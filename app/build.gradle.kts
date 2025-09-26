@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.android.sample"
+    namespace = "ch.eureka.eurekapp"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.android.sample"
+        applicationId = "ch.eureka.eurekapp"
         minSdk = 28
         targetSdk = 34
         versionCode = 1
@@ -91,7 +91,7 @@ android {
     }
 }
 
-sonar {
+sonar { // edit these when setup sonar
     properties {
         property("sonar.projectKey", "gf_android-sample")
         property("sonar.projectName", "Android-Sample")
