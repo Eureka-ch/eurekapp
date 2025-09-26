@@ -1,4 +1,4 @@
-package com.android.sample
+package ch.eureka.eurekapp
 
 import kotlin.math.sqrt
 

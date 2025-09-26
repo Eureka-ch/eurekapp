@@ -1,4 +1,4 @@
-package com.android.sample
+package ch.eureka.eurekapp
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
