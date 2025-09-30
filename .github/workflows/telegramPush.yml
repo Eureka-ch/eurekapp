@@ -1,4 +1,4 @@
-name: Notify Telegram on Push
+name: Telegram — Push Notification
 on:
   push: # to any branch
     branches:
@@ -9,55 +9,19 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout repo (required for local actions and scripts)
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
 
-      - name: Ensure jq (for building message)
-        run: |
-          if ! command -v jq >/dev/null 2>&1; then
-            sudo apt-get update -y && sudo apt-get install -y jq
-          fi
-
-      - name: Build message (HTML-safe)
-        id: msg
-        shell: bash
-        run: |
-          set -euo pipefail
-          REPO="${{ github.repository }}"
-          BRANCH="${{ github.ref_name }}"
-          ACTOR="${{ github.actor }}"
-          COMMITS_JSON='${{ toJson(github.event.commits) }}'
-
-          html_esc() { sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g'; }
-
-          TITLE="$(printf "%s just pushed to branch %s of %s," \
-            "$(echo "$ACTOR" | html_esc)" \
-            "$(echo "$BRANCH" | html_esc)" \
-            "$(echo "$REPO" | html_esc)")"
-
-          COMMITS=$(
-            echo "$COMMITS_JSON" | jq -r '
-              .[:10][]? | [ .id[0:7], .id, (.message // "" | gsub("\n"; " ")), (.author.username // .author.name // "unknown") ] | @tsv
-            ' | while IFS=$'\t' read -r SHA7 FULL MSG AUTHOR; do
-                  MSG_ESC=$(printf "%s" "$MSG" | html_esc)
-                  AUTHOR_ESC=$(printf "%s" "$AUTHOR" | html_esc)
-                  URL="https://github.com/${REPO}/commit/${FULL}"
-                  printf -- "- <a href=\"%s\">%s</a> — %s (by %s)\n" "$URL" "$SHA7" "$MSG_ESC" "$AUTHOR_ESC"
-                done
-          )
-          [ -z "${COMMITS:-}" ] && COMMITS="— no commit messages —"
-
-          printf -v BODY "%s\n%s" "$TITLE" "$COMMITS"
-          {
-            echo "text<<EOF"
-            printf "%s\n" "$BODY"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Send Telegram
-        uses: ./.github/actions/telegram-send
-        with:
-          text: ${{ steps.msg.outputs.text }}
-          parse_mode: HTML
-          bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          chat_id:   ${{ secrets.TELEGRAM_CHAT_ID }}
-          thread_id: ${{ vars.TELEGRAM_PUSH_THREAD_ID || '' }}
+    - name: Send Telegram notification
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        TELEGRAM_THREAD_ID: ${{ vars.TELEGRAM_PUSH_THREAD_ID }}
+        EVENT_TYPE: push
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_ACTOR: ${{ github.actor }}
+        PUSH_BRANCH: ${{ github.ref_name }}
+        PUSH_COMMITS: ${{ toJson(github.event.commits) }}
+      run: python3 .github/scripts/telegram_notify.py

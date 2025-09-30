@@ -1,4 +1,4 @@
-name: Telegram — Pull Requests
+name: Telegram — Pull Requests Notification
 
 on:
   pull_request:
@@ -11,60 +11,24 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - name: Build PR message (HTML-safe)
-        id: msg
-        shell: bash
-        run: |
-          set -euo pipefail
-          html_esc() { sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g'; }
-
-          REPO="${{ github.repository }}"
-          ACTOR="${{ github.actor }}"
-          PR_NUM="${{ github.event.pull_request.number }}"
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          PR_STATE="${{ github.event.action }}"
-          PR_MERGED="${{ github.event.pull_request.merged }}"
-          PR_URL="${{ github.event.pull_request.html_url }}"
-          BASE_REF="${{ github.event.pull_request.base.ref }}"
-          HEAD_REF="${{ github.event.pull_request.head.ref }}"
-
-          # human-ish status
-          if [ "$PR_STATE" = "closed" ] && [ "$PR_MERGED" = "true" ]; then
-            STATUS="merged"
-          elif [ "$PR_STATE" = "synchronize" ]; then
-            STATUS="updated"
-          else
-            STATUS="$PR_STATE"
-          fi
-
-          printf -v BODY "%s" "$(cat <<'EOF' | sed '1d;$d'
-          <b>PR ${STATUS}:</b> <a href="__PR_URL__">#__PR_NUM__</a> — __PR_TITLE__<br/>
-          Repo: __REPO__<br/>
-          By: __ACTOR__<br/>
-          __HEAD__ → __BASE__
-          EOF
-          )"
-
-          BODY=${BODY//__PR_URL__/$(printf "%s" "$PR_URL" | html_esc)}
-          BODY=${BODY//__PR_NUM__/$(printf "%s" "$PR_NUM" | html_esc)}
-          BODY=${BODY//__PR_TITLE__/$(printf "%s" "$PR_TITLE" | html_esc)}
-          BODY=${BODY//__REPO__/$(printf "%s" "$REPO" | html_esc)}
-          BODY=${BODY//__ACTOR__/$(printf "%s" "$ACTOR" | html_esc)}
-          BODY=${BODY//__HEAD__/$(printf "%s" "$HEAD_REF" | html_esc)}
-          BODY=${BODY//__BASE__/$(printf "%s" "$BASE_REF" | html_esc)}
-
-          {
-            echo "text<<EOF"
-            printf "%s\n" "$BODY"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Send Telegram
-        uses: ./.github/actions/telegram-send
+      - name: Checkout repo (required for local actions and scripts)
+        uses: actions/checkout@v4
         with:
-          text: ${{ steps.msg.outputs.text }}
-          parse_mode: HTML
-          bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          chat_id:   ${{ secrets.TELEGRAM_CHAT_ID }}
-          # Optional repo variable for PR topic (e.g., 3)
-          thread_id: ${{ vars.TELEGRAM_PR_THREAD_ID }}
+          fetch-depth: 1
+
+      - name: Send Telegram notification
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_ID: ${{ vars.TELEGRAM_PR_THREAD_ID }}
+          EVENT_TYPE: pull_request
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_ACTION: ${{ github.event.action }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+        run: python3 .github/scripts/telegram_notify.py
