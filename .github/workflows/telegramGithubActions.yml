@@ -1,8 +1,8 @@
-name: Telegram — Actions Status
+name: Telegram — Actions Status Notification
 
 on:
   workflow_run:
-    workflows: ["*"]   # watch all; we’ll filter in the job
+    workflows: ["*"]   # watch all; we'll filter in the job
     types: [completed]
 
 jobs:
@@ -12,52 +12,22 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - name: Build Workflow message (HTML-safe)
-        id: msg
-        shell: bash
-        run: |
-          set -euo pipefail
-          html_esc() { sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g'; }
-
-          REPO="${{ github.repository }}"
-          WF_NAME="${{ github.event.workflow.name }}"
-          CONCLUSION="${{ github.event.workflow_run.conclusion }}"
-          EVENT="${{ github.event.workflow_run.event }}"
-          ACTOR="${{ github.event.workflow_run.actor.login }}"
-          RUN_URL="${{ github.event.workflow_run.html_url }}"
-          BRANCH="${{ github.event.workflow_run.head_branch }}"
-
-          printf -v BODY "%s" "$(cat <<'EOF' | sed '1d;$d'
-          <b>Workflow:</b> __WF__<br/>
-          Repo: __REPO__<br/>
-          Branch: __BRANCH__<br/>
-          By: __ACTOR__<br/>
-          Event: __EVENT__<br/>
-          Status: <b>__CONCLUSION__</b><br/>
-          <a href="__URL__">Open run</a>
-          EOF
-          )"
-
-          BODY=${BODY//__WF__/$(printf "%s" "$WF_NAME" | html_esc)}
-          BODY=${BODY//__REPO__/$(printf "%s" "$REPO" | html_esc)}
-          BODY=${BODY//__BRANCH__/$(printf "%s" "$BRANCH" | html_esc)}
-          BODY=${BODY//__ACTOR__/$(printf "%s" "$ACTOR" | html_esc)}
-          BODY=${BODY//__EVENT__/$(printf "%s" "$EVENT" | html_esc)}
-          BODY=${BODY//__CONCLUSION__/$(printf "%s" "$CONCLUSION" | html_esc)}
-          BODY=${BODY//__URL__/$(printf "%s" "$RUN_URL" | html_esc)}
-
-          {
-            echo "text<<EOF"
-            printf "%s\n" "$BODY"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Send Telegram
-        uses: ./.github/actions/telegram-send
+      - name: Checkout repo (required for local actions and scripts)
+        uses: actions/checkout@v4
         with:
-          text: ${{ steps.msg.outputs.text }}
-          parse_mode: HTML
-          bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          chat_id:   ${{ secrets.TELEGRAM_CHAT_ID }}
-          # Optional repo variable for CI topic
-          thread_id: ${{ vars.TELEGRAM_CI_THREAD_ID }}
+          fetch-depth: 1
+
+      - name: Send Telegram notification
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_ID: ${{ vars.TELEGRAM_CI_THREAD_ID }}
+          EVENT_TYPE: workflow_run
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_ACTOR: ${{ github.event.workflow_run.actor.login }}
+          WORKFLOW_NAME: ${{ github.event.workflow.name }}
+          WORKFLOW_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          WORKFLOW_EVENT: ${{ github.event.workflow_run.event }}
+          WORKFLOW_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          WORKFLOW_URL: ${{ github.event.workflow_run.html_url }}
+        run: python3 .github/scripts/telegram_notify.py
