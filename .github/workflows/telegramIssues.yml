@@ -1,0 +1,55 @@
+name: Telegram — Issues
+
+on:
+  issues:
+    types: [opened, reopened, edited, closed]
+
+jobs:
+  notify:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Build Issue message (HTML-safe)
+        id: msg
+        shell: bash
+        run: |
+          set -euo pipefail
+          html_esc() { sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g'; }
+
+          REPO="${{ github.repository }}"
+          ACTOR="${{ github.actor }}"
+          ISSUE_NUM="${{ github.event.issue.number }}"
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+          ISSUE_STATE="${{ github.event.action }}"
+          ISSUE_URL="${{ github.event.issue.html_url }}"
+
+          printf -v BODY "%s" "$(cat <<'EOF' | sed '1d;$d'
+          <b>Issue __STATE__:</b> <a href="__URL__">#__NUM__</a> — __TITLE__<br/>
+          Repo: __REPO__<br/>
+          By: __ACTOR__
+          EOF
+          )"
+
+          BODY=${BODY//__STATE__/$(printf "%s" "$ISSUE_STATE" | html_esc)}
+          BODY=${BODY//__URL__/$(printf "%s" "$ISSUE_URL" | html_esc)}
+          BODY=${BODY//__NUM__/$(printf "%s" "$ISSUE_NUM" | html_esc)}
+          BODY=${BODY//__TITLE__/$(printf "%s" "$ISSUE_TITLE" | html_esc)}
+          BODY=${BODY//__REPO__/$(printf "%s" "$REPO" | html_esc)}
+          BODY=${BODY//__ACTOR__/$(printf "%s" "$ACTOR" | html_esc)}
+
+          {
+            echo "text<<EOF"
+            printf "%s\n" "$BODY"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Send Telegram
+        uses: ./.github/actions/telegram-send
+        with:
+          text: ${{ steps.msg.outputs.text }}
+          parse_mode: HTML
+          bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          chat_id:   ${{ secrets.TELEGRAM_CHAT_ID }}
+          # Optional repo variable for Issues topic
+          thread_id: ${{ vars.TELEGRAM_ISSUES_THREAD_ID }}
