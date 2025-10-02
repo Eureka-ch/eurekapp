@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: 17
-          distribution: 'zulu' # Alternative distribution options are available
+          distribution: 'temurin' # Alternative distribution options are available
       - name: Cache SonarQube packages
         uses: actions/cache@v4
         with:
@@ -30,6 +30,8 @@ jobs:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
+      - name: Grant execute permission to Gradle wrapper
+        run: chmod +x ./gradlew
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
