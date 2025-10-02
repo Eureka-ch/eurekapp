@@ -7,7 +7,7 @@ EurekApp is a mobile application that helps students with their studies using ar
 - Student collaboration platform: A built-in platform for sharing academic resources helps build community and strengthens the solidarity.
 
 ## Technology
-- API integration: Information is added to the application via the APIs of individual platforms. The application supports integration with Telegram groups using bots.
+- API integration: Information is added to the application via the APIs of individual platforms. The application supports integration with Telegram groups using bots, and with Edstem and Moodle.
 - AI: The application uses LLM to provide smart assistant services. Emphasis is placed on minimizing hallucinations to limit the risks associated with learning using AI.
 
 ## Advantages
