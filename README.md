@@ -17,4 +17,4 @@ EurekApp is a mobile application that helps students with their studies using ar
 - Practicality: This application is designed to solve the everyday real-life problems of students. Its goal is to become an integral part of a student's day, just as the CFF application is part of the life of public transport passengers or GitHub is part of the life of programmers.
 
 ## Figma Project link
-- https://www.figma.com/design/bKRZnuU5m3tkV8UKezHdAy/Eureka-figma?node-id=0-1&p=f&t=k7tOtfZ0CLtuD3kU-0
+View the complete design on [Figma](https://www.figma.com/design/bKRZnuU5m3tkV8UKezHdAy/Eureka-figma?node-id=0-1).
