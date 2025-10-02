@@ -93,7 +93,7 @@ android {
 
 sonar { // edit these when setup sonar
     properties {
-        property("sonar.projectKey", "eurekapp")
+        property("sonar.projectKey", "eureka-ch")
         property("sonar.projectName", "Eurekapp")
         property("sonar.organization", "Eureka.ch")
         property("sonar.host.url", "https://sonarcloud.io")
