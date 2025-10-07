@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.widget.ImageView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,7 +47,16 @@ fun PhotoScreen(cameraViewModel: CameraViewModel) {
     Box(modifier = Modifier.fillMaxSize()) {
       if (cameraState.picture != null) {
         AndroidView(
-            factory = { context -> ImageView(context).apply { setImageURI(cameraState.picture) } })
+            factory = { context -> ImageView(context).apply { setImageURI(cameraState.picture) } },
+            modifier = Modifier.fillMaxSize())
+      } else {
+        AndroidView(
+            factory = { context ->
+              val previewView = PreviewView(context)
+              cameraViewModel.getPreview().surfaceProvider = previewView.surfaceProvider
+              previewView
+            },
+            modifier = Modifier.fillMaxSize())
       }
 
       FilledTonalButton(

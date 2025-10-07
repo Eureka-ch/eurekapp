@@ -30,4 +30,8 @@ class CameraViewModel(private val cameraRepository: CameraRepository) : ViewMode
 
     return false
   }
+
+  fun getPreview(): androidx.camera.core.Preview {
+    return cameraRepository.preview
+  }
 }

@@ -31,6 +31,8 @@ interface CameraRepository {
   suspend fun getNewPhoto(): Uri?
 
   suspend fun deletePhoto(photoUri: Uri): Boolean
+
+  var preview: Preview
 }
 
 /**
@@ -50,6 +52,7 @@ class LocalCameraRepository(
   private var imageCapture: ImageCapture? = null
   private lateinit var cameraExecutor: Executor
   private var _isInitialized = false
+  override lateinit var preview: Preview
 
   init {
     initialization()
@@ -65,7 +68,7 @@ class LocalCameraRepository(
     }
 
     val cameraProvider = ProcessCameraProvider.getInstance(context).get()
-    val preview = Preview.Builder().build()
+    preview = Preview.Builder().build()
     imageCapture = ImageCapture.Builder().build()
     cameraExecutor = ContextCompat.getMainExecutor(context)
 
