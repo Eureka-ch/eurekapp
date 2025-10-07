@@ -47,7 +47,8 @@ class LocalCameraRepository(
     private val context: Context,
     private val lifecycleOwner: LifecycleOwner,
     private val locale: Locale = Locale("fr", "CH"),
-    private val photoLocation: String = "Pictures/EurekApp"
+    private val photoLocation: String = "Pictures/EurekApp",
+    private val cameraSelection: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 ) : CameraRepository {
   private var imageCapture: ImageCapture? = null
   private lateinit var cameraExecutor: Executor
@@ -74,7 +75,7 @@ class LocalCameraRepository(
 
     cameraProvider.unbindAll()
     cameraProvider.bindToLifecycle(
-        lifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageCapture)
+        lifecycleOwner, cameraSelection, preview, imageCapture)
 
     _isInitialized = true
   }
