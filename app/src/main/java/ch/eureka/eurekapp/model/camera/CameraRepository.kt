@@ -52,36 +52,28 @@ class LocalCameraRepository(
 ) : CameraRepository {
   private var imageCapture: ImageCapture? = null
   private lateinit var cameraExecutor: Executor
-  private var _isInitialized = false
   override lateinit var preview: Preview
-
-  init {
-    initialization()
-  }
 
   companion object {
     private const val NAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
   }
 
-  private fun initialization() {
-    if (_isInitialized) {
-      return
-    }
+  init {
+    initialization()
+  }
 
-    val cameraProvider = ProcessCameraProvider.getInstance(context).get()
+  private fun initialization() {
     preview = Preview.Builder().build()
     imageCapture = ImageCapture.Builder().build()
     cameraExecutor = ContextCompat.getMainExecutor(context)
 
+    val cameraProvider = ProcessCameraProvider.getInstance(context).get()
     cameraProvider.unbindAll()
-    cameraProvider.bindToLifecycle(
-        lifecycleOwner, cameraSelection, preview, imageCapture)
-
-    _isInitialized = true
+    cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelection, preview, imageCapture)
   }
 
   override suspend fun getNewPhoto(): Uri? {
-    if (!_isInitialized || imageCapture == null) {
+    if (imageCapture == null) {
       return null
     }
 

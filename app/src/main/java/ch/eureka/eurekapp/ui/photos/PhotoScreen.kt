@@ -36,8 +36,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun PhotoScreen(cameraViewModel: CameraViewModel) {
   val cameraState by cameraViewModel.photoState.collectAsState()
-
+  val cameraPreview by cameraViewModel.preview.collectAsState()
   val context = LocalContext.current
+  val previewView = remember { PreviewView(context) }
   var hasPermission by remember {
     mutableStateOf(
         ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
@@ -49,14 +50,10 @@ fun PhotoScreen(cameraViewModel: CameraViewModel) {
         AndroidView(
             factory = { context -> ImageView(context).apply { setImageURI(cameraState.picture) } },
             modifier = Modifier.fillMaxSize())
-      } else {
-        AndroidView(
-            factory = { context ->
-              val previewView = PreviewView(context)
-              cameraViewModel.getPreview().surfaceProvider = previewView.surfaceProvider
-              previewView
-            },
-            modifier = Modifier.fillMaxSize())
+      } else if (cameraPreview != null) {
+        AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize()) {
+          cameraViewModel.getPreview().surfaceProvider = previewView.surfaceProvider
+        }
       }
 
       FilledTonalButton(
