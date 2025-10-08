@@ -30,9 +30,17 @@ interface CameraRepository {
    */
   suspend fun getNewPhoto(): Uri?
 
+  /**
+   * Deletes the photo at the specified Uri
+   *
+   * @return true if the delete was successful, false otherwise
+   */
   suspend fun deletePhoto(photoUri: Uri): Boolean
+
+  /** Cleans up camera resources. */
   fun dispose()
 
+  /** The preview of the camera for displaying the live camera feed */
   var preview: Preview
 }
 
@@ -116,7 +124,7 @@ class LocalCameraRepository(
     return rowsDeleted > 0
   }
 
-    override fun dispose() {
-        cameraProvider.unbindAll()
-    }
+  override fun dispose() {
+    cameraProvider.unbindAll()
+  }
 }

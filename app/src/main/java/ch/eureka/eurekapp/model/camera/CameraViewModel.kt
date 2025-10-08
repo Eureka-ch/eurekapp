@@ -8,12 +8,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+/**
+ * The view model for the camera operations
+ *
+ * @param application The application being run (necessary for having a context)
+ */
 class CameraViewModel(application: Application) : AndroidViewModel(application) {
   private var _photoState: MutableStateFlow<CameraModel> = MutableStateFlow(CameraModel())
   val photoState: StateFlow<CameraModel> = _photoState.asStateFlow()
   private var cameraRepository: LocalCameraRepository? = null
   private val _preview: MutableStateFlow<Preview?> = MutableStateFlow(null)
   val preview: StateFlow<Preview?> = _preview.asStateFlow()
+
+  /** Takes a photo using the cameraRepository (if initialized) */
   suspend fun takePhoto() {
     val newPhoto = cameraRepository?.getNewPhoto()
     newPhoto?.let { uri ->
@@ -22,6 +29,11 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
     }
   }
 
+  /**
+   * Deletes the photo from the current state (if there is any)
+   *
+   * @return true if the delete was successful, false otherwise
+   */
   suspend fun deletePhoto(): Boolean {
     val currentState = _photoState.value
     if (currentState.picture == null) {
@@ -36,18 +48,30 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
     return false
   }
 
+  /**
+   * Returns the preview of the currently used camera
+   *
+   * @return The preview
+   * @throws IllegalArgumentException if the cameraRepository is not initialized
+   */
   fun getPreview(): Preview {
     return cameraRepository?.preview
         ?: throw IllegalStateException("CameraRepository not initialized.")
   }
 
+  /**
+   * Initialized the cameraRepository and therefore starts the camera
+   *
+   * @param lifecycleOwner The owner of the camera
+   */
   fun startCamera(lifecycleOwner: LifecycleOwner) {
     val context = getApplication<Application>().applicationContext
     cameraRepository = LocalCameraRepository(context, lifecycleOwner)
     _preview.value = cameraRepository?.preview
   }
 
-  fun unbindCamera(){
+  /** Unbinds (cleans up after) a camera session */
+  fun unbindCamera() {
     cameraRepository?.dispose()
   }
 }
