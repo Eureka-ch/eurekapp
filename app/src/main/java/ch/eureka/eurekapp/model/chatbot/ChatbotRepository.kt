@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.chatbot
+package ch.eureka.eurekapp.model.chatbot
 
 /**
  * Repository for managing chatbot interactions. Delegates message sending to the appropriate data

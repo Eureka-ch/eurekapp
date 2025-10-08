@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.chatbot
+package ch.eureka.eurekapp.model.chatbot
 
 /**
  * Interface for chatbot data sources. Implementations can provide dummy responses or make actual

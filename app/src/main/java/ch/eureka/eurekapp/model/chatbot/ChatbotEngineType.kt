@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.chatbot
+package ch.eureka.eurekapp.model.chatbot
 
 /** Enum representing the type of chatbot engine to use. */
 enum class ChatbotEngineType {

@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.chatbot
+package ch.eureka.eurekapp.model.chatbot
 
 import java.io.BufferedReader
 import java.io.InputStreamReader

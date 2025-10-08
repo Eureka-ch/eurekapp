@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.chatbot
+package ch.eureka.eurekapp.model.chatbot
 
 /**
  * Use case for sending messages to the chatbot. Encapsulates the business logic for message
