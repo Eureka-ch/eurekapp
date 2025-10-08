@@ -117,6 +117,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(platform(libs.compose.bom))
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.10")
     testImplementation(libs.junit)
     globalTestImplementation(libs.androidx.junit)
     globalTestImplementation(libs.androidx.espresso.core)
@@ -185,4 +186,29 @@ tasks.register("jacocoTestReport", JacocoReport::class) {
         include("outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
         include("outputs/code_coverage/debugAndroidTest/connected/*/coverage.ec")
     })
+}
+
+// Task to generate Firestore rules from annotations
+tasks.register<JavaExec>("generateFirestoreRules") {
+    group = "codegen"
+    description = "Generate Firestore security rules from annotated data classes"
+
+    // Use Android project's runtime classpath
+    classpath = files(
+        android.sourceSets.getByName("main").java.srcDirs,
+        "${layout.buildDirectory.get()}/intermediates/javac/debug/classes",
+        "${layout.buildDirectory.get()}/tmp/kotlin-classes/debug",
+        configurations.getByName("runtimeClasspath")
+    )
+
+    mainClass.set("ch.eureka.eurekapp.codegen.RulesGeneratorMainKt")
+
+    // Set output path
+    systemProperty("output.path", "${project.projectDir}/../firestore.rules")
+
+    dependsOn("compileDebugKotlin")
+
+    doFirst {
+        println("Generating Firestore rules...")
+    }
 }
