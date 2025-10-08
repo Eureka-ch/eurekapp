@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,13 +10,21 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.credentials.CredentialManager
+import ch.eureka.eurekapp.model.authentication.AuthRepository
 import ch.eureka.eurekapp.resources.C
+import ch.eureka.eurekapp.ui.authentication.SignInScreen
 import ch.eureka.eurekapp.ui.theme.EurekappTheme
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
+  private lateinit var auth: FirebaseAuth
+  private lateinit var authRepository: AuthRepository
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContent {
@@ -24,11 +33,19 @@ class MainActivity : ComponentActivity() {
         Surface(
             modifier = Modifier.fillMaxSize().semantics { testTag = C.Tag.main_screen_container },
             color = MaterialTheme.colorScheme.background) {
-              Greeting("Android")
+              Eurekapp()
             }
       }
     }
   }
+}
+
+@Composable
+fun Eurekapp(
+    context: Context = LocalContext.current,
+    credentialManager: CredentialManager = CredentialManager.create(context),
+) {
+  SignInScreen(credentialManager = credentialManager, onSignedIn = {})
 }
 
 @Composable
