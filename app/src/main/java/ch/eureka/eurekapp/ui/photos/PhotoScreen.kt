@@ -23,12 +23,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.camera.CameraViewModel
 import kotlinx.coroutines.launch
+
+object PhotoScreenTestTags {
+  const val PHOTO = "photo"
+  const val PREVIEW = "preview"
+  const val TAKE_PHOTO = "take_photo"
+  const val DELETE_PHOTO = "delete_photo"
+  const val NO_PERMISSION = "no_permission"
+  const val GRANT_PERMISSION = "grant_permission"
+}
 
 // Portions of this code were generated with the help of Grok.
 @Composable
@@ -47,22 +57,26 @@ fun PhotoScreen(cameraViewModel: CameraViewModel) {
       if (cameraState.picture != null) {
         AndroidView(
             factory = { context -> ImageView(context).apply { setImageURI(cameraState.picture) } },
-            modifier = Modifier.fillMaxSize())
+            modifier = Modifier.fillMaxSize().testTag(PhotoScreenTestTags.PHOTO))
       } else if (cameraPreview != null) {
-        AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize()) {
-          cameraViewModel.getPreview().surfaceProvider = previewView.surfaceProvider
-        }
+        AndroidView(
+            factory = { previewView },
+            modifier = Modifier.fillMaxSize().testTag(PhotoScreenTestTags.PREVIEW)) {
+              cameraViewModel.getPreview().surfaceProvider = previewView.surfaceProvider
+            }
       }
 
       FilledTonalButton(
           onClick = { cameraViewModel.viewModelScope.launch { cameraViewModel.takePhoto() } },
-          modifier = Modifier.align(Alignment.BottomStart)) {
+          modifier =
+              Modifier.align(Alignment.BottomStart).testTag(PhotoScreenTestTags.TAKE_PHOTO)) {
             Text(text = "Take photo")
           }
 
       FilledTonalButton(
           onClick = { cameraViewModel.viewModelScope.launch { cameraViewModel.deletePhoto() } },
-          modifier = Modifier.align(Alignment.BottomCenter)) {
+          modifier =
+              Modifier.align(Alignment.BottomCenter).testTag(PhotoScreenTestTags.DELETE_PHOTO)) {
             Text(text = "Delete photo")
           }
     }
@@ -78,10 +92,13 @@ fun PhotoScreen(cameraViewModel: CameraViewModel) {
           verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text(
                 text = "Camera permission is required to use this app.",
-                style = MaterialTheme.typography.bodyLarge)
-            Button(onClick = { launcher.launch(Manifest.permission.CAMERA) }) {
-              Text("Grant permission")
-            }
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.testTag(PhotoScreenTestTags.NO_PERMISSION))
+            Button(
+                onClick = { launcher.launch(Manifest.permission.CAMERA) },
+                modifier = Modifier.testTag(PhotoScreenTestTags.GRANT_PERMISSION)) {
+                  Text("Grant permission")
+                }
           }
     }
   }
