@@ -1,6 +1,5 @@
 package ch.eureka.eurekapp.designsystem.tokens
 
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.ui.designsystem.tokens.LocalSpacing
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
@@ -9,46 +8,41 @@ import org.junit.Assert.assertNotNull
 import org.junit.Test
 
 class SpacingTest {
-    
-    @Test
-    fun `default spacing values are correct`() {
-        val spacing = Spacing()
-        
-        assertEquals("XS spacing should be 4dp", 4.dp, spacing.xs)
-        assertEquals("SM spacing should be 8dp", 8.dp, spacing.sm)
-        assertEquals("MD spacing should be 12dp", 12.dp, spacing.md)
-        assertEquals("LG spacing should be 16dp", 16.dp, spacing.lg)
-        assertEquals("XL spacing should be 24dp", 24.dp, spacing.xl)
-        assertEquals("XXL spacing should be 32dp", 32.dp, spacing.xxl)
-    }
-    
-    @Test
-    fun `LocalSpacing is properly defined`() {
-        // Verify that LocalSpacing is properly defined
-        assertNotNull("LocalSpacing should be defined", LocalSpacing)
-        
-        // Test that we can create a Spacing instance with default values
-        val spacing = Spacing()
-        assertNotNull("Spacing instance should be created", spacing)
-        
-        // Verify default values match expected spacing
-        assertEquals("Default XS should be 4dp", 4.dp, spacing.xs)
-        assertEquals("Default SM should be 8dp", 8.dp, spacing.sm)
-        assertEquals("Default MD should be 12dp", 12.dp, spacing.md)
-        assertEquals("Default LG should be 16dp", 16.dp, spacing.lg)
-        assertEquals("Default XL should be 24dp", 24.dp, spacing.xl)
-        assertEquals("Default XXL should be 32dp", 32.dp, spacing.xxl)
-    }
-    
-    @Test
-    fun `spacing values are in ascending order`() {
-        val spacing = Spacing()
-        
-        // Verify spacing values increase in order
-        assert(spacing.xs < spacing.sm) { "XS should be smaller than SM" }
-        assert(spacing.sm < spacing.md) { "SM should be smaller than MD" }
-        assert(spacing.md < spacing.lg) { "MD should be smaller than LG" }
-        assert(spacing.lg < spacing.xl) { "LG should be smaller than XL" }
-        assert(spacing.xl < spacing.xxl) { "XL should be smaller than XXL" }
-    }
+
+  @Test
+  fun `spacing values are correct`() {
+    assertEquals("XXS spacing should be 4dp", 4.dp, Spacing.xxs)
+    assertEquals("XS spacing should be 8dp", 8.dp, Spacing.xs)
+    assertEquals("SM spacing should be 12dp", 12.dp, Spacing.sm)
+    assertEquals("MD spacing should be 16dp", 16.dp, Spacing.md)
+    assertEquals("LG spacing should be 24dp", 24.dp, Spacing.lg)
+    assertEquals("XL spacing should be 32dp", 32.dp, Spacing.xl)
+  }
+
+  @Test
+  fun `LocalSpacing is properly defined`() {
+    // Verify that LocalSpacing is properly defined
+    assertNotNull("LocalSpacing should be defined", LocalSpacing)
+
+    // Test that we can access Spacing object
+    assertNotNull("Spacing object should be accessible", Spacing)
+
+    // Verify spacing values match expected values
+    assertEquals("XXS should be 4dp", 4.dp, Spacing.xxs)
+    assertEquals("XS should be 8dp", 8.dp, Spacing.xs)
+    assertEquals("SM should be 12dp", 12.dp, Spacing.sm)
+    assertEquals("MD should be 16dp", 16.dp, Spacing.md)
+    assertEquals("LG should be 24dp", 24.dp, Spacing.lg)
+    assertEquals("XL should be 32dp", 32.dp, Spacing.xl)
+  }
+
+  @Test
+  fun `spacing values are in ascending order`() {
+    // Verify spacing values increase in order
+    assert(Spacing.xxs < Spacing.xs) { "XXS should be smaller than XS" }
+    assert(Spacing.xs < Spacing.sm) { "XS should be smaller than SM" }
+    assert(Spacing.sm < Spacing.md) { "SM should be smaller than MD" }
+    assert(Spacing.md < Spacing.lg) { "MD should be smaller than LG" }
+    assert(Spacing.lg < Spacing.xl) { "LG should be smaller than XL" }
+  }
 }
