@@ -63,6 +63,16 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes.addAll(
+                listOf(
+                    "META-INF/LICENSE.md",
+                    "META-INF/LICENSE-notice.md",
+                    "META-INF/LICENSE",
+                    "META-INF/LICENSE.txt",
+                    "META-INF/NOTICE",
+                    "META-INF/NOTICE.txt"
+                )
+            )
         }
     }
 
@@ -141,6 +151,12 @@ dependencies {
     // UI Tests
     globalTestImplementation(libs.compose.test.junit)
     debugImplementation(libs.compose.test.manifest)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+        testImplementation(libs.mockito.core)
+        testImplementation(libs.mockito.kotlin)
+        androidTestImplementation(libs.mockito.android)
+        androidTestImplementation(libs.mockito.kotlin)
+        testImplementation(libs.robolectric)
 
     // Kaspresso test framework
     globalTestImplementation(libs.kaspresso)
@@ -160,6 +176,16 @@ dependencies {
     implementation(libs.credentials)
     implementation(libs.credentials.play.services.auth)
     implementation(libs.googleid)
+
+    // Networking with OkHttp
+    implementation(libs.okhttp)
+
+    // Testing Unit
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.mockk)
+    androidTestImplementation(libs.mockk.android)
+    androidTestImplementation(libs.mockk.agent)
+    testImplementation(libs.mockk)
 }
 
 tasks.withType<Test> {
@@ -185,6 +211,9 @@ tasks.register("jacocoTestReport", JacocoReport::class) {
         "**/Manifest*.*",
         "**/*Test*.*",
         "android/**/*.*",
+        "jdk/proxy2/**",
+        "sun/reflect/**",
+        "java/lang/reflect/**"
     )
 
     val debugTree = fileTree("${project.layout.buildDirectory.get()}/tmp/kotlin-classes/debug") {
