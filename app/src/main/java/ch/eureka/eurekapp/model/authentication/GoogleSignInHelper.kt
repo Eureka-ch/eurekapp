@@ -1,7 +1,6 @@
 /*
 The following code comes from the solution of the part 3 of the SwEnt bootcamp made by the SwEnt team:
 https://github.com/swent-epfl/bootcamp-25-B3-Solution/blob/main/app/src/main/java/com/github/se/bootcamp/model/authentication/GoogleSignInHelper.kt
-Licensed under TODO
 */
 
 package ch.eureka.eurekapp.model.authentication
