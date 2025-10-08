@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
 fun Camera() {
   val viewModel: CameraViewModel = viewModel()
   val lifecycleOwner = LocalLifecycleOwner.current
-  EurekappTheme { PhotoScreen(viewModel) }
+  PhotoScreen(viewModel)
   DisposableEffect(lifecycleOwner) {
     viewModel.startCamera(lifecycleOwner)
     onDispose { viewModel.unbindCamera() }
