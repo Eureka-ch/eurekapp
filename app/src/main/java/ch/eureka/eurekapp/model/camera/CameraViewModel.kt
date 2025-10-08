@@ -46,4 +46,8 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
     cameraRepository = LocalCameraRepository(context, lifecycleOwner)
     _preview.value = cameraRepository?.preview
   }
+
+  fun unbindCamera(){
+    cameraRepository?.dispose()
+  }
 }

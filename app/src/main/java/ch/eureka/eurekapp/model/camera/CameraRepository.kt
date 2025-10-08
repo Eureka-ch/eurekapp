@@ -31,6 +31,7 @@ interface CameraRepository {
   suspend fun getNewPhoto(): Uri?
 
   suspend fun deletePhoto(photoUri: Uri): Boolean
+  fun dispose()
 
   var preview: Preview
 }
@@ -53,6 +54,7 @@ class LocalCameraRepository(
   private var imageCapture: ImageCapture? = null
   private lateinit var cameraExecutor: Executor
   override lateinit var preview: Preview
+  private val cameraProvider = ProcessCameraProvider.getInstance(context).get()
 
   companion object {
     private const val NAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
@@ -67,7 +69,6 @@ class LocalCameraRepository(
     imageCapture = ImageCapture.Builder().build()
     cameraExecutor = ContextCompat.getMainExecutor(context)
 
-    val cameraProvider = ProcessCameraProvider.getInstance(context).get()
     cameraProvider.unbindAll()
     cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelection, preview, imageCapture)
   }
@@ -114,4 +115,8 @@ class LocalCameraRepository(
     val rowsDeleted = context.contentResolver.delete(photoUri, null, null)
     return rowsDeleted > 0
   }
+
+    override fun dispose() {
+        cameraProvider.unbindAll()
+    }
 }

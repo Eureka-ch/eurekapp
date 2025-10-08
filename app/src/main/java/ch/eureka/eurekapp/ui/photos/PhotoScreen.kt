@@ -31,8 +31,6 @@ import ch.eureka.eurekapp.model.camera.CameraViewModel
 import kotlinx.coroutines.launch
 
 // Portions of this code were generated with the help of Grok.
-
-// Before using this screen make sure the app has the camera permissions using
 @Composable
 fun PhotoScreen(cameraViewModel: CameraViewModel) {
   val cameraState by cameraViewModel.photoState.collectAsState()

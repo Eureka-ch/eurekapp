@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -41,7 +42,12 @@ fun Camera() {
   val viewModel: CameraViewModel = viewModel()
   val lifecycleOwner = LocalLifecycleOwner.current
   EurekappTheme { PhotoScreen(viewModel) }
-  LaunchedEffect(Unit) { viewModel.startCamera(lifecycleOwner) }
+  DisposableEffect(lifecycleOwner) {
+    viewModel.startCamera(lifecycleOwner)
+    onDispose {
+      viewModel.unbindCamera()
+    }
+  }
 }
 
 @Composable
