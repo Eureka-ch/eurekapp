@@ -27,7 +27,6 @@ fun EurekaTaskCard(
     dueDate: String = "",
     assignee: String = "",
     priority: String = "",
-    category: String = "",
     progressText: String = "",
     progressValue: Float = 0f,
     isCompleted: Boolean = false,
@@ -88,15 +87,9 @@ fun EurekaTaskCard(
                 }
 
                 // Tags row
-                if (priority.isNotEmpty() || category.isNotEmpty()) {
+                if (priority.isNotEmpty()) {
                   Row {
-                    if (priority.isNotEmpty()) {
-                      EurekaStatusTag(text = priority, type = StatusType.INFO)
-                    }
-                    if (category.isNotEmpty()) {
-                      if (priority.isNotEmpty()) Spacer(modifier = Modifier.width(Spacing.xs))
-                      EurekaStatusTag(text = category, type = StatusType.INFO)
-                    }
+                    EurekaStatusTag(text = priority, type = StatusType.INFO)
                   }
                 }
               }

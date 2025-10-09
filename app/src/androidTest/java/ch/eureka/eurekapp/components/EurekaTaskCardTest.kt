@@ -36,7 +36,6 @@ class EurekaTaskCardTest {
             dueDate = "2024-01-15",
             assignee = "John Doe",
             priority = "High",
-            category = "Work",
             progressText = "75%",
             progressValue = 0.75f,
             isCompleted = false,
@@ -127,7 +126,7 @@ class EurekaTaskCardTest {
   }
 
   @Test
-  fun eurekaTaskCardRendersWithOnlyPriority() {
+  fun eurekaTaskCardRendersWithOnlyPriorityLow() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaTaskCard(title = "Task with Priority", priority = "Low", onToggleComplete = {})
@@ -140,16 +139,16 @@ class EurekaTaskCardTest {
   }
 
   @Test
-  fun eurekaTaskCardRendersWithOnlyCategory() {
+  fun eurekaTaskCardRendersWithOnlyPriorityHigh() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
-        EurekaTaskCard(title = "Task with Category", category = "Personal", onToggleComplete = {})
+        EurekaTaskCard(title = "Task with Priority", priority = "High", onToggleComplete = {})
       }
     }
 
-    // Check that category tag is displayed
-    composeTestRule.onNodeWithText("Task with Category").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Personal").assertIsDisplayed()
+    // Check that priority tag is displayed
+    composeTestRule.onNodeWithText("Task with Priority").assertIsDisplayed()
+    composeTestRule.onNodeWithText("High").assertIsDisplayed()
   }
 
   @Test
@@ -187,7 +186,6 @@ class EurekaTaskCardTest {
             dueDate = "2024-01-20",
             assignee = "Bob",
             priority = "Medium",
-            category = "Home",
             onToggleComplete = {})
       }
     }
