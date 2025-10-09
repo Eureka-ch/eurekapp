@@ -23,6 +23,7 @@ data class Meeting(
     @Required @Immutable val contextType: ContextType = ContextType.WORKSPACE,
     @Required @Length(min = 1, max = 200) val title: String = "",
     @Required val status: String = "", // scheduled, in_progress, completed, cancelled
-    @Required val participants: Map<String, String> = emptyMap(), // userId -> role (host, participant)
+    @Required
+    val participants: Map<String, String> = emptyMap(), // userId -> role (host, participant)
     val attachmentUrls: List<String> = emptyList()
 )

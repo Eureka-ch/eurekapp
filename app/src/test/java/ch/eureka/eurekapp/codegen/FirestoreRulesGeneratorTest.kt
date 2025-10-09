@@ -9,8 +9,8 @@ import org.junit.Test
 /**
  * Comprehensive unit tests for the FirestoreRulesGenerator.
  *
- * These tests verify that the generator correctly processes annotations and produces valid Firestore
- * security rules.
+ * These tests verify that the generator correctly processes annotations and produces valid
+ * Firestore security rules.
  */
 class FirestoreRulesGeneratorTest {
 
@@ -26,7 +26,8 @@ class FirestoreRulesGeneratorTest {
       @Required @Immutable val uid: String = "",
       @Required @Length(min = 1, max = 100) val displayName: String = "",
       @Required val email: String = "",
-      @ServerTimestamp val createdAt: Timestamp = Timestamp(0, 0))
+      @ServerTimestamp val createdAt: Timestamp = Timestamp(0, 0)
+  )
 
   @CollectionPath("workspaces/{workspaceId}/tasks")
   @Rules(
@@ -40,14 +41,14 @@ class FirestoreRulesGeneratorTest {
       @Length(max = 5000) val description: String = "",
       @Immutable val workspaceId: String = "",
       @ServerTimestamp val createdAt: Timestamp = Timestamp(0, 0),
-      @ServerTimestamp val updatedAt: Timestamp = Timestamp(0, 0))
+      @ServerTimestamp val updatedAt: Timestamp = Timestamp(0, 0)
+  )
 
   @CollectionPath("simple")
   @Rules(read = "true", create = "true", update = "true", delete = "true")
   data class TestSimple(@Required val id: String = "", @Required val name: String = "")
 
-  @CollectionPath("public")
-  data class TestNoRules(@Required val id: String = "")
+  @CollectionPath("public") data class TestNoRules(@Required val id: String = "")
 
   @CollectionPath("posts") @Rules(read = "true") data class TestEmptyCreate(val id: String = "")
 
@@ -200,8 +201,7 @@ class FirestoreRulesGeneratorTest {
 
   @Test
   fun generate_shouldHandleMultipleClasses() {
-    val generator =
-        FirestoreRulesGenerator().addClass(TestSimple::class).addClass(TestUser::class)
+    val generator = FirestoreRulesGenerator().addClass(TestSimple::class).addClass(TestUser::class)
 
     val output = generator.generate()
 
@@ -317,7 +317,8 @@ class FirestoreRulesGeneratorTest {
         @Required val messageId: String = "",
         @Required @Length(min = 1, max = 5000) val text: String = "",
         @Required @Immutable val senderId: String = "",
-        @ServerTimestamp val createdAt: Timestamp = Timestamp(0, 0))
+        @ServerTimestamp val createdAt: Timestamp = Timestamp(0, 0)
+    )
 
     val generator = FirestoreRulesGenerator().addClass(TestMessage::class)
 
@@ -406,7 +407,8 @@ class FirestoreRulesGeneratorTest {
         @Required val field1: String = "",
         @Required val field2: String = "",
         @Required val field3: String = "",
-        val optional: String = "")
+        val optional: String = ""
+    )
 
     val generator = FirestoreRulesGenerator().addClass(TestMultiRequired::class)
 
@@ -426,7 +428,8 @@ class FirestoreRulesGeneratorTest {
     data class TestMultiImmutable(
         @Immutable val id: String = "",
         @Immutable val creatorId: String = "",
-        val mutableField: String = "")
+        val mutableField: String = ""
+    )
 
     val generator = FirestoreRulesGenerator().addClass(TestMultiImmutable::class)
 
@@ -435,5 +438,4 @@ class FirestoreRulesGeneratorTest {
     assertTrue(output.contains("request.resource.data.id == resource.data.id"))
     assertTrue(output.contains("request.resource.data.creatorId == resource.data.creatorId"))
   }
-
 }
