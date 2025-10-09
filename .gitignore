@@ -10,3 +10,4 @@ local.properties
 .firebaserc
 /firebase-debug.log
 /firestore-debug.log
+/base64_google_services.txt

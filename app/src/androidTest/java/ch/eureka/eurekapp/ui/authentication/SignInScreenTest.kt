@@ -39,9 +39,7 @@ class SignInScreenTest {
 
     composeTestRule.onNodeWithTag(SignInScreenTestTags.SIGN_IN_TITLE).assertIsDisplayed()
 
-    composeTestRule
-        .onNodeWithTag(SignInScreenTestTags.SIGN_IN_WITH_GOOGLE_BUTTON)
-        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SIGN_IN_WITH_GOOGLE_BUTTON).assertIsDisplayed()
   }
 
   @Test
@@ -61,7 +59,7 @@ class SignInScreenTest {
           credentialManager = fakeCredentialManager, onSignedIn = { hasNavigated.set(true) })
     }
 
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.SIGN_IN_WITH_GOOGLE_BUTTON).performClick()
+    composeTestRule.onNodeWithTag(SIGN_IN_WITH_GOOGLE_BUTTON).performClick()
 
     composeTestRule.waitUntil(timeoutMillis = 5000) { hasNavigated.get() }
 
@@ -86,7 +84,7 @@ class SignInScreenTest {
           credentialManager = fakeCredentialManager, onSignedIn = { hasNavigated.set(true) })
     }
 
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.SIGN_IN_WITH_GOOGLE_BUTTON).performClick()
+    composeTestRule.onNodeWithTag(SIGN_IN_WITH_GOOGLE_BUTTON).performClick()
 
     composeTestRule.waitUntil(timeoutMillis = 5000) { hasNavigated.get() }
     assertTrue("The onSignedIn callback should have been called.", hasNavigated.get())
