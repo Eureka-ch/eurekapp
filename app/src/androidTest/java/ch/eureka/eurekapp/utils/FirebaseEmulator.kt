@@ -1,8 +1,8 @@
 /*
 The following code comes from the solution of the part 3 of the SwEnt bootcamp made by the SwEnt team:
 https://github.com/swent-epfl/bootcamp-25-B3-Solution/blob/main/app/src/androidTest/java/com/github/se/bootcamp/utils/FirebaseEmulator.kt
+Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
 */
-
 package ch.eureka.eurekapp.utils
 
 import android.util.Log
@@ -37,6 +37,7 @@ object FirebaseEmulator {
   val projectID by lazy { FirebaseApp.getInstance().options.projectId }
 
   private val httpClient = OkHttpClient()
+
   private val firestoreEndpoint by lazy {
     "http://${HOST}:$FIRESTORE_PORT/emulator/v1/projects/$projectID/databases/(default)/documents"
   }

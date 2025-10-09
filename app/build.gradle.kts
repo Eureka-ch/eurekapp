@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.ktfmt)
     alias(libs.plugins.gms)
     alias(libs.plugins.sonar)
+    alias(libs.plugins.gms)
     id("jacoco")
 }
 
@@ -136,15 +137,29 @@ fun DependencyHandlerScope.globalTestImplementation(dep: Any) {
     testImplementation(dep)
 }
 
+configurations.forEach { configuration ->
+    // Exclude protobuf-lite from all configurations
+    // This fixes a fatal exception for tests interacting with Cloud Firestore
+    configuration.exclude("com.google.protobuf", "protobuf-lite")
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(platform(libs.compose.bom))
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.10")
     testImplementation(libs.junit)
     globalTestImplementation(libs.androidx.junit)
     globalTestImplementation(libs.androidx.espresso.core)
+
+    // ------------- Firebase/Firestore ------------------
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.database.ktx)
+    implementation(libs.firebase.firestore)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     // ------------- Jetpack Compose ------------------
     val composeBom = platform(libs.compose.bom)
@@ -207,7 +222,6 @@ dependencies {
 
     implementation(libs.guava)
 }
-
 tasks.withType<Test> {
     // Configure Jacoco for each tests
     configure<JacocoTaskExtension> {
@@ -244,4 +258,5 @@ tasks.register("jacocoTestReport", JacocoReport::class) {
         include("outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
         include("outputs/code_coverage/debugAndroidTest/connected/*/coverage.ec")
     })
+    }
 }

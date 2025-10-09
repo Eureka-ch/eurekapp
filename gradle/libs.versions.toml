@@ -49,6 +49,7 @@ lifecycleRuntimeKtx = "2.7.0"
 
 lifecycleProcess = "2.9.4"
 guava = "31.1-android"
+coroutinesPlayServices = "1.7.3"
 
 [libraries]
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraxVersion" }
@@ -99,6 +100,8 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 androidx-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-process", version.ref = "lifecycleProcess" }
 
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
+kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutinesPlayServices" }
+
 guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -106,3 +109,4 @@ jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "k
 ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt" }
 gms = { id = "com.google.gms.google-services", version.ref = "gms" }
 sonar = { id = "org.sonarqube", version.ref = "sonar" }
+gms = { id = "com.google.gms.google-services", version.ref = "gms" }

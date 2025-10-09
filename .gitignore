@@ -11,3 +11,6 @@ local.properties
 /firebase-debug.log
 /firestore-debug.log
 /base64_google_services.txt
+
+# Firebase config
+app/google-services.json
