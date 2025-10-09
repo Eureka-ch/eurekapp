@@ -28,7 +28,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -102,9 +101,9 @@ fun SignInScreen(
 fun SignInWithGoogleButton(onSignInClick: () -> Unit) {
   Button(
       onClick = onSignInClick,
-      colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+      colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.background),
       shape = RoundedCornerShape(50),
-      border = BorderStroke(1.dp, Color.LightGray),
+      border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
       modifier =
           Modifier.padding(8.dp)
               .height(48.dp)
@@ -119,7 +118,7 @@ fun SignInWithGoogleButton(onSignInClick: () -> Unit) {
 
               Text(
                   text = "Sign in with Google",
-                  color = Color.Gray,
+                  color = MaterialTheme.colorScheme.onSurface,
                   fontSize = 16.sp,
                   fontWeight = FontWeight.Medium)
             }

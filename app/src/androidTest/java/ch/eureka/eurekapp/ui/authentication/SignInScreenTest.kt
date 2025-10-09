@@ -13,9 +13,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
+import org.junit.Assert.*
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Rule
