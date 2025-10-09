@@ -9,7 +9,7 @@ import ch.eureka.eurekapp.model.annotations.firestore.*
     update = "request.auth != null",
     delete = "request.auth != null")
 data class Project(
-    @Required @Immutable val projectID: String = "",
+    @Required @Immutable val projectId: String = "",
     @Required @Immutable val groupId: String = "",
     @Required @Immutable val workspaceId: String = "", // Denormalized for easier access
     @Required @Length(min = 1, max = 100) val name: String = "",
