@@ -10,9 +10,9 @@ import com.google.firebase.Timestamp
     update = "request.auth != null && request.auth.uid == resource.id",
     delete = "false")
 data class User(
-    @Required @Immutable val uid: String,
-    @Required @Length(min = 1, max = 100) val displayName: String,
-    @Required val email: String,
-    val photoUrl: String,
-    @ServerTimestamp val lastActive: Timestamp
+    @Required @Immutable val uid: String = "",
+    @Required @Length(min = 1, max = 100) val displayName: String = "",
+    @Required val email: String = "",
+    val photoUrl: String = "",
+    @ServerTimestamp val lastActive: Timestamp = Timestamp(0, 0)
 )

@@ -10,11 +10,11 @@ import com.google.firebase.Timestamp
     update = "request.auth != null",
     delete = "request.auth != null")
 data class Task(
-    @Required @Immutable val taskID: String,
-    @Required @Immutable val templateId: String,
-    @Required @Immutable val projectId: String,
-    @Required @Immutable val groupId: String,
-    @Required @Immutable val workspaceId: String,
+    @Required @Immutable val taskID: String = "",
+    @Required @Immutable val templateId: String = "",
+    @Required @Immutable val projectId: String = "",
+    @Required @Immutable val groupId: String = "",
+    @Required @Immutable val workspaceId: String = "",
     @Required val assignedUserIds: List<String> = emptyList(),
     val dueDate: Timestamp? = null
 )

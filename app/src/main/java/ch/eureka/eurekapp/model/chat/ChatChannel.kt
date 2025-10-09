@@ -15,9 +15,9 @@ enum class ChatContextType {
     update = "request.auth != null",
     delete = "request.auth != null")
 data class ChatChannel(
-    @Required @Immutable val channelID: String,
-    @Required @Immutable val workspaceId: String, // For nested path
-    @Required @Immutable val contextId: String, // workspaceId, groupId, or projectId
-    @Required @Immutable val contextType: ChatContextType,
-    @Required @Length(min = 1, max = 100) val name: String
+    @Required @Immutable val channelID: String = "",
+    @Required @Immutable val workspaceId: String = "", // For nested path
+    @Required @Immutable val contextId: String = "", // workspaceId, groupId, or projectId
+    @Required @Immutable val contextType: ChatContextType = ChatContextType.WORKSPACE,
+    @Required @Length(min = 1, max = 100) val name: String = ""
 )

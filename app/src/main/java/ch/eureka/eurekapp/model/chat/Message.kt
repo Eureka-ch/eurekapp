@@ -10,9 +10,9 @@ import com.google.firebase.Timestamp
     update = "request.auth != null && request.auth.uid == resource.data.senderId",
     delete = "request.auth != null && request.auth.uid == resource.data.senderId")
 data class Message(
-    @Required @Immutable val messageID: String,
-    @Required @Length(min = 1, max = 5000) val text: String,
-    @Required @Immutable val senderId: String,
-    @Required @ServerTimestamp val createdAt: Timestamp,
+    @Required @Immutable val messageID: String = "",
+    @Required @Length(min = 1, max = 5000) val text: String = "",
+    @Required @Immutable val senderId: String = "",
+    @Required @ServerTimestamp val createdAt: Timestamp = Timestamp(0, 0),
     val references: List<String> = emptyList()
 )
