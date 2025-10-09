@@ -13,110 +13,80 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class EurekaTopBarCoverageTest {
 
-    @get:Rule
-    val composeTestRule = createComposeRule()
+  @get:Rule val composeTestRule = createComposeRule()
 
-    @Test
-    fun `EurekaTopBar renders with title`() {
-        composeTestRule.setContent {
-            EurekaTheme(darkTheme = false) {
-                EurekaTopBar(
-                    title = "Test Title"
-                )
-            }
-        }
-
-        composeTestRule.onNodeWithText("Test Title").assertIsDisplayed()
+  @Test
+  fun `EurekaTopBar renders with title`() {
+    composeTestRule.setContent {
+      EurekaTheme(darkTheme = false) { EurekaTopBar(title = "Test Title") }
     }
 
-    @Test
-    fun `EurekaTopBar renders with empty title`() {
-        composeTestRule.setContent {
-            EurekaTheme(darkTheme = false) {
-                EurekaTopBar(
-                    title = ""
-                )
-            }
-        }
+    composeTestRule.onNodeWithText("Test Title").assertIsDisplayed()
+  }
 
-        // Should render without crashing
-        composeTestRule.onRoot().assertExists()
+  @Test
+  fun `EurekaTopBar renders with empty title`() {
+    composeTestRule.setContent { EurekaTheme(darkTheme = false) { EurekaTopBar(title = "") } }
+
+    // Should render without crashing
+    composeTestRule.onRoot().assertExists()
+  }
+
+  @Test
+  fun `EurekaTopBar renders in dark theme`() {
+    composeTestRule.setContent {
+      EurekaTheme(darkTheme = true) { EurekaTopBar(title = "Dark Theme Title") }
     }
 
-    @Test
-    fun `EurekaTopBar renders in dark theme`() {
-        composeTestRule.setContent {
-            EurekaTheme(darkTheme = true) {
-                EurekaTopBar(
-                    title = "Dark Theme Title"
-                )
-            }
-        }
+    composeTestRule.onNodeWithText("Dark Theme Title").assertIsDisplayed()
+  }
 
-        composeTestRule.onNodeWithText("Dark Theme Title").assertIsDisplayed()
+  @Test
+  fun `EurekaTopBar renders with long title`() {
+    composeTestRule.setContent {
+      EurekaTheme(darkTheme = false) {
+        EurekaTopBar(title = "Very Long Title That Should Still Render Correctly")
+      }
     }
 
-    @Test
-    fun `EurekaTopBar renders with long title`() {
-        composeTestRule.setContent {
-            EurekaTheme(darkTheme = false) {
-                EurekaTopBar(
-                    title = "Very Long Title That Should Still Render Correctly"
-                )
-            }
-        }
+    composeTestRule
+        .onNodeWithText("Very Long Title That Should Still Render Correctly")
+        .assertIsDisplayed()
+  }
 
-        composeTestRule.onNodeWithText("Very Long Title That Should Still Render Correctly").assertIsDisplayed()
+  @Test
+  fun `EurekaTopBar renders with special characters`() {
+    composeTestRule.setContent {
+      EurekaTheme(darkTheme = false) { EurekaTopBar(title = "Special Characters: !@#$%^&*()") }
     }
 
-    @Test
-    fun `EurekaTopBar renders with special characters`() {
-        composeTestRule.setContent {
-            EurekaTheme(darkTheme = false) {
-                EurekaTopBar(
-                    title = "Special Characters: !@#$%^&*()"
-                )
-            }
-        }
+    composeTestRule.onNodeWithText("Special Characters: !@#$%^&*()").assertIsDisplayed()
+  }
 
-        composeTestRule.onNodeWithText("Special Characters: !@#$%^&*()").assertIsDisplayed()
+  @Test
+  fun `EurekaTopBar renders with unicode characters`() {
+    composeTestRule.setContent {
+      EurekaTheme(darkTheme = false) { EurekaTopBar(title = "Unicode: 🚀 émojis ñáéíóú") }
     }
 
-    @Test
-    fun `EurekaTopBar renders with unicode characters`() {
-        composeTestRule.setContent {
-            EurekaTheme(darkTheme = false) {
-                EurekaTopBar(
-                    title = "Unicode: 🚀 émojis ñáéíóú"
-                )
-            }
-        }
+    composeTestRule.onNodeWithText("Unicode: 🚀 émojis ñáéíóú").assertIsDisplayed()
+  }
 
-        composeTestRule.onNodeWithText("Unicode: 🚀 émojis ñáéíóú").assertIsDisplayed()
+  @Test
+  fun `EurekaTopBar renders with default title`() {
+    composeTestRule.setContent { EurekaTheme(darkTheme = false) { EurekaTopBar() } }
+
+    composeTestRule.onNodeWithText("EUREKA").assertIsDisplayed()
+  }
+
+  @Test
+  fun `EurekaTopBar renders with modifier`() {
+    composeTestRule.setContent {
+      EurekaTheme(darkTheme = false) {
+        EurekaTopBar(title = "Modified Title", modifier = androidx.compose.ui.Modifier)
+      }
     }
 
-    @Test
-    fun `EurekaTopBar renders with default title`() {
-        composeTestRule.setContent {
-            EurekaTheme(darkTheme = false) {
-                EurekaTopBar()
-            }
-        }
-
-        composeTestRule.onNodeWithText("EUREKA").assertIsDisplayed()
-    }
-
-    @Test
-    fun `EurekaTopBar renders with modifier`() {
-        composeTestRule.setContent {
-            EurekaTheme(darkTheme = false) {
-                EurekaTopBar(
-                    title = "Modified Title",
-                    modifier = androidx.compose.ui.Modifier
-                )
-            }
-        }
-
-        composeTestRule.onNodeWithText("Modified Title").assertIsDisplayed()
-    }
+    composeTestRule.onNodeWithText("Modified Title").assertIsDisplayed()
+  }
 }
