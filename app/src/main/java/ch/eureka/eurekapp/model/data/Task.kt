@@ -1,7 +1,7 @@
 package ch.eureka.eurekapp.model.data
 
 import ch.eureka.eurekapp.model.annotations.firestore.*
-import java.sql.Timestamp
+import com.google.firebase.Timestamp
 
 @CollectionPath("workspaces/{workspaceId}/groups/{groupId}/projects/{projectId}/tasks")
 @Rules(
@@ -25,6 +25,8 @@ data class Task(
 
     @Required
     val assignedUserIds: List<String>,
+
+    val assignedDate: Timestamp,
 
     val dueDate: Timestamp
 )

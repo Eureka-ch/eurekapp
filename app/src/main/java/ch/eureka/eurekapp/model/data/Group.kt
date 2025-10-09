@@ -23,5 +23,5 @@ data class Group(
     val name: String,
 
     @Required
-    val members: Map<String, String> // userId -> role (admin, member)
+    val members: Map<String, String>
 )

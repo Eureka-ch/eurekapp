@@ -22,5 +22,5 @@ data class Workspace(
     val isPersonal: Boolean,
 
     @Required
-    val members: Map<String, String> // userId -> role (owner, admin, member)
+    val members: Map<String, String>
 )

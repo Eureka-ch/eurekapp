@@ -1,7 +1,7 @@
 package ch.eureka.eurekapp.model.data
 
 import ch.eureka.eurekapp.model.annotations.firestore.*
-import java.sql.Timestamp
+import com.google.firebase.Timestamp
 
 @CollectionPath("users")
 @Rules(

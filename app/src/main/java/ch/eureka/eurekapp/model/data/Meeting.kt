@@ -34,10 +34,12 @@ data class Meeting(
     val title: String,
 
     @Required
-    val status: String, // scheduled, in_progress, completed, cancelled
+    val status: String,
 
     @Required
-    val participants: Map<String, String>, // userId -> role (host, participant)
+    val participants: Map<String, String>,
 
-    val attachmentUrls: List<String>
+    val attachmentUrls: List<String>,
+
+    val imageUris: List<String>
 )

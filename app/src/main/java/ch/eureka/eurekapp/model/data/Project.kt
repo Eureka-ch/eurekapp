@@ -26,5 +26,5 @@ data class Project(
     val description: String,
 
     @Required
-    val status: String // open, in_progress, completed, archived
+    val status: String
 )

@@ -21,5 +21,5 @@ data class TaskTemplate(
     @Length(max = 1000)
     val description: String,
 
-    val definedFields: Map<String, Any> // Custom field definitions
+    val definedFields: Map<String, Any>
 )
