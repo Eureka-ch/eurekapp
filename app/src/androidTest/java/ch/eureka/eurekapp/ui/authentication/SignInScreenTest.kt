@@ -66,37 +66,6 @@ class SignInScreenTest {
     assertTrue("The onSignedIn callback should have been called.", hasNavigated.get())
   }
 
-  //  @Test
-  //  fun successfulSignIn_triggersCallback_and_setsCurrentUserInAuth() {
-  //
-  //    val fakeName = "Ada Lovelace"
-  //    val fakeEmail = "ada.lovelace@example.com"
-  //    val fakeIdToken = FakeJwtGenerator.createFakeGoogleIdToken(fakeName, fakeEmail)
-  //
-  //    FirebaseEmulator.createGoogleUser(fakeIdToken)
-  //
-  //    val fakeCredentialManager = FakeCredentialManager.create(fakeIdToken)
-  //
-  //    val hasNavigated = AtomicBoolean(false)
-  //
-  //    composeTestRule.setContent {
-  //      SignInScreen(
-  //          credentialManager = fakeCredentialManager, onSignedIn = { hasNavigated.set(true) })
-  //    }
-  //
-  //    composeTestRule.onNodeWithTag(SIGN_IN_WITH_GOOGLE_BUTTON).performClick()
-  //
-  //    composeTestRule.waitUntil(timeoutMillis = 5000) { hasNavigated.get() }
-  //    assertTrue("The onSignedIn callback should have been called.", hasNavigated.get())
-  //
-  //    val currentUser = FirebaseEmulator.auth.currentUser
-  //    assertNotNull("Current user in Firebase Auth should not be null.", currentUser)
-  //    assertEquals(
-  //        "Signed-in user's email should match the fake user.", fakeEmail, currentUser?.email)
-  //    assertEquals(
-  //        "Signed-in user's name should match the fake user.", fakeName, currentUser?.displayName)
-  //  }
-
   @Test
   fun canSignInWithExistingAccount() {
     val email = "existing@test.com"
