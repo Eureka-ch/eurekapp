@@ -8,3 +8,5 @@
 .cxx
 local.properties
 .firebaserc
+/firebase-debug.log
+/firestore-debug.log
