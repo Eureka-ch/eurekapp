@@ -40,7 +40,7 @@ android {
     }
 
     testCoverage {
-        jacocoVersion = "0.8.8"
+        jacocoVersion = "0.8.12"
     }
 
     buildFeatures {
@@ -63,16 +63,6 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes.addAll(
-                listOf(
-                    "META-INF/LICENSE.md",
-                    "META-INF/LICENSE-notice.md",
-                    "META-INF/LICENSE",
-                    "META-INF/LICENSE.txt",
-                    "META-INF/NOTICE",
-                    "META-INF/NOTICE.txt"
-                )
-            )
         }
     }
 
@@ -211,9 +201,6 @@ tasks.register("jacocoTestReport", JacocoReport::class) {
         "**/Manifest*.*",
         "**/*Test*.*",
         "android/**/*.*",
-        "jdk/proxy2/**",
-        "sun/reflect/**",
-        "java/lang/reflect/**"
     )
 
     val debugTree = fileTree("${project.layout.buildDirectory.get()}/tmp/kotlin-classes/debug") {
