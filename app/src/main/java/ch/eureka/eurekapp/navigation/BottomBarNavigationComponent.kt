@@ -113,78 +113,74 @@ fun BottomBarNavigationComponent(
     }
   }
 
-    BottomAppBar(
-        containerColor = LightGrey,
-        modifier =
-            Modifier.fillMaxWidth()
-                .padding(horizontal = 15.dp, vertical = 10.dp)
-                .height((screenTotalHeight * 0.08f).dp)
-                .clip(RoundedCornerShape(25.dp)),
-        tonalElevation = 8.dp,
-        actions = {
-          Row() {
-            CustomIconButtonComposable(
-                modifier =
-                    Modifier.weight(1f)
-                        .testTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON.name),
-                "Tasks",
-                onClick = {
-                  navigationFunction(navigationController, destination = MainScreens.TasksScreen)
-                },
-                iconVector = Icons.Outlined.AssignmentTurnedIn,
-                pressedIconVector = Icons.Filled.AssignmentTurnedIn,
-                isPressed = isTasksPressed)
-            CustomIconButtonComposable(
-                modifier =
-                    Modifier.weight(1f)
-                        .testTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON.name),
-                "Ideas",
-                onClick = {
-                  navigationFunction(navigationController, destination = MainScreens.IdeasScreen)
-                },
-                iconVector = Icons.Outlined.Lightbulb,
-                pressedIconVector = Icons.Filled.Lightbulb,
-                isPressed = isIdeasScreenPressed)
-            Row(
-                modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically) {
-                  Box() {
-                    HomeIconButton(
-                        modifier =
-                            Modifier.testTag(
-                                BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON.name),
-                        onClick = {
-                          navigationFunction(
-                              navigationController, destination = MainScreens.OverviewProjectScreen)
-                        })
-                  }
+  BottomAppBar(
+      containerColor = LightGrey,
+      modifier =
+          Modifier.fillMaxWidth()
+              .padding(horizontal = 15.dp, vertical = 10.dp)
+              .height((screenTotalHeight * 0.08f).dp)
+              .clip(RoundedCornerShape(25.dp)),
+      tonalElevation = 8.dp,
+      actions = {
+        Row() {
+          CustomIconButtonComposable(
+              modifier =
+                  Modifier.weight(1f).testTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON.name),
+              "Tasks",
+              onClick = {
+                navigationFunction(navigationController, destination = MainScreens.TasksScreen)
+              },
+              iconVector = Icons.Outlined.AssignmentTurnedIn,
+              pressedIconVector = Icons.Filled.AssignmentTurnedIn,
+              isPressed = isTasksPressed)
+          CustomIconButtonComposable(
+              modifier =
+                  Modifier.weight(1f).testTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON.name),
+              "Ideas",
+              onClick = {
+                navigationFunction(navigationController, destination = MainScreens.IdeasScreen)
+              },
+              iconVector = Icons.Outlined.Lightbulb,
+              pressedIconVector = Icons.Filled.Lightbulb,
+              isPressed = isIdeasScreenPressed)
+          Row(
+              modifier = Modifier.weight(1f),
+              horizontalArrangement = Arrangement.Center,
+              verticalAlignment = Alignment.CenterVertically) {
+                Box() {
+                  HomeIconButton(
+                      modifier =
+                          Modifier.testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON.name),
+                      onClick = {
+                        navigationFunction(
+                            navigationController, destination = MainScreens.OverviewProjectScreen)
+                      })
                 }
-            CustomIconButtonComposable(
-                modifier =
-                    Modifier.weight(1f)
-                        .testTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON.name),
-                "Meetings",
-                onClick = {
-                  navigationFunction(navigationController, destination = MainScreens.MeetingsScreen)
-                },
-                iconVector = Icons.Default.CalendarToday,
-                pressedIconVector = Icons.Filled.CalendarToday,
-                isPressed = isMeetingScreenPressed)
-            CustomIconButtonComposable(
-                modifier =
-                    Modifier.weight(1f)
-                        .testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON.name),
-                "Profile",
-                onClick = {
-                  navigationFunction(navigationController, destination = MainScreens.ProfileScreen)
-                },
-                iconVector = Icons.Outlined.AccountCircle,
-                pressedIconVector = Icons.Filled.AccountCircle,
-                isPressed = isProfileScreenPressed)
-          }
-        })
-
+              }
+          CustomIconButtonComposable(
+              modifier =
+                  Modifier.weight(1f)
+                      .testTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON.name),
+              "Meetings",
+              onClick = {
+                navigationFunction(navigationController, destination = MainScreens.MeetingsScreen)
+              },
+              iconVector = Icons.Default.CalendarToday,
+              pressedIconVector = Icons.Filled.CalendarToday,
+              isPressed = isMeetingScreenPressed)
+          CustomIconButtonComposable(
+              modifier =
+                  Modifier.weight(1f)
+                      .testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON.name),
+              "Profile",
+              onClick = {
+                navigationFunction(navigationController, destination = MainScreens.ProfileScreen)
+              },
+              iconVector = Icons.Outlined.AccountCircle,
+              pressedIconVector = Icons.Filled.AccountCircle,
+              isPressed = isProfileScreenPressed)
+        }
+      })
 }
 
 @Composable
