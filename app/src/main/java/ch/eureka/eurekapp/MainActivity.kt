@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
         Surface(
             modifier = Modifier.fillMaxSize().semantics { testTag = C.Tag.main_screen_container },
             color = MaterialTheme.colorScheme.background) {
-            NavigationMenu()
+              NavigationMenu()
             }
       }
     }

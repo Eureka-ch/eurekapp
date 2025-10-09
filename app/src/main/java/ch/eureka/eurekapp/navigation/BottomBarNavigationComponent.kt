@@ -43,141 +43,178 @@ import ch.eureka.eurekapp.ui.theme.DarkerGray
 import ch.eureka.eurekapp.ui.theme.LightGrey
 import ch.eureka.eurekapp.ui.theme.LightRed
 
-enum class BottomBarNavigationTestTags{
-    TASKS_SCREEN_BUTTON,
-    IDEAS_SCREEN_BUTTON,
-    OVERVIEW_SCREEN_BUTTON,
-    MEETINGS_SCREEN_BUTTON,
-    PROFILE_SCREEN_BUTTON
+enum class BottomBarNavigationTestTags {
+  TASKS_SCREEN_BUTTON,
+  IDEAS_SCREEN_BUTTON,
+  OVERVIEW_SCREEN_BUTTON,
+  MEETINGS_SCREEN_BUTTON,
+  PROFILE_SCREEN_BUTTON
 }
 
 @Composable
-fun BottomBarNavigationComponent(navigationController: NavController, currentScreen: MutableState<Screen>){
-    val configuration = LocalConfiguration.current
-    val screenTotalHeight = configuration.screenHeightDp
-    val isTasksPressed by remember(currentScreen) { derivedStateOf {
-        (currentScreen.value == MainScreens.TasksScreen ||
-                (currentScreen.value is SubScreen && (currentScreen.value as SubScreen).parentScreen == MainScreens.TasksScreen))
-    } }
-
-
-
-    val isProfileScreenPressed by remember (currentScreen){ derivedStateOf {
-        (currentScreen.value == MainScreens.ProfileScreen ||
-                (currentScreen.value is SubScreen && (currentScreen.value as SubScreen).parentScreen == MainScreens.ProfileScreen))
-    }
-    }
-
-
-    val isOverviewProjectScreenPressed by remember (currentScreen){
+fun BottomBarNavigationComponent(
+    navigationController: NavController,
+    currentScreen: MutableState<Screen>
+) {
+  val configuration = LocalConfiguration.current
+  val screenTotalHeight = configuration.screenHeightDp
+  val isTasksPressed by
+      remember(currentScreen) {
         derivedStateOf {
-            (currentScreen.value == MainScreens.OverviewProjectScreen ||
-                    (currentScreen.value is SubScreen && (currentScreen.value as SubScreen).parentScreen == MainScreens.OverviewProjectScreen))
+          (currentScreen.value == MainScreens.TasksScreen ||
+              (currentScreen.value is SubScreen &&
+                  (currentScreen.value as SubScreen).parentScreen == MainScreens.TasksScreen))
         }
-    }
+      }
 
-
-    val isIdeasScreenPressed by remember (currentScreen){
+  val isProfileScreenPressed by
+      remember(currentScreen) {
         derivedStateOf {
-            (currentScreen.value == MainScreens.IdeasScreen ||
-                    (currentScreen.value is SubScreen && (currentScreen.value as SubScreen).parentScreen == MainScreens.IdeasScreen))
+          (currentScreen.value == MainScreens.ProfileScreen ||
+              (currentScreen.value is SubScreen &&
+                  (currentScreen.value as SubScreen).parentScreen == MainScreens.ProfileScreen))
         }
-    }
+      }
 
-
-    val isProjectSelectionScreenPressed by remember (currentScreen){
+  val isOverviewProjectScreenPressed by
+      remember(currentScreen) {
         derivedStateOf {
-            (currentScreen.value == MainScreens.ProjectSelectionScreen||
-                    (currentScreen.value is SubScreen && (currentScreen.value as SubScreen).parentScreen == MainScreens.ProjectSelectionScreen))
+          (currentScreen.value == MainScreens.OverviewProjectScreen ||
+              (currentScreen.value is SubScreen &&
+                  (currentScreen.value as SubScreen).parentScreen ==
+                      MainScreens.OverviewProjectScreen))
         }
-    }
+      }
 
-
-    val isMeetingScreenPressed by remember {
+  val isIdeasScreenPressed by
+      remember(currentScreen) {
         derivedStateOf {
-            (currentScreen.value == MainScreens.MeetingsScreen||
-                    (currentScreen.value is SubScreen && (currentScreen.value as SubScreen).parentScreen == MainScreens.MeetingsScreen))
-
+          (currentScreen.value == MainScreens.IdeasScreen ||
+              (currentScreen.value is SubScreen &&
+                  (currentScreen.value as SubScreen).parentScreen == MainScreens.IdeasScreen))
         }
+      }
+
+  val isProjectSelectionScreenPressed by
+      remember(currentScreen) {
+        derivedStateOf {
+          (currentScreen.value == MainScreens.ProjectSelectionScreen ||
+              (currentScreen.value is SubScreen &&
+                  (currentScreen.value as SubScreen).parentScreen ==
+                      MainScreens.ProjectSelectionScreen))
+        }
+      }
+
+  val isMeetingScreenPressed by remember {
+    derivedStateOf {
+      (currentScreen.value == MainScreens.MeetingsScreen ||
+          (currentScreen.value is SubScreen &&
+              (currentScreen.value as SubScreen).parentScreen == MainScreens.MeetingsScreen))
     }
+  }
 
-
-    if(!isProjectSelectionScreenPressed){
-        BottomAppBar(
-            containerColor = LightGrey,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp, vertical = 10.dp).height((screenTotalHeight*0.08f).dp).clip(RoundedCornerShape(25.dp)),
-            tonalElevation = 8.dp,
-            actions = {
-                Row(){
-                    CustomIconButtonComposable(
-                        modifier = Modifier.weight(1f).testTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON.name),
-                        "Tasks",
-                        onClick = {navigationFunction(navigationController, destination = MainScreens.TasksScreen)},
-                        iconVector = Icons.Outlined.AssignmentTurnedIn,
-                        pressedIconVector = Icons.Filled.AssignmentTurnedIn,
-                        isPressed = isTasksPressed
-                    )
-                    CustomIconButtonComposable(
-                        modifier = Modifier.weight(1f).testTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON.name),
-                        "Ideas",
-                        onClick = {navigationFunction(navigationController, destination = MainScreens.IdeasScreen)},
-                        iconVector = Icons.Outlined.Lightbulb,
-                        pressedIconVector = Icons.Filled.Lightbulb,
-                        isPressed = isIdeasScreenPressed
-                    )
-                    Row(
-                        modifier = Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ){
-                        Box(){
-                            HomeIconButton(
-                                modifier = Modifier.testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON.name),
-                                onClick = {navigationFunction(navigationController, destination = MainScreens.OverviewProjectScreen)}
-                            )
-                        }
-                    }
-                    CustomIconButtonComposable(
-                        modifier = Modifier.weight(1f).testTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON.name),
-                        "Meetings",
-                        onClick = {navigationFunction(navigationController, destination = MainScreens.MeetingsScreen)},
-                        iconVector = Icons.Default.CalendarToday,
-                        pressedIconVector = Icons.Filled.CalendarToday,
-                        isPressed = isMeetingScreenPressed
-                    )
-                    CustomIconButtonComposable(
-                        modifier = Modifier.weight(1f).testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON.name),
-                        "Profile",
-                        onClick = {navigationFunction(navigationController, destination = MainScreens.ProfileScreen)},
-                        iconVector = Icons.Outlined.AccountCircle,
-                        pressedIconVector = Icons.Filled.AccountCircle,
-                        isPressed = isProfileScreenPressed
-                    )
+  if (true) {
+    BottomAppBar(
+        containerColor = LightGrey,
+        modifier =
+            Modifier.fillMaxWidth()
+                .padding(horizontal = 15.dp, vertical = 10.dp)
+                .height((screenTotalHeight * 0.08f).dp)
+                .clip(RoundedCornerShape(25.dp)),
+        tonalElevation = 8.dp,
+        actions = {
+          Row() {
+            CustomIconButtonComposable(
+                modifier =
+                    Modifier.weight(1f)
+                        .testTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON.name),
+                "Tasks",
+                onClick = {
+                  navigationFunction(navigationController, destination = MainScreens.TasksScreen)
+                },
+                iconVector = Icons.Outlined.AssignmentTurnedIn,
+                pressedIconVector = Icons.Filled.AssignmentTurnedIn,
+                isPressed = isTasksPressed)
+            CustomIconButtonComposable(
+                modifier =
+                    Modifier.weight(1f)
+                        .testTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON.name),
+                "Ideas",
+                onClick = {
+                  navigationFunction(navigationController, destination = MainScreens.IdeasScreen)
+                },
+                iconVector = Icons.Outlined.Lightbulb,
+                pressedIconVector = Icons.Filled.Lightbulb,
+                isPressed = isIdeasScreenPressed)
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically) {
+                  Box() {
+                    HomeIconButton(
+                        modifier =
+                            Modifier.testTag(
+                                BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON.name),
+                        onClick = {
+                          navigationFunction(
+                              navigationController, destination = MainScreens.OverviewProjectScreen)
+                        })
+                  }
                 }
-            }
-        )
-    }
+            CustomIconButtonComposable(
+                modifier =
+                    Modifier.weight(1f)
+                        .testTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON.name),
+                "Meetings",
+                onClick = {
+                  navigationFunction(navigationController, destination = MainScreens.MeetingsScreen)
+                },
+                iconVector = Icons.Default.CalendarToday,
+                pressedIconVector = Icons.Filled.CalendarToday,
+                isPressed = isMeetingScreenPressed)
+            CustomIconButtonComposable(
+                modifier =
+                    Modifier.weight(1f)
+                        .testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON.name),
+                "Profile",
+                onClick = {
+                  navigationFunction(navigationController, destination = MainScreens.ProfileScreen)
+                },
+                iconVector = Icons.Outlined.AccountCircle,
+                pressedIconVector = Icons.Filled.AccountCircle,
+                isPressed = isProfileScreenPressed)
+          }
+        })
+  }
 }
 
 @Composable
-fun CustomIconButtonComposable(modifier: Modifier = Modifier, title: String, onClick: () -> Unit, iconVector: ImageVector, pressedIconVector: ImageVector, isPressed: Boolean){
-    IconButton(
-        onClick = onClick,
-        modifier = modifier.padding(0.dp)
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            Icon(if(isPressed) pressedIconVector else iconVector, contentDescription = null, tint = if (isPressed) LightRed else DarkerGray)
-            Text(title, style = TextStyle(fontSize = 10.sp))
+fun CustomIconButtonComposable(
+    modifier: Modifier = Modifier,
+    title: String,
+    onClick: () -> Unit,
+    iconVector: ImageVector,
+    pressedIconVector: ImageVector,
+    isPressed: Boolean
+) {
+  IconButton(onClick = onClick, modifier = modifier.padding(0.dp)) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center) {
+          Icon(
+              if (isPressed) pressedIconVector else iconVector,
+              contentDescription = null,
+              tint = if (isPressed) LightRed else DarkerGray)
+          Text(title, style = TextStyle(fontSize = 10.sp))
         }
-    }
+  }
 }
 
 @Composable
-fun HomeIconButton(modifier: Modifier = Modifier, onClick: () -> Unit){
-    IconButton(
-        modifier = modifier.padding(0.dp).background(LightRed, shape = CircleShape),
-        onClick = onClick
-    ) {
+fun HomeIconButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
+  IconButton(
+      modifier = modifier.padding(0.dp).background(LightRed, shape = CircleShape),
+      onClick = onClick) {
         Icon(Icons.Outlined.Home, contentDescription = null, tint = Color.White)
-    }
+      }
 }
