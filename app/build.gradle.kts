@@ -143,6 +143,11 @@ dependencies {
     implementation(libs.compose.material3)
     // Integration with activities
     implementation(libs.compose.activity)
+    //Navigation library
+    implementation(libs.androidx.navigation.compose)
+    //Extended icons library
+    implementation(libs.androidx.material.icons.extended)
+
     // Integration with ViewModels
     implementation(libs.compose.viewmodel)
     // Android Studio Preview support
