@@ -15,6 +15,17 @@ import org.junit.Rule
 import org.junit.Test
 
 class NavigationMenuTest : TestCase() {
+  private val taskDetailsScreen = TaskSpecificScreens.TasksDetailScreen
+  private val taskEditScreen = TaskSpecificScreens.TasksEditScreen
+  private val autoTaskAssignment = TaskSpecificScreens.AutoTaskAssignmentScreen
+  private val taskDependenceScreen = TaskSpecificScreens.TaskDependencePage
+
+  private val createIdeasScreen = IdeasSpecificScreens.CreateIdeasScreen
+
+  private val addMeetingScreen = MeetingsSpecificScreens.AddMeetingScreen
+  private val cameraScreen = MeetingsSpecificScreens.CameraScreen
+  private val audioTranscriptScreen = MeetingsSpecificScreens.AudioTranscriptScreen
+
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test

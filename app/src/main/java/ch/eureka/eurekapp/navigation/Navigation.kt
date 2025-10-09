@@ -62,7 +62,7 @@ object IdeasSpecificScreens {
   val CreateIdeasScreen = SubScreen("Create Ideas Screen", MainScreens.IdeasScreen)
 }
 
-object MeetinsSpecificScreens {
+object MeetingsSpecificScreens {
   // Add Meeting Screen
   val AddMeetingScreen = SubScreen("Add Meeting Screen", MainScreens.MeetingsScreen)
   // Sub page to the meetings Screen where the user will be able to take pictures

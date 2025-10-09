@@ -76,16 +76,11 @@ fun BottomBarNavigationComponent(
         }
       }
 
-  val isOverviewProjectScreenPressed by
-      remember(currentScreen) {
-        derivedStateOf {
-          (currentScreen.value == MainScreens.OverviewProjectScreen ||
-              (currentScreen.value is SubScreen &&
-                  (currentScreen.value as SubScreen).parentScreen ==
-                      MainScreens.OverviewProjectScreen))
-        }
-      }
-
+  /**
+   * val isOverviewProjectScreenPressed by remember(currentScreen) { derivedStateOf {
+   * (currentScreen.value == MainScreens.OverviewProjectScreen || (currentScreen.value is SubScreen
+   * && (currentScreen.value as SubScreen).parentScreen == MainScreens.OverviewProjectScreen)) } }
+   */
   val isIdeasScreenPressed by
       remember(currentScreen) {
         derivedStateOf {
@@ -95,16 +90,11 @@ fun BottomBarNavigationComponent(
         }
       }
 
-  val isProjectSelectionScreenPressed by
-      remember(currentScreen) {
-        derivedStateOf {
-          (currentScreen.value == MainScreens.ProjectSelectionScreen ||
-              (currentScreen.value is SubScreen &&
-                  (currentScreen.value as SubScreen).parentScreen ==
-                      MainScreens.ProjectSelectionScreen))
-        }
-      }
-
+  /**
+   * val isProjectSelectionScreenPressed by remember(currentScreen) { derivedStateOf {
+   * (currentScreen.value == MainScreens.ProjectSelectionScreen || (currentScreen.value is SubScreen
+   * && (currentScreen.value as SubScreen).parentScreen == MainScreens.ProjectSelectionScreen)) } }
+   */
   val isMeetingScreenPressed by remember {
     derivedStateOf {
       (currentScreen.value == MainScreens.MeetingsScreen ||
