@@ -7,12 +7,12 @@ import androidx.compose.ui.platform.testTag
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 
-enum class ProfileScreenTestTags {
-  PROFILE_SCREEN_TEXT
+object ProfileScreenTestTags {
+  const val PROFILE_SCREEN_TEXT = "ProfileScreenText"
 }
 
 @Composable
 fun ProfileScreen(navigationController: NavHostController = rememberNavController()) {
   Text(
-      "Profile Screen", modifier = Modifier.testTag(ProfileScreenTestTags.PROFILE_SCREEN_TEXT.name))
+      "Profile Screen", modifier = Modifier.testTag(ProfileScreenTestTags.PROFILE_SCREEN_TEXT))
 }

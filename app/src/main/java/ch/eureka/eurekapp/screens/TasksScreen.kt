@@ -7,11 +7,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 
-enum class TasksScreenTestTags {
-  TASKS_SCREEN_TEXT
+object TasksScreenTestTags {
+  const val TASKS_SCREEN_TEXT = "TasksScreenText"
 }
 
 @Composable
 fun TasksScreen(navigationController: NavHostController = rememberNavController()) {
-  Text("Tasks Screen", modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT.name))
+  Text("Tasks Screen", modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
 }

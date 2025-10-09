@@ -43,12 +43,12 @@ import ch.eureka.eurekapp.ui.theme.DarkerGray
 import ch.eureka.eurekapp.ui.theme.LightGrey
 import ch.eureka.eurekapp.ui.theme.LightRed
 
-enum class BottomBarNavigationTestTags {
-  TASKS_SCREEN_BUTTON,
-  IDEAS_SCREEN_BUTTON,
-  OVERVIEW_SCREEN_BUTTON,
-  MEETINGS_SCREEN_BUTTON,
-  PROFILE_SCREEN_BUTTON
+object BottomBarNavigationTestTags {
+  const val TASKS_SCREEN_BUTTON = "TasksScreenButton"
+  const val IDEAS_SCREEN_BUTTON = "IdeasScreenButton"
+  const val OVERVIEW_SCREEN_BUTTON = "OverviewScreenButton"
+  const val MEETINGS_SCREEN_BUTTON = "MeetingsScreenButton"
+  const val PROFILE_SCREEN_BUTTON = "ProfileScreenButton"
 }
 
 @Composable
@@ -115,7 +115,7 @@ fun BottomBarNavigationComponent(
         Row() {
           CustomIconButtonComposable(
               modifier =
-                  Modifier.weight(1f).testTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON.name),
+                  Modifier.weight(1f).testTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON),
               "Tasks",
               onClick = {
                 navigationFunction(navigationController, destination = MainScreens.TasksScreen)
@@ -125,7 +125,7 @@ fun BottomBarNavigationComponent(
               isPressed = isTasksPressed)
           CustomIconButtonComposable(
               modifier =
-                  Modifier.weight(1f).testTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON.name),
+                  Modifier.weight(1f).testTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON),
               "Ideas",
               onClick = {
                 navigationFunction(navigationController, destination = MainScreens.IdeasScreen)
@@ -140,7 +140,7 @@ fun BottomBarNavigationComponent(
                 Box() {
                   HomeIconButton(
                       modifier =
-                          Modifier.testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON.name),
+                          Modifier.testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
                       onClick = {
                         navigationFunction(
                             navigationController, destination = MainScreens.OverviewProjectScreen)
@@ -150,7 +150,7 @@ fun BottomBarNavigationComponent(
           CustomIconButtonComposable(
               modifier =
                   Modifier.weight(1f)
-                      .testTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON.name),
+                      .testTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON),
               "Meetings",
               onClick = {
                 navigationFunction(navigationController, destination = MainScreens.MeetingsScreen)
@@ -161,7 +161,7 @@ fun BottomBarNavigationComponent(
           CustomIconButtonComposable(
               modifier =
                   Modifier.weight(1f)
-                      .testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON.name),
+                      .testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON),
               "Profile",
               onClick = {
                 navigationFunction(navigationController, destination = MainScreens.ProfileScreen)

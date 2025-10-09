@@ -7,8 +7,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 
-enum class OverviewProjectsScreenTestTags {
-  OVERVIEW_PROJECTS_SCREEN_TEXT
+object OverviewProjectsScreenTestTags {
+  const val OVERVIEW_PROJECTS_SCREEN_TEXT = "OverviewProjectsScreenText"
 }
 
 @Composable
@@ -16,5 +16,5 @@ fun OverviewProjectsScreen(navigationController: NavHostController = rememberNav
   Text(
       "Overview Projects Screen",
       modifier =
-          Modifier.testTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT.name))
+          Modifier.testTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT))
 }
