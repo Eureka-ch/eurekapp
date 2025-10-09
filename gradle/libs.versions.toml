@@ -109,4 +109,3 @@ jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "k
 ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt" }
 gms = { id = "com.google.gms.google-services", version.ref = "gms" }
 sonar = { id = "org.sonarqube", version.ref = "sonar" }
-gms = { id = "com.google.gms.google-services", version.ref = "gms" }
