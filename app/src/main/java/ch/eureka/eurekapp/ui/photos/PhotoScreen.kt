@@ -27,7 +27,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.camera.CameraViewModel
 import kotlinx.coroutines.launch
 
@@ -67,14 +66,14 @@ fun PhotoScreen(cameraViewModel: CameraViewModel) {
       }
 
       FilledTonalButton(
-          onClick = { cameraViewModel.viewModelScope.launch { cameraViewModel.takePhoto() } },
+          onClick = { cameraViewModel.takePhoto() },
           modifier =
               Modifier.align(Alignment.BottomStart).testTag(PhotoScreenTestTags.TAKE_PHOTO)) {
             Text(text = "Take photo")
           }
 
       FilledTonalButton(
-          onClick = { cameraViewModel.viewModelScope.launch { cameraViewModel.deletePhoto() } },
+          onClick = { cameraViewModel.deletePhoto() },
           modifier =
               Modifier.align(Alignment.BottomCenter).testTag(PhotoScreenTestTags.DELETE_PHOTO)) {
             Text(text = "Delete photo")

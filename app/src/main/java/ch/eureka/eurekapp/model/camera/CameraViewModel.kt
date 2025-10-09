@@ -4,9 +4,12 @@ import android.app.Application
 import androidx.camera.core.Preview
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /**
  * The view model for the camera operations
@@ -21,11 +24,13 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
   val preview: StateFlow<Preview?> = _preview.asStateFlow()
 
   /** Takes a photo using the cameraRepository (if initialized) */
-  suspend fun takePhoto() {
-    val newPhoto = cameraRepository?.getNewPhoto()
-    newPhoto?.let { uri ->
-      val currentState = _photoState.value
-      _photoState.value = currentState.copy(picture = uri)
+  fun takePhoto() {
+    viewModelScope.launch {
+      val newPhoto = cameraRepository?.getNewPhoto()
+      newPhoto?.let { uri ->
+        val currentState = _photoState.value
+        _photoState.value = currentState.copy(picture = uri)
+      }
     }
   }
 
@@ -34,18 +39,19 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
    *
    * @return true if the delete was successful, false otherwise
    */
-  suspend fun deletePhoto(): Boolean {
+  fun deletePhoto(): Boolean {
     val currentState = _photoState.value
     if (currentState.picture == null) {
       return false
     }
-
-    if (cameraRepository?.deletePhoto(currentState.picture) == true) {
-      _photoState.value = currentState.copy(picture = null)
-      return true
+    return runBlocking {
+      if (cameraRepository?.deletePhoto(currentState.picture) == true) {
+        _photoState.value = currentState.copy(picture = null)
+        true
+      } else {
+        false
+      }
     }
-
-    return false
   }
 
   /**
