@@ -113,7 +113,6 @@ fun BottomBarNavigationComponent(
     }
   }
 
-  if (true) {
     BottomAppBar(
         containerColor = LightGrey,
         modifier =
@@ -185,7 +184,7 @@ fun BottomBarNavigationComponent(
                 isPressed = isProfileScreenPressed)
           }
         })
-  }
+
 }
 
 @Composable
