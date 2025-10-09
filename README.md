@@ -1,20 +1,20 @@
 # EurekApp
-EurekApp is a mobile application that helps students with their studies using artificial intelligence.
+EurekApp is an application for teams to collaborate on projects. It allows for easy assignment and tracking of task status, including reminders via notifications, recording of meetings and their AI transcription or summary, and sharing of hand-written notes using photos from the camera.
 
 ## Main features
-- Centralization: EurekApp is the only application students need. There is no need to switch between Moodle, edDiscussions, etc. All necessary features and information are contained in this application.
-- AI assistant: The application includes a smart AI assistant that answers students' questions without delay. It uses connected information sources such as documents uploaded to Moodle.
-- Student collaboration platform: A built-in platform for sharing academic resources helps build community and strengthens the solidarity.
+- Task management: The application includes a chat feature for brainstorming and sharing ideas (similar to Google Chat). You can then convert these ideas into tasks, which allow you to set deadlines, notifications, and view the status of work on individual tasks as well as the overall project progress (similar to Jira).
+- Automatic meeting scheduling: EurekApp simplifies meeting planning. You can schedule a meeting with the press of a button. The app selects the optimal date based on the time preferences of individual team members. It then provides a link to the online meeting or navigation to the meeting location, including a notification to leave home on time.
+- Meeting recordings: EurekApp makes it easy to record every meeting. First, this reduces the need to switch between applications, and second, it makes it very easy to share the recording in the chat, for example with team members who were unable to attend the meeting for whatever reason.
 
 ## Technology
-- API integration: Information is added to the application via the APIs of individual platforms. The application supports integration with Telegram groups using bots, and with Edstem and Moodle.
-- AI: The application uses LLM to provide smart assistant services. Emphasis is placed on minimizing hallucinations to limit the risks associated with learning using AI.
+- Artificial intelligence (LLM): EurekApp uses LLMs to extract tasks from text in chats or meeting transcripts and convert them into a structured form that can be assigned, tracked on dashboards, etc.
+- Google Sign-In: EurekApp uses Google Sign-In because it is a very simple way to authenticate users and invite members to the team. It also allows you to start working with the application almost immediately without having to register, which could discourage some users.
 
 ## Advantages
-- Higher student productivity: Access to a centralized source of information allows students to devote more time to their studies, thereby increasing productivity. The academic resource sharing platform gives many students access to information that would otherwise be unavailable to them.
-- Stress reduction: An up-to-date and accurate overview of current and upcoming study obligations and events increases students' awareness and reduces stress arising from potential disorientation in the flood of information.
-- Community building: The platform for sharing academic resources encourages solidarity and helps build friendships.
-- Practicality: This application is designed to solve the everyday real-life problems of students. Its goal is to become an integral part of a student's day, just as the CFF application is part of the life of public transport passengers or GitHub is part of the life of programmers.
+- Overview of tasks: As soon as you open the app, you can see the current status and progress of your tasks and those of your team. There's no need to scroll through chaotic chats to find out what's going on.
+- Centralized coordination: Thanks to the simplicity of converting ideas in messages into tasks, there is no risk of the team forgetting an idea and not converting into a task. This means there will be no need to spend a long time searching WhatsApp, Telegram, or Google Chat to find out what the idea actually was.
+- Quick meeting scheduling: EurekApp allows you to automatically find the optimal meeting time without lengthy conversations. It also generates a link to the online meeting and provides navigation, further reducing the overhead of team collaboration.
+- Preserving meeting content: The application allows you to record meetings. This ensures that absent members are always up to date and also allows for easy conversion of transcripts into tasks.
 
 ## Figma Project link
 View the complete design on [Figma](https://www.figma.com/design/bKRZnuU5m3tkV8UKezHdAy/Eureka-figma?node-id=0-1).
