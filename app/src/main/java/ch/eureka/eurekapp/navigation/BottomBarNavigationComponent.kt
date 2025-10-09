@@ -5,12 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -27,49 +24,53 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import ch.eureka.eurekapp.ui.theme.DarkerGray
 import ch.eureka.eurekapp.ui.theme.LightGrey
 import ch.eureka.eurekapp.ui.theme.LightRed
 
 
 @Composable
-fun BottomBarNavigationComponent(navigationController: NavController, currentScreenName: String, screenTotalHeight: Int){
-    val navBackStackEntry by navigationController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
+fun BottomBarNavigationComponent(navigationController: NavController, currentScreen: Screen, screenTotalHeight: Int){
 
-    val isTasksPressed by remember {derivedStateOf {
-      currentRoute != null && (
-              currentRoute == MainNavigationScreens.TasksScreen.name ||
-              currentRoute == TaskSpecificScreens.TasksEditScreen.name ||
-              currentRoute == TaskSpecificScreens.TasksDetailScreen.name ||
-              currentRoute == TaskSpecificScreens.TaskDependencePage.name ||
-              currentRoute == TaskSpecificScreens.AutoTaskAssignmentScreen.name
-              )
-    }}
+    val isTasksPressed =
+      (currentScreen == MainScreens.TasksScreen ||
+              (currentScreen is SubScreen && currentScreen.parentScreen == MainScreens.TasksScreen))
 
-    val isProfileScreenPressed by remember { derivedStateOf {
-        currentRoute != null &&
-                currentRoute == MainNavigationScreens.ProfileScreen.name
-    } }
 
-    val isOverviewProjectScreen by remember { derivedStateOf {
-        currentRoute != null && currentRoute == MainNavigationScreens.OverviewProjectScreen.name
-    } }
+
+    val isProfileScreenPressed =
+        (currentScreen == MainScreens.ProfileScreen ||
+                (currentScreen is SubScreen && currentScreen.parentScreen == MainScreens.ProfileScreen))
+
+
+    val isOverviewProjectScreenPressed =
+        (currentScreen == MainScreens.OverviewProjectScreen ||
+                (currentScreen is SubScreen && currentScreen.parentScreen == MainScreens.OverviewProjectScreen))
+
+
+    val isIdeasScreenPressed =
+        (currentScreen == MainScreens.IdeasScreen ||
+                (currentScreen is SubScreen && currentScreen.parentScreen == MainScreens.IdeasScreen))
+
+
+    val isProjectSelectionScreenPressed =
+        (currentScreen == MainScreens.ProjectSelectionScreen||
+                (currentScreen is SubScreen && currentScreen.parentScreen == MainScreens.ProjectSelectionScreen))
+
+
+    val isMeetingScreenPressed =
+        (currentScreen == MainScreens.MeetingsScreen||
+                (currentScreen is SubScreen && currentScreen.parentScreen == MainScreens.MeetingsScreen))
+
 
 
     BottomAppBar(
@@ -78,19 +79,21 @@ fun BottomBarNavigationComponent(navigationController: NavController, currentScr
         tonalElevation = 8.dp,
         actions = {
             Row(){
-                CustomIconButtonCompposable(
+                CustomIconButtonComposable(
                     modifier = Modifier.weight(1f),
                     "Tasks",
-                    onClick = {navigationFunction(navigationController, destination = MainNavigationScreens.TasksScreen.name)},
+                    onClick = {navigationFunction(navigationController, destination = MainScreens.TasksScreen)},
                     iconVector = Icons.Outlined.AssignmentTurnedIn,
-                    pressedIconVector = Icons.Filled.AssignmentTurnedIn
+                    pressedIconVector = Icons.Filled.AssignmentTurnedIn,
+                    isPressed = isTasksPressed
                 )
-                CustomIconButtonCompposable(
+                CustomIconButtonComposable(
                     modifier = Modifier.weight(1f),
                     "Ideas",
-                    onClick = {navigationFunction(navigationController, destination = MainNavigationScreens.IdeasScreen.name)},
+                    onClick = {navigationFunction(navigationController, destination = MainScreens.IdeasScreen)},
                     iconVector = Icons.Outlined.Lightbulb,
-                    pressedIconVector = Icons.Filled.Lightbulb
+                    pressedIconVector = Icons.Filled.Lightbulb,
+                    isPressed = isIdeasScreenPressed
                 )
                 Row(
                     modifier = Modifier.weight(1f),
@@ -99,23 +102,25 @@ fun BottomBarNavigationComponent(navigationController: NavController, currentScr
                 ){
                     Box(){
                         HomeIconButton(
-                            onClick = {navigationFunction(navigationController, destination = MainNavigationScreens.OverviewProjectScreen.name)}
+                            onClick = {navigationFunction(navigationController, destination = MainScreens.OverviewProjectScreen)}
                         )
                     }
                 }
-                CustomIconButtonCompposable(
+                CustomIconButtonComposable(
                     modifier = Modifier.weight(1f),
                     "Meetings",
-                    onClick = {navigationFunction(navigationController, destination = MainNavigationScreens.MeetingsScreen.name)},
+                    onClick = {navigationFunction(navigationController, destination = MainScreens.MeetingsScreen)},
                     iconVector = Icons.Default.CalendarToday,
-                    pressedIconVector = Icons.Filled.CalendarToday
+                    pressedIconVector = Icons.Filled.CalendarToday,
+                    isPressed = isMeetingScreenPressed
                 )
-                CustomIconButtonCompposable(
+                CustomIconButtonComposable(
                     modifier = Modifier.weight(1f),
                     "Profile",
-                    onClick = {navigationFunction(navigationController, destination = MainNavigationScreens.ProfileScreen.name)},
+                    onClick = {navigationFunction(navigationController, destination = MainScreens.ProfileScreen)},
                     iconVector = Icons.Outlined.AccountCircle,
-                    pressedIconVector = Icons.Filled.AccountCircle
+                    pressedIconVector = Icons.Filled.AccountCircle,
+                    isPressed = isProfileScreenPressed
                 )
 
 
@@ -129,13 +134,13 @@ fun BottomBarNavigationComponent(navigationController: NavController, currentScr
 }
 
 @Composable
-fun CustomIconButtonCompposable(modifier: Modifier = Modifier, title: String, onClick: () -> Unit, iconVector: ImageVector, pressedIconVector: ImageVector, isPressed: Boolean){
+fun CustomIconButtonComposable(modifier: Modifier = Modifier, title: String, onClick: () -> Unit, iconVector: ImageVector, pressedIconVector: ImageVector, isPressed: Boolean){
     IconButton(
         onClick = onClick,
         modifier = modifier.padding(0.dp)
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            Icon(iconVector, contentDescription = null, tint = if (isPressed) LightRed else DarkerGray)
+            Icon(if(isPressed) pressedIconVector else iconVector, contentDescription = null, tint = if (isPressed) LightRed else DarkerGray)
             Text(title, style = TextStyle(fontSize = 10.sp))
         }
     }
