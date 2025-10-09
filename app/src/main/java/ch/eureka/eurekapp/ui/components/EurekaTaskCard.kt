@@ -24,12 +24,12 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 @Composable
 fun EurekaTaskCard(
     title: String,
-    dueDate: String? = null,
-    assignee: String? = null,
-    priority: String? = null,
-    category: String? = null,
-    progressText: String? = null,
-    progressValue: Float? = null,
+    dueDate: String = "",
+    assignee: String = "",
+    priority: String = "",
+    category: String = "",
+    progressText: String = "",
+    progressValue: Float = 0f,
     isCompleted: Boolean = false,
     onToggleComplete: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -64,58 +64,53 @@ fun EurekaTaskCard(
                     color = MaterialTheme.colorScheme.onSurface)
 
                 // Metadata row
-                Row {
-                  dueDate?.let {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                      Text(
-                          text = "⏰",
-                          style = MaterialTheme.typography.bodySmall,
-                          color = MaterialTheme.colorScheme.onSurfaceVariant)
-                      Spacer(modifier = Modifier.width(4.dp))
-                      Text(
-                          text = it,
-                          style = MaterialTheme.typography.bodySmall,
-                          color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (dueDate.isNotEmpty() || assignee.isNotEmpty()) {
+                  Row {
+                    if (dueDate.isNotEmpty()) {
+                      Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "⏰ $dueDate",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                      }
                     }
-                  }
 
-                  assignee?.let {
-                    if (dueDate != null) Spacer(modifier = Modifier.width(Spacing.sm))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                      Text(
-                          text = "👤",
-                          style = MaterialTheme.typography.bodySmall,
-                          color = MaterialTheme.colorScheme.onSurfaceVariant)
-                      Spacer(modifier = Modifier.width(4.dp))
-                      Text(
-                          text = it,
-                          style = MaterialTheme.typography.bodySmall,
-                          color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (assignee.isNotEmpty()) {
+                      if (dueDate.isNotEmpty()) Spacer(modifier = Modifier.width(Spacing.sm))
+                      Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "👤 $assignee",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                      }
                     }
                   }
                 }
 
                 // Tags row
-                Row {
-                  priority?.let { EurekaStatusTag(text = it, type = StatusType.INFO) }
-
-                  category?.let {
-                    if (priority != null) Spacer(modifier = Modifier.width(Spacing.xs))
-                    EurekaStatusTag(text = it, type = StatusType.INFO)
+                if (priority.isNotEmpty() || category.isNotEmpty()) {
+                  Row {
+                    if (priority.isNotEmpty()) {
+                      EurekaStatusTag(text = priority, type = StatusType.INFO)
+                    }
+                    if (category.isNotEmpty()) {
+                      if (priority.isNotEmpty()) Spacer(modifier = Modifier.width(Spacing.xs))
+                      EurekaStatusTag(text = category, type = StatusType.INFO)
+                    }
                   }
                 }
               }
 
               // Progress indicator
-              if (progressText != null || progressValue != null) {
+              if (progressText.isNotEmpty() || progressValue > 0f) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                   LinearProgressIndicator(
-                      progress = { progressValue ?: 0.5f },
+                      progress = { progressValue },
                       modifier = Modifier.width(60.dp),
                       color = MaterialTheme.colorScheme.tertiary)
-                  progressText?.let {
+                  if (progressText.isNotEmpty()) {
                     Text(
-                        text = it,
+                        text = progressText,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                   }

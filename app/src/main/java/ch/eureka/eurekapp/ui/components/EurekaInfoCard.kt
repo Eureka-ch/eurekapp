@@ -25,8 +25,8 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 fun EurekaInfoCard(
     title: String,
     primaryValue: String,
-    secondaryValue: String? = null,
-    iconText: String? = null,
+    secondaryValue: String = "",
+    iconText: String = "",
     modifier: Modifier = Modifier
 ) {
   Card(
@@ -37,7 +37,7 @@ fun EurekaInfoCard(
             modifier = Modifier.padding(Spacing.md),
             verticalAlignment = Alignment.CenterVertically) {
               // Icon container
-              iconText?.let {
+              if (iconText.isNotEmpty()) {
                 Box(
                     modifier =
                         Modifier.size(40.dp)
@@ -46,13 +46,12 @@ fun EurekaInfoCard(
                                 RoundedCornerShape(8.dp)),
                     contentAlignment = Alignment.Center) {
                       Text(
-                          text = it,
+                          text = iconText,
                           style = MaterialTheme.typography.titleMedium,
                           color = MaterialTheme.colorScheme.primary)
                     }
+                Spacer(modifier = Modifier.width(Spacing.md))
               }
-
-              Spacer(modifier = Modifier.width(Spacing.md))
 
               Column {
                 Text(
@@ -63,9 +62,9 @@ fun EurekaInfoCard(
                     text = primaryValue,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface)
-                secondaryValue?.let {
+                if (secondaryValue.isNotEmpty()) {
                   Text(
-                      text = it,
+                      text = secondaryValue,
                       style = MaterialTheme.typography.bodySmall,
                       color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
