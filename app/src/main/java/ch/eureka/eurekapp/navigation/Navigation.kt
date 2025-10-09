@@ -87,22 +87,20 @@ private val titleToScreensMap = mapOf<String, Screen>(
 )
 
 @Composable
-fun NavigationMenu(isUserSignedIn: Boolean){
+fun NavigationMenu(){
     val navigationController = rememberNavController()
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp
 
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    var currentScreen by remember { mutableStateOf<Screen>(MainScreens.OverviewProjectScreen) }
+    val currentScreen =  remember { mutableStateOf<Screen>(MainScreens.OverviewProjectScreen) }
 
     LaunchedEffect(currentRoute) {
         if(currentRoute != null){
-            currentScreen = titleToScreensMap[currentRoute]!!
+            currentScreen.value = titleToScreensMap[currentRoute]!!
 
         }else{
-            currentScreen = MainScreens.OverviewProjectScreen
+            currentScreen.value = MainScreens.OverviewProjectScreen
         }
     }
     Scaffold(
@@ -111,7 +109,6 @@ fun NavigationMenu(isUserSignedIn: Boolean){
             BottomBarNavigationComponent(
                 navigationController = navigationController,
                 currentScreen = currentScreen,
-                screenTotalHeight = screenHeight
             )
         }
 
