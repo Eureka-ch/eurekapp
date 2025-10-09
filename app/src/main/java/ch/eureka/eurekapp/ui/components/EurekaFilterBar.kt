@@ -9,7 +9,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 /** Filter bar with segmented control for filtering content */
@@ -31,7 +30,7 @@ fun EurekaFilterBar(
               colors =
                   FilterChipDefaults.filterChipColors(
                       selectedContainerColor = MaterialTheme.colorScheme.primary,
-                      selectedLabelColor = Color.White,
+                      selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
                       containerColor = MaterialTheme.colorScheme.surface,
                       labelColor = MaterialTheme.colorScheme.onSurface))
         }

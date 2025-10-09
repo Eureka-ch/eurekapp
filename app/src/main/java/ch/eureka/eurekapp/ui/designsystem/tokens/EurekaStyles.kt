@@ -21,9 +21,8 @@ object EurekaStyles {
   @Composable
   fun OutlinedButtonColors() =
       ButtonDefaults.outlinedButtonColors(
-          contentColor = Color(0xFF424242), // Dark gray text
-          containerColor = Color.White // White background
-          )
+          contentColor = MaterialTheme.colorScheme.onSurface,
+          containerColor = MaterialTheme.colorScheme.surface)
 
   @Composable
   fun TextFieldColors() =
@@ -40,20 +39,16 @@ object EurekaStyles {
   @Composable
   fun HighPriorityTagColors() =
       CardDefaults.cardColors(
-          containerColor = Color(0xFFFFEBEE), // Light red background
-          contentColor = Color(0xFFE57373) // Red text
-          )
+          containerColor = MaterialTheme.colorScheme.errorContainer,
+          contentColor = MaterialTheme.colorScheme.onErrorContainer)
 
   @Composable
   fun NormalTagColors() =
       CardDefaults.cardColors(
-          containerColor = Color(0xFFEEEEEE), // Light gray background
-          contentColor = Color(0xFF424242) // Dark gray text
-          )
+          containerColor = MaterialTheme.colorScheme.surfaceVariant,
+          contentColor = MaterialTheme.colorScheme.onSurfaceVariant)
 
-  // Button border style matching Figma
-  val OutlinedButtonBorder =
-      androidx.compose.foundation.BorderStroke(
-          width = 1.dp, color = Color(0xFFE5E5E5) // Light gray border
-          )
+  @Composable
+  fun OutlinedButtonBorder() =
+      BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
 }

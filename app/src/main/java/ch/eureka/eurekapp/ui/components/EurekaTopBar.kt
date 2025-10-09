@@ -8,7 +8,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 
 /** Top header bar that appears on all screens */
@@ -20,7 +19,7 @@ fun EurekaTopBar(title: String = "EUREKA", modifier: Modifier = Modifier) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-            color = Color.White)
+            color = MaterialTheme.colorScheme.onPrimary)
       },
       colors =
           TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary),

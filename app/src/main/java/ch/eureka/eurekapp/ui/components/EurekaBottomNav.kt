@@ -9,14 +9,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 /** Bottom navigation bar that appears on all main screens */
 @Composable
-fun EurekaBottomNav(currentRoute: String, onNavigate: (String) -> Unit) {
-  val navItems =
-      listOf(
-          NavItem("Tasks", null),
-          NavItem("Ideas", null),
-          NavItem("Home", null),
-          NavItem("Meetings", null),
-          NavItem("Profile", null))
+fun EurekaBottomNav(
+    currentRoute: String,
+    onNavigate: (String) -> Unit,
+    navItems: List<NavItem> = defaultNavItems
+) {
 
   NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
     navItems.forEach { item ->
@@ -42,3 +39,12 @@ fun EurekaBottomNav(currentRoute: String, onNavigate: (String) -> Unit) {
 }
 
 data class NavItem(val label: String, val icon: ImageVector?)
+
+// Default navigation items - can be overridden for different use cases
+private val defaultNavItems =
+    listOf(
+        NavItem("Tasks", null),
+        NavItem("Ideas", null),
+        NavItem("Home", null),
+        NavItem("Meetings", null),
+        NavItem("Profile", null))

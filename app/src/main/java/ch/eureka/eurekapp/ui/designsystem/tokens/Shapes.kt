@@ -9,7 +9,7 @@ object EShapes {
 
   val value =
       Shapes(
-          small = RoundedCornerShape(16.dp),
+          small = RoundedCornerShape(8.dp),
           medium = RoundedCornerShape(16.dp),
-          large = RoundedCornerShape(16.dp))
+          large = RoundedCornerShape(24.dp))
 }

@@ -1,7 +1,7 @@
 package ch.eureka.eurekapp.designsystem.tokens
 
 import ch.eureka.eurekapp.ui.designsystem.tokens.EShapes
-import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 
@@ -35,10 +35,11 @@ class ShapesTest {
   }
 
   @Test
-  fun `all shapes use consistent 16dp radius`() {
+  fun `shapes have different corner radii`() {
     val shapes = EShapes.value
-    // All shapes should be the same since we use 16dp everywhere
-    assertEquals("All shapes should be identical", shapes.small, shapes.medium)
-    assertEquals("All shapes should be identical", shapes.medium, shapes.large)
+    // Shapes should be different: small=8dp, medium=16dp, large=24dp
+    assertNotEquals("Small and medium shapes should be different", shapes.small, shapes.medium)
+    assertNotEquals("Medium and large shapes should be different", shapes.medium, shapes.large)
+    assertNotEquals("Small and large shapes should be different", shapes.small, shapes.large)
   }
 }
