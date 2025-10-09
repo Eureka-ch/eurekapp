@@ -15,7 +15,7 @@ class EurekaThemeSmokeTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun `EurekaTheme renders text correctly in light mode`() {
+  fun eurekaThemeRendersTextCorrectlyInLightMode() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) { androidx.compose.material3.Text("theme") }
     }
@@ -24,7 +24,7 @@ class EurekaThemeSmokeTest {
   }
 
   @Test
-  fun `EurekaTheme renders text correctly in dark mode`() {
+  fun eurekaThemeRendersTextCorrectlyInDarkMode() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = true) { androidx.compose.material3.Text("theme") }
     }

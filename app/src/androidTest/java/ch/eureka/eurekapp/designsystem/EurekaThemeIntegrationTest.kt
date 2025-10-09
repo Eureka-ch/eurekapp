@@ -7,6 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import ch.eureka.eurekapp.ui.components.EurekaInfoCard
 import ch.eureka.eurekapp.ui.components.EurekaStatusTag
 import ch.eureka.eurekapp.ui.components.StatusType
+import ch.eureka.eurekapp.ui.designsystem.EurekaTheme
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -17,7 +18,7 @@ class EurekaThemeIntegrationTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun `EurekaTheme renders components correctly in light mode`() {
+  fun eurekaThemeRendersComponentsCorrectlyInLightMode() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.foundation.layout.Column {
@@ -36,7 +37,7 @@ class EurekaThemeIntegrationTest {
   }
 
   @Test
-  fun `EurekaTheme renders components correctly in dark mode`() {
+  fun eurekaThemeRendersComponentsCorrectlyInDarkMode() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = true) {
         androidx.compose.foundation.layout.Column {
@@ -55,7 +56,7 @@ class EurekaThemeIntegrationTest {
   }
 
   @Test
-  fun `EurekaTheme renders simple text`() {
+  fun eurekaThemeRendersSimpleText() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) { androidx.compose.material3.Text("Simple Text") }
     }

@@ -7,18 +7,30 @@ import androidx.compose.ui.graphics.Color
 /** Defines the app color schemes (light/dark) mapped from the Figma palette. */
 object EColors {
 
-  // Brand colors from updated guidelines
-  private val PrimaryRed = Color(0xFFFF3B30)
-  private val DarkPrimaryRed = Color(0xFFB71C1C) // Darker variant for dark theme
-  private val SecondaryOrange = Color(0xFFFF9500)
-  private val TertiaryGreen = Color(0xFF22C55E)
+    // Brand colors from Figma templates
+    private val PrimaryRed = Color(0xFFE83E3E) // Exact red from Figma header
+    private val DarkPrimaryRed = Color(0xFFB71C1C) // Darker variant for dark theme
+    private val SecondaryOrange = Color(0xFFFF9500) // Orange for warnings/meetings
+    private val TertiaryGreen = Color(0xFF22C55E) // Green for success/tasks
+    
+    // Additional colors from Figma
+    private val IconColor = Color(0xFF424242) // Dark gray for icons
+    private val NotificationIconColor = Color(0xFFEF9A9A) // Light red for notification icons
+    private val HighPriorityBackground = Color(0xFFFFEBEE) // Light red background for high priority
+    private val HighPriorityText = Color(0xFFE57373) // Red text for high priority
+    private val TagBackground = Color(0xFFEEEEEE) // Light gray background for tags
+    private val TagText = Color(0xFF424242) // Dark gray text for tags
+    private val ButtonBorderColor = Color(0xFFE5E5E5) // Light gray border for outlined buttons
+    private val SuccessGreen = Color(0xFF4CAF50) // Green for success states and progress
+    private val WarningOrange = Color(0xFFFFB74D) // Orange for warnings
+    private val InfoBlue = Color(0xFF2196F3) // Blue for info states
 
-  // Light theme colors
-  private val LightBackground = Color(0xFFF5F5F5)
-  private val LightSurface = Color.White
-  private val LightOnSurface = Color.Black
-  private val LightOnSurfaceVariant = Color(0xFF666666)
-  private val LightOutlineVariant = Color(0xFFE5E5E5)
+    // Light theme colors from Figma
+    private val LightBackground = Color(0xFFF5F5F5) // Light gray background
+    private val LightSurface = Color.White // White cards/surfaces
+    private val LightOnSurface = Color(0xFF212121) // Dark text for titles
+    private val LightOnSurfaceVariant = Color(0xFF757575) // Medium gray for body text
+    private val LightOutlineVariant = Color(0xFF9E9E9E) // Light gray for secondary text
 
   // Dark theme colors
   private val DarkBackground = Color(0xFF121212)
