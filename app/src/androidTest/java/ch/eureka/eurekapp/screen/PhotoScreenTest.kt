@@ -44,7 +44,7 @@ class PhotoScreenTest {
 
     composeTestRule.onNodeWithTag(PhotoScreenTestTags.DELETE_PHOTO).performClick()
 
-    Thread.sleep(1000)
+    Thread.sleep(5000)
 
     composeTestRule.onNodeWithTag(PhotoScreenTestTags.TAKE_PHOTO).assertIsDisplayed()
 
@@ -54,7 +54,7 @@ class PhotoScreenTest {
 
     composeTestRule.onNodeWithTag(PhotoScreenTestTags.TAKE_PHOTO).performClick()
 
-    Thread.sleep(1000)
+    Thread.sleep(5000)
 
     composeTestRule.onNodeWithTag(PhotoScreenTestTags.TAKE_PHOTO).assertIsDisplayed()
 
@@ -64,7 +64,7 @@ class PhotoScreenTest {
 
     composeTestRule.onNodeWithTag(PhotoScreenTestTags.TAKE_PHOTO).performClick()
 
-    Thread.sleep(1000)
+    Thread.sleep(5000)
 
     composeTestRule.onNodeWithTag(PhotoScreenTestTags.TAKE_PHOTO).assertIsDisplayed()
 
@@ -74,7 +74,7 @@ class PhotoScreenTest {
 
     composeTestRule.onNodeWithTag(PhotoScreenTestTags.DELETE_PHOTO).performClick()
 
-    Thread.sleep(1000)
+    Thread.sleep(5000)
 
     composeTestRule.onNodeWithTag(PhotoScreenTestTags.TAKE_PHOTO).assertIsDisplayed()
 
