@@ -20,7 +20,7 @@ gms = "4.4.2"
 coroutinesPlayServices = "1.7.3"
 okhttp = "4.12.0"
 lifecycleProcess = "2.9.4"
-
+guava = "31.1-android"
 [libraries]
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraxVersion" }
 androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "cameraxVersion" }
@@ -59,7 +59,7 @@ firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version
 firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version = "23.0.0" }
 firebase-database-ktx = { group = "com.google.firebase", name = "firebase-database-ktx", version = "21.0.0" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version = "25.1.0" }
-
+guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
