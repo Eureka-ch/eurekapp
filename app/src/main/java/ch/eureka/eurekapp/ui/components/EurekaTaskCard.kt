@@ -28,7 +28,8 @@ fun EurekaTaskCard(
     assignee: String? = null,
     priority: String? = null,
     category: String? = null,
-    progress: Float? = null,
+    progressText: String? = null,
+    progressValue: Float? = null,
     isCompleted: Boolean = false,
     onToggleComplete: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -96,16 +97,7 @@ fun EurekaTaskCard(
 
                 // Tags row
                 Row {
-                  priority?.let {
-                    EurekaStatusTag(
-                        text = it,
-                        type =
-                            when (it) {
-                              "High" -> StatusType.ERROR
-                              "Medium" -> StatusType.WARNING
-                              else -> StatusType.INFO
-                            })
-                  }
+                  priority?.let { EurekaStatusTag(text = it, type = StatusType.INFO) }
 
                   category?.let {
                     if (priority != null) Spacer(modifier = Modifier.width(Spacing.xs))
@@ -115,16 +107,18 @@ fun EurekaTaskCard(
               }
 
               // Progress indicator
-              progress?.let {
+              if (progressText != null || progressValue != null) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                   LinearProgressIndicator(
-                      progress = { it },
+                      progress = { progressValue ?: 0.5f },
                       modifier = Modifier.width(60.dp),
                       color = MaterialTheme.colorScheme.tertiary)
-                  Text(
-                      text = "${(it * 100).toInt()}%",
-                      style = MaterialTheme.typography.labelSmall,
-                      color = MaterialTheme.colorScheme.onSurfaceVariant)
+                  progressText?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                  }
                 }
               }
             }

@@ -103,16 +103,14 @@ fun MyScreen() {
 
 ```kotlin
 import ch.eureka.eurekapp.ui.components.EurekaInfoCard
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Checklist
 
 @Composable
 fun DashboardScreen() {
     EurekaInfoCard(
-        icon = Icons.Default.Checklist,
         title = "Tasks in Progress",
         primaryValue = "3 open",
-        secondaryValue = "1 due today"
+        secondaryValue = "1 due today",
+        iconText = "T" // Optional: pass the icon text you want to display
     )
 }
 ```
@@ -131,9 +129,10 @@ fun TasksScreen() {
         title = "Implement Overview Screen",
         dueDate = "Due: Today - 23:59",
         assignee = "Assigned: Ismail",
-        priority = "High",
+        priority = "High", // Just display as-is, no logic mapping
         category = "UI",
-        progress = 0.65f,
+        progressText = "65%", // Pass the text you want to display
+        progressValue = 0.65f, // Pass the progress value (0.0 to 1.0)
         onToggleComplete = { /* handle completion */ }
     )
 }
@@ -175,12 +174,12 @@ fun TaskItem() {
     Row {
         EurekaStatusTag(
             text = "High Priority",
-            type = StatusType.ERROR
+            type = StatusType.ERROR // You decide the visual type
         )
         
         EurekaStatusTag(
             text = "UI",
-            type = StatusType.INFO
+            type = StatusType.INFO // You decide the visual type
         )
     }
 }
@@ -224,10 +223,10 @@ fun MyScreen() {
             LazyColumn {
                 item {
                     EurekaInfoCard(
-                        icon = Icons.Default.Checklist,
                         title = "Tasks in Progress",
                         primaryValue = "3 open",
-                        secondaryValue = "1 due today"
+                        secondaryValue = "1 due today",
+                        iconText = "T"
                     )
                 }
                 
@@ -238,7 +237,8 @@ fun MyScreen() {
                         assignee = "Assigned: Ismail",
                         priority = "High",
                         category = "UI",
-                        progress = 0.65f
+                        progressText = "65%",
+                        progressValue = 0.65f
                     )
                 }
             }

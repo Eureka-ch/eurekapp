@@ -26,6 +26,7 @@ fun EurekaInfoCard(
     title: String,
     primaryValue: String,
     secondaryValue: String? = null,
+    iconText: String? = null,
     modifier: Modifier = Modifier
 ) {
   Card(
@@ -36,18 +37,20 @@ fun EurekaInfoCard(
             modifier = Modifier.padding(Spacing.md),
             verticalAlignment = Alignment.CenterVertically) {
               // Icon container
-              Box(
-                  modifier =
-                      Modifier.size(40.dp)
-                          .background(
-                              MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                              RoundedCornerShape(8.dp)),
-                  contentAlignment = Alignment.Center) {
-                    Text(
-                        text = title.take(1),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary)
-                  }
+              iconText?.let {
+                Box(
+                    modifier =
+                        Modifier.size(40.dp)
+                            .background(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                RoundedCornerShape(8.dp)),
+                    contentAlignment = Alignment.Center) {
+                      Text(
+                          text = it,
+                          style = MaterialTheme.typography.titleMedium,
+                          color = MaterialTheme.colorScheme.primary)
+                    }
+              }
 
               Spacer(modifier = Modifier.width(Spacing.md))
 
