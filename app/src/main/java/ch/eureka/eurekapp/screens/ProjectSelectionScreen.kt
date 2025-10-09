@@ -7,11 +7,13 @@ import androidx.compose.ui.platform.testTag
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 
-enum class ProjectSelectionScreenTestTags{
+enum class ProjectSelectionScreenTestTags {
   PROJECT_SELECTION_TEXT
 }
 
 @Composable
 fun ProjectSelectionScreen(navigationController: NavHostController = rememberNavController()) {
-  Text("Project Selection Screen", modifier = Modifier.testTag(ProjectSelectionScreenTestTags.PROJECT_SELECTION_TEXT.name))
+  Text(
+      "Project Selection Screen",
+      modifier = Modifier.testTag(ProjectSelectionScreenTestTags.PROJECT_SELECTION_TEXT.name))
 }

@@ -43,24 +43,32 @@ class NavigationMenuTest : TestCase() {
   }
 
   @Test
-  fun testAllPages(){
-      val currentScreen = mutableStateOf<Screen>(MainScreens.ProfileScreen)
-      composeTestRule.setContent {
-          NavigationMenu()
-      }
+  fun testAllPages() {
+    val currentScreen = mutableStateOf<Screen>(MainScreens.ProfileScreen)
+    composeTestRule.setContent { NavigationMenu() }
 
-      composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON.name).performClick()
-      composeTestRule.onNodeWithTag(ProfileScreenTestTags.PROFILE_SCREEN_TEXT.name).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON.name)
+        .performClick()
+    composeTestRule
+        .onNodeWithTag(ProfileScreenTestTags.PROFILE_SCREEN_TEXT.name)
+        .assertIsDisplayed()
 
-      composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON.name).performClick()
-      composeTestRule.onNodeWithTag(IdeasScreenTestTags.IDEAS_SCREEN_TEXT.name).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON.name)
+        .performClick()
+    composeTestRule.onNodeWithTag(IdeasScreenTestTags.IDEAS_SCREEN_TEXT.name).assertIsDisplayed()
 
-      composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON.name).performClick()
-      composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT.name).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON.name)
+        .performClick()
+    composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT.name).assertIsDisplayed()
 
-      composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON.name).performClick()
-      composeTestRule.onNodeWithTag(MeetingsScreenTestTags.MEETINGS_SCREEN_TEXT.name).assertIsDisplayed()
-
-
+    composeTestRule
+        .onNodeWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON.name)
+        .performClick()
+    composeTestRule
+        .onNodeWithTag(MeetingsScreenTestTags.MEETINGS_SCREEN_TEXT.name)
+        .assertIsDisplayed()
   }
 }

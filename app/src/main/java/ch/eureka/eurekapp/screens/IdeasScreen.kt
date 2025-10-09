@@ -7,7 +7,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 
-enum class IdeasScreenTestTags{
+enum class IdeasScreenTestTags {
   IDEAS_SCREEN_TEXT
 }
 

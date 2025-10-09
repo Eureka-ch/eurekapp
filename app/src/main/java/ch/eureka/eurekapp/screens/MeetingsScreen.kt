@@ -7,10 +7,13 @@ import androidx.compose.ui.platform.testTag
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 
-enum class MeetingsScreenTestTags{
+enum class MeetingsScreenTestTags {
   MEETINGS_SCREEN_TEXT
 }
+
 @Composable
 fun MeetingsScreen(navigationController: NavHostController = rememberNavController()) {
-  Text("Meetings Screen", modifier = Modifier.testTag(MeetingsScreenTestTags.MEETINGS_SCREEN_TEXT.name))
+  Text(
+      "Meetings Screen",
+      modifier = Modifier.testTag(MeetingsScreenTestTags.MEETINGS_SCREEN_TEXT.name))
 }
