@@ -21,7 +21,7 @@ import java.io.File
  * - From command line: ./gradlew run -PmainClass=ch.eureka.eurekapp.codegen.RulesGeneratorMainKt
  */
 fun main() {
-  println("🔥 Generating Firestore Rules...")
+  println("Generating Firestore Rules...")
 
   val generator =
       FirestoreRulesGenerator()
@@ -44,11 +44,11 @@ fun main() {
   val outputFile = File(outputPath)
   outputFile.writeText(rulesContent)
 
-  println("✅ Firestore rules generated successfully!")
-  println("📄 Output: ${outputFile.absolutePath}")
+  println("Firestore rules generated successfully!")
+  println("Output: ${outputFile.absolutePath}")
   println()
   println("Preview:")
-  println("─".repeat(80))
+  println("=".repeat(80))
   println(rulesContent)
-  println("─".repeat(80))
+  println("=".repeat(80))
 }

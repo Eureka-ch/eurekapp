@@ -218,18 +218,6 @@ class FirestoreRulesGenerator {
       if (operation == "update" && prop.findAnnotation<Immutable>() != null) {
         checks.add("request.resource.data.${property.name} == resource.data.${property.name}")
       }
-
-      // @ServerTimestamp fields should use request.time only on create
-      // On update, allow the field to remain unchanged or be set to request.time
-      if (prop.findAnnotation<ServerTimestamp>() != null) {
-        val fieldRef = "request.resource.data.${property.name}"
-        if (operation == "create") {
-          checks.add("$fieldRef == request.time")
-        } else if (operation == "update") {
-          // Allow timestamp to either stay the same or be updated to request.time
-          checks.add("($fieldRef == request.time || $fieldRef == resource.data.${property.name})")
-        }
-      }
     }
 
     // Add hasAll check for required fields
