@@ -88,9 +88,7 @@ fun EurekaTaskCard(
 
                 // Tags row
                 if (priority.isNotEmpty()) {
-                  Row {
-                    EurekaStatusTag(text = priority, type = StatusType.INFO)
-                  }
+                  Row { EurekaStatusTag(text = priority, type = StatusType.INFO) }
                 }
               }
 

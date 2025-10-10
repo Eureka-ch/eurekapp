@@ -25,14 +25,10 @@ class EurekaBottomNavTest {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaBottomNav(
-            currentRoute = "Tasks", 
+            currentRoute = "Tasks",
             onNavigate = { clickedRoute = it },
-            navItems = listOf(
-                NavItem("Tasks", null),
-                NavItem("Ideas", null),
-                NavItem("Home", null)
-            )
-        )
+            navItems =
+                listOf(NavItem("Tasks", null), NavItem("Ideas", null), NavItem("Home", null)))
       }
     }
 
@@ -47,16 +43,12 @@ class EurekaBottomNavTest {
   @Test
   fun eurekaBottomNavShowsSelectedState() {
     composeTestRule.setContent {
-      EurekaTheme(darkTheme = false) { 
+      EurekaTheme(darkTheme = false) {
         EurekaBottomNav(
-            currentRoute = "Ideas", 
+            currentRoute = "Ideas",
             onNavigate = {},
-            navItems = listOf(
-                NavItem("Tasks", null),
-                NavItem("Ideas", null),
-                NavItem("Home", null)
-            )
-        )
+            navItems =
+                listOf(NavItem("Tasks", null), NavItem("Ideas", null), NavItem("Home", null)))
       }
     }
 
@@ -71,14 +63,10 @@ class EurekaBottomNavTest {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaBottomNav(
-            currentRoute = "Tasks", 
+            currentRoute = "Tasks",
             onNavigate = { clickedRoute = it },
-            navItems = listOf(
-                NavItem("Tasks", null),
-                NavItem("Ideas", null),
-                NavItem("Home", null)
-            )
-        )
+            navItems =
+                listOf(NavItem("Tasks", null), NavItem("Ideas", null), NavItem("Home", null)))
       }
     }
 
@@ -110,16 +98,12 @@ class EurekaBottomNavTest {
   @Test
   fun eurekaBottomNavWorksInDarkMode() {
     composeTestRule.setContent {
-      EurekaTheme(darkTheme = true) { 
+      EurekaTheme(darkTheme = true) {
         EurekaBottomNav(
-            currentRoute = "Home", 
+            currentRoute = "Home",
             onNavigate = {},
-            navItems = listOf(
-                NavItem("Tasks", null),
-                NavItem("Ideas", null),
-                NavItem("Home", null)
-            )
-        )
+            navItems =
+                listOf(NavItem("Tasks", null), NavItem("Ideas", null), NavItem("Home", null)))
       }
     }
 
@@ -131,16 +115,12 @@ class EurekaBottomNavTest {
   @Test
   fun eurekaBottomNavShowsFirstLetterAsIcon() {
     composeTestRule.setContent {
-      EurekaTheme(darkTheme = false) { 
+      EurekaTheme(darkTheme = false) {
         EurekaBottomNav(
-            currentRoute = "Tasks", 
+            currentRoute = "Tasks",
             onNavigate = {},
-            navItems = listOf(
-                NavItem("Tasks", null),
-                NavItem("Ideas", null),
-                NavItem("Home", null)
-            )
-        )
+            navItems =
+                listOf(NavItem("Tasks", null), NavItem("Ideas", null), NavItem("Home", null)))
       }
     }
 
