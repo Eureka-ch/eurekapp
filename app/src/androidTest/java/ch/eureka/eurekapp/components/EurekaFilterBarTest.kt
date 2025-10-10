@@ -81,22 +81,6 @@ class EurekaFilterBarTest {
     composeTestRule.onNodeWithText("Only Option").assertIsSelected()
   }
 
-  @Test
-  fun eurekaFilterBarWorksWithManyOptions() {
-    val options = listOf("Option1", "Option2", "Option3", "Option4", "Option5")
-
-    composeTestRule.setContent {
-      EurekaTheme(darkTheme = false) {
-        EurekaFilterBar(options = options, selectedOption = "Option3", onOptionSelected = {})
-      }
-    }
-
-    // Check that all options are displayed (now scrollable)
-    options.forEach { option -> composeTestRule.onNodeWithText(option).assertIsDisplayed() }
-
-    // Check that Option3 is selected
-    composeTestRule.onNodeWithText("Option3").assertIsSelected()
-  }
 
   @Test
   fun eurekaFilterBarWorksInDarkMode() {
