@@ -16,7 +16,7 @@ class DesignTokensIntegrationTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun `EurekaTheme applies all design tokens correctly`() {
+  fun eurekaThemeAppliesAllDesignTokensCorrectly() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         // Test que le thème applique tous les tokens
@@ -39,7 +39,7 @@ class DesignTokensIntegrationTest {
   }
 
   @Test
-  fun `Design tokens work in both light and dark themes`() {
+  fun designTokensWorkInBothLightAndDarkThemes() {
     // Test thème clair
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
