@@ -91,7 +91,7 @@ class EurekaFilterBarTest {
       }
     }
 
-    // Check that all options are displayed
+    // Check that all options are displayed (now scrollable)
     options.forEach { option -> composeTestRule.onNodeWithText(option).assertIsDisplayed() }
 
     // Check that Option3 is selected
