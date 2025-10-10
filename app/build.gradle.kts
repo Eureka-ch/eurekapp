@@ -5,8 +5,8 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.ktfmt)
-    alias(libs.plugins.sonar)
     alias(libs.plugins.gms)
+    alias(libs.plugins.sonar)
     id("jacoco")
 }
 
@@ -50,7 +50,7 @@ android {
     }
 
     testCoverage {
-        jacocoVersion = "0.8.8"
+        jacocoVersion = "0.8.13"
     }
 
     buildFeatures {
@@ -74,6 +74,14 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            merges += "META-INF/LICENSE.md"
+            merges += "META-INF/LICENSE-notice.md"
+            excludes += "META-INF/LICENSE-notice.md"
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/LICENSE"
+            excludes += "META-INF/LICENSE.txt"
+            excludes += "META-INF/NOTICE"
+            excludes += "META-INF/NOTICE.txt"
         }
     }
 
@@ -81,6 +89,11 @@ android {
         unitTests {
             isIncludeAndroidResources = true
             isReturnDefaultValues = true
+        }
+        packagingOptions {
+            jniLibs {
+                useLegacyPackaging = true
+            }
         }
     }
 
@@ -166,18 +179,41 @@ dependencies {
     // UI Tests
     globalTestImplementation(libs.compose.test.junit)
     debugImplementation(libs.compose.test.manifest)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+        testImplementation(libs.mockito.core)
+        testImplementation(libs.mockito.kotlin)
+        androidTestImplementation(libs.mockito.android)
+        androidTestImplementation(libs.mockito.kotlin)
+        testImplementation(libs.robolectric)
 
-    // --------- Kaspresso test framework ----------
+    // Kaspresso test framework
     globalTestImplementation(libs.kaspresso)
     globalTestImplementation(libs.kaspresso.compose)
 
-    // ----------       Robolectric     ------------
+    // Robolectric
     testImplementation(libs.robolectric)
 
-    // ------------- OkHttp ------------------
+    // Firebase
+    implementation(libs.firebase.database.ktx)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.ui.auth)
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.auth)
+
+    // Credential Manager (for Google Sign-In)
+    implementation(libs.credentials)
+    implementation(libs.credentials.play.services.auth)
+    implementation(libs.googleid)
+
+    // Networking with OkHttp
     implementation(libs.okhttp)
 
-    // ----------       Camera     ------------
+    // Testing Unit
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.mockk.android)
+    testImplementation(libs.mockk)
+    
+    // Camera
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
