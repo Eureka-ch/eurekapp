@@ -106,7 +106,6 @@ androidx-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-p
 
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutinesPlayServices" }
-
 guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
