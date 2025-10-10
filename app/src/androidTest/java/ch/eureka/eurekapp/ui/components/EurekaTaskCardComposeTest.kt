@@ -18,7 +18,7 @@ class EurekaTaskCardComposeTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun `EurekaTaskCard renders with title`() {
+  fun eurekaTaskCardRendersWithTitle() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) { EurekaTaskCard(title = "Test Task", isCompleted = false) }
     }
@@ -27,7 +27,7 @@ class EurekaTaskCardComposeTest {
   }
 
   @Test
-  fun `EurekaTaskCard renders with completion checkmark`() {
+  fun eurekaTaskCardRendersWithCompletionCheckmark() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaTaskCard(title = "Completed Task", isCompleted = true)
@@ -39,7 +39,7 @@ class EurekaTaskCardComposeTest {
   }
 
   @Test
-  fun `EurekaTaskCard renders with metadata`() {
+  fun eurekaTaskCardRendersWithMetadata() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaTaskCard(title = "Task with Metadata", dueDate = "2024-01-15", assignee = "John Doe")
@@ -52,7 +52,7 @@ class EurekaTaskCardComposeTest {
   }
 
   @Test
-  fun `EurekaTaskCard renders with progress`() {
+  fun eurekaTaskCardRendersWithProgress() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaTaskCard(title = "Task with Progress", progressText = "75%", progressValue = 0.75f)

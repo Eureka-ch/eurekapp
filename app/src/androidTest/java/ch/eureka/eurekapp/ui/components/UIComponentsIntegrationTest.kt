@@ -18,7 +18,7 @@ class UIComponentsIntegrationTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun `All UI components render with EurekaTheme`() {
+  fun allUIComponentsRenderWithEurekaTheme() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         // Test que tous les composants principaux se rendent
@@ -46,7 +46,7 @@ class UIComponentsIntegrationTest {
   }
 
   @Test
-  fun `Components work in dark theme`() {
+  fun componentsWorkInDarkTheme() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = true) {
         EurekaTopBar("Dark Theme Test")
@@ -62,7 +62,7 @@ class UIComponentsIntegrationTest {
   }
 
   @Test
-  fun `StatusTag renders all status types`() {
+  fun statusTagRendersAllStatusTypes() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaStatusTag("Success", StatusType.SUCCESS)

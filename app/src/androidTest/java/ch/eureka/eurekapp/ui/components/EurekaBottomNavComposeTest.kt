@@ -16,7 +16,7 @@ class EurekaBottomNavComposeTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun `EurekaBottomNav renders with default items`() {
+  fun eurekaBottomNavRendersWithDefaultItems() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaBottomNav(
@@ -33,7 +33,7 @@ class EurekaBottomNavComposeTest {
   }
 
   @Test
-  fun `EurekaBottomNav shows selected state`() {
+  fun eurekaBottomNavShowsSelectedState() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaBottomNav(
