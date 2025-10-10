@@ -1,7 +1,11 @@
+import java.util.Properties
+import org.gradle.kotlin.dsl.implementation
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.ktfmt)
+    alias(libs.plugins.gms)
     alias(libs.plugins.sonar)
     id("jacoco")
 }
@@ -21,6 +25,13 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        val properties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            properties.load(localPropertiesFile.inputStream())
+        }
+        buildConfigField("String", "DEEPSEEK_API_KEY", "\"${properties.getProperty("DEEPSEEK_API_KEY", "")}\"")
     }
 
     buildTypes {
@@ -39,11 +50,12 @@ android {
     }
 
     testCoverage {
-        jacocoVersion = "0.8.8"
+        jacocoVersion = "0.8.13"
     }
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     composeOptions {
@@ -62,6 +74,14 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            merges += "META-INF/LICENSE.md"
+            merges += "META-INF/LICENSE-notice.md"
+            excludes += "META-INF/LICENSE-notice.md"
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/LICENSE"
+            excludes += "META-INF/LICENSE.txt"
+            excludes += "META-INF/NOTICE"
+            excludes += "META-INF/NOTICE.txt"
         }
     }
 
@@ -69,6 +89,11 @@ android {
         unitTests {
             isIncludeAndroidResources = true
             isReturnDefaultValues = true
+        }
+        packagingOptions {
+            jniLibs {
+                useLegacyPackaging = true
+            }
         }
     }
 
@@ -111,15 +136,29 @@ fun DependencyHandlerScope.globalTestImplementation(dep: Any) {
     testImplementation(dep)
 }
 
+configurations.forEach { configuration ->
+    // Exclude protobuf-lite from all configurations
+    // This fixes a fatal exception for tests interacting with Cloud Firestore
+    configuration.exclude("com.google.protobuf", "protobuf-lite")
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(platform(libs.compose.bom))
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.10")
     testImplementation(libs.junit)
     globalTestImplementation(libs.androidx.junit)
     globalTestImplementation(libs.androidx.espresso.core)
+
+    // ------------- Firebase/Firestore ------------------
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.database.ktx)
+    implementation(libs.firebase.firestore)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     // ------------- Jetpack Compose ------------------
     val composeBom = platform(libs.compose.bom)
@@ -132,6 +171,11 @@ dependencies {
     implementation(libs.compose.material3)
     // Integration with activities
     implementation(libs.compose.activity)
+    //Navigation library
+    implementation(libs.androidx.navigation.compose)
+    //Extended icons library
+    implementation(libs.androidx.material.icons.extended)
+
     // Integration with ViewModels
     implementation(libs.compose.viewmodel)
     // Android Studio Preview support
@@ -140,15 +184,48 @@ dependencies {
     // UI Tests
     globalTestImplementation(libs.compose.test.junit)
     debugImplementation(libs.compose.test.manifest)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+        testImplementation(libs.mockito.core)
+        testImplementation(libs.mockito.kotlin)
+        androidTestImplementation(libs.mockito.android)
+        androidTestImplementation(libs.mockito.kotlin)
+        testImplementation(libs.robolectric)
 
-    // --------- Kaspresso test framework ----------
+    // Kaspresso test framework
     globalTestImplementation(libs.kaspresso)
     globalTestImplementation(libs.kaspresso.compose)
 
-    // ----------       Robolectric     ------------
+    // Robolectric
     testImplementation(libs.robolectric)
-}
 
+    // Firebase
+    implementation(libs.firebase.database.ktx)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.ui.auth)
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.auth)
+
+    // Credential Manager (for Google Sign-In)
+    implementation(libs.credentials)
+    implementation(libs.credentials.play.services.auth)
+    implementation(libs.googleid)
+
+    // Networking with OkHttp
+    implementation(libs.okhttp)
+
+    // Testing Unit
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.mockk.android)
+    testImplementation(libs.mockk)
+
+    // Camera
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+
+    implementation(libs.guava)
+}
 tasks.withType<Test> {
     // Configure Jacoco for each tests
     configure<JacocoTaskExtension> {
