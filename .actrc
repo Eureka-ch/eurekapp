@@ -1,4 +1,0 @@
-# Act configuration file
-# Use a larger Ubuntu image that includes Python 3 and common tools
--P ubuntu-latest=catthehacker/ubuntu:act-latest
-
