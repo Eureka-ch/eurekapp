@@ -10,6 +10,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -20,6 +24,7 @@ import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.authentication.AuthRepository
 import ch.eureka.eurekapp.model.camera.CameraViewModel
+import ch.eureka.eurekapp.navigation.NavigationMenu
 import ch.eureka.eurekapp.resources.C
 import ch.eureka.eurekapp.ui.authentication.SignInScreen
 import ch.eureka.eurekapp.ui.photos.PhotoScreen
@@ -50,7 +55,12 @@ fun Eurekapp(
     context: Context = LocalContext.current,
     credentialManager: CredentialManager = CredentialManager.create(context),
 ) {
-  SignInScreen(credentialManager = credentialManager, onSignedIn = {})
+  var signedIn by remember { mutableStateOf(false) }
+  if (!signedIn) {
+    SignInScreen(credentialManager = credentialManager, onSignedIn = { signedIn = true })
+  } else {
+    NavigationMenu()
+  }
 }
 
 @Composable
