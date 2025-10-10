@@ -12,7 +12,6 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import com.google.common.util.concurrent.ListenableFuture
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.Executor
@@ -63,8 +62,7 @@ class LocalCameraRepository(
   private var imageCapture: ImageCapture? = null
   private lateinit var cameraExecutor: Executor
   override lateinit var preview: Preview
-  val cameraProvider: ProcessCameraProvider? =  ProcessCameraProvider.getInstance(context).get()
-
+  val cameraProvider: ProcessCameraProvider? = ProcessCameraProvider.getInstance(context).get()
 
   companion object {
     private const val NAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
