@@ -37,6 +37,7 @@ mockk = "1.13.7"
 mockkAgent = "1.13.7"
 mockkAndroid = "1.13.7"
 junitVersion = "1.1.5"
+mockitoAndroid = "5.12.0"
 
 # Testing UI
 espressoCore = "3.5.1"

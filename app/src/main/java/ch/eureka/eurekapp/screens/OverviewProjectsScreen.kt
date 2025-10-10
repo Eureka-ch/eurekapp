@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import ch.eureka.eurekapp.Camera
 
 object OverviewProjectsScreenTestTags {
   const val OVERVIEW_PROJECTS_SCREEN_TEXT = "OverviewProjectsScreenText"
@@ -16,4 +17,5 @@ fun OverviewProjectsScreen(navigationController: NavHostController = rememberNav
   Text(
       "Overview Projects Screen",
       modifier = Modifier.testTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT))
+  Camera()
 }
