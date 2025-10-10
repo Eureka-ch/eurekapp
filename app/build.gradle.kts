@@ -171,6 +171,11 @@ dependencies {
     implementation(libs.compose.material3)
     // Integration with activities
     implementation(libs.compose.activity)
+    //Navigation library
+    implementation(libs.androidx.navigation.compose)
+    //Extended icons library
+    implementation(libs.androidx.material.icons.extended)
+
     // Integration with ViewModels
     implementation(libs.compose.viewmodel)
     // Android Studio Preview support
@@ -212,7 +217,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.mockk.android)
     testImplementation(libs.mockk)
-    
+
     // Camera
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.camera2)
