@@ -163,14 +163,15 @@ class DesignTokensTest {
   }
 
   @Test
-  fun eurekaThemeSwitchesBetweenLightAndDark() {
-    // Test light theme
+  fun eurekaThemeWorksInLightMode() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) { androidx.compose.material3.Text("Light") }
     }
     composeTestRule.onNodeWithText("Light").assertIsDisplayed()
+  }
 
-    // Test dark theme
+  @Test
+  fun eurekaThemeWorksInDarkMode() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = true) { androidx.compose.material3.Text("Dark") }
     }

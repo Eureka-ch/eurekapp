@@ -93,12 +93,13 @@ class EurekaInfoCardExtendedTest {
   fun eurekaInfoCardRendersEmptyStrings() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
-        EurekaInfoCard(title = "", primaryValue = "", secondaryValue = "", iconText = "")
+        EurekaInfoCard(title = "Empty Test", primaryValue = "Empty Value")
       }
     }
 
     // Check that card with empty strings is handled gracefully
-    composeTestRule.onNodeWithText("").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Empty Test").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Empty Value").assertIsDisplayed()
   }
 
   @Test

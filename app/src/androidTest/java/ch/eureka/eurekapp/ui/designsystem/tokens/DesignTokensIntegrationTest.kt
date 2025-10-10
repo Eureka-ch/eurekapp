@@ -39,8 +39,7 @@ class DesignTokensIntegrationTest {
   }
 
   @Test
-  fun designTokensWorkInBothLightAndDarkThemes() {
-    // Test thème clair
+  fun designTokensWorkInLightTheme() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.material3.Text(
@@ -49,8 +48,10 @@ class DesignTokensIntegrationTest {
       }
     }
     composeTestRule.onNodeWithText("Light Theme").assertIsDisplayed()
+  }
 
-    // Test thème sombre
+  @Test
+  fun designTokensWorkInDarkTheme() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = true) {
         androidx.compose.material3.Text(
