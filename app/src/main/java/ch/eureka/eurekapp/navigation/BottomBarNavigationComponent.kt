@@ -149,8 +149,7 @@ fun BottomBarNavigationComponent(
               }
           CustomIconButtonComposable(
               modifier =
-                  Modifier.weight(1f)
-                      .testTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON),
+                  Modifier.weight(1f).testTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON),
               "Meetings",
               onClick = {
                 navigationFunction(navigationController, destination = MainScreens.MeetingsScreen)
@@ -160,8 +159,7 @@ fun BottomBarNavigationComponent(
               isPressed = isMeetingScreenPressed)
           CustomIconButtonComposable(
               modifier =
-                  Modifier.weight(1f)
-                      .testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON),
+                  Modifier.weight(1f).testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON),
               "Profile",
               onClick = {
                 navigationFunction(navigationController, destination = MainScreens.ProfileScreen)

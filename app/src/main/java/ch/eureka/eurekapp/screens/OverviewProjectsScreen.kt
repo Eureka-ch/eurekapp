@@ -15,6 +15,5 @@ object OverviewProjectsScreenTestTags {
 fun OverviewProjectsScreen(navigationController: NavHostController = rememberNavController()) {
   Text(
       "Overview Projects Screen",
-      modifier =
-          Modifier.testTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT))
+      modifier = Modifier.testTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT))
 }

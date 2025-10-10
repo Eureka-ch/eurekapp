@@ -13,7 +13,5 @@ object MeetingsScreenTestTags {
 
 @Composable
 fun MeetingsScreen(navigationController: NavHostController = rememberNavController()) {
-  Text(
-      "Meetings Screen",
-      modifier = Modifier.testTag(MeetingsScreenTestTags.MEETINGS_SCREEN_TEXT))
+  Text("Meetings Screen", modifier = Modifier.testTag(MeetingsScreenTestTags.MEETINGS_SCREEN_TEXT))
 }

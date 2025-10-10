@@ -58,28 +58,16 @@ class NavigationMenuTest : TestCase() {
     val currentScreen = mutableStateOf<Screen>(MainScreens.ProfileScreen)
     composeTestRule.setContent { NavigationMenu() }
 
-    composeTestRule
-        .onNodeWithTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON)
-        .performClick()
-    composeTestRule
-        .onNodeWithTag(ProfileScreenTestTags.PROFILE_SCREEN_TEXT)
-        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON).performClick()
+    composeTestRule.onNodeWithTag(ProfileScreenTestTags.PROFILE_SCREEN_TEXT).assertIsDisplayed()
 
-    composeTestRule
-        .onNodeWithTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON)
-        .performClick()
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON).performClick()
     composeTestRule.onNodeWithTag(IdeasScreenTestTags.IDEAS_SCREEN_TEXT).assertIsDisplayed()
 
-    composeTestRule
-        .onNodeWithTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON)
-        .performClick()
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON).performClick()
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
 
-    composeTestRule
-        .onNodeWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON)
-        .performClick()
-    composeTestRule
-        .onNodeWithTag(MeetingsScreenTestTags.MEETINGS_SCREEN_TEXT)
-        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON).performClick()
+    composeTestRule.onNodeWithTag(MeetingsScreenTestTags.MEETINGS_SCREEN_TEXT).assertIsDisplayed()
   }
 }

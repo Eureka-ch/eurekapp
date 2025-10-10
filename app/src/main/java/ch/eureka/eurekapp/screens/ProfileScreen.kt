@@ -13,6 +13,5 @@ object ProfileScreenTestTags {
 
 @Composable
 fun ProfileScreen(navigationController: NavHostController = rememberNavController()) {
-  Text(
-      "Profile Screen", modifier = Modifier.testTag(ProfileScreenTestTags.PROFILE_SCREEN_TEXT))
+  Text("Profile Screen", modifier = Modifier.testTag(ProfileScreenTestTags.PROFILE_SCREEN_TEXT))
 }
