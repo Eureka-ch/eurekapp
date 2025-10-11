@@ -43,10 +43,10 @@ android {
             )
         }
 
-        debug {
-            enableUnitTestCoverage = true
-            enableAndroidTestCoverage = true
-        }
+    debug {
+        enableUnitTestCoverage = true
+        enableAndroidTestCoverage = true
+    }
     }
 
     testCoverage {

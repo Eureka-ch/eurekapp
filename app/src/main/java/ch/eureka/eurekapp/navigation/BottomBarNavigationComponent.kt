@@ -39,9 +39,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import ch.eureka.eurekapp.ui.theme.DarkerGray
-import ch.eureka.eurekapp.ui.theme.LightGrey
-import ch.eureka.eurekapp.ui.theme.LightRed
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 
 object BottomBarNavigationTestTags {
   const val TASKS_SCREEN_BUTTON = "TasksScreenButton"
@@ -104,7 +102,7 @@ fun BottomBarNavigationComponent(
   }
 
   BottomAppBar(
-      containerColor = LightGrey,
+      containerColor = EColors.light.surface,
       modifier =
           Modifier.fillMaxWidth()
               .padding(horizontal = 15.dp, vertical = 10.dp)
@@ -187,7 +185,7 @@ fun CustomIconButtonComposable(
           Icon(
               if (isPressed) pressedIconVector else iconVector,
               contentDescription = null,
-              tint = if (isPressed) LightRed else DarkerGray)
+              tint = if (isPressed) EColors.light.primary else EColors.light.onSurfaceVariant)
           Text(title, style = TextStyle(fontSize = 10.sp))
         }
   }
@@ -196,7 +194,7 @@ fun CustomIconButtonComposable(
 @Composable
 fun HomeIconButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
   IconButton(
-      modifier = modifier.padding(0.dp).background(LightRed, shape = CircleShape),
+      modifier = modifier.padding(0.dp).background(EColors.light.primary, shape = CircleShape),
       onClick = onClick) {
         Icon(Icons.Outlined.Home, contentDescription = null, tint = Color.White)
       }
