@@ -69,6 +69,7 @@ object FirebaseEmulator {
   }
 
   private fun clearEmulator(endpoint: String) {
+
     val client = httpClient
     val request = Request.Builder().url(endpoint).delete().build()
     val response = client.newCall(request).execute()
