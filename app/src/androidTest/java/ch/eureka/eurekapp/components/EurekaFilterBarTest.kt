@@ -81,7 +81,6 @@ class EurekaFilterBarTest {
     composeTestRule.onNodeWithText("Only Option").assertIsSelected()
   }
 
-
   @Test
   fun eurekaFilterBarWorksInDarkMode() {
     val options = listOf("Light", "Dark")
