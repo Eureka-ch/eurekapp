@@ -1,28 +1,19 @@
 package ch.eureka.eurekapp.utils
 
+/*
+ * This test file takes inspiration from the tests provided for the EPFL swent course
+ * bootcamp.
+ * */
+
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
+import org.junit.After
 import org.junit.Before
 
-/**
- * Base class for Firestore repository tests that provides common setup and cleanup functionality.
- *
- * Subclasses should:
- * 1. Override [getCollectionPaths] to specify which collections to clear before each test
- * 2. Call [super.setup()] in their @Before method if they override it
- */
 abstract class FirestoreRepositoryTest {
 
   protected lateinit var testUserId: String
 
-  /**
-   * Returns the collection paths that should be cleared before each test.
-   *
-   * Examples:
-   * - ["workspaces"] - clears all workspaces
-   * - ["workspaces/ws1/groups"] - clears groups in workspace ws1
-   * - ["users", "workspaces"] - clears both users and workspaces
-   */
   protected abstract fun getCollectionPaths(): List<String>
 
   @Before
@@ -31,36 +22,45 @@ abstract class FirestoreRepositoryTest {
       throw IllegalStateException("Firebase Emulator must be running for tests")
     }
 
-    // Clear test data before each test
-    clearTestData()
-
-    // Sign in anonymously to get a test user ID
+    // Clear first before signing in
+    FirebaseEmulator.clearFirestoreEmulator()
+    // Sign in anonymously first to ensure auth is established before clearing data
     val authResult = FirebaseEmulator.auth.signInAnonymously().await()
     testUserId = authResult.user?.uid ?: throw IllegalStateException("Failed to sign in")
+
+    // Verify auth state is properly set
+    if (FirebaseEmulator.auth.currentUser == null) {
+      throw IllegalStateException("Auth state not properly established after sign-in")
+    }
   }
 
-  private suspend fun clearTestData() {
-    val collectionPaths = getCollectionPaths()
+  @After
+  open fun tearDown() = runBlocking {
+    // Give time for any pending Firestore operations to complete
 
-    for (path in collectionPaths) {
-      val pathParts = path.split("/")
-      var collectionRef = FirebaseEmulator.firestore.collection(pathParts[0])
+    // Clear server data
+    FirebaseEmulator.clearFirestoreEmulator()
+    FirebaseEmulator.clearAuthEmulator()
+  }
 
-      // Navigate through the path (collection/doc/collection/doc/...)
-      for (i in 1 until pathParts.size) {
-        if (i % 2 == 1) {
-          // Odd index = document
-          collectionRef = collectionRef.document(pathParts[i]).collection(pathParts[i + 1])
-        }
-      }
+  protected suspend fun setupTestProject(projectId: String, role: String = "owner") {
+    // Create project and member sequentially (security rules require project to exist first)
+    // Note: Data is already cleared in setup() via clearFirestoreEmulator()
+    val projectRef = FirebaseEmulator.firestore.collection("projects").document(projectId)
 
-      // Get all documents and delete them in a batch
-      val documents = collectionRef.get().await()
-      if (documents.isEmpty) continue
+    // First create the project document with createdBy field
+    val project =
+        mapOf(
+            "projectId" to projectId,
+            "name" to "Test Project",
+            "description" to "Test project for integration tests",
+            "status" to "open",
+            "createdBy" to testUserId)
+    projectRef.set(project).await()
 
-      val batch = FirebaseEmulator.firestore.batch()
-      documents.documents.forEach { batch.delete(it.reference) }
-      batch.commit().await()
-    }
+    // Then add the test user as a member
+    val member = mapOf("userId" to testUserId, "role" to role)
+    val memberRef = projectRef.collection("members").document(testUserId)
+    memberRef.set(member).await()
   }
 }

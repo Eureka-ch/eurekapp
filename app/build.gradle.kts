@@ -271,3 +271,25 @@ tasks.register("jacocoTestReport", JacocoReport::class) {
 
     }
 }
+
+// Custom task to run Firestore emulator tests
+tasks.register<Exec>("firestoreEmulatorTests") {
+    group = "verification"
+    description = "Runs all repository tests that require Firebase emulator (model package tests)"
+
+    doFirst {
+        println("╔════════════════════════════════════════════════════════════════╗")
+        println("║         Running Firestore Emulator Tests                      ║")
+        println("║  Make sure Firebase emulator is running:                      ║")
+        println("║  firebase emulators:start                                     ║")
+        println("╚════════════════════════════════════════════════════════════════╝")
+        commandLine(
+            "./gradlew",
+            ":app:connectedDebugAndroidTest",
+            "-Pandroid.testInstrumentationRunnerArguments.package=ch.eureka.eurekapp.model.data"
+        )
+
+        workingDir(rootProject.projectDir)
+    }
+
+}
