@@ -73,12 +73,17 @@ jobs:
       - name: Decode secrets
         env:
           GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
-          LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
+          FIRESTORE_RULES: ${{ secrets.FIRESTORE_RULES }}
+
         run: |
           if [ -n "$GOOGLE_SERVICES" ]; then
             echo "$GOOGLE_SERVICES" | base64 --decode > ./app/google-services.json
           else
             echo "::warning::GOOGLE_SERVICES secret is not set. google-services.json will not be created. Should be present after B2"
+          fi
+          if [ -n "$FIRESTORE_RULES" ]; then
+            mkdir -p ./firebase/firestore
+            echo "$FIRESTORE_RULES" | base64 --decode > ./firebase/firestore/firestore.rules
           fi
 
           if [ -n "$LOCAL_PROPERTIES" ]; then
