@@ -266,7 +266,7 @@ tasks.register("jacocoTestReport", JacocoReport::class) {
         val newContent = reportFile.readText().replace("<line[^>]+nr=\"65535\"[^>]*>".toRegex(), "")
         reportFile.writeText(newContent)
 
-        logger.quiet("Wrote summarized jacoco test coverage report xml to $reportFile.absolutePath}")
+        logger.quiet("Wrote summarized jacoco test coverage report xml to ${reportFile.absolutePath}")
     }
 
     }
