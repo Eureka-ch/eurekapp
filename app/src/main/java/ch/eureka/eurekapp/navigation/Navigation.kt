@@ -15,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import ch.eureka.eurekapp.screens.CreateTaskScreen
 import ch.eureka.eurekapp.screens.IdeasScreen
 import ch.eureka.eurekapp.screens.MeetingsScreen
 import ch.eureka.eurekapp.screens.OverviewProjectsScreen
@@ -55,6 +56,8 @@ object TaskSpecificScreens {
 
   // The screen showing dependences between tasks.
   val TaskDependencePage = SubScreen("Task Dependence Page", MainScreens.TasksScreen)
+
+  val CreateTaskScreen = SubScreen("Create task screen", MainScreens.TasksScreen)
 }
 
 object IdeasSpecificScreens {
@@ -80,6 +83,7 @@ private val titleToScreensMap =
         MainScreens.ProfileScreen.title to MainScreens.ProfileScreen,
         MainScreens.IdeasScreen.title to MainScreens.IdeasScreen,
         MainScreens.ProjectSelectionScreen.title to MainScreens.ProjectSelectionScreen,
+        TaskSpecificScreens.CreateTaskScreen.title to TaskSpecificScreens.CreateTaskScreen
     )
 
 @Composable
@@ -120,6 +124,7 @@ fun NavigationMenu() {
                 OverviewProjectsScreen(navigationController)
               }
               composable(MainScreens.TasksScreen.title) { TasksScreen(navigationController) }
+              composable(TaskSpecificScreens.CreateTaskScreen.title) { CreateTaskScreen(navigationController) }
             }
       }
 }
