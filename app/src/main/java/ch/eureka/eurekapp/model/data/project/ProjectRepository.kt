@@ -13,7 +13,7 @@ interface ProjectRepository {
   suspend fun createProject(
       project: Project,
       creatorId: String,
-      creatorRole: String = "owner"
+      creatorRole: ProjectRole = ProjectRole.OWNER
   ): Result<String>
 
   /** Update project details */
@@ -26,11 +26,11 @@ interface ProjectRepository {
   fun getMembers(projectId: String): Flow<List<Member>>
 
   /** Add member to project */
-  suspend fun addMember(projectId: String, userId: String, role: String): Result<Unit>
+  suspend fun addMember(projectId: String, userId: String, role: ProjectRole): Result<Unit>
 
   /** Remove member from project */
   suspend fun removeMember(projectId: String, userId: String): Result<Unit>
 
   /** Update member role */
-  suspend fun updateMemberRole(projectId: String, userId: String, role: String): Result<Unit>
+  suspend fun updateMemberRole(projectId: String, userId: String, role: ProjectRole): Result<Unit>
 }

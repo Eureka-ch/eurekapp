@@ -15,59 +15,59 @@ class MemberTest {
   fun member_shouldHaveCorrectDefaultValues() {
     val member = Member()
     assertEquals("", member.userId)
-    assertEquals("", member.role)
+    assertEquals(ProjectRole.MEMBER, member.role)
   }
 
   @Test
   fun member_shouldInitializeWithProvidedValues() {
-    val member = Member(userId = "user123", role = "owner")
+    val member = Member(userId = "user123", role = ProjectRole.OWNER)
     assertEquals("user123", member.userId)
-    assertEquals("owner", member.role)
+    assertEquals(ProjectRole.OWNER, member.role)
   }
 
   @Test
   fun member_shouldSupportCopy() {
-    val member = Member(userId = "user123", role = "owner")
-    val copiedMember = member.copy(role = "admin")
+    val member = Member(userId = "user123", role = ProjectRole.OWNER)
+    val copiedMember = member.copy(role = ProjectRole.ADMIN)
     assertEquals("user123", copiedMember.userId)
-    assertEquals("admin", copiedMember.role)
-    assertEquals("owner", member.role)
+    assertEquals(ProjectRole.ADMIN, copiedMember.role)
+    assertEquals(ProjectRole.OWNER, member.role)
   }
 
   @Test
   fun member_shouldSupportEquality() {
-    val member1 = Member(userId = "user123", role = "owner")
-    val member2 = Member(userId = "user123", role = "owner")
+    val member1 = Member(userId = "user123", role = ProjectRole.OWNER)
+    val member2 = Member(userId = "user123", role = ProjectRole.OWNER)
     assertEquals(member1, member2)
   }
 
   @Test
   fun member_shouldSupportHashCode() {
-    val member1 = Member(userId = "user123", role = "owner")
-    val member2 = Member(userId = "user123", role = "owner")
+    val member1 = Member(userId = "user123", role = ProjectRole.OWNER)
+    val member2 = Member(userId = "user123", role = ProjectRole.OWNER)
     assertEquals(member1.hashCode(), member2.hashCode())
   }
 
   @Test
   fun member_shouldSupportToString() {
-    val member = Member(userId = "user123", role = "owner")
+    val member = Member(userId = "user123", role = ProjectRole.OWNER)
     val string = member.toString()
     assert(string.contains("user123"))
-    assert(string.contains("owner"))
+    assert(string.contains("OWNER"))
   }
 
   @Test
   fun member_differentInstances_shouldNotBeSame() {
-    val member1 = Member(userId = "user123", role = "owner")
-    val member2 = Member(userId = "user123", role = "owner")
+    val member1 = Member(userId = "user123", role = ProjectRole.OWNER)
+    val member2 = Member(userId = "user123", role = ProjectRole.OWNER)
     assertNotSame(member1, member2)
   }
 
   @Test
   fun member_shouldSupportComponentFunctions() {
-    val member = Member(userId = "user123", role = "owner")
+    val member = Member(userId = "user123", role = ProjectRole.OWNER)
     val (userId, role) = member
     assertEquals("user123", userId)
-    assertEquals("owner", role)
+    assertEquals(ProjectRole.OWNER, role)
   }
 }

@@ -5,6 +5,8 @@ package ch.eureka.eurekapp.utils
  * bootcamp.
  * */
 
+import ch.eureka.eurekapp.model.data.project.ProjectRole
+import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
@@ -43,23 +45,23 @@ abstract class FirestoreRepositoryTest {
     FirebaseEmulator.clearAuthEmulator()
   }
 
-  protected suspend fun setupTestProject(projectId: String, role: String = "owner") {
+  protected suspend fun setupTestProject(projectId: String, role: ProjectRole = ProjectRole.OWNER) {
     // Create project and member sequentially (security rules require project to exist first)
     // Note: Data is already cleared in setup() via clearFirestoreEmulator()
     val projectRef = FirebaseEmulator.firestore.collection("projects").document(projectId)
 
     // First create the project document with createdBy field
     val project =
-        mapOf(
-            "projectId" to projectId,
-            "name" to "Test Project",
-            "description" to "Test project for integration tests",
-            "status" to "open",
-            "createdBy" to testUserId)
+        ch.eureka.eurekapp.model.data.project.Project(
+            projectId = projectId,
+            name = "Test Project",
+            description = "Test project for integration tests",
+            status = ch.eureka.eurekapp.model.data.project.ProjectStatus.OPEN,
+            createdBy = testUserId)
     projectRef.set(project).await()
 
     // Then add the test user as a member
-    val member = mapOf("userId" to testUserId, "role" to role)
+    val member = ch.eureka.eurekapp.model.data.project.Member(userId = testUserId, role = role)
     val memberRef = projectRef.collection("members").document(testUserId)
     memberRef.set(member).await()
   }

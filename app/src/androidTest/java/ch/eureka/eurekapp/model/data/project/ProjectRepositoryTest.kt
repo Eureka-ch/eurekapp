@@ -46,10 +46,10 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
             projectId = "project1",
             name = "Test Project",
             description = "Test project description",
-            status = "open",
+            status = ProjectStatus.OPEN,
             createdBy = testUserId)
 
-    val result = repository.createProject(project, testUserId, "owner")
+    val result = repository.createProject(project, testUserId, ProjectRole.OWNER)
 
     assertTrue(result.isSuccess)
     assertEquals("project1", result.getOrNull())
@@ -71,7 +71,7 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
     val members = repository.getMembers("project1").first()
     assertEquals(1, members.size)
     assertEquals(testUserId, members[0].userId)
-    assertEquals("owner", members[0].role)
+    assertEquals(ProjectRole.OWNER, members[0].role)
   }
 
   @Test
@@ -81,9 +81,9 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
             projectId = "project2",
             name = "Test Project 2",
             description = "Description 2",
-            status = "in_progress",
+            status = ProjectStatus.IN_PROGRESS,
             createdBy = testUserId)
-    repository.createProject(project, testUserId, "admin")
+    repository.createProject(project, testUserId, ProjectRole.ADMIN)
 
     val flow = repository.getProjectById("project2")
     val retrievedProject = flow.first()
@@ -109,18 +109,18 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
             projectId = "project3",
             name = "Project 3",
             description = "",
-            status = "open",
+            status = ProjectStatus.OPEN,
             createdBy = testUserId)
     val project2 =
         Project(
             projectId = "project4",
             name = "Project 4",
             description = "",
-            status = "completed",
+            status = ProjectStatus.COMPLETED,
             createdBy = testUserId)
 
-    val createFirst = repository.createProject(project1, testUserId, "owner")
-    val createSecond = repository.createProject(project2, testUserId, "member")
+    val createFirst = repository.createProject(project1, testUserId, ProjectRole.OWNER)
+    val createSecond = repository.createProject(project2, testUserId, ProjectRole.MEMBER)
     assertTrue(createFirst.isSuccess && createSecond.isSuccess)
     val flow = repository.getProjectsForCurrentUser()
     val projects = flow.first()
@@ -145,13 +145,15 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
             projectId = "project5",
             name = "Original Name",
             description = "Original Description",
-            status = "open",
+            status = ProjectStatus.OPEN,
             createdBy = testUserId)
-    repository.createProject(project, testUserId, "owner")
+    repository.createProject(project, testUserId, ProjectRole.OWNER)
 
     val updatedProject =
         project.copy(
-            name = "Updated Name", description = "Updated Description", status = "in_progress")
+            name = "Updated Name",
+            description = "Updated Description",
+            status = ProjectStatus.IN_PROGRESS)
     val result = repository.updateProject(updatedProject)
 
     assertTrue(result.isSuccess)
@@ -167,7 +169,7 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
     assertNotNull(savedProject)
     assertEquals("Updated Name", savedProject?.name)
     assertEquals("Updated Description", savedProject?.description)
-    assertEquals("in_progress", savedProject?.status)
+    assertEquals(ProjectStatus.IN_PROGRESS, savedProject?.status)
   }
 
   @Test
@@ -177,9 +179,9 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
             projectId = "project6",
             name = "To Delete",
             description = "",
-            status = "archived",
+            status = ProjectStatus.ARCHIVED,
             createdBy = testUserId)
-    repository.createProject(project, testUserId, "owner")
+    repository.createProject(project, testUserId, ProjectRole.OWNER)
 
     val result = repository.deleteProject("project6")
 
@@ -203,18 +205,18 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
             projectId = "project7",
             name = "Member Test",
             description = "",
-            status = "open",
+            status = ProjectStatus.OPEN,
             createdBy = testUserId)
-    repository.createProject(project, testUserId, "owner")
+    repository.createProject(project, testUserId, ProjectRole.OWNER)
 
     val newUserId = "test_user_2"
-    val result = repository.addMember("project7", newUserId, "member")
+    val result = repository.addMember("project7", newUserId, ProjectRole.MEMBER)
 
     assertTrue(result.isSuccess)
 
     val members = repository.getMembers("project7").first()
     assertEquals(2, members.size)
-    assertTrue(members.any { it.userId == newUserId && it.role == "member" })
+    assertTrue(members.any { it.userId == newUserId && it.role == ProjectRole.MEMBER })
   }
 
   @Test
@@ -225,10 +227,10 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
             projectId = "project8",
             name = "Remove Member Test",
             description = "",
-            status = "open",
+            status = ProjectStatus.OPEN,
             createdBy = testUserId)
-    repository.createProject(project, testUserId, "owner")
-    repository.addMember("project8", memberToRemove, "member")
+    repository.createProject(project, testUserId, ProjectRole.OWNER)
+    repository.addMember("project8", memberToRemove, ProjectRole.MEMBER)
 
     val result = repository.removeMember("project8", memberToRemove)
 
@@ -247,23 +249,23 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
             projectId = "project9",
             name = "Update Role Test",
             description = "",
-            status = "open",
+            status = ProjectStatus.OPEN,
             createdBy = testUserId)
-    repository.createProject(project, testUserId, "owner")
-    repository.addMember("project9", memberToUpdate, "member")
+    repository.createProject(project, testUserId, ProjectRole.OWNER)
+    repository.addMember("project9", memberToUpdate, ProjectRole.MEMBER)
 
-    val result = repository.updateMemberRole("project9", memberToUpdate, "admin")
+    val result = repository.updateMemberRole("project9", memberToUpdate, ProjectRole.ADMIN)
 
     assertTrue(result.isSuccess)
 
     val members = repository.getMembers("project9").first()
     val updatedMember = members.find { it.userId == memberToUpdate }
     assertNotNull(updatedMember)
-    assertEquals("admin", updatedMember?.role)
+    assertEquals(ProjectRole.ADMIN, updatedMember?.role)
 
     val ownerMember = members.find { it.userId == testUserId }
     assertNotNull(ownerMember)
-    assertEquals("owner", ownerMember?.role)
+    assertEquals(ProjectRole.OWNER, ownerMember?.role)
   }
 
   @Test

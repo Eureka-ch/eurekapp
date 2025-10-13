@@ -9,6 +9,6 @@ package ch.eureka.eurekapp.model.data.project
  * Note: This file was co-authored by Claude Code.
  *
  * @property userId The ID of the user who is a member of the project.
- * @property role The role of the member (owner, admin, member).
+ * @property role The role of the member (OWNER, ADMIN, MEMBER).
  */
-data class Member(val userId: String = "", val role: String = "")
+data class Member(val userId: String = "", val role: ProjectRole = ProjectRole.MEMBER)

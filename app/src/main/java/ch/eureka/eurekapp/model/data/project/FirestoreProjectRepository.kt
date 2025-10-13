@@ -77,7 +77,7 @@ class FirestoreProjectRepository(
   override suspend fun createProject(
       project: Project,
       creatorId: String,
-      creatorRole: String
+      creatorRole: ProjectRole
   ): Result<String> = runCatching {
     val projectRef = firestore.collection(FirestorePaths.PROJECTS).document(project.projectId)
 
@@ -117,17 +117,20 @@ class FirestoreProjectRepository(
     awaitClose { listener.remove() }
   }
 
-  override suspend fun addMember(projectId: String, userId: String, role: String): Result<Unit> =
-      runCatching {
-        val member = Member(userId = userId, role = role)
-        firestore
-            .collection(FirestorePaths.PROJECTS)
-            .document(projectId)
-            .collection("members")
-            .document(userId)
-            .set(member)
-            .await()
-      }
+  override suspend fun addMember(
+      projectId: String,
+      userId: String,
+      role: ProjectRole
+  ): Result<Unit> = runCatching {
+    val member = Member(userId = userId, role = role)
+    firestore
+        .collection(FirestorePaths.PROJECTS)
+        .document(projectId)
+        .collection("members")
+        .document(userId)
+        .set(member)
+        .await()
+  }
 
   override suspend fun removeMember(projectId: String, userId: String): Result<Unit> = runCatching {
     firestore
@@ -142,14 +145,14 @@ class FirestoreProjectRepository(
   override suspend fun updateMemberRole(
       projectId: String,
       userId: String,
-      role: String
+      role: ProjectRole
   ): Result<Unit> = runCatching {
     firestore
         .collection(FirestorePaths.PROJECTS)
         .document(projectId)
         .collection("members")
         .document(userId)
-        .update("role", role)
+        .update("role", role.name)
         .await()
   }
 }
