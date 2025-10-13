@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.model.data.meeting
 
+import ch.eureka.eurekapp.model.data.enumFromString
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
@@ -26,56 +27,56 @@ class MeetingStatusTest {
 
   @Test
   fun fromString_shouldReturnCorrectStatusForLowercaseString() {
-    assertEquals(MeetingStatus.SCHEDULED, MeetingStatus.fromString("scheduled"))
-    assertEquals(MeetingStatus.IN_PROGRESS, MeetingStatus.fromString("in_progress"))
-    assertEquals(MeetingStatus.COMPLETED, MeetingStatus.fromString("completed"))
-    assertEquals(MeetingStatus.CANCELLED, MeetingStatus.fromString("cancelled"))
+    assertEquals(MeetingStatus.SCHEDULED, enumFromString<MeetingStatus>("scheduled"))
+    assertEquals(MeetingStatus.IN_PROGRESS, enumFromString<MeetingStatus>("in_progress"))
+    assertEquals(MeetingStatus.COMPLETED, enumFromString<MeetingStatus>("completed"))
+    assertEquals(MeetingStatus.CANCELLED, enumFromString<MeetingStatus>("cancelled"))
   }
 
   @Test
   fun fromString_shouldReturnCorrectStatusForUppercaseString() {
-    assertEquals(MeetingStatus.SCHEDULED, MeetingStatus.fromString("SCHEDULED"))
-    assertEquals(MeetingStatus.IN_PROGRESS, MeetingStatus.fromString("IN_PROGRESS"))
-    assertEquals(MeetingStatus.COMPLETED, MeetingStatus.fromString("COMPLETED"))
-    assertEquals(MeetingStatus.CANCELLED, MeetingStatus.fromString("CANCELLED"))
+    assertEquals(MeetingStatus.SCHEDULED, enumFromString<MeetingStatus>("SCHEDULED"))
+    assertEquals(MeetingStatus.IN_PROGRESS, enumFromString<MeetingStatus>("IN_PROGRESS"))
+    assertEquals(MeetingStatus.COMPLETED, enumFromString<MeetingStatus>("COMPLETED"))
+    assertEquals(MeetingStatus.CANCELLED, enumFromString<MeetingStatus>("CANCELLED"))
   }
 
   @Test
   fun fromString_shouldReturnCorrectStatusForMixedCaseString() {
-    assertEquals(MeetingStatus.SCHEDULED, MeetingStatus.fromString("ScHeDuLeD"))
-    assertEquals(MeetingStatus.IN_PROGRESS, MeetingStatus.fromString("In_PrOgReSs"))
-    assertEquals(MeetingStatus.COMPLETED, MeetingStatus.fromString("CoMpLeTeD"))
-    assertEquals(MeetingStatus.CANCELLED, MeetingStatus.fromString("CaNcElLeD"))
+    assertEquals(MeetingStatus.SCHEDULED, enumFromString<MeetingStatus>("ScHeDuLeD"))
+    assertEquals(MeetingStatus.IN_PROGRESS, enumFromString<MeetingStatus>("In_PrOgReSs"))
+    assertEquals(MeetingStatus.COMPLETED, enumFromString<MeetingStatus>("CoMpLeTeD"))
+    assertEquals(MeetingStatus.CANCELLED, enumFromString<MeetingStatus>("CaNcElLeD"))
   }
 
   @Test(expected = IllegalArgumentException::class)
   fun fromString_shouldThrowExceptionForInvalidString() {
-    MeetingStatus.fromString("invalid")
+    enumFromString<MeetingStatus>("invalid")
   }
 
   @Test(expected = IllegalArgumentException::class)
   fun fromString_shouldThrowExceptionForEmptyString() {
-    MeetingStatus.fromString("")
+    enumFromString<MeetingStatus>("")
   }
 
   @Test(expected = IllegalArgumentException::class)
   fun fromString_shouldThrowExceptionForWrongStatus() {
-    MeetingStatus.fromString("pending")
+    enumFromString<MeetingStatus>("pending")
   }
 
   @Test(expected = IllegalArgumentException::class)
   fun fromString_shouldThrowExceptionForLeadingSpace() {
-    MeetingStatus.fromString(" scheduled")
+    enumFromString<MeetingStatus>(" scheduled")
   }
 
   @Test(expected = IllegalArgumentException::class)
   fun fromString_shouldThrowExceptionForTrailingSpace() {
-    MeetingStatus.fromString("scheduled ")
+    enumFromString<MeetingStatus>("scheduled ")
   }
 
   @Test(expected = IllegalArgumentException::class)
   fun fromString_shouldThrowExceptionForSurroundingSpaces() {
-    MeetingStatus.fromString(" scheduled ")
+    enumFromString<MeetingStatus>(" scheduled ")
   }
 
   @Test
@@ -109,7 +110,7 @@ class MeetingStatusTest {
 
   @Test
   fun fromString_shouldReturnNonNullValue() {
-    val status = MeetingStatus.fromString("scheduled")
+    val status = enumFromString<MeetingStatus>("scheduled")
     assertNotNull(status)
     assertEquals(MeetingStatus.SCHEDULED, status)
   }

@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.model.data.project
 
+import ch.eureka.eurekapp.model.data.enumFromString
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
@@ -29,53 +30,53 @@ class ProjectRoleTest {
 
   @Test
   fun fromString_shouldReturnCorrectRoleForLowercaseString() {
-    assertEquals(ProjectRole.OWNER, ProjectRole.fromString("owner"))
-    assertEquals(ProjectRole.ADMIN, ProjectRole.fromString("admin"))
-    assertEquals(ProjectRole.MEMBER, ProjectRole.fromString("member"))
+    assertEquals(ProjectRole.OWNER, enumFromString<ProjectRole>("owner"))
+    assertEquals(ProjectRole.ADMIN, enumFromString<ProjectRole>("admin"))
+    assertEquals(ProjectRole.MEMBER, enumFromString<ProjectRole>("member"))
   }
 
   @Test
   fun fromString_shouldReturnCorrectRoleForUppercaseString() {
-    assertEquals(ProjectRole.OWNER, ProjectRole.fromString("OWNER"))
-    assertEquals(ProjectRole.ADMIN, ProjectRole.fromString("ADMIN"))
-    assertEquals(ProjectRole.MEMBER, ProjectRole.fromString("MEMBER"))
+    assertEquals(ProjectRole.OWNER, enumFromString<ProjectRole>("OWNER"))
+    assertEquals(ProjectRole.ADMIN, enumFromString<ProjectRole>("ADMIN"))
+    assertEquals(ProjectRole.MEMBER, enumFromString<ProjectRole>("MEMBER"))
   }
 
   @Test
   fun fromString_shouldReturnCorrectRoleForMixedCaseString() {
-    assertEquals(ProjectRole.OWNER, ProjectRole.fromString("OwNeR"))
-    assertEquals(ProjectRole.ADMIN, ProjectRole.fromString("AdMiN"))
-    assertEquals(ProjectRole.MEMBER, ProjectRole.fromString("MeMbEr"))
+    assertEquals(ProjectRole.OWNER, enumFromString<ProjectRole>("OwNeR"))
+    assertEquals(ProjectRole.ADMIN, enumFromString<ProjectRole>("AdMiN"))
+    assertEquals(ProjectRole.MEMBER, enumFromString<ProjectRole>("MeMbEr"))
   }
 
   @Test(expected = IllegalArgumentException::class)
   fun fromString_shouldThrowExceptionForInvalidString() {
-    ProjectRole.fromString("invalid")
+    enumFromString<ProjectRole>("invalid")
   }
 
   @Test(expected = IllegalArgumentException::class)
   fun fromString_shouldThrowExceptionForEmptyString() {
-    ProjectRole.fromString("")
+    enumFromString<ProjectRole>("")
   }
 
   @Test(expected = IllegalArgumentException::class)
   fun fromString_shouldThrowExceptionForWrongRole() {
-    ProjectRole.fromString("guest")
+    enumFromString<ProjectRole>("guest")
   }
 
   @Test(expected = IllegalArgumentException::class)
   fun fromString_shouldThrowExceptionForLeadingSpace() {
-    ProjectRole.fromString(" owner")
+    enumFromString<ProjectRole>(" owner")
   }
 
   @Test(expected = IllegalArgumentException::class)
   fun fromString_shouldThrowExceptionForTrailingSpace() {
-    ProjectRole.fromString("owner ")
+    enumFromString<ProjectRole>("owner ")
   }
 
   @Test(expected = IllegalArgumentException::class)
   fun fromString_shouldThrowExceptionForSurroundingSpaces() {
-    ProjectRole.fromString(" owner ")
+    enumFromString<ProjectRole>(" owner ")
   }
 
   @Test
@@ -106,7 +107,7 @@ class ProjectRoleTest {
 
   @Test
   fun fromString_shouldReturnNonNullValue() {
-    val role = ProjectRole.fromString("owner")
+    val role = enumFromString<ProjectRole>("owner")
     assertNotNull(role)
     assertEquals(ProjectRole.OWNER, role)
   }
