@@ -45,7 +45,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             projectId = projectId,
             taskId = null,
             title = "Team Meeting",
-            status = "scheduled",
+            status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
 
@@ -72,7 +72,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
     val participants = repository.getParticipants(projectId, "meeting1").first()
     assertEquals(1, participants.size)
     assertEquals(testUserId, participants[0].userId)
-    assertEquals("host", participants[0].role)
+    assertEquals(MeetingRole.HOST, participants[0].role)
   }
 
   @Test
@@ -86,7 +86,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             projectId = projectId,
             taskId = null,
             title = "Sprint Planning",
-            status = "scheduled",
+            status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
     repository.createMeeting(meeting2, testUserId, "host")
@@ -121,7 +121,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             projectId = projectId,
             taskId = null,
             title = "Meeting 3",
-            status = "scheduled",
+            status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
     val meeting4 =
@@ -130,7 +130,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             projectId = projectId,
             taskId = "task1",
             title = "Meeting 4",
-            status = "scheduled",
+            status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
     repository.createMeeting(meeting3, testUserId, "host")
@@ -166,7 +166,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             projectId = projectId,
             taskId = "task1",
             title = "Task Meeting 1",
-            status = "scheduled",
+            status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
     val meeting6 =
@@ -175,7 +175,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             projectId = projectId,
             taskId = "task2",
             title = "Task Meeting 2",
-            status = "scheduled",
+            status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
     repository.createMeeting(meeting5, testUserId, "host")
@@ -200,7 +200,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             projectId = projectId,
             taskId = null,
             title = "My Meeting",
-            status = "scheduled",
+            status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
     val meeting8 =
@@ -209,7 +209,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             projectId = projectId,
             taskId = null,
             title = "Other Meeting",
-            status = "scheduled",
+            status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
 
@@ -249,12 +249,12 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             projectId = projectId,
             taskId = null,
             title = "Original Title",
-            status = "scheduled",
+            status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
     repository.createMeeting(meeting9, testUserId, "host")
 
-    val updatedMeeting = meeting9.copy(title = "Updated Title", status = "in_progress")
+    val updatedMeeting = meeting9.copy(title = "Updated Title", status = MeetingStatus.IN_PROGRESS)
     val result = repository.updateMeeting(updatedMeeting)
 
     assertTrue(result.isSuccess)
@@ -271,7 +271,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
 
     assertNotNull(savedMeeting)
     assertEquals("Updated Title", savedMeeting?.title)
-    assertEquals("in_progress", savedMeeting?.status)
+    assertEquals(MeetingStatus.IN_PROGRESS, savedMeeting?.status)
   }
 
   @Test
@@ -285,7 +285,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             projectId = projectId,
             taskId = null,
             title = "To Delete",
-            status = "scheduled",
+            status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
     repository.createMeeting(meeting10, testUserId, "host")
@@ -318,7 +318,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             projectId = projectId,
             taskId = null,
             title = "Meeting 11",
-            status = "scheduled",
+            status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
     repository.createMeeting(meeting11, testUserId, "host")
@@ -330,7 +330,8 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
 
     val participants = repository.getParticipants(projectId, "meeting11").first()
     assertEquals(2, participants.size)
-    assertTrue(participants.any { it.userId == newParticipantId && it.role == "participant" })
+    assertTrue(
+        participants.any { it.userId == newParticipantId && it.role == MeetingRole.PARTICIPANT })
   }
 
   @Test
@@ -345,7 +346,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             projectId = projectId,
             taskId = null,
             title = "Meeting 12",
-            status = "scheduled",
+            status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
     repository.createMeeting(meeting12, testUserId, "host")
@@ -372,19 +373,19 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             projectId = projectId,
             taskId = null,
             title = "Meeting 13",
-            status = "scheduled",
+            status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
     repository.createMeeting(meeting13, testUserId, "host")
     repository.addParticipant(projectId, "meeting13", participantId, "participant")
 
-    val result = repository.updateParticipantRole(projectId, "meeting13", participantId, "co-host")
+    val result = repository.updateParticipantRole(projectId, "meeting13", participantId, "host")
 
     assertTrue(result.isSuccess)
 
     val participants = repository.getParticipants(projectId, "meeting13").first()
     val updatedParticipant = participants.find { it.userId == participantId }
     assertNotNull(updatedParticipant)
-    assertEquals("co-host", updatedParticipant?.role)
+    assertEquals(MeetingRole.HOST, updatedParticipant?.role)
   }
 }

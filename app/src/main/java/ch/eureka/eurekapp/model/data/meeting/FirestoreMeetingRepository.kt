@@ -126,7 +126,7 @@ class FirestoreMeetingRepository(
         .set(meeting)
         .await()
 
-    val participant = Participant(userId = creatorId, role = creatorRole)
+    val participant = Participant(userId = creatorId, role = MeetingRole.fromString(creatorRole))
     firestore
         .collection(FirestorePaths.PROJECTS)
         .document(meeting.projectId)
@@ -189,7 +189,7 @@ class FirestoreMeetingRepository(
       userId: String,
       role: String
   ): Result<Unit> = runCatching {
-    val participant = Participant(userId = userId, role = role)
+    val participant = Participant(userId = userId, role = MeetingRole.fromString(role))
     firestore
         .collection(FirestorePaths.PROJECTS)
         .document(projectId)

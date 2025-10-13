@@ -6,8 +6,9 @@ enum class ProjectRole {
   MEMBER;
 
   companion object {
-    fun fromString(role: String): ProjectRole? {
+    fun fromString(role: String): ProjectRole {
       return values().find { it.name.equals(role, ignoreCase = true) }
+          ?: throw IllegalArgumentException("Invalid ProjectRole: $role")
     }
   }
 

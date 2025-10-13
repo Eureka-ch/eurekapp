@@ -2,7 +2,6 @@ package ch.eureka.eurekapp.model.data.project
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Test
 
 /**
@@ -49,18 +48,34 @@ class ProjectRoleTest {
     assertEquals(ProjectRole.MEMBER, ProjectRole.fromString("MeMbEr"))
   }
 
-  @Test
-  fun fromString_shouldReturnNullForInvalidString() {
-    assertNull(ProjectRole.fromString("invalid"))
-    assertNull(ProjectRole.fromString(""))
-    assertNull(ProjectRole.fromString("guest"))
+  @Test(expected = IllegalArgumentException::class)
+  fun fromString_shouldThrowExceptionForInvalidString() {
+    ProjectRole.fromString("invalid")
   }
 
-  @Test
-  fun fromString_shouldHandleEdgeCases() {
-    assertNull(ProjectRole.fromString(" owner "))
-    assertNull(ProjectRole.fromString("owner "))
-    assertNull(ProjectRole.fromString(" owner"))
+  @Test(expected = IllegalArgumentException::class)
+  fun fromString_shouldThrowExceptionForEmptyString() {
+    ProjectRole.fromString("")
+  }
+
+  @Test(expected = IllegalArgumentException::class)
+  fun fromString_shouldThrowExceptionForWrongRole() {
+    ProjectRole.fromString("guest")
+  }
+
+  @Test(expected = IllegalArgumentException::class)
+  fun fromString_shouldThrowExceptionForLeadingSpace() {
+    ProjectRole.fromString(" owner")
+  }
+
+  @Test(expected = IllegalArgumentException::class)
+  fun fromString_shouldThrowExceptionForTrailingSpace() {
+    ProjectRole.fromString("owner ")
+  }
+
+  @Test(expected = IllegalArgumentException::class)
+  fun fromString_shouldThrowExceptionForSurroundingSpaces() {
+    ProjectRole.fromString(" owner ")
   }
 
   @Test
@@ -90,7 +105,7 @@ class ProjectRoleTest {
   }
 
   @Test
-  fun fromString_shouldBeNullSafeWithNonNull() {
+  fun fromString_shouldReturnNonNullValue() {
     val role = ProjectRole.fromString("owner")
     assertNotNull(role)
     assertEquals(ProjectRole.OWNER, role)
