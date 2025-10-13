@@ -53,7 +53,7 @@ class ParticipantTest {
     val participant = Participant(userId = "user456", role = MeetingRole.HOST)
     val string = participant.toString()
     assert(string.contains("user456"))
-    assert(string.contains("host"))
+    assert(string.contains("HOST"))
   }
 
   @Test

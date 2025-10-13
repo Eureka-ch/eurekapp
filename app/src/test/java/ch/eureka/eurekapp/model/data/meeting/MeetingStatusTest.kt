@@ -17,11 +17,11 @@ class MeetingStatusTest {
   }
 
   @Test
-  fun toString_shouldReturnLowercaseName() {
-    assertEquals("scheduled", MeetingStatus.SCHEDULED.toString())
-    assertEquals("in_progress", MeetingStatus.IN_PROGRESS.toString())
-    assertEquals("completed", MeetingStatus.COMPLETED.toString())
-    assertEquals("cancelled", MeetingStatus.CANCELLED.toString())
+  fun toString_shouldReturnUppercaseName() {
+    assertEquals("SCHEDULED", MeetingStatus.SCHEDULED.toString())
+    assertEquals("IN_PROGRESS", MeetingStatus.IN_PROGRESS.toString())
+    assertEquals("COMPLETED", MeetingStatus.COMPLETED.toString())
+    assertEquals("CANCELLED", MeetingStatus.CANCELLED.toString())
   }
 
   @Test

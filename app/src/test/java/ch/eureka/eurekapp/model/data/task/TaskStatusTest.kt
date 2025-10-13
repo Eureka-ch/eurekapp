@@ -18,11 +18,11 @@ class TaskStatusTest {
   }
 
   @Test
-  fun toString_shouldReturnLowercaseName() {
-    assertEquals("todo", TaskStatus.TODO.toString())
-    assertEquals("in_progress", TaskStatus.IN_PROGRESS.toString())
-    assertEquals("completed", TaskStatus.COMPLETED.toString())
-    assertEquals("cancelled", TaskStatus.CANCELLED.toString())
+  fun toString_shouldReturnUppercaseName() {
+    assertEquals("TODO", TaskStatus.TODO.toString())
+    assertEquals("IN_PROGRESS", TaskStatus.IN_PROGRESS.toString())
+    assertEquals("COMPLETED", TaskStatus.COMPLETED.toString())
+    assertEquals("CANCELLED", TaskStatus.CANCELLED.toString())
   }
 
   @Test

@@ -12,8 +12,4 @@ enum class MeetingStatus {
           ?: throw IllegalArgumentException("Invalid MeetingStatus: $status")
     }
   }
-
-  override fun toString(): String {
-    return name.lowercase()
-  }
 }

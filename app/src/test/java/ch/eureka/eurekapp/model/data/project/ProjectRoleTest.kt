@@ -21,10 +21,10 @@ class ProjectRoleTest {
   }
 
   @Test
-  fun toString_shouldReturnLowercaseName() {
-    assertEquals("owner", ProjectRole.OWNER.toString())
-    assertEquals("admin", ProjectRole.ADMIN.toString())
-    assertEquals("member", ProjectRole.MEMBER.toString())
+  fun toString_shouldReturnUppercaseName() {
+    assertEquals("OWNER", ProjectRole.OWNER.toString())
+    assertEquals("ADMIN", ProjectRole.ADMIN.toString())
+    assertEquals("MEMBER", ProjectRole.MEMBER.toString())
   }
 
   @Test
