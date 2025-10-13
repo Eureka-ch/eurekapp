@@ -11,8 +11,4 @@ enum class ProjectRole {
           ?: throw IllegalArgumentException("Invalid ProjectRole: $role")
     }
   }
-
-  override fun toString(): String {
-    return name.lowercase()
-  }
 }

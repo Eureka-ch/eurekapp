@@ -10,8 +10,4 @@ enum class MeetingRole {
           ?: throw IllegalArgumentException("Invalid MeetingRole: $role")
     }
   }
-
-  override fun toString(): String {
-    return name.lowercase()
-  }
 }

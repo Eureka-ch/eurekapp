@@ -20,9 +20,9 @@ class MeetingRoleTest {
   }
 
   @Test
-  fun toString_shouldReturnLowercaseName() {
-    assertEquals("host", MeetingRole.HOST.toString())
-    assertEquals("participant", MeetingRole.PARTICIPANT.toString())
+  fun toString_shouldReturnUppercaseName() {
+    assertEquals("HOST", MeetingRole.HOST.toString())
+    assertEquals("PARTICIPANT", MeetingRole.PARTICIPANT.toString())
   }
 
   @Test

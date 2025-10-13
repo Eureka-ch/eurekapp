@@ -6,7 +6,5 @@ enum class TaskStatus : StringSerializableEnum {
   TODO,
   IN_PROGRESS,
   COMPLETED,
-  CANCELLED;
-
-  override fun toString(): String = toDisplayString()
+  CANCELLED
 }
