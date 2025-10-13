@@ -388,4 +388,31 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
     assertNotNull(updatedParticipant)
     assertEquals(MeetingRole.HOST, updatedParticipant?.role)
   }
+
+  @Test
+  fun createMeeting_shouldUseDefaultHostRole() = runBlocking {
+    val projectId = "project_meeting_14"
+    setupTestProject(projectId)
+
+    val meeting14 =
+        Meeting(
+            meetingID = "meeting14",
+            projectId = projectId,
+            taskId = null,
+            title = "Meeting with Default Role",
+            status = MeetingStatus.SCHEDULED,
+            attachmentUrls = emptyList(),
+            createdBy = testUserId)
+
+    // Call without specifying role - should default to "host"
+    val result = repository.createMeeting(meeting14, testUserId)
+
+    assertTrue(result.isSuccess)
+    assertEquals("meeting14", result.getOrNull())
+
+    val participants = repository.getParticipants(projectId, "meeting14").first()
+    assertEquals(1, participants.size)
+    assertEquals(testUserId, participants[0].userId)
+    assertEquals(MeetingRole.HOST, participants[0].role)
+  }
 }

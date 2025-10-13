@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.model.data.meeting
 
+import ch.eureka.eurekapp.model.data.enumFromString
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
@@ -26,51 +27,51 @@ class MeetingRoleTest {
   }
 
   @Test
-  fun fromString_shouldReturnCorrectRoleForLowercaseString() {
-    assertEquals(MeetingRole.HOST, MeetingRole.fromString("host"))
-    assertEquals(MeetingRole.PARTICIPANT, MeetingRole.fromString("participant"))
+  fun enumFromString_shouldReturnCorrectRoleForLowercaseString() {
+    assertEquals(MeetingRole.HOST, enumFromString<MeetingRole>("host"))
+    assertEquals(MeetingRole.PARTICIPANT, enumFromString<MeetingRole>("participant"))
   }
 
   @Test
-  fun fromString_shouldReturnCorrectRoleForUppercaseString() {
-    assertEquals(MeetingRole.HOST, MeetingRole.fromString("HOST"))
-    assertEquals(MeetingRole.PARTICIPANT, MeetingRole.fromString("PARTICIPANT"))
+  fun enumFromString_shouldReturnCorrectRoleForUppercaseString() {
+    assertEquals(MeetingRole.HOST, enumFromString<MeetingRole>("HOST"))
+    assertEquals(MeetingRole.PARTICIPANT, enumFromString<MeetingRole>("PARTICIPANT"))
   }
 
   @Test
-  fun fromString_shouldReturnCorrectRoleForMixedCaseString() {
-    assertEquals(MeetingRole.HOST, MeetingRole.fromString("HoSt"))
-    assertEquals(MeetingRole.PARTICIPANT, MeetingRole.fromString("PaRtIcIpAnT"))
+  fun enumFromString_shouldReturnCorrectRoleForMixedCaseString() {
+    assertEquals(MeetingRole.HOST, enumFromString<MeetingRole>("HoSt"))
+    assertEquals(MeetingRole.PARTICIPANT, enumFromString<MeetingRole>("PaRtIcIpAnT"))
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun fromString_shouldThrowExceptionForInvalidString() {
-    MeetingRole.fromString("invalid")
+  fun enumFromString_shouldThrowExceptionForInvalidString() {
+    enumFromString<MeetingRole>("invalid")
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun fromString_shouldThrowExceptionForEmptyString() {
-    MeetingRole.fromString("")
+  fun enumFromString_shouldThrowExceptionForEmptyString() {
+    enumFromString<MeetingRole>("")
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun fromString_shouldThrowExceptionForWrongRole() {
-    MeetingRole.fromString("admin")
+  fun enumFromString_shouldThrowExceptionForWrongRole() {
+    enumFromString<MeetingRole>("admin")
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun fromString_shouldThrowExceptionForLeadingSpace() {
-    MeetingRole.fromString(" host")
+  fun enumFromString_shouldThrowExceptionForLeadingSpace() {
+    enumFromString<MeetingRole>(" host")
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun fromString_shouldThrowExceptionForTrailingSpace() {
-    MeetingRole.fromString("host ")
+  fun enumFromString_shouldThrowExceptionForTrailingSpace() {
+    enumFromString<MeetingRole>("host ")
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun fromString_shouldThrowExceptionForSurroundingSpaces() {
-    MeetingRole.fromString(" host ")
+  fun enumFromString_shouldThrowExceptionForSurroundingSpaces() {
+    enumFromString<MeetingRole>(" host ")
   }
 
   @Test
@@ -98,7 +99,7 @@ class MeetingRoleTest {
 
   @Test
   fun fromString_shouldReturnNonNullValue() {
-    val role = MeetingRole.fromString("host")
+    val role = enumFromString<MeetingRole>("host")
     assertNotNull(role)
     assertEquals(MeetingRole.HOST, role)
   }
