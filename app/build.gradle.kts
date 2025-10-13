@@ -121,6 +121,9 @@ sonar { // edit these when setup sonar
         property("sonar.projectKey", "Eureka-ch_eurekapp")
         property("sonar.organization", "eureka-ch")
         property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.sources", "src/main/java")
+        property("sonar.tests", "src/test/java,src/androidTest/java")
+        property("sonar.java.binaries", "${project.layout.buildDirectory.get()}/tmp/kotlin-classes/debug")
         // Comma-separated paths to the various directories containing the *.xml JUnit report files. Each path may be absolute or relative to the project base directory.
         property("sonar.junit.reportPaths", "${project.layout.buildDirectory.get()}/test-results/testDebugunitTest/")
         // Paths to xml files with Android Lint issues. If the main flavor is changed, this file will have to be changed too.
