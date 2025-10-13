@@ -2,7 +2,6 @@ package ch.eureka.eurekapp.model.data.meeting
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Test
 
 /**
@@ -44,18 +43,34 @@ class MeetingRoleTest {
     assertEquals(MeetingRole.PARTICIPANT, MeetingRole.fromString("PaRtIcIpAnT"))
   }
 
-  @Test
-  fun fromString_shouldReturnNullForInvalidString() {
-    assertNull(MeetingRole.fromString("invalid"))
-    assertNull(MeetingRole.fromString(""))
-    assertNull(MeetingRole.fromString("admin"))
+  @Test(expected = IllegalArgumentException::class)
+  fun fromString_shouldThrowExceptionForInvalidString() {
+    MeetingRole.fromString("invalid")
   }
 
-  @Test
-  fun fromString_shouldHandleEdgeCases() {
-    assertNull(MeetingRole.fromString(" host "))
-    assertNull(MeetingRole.fromString("host "))
-    assertNull(MeetingRole.fromString(" host"))
+  @Test(expected = IllegalArgumentException::class)
+  fun fromString_shouldThrowExceptionForEmptyString() {
+    MeetingRole.fromString("")
+  }
+
+  @Test(expected = IllegalArgumentException::class)
+  fun fromString_shouldThrowExceptionForWrongRole() {
+    MeetingRole.fromString("admin")
+  }
+
+  @Test(expected = IllegalArgumentException::class)
+  fun fromString_shouldThrowExceptionForLeadingSpace() {
+    MeetingRole.fromString(" host")
+  }
+
+  @Test(expected = IllegalArgumentException::class)
+  fun fromString_shouldThrowExceptionForTrailingSpace() {
+    MeetingRole.fromString("host ")
+  }
+
+  @Test(expected = IllegalArgumentException::class)
+  fun fromString_shouldThrowExceptionForSurroundingSpaces() {
+    MeetingRole.fromString(" host ")
   }
 
   @Test
@@ -82,7 +97,7 @@ class MeetingRoleTest {
   }
 
   @Test
-  fun fromString_shouldBeNullSafeWithNonNull() {
+  fun fromString_shouldReturnNonNullValue() {
     val role = MeetingRole.fromString("host")
     assertNotNull(role)
     assertEquals(MeetingRole.HOST, role)

@@ -20,27 +20,44 @@ class TaskTest {
     assertEquals("", task.taskID)
     assertEquals("", task.templateId)
     assertEquals("", task.projectId)
+    assertEquals("", task.title)
+    assertEquals("", task.description)
+    assertEquals(TaskStatus.TODO, task.status)
     assertEquals(emptyList<String>(), task.assignedUserIds)
     assertNull(task.dueDate)
+    assertEquals(emptyList<String>(), task.attachmentUrls)
+    assertEquals(emptyMap<String, Any>(), task.customData)
   }
 
   @Test
   fun task_withParameters_setsCorrectValues() {
     val assignedUsers = listOf("user1", "user2")
     val dueDate = Timestamp(1000, 0)
+    val attachments = listOf("uri1", "uri2")
+    val customData = mapOf("priority" to "high", "hours" to 5)
     val task =
         Task(
             taskID = "task123",
             templateId = "tmpl123",
             projectId = "prj123",
+            title = "Test Task",
+            description = "Test Description",
+            status = TaskStatus.IN_PROGRESS,
             assignedUserIds = assignedUsers,
-            dueDate = dueDate)
+            dueDate = dueDate,
+            attachmentUrls = attachments,
+            customData = customData)
 
     assertEquals("task123", task.taskID)
     assertEquals("tmpl123", task.templateId)
     assertEquals("prj123", task.projectId)
+    assertEquals("Test Task", task.title)
+    assertEquals("Test Description", task.description)
+    assertEquals(TaskStatus.IN_PROGRESS, task.status)
     assertEquals(assignedUsers, task.assignedUserIds)
     assertEquals(dueDate, task.dueDate)
+    assertEquals(attachments, task.attachmentUrls)
+    assertEquals(customData, task.customData)
   }
 
   @Test
@@ -81,11 +98,19 @@ class TaskTest {
 
   @Test
   fun task_toString_containsAllFields() {
-    val task = Task(taskID = "task123", templateId = "tmpl123", projectId = "prj123")
+    val task =
+        Task(
+            taskID = "task123",
+            templateId = "tmpl123",
+            projectId = "prj123",
+            title = "Test Task",
+            description = "Test Description")
     val taskString = task.toString()
 
     assert(taskString.contains("task123"))
     assert(taskString.contains("tmpl123"))
     assert(taskString.contains("prj123"))
+    assert(taskString.contains("Test Task"))
+    assert(taskString.contains("Test Description"))
   }
 }

@@ -5,8 +5,9 @@ enum class MeetingRole {
   PARTICIPANT;
 
   companion object {
-    fun fromString(role: String): MeetingRole? {
+    fun fromString(role: String): MeetingRole {
       return values().find { it.name.equals(role, ignoreCase = true) }
+          ?: throw IllegalArgumentException("Invalid MeetingRole: $role")
     }
   }
 

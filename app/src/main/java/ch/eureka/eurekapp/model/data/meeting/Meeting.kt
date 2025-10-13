@@ -5,7 +5,7 @@ data class Meeting(
     val projectId: String = "",
     val taskId: String? = null,
     val title: String = "",
-    val status: String = "", // scheduled, in_progress, completed, cancelled
+    val status: MeetingStatus = MeetingStatus.SCHEDULED,
     val attachmentUrls: List<String> = emptyList(),
     val createdBy: String = ""
 )
