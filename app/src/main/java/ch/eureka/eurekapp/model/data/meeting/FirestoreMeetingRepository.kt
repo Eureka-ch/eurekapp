@@ -1,7 +1,6 @@
 package ch.eureka.eurekapp.model.data.meeting
 
 import ch.eureka.eurekapp.model.data.FirestorePaths
-import ch.eureka.eurekapp.model.data.enumFromString
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
@@ -117,7 +116,7 @@ class FirestoreMeetingRepository(
   override suspend fun createMeeting(
       meeting: Meeting,
       creatorId: String,
-      creatorRole: String
+      creatorRole: MeetingRole
   ): Result<String> = runCatching {
     firestore
         .collection(FirestorePaths.PROJECTS)
@@ -127,8 +126,7 @@ class FirestoreMeetingRepository(
         .set(meeting)
         .await()
 
-    val participant =
-        Participant(userId = creatorId, role = enumFromString<MeetingRole>(creatorRole))
+    val participant = Participant(userId = creatorId, role = creatorRole)
     firestore
         .collection(FirestorePaths.PROJECTS)
         .document(meeting.projectId)
@@ -189,9 +187,9 @@ class FirestoreMeetingRepository(
       projectId: String,
       meetingId: String,
       userId: String,
-      role: String
+      role: MeetingRole
   ): Result<Unit> = runCatching {
-    val participant = Participant(userId = userId, role = enumFromString<MeetingRole>(role))
+    val participant = Participant(userId = userId, role = role)
     firestore
         .collection(FirestorePaths.PROJECTS)
         .document(projectId)
@@ -223,7 +221,7 @@ class FirestoreMeetingRepository(
       projectId: String,
       meetingId: String,
       userId: String,
-      role: String
+      role: MeetingRole
   ): Result<Unit> = runCatching {
     firestore
         .collection(FirestorePaths.PROJECTS)
@@ -232,7 +230,7 @@ class FirestoreMeetingRepository(
         .document(meetingId)
         .collection("participants")
         .document(userId)
-        .update("role", enumFromString<MeetingRole>(role))
+        .update("role", role.name)
         .await()
   }
 }

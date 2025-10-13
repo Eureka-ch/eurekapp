@@ -19,7 +19,7 @@ interface MeetingRepository {
   suspend fun createMeeting(
       meeting: Meeting,
       creatorId: String,
-      creatorRole: String = "host"
+      creatorRole: MeetingRole = MeetingRole.HOST
   ): Result<String>
 
   /** Update meeting */
@@ -36,7 +36,7 @@ interface MeetingRepository {
       projectId: String,
       meetingId: String,
       userId: String,
-      role: String
+      role: MeetingRole
   ): Result<Unit>
 
   /** Remove participant from meeting */
@@ -47,6 +47,6 @@ interface MeetingRepository {
       projectId: String,
       meetingId: String,
       userId: String,
-      role: String
+      role: MeetingRole
   ): Result<Unit>
 }

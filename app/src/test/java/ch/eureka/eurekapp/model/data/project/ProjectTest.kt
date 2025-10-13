@@ -18,7 +18,7 @@ class ProjectTest {
     assertEquals("", project.projectId)
     assertEquals("", project.name)
     assertEquals("", project.description)
-    assertEquals("", project.status)
+    assertEquals(ProjectStatus.OPEN, project.status)
   }
 
   @Test
@@ -28,30 +28,30 @@ class ProjectTest {
             projectId = "prj123",
             name = "Mobile App",
             description = "A mobile application project",
-            status = "in_progress",
+            status = ProjectStatus.IN_PROGRESS,
         )
 
     assertEquals("prj123", project.projectId)
     assertEquals("Mobile App", project.name)
     assertEquals("A mobile application project", project.description)
-    assertEquals("in_progress", project.status)
+    assertEquals(ProjectStatus.IN_PROGRESS, project.status)
   }
 
   @Test
   fun project_copy_createsNewInstance() {
-    val project = Project(projectId = "prj123", name = "Mobile App", status = "open")
-    val copiedProject = project.copy(status = "in_progress")
+    val project = Project(projectId = "prj123", name = "Mobile App", status = ProjectStatus.OPEN)
+    val copiedProject = project.copy(status = ProjectStatus.IN_PROGRESS)
 
     assertEquals("prj123", copiedProject.projectId)
     assertEquals("Mobile App", copiedProject.name)
-    assertEquals("in_progress", copiedProject.status)
+    assertEquals(ProjectStatus.IN_PROGRESS, copiedProject.status)
   }
 
   @Test
   fun project_equals_comparesCorrectly() {
-    val project1 = Project(projectId = "prj123", name = "Mobile App", status = "open")
-    val project2 = Project(projectId = "prj123", name = "Mobile App", status = "open")
-    val project3 = Project(projectId = "prj456", name = "Web App", status = "completed")
+    val project1 = Project(projectId = "prj123", name = "Mobile App", status = ProjectStatus.OPEN)
+    val project2 = Project(projectId = "prj123", name = "Mobile App", status = ProjectStatus.OPEN)
+    val project3 = Project(projectId = "prj456", name = "Web App", status = ProjectStatus.COMPLETED)
 
     assertEquals(project1, project2)
     assertNotEquals(project1, project3)
@@ -59,8 +59,8 @@ class ProjectTest {
 
   @Test
   fun project_hashCode_isConsistent() {
-    val project1 = Project(projectId = "prj123", name = "Mobile App", status = "open")
-    val project2 = Project(projectId = "prj123", name = "Mobile App", status = "open")
+    val project1 = Project(projectId = "prj123", name = "Mobile App", status = ProjectStatus.OPEN)
+    val project2 = Project(projectId = "prj123", name = "Mobile App", status = ProjectStatus.OPEN)
 
     assertEquals(project1.hashCode(), project2.hashCode())
   }
@@ -72,12 +72,12 @@ class ProjectTest {
             projectId = "prj123",
             name = "Mobile App",
             description = "A mobile application project",
-            status = "open",
+            status = ProjectStatus.OPEN,
         )
     val projectString = project.toString()
 
     assert(projectString.contains("prj123"))
     assert(projectString.contains("Mobile App"))
-    assert(projectString.contains("open"))
+    assert(projectString.contains("OPEN"))
   }
 }

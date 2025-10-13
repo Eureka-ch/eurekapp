@@ -49,7 +49,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             attachmentUrls = emptyList(),
             createdBy = testUserId)
 
-    val result = repository.createMeeting(meeting1, testUserId, "host")
+    val result = repository.createMeeting(meeting1, testUserId, MeetingRole.HOST)
 
     assertTrue(result.isSuccess)
     assertEquals("meeting1", result.getOrNull())
@@ -89,7 +89,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
-    repository.createMeeting(meeting2, testUserId, "host")
+    repository.createMeeting(meeting2, testUserId, MeetingRole.HOST)
 
     val flow = repository.getMeetingById(projectId, "meeting2")
     val retrievedMeeting = flow.first()
@@ -133,8 +133,8 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
-    repository.createMeeting(meeting3, testUserId, "host")
-    repository.createMeeting(meeting4, testUserId, "participant")
+    repository.createMeeting(meeting3, testUserId, MeetingRole.HOST)
+    repository.createMeeting(meeting4, testUserId, MeetingRole.PARTICIPANT)
 
     val flow = repository.getMeetingsInProject(projectId)
     val meetings = flow.first()
@@ -178,8 +178,8 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
-    repository.createMeeting(meeting5, testUserId, "host")
-    repository.createMeeting(meeting6, testUserId, "host")
+    repository.createMeeting(meeting5, testUserId, MeetingRole.HOST)
+    repository.createMeeting(meeting6, testUserId, MeetingRole.HOST)
 
     val flow = repository.getMeetingsForTask(projectId, "task1")
     val meetings = flow.first()
@@ -214,10 +214,10 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             createdBy = testUserId)
 
     // Create meeting7 with testUser as participant
-    repository.createMeeting(meeting7, testUserId, "host")
+    repository.createMeeting(meeting7, testUserId, MeetingRole.HOST)
 
     // Create meeting8 with testUser as creator but remove them as participant
-    repository.createMeeting(meeting8, testUserId, "host")
+    repository.createMeeting(meeting8, testUserId, MeetingRole.HOST)
     repository.removeParticipant(projectId, "meeting8", testUserId)
 
     val flow = repository.getMeetingsForCurrentUser(projectId)
@@ -252,7 +252,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
-    repository.createMeeting(meeting9, testUserId, "host")
+    repository.createMeeting(meeting9, testUserId, MeetingRole.HOST)
 
     val updatedMeeting = meeting9.copy(title = "Updated Title", status = MeetingStatus.IN_PROGRESS)
     val result = repository.updateMeeting(updatedMeeting)
@@ -288,7 +288,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
-    repository.createMeeting(meeting10, testUserId, "host")
+    repository.createMeeting(meeting10, testUserId, MeetingRole.HOST)
 
     val result = repository.deleteMeeting(projectId, "meeting10")
 
@@ -321,10 +321,11 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
-    repository.createMeeting(meeting11, testUserId, "host")
+    repository.createMeeting(meeting11, testUserId, MeetingRole.HOST)
 
     val newParticipantId = "newParticipant123"
-    val result = repository.addParticipant(projectId, "meeting11", newParticipantId, "participant")
+    val result =
+        repository.addParticipant(projectId, "meeting11", newParticipantId, MeetingRole.PARTICIPANT)
 
     assertTrue(result.isSuccess)
 
@@ -349,8 +350,8 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
-    repository.createMeeting(meeting12, testUserId, "host")
-    repository.addParticipant(projectId, "meeting12", participantId, "participant")
+    repository.createMeeting(meeting12, testUserId, MeetingRole.HOST)
+    repository.addParticipant(projectId, "meeting12", participantId, MeetingRole.PARTICIPANT)
 
     val result = repository.removeParticipant(projectId, "meeting12", participantId)
 
@@ -376,10 +377,11 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
             status = MeetingStatus.SCHEDULED,
             attachmentUrls = emptyList(),
             createdBy = testUserId)
-    repository.createMeeting(meeting13, testUserId, "host")
-    repository.addParticipant(projectId, "meeting13", participantId, "participant")
+    repository.createMeeting(meeting13, testUserId, MeetingRole.HOST)
+    repository.addParticipant(projectId, "meeting13", participantId, MeetingRole.PARTICIPANT)
 
-    val result = repository.updateParticipantRole(projectId, "meeting13", participantId, "host")
+    val result =
+        repository.updateParticipantRole(projectId, "meeting13", participantId, MeetingRole.HOST)
 
     assertTrue(result.isSuccess)
 
