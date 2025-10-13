@@ -1,13 +1,34 @@
 package ch.eureka.eurekapp.model.data
 
+/**
+ * Object containing constants and helper functions for Firestore document paths.
+ *
+ * This centralizes all Firestore path logic to ensure consistency across the application and make
+ * path structure changes easier to manage. The architecture uses a project-centric design with
+ * subcollections for tasks, meetings, members, and chat channels.
+ *
+ * Note: This file was co-authored by Claude Code.
+ */
 object FirestorePaths {
-  // Top-level collections
+  /** Top-level users collection */
   const val USERS = "users"
+
+  /** Top-level projects collection */
   const val PROJECTS = "projects"
+
+  /** Chat channels subcollection name */
   const val CHAT_CHANNELS = "chatChannels"
+
+  /** Messages subcollection name */
   const val MESSAGES = "messages"
+
+  /** Meetings subcollection name */
   const val MEETINGS = "meetings"
+
+  /** Task templates subcollection name */
   const val TASK_TEMPLATES = "taskTemplates"
+
+  /** Tasks subcollection name */
   const val TASKS = "tasks"
 
   fun userPath(userId: String) = "$USERS/$userId"
