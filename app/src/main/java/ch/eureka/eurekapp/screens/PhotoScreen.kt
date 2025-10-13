@@ -39,7 +39,13 @@ object PhotoScreenTestTags {
   const val GRANT_PERMISSION = "grant_permission"
 }
 
-// Portions of this code were generated with the help of Grok.
+// Portions of this code (and KDoc) were generated with the help of Grok.
+/**
+ * A composable screen for capturing and managing photos using the device's camera. This screen
+ * displays a live camera preview or the captured photo image.
+ *
+ * @param cameraViewModel The CameraViewModel instance responsible for managing camera state.
+ */
 @Composable
 fun PhotoScreen(cameraViewModel: CameraViewModel) {
   val cameraState by cameraViewModel.photoState.collectAsState()
