@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.ui.photos
+package ch.eureka.eurekapp.screens
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import ch.eureka.eurekapp.model.camera.CameraViewModel
-import kotlinx.coroutines.launch
+import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 object PhotoScreenTestTags {
   const val PHOTO = "photo"
@@ -39,7 +39,13 @@ object PhotoScreenTestTags {
   const val GRANT_PERMISSION = "grant_permission"
 }
 
-// Portions of this code were generated with the help of Grok.
+// Portions of this code (and KDoc) were generated with the help of Grok.
+/**
+ * A composable screen for capturing and managing photos using the device's camera. This screen
+ * displays a live camera preview or the captured photo image.
+ *
+ * @param cameraViewModel The CameraViewModel instance responsible for managing camera state.
+ */
 @Composable
 fun PhotoScreen(cameraViewModel: CameraViewModel) {
   val cameraState by cameraViewModel.photoState.collectAsState()
@@ -65,15 +71,17 @@ fun PhotoScreen(cameraViewModel: CameraViewModel) {
             }
       }
 
-      FilledTonalButton(
+      OutlinedButton(
           onClick = { cameraViewModel.takePhoto() },
+          colors = EurekaStyles.OutlinedButtonColors(),
           modifier =
               Modifier.align(Alignment.BottomStart).testTag(PhotoScreenTestTags.TAKE_PHOTO)) {
             Text(text = "Take photo")
           }
 
-      FilledTonalButton(
+      OutlinedButton(
           onClick = { cameraViewModel.deletePhoto() },
+          colors = EurekaStyles.OutlinedButtonColors(),
           modifier =
               Modifier.align(Alignment.BottomCenter).testTag(PhotoScreenTestTags.DELETE_PHOTO)) {
             Text(text = "Delete photo")
@@ -95,6 +103,7 @@ fun PhotoScreen(cameraViewModel: CameraViewModel) {
                 modifier = Modifier.testTag(PhotoScreenTestTags.NO_PERMISSION))
             Button(
                 onClick = { launcher.launch(Manifest.permission.CAMERA) },
+                colors = EurekaStyles.PrimaryButtonColors(),
                 modifier = Modifier.testTag(PhotoScreenTestTags.GRANT_PERMISSION)) {
                   Text("Grant permission")
                 }
