@@ -26,6 +26,7 @@ class TasksScreenRobot(private val composeTestRule: ComposeTestRule) {
 
   // Filter actions
   fun clickFilter(filterName: String): TasksScreenRobot {
+    composeTestRule.waitForIdle() // Attendre le rendu avant interaction
     composeTestRule
         .onNodeWithTag("filter_${filterName.lowercase().replace(" ", "_")}")
         .performClick()
@@ -40,7 +41,10 @@ class TasksScreenRobot(private val composeTestRule: ComposeTestRule) {
 
   fun clickAllFilter(): TasksScreenRobot = clickFilter("All")
 
-  fun clickProjectFilter(): TasksScreenRobot = clickFilter("Project")
+  fun clickProjectFilter(): TasksScreenRobot {
+    composeTestRule.waitForIdle() // Attendre le rendu
+    return clickFilter("Project")
+  }
 
   // Task actions
   fun clickTask(taskTitle: String): TasksScreenRobot {
@@ -76,6 +80,7 @@ class TasksScreenRobot(private val composeTestRule: ComposeTestRule) {
   }
 
   fun assertFilterDisplayed(filterName: String): TasksScreenRobot {
+    composeTestRule.waitForIdle() // Attendre le rendu avant assertion
     composeTestRule
         .onNodeWithTag("filter_${filterName.lowercase().replace(" ", "_")}")
         .assertIsDisplayed()
@@ -83,6 +88,7 @@ class TasksScreenRobot(private val composeTestRule: ComposeTestRule) {
   }
 
   fun assertAllFiltersDisplayed(): TasksScreenRobot {
+    composeTestRule.waitForIdle() // Attendre le rendu complet
     assertFilterDisplayed("My tasks")
     assertFilterDisplayed("Team")
     assertFilterDisplayed("This week")
