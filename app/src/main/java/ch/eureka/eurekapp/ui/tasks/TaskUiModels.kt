@@ -33,6 +33,12 @@ data class TaskUiModel(
   val tags: List<String>
     get() = determineTags()
 
+  val progressText: String
+    get() = "${(progress * 100).toInt()}%"
+
+  val progressValue: Float
+    get() = progress
+
   private fun formatDueDate(timestamp: Timestamp?): String {
     if (timestamp == null) return "No due date"
 

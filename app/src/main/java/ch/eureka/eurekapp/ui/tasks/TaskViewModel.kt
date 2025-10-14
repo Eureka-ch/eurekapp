@@ -269,4 +269,25 @@ class TaskViewModel : ViewModel() {
       return false // Placeholder
   }
   */
+
+  /**
+   * Toggle task completion status
+   */
+  fun toggleTaskCompletion(taskId: String) {
+    viewModelScope.launch {
+      try {
+        _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+        
+        // TODO: Implement actual task status update
+        // For now, just simulate success
+        _uiState.value = _uiState.value.copy(isLoading = false)
+        
+      } catch (e: Exception) {
+        _uiState.value = _uiState.value.copy(
+          isLoading = false,
+          error = e.message ?: "Failed to update task"
+        )
+      }
+    }
+  }
 }
