@@ -50,14 +50,15 @@ abstract class FirestoreRepositoryTest {
     // Note: Data is already cleared in setup() via clearFirestoreEmulator()
     val projectRef = FirebaseEmulator.firestore.collection("projects").document(projectId)
 
-    // First create the project document with createdBy field
+    // First create the project document with createdBy field and memberIds
     val project =
         ch.eureka.eurekapp.model.data.project.Project(
             projectId = projectId,
             name = "Test Project",
             description = "Test project for integration tests",
             status = ch.eureka.eurekapp.model.data.project.ProjectStatus.OPEN,
-            createdBy = testUserId)
+            createdBy = testUserId,
+            memberIds = listOf(testUserId))
     projectRef.set(project).await()
 
     // Then add the test user as a member
