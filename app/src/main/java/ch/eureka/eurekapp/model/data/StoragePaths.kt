@@ -1,3 +1,6 @@
+/*
+ * Portions of this file were co-authored by Claude Code (Anthropic AI assistant).
+ */
 package ch.eureka.eurekapp.model.data
 
 /**
