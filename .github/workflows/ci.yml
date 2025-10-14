@@ -134,6 +134,7 @@ jobs:
           if [ -e "firebase.json" ] && jq -e '.emulators' firebase.json >/dev/null; then
             echo "Starting Firebase emulators for instrumentation tests..."
             firebase emulators:start --only auth,firestore,storage --project demo-project &
+            sleep 20
             echo "Firebase emulators started"
           else
             echo "Firebase emulators not configured, skipping emulator startup..."
