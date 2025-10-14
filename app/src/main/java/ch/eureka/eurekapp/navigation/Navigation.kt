@@ -20,7 +20,7 @@ import ch.eureka.eurekapp.screens.MeetingsScreen
 import ch.eureka.eurekapp.screens.OverviewProjectsScreen
 import ch.eureka.eurekapp.screens.ProfileScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
-import ch.eureka.eurekapp.screens.TasksScreen
+import ch.eureka.eurekapp.ui.tasks.TasksScreen
 
 abstract class Screen(val title: String)
 
@@ -119,7 +119,9 @@ fun NavigationMenu() {
               composable(MainScreens.OverviewProjectScreen.title) {
                 OverviewProjectsScreen(navigationController)
               }
-              composable(MainScreens.TasksScreen.title) { TasksScreen(navigationController) }
+              composable(MainScreens.TasksScreen.title) { 
+                TasksScreen(onNavigate = { route -> navigationController.navigate(route) })
+              }
             }
       }
 }
