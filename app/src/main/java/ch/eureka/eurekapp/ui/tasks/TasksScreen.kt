@@ -176,6 +176,8 @@ fun TasksScreen(
                           },
                           label = { Text(option) },
                           selected = isSelected,
+                          modifier =
+                              Modifier.testTag("filter_${option.lowercase().replace(" ", "_")}"),
                           colors =
                               FilterChipDefaults.filterChipColors(
                                   selectedContainerColor = MaterialTheme.colorScheme.primary,

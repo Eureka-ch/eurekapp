@@ -26,7 +26,9 @@ class TasksScreenRobot(private val composeTestRule: ComposeTestRule) {
 
   // Filter actions
   fun clickFilter(filterName: String): TasksScreenRobot {
-    composeTestRule.onNodeWithText(filterName).performClick()
+    composeTestRule
+        .onNodeWithTag("filter_${filterName.lowercase().replace(" ", "_")}")
+        .performClick()
     return this
   }
 
@@ -74,7 +76,9 @@ class TasksScreenRobot(private val composeTestRule: ComposeTestRule) {
   }
 
   fun assertFilterDisplayed(filterName: String): TasksScreenRobot {
-    composeTestRule.onNodeWithText(filterName).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag("filter_${filterName.lowercase().replace(" ", "_")}")
+        .assertIsDisplayed()
     return this
   }
 
