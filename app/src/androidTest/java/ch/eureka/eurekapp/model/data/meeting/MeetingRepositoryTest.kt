@@ -6,11 +6,9 @@ import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
 import junit.framework.TestCase.assertNull
 import junit.framework.TestCase.assertTrue
-import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withTimeout
 import org.junit.Before
 import org.junit.Test
 
@@ -228,7 +226,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
     assertEquals(1, meetings.size)
     assertEquals("meeting7", meetings[0].meetingID)
   }
-  //TODO find a good fix
+  // TODO find a good fix
   /*@Test
   fun getMeetingsForCurrentUser_shouldReturnEmptyListWhenUserNotInAnyMeeting() = runBlocking {
     val projectId = "project_meeting_8"
