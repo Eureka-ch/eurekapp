@@ -11,12 +11,10 @@ import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
 import junit.framework.TestCase.assertNull
 import junit.framework.TestCase.assertTrue
-import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withTimeout
 import org.junit.Before
 import org.junit.Test
 
@@ -131,7 +129,7 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
     assertTrue(projects.any { it.projectId == "project3" })
     assertTrue(projects.any { it.projectId == "project4" })
   }
-  //TODO find a fix
+  // TODO find a fix
   /*@Test
   fun getProjectsForCurrentUser_shouldReturnEmptyListWhenNoProjects() = runBlocking {
     val flow = repository.getProjectsForCurrentUser()
