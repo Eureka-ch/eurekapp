@@ -10,6 +10,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
+import com.google.firebase.storage.storage
 import io.mockk.InternalPlatformDsl.toArray
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -29,10 +30,14 @@ object FirebaseEmulator {
   val firestore
     get() = Firebase.firestore
 
+  val storage
+    get() = Firebase.storage
+
   const val HOST = "10.0.2.2"
   const val EMULATORS_PORT = 4400
   const val FIRESTORE_PORT = 8080
   const val AUTH_PORT = 9099
+  const val STORAGE_PORT = 9199
 
   val projectID by lazy { FirebaseApp.getInstance().options.projectId }
 
@@ -44,6 +49,10 @@ object FirebaseEmulator {
 
   private val authEndpoint by lazy {
     "http://${HOST}:$AUTH_PORT/emulator/v1/projects/$projectID/accounts"
+  }
+
+  private val storageEndpoint by lazy {
+    "http://${HOST}:$STORAGE_PORT/v0/b/${projectID}.appspot.com/o"
   }
 
   private val emulatorsEndpoint = "http://$HOST:$EMULATORS_PORT/emulators"
@@ -62,6 +71,7 @@ object FirebaseEmulator {
     if (isRunning) {
       auth.useEmulator(HOST, AUTH_PORT)
       firestore.useEmulator(HOST, FIRESTORE_PORT)
+      storage.useEmulator(HOST, STORAGE_PORT)
       assert(Firebase.firestore.firestoreSettings.host.contains(HOST)) {
         "Failed to connect to Firebase Firestore Emulator."
       }
@@ -69,12 +79,13 @@ object FirebaseEmulator {
   }
 
   private fun clearEmulator(endpoint: String) {
+    runCatching {
+      val client = httpClient
+      val request = Request.Builder().url(endpoint).delete().build()
+      val response = client.newCall(request).execute()
 
-    val client = httpClient
-    val request = Request.Builder().url(endpoint).delete().build()
-    val response = client.newCall(request).execute()
-
-    assert(response.isSuccessful) { "Failed to clear emulator at $endpoint" }
+      assert(response.isSuccessful) { "Failed to clear emulator at $endpoint" }
+    }
   }
 
   fun clearAuthEmulator() {
@@ -83,6 +94,10 @@ object FirebaseEmulator {
 
   fun clearFirestoreEmulator() {
     clearEmulator(firestoreEndpoint)
+  }
+
+  fun clearStorageEmulator() {
+    clearEmulator(storageEndpoint)
   }
 
   /**
