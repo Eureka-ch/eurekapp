@@ -2,6 +2,7 @@ package ch.eureka.eurekapp.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 /** Task card component used on tasks and project screens */
@@ -47,54 +49,54 @@ fun EurekaTaskCard(
   var checked by remember { mutableStateOf(isCompleted) }
   Card(
       shape = RoundedCornerShape(16.dp),
-      elevation = CardDefaults.cardElevation(defaultElevation = 8.dp), // Plus d'élévation
-      colors = CardDefaults.cardColors(containerColor = Color.White), // Blanc pur forcé
+      elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+      colors = EurekaStyles.TaskCardColors(),
+      border = EurekaStyles.TaskCardBorder(),
       modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(Spacing.lg)) { // Plus de padding
 
-          // Top row: Checkbox + Title + Progress
-          Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+          // Top row: Title (left) + Checkbox (right)
+          Row(
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.SpaceBetween,
+              modifier = Modifier.fillMaxWidth()) {
 
-            // Checkbox cliquable dans les deux sens
-            Box(
-                modifier =
-                    Modifier.clickable {
-                      checked = !checked
-                      onToggleComplete()
-                    }) {
-                  if (checked) {
-                    Text(
-                        text = "✓",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color(0xFF22C55E)) // Vert pour completed
-                  } else {
-                    Checkbox(
-                        checked = false,
-                        onCheckedChange = {
-                          checked = true
+                // Task title aligned to the left
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = EurekaStyles.TaskTitleColor(checked),
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f))
+
+                // Checkbox aligned to the right
+                Box(
+                    modifier =
+                        Modifier.clickable {
+                          checked = !checked
                           onToggleComplete()
-                        },
-                        colors =
-                            CheckboxDefaults.colors(
-                                checkedColor = MaterialTheme.colorScheme.primary),
-                        modifier = Modifier.testTag("checkbox"))
-                  }
-                }
+                        }) {
+                      if (checked) {
+                        Text(
+                            text = "✓",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.tertiary)
+                      } else {
+                        Checkbox(
+                            checked = false,
+                            onCheckedChange = {
+                              checked = true
+                              onToggleComplete()
+                            },
+                            colors =
+                                CheckboxDefaults.colors(
+                                    checkedColor = MaterialTheme.colorScheme.primary),
+                            modifier = Modifier.testTag("checkbox"))
+                      }
+                    }
 
-            Spacer(modifier = Modifier.width(Spacing.md))
-
-            // Title
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                color =
-                    if (checked) Color(0xFF757575)
-                    else Color(0xFF000000), // Gris si cochée, noir sinon
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f))
-
-            // Pas de pourcentage en haut
-          }
+                // Pas de pourcentage en haut
+              }
 
           Spacer(modifier = Modifier.height(Spacing.sm))
 
@@ -108,7 +110,7 @@ fun EurekaTaskCard(
                       Text(
                           text = "⏰ $dueDate",
                           style = MaterialTheme.typography.bodySmall,
-                          color = Color(0xFF424242)) // Gris foncé
+                          color = EurekaStyles.TaskSecondaryTextColor())
                     }
                   }
 
@@ -120,7 +122,7 @@ fun EurekaTaskCard(
                       Text(
                           text = "👤 $assignee",
                           style = MaterialTheme.typography.bodySmall,
-                          color = Color(0xFF424242)) // Gris foncé
+                          color = EurekaStyles.TaskSecondaryTextColor())
                     }
                   }
                 }
@@ -144,7 +146,7 @@ fun EurekaTaskCard(
               modifier =
                   Modifier.fillMaxWidth()
                       .height(1.dp)
-                      .background(Color(0xFFE0E0E0))) // Ligne grise claire
+                      .background(EurekaStyles.TaskSeparatorColor()))
 
           Spacer(modifier = Modifier.height(Spacing.sm))
 

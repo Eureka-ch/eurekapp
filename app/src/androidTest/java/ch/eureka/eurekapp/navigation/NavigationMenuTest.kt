@@ -9,7 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.screens.IdeasScreenTestTags
 import ch.eureka.eurekapp.screens.MeetingsScreenTestTags
 import ch.eureka.eurekapp.screens.ProfileScreenTestTags
-import ch.eureka.eurekapp.screens.TasksScreenTestTags
+import ch.eureka.eurekapp.ui.tasks.TasksScreenTestTags
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import org.junit.Rule
 import org.junit.Test

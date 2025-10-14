@@ -21,9 +21,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.ui.components.EurekaBottomNav
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
@@ -36,6 +36,7 @@ import ch.eureka.eurekapp.ui.theme.EurekappTheme
 /** Test tags used by UI tests. */
 object TasksScreenTestTags {
   const val TASKS_SCREEN_CONTENT = "tasksScreenContent"
+  const val TASKS_SCREEN_TEXT = "tasksScreenText"
   const val LOADING_INDICATOR = "loadingIndicator"
   const val ERROR_MESSAGE = "errorMessage"
   const val EMPTY_STATE = "emptyState"
@@ -52,6 +53,41 @@ object TasksScreenTestTags {
  * @param modifier Modifier for the composable
  * @param viewModel ViewModel for task state management
  */
+/**
+ * Convert a Task to TaskUiModel for UI display This function handles the UI model conversion in the
+ * UI layer
+ */
+@Composable
+private fun Task.toTaskUiModel(): TaskUiModel {
+  return TaskUiModel(
+      task = this,
+      template = null, // TODO: Load template if needed
+      assignee = null, // TODO: Load assignee if needed
+      progress = 0.0f,
+      isCompleted = TaskBusinessLogic.isTaskCompleted(this) // Business logic in UI layer for now
+      )
+}
+
+/**
+ * Render a task card with proper UI model conversion Wraps EurekaTaskCard instantiation as
+ * requested in code review
+ */
+@Composable
+private fun TaskCard(task: Task, onToggleComplete: () -> Unit, modifier: Modifier = Modifier) {
+  val taskUiModel = task.toTaskUiModel()
+
+  EurekaTaskCard(
+      title = taskUiModel.title,
+      dueDate = taskUiModel.dueDate,
+      assignee = taskUiModel.assigneeName,
+      priority = taskUiModel.priority,
+      progressText = taskUiModel.progressText,
+      progressValue = taskUiModel.progressValue,
+      isCompleted = taskUiModel.isCompleted,
+      onToggleComplete = onToggleComplete,
+      modifier = modifier)
+}
+
 @Composable
 fun TasksScreen(
     onTaskClick: (String) -> Unit = {},
@@ -73,7 +109,7 @@ fun TasksScreen(
           NavItem("Profile", null))
 
   Scaffold(
-      topBar = { EurekaTopBar(title = "EUREKA") },
+      topBar = { EurekaTopBar(title = "Tasks", modifier = Modifier.testTag("tasksTopBar")) },
       bottomBar = {
         EurekaBottomNav(currentRoute = "Tasks", onNavigate = onNavigate, navItems = navItems)
       },
@@ -87,8 +123,8 @@ fun TasksScreen(
                 Text(
                     text = "Task",
                     style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface)
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
 
                 Text(
                     text = "Manage and track your project tasks",
@@ -107,26 +143,35 @@ fun TasksScreen(
               LazyRow(
                   horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
                   modifier = Modifier.padding(bottom = Spacing.sm)) {
-                    val filterOptions = listOf("Me", "Team", "This week", "All", "Project")
+                    val filterOptions = TaskFilterConstants.FILTER_OPTIONS
                     items(filterOptions) { option ->
                       val isSelected =
                           when (option) {
-                            "Me" -> uiState.selectedFilter == TaskFilter.MINE
-                            "Team" -> uiState.selectedFilter == TaskFilter.TEAM
-                            "This week" -> uiState.selectedFilter == TaskFilter.THIS_WEEK
-                            "All" -> uiState.selectedFilter == TaskFilter.ALL
-                            "Project" -> uiState.selectedFilter == TaskFilter.PROJECT
+                            TaskFilterConstants.FILTER_MY_TASKS ->
+                                uiState.selectedFilter == TaskFilter.MINE
+                            TaskFilterConstants.FILTER_TEAM ->
+                                uiState.selectedFilter == TaskFilter.TEAM
+                            TaskFilterConstants.FILTER_THIS_WEEK ->
+                                uiState.selectedFilter == TaskFilter.THIS_WEEK
+                            TaskFilterConstants.FILTER_ALL ->
+                                uiState.selectedFilter == TaskFilter.ALL
+                            TaskFilterConstants.FILTER_PROJECT ->
+                                uiState.selectedFilter == TaskFilter.PROJECT
                             else -> false
                           }
 
                       FilterChip(
                           onClick = {
                             when (option) {
-                              "Me" -> viewModel.setFilter(TaskFilter.MINE)
-                              "Team" -> viewModel.setFilter(TaskFilter.TEAM)
-                              "This week" -> viewModel.setFilter(TaskFilter.THIS_WEEK)
-                              "All" -> viewModel.setFilter(TaskFilter.ALL)
-                              "Project" -> viewModel.setFilter(TaskFilter.PROJECT)
+                              TaskFilterConstants.FILTER_MY_TASKS ->
+                                  viewModel.setFilter(TaskFilter.MINE)
+                              TaskFilterConstants.FILTER_TEAM ->
+                                  viewModel.setFilter(TaskFilter.TEAM)
+                              TaskFilterConstants.FILTER_THIS_WEEK ->
+                                  viewModel.setFilter(TaskFilter.THIS_WEEK)
+                              TaskFilterConstants.FILTER_ALL -> viewModel.setFilter(TaskFilter.ALL)
+                              TaskFilterConstants.FILTER_PROJECT ->
+                                  viewModel.setFilter(TaskFilter.PROJECT)
                             }
                           },
                           label = { Text(option) },
@@ -168,23 +213,8 @@ fun TasksScreen(
                     }
               } else {
                 // Content
-                val currentTasks =
-                    when (uiState.selectedFilter) {
-                      TaskFilter.MINE -> uiState.myTasks.filter { !it.isCompleted }
-                      TaskFilter.TEAM -> uiState.allTasks.filter { !it.isCompleted }
-                      TaskFilter.THIS_WEEK -> uiState.allTasks.filter { !it.isCompleted }
-                      TaskFilter.ALL -> uiState.allTasks.filter { !it.isCompleted }
-                      TaskFilter.PROJECT -> uiState.allTasks.filter { !it.isCompleted }
-                    }
-
-                val completedTasks =
-                    when (uiState.selectedFilter) {
-                      TaskFilter.MINE -> uiState.myTasks.filter { it.isCompleted }
-                      TaskFilter.TEAM -> uiState.allTasks.filter { it.isCompleted }
-                      TaskFilter.THIS_WEEK -> uiState.allTasks.filter { it.isCompleted }
-                      TaskFilter.ALL -> uiState.allTasks.filter { it.isCompleted }
-                      TaskFilter.PROJECT -> uiState.allTasks.filter { it.isCompleted }
-                    }
+                val currentTasks = viewModel.getIncompleteTasks()
+                val completedTasks = viewModel.getCompletedTasks()
 
                 // Task count
                 Text(
@@ -203,16 +233,10 @@ fun TasksScreen(
                           TaskSectionHeader(title = "Current Tasks", taskCount = currentTasks.size)
                         }
 
-                        items(currentTasks, key = { it.id }) { task ->
-                          EurekaTaskCard(
-                              title = task.title,
-                              dueDate = task.dueDate,
-                              assignee = task.assigneeName,
-                              priority = task.priority,
-                              progressText = task.progressText,
-                              progressValue = task.progressValue,
-                              isCompleted = task.isCompleted,
-                              onToggleComplete = { viewModel.toggleTaskCompletion(task.id) })
+                        items(currentTasks, key = { it.taskID }) { task ->
+                          TaskCard(
+                              task = task,
+                              onToggleComplete = { viewModel.toggleTaskCompletion(task.taskID) })
                         }
                       }
 
@@ -225,16 +249,10 @@ fun TasksScreen(
                               modifier = Modifier.padding(top = Spacing.lg))
                         }
 
-                        items(completedTasks, key = { it.id }) { task ->
-                          EurekaTaskCard(
-                              title = task.title,
-                              dueDate = task.dueDate,
-                              assignee = task.assigneeName,
-                              priority = task.priority,
-                              progressText = task.progressText,
-                              progressValue = task.progressValue,
-                              isCompleted = task.isCompleted,
-                              onToggleComplete = { viewModel.toggleTaskCompletion(task.id) })
+                        items(completedTasks, key = { it.taskID }) { task ->
+                          TaskCard(
+                              task = task,
+                              onToggleComplete = { viewModel.toggleTaskCompletion(task.taskID) })
                         }
                       }
 

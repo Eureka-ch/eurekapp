@@ -212,10 +212,17 @@ class TaskUiModelAdditionalTest {
     val cancelledTask = Task(status = TaskStatus.CANCELLED)
 
     // When
-    val todoModel = TaskUiModel(task = todoTask)
-    val inProgressModel = TaskUiModel(task = inProgressTask)
-    val completedModel = TaskUiModel(task = completedTask)
-    val cancelledModel = TaskUiModel(task = cancelledTask)
+    val todoModel =
+        TaskUiModel(task = todoTask, isCompleted = TaskBusinessLogic.isTaskCompleted(todoTask))
+    val inProgressModel =
+        TaskUiModel(
+            task = inProgressTask, isCompleted = TaskBusinessLogic.isTaskCompleted(inProgressTask))
+    val completedModel =
+        TaskUiModel(
+            task = completedTask, isCompleted = TaskBusinessLogic.isTaskCompleted(completedTask))
+    val cancelledModel =
+        TaskUiModel(
+            task = cancelledTask, isCompleted = TaskBusinessLogic.isTaskCompleted(cancelledTask))
 
     // Then
     assertFalse(todoModel.isCompleted)
@@ -232,9 +239,14 @@ class TaskUiModelAdditionalTest {
     val completedTask = Task(status = TaskStatus.COMPLETED)
 
     // When
-    val todoModel = TaskUiModel(task = todoTask)
-    val inProgressModel = TaskUiModel(task = inProgressTask)
-    val completedModel = TaskUiModel(task = completedTask)
+    val todoModel =
+        TaskUiModel(task = todoTask, isCompleted = TaskBusinessLogic.isTaskCompleted(todoTask))
+    val inProgressModel =
+        TaskUiModel(
+            task = inProgressTask, isCompleted = TaskBusinessLogic.isTaskCompleted(inProgressTask))
+    val completedModel =
+        TaskUiModel(
+            task = completedTask, isCompleted = TaskBusinessLogic.isTaskCompleted(completedTask))
 
     // Then
     assertTrue(todoModel.tags.isNotEmpty())

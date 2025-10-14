@@ -99,7 +99,7 @@ class TaskUiModelTest {
   fun `isCompleted true when task status is completed`() {
     // Given
     val task = Task(status = TaskStatus.COMPLETED)
-    val uiModel = TaskUiModel(task = task)
+    val uiModel = TaskUiModel(task = task, isCompleted = TaskBusinessLogic.isTaskCompleted(task))
 
     // When
     val result = uiModel.isCompleted
@@ -112,7 +112,7 @@ class TaskUiModelTest {
   fun `isCompleted false when task status is not completed`() {
     // Given
     val task = Task(status = TaskStatus.IN_PROGRESS)
-    val uiModel = TaskUiModel(task = task)
+    val uiModel = TaskUiModel(task = task, isCompleted = TaskBusinessLogic.isTaskCompleted(task))
 
     // When
     val result = uiModel.isCompleted

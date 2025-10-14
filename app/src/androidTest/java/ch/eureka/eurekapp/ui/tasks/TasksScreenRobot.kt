@@ -30,7 +30,7 @@ class TasksScreenRobot(private val composeTestRule: ComposeTestRule) {
     return this
   }
 
-  fun clickMeFilter(): TasksScreenRobot = clickFilter("Me")
+  fun clickMeFilter(): TasksScreenRobot = clickFilter("My tasks")
 
   fun clickTeamFilter(): TasksScreenRobot = clickFilter("Team")
 
@@ -54,7 +54,7 @@ class TasksScreenRobot(private val composeTestRule: ComposeTestRule) {
 
   // Assertions - Display
   fun assertScreenTitleDisplayed(): TasksScreenRobot {
-    composeTestRule.onNodeWithText("Tasks").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("tasksTopBar").assertIsDisplayed()
     return this
   }
 
@@ -79,7 +79,7 @@ class TasksScreenRobot(private val composeTestRule: ComposeTestRule) {
   }
 
   fun assertAllFiltersDisplayed(): TasksScreenRobot {
-    assertFilterDisplayed("Me")
+    assertFilterDisplayed("My tasks")
     assertFilterDisplayed("Team")
     assertFilterDisplayed("This week")
     assertFilterDisplayed("All")
