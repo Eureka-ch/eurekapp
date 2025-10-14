@@ -240,6 +240,8 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
         repository.uploadFile(
             storagePath = StoragePaths.projectFilePath(projectId, "test.txt"), fileUri = txtUri)
     assertTrue(txtResult.isSuccess)
+    val txtMetadata = repository.getFileMetadata(txtResult.getOrNull()!!).getOrNull()
+    assertEquals("text/plain", txtMetadata?.contentType)
 
     // Test PDF file (simulated)
     val pdfUri = createTempFile("document", "pdf", "PDF content")
@@ -247,6 +249,8 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
         repository.uploadFile(
             storagePath = StoragePaths.projectFilePath(projectId, "doc.pdf"), fileUri = pdfUri)
     assertTrue(pdfResult.isSuccess)
+    val pdfMetadata = repository.getFileMetadata(pdfResult.getOrNull()!!).getOrNull()
+    assertEquals("application/pdf", pdfMetadata?.contentType)
 
     // Test image file (simulated)
     val imgUri = createTempFile("image", "jpg", "Image content")
@@ -254,6 +258,8 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
         repository.uploadFile(
             storagePath = StoragePaths.projectFilePath(projectId, "img.jpg"), fileUri = imgUri)
     assertTrue(imgResult.isSuccess)
+    val imgMetadata = repository.getFileMetadata(imgResult.getOrNull()!!).getOrNull()
+    assertEquals("image/jpeg", imgMetadata?.contentType)
   }
 
   @Test

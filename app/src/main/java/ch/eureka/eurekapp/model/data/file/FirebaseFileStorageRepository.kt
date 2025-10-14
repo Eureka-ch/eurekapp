@@ -39,7 +39,7 @@ class FirebaseFileStorageRepository(
     auth.currentUser ?: throw IllegalStateException("User must be authenticated to upload")
 
     val ref = storage.reference.child(storagePath)
-    val contentType = getContentTypeFromPath(storagePath)
+    val contentType = StorageHelpers.getContentTypeFromPath(storagePath)
     val metadata = StorageMetadata.Builder().setContentType(contentType).build()
 
     ref.putFile(fileUri, metadata).await()
@@ -102,50 +102,5 @@ class FirebaseFileStorageRepository(
 
     val encodedPath = downloadUrl.substring(pathStart + 3, pathEnd)
     return java.net.URLDecoder.decode(encodedPath, "UTF-8")
-  }
-
-  /**
-   * Determine the MIME content type from a file path based on its extension.
-   *
-   * This function was co-authored by Claude Code (Anthropic AI assistant).
-   *
-   * @param path The file path (e.g., "projects/proj1/file.txt")
-   * @return The MIME type (e.g., "text/plain")
-   */
-  private fun getContentTypeFromPath(path: String): String {
-    val extension = path.substringAfterLast('.', "").lowercase()
-    return when (extension) {
-      "txt" -> "text/plain"
-      "html",
-      "htm" -> "text/html"
-      "css" -> "text/css"
-      "js" -> "application/javascript"
-      "json" -> "application/json"
-      "xml" -> "application/xml"
-      "jpg",
-      "jpeg" -> "image/jpeg"
-      "png" -> "image/png"
-      "gif" -> "image/gif"
-      "svg" -> "image/svg+xml"
-      "webp" -> "image/webp"
-      "bmp" -> "image/bmp"
-      "ico" -> "image/x-icon"
-      "pdf" -> "application/pdf"
-      "doc" -> "application/msword"
-      "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-      "xls" -> "application/vnd.ms-excel"
-      "xlsx" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      "ppt" -> "application/vnd.ms-powerpoint"
-      "pptx" -> "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-      "zip" -> "application/zip"
-      "tar" -> "application/x-tar"
-      "gz" -> "application/gzip"
-      "7z" -> "application/x-7z-compressed"
-      "mp3" -> "audio/mpeg"
-      "wav" -> "audio/wav"
-      "mp4" -> "video/mp4"
-      "avi" -> "video/x-msvideo"
-      else -> "application/octet-stream"
-    }
   }
 }
