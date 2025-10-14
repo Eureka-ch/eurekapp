@@ -122,7 +122,7 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
     val createFirst = repository.createProject(project1, testUserId, ProjectRole.OWNER)
     val createSecond = repository.createProject(project2, testUserId, ProjectRole.MEMBER)
     assertTrue(createFirst.isSuccess && createSecond.isSuccess)
-    val flow = repository.getProjectsForCurrentUser(skipCache = false)
+    val flow = repository.getProjectsForCurrentUser(skipCache = true)
     val projects = flow.first()
 
     assertEquals(2, projects.size)
