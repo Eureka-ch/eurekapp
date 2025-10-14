@@ -13,7 +13,8 @@ data class TaskUiModel(
     val template: TaskTemplate? = null,
     val assignee: User? = null,
     val progress: Float = 0.0f,
-    val isCompleted: Boolean = task.status == ch.eureka.eurekapp.model.data.task.TaskStatus.COMPLETED
+    val isCompleted: Boolean =
+        task.status == ch.eureka.eurekapp.model.data.task.TaskStatus.COMPLETED
 ) {
   val id: String
     get() = task.taskID

@@ -25,13 +25,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.ui.components.EurekaBottomNav
-import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.NavItem
-import ch.eureka.eurekapp.ui.theme.EurekappTheme
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.tasks.components.TaskActionButtons
 import ch.eureka.eurekapp.ui.tasks.components.TaskSectionHeader
+import ch.eureka.eurekapp.ui.theme.EurekappTheme
 
 /** Test tags used by UI tests. */
 object TasksScreenTestTags {
@@ -41,9 +41,6 @@ object TasksScreenTestTags {
   const val EMPTY_STATE = "emptyState"
   const val TASK_LIST = "taskList"
 }
-
-
-
 
 /**
  * Main Tasks screen composable Displays user tasks with filtering and management capabilities
@@ -80,7 +77,7 @@ fun TasksScreen(
       bottomBar = {
         EurekaBottomNav(currentRoute = "Tasks", onNavigate = onNavigate, navItems = navItems)
       },
-        modifier = modifier.fillMaxSize().testTag(TasksScreenTestTags.TASKS_SCREEN_CONTENT)) {
+      modifier = modifier.fillMaxSize().testTag(TasksScreenTestTags.TASKS_SCREEN_CONTENT)) {
           innerPadding ->
         Column(
             modifier =
@@ -112,15 +109,16 @@ fun TasksScreen(
                   modifier = Modifier.padding(bottom = Spacing.sm)) {
                     val filterOptions = listOf("Me", "Team", "This week", "All", "Project")
                     items(filterOptions) { option ->
-                      val isSelected = when (option) {
-                        "Me" -> uiState.selectedFilter == TaskFilter.MINE
-                        "Team" -> uiState.selectedFilter == TaskFilter.TEAM
-                        "This week" -> uiState.selectedFilter == TaskFilter.THIS_WEEK
-                        "All" -> uiState.selectedFilter == TaskFilter.ALL
-                        "Project" -> uiState.selectedFilter == TaskFilter.PROJECT
-                        else -> false
-                      }
-                      
+                      val isSelected =
+                          when (option) {
+                            "Me" -> uiState.selectedFilter == TaskFilter.MINE
+                            "Team" -> uiState.selectedFilter == TaskFilter.TEAM
+                            "This week" -> uiState.selectedFilter == TaskFilter.THIS_WEEK
+                            "All" -> uiState.selectedFilter == TaskFilter.ALL
+                            "Project" -> uiState.selectedFilter == TaskFilter.PROJECT
+                            else -> false
+                          }
+
                       FilterChip(
                           onClick = {
                             when (option) {
@@ -133,13 +131,12 @@ fun TasksScreen(
                           },
                           label = { Text(option) },
                           selected = isSelected,
-                          colors = FilterChipDefaults.filterChipColors(
-                              selectedContainerColor = MaterialTheme.colorScheme.primary,
-                              selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                              containerColor = MaterialTheme.colorScheme.surface,
-                              labelColor = MaterialTheme.colorScheme.onSurface
-                          )
-                      )
+                          colors =
+                              FilterChipDefaults.filterChipColors(
+                                  selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                  selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                  containerColor = MaterialTheme.colorScheme.surface,
+                                  labelColor = MaterialTheme.colorScheme.onSurface))
                     }
                   }
 
@@ -149,8 +146,8 @@ fun TasksScreen(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.testTag(TasksScreenTestTags.LOADING_INDICATOR))
+                      CircularProgressIndicator(
+                          modifier = Modifier.testTag(TasksScreenTestTags.LOADING_INDICATOR))
                       Text(
                           text = "Loading tasks...",
                           modifier = Modifier.padding(top = Spacing.md),
@@ -165,9 +162,9 @@ fun TasksScreen(
                       Text(
                           text = "Error: ${uiState.error}",
                           color = MaterialTheme.colorScheme.error,
-                        modifier =
-                            Modifier.padding(Spacing.md)
-                                .testTag(TasksScreenTestTags.ERROR_MESSAGE))
+                          modifier =
+                              Modifier.padding(Spacing.md)
+                                  .testTag(TasksScreenTestTags.ERROR_MESSAGE))
                     }
               } else {
                 // Content
@@ -206,18 +203,17 @@ fun TasksScreen(
                           TaskSectionHeader(title = "Current Tasks", taskCount = currentTasks.size)
                         }
 
-                          items(currentTasks, key = { it.id }) { task ->
-                            EurekaTaskCard(
-                                title = task.title,
-                                dueDate = task.dueDate,
-                                assignee = task.assigneeName,
-                                priority = task.priority,
-                                progressText = task.progressText,
-                                progressValue = task.progressValue,
-                                isCompleted = task.isCompleted,
-                                onToggleComplete = { viewModel.toggleTaskCompletion(task.id) }
-                            )
-                          }
+                        items(currentTasks, key = { it.id }) { task ->
+                          EurekaTaskCard(
+                              title = task.title,
+                              dueDate = task.dueDate,
+                              assignee = task.assigneeName,
+                              priority = task.priority,
+                              progressText = task.progressText,
+                              progressValue = task.progressValue,
+                              isCompleted = task.isCompleted,
+                              onToggleComplete = { viewModel.toggleTaskCompletion(task.id) })
+                        }
                       }
 
                       // Completed tasks section
@@ -229,18 +225,17 @@ fun TasksScreen(
                               modifier = Modifier.padding(top = Spacing.lg))
                         }
 
-                          items(completedTasks, key = { it.id }) { task ->
-                            EurekaTaskCard(
-                                title = task.title,
-                                dueDate = task.dueDate,
-                                assignee = task.assigneeName,
-                                priority = task.priority,
-                                progressText = task.progressText,
-                                progressValue = task.progressValue,
-                                isCompleted = task.isCompleted,
-                                onToggleComplete = { viewModel.toggleTaskCompletion(task.id) }
-                            )
-                          }
+                        items(completedTasks, key = { it.id }) { task ->
+                          EurekaTaskCard(
+                              title = task.title,
+                              dueDate = task.dueDate,
+                              assignee = task.assigneeName,
+                              priority = task.priority,
+                              progressText = task.progressText,
+                              progressValue = task.progressValue,
+                              isCompleted = task.isCompleted,
+                              onToggleComplete = { viewModel.toggleTaskCompletion(task.id) })
+                        }
                       }
 
                       // Empty state
@@ -276,11 +271,8 @@ fun TasksScreen(
 private fun TasksScreenPreview() {
   EurekappTheme(darkTheme = false) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White),
+        modifier = Modifier.fillMaxSize().background(Color.White),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-          
           EurekaTaskCard(
               title = "Implement Overview Screen",
               dueDate = "Due: Today · 23:59",
@@ -289,9 +281,7 @@ private fun TasksScreenPreview() {
               progressText = "65%",
               progressValue = 0.65f,
               isCompleted = false,
-              onToggleComplete = {}
-          )
+              onToggleComplete = {})
         }
   }
 }
-

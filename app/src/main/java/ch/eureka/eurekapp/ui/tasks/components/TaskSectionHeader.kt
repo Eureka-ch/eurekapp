@@ -21,8 +21,14 @@ fun TaskSectionHeader(title: String, taskCount: Int? = null, modifier: Modifier 
         color = MaterialTheme.colorScheme.onSurface)
 
     if (taskCount != null) {
+      val taskText =
+          when (taskCount) {
+            0 -> "tâche"
+            1 -> "tâche"
+            else -> "tâches"
+          }
       Text(
-          text = "$taskCount tâches",
+          text = "$taskCount $taskText",
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           modifier = Modifier.padding(top = Spacing.xs))

@@ -119,7 +119,7 @@ fun NavigationMenu() {
               composable(MainScreens.OverviewProjectScreen.title) {
                 OverviewProjectsScreen(navigationController)
               }
-              composable(MainScreens.TasksScreen.title) { 
+              composable(MainScreens.TasksScreen.title) {
                 TasksScreen(onNavigate = { route -> navigationController.navigate(route) })
               }
             }

@@ -1,177 +1,175 @@
 package ch.eureka.eurekapp.ui.tasks
 
-import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import ch.eureka.eurekapp.ui.tasks.TasksScreenTestTags
 
 /**
- * Robot pattern for TasksScreen UI tests
- * Provides a fluent API for interacting with the TasksScreen
+ * Robot pattern for TasksScreen UI tests Provides a fluent API for interacting with the TasksScreen
  */
 class TasksScreenRobot(private val composeTestRule: ComposeTestRule) {
 
-    // Navigation actions
-    fun clickCreateTask(): TasksScreenRobot {
-        composeTestRule.onNodeWithText("+ New Task").performClick()
-        return this
-    }
+  // Navigation actions
+  fun clickCreateTask(): TasksScreenRobot {
+    composeTestRule.onNodeWithText("+ New Task").performClick()
+    return this
+  }
 
-    fun clickAutoAssign(): TasksScreenRobot {
-        composeTestRule.onNodeWithText("Auto-assign").performClick()
-        return this
-    }
+  fun clickAutoAssign(): TasksScreenRobot {
+    composeTestRule.onNodeWithText("Auto-assign").performClick()
+    return this
+  }
 
-    // Filter actions
-    fun clickFilter(filterName: String): TasksScreenRobot {
-        composeTestRule.onNodeWithText(filterName).performClick()
-        return this
-    }
+  // Filter actions
+  fun clickFilter(filterName: String): TasksScreenRobot {
+    composeTestRule.onNodeWithText(filterName).performClick()
+    return this
+  }
 
-    fun clickMeFilter(): TasksScreenRobot = clickFilter("Me")
-    fun clickTeamFilter(): TasksScreenRobot = clickFilter("Team")
-    fun clickThisWeekFilter(): TasksScreenRobot = clickFilter("This week")
-    fun clickAllFilter(): TasksScreenRobot = clickFilter("All")
-    fun clickProjectFilter(): TasksScreenRobot = clickFilter("Project")
+  fun clickMeFilter(): TasksScreenRobot = clickFilter("Me")
 
-    // Task actions
-    fun clickTask(taskTitle: String): TasksScreenRobot {
-        composeTestRule.onNodeWithText(taskTitle).performClick()
-        return this
-    }
+  fun clickTeamFilter(): TasksScreenRobot = clickFilter("Team")
 
-    fun toggleTaskCompletion(taskTitle: String): TasksScreenRobot {
-        // Find the checkbox for the task and click it
-        composeTestRule.onNodeWithText(taskTitle)
-            .performScrollTo()
-            .performClick()
-        return this
-    }
+  fun clickThisWeekFilter(): TasksScreenRobot = clickFilter("This week")
 
-    // Assertions - Display
-    fun assertScreenTitleDisplayed(): TasksScreenRobot {
-        composeTestRule.onNodeWithText("Tasks").assertIsDisplayed()
-        return this
-    }
+  fun clickAllFilter(): TasksScreenRobot = clickFilter("All")
 
-    fun assertDescriptionDisplayed(): TasksScreenRobot {
-        composeTestRule.onNodeWithText("Manage and track your project tasks").assertIsDisplayed()
-        return this
-    }
+  fun clickProjectFilter(): TasksScreenRobot = clickFilter("Project")
 
-    fun assertCreateTaskButtonDisplayed(): TasksScreenRobot {
-        composeTestRule.onNodeWithText("+ New Task").assertIsDisplayed()
-        return this
-    }
+  // Task actions
+  fun clickTask(taskTitle: String): TasksScreenRobot {
+    composeTestRule.onNodeWithText(taskTitle).performClick()
+    return this
+  }
 
-    fun assertAutoAssignButtonDisplayed(): TasksScreenRobot {
-        composeTestRule.onNodeWithText("Auto-assign").assertIsDisplayed()
-        return this
-    }
+  fun toggleTaskCompletion(taskTitle: String): TasksScreenRobot {
+    // Find the checkbox for the task and click it
+    composeTestRule.onNodeWithText(taskTitle).performScrollTo().performClick()
+    return this
+  }
 
-    fun assertFilterDisplayed(filterName: String): TasksScreenRobot {
-        composeTestRule.onNodeWithText(filterName).assertIsDisplayed()
-        return this
-    }
+  // Assertions - Display
+  fun assertScreenTitleDisplayed(): TasksScreenRobot {
+    composeTestRule.onNodeWithText("Tasks").assertIsDisplayed()
+    return this
+  }
 
-    fun assertAllFiltersDisplayed(): TasksScreenRobot {
-        assertFilterDisplayed("Me")
-        assertFilterDisplayed("Team")
-        assertFilterDisplayed("This week")
-        assertFilterDisplayed("All")
-        assertFilterDisplayed("Project")
-        return this
-    }
+  fun assertDescriptionDisplayed(): TasksScreenRobot {
+    composeTestRule.onNodeWithText("Manage and track your project tasks").assertIsDisplayed()
+    return this
+  }
 
-    // Assertions - Task content
-    fun assertTaskDisplayed(taskTitle: String): TasksScreenRobot {
-        composeTestRule.onNodeWithText(taskTitle).assertIsDisplayed()
-        return this
-    }
+  fun assertCreateTaskButtonDisplayed(): TasksScreenRobot {
+    composeTestRule.onNodeWithText("+ New Task").assertIsDisplayed()
+    return this
+  }
 
-    fun assertTaskNotDisplayed(taskTitle: String): TasksScreenRobot {
-        composeTestRule.onNodeWithText(taskTitle).assertIsNotDisplayed()
-        return this
-    }
+  fun assertAutoAssignButtonDisplayed(): TasksScreenRobot {
+    composeTestRule.onNodeWithText("Auto-assign").assertIsDisplayed()
+    return this
+  }
 
-    fun assertTaskCountDisplayed(count: Int): TasksScreenRobot {
-        composeTestRule.onNodeWithText("$count tasks").assertIsDisplayed()
-        return this
-    }
+  fun assertFilterDisplayed(filterName: String): TasksScreenRobot {
+    composeTestRule.onNodeWithText(filterName).assertIsDisplayed()
+    return this
+  }
 
-    fun assertTaskCountDisplayed(count: Int, singular: Boolean = false): TasksScreenRobot {
-        val text = if (singular && count == 1) "1 task" else "$count tasks"
-        composeTestRule.onNodeWithText(text).assertIsDisplayed()
-        return this
-    }
+  fun assertAllFiltersDisplayed(): TasksScreenRobot {
+    assertFilterDisplayed("Me")
+    assertFilterDisplayed("Team")
+    assertFilterDisplayed("This week")
+    assertFilterDisplayed("All")
+    assertFilterDisplayed("Project")
+    return this
+  }
 
-    // Assertions - States
-    fun assertLoadingDisplayed(): TasksScreenRobot {
-        composeTestRule.onNodeWithTag(TasksScreenTestTags.LOADING_INDICATOR).assertIsDisplayed()
-        return this
-    }
+  // Assertions - Task content
+  fun assertTaskDisplayed(taskTitle: String): TasksScreenRobot {
+    composeTestRule.onNodeWithText(taskTitle).assertIsDisplayed()
+    return this
+  }
 
-    fun assertLoadingNotDisplayed(): TasksScreenRobot {
-        composeTestRule.onNodeWithTag(TasksScreenTestTags.LOADING_INDICATOR).assertIsNotDisplayed()
-        return this
-    }
+  fun assertTaskNotDisplayed(taskTitle: String): TasksScreenRobot {
+    composeTestRule.onNodeWithText(taskTitle).assertIsNotDisplayed()
+    return this
+  }
 
-    fun assertEmptyStateDisplayed(): TasksScreenRobot {
-        composeTestRule.onNodeWithText("No tasks found").assertIsDisplayed()
-        return this
-    }
+  fun assertTaskCountDisplayed(count: Int): TasksScreenRobot {
+    composeTestRule.onNodeWithText("$count tasks").assertIsDisplayed()
+    return this
+  }
 
-    fun assertErrorStateDisplayed(errorMessage: String): TasksScreenRobot {
-        composeTestRule.onNodeWithText(errorMessage).assertIsDisplayed()
-        return this
-    }
+  fun assertTaskCountDisplayed(count: Int, singular: Boolean = false): TasksScreenRobot {
+    val text = if (singular && count == 1) "1 task" else "$count tasks"
+    composeTestRule.onNodeWithText(text).assertIsDisplayed()
+    return this
+  }
 
-    fun assertErrorStateNotDisplayed(): TasksScreenRobot {
-        composeTestRule.onNodeWithTag(TasksScreenTestTags.ERROR_MESSAGE).assertIsNotDisplayed()
-        return this
-    }
+  // Assertions - States
+  fun assertLoadingDisplayed(): TasksScreenRobot {
+    composeTestRule.onNodeWithTag(TasksScreenTestTags.LOADING_INDICATOR).assertIsDisplayed()
+    return this
+  }
 
-    // Assertions - Filter states
-    fun assertFilterSelected(filterName: String): TasksScreenRobot {
-        composeTestRule.onNodeWithText(filterName)
-            .assertIsDisplayed()
-        return this
-    }
+  fun assertLoadingNotDisplayed(): TasksScreenRobot {
+    composeTestRule.onNodeWithTag(TasksScreenTestTags.LOADING_INDICATOR).assertIsNotDisplayed()
+    return this
+  }
 
-    fun assertFilterNotSelected(filterName: String): TasksScreenRobot {
-        composeTestRule.onNodeWithText(filterName)
-            .assertIsDisplayed()
-        return this
-    }
+  fun assertEmptyStateDisplayed(): TasksScreenRobot {
+    composeTestRule.onNodeWithText("No tasks found").assertIsDisplayed()
+    return this
+  }
 
-    // Assertions - Sections
-    fun assertCurrentTasksSectionDisplayed(): TasksScreenRobot {
-        composeTestRule.onNodeWithText("Current Tasks").assertIsDisplayed()
-        return this
-    }
+  fun assertErrorStateDisplayed(errorMessage: String): TasksScreenRobot {
+    composeTestRule.onNodeWithText(errorMessage).assertIsDisplayed()
+    return this
+  }
 
-    fun assertCompletedTasksSectionDisplayed(): TasksScreenRobot {
-        composeTestRule.onNodeWithText("Recently Completed").assertIsDisplayed()
-        return this
-    }
+  fun assertErrorStateNotDisplayed(): TasksScreenRobot {
+    composeTestRule.onNodeWithTag(TasksScreenTestTags.ERROR_MESSAGE).assertIsNotDisplayed()
+    return this
+  }
 
-    fun assertCurrentTasksSectionNotDisplayed(): TasksScreenRobot {
-        composeTestRule.onNodeWithText("Current Tasks").assertIsNotDisplayed()
-        return this
-    }
+  // Assertions - Filter states
+  fun assertFilterSelected(filterName: String): TasksScreenRobot {
+    composeTestRule.onNodeWithText(filterName).assertIsDisplayed()
+    return this
+  }
 
-    fun assertCompletedTasksSectionNotDisplayed(): TasksScreenRobot {
-        composeTestRule.onNodeWithText("Recently Completed").assertIsNotDisplayed()
-        return this
-    }
+  fun assertFilterNotSelected(filterName: String): TasksScreenRobot {
+    composeTestRule.onNodeWithText(filterName).assertIsDisplayed()
+    return this
+  }
 
-    // Helper methods
-    fun verifyScreenLoaded(): TasksScreenRobot {
-        assertScreenTitleDisplayed()
-        return this
-    }
+  // Assertions - Sections
+  fun assertCurrentTasksSectionDisplayed(): TasksScreenRobot {
+    composeTestRule.onNodeWithText("Current Tasks").assertIsDisplayed()
+    return this
+  }
+
+  fun assertCompletedTasksSectionDisplayed(): TasksScreenRobot {
+    composeTestRule.onNodeWithText("Recently Completed").assertIsDisplayed()
+    return this
+  }
+
+  fun assertCurrentTasksSectionNotDisplayed(): TasksScreenRobot {
+    composeTestRule.onNodeWithText("Current Tasks").assertIsNotDisplayed()
+    return this
+  }
+
+  fun assertCompletedTasksSectionNotDisplayed(): TasksScreenRobot {
+    composeTestRule.onNodeWithText("Recently Completed").assertIsNotDisplayed()
+    return this
+  }
+
+  // Helper methods
+  fun verifyScreenLoaded(): TasksScreenRobot {
+    assertScreenTitleDisplayed()
+    return this
+  }
 }
