@@ -5,8 +5,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -20,7 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.ui.components.EurekaBottomNav
-import ch.eureka.eurekapp.ui.components.EurekaFilterBar
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.NavItem
 import ch.eureka.eurekapp.ui.designsystem.EurekaTheme
@@ -62,11 +64,24 @@ private fun TasksScreenPreviewLight() {
               onAutoAssignClick = {},
               modifier = Modifier.padding(top = Spacing.md))
 
-          EurekaFilterBar(
-              options = listOf("Me", "Team", "This week", "All", "Project"),
-              selectedOption = "Me",
-              onOptionSelected = {},
-              modifier = Modifier.padding(bottom = Spacing.sm))
+          LazyRow(
+              horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+              modifier = Modifier.padding(bottom = Spacing.sm)) {
+                val filterOptions = listOf("Me", "Team", "This week", "All", "Project")
+                items(filterOptions) { option ->
+                  FilterChip(
+                      onClick = {},
+                      label = { Text(option) },
+                      selected = option == "Me",
+                      colors = FilterChipDefaults.filterChipColors(
+                          selectedContainerColor = MaterialTheme.colorScheme.primary,
+                          selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                          containerColor = MaterialTheme.colorScheme.surface,
+                          labelColor = MaterialTheme.colorScheme.onSurface
+                      )
+                  )
+                }
+              }
 
           Text(
               text = "0 tasks",
@@ -146,24 +161,42 @@ fun TasksScreen(
                     modifier = Modifier.padding(top = Spacing.md))
               }
 
-              // Filter bar
-              EurekaFilterBar(
-                  options = listOf("Me", "Team", "This week", "All", "Project"),
-                  selectedOption =
-                      when (uiState.selectedFilter) {
-                        TaskFilter.MINE -> "Me"
-                        TaskFilter.ALL -> "All"
-                        TaskFilter.PROJECT -> "Project"
-                      },
-                  onOptionSelected = { option ->
-                    when (option) {
-                      "Me" -> viewModel.setFilter(TaskFilter.MINE)
-                      "All" -> viewModel.setFilter(TaskFilter.ALL)
-                      "Project" -> viewModel.setFilter(TaskFilter.PROJECT)
-                    // TODO: Implement other filters
+              // Horizontal scrollable filter bar
+              LazyRow(
+                  horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+                  modifier = Modifier.padding(bottom = Spacing.sm)) {
+                    val filterOptions = listOf("Me", "Team", "This week", "All", "Project")
+                    items(filterOptions) { option ->
+                      val isSelected = when (option) {
+                        "Me" -> uiState.selectedFilter == TaskFilter.MINE
+                        "Team" -> uiState.selectedFilter == TaskFilter.TEAM
+                        "This week" -> uiState.selectedFilter == TaskFilter.THIS_WEEK
+                        "All" -> uiState.selectedFilter == TaskFilter.ALL
+                        "Project" -> uiState.selectedFilter == TaskFilter.PROJECT
+                        else -> false
+                      }
+                      
+                      FilterChip(
+                          onClick = {
+                            when (option) {
+                              "Me" -> viewModel.setFilter(TaskFilter.MINE)
+                              "Team" -> viewModel.setFilter(TaskFilter.TEAM)
+                              "This week" -> viewModel.setFilter(TaskFilter.THIS_WEEK)
+                              "All" -> viewModel.setFilter(TaskFilter.ALL)
+                              "Project" -> viewModel.setFilter(TaskFilter.PROJECT)
+                            }
+                          },
+                          label = { Text(option) },
+                          selected = isSelected,
+                          colors = FilterChipDefaults.filterChipColors(
+                              selectedContainerColor = MaterialTheme.colorScheme.primary,
+                              selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                              containerColor = MaterialTheme.colorScheme.surface,
+                              labelColor = MaterialTheme.colorScheme.onSurface
+                          )
+                      )
                     }
-                  },
-                  modifier = Modifier.padding(bottom = Spacing.sm))
+                  }
 
               // Loading state
               if (uiState.isLoading) {
@@ -196,6 +229,8 @@ fun TasksScreen(
                 val currentTasks =
                     when (uiState.selectedFilter) {
                       TaskFilter.MINE -> uiState.myTasks.filter { !it.isCompleted }
+                      TaskFilter.TEAM -> uiState.allTasks.filter { !it.isCompleted }
+                      TaskFilter.THIS_WEEK -> uiState.allTasks.filter { !it.isCompleted }
                       TaskFilter.ALL -> uiState.allTasks.filter { !it.isCompleted }
                       TaskFilter.PROJECT -> uiState.allTasks.filter { !it.isCompleted }
                     }
@@ -203,6 +238,8 @@ fun TasksScreen(
                 val completedTasks =
                     when (uiState.selectedFilter) {
                       TaskFilter.MINE -> uiState.myTasks.filter { it.isCompleted }
+                      TaskFilter.TEAM -> uiState.allTasks.filter { it.isCompleted }
+                      TaskFilter.THIS_WEEK -> uiState.allTasks.filter { it.isCompleted }
                       TaskFilter.ALL -> uiState.allTasks.filter { it.isCompleted }
                       TaskFilter.PROJECT -> uiState.allTasks.filter { it.isCompleted }
                     }

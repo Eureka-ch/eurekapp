@@ -1,8 +1,8 @@
 package ch.eureka.eurekapp.ui.tasks
 
-import ch.eureka.eurekapp.model.task.Task
-import ch.eureka.eurekapp.model.template.TaskTemplate
-import ch.eureka.eurekapp.model.user.User
+import ch.eureka.eurekapp.model.data.task.Task
+import ch.eureka.eurekapp.model.data.template.TaskTemplate
+import ch.eureka.eurekapp.model.data.user.User
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.*
@@ -13,13 +13,13 @@ data class TaskUiModel(
     val template: TaskTemplate? = null,
     val assignee: User? = null,
     val progress: Float = 0.0f,
-    val isCompleted: Boolean = false
+    val isCompleted: Boolean = task.status == ch.eureka.eurekapp.model.data.task.TaskStatus.COMPLETED
 ) {
   val id: String
     get() = task.taskID
 
   val title: String
-    get() = template?.title ?: "Untitled Task"
+    get() = task.title.ifBlank { template?.title ?: "Untitled Task" }
   // val description: String get() = template?.description ?: ""
   val assigneeName: String
     get() = assignee?.displayName ?: "Unassigned"
@@ -72,12 +72,12 @@ data class TaskUiModel(
   private fun determineTags(): List<String> {
     val tags = mutableListOf<String>()
 
-    // Add tags based on template context
-    when (template?.contextType) {
-      ch.eureka.eurekapp.model.template.TemplateContextType.WORKSPACE -> tags.add("Workspace")
-      ch.eureka.eurekapp.model.template.TemplateContextType.GROUP -> tags.add("Group")
-      ch.eureka.eurekapp.model.template.TemplateContextType.PROJECT -> tags.add("Project")
-      null -> tags.add("General")
+    // Add tags based on task status
+    when (task.status) {
+      ch.eureka.eurekapp.model.data.task.TaskStatus.TODO -> tags.add("To Do")
+      ch.eureka.eurekapp.model.data.task.TaskStatus.IN_PROGRESS -> tags.add("In Progress")
+      ch.eureka.eurekapp.model.data.task.TaskStatus.COMPLETED -> tags.add("Completed")
+      ch.eureka.eurekapp.model.data.task.TaskStatus.CANCELLED -> tags.add("Cancelled")
     }
 
     // Add tags based on assignment status
