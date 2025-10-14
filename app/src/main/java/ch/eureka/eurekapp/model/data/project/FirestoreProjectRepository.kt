@@ -2,6 +2,7 @@ package ch.eureka.eurekapp.model.data.project
 
 import ch.eureka.eurekapp.model.data.FirestorePaths
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -33,7 +34,7 @@ class FirestoreProjectRepository(
     awaitClose { listener.remove() }
   }
 
-  override fun getProjectsForCurrentUser(): Flow<List<Project>> = callbackFlow {
+  override fun getProjectsForCurrentUser(skipCache: Boolean): Flow<List<Project>> = callbackFlow {
     val currentUserId = auth.currentUser?.uid
     if (currentUserId == null) {
       trySend(emptyList())
@@ -43,33 +44,21 @@ class FirestoreProjectRepository(
 
     val listener =
         firestore
-            .collectionGroup("members")
-            .whereEqualTo("userId", currentUserId)
+            .collection(FirestorePaths.PROJECTS)
+            .whereArrayContains("memberIds", currentUserId)
             .addSnapshotListener { snapshot, error ->
+              // Skip cached data if requested to avoid stale results
+              if (skipCache && snapshot?.metadata?.isFromCache == true) {
+                return@addSnapshotListener
+              }
               if (error != null) {
                 close(error)
                 return@addSnapshotListener
               }
-
-              val projectIds =
-                  snapshot?.documents?.mapNotNull { doc -> doc.reference.parent.parent?.id }
+              val projects =
+                  snapshot?.documents?.mapNotNull { it.toObject(Project::class.java) }
                       ?: emptyList()
-
-              if (projectIds.isEmpty()) {
-                trySend(emptyList())
-                return@addSnapshotListener
-              }
-
-              firestore
-                  .collection(FirestorePaths.PROJECTS)
-                  .whereIn("projectId", projectIds)
-                  .get()
-                  .addOnSuccessListener { projectSnapshot ->
-                    val projects =
-                        projectSnapshot.documents.mapNotNull { it.toObject(Project::class.java) }
-                    trySend(projects)
-                  }
-                  .addOnFailureListener { close(it) }
+              trySend(projects)
             }
     awaitClose { listener.remove() }
   }
@@ -81,7 +70,9 @@ class FirestoreProjectRepository(
   ): Result<String> = runCatching {
     val projectRef = firestore.collection(FirestorePaths.PROJECTS).document(project.projectId)
 
-    projectRef.set(project).await()
+    // Add creator to memberIds
+    val projectWithMember = project.copy(memberIds = listOf(creatorId))
+    projectRef.set(projectWithMember).await()
 
     // Then create initial member document (security rules require project to exist first)
     val member = Member(userId = creatorId, role = creatorRole)
@@ -122,23 +113,31 @@ class FirestoreProjectRepository(
       userId: String,
       role: ProjectRole
   ): Result<Unit> = runCatching {
-    val member = Member(userId = userId, role = role)
+    val projectRef = firestore.collection(FirestorePaths.PROJECTS).document(projectId)
+
     firestore
-        .collection(FirestorePaths.PROJECTS)
-        .document(projectId)
-        .collection("members")
-        .document(userId)
-        .set(member)
+        .runBatch { batch ->
+          // Update memberIds array
+          batch.update(projectRef, "memberIds", FieldValue.arrayUnion(userId))
+
+          // Create member document
+          val member = Member(userId = userId, role = role)
+          batch.set(projectRef.collection("members").document(userId), member)
+        }
         .await()
   }
 
   override suspend fun removeMember(projectId: String, userId: String): Result<Unit> = runCatching {
+    val projectRef = firestore.collection(FirestorePaths.PROJECTS).document(projectId)
+
     firestore
-        .collection(FirestorePaths.PROJECTS)
-        .document(projectId)
-        .collection("members")
-        .document(userId)
-        .delete()
+        .runBatch { batch ->
+          // Remove from memberIds array
+          batch.update(projectRef, "memberIds", FieldValue.arrayRemove(userId))
+
+          // Delete member document
+          batch.delete(projectRef.collection("members").document(userId))
+        }
         .await()
   }
 

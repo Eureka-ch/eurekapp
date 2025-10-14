@@ -13,7 +13,7 @@ interface MeetingRepository {
   fun getMeetingsForTask(projectId: String, taskId: String): Flow<List<Meeting>>
 
   /** Get meetings where current user is a participant with real-time updates */
-  fun getMeetingsForCurrentUser(projectId: String): Flow<List<Meeting>>
+  fun getMeetingsForCurrentUser(projectId: String, skipCache: Boolean = true): Flow<List<Meeting>>
 
   /** Create a new meeting */
   suspend fun createMeeting(

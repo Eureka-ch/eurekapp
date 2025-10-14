@@ -13,11 +13,13 @@ package ch.eureka.eurekapp.model.data.project
  * @property description Detailed description of the project's goals and scope.
  * @property status Current status of the project (OPEN, IN_PROGRESS, COMPLETED, ARCHIVED).
  * @property createdBy User ID of the person who created this project.
+ * @property memberIds List of user IDs who are members of this project (for efficient queries).
  */
 data class Project(
     val projectId: String = "",
     val name: String = "",
     val description: String = "",
     val status: ProjectStatus = ProjectStatus.OPEN,
-    val createdBy: String = ""
+    val createdBy: String = "",
+    val memberIds: List<String> = emptyList()
 )

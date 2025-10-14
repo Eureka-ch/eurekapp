@@ -2,6 +2,7 @@ package ch.eureka.eurekapp.model.data.meeting
 
 import ch.eureka.eurekapp.model.data.FirestorePaths
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -70,7 +71,10 @@ class FirestoreMeetingRepository(
         awaitClose { listener.remove() }
       }
 
-  override fun getMeetingsForCurrentUser(projectId: String): Flow<List<Meeting>> = callbackFlow {
+  override fun getMeetingsForCurrentUser(
+      projectId: String,
+      skipCache: Boolean
+  ): Flow<List<Meeting>> = callbackFlow {
     val currentUserId = auth.currentUser?.uid
     if (currentUserId == null) {
       trySend(emptyList())
@@ -80,35 +84,23 @@ class FirestoreMeetingRepository(
 
     val listener =
         firestore
-            .collectionGroup("participants")
-            .whereEqualTo("userId", currentUserId)
+            .collection(FirestorePaths.PROJECTS)
+            .document(projectId)
+            .collection(FirestorePaths.MEETINGS)
+            .whereArrayContains("participantIds", currentUserId)
             .addSnapshotListener { snapshot, error ->
+              // Skip cached data if requested to avoid stale results
+              if (skipCache && snapshot?.metadata?.isFromCache == true) {
+                return@addSnapshotListener
+              }
               if (error != null) {
                 close(error)
                 return@addSnapshotListener
               }
-
-              val meetingIds =
-                  snapshot?.documents?.mapNotNull { doc -> doc.reference.parent.parent?.id }
+              val meetings =
+                  snapshot?.documents?.mapNotNull { it.toObject(Meeting::class.java) }
                       ?: emptyList()
-
-              if (meetingIds.isEmpty()) {
-                trySend(emptyList())
-                return@addSnapshotListener
-              }
-
-              firestore
-                  .collection(FirestorePaths.PROJECTS)
-                  .document(projectId)
-                  .collection(FirestorePaths.MEETINGS)
-                  .whereIn("meetingID", meetingIds)
-                  .get()
-                  .addOnSuccessListener { meetingSnapshot ->
-                    val meetings =
-                        meetingSnapshot.documents.mapNotNull { it.toObject(Meeting::class.java) }
-                    trySend(meetings)
-                  }
-                  .addOnFailureListener { close(it) }
+              trySend(meetings)
             }
     awaitClose { listener.remove() }
   }
@@ -118,12 +110,15 @@ class FirestoreMeetingRepository(
       creatorId: String,
       creatorRole: MeetingRole
   ): Result<String> = runCatching {
+    // Add creator to participantIds
+    val meetingWithParticipant = meeting.copy(participantIds = listOf(creatorId))
+
     firestore
         .collection(FirestorePaths.PROJECTS)
         .document(meeting.projectId)
         .collection(FirestorePaths.MEETINGS)
         .document(meeting.meetingID)
-        .set(meeting)
+        .set(meetingWithParticipant)
         .await()
 
     val participant = Participant(userId = creatorId, role = creatorRole)
@@ -189,15 +184,22 @@ class FirestoreMeetingRepository(
       userId: String,
       role: MeetingRole
   ): Result<Unit> = runCatching {
-    val participant = Participant(userId = userId, role = role)
+    val meetingRef =
+        firestore
+            .collection(FirestorePaths.PROJECTS)
+            .document(projectId)
+            .collection(FirestorePaths.MEETINGS)
+            .document(meetingId)
+
     firestore
-        .collection(FirestorePaths.PROJECTS)
-        .document(projectId)
-        .collection(FirestorePaths.MEETINGS)
-        .document(meetingId)
-        .collection("participants")
-        .document(userId)
-        .set(participant)
+        .runBatch { batch ->
+          // Update participantIds array
+          batch.update(meetingRef, "participantIds", FieldValue.arrayUnion(userId))
+
+          // Create participant document
+          val participant = Participant(userId = userId, role = role)
+          batch.set(meetingRef.collection("participants").document(userId), participant)
+        }
         .await()
   }
 
@@ -206,14 +208,21 @@ class FirestoreMeetingRepository(
       meetingId: String,
       userId: String
   ): Result<Unit> = runCatching {
+    val meetingRef =
+        firestore
+            .collection(FirestorePaths.PROJECTS)
+            .document(projectId)
+            .collection(FirestorePaths.MEETINGS)
+            .document(meetingId)
+
     firestore
-        .collection(FirestorePaths.PROJECTS)
-        .document(projectId)
-        .collection(FirestorePaths.MEETINGS)
-        .document(meetingId)
-        .collection("participants")
-        .document(userId)
-        .delete()
+        .runBatch { batch ->
+          // Remove from participantIds array
+          batch.update(meetingRef, "participantIds", FieldValue.arrayRemove(userId))
+
+          // Delete participant document
+          batch.delete(meetingRef.collection("participants").document(userId))
+        }
         .await()
   }
 

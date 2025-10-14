@@ -15,6 +15,8 @@ package ch.eureka.eurekapp.model.data.meeting
  * @property status Current status of the meeting (SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED).
  * @property attachmentUrls List of file URLs attached to this meeting (notes, recordings, etc.).
  * @property createdBy User ID of the person who created this meeting.
+ * @property participantIds List of user IDs who are participants in this meeting (for efficient
+ *   queries).
  */
 data class Meeting(
     val meetingID: String = "",
@@ -23,5 +25,6 @@ data class Meeting(
     val title: String = "",
     val status: MeetingStatus = MeetingStatus.SCHEDULED,
     val attachmentUrls: List<String> = emptyList(),
-    val createdBy: String = ""
+    val createdBy: String = "",
+    val participantIds: List<String> = emptyList()
 )

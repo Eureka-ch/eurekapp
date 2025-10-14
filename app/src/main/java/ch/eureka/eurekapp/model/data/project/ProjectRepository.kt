@@ -7,7 +7,7 @@ interface ProjectRepository {
   fun getProjectById(projectId: String): Flow<Project?>
 
   /** Get all projects for current user with real-time updates */
-  fun getProjectsForCurrentUser(): Flow<List<Project>>
+  fun getProjectsForCurrentUser(skipCache: Boolean = true): Flow<List<Project>>
 
   /** Create a new project */
   suspend fun createProject(
