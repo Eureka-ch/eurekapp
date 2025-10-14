@@ -26,10 +26,10 @@ object EColors {
   private val InfoBlue = Color(0xFF2196F3) // Blue for info states
 
   // Light theme colors from Figma
-  private val LightBackground = Color(0xFFF5F5F5) // Light gray background
+  private val LightBackground = Color.White // Pure white background
   private val LightSurface = Color.White // White cards/surfaces
   private val LightOnSurface = Color(0xFF212121) // Dark text for titles
-  private val LightOnSurfaceVariant = Color(0xFF757575) // Medium gray for body text
+  private val LightOnSurfaceVariant = Color(0xFF424242) // Darker gray for better contrast
   private val LightOutlineVariant = Color(0xFF9E9E9E) // Light gray for secondary text
 
   // Dark theme colors
@@ -51,7 +51,11 @@ object EColors {
           onBackground = LightOnSurface,
           surface = LightSurface,
           onSurface = LightOnSurface,
+          surfaceVariant = Color.White, // Force surfaceVariant to white
           onSurfaceVariant = LightOnSurfaceVariant,
+          surfaceContainer = Color.White, // Force surfaceContainer to white
+          surfaceContainerHigh = Color.White, // Force surfaceContainerHigh to white
+          surfaceContainerHighest = Color.White, // Force surfaceContainerHighest to white
           outlineVariant = LightOutlineVariant,
           error = Color(0xFFB3261E),
           onError = Color.White)

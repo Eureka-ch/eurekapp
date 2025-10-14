@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.ui.tasks
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,16 +19,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.ui.components.EurekaBottomNav
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.components.EurekaTaskCard
 import ch.eureka.eurekapp.ui.components.NavItem
-import ch.eureka.eurekapp.ui.designsystem.EurekaTheme
+import ch.eureka.eurekapp.ui.theme.EurekappTheme
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
-import ch.eureka.eurekapp.ui.tasks.components.EnhancedTaskCard
 import ch.eureka.eurekapp.ui.tasks.components.TaskActionButtons
 import ch.eureka.eurekapp.ui.tasks.components.TaskSectionHeader
 
@@ -40,63 +42,6 @@ object TasksScreenTestTags {
   const val TASK_LIST = "taskList"
 }
 
-@Preview(showBackground = true)
-@Composable
-private fun TasksScreenPreviewLight() {
-  EurekaTheme(darkTheme = false) {
-    Column(
-        modifier = Modifier.padding(Spacing.md),
-        verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-          Text(
-              text = "Task",
-              style = MaterialTheme.typography.headlineLarge,
-              fontWeight = FontWeight.Bold,
-              color = MaterialTheme.colorScheme.onSurface)
-
-          Text(
-              text = "Manage and track your project tasks",
-              style = MaterialTheme.typography.bodyMedium,
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-              modifier = Modifier.padding(top = Spacing.xs))
-
-          TaskActionButtons(
-              onCreateTaskClick = {},
-              onAutoAssignClick = {},
-              modifier = Modifier.padding(top = Spacing.md))
-
-          LazyRow(
-              horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
-              modifier = Modifier.padding(bottom = Spacing.sm)) {
-                val filterOptions = listOf("Me", "Team", "This week", "All", "Project")
-                items(filterOptions) { option ->
-                  FilterChip(
-                      onClick = {},
-                      label = { Text(option) },
-                      selected = option == "Me",
-                      colors = FilterChipDefaults.filterChipColors(
-                          selectedContainerColor = MaterialTheme.colorScheme.primary,
-                          selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                          containerColor = MaterialTheme.colorScheme.surface,
-                          labelColor = MaterialTheme.colorScheme.onSurface
-                      )
-                  )
-                }
-              }
-
-          Text(
-              text = "0 tasks",
-              style = MaterialTheme.typography.bodySmall,
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-              modifier = Modifier.padding(bottom = Spacing.md))
-
-          Text(
-              text = "No tasks found",
-              style = MaterialTheme.typography.bodyLarge,
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-              modifier = Modifier.padding(Spacing.lg))
-        }
-  }
-}
 
 
 
@@ -261,9 +206,18 @@ fun TasksScreen(
                           TaskSectionHeader(title = "Current Tasks", taskCount = currentTasks.size)
                         }
 
-                        items(currentTasks, key = { it.id }) { task ->
-                          EnhancedTaskCard(task = task, onTaskClick = onTaskClick)
-                        }
+                          items(currentTasks, key = { it.id }) { task ->
+                            EurekaTaskCard(
+                                title = task.title,
+                                dueDate = task.dueDate,
+                                assignee = task.assigneeName,
+                                priority = task.priority,
+                                progressText = task.progressText,
+                                progressValue = task.progressValue,
+                                isCompleted = task.isCompleted,
+                                onToggleComplete = { viewModel.toggleTaskCompletion(task.id) }
+                            )
+                          }
                       }
 
                       // Completed tasks section
@@ -275,9 +229,18 @@ fun TasksScreen(
                               modifier = Modifier.padding(top = Spacing.lg))
                         }
 
-                        items(completedTasks, key = { it.id }) { task ->
-                          EnhancedTaskCard(task = task, onTaskClick = onTaskClick)
-                        }
+                          items(completedTasks, key = { it.id }) { task ->
+                            EurekaTaskCard(
+                                title = task.title,
+                                dueDate = task.dueDate,
+                                assignee = task.assigneeName,
+                                priority = task.priority,
+                                progressText = task.progressText,
+                                progressValue = task.progressValue,
+                                isCompleted = task.isCompleted,
+                                onToggleComplete = { viewModel.toggleTaskCompletion(task.id) }
+                            )
+                          }
                       }
 
                       // Empty state
@@ -307,3 +270,28 @@ fun TasksScreen(
             }
       }
 }
+
+@Preview
+@Composable
+private fun TasksScreenPreview() {
+  EurekappTheme(darkTheme = false) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+          
+          EurekaTaskCard(
+              title = "Implement Overview Screen",
+              dueDate = "Due: Today · 23:59",
+              assignee = "Assigned: Ismail",
+              priority = "High Priority",
+              progressText = "65%",
+              progressValue = 0.65f,
+              isCompleted = false,
+              onToggleComplete = {}
+          )
+        }
+  }
+}
+
