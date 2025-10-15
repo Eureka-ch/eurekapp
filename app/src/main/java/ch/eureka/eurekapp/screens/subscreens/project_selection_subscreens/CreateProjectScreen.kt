@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,7 +16,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.ButtonDefaults
@@ -47,9 +50,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -61,10 +66,12 @@ import ch.eureka.eurekapp.ui.theme.BackgroundGray
 import ch.eureka.eurekapp.ui.theme.Black
 import ch.eureka.eurekapp.ui.theme.BorderGrayColor
 import ch.eureka.eurekapp.ui.theme.DarkerGray
+import ch.eureka.eurekapp.ui.theme.LightRed
 import ch.eureka.eurekapp.ui.theme.LightingBlue
 import ch.eureka.eurekapp.ui.theme.NormalTextGray
 import ch.eureka.eurekapp.ui.theme.Typography
 import ch.eureka.eurekapp.ui.theme.White
+import ch.eureka.eurekapp.utils.Utils
 import ch.eureka.eurekapp.utils.Utils.convertMillisToDate
 
 /**
@@ -78,15 +85,25 @@ fun CreateProjectScreen(
     createProjectViewModel: CreateProjectViewModel = viewModel()
 ) {
     val projectName = remember { mutableStateOf<String>("") }
+    val projectNameError = remember { mutableStateOf<Boolean>(false) }
+
     val projectDescription = remember { mutableStateOf<String>("") }
+    val projectDescriptionError = remember { mutableStateOf<Boolean>(false) }
+
     val startDate = remember { mutableStateOf<String>("") }
+    val startDateError = remember { mutableStateOf<Boolean>(false) }
+
     val endDate = remember { mutableStateOf<String>("") }
+    val endDateError = remember { mutableStateOf<Boolean>(false) }
+
     val projectStatus = remember { mutableStateOf<ProjectStatus>(ProjectStatus.OPEN) }
 
     val enableGoogleDriveFolderChecked = remember { mutableStateOf<Boolean>(false) }
     val linkGithubRepository = remember { mutableStateOf<Boolean>(false) }
 
     val githubUrl = remember { mutableStateOf<String>("") }
+
+    val scrollState = rememberScrollState()
 
     Column(modifier = Modifier.fillMaxSize().background(color = BackgroundGray),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -113,34 +130,41 @@ fun CreateProjectScreen(
 
         ){
             Column(
-                modifier = Modifier.padding(vertical = 5.dp).fillMaxSize(),
+                modifier = Modifier.padding(vertical = 5.dp).fillMaxWidth().verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ){
                 Row(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ){
                     CreateProjectTextField(
                         title = "Project name",
                         placeHolderText = "Ex: SwEnt - Sprint Manager",
-                        textValue = projectName
+                        textValue = projectName,
+                        inputIsError = {input -> Utils.stringIsEmptyOrBlank(input)},
+                        errorText = "Project name cannot be empty!",
+                        isErrorState = projectNameError
                     )
                 }
                 Row(
-                    modifier = Modifier.weight(1.5f).fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ){
                     CreateProjectTextField(
                         title = "Description",
                         placeHolderText = "Short context and objectives...",
-                        textValue = projectDescription
+                        textValue = projectDescription,
+                        inputIsError = {input -> Utils.stringIsEmptyOrBlank(input)},
+                        errorText = "Description cannot be empty!",
+                        minLine = 4,
+                        isErrorState = projectDescriptionError
                     )
                 }
-                Row(modifier = Modifier.weight(0.9f).fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
+                Row(modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically){
                     Row(modifier = Modifier.weight(1f),
                         horizontalArrangement = Arrangement.Center,
@@ -149,10 +173,13 @@ fun CreateProjectScreen(
                             title = "Start",
                             placeHolderText = "dd/MM/yyyy",
                             isDatePicker = true,
-                            textValue = startDate
+                            textValue = startDate,
+                            inputIsError = {input ->
+                                !Utils.isDateParseableToStandardAppPattern(input)},
+                            errorText = "Date should be of the format dd/MM/yyyy",
+                            isErrorState = startDateError
                         )
                     }
-                    Spacer(modifier = Modifier.padding(1.dp))
                     Row(modifier = Modifier.weight(1f),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically){
@@ -160,12 +187,15 @@ fun CreateProjectScreen(
                             title = "End (optional)",
                             placeHolderText = "dd/MM/yyyy",
                             isDatePicker = true,
-                            textValue = endDate
+                            textValue = endDate,
+                            inputIsError = {input -> !Utils.isDateParseableToStandardAppPattern(input)},
+                            errorText = "Date should be of the format dd/MM/yyyy",
+                            isErrorState = endDateError
                         )
                     }
                 }
 
-                Row(modifier = Modifier.weight(1f).fillMaxWidth(),
+                Row(modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically){
                     ProjectStateSelectionMenu(
@@ -176,7 +206,7 @@ fun CreateProjectScreen(
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 15.dp),
                     thickness = 1.dp, color=BorderGrayColor)
 
-                Column(modifier = Modifier.weight(1.5f).fillMaxWidth()
+                Column(modifier = Modifier.fillMaxWidth()
                     .padding(horizontal = 15.dp, vertical = 5.dp),
                     horizontalAlignment = Alignment.Start){
                     Text("Integrations", style = Typography.titleMedium,
@@ -186,16 +216,25 @@ fun CreateProjectScreen(
                     CheckboxOptionComponent("Link Github Repository",
                         linkGithubRepository)
 
+
                     if(linkGithubRepository.value){
-                        CreateProjectTextField(
-                            title = "Github URL (optional)",
-                            placeHolderText = "https://github.com/org/repo",
-                            textValue = githubUrl
-                        )
+                        Row(
+                            modifier = Modifier
+                        ){
+                            CreateProjectTextField(
+                                title = "Github URL (optional)",
+                                placeHolderText = "https://github.com/org/repo",
+                                textValue = githubUrl,
+                                inputIsError = {input -> false},
+                                errorText = ""
+                            )
+                        }
                     }
                 }
 
-                Row(modifier = Modifier.weight(1f)
+                Spacer(modifier = Modifier.weight(1f))
+
+                Row(modifier = Modifier
                     .fillMaxWidth().padding(horizontal = 10.dp), horizontalArrangement =
                     Arrangement.Start, verticalAlignment = Alignment.CenterVertically){
                     FilledTonalButton(
@@ -228,55 +267,78 @@ private val defaultPopupProperties = PopupProperties(
 @Composable
 fun CreateProjectTextField(title: String,
                            textValue: MutableState<String>,
-                           placeHolderText: String, isDatePicker: Boolean = false){
+                           placeHolderText: String,
+                           isErrorState: MutableState<Boolean> =
+                               remember { mutableStateOf<Boolean>(false) },
+                           inputIsError: (String) -> Boolean,
+                           errorText: String,
+                           minLine: Int = 1,
+                           isDatePicker: Boolean = false){
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
+
     val selectedDate = datePickerState.selectedDateMillis?.let {
         val converted = convertMillisToDate(it)
         textValue.value = converted
         converted
     } ?: ""
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = horizontalContainerPadding,
-            vertical = verticalContainerPadding),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ){
-        var text by remember { mutableStateOf("") }
-        Text(modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
-            text = title, style = titleTypography, color = NormalTextGray,
-            textAlign = TextAlign.Start)
-        Spacer(modifier = Modifier.padding(2.dp))
-        OutlinedTextField(
-            modifier = Modifier.padding(horizontal = 5.dp, vertical = 0.dp)
-                .background(color = White).fillMaxWidth().fillMaxHeight(),
-            shape = textFieldShape,
-            value = if(!isDatePicker) textValue.value else selectedDate,
-            onValueChange = {
-                if(!isDatePicker){
-                    textValue.value = it
-                }
-            },
-            textStyle = textTypography,
-            placeholder = {
-                Text(placeHolderText, style = textTypography, color = NormalTextGray)
-            },
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                focusedBorderColor = DarkerGray,
-                unfocusedBorderColor = BorderGrayColor
-            ),
-            trailingIcon = {
-                if(isDatePicker){
-                    IconButton(onClick = { showDatePicker = !showDatePicker }) {
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = "Select date"
-                        )
-                    }
-                }
-            }
 
-        )
+    Column(modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center){
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = horizontalContainerPadding,
+                vertical = verticalContainerPadding),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ){
+            Text(modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
+                text = title, style = titleTypography, color = NormalTextGray,
+                textAlign = TextAlign.Start)
+            Spacer(modifier = Modifier.padding(2.dp))
+            OutlinedTextField(
+                minLines = minLine,
+                singleLine = isDatePicker,
+                readOnly = isDatePicker,
+                modifier = Modifier.padding(horizontal = 5.dp, vertical = 0.dp)
+                    .background(color = White).fillMaxWidth(),
+                shape = textFieldShape,
+                value = if(!isDatePicker) textValue.value else selectedDate,
+                onValueChange = {
+                    if(!isDatePicker){
+                        textValue.value = it
+                        isErrorState.value = inputIsError(it)
+                    }
+                },
+                textStyle = textTypography,
+                placeholder = {
+                    Text(placeHolderText, style = textTypography, color = NormalTextGray)
+                },
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = DarkerGray,
+                    unfocusedBorderColor = BorderGrayColor
+                ),
+                trailingIcon = {
+                    if(isDatePicker){
+                        IconButton(onClick = { showDatePicker = !showDatePicker }) {
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = "Select date"
+                            )
+                        }
+                    }
+                },
+                isError = isErrorState.value
+
+            )
+        }
+        Row(modifier = Modifier, horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically){
+            Spacer(modifier = Modifier.padding(2.dp))
+            if(isErrorState.value){
+                Text(errorText, style = TextStyle(fontSize = 10.sp), color = LightRed)
+            }
+        }
     }
 
     if(showDatePicker){
