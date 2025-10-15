@@ -80,7 +80,8 @@ class TaskBusinessLogicTest {
     val futureDate = Date(System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000)
     val timestamp = Timestamp(futureDate)
     val result = TaskBusinessLogic.formatDueDate(timestamp)
-    assertTrue("Should contain 'Due in' and 'days'", result.contains("Due in") && result.contains("days"))
+    assertTrue(
+        "Should contain 'Due in' and 'days'", result.contains("Due in") && result.contains("days"))
   }
 
   @Test
