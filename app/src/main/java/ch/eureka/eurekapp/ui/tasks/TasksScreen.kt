@@ -50,37 +50,30 @@ object TasksScreenTestTags {
  * @param modifier Modifier for the composable
  * @param viewModel ViewModel for task state management
  */
-/**
- * Convert a Task to TaskUiModel for UI display This function handles the UI model conversion in the
- * UI layer
- */
-@Composable
-private fun Task.toTaskUiModel(): TaskUiModel {
-  return TaskUiModel(
-      task = this,
-      template = null, // TODO: Load template if needed
-      assignee = null, // TODO: Load assignee if needed
-      progress = 0.0f,
-      isCompleted = TaskBusinessLogic.isTaskCompleted(this) // Business logic in UI layer for now
-      )
-}
 
 /**
- * Render a task card with proper UI model conversion Wraps EurekaTaskCard instantiation as
- * requested in code review
+ * Render a task card with individual properties Uses ViewModel computed properties directly for
+ * better performance
  */
 @Composable
-private fun TaskCard(task: Task, onToggleComplete: () -> Unit, modifier: Modifier = Modifier) {
-  val taskUiModel = task.toTaskUiModel()
-
+private fun TaskCard(
+    task: Task,
+    title: String,
+    assigneeName: String,
+    progressText: String,
+    progressValue: Float,
+    isCompleted: Boolean,
+    onToggleComplete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
   EurekaTaskCard(
-      title = taskUiModel.title,
-      dueDate = TaskBusinessLogic.formatDueDate(taskUiModel.task.dueDate),
-      assignee = taskUiModel.assigneeName,
-      priority = TaskBusinessLogic.determinePriority(taskUiModel.task),
-      progressText = taskUiModel.progressText,
-      progressValue = taskUiModel.progressValue,
-      isCompleted = taskUiModel.isCompleted,
+      title = title,
+      dueDate = TaskBusinessLogic.formatDueDate(task.dueDate),
+      assignee = assigneeName,
+      priority = TaskBusinessLogic.determinePriority(task),
+      progressText = progressText,
+      progressValue = progressValue,
+      isCompleted = isCompleted,
       onToggleComplete = onToggleComplete,
       modifier = modifier)
 }
@@ -211,8 +204,15 @@ fun TasksScreen(
                     }
               } else {
                 // Content
-                val currentTasks = viewModel.getIncompleteTasks()
-                val completedTasks = viewModel.getCompletedTasks()
+                val rawTasks by viewModel.rawTasks.collectAsState()
+                val titles by viewModel.taskTitles.collectAsState()
+                val assigneeNames by viewModel.assigneeNames.collectAsState()
+                val progressTexts by viewModel.progressTexts.collectAsState()
+                val progressValues by viewModel.progressValues.collectAsState()
+                val isCompletedList by viewModel.isCompletedList.collectAsState()
+
+                val currentTasks = rawTasks.filterIndexed { index, _ -> !isCompletedList[index] }
+                val completedTasks = rawTasks.filterIndexed { index, _ -> isCompletedList[index] }
 
                 // Task count
                 Text(
@@ -232,8 +232,14 @@ fun TasksScreen(
                         }
 
                         items(currentTasks, key = { it.taskID }) { task ->
+                          val index = rawTasks.indexOf(task)
                           TaskCard(
                               task = task,
+                              title = titles[index],
+                              assigneeName = assigneeNames[index],
+                              progressText = progressTexts[index],
+                              progressValue = progressValues[index],
+                              isCompleted = isCompletedList[index],
                               onToggleComplete = { viewModel.toggleTaskCompletion(task.taskID) })
                         }
                       }
@@ -248,8 +254,14 @@ fun TasksScreen(
                         }
 
                         items(completedTasks, key = { it.taskID }) { task ->
+                          val index = rawTasks.indexOf(task)
                           TaskCard(
                               task = task,
+                              title = titles[index],
+                              assigneeName = assigneeNames[index],
+                              progressText = progressTexts[index],
+                              progressValue = progressValues[index],
+                              isCompleted = isCompletedList[index],
                               onToggleComplete = { viewModel.toggleTaskCompletion(task.taskID) })
                         }
                       }

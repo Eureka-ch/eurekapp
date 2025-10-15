@@ -5,10 +5,16 @@ import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
-import com.google.firebase.auth.FirebaseAuth
+import ch.eureka.eurekapp.model.data.template.TaskTemplate
+import ch.eureka.eurekapp.model.data.user.User
+import ch.eureka.eurekapp.model.utils.TaskBusinessLogic
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /** UI state data class for TasksScreen Contains all the data needed to render the tasks screen */
@@ -50,8 +56,14 @@ class TaskViewModel(private val taskRepository: TaskRepository) : ViewModel() {
   private val _uiState = MutableStateFlow(TaskUiState())
   val uiState: StateFlow<TaskUiState> = _uiState.asStateFlow()
 
+  // Additional data needed for TaskUiModel creation
+  private val _assignees = MutableStateFlow<List<User>>(emptyList())
+  private val _templates = MutableStateFlow<List<TaskTemplate>>(emptyList())
+
   init {
     loadTasks()
+    loadAssignees() // TODO: Implement when UserRepository is available
+    loadTemplates() // TODO: Implement when TemplateRepository is available
   }
 
   /**
@@ -82,48 +94,86 @@ class TaskViewModel(private val taskRepository: TaskRepository) : ViewModel() {
     _uiState.value = _uiState.value.copy(selectedFilter = filter)
   }
 
-  /** Get filtered tasks based on current filter */
-  fun getFilteredTasks(): List<Task> {
-    val state = _uiState.value
-    return when (state.selectedFilter) {
-      TaskFilter.MINE ->
-          state.rawTasks.filter { task ->
-            task.assignedUserIds.contains(FirebaseAuth.getInstance().currentUser?.uid)
+  /**
+   * Computed properties for UI - replaces TaskUiModel Each property provides UI-ready data for
+   * tasks
+   */
+  val taskTitles: StateFlow<List<String>> =
+      combine(_uiState.map { it.rawTasks }, _templates) { tasks, templates ->
+            tasks.map { task ->
+              task.title.ifBlank {
+                templates.find { it.templateID == task.templateId }?.title ?: "Untitled Task"
+              }
+            }
           }
-      TaskFilter.TEAM ->
-          state.rawTasks.filter { task ->
-            task.assignedUserIds.isNotEmpty() &&
-                !task.assignedUserIds.contains(FirebaseAuth.getInstance().currentUser?.uid)
+          .stateIn(
+              scope = viewModelScope,
+              started = SharingStarted.WhileSubscribed(5000),
+              initialValue = emptyList())
+
+  val assigneeNames: StateFlow<List<String>> =
+      combine(_uiState.map { it.rawTasks }, _assignees) { tasks, assignees ->
+            tasks.map { task ->
+              val assignee = assignees.find { it.uid in task.assignedUserIds }
+              assignee?.displayName ?: "Unassigned"
+            }
           }
-      TaskFilter.THIS_WEEK ->
-          state.rawTasks.filter { task ->
-            // Simple logic: tasks due within 7 days
-            task.dueDate?.let { dueDate ->
-              val now = System.currentTimeMillis()
-              val taskTime = dueDate.toDate().time
-              val diffInDays = (taskTime - now) / (1000 * 60 * 60 * 24)
-              diffInDays in 0..7
-            } ?: false
+          .stateIn(
+              scope = viewModelScope,
+              started = SharingStarted.WhileSubscribed(5000),
+              initialValue = emptyList())
+
+  val progressValues: StateFlow<List<Float>> =
+      _uiState
+          .map { state ->
+            state.rawTasks.map { task ->
+              when (task.status) {
+                TaskStatus.COMPLETED -> 1.0f
+                TaskStatus.IN_PROGRESS -> 0.5f
+                TaskStatus.TODO -> 0.0f
+                else -> 0.0f
+              }
+            }
           }
-      TaskFilter.ALL -> state.rawTasks
-      TaskFilter.PROJECT -> {
-        if (state.projectId != null) {
-          state.rawTasks.filter { task -> task.projectId == state.projectId }
-        } else {
-          emptyList()
-        }
-      }
-    }
+          .stateIn(
+              scope = viewModelScope,
+              started = SharingStarted.WhileSubscribed(5000),
+              initialValue = emptyList())
+
+  val progressTexts: StateFlow<List<String>> =
+      progressValues
+          .map { progressList -> progressList.map { progress -> "${(progress * 100).toInt()}%" } }
+          .stateIn(
+              scope = viewModelScope,
+              started = SharingStarted.WhileSubscribed(5000),
+              initialValue = emptyList())
+
+  val isCompletedList: StateFlow<List<Boolean>> =
+      _uiState
+          .map { state -> state.rawTasks.map { task -> TaskBusinessLogic.isTaskCompleted(task) } }
+          .stateIn(
+              scope = viewModelScope,
+              started = SharingStarted.WhileSubscribed(5000),
+              initialValue = emptyList())
+
+  val rawTasks: StateFlow<List<Task>> =
+      _uiState
+          .map { it.rawTasks }
+          .stateIn(
+              scope = viewModelScope,
+              started = SharingStarted.WhileSubscribed(5000),
+              initialValue = emptyList())
+
+  /** Load assignees (placeholder for now) */
+  private fun loadAssignees() {
+    // TODO: Implement when UserRepository is available
+    // For now, keep empty list
   }
 
-  /** Get incomplete tasks from filtered results */
-  fun getIncompleteTasks(): List<Task> {
-    return getFilteredTasks().filter { task -> task.status != TaskStatus.COMPLETED }
-  }
-
-  /** Get completed tasks from filtered results */
-  fun getCompletedTasks(): List<Task> {
-    return getFilteredTasks().filter { task -> task.status == TaskStatus.COMPLETED }
+  /** Load templates (placeholder for now) */
+  private fun loadTemplates() {
+    // TODO: Implement when TemplateRepository is available
+    // For now, keep empty list
   }
 
   /**
