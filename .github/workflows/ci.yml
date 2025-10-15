@@ -75,6 +75,7 @@ jobs:
         env:
           GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
           FIRESTORE_RULES: ${{ secrets.FIRESTORE_RULES }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
 
         run: |
           if [ -n "$GOOGLE_SERVICES" ]; then
@@ -87,10 +88,11 @@ jobs:
             echo "$FIRESTORE_RULES" | base64 --decode > ./firebase/firestore/firestore.rules
           fi
 
-          if [ -n "$LOCAL_PROPERTIES" ]; then
-            echo "$LOCAL_PROPERTIES" | base64 --decode > ./local.properties
+          # Create local.properties with DEEPSEEK_API_KEY
+          if [ -n "$DEEPSEEK_API_KEY" ]; then
+            echo "DEEPSEEK_API_KEY=$DEEPSEEK_API_KEY" > ./local.properties
           else
-            echo "::warning::LOCAL_PROPERTIES secret is not set. local.properties will not be created. Should be present after B3"
+            echo "::warning::DEEPSEEK_API_KEY secret is not set. local.properties will not include API key."
           fi
 
       - name: Grant execute permission for gradlew
