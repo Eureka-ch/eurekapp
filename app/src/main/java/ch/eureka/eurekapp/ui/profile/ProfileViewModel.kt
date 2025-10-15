@@ -16,7 +16,8 @@ data class ProfileUIState(val user: User? = null, val isEditing: Boolean = false
 
 /** ViewModel for the profile screen. */
 class ProfileViewModel(
-    private val userRepository: UserRepository = UserRepositoryProvider.repository
+    private val userRepository: UserRepository = UserRepositoryProvider.repository,
+    private val userId: String? = FirebaseAuth.getInstance().currentUser?.uid
 ) : ViewModel() {
 
   private val _uiState = MutableStateFlow(ProfileUIState())
@@ -28,10 +29,10 @@ class ProfileViewModel(
 
   /** Loads the current user's profile data. */
   private fun loadUserProfile() {
-    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+    val uid = userId ?: return
 
     viewModelScope.launch {
-      userRepository.getUserById(userId).collect { user ->
+      userRepository.getUserById(uid).collect { user ->
         _uiState.update { it.copy(user = user) }
       }
     }

@@ -8,7 +8,6 @@ import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.ui.profile.ProfileViewModel
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import io.mockk.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
@@ -17,19 +16,39 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
+/** Fake UserRepository for testing */
+class FakeUserRepository : UserRepository {
+  val userFlow = MutableStateFlow<User?>(null)
+  var saveUserResult: Result<Unit> = Result.success(Unit)
+  val savedUsers = mutableListOf<User>()
+
+  override fun getUserById(userId: String) = userFlow
+
+  override fun getCurrentUser() = userFlow
+
+  override suspend fun saveUser(user: User): Result<Unit> {
+    savedUsers.add(user)
+    if (saveUserResult.isSuccess) {
+      userFlow.value = user
+    }
+    return saveUserResult
+  }
+
+  override suspend fun updateLastActive(userId: String) = Result.success(Unit)
+}
+
 @RunWith(AndroidJUnit4::class)
 class ProfileScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
-  private lateinit var userRepository: UserRepository
+  private lateinit var userRepository: FakeUserRepository
   private lateinit var firebaseAuth: FirebaseAuth
-  private lateinit var firebaseUser: FirebaseUser
-  private lateinit var userFlow: MutableStateFlow<User?>
 
+  private val testUserId = "test-uid"
   private val testUser =
       User(
-          uid = "test-uid",
+          uid = testUserId,
           displayName = "John Doe",
           email = "john.doe@example.com",
           photoUrl = "https://example.com/photo.jpg",
@@ -47,18 +66,11 @@ class ProfileScreenTest {
   fun setup() {
     // Mock FirebaseAuth
     firebaseAuth = mockk(relaxed = true)
-    firebaseUser = mockk(relaxed = true)
-    every { firebaseUser.uid } returns "test-uid"
-    every { firebaseAuth.currentUser } returns firebaseUser
 
-    mockkStatic(FirebaseAuth::class)
-    every { FirebaseAuth.getInstance() } returns firebaseAuth
-
-    // Mock Userrepository
-    userRepository = mockk()
-    userFlow = MutableStateFlow(testUser)
-    every { userRepository.getUserById(any()) } returns userFlow
-    coEvery { userRepository.saveUser(any()) } returns Result.success(Unit)
+    // Use Fake UserRepository
+    userRepository = FakeUserRepository()
+    userRepository.userFlow.value = testUser
+    userRepository.saveUserResult = Result.success(Unit)
   }
 
   @After
@@ -69,10 +81,10 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_displaysUserInformation() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
+    val viewModel = ProfileViewModel(userRepository, testUserId)
 
     // When
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
 
     // Then
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.PROFILE_SCREEN).assertIsDisplayed()
@@ -87,10 +99,10 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_displaysProfilePictureWhenPhotoUrlExists() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
+    val viewModel = ProfileViewModel(userRepository, testUserId)
 
     // When
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
 
     // Then
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.PROFILE_PICTURE).assertIsDisplayed()
@@ -99,11 +111,11 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_displaysFallbackIconWhenPhotoUrlEmpty() {
     // Given
-    userFlow.value = testUserWithoutPhoto
-    val viewModel = ProfileViewModel(userRepository)
+    userRepository.userFlow.value = testUserWithoutPhoto
+    val viewModel = ProfileViewModel(userRepository, testUserId)
 
     // When
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
 
     // Then
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.PROFILE_PICTURE).assertIsDisplayed()
@@ -112,10 +124,10 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_displaysEditButton() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
+    val viewModel = ProfileViewModel(userRepository, testUserId)
 
     // When
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
 
     // Then
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON).assertIsDisplayed()
@@ -124,10 +136,10 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_displaysSignOutButton() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
+    val viewModel = ProfileViewModel(userRepository, testUserId)
 
     // When
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
 
     // Then
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.SIGN_OUT_BUTTON).assertIsDisplayed()
@@ -139,8 +151,8 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_clickEditButton_showsEditMode() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
 
     // When
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON).performClick()
@@ -155,8 +167,8 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_editMode_displayNameFieldContainsCurrentName() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
 
     // When
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON).performClick()
@@ -170,8 +182,8 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_editMode_canTypeInDisplayNameField() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON).performClick()
 
     // When
@@ -189,8 +201,8 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_editMode_clickCancel_exitsEditMode() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON).performClick()
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD).performTextClearance()
     composeTestRule
@@ -211,8 +223,8 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_editMode_clickSave_savesDisplayName() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON).performClick()
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD).performTextClearance()
     composeTestRule
@@ -224,14 +236,14 @@ class ProfileScreenTest {
 
     // Then
     composeTestRule.waitForIdle()
-    coVerify { userRepository.saveUser(match { it.displayName == "Updated Name" }) }
+    assert(userRepository.savedUsers.any { it.displayName == "Updated Name" })
   }
 
   @Test
   fun profileScreen_editMode_clickSave_exitsEditMode() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON).performClick()
 
     // When
@@ -246,11 +258,11 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_displaysErrorWhenNoUserData() {
     // Given
-    userFlow.value = null
-    val viewModel = ProfileViewModel(userRepository)
+    userRepository.userFlow.value = null
+    val viewModel = ProfileViewModel(userRepository, testUserId)
 
     // When
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
 
     // Then
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.ERROR_TEXT).assertIsDisplayed()
@@ -262,11 +274,11 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_noUserData_doesNotShowEditButton() {
     // Given
-    userFlow.value = null
-    val viewModel = ProfileViewModel(userRepository)
+    userRepository.userFlow.value = null
+    val viewModel = ProfileViewModel(userRepository, testUserId)
 
     // When
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
 
     // Then
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON).assertDoesNotExist()
@@ -276,8 +288,8 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_clickSignOut_callsFirebaseSignOut() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
 
     // When
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.SIGN_OUT_BUTTON).performClick()
@@ -289,8 +301,8 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_editMode_saveEmptyName_savesEmptyString() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON).performClick()
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD).performTextClearance()
 
@@ -299,15 +311,15 @@ class ProfileScreenTest {
 
     // Then
     composeTestRule.waitForIdle()
-    coVerify { userRepository.saveUser(match { it.displayName == "" }) }
+    assert(userRepository.savedUsers.any { it.displayName == "" })
   }
 
   @Test
   fun profileScreen_editMode_saveLongName_savesLongString() {
     // Given
     val longName = "A".repeat(100)
-    val viewModel = ProfileViewModel(userRepository)
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON).performClick()
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD).performTextClearance()
     composeTestRule
@@ -319,15 +331,15 @@ class ProfileScreenTest {
 
     // Then
     composeTestRule.waitForIdle()
-    coVerify { userRepository.saveUser(match { it.displayName == longName }) }
+    assert(userRepository.savedUsers.any { it.displayName == longName })
   }
 
   @Test
   fun profileScreen_editMode_saveSpecialCharacters_savesCorrectly() {
     // Given
     val specialName = "Test@#$%Name"
-    val viewModel = ProfileViewModel(userRepository)
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON).performClick()
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD).performTextClearance()
     composeTestRule
@@ -339,17 +351,17 @@ class ProfileScreenTest {
 
     // Then
     composeTestRule.waitForIdle()
-    coVerify { userRepository.saveUser(match { it.displayName == specialName }) }
+    assert(userRepository.savedUsers.any { it.displayName == specialName })
   }
 
   @Test
   fun profileScreen_userDataUpdates_displaysNewData() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
 
     // When
-    userFlow.value = testUser.copy(displayName = "Updated User")
+    userRepository.userFlow.value = testUser.copy(displayName = "Updated User")
     composeTestRule.waitForIdle()
 
     // Then
@@ -361,8 +373,8 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_multipleEditCancelCycles_worksCorrectly() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
 
     // When & Then - first
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON).performClick()
@@ -380,10 +392,10 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_hasWhiteBackground() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
+    val viewModel = ProfileViewModel(userRepository, testUserId)
 
     // When
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
 
     // Then
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.PROFILE_SCREEN).assertIsDisplayed()
@@ -392,9 +404,9 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_repositorySaveFails_stillExitsEditMode() {
     // Given
-    coEvery { userRepository.saveUser(any()) } returns Result.failure(Exception("Save failed"))
-    val viewModel = ProfileViewModel(userRepository)
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    userRepository.saveUserResult = Result.failure(Exception("Save failed"))
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON).performClick()
 
     // When
@@ -408,11 +420,11 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_withUnicodeCharacters_displaysCorrectly() {
     // Given
-    userFlow.value = testUser.copy(displayName = "Test 测试 テスト 🎉 العربية")
-    val viewModel = ProfileViewModel(userRepository)
+    userRepository.userFlow.value = testUser.copy(displayName = "Test 测试 テスト 🎉 العربية")
+    val viewModel = ProfileViewModel(userRepository, testUserId)
 
     // When
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
 
     // Then
     composeTestRule
@@ -423,8 +435,8 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_editAndCancel_restoresOriginalName() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
     val originalName = "John Doe"
 
     // When
@@ -444,13 +456,13 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_userChangesFromNullToValid_displaysUser() {
     // Given
-    userFlow.value = null
-    val viewModel = ProfileViewModel(userRepository)
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    userRepository.userFlow.value = null
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.ERROR_TEXT).assertIsDisplayed()
 
     // When
-    userFlow.value = testUser
+    userRepository.userFlow.value = testUser
     composeTestRule.waitForIdle()
 
     // Then
@@ -461,12 +473,12 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_userChangesFromValidToNull_showsError() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.DISPLAY_NAME_TEXT).assertIsDisplayed()
 
     // When
-    userFlow.value = null
+    userRepository.userFlow.value = null
     composeTestRule.waitForIdle()
 
     // Then
@@ -477,11 +489,11 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_photoUrlChanges_displaysNewPhoto() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
 
     // When
-    userFlow.value = testUser.copy(photoUrl = "https://newphoto.com/image.jpg")
+    userRepository.userFlow.value = testUser.copy(photoUrl = "https://newphoto.com/image.jpg")
     composeTestRule.waitForIdle()
 
     // Then
@@ -491,11 +503,11 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_photoUrlChangesToEmpty_showsFallbackIcon() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
 
     // When
-    userFlow.value = testUser.copy(photoUrl = "")
+    userRepository.userFlow.value = testUser.copy(photoUrl = "")
     composeTestRule.waitForIdle()
 
     // Then
@@ -505,12 +517,12 @@ class ProfileScreenTest {
   @Test
   fun profileScreen_editModeActiveWhenUserChanges_handlesGracefully() {
     // Given
-    val viewModel = ProfileViewModel(userRepository)
-    composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON).performClick()
 
     // When
-    userFlow.value = testUser.copy(displayName = "New Name From Server")
+    userRepository.userFlow.value = testUser.copy(displayName = "New Name From Server")
     composeTestRule.waitForIdle()
 
     // Then

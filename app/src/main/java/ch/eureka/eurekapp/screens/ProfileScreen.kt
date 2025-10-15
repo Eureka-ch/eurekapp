@@ -67,7 +67,8 @@ object ProfileScreenTestTags {
 @Composable
 fun ProfileScreen(
     navigationController: NavHostController = rememberNavController(),
-    viewModel: ProfileViewModel = viewModel()
+    viewModel: ProfileViewModel = viewModel(),
+    firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
 ) {
   val uiState by viewModel.uiState.collectAsState()
 
@@ -185,7 +186,7 @@ fun ProfileScreen(
               }
 
           Button(
-              onClick = { FirebaseAuth.getInstance().signOut() },
+              onClick = { firebaseAuth.signOut() },
               modifier =
                   Modifier.align(Alignment.BottomCenter)
                       .fillMaxWidth()
