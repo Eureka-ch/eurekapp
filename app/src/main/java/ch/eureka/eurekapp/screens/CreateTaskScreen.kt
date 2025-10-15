@@ -41,7 +41,6 @@ import ch.eureka.eurekapp.navigation.SharedScreens
 import ch.eureka.eurekapp.navigation.navigationFunction
 import ch.eureka.eurekapp.ui.camera.LocalPhotoViewer
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 object CreateTaskScreenTestTags {
@@ -180,8 +179,7 @@ fun CreateTaskScreen(
                     onClick = {
                       navigationFunction(
                           navigationController = navigationController,
-                          destination = SharedScreens.CameraScreen,
-                          args = arrayOf(projectId, createTaskState.taskId))
+                          destination = SharedScreens.CameraScreen)
                     },
                     colors = EurekaStyles.OutlinedButtonColors(),
                     modifier = Modifier.testTag(CreateTaskScreenTestTags.ADD_PHOTO)) {

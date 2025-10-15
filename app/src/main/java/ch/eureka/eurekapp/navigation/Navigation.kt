@@ -144,19 +144,7 @@ fun NavigationMenu() {
                       Toast.makeText(context, "Project ID is null", Toast.LENGTH_SHORT).show()
                     }
               }
-              composable("${SharedScreens.CameraScreen.title}/{projectId}/{taskId}") {
-                  backStackEntry ->
-                val projectId = backStackEntry.arguments?.getString("projectId")
-                val taskId = backStackEntry.arguments?.getString("taskId")
-                val context = LocalContext.current
-
-                if (projectId != null && taskId != null) {
-                  Camera(navigationController)
-                } else {
-                  Toast.makeText(context, "Project ID or Task ID is null", Toast.LENGTH_SHORT)
-                      .show()
-                }
-              }
+              composable(SharedScreens.CameraScreen.title) { Camera(navigationController) }
             }
       }
 }

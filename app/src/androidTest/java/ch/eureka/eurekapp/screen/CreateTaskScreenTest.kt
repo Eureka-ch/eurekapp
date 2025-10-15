@@ -1,6 +1,7 @@
 package ch.eureka.eurekapp.screen
 
 import android.Manifest
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.testTag
@@ -16,6 +17,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.authentication.CurrentUserProvider
+import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.tasks.CreateTaskViewModel
@@ -23,11 +25,14 @@ import ch.eureka.eurekapp.navigation.BottomBarNavigationTestTags
 import ch.eureka.eurekapp.navigation.MainScreens
 import ch.eureka.eurekapp.navigation.NavigationMenu
 import ch.eureka.eurekapp.navigation.Screen
+import ch.eureka.eurekapp.navigation.SharedScreens
 import ch.eureka.eurekapp.navigation.TaskSpecificScreens
+import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.CameraScreenTestTags
 import ch.eureka.eurekapp.screens.CreateTaskScreen
 import ch.eureka.eurekapp.screens.CreateTaskScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
+import com.google.firebase.storage.StorageMetadata
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -89,7 +94,7 @@ class NavigationButtonsTest : TestCase() {
   }
 
   @Test
-  fun testPhotoUpload() {
+  fun testTakingPhotos() {
     navigateToCreateTaskScreen()
 
     // Initially, no photo should be displayed
@@ -112,6 +117,149 @@ class NavigationButtonsTest : TestCase() {
     // Delete the photo
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DELETE_PHOTO).performClick()
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.PHOTO).assertIsNotDisplayed()
+  }
+
+  @Test
+  fun testPhotoUpload() {
+    val viewModel =
+        CreateTaskViewModel(
+            mockRepository,
+            currentUserProvider = FakeCurrentUserProvider(),
+            fileRepository = FakeFileRepository())
+    val projectId = "project123"
+
+    // Inject the view model into the screen
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      FakeNavGraph(projectId = projectId, navController = navController, viewModel = viewModel)
+      navController.navigate(TaskSpecificScreens.CreateTaskScreen.title)
+    }
+
+    // Fill in valid inputs
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performTextInput("Task 1")
+    composeTestRule
+        .onNodeWithTag(CreateTaskScreenTestTags.DESCRIPTION)
+        .performTextInput("Description")
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DUE_DATE).performTextInput("15/10/2025")
+
+    // Click add photo button to navigate to Camera screen
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ADD_PHOTO).performClick()
+
+    Thread.sleep(1000) // Wait for navigation
+
+    composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
+
+    Thread.sleep(5000)
+
+    // After taking photo, save the photo
+    composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).performClick()
+
+    // Now the photo should be displayed in Create Task screen and inputs conserved
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DELETE_PHOTO).assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.SAVE_TASK).performClick()
+
+    Thread.sleep(1000) // Wait for recomposition/navigation
+
+    // Ensure navigation back to tasks screen (pop back)
+    composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
+  }
+
+  @Test
+  fun testDefectiveFileRepository() {
+    val viewModel =
+        CreateTaskViewModel(
+            mockRepository,
+            currentUserProvider = FakeCurrentUserProvider(),
+            fileRepository = DefectiveFakeFileRepository())
+    val projectId = "project123"
+
+    // Inject the view model into the screen
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      FakeNavGraph(projectId = projectId, navController = navController, viewModel = viewModel)
+      navController.navigate(TaskSpecificScreens.CreateTaskScreen.title)
+    }
+
+    // Fill in valid inputs
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performTextInput("Task 1")
+    composeTestRule
+        .onNodeWithTag(CreateTaskScreenTestTags.DESCRIPTION)
+        .performTextInput("Description")
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DUE_DATE).performTextInput("15/10/2025")
+
+    // Click add photo button to navigate to Camera screen
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ADD_PHOTO).performClick()
+
+    Thread.sleep(1000) // Wait for navigation
+
+    composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
+
+    Thread.sleep(5000)
+
+    // After taking photo, save the photo
+    composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).performClick()
+
+    // Now the photo should be displayed in Create Task screen and inputs conserved
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DELETE_PHOTO).assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.SAVE_TASK).performClick()
+
+    Thread.sleep(1000) // Wait for recomposition/navigation
+
+    // Even with defective file repository, should navigate back to tasks screen (no crash)
+    composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
+  }
+
+  @Test
+  fun testTaskCreated() {
+    val viewModel =
+        CreateTaskViewModel(
+            mockRepository,
+            currentUserProvider = FakeCurrentUserProvider(),
+            fileRepository = FakeFileRepository())
+    val projectId = "project123"
+
+    // Inject the view model into the screen
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      FakeNavGraph(projectId = projectId, navController = navController, viewModel = viewModel)
+      navController.navigate(TaskSpecificScreens.CreateTaskScreen.title)
+    }
+
+    // Fill in valid inputs
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performTextInput("Task 1")
+    composeTestRule
+        .onNodeWithTag(CreateTaskScreenTestTags.DESCRIPTION)
+        .performTextInput("Description")
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DUE_DATE).performTextInput("15/10/2025")
+
+    // Click add photo button to navigate to Camera screen
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ADD_PHOTO).performClick()
+
+    Thread.sleep(1000) // Wait for navigation
+
+    composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
+
+    Thread.sleep(5000)
+
+    // After taking photo, save the photo
+    composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).performClick()
+
+    // Now the photo should be displayed in Create Task screen and inputs conserved
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DELETE_PHOTO).assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.SAVE_TASK).performClick()
+
+    Thread.sleep(1000) // Wait for recomposition/navigation
+
+    composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
   }
 
   @Test
@@ -168,6 +316,7 @@ class NavigationButtonsTest : TestCase() {
             "Tasks Screen",
             modifier = androidx.compose.ui.Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
       }
+      composable(SharedScreens.CameraScreen.title) { Camera(navigationController = navController) }
     }
   }
 
@@ -189,6 +338,34 @@ class NavigationButtonsTest : TestCase() {
 
     override suspend fun unassignUser(projectId: String, taskId: String, userId: String) =
         Result.success(Unit)
+  }
+
+  class FakeFileRepository : FileStorageRepository {
+    override suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String> {
+      return Result.success("https://fakeurl.com/file.jpg")
+    }
+
+    override suspend fun deleteFile(downloadUrl: String): Result<Unit> {
+      return Result.success(Unit)
+    }
+
+    override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
+      return Result.success(StorageMetadata.Builder().setContentType("image/jpeg").build())
+    }
+  }
+
+  class DefectiveFakeFileRepository : FileStorageRepository {
+    override suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String> {
+      return Result.failure(Exception("Upload failed"))
+    }
+
+    override suspend fun deleteFile(downloadUrl: String): Result<Unit> {
+      return Result.failure(Exception("Delete failed"))
+    }
+
+    override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
+      return Result.failure(Exception("No metadata"))
+    }
   }
 
   class FakeCurrentUserProvider : CurrentUserProvider {

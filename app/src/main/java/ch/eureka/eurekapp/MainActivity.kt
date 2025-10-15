@@ -26,11 +26,8 @@ import ch.eureka.eurekapp.navigation.NavigationMenu
 import ch.eureka.eurekapp.resources.C
 import ch.eureka.eurekapp.ui.authentication.SignInScreen
 import ch.eureka.eurekapp.ui.theme.EurekappTheme
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
-import com.google.firebase.firestore.firestore
-import com.google.firebase.storage.storage
 
 class MainActivity : ComponentActivity() {
   private lateinit var auth: FirebaseAuth
@@ -38,9 +35,6 @@ class MainActivity : ComponentActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    Firebase.firestore.useEmulator("10.0.2.2", 8080)
-    Firebase.auth.useEmulator("10.0.2.2", 9099)
-    Firebase.storage.useEmulator("10.0.2.2", 9199)
     setContent {
       EurekappTheme {
         // A surface container using the 'background' color from the theme
