@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.ui.utils
+package ch.eureka.eurekapp.utils
 
 import java.text.SimpleDateFormat
 import java.util.*
