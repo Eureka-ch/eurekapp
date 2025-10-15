@@ -7,6 +7,7 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToIndex
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -70,6 +71,9 @@ class MeetingsScreenTest {
 
     // Verify the past meetings are shown
     val pastCount = MeetingProvider.sampleMeetings.count { it.ended }
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_LIST)
+        .performScrollToIndex(pastCount - 1)
     composeTestRule
         .onAllNodesWithTag(MeetingScreenTestTags.MEETING_CARD)
         .assertCountEquals(pastCount)
