@@ -24,7 +24,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -148,14 +147,14 @@ fun EurekaTaskCard(
                   Text(
                       text = "Progression",
                       style = MaterialTheme.typography.bodySmall,
-                      color = Color(0xFF424242), // Gris foncé
+                      color = EurekaStyles.TaskSecondaryTextColor(),
                       modifier = Modifier.weight(1f))
 
                   LinearProgressIndicator(
                       progress = { if (isCompleted) 1.0f else progressValue }, // 100% si cochée
                       modifier = Modifier.width(60.dp).height(6.dp),
-                      color = Color(0xFF22C55E), // Vert forcé
-                      trackColor = Color(0xFFE0E0E0)) // Track gris clair
+                      color = MaterialTheme.colorScheme.primary,
+                      trackColor = EurekaStyles.TaskSeparatorColor())
 
                   Spacer(modifier = Modifier.width(Spacing.xs))
 
@@ -163,7 +162,7 @@ fun EurekaTaskCard(
                   Text(
                       text = if (isCompleted) "100%" else progressText,
                       style = MaterialTheme.typography.labelMedium,
-                      color = Color(0xFF000000), // Noir pur
+                      color = EurekaStyles.TaskSecondaryTextColor(),
                       fontWeight = FontWeight.Bold)
                 }
           }
