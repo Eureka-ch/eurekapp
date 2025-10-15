@@ -17,7 +17,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.screens.IdeasScreen
 import ch.eureka.eurekapp.screens.MeetingsScreen
-import ch.eureka.eurekapp.screens.OverviewProjectsScreen
 import ch.eureka.eurekapp.screens.ProfileScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
 import ch.eureka.eurekapp.screens.TasksScreen
@@ -74,8 +73,8 @@ object MeetingsSpecificScreens {
 }
 
 object ProjectSelectionSpecificScreens {
-    //Create Project Screen
-    val CreateProjectScreen = SubScreen("Create Project Screen", MainScreens.ProjectSelectionScreen)
+  // Create Project Screen
+  val CreateProjectScreen = SubScreen("Create Project Screen", MainScreens.ProjectSelectionScreen)
 }
 
 private val titleToScreensMap =
@@ -87,26 +86,25 @@ private val titleToScreensMap =
         MainScreens.IdeasScreen.title to MainScreens.IdeasScreen,
         MainScreens.ProjectSelectionScreen.title to MainScreens.ProjectSelectionScreen,
 
-        //Task specific screens
+        // Task specific screens
         TaskSpecificScreens.TasksEditScreen.title to TaskSpecificScreens.TasksEditScreen,
         TaskSpecificScreens.TasksDetailScreen.title to TaskSpecificScreens.TasksDetailScreen,
-        TaskSpecificScreens.AutoTaskAssignmentScreen.title to TaskSpecificScreens
-            .AutoTaskAssignmentScreen,
+        TaskSpecificScreens.AutoTaskAssignmentScreen.title to
+            TaskSpecificScreens.AutoTaskAssignmentScreen,
         TaskSpecificScreens.TaskDependencePage.title to TaskSpecificScreens.TaskDependencePage,
 
-        //Ideas Specific Screens
+        // Ideas Specific Screens
         IdeasSpecificScreens.CreateIdeasScreen.title to IdeasSpecificScreens.CreateIdeasScreen,
 
-        //Meetings specific screens
+        // Meetings specific screens
         MeetingsSpecificScreens.CameraScreen.title to MeetingsSpecificScreens.CameraScreen,
         MeetingsSpecificScreens.AddMeetingScreen.title to MeetingsSpecificScreens.AddMeetingScreen,
-        MeetingsSpecificScreens.AudioTranscriptScreen.title to MeetingsSpecificScreens
-            .AudioTranscriptScreen,
+        MeetingsSpecificScreens.AudioTranscriptScreen.title to
+            MeetingsSpecificScreens.AudioTranscriptScreen,
 
-        //Project selection specific screens
+        // Project selection specific screens
         ProjectSelectionSpecificScreens.CreateProjectScreen.title to
-                ProjectSelectionSpecificScreens.CreateProjectScreen
-    )
+            ProjectSelectionSpecificScreens.CreateProjectScreen)
 
 @Composable
 fun NavigationMenu() {
@@ -143,8 +141,8 @@ fun NavigationMenu() {
               composable(MainScreens.MeetingsScreen.title) { MeetingsScreen(navigationController) }
               composable(MainScreens.IdeasScreen.title) { IdeasScreen(navigationController) }
               composable(MainScreens.OverviewProjectScreen.title) {
-                //OverviewProjectsScreen(navigationController)
-                  CreateProjectScreen(navigationController)
+                // OverviewProjectsScreen(navigationController)
+                CreateProjectScreen(navigationController)
               }
               composable(MainScreens.TasksScreen.title) { TasksScreen(navigationController) }
             }

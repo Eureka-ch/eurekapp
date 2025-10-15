@@ -158,7 +158,7 @@ class FirestoreProjectRepository(
         .await()
   }
 
-    override suspend fun getNewProjectId(): Result<String> = runCatching {
-        firestore.collection(FirestorePaths.PROJECTS).document().id
-    }
+  override suspend fun getNewProjectId(): Result<String> = runCatching {
+    firestore.collection(FirestorePaths.PROJECTS).document().id
+  }
 }

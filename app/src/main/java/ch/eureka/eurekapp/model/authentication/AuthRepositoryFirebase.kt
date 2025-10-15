@@ -64,7 +64,7 @@ class AuthRepositoryFirebase(
     }
   }
 
-    override fun getUserId(): Result<String?> {
-        return Result.success(auth.currentUser?.uid)
-    }
+  override fun getUserId(): Result<String?> {
+    return Result.success(auth.currentUser?.uid)
+  }
 }

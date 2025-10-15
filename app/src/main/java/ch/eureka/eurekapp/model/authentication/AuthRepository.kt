@@ -27,6 +27,7 @@ interface AuthRepository {
 
   /**
    * Get user id if the user is logged int
-   * **/
+   * *
+   */
   fun getUserId(): Result<String?>
 }

@@ -25,13 +25,13 @@ object EColors {
   val WarningOrange = Color(0xFFFFB74D) // Orange for warnings
   val InfoBlue = Color(0xFF2196F3) // Blue for info states
 
-  //Text colors
+  // Text colors
   val GrayTextColor2 = Color(0xFF64748B)
   val WhiteTextColor = Color.White
   val BlackTextColor = Color.Black
   val LightingBlue = Color(0xFF2563EB)
 
-  //Border colors
+  // Border colors
   val BorderGrayColor = Color(0xFFE5E7EB)
 
   // Light theme colors from Figma

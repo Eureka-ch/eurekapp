@@ -7,23 +7,25 @@ import ch.eureka.eurekapp.model.authentication.AuthRepositoryProvider
 class CreateProjectViewModel(
     private val projectsRepository: ProjectRepository = ProjectRepositoryProvider.repository,
     private val authenticationRepository: AuthRepository = AuthRepositoryProvider.repository
-): ViewModel() {
+) : ViewModel() {
 
-    suspend fun createProject(projectToCreate: Project, onSuccessCallback: () -> Unit,
-                              onFailureCallback: () -> Unit){
-        if(projectsRepository.createProject(projectToCreate,
-                projectToCreate.createdBy).isSuccess){
-            onSuccessCallback()
-        }else{
-            onFailureCallback()
-        }
+  suspend fun createProject(
+      projectToCreate: Project,
+      onSuccessCallback: () -> Unit,
+      onFailureCallback: () -> Unit
+  ) {
+    if (projectsRepository.createProject(projectToCreate, projectToCreate.createdBy).isSuccess) {
+      onSuccessCallback()
+    } else {
+      onFailureCallback()
     }
+  }
 
-    fun getCurrentUser(): String?{
-        return authenticationRepository.getUserId().getOrNull()
-    }
+  fun getCurrentUser(): String? {
+    return authenticationRepository.getUserId().getOrNull()
+  }
 
-    suspend fun getNewProjectId(): String?{
-        return projectsRepository.getNewProjectId().getOrNull()
-    }
+  suspend fun getNewProjectId(): String? {
+    return projectsRepository.getNewProjectId().getOrNull()
+  }
 }
