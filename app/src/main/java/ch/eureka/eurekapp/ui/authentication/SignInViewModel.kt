@@ -13,9 +13,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.authentication.AuthRepository
 import ch.eureka.eurekapp.model.authentication.AuthRepositoryProvider
-import ch.eureka.eurekapp.model.user.User
-import ch.eureka.eurekapp.model.user.UserRepository
-import ch.eureka.eurekapp.model.user.UserRepositoryProvider
+import ch.eureka.eurekapp.model.data.user.User
+import ch.eureka.eurekapp.model.data.user.UserRepository
+import ch.eureka.eurekapp.model.data.user.UserRepositoryProvider
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseUser
