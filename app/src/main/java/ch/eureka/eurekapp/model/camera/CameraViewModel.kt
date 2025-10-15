@@ -1,22 +1,23 @@
 package ch.eureka.eurekapp.model.camera
 
-import android.app.Application
+import android.content.Context
 import androidx.camera.core.Preview
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
-/**
- * The view model for the camera operations
- *
- * @param application The application being run (necessary for having a context)
- */
-class CameraViewModel(application: Application) : AndroidViewModel(application) {
+/** The view model for the camera operations */
+class CameraViewModel(
+    private val fileStorageRepository: FileStorageRepository =
+        FirestoreRepositoriesProvider.fileRepository
+) : ViewModel() {
   private var _photoState: MutableStateFlow<CameraModel> = MutableStateFlow(CameraModel())
   val photoState: StateFlow<CameraModel> = _photoState.asStateFlow()
   private var cameraRepository: LocalCameraRepository? = null
@@ -70,8 +71,7 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
    *
    * @param lifecycleOwner The owner of the camera
    */
-  fun startCamera(lifecycleOwner: LifecycleOwner) {
-    val context = getApplication<Application>().applicationContext
+  fun startCamera(context: Context, lifecycleOwner: LifecycleOwner) {
     cameraRepository = LocalCameraRepository(context, lifecycleOwner)
     _preview.value = cameraRepository?.preview
   }
@@ -79,5 +79,9 @@ class CameraViewModel(application: Application) : AndroidViewModel(application) 
   /** Unbinds (cleans up after) a camera session */
   fun unbindCamera() {
     cameraRepository?.dispose()
+  }
+
+  suspend fun savePhoto(storagePath: String): Result<String> {
+    return fileStorageRepository.uploadFile(storagePath, photoState.value.picture!!)
   }
 }

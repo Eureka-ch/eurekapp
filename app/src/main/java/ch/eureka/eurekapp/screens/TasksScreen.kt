@@ -28,21 +28,23 @@ fun TasksScreen(navigationController: NavHostController = rememberNavController(
 
   Box(modifier = Modifier.fillMaxSize()) {
     Button(
-      onClick = {
-        navigationFunction(navigationController =  navigationController,
-          destination = TaskSpecificScreens.CreateTaskScreen)
-      },
-      colors = EurekaStyles.PrimaryButtonColors(),
-      modifier = Modifier.align(Alignment.TopEnd)
-        .testTag(TasksScreenTestTags.CREATE_TASK_BUTTON)
-    ) {
-      Row {
-        Icon(Icons.Filled.Add, "Add Icon")
-        Text("Add new task")
-      }
-    }
+        onClick = {
+          navigationFunction(
+              navigationController = navigationController,
+              destination = TaskSpecificScreens.CreateTaskScreen,
+              args = arrayOf("1234"))
+        },
+        colors = EurekaStyles.PrimaryButtonColors(),
+        modifier =
+            Modifier.align(Alignment.TopEnd).testTag(TasksScreenTestTags.CREATE_TASK_BUTTON)) {
+          Row {
+            Icon(Icons.Filled.Add, "Add Icon")
+            Text("Add new task")
+          }
+        }
 
-    Text("Tasks Screen", modifier = Modifier.align(Alignment.Center)
-      .testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
+    Text(
+        "Tasks Screen",
+        modifier = Modifier.align(Alignment.Center).testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
   }
 }

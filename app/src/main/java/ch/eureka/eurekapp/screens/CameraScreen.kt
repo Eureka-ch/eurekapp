@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.screens
 import android.Manifest
 import android.content.pm.PackageManager
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.view.PreviewView
@@ -15,10 +16,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,8 +30,15 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.camera.CameraViewModel
+import ch.eureka.eurekapp.navigation.navigationFunction
+import ch.eureka.eurekapp.ui.camera.LocalPhotoViewer
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
+import kotlinx.coroutines.launch
 
 object PhotoScreenTestTags {
   const val PHOTO = "photo"
@@ -47,7 +57,10 @@ object PhotoScreenTestTags {
  * @param cameraViewModel The CameraViewModel instance responsible for managing camera state.
  */
 @Composable
-fun PhotoScreen(cameraViewModel: CameraViewModel) {
+fun CameraScreen(
+    navigationController: NavHostController,
+    cameraViewModel: CameraViewModel,
+) {
   val cameraState by cameraViewModel.photoState.collectAsState()
   val cameraPreview by cameraViewModel.preview.collectAsState()
   val context = LocalContext.current
@@ -57,35 +70,45 @@ fun PhotoScreen(cameraViewModel: CameraViewModel) {
         ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
             PackageManager.PERMISSION_GRANTED)
   }
+
   if (hasPermission) {
     Box(modifier = Modifier.fillMaxSize()) {
       if (cameraState.picture != null) {
-        AndroidView(
-            factory = { context -> ImageView(context).apply { setImageURI(cameraState.picture) } },
-            modifier = Modifier.fillMaxSize().testTag(PhotoScreenTestTags.PHOTO))
+        cameraState.picture?.let { uri ->
+            LocalPhotoViewer(uri, modifier = Modifier.fillMaxSize().testTag(PhotoScreenTestTags.PHOTO))
+        }
+        OutlinedButton(
+            onClick = { cameraViewModel.deletePhoto() },
+            colors = EurekaStyles.OutlinedButtonColors(),
+            modifier =
+                Modifier.align(Alignment.BottomStart).testTag(PhotoScreenTestTags.DELETE_PHOTO)) {
+              Text(text = "Delete photo")
+            }
+        Button(
+            onClick = {
+                  navigationController.previousBackStackEntry
+                    ?.savedStateHandle
+                    ?.set("photoUri", cameraState.picture.toString())
+                navigationFunction(navigationController, true, null)
+            },
+            colors = EurekaStyles.PrimaryButtonColors(),
+            modifier = Modifier.align(Alignment.BottomEnd)) {
+              Text(text = "Save photo")
+            }
       } else if (cameraPreview != null) {
         AndroidView(
             factory = { previewView },
             modifier = Modifier.fillMaxSize().testTag(PhotoScreenTestTags.PREVIEW)) {
               cameraViewModel.getPreview().surfaceProvider = previewView.surfaceProvider
             }
+        OutlinedButton(
+            onClick = { cameraViewModel.takePhoto() },
+            colors = EurekaStyles.OutlinedButtonColors(),
+            modifier =
+                Modifier.align(Alignment.BottomCenter).testTag(PhotoScreenTestTags.TAKE_PHOTO)) {
+              Text(text = "Take photo")
+            }
       }
-
-      OutlinedButton(
-          onClick = { cameraViewModel.takePhoto() },
-          colors = EurekaStyles.OutlinedButtonColors(),
-          modifier =
-              Modifier.align(Alignment.BottomStart).testTag(PhotoScreenTestTags.TAKE_PHOTO)) {
-            Text(text = "Take photo")
-          }
-
-      OutlinedButton(
-          onClick = { cameraViewModel.deletePhoto() },
-          colors = EurekaStyles.OutlinedButtonColors(),
-          modifier =
-              Modifier.align(Alignment.BottomCenter).testTag(PhotoScreenTestTags.DELETE_PHOTO)) {
-            Text(text = "Delete photo")
-          }
     }
   } else {
     val launcher =
@@ -98,7 +121,7 @@ fun PhotoScreen(cameraViewModel: CameraViewModel) {
           horizontalAlignment = Alignment.CenterHorizontally,
           verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text(
-                text = "Camera permission is required to use this app.",
+                text = "Camera permission is required.",
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.testTag(PhotoScreenTestTags.NO_PERMISSION))
             Button(
@@ -109,5 +132,20 @@ fun PhotoScreen(cameraViewModel: CameraViewModel) {
                 }
           }
     }
+  }
+}
+
+@Composable
+fun Camera(
+    navigationController: NavHostController = rememberNavController(),
+) {
+  val viewModel: CameraViewModel = viewModel()
+  val lifecycleOwner = LocalLifecycleOwner.current
+  val context = LocalContext.current
+
+  CameraScreen(navigationController, cameraViewModel = viewModel)
+  DisposableEffect(lifecycleOwner) {
+    viewModel.startCamera(context, lifecycleOwner)
+    onDispose { viewModel.unbindCamera() }
   }
 }
