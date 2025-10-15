@@ -21,6 +21,7 @@ import ch.eureka.eurekapp.screens.OverviewProjectsScreen
 import ch.eureka.eurekapp.screens.ProfileScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
 import ch.eureka.eurekapp.screens.TasksScreen
+import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 
 abstract class Screen(val title: String)
 
@@ -114,7 +115,9 @@ fun NavigationMenu() {
                 ProjectSelectionScreen(navigationController)
               }
               composable(MainScreens.ProfileScreen.title) { ProfileScreen(navigationController) }
-              composable(MainScreens.MeetingsScreen.title) { MeetingsScreen(navigationController) }
+              composable(MainScreens.MeetingsScreen.title) {
+                MeetingScreen("1234")
+              } // TODO : change this after "Create project" is implemented
               composable(MainScreens.IdeasScreen.title) { IdeasScreen(navigationController) }
               composable(MainScreens.OverviewProjectScreen.title) {
                 OverviewProjectsScreen(navigationController)

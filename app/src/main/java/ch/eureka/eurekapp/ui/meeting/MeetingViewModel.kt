@@ -15,37 +15,47 @@ import kotlinx.coroutines.launch
 /**
  * Data class to represent the UI state of the meeting screen.
  *
- * @property currentMeetings All the meetings that are planned or in progress.
+ * @property upcomingMeetings All the meetings that are planned or in progress.
  * @property pastMeetings All meetings that are finished.
  * @property errorMsg An error message to display, or null if there is no error.
  * @property isLoading Whether an authentication operation is in progress.
  */
 data class MeetingUIState(
-    val currentMeetings: List<Meeting> = emptyList(),
+    val upcomingMeetings: List<Meeting> = emptyList(),
     val pastMeetings: List<Meeting> = emptyList(),
+    val selectedTab: MeetingTab = MeetingTab.UPCOMING,
     val errorMsg: String? = null,
     val isLoading: Boolean = false,
 )
 
+/**
+ * Enum that represents a meeting tab in the UI.
+ *
+ * @property name The name of that tag.
+ */
+enum class MeetingTab {
+  UPCOMING,
+  PAST
+}
+
 class MeetingViewModel(
-    private val projectId: String,
     private val repository: MeetingRepository = FirestoreMeetingRepository(),
 ) : ViewModel() {
 
   private val _uiState = MutableStateFlow(MeetingUIState())
   val uiState: StateFlow<MeetingUIState> = _uiState
 
-  init {
-    loadMeetings()
-  }
-
   /** Clears the error message in the UI state. */
   fun clearErrorMsg() {
     _uiState.update { it.copy(errorMsg = null) }
   }
 
-  /** Load all the meetings from the database for the project ID [projectId] into the UI state. */
-  fun loadMeetings() {
+  /**
+   * Load all the meetings from the database for the project ID [projectId] into the UI state.
+   *
+   * @param projectId The ID of the project on which to requests the meetings.
+   */
+  fun loadMeetings(projectId: String) {
     viewModelScope.launch {
       repository
           .getMeetingsInProject(projectId)
@@ -55,10 +65,19 @@ class MeetingViewModel(
             _uiState.update {
               it.copy(
                   isLoading = false,
-                  currentMeetings = meetings.filterNot { meeting -> meeting.ended },
+                  upcomingMeetings = meetings.filterNot { meeting -> meeting.ended },
                   pastMeetings = meetings.filter { meeting -> meeting.ended })
             }
           }
     }
+  }
+
+  /**
+   * Sets the current selected tab of the UI state.
+   *
+   * @param tab The new tab selected.
+   */
+  fun selectTab(tab: MeetingTab) {
+    _uiState.update { it.copy(selectedTab = tab) }
   }
 }
