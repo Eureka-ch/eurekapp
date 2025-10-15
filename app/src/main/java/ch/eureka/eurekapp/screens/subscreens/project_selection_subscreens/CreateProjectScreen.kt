@@ -57,10 +57,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.project.CreateProjectViewModel
+import ch.eureka.eurekapp.model.project.Project
 import ch.eureka.eurekapp.model.project.ProjectStatus
 import ch.eureka.eurekapp.ui.theme.BackgroundGray
 import ch.eureka.eurekapp.ui.theme.Black
@@ -73,6 +75,8 @@ import ch.eureka.eurekapp.ui.theme.Typography
 import ch.eureka.eurekapp.ui.theme.White
 import ch.eureka.eurekapp.utils.Utils
 import ch.eureka.eurekapp.utils.Utils.convertMillisToDate
+import com.google.firebase.Timestamp
+import kotlinx.coroutines.launch
 
 /**
  * The screen to create projects
@@ -239,7 +243,33 @@ fun CreateProjectScreen(
                     Arrangement.Start, verticalAlignment = Alignment.CenterVertically){
                     FilledTonalButton(
                         modifier = Modifier.width(140.dp).height(40.dp),
-                        onClick = {},
+                        onClick = {
+                            /**
+                             * The method that handles the creation of a project
+                             * */
+                            createProjectViewModel.viewModelScope.launch {
+                                val newId = createProjectViewModel.getNewProjectId()
+                                val currentUserId = createProjectViewModel.getCurrentUser()
+                                if(newId != null && currentUserId != null){
+                                    val projectToAdd = Project(
+                                        projectId = newId,
+                                        createdBy = currentUserId,
+                                        memberIds = listOf(currentUserId),
+                                        createdAt = Timestamp.now(),
+                                        name = projectName.value,
+                                        description = projectDescription.value,
+                                        status = projectStatus.value
+                                        )
+                                    createProjectViewModel.createProject(
+                                        projectToCreate = projectToAdd,
+                                        onSuccessCallback = {
+
+                                        }
+                                    )
+                                }
+                            }
+
+                        },
                         colors = ButtonDefaults.filledTonalButtonColors(
                             containerColor = LightingBlue
                         )

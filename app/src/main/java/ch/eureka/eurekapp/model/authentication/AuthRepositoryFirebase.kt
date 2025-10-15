@@ -63,4 +63,8 @@ class AuthRepositoryFirebase(
           IllegalStateException("Logout failed: ${e.localizedMessage ?: "Unexpected error."}"))
     }
   }
+
+    override fun getUserId(): Result<String?> {
+        return Result.success(auth.currentUser?.uid)
+    }
 }

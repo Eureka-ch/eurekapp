@@ -9,4 +9,20 @@ class CreateProjectViewModel(
     private val authenticationRepository: AuthRepository = AuthRepositoryProvider.repository
 ): ViewModel() {
 
+    suspend fun createProject(projectToCreate: Project, onSuccessCallback: () -> Unit,
+                              onFailureCallback: () -> Unit){
+        if(projectsRepository.createProject(projectToCreate).isSuccess){
+            onSuccessCallback()
+        }else{
+            onFailureCallback()
+        }
+    }
+
+    fun getCurrentUser(): String?{
+        return authenticationRepository.getUserId().getOrNull()
+    }
+
+    suspend fun getNewProjectId(): String?{
+        return projectsRepository.getNewProjectId().getOrNull()
+    }
 }

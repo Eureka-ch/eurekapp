@@ -22,10 +22,6 @@ class FirestoreProjectRepository(
   ): Flow<Project?> = callbackFlow {
     val listener =
         firestore
-            .collection("workspaces")
-            .document(workspaceId)
-            .collection("groups")
-            .document(groupId)
             .collection("projects")
             .document(projectId)
             .addSnapshotListener { snapshot, error ->
@@ -38,34 +34,8 @@ class FirestoreProjectRepository(
     awaitClose { listener.remove() }
   }
 
-  override fun getProjectsInGroup(workspaceId: String, groupId: String): Flow<List<Project>> =
-      callbackFlow {
-        val listener =
-            firestore
-                .collection("workspaces")
-                .document(workspaceId)
-                .collection("groups")
-                .document(groupId)
-                .collection("projects")
-                .addSnapshotListener { snapshot, error ->
-                  if (error != null) {
-                    close(error)
-                    return@addSnapshotListener
-                  }
-                  val projects =
-                      snapshot?.documents?.mapNotNull { it.toObject(Project::class.java) }
-                          ?: emptyList()
-                  trySend(projects)
-                }
-        awaitClose { listener.remove() }
-      }
-
   override suspend fun createProject(project: Project): Result<String> = runCatching {
     firestore
-        .collection("workspaces")
-        .document(project.workspaceId)
-        .collection("groups")
-        .document(project.groupId)
         .collection("projects")
         .document(project.projectId)
         .set(project)
@@ -75,10 +45,6 @@ class FirestoreProjectRepository(
 
   override suspend fun updateProject(project: Project): Result<Unit> = runCatching {
     firestore
-        .collection("workspaces")
-        .document(project.workspaceId)
-        .collection("groups")
-        .document(project.groupId)
         .collection("projects")
         .document(project.projectId)
         .set(project)
@@ -91,13 +57,13 @@ class FirestoreProjectRepository(
       projectId: String
   ): Result<Unit> = runCatching {
     firestore
-        .collection("workspaces")
-        .document(workspaceId)
-        .collection("groups")
-        .document(groupId)
         .collection("projects")
         .document(projectId)
         .delete()
         .await()
   }
+
+    override suspend fun getNewProjectId(): Result<String> = runCatching {
+        firestore.collection("projects").document().id
+    }
 }

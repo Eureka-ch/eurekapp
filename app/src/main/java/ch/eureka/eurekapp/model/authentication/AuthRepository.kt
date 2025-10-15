@@ -24,4 +24,9 @@ interface AuthRepository {
    * @return A [Result] indicating success or failure.
    */
   fun signOut(): Result<Unit>
+
+  /**
+   * Get user id if the user is logged int
+   * **/
+  fun getUserId(): Result<String?>
 }
