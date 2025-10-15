@@ -11,13 +11,15 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.rule.GrantPermissionRule
-import ch.eureka.eurekapp.model.authentication.CurrentUserProvider
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
+import ch.eureka.eurekapp.model.data.project.ProjectRole
+import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.tasks.CreateTaskViewModel
@@ -32,10 +34,19 @@ import ch.eureka.eurekapp.screens.CameraScreenTestTags
 import ch.eureka.eurekapp.screens.CreateTaskScreen
 import ch.eureka.eurekapp.screens.CreateTaskScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
+import ch.eureka.eurekapp.utils.FirebaseEmulator
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageMetadata
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import java.security.Timestamp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
+import org.junit.After
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -47,7 +58,52 @@ class NavigationButtonsTest : TestCase() {
   @get:Rule
   var permissionRule: GrantPermissionRule? = GrantPermissionRule.grant(Manifest.permission.CAMERA)
 
-  private val mockRepository = FakeTaskRepository()
+  var testUserId: String = ""
+
+  @Before
+  open fun setup() = runBlocking {
+    if (!FirebaseEmulator.isRunning) {
+      throw IllegalStateException("Firebase Emulator must be running for tests")
+    }
+
+    // Clear first before signing in
+    FirebaseEmulator.clearFirestoreEmulator()
+    // Sign in anonymously first to ensure auth is established before clearing data
+    val authResult = FirebaseEmulator.auth.signInAnonymously().await()
+    testUserId = authResult.user?.uid ?: throw IllegalStateException("Failed to sign in")
+
+    // Verify auth state is properly set
+    if (FirebaseEmulator.auth.currentUser == null) {
+      throw IllegalStateException("Auth state not properly established after sign-in")
+    }
+  }
+
+  @After open fun tearDown() = runBlocking { FirebaseEmulator.clearFirestoreEmulator() }
+
+  private val taskRepository: TaskRepository =
+      FirestoreTaskRepository(firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+
+  protected suspend fun setupTestProject(projectId: String, role: ProjectRole = ProjectRole.OWNER) {
+    // Create project and member sequentially (security rules require project to exist first)
+    // Note: Data is already cleared in setup() via clearFirestoreEmulator()
+    val projectRef = FirebaseEmulator.firestore.collection("projects").document(projectId)
+
+    // First create the project document with createdBy field and memberIds
+    val project =
+        ch.eureka.eurekapp.model.data.project.Project(
+            projectId = projectId,
+            name = "Test Project",
+            description = "Test project for integration tests",
+            status = ch.eureka.eurekapp.model.data.project.ProjectStatus.OPEN,
+            createdBy = testUserId,
+            memberIds = listOf(testUserId))
+    projectRef.set(project).await()
+
+    // Then add the test user as a member
+    val member = ch.eureka.eurekapp.model.data.project.Member(userId = testUserId, role = role)
+    val memberRef = projectRef.collection("members").document(testUserId)
+    memberRef.set(member).await()
+  }
 
   private fun navigateToCreateTaskScreen() {
     val currentScreen = mutableStateOf<Screen>(MainScreens.ProfileScreen)
@@ -121,11 +177,7 @@ class NavigationButtonsTest : TestCase() {
 
   @Test
   fun testPhotoUpload() {
-    val viewModel =
-        CreateTaskViewModel(
-            mockRepository,
-            currentUserProvider = FakeCurrentUserProvider(),
-            fileRepository = FakeFileRepository())
+    val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
     val projectId = "project123"
 
     // Inject the view model into the screen
@@ -164,10 +216,7 @@ class NavigationButtonsTest : TestCase() {
   @Test
   fun testDefectiveFileRepository() {
     val viewModel =
-        CreateTaskViewModel(
-            mockRepository,
-            currentUserProvider = FakeCurrentUserProvider(),
-            fileRepository = DefectiveFakeFileRepository())
+        CreateTaskViewModel(taskRepository, fileRepository = DefectiveFakeFileRepository())
     val projectId = "project123"
 
     // Inject the view model into the screen
@@ -205,12 +254,10 @@ class NavigationButtonsTest : TestCase() {
 
   @Test
   fun testTaskCreated() {
-    val viewModel =
-        CreateTaskViewModel(
-            mockRepository,
-            currentUserProvider = FakeCurrentUserProvider(),
-            fileRepository = FakeFileRepository())
+    val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
     val projectId = "project123"
+
+    runBlocking { setupTestProject(projectId, ProjectRole.OWNER) }
 
     // Inject the view model into the screen
     composeTestRule.setContent {
@@ -242,12 +289,30 @@ class NavigationButtonsTest : TestCase() {
 
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.SAVE_TASK).performClick()
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
+
+    val dateText = "15/10/2025"
+    val simpleDateFormat = java.text.SimpleDateFormat("dd/MM/yyyy")
+    val date = simpleDateFormat.parse(dateText)!!
+
+    val task =
+        Task(
+            projectId = projectId,
+            title = "Task 1",
+            description = "Description",
+            dueDate = com.google.firebase.Timestamp(date), // 15/10/2025
+            attachmentUrls = listOf(),
+            createdBy = Firebase.auth.currentUser!!.uid)
+
+    viewModel.viewModelScope.launch(Dispatchers.IO) {
+      val tasks = taskRepository.getTasksForCurrentUser().first()
+      val found = tasks.any { it.title == task.title && it.dueDate == task.dueDate }
+      assert(found)
+    }
   }
 
   @Test
   fun testSaveButtonEnabledOnlyWithValidInput() {
-    val viewModel =
-        CreateTaskViewModel(mockRepository, currentUserProvider = FakeCurrentUserProvider())
+    val viewModel = CreateTaskViewModel(taskRepository)
     val projectId = "project123"
 
     // Inject the view model into the screen
@@ -300,26 +365,6 @@ class NavigationButtonsTest : TestCase() {
     }
   }
 
-  class FakeTaskRepository : TaskRepository {
-    override fun getTaskById(projectId: String, taskId: String) = flowOf(null)
-
-    override fun getTasksInProject(projectId: String): Flow<List<Task>> = flowOf(emptyList())
-
-    override fun getTasksForCurrentUser(): Flow<List<Task>> = flowOf(emptyList())
-
-    override suspend fun createTask(task: Task) = Result.success("fakeTaskId")
-
-    override suspend fun updateTask(task: Task) = Result.success(Unit)
-
-    override suspend fun deleteTask(projectId: String, taskId: String) = Result.success(Unit)
-
-    override suspend fun assignUser(projectId: String, taskId: String, userId: String) =
-        Result.success(Unit)
-
-    override suspend fun unassignUser(projectId: String, taskId: String, userId: String) =
-        Result.success(Unit)
-  }
-
   class FakeFileRepository : FileStorageRepository {
     override suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String> {
       return Result.success("https://fakeurl.com/file.jpg")
@@ -346,9 +391,5 @@ class NavigationButtonsTest : TestCase() {
     override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
       return Result.failure(Exception("No metadata"))
     }
-  }
-
-  class FakeCurrentUserProvider : CurrentUserProvider {
-    override val currentUserId: String? = "user123"
   }
 }

@@ -2,17 +2,18 @@ package ch.eureka.eurekapp.model.tasks
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ch.eureka.eurekapp.model.authentication.CurrentUserProvider
-import ch.eureka.eurekapp.model.authentication.FirebaseCurrentUserProvider
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
+import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.auth
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,7 +30,6 @@ class CreateTaskViewModel(
     private val taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
     private val fileRepository: FileStorageRepository =
         FirestoreRepositoriesProvider.fileRepository,
-    private val currentUserProvider: CurrentUserProvider = FirebaseCurrentUserProvider()
 ) : ViewModel() {
   // CreateTask state
   private val _uiState = MutableStateFlow(CreateTaskState())
@@ -89,10 +89,11 @@ class CreateTaskViewModel(
           return
         }
 
-    val currentUser = currentUserProvider.currentUserId ?: throw Exception("User not logged in.")
+    val currentUser = Firebase.auth.currentUser?.uid ?: throw Exception("User not logged in.")
 
     viewModelScope.launch {
       val photoUrls = saveFilesOnRepository(context)
+      Log.d("CreateTaskViewModel", state.taskId)
       addTaskToRepository(
           Task(
               taskID = state.taskId,
@@ -101,18 +102,15 @@ class CreateTaskViewModel(
               description = state.description,
               assignedUserIds = listOf(currentUser),
               dueDate = Timestamp(date),
-              attachmentUrls = photoUrls))
+              attachmentUrls = photoUrls,
+              createdBy = currentUser))
       clearErrorMsg()
     }
   }
 
   private fun addTaskToRepository(task: Task) {
     viewModelScope.launch {
-      try {
-        taskRepository.createTask(task)
-      } catch (e: Exception) {
-        setErrorMsg("Failed to add Task: ${e.message}")
-      }
+      taskRepository.createTask(task).onFailure { setErrorMsg("Failed to add Task.") }
     }
   }
 
