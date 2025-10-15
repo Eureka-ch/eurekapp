@@ -83,7 +83,10 @@ class CreateProjectScreenTest {
         .performClick()
         .assertIsDisplayed()
     composeRule.waitForIdle()
+
   }
 
-  @Test fun createProject() {}
+  @Test fun createProject() {
+      //TODO
+  }
 }
