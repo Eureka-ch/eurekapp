@@ -1,7 +1,6 @@
 package ch.eureka.eurekapp.ui.tasks
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
@@ -46,23 +45,7 @@ enum class TaskFilter {
  */
 class TaskViewModel(private val taskRepository: TaskRepository) : ViewModel() {
 
-  companion object {
-    /**
-     * Factory for creating TaskViewModel instances Required for dependency injection in tests and
-     * UI
-     */
-    fun provideFactory(taskRepository: TaskRepository): ViewModelProvider.Factory {
-      return object : ViewModelProvider.Factory {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-          if (modelClass.isAssignableFrom(TaskViewModel::class.java)) {
-            return TaskViewModel(taskRepository) as T
-          }
-          throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
-        }
-      }
-    }
-  }
+  constructor() : this(MockTaskRepository())
 
   private val _uiState = MutableStateFlow(TaskUiState())
   val uiState: StateFlow<TaskUiState> = _uiState.asStateFlow()

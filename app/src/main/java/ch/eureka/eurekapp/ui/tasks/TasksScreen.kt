@@ -91,8 +91,7 @@ fun TasksScreen(
     onAutoAssignClick: () -> Unit = {},
     onNavigate: (String) -> Unit = {},
     modifier: Modifier = Modifier,
-    viewModel: TaskViewModel =
-        viewModel(factory = TaskViewModel.provideFactory(MockTaskRepository()))
+    viewModel: TaskViewModel = viewModel()
 ) {
   val uiState by viewModel.uiState.collectAsState()
 
