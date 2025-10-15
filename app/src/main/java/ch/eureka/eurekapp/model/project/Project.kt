@@ -2,6 +2,13 @@ package ch.eureka.eurekapp.model.project
 
 import ch.eureka.eurekapp.model.annotations.firestore.*
 
+enum class ProjectStatus {
+    OPEN,
+    IN_PROGRESS,
+    COMPLETED,
+    ARCHIVED
+}
+
 @CollectionPath("workspaces/{workspaceId}/groups/{groupId}/projects")
 @Rules(
     read = "request.auth != null",

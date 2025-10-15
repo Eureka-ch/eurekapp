@@ -26,6 +26,7 @@ import ch.eureka.eurekapp.model.authentication.AuthRepository
 import ch.eureka.eurekapp.model.camera.CameraViewModel
 import ch.eureka.eurekapp.navigation.NavigationMenu
 import ch.eureka.eurekapp.resources.C
+import ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens.CreateProjectScreen
 import ch.eureka.eurekapp.ui.authentication.SignInScreen
 import ch.eureka.eurekapp.ui.photos.PhotoScreen
 import ch.eureka.eurekapp.ui.theme.EurekappTheme
@@ -55,12 +56,15 @@ fun Eurekapp(
     context: Context = LocalContext.current,
     credentialManager: CredentialManager = CredentialManager.create(context),
 ) {
+  /**
   var signedIn by remember { mutableStateOf(false) }
   if (!signedIn) {
-    SignInScreen(credentialManager = credentialManager, onSignedIn = { signedIn = true })
+  SignInScreen(credentialManager = credentialManager, onSignedIn = { signedIn = true })
   } else {
-    NavigationMenu()
+  NavigationMenu()
   }
+   * **/
+  CreateProjectScreen()
 }
 
 @Composable

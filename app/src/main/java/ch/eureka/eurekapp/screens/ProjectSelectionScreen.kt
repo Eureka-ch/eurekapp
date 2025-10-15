@@ -16,4 +16,5 @@ fun ProjectSelectionScreen(navigationController: NavHostController = rememberNav
   Text(
       "Project Selection Screen",
       modifier = Modifier.testTag(ProjectSelectionScreenTestTags.PROJECT_SELECTION_TEXT))
+
 }

@@ -21,6 +21,7 @@ import ch.eureka.eurekapp.screens.OverviewProjectsScreen
 import ch.eureka.eurekapp.screens.ProfileScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
 import ch.eureka.eurekapp.screens.TasksScreen
+import ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens.CreateProjectScreen
 
 abstract class Screen(val title: String)
 
@@ -72,6 +73,11 @@ object MeetingsSpecificScreens {
   val AudioTranscriptScreen = SubScreen("Audio Transcript Screen", MainScreens.MeetingsScreen)
 }
 
+object ProjectSelectionSpecificScreens {
+    //Create Project Screen
+    val CreateProjectScreen = SubScreen("Create Project Screen", MainScreens.ProjectSelectionScreen)
+}
+
 private val titleToScreensMap =
     mapOf<String, Screen>(
         MainScreens.MeetingsScreen.title to MainScreens.MeetingsScreen,
@@ -80,6 +86,26 @@ private val titleToScreensMap =
         MainScreens.ProfileScreen.title to MainScreens.ProfileScreen,
         MainScreens.IdeasScreen.title to MainScreens.IdeasScreen,
         MainScreens.ProjectSelectionScreen.title to MainScreens.ProjectSelectionScreen,
+
+        //Task specific screens
+        TaskSpecificScreens.TasksEditScreen.title to TaskSpecificScreens.TasksEditScreen,
+        TaskSpecificScreens.TasksDetailScreen.title to TaskSpecificScreens.TasksDetailScreen,
+        TaskSpecificScreens.AutoTaskAssignmentScreen.title to TaskSpecificScreens
+            .AutoTaskAssignmentScreen,
+        TaskSpecificScreens.TaskDependencePage.title to TaskSpecificScreens.TaskDependencePage,
+
+        //Ideas Specific Screens
+        IdeasSpecificScreens.CreateIdeasScreen.title to IdeasSpecificScreens.CreateIdeasScreen,
+
+        //Meetings specific screens
+        MeetingsSpecificScreens.CameraScreen.title to MeetingsSpecificScreens.CameraScreen,
+        MeetingsSpecificScreens.AddMeetingScreen.title to MeetingsSpecificScreens.AddMeetingScreen,
+        MeetingsSpecificScreens.AudioTranscriptScreen.title to MeetingsSpecificScreens
+            .AudioTranscriptScreen,
+
+        //Project selection specific screens
+        ProjectSelectionSpecificScreens.CreateProjectScreen.title to
+                ProjectSelectionSpecificScreens.CreateProjectScreen
     )
 
 @Composable
@@ -117,7 +143,8 @@ fun NavigationMenu() {
               composable(MainScreens.MeetingsScreen.title) { MeetingsScreen(navigationController) }
               composable(MainScreens.IdeasScreen.title) { IdeasScreen(navigationController) }
               composable(MainScreens.OverviewProjectScreen.title) {
-                OverviewProjectsScreen(navigationController)
+                //OverviewProjectsScreen(navigationController)
+                  CreateProjectScreen(navigationController)
               }
               composable(MainScreens.TasksScreen.title) { TasksScreen(navigationController) }
             }
