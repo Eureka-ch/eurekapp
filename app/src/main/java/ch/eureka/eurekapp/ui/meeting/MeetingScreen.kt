@@ -73,7 +73,6 @@ object MeetingScreenTestTags {
   const val VOTE_FOR_FORMAT_BUTTON = "VoteForFormatButton"
   const val NO_UPCOMING_MEETINGS_MESSAGE = "NoUpcomingMeetingsMessageTest"
   const val NO_PAST_MEETINGS_MESSAGE = "NoPastMeetingsMessage"
-  const val MEETING_LIST = "MeetingList"
 }
 
 /**
@@ -162,11 +161,7 @@ fun MeetingsList(
   if (meetings.isNotEmpty()) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = 8.dp),
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .testTag(MeetingScreenTestTags.MEETING_LIST)) {
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
           items(meetings.size) { index -> MeetingCard(meeting = meetings[index]) }
         }
   } else {

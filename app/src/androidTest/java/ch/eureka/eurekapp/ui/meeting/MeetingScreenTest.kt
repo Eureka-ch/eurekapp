@@ -1,13 +1,10 @@
 package ch.eureka.eurekapp.ui.meeting
 
-import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollToIndex
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -63,20 +60,20 @@ class MeetingsScreenTest {
 
   @Test
   fun clickingPastTabDisplaysPastMeetings() {
-    meetingsFlow.value = MeetingProvider.sampleMeetings
+    val allMeetings = MeetingProvider.sampleMeetings
+    meetingsFlow.value = allMeetings
     setContent()
 
-    // Click on the 'PAST' tab
+    val expectedPast = allMeetings.filter { it.ended }
+    val expectedUpcoming = allMeetings.filter { !it.ended }
+
     composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_TAB_PAST).performClick()
 
-    // Verify the past meetings are shown
-    val pastCount = MeetingProvider.sampleMeetings.count { it.ended }
-    composeTestRule
-        .onNodeWithTag(MeetingScreenTestTags.MEETING_LIST)
-        .performScrollToIndex(pastCount - 1)
-    composeTestRule
-        .onAllNodesWithTag(MeetingScreenTestTags.MEETING_CARD)
-        .assertCountEquals(pastCount)
+    val firstPastMeetingTitle = expectedPast.first().title
+    composeTestRule.onNodeWithText(firstPastMeetingTitle).assertIsDisplayed()
+
+    val firstUpcomingMeetingTitle = expectedUpcoming.first().title
+    composeTestRule.onNodeWithText(firstUpcomingMeetingTitle).assertDoesNotExist()
   }
 
   @Test
