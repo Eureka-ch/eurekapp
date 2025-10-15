@@ -41,13 +41,39 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.formatTimeSlot
-import ch.eureka.eurekapp.ui.utils.Formatters
+import ch.eureka.eurekapp.utils.Formatters
+
+object MeetingScreenTestTags {
+  const val MEETING_SCREEN = "MeetingScreen"
+  const val MEETING_SCREEN_TITLE = "MeetingScreenTitle"
+  const val MEETING_SCREEN_DESCRIPTION = "MeetingScreenDescription"
+  const val MEETING_TABS = "MeetingTabs"
+  const val MEETING_TAB_UPCOMING = "MeetingTabUpcoming"
+  const val MEETING_TAB_PAST = "MeetingTabPast"
+  const val MEETING_CARD = "MeetingCard"
+  const val MEETING_TITLE = "MeetingTitle"
+  const val MEETING_STATUS_TEXT = "MeetingStatusText"
+  const val MEETING_DATETIME = "MeetingDateTime"
+  const val MEETING_TIMESLOT = "MeetingTimeSlot"
+  const val MEETING_VOTE_FOR_DATETIME_MESSAGE = "MeetingVoteForDateTimeMessage"
+  const val MEETING_VOTE_FOR_FORMAT_MESSAGE = "MeetingVoteForFormatMessage"
+  const val MEETING_LINK = "MeetingLink"
+  const val MEETING_LOCATION = "MeetingLocation"
+  const val JOIN_MEETING_BUTTON = "JoinMeetingButton"
+  const val DIRECTIONS_BUTTON = "DirectionsButton"
+  const val RECORD_BUTTON = "RecordButton"
+  const val VOTE_FOR_DATETIME_BUTTON = "VoteForDateTimeButton"
+  const val VOTE_FOR_FORMAT_BUTTON = "VoteForFormatButton"
+  const val NO_UPCOMING_MEETINGS_MESSAGE = "NoUpcomingMeetingsMessageTest"
+  const val NO_PAST_MEETINGS_MESSAGE = "NoPastMeetingsMessage"
+}
 
 /**
  * Main composable to draw the meetings screen.
@@ -77,39 +103,45 @@ fun MeetingScreen(
 
   Scaffold(
       content = { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(10.dp)) {
-          Text(
-              text = "Meetings",
-              style = MaterialTheme.typography.headlineSmall,
-              fontWeight = FontWeight.Bold)
-          Spacer(modifier = Modifier.height(8.dp))
-          Text(
-              text = "Schedule and manage your team meetings",
-              style = MaterialTheme.typography.bodyMedium,
-              color = Color.Gray)
+        Column(
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(10.dp)
+                    .testTag(MeetingScreenTestTags.MEETING_SCREEN)) {
+              Text(
+                  modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_TITLE),
+                  text = "Meetings",
+                  style = MaterialTheme.typography.headlineSmall,
+                  fontWeight = FontWeight.Bold)
+              Spacer(modifier = Modifier.height(8.dp))
+              Text(
+                  modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_DESCRIPTION),
+                  text = "Schedule and manage your team meetings",
+                  style = MaterialTheme.typography.bodyMedium,
+                  color = Color.Gray)
 
-          Spacer(Modifier.height(16.dp))
+              Spacer(Modifier.height(16.dp))
 
-          RoundedTabRow(
-              tabs = MeetingTab.values(),
-              selectedTab = uiState.selectedTab,
-              onTabSelected = { meetingViewModel.selectTab(it) })
+              RoundedTabRow(
+                  tabs = MeetingTab.values(),
+                  selectedTab = uiState.selectedTab,
+                  onTabSelected = { meetingViewModel.selectTab(it) })
 
-          Spacer(Modifier.height(16.dp))
+              Spacer(Modifier.height(16.dp))
 
-          when (uiState.selectedTab) {
-            MeetingTab.UPCOMING ->
-                MeetingsList(
-                    modifier = Modifier.padding(padding),
-                    meetings = uiState.upcomingMeetings,
-                    tabName = MeetingTab.UPCOMING.name.lowercase())
-            MeetingTab.PAST ->
-                MeetingsList(
-                    modifier = Modifier.padding(padding),
-                    meetings = uiState.pastMeetings,
-                    tabName = MeetingTab.PAST.name.lowercase())
-          }
-        }
+              when (uiState.selectedTab) {
+                MeetingTab.UPCOMING ->
+                    MeetingsList(
+                        modifier = Modifier.padding(padding),
+                        meetings = uiState.upcomingMeetings,
+                        tabName = MeetingTab.UPCOMING.name.lowercase())
+                MeetingTab.PAST ->
+                    MeetingsList(
+                        modifier = Modifier.padding(padding),
+                        meetings = uiState.pastMeetings,
+                        tabName = MeetingTab.PAST.name.lowercase())
+              }
+            }
       })
 }
 
@@ -133,7 +165,13 @@ fun MeetingsList(
           items(meetings.size) { index -> MeetingCard(meeting = meetings[index]) }
         }
   } else {
-    Text(modifier = modifier, text = "You have no $tabName meetings yet.")
+    Text(
+        modifier =
+            modifier.testTag(
+                if (tabName == MeetingTab.UPCOMING.name.lowercase())
+                    MeetingScreenTestTags.NO_UPCOMING_MEETINGS_MESSAGE
+                else MeetingScreenTestTags.NO_PAST_MEETINGS_MESSAGE),
+        text = "You have no $tabName meetings yet.")
   }
 }
 
@@ -157,7 +195,11 @@ fun MeetingCard(
     onRecord: () -> Unit = {},
 ) {
   Card(
-      modifier = Modifier.fillMaxWidth().padding(5.dp).wrapContentHeight(),
+      modifier =
+          Modifier.fillMaxWidth()
+              .padding(5.dp)
+              .wrapContentHeight()
+              .testTag(MeetingScreenTestTags.MEETING_CARD),
       shape = RoundedCornerShape(16.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -166,9 +208,10 @@ fun MeetingCard(
                 text = meeting.title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.weight(1f))
+                modifier = Modifier.weight(1f).testTag(MeetingScreenTestTags.MEETING_TITLE))
             Spacer(modifier = Modifier.width(8.dp))
             Text(
+                modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_STATUS_TEXT),
                 text = if (meeting.canVote) "Voting in progress" else "Scheduled",
                 style = MaterialTheme.typography.bodySmall,
                 color = if (meeting.canVote) Color.Blue else Color.Red)
@@ -187,6 +230,7 @@ fun MeetingCard(
                       tint = MaterialTheme.colorScheme.onSurfaceVariant)
                   Spacer(modifier = Modifier.width(4.dp))
                   Text(
+                      modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_TIMESLOT),
                       text = meeting.timeSlot.formatTimeSlot(),
                       style = MaterialTheme.typography.bodySmall,
                       color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -201,6 +245,8 @@ fun MeetingCard(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
+                    modifier =
+                        Modifier.testTag(MeetingScreenTestTags.MEETING_VOTE_FOR_DATETIME_MESSAGE),
                     text = "Vote for your preferred datetime(s)",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -214,6 +260,7 @@ fun MeetingCard(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
+                    modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_DATETIME),
                     text = Formatters.formatDateTime(meeting.datetime.toDate()),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -231,6 +278,8 @@ fun MeetingCard(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
+                    modifier =
+                        Modifier.testTag(MeetingScreenTestTags.MEETING_VOTE_FOR_FORMAT_MESSAGE),
                     text = "Vote for your preferred meeting format",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -243,6 +292,7 @@ fun MeetingCard(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
+                    modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_LOCATION),
                     text =
                         meeting.location?.name
                             ?: throw IllegalStateException(
@@ -258,6 +308,7 @@ fun MeetingCard(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
+                    modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_LINK),
                     text =
                         meeting.link
                             ?: throw IllegalStateException("Link to meeting does not exist."),
@@ -273,21 +324,46 @@ fun MeetingCard(
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
           if (meeting.canVote) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-              Button(onClick = onVoteForDateTime) { Text("Vote for datetime") }
+              Button(
+                  onClick = onVoteForDateTime,
+                  modifier = Modifier.testTag(MeetingScreenTestTags.VOTE_FOR_DATETIME_BUTTON),
+              ) {
+                Text("Vote for datetime")
+              }
               Spacer(modifier = Modifier.width(10.dp))
-              Button(onClick = onVoteForFormat) { Text("Vote for format") }
+              Button(
+                  onClick = onVoteForFormat,
+                  modifier = Modifier.testTag(MeetingScreenTestTags.VOTE_FOR_FORMAT_BUTTON),
+              ) {
+                Text("Vote for format")
+              }
             }
           } else {
             when (meeting.format) {
               MeetingFormat.IN_PERSON -> {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                  Button(onClick = onDirections) { Text("Directions") }
+                  Button(
+                      onClick = onDirections,
+                      modifier = Modifier.testTag(MeetingScreenTestTags.DIRECTIONS_BUTTON),
+                  ) {
+                    Text("Directions")
+                  }
                   Spacer(modifier = Modifier.width(10.dp))
-                  Button(onClick = onRecord) { Text("Record") }
+                  Button(
+                      onClick = onRecord,
+                      modifier = Modifier.testTag(MeetingScreenTestTags.RECORD_BUTTON),
+                  ) {
+                    Text("Record")
+                  }
                 }
               }
               MeetingFormat.VIRTUAL -> {
-                Button(onClick = onJoinMeeting) { Text("Join meeting") }
+                Button(
+                    onClick = onJoinMeeting,
+                    modifier = Modifier.testTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON),
+                ) {
+                  Text("Join meeting")
+                }
               }
               null -> {}
             }
@@ -313,7 +389,11 @@ fun RoundedTabRow(
       shape = RoundedCornerShape(24.dp),
       color = MaterialTheme.colorScheme.surfaceVariant,
       tonalElevation = 2.dp,
-      modifier = Modifier.padding(horizontal = 8.dp).fillMaxWidth().wrapContentHeight()) {
+      modifier =
+          Modifier.padding(horizontal = 8.dp)
+              .fillMaxWidth()
+              .wrapContentHeight()
+              .testTag(MeetingScreenTestTags.MEETING_TABS)) {
         Row(
             modifier = Modifier.padding(6.dp).fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -325,9 +405,13 @@ fun RoundedTabRow(
                     color =
                         if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
                     modifier =
-                        Modifier.weight(1f).height(40.dp).padding(horizontal = 4.dp).clickable {
-                          onTabSelected(tab)
-                        },
+                        Modifier.weight(1f)
+                            .height(40.dp)
+                            .padding(horizontal = 4.dp)
+                            .testTag(
+                                if (tab.ordinal == 0) MeetingScreenTestTags.MEETING_TAB_UPCOMING
+                                else MeetingScreenTestTags.MEETING_TAB_PAST)
+                            .clickable { onTabSelected(tab) },
                 ) {
                   Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
