@@ -227,6 +227,8 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation(libs.guava)
+}
+
 tasks.withType<Test> {
     // Configure Jacoco for each tests
     configure<JacocoTaskExtension> {
@@ -270,7 +272,5 @@ tasks.register("jacocoTestReport", JacocoReport::class) {
         reportFile.writeText(newContent)
 
         logger.quiet("Wrote summarized jacoco test coverage report xml to ${reportFile.absolutePath}")
-    }
-
     }
 }
