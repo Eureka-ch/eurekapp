@@ -3,7 +3,6 @@ package ch.eureka.eurekapp.ui.tasks
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import ch.eureka.eurekapp.ui.theme.EurekappTheme
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -72,10 +71,12 @@ class TasksScreenCoverageTest {
   }
 
   @Test
-  @Ignore("CI_FAILURE: Component not displayed - timing issue in CI environment")
   fun tasksScreen_allFilterOptions() {
-    // Given
-    composeTestRule.setContent { EurekappTheme { TasksScreen() } }
+    // Given - Use mock ViewModel for stable state
+    val mockViewModel = TaskViewModel(MockTaskRepository())
+    mockViewModel.setFilter(TaskFilter.MINE) // Set stable state
+
+    composeTestRule.setContent { EurekappTheme { TasksScreen(viewModel = mockViewModel) } }
 
     // When & Then - Test all filter options to cover filter logic
     TasksScreenRobot(composeTestRule)
