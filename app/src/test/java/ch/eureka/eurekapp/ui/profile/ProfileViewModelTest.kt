@@ -419,4 +419,166 @@ class ProfileViewModelTest {
     // Then
     coVerify { userRepository.saveUser(match { it.uid == originalUid }) }
   }
+
+  @Test
+  fun `updateDisplayName with whitespace only string`() = runTest {
+    // Given
+    every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
+    coEvery { userRepository.saveUser(any()) } returns Result.success(Unit)
+    viewModel = ProfileViewModel(userRepository)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    // When
+    viewModel.updateDisplayName("   ")
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    // Then
+    coVerify { userRepository.saveUser(match { it.displayName == "   " }) }
+  }
+
+  @Test
+  fun `updateDisplayName with newline characters`() = runTest {
+    // Given
+    val nameWithNewlines = "Test\nUser\nName"
+    every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
+    coEvery { userRepository.saveUser(any()) } returns Result.success(Unit)
+    viewModel = ProfileViewModel(userRepository)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    // When
+    viewModel.updateDisplayName(nameWithNewlines)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    // Then
+    coVerify { userRepository.saveUser(match { it.displayName == nameWithNewlines }) }
+  }
+
+  @Test
+  fun `user with null email is handled correctly`() = runTest {
+    // Given
+    val userWithNullEmail = testUser.copy(email = "")
+    every { userRepository.getUserById("test-uid") } returns flowOf(userWithNullEmail)
+
+    // When
+    viewModel = ProfileViewModel(userRepository)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    // Then
+    val state = viewModel.uiState.value
+    assertEquals("", state.user?.email)
+  }
+
+  @Test
+  fun `updateDisplayName preserves email when updating`() = runTest {
+    // Given
+    every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
+    coEvery { userRepository.saveUser(any()) } returns Result.success(Unit)
+    viewModel = ProfileViewModel(userRepository)
+    testDispatcher.scheduler.advanceUntilIdle()
+    val originalEmail = testUser.email
+
+    // When
+    viewModel.updateDisplayName("New Name")
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    // Then
+    coVerify { userRepository.saveUser(match { it.email == originalEmail }) }
+  }
+
+  @Test
+  fun `setEditing true does not trigger save`() = runTest {
+    // Given
+    every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
+    viewModel = ProfileViewModel(userRepository)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    // When
+    viewModel.setEditing(true)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    // Then
+    coVerify(exactly = 0) { userRepository.saveUser(any()) }
+  }
+
+  @Test
+  fun `setEditing false does not trigger save`() = runTest {
+    // Given
+    every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
+    viewModel = ProfileViewModel(userRepository)
+    viewModel.setEditing(true)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    // When
+    viewModel.setEditing(false)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    // Then
+    coVerify(exactly = 0) { userRepository.saveUser(any()) }
+  }
+
+  @Test
+  fun `updateDisplayName with same name still triggers save`() = runTest {
+    // Given
+    every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
+    coEvery { userRepository.saveUser(any()) } returns Result.success(Unit)
+    viewModel = ProfileViewModel(userRepository)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    // When
+    viewModel.updateDisplayName(testUser.displayName)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    // Then
+    coVerify { userRepository.saveUser(any()) }
+  }
+
+  @Test
+  fun `user state is null initially before repository returns`() {
+    // Given
+    every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
+
+    // When
+    viewModel = ProfileViewModel(userRepository)
+    // Don't advance the dispatcher
+
+    // Then
+    val state = viewModel.uiState.value
+    assertNull(state.user)
+  }
+
+  @Test
+  fun `updateDisplayName with trailing and leading whitespace`() = runTest {
+    // Given
+    val nameWithWhitespace = "  Test User  "
+    every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
+    coEvery { userRepository.saveUser(any()) } returns Result.success(Unit)
+    viewModel = ProfileViewModel(userRepository)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    // When
+    viewModel.updateDisplayName(nameWithWhitespace)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    // Then
+    coVerify { userRepository.saveUser(match { it.displayName == nameWithWhitespace }) }
+  }
+
+  @Test
+  fun `updateDisplayName after setEditing false still works`() = runTest {
+    // Given
+    every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
+    coEvery { userRepository.saveUser(any()) } returns Result.success(Unit)
+    viewModel = ProfileViewModel(userRepository)
+    viewModel.setEditing(true)
+    viewModel.setEditing(false)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    // When
+    viewModel.updateDisplayName("New Name")
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    // Then
+    coVerify { userRepository.saveUser(match { it.displayName == "New Name" }) }
+    assertFalse(viewModel.uiState.value.isEditing)
+  }
 }
