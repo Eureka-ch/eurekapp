@@ -56,15 +56,12 @@ fun Eurekapp(
     context: Context = LocalContext.current,
     credentialManager: CredentialManager = CredentialManager.create(context),
 ) {
-  /**
   var signedIn by remember { mutableStateOf(false) }
   if (!signedIn) {
   SignInScreen(credentialManager = credentialManager, onSignedIn = { signedIn = true })
   } else {
   NavigationMenu()
   }
-   * **/
-  CreateProjectScreen()
 }
 
 @Composable

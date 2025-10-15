@@ -64,6 +64,8 @@ import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.project.CreateProjectViewModel
 import ch.eureka.eurekapp.model.project.Project
 import ch.eureka.eurekapp.model.project.ProjectStatus
+import ch.eureka.eurekapp.navigation.MainScreens
+import ch.eureka.eurekapp.navigation.navigationFunction
 import ch.eureka.eurekapp.ui.theme.BackgroundGray
 import ch.eureka.eurekapp.ui.theme.Black
 import ch.eureka.eurekapp.ui.theme.BorderGrayColor
@@ -108,6 +110,8 @@ fun CreateProjectScreen(
     val githubUrl = remember { mutableStateOf<String>("") }
 
     val scrollState = rememberScrollState()
+
+    var failedToCreateProjectText by remember { mutableStateOf<String>("") }
 
     Column(modifier = Modifier.fillMaxSize().background(color = BackgroundGray),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -239,7 +243,7 @@ fun CreateProjectScreen(
                 Spacer(modifier = Modifier.weight(1f))
 
                 Row(modifier = Modifier
-                    .fillMaxWidth().padding(horizontal = 10.dp), horizontalArrangement =
+                    .fillMaxWidth().padding(horizontal = 10.dp, vertical = 10.dp), horizontalArrangement =
                     Arrangement.Start, verticalAlignment = Alignment.CenterVertically){
                     FilledTonalButton(
                         modifier = Modifier.width(140.dp).height(40.dp),
@@ -247,26 +251,43 @@ fun CreateProjectScreen(
                             /**
                              * The method that handles the creation of a project
                              * */
+                            projectNameError.value = Utils.stringIsEmptyOrBlank(
+                                projectName.value)
+                            projectDescriptionError.value = Utils.stringIsEmptyOrBlank(
+                                projectDescription.value)
+                            startDateError.value = !Utils.isDateParseableToStandardAppPattern(
+                                startDate.value)
+                            endDateError.value = !Utils.isDateParseableToStandardAppPattern(
+                                endDate.value)
+
                             createProjectViewModel.viewModelScope.launch {
                                 val newId = createProjectViewModel.getNewProjectId()
                                 val currentUserId = createProjectViewModel.getCurrentUser()
-                                if(newId != null && currentUserId != null){
-                                    val projectToAdd = Project(
-                                        projectId = newId,
-                                        createdBy = currentUserId,
-                                        memberIds = listOf(currentUserId),
-                                        createdAt = Timestamp.now(),
-                                        name = projectName.value,
-                                        description = projectDescription.value,
-                                        status = projectStatus.value
-                                        )
-                                    createProjectViewModel.createProject(
-                                        projectToCreate = projectToAdd,
-                                        onSuccessCallback = {
-
-                                        }
-                                    )
-                                }
+                               if(!projectNameError.value && !projectDescriptionError.value &&
+                                   !startDateError.value && !endDateError.value){
+                                   if(newId != null && currentUserId != null){
+                                       val projectToAdd = Project(
+                                           projectId = newId,
+                                           createdBy = currentUserId,
+                                           memberIds = listOf(currentUserId),
+                                           createdAt = Timestamp.now(),
+                                           name = projectName.value,
+                                           description = projectDescription.value,
+                                           status = projectStatus.value
+                                       )
+                                       createProjectViewModel.createProject(
+                                           projectToCreate = projectToAdd,
+                                           onSuccessCallback = {
+                                               navigationFunction(navigationController, goBack = false,
+                                                   destination = MainScreens.ProjectSelectionScreen)
+                                           },
+                                           onFailureCallback = {
+                                               failedToCreateProjectText =
+                                                   "Failed to create the project..."
+                                           }
+                                       )
+                                   }
+                               }
                             }
 
                         },
@@ -277,6 +298,8 @@ fun CreateProjectScreen(
                         Text(text = "Create Project", color = White,
                             fontWeight = FontWeight(500), style = Typography.titleSmall)
                     }
+
+                    Text(failedToCreateProjectText ,color = LightRed)
                 }
             }
         }
@@ -310,6 +333,7 @@ fun CreateProjectTextField(title: String,
     val selectedDate = datePickerState.selectedDateMillis?.let {
         val converted = convertMillisToDate(it)
         textValue.value = converted
+        isErrorState.value = inputIsError(textValue.value)
         converted
     } ?: ""
 
