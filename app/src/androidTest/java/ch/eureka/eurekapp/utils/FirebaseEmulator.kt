@@ -10,6 +10,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
+import com.google.firebase.storage.storage
 import io.mockk.InternalPlatformDsl.toArray
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -29,10 +30,14 @@ object FirebaseEmulator {
   val firestore
     get() = Firebase.firestore
 
+  val storage
+    get() = Firebase.storage
+
   const val HOST = "10.0.2.2"
   const val EMULATORS_PORT = 4400
   const val FIRESTORE_PORT = 8080
   const val AUTH_PORT = 9099
+  const val STORAGE_PORT = 9199
 
   val projectID by lazy { FirebaseApp.getInstance().options.projectId }
 
@@ -46,42 +51,76 @@ object FirebaseEmulator {
     "http://${HOST}:$AUTH_PORT/emulator/v1/projects/$projectID/accounts"
   }
 
+  private val storageEndpoint by lazy {
+    "http://${HOST}:$STORAGE_PORT/v0/b/${projectID}.appspot.com/o"
+  }
+
   private val emulatorsEndpoint = "http://$HOST:$EMULATORS_PORT/emulators"
 
   private fun areEmulatorsRunning(): Boolean =
       runCatching {
+            Log.d("FirebaseEmulator", "Checking if emulators are running at $emulatorsEndpoint")
             val client = httpClient
             val request = Request.Builder().url(emulatorsEndpoint).build()
-            client.newCall(request).execute().isSuccessful
+            val isSuccessful = client.newCall(request).execute().isSuccessful
+            Log.d("FirebaseEmulator", "Emulators running check result: $isSuccessful")
+            isSuccessful
           }
           .getOrNull() == true
 
   val isRunning = areEmulatorsRunning()
 
   init {
+    Log.d("FirebaseEmulator", "Initializing FirebaseEmulator")
     if (isRunning) {
+      Log.d("FirebaseEmulator", "Emulators detected, configuring Firebase to use emulators")
       auth.useEmulator(HOST, AUTH_PORT)
+      Log.d("FirebaseEmulator", "Auth emulator configured at $HOST:$AUTH_PORT")
       firestore.useEmulator(HOST, FIRESTORE_PORT)
+      Log.d("FirebaseEmulator", "Firestore emulator configured at $HOST:$FIRESTORE_PORT")
+      storage.useEmulator(HOST, STORAGE_PORT)
+      Log.d("FirebaseEmulator", "Storage emulator configured at $HOST:$STORAGE_PORT")
       assert(Firebase.firestore.firestoreSettings.host.contains(HOST)) {
         "Failed to connect to Firebase Firestore Emulator."
       }
+      Log.d("FirebaseEmulator", "All emulators successfully initialized")
+    } else {
+      Log.w("FirebaseEmulator", "Emulators are not running, using production Firebase")
     }
   }
 
   private fun clearEmulator(endpoint: String) {
-    val client = httpClient
-    val request = Request.Builder().url(endpoint).delete().build()
-    val response = client.newCall(request).execute()
+    runCatching {
+      Log.d("FirebaseEmulator", "Clearing emulator at $endpoint")
+      val client = httpClient
+      val request = Request.Builder().url(endpoint).delete().build()
+      val response = client.newCall(request).execute()
 
-    assert(response.isSuccessful) { "Failed to clear emulator at $endpoint" }
+      if (response.isSuccessful) {
+        Log.d("FirebaseEmulator", "Successfully cleared emulator at $endpoint")
+      } else {
+        Log.e(
+            "FirebaseEmulator",
+            "Failed to clear emulator at $endpoint: ${response.code} ${response.message}")
+      }
+
+      assert(response.isSuccessful) { "Failed to clear emulator at $endpoint" }
+    }
   }
 
   fun clearAuthEmulator() {
+    Log.d("FirebaseEmulator", "Clearing Auth emulator")
     clearEmulator(authEndpoint)
   }
 
   fun clearFirestoreEmulator() {
+    Log.d("FirebaseEmulator", "Clearing Firestore emulator")
     clearEmulator(firestoreEndpoint)
+  }
+
+  fun clearStorageEmulator() {
+    Log.d("FirebaseEmulator", "Clearing Storage emulator")
+    clearEmulator(storageEndpoint)
   }
 
   /**
@@ -91,6 +130,7 @@ object FirebaseEmulator {
    * @param email The email address to associate with the account.
    */
   fun createGoogleUser(fakeIdToken: String) {
+    Log.d("FirebaseEmulator", "Creating Google user with fake ID token")
     val url =
         "http://$HOST:$AUTH_PORT/identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=fake-api-key"
 
@@ -112,12 +152,19 @@ object FirebaseEmulator {
         Request.Builder().url(url).post(body).addHeader("Content-Type", "application/json").build()
 
     val response = httpClient.newCall(request).execute()
+    if (response.isSuccessful) {
+      Log.d("FirebaseEmulator", "Successfully created Google user in Auth Emulator")
+    } else {
+      Log.e(
+          "FirebaseEmulator", "Failed to create Google user: ${response.code} ${response.message}")
+    }
     assert(response.isSuccessful) {
       "Failed to create user in Auth Emulator: ${response.code} ${response.message}"
     }
   }
 
   fun changeEmail(fakeIdToken: String, newEmail: String) {
+    Log.d("FirebaseEmulator", "Changing user email to $newEmail")
     val response =
         httpClient
             .newCall(
@@ -136,6 +183,11 @@ object FirebaseEmulator {
                             .toRequestBody())
                     .build())
             .execute()
+    if (response.isSuccessful) {
+      Log.d("FirebaseEmulator", "Successfully changed user email to $newEmail")
+    } else {
+      Log.e("FirebaseEmulator", "Failed to change email: ${response.code} ${response.message}")
+    }
     assert(response.isSuccessful) {
       "Failed to change email in Auth Emulator: ${response.code} ${response.message}"
     }

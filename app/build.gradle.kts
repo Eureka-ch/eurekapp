@@ -43,10 +43,10 @@ android {
             )
         }
 
-        debug {
-            enableUnitTestCoverage = true
-            enableAndroidTestCoverage = true
-        }
+    debug {
+        enableUnitTestCoverage = true
+        enableAndroidTestCoverage = true
+    }
     }
 
     testCoverage {
@@ -158,6 +158,7 @@ dependencies {
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.database.ktx)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage.ktx)
     implementation(libs.kotlinx.coroutines.play.services)
 
     // ------------- Jetpack Compose ------------------
@@ -223,9 +224,7 @@ dependencies {
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
-
     implementation(libs.guava)
-}
 tasks.withType<Test> {
     // Configure Jacoco for each tests
     configure<JacocoTaskExtension> {
@@ -262,4 +261,36 @@ tasks.register("jacocoTestReport", JacocoReport::class) {
         include("outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
         include("outputs/code_coverage/debugAndroidTest/connected/*/coverage.ec")
     })
+
+    doLast {
+        val reportFile = reports.xml.outputLocation.asFile.get()
+        val newContent = reportFile.readText().replace("<line[^>]+nr=\"65535\"[^>]*>".toRegex(), "")
+        reportFile.writeText(newContent)
+
+        logger.quiet("Wrote summarized jacoco test coverage report xml to ${reportFile.absolutePath}")
+    }
+
+    }
+}
+
+// Custom task to run Firestore emulator tests
+tasks.register<Exec>("firestoreEmulatorTests") {
+    group = "verification"
+    description = "Runs all repository tests that require Firebase emulator (model package tests)"
+
+    doFirst {
+        println("╔════════════════════════════════════════════════════════════════╗")
+        println("║         Running Firestore Emulator Tests                      ║")
+        println("║  Make sure Firebase emulator is running:                      ║")
+        println("║  firebase emulators:start                                     ║")
+        println("╚════════════════════════════════════════════════════════════════╝")
+        commandLine(
+            "./gradlew",
+            ":app:connectedDebugAndroidTest",
+            "-Pandroid.testInstrumentationRunnerArguments.package=ch.eureka.eurekapp.model.data"
+        )
+
+        workingDir(rootProject.projectDir)
+    }
+
 }

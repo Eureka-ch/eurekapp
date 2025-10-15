@@ -9,7 +9,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.Camera
-import ch.eureka.eurekapp.ui.photos.PhotoScreenTestTags
+import ch.eureka.eurekapp.screens.PhotoScreenTestTags
 import org.junit.Rule
 import org.junit.Test
 

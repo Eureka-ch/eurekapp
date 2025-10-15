@@ -73,12 +73,22 @@ jobs:
       - name: Decode secrets
         env:
           GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
-          LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
+          FIRESTORE_RULES: ${{ secrets.FIRESTORE_RULES }}
+          STORAGE_RULES: ${{ secrets.STORAGE_RULES }}
+
         run: |
           if [ -n "$GOOGLE_SERVICES" ]; then
             echo "$GOOGLE_SERVICES" | base64 --decode > ./app/google-services.json
           else
             echo "::warning::GOOGLE_SERVICES secret is not set. google-services.json will not be created. Should be present after B2"
+          fi
+          if [ -n "$FIRESTORE_RULES" ]; then
+            mkdir -p ./firebase/firestore
+            echo "$FIRESTORE_RULES" | base64 --decode > ./firebase/firestore/firestore.rules
+          fi
+          if [ -n "$STORAGE_RULES" ]; then
+            mkdir -p ./firebase/storage
+            echo "$STORAGE_RULES" | base64 --decode > ./firebase/storage/storage.rules
           fi
 
           if [ -n "$LOCAL_PROPERTIES" ]; then
@@ -123,7 +133,8 @@ jobs:
         run: |
           if [ -e "firebase.json" ] && jq -e '.emulators' firebase.json >/dev/null; then
             echo "Starting Firebase emulators for instrumentation tests..."
-            firebase emulators:start --only auth,firestore --project demo-project &
+            firebase emulators:start --only storage,firestore,auth --project eureka-app-ch &
+            sleep 20
             echo "Firebase emulators started"
           else
             echo "Firebase emulators not configured, skipping emulator startup..."
