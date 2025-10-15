@@ -8,6 +8,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import ch.eureka.eurekapp.utils.FirestoreRepositoryTest
+import com.google.firebase.storage.StorageException
 import java.io.File
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
@@ -185,6 +186,32 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
+  fun deleteFile_shouldFailWhenNotAuthenticated() = runBlocking {
+    val projectId = "test_project_delete_unauth"
+    setupTestProject(projectId)
+
+    val testContent = "File to delete without auth"
+    val fileUri = createTempFile("test_delete_unauth", "txt", testContent)
+
+    // Upload file while authenticated
+    val uploadResult =
+        repository.uploadFile(
+            storagePath = StoragePaths.projectFilePath(projectId, "unauth_delete.txt"),
+            fileUri = fileUri)
+    assertTrue(uploadResult.isSuccess)
+    val downloadUrl = uploadResult.getOrNull()!!
+
+    // Sign out to test unauthenticated access
+    FirebaseEmulator.auth.signOut()
+
+    // Attempt to delete while not authenticated
+    val deleteResult = repository.deleteFile(downloadUrl)
+
+    assertTrue(deleteResult.isFailure)
+    assertTrue(deleteResult.exceptionOrNull() is StorageException)
+  }
+
+  @Test
   fun getFileMetadata_shouldReturnMetadataForExistingFile() = runBlocking {
     val projectId = "test_project_3"
     setupTestProject(projectId)
@@ -227,6 +254,32 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
     val result = repository.getFileMetadata(fakeUrl)
 
     assertTrue(result.isFailure)
+  }
+
+  @Test
+  fun getFileMetadata_shouldFailWhenNotAuthenticated() = runBlocking {
+    val projectId = "test_project_metadata_unauth"
+    setupTestProject(projectId)
+
+    val testContent = "Metadata test without auth"
+    val fileUri = createTempFile("test_metadata_unauth", "txt", testContent)
+
+    // Upload file while authenticated
+    val uploadResult =
+        repository.uploadFile(
+            storagePath = StoragePaths.projectFilePath(projectId, "unauth_metadata.txt"),
+            fileUri = fileUri)
+    assertTrue(uploadResult.isSuccess)
+    val downloadUrl = uploadResult.getOrNull()!!
+
+    // Sign out to test unauthenticated access
+    FirebaseEmulator.auth.signOut()
+
+    // Attempt to get metadata while not authenticated
+    val metadataResult = repository.getFileMetadata(downloadUrl)
+
+    assertTrue(metadataResult.isFailure)
+    assertTrue(metadataResult.exceptionOrNull() is StorageException)
   }
 
   @Test
