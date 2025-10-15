@@ -35,12 +35,12 @@ class ProfileViewModelTest {
   @Before
   fun setup() {
     Dispatchers.setMain(testDispatcher)
-    
+
     firebaseAuth = mockk(relaxed = true)
     firebaseUser = mockk(relaxed = true)
     every { firebaseUser.uid } returns "test-uid"
     every { firebaseAuth.currentUser } returns firebaseUser
-    
+
     mockkStatic(FirebaseAuth::class)
     every { FirebaseAuth.getInstance() } returns firebaseAuth
 

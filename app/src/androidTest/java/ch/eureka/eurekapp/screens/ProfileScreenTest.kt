@@ -364,7 +364,7 @@ class ProfileScreenTest {
     val viewModel = ProfileViewModel(userRepository)
     composeTestRule.setContent { ProfileScreen(viewModel = viewModel) }
 
-    // When & Then - first 
+    // When & Then - first
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON).performClick()
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD).assertIsDisplayed()
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.CANCEL_BUTTON).performClick()
