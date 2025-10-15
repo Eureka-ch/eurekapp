@@ -144,9 +144,6 @@ class NavigationButtonsTest : TestCase() {
 
     // Click add photo button to navigate to Camera screen
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ADD_PHOTO).performClick()
-
-    Thread.sleep(1000) // Wait for navigation
-
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
 
     Thread.sleep(5000)
@@ -160,9 +157,6 @@ class NavigationButtonsTest : TestCase() {
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DELETE_PHOTO).assertIsDisplayed()
 
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.SAVE_TASK).performClick()
-
-    Thread.sleep(1000) // Wait for recomposition/navigation
-
     // Ensure navigation back to tasks screen (pop back)
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
   }
@@ -192,9 +186,6 @@ class NavigationButtonsTest : TestCase() {
 
     // Click add photo button to navigate to Camera screen
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ADD_PHOTO).performClick()
-
-    Thread.sleep(1000) // Wait for navigation
-
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
 
     Thread.sleep(5000)
@@ -208,9 +199,6 @@ class NavigationButtonsTest : TestCase() {
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DELETE_PHOTO).assertIsDisplayed()
 
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.SAVE_TASK).performClick()
-
-    Thread.sleep(1000) // Wait for recomposition/navigation
-
     // Even with defective file repository, should navigate back to tasks screen (no crash)
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
   }
@@ -240,9 +228,6 @@ class NavigationButtonsTest : TestCase() {
 
     // Click add photo button to navigate to Camera screen
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ADD_PHOTO).performClick()
-
-    Thread.sleep(1000) // Wait for navigation
-
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
 
     Thread.sleep(5000)
@@ -256,9 +241,6 @@ class NavigationButtonsTest : TestCase() {
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DELETE_PHOTO).assertIsDisplayed()
 
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.SAVE_TASK).performClick()
-
-    Thread.sleep(1000) // Wait for recomposition/navigation
-
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
   }
 
@@ -279,7 +261,6 @@ class NavigationButtonsTest : TestCase() {
 
     // Initially, Save button should be disabled
     saveButton.performClick()
-    Thread.sleep(1000) // Wait to ensure no navigation occurs
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).assertIsDisplayed()
 
     // Fill in valid inputs
@@ -291,7 +272,6 @@ class NavigationButtonsTest : TestCase() {
 
     // Save button should be enabled now
     saveButton.performClick()
-    Thread.sleep(1000) // Wait for recomposition/navigation
 
     // Ensure navigation back to tasks screen (pop back)
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()

@@ -45,6 +45,29 @@ class CreateTaskViewModel(
     _uiState.value = _uiState.value.copy(errorMsg = errorMsg)
   }
 
+  private suspend fun saveFilesOnRepository(context: Context): List<String> {
+    val state = _uiState.value
+    val photoUrls = mutableListOf<String>()
+    for (uri in state.attachmentUrls) {
+      val photoSaveResult =
+          fileRepository.uploadFile(
+              StoragePaths.taskAttachmentPath(
+                  state.projectId, state.taskId, uri.lastPathSegment + ".jpg"),
+              uri)
+
+      val photoUrl =
+          when {
+            photoSaveResult.isSuccess -> photoSaveResult.getOrThrow()
+            else -> {
+              Toast.makeText(context, "Failed to save the photo", Toast.LENGTH_SHORT).show()
+              continue
+            }
+          }
+      photoUrls.add(photoUrl)
+    }
+    return photoUrls
+  }
+
   /** Adds a Task */
   fun addTask(context: Context) {
     val state = _uiState.value
@@ -69,24 +92,7 @@ class CreateTaskViewModel(
     val currentUser = currentUserProvider.currentUserId ?: throw Exception("User not logged in.")
 
     viewModelScope.launch {
-      val photoUrls = mutableListOf<String>()
-      for (uri in state.attachmentUrls) {
-        val photoSaveResult =
-            fileRepository.uploadFile(
-                StoragePaths.taskAttachmentPath(
-                    state.projectId, state.taskId, uri.lastPathSegment + ".jpg"),
-                uri)
-
-        val photoUrl =
-            when {
-              photoSaveResult.isSuccess -> photoSaveResult.getOrThrow()
-              else -> {
-                Toast.makeText(context, "Failed to save the photo", Toast.LENGTH_SHORT).show()
-                continue
-              }
-            }
-        photoUrls.add(photoUrl)
-      }
+      val photoUrls = saveFilesOnRepository(context)
       addTaskToRepository(
           Task(
               taskID = state.taskId,
