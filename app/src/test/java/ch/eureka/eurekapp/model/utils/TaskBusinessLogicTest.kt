@@ -161,4 +161,69 @@ class TaskBusinessLogicTest {
     val result = TaskBusinessLogic.isTaskCompleted(task)
     assertTrue(!result)
   }
+
+  @Test
+  fun `determineTags returns Overdue tag for overdue task`() {
+    val yesterday = Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000)
+    val timestamp = Timestamp(yesterday)
+    val task = Task(taskID = "1", dueDate = timestamp)
+    val result = TaskBusinessLogic.determineTags(task)
+    assertTrue(result.contains("Overdue"))
+  }
+
+  @Test
+  fun `determineTags returns Urgent tag for task due today`() {
+    val today = Date()
+    val timestamp = Timestamp(today)
+    val task = Task(taskID = "1", dueDate = timestamp)
+    val result = TaskBusinessLogic.determineTags(task)
+    assertTrue(result.contains("Urgent"))
+  }
+
+  @Test
+  fun `determineTags returns Urgent tag for task due tomorrow`() {
+    val tomorrow = Date(System.currentTimeMillis() + 25 * 60 * 60 * 1000)
+    val timestamp = Timestamp(tomorrow)
+    val task = Task(taskID = "1", dueDate = timestamp)
+    val result = TaskBusinessLogic.determineTags(task)
+    assertTrue(result.contains("Urgent"))
+  }
+
+  @Test
+  fun `determineTags returns This Week tag for task due in 3 days`() {
+    val threeDaysFromNow = Date(System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000)
+    val timestamp = Timestamp(threeDaysFromNow)
+    val task = Task(taskID = "1", dueDate = timestamp)
+    val result = TaskBusinessLogic.determineTags(task)
+    assertTrue(result.contains("This Week"))
+  }
+
+  @Test
+  fun `determineTags returns This Week tag for task due in 7 days`() {
+    val sevenDaysFromNow = Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000)
+    val timestamp = Timestamp(sevenDaysFromNow)
+    val task = Task(taskID = "1", dueDate = timestamp)
+    val result = TaskBusinessLogic.determineTags(task)
+    assertTrue(result.contains("This Week"))
+  }
+
+  @Test
+  fun `determineTags does not return date-based tags for task due far in future`() {
+    val farFuture = Date(System.currentTimeMillis() + 10 * 24 * 60 * 60 * 1000)
+    val timestamp = Timestamp(farFuture)
+    val task = Task(taskID = "1", dueDate = timestamp)
+    val result = TaskBusinessLogic.determineTags(task)
+    assertTrue(!result.contains("Overdue"))
+    assertTrue(!result.contains("Urgent"))
+    assertTrue(!result.contains("This Week"))
+  }
+
+  @Test
+  fun `determineTags does not return date-based tags for task with null due date`() {
+    val task = Task(taskID = "1", dueDate = null)
+    val result = TaskBusinessLogic.determineTags(task)
+    assertTrue(!result.contains("Overdue"))
+    assertTrue(!result.contains("Urgent"))
+    assertTrue(!result.contains("This Week"))
+  }
 }
