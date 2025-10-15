@@ -59,7 +59,6 @@ class CameraScreenTest {
 
     composeTestRule.onNodeWithTag(CameraScreenTestTags.DELETE_PHOTO).performClick()
 
-
     Thread.sleep(5000)
 
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).assertIsDisplayed()
@@ -69,6 +68,5 @@ class CameraScreenTest {
     composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).assertIsNotDisplayed()
 
     composeTestRule.onNodeWithTag(CameraScreenTestTags.PREVIEW).assertIsDisplayed()
-
   }
 }

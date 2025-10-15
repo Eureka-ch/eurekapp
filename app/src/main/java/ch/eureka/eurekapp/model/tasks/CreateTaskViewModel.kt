@@ -3,17 +3,16 @@ package ch.eureka.eurekapp.model.tasks
 import android.content.Context
 import android.net.Uri
 import android.widget.Toast
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ch.eureka.eurekapp.model.authentication.CurrentUserProvider
+import ch.eureka.eurekapp.model.authentication.FirebaseCurrentUserProvider
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
-import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
-import com.google.firebase.auth.auth
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +27,9 @@ Portions of the code in this file are copy-pasted from the Bootcamp solution pro
 /** ViewModel for the CreateTask screen. This ViewModel manages the state of input fields. */
 class CreateTaskViewModel(
     private val taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
-    private val fileRepository: FileStorageRepository = FirestoreRepositoriesProvider.fileRepository
+    private val fileRepository: FileStorageRepository =
+        FirestoreRepositoriesProvider.fileRepository,
+    private val currentUserProvider: CurrentUserProvider = FirebaseCurrentUserProvider()
 ) : ViewModel() {
   // CreateTask state
   private val _uiState = MutableStateFlow(CreateTaskState())
@@ -65,35 +66,36 @@ class CreateTaskViewModel(
           return
         }
 
-    val currentUser = Firebase.auth.currentUser?.uid ?: throw Exception("User not logged in.")
+    val currentUser = currentUserProvider.currentUserId ?: throw Exception("User not logged in.")
 
     viewModelScope.launch {
       val photoUrls = mutableListOf<String>()
       for (uri in state.attachmentUrls) {
-        val photoSaveResult = fileRepository.uploadFile(StoragePaths.taskAttachmentPath(
-            state.projectId,
-            state.taskId,
-            uri.lastPathSegment + ".jpg"), uri)
+        val photoSaveResult =
+            fileRepository.uploadFile(
+                StoragePaths.taskAttachmentPath(
+                    state.projectId, state.taskId, uri.lastPathSegment + ".jpg"),
+                uri)
 
         val photoUrl =
-          when {
-            photoSaveResult.isSuccess -> photoSaveResult.getOrThrow()
-            else -> {
-              Toast.makeText(context, "Failed to save the photo", Toast.LENGTH_SHORT).show()
-              continue
+            when {
+              photoSaveResult.isSuccess -> photoSaveResult.getOrThrow()
+              else -> {
+                Toast.makeText(context, "Failed to save the photo", Toast.LENGTH_SHORT).show()
+                continue
+              }
             }
-          }
         photoUrls.add(photoUrl)
       }
       addTaskToRepository(
-        Task(
-          taskID = state.taskId,
-          projectId = state.projectId,
-          title = state.title,
-          description = state.description,
-          assignedUserIds = listOf(currentUser),
-          dueDate = Timestamp(date),
-          attachmentUrls = photoUrls))
+          Task(
+              taskID = state.taskId,
+              projectId = state.projectId,
+              title = state.title,
+              description = state.description,
+              assignedUserIds = listOf(currentUser),
+              dueDate = Timestamp(date),
+              attachmentUrls = photoUrls))
       clearErrorMsg()
     }
   }
@@ -128,12 +130,21 @@ class CreateTaskViewModel(
     }
   }
 
-  fun removeAttachment(uri: Uri) {
-      _uiState.value =
-        _uiState.value.copy(attachmentUrls = _uiState.value.attachmentUrls.filter { it != uri  })
+  fun removeAttachment(index: Int) {
+    _uiState.value =
+        _uiState.value.copy(
+            attachmentUrls =
+                _uiState.value.attachmentUrls.toMutableList().also {
+                  if (index in it.indices) it.removeAt(index)
+                })
   }
 
   fun setProjectId(id: String) {
     _uiState.value = _uiState.value.copy(projectId = id)
+  }
+
+  fun deletePhoto(context: Context, photoUri: Uri): Boolean {
+    val rowsDeleted = context.contentResolver.delete(photoUri, null, null)
+    return rowsDeleted > 0
   }
 }

@@ -80,8 +80,4 @@ class CameraViewModel(
   fun unbindCamera() {
     cameraRepository?.dispose()
   }
-
-  suspend fun savePhoto(storagePath: String): Result<String> {
-    return fileStorageRepository.uploadFile(storagePath, photoState.value.picture!!)
-  }
 }

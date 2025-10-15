@@ -73,7 +73,8 @@ fun CameraScreen(
     Box(modifier = Modifier.fillMaxSize()) {
       if (cameraState.picture != null) {
         cameraState.picture?.let { uri ->
-            LocalPhotoViewer(uri, modifier = Modifier.fillMaxSize().testTag(CameraScreenTestTags.PHOTO))
+          LocalPhotoViewer(
+              uri, modifier = Modifier.fillMaxSize().testTag(CameraScreenTestTags.PHOTO))
         }
         OutlinedButton(
             onClick = { cameraViewModel.deletePhoto() },
@@ -84,13 +85,14 @@ fun CameraScreen(
             }
         Button(
             onClick = {
-                  navigationController.previousBackStackEntry
-                    ?.savedStateHandle
-                    ?.set("photoUri", cameraState.picture.toString())
-                navigationFunction(navigationController, true, null)
+              navigationController.previousBackStackEntry
+                  ?.savedStateHandle
+                  ?.set("photoUri", cameraState.picture.toString())
+              navigationFunction(navigationController, true, null)
             },
             colors = EurekaStyles.PrimaryButtonColors(),
-            modifier = Modifier.align(Alignment.BottomEnd).testTag(CameraScreenTestTags.SAVE_PHOTO)) {
+            modifier =
+                Modifier.align(Alignment.BottomEnd).testTag(CameraScreenTestTags.SAVE_PHOTO)) {
               Text(text = "Save photo")
             }
       } else if (cameraPreview != null) {
