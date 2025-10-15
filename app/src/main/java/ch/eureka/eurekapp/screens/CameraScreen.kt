@@ -2,8 +2,6 @@ package ch.eureka.eurekapp.screens
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.widget.ImageView
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.view.PreviewView
@@ -21,7 +19,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,13 +35,13 @@ import ch.eureka.eurekapp.model.camera.CameraViewModel
 import ch.eureka.eurekapp.navigation.navigationFunction
 import ch.eureka.eurekapp.ui.camera.LocalPhotoViewer
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
-import kotlinx.coroutines.launch
 
-object PhotoScreenTestTags {
+object CameraScreenTestTags {
   const val PHOTO = "photo"
   const val PREVIEW = "preview"
   const val TAKE_PHOTO = "take_photo"
   const val DELETE_PHOTO = "delete_photo"
+  const val SAVE_PHOTO = "save_photo"
   const val NO_PERMISSION = "no_permission"
   const val GRANT_PERMISSION = "grant_permission"
 }
@@ -54,6 +51,7 @@ object PhotoScreenTestTags {
  * A composable screen for capturing and managing photos using the device's camera. This screen
  * displays a live camera preview or the captured photo image.
  *
+ * @param navigationController The NavHostController for handling navigation actions.
  * @param cameraViewModel The CameraViewModel instance responsible for managing camera state.
  */
 @Composable
@@ -75,13 +73,13 @@ fun CameraScreen(
     Box(modifier = Modifier.fillMaxSize()) {
       if (cameraState.picture != null) {
         cameraState.picture?.let { uri ->
-            LocalPhotoViewer(uri, modifier = Modifier.fillMaxSize().testTag(PhotoScreenTestTags.PHOTO))
+            LocalPhotoViewer(uri, modifier = Modifier.fillMaxSize().testTag(CameraScreenTestTags.PHOTO))
         }
         OutlinedButton(
             onClick = { cameraViewModel.deletePhoto() },
             colors = EurekaStyles.OutlinedButtonColors(),
             modifier =
-                Modifier.align(Alignment.BottomStart).testTag(PhotoScreenTestTags.DELETE_PHOTO)) {
+                Modifier.align(Alignment.BottomStart).testTag(CameraScreenTestTags.DELETE_PHOTO)) {
               Text(text = "Delete photo")
             }
         Button(
@@ -92,20 +90,20 @@ fun CameraScreen(
                 navigationFunction(navigationController, true, null)
             },
             colors = EurekaStyles.PrimaryButtonColors(),
-            modifier = Modifier.align(Alignment.BottomEnd)) {
+            modifier = Modifier.align(Alignment.BottomEnd).testTag(CameraScreenTestTags.SAVE_PHOTO)) {
               Text(text = "Save photo")
             }
       } else if (cameraPreview != null) {
         AndroidView(
             factory = { previewView },
-            modifier = Modifier.fillMaxSize().testTag(PhotoScreenTestTags.PREVIEW)) {
+            modifier = Modifier.fillMaxSize().testTag(CameraScreenTestTags.PREVIEW)) {
               cameraViewModel.getPreview().surfaceProvider = previewView.surfaceProvider
             }
         OutlinedButton(
             onClick = { cameraViewModel.takePhoto() },
             colors = EurekaStyles.OutlinedButtonColors(),
             modifier =
-                Modifier.align(Alignment.BottomCenter).testTag(PhotoScreenTestTags.TAKE_PHOTO)) {
+                Modifier.align(Alignment.BottomCenter).testTag(CameraScreenTestTags.TAKE_PHOTO)) {
               Text(text = "Take photo")
             }
       }
@@ -123,11 +121,11 @@ fun CameraScreen(
             Text(
                 text = "Camera permission is required.",
                 style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.testTag(PhotoScreenTestTags.NO_PERMISSION))
+                modifier = Modifier.testTag(CameraScreenTestTags.NO_PERMISSION))
             Button(
                 onClick = { launcher.launch(Manifest.permission.CAMERA) },
                 colors = EurekaStyles.PrimaryButtonColors(),
-                modifier = Modifier.testTag(PhotoScreenTestTags.GRANT_PERMISSION)) {
+                modifier = Modifier.testTag(CameraScreenTestTags.GRANT_PERMISSION)) {
                   Text("Grant permission")
                 }
           }
