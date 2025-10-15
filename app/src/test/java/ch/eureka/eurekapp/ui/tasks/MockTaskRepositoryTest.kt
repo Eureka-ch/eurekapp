@@ -44,8 +44,25 @@ class MockTaskRepositoryTest {
   }
 
   @Test
+  fun `createTask returns success with different task`() = runTest {
+    val task = Task(taskID = "2", title = "Another Task", description = "Test description")
+    val result = mockRepository.createTask(task)
+
+    assertTrue(result.isSuccess)
+    assertEquals("mock-task-id", result.getOrNull())
+  }
+
+  @Test
   fun `updateTask returns success`() = runTest {
     val task = Task(taskID = "1", title = "Updated Task")
+    val result = mockRepository.updateTask(task)
+
+    assertTrue(result.isSuccess)
+  }
+
+  @Test
+  fun `updateTask returns success with different task`() = runTest {
+    val task = Task(taskID = "2", title = "Updated Task 2", description = "Updated description")
     val result = mockRepository.updateTask(task)
 
     assertTrue(result.isSuccess)
@@ -59,8 +76,22 @@ class MockTaskRepositoryTest {
   }
 
   @Test
+  fun `deleteTask returns success with different parameters`() = runTest {
+    val result = mockRepository.deleteTask("project2", "task2")
+
+    assertTrue(result.isSuccess)
+  }
+
+  @Test
   fun `assignUser returns success`() = runTest {
     val result = mockRepository.assignUser("project1", "task1", "user1")
+
+    assertTrue(result.isSuccess)
+  }
+
+  @Test
+  fun `assignUser returns success with different parameters`() = runTest {
+    val result = mockRepository.assignUser("project2", "task2", "user2")
 
     assertTrue(result.isSuccess)
   }
@@ -70,5 +101,31 @@ class MockTaskRepositoryTest {
     val result = mockRepository.unassignUser("project1", "task1", "user1")
 
     assertTrue(result.isSuccess)
+  }
+
+  @Test
+  fun `test suspend functions coverage`() = runTest {
+    // Test all suspend functions to ensure they are covered
+    val task = Task(taskID = "test", title = "Test Task")
+
+    // Test createTask
+    val createResult = mockRepository.createTask(task)
+    assertTrue(createResult.isSuccess)
+
+    // Test updateTask
+    val updateResult = mockRepository.updateTask(task)
+    assertTrue(updateResult.isSuccess)
+
+    // Test deleteTask
+    val deleteResult = mockRepository.deleteTask("project", "task")
+    assertTrue(deleteResult.isSuccess)
+
+    // Test assignUser
+    val assignResult = mockRepository.assignUser("project", "task", "user")
+    assertTrue(assignResult.isSuccess)
+
+    // Test unassignUser
+    val unassignResult = mockRepository.unassignUser("project", "task", "user")
+    assertTrue(unassignResult.isSuccess)
   }
 }
