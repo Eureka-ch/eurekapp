@@ -32,9 +32,7 @@ class ProfileViewModel(
     val uid = userId ?: return
 
     viewModelScope.launch {
-      userRepository.getUserById(uid).collect { user ->
-        _uiState.update { it.copy(user = user) }
-      }
+      userRepository.getUserById(uid).collect { user -> _uiState.update { it.copy(user = user) } }
     }
   }
 
