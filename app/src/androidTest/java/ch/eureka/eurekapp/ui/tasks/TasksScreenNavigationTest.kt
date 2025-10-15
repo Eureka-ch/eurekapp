@@ -18,18 +18,13 @@ class TasksScreenNavigationTest {
     // Given
     var createTaskCalled = false
     var autoAssignCalled = false
-    var navigationCalled = false
-    var lastNavigationRoute = ""
 
     composeTestRule.setContent {
       EurekappTheme {
         TasksScreen(
             onCreateTaskClick = { createTaskCalled = true },
             onAutoAssignClick = { autoAssignCalled = true },
-            onNavigate = { route ->
-              navigationCalled = true
-              lastNavigationRoute = route
-            })
+            onNavigate = { /* navigation callback */})
       }
     }
 
@@ -44,18 +39,7 @@ class TasksScreenNavigationTest {
   @Test
   fun tasksScreen_taskClickCallbackWorks() {
     // Given
-    var taskClicked = false
-    var clickedTaskId = ""
-
-    composeTestRule.setContent {
-      EurekappTheme {
-        TasksScreen(
-            onTaskClick = { taskId ->
-              taskClicked = true
-              clickedTaskId = taskId
-            })
-      }
-    }
+    composeTestRule.setContent { EurekappTheme { TasksScreen() } }
 
     // When
     // Note: This test assumes there are tasks displayed
@@ -63,15 +47,13 @@ class TasksScreenNavigationTest {
     TasksScreenRobot(composeTestRule).assertScreenTitleDisplayed()
 
     // Then
-    // Since we don't have tasks in this test, we just verify the callback is set up
-    assertTrue("Task click callback should be configured", true)
+    // Since we don't have tasks in this test, we just verify the screen loads
+    assertTrue("Screen should load correctly", true)
   }
 
   @Test
   fun tasksScreen_filterSelectionTriggersViewModel() {
     // Given
-    var filterChanged = false
-
     composeTestRule.setContent { EurekappTheme { TasksScreen() } }
 
     // When
@@ -99,17 +81,8 @@ class TasksScreenNavigationTest {
   @Test
   fun tasksScreen_bottomNavigationWorks() {
     // Given
-    var navigationCalled = false
-    var navigationRoute = ""
-
     composeTestRule.setContent {
-      EurekappTheme {
-        TasksScreen(
-            onNavigate = { route ->
-              navigationCalled = true
-              navigationRoute = route
-            })
-      }
+      EurekappTheme { TasksScreen(onNavigate = { /* navigation callback */}) }
     }
 
     // When
@@ -126,16 +99,13 @@ class TasksScreenNavigationTest {
     // Given
     var createTaskCalled = false
     var autoAssignCalled = false
-    var taskClickCalled = false
-    var navigationCalled = false
 
     composeTestRule.setContent {
       EurekappTheme {
         TasksScreen(
             onCreateTaskClick = { createTaskCalled = true },
             onAutoAssignClick = { autoAssignCalled = true },
-            onTaskClick = { taskClickCalled = true },
-            onNavigate = { navigationCalled = true })
+            onNavigate = { /* navigation callback */})
       }
     }
 

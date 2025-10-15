@@ -24,15 +24,6 @@ data class TaskUiModel(
   val assigneeName: String
     get() = assignee?.displayName ?: "Unassigned"
 
-  val dueDate: String
-    get() = TaskBusinessLogic.formatDueDate(task.dueDate)
-
-  val priority: String
-    get() = TaskBusinessLogic.determinePriority(task)
-
-  val tags: List<String>
-    get() = TaskBusinessLogic.determineTags(task)
-
   val progressText: String
     get() = "${(progress * 100).toInt()}%"
 

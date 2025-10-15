@@ -7,52 +7,17 @@ import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/**
- * Mock TaskRepository for testing and default instantiation Returns empty lists and successful
- * results
- */
-private class MockTaskRepository : TaskRepository {
-  override fun getTaskById(projectId: String, taskId: String): Flow<Task?> =
-      kotlinx.coroutines.flow.flowOf(null)
-
-  override fun getTasksInProject(projectId: String): Flow<List<Task>> =
-      kotlinx.coroutines.flow.flowOf(emptyList())
-
-  override fun getTasksForCurrentUser(): Flow<List<Task>> =
-      kotlinx.coroutines.flow.flowOf(emptyList())
-
-  override suspend fun createTask(task: Task): Result<String> = Result.success("mock-task-id")
-
-  override suspend fun updateTask(task: Task): Result<Unit> = Result.success(Unit)
-
-  override suspend fun deleteTask(projectId: String, taskId: String): Result<Unit> =
-      Result.success(Unit)
-
-  override suspend fun assignUser(projectId: String, taskId: String, userId: String): Result<Unit> =
-      Result.success(Unit)
-
-  override suspend fun unassignUser(
-      projectId: String,
-      taskId: String,
-      userId: String
-  ): Result<Unit> = Result.success(Unit)
-}
-
 /** UI state data class for TasksScreen Contains all the data needed to render the tasks screen */
 data class TaskUiState(
     val selectedFilter: TaskFilter = TaskFilter.MINE,
-    val rawTasks: List<Task> = emptyList(), // Raw tasks from repository
+    val rawTasks: List<Task> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val workspaceId: String? = null,
-    val groupId: String? = null,
     val projectId: String? = null
 )
 
@@ -81,8 +46,6 @@ enum class TaskFilter {
  */
 class TaskViewModel(private val taskRepository: TaskRepository) : ViewModel() {
 
-  constructor() : this(MockTaskRepository())
-
   companion object {
     /**
      * Factory for creating TaskViewModel instances Required for dependency injection in tests and
@@ -104,32 +67,26 @@ class TaskViewModel(private val taskRepository: TaskRepository) : ViewModel() {
   private val _uiState = MutableStateFlow(TaskUiState())
   val uiState: StateFlow<TaskUiState> = _uiState.asStateFlow()
 
-  private var currentJob: Job? = null
-
   init {
     loadTasks()
   }
 
   /**
-   * Load tasks for the current user from Firebase Updates the UI state with raw task data (no UI
-   * model conversion)
+   * Load tasks for the current user from Firebase Simplified Flow usage - no manual job management
    */
   fun loadTasks() {
-    currentJob?.cancel()
-    currentJob =
-        viewModelScope.launch {
-          _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+    viewModelScope.launch {
+      _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
-          try {
-            taskRepository.getTasksForCurrentUser().collect { tasks ->
-              _uiState.value =
-                  _uiState.value.copy(rawTasks = tasks, isLoading = false, error = null)
-            }
-          } catch (e: Exception) {
-            _uiState.value =
-                _uiState.value.copy(isLoading = false, error = e.message ?: "Failed to load tasks")
-          }
+      try {
+        taskRepository.getTasksForCurrentUser().collect { tasks ->
+          _uiState.value = _uiState.value.copy(rawTasks = tasks, isLoading = false, error = null)
         }
+      } catch (e: Exception) {
+        _uiState.value =
+            _uiState.value.copy(isLoading = false, error = e.message ?: "Failed to load tasks")
+      }
+    }
   }
 
   /**
@@ -142,7 +99,7 @@ class TaskViewModel(private val taskRepository: TaskRepository) : ViewModel() {
     _uiState.value = _uiState.value.copy(selectedFilter = filter)
   }
 
-  /** Get filtered tasks based on current filter This method handles all filtering logic */
+  /** Get filtered tasks based on current filter */
   fun getFilteredTasks(): List<Task> {
     val state = _uiState.value
     return when (state.selectedFilter) {
@@ -156,7 +113,15 @@ class TaskViewModel(private val taskRepository: TaskRepository) : ViewModel() {
                 !task.assignedUserIds.contains(FirebaseAuth.getInstance().currentUser?.uid)
           }
       TaskFilter.THIS_WEEK ->
-          state.rawTasks.filter { task -> TaskDateUtils.isDueThisWeek(task.dueDate) }
+          state.rawTasks.filter { task ->
+            // Simple logic: tasks due within 7 days
+            task.dueDate?.let { dueDate ->
+              val now = System.currentTimeMillis()
+              val taskTime = dueDate.toDate().time
+              val diffInDays = (taskTime - now) / (1000 * 60 * 60 * 24)
+              diffInDays in 0..7
+            } ?: false
+          }
       TaskFilter.ALL -> state.rawTasks
       TaskFilter.PROJECT -> {
         if (state.projectId != null) {
@@ -176,18 +141,6 @@ class TaskViewModel(private val taskRepository: TaskRepository) : ViewModel() {
   /** Get completed tasks from filtered results */
   fun getCompletedTasks(): List<Task> {
     return getFilteredTasks().filter { task -> task.status == TaskStatus.COMPLETED }
-  }
-
-  /**
-   * Update project context for filtering tasks by project
-   *
-   * @param workspaceId The workspace ID
-   * @param groupId The group ID
-   * @param projectId The project ID
-   */
-  fun updateProjectContext(workspaceId: String?, groupId: String?, projectId: String?) {
-    _uiState.value =
-        _uiState.value.copy(workspaceId = workspaceId, groupId = groupId, projectId = projectId)
   }
 
   /**

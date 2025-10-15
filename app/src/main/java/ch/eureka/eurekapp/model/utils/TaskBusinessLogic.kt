@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.ui.tasks
+package ch.eureka.eurekapp.model.utils
 
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus

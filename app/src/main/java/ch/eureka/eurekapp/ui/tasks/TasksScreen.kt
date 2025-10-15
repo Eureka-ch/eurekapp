@@ -1,6 +1,5 @@
 package ch.eureka.eurekapp.ui.tasks
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,11 +18,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.task.Task
+import ch.eureka.eurekapp.model.utils.TaskBusinessLogic
 import ch.eureka.eurekapp.ui.components.EurekaBottomNav
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
@@ -31,7 +29,6 @@ import ch.eureka.eurekapp.ui.components.NavItem
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.tasks.components.TaskActionButtons
 import ch.eureka.eurekapp.ui.tasks.components.TaskSectionHeader
-import ch.eureka.eurekapp.ui.theme.EurekappTheme
 
 /** Test tags used by UI tests. */
 object TasksScreenTestTags {
@@ -78,9 +75,9 @@ private fun TaskCard(task: Task, onToggleComplete: () -> Unit, modifier: Modifie
 
   EurekaTaskCard(
       title = taskUiModel.title,
-      dueDate = taskUiModel.dueDate,
+      dueDate = TaskBusinessLogic.formatDueDate(taskUiModel.task.dueDate),
       assignee = taskUiModel.assigneeName,
-      priority = taskUiModel.priority,
+      priority = TaskBusinessLogic.determinePriority(taskUiModel.task),
       progressText = taskUiModel.progressText,
       progressValue = taskUiModel.progressValue,
       isCompleted = taskUiModel.isCompleted,
@@ -90,12 +87,12 @@ private fun TaskCard(task: Task, onToggleComplete: () -> Unit, modifier: Modifie
 
 @Composable
 fun TasksScreen(
-    onTaskClick: (String) -> Unit = {},
     onCreateTaskClick: () -> Unit = {},
     onAutoAssignClick: () -> Unit = {},
     onNavigate: (String) -> Unit = {},
     modifier: Modifier = Modifier,
-    viewModel: TaskViewModel = viewModel()
+    viewModel: TaskViewModel =
+        viewModel(factory = TaskViewModel.provideFactory(MockTaskRepository()))
 ) {
   val uiState by viewModel.uiState.collectAsState()
 
@@ -284,24 +281,4 @@ fun TasksScreen(
               }
             }
       }
-}
-
-@Preview
-@Composable
-private fun TasksScreenPreview() {
-  EurekappTheme(darkTheme = false) {
-    Column(
-        modifier = Modifier.fillMaxSize().background(Color.White),
-        verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-          EurekaTaskCard(
-              title = "Implement Overview Screen",
-              dueDate = "Due: Today · 23:59",
-              assignee = "Assigned: Ismail",
-              priority = "High Priority",
-              progressText = "65%",
-              progressValue = 0.65f,
-              isCompleted = false,
-              onToggleComplete = {})
-        }
-  }
 }

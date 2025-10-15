@@ -21,8 +21,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +44,7 @@ fun EurekaTaskCard(
     onToggleComplete: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-  var checked by remember { mutableStateOf(isCompleted) }
+  // No local state - use controlled state from parent
   Card(
       shape = RoundedCornerShape(16.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
@@ -65,35 +63,27 @@ fun EurekaTaskCard(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
-                    color = EurekaStyles.TaskTitleColor(checked),
+                    color = EurekaStyles.TaskTitleColor(isCompleted),
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f))
 
                 // Checkbox aligned to the right
-                Box(
-                    modifier =
-                        Modifier.clickable {
-                          checked = !checked
-                          onToggleComplete()
-                        }) {
-                      if (checked) {
-                        Text(
-                            text = "✓",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.tertiary)
-                      } else {
-                        Checkbox(
-                            checked = false,
-                            onCheckedChange = {
-                              checked = true
-                              onToggleComplete()
-                            },
-                            colors =
-                                CheckboxDefaults.colors(
-                                    checkedColor = MaterialTheme.colorScheme.primary),
-                            modifier = Modifier.testTag("checkbox"))
-                      }
-                    }
+                Box(modifier = Modifier.clickable { onToggleComplete() }) {
+                  if (isCompleted) {
+                    Text(
+                        text = "✓",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.tertiary)
+                  } else {
+                    Checkbox(
+                        checked = false,
+                        onCheckedChange = { onToggleComplete() },
+                        colors =
+                            CheckboxDefaults.colors(
+                                checkedColor = MaterialTheme.colorScheme.primary),
+                        modifier = Modifier.testTag("checkbox"))
+                  }
+                }
 
                 // Pas de pourcentage en haut
               }
@@ -131,7 +121,7 @@ fun EurekaTaskCard(
           Spacer(modifier = Modifier.height(Spacing.sm))
 
           // Priority tag ou Done
-          if (checked) {
+          if (isCompleted) {
             Row {
               EurekaStatusTag(text = "Done", type = StatusType.SUCCESS) // Vert pour Done
             }
@@ -162,7 +152,7 @@ fun EurekaTaskCard(
                       modifier = Modifier.weight(1f))
 
                   LinearProgressIndicator(
-                      progress = { if (checked) 1.0f else progressValue }, // 100% si cochée
+                      progress = { if (isCompleted) 1.0f else progressValue }, // 100% si cochée
                       modifier = Modifier.width(60.dp).height(6.dp),
                       color = Color(0xFF22C55E), // Vert forcé
                       trackColor = Color(0xFFE0E0E0)) // Track gris clair
@@ -171,7 +161,7 @@ fun EurekaTaskCard(
 
                   // Pourcentage à côté de la barre
                   Text(
-                      text = if (checked) "100%" else progressText,
+                      text = if (isCompleted) "100%" else progressText,
                       style = MaterialTheme.typography.labelMedium,
                       color = Color(0xFF000000), // Noir pur
                       fontWeight = FontWeight.Bold)
