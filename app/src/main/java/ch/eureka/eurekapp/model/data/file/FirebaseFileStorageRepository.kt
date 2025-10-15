@@ -24,17 +24,6 @@ class FirebaseFileStorageRepository(
     private val auth: FirebaseAuth
 ) : FileStorageRepository {
 
-  /**
-   * Upload a file to Firebase Storage.
-   *
-   * This method uploads a file from a local URI to the specified storage path. The upload operation
-   * requires the user to be authenticated and authorized by security rules.
-   *
-   * @param storagePath The full storage path where the file should be stored
-   * @param fileUri The local file URI to upload
-   * @return Result containing the download URL on success, or an exception on failure
-   * @throws IllegalStateException if the user is not authenticated
-   */
   override suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String> = runCatching {
     auth.currentUser ?: throw IllegalStateException("User must be authenticated to upload")
 
@@ -46,33 +35,12 @@ class FirebaseFileStorageRepository(
     ref.downloadUrl.await().toString()
   }
 
-  /**
-   * Delete a file from Firebase Storage using its download URL.
-   *
-   * This method extracts the storage reference from a download URL and deletes the file. The
-   * deletion operation requires the user to be authenticated and authorized by security rules.
-   *
-   * @param downloadUrl The Firebase Storage download URL of the file to delete
-   * @return Result containing Unit on success, or an exception on failure
-   * @throws IllegalArgumentException if the download URL is invalid
-   */
   override suspend fun deleteFile(downloadUrl: String): Result<Unit> = runCatching {
     val storagePath = extractStoragePathFromUrl(downloadUrl)
     val ref = storage.reference.child(storagePath)
     ref.delete().await()
   }
 
-  /**
-   * Get metadata for a file using its download URL.
-   *
-   * This method retrieves metadata information about a file including name, size, content type, and
-   * creation time. The operation requires the user to be authenticated and authorized by security
-   * rules.
-   *
-   * @param downloadUrl The Firebase Storage download URL of the file
-   * @return Result containing StorageMetadata on success, or an exception on failure
-   * @throws IllegalArgumentException if the download URL is invalid
-   */
   override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> = runCatching {
     val storagePath = extractStoragePathFromUrl(downloadUrl)
     val ref = storage.reference.child(storagePath)
