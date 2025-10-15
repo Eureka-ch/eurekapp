@@ -59,7 +59,7 @@ class NavigationMenuTest : TestCase() {
     composeTestRule.setContent { NavigationMenu() }
 
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON).performClick()
-    composeTestRule.onNodeWithTag(ProfileScreenTestTags.PROFILE_SCREEN_TEXT).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(ProfileScreenTestTags.PROFILE_SCREEN).assertIsDisplayed()
 
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON).performClick()
     composeTestRule.onNodeWithTag(IdeasScreenTestTags.IDEAS_SCREEN_TEXT).assertIsDisplayed()

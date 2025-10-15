@@ -21,6 +21,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -122,18 +123,28 @@ class SignInViewModel(
 
         // Pass the credential to the repository
         repository.signInWithGoogle(credential).fold({ firebaseUser ->
-          // Create User object from FirebaseUser data
-          val user =
-              User(
-                  uid = firebaseUser.uid,
-                  displayName = firebaseUser.displayName ?: "",
-                  email = firebaseUser.email ?: "",
-                  photoUrl = firebaseUser.photoUrl?.toString() ?: "",
-                  lastActive = Timestamp.now())
-
           viewModelScope.launch {
+            // Check if user already exists in database
+            val existingUser = userRepository.getUserById(firebaseUser.uid).firstOrNull()
+
+            val userToSave =
+                if (existingUser != null) {
+                  // User exists : only update photoUrl and lastActive
+                  existingUser.copy(
+                      photoUrl = firebaseUser.photoUrl?.toString() ?: existingUser.photoUrl,
+                      lastActive = Timestamp.now())
+                } else {
+                  // New user : create from Firebase data
+                  User(
+                      uid = firebaseUser.uid,
+                      displayName = firebaseUser.displayName ?: "",
+                      email = firebaseUser.email ?: "",
+                      photoUrl = firebaseUser.photoUrl?.toString() ?: "",
+                      lastActive = Timestamp.now())
+                }
+
             userRepository
-                .saveUser(user)
+                .saveUser(userToSave)
                 .fold(
                     onSuccess = {
                       _uiState.update {
