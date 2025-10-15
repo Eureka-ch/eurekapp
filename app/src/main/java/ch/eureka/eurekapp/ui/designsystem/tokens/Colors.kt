@@ -14,16 +14,25 @@ object EColors {
   private val TertiaryGreen = Color(0xFF22C55E) // Green for success/tasks
 
   // Additional colors from Figma
-  private val IconColor = Color(0xFF424242) // Dark gray for icons
-  private val NotificationIconColor = Color(0xFFEF9A9A) // Light red for notification icons
-  private val HighPriorityBackground = Color(0xFFFFEBEE) // Light red background for high priority
-  private val HighPriorityText = Color(0xFFE57373) // Red text for high priority
-  private val TagBackground = Color(0xFFEEEEEE) // Light gray background for tags
-  private val TagText = Color(0xFF424242) // Dark gray text for tags
-  private val ButtonBorderColor = Color(0xFFE5E5E5) // Light gray border for outlined buttons
-  private val SuccessGreen = Color(0xFF4CAF50) // Green for success states and progress
-  private val WarningOrange = Color(0xFFFFB74D) // Orange for warnings
-  private val InfoBlue = Color(0xFF2196F3) // Blue for info states
+  val IconColor = Color(0xFF424242) // Dark gray for icons
+  val NotificationIconColor = Color(0xFFEF9A9A) // Light red for notification icons
+  val HighPriorityBackground = Color(0xFFFFEBEE) // Light red background for high priority
+  val HighPriorityText = Color(0xFFE57373) // Red text for high priority
+  val TagBackground = Color(0xFFEEEEEE) // Light gray background for tags
+  val TagText = Color(0xFF424242) // Dark gray text for tags
+  val ButtonBorderColor = Color(0xFFE5E5E5) // Light gray border for outlined buttons
+  val SuccessGreen = Color(0xFF4CAF50) // Green for success states and progress
+  val WarningOrange = Color(0xFFFFB74D) // Orange for warnings
+  val InfoBlue = Color(0xFF2196F3) // Blue for info states
+
+  //Text colors
+  val GrayTextColor2 = Color(0xFF64748B)
+  val WhiteTextColor = Color.White
+  val BlackTextColor = Color.Black
+  val LightingBlue = Color(0xFF2563EB)
+
+  //Border colors
+  val BorderGrayColor = Color(0xFFE5E7EB)
 
   // Light theme colors from Figma
   private val LightBackground = Color(0xFFF5F5F5) // Light gray background

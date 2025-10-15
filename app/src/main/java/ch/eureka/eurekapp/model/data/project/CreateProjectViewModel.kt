@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.model.project
+package ch.eureka.eurekapp.model.data.project
 
 import androidx.lifecycle.ViewModel
 import ch.eureka.eurekapp.model.authentication.AuthRepository
@@ -11,7 +11,8 @@ class CreateProjectViewModel(
 
     suspend fun createProject(projectToCreate: Project, onSuccessCallback: () -> Unit,
                               onFailureCallback: () -> Unit){
-        if(projectsRepository.createProject(projectToCreate).isSuccess){
+        if(projectsRepository.createProject(projectToCreate,
+                projectToCreate.createdBy).isSuccess){
             onSuccessCallback()
         }else{
             onFailureCallback()

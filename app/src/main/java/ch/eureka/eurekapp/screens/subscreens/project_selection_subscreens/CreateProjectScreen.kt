@@ -38,6 +38,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -50,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -61,24 +63,42 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import ch.eureka.eurekapp.model.project.CreateProjectViewModel
-import ch.eureka.eurekapp.model.project.Project
-import ch.eureka.eurekapp.model.project.ProjectStatus
+import ch.eureka.eurekapp.model.data.project.ProjectStatus
+import ch.eureka.eurekapp.model.data.project.CreateProjectViewModel
+import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.navigation.MainScreens
 import ch.eureka.eurekapp.navigation.navigationFunction
-import ch.eureka.eurekapp.ui.theme.BackgroundGray
-import ch.eureka.eurekapp.ui.theme.Black
-import ch.eureka.eurekapp.ui.theme.BorderGrayColor
-import ch.eureka.eurekapp.ui.theme.DarkerGray
-import ch.eureka.eurekapp.ui.theme.LightRed
-import ch.eureka.eurekapp.ui.theme.LightingBlue
-import ch.eureka.eurekapp.ui.theme.NormalTextGray
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BlackTextColor
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.GrayTextColor2
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.LightingBlue
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.WhiteTextColor
+import ch.eureka.eurekapp.ui.theme.DarkColorScheme
+import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.ui.theme.Typography
-import ch.eureka.eurekapp.ui.theme.White
 import ch.eureka.eurekapp.utils.Utils
 import ch.eureka.eurekapp.utils.Utils.convertMillisToDate
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.launch
+
+object CreateProjectScreenTestTags{
+    const val PROJECT_NAME_TEST_TAG_TEXT_INPUT = "Project name text input"
+    const val DESCRIPTION_NAME_TEST_TAG_TEXT_INPUT = "Description text input"
+    const val START_DATE_TEST_TAG = "start date text input test tag"
+    const val END_DATE_TEST_TAG = "end date test tag"
+    const val PROJECT_STATUS_DROPDOWN_TEST_TAG = "project status dropdown test tag"
+    const val CHECKBOX_ENABLE_GOOGLE_DRIVE_FOLDER_TEST_TAG = "checkbox enable google drive folder"
+    const val CHECKBOX_LINK_GITHUB_REPOSITORY = "checkbox link github repository"
+    const val GITHUB_URL_TEST_TAG = "text input github url"
+
+    const val CALENDAR_ICON_BUTTON_START = "calendar icon start"
+    const val CALENDAR_ICON_BUTTON_END = "calendar icon end"
+
+    fun createProjectStatusTestTag(status: ProjectStatus): String {
+        return "status: ${status.name}"
+    }
+}
 
 /**
  * The screen to create projects
@@ -113,7 +133,7 @@ fun CreateProjectScreen(
 
     var failedToCreateProjectText by remember { mutableStateOf<String>("") }
 
-    Column(modifier = Modifier.fillMaxSize().background(color = BackgroundGray),
+    Column(modifier = Modifier.fillMaxSize().background(color = LightColorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly
     ) {
@@ -123,7 +143,7 @@ fun CreateProjectScreen(
             Text(text = "Create New Project", style = Typography.titleLarge,
                 fontWeight = FontWeight(600))
             Text(text = "Define the core details. You can link Google Workspace and Github now or later.",
-                style = Typography.titleMedium, color = NormalTextGray
+                style = Typography.titleMedium, color = GrayTextColor2
             )
         }
         //project creation
@@ -153,7 +173,8 @@ fun CreateProjectScreen(
                         textValue = projectName,
                         inputIsError = {input -> Utils.stringIsEmptyOrBlank(input)},
                         errorText = "Project name cannot be empty!",
-                        isErrorState = projectNameError
+                        isErrorState = projectNameError,
+                        testTag = CreateProjectScreenTestTags.PROJECT_NAME_TEST_TAG_TEXT_INPUT
                     )
                 }
                 Row(
@@ -168,7 +189,8 @@ fun CreateProjectScreen(
                         inputIsError = {input -> Utils.stringIsEmptyOrBlank(input)},
                         errorText = "Description cannot be empty!",
                         minLine = 4,
-                        isErrorState = projectDescriptionError
+                        isErrorState = projectDescriptionError,
+                        testTag = CreateProjectScreenTestTags.DESCRIPTION_NAME_TEST_TAG_TEXT_INPUT
                     )
                 }
                 Row(modifier = Modifier.fillMaxWidth(),
@@ -185,7 +207,9 @@ fun CreateProjectScreen(
                             inputIsError = {input ->
                                 !Utils.isDateParseableToStandardAppPattern(input)},
                             errorText = "Date should be of the format dd/MM/yyyy",
-                            isErrorState = startDateError
+                            isErrorState = startDateError,
+                            testTag = CreateProjectScreenTestTags.START_DATE_TEST_TAG,
+                            datePickerButtonTag = CreateProjectScreenTestTags.CALENDAR_ICON_BUTTON_START
                         )
                     }
                     Row(modifier = Modifier.weight(1f),
@@ -198,7 +222,9 @@ fun CreateProjectScreen(
                             textValue = endDate,
                             inputIsError = {input -> !Utils.isDateParseableToStandardAppPattern(input)},
                             errorText = "Date should be of the format dd/MM/yyyy",
-                            isErrorState = endDateError
+                            isErrorState = endDateError,
+                            testTag = CreateProjectScreenTestTags.END_DATE_TEST_TAG,
+                            datePickerButtonTag = CreateProjectScreenTestTags.CALENDAR_ICON_BUTTON_END
                         )
                     }
                 }
@@ -220,9 +246,12 @@ fun CreateProjectScreen(
                     Text("Integrations", style = Typography.titleMedium,
                         fontWeight = FontWeight(600))
                     CheckboxOptionComponent("Enable Google Drive Folder",
-                        enableGoogleDriveFolderChecked)
+                        enableGoogleDriveFolderChecked,
+                        CreateProjectScreenTestTags
+                            .CHECKBOX_ENABLE_GOOGLE_DRIVE_FOLDER_TEST_TAG)
                     CheckboxOptionComponent("Link Github Repository",
-                        linkGithubRepository)
+                        linkGithubRepository,
+                        CreateProjectScreenTestTags.CHECKBOX_LINK_GITHUB_REPOSITORY)
 
 
                     if(linkGithubRepository.value){
@@ -234,7 +263,8 @@ fun CreateProjectScreen(
                                 placeHolderText = "https://github.com/org/repo",
                                 textValue = githubUrl,
                                 inputIsError = {input -> false},
-                                errorText = ""
+                                errorText = "",
+                                testTag = CreateProjectScreenTestTags.GITHUB_URL_TEST_TAG
                             )
                         }
                     }
@@ -270,7 +300,6 @@ fun CreateProjectScreen(
                                            projectId = newId,
                                            createdBy = currentUserId,
                                            memberIds = listOf(currentUserId),
-                                           createdAt = Timestamp.now(),
                                            name = projectName.value,
                                            description = projectDescription.value,
                                            status = projectStatus.value
@@ -295,11 +324,11 @@ fun CreateProjectScreen(
                             containerColor = LightingBlue
                         )
                     ) {
-                        Text(text = "Create Project", color = White,
+                        Text(text = "Create Project", color = WhiteTextColor,
                             fontWeight = FontWeight(500), style = Typography.titleSmall)
                     }
 
-                    Text(failedToCreateProjectText ,color = LightRed)
+                    Text(failedToCreateProjectText ,color = LightColorScheme.error)
                 }
             }
         }
@@ -326,6 +355,8 @@ fun CreateProjectTextField(title: String,
                            inputIsError: (String) -> Boolean,
                            errorText: String,
                            minLine: Int = 1,
+                           testTag: String,
+                           datePickerButtonTag: String = "",
                            isDatePicker: Boolean = false){
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
@@ -347,7 +378,7 @@ fun CreateProjectTextField(title: String,
             verticalArrangement = Arrangement.Center
         ){
             Text(modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
-                text = title, style = titleTypography, color = NormalTextGray,
+                text = title, style = titleTypography, color = GrayTextColor2,
                 textAlign = TextAlign.Start)
             Spacer(modifier = Modifier.padding(2.dp))
             OutlinedTextField(
@@ -355,7 +386,7 @@ fun CreateProjectTextField(title: String,
                 singleLine = isDatePicker,
                 readOnly = isDatePicker,
                 modifier = Modifier.padding(horizontal = 5.dp, vertical = 0.dp)
-                    .background(color = White).fillMaxWidth(),
+                    .background(color = LightColorScheme.surface).fillMaxWidth().testTag(testTag),
                 shape = textFieldShape,
                 value = if(!isDatePicker) textValue.value else selectedDate,
                 onValueChange = {
@@ -366,15 +397,17 @@ fun CreateProjectTextField(title: String,
                 },
                 textStyle = textTypography,
                 placeholder = {
-                    Text(placeHolderText, style = textTypography, color = NormalTextGray)
+                    Text(placeHolderText, style = textTypography, color = GrayTextColor2)
                 },
                 colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = DarkerGray,
+                    focusedBorderColor = GrayTextColor2,
                     unfocusedBorderColor = BorderGrayColor
                 ),
                 trailingIcon = {
                     if(isDatePicker){
-                        IconButton(onClick = { showDatePicker = !showDatePicker }) {
+                        IconButton(modifier = Modifier
+                            .testTag(datePickerButtonTag),
+                            onClick = { showDatePicker = !showDatePicker }) {
                             Icon(
                                 imageVector = Icons.Default.DateRange,
                                 contentDescription = "Select date"
@@ -390,7 +423,7 @@ fun CreateProjectTextField(title: String,
             verticalAlignment = Alignment.CenterVertically){
             Spacer(modifier = Modifier.padding(2.dp))
             if(isErrorState.value){
-                Text(errorText, style = TextStyle(fontSize = 10.sp), color = LightRed)
+                Text(errorText, style = TextStyle(fontSize = 10.sp), color = LightColorScheme.error)
             }
         }
     }
@@ -405,7 +438,7 @@ fun CreateProjectTextField(title: String,
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .fillMaxWidth(0.85f)
-                    .shadow(elevation = 4.dp).background(White)
+                    .shadow(elevation = 4.dp).background(LightColorScheme.surface)
             ){
                 DatePicker(
                     colors = DatePickerDefaults.colors(
@@ -432,26 +465,31 @@ fun ProjectStateSelectionMenu(
     ) {
         var expanded by remember { mutableStateOf(false) }
         Text(modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
-            text = "Project Status", style = titleTypography, color = NormalTextGray,
+            text = "Project Status", style = titleTypography, color = GrayTextColor2,
             textAlign = TextAlign.Start)
         OutlinedButton(
-            modifier = Modifier.background(color = White),
+            modifier = Modifier.background(color = LightColorScheme.surface).testTag(
+                CreateProjectScreenTestTags.PROJECT_STATUS_DROPDOWN_TEST_TAG),
             onClick = {expanded = true},
             shape = dropDownMenuButtonShape,
             border = dropDownMenuButtonBorderStroke
         ) {
             Text(modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
-                text = projectStatus.value.name, style = titleTypography, color = NormalTextGray,
+                text = projectStatus.value.name, style = titleTypography, color = GrayTextColor2,
                 textAlign = TextAlign.Start)
         }
         DropdownMenu(
-            modifier = Modifier.background(color = White, shape = dropDownMenuButtonShape),
+            modifier = Modifier.background(color = LightColorScheme.surface,
+                shape = dropDownMenuButtonShape),
             expanded = expanded,
             onDismissRequest = {expanded = false},
             properties = defaultPopupProperties
         ) {
             ProjectStatus.values().forEachIndexed { index, status ->
                 DropdownMenuItem(
+                    modifier = Modifier
+                        .testTag(CreateProjectScreenTestTags
+                            .createProjectStatusTestTag(status)),
                     text = {
                         Text(text = status.name, style = Typography.bodyMedium)
                     },
@@ -469,16 +507,18 @@ private val checkBoxVerticalPadding = 5.dp
 private val checkBoxHorizontalpadding = 6.dp
 private val checkBoxShape = RoundedCornerShape(3.dp)
 @Composable
-fun CheckboxOptionComponent(title: String, value: MutableState<Boolean>){
+fun CheckboxOptionComponent(title: String,
+                            value: MutableState<Boolean>,
+                            testTag: String){
     Row(modifier = Modifier.padding(vertical = checkBoxVerticalPadding, horizontal = checkBoxHorizontalpadding),
         horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically){
-        Checkbox(modifier = Modifier.size(5.dp).padding(0.dp), checked =value.value,
+        Checkbox(modifier = Modifier.size(5.dp).padding(0.dp).testTag(testTag), checked =value.value,
             onCheckedChange = {value.value = !value.value},
             colors = CheckboxDefaults.colors(
                 checkedColor = LightingBlue
             )
         )
         Spacer(modifier = Modifier.padding(horizontal = 10.dp))
-        Text(text= title, style = Typography.bodySmall, color = Black)
+        Text(text= title, style = Typography.bodySmall, color = BlackTextColor)
     }
 }

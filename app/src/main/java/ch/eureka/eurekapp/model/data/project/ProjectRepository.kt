@@ -33,4 +33,7 @@ interface ProjectRepository {
 
   /** Update member role */
   suspend fun updateMemberRole(projectId: String, userId: String, role: ProjectRole): Result<Unit>
+
+  /**Get new id for project*/
+  suspend fun getNewProjectId(): Result<String>
 }
