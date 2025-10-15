@@ -7,8 +7,6 @@ import kotlinx.coroutines.flow.Flow
  *
  * This interface defines operations for creating, retrieving, and managing project invitations.
  * Implementations should ensure token uniqueness and handle concurrent access properly.
- *
- * Note: This file was co-authored by Claude Code.
  */
 interface InvitationRepository {
   /**
@@ -38,8 +36,8 @@ interface InvitationRepository {
   /**
    * Mark an invitation as used by a specific user.
    *
-   * This operation should be atomic to prevent race conditions. Once marked as used, the
-   * invitation cannot be used again.
+   * This operation should be atomic to prevent race conditions. Once marked as used, the invitation
+   * cannot be used again.
    *
    * @param token The token of the invitation to mark as used.
    * @param userId The ID of the user who is using the invitation.

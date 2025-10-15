@@ -7,8 +7,6 @@ import com.google.firebase.firestore.FirebaseFirestore
  *
  * This follows the singleton provider pattern used throughout the application for repository
  * dependency injection.
- *
- * Note: This file was co-authored by Claude Code.
  */
 object InvitationRepositoryProvider {
   private val _repository: InvitationRepository by lazy {

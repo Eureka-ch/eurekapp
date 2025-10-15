@@ -14,8 +14,6 @@ import kotlinx.coroutines.tasks.await
  * This implementation provides real-time updates for invitation data and ensures atomic operations
  * for marking invitations as used to prevent race conditions.
  *
- * Note: This file was co-authored by Claude Code.
- *
  * @property firestore The Firestore instance to use for database operations.
  */
 class FirestoreInvitationRepository(private val firestore: FirebaseFirestore) :
@@ -23,17 +21,16 @@ class FirestoreInvitationRepository(private val firestore: FirebaseFirestore) :
 
   override fun getInvitationByToken(token: String): Flow<Invitation?> = callbackFlow {
     val listener =
-        firestore
-            .collection(FirestorePaths.INVITATIONS)
-            .document(token)
-            .addSnapshotListener { snapshot, error ->
-              if (error != null) {
-                close(error)
-                return@addSnapshotListener
-              }
-              val invitation = snapshot?.toObject(Invitation::class.java)
-              trySend(invitation)
-            }
+        firestore.collection(FirestorePaths.INVITATIONS).document(token).addSnapshotListener {
+            snapshot,
+            error ->
+          if (error != null) {
+            close(error)
+            return@addSnapshotListener
+          }
+          val invitation = snapshot?.toObject(Invitation::class.java)
+          trySend(invitation)
+        }
     awaitClose { listener.remove() }
   }
 
@@ -67,26 +64,30 @@ class FirestoreInvitationRepository(private val firestore: FirebaseFirestore) :
       runCatching {
         val invitationRef = firestore.collection(FirestorePaths.INVITATIONS).document(token)
 
-        firestore.runTransaction { transaction ->
-          val snapshot = transaction.get(invitationRef)
-          val invitation = snapshot.toObject(Invitation::class.java)
+        firestore
+            .runTransaction { transaction ->
+              val snapshot = transaction.get(invitationRef)
 
-          if (invitation == null) {
-            throw IllegalStateException("Invitation not found")
-          }
+              if (!snapshot.exists()) {
+                throw IllegalStateException("Invitation not found")
+              }
 
-          if (invitation.isUsed) {
-            throw IllegalStateException("Invitation has already been used")
-          }
+              val invitation =
+                  snapshot.toObject(Invitation::class.java)
+                      ?: throw IllegalStateException("Invitation not found")
 
-          // Mark as used
-          transaction.update(
-              invitationRef,
-              mapOf(
-                  "isUsed" to true,
-                  "usedBy" to userId,
-                  "usedAt" to Timestamp.now()))
-        }
+              if (invitation.isUsed) {
+                throw IllegalStateException("Invitation has already been used")
+              }
+
+              // mark as used -> update the object and write it back
+              invitation.isUsed = true
+              invitation.usedBy = userId
+              invitation.usedAt = Timestamp.now()
+
+              // use set with the updated object to ensure all fields are properly written
+              transaction.set(invitationRef, invitation)
+            }
             .await()
       }
 }
