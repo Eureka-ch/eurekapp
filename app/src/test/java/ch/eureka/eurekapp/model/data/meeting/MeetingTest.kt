@@ -83,12 +83,14 @@ class MeetingTest {
 
   @Test
   fun meeting_equals_comparesCorrectly() {
+    val fixedTimestamp = Timestamp(Date(0))
     val meeting1 =
         Meeting(
             meetingID = "mtg123",
             projectId = "prj123",
             taskId = "task123",
             title = "Sprint Planning",
+            datetime = fixedTimestamp,
             status = MeetingStatus.SCHEDULED)
     val meeting2 =
         Meeting(
@@ -96,6 +98,7 @@ class MeetingTest {
             projectId = "prj123",
             taskId = "task123",
             title = "Sprint Planning",
+            datetime = fixedTimestamp,
             status = MeetingStatus.SCHEDULED)
     val meeting3 =
         Meeting(
@@ -103,6 +106,7 @@ class MeetingTest {
             projectId = "prj456",
             taskId = null,
             title = "Retrospective",
+            datetime = fixedTimestamp,
             status = MeetingStatus.COMPLETED)
 
     assertEquals(meeting1, meeting2)
@@ -111,12 +115,15 @@ class MeetingTest {
 
   @Test
   fun meeting_hashCode_isConsistent() {
+    val fixedTimestamp = Timestamp(Date(0))
+
     val meeting1 =
         Meeting(
             meetingID = "mtg123",
             projectId = "prj123",
             taskId = "task123",
             title = "Sprint Planning",
+            datetime = fixedTimestamp,
             status = MeetingStatus.SCHEDULED)
     val meeting2 =
         Meeting(
@@ -124,6 +131,7 @@ class MeetingTest {
             projectId = "prj123",
             taskId = "task123",
             title = "Sprint Planning",
+            datetime = fixedTimestamp,
             status = MeetingStatus.SCHEDULED)
 
     assertEquals(meeting1.hashCode(), meeting2.hashCode())
