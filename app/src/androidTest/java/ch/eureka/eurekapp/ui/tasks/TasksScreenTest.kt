@@ -17,7 +17,7 @@ class TasksScreenTest {
   @get:Rule val composeTestRule = createAndroidComposeRule<androidx.activity.ComponentActivity>()
 
   @Test
-  fun `TasksScreen renders with empty state`() {
+  fun tasksScreenRendersWithEmptyState() {
     composeTestRule.setContent {
       EurekappTheme { TasksScreen(onCreateTaskClick = {}, onAutoAssignClick = {}, onNavigate = {}) }
     }
@@ -27,7 +27,7 @@ class TasksScreenTest {
   }
 
   @Test
-  fun `TasksScreen renders with mock tasks`() {
+  fun tasksScreenRendersWithMockTasks() {
     val mockViewModel = TaskViewModel(MockTaskRepository())
 
     composeTestRule.setContent {
@@ -45,7 +45,7 @@ class TasksScreenTest {
   }
 
   @Test
-  fun `TasksScreen handles task completion toggle`() {
+  fun tasksScreenHandlesTaskCompletionToggle() {
     val mockViewModel = TaskViewModel(MockTaskRepository())
 
     composeTestRule.setContent {
@@ -63,7 +63,7 @@ class TasksScreenTest {
   }
 
   @Test
-  fun `TasksScreen handles different filter states`() {
+  fun tasksScreenHandlesDifferentFilterStates() {
     val mockViewModel = TaskViewModel(MockTaskRepository())
 
     composeTestRule.setContent {
@@ -84,7 +84,7 @@ class TasksScreenTest {
   }
 
   @Test
-  fun `TasksScreen handles callback functions`() {
+  fun tasksScreenHandlesCallbackFunctions() {
     var createTaskCalled = false
     var autoAssignCalled = false
     var navigateCalled = false
