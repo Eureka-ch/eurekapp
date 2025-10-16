@@ -1,6 +1,8 @@
 package ch.eureka.eurekapp.screens
 
+import android.content.ContentResolver
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -70,7 +72,8 @@ Portions of the code in this file are copy-pasted from the Bootcamp solution pro
 fun CreateTaskScreen(
     projectId: String,
     navigationController: NavHostController = rememberNavController(),
-    createTaskViewModel: CreateTaskViewModel = viewModel()
+    createTaskViewModel: CreateTaskViewModel = viewModel(),
+    contentResolver: ContentResolver = LocalContext.current.contentResolver
 ) {
   val createTaskState by createTaskViewModel.uiState.collectAsState()
   val errorMsg = createTaskState.errorMsg
@@ -84,6 +87,13 @@ fun CreateTaskScreen(
 
   val context = LocalContext.current
   val coroutineScope = rememberCoroutineScope()
+
+  BackHandler(enabled = true) {
+    for (uri in createTaskState.attachmentUris) {
+      coroutineScope.launch { createTaskViewModel.deletePhoto(context, uri) }
+    }
+    navigationFunction(navigationController, true, null)
+  }
 
   LaunchedEffect(projectId) { createTaskViewModel.setProjectId(projectId) }
 
@@ -202,7 +212,7 @@ fun CreateTaskScreen(
                       Text("Save")
                     }
               }
-              createTaskState.attachmentUrls.forEachIndexed { index, file ->
+              createTaskState.attachmentUris.forEachIndexed { index, file ->
                 Row {
                   Text("Photo ${index + 1}")
                   IconButton(

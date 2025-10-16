@@ -2,7 +2,6 @@ package ch.eureka.eurekapp.model.tasks
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -30,9 +29,10 @@ class CreateTaskViewModel(
     private val taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
     private val fileRepository: FileStorageRepository =
         FirestoreRepositoriesProvider.fileRepository,
+    private val attachmentUris: List<Uri> = emptyList()
 ) : ViewModel() {
   // CreateTask state
-  private val _uiState = MutableStateFlow(CreateTaskState())
+  private val _uiState = MutableStateFlow(CreateTaskState(attachmentUris = attachmentUris))
   val uiState: StateFlow<CreateTaskState> = _uiState.asStateFlow()
 
   /** Clears the error message in the UI state. */
@@ -48,7 +48,7 @@ class CreateTaskViewModel(
   private suspend fun saveFilesOnRepository(context: Context): List<String> {
     val state = _uiState.value
     val photoUrls = mutableListOf<String>()
-    for (uri in state.attachmentUrls) {
+    for (uri in state.attachmentUris) {
       val photoSaveResult =
           fileRepository.uploadFile(
               StoragePaths.taskAttachmentPath(
@@ -93,7 +93,6 @@ class CreateTaskViewModel(
 
     viewModelScope.launch {
       val photoUrls = saveFilesOnRepository(context)
-      Log.d("CreateTaskViewModel", state.taskId)
       addTaskToRepository(
           Task(
               taskID = state.taskId,
@@ -105,6 +104,9 @@ class CreateTaskViewModel(
               attachmentUrls = photoUrls,
               createdBy = currentUser))
       clearErrorMsg()
+      for (uri in state.attachmentUris) {
+        deletePhoto(context, uri)
+      }
     }
   }
 
@@ -129,16 +131,16 @@ class CreateTaskViewModel(
   }
 
   fun addAttachment(uri: Uri) {
-    if (!_uiState.value.attachmentUrls.contains(uri)) {
-      _uiState.value = _uiState.value.copy(attachmentUrls = _uiState.value.attachmentUrls + uri)
+    if (!_uiState.value.attachmentUris.contains(uri)) {
+      _uiState.value = _uiState.value.copy(attachmentUris = _uiState.value.attachmentUris + uri)
     }
   }
 
   fun removeAttachment(index: Int) {
     _uiState.value =
         _uiState.value.copy(
-            attachmentUrls =
-                _uiState.value.attachmentUrls.toMutableList().also {
+            attachmentUris =
+                _uiState.value.attachmentUris.toMutableList().also {
                   if (index in it.indices) it.removeAt(index)
                 })
   }

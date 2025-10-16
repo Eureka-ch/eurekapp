@@ -16,6 +16,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.test.espresso.Espresso.pressBack
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.ProjectRole
@@ -339,6 +340,22 @@ class NavigationButtonsTest : TestCase() {
     saveButton.performClick()
 
     // Ensure navigation back to tasks screen (pop back)
+    composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
+  }
+
+  @Test
+  fun testBackButton() {
+    val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+
+    // Set up the Composable with mocked dependencies
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      FakeNavGraph(projectId = "project1234", navController = navController, viewModel = viewModel)
+      navController.navigate(TaskSpecificScreens.CreateTaskScreen.title)
+    }
+
+    pressBack()
+
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
   }
 

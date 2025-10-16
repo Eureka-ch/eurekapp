@@ -18,7 +18,7 @@ data class CreateTaskState(
     val status: TaskStatus = TaskStatus.TODO,
     val assignedUserIds: List<String> = emptyList(),
     val dueDate: String = "",
-    val attachmentUrls: List<Uri> = emptyList(),
+    val attachmentUris: List<Uri> = emptyList(),
     val customData: Map<String, Any> = emptyMap(),
     val errorMsg: String? = null
 )
