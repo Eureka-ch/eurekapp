@@ -20,8 +20,8 @@ import ch.eureka.eurekapp.screens.MeetingsScreen
 import ch.eureka.eurekapp.screens.OverviewProjectsScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
 import ch.eureka.eurekapp.screens.TasksScreen
-import ch.eureka.eurekapp.ui.profile.ProfileScreen
 import ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens.CreateProjectScreen
+import ch.eureka.eurekapp.ui.profile.ProfileScreen
 
 abstract class Screen(val title: String)
 

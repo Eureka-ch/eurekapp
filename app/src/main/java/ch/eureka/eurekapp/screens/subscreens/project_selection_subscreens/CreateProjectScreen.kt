@@ -58,13 +58,9 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.data.project.CreateProjectViewModel
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
-import ch.eureka.eurekapp.navigation.MainScreens
-import ch.eureka.eurekapp.navigation.navigationFunction
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BlackTextColor
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.GrayTextColor2
@@ -107,7 +103,7 @@ object CreateProjectScreenTestTags {
 fun CreateProjectScreen(
     createProjectViewModel: CreateProjectViewModel = viewModel(),
     startDate: MutableState<String> = remember { mutableStateOf<String>("") },
-    //for injecting it during testing,
+    // for injecting it during testing,
     onProjectCreated: () -> Unit = {}
 ) {
   val projectName = remember { mutableStateOf<String>("") }
@@ -225,7 +221,7 @@ fun CreateProjectScreen(
                                     textValue = endDate,
                                     inputIsError = { input ->
                                       !Utils.stringIsEmptyOrBlank(input) &&
-                                              !Utils.isDateParseableToStandardAppPattern(input)
+                                          !Utils.isDateParseableToStandardAppPattern(input)
                                     },
                                     errorText = "Date should be of the format dd/MM/yyyy",
                                     isErrorState = endDateError,
@@ -286,9 +282,10 @@ fun CreateProjectScreen(
                         horizontalArrangement = Arrangement.Start,
                         verticalAlignment = Alignment.CenterVertically) {
                           FilledTonalButton(
-                              modifier = Modifier.width(140.dp).height(40.dp)
-                                  .testTag(
-                                  CreateProjectScreenTestTags.CREATE_RPOJECT_BUTTON),
+                              modifier =
+                                  Modifier.width(140.dp)
+                                      .height(40.dp)
+                                      .testTag(CreateProjectScreenTestTags.CREATE_RPOJECT_BUTTON),
                               onClick = {
                                 /** The method that handles the creation of a project */
                                 projectNameError.value =
@@ -299,7 +296,7 @@ fun CreateProjectScreen(
                                     !Utils.isDateParseableToStandardAppPattern(startDate.value)
                                 endDateError.value =
                                     !Utils.stringIsEmptyOrBlank(endDate.value) &&
-                                            !Utils.isDateParseableToStandardAppPattern(endDate.value)
+                                        !Utils.isDateParseableToStandardAppPattern(endDate.value)
 
                                 createProjectViewModel.viewModelScope.launch {
                                   val newId = createProjectViewModel.getNewProjectId()
@@ -308,7 +305,8 @@ fun CreateProjectScreen(
                                       !projectDescriptionError.value &&
                                       !startDateError.value &&
                                       (Utils.stringIsEmptyOrBlank(endDate.value) ||
-                                              Utils.isDateParseableToStandardAppPattern(endDate.value))) {
+                                          Utils.isDateParseableToStandardAppPattern(
+                                              endDate.value))) {
                                     if (newId != null && currentUserId != null) {
                                       val projectToAdd =
                                           Project(
@@ -320,9 +318,7 @@ fun CreateProjectScreen(
                                               status = projectStatus.value)
                                       createProjectViewModel.createProject(
                                           projectToCreate = projectToAdd,
-                                          onSuccessCallback = {
-                                            onProjectCreated()
-                                          },
+                                          onSuccessCallback = { onProjectCreated() },
                                           onFailureCallback = {
                                             failedToCreateProjectText =
                                                 "Failed to create the project..."
