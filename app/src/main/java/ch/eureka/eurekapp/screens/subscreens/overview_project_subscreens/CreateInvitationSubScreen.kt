@@ -1,6 +1,10 @@
 package ch.eureka.eurekapp.screens.subscreens.overview_project_subscreens
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.graphics.Paint
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -43,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -65,13 +70,17 @@ import ch.eureka.eurekapp.ui.theme.Typography
 import ch.eureka.eurekapp.utils.Utils.convertMillisToDate
 import kotlinx.coroutines.launch
 
+object CreateInvitationSubScreen{
+    const val CREATE_INVITATION_BUTTON = "create invitation button"
+    const val COPY_INVITATION_BUTTON = "copy invitation button"
+}
+
 @Composable
 fun CreateInvitationSubscreen(
     projectId: String,
     createInvitationViewModel: CreateInvitationViewModel = viewModel(),
     onInvitationCreate: () -> Unit
     ) {
-  val scrollState = rememberScrollState()
 
   val createInvitationToken = remember { mutableStateOf<Invitation?>(null) }
   val createdInvitation = remember { mutableStateOf<Boolean>(false) }
@@ -81,6 +90,8 @@ fun CreateInvitationSubscreen(
   }}
 
   val errorText = remember { mutableStateOf<String>("") }
+
+  val context = LocalContext.current
   Column(
       modifier = Modifier.fillMaxSize().background(color = LightColorScheme.background),
       horizontalAlignment = Alignment.CenterHorizontally,
@@ -117,18 +128,24 @@ fun CreateInvitationSubscreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center) {
 
-                    Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically){
+                    Row(modifier = Modifier.weight(1f).padding(vertical = 10.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically){
                         if(createInvitationToken.value != null){
-                            Text("Invitation token: " + createInvitationToken.value!!.token, textAlign = TextAlign.Center,
-                                style = Typography.titleMedium, fontWeight = FontWeight(500))
+                            Text("Invitation token: " + createInvitationToken.value!!.token,
+                                textAlign = TextAlign.Center,
+                                style = Typography.titleLarge,
+                                fontWeight = FontWeight(600))
                         }
                     }
 
-                    Spacer(modifier = Modifier.weight(2f))
+                    Spacer(modifier = Modifier.weight(1f))
 
-                    Row(modifier = Modifier.weight(1f)) {
+                    Row() {
                         FilledTonalButton(
-                            modifier = Modifier.width(190.dp).height(80.dp).padding(horizontal = 15.dp),
+                            modifier = Modifier.width(190.dp).height(80.dp)
+                                .padding(horizontal = 15.dp).testTag(
+                                CreateInvitationSubScreen.CREATE_INVITATION_BUTTON),
                             shape = RoundedCornerShape(7.dp),
                             enabled = !createdInvitation.value,
                             colors = ButtonDefaults.filledTonalButtonColors(
@@ -151,36 +168,31 @@ fun CreateInvitationSubscreen(
                                 }
                             }
                         ) {
-                            Text("Create invitation", style = Typography.titleMedium,
-                                fontWeight = FontWeight(500), color = LightColorScheme.surface)
+                            Text("Create invitation", style = Typography.titleSmall,
+                                fontWeight = FontWeight(500),
+                                color = LightColorScheme.surface, textAlign = TextAlign.Center)
                         }
 
                         FilledTonalButton(
-                            modifier = Modifier.width(190.dp).height(80.dp).padding(horizontal = 10.dp),
+                            modifier = Modifier.width(190.dp).height(80.dp)
+                                .padding(horizontal = 10.dp).testTag(
+                                CreateInvitationSubScreen.COPY_INVITATION_BUTTON),
                             shape = RoundedCornerShape(7.dp),
                             enabled = copyToClipBoard.value,
                             colors = ButtonDefaults.filledTonalButtonColors(
                                 containerColor = PrimaryRed
                             ),
                             onClick = {
-                                val invitationToCreate = Invitation(
-                                    token = IdGenerator.generateUniqueToken(),
-                                    projectId = projectId,
-                                )
-                                createInvitationViewModel.viewModelScope.launch {
-                                    createInvitationViewModel
-                                        .createInvitation(invitationToCreate,
-                                            onFailureCallback = {
-                                                errorText.value = "Failed to create invitation"
-                                            }, onSuccessCallback = {
-                                                createdInvitation.value = true
-                                                createInvitationToken.value = invitationToCreate
-                                            })
-                                }
+                               if(createInvitationToken.value != null){
+                                   copyToClipboard(context, createInvitationToken.value!!.token)
+                                   Toast.makeText(context, "Copied to clipboard!",
+                                       Toast.LENGTH_SHORT).show()
+                               }
                             }
                         ) {
                             Text("Copy to clipboard", style = Typography.titleSmall,
-                                fontWeight = FontWeight(500), color = LightColorScheme.surface)
+                                fontWeight = FontWeight(500), color = LightColorScheme.surface,
+                                textAlign = TextAlign.Center)
                         }
                     }
 
@@ -193,81 +205,10 @@ fun CreateInvitationSubscreen(
       }
 }
 
-private val textTypography = Typography.bodyMedium
-private val titleTypography = Typography.titleSmall
-private val verticalContainerPadding = 5.dp
-private val horizontalContainerPadding = 15.dp
-private val textFieldShape = RoundedCornerShape(12.dp)
-private val defaultPopupProperties =
-    PopupProperties(
-        focusable = true,
-        dismissOnClickOutside = true,
-        dismissOnBackPress = true,
-        usePlatformDefaultWidth = false)
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CreateInvitationTextField(
-    title: String,
-    textValue: MutableState<String>,
-    placeHolderText: String,
-    isErrorState: MutableState<Boolean> = remember { mutableStateOf<Boolean>(false) },
-    inputIsError: (String) -> Boolean,
-    errorText: String,
-    minLine: Int = 1,
-    testTag: String,
-) {
-
-  Column(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.Center) {
-        Column(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .padding(
-                        horizontal = horizontalContainerPadding,
-                        vertical = verticalContainerPadding),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center) {
-              Text(
-                  modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
-                  text = title,
-                  style = titleTypography,
-                  color = GrayTextColor2,
-                  textAlign = TextAlign.Start)
-              Spacer(modifier = Modifier.padding(2.dp))
-              OutlinedTextField(
-                  minLines = minLine,
-                  modifier =
-                      Modifier.padding(horizontal = 5.dp, vertical = 0.dp)
-                          .background(color = LightColorScheme.surface)
-                          .fillMaxWidth()
-                          .testTag(testTag),
-                  shape = textFieldShape,
-                  value = textValue.value,
-                  onValueChange = {
-                      textValue.value = it
-                      isErrorState.value = inputIsError(it)
-                  },
-                  textStyle = textTypography,
-                  placeholder = {
-                    Text(placeHolderText, style = textTypography, color = GrayTextColor2)
-                  },
-                  colors =
-                      TextFieldDefaults.outlinedTextFieldColors(
-                          focusedBorderColor = GrayTextColor2,
-                          unfocusedBorderColor = BorderGrayColor),
-                  isError = isErrorState.value)
-            }
-        Row(
-            modifier = Modifier,
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically) {
-              Spacer(modifier = Modifier.padding(2.dp))
-              if (isErrorState.value) {
-                Text(errorText, style = TextStyle(fontSize = 10.sp), color = LightColorScheme.error)
-              }
-            }
-      }
+fun copyToClipboard(context: Context, text: String) {
+    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    val clip = ClipData.newPlainText("label", text)
+    clipboard.setPrimaryClip(clip)
 }
+
