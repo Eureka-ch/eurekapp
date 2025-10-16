@@ -42,6 +42,8 @@ abstract class FirestoreRepositoryTest {
 
     // Clear server data
     FirebaseEmulator.clearFirestoreEmulator()
+    // Note: Storage emulator doesn't have a simple clear endpoint like Firestore
+    // Storage is naturally isolated by using unique project IDs and file paths per test
     FirebaseEmulator.clearAuthEmulator()
   }
 
