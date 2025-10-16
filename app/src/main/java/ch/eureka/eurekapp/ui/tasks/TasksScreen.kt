@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
@@ -15,13 +16,18 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.task.Task
-import ch.eureka.eurekapp.model.utils.TaskBusinessLogic
+import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.data.task.determinePriority
+import ch.eureka.eurekapp.model.data.task.getDaysUntilDue
+import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.components.EurekaBottomNav
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
@@ -40,6 +46,51 @@ object TasksScreenTestTags {
   const val TASK_LIST = "taskList"
 }
 
+data class TaskAndUsers(val task: Task, val users: List<User>)
+
+/**
+ * Render a task card with individual properties Uses ViewModel computed properties directly for
+ * better performance
+ */
+@Composable
+private fun TaskCard(
+    taskAndUsers: TaskAndUsers,
+    onToggleComplete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+  val (task, users) = taskAndUsers
+  val progressValue =
+      when (task.status) {
+        TaskStatus.COMPLETED -> 1.0f
+        TaskStatus.IN_PROGRESS -> 0.5f
+        TaskStatus.TODO -> 0.0f
+        else -> 0.0f
+      }
+  val daysUntilDue = getDaysUntilDue(task)
+
+  EurekaTaskCard(
+      title = task.title,
+      assignee = if (users.isNotEmpty()) users[0].displayName else "Unassigned",
+      progressText = "${(progressValue * 100).toInt()}%",
+      progressValue = progressValue,
+      isCompleted = task.status == TaskStatus.COMPLETED,
+      dueDate = daysUntilDue?.let { formatDueDate(it) } ?: "No due date",
+      priority = determinePriority(task),
+      onToggleComplete = onToggleComplete,
+      modifier = modifier)
+}
+
+/** Format due date for display */
+fun formatDueDate(diffInDays: Long): String {
+
+  return when {
+    diffInDays < 0 -> "Overdue"
+    diffInDays == 0L -> "Due today"
+    diffInDays == 1L -> "Due tomorrow"
+    diffInDays <= 7L -> "Due in $diffInDays days"
+    else -> "Due in more than a week"
+  }
+}
 /**
  * Main Tasks screen composable Displays user tasks with filtering and management capabilities
  *
@@ -50,43 +101,23 @@ object TasksScreenTestTags {
  * @param modifier Modifier for the composable
  * @param viewModel ViewModel for task state management
  */
-
-/**
- * Render a task card with individual properties Uses ViewModel computed properties directly for
- * better performance
- */
-@Composable
-private fun TaskCard(
-    task: Task,
-    title: String,
-    assigneeName: String,
-    progressText: String,
-    progressValue: Float,
-    isCompleted: Boolean,
-    onToggleComplete: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-  EurekaTaskCard(
-      title = title,
-      dueDate = TaskBusinessLogic.formatDueDate(task.dueDate),
-      assignee = assigneeName,
-      priority = TaskBusinessLogic.determinePriority(task),
-      progressText = progressText,
-      progressValue = progressValue,
-      isCompleted = isCompleted,
-      onToggleComplete = onToggleComplete,
-      modifier = modifier)
-}
-
 @Composable
 fun TasksScreen(
+    modifier: Modifier = Modifier,
+    onTaskClick: (Task) -> Unit = {},
     onCreateTaskClick: () -> Unit = {},
     onAutoAssignClick: () -> Unit = {},
     onNavigate: (String) -> Unit = {},
-    modifier: Modifier = Modifier,
-    viewModel: TaskViewModel = viewModel()
+    viewModel: TaskScreenViewModel = viewModel()
 ) {
   val uiState by viewModel.uiState.collectAsState()
+  val selectedFilter by remember { derivedStateOf { uiState.selectedFilter } }
+  val tasksAndUsers by remember { derivedStateOf { uiState.tasksAndUsers } }
+  val errorMsg by remember { derivedStateOf { uiState.error } }
+
+  fun setFilter(filter: TaskScreenFilter) {
+    viewModel.setFilter(filter)
+  }
 
   // Bottom navigation items
   val navItems =
@@ -132,41 +163,12 @@ fun TasksScreen(
               LazyRow(
                   horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
                   modifier = Modifier.padding(bottom = Spacing.sm)) {
-                    val filterOptions = TaskFilterConstants.FILTER_OPTIONS
-                    items(filterOptions) { option ->
-                      val isSelected =
-                          when (option) {
-                            TaskFilterConstants.FILTER_MY_TASKS ->
-                                uiState.selectedFilter == TaskFilter.MINE
-                            TaskFilterConstants.FILTER_TEAM ->
-                                uiState.selectedFilter == TaskFilter.TEAM
-                            TaskFilterConstants.FILTER_THIS_WEEK ->
-                                uiState.selectedFilter == TaskFilter.THIS_WEEK
-                            TaskFilterConstants.FILTER_ALL ->
-                                uiState.selectedFilter == TaskFilter.ALL
-                            TaskFilterConstants.FILTER_PROJECT ->
-                                uiState.selectedFilter == TaskFilter.PROJECT
-                            else -> false
-                          }
-
+                    items(TaskScreenFilter.values) { filter ->
                       FilterChip(
-                          onClick = {
-                            when (option) {
-                              TaskFilterConstants.FILTER_MY_TASKS ->
-                                  viewModel.setFilter(TaskFilter.MINE)
-                              TaskFilterConstants.FILTER_TEAM ->
-                                  viewModel.setFilter(TaskFilter.TEAM)
-                              TaskFilterConstants.FILTER_THIS_WEEK ->
-                                  viewModel.setFilter(TaskFilter.THIS_WEEK)
-                              TaskFilterConstants.FILTER_ALL -> viewModel.setFilter(TaskFilter.ALL)
-                              TaskFilterConstants.FILTER_PROJECT ->
-                                  viewModel.setFilter(TaskFilter.PROJECT)
-                            }
-                          },
-                          label = { Text(option) },
-                          selected = isSelected,
-                          modifier =
-                              Modifier.testTag("filter_${option.lowercase().replace(" ", "_")}"),
+                          onClick = { setFilter(filter) },
+                          label = { Text(filter.displayName) },
+                          selected = filter == selectedFilter,
+                          modifier = Modifier.testTag(getFilterTag(filter)),
                           colors =
                               FilterChipDefaults.filterChipColors(
                                   selectedContainerColor = MaterialTheme.colorScheme.primary,
@@ -203,20 +205,15 @@ fun TasksScreen(
                                   .testTag(TasksScreenTestTags.ERROR_MESSAGE))
                     }
               } else {
-                // Content
-                val rawTasks by viewModel.rawTasks.collectAsState()
-                val titles by viewModel.taskTitles.collectAsState()
-                val assigneeNames by viewModel.assigneeNames.collectAsState()
-                val progressTexts by viewModel.progressTexts.collectAsState()
-                val progressValues by viewModel.progressValues.collectAsState()
-                val isCompletedList by viewModel.isCompletedList.collectAsState()
 
-                val currentTasks = rawTasks.filterIndexed { index, _ -> !isCompletedList[index] }
-                val completedTasks = rawTasks.filterIndexed { index, _ -> isCompletedList[index] }
+                val currentTaskAndUsers =
+                    tasksAndUsers.filter { it.task.status != TaskStatus.COMPLETED }
+                val completedTaskAndUsers =
+                    tasksAndUsers.filter { it.task.status == TaskStatus.COMPLETED }
 
                 // Task count
                 Text(
-                    text = "${currentTasks.size} tasks",
+                    text = "${currentTaskAndUsers.size} tasks",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = Spacing.md))
@@ -225,49 +222,16 @@ fun TasksScreen(
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(Spacing.sm),
                     modifier = Modifier.testTag(TasksScreenTestTags.TASK_LIST)) {
-                      // Current tasks section
-                      if (currentTasks.isNotEmpty()) {
-                        item {
-                          TaskSectionHeader(title = "Current Tasks", taskCount = currentTasks.size)
-                        }
-
-                        items(currentTasks, key = { it.taskID }) { task ->
-                          val index = rawTasks.indexOf(task)
-                          TaskCard(
-                              task = task,
-                              title = titles[index],
-                              assigneeName = assigneeNames[index],
-                              progressText = progressTexts[index],
-                              progressValue = progressValues[index],
-                              isCompleted = isCompletedList[index],
-                              onToggleComplete = { viewModel.toggleTaskCompletion(task.taskID) })
-                        }
-                      }
-
-                      // Completed tasks section
-                      if (completedTasks.isNotEmpty()) {
-                        item {
-                          TaskSectionHeader(
-                              title = "Recently Completed",
-                              taskCount = completedTasks.size,
-                              modifier = Modifier.padding(top = Spacing.lg))
-                        }
-
-                        items(completedTasks, key = { it.taskID }) { task ->
-                          val index = rawTasks.indexOf(task)
-                          TaskCard(
-                              task = task,
-                              title = titles[index],
-                              assigneeName = assigneeNames[index],
-                              progressText = progressTexts[index],
-                              progressValue = progressValues[index],
-                              isCompleted = isCompletedList[index],
-                              onToggleComplete = { viewModel.toggleTaskCompletion(task.taskID) })
-                        }
-                      }
-
-                      // Empty state
-                      if (currentTasks.isEmpty() && completedTasks.isEmpty()) {
+                      taskSection(
+                          title = "Current Tasks",
+                          tasksAndUsers = currentTaskAndUsers,
+                          viewModel = viewModel)
+                      taskSection(
+                          title = "Recently Completed",
+                          tasksAndUsers = completedTaskAndUsers,
+                          viewModel = viewModel,
+                          modifier = Modifier.padding(top = Spacing.lg))
+                      if (currentTaskAndUsers.isEmpty() && completedTaskAndUsers.isEmpty()) {
                         item {
                           Column(
                               modifier = Modifier.fillMaxSize(),
@@ -292,4 +256,24 @@ fun TasksScreen(
               }
             }
       }
+}
+
+private fun LazyListScope.taskSection(
+    title: String,
+    tasksAndUsers: List<TaskAndUsers>,
+    viewModel: TaskScreenViewModel,
+    modifier: Modifier = Modifier
+) {
+  if (tasksAndUsers.isEmpty()) return
+  item { TaskSectionHeader(title = title, taskCount = tasksAndUsers.size, modifier = modifier) }
+  items(tasksAndUsers, key = { it.task.taskID }) { taskAndUsers ->
+    TaskCard(
+        taskAndUsers,
+        onToggleComplete = { viewModel.toggleTaskCompletion(taskAndUsers.task) },
+    )
+  }
+}
+
+fun getFilterTag(filter: TaskScreenFilter): String {
+  return "filter_${filter.displayName.lowercase().replace(" ", "_")}"
 }

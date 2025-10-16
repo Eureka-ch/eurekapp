@@ -2,6 +2,7 @@ package ch.eureka.eurekapp.model.utils
 
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.data.task.getDaysUntilDue
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.*
@@ -16,10 +17,7 @@ object TaskBusinessLogic {
    * @return Priority string for display
    */
   fun determinePriority(task: Task): String {
-    val timestamp = task.dueDate
-    if (timestamp == null) return "Low Priority"
-
-    val diffInDays = TaskDateUtils.getDaysUntilDue(timestamp)
+    val diffInDays = getDaysUntilDue(task) ?: return "Low Priority"
 
     return when {
       diffInDays < 0 -> "Critical Priority" // Overdue
@@ -32,13 +30,11 @@ object TaskBusinessLogic {
   /**
    * Formats the due date for display
    *
-   * @param timestamp The due date timestamp
+   * @param task The task to format due date for
    * @return Formatted date string
    */
-  fun formatDueDate(timestamp: Timestamp?): String {
-    if (timestamp == null) return "No due date"
-
-    val diffInDays = TaskDateUtils.getDaysUntilDue(timestamp)
+  fun formatDueDate(task: Task): String {
+    val diffInDays = getDaysUntilDue(task) ?: return "No due date"
 
     return when {
       diffInDays < 0 -> "Overdue"
@@ -47,7 +43,7 @@ object TaskBusinessLogic {
       diffInDays <= 7L -> "Due in $diffInDays days"
       else -> {
         val formatter = SimpleDateFormat("MMM dd", Locale.getDefault())
-        "Due ${formatter.format(timestamp.toDate())}"
+        "Due ${formatter.format(task.dueDate?.toDate() ?: Date())}"
       }
     }
   }
@@ -76,11 +72,9 @@ object TaskBusinessLogic {
       tags.add("Assigned")
     }
 
-    // Add tags based on due date status using TaskDateUtils
-    val timestamp = task.dueDate
-    if (timestamp != null) {
-      val diffInDays = TaskDateUtils.getDaysUntilDue(timestamp)
-
+    // Add tags based on due date status
+    val diffInDays = getDaysUntilDue(task)
+    if (diffInDays != null) {
       when {
         diffInDays < 0 -> tags.add("Overdue")
         diffInDays <= 1L -> tags.add("Urgent")
@@ -98,12 +92,8 @@ object TaskBusinessLogic {
    * @return true if the task is valid, false otherwise
    */
   fun isValidTask(task: Task): Boolean {
-    // Required fields validation
-    if (task.taskID.isBlank()) return false
-    if (task.title.isBlank()) return false
-    if (task.projectId.isBlank()) return false
-
-    return true
+    // Required fields validation - all must be non-blank
+    return !task.taskID.isBlank() && !task.title.isBlank() && !task.projectId.isBlank()
   }
 
   /**

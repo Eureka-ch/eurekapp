@@ -88,10 +88,10 @@ class EurekaTaskCardTest {
       }
     }
 
-    // Should show checkmark for completed task
+    // Should show checkmark for completed task (not checkbox)
     composeTestRule.onNodeWithText("✓").assertIsDisplayed()
 
-    // Should not show checkbox
+    // Should not show checkbox when task is already completed
     composeTestRule.onNodeWithTag("checkbox").assertIsNotDisplayed()
   }
 

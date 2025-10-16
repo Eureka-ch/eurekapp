@@ -74,7 +74,7 @@ class TaskSectionHeaderTest {
     }
 
     // Then
-    composeTestRule.onNodeWithText("0 No task").assertIsDisplayed()
+    composeTestRule.onNodeWithText("0 No tasks").assertIsDisplayed()
   }
 
   @Test

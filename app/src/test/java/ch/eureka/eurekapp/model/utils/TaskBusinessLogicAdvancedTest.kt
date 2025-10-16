@@ -76,20 +76,23 @@ class TaskBusinessLogicAdvancedTest {
   @Test
   fun `formatDueDate returns Overdue for past dates`() {
     val yesterday = Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000)
-    val formatted = TaskBusinessLogic.formatDueDate(Timestamp(yesterday))
+    val task = Task(taskID = "test", projectId = "proj", title = "Test", dueDate = Timestamp(yesterday))
+    val formatted = TaskBusinessLogic.formatDueDate(task)
     assertEquals("Overdue", formatted)
   }
 
   @Test
   fun `formatDueDate returns Due today for today`() {
     val today = Date()
-    val formatted = TaskBusinessLogic.formatDueDate(Timestamp(today))
+    val task = Task(taskID = "test", projectId = "proj", title = "Test", dueDate = Timestamp(today))
+    val formatted = TaskBusinessLogic.formatDueDate(task)
     assertEquals("Due today", formatted)
   }
 
   @Test
   fun `formatDueDate returns No due date for null timestamp`() {
-    val formatted = TaskBusinessLogic.formatDueDate(null)
+    val task = Task(taskID = "test", projectId = "proj", title = "Test", dueDate = null)
+    val formatted = TaskBusinessLogic.formatDueDate(task)
     assertEquals("No due date", formatted)
   }
 
@@ -119,5 +122,28 @@ class TaskBusinessLogicAdvancedTest {
     val task = Task(taskID = "test", title = "Cancelled Task", status = TaskStatus.CANCELLED)
 
     assertFalse(TaskBusinessLogic.isTaskCompleted(task))
+  }
+
+  @Test
+  fun `isValidTask validates required fields correctly`() {
+    // Valid task
+    val validTask = Task(
+        taskID = "task-123",
+        title = "Valid Task",
+        projectId = "project-123"
+    )
+    assertTrue(TaskBusinessLogic.isValidTask(validTask))
+
+    // Invalid: empty taskID
+    val invalidTaskId = validTask.copy(taskID = "")
+    assertFalse(TaskBusinessLogic.isValidTask(invalidTaskId))
+
+    // Invalid: empty title
+    val invalidTitle = validTask.copy(title = "")
+    assertFalse(TaskBusinessLogic.isValidTask(invalidTitle))
+
+    // Invalid: empty projectId
+    val invalidProjectId = validTask.copy(projectId = "")
+    assertFalse(TaskBusinessLogic.isValidTask(invalidProjectId))
   }
 }

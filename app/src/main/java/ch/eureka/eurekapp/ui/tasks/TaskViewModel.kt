@@ -2,45 +2,64 @@ package ch.eureka.eurekapp.ui.tasks
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository
+import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
-import ch.eureka.eurekapp.model.data.template.TaskTemplate
+import ch.eureka.eurekapp.model.data.task.getDaysUntilDue
+import ch.eureka.eurekapp.model.data.user.FirestoreUserRepository
 import ch.eureka.eurekapp.model.data.user.User
-import ch.eureka.eurekapp.model.utils.TaskBusinessLogic
+import ch.eureka.eurekapp.model.data.user.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+/** Data class combining Task with its assigned Users */
+
 /** UI state data class for TasksScreen Contains all the data needed to render the tasks screen */
-data class TaskUiState(
-    val selectedFilter: TaskFilter = TaskFilter.MINE,
-    val rawTasks: List<Task> = emptyList(),
+data class TaskScreenUiState(
+    val tasksAndUsers: List<TaskAndUsers> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val projectId: String? = null
+    val selectedFilter: TaskScreenFilter = TaskScreenFilter.Mine
 )
 
-/** Enum representing different task filtering options */
-enum class TaskFilter {
+/** Sealed class representing different task filtering options with their data */
+sealed class TaskScreenFilter(val displayName: String) {
   /** Show only tasks assigned to current user */
-  MINE,
+  object Mine : TaskScreenFilter(MY_TASKS_DISPLAY_NAME)
+
   /** Show tasks assigned to team members */
-  TEAM,
+  object Team : TaskScreenFilter(TEAM_DISPLAY_NAME)
+
   /** Show tasks due this week */
-  THIS_WEEK,
+  object ThisWeek : TaskScreenFilter(THIS_WEEK_DISPLAY_NAME)
+
   /** Show all tasks */
-  ALL,
-  /** Show tasks from specific project */
-  PROJECT
+  object All : TaskScreenFilter(ALL_DISPLAY_NAME)
+
+  /** Show tasks from specific projects */
+  /**
+   * Constants for task filter options Centralizes filter option strings for better maintainability
+   * and localization
+   */
+  companion object {
+    const val MY_TASKS_DISPLAY_NAME = "My tasks"
+    const val TEAM_DISPLAY_NAME = "Team"
+    const val THIS_WEEK_DISPLAY_NAME = "This week"
+    const val ALL_DISPLAY_NAME = "All"
+    val values by lazy { listOf(Mine, Team, ThisWeek, All) }
+  }
 }
 
 /**
@@ -52,182 +71,121 @@ enum class TaskFilter {
  * @property uiState StateFlow containing current UI state
  * @property taskRepository Repository for task data operations
  */
-class TaskViewModel(private val taskRepository: TaskRepository) : ViewModel() {
+@OptIn(ExperimentalCoroutinesApi::class)
+open class TaskScreenViewModel(
+    private val taskRepository: TaskRepository =
+        FirestoreTaskRepository(
+            firestore = FirebaseFirestore.getInstance(), auth = FirebaseAuth.getInstance()),
+    private val projectRepository: ProjectRepository =
+        FirestoreProjectRepository(
+            firestore = FirebaseFirestore.getInstance(), auth = FirebaseAuth.getInstance()),
+    private val userRepository: UserRepository =
+        FirestoreUserRepository(
+            firestore = FirebaseFirestore.getInstance(), auth = FirebaseAuth.getInstance()),
+    private val currentUserId: String? = FirebaseAuth.getInstance().currentUser?.uid
+) : ViewModel() {
 
-  // Default constructor for production - uses Firebase
-  constructor() :
-      this(FirestoreTaskRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance()))
+  protected open val _uiState = MutableStateFlow(TaskScreenUiState())
 
-  private val _uiState = MutableStateFlow(TaskUiState())
-  val uiState: StateFlow<TaskUiState> = _uiState.asStateFlow()
-
-  // Additional data needed for TaskUiModel creation
-  private val _assignees = MutableStateFlow<List<User>>(emptyList())
-  private val _templates = MutableStateFlow<List<TaskTemplate>>(emptyList())
+  // Flow 1: Tasks assigned to current user
+  private val userTasks = taskRepository.getTasksForCurrentUser()
+  private val _selectedFilter = MutableStateFlow<TaskScreenFilter>(TaskScreenFilter.Mine)
+  // Flow 2: All tasks in user's projects, filtered to exclude user's tasks (team tasks)
+  @OptIn(ExperimentalCoroutinesApi::class)
+  private val teamTasks: Flow<List<Task>> =
+      projectRepository.getProjectsForCurrentUser().flatMapLatest { projects ->
+        if (projects.isEmpty()) {
+          flowOf(emptyList())
+        } else {
+          // Combine all task flows from all projects
+          combine(
+              projects.map { project -> taskRepository.getTasksInProject(project.projectId) }) {
+                  tasksArrays ->
+                tasksArrays
+                    .flatMap { it.toList() }
+                    .filter { task ->
+                      currentUserId != null && !task.assignedUserIds.contains(currentUserId)
+                    }
+              }
+        }
+      }
 
   init {
-    loadTasks()
-    loadAssignees()
-    loadTemplates()
-  }
-
-  /**
-   * Load tasks for the current user from Firebase Simplified Flow usage - no manual job management
-   */
-  fun loadTasks() {
     viewModelScope.launch {
-      _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-
-      try {
-        taskRepository.getTasksForCurrentUser().collect { tasks ->
-          _uiState.value = _uiState.value.copy(rawTasks = tasks, isLoading = false, error = null)
-        }
-      } catch (e: Exception) {
-        _uiState.value =
-            _uiState.value.copy(isLoading = false, error = e.message ?: "Failed to load tasks")
-      }
+      combine(userTasks, teamTasks, _selectedFilter) { userTasks, teamTasks, filter ->
+            val tasks =
+                when (filter) {
+                  is TaskScreenFilter.Mine -> userTasks
+                  is TaskScreenFilter.Team -> teamTasks
+                  is TaskScreenFilter.All -> userTasks + teamTasks
+                  is TaskScreenFilter.ThisWeek ->
+                      (userTasks + teamTasks).filter { task ->
+                        val daysUntilDue = getDaysUntilDue(task) ?: return@filter false
+                        daysUntilDue in 0..7
+                      }
+                }
+            Pair(filter, tasks)
+          }
+          .flatMapLatest { (filter, tasks) ->
+            // For each task, fetch its assignees
+            if (tasks.isEmpty()) {
+              flowOf(Pair(filter, emptyList<TaskAndUsers>()))
+            } else {
+              combine(
+                  tasks.map { task ->
+                    getAssignees(task).map { users -> TaskAndUsers(task, users) }
+                  }) { tasksAndUsersArray ->
+                    Pair(filter, tasksAndUsersArray.toList())
+                  }
+            }
+          }
+          .collect { (filter, tasksAndUsers) ->
+            _uiState.emit(
+                _uiState.value.copy(
+                    tasksAndUsers = tasksAndUsers,
+                    selectedFilter = filter,
+                    isLoading = false,
+                    error = null))
+          }
     }
   }
 
+  open val uiState: StateFlow<TaskScreenUiState>
+    get() = _uiState
+
   /**
-   * Set the current task filter No need to reload data as filtering is handled by computed
-   * properties
+   * Set the current task filter
    *
    * @param filter The filter to apply
    */
-  fun setFilter(filter: TaskFilter) {
-    _uiState.value = _uiState.value.copy(selectedFilter = filter)
+  open fun setFilter(filter: TaskScreenFilter) {
+    _selectedFilter.value = filter
   }
 
-  /**
-   * Computed properties for UI - replaces TaskUiModel Each property provides UI-ready data for
-   * tasks
-   */
-  val taskTitles: StateFlow<List<String>> =
-      combine(_uiState.map { it.rawTasks }, _templates) { tasks, templates ->
-            tasks.map { task ->
-              task.title.ifBlank {
-                templates.find { it.templateID == task.templateId }?.title ?: "Untitled Task"
-              }
-            }
-          }
-          .stateIn(
-              scope = viewModelScope,
-              started = SharingStarted.WhileSubscribed(5000),
-              initialValue = emptyList())
-
-  val assigneeNames: StateFlow<List<String>> =
-      combine(_uiState.map { it.rawTasks }, _assignees) { tasks, assignees ->
-            tasks.map { task ->
-              val assignee = assignees.find { it.uid in task.assignedUserIds }
-              assignee?.displayName ?: "Unassigned"
-            }
-          }
-          .stateIn(
-              scope = viewModelScope,
-              started = SharingStarted.WhileSubscribed(5000),
-              initialValue = emptyList())
-
-  val progressValues: StateFlow<List<Float>> =
-      _uiState
-          .map { state ->
-            state.rawTasks.map { task ->
-              when (task.status) {
-                TaskStatus.COMPLETED -> 1.0f
-                TaskStatus.IN_PROGRESS -> 0.5f
-                TaskStatus.TODO -> 0.0f
-                else -> 0.0f
-              }
-            }
-          }
-          .stateIn(
-              scope = viewModelScope,
-              started = SharingStarted.WhileSubscribed(5000),
-              initialValue = emptyList())
-
-  val progressTexts: StateFlow<List<String>> =
-      progressValues
-          .map { progressList -> progressList.map { progress -> "${(progress * 100).toInt()}%" } }
-          .stateIn(
-              scope = viewModelScope,
-              started = SharingStarted.WhileSubscribed(5000),
-              initialValue = emptyList())
-
-  val isCompletedList: StateFlow<List<Boolean>> =
-      _uiState
-          .map { state -> state.rawTasks.map { task -> TaskBusinessLogic.isTaskCompleted(task) } }
-          .stateIn(
-              scope = viewModelScope,
-              started = SharingStarted.WhileSubscribed(5000),
-              initialValue = emptyList())
-
-  val rawTasks: StateFlow<List<Task>> =
-      _uiState
-          .map { it.rawTasks }
-          .stateIn(
-              scope = viewModelScope,
-              started = SharingStarted.WhileSubscribed(5000),
-              initialValue = emptyList())
-
-  /** Load assignees (placeholder for now) */
-  private fun loadAssignees() {
-    // TODO: Implement when UserRepository is available
-    // For now, keep empty list
-  }
-
-  /** Load templates (placeholder for now) */
-  private fun loadTemplates() {
-    // TODO: Implement when TemplateRepository is available
-    // For now, keep empty list
-  }
+  /** Determine priority based on due date */
 
   /**
    * Toggle task completion status
    *
    * @param taskId The ID of the task to toggle
    */
-  fun toggleTaskCompletion(taskId: String) {
-    // Input validation
-    if (taskId.isBlank()) {
-      _uiState.value = _uiState.value.copy(error = "Task ID cannot be empty")
-      return
-    }
-
+  open fun toggleTaskCompletion(task: Task) {
     viewModelScope.launch {
-      try {
-        _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-
-        // Find the task in current state
-        val allTasks = _uiState.value.rawTasks
-        val taskToUpdate = allTasks.find { it.taskID == taskId }
-
-        if (taskToUpdate != null) {
-          // Toggle the status
-          val newStatus =
-              if (taskToUpdate.status == TaskStatus.COMPLETED) {
-                TaskStatus.TODO
-              } else {
-                TaskStatus.COMPLETED
-              }
-
-          val updatedTask = taskToUpdate.copy(status = newStatus)
-          val result = taskRepository.updateTask(updatedTask)
-
-          if (result.isSuccess) {
-            _uiState.value = _uiState.value.copy(isLoading = false)
-          } else {
-            _uiState.value =
-                _uiState.value.copy(
-                    isLoading = false,
-                    error = result.exceptionOrNull()?.message ?: "Failed to update task")
-          }
-        } else {
-          _uiState.value = _uiState.value.copy(isLoading = false, error = "Task not found")
-        }
-      } catch (e: Exception) {
+      val newStatus =
+          if (task.status == TaskStatus.COMPLETED) TaskStatus.TODO else TaskStatus.COMPLETED
+      val updatedTask = task.copy(status = newStatus)
+      val result = taskRepository.updateTask(updatedTask)
+      if (result.isFailure) {
         _uiState.value =
-            _uiState.value.copy(isLoading = false, error = e.message ?: "Failed to update task")
+            _uiState.value.copy(
+                error = "Failed to update task: ${result.exceptionOrNull()?.message}")
       }
     }
+  }
+
+  fun getAssignees(task: Task): Flow<List<User>> {
+    if (task.assignedUserIds.isEmpty()) return flowOf(emptyList())
+    val users = task.assignedUserIds.map { userId -> userRepository.getUserById(userId) }
+    return combine(users) { it.toList().filterNotNull() }
   }
 }

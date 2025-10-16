@@ -1,6 +1,6 @@
 {
   "projects": {
-    "default": "eurekapp-dev"
+    "default": "eureka-app-ch"
   },
   "firestore": {
     "rules": "firebase/firestore/firestore.rules",

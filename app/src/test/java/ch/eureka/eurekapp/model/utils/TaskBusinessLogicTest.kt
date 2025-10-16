@@ -55,7 +55,8 @@ class TaskBusinessLogicTest {
 
   @Test
   fun `formatDueDate returns No due date for null`() {
-    val result = TaskBusinessLogic.formatDueDate(null)
+    val task = Task(taskID = "1", dueDate = null)
+    val result = TaskBusinessLogic.formatDueDate(task)
     assertEquals("No due date", result)
   }
 
@@ -63,7 +64,8 @@ class TaskBusinessLogicTest {
   fun `formatDueDate returns Due today for today`() {
     val today = Date()
     val timestamp = Timestamp(today)
-    val result = TaskBusinessLogic.formatDueDate(timestamp)
+    val task = Task(taskID = "1", dueDate = timestamp)
+    val result = TaskBusinessLogic.formatDueDate(task)
     assertEquals("Due today", result)
   }
 
@@ -71,7 +73,8 @@ class TaskBusinessLogicTest {
   fun `formatDueDate returns Due tomorrow for tomorrow`() {
     val tomorrow = Date(System.currentTimeMillis() + 25 * 60 * 60 * 1000)
     val timestamp = Timestamp(tomorrow)
-    val result = TaskBusinessLogic.formatDueDate(timestamp)
+    val task = Task(taskID = "1", dueDate = timestamp)
+    val result = TaskBusinessLogic.formatDueDate(task)
     assertEquals("Due tomorrow", result)
   }
 
@@ -79,7 +82,8 @@ class TaskBusinessLogicTest {
   fun `formatDueDate returns Due in X days for future dates`() {
     val futureDate = Date(System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000)
     val timestamp = Timestamp(futureDate)
-    val result = TaskBusinessLogic.formatDueDate(timestamp)
+    val task = Task(taskID = "1", dueDate = timestamp)
+    val result = TaskBusinessLogic.formatDueDate(task)
     assertTrue(
         "Should contain 'Due in' and 'days'", result.contains("Due in") && result.contains("days"))
   }
@@ -88,7 +92,8 @@ class TaskBusinessLogicTest {
   fun `formatDueDate returns formatted date for far future`() {
     val farFuture = Date(System.currentTimeMillis() + 10 * 24 * 60 * 60 * 1000) // 10 days
     val timestamp = Timestamp(farFuture)
-    val result = TaskBusinessLogic.formatDueDate(timestamp)
+    val task = Task(taskID = "1", dueDate = timestamp)
+    val result = TaskBusinessLogic.formatDueDate(task)
     assertTrue(result.startsWith("Due "))
   }
 

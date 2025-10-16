@@ -271,6 +271,7 @@ tasks.register("jacocoTestReport", JacocoReport::class) {
     }
 
     }
+    testImplementation(kotlin("test"))
 }
 
 // Custom task to run Firestore emulator tests

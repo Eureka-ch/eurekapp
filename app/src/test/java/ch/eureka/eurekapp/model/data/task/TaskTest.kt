@@ -299,4 +299,105 @@ class TaskTest {
     assertEquals(customData, task.customData)
     assertEquals("creator123", task.createdBy)
   }
+
+  @Test
+  fun getDaysUntilDue_withNullDueDate_returnsNull() {
+    val task = Task(taskID = "1", title = "Test Task", dueDate = null)
+    assertNull(getDaysUntilDue(task))
+  }
+
+  @Test
+  fun getDaysUntilDue_withPastDueDate_returnsNegativeValue() {
+    val yesterday = java.util.Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000)
+    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(yesterday))
+    val result = getDaysUntilDue(task)
+    assertEquals(-1L, result)
+  }
+
+  @Test
+  fun getDaysUntilDue_withTodayDueDate_returnsZero() {
+    val now = java.util.Date()
+    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(now))
+    val result = getDaysUntilDue(task)
+    assertEquals(0L, result)
+  }
+
+  @Test
+  fun getDaysUntilDue_withTomorrowDueDate_returnsOne() {
+    val tomorrow = java.util.Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)
+    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(tomorrow))
+    val result = getDaysUntilDue(task)
+    assertEquals(1L, result)
+  }
+
+  @Test
+  fun getDaysUntilDue_withFutureDueDate_returnsCorrectDays() {
+    val sevenDaysFromNow = java.util.Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000)
+    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(sevenDaysFromNow))
+    val result = getDaysUntilDue(task)
+    assertEquals(7L, result)
+  }
+
+  @Test
+  fun determinePriority_withNullDueDate_returnsLowPriority() {
+    val task = Task(taskID = "1", title = "Test Task", dueDate = null)
+    val result = determinePriority(task)
+    assertEquals("Low Priority", result)
+  }
+
+  @Test
+  fun determinePriority_withOverdueDueDate_returnsCriticalPriority() {
+    val yesterday = java.util.Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000)
+    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(yesterday))
+    val result = determinePriority(task)
+    assertEquals("Critical Priority", result)
+  }
+
+  @Test
+  fun determinePriority_withTodayDueDate_returnsHighPriority() {
+    val now = java.util.Date()
+    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(now))
+    val result = determinePriority(task)
+    assertEquals("High Priority", result)
+  }
+
+  @Test
+  fun determinePriority_withTomorrowDueDate_returnsHighPriority() {
+    val tomorrow = java.util.Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)
+    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(tomorrow))
+    val result = determinePriority(task)
+    assertEquals("High Priority", result)
+  }
+
+  @Test
+  fun determinePriority_withTwoDaysFromNowDueDate_returnsMediumPriority() {
+    val twoDaysFromNow = java.util.Date(System.currentTimeMillis() + 2 * 24 * 60 * 60 * 1000)
+    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(twoDaysFromNow))
+    val result = determinePriority(task)
+    assertEquals("Medium Priority", result)
+  }
+
+  @Test
+  fun determinePriority_withThreeDaysFromNowDueDate_returnsMediumPriority() {
+    val threeDaysFromNow = java.util.Date(System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000)
+    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(threeDaysFromNow))
+    val result = determinePriority(task)
+    assertEquals("Medium Priority", result)
+  }
+
+  @Test
+  fun determinePriority_withFourDaysFromNowDueDate_returnsLowPriority() {
+    val fourDaysFromNow = java.util.Date(System.currentTimeMillis() + 4 * 24 * 60 * 60 * 1000)
+    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(fourDaysFromNow))
+    val result = determinePriority(task)
+    assertEquals("Low Priority", result)
+  }
+
+  @Test
+  fun determinePriority_withWeekFromNowDueDate_returnsLowPriority() {
+    val sevenDaysFromNow = java.util.Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000)
+    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(sevenDaysFromNow))
+    val result = determinePriority(task)
+    assertEquals("Low Priority", result)
+  }
 }
