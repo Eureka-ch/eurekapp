@@ -2,10 +2,8 @@ package ch.eureka.eurekapp.model.data.meeting
 
 import ch.eureka.eurekapp.model.data.map.Location
 import com.google.firebase.Timestamp
-import java.time.temporal.ChronoUnit
 import java.util.Date
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNotSame
@@ -28,13 +26,24 @@ class MeetingTest {
     assertEquals("", meeting.projectId)
     assertNull(meeting.taskId)
     assertEquals("", meeting.title)
-    assertEquals(MeetingStatus.SCHEDULED, meeting.status)
+    assertEquals(MeetingStatus.OPEN_TO_VOTES, meeting.status)
     assertEquals(emptyList<String>(), meeting.attachmentUrls)
+    assertNotNull(meeting.timeSlot)
+    assertTrue(meeting.dateTimeVotes.isEmpty())
+    assertTrue(meeting.formatVotes.isEmpty())
+    assertNotNull(meeting.datetime)
+    assertNull(meeting.format)
+    assertNull(meeting.location)
+    assertNull(meeting.link)
+    assertEquals("", meeting.createdBy)
+    assertTrue(meeting.participantIds.isEmpty())
   }
 
   @Test
   fun meeting_withParameters_setsCorrectValues() {
     val attachments = listOf("url1", "url2")
+    val timeSlot = TimeSlot(Timestamp.now(), Timestamp.now())
+
     val meeting =
         Meeting(
             meetingID = "mtg123",
@@ -42,7 +51,8 @@ class MeetingTest {
             taskId = "task123",
             title = "Sprint Planning",
             status = MeetingStatus.SCHEDULED,
-            attachmentUrls = attachments)
+            attachmentUrls = attachments,
+            timeSlot = timeSlot)
 
     assertEquals("mtg123", meeting.meetingID)
     assertEquals("prj123", meeting.projectId)
@@ -50,6 +60,7 @@ class MeetingTest {
     assertEquals("Sprint Planning", meeting.title)
     assertEquals(MeetingStatus.SCHEDULED, meeting.status)
     assertEquals(attachments, meeting.attachmentUrls)
+    assertEquals(timeSlot, meeting.timeSlot)
   }
 
   @Test
@@ -79,6 +90,7 @@ class MeetingTest {
     assertEquals("prj123", copiedMeeting.projectId)
     assertEquals("Sprint Planning", copiedMeeting.title)
     assertEquals(MeetingStatus.IN_PROGRESS, copiedMeeting.status)
+    assertNotSame(meeting, copiedMeeting)
   }
 
   @Test
@@ -116,7 +128,6 @@ class MeetingTest {
   @Test
   fun meeting_hashCode_isConsistent() {
     val fixedTimestamp = Timestamp(Date(0))
-
     val meeting1 =
         Meeting(
             meetingID = "mtg123",
@@ -148,42 +159,16 @@ class MeetingTest {
             status = MeetingStatus.SCHEDULED)
     val meetingString = meeting.toString()
 
-    assert(meetingString.contains("mtg123"))
-    assert(meetingString.contains("prj123"))
-    assert(meetingString.contains("Sprint Planning"))
-  }
-
-  @Test
-  fun testDefaultConstructorValues() {
-    val meeting = Meeting()
-
-    assertEquals("", meeting.meetingID)
-    assertEquals("", meeting.projectId)
-    assertNull(meeting.taskId)
-    assertEquals("", meeting.title)
-    assertNotNull(meeting.datetime)
-    assertNull(meeting.location)
-    assertEquals(MeetingStatus.SCHEDULED, meeting.status)
-    assertNull(meeting.format)
-    assertNull(meeting.link)
-    assertTrue(meeting.attachmentUrls.isEmpty())
-    assertFalse(meeting.ended)
-    assertEquals("", meeting.createdBy)
-    assertTrue(meeting.participantIds.isEmpty())
-    assertTrue(meeting.canVote)
-    assertNull(meeting.timeSlot)
-    assertTrue(meeting.dateTimeVotes.isEmpty())
-    assertTrue(meeting.formatVotes.isEmpty())
+    assertTrue(meetingString.contains("mtg123"))
+    assertTrue(meetingString.contains("prj123"))
+    assertTrue(meetingString.contains("Sprint Planning"))
   }
 
   @Test
   fun testFullConstructorAndPropertyValues() {
     val timestamp = Timestamp.now()
-    val instant = timestamp.toDate().toInstant()
-    val newInstant = instant.plus(5L, ChronoUnit.MINUTES)
-    val newTimestamp = Timestamp(Date.from(newInstant))
     val location = Location(latitude = 46.0, longitude = 7.0)
-    val timeSlot = TimeSlot(timestamp, newTimestamp)
+    val timeSlot = TimeSlot(timestamp, Timestamp(Date(timestamp.toDate().time + 60000)))
     val dateVotes = listOf(MeetingDateTimeVotes("user1", listOf(timestamp)))
     val formatVotes = listOf(MeetingFormatVote("user1", MeetingFormat.VIRTUAL))
 
@@ -199,10 +184,8 @@ class MeetingTest {
             format = MeetingFormat.IN_PERSON,
             link = "https://zoom.us/abc",
             attachmentUrls = listOf("url1", "url2"),
-            ended = true,
             createdBy = "user123",
             participantIds = listOf("u1", "u2"),
-            canVote = false,
             timeSlot = timeSlot,
             dateTimeVotes = dateVotes,
             formatVotes = formatVotes)
@@ -217,10 +200,8 @@ class MeetingTest {
     assertEquals(MeetingFormat.IN_PERSON, meeting.format)
     assertEquals("https://zoom.us/abc", meeting.link)
     assertEquals(listOf("url1", "url2"), meeting.attachmentUrls)
-    assertTrue(meeting.ended)
     assertEquals("user123", meeting.createdBy)
     assertEquals(listOf("u1", "u2"), meeting.participantIds)
-    assertFalse(meeting.canVote)
     assertEquals(timeSlot, meeting.timeSlot)
     assertEquals(dateVotes, meeting.dateTimeVotes)
     assertEquals(formatVotes, meeting.formatVotes)
@@ -234,8 +215,8 @@ class MeetingTest {
     assertNotSame(m1, m2)
     assertEquals("id1", m2.meetingID)
     assertEquals("B", m2.title)
-    assertFalse(m1 == m2)
-    assertTrue(m1.hashCode() != m2.hashCode())
+    assertNotEquals(m1, m2)
+    assertNotEquals(m1.hashCode(), m2.hashCode())
   }
 
   @Test

@@ -1,9 +1,8 @@
 package ch.eureka.eurekapp.ui.meeting
 
-import ch.eureka.eurekapp.model.data.meeting.Meeting
-import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
-import ch.eureka.eurekapp.model.data.meeting.MeetingRole
-import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.model.data.meeting.*
+import com.google.firebase.Timestamp
+import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -14,18 +13,14 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
+import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 
 /**
  * Test suite for MeetingViewModel
  *
- * Note : some tests where generated with Gemini
+ * Note : some tests where generated with Gemini and chatGPT
  */
 @ExperimentalCoroutinesApi
 class MeetingViewModelTest {
@@ -34,7 +29,6 @@ class MeetingViewModelTest {
   private lateinit var viewModel: MeetingViewModel
   private lateinit var repositoryMock: MeetingRepositoryMockViewmodel
 
-  // This rule sets the main coroutine dispatcher for unit testing.
   @Before
   fun setup() {
     Dispatchers.setMain(testDispatcher)
@@ -42,7 +36,6 @@ class MeetingViewModelTest {
     viewModel = MeetingViewModel(repositoryMock)
   }
 
-  // This rule cleans up the dispatcher after tests are finished.
   @After
   fun tearDown() {
     Dispatchers.resetMain()
@@ -59,35 +52,96 @@ class MeetingViewModelTest {
   }
 
   @Test
-  fun loadMeetingsCorrectlyFiltersUpcomingAndPastMeetings() = runTest {
-    // Given a mock repository that returns sample meetings
-    val allMeetings = MeetingProvider.sampleMeetings
-    repositoryMock.meetingsToReturn = allMeetings
+  fun loadMeetingsCorrectlyFiltersAndSortsMeetings() = runTest {
+    val now = Timestamp(Date())
+    val older = Timestamp(Date(now.toDate().time - 1000000))
+    val newer = Timestamp(Date(now.toDate().time + 1000000))
 
-    // When loadMeetings is called
-    viewModel.loadMeetings("any_project_id")
-    testDispatcher.scheduler.advanceUntilIdle() // Execute the coroutine
+    val meeting1 =
+        Meeting(
+            meetingID = "1",
+            title = "Future Planning",
+            status = MeetingStatus.SCHEDULED,
+            datetime = newer)
+    val meeting2 =
+        Meeting(
+            meetingID = "2", title = "Ongoing", status = MeetingStatus.IN_PROGRESS, datetime = now)
+    val meeting3 =
+        Meeting(
+            meetingID = "3",
+            title = "Completed",
+            status = MeetingStatus.COMPLETED,
+            datetime = older)
 
-    // Then the UI state should be updated with filtered lists
+    repositoryMock.meetingsToReturn = listOf(meeting1, meeting2, meeting3)
+
+    viewModel.loadMeetings("project123")
+    testDispatcher.scheduler.advanceUntilIdle()
+
     val uiState = viewModel.uiState.value
-    val expectedUpcoming = allMeetings.filter { !it.ended }
-    val expectedPast = allMeetings.filter { it.ended }
 
+    // Check loading turned off
     assertFalse(uiState.isLoading)
-    assertEquals(expectedUpcoming.size, uiState.upcomingMeetings.size)
-    assertEquals(expectedPast.size, uiState.pastMeetings.size)
-    assertEquals(expectedUpcoming, uiState.upcomingMeetings)
-    assertEquals(expectedPast, uiState.pastMeetings)
+
+    // Filtering
+    assertEquals(listOf(meeting1, meeting2), uiState.upcomingMeetings)
+    assertEquals(listOf(meeting3), uiState.pastMeetings)
+
+    // Check sorting is reversed (newest first)
+    val upcomingIds = uiState.upcomingMeetings.map { it.meetingID }
+    val pastIds = uiState.pastMeetings.map { it.meetingID }
+
+    assertEquals(listOf("1", "2"), upcomingIds)
+    assertEquals(listOf("3"), pastIds)
+  }
+
+  @Test
+  fun loadMeetingsSortsByTimeSlotWhenDatetimeIsNull() = runTest {
+    val baseTime = Date().time
+
+    // One meeting with datetime (newer)
+    val meetingWithDatetime =
+        Meeting(
+            meetingID = "1",
+            title = "With Datetime",
+            status = MeetingStatus.SCHEDULED,
+            datetime = Timestamp(Date(baseTime + 1000000)))
+
+    // One meeting with only timeSlot (older)
+    val meetingWithTimeSlot =
+        Meeting(
+            meetingID = "2",
+            title = "With TimeSlot",
+            status = MeetingStatus.SCHEDULED,
+            datetime = null,
+            timeSlot =
+                TimeSlot(
+                    startTime = Timestamp(Date(baseTime - 1000000)),
+                    endTime = Timestamp(Date(baseTime))))
+
+    repositoryMock.meetingsToReturn = listOf(meetingWithDatetime, meetingWithTimeSlot)
+
+    viewModel.loadMeetings("projectABC")
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    val uiState = viewModel.uiState.value
+
+    // Should sort by datetime (or timeSlot.startTime) DESCENDING
+    val upcomingIds = uiState.upcomingMeetings.map { it.meetingID }
+
+    // "1" should come before "2" (newer datetime first)
+    assertEquals(listOf("1", "2"), upcomingIds)
+    assertTrue(uiState.pastMeetings.isEmpty())
   }
 
   @Test
   fun loadMeetingsHandlesLoadingStateCorrectly() = runTest {
-    repositoryMock.meetingsToReturn = MeetingProvider.sampleMeetings
-
+    repositoryMock.meetingsToReturn = listOf(Meeting(title = "Planning"))
     viewModel.loadMeetings("any_project_id")
 
-    // After the coroutine completes, isLoading should be false
+    // Execute coroutine
     testDispatcher.scheduler.advanceUntilIdle()
+
     assertFalse(viewModel.uiState.value.isLoading)
   }
 
@@ -106,16 +160,13 @@ class MeetingViewModelTest {
 
   @Test
   fun loadMeetingsHandlesRepositoryError() = runTest {
-    // Given the repository will throw an error
     val errorMessage = "Network Error"
     repositoryMock.shouldThrowError = true
     repositoryMock.errorMessage = errorMessage
 
-    // When loadMeetings is called
     viewModel.loadMeetings("any_project_id")
     testDispatcher.scheduler.advanceUntilIdle()
 
-    // Then the error message should be in the UI state
     val uiState = viewModel.uiState.value
     assertFalse(uiState.isLoading)
     assertNotNull(uiState.errorMsg)
@@ -123,37 +174,27 @@ class MeetingViewModelTest {
   }
 
   @Test
-  fun selectTabUpdatesTheSelectedTabInUJiState() {
-    // When a new tab is selected
+  fun selectTabUpdatesTheSelectedTabInUIState() {
     viewModel.selectTab(MeetingTab.PAST)
-
-    // Then the state should reflect the change
     assertEquals(MeetingTab.PAST, viewModel.uiState.value.selectedTab)
 
-    // When the other tab is selected
     viewModel.selectTab(MeetingTab.UPCOMING)
-
-    // Then the state should change back
     assertEquals(MeetingTab.UPCOMING, viewModel.uiState.value.selectedTab)
   }
 
   @Test
   fun clearErrorMsgSetsErrorMsgToNull() = runTest {
-    // Given the state has an error
     repositoryMock.shouldThrowError = true
     viewModel.loadMeetings("any_project_id")
     testDispatcher.scheduler.advanceUntilIdle()
     assertNotNull(viewModel.uiState.value.errorMsg)
 
-    // When the error message is cleared
     viewModel.clearErrorMsg()
-
-    // Then the error message in the state should be null
     assertNull(viewModel.uiState.value.errorMsg)
   }
 }
 
-// A slightly modified mock for more flexible ViewModel testing
+/** Mock repository to control meeting data for ViewModel tests. */
 class MeetingRepositoryMockViewmodel : MeetingRepository {
   var meetingsToReturn: List<Meeting> = emptyList()
   var shouldThrowError = false
@@ -181,45 +222,35 @@ class MeetingRepositoryMockViewmodel : MeetingRepository {
       meeting: Meeting,
       creatorId: String,
       creatorRole: MeetingRole
-  ): Result<String> {
-    return runCatching { "url" }
-  }
+  ): Result<String> = runCatching { "url" }
 
-  override suspend fun updateMeeting(meeting: Meeting): Result<Unit> {
-    return runCatching {}
-  }
+  override suspend fun updateMeeting(meeting: Meeting): Result<Unit> = runCatching {}
 
-  override suspend fun deleteMeeting(projectId: String, meetingId: String): Result<Unit> {
-    return runCatching {}
-  }
+  override suspend fun deleteMeeting(projectId: String, meetingId: String): Result<Unit> =
+      runCatching {}
 
-  override fun getParticipants(projectId: String, meetingId: String): Flow<List<Participant>> {
-    return flow { emptyList<Participant>() }
-  }
+  override fun getParticipants(projectId: String, meetingId: String): Flow<List<Participant>> =
+      flow {
+        emit(emptyList())
+      }
 
   override suspend fun addParticipant(
       projectId: String,
       meetingId: String,
       userId: String,
       role: MeetingRole
-  ): Result<Unit> {
-    return runCatching {}
-  }
+  ): Result<Unit> = runCatching {}
 
   override suspend fun removeParticipant(
       projectId: String,
       meetingId: String,
       userId: String
-  ): Result<Unit> {
-    return runCatching {}
-  }
+  ): Result<Unit> = runCatching {}
 
   override suspend fun updateParticipantRole(
       projectId: String,
       meetingId: String,
       userId: String,
       role: MeetingRole
-  ): Result<Unit> {
-    return runCatching {}
-  }
+  ): Result<Unit> = runCatching {}
 }
