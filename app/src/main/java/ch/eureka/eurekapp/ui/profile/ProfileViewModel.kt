@@ -53,7 +53,10 @@ class ProfileViewModel(
 
   /** Updates the user's display name. */
   fun updateDisplayName(newDisplayName: String) {
-    val currentUser = _uiState.value.user ?: throw IllegalStateException("Cannot update display name - user data is not available")
+    val currentUser =
+        _uiState.value.user
+            ?: throw IllegalStateException(
+                "Cannot update display name - user data is not available")
 
     viewModelScope.launch {
       val updatedUser = currentUser.copy(displayName = newDisplayName)

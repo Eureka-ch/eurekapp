@@ -78,9 +78,7 @@ fun ProfileScreen(
   var editedDisplayName by remember { mutableStateOf("") }
 
   LaunchedEffect(uiState.user) {
-    uiState.user?.let { user ->
-      editedDisplayName = user.displayName
-    }
+    uiState.user?.let { user -> editedDisplayName = user.displayName }
   }
 
   Scaffold(topBar = { EurekaTopBar(title = "Profile") }, containerColor = Color.White) {
@@ -96,7 +94,6 @@ fun ProfileScreen(
               horizontalAlignment = Alignment.CenterHorizontally,
               verticalArrangement = Arrangement.Top) {
                 uiState.user?.let { user ->
-
                   Spacer(modifier = Modifier.height(32.dp))
 
                   // Profile Picture (real google profile picture)
@@ -180,11 +177,12 @@ fun ProfileScreen(
                           Text("Cancel")
                         }
                   }
-                } ?: run {
-                  Text(
-                      text = "No user data available",
-                      modifier = Modifier.testTag(ProfileScreenTestTags.ERROR_TEXT))
                 }
+                    ?: run {
+                      Text(
+                          text = "No user data available",
+                          modifier = Modifier.testTag(ProfileScreenTestTags.ERROR_TEXT))
+                    }
               }
 
           Button(

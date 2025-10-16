@@ -127,16 +127,16 @@ class SignInViewModel(
             // Check if user already exists in database
             val existingUser = userRepository.getUserById(firebaseUser.uid).firstOrNull()
 
-            val userToSave = existingUser?.copy(
-                photoUrl = firebaseUser.photoUrl?.toString() ?: existingUser.photoUrl,
-                lastActive = Timestamp.now()
-            ) ?: User(
-                uid = firebaseUser.uid,
-                displayName = firebaseUser.displayName ?: "",
-                email = firebaseUser.email ?: "",
-                photoUrl = firebaseUser.photoUrl?.toString() ?: "",
-                lastActive = Timestamp.now()
-            )
+            val userToSave =
+                existingUser?.copy(
+                    photoUrl = firebaseUser.photoUrl?.toString() ?: existingUser.photoUrl,
+                    lastActive = Timestamp.now())
+                    ?: User(
+                        uid = firebaseUser.uid,
+                        displayName = firebaseUser.displayName ?: "",
+                        email = firebaseUser.email ?: "",
+                        photoUrl = firebaseUser.photoUrl?.toString() ?: "",
+                        lastActive = Timestamp.now())
 
             userRepository
                 .saveUser(userToSave)
