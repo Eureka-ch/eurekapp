@@ -20,6 +20,8 @@ import ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens.Create
 import com.google.firebase.auth.FirebaseUser
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
 
@@ -44,15 +46,15 @@ class CreateProjectScreenTest : TestCase() {
     }
 
     override suspend fun updateProject(project: Project): Result<Unit> {
-      TODO("Not yet implemented")
+      return Result.success(Unit)
     }
 
     override suspend fun deleteProject(projectId: String): Result<Unit> {
-      TODO("Not yet implemented")
+      return Result.success(Unit)
     }
 
     override fun getMembers(projectId: String): Flow<List<Member>> {
-      TODO("Not yet implemented")
+      return flowOf(listOf())
     }
 
     override suspend fun addMember(
@@ -60,11 +62,11 @@ class CreateProjectScreenTest : TestCase() {
         userId: String,
         role: ProjectRole
     ): Result<Unit> {
-      TODO("Not yet implemented")
+      return Result.success(Unit)
     }
 
     override suspend fun removeMember(projectId: String, userId: String): Result<Unit> {
-      TODO("Not yet implemented")
+      return Result.success(Unit)
     }
 
     override suspend fun updateMemberRole(
@@ -72,7 +74,7 @@ class CreateProjectScreenTest : TestCase() {
         userId: String,
         role: ProjectRole
     ): Result<Unit> {
-      TODO("Not yet implemented")
+      return Result.success(Unit)
     }
   }
 
@@ -162,51 +164,54 @@ class CreateProjectScreenTest : TestCase() {
 
   @Test
   fun createProjectWorks() {
+    runBlocking {
+      val auth = MockedAuthRepositoryFirebase()
+      val firebaseProjectsRepository = MockedProjectsRepository()
 
-    val auth = MockedAuthRepositoryFirebase()
-    val firebaseProjectsRepository = MockedProjectsRepository()
+      val createProjectScreenViewModel =
+          CreateProjectViewModel(
+              projectsRepository = firebaseProjectsRepository, authenticationRepository = auth)
 
-    val createProjectScreenViewModel =
-        CreateProjectViewModel(
-            projectsRepository = firebaseProjectsRepository, authenticationRepository = auth)
+      val startDateInjectedState = mutableStateOf<String>("24/12/2007")
 
-    val startDateInjectedState = mutableStateOf<String>("24/12/2007")
+      var createdProject = false
 
-    var createdProject = false
+      composeRule.setContent {
+        CreateProjectScreen(
+            createProjectViewModel = createProjectScreenViewModel,
+            startDate = startDateInjectedState,
+            onProjectCreated = { createdProject = true })
+      }
 
-    composeRule.setContent {
-      CreateProjectScreen(
-          createProjectViewModel = createProjectScreenViewModel,
-          startDate = startDateInjectedState,
-          onProjectCreated = { createdProject = true })
+      composeRule
+          .onNodeWithTag(CreateProjectScreenTestTags.PROJECT_NAME_TEST_TAG_TEXT_INPUT)
+          .performTextInput("Ilias")
+      composeRule
+          .onNodeWithTag(CreateProjectScreenTestTags.PROJECT_NAME_TEST_TAG_TEXT_INPUT)
+          .assertIsDisplayed()
+          .assertTextEquals("Ilias")
+
+      composeRule
+          .onNodeWithTag(CreateProjectScreenTestTags.DESCRIPTION_NAME_TEST_TAG_TEXT_INPUT)
+          .performTextInput("Ilias")
+      composeRule
+          .onNodeWithTag(CreateProjectScreenTestTags.DESCRIPTION_NAME_TEST_TAG_TEXT_INPUT)
+          .assertIsDisplayed()
+          .assertTextEquals("Ilias")
+
+      composeRule
+          .onNodeWithTag(CreateProjectScreenTestTags.PROJECT_STATUS_DROPDOWN_TEST_TAG)
+          .performClick()
+      composeRule
+          .onNodeWithTag(CreateProjectScreenTestTags.createProjectStatusTestTag(ProjectStatus.OPEN))
+          .performClick()
+
+      composeRule.onNodeWithTag(CreateProjectScreenTestTags.CREATE_RPOJECT_BUTTON).performClick()
+
+      composeRule.waitForIdle()
+
+      Thread.sleep(5000)
+      assert(createdProject)
     }
-
-    composeRule
-        .onNodeWithTag(CreateProjectScreenTestTags.PROJECT_NAME_TEST_TAG_TEXT_INPUT)
-        .performTextInput("Ilias")
-    composeRule
-        .onNodeWithTag(CreateProjectScreenTestTags.PROJECT_NAME_TEST_TAG_TEXT_INPUT)
-        .assertIsDisplayed()
-        .assertTextEquals("Ilias")
-
-    composeRule
-        .onNodeWithTag(CreateProjectScreenTestTags.DESCRIPTION_NAME_TEST_TAG_TEXT_INPUT)
-        .performTextInput("Ilias")
-    composeRule
-        .onNodeWithTag(CreateProjectScreenTestTags.DESCRIPTION_NAME_TEST_TAG_TEXT_INPUT)
-        .assertIsDisplayed()
-        .assertTextEquals("Ilias")
-
-    composeRule
-        .onNodeWithTag(CreateProjectScreenTestTags.PROJECT_STATUS_DROPDOWN_TEST_TAG)
-        .performClick()
-    composeRule
-        .onNodeWithTag(CreateProjectScreenTestTags.createProjectStatusTestTag(ProjectStatus.OPEN))
-        .performClick()
-
-    composeRule.onNodeWithTag(CreateProjectScreenTestTags.CREATE_RPOJECT_BUTTON).performClick()
-
-    composeRule.waitForIdle()
-    assert(createdProject)
   }
 }

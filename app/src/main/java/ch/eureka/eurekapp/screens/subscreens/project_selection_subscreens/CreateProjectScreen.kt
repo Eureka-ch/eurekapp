@@ -298,24 +298,23 @@ fun CreateProjectScreen(
                                     !Utils.stringIsEmptyOrBlank(endDate.value) &&
                                         !Utils.isDateParseableToStandardAppPattern(endDate.value)
 
-                                createProjectViewModel.viewModelScope.launch {
-                                  val newId = createProjectViewModel.getNewProjectId()
-                                  val currentUserId = createProjectViewModel.getCurrentUser()
-                                  if (!projectNameError.value &&
-                                      !projectDescriptionError.value &&
-                                      !startDateError.value &&
-                                      (Utils.stringIsEmptyOrBlank(endDate.value) ||
-                                          Utils.isDateParseableToStandardAppPattern(
-                                              endDate.value))) {
-                                    if (currentUserId != null) {
-                                      val projectToAdd =
-                                          Project(
-                                              projectId = newId,
-                                              createdBy = currentUserId,
-                                              memberIds = listOf(currentUserId),
-                                              name = projectName.value,
-                                              description = projectDescription.value,
-                                              status = projectStatus.value)
+                                val newId = createProjectViewModel.getNewProjectId()
+                                val currentUserId = createProjectViewModel.getCurrentUser()
+                                if (!projectNameError.value &&
+                                    !projectDescriptionError.value &&
+                                    !startDateError.value &&
+                                    (Utils.stringIsEmptyOrBlank(endDate.value) ||
+                                        Utils.isDateParseableToStandardAppPattern(endDate.value))) {
+                                  if (currentUserId != null) {
+                                    val projectToAdd =
+                                        Project(
+                                            projectId = newId,
+                                            createdBy = currentUserId,
+                                            memberIds = listOf(currentUserId),
+                                            name = projectName.value,
+                                            description = projectDescription.value,
+                                            status = projectStatus.value)
+                                    createProjectViewModel.viewModelScope.launch {
                                       createProjectViewModel.createProject(
                                           projectToCreate = projectToAdd,
                                           onSuccessCallback = { onProjectCreated() },

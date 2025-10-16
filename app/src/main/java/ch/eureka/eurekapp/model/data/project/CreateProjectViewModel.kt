@@ -26,7 +26,7 @@ class CreateProjectViewModel(
     return authenticationRepository.getUserId().getOrNull()
   }
 
-  suspend fun getNewProjectId(): String {
+  fun getNewProjectId(): String {
     return IdGenerator.generateProjectId()
   }
 }
