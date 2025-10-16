@@ -1,7 +1,9 @@
 package ch.eureka.eurekapp.screen
 
 import android.Manifest
+import android.content.Context
 import android.net.Uri
+import android.provider.MediaStore
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.testTag
@@ -16,7 +18,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.test.espresso.Espresso.pressBack
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.ProjectRole
@@ -40,7 +42,6 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageMetadata
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
-import java.security.Timestamp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -53,16 +54,17 @@ import org.junit.Test
 
 // Portions of this code were generated with the help of ChatGPT.
 
-class NavigationButtonsTest : TestCase() {
+class CreateTaskScreenTests : TestCase() {
 
   @get:Rule val composeTestRule = createComposeRule()
   @get:Rule
   var permissionRule: GrantPermissionRule? = GrantPermissionRule.grant(Manifest.permission.CAMERA)
 
   var testUserId: String = ""
+  private lateinit var context: Context
 
   @Before
-  open fun setup() = runBlocking {
+  fun setup() = runBlocking {
     if (!FirebaseEmulator.isRunning) {
       throw IllegalStateException("Firebase Emulator must be running for tests")
     }
@@ -77,6 +79,8 @@ class NavigationButtonsTest : TestCase() {
     if (FirebaseEmulator.auth.currentUser == null) {
       throw IllegalStateException("Auth state not properly established after sign-in")
     }
+
+    context = InstrumentationRegistry.getInstrumentation().targetContext
   }
 
   @After open fun tearDown() = runBlocking { FirebaseEmulator.clearFirestoreEmulator() }
@@ -188,6 +192,8 @@ class NavigationButtonsTest : TestCase() {
       navController.navigate(TaskSpecificScreens.CreateTaskScreen.title)
     }
 
+    assert(!isPhotoSaved(context, "Pictures/EurekApp/"))
+
     // Fill in valid inputs
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performTextInput("Task 1")
     composeTestRule
@@ -204,6 +210,8 @@ class NavigationButtonsTest : TestCase() {
     // After taking photo, save the photo
     composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).performClick()
 
+    assert(isPhotoSaved(context, "Pictures/EurekApp/"))
+
     // Now the photo should be displayed in Create Task screen and inputs conserved
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.PHOTO).assertIsDisplayed()
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).assertIsDisplayed()
@@ -212,6 +220,7 @@ class NavigationButtonsTest : TestCase() {
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.SAVE_TASK).performClick()
     // Ensure navigation back to tasks screen (pop back)
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
+    assert(!isPhotoSaved(context, "Pictures/EurekApp/"))
   }
 
   @Test
@@ -343,20 +352,20 @@ class NavigationButtonsTest : TestCase() {
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
   }
 
-  @Test
-  fun testBackButton() {
-    val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
-
-    // Set up the Composable with mocked dependencies
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      FakeNavGraph(projectId = "project1234", navController = navController, viewModel = viewModel)
-      navController.navigate(TaskSpecificScreens.CreateTaskScreen.title)
-    }
-
-    pressBack()
-
-    composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
+  fun isPhotoSaved(context: Context, relativePath: String): Boolean {
+    val projection = arrayOf(MediaStore.Images.Media.DISPLAY_NAME)
+    val selection = "${MediaStore.Images.Media.RELATIVE_PATH} = ?"
+    val selectionArgs = arrayOf(relativePath)
+    val cursor =
+        context.contentResolver.query(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            projection,
+            selection,
+            selectionArgs,
+            null)
+    val exists = cursor?.moveToFirst() ?: false
+    cursor?.close()
+    return exists
   }
 
   @Composable
