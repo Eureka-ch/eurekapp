@@ -47,7 +47,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
+import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.formatTimeSlot
+import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.utils.Formatters
 
 object MeetingScreenTestTags {
@@ -71,6 +73,9 @@ object MeetingScreenTestTags {
   const val RECORD_BUTTON = "RecordButton"
   const val VOTE_FOR_DATETIME_BUTTON = "VoteForDateTimeButton"
   const val VOTE_FOR_FORMAT_BUTTON = "VoteForFormatButton"
+
+  const val VIEW_SUMMARY_BUTTON = "SeeSummaryButton"
+  const val VIEW_TRANSCRIPT_BUTTON = "SeeTranscriptButton"
   const val NO_UPCOMING_MEETINGS_MESSAGE = "NoUpcomingMeetingsMessageTest"
   const val NO_PAST_MEETINGS_MESSAGE = "NoPastMeetingsMessage"
 }
@@ -162,7 +167,11 @@ fun MeetingsList(
     LazyColumn(
         contentPadding = PaddingValues(vertical = 8.dp),
         modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-          items(meetings.size) { index -> MeetingCard(meeting = meetings[index]) }
+          items(meetings.size) { index ->
+            MeetingCard(
+                meeting = meetings[index],
+            )
+          }
         }
   } else {
     Text(
@@ -193,6 +202,8 @@ fun MeetingCard(
     onVoteForFormat: () -> Unit = {},
     onDirections: () -> Unit = {},
     onRecord: () -> Unit = {},
+    onViewSummary: () -> Unit = {},
+    onSeeTranscript: () -> Unit = {},
 ) {
   Card(
       modifier =
@@ -201,8 +212,9 @@ fun MeetingCard(
               .wrapContentHeight()
               .testTag(MeetingScreenTestTags.MEETING_CARD),
       shape = RoundedCornerShape(16.dp),
-      elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
+      elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {
         Column(modifier = Modifier.padding(16.dp)) {
+          // title and status row
           Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = meeting.title,
@@ -212,16 +224,23 @@ fun MeetingCard(
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_STATUS_TEXT),
-                text = if (meeting.canVote) "Voting in progress" else "Scheduled",
+                text = meeting.status.description,
                 style = MaterialTheme.typography.bodySmall,
-                color = if (meeting.canVote) Color.Blue else Color.Red)
+                color =
+                    when (meeting.status) {
+                      MeetingStatus.OPEN_TO_VOTES -> Color.Blue
+                      MeetingStatus.SCHEDULED -> Color.Red
+                      MeetingStatus.COMPLETED -> Color.DarkGray
+                      MeetingStatus.IN_PROGRESS -> Color.Green
+                    })
           }
 
           Spacer(modifier = Modifier.height(8.dp))
 
-          Column(modifier = Modifier.fillMaxWidth()) {
-            if (meeting.datetime == null) {
-              meeting.timeSlot?.let {
+          // datetime row(s)
+          when (meeting.status) {
+            MeetingStatus.OPEN_TO_VOTES -> {
+              Column(modifier = Modifier.fillMaxWidth()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                   Icon(
                       imageVector = Icons.Default.Schedule,
@@ -235,23 +254,30 @@ fun MeetingCard(
                       style = MaterialTheme.typography.bodySmall,
                       color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                  Icon(
+                      imageVector = Icons.Default.HowToVote,
+                      contentDescription = "Vote icon.",
+                      modifier = Modifier.size(16.dp),
+                      tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                  Spacer(modifier = Modifier.width(4.dp))
+                  Text(
+                      modifier =
+                          Modifier.testTag(MeetingScreenTestTags.MEETING_VOTE_FOR_DATETIME_MESSAGE),
+                      text = "Vote for your preferred datetime(s)",
+                      style = MaterialTheme.typography.bodySmall,
+                      color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
               }
-              Spacer(modifier = Modifier.height(4.dp))
-              Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.HowToVote,
-                    contentDescription = "Vote icon.",
-                    modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    modifier =
-                        Modifier.testTag(MeetingScreenTestTags.MEETING_VOTE_FOR_DATETIME_MESSAGE),
-                    text = "Vote for your preferred datetime(s)",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            MeetingStatus.SCHEDULED,
+            MeetingStatus.IN_PROGRESS,
+            MeetingStatus.COMPLETED -> {
+              if (meeting.datetime == null) {
+                throw IllegalStateException(
+                    "Datetime should be set if meeting is not open to votes.")
               }
-            } else {
               Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Schedule,
@@ -267,107 +293,151 @@ fun MeetingCard(
               }
             }
           }
+
           Spacer(modifier = Modifier.height(4.dp))
+
+          // format row
           Row(verticalAlignment = Alignment.CenterVertically) {
-            when (meeting.format) {
-              null -> {
-                Icon(
-                    imageVector = Icons.Default.HowToVote,
-                    contentDescription = "Vote icon.",
-                    modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    modifier =
-                        Modifier.testTag(MeetingScreenTestTags.MEETING_VOTE_FOR_FORMAT_MESSAGE),
-                    text = "Vote for your preferred meeting format",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-              }
-              MeetingFormat.IN_PERSON -> {
-                Icon(
-                    imageVector = Icons.Default.Place,
-                    contentDescription = "Place icon.",
-                    modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_LOCATION),
-                    text =
-                        meeting.location?.name
-                            ?: throw IllegalStateException(
-                                "Location of meeting does not exist."), // TODO : change this later
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-              }
-              MeetingFormat.VIRTUAL -> {
-                Icon(
-                    imageVector = Icons.Default.VideoCall,
-                    contentDescription = "Video call icon.",
-                    modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_LINK),
-                    text =
-                        meeting.link
-                            ?: throw IllegalStateException("Link to meeting does not exist."),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-              }
-            }
-          }
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-          if (meeting.canVote) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-              Button(
-                  onClick = onVoteForDateTime,
-                  modifier = Modifier.testTag(MeetingScreenTestTags.VOTE_FOR_DATETIME_BUTTON),
-              ) {
-                Text("Vote for datetime")
-              }
-              Spacer(modifier = Modifier.width(10.dp))
-              Button(
-                  onClick = onVoteForFormat,
-                  modifier = Modifier.testTag(MeetingScreenTestTags.VOTE_FOR_FORMAT_BUTTON),
-              ) {
-                Text("Vote for format")
-              }
-            }
-          } else {
-            when (meeting.format) {
-              MeetingFormat.IN_PERSON -> {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                  Button(
-                      onClick = onDirections,
-                      modifier = Modifier.testTag(MeetingScreenTestTags.DIRECTIONS_BUTTON),
-                  ) {
-                    Text("Directions")
-                  }
-                  Spacer(modifier = Modifier.width(10.dp))
-                  Button(
-                      onClick = onRecord,
-                      modifier = Modifier.testTag(MeetingScreenTestTags.RECORD_BUTTON),
-                  ) {
-                    Text("Record")
+            when (meeting.status) {
+              MeetingStatus.OPEN_TO_VOTES -> {
+                when (meeting.format) {
+                  MeetingFormat.IN_PERSON,
+                  MeetingFormat.VIRTUAL ->
+                      throw IllegalStateException(
+                          "Format must not be set if meeting is open to votes.")
+                  null -> {
+                    Icon(
+                        imageVector = Icons.Default.HowToVote,
+                        contentDescription = "Vote icon.",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        modifier =
+                            Modifier.testTag(MeetingScreenTestTags.MEETING_VOTE_FOR_FORMAT_MESSAGE),
+                        text = "Vote for your preferred meeting format",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                   }
                 }
               }
-              MeetingFormat.VIRTUAL -> {
-                Button(
-                    onClick = onJoinMeeting,
-                    modifier = Modifier.testTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON),
-                ) {
-                  Text("Join meeting")
+              MeetingStatus.SCHEDULED,
+              MeetingStatus.IN_PROGRESS,
+              MeetingStatus.COMPLETED -> {
+                when (meeting.format) {
+                  MeetingFormat.IN_PERSON -> {
+                    Icon(
+                        imageVector = Icons.Default.Place,
+                        contentDescription = "Place icon.",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_LOCATION),
+                        text =
+                            meeting.location?.name
+                                ?: throw IllegalStateException(
+                                    "Location of in-person meeting closed to votes should exist."),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                  }
+                  MeetingFormat.VIRTUAL -> {
+                    if (meeting.status != MeetingStatus.COMPLETED) {
+                      Icon(
+                          imageVector = Icons.Default.VideoCall,
+                          contentDescription = "Video call icon.",
+                          modifier = Modifier.size(16.dp),
+                          tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                      Spacer(modifier = Modifier.width(4.dp))
+                      Text(
+                          modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_LINK),
+                          text =
+                              meeting.link
+                                  ?: throw IllegalStateException(
+                                      "Link to scheduled/in progress virtual meeting should exist."),
+                          style = MaterialTheme.typography.bodySmall,
+                          color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                  }
+                  null ->
+                      throw IllegalStateException(
+                          "Format of meeting closed to votes should be set.")
                 }
               }
-              null -> {}
             }
           }
+
+          Spacer(modifier = Modifier.height(8.dp))
+
+          // button row
+          Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.Center,
+              verticalAlignment = Alignment.CenterVertically) {
+                when (meeting.status) {
+                  MeetingStatus.OPEN_TO_VOTES -> {
+                    Button(
+                        onClick = onVoteForDateTime,
+                        modifier = Modifier.testTag(MeetingScreenTestTags.VOTE_FOR_DATETIME_BUTTON),
+                    ) {
+                      Text("Vote for datetime")
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Button(
+                        onClick = onVoteForFormat,
+                        modifier = Modifier.testTag(MeetingScreenTestTags.VOTE_FOR_FORMAT_BUTTON),
+                    ) {
+                      Text("Vote for format")
+                    }
+                  }
+                  MeetingStatus.SCHEDULED,
+                  MeetingStatus.IN_PROGRESS -> {
+                    when (meeting.format) {
+                      MeetingFormat.IN_PERSON -> {
+                        Button(
+                            onClick = onDirections,
+                            modifier = Modifier.testTag(MeetingScreenTestTags.DIRECTIONS_BUTTON),
+                        ) {
+                          Text("Directions")
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Button(
+                            onClick = onRecord,
+                            modifier = Modifier.testTag(MeetingScreenTestTags.RECORD_BUTTON),
+                        ) {
+                          Text("Record")
+                        }
+                      }
+                      MeetingFormat.VIRTUAL -> {
+                        Button(
+                            onClick = onJoinMeeting,
+                            modifier = Modifier.testTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON),
+                        ) {
+                          Text("Join meeting")
+                        }
+                      }
+                      null ->
+                          throw IllegalStateException(
+                              "Format of scheduled/in progress should exist.")
+                    }
+                  }
+                  MeetingStatus.COMPLETED -> {
+                    Button(
+                        onClick = onViewSummary,
+                        modifier = Modifier.testTag(MeetingScreenTestTags.VIEW_SUMMARY_BUTTON),
+                    ) {
+                      Text("View summary")
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Button(
+                        onClick = onSeeTranscript,
+                        modifier = Modifier.testTag(MeetingScreenTestTags.VIEW_TRANSCRIPT_BUTTON),
+                    ) {
+                      Text("Transcript")
+                    }
+                  }
+                }
+              }
         }
       }
 }
