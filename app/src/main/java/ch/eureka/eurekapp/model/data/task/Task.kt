@@ -38,17 +38,17 @@ data class Task(
     val createdBy: String = "",
 )
 
-fun getDaysUntilDue(task: Task): Long? {
+fun getDaysUntilDue(task: Task, now: Timestamp): Long? {
   val dueDate = task.dueDate?.toDate() ?: return null
-  val now = Timestamp.now().toDate()
-  return ChronoUnit.DAYS.between(now.toInstant(), dueDate.toInstant())
+  val currentDate = now.toDate()
+  return ChronoUnit.DAYS.between(currentDate.toInstant(), dueDate.toInstant())
 }
 
-fun determinePriority(task: Task): String {
+fun determinePriority(task: Task, now: Timestamp): String {
   val timestamp = task.dueDate
   if (timestamp == null) return "Low Priority"
 
-  val diffInDays = getDaysUntilDue(task) ?: return "Low Priority"
+  val diffInDays = getDaysUntilDue(task, now) ?: return "Low Priority"
 
   return when {
     diffInDays < 0 -> "Critical Priority"

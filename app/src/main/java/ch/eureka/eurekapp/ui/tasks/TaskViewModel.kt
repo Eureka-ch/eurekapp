@@ -12,6 +12,7 @@ import ch.eureka.eurekapp.model.data.task.getDaysUntilDue
 import ch.eureka.eurekapp.model.data.user.FirestoreUserRepository
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -120,7 +121,8 @@ open class TaskScreenViewModel(
                   is TaskScreenFilter.All -> userTasks + teamTasks
                   is TaskScreenFilter.ThisWeek ->
                       (userTasks + teamTasks).filter { task ->
-                        val daysUntilDue = getDaysUntilDue(task) ?: return@filter false
+                        val now = Timestamp.now()
+                        val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
                         daysUntilDue in 0..7
                       }
                 }

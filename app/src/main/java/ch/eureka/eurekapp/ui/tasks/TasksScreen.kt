@@ -35,6 +35,7 @@ import ch.eureka.eurekapp.ui.components.NavItem
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.tasks.components.TaskActionButtons
 import ch.eureka.eurekapp.ui.tasks.components.TaskSectionHeader
+import com.google.firebase.Timestamp
 
 /** Test tags used by UI tests. */
 object TasksScreenTestTags {
@@ -66,7 +67,8 @@ private fun TaskCard(
         TaskStatus.TODO -> 0.0f
         else -> 0.0f
       }
-  val daysUntilDue = getDaysUntilDue(task)
+  val now = Timestamp.now()
+  val daysUntilDue = getDaysUntilDue(task, now)
 
   EurekaTaskCard(
       title = task.title,
@@ -75,7 +77,7 @@ private fun TaskCard(
       progressValue = progressValue,
       isCompleted = task.status == TaskStatus.COMPLETED,
       dueDate = daysUntilDue?.let { formatDueDate(it) } ?: "No due date",
-      priority = determinePriority(task),
+      priority = determinePriority(task, now),
       onToggleComplete = onToggleComplete,
       modifier = modifier)
 }
