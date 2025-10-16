@@ -157,7 +157,7 @@ fun NavigationMenu() {
               composable(MainScreens.ProfileScreen.title) { ProfileScreen() }
               composable(MainScreens.IdeasScreen.title) { IdeasScreen(navigationController) }
               composable(MainScreens.OverviewProjectScreen.title) {
-                OverviewProjectsScreen(navigationController)
+                OverviewProjectsScreen()
               }
               composable(MainScreens.TasksScreen.title) { TasksScreen(navigationController) }
               composable("${TaskSpecificScreens.CreateTaskScreen.title}/{projectId}") {
