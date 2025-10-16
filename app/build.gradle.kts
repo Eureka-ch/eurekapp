@@ -1,5 +1,6 @@
 import java.util.Properties
 import org.gradle.kotlin.dsl.implementation
+import org.gradle.kotlin.dsl.invoke
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -228,6 +229,8 @@ dependencies {
 
     // Coil for image loading
     implementation(libs.coil.compose)
+    testImplementation(kotlin("test"))
+
 }
 
 tasks.withType<Test> {
@@ -274,10 +277,10 @@ tasks.register("jacocoTestReport", JacocoReport::class) {
 
         logger.quiet("Wrote summarized jacoco test coverage report xml to ${reportFile.absolutePath}")
     }
-
-    }
-    testImplementation(kotlin("test"))
 }
+
+
+
 
 // Custom task to run Firestore emulator tests
 tasks.register<Exec>("firestoreEmulatorTests") {
