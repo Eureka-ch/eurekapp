@@ -17,7 +17,6 @@ import ch.eureka.eurekapp.model.data.project.ProjectRole
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens.CreateProjectScreen
 import ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens.CreateProjectScreenTestTags
-import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.google.firebase.auth.FirebaseUser
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import kotlinx.coroutines.flow.Flow
@@ -164,16 +163,12 @@ class CreateProjectScreenTest : TestCase() {
   @Test
   fun createProjectWorks() {
 
-    val firestore = FirebaseEmulator.firestore
     val auth = MockedAuthRepositoryFirebase()
     val firebaseProjectsRepository = MockedProjectsRepository()
 
-    val authRepository = auth
-
     val createProjectScreenViewModel =
         CreateProjectViewModel(
-            projectsRepository = firebaseProjectsRepository,
-            authenticationRepository = authRepository)
+            projectsRepository = firebaseProjectsRepository, authenticationRepository = auth)
 
     val startDateInjectedState = mutableStateOf<String>("24/12/2007")
 
@@ -211,7 +206,7 @@ class CreateProjectScreenTest : TestCase() {
 
     composeRule.onNodeWithTag(CreateProjectScreenTestTags.CREATE_RPOJECT_BUTTON).performClick()
 
-    Thread.sleep(5000)
-    assert(createdProject == true)
+    composeRule.waitForIdle()
+    assert(createdProject)
   }
 }
