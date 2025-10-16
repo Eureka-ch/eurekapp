@@ -142,7 +142,7 @@ fun NavigationMenu() {
               composable(MainScreens.IdeasScreen.title) { IdeasScreen(navigationController) }
               composable(MainScreens.OverviewProjectScreen.title) {
                 // OverviewProjectsScreen(navigationController)
-                CreateProjectScreen(navigationController)
+                CreateProjectScreen()
               }
               composable(MainScreens.TasksScreen.title) { TasksScreen(navigationController) }
             }

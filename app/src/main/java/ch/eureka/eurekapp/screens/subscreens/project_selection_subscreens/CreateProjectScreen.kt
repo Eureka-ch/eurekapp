@@ -89,6 +89,8 @@ object CreateProjectScreenTestTags {
   const val CALENDAR_ICON_BUTTON_START = "calendar icon start"
   const val CALENDAR_ICON_BUTTON_END = "calendar icon end"
 
+  const val CREATE_RPOJECT_BUTTON = "create project button"
+
   fun createProjectStatusTestTag(status: ProjectStatus): String {
     return "status: ${status.name}"
   }
@@ -98,12 +100,15 @@ object CreateProjectScreenTestTags {
  * The screen to create projects
  *
  * @param createProjectViewModel the view model that communicates with the repositories
- * @param navigationController the navigation controller of the app *
+ * @param startDate a startDate for the project just for injecting it during testing
+ * @param onProjectCreated the function to execute on the project is created
  */
 @Composable
 fun CreateProjectScreen(
-    navigationController: NavController = rememberNavController(),
-    createProjectViewModel: CreateProjectViewModel = viewModel()
+    createProjectViewModel: CreateProjectViewModel = viewModel(),
+    startDate: MutableState<String> = remember { mutableStateOf<String>("") },
+    //for injecting it during testing,
+    onProjectCreated: () -> Unit = {}
 ) {
   val projectName = remember { mutableStateOf<String>("") }
   val projectNameError = remember { mutableStateOf<Boolean>(false) }
@@ -111,7 +116,6 @@ fun CreateProjectScreen(
   val projectDescription = remember { mutableStateOf<String>("") }
   val projectDescriptionError = remember { mutableStateOf<Boolean>(false) }
 
-  val startDate = remember { mutableStateOf<String>("") }
   val startDateError = remember { mutableStateOf<Boolean>(false) }
 
   val endDate = remember { mutableStateOf<String>("") }
@@ -220,7 +224,8 @@ fun CreateProjectScreen(
                                     isDatePicker = true,
                                     textValue = endDate,
                                     inputIsError = { input ->
-                                      !Utils.isDateParseableToStandardAppPattern(input)
+                                      !Utils.stringIsEmptyOrBlank(input) &&
+                                              !Utils.isDateParseableToStandardAppPattern(input)
                                     },
                                     errorText = "Date should be of the format dd/MM/yyyy",
                                     isErrorState = endDateError,
@@ -281,7 +286,9 @@ fun CreateProjectScreen(
                         horizontalArrangement = Arrangement.Start,
                         verticalAlignment = Alignment.CenterVertically) {
                           FilledTonalButton(
-                              modifier = Modifier.width(140.dp).height(40.dp),
+                              modifier = Modifier.width(140.dp).height(40.dp)
+                                  .testTag(
+                                  CreateProjectScreenTestTags.CREATE_RPOJECT_BUTTON),
                               onClick = {
                                 /** The method that handles the creation of a project */
                                 projectNameError.value =
@@ -291,7 +298,8 @@ fun CreateProjectScreen(
                                 startDateError.value =
                                     !Utils.isDateParseableToStandardAppPattern(startDate.value)
                                 endDateError.value =
-                                    !Utils.isDateParseableToStandardAppPattern(endDate.value)
+                                    !Utils.stringIsEmptyOrBlank(endDate.value) &&
+                                            !Utils.isDateParseableToStandardAppPattern(endDate.value)
 
                                 createProjectViewModel.viewModelScope.launch {
                                   val newId = createProjectViewModel.getNewProjectId()
@@ -299,7 +307,8 @@ fun CreateProjectScreen(
                                   if (!projectNameError.value &&
                                       !projectDescriptionError.value &&
                                       !startDateError.value &&
-                                      !endDateError.value) {
+                                      (Utils.stringIsEmptyOrBlank(endDate.value) ||
+                                              Utils.isDateParseableToStandardAppPattern(endDate.value))) {
                                     if (newId != null && currentUserId != null) {
                                       val projectToAdd =
                                           Project(
@@ -312,10 +321,7 @@ fun CreateProjectScreen(
                                       createProjectViewModel.createProject(
                                           projectToCreate = projectToAdd,
                                           onSuccessCallback = {
-                                            navigationFunction(
-                                                navigationController,
-                                                goBack = false,
-                                                destination = MainScreens.ProjectSelectionScreen)
+                                            onProjectCreated()
                                           },
                                           onFailureCallback = {
                                             failedToCreateProjectText =

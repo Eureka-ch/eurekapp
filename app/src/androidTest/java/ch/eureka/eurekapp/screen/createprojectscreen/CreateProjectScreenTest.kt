@@ -1,14 +1,26 @@
 package ch.eureka.eurekapp.screen.createprojectscreen
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import ch.eureka.eurekapp.model.authentication.AuthRepositoryFirebase
+import ch.eureka.eurekapp.model.data.project.CreateProjectViewModel
+import ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository
+import ch.eureka.eurekapp.model.data.project.Member
+import ch.eureka.eurekapp.model.data.project.Project
+import ch.eureka.eurekapp.model.data.project.ProjectRepository
+import ch.eureka.eurekapp.model.data.project.ProjectRole
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens.CreateProjectScreen
 import ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens.CreateProjectScreenTestTags
+import ch.eureka.eurekapp.utils.FirebaseEmulator
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.flow.Flow
 import org.junit.Rule
 import org.junit.Test
 
@@ -86,7 +98,51 @@ class CreateProjectScreenTest {
 
   }
 
-  @Test fun createProject() {
-      //TODO
+    @Test fun createProjectWorks() {
+        val firestore = FirebaseEmulator.firestore
+        val auth = FirebaseEmulator.auth
+        val firebaseProjectsRepository = FirestoreProjectRepository(firestore = firestore, auth = auth)
+
+        val authRepository = AuthRepositoryFirebase(auth = auth)
+
+        val createProjectScreenViewModel = CreateProjectViewModel(
+            projectsRepository = firebaseProjectsRepository,
+            authenticationRepository = authRepository)
+
+        val startDateInjectedState = mutableStateOf<String>("24/12/2007")
+
+        composeRule.setContent {
+            CreateProjectScreen(createProjectViewModel = createProjectScreenViewModel,
+                startDate = startDateInjectedState)
+        }
+
+
+        composeRule
+            .onNodeWithTag(CreateProjectScreenTestTags.PROJECT_NAME_TEST_TAG_TEXT_INPUT)
+            .performTextInput("Ilias")
+        composeRule
+            .onNodeWithTag(CreateProjectScreenTestTags.PROJECT_NAME_TEST_TAG_TEXT_INPUT)
+            .assertIsDisplayed()
+            .assertTextEquals("Ilias")
+
+        composeRule
+            .onNodeWithTag(CreateProjectScreenTestTags.DESCRIPTION_NAME_TEST_TAG_TEXT_INPUT)
+            .performTextInput("Ilias")
+        composeRule
+            .onNodeWithTag(CreateProjectScreenTestTags.DESCRIPTION_NAME_TEST_TAG_TEXT_INPUT)
+            .assertIsDisplayed()
+            .assertTextEquals("Ilias")
+
+        composeRule
+            .onNodeWithTag(CreateProjectScreenTestTags.PROJECT_STATUS_DROPDOWN_TEST_TAG)
+            .performClick()
+        composeRule
+            .onNodeWithTag(CreateProjectScreenTestTags
+                .createProjectStatusTestTag(ProjectStatus.OPEN))
+            .performClick()
+
+        composeRule.onNodeWithTag(CreateProjectScreenTestTags.CREATE_RPOJECT_BUTTON)
+            .performClick()
+
   }
 }
