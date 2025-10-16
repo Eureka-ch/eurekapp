@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.meeting.FirestoreMeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
+import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -65,8 +66,16 @@ class MeetingViewModel(
             _uiState.update {
               it.copy(
                   isLoading = false,
-                  upcomingMeetings = meetings.filterNot { meeting -> meeting.ended },
-                  pastMeetings = meetings.filter { meeting -> meeting.ended })
+                  upcomingMeetings =
+                      meetings
+                          .filterNot { meeting -> meeting.status == MeetingStatus.COMPLETED }
+                          .sortedBy { m -> m.datetime ?: m.timeSlot.startTime }
+                          .reversed(),
+                  pastMeetings =
+                      meetings
+                          .filter { meeting -> meeting.status == MeetingStatus.COMPLETED }
+                          .sortedBy { m -> m.datetime ?: m.timeSlot.startTime }
+                          .reversed())
             }
           }
     }
