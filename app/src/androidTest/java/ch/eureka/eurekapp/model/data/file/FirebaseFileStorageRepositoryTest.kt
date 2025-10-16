@@ -368,4 +368,71 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
       assertTrue(metadataResult.isFailure)
     }
   }
+
+  @Test
+  fun uploadProfilePhoto_ownerCanUpload() = runBlocking {
+    val userId = FirebaseEmulator.auth.currentUser!!.uid
+    val fileUri = createTempFile("profile", "jpg", "Profile photo content")
+
+    val result =
+        repository.uploadFile(
+            storagePath = StoragePaths.profilePhotoPath(userId, "jpg"), fileUri = fileUri)
+
+    assertTrue("Owner should be able to upload profile photo", result.isSuccess)
+    val downloadUrl = result.getOrNull()!!
+    assertNotNull(downloadUrl)
+
+    // Verify content type
+    val metadata = repository.getFileMetadata(downloadUrl).getOrNull()
+    assertEquals("image/jpeg", metadata?.contentType)
+  }
+
+  @Test
+  fun uploadProfilePhoto_cannotUploadToOtherUsersProfile() = runBlocking {
+    val otherUserId = "different_user_id"
+    val fileUri = createTempFile("profile", "png", "Profile photo content")
+
+    val result =
+        repository.uploadFile(
+            storagePath = StoragePaths.profilePhotoPath(otherUserId, "png"), fileUri = fileUri)
+
+    assertTrue(
+        "User should not be able to upload to another user's profile photo", result.isFailure)
+    assertTrue(result.exceptionOrNull() is StorageException)
+  }
+
+  @Test
+  fun deleteProfilePhoto_ownerCanDelete() = runBlocking {
+    val userId = FirebaseEmulator.auth.currentUser!!.uid
+    val fileUri = createTempFile("profile_delete", "jpg", "Profile photo to delete")
+
+    // Upload profile photo
+    val uploadResult =
+        repository.uploadFile(
+            storagePath = StoragePaths.profilePhotoPath(userId, "jpg"), fileUri = fileUri)
+    assertTrue(uploadResult.isSuccess)
+    val downloadUrl = uploadResult.getOrNull()!!
+
+    // Delete profile photo
+    val deleteResult = repository.deleteFile(downloadUrl)
+    assertTrue("Owner should be able to delete their profile photo", deleteResult.isSuccess)
+
+    // Verify deletion
+    val metadataResult = repository.getFileMetadata(downloadUrl)
+    assertTrue(metadataResult.isFailure)
+  }
+
+  @Test
+  fun profilePhoto_authenticatedReadAccess() = runBlocking {
+    val currentUserId = FirebaseEmulator.auth.currentUser!!.uid
+    val differentUserId = "different_user_id_12345"
+
+    // Upload profile photo for a DIFFERENT user directly (bypassing auth rules)
+    val fileContent = "Public profile photo for different user".toByteArray()
+    val storagePath = StoragePaths.profilePhotoPath(differentUserId, "png")
+    val downloadUrl = FirebaseEmulator.uploadFileDirect(storagePath, fileContent, "image/png")
+    val metadata = repository.getFileMetadata(downloadUrl)
+    assertTrue(metadata.isSuccess)
+    // Get download URL using Firebase SDK
+  }
 }

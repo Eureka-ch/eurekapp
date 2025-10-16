@@ -206,4 +206,59 @@ object FirebaseEmulator {
       Log.d("FirebaseEmulator", "Response received: ${response.toArray()}")
       return response.body.toString()
     }
+
+  /**
+   * Upload a file directly to Firebase Storage Emulator using REST API.
+   *
+   * This bypasses Firebase Authentication rules, simulating admin-like behavior for testing. Use
+   * this to upload files that would normally be restricted by security rules.
+   *
+   * @param storagePath The storage path (e.g., "profilePhotos/user123.jpg")
+   * @param fileContent The file content as a byte array
+   * @param contentType The MIME content type (e.g., "image/jpeg")
+   * @return The storage path (not download URL) for use with Firebase SDK
+   */
+  fun uploadFileDirect(storagePath: String, fileContent: ByteArray, contentType: String): String {
+    Log.d("FirebaseEmulator", "Uploading file directly to storage: $storagePath")
+    val app = "$projectID.firebasestorage.app"
+    // Use simple PUT upload to emulator with encoded path
+    val encodedPath = java.net.URLEncoder.encode(storagePath, "UTF-8")
+    val uploadUrl = "http://$HOST:$STORAGE_PORT/v0/b/$app/o/$encodedPath"
+
+    val mediaType = contentType.toMediaType()
+    val body = fileContent.toRequestBody(mediaType)
+
+    val request =
+        Request.Builder()
+            .url(uploadUrl)
+            .put(body)
+            .addHeader("contentType", contentType)
+            .addHeader("Authorization", "Firebase owner")
+            .build()
+
+    val response = httpClient.newCall(request).execute()
+
+    if (response.isSuccessful) {
+      Log.d("FirebaseEmulator", "Successfully uploaded file to storage")
+      val responseBody = response.body?.string() ?: "{}"
+      Log.d("FirebaseEmulator", "Upload response: $responseBody")
+      val token =
+          JSONObject(responseBody).optString("downloadTokens").ifBlank {
+            throw Exception("No download token in upload response")
+          }
+
+      val downloadUrl = "http://$HOST:$STORAGE_PORT/v0/b/$app/o/$encodedPath?alt=media&token=$token"
+      Log.d("FirebaseEmulator", "File download URL: $downloadUrl")
+      Log.d(
+          "Local download URL",
+          "http://localhost:$STORAGE_PORT/v0/b/$projectID.appspot.com/o/$encodedPath?alt=media&token=$token")
+      return downloadUrl
+    } else {
+      val errorBody = response.body?.string() ?: "No error body"
+      Log.e(
+          "FirebaseEmulator",
+          "Failed to upload file to storage: ${response.code} ${response.message} - $errorBody")
+      throw Exception("Failed to upload file: ${response.code} ${response.message} - $errorBody")
+    }
+  }
 }
