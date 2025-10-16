@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.screens
+package ch.eureka.eurekapp.ui.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,9 +13,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -39,16 +39,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.ui.components.EurekaInfoCard
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
-import ch.eureka.eurekapp.ui.profile.ProfileViewModel
 import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+/** Test tags for the Profile screen UI elements. */
 object ProfileScreenTestTags {
   const val PROFILE_SCREEN = "ProfileScreen"
   const val PROFILE_PICTURE = "ProfilePicture"
@@ -64,9 +62,14 @@ object ProfileScreenTestTags {
   const val SIGN_OUT_BUTTON = "SignOutButton"
 }
 
+/**
+ * Profile screen displaying user information and edit capabilities.
+ *
+ * @param viewModel The [ProfileViewModel] managing the screen's state and logic.
+ * @param firebaseAuth The [FirebaseAuth] instance for authentication operations.
+ */
 @Composable
 fun ProfileScreen(
-    navigationController: NavHostController = rememberNavController(),
     viewModel: ProfileViewModel = viewModel(),
     firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
 ) {
@@ -75,8 +78,8 @@ fun ProfileScreen(
   var editedDisplayName by remember { mutableStateOf("") }
 
   LaunchedEffect(uiState.user) {
-    if (uiState.user != null) {
-      editedDisplayName = uiState.user!!.displayName
+    uiState.user?.let { user ->
+      editedDisplayName = user.displayName
     }
   }
 
@@ -92,8 +95,7 @@ fun ProfileScreen(
                   Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
               horizontalAlignment = Alignment.CenterHorizontally,
               verticalArrangement = Arrangement.Top) {
-                if (uiState.user != null) {
-                  val user = uiState.user!!
+                uiState.user?.let { user ->
 
                   Spacer(modifier = Modifier.height(32.dp))
 
@@ -178,7 +180,7 @@ fun ProfileScreen(
                           Text("Cancel")
                         }
                   }
-                } else {
+                } ?: run {
                   Text(
                       text = "No user data available",
                       modifier = Modifier.testTag(ProfileScreenTestTags.ERROR_TEXT))
@@ -196,7 +198,7 @@ fun ProfileScreen(
                   ButtonDefaults.buttonColors(
                       containerColor = MaterialTheme.colorScheme.error,
                       contentColor = MaterialTheme.colorScheme.onError)) {
-                Icon(Icons.Default.Logout, contentDescription = null)
+                Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null)
                 Spacer(modifier = Modifier.size(8.dp))
                 Text("Sign Out")
               }

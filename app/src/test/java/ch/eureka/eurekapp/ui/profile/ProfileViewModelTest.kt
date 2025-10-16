@@ -84,20 +84,13 @@ class ProfileViewModelTest {
     verify { userRepository.getUserById("test-uid") }
   }
 
-  @Test
-  fun `loadUserProfile handles null Firebase user`() = runTest {
+  @Test(expected = IllegalStateException::class)
+  fun `loadUserProfile throws exception when Firebase user is null`() = runTest {
     // Given
     every { firebaseAuth.currentUser } returns null
-    every { userRepository.getUserById(any()) } returns flowOf(null)
 
-    // When
+    // When/Then - should throw exception
     viewModel = ProfileViewModel(userRepository)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    // Then
-    val state = viewModel.uiState.value
-    assertNull(state.user)
-    verify(exactly = 0) { userRepository.getUserById(any()) }
   }
 
   @Test
@@ -206,8 +199,8 @@ class ProfileViewModelTest {
     assertFalse(viewModel.uiState.value.isEditing)
   }
 
-  @Test
-  fun `updateDisplayName does nothing when user is null`() = runTest {
+  @Test(expected = IllegalStateException::class)
+  fun `updateDisplayName throws exception when user is null`() = runTest {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(null)
     viewModel = ProfileViewModel(userRepository)
@@ -216,9 +209,6 @@ class ProfileViewModelTest {
     // When
     viewModel.updateDisplayName("New Name")
     testDispatcher.scheduler.advanceUntilIdle()
-
-    // Then
-    coVerify(exactly = 0) { userRepository.saveUser(any()) }
   }
 
   @Test

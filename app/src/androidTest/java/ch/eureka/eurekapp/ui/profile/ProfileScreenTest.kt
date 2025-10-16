@@ -1,11 +1,10 @@
-package ch.eureka.eurekapp.screens
+package ch.eureka.eurekapp.ui.profile
 
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
-import ch.eureka.eurekapp.ui.profile.ProfileViewModel
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import io.mockk.*

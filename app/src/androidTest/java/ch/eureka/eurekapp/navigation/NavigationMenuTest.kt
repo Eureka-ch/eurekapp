@@ -8,8 +8,8 @@ import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.screens.IdeasScreenTestTags
 import ch.eureka.eurekapp.screens.MeetingsScreenTestTags
-import ch.eureka.eurekapp.screens.ProfileScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
+import ch.eureka.eurekapp.ui.profile.ProfileScreenTestTags
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import org.junit.Rule
 import org.junit.Test

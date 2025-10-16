@@ -11,10 +11,20 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** UI state for the profile screen. */
+/**
+ * UI state for the profile screen.
+ *
+ * @property user The current user's data, or null if not available.
+ * @property isEditing Whether the profile is currently in editing mode.
+ */
 data class ProfileUIState(val user: User? = null, val isEditing: Boolean = false)
 
-/** ViewModel for the profile screen. */
+/**
+ * ViewModel for the profile screen.
+ *
+ * @property userRepository Repository for user data operations.
+ * @property userId The ID of the currently authenticated user.
+ */
 class ProfileViewModel(
     private val userRepository: UserRepository = UserRepositoryProvider.repository,
     private val userId: String? = FirebaseAuth.getInstance().currentUser?.uid
@@ -29,7 +39,7 @@ class ProfileViewModel(
 
   /** Loads the current user's profile data. */
   private fun loadUserProfile() {
-    val uid = userId ?: return
+    val uid = userId ?: throw IllegalStateException("User ID is null - user must be authenticated")
 
     viewModelScope.launch {
       userRepository.getUserById(uid).collect { user -> _uiState.update { it.copy(user = user) } }
@@ -43,7 +53,7 @@ class ProfileViewModel(
 
   /** Updates the user's display name. */
   fun updateDisplayName(newDisplayName: String) {
-    val currentUser = _uiState.value.user ?: return
+    val currentUser = _uiState.value.user ?: throw IllegalStateException("Cannot update display name - user data is not available")
 
     viewModelScope.launch {
       val updatedUser = currentUser.copy(displayName = newDisplayName)
