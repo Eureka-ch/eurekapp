@@ -1,5 +1,14 @@
+/**
+ * Unit tests for TaskDateUtils utility class
+ *
+ * Tests basic date utility functions including overdue detection, week calculations, and day
+ * counting.
+ *
+ * @author Assisted by AI for comprehensive test coverage
+ */
 package ch.eureka.eurekapp.ui.tasks
 
+import ch.eureka.eurekapp.model.utils.TaskDateUtils
 import com.google.firebase.Timestamp
 import java.util.Date
 import org.junit.Assert.assertFalse

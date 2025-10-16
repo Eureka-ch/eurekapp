@@ -14,8 +14,7 @@ local.properties
 # Firebase config
 app/google-services.json
 
-# Task implementation documentation
-TASK_IMPLEMENTATION_PLAN.md
+
 
 # Log files
 *.log

@@ -23,9 +23,9 @@ fun TaskSectionHeader(title: String, taskCount: Int? = null, modifier: Modifier 
     if (taskCount != null) {
       val taskText =
           when (taskCount) {
-            0 -> "tâche"
-            1 -> "tâche"
-            else -> "tâches"
+            0 -> "no task"
+            1 -> "task"
+            else -> "tasks"
           }
       Text(
           text = "$taskCount $taskText",

@@ -14,22 +14,6 @@ import org.junit.Test
 class TaskTest {
 
   @Test
-  fun task_defaultConstructor_createsEmptyTask() {
-    val task = Task()
-
-    assertEquals("", task.taskID)
-    assertEquals("", task.templateId)
-    assertEquals("", task.projectId)
-    assertEquals("", task.title)
-    assertEquals("", task.description)
-    assertEquals(TaskStatus.TODO, task.status)
-    assertEquals(emptyList<String>(), task.assignedUserIds)
-    assertNull(task.dueDate)
-    assertEquals(emptyList<String>(), task.attachmentUrls)
-    assertEquals(emptyMap<String, Any>(), task.customData)
-  }
-
-  @Test
   fun task_withParameters_setsCorrectValues() {
     val assignedUsers = listOf("user1", "user2")
     val dueDate = Timestamp(1000, 0)

@@ -1,3 +1,10 @@
+/**
+ * UI tests for TasksScreen component functionality
+ *
+ * Tests UI interactions and component behavior including filter buttons and screen navigation.
+ *
+ * @author Assisted by AI for comprehensive test coverage
+ */
 package ch.eureka.eurekapp.ui.tasks
 
 import androidx.compose.ui.test.junit4.createAndroidComposeRule

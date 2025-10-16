@@ -1,3 +1,11 @@
+/**
+ * Unit tests for MockTaskRepository
+ *
+ * Tests mock repository functionality for task operations including creation, retrieval, and
+ * coroutine-based operations.
+ *
+ * @author Assisted by AI for comprehensive test coverage
+ */
 package ch.eureka.eurekapp.ui.tasks
 
 import ch.eureka.eurekapp.model.data.task.Task

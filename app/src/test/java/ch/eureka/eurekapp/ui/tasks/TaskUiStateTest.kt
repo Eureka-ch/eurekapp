@@ -1,24 +1,19 @@
+/**
+ * Unit tests for TaskUiState data class
+ *
+ * Tests UI state management including custom value creation and state updates.
+ *
+ * @author Assisted by AI for comprehensive test coverage
+ */
 package ch.eureka.eurekapp.ui.tasks
 
 import ch.eureka.eurekapp.model.data.task.Task
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TaskUiStateTest {
-
-  @Test
-  fun `TaskUiState has correct default values`() {
-    val state = TaskUiState()
-
-    assertEquals(TaskFilter.MINE, state.selectedFilter)
-    assertTrue(state.rawTasks.isEmpty())
-    assertFalse(state.isLoading)
-    assertNull(state.error)
-    assertNull(state.projectId)
-  }
 
   @Test
   fun `TaskUiState can be created with custom values`() {

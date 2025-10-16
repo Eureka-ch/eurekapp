@@ -1,3 +1,10 @@
+/**
+ * Unit tests for TasksScreen composable
+ *
+ * Tests the main screen functionality and indirectly covers TaskCard.
+ *
+ * @author Assisted by AI for comprehensive test coverage
+ */
 package ch.eureka.eurekapp.ui.tasks
 
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -7,10 +14,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/**
- * Unit tests for TasksScreen composable Tests the main screen functionality and indirectly covers
- * TaskCard
- */
 @RunWith(AndroidJUnit4::class)
 class TasksScreenTest {
 

@@ -47,7 +47,7 @@ class TaskSectionHeaderTest {
     }
 
     // Then
-    composeTestRule.onNodeWithText("$taskCount tâches").assertIsDisplayed()
+    composeTestRule.onNodeWithText("$taskCount tasks").assertIsDisplayed()
   }
 
   @Test
@@ -61,7 +61,7 @@ class TaskSectionHeaderTest {
     }
 
     // Then
-    composeTestRule.onNodeWithText("1 tâche").assertIsDisplayed()
+    composeTestRule.onNodeWithText("1 task").assertIsDisplayed()
   }
 
   @Test
@@ -75,7 +75,7 @@ class TaskSectionHeaderTest {
     }
 
     // Then
-    composeTestRule.onNodeWithText("0 tâche").assertIsDisplayed()
+    composeTestRule.onNodeWithText("0 no task").assertIsDisplayed()
   }
 
   @Test
@@ -89,6 +89,6 @@ class TaskSectionHeaderTest {
     }
 
     // Then
-    composeTestRule.onNodeWithText("$taskCount tâches").assertIsDisplayed()
+    composeTestRule.onNodeWithText("$taskCount tasks").assertIsDisplayed()
   }
 }

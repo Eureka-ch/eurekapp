@@ -19,9 +19,7 @@ object TaskBusinessLogic {
     val timestamp = task.dueDate
     if (timestamp == null) return "Low Priority"
 
-    val now = Date()
-    val dueDate = timestamp.toDate()
-    val diffInDays = (dueDate.time - now.time) / (1000 * 60 * 60 * 24)
+    val diffInDays = TaskDateUtils.getDaysUntilDue(timestamp)
 
     return when {
       diffInDays < 0 -> "Critical Priority" // Overdue
@@ -40,9 +38,7 @@ object TaskBusinessLogic {
   fun formatDueDate(timestamp: Timestamp?): String {
     if (timestamp == null) return "No due date"
 
-    val now = Date()
-    val dueDate = timestamp.toDate()
-    val diffInDays = (dueDate.time - now.time) / (1000 * 60 * 60 * 24)
+    val diffInDays = TaskDateUtils.getDaysUntilDue(timestamp)
 
     return when {
       diffInDays < 0 -> "Overdue"
@@ -51,7 +47,7 @@ object TaskBusinessLogic {
       diffInDays <= 7L -> "Due in $diffInDays days"
       else -> {
         val formatter = SimpleDateFormat("MMM dd", Locale.getDefault())
-        "Due ${formatter.format(dueDate)}"
+        "Due ${formatter.format(timestamp.toDate())}"
       }
     }
   }
@@ -80,12 +76,10 @@ object TaskBusinessLogic {
       tags.add("Assigned")
     }
 
-    // Add tags based on due date status
+    // Add tags based on due date status using TaskDateUtils
     val timestamp = task.dueDate
     if (timestamp != null) {
-      val now = Date()
-      val dueDate = timestamp.toDate()
-      val diffInDays = (dueDate.time - now.time) / (1000 * 60 * 60 * 24)
+      val diffInDays = TaskDateUtils.getDaysUntilDue(timestamp)
 
       when {
         diffInDays < 0 -> tags.add("Overdue")

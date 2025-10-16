@@ -1,3 +1,11 @@
+/**
+ * Tests for TaskActionButtons component
+ *
+ * These tests verify the correct display and interaction behavior of the task action buttons
+ * including create task and auto-assign functionality.
+ *
+ * @author Assisted by AI for comprehensive test coverage
+ */
 package ch.eureka.eurekapp.ui.tasks.components
 
 import androidx.compose.ui.test.assertIsDisplayed

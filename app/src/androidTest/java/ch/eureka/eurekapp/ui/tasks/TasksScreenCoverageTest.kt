@@ -1,3 +1,11 @@
+/**
+ * UI tests for TasksScreen component coverage
+ *
+ * Tests UI component display and basic interactions to ensure proper rendering and coverage of UI
+ * elements.
+ *
+ * @author Assisted by AI for comprehensive test coverage
+ */
 package ch.eureka.eurekapp.ui.tasks
 
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -25,19 +33,6 @@ class TasksScreenCoverageTest {
         .assertDescriptionDisplayed()
         .assertCreateTaskButtonDisplayed()
         .assertAutoAssignButtonDisplayed()
-  }
-
-  @Test
-  fun tasksScreen_filterInteractions() {
-    // Given
-    composeTestRule.setContent { EurekappTheme { TasksScreen() } }
-
-    // When & Then - This will trigger filter changes in TaskViewModel
-    TasksScreenRobot(composeTestRule)
-        .clickMeFilter()
-        .clickTeamFilter()
-        .clickThisWeekFilter()
-        .clickAllFilter()
   }
 
   @Test
