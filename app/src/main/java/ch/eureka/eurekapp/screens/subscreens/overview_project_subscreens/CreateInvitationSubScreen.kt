@@ -123,7 +123,7 @@ fun CreateInvitationSubscreen(
 
                     Row(modifier = Modifier.weight(1f)) {
                         FilledTonalButton(
-                            modifier = Modifier.width(200.dp).height(60.dp).padding(horizontal = 10.dp),
+                            modifier = Modifier.width(190.dp).height(50.dp).padding(horizontal = 15.dp),
                             shape = RoundedCornerShape(7.dp),
                             enabled = !createdInvitation.value,
                             colors = ButtonDefaults.filledTonalButtonColors(
@@ -151,7 +151,7 @@ fun CreateInvitationSubscreen(
                         }
 
                         FilledTonalButton(
-                            modifier = Modifier.width(200.dp).height(60.dp).padding(horizontal = 10.dp),
+                            modifier = Modifier.width(190.dp).height(50.dp).padding(horizontal = 10.dp),
                             shape = RoundedCornerShape(7.dp),
                             enabled = !createdInvitation.value,
                             colors = ButtonDefaults.filledTonalButtonColors(
@@ -174,7 +174,8 @@ fun CreateInvitationSubscreen(
                                 }
                             }
                         ) {
-                            Text("Copy to clipboard", style = Typography.titleMedium, fontWeight = FontWeight(500), color = LightColorScheme.surface)
+                            Text("Copy to clipboard", style = Typography.titleSmall,
+                                fontWeight = FontWeight(500), color = LightColorScheme.surface)
                         }
                     }
 
