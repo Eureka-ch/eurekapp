@@ -18,9 +18,9 @@ import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.screens.IdeasScreen
 import ch.eureka.eurekapp.screens.MeetingsScreen
 import ch.eureka.eurekapp.screens.OverviewProjectsScreen
-import ch.eureka.eurekapp.screens.ProfileScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
 import ch.eureka.eurekapp.screens.TasksScreen
+import ch.eureka.eurekapp.ui.profile.ProfileScreen
 
 abstract class Screen(val title: String)
 
@@ -113,7 +113,7 @@ fun NavigationMenu() {
               composable(MainScreens.ProjectSelectionScreen.title) {
                 ProjectSelectionScreen(navigationController)
               }
-              composable(MainScreens.ProfileScreen.title) { ProfileScreen(navigationController) }
+              composable(MainScreens.ProfileScreen.title) { ProfileScreen() }
               composable(MainScreens.MeetingsScreen.title) { MeetingsScreen(navigationController) }
               composable(MainScreens.IdeasScreen.title) { IdeasScreen(navigationController) }
               composable(MainScreens.OverviewProjectScreen.title) {
