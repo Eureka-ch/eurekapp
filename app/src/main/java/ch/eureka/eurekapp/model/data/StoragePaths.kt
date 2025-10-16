@@ -1,3 +1,6 @@
+/*
+ * Portions of this file were co-authored by Claude Code (Anthropic AI assistant).
+ */
 package ch.eureka.eurekapp.model.data
 
 /**
@@ -8,16 +11,30 @@ package ch.eureka.eurekapp.model.data
  * user files, project-level files, and nested task/meeting attachments.
  *
  * Storage Structure:
+ * - profilePhotos/{userId}.{ext} - User profile photos (public read, owner write only)
  * - users/{userId}/{filename} - User personal files
  * - projects/{projectId}/{filename} - Project-level files
  * - projects/{projectId}/tasks/{taskId}/{filename} - Task attachments
  * - projects/{projectId}/meetings/{meetingId}/{filename} - Meeting attachments
  */
 object StoragePaths {
+  private const val PROFILE_PHOTOS = "profilePhotos"
   private const val USERS = "users"
   private const val PROJECTS = "projects"
   private const val TASKS = "tasks"
   private const val MEETINGS = "meetings"
+
+  /**
+   * Generate storage path for user profile photo.
+   *
+   * Profile photos are stored with the user ID as the filename to enforce the security rule that
+   * only the owner can write to their profile photo.
+   *
+   * @param userId The user ID (this will be the filename)
+   * @param extension The file extension (e.g., "jpg", "png")
+   * @return Storage path: profilePhotos/{userId}.{extension}
+   */
+  fun profilePhotoPath(userId: String, extension: String) = "$PROFILE_PHOTOS/$userId.$extension"
 
   /**
    * Generate storage path for user personal files.

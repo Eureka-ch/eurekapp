@@ -6,6 +6,41 @@ import org.junit.Test
 class StoragePathsTest {
 
   @Test
+  fun profilePhotoPath_generatesCorrectPath() {
+    val userId = "user123"
+    val extension = "jpg"
+
+    val result = StoragePaths.profilePhotoPath(userId, extension)
+
+    assertEquals("profilePhotos/user123.jpg", result)
+  }
+
+  @Test
+  fun profilePhotoPath_handlesVariousExtensions() {
+    val userId = "user456"
+
+    val jpgPath = StoragePaths.profilePhotoPath(userId, "jpg")
+    val pngPath = StoragePaths.profilePhotoPath(userId, "png")
+    val jpegPath = StoragePaths.profilePhotoPath(userId, "jpeg")
+    val webpPath = StoragePaths.profilePhotoPath(userId, "webp")
+
+    assertEquals("profilePhotos/user456.jpg", jpgPath)
+    assertEquals("profilePhotos/user456.png", pngPath)
+    assertEquals("profilePhotos/user456.jpeg", jpegPath)
+    assertEquals("profilePhotos/user456.webp", webpPath)
+  }
+
+  @Test
+  fun profilePhotoPath_handlesLongUserId() {
+    val userId = "very_long_user_id_with_many_characters_123456789"
+    val extension = "jpg"
+
+    val result = StoragePaths.profilePhotoPath(userId, extension)
+
+    assertEquals("profilePhotos/very_long_user_id_with_many_characters_123456789.jpg", result)
+  }
+
+  @Test
   fun userFilePath_generatesCorrectPath() {
     val userId = "user123"
     val filename = "profile.jpg"

@@ -23,3 +23,6 @@ logs/
 firebase-debug.log
 firestore-debug.log
 .firebase/logs/vsce-debug.log
+
+# Firebase rules (deployed via CI)
+firebase/**/*.rules
