@@ -13,3 +13,6 @@ local.properties
 
 # Firebase config
 app/google-services.json
+
+# Firebase rules (deployed via CI)
+firebase/**/*.rules
