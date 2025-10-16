@@ -77,7 +77,7 @@ class TokenEntryViewModelTest {
 
   @Test
   fun init_whenUserHasEmptyDisplayName_shouldUseEmptyString() {
-    every { mockUser.displayName} returns ""
+    every { mockUser.displayName } returns ""
 
     val viewModelEmptyName = TokenEntryViewModel(repository = mockRepository, auth = mockAuth)
 
@@ -223,8 +223,7 @@ class TokenEntryViewModelTest {
     advanceUntilIdle()
 
     assertEquals(
-        "You must be signed in to use an invitation token",
-        viewModel.uiState.value.errorMessage)
+        "You must be signed in to use an invitation token", viewModel.uiState.value.errorMessage)
     assertFalse(viewModel.uiState.value.isLoading)
   }
 
@@ -280,8 +279,7 @@ class TokenEntryViewModelTest {
         Invitation(token = "VALID-TOKEN", projectId = "project_123", isUsed = false)
 
     viewModel.updateToken("VALID-TOKEN")
-    coEvery { mockRepository.getInvitationByToken("VALID-TOKEN") } returns
-        flowOf(validInvitation)
+    coEvery { mockRepository.getInvitationByToken("VALID-TOKEN") } returns flowOf(validInvitation)
     coEvery { mockRepository.markInvitationAsUsed("VALID-TOKEN", "test_user_123") } returns
         Result.success(Unit)
 
@@ -300,10 +298,8 @@ class TokenEntryViewModelTest {
         Invitation(token = "VALID-TOKEN", projectId = "project_123", isUsed = false)
 
     viewModel.updateToken("VALID-TOKEN")
-    coEvery { mockRepository.getInvitationByToken("VALID-TOKEN") } returns
-        flowOf(validInvitation)
-    coEvery { mockRepository.markInvitationAsUsed(any(), any()) } returns
-        Result.success(Unit)
+    coEvery { mockRepository.getInvitationByToken("VALID-TOKEN") } returns flowOf(validInvitation)
+    coEvery { mockRepository.markInvitationAsUsed(any(), any()) } returns Result.success(Unit)
 
     viewModel.validateToken()
     advanceUntilIdle()
@@ -323,8 +319,7 @@ class TokenEntryViewModelTest {
         Invitation(token = "VALID-TOKEN", projectId = "project_123", isUsed = false)
 
     viewModel.updateToken("VALID-TOKEN")
-    coEvery { mockRepository.getInvitationByToken("VALID-TOKEN") } returns
-        flowOf(validInvitation)
+    coEvery { mockRepository.getInvitationByToken("VALID-TOKEN") } returns flowOf(validInvitation)
     coEvery { mockRepository.markInvitationAsUsed("VALID-TOKEN", "test_user_123") } returns
         Result.failure(Exception("Database error"))
 
@@ -342,8 +337,7 @@ class TokenEntryViewModelTest {
         Invitation(token = "VALID-TOKEN", projectId = "project_123", isUsed = false)
 
     viewModel.updateToken("VALID-TOKEN")
-    coEvery { mockRepository.getInvitationByToken("VALID-TOKEN") } returns
-        flowOf(validInvitation)
+    coEvery { mockRepository.getInvitationByToken("VALID-TOKEN") } returns flowOf(validInvitation)
     coEvery { mockRepository.markInvitationAsUsed("VALID-TOKEN", "test_user_123") } returns
         Result.failure(Exception())
 
@@ -361,8 +355,7 @@ class TokenEntryViewModelTest {
   @Test
   fun validateToken_whenRepositoryThrowsException_shouldSetError() = runTest {
     viewModel.updateToken("ERROR-TOKEN")
-    coEvery { mockRepository.getInvitationByToken("ERROR-TOKEN") } throws
-        Exception("Network error")
+    coEvery { mockRepository.getInvitationByToken("ERROR-TOKEN") } throws Exception("Network error")
 
     viewModel.validateToken()
     advanceUntilIdle()
@@ -443,10 +436,8 @@ class TokenEntryViewModelTest {
         Invitation(token = "VALID-TOKEN", projectId = "project_123", isUsed = false)
 
     viewModel.updateToken("VALID-TOKEN")
-    coEvery { mockRepository.getInvitationByToken("VALID-TOKEN") } returns
-        flowOf(validInvitation)
-    coEvery { mockRepository.markInvitationAsUsed(any(), any()) } returns
-        Result.success(Unit)
+    coEvery { mockRepository.getInvitationByToken("VALID-TOKEN") } returns flowOf(validInvitation)
+    coEvery { mockRepository.markInvitationAsUsed(any(), any()) } returns Result.success(Unit)
 
     // Call validate multiple times rapidly (UI prevents this in reality)
     viewModel.validateToken()
@@ -485,8 +476,7 @@ class TokenEntryViewModelTest {
     val validInvitation =
         Invitation(token = "VALID-TOKEN", projectId = "project_123", isUsed = false)
     viewModel.updateToken("VALID-TOKEN")
-    coEvery { mockRepository.getInvitationByToken("VALID-TOKEN") } returns
-        flowOf(validInvitation)
+    coEvery { mockRepository.getInvitationByToken("VALID-TOKEN") } returns flowOf(validInvitation)
     coEvery { mockRepository.markInvitationAsUsed("VALID-TOKEN", "test_user_123") } returns
         Result.success(Unit)
 
@@ -504,8 +494,7 @@ class TokenEntryViewModelTest {
         Invitation(token = "VALID-TOKEN", projectId = "project_123", isUsed = false)
 
     viewModel.updateToken("VALID-TOKEN")
-    coEvery { mockRepository.getInvitationByToken("VALID-TOKEN") } returns
-        flowOf(validInvitation)
+    coEvery { mockRepository.getInvitationByToken("VALID-TOKEN") } returns flowOf(validInvitation)
     coEvery { mockRepository.markInvitationAsUsed("VALID-TOKEN", "test_user_123") } returns
         Result.success(Unit)
 

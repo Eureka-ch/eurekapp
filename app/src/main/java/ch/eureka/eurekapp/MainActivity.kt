@@ -51,9 +51,7 @@ class MainActivity : ComponentActivity() {
   }
 }
 
-/**
- * Navigation state for the authentication flow.
- */
+/** Navigation state for the authentication flow. */
 enum class AuthState {
   SIGNED_OUT,
   AWAITING_TOKEN,

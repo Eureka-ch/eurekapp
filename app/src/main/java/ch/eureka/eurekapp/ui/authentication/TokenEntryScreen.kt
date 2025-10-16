@@ -35,8 +35,8 @@ object TokenEntryScreenTestTags {
 /**
  * Token entry screen for users to enter an invitation token after authentication.
  *
- * This screen provides a simplified interface for entering and validating invitation tokens.
- * Upon successful validation, the user is redirected to the overview screen.
+ * This screen provides a simplified interface for entering and validating invitation tokens. Upon
+ * successful validation, the user is redirected to the overview screen.
  *
  * @param tokenEntryViewModel The ViewModel managing token validation logic.
  * @param onTokenValidated Callback invoked when the token is successfully validated.
@@ -71,9 +71,7 @@ fun TokenEntryScreen(
   ) { padding ->
     Column(
         modifier =
-            Modifier.fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 24.dp, vertical = 32.dp),
+            Modifier.fillMaxSize().padding(padding).padding(horizontal = 24.dp, vertical = 32.dp),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(24.dp)) {
           // Greeting
@@ -149,9 +147,7 @@ fun TokenEntryScreen(
   }
 }
 
-/**
- * Help link for users who need assistance with tokens.
- */
+/** Help link for users who need assistance with tokens. */
 @Composable
 private fun HelpLink(modifier: Modifier = Modifier) {
   val annotatedString = buildAnnotatedString {
@@ -159,8 +155,7 @@ private fun HelpLink(modifier: Modifier = Modifier) {
     pushStringAnnotation(tag = "HELP", annotation = "help")
     withStyle(
         style =
-            SpanStyle(
-                color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)) {
+            SpanStyle(color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)) {
           append("How to get a token")
         }
     pop()
@@ -169,9 +164,12 @@ private fun HelpLink(modifier: Modifier = Modifier) {
   ClickableText(
       text = annotatedString,
       onClick = { offset ->
-        annotatedString.getStringAnnotations(tag = "HELP", start = offset, end = offset).firstOrNull()?.let {
-          // TODO: Navigate to help screen or show help dialog
-        }
+        annotatedString
+            .getStringAnnotations(tag = "HELP", start = offset, end = offset)
+            .firstOrNull()
+            ?.let {
+              // TODO: Navigate to help screen or show help dialog
+            }
       },
       style =
           MaterialTheme.typography.bodyMedium.copy(

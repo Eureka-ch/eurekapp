@@ -2,7 +2,6 @@ package ch.eureka.eurekapp.ui.authentication
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ch.eureka.eurekapp.model.data.invitation.Invitation
 import ch.eureka.eurekapp.model.data.invitation.InvitationRepository
 import ch.eureka.eurekapp.model.data.invitation.InvitationRepositoryProvider
 import com.google.firebase.auth.FirebaseAuth
@@ -49,9 +48,7 @@ class TokenEntryViewModel(
     loadUserName()
   }
 
-  /**
-   * Loads the current user's display name from Firebase Auth.
-   */
+  /** Loads the current user's display name from Firebase Auth. */
   private fun loadUserName() {
     val currentUser = auth.currentUser
     val displayName = currentUser?.displayName ?: "Guest"
@@ -67,9 +64,7 @@ class TokenEntryViewModel(
     _uiState.update { it.copy(token = newToken.trim(), errorMessage = null) }
   }
 
-  /**
-   * Clears any error message.
-   */
+  /** Clears any error message. */
   fun clearError() {
     _uiState.update { it.copy(errorMessage = null) }
   }
@@ -94,9 +89,7 @@ class TokenEntryViewModel(
 
     val currentUser = auth.currentUser
     if (currentUser == null) {
-      _uiState.update {
-        it.copy(errorMessage = "You must be signed in to use an invitation token")
-      }
+      _uiState.update { it.copy(errorMessage = "You must be signed in to use an invitation token") }
       return
     }
 
@@ -109,9 +102,7 @@ class TokenEntryViewModel(
 
         if (invitation == null) {
           _uiState.update {
-            it.copy(
-                isLoading = false,
-                errorMessage = "Invalid token. Please check and try again.")
+            it.copy(isLoading = false, errorMessage = "Invalid token. Please check and try again.")
           }
           return@launch
         }
@@ -135,8 +126,7 @@ class TokenEntryViewModel(
               _uiState.update {
                 it.copy(
                     isLoading = false,
-                    errorMessage =
-                        error.message ?: "Failed to validate token. Please try again.")
+                    errorMessage = error.message ?: "Failed to validate token. Please try again.")
               }
             })
       } catch (e: Exception) {
