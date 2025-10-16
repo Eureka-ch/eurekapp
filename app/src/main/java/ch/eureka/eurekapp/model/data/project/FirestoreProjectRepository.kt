@@ -6,7 +6,6 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -19,8 +18,8 @@ import kotlinx.coroutines.tasks.await
  * Firebase Firestore with real-time updates through Flow-based APIs.
  */
 class FirestoreProjectRepository(
-    private val firestore: FirebaseFirestore = Firebase.firestore,
-    private val auth: FirebaseAuth = Firebase.auth
+    private val firestore: FirebaseFirestore,
+    private val auth: FirebaseAuth
 ) : ProjectRepository {
 
   override fun getProjectById(projectId: String): Flow<Project?> = callbackFlow {

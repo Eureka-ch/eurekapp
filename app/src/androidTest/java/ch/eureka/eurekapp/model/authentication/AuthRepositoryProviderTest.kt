@@ -14,4 +14,11 @@ class AuthRepositoryProviderTest {
     val secondInstance = AuthRepositoryProvider.repository
     TestCase.assertEquals(instance, secondInstance)
   }
+
+  @Test
+  fun getUserLoggedInId() {
+    val instance: AuthRepository = AuthRepositoryProvider.repository
+    val userId = instance.getUserId()
+    assert(userId.isSuccess) // no logged in user
+  }
 }

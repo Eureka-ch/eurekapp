@@ -134,5 +134,7 @@ class CreateProjectScreenTest {
         .performClick()
 
     composeRule.onNodeWithTag(CreateProjectScreenTestTags.CREATE_RPOJECT_BUTTON).performClick()
+
+    Thread.sleep(5000)
   }
 }
