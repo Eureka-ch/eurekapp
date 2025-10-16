@@ -23,7 +23,7 @@ class NavigationMenuTest : TestCase() {
   private val createIdeasScreen = IdeasSpecificScreens.CreateIdeasScreen
 
   private val addMeetingScreen = MeetingsSpecificScreens.AddMeetingScreen
-  private val cameraScreen = MeetingsSpecificScreens.CameraScreen
+  private val cameraScreen = SharedScreens.CameraScreen
   private val audioTranscriptScreen = MeetingsSpecificScreens.AudioTranscriptScreen
 
   @get:Rule val composeTestRule = createComposeRule()
