@@ -25,7 +25,6 @@ import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.navigation.NavigationMenu
 import ch.eureka.eurekapp.resources.C
 import ch.eureka.eurekapp.ui.authentication.SignInScreen
-import ch.eureka.eurekapp.ui.authentication.TokenEntryScreen
 import ch.eureka.eurekapp.ui.theme.EurekappTheme
 import com.google.firebase.auth.FirebaseAuth
 
