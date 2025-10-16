@@ -22,15 +22,7 @@ class TasksScreenTest {
   @Test
   fun tasksScreenRendersWithoutCrashing() {
     composeTestRule.setContent {
-      EurekappTheme { 
-        TasksScreen(
-          onCreateTaskClick = {}, 
-          onAutoAssignClick = {}, 
-          onNavigate = {}
-        ) 
-      }
+      EurekappTheme { TasksScreen(onCreateTaskClick = {}, onAutoAssignClick = {}, onNavigate = {}) }
     }
-    
-    
   }
 }

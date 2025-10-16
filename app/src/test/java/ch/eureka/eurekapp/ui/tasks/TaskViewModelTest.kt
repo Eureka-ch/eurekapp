@@ -7,9 +7,6 @@
  */
 package ch.eureka.eurekapp.ui.tasks
 
-import androidx.lifecycle.viewModelScope
-import ch.eureka.eurekapp.model.data.task.Task
-import ch.eureka.eurekapp.model.data.task.TaskStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
