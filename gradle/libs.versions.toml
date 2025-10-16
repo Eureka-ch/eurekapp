@@ -14,6 +14,7 @@ kaspresso = "1.5.5"
 navigationCompose = "2.8.0"
 robolectric = "4.11.1"
 okhttp = "4.12.0"
+coil = "2.5.0"
 
 # Firebase
 firebaseAuth = "23.0.0"
@@ -109,6 +110,7 @@ androidx-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-p
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutinesPlayServices" }
 guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
