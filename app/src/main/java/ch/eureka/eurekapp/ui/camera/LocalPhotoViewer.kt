@@ -12,8 +12,5 @@ fun LocalPhotoViewer(uri: Uri, modifier: Modifier = Modifier) {
   AndroidView(
       factory = { context -> ImageView(context).apply { setImageURI(uri) } },
       modifier = modifier,
-      update = { imageView ->
-        imageView.setImageURI(null)
-        imageView.setImageURI(uri)
-      })
+      update = { imageView -> imageView.setImageURI(uri) })
 }

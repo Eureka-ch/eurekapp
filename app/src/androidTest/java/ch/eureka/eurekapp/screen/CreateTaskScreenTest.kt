@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
@@ -81,9 +82,10 @@ class CreateTaskScreenTests : TestCase() {
     }
 
     context = InstrumentationRegistry.getInstrumentation().targetContext
+    clearTestPhotos()
   }
 
-  @After open fun tearDown() = runBlocking { FirebaseEmulator.clearFirestoreEmulator() }
+  @After fun tearDown() = runBlocking { FirebaseEmulator.clearFirestoreEmulator() }
 
   private val taskRepository: TaskRepository =
       FirestoreTaskRepository(firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
@@ -165,7 +167,12 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ADD_PHOTO).performClick()
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
 
-    Thread.sleep(5000)
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodesWithTag(CameraScreenTestTags.SAVE_PHOTO)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
 
     // After taking photo, save the photo
     composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).performClick()
@@ -205,7 +212,12 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ADD_PHOTO).performClick()
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
 
-    Thread.sleep(5000)
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodesWithTag(CameraScreenTestTags.SAVE_PHOTO)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
 
     // After taking photo, save the photo
     composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).performClick()
@@ -247,7 +259,12 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ADD_PHOTO).performClick()
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
 
-    Thread.sleep(5000)
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodesWithTag(CameraScreenTestTags.SAVE_PHOTO)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
 
     // After taking photo, save the photo
     composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).performClick()
@@ -287,7 +304,12 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ADD_PHOTO).performClick()
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
 
-    Thread.sleep(5000)
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodesWithTag(CameraScreenTestTags.SAVE_PHOTO)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
 
     // After taking photo, save the photo
     composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).performClick()
@@ -366,6 +388,34 @@ class CreateTaskScreenTests : TestCase() {
     val exists = cursor?.moveToFirst() ?: false
     cursor?.close()
     return exists
+  }
+
+  private fun clearTestPhotos() {
+    val projection = arrayOf(MediaStore.Images.Media._ID)
+    val selection = "${MediaStore.Images.Media.RELATIVE_PATH} = ?"
+    val selectionArgs = arrayOf("Pictures/EurekApp/")
+    val cursor =
+        context.contentResolver.query(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            projection,
+            selection,
+            selectionArgs,
+            null)
+    cursor?.use {
+      val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
+      while (cursor.moveToNext()) {
+        val id = cursor.getLong(idColumn)
+        val uri =
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI.buildUpon()
+                .appendPath(id.toString())
+                .build()
+        try {
+          context.contentResolver.delete(uri, null, null)
+        } catch (e: Exception) {
+          e.printStackTrace()
+        }
+      }
+    }
   }
 
   @Composable

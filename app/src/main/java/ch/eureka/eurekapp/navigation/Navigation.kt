@@ -168,8 +168,10 @@ fun navigationFunction(
         }
     navigationController.navigate(route) {
       launchSingleTop = true
-      restoreState = true
-      popUpTo(route) { saveState = true }
+      popUpTo(route) {
+        saveState = true
+        inclusive = true
+      }
     }
   }
 }

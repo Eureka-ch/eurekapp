@@ -1,8 +1,6 @@
 package ch.eureka.eurekapp.screens
 
-import android.content.ContentResolver
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
@@ -21,6 +21,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -56,6 +57,8 @@ object CreateTaskScreenTestTags {
   const val ERROR_MSG = "error_msg"
 }
 
+const val SAVE_BUTTON_SIZE = 0.7f
+
 /*
 Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
 */
@@ -73,9 +76,9 @@ fun CreateTaskScreen(
     projectId: String,
     navigationController: NavHostController = rememberNavController(),
     createTaskViewModel: CreateTaskViewModel = viewModel(),
-    contentResolver: ContentResolver = LocalContext.current.contentResolver
 ) {
   val createTaskState by createTaskViewModel.uiState.collectAsState()
+  val inputValid by createTaskViewModel.inputValid.collectAsState()
   val errorMsg = createTaskState.errorMsg
   var hasTouchedTitle by remember { mutableStateOf(false) }
   var hasTouchedDescription by remember { mutableStateOf(false) }
@@ -87,12 +90,16 @@ fun CreateTaskScreen(
 
   val context = LocalContext.current
   val coroutineScope = rememberCoroutineScope()
+  val scrollState = rememberScrollState()
 
-  BackHandler(enabled = true) {
-    for (uri in createTaskState.attachmentUris) {
-      coroutineScope.launch { createTaskViewModel.deletePhoto(context, uri) }
+  DisposableEffect(Unit) {
+    onDispose {
+      coroutineScope.launch {
+        for (uri in createTaskState.attachmentUris) {
+          createTaskViewModel.deletePhoto(context, uri)
+        }
+      }
     }
-    navigationFunction(navigationController, true, null)
   }
 
   LaunchedEffect(projectId) { createTaskViewModel.setProjectId(projectId) }
@@ -113,7 +120,11 @@ fun CreateTaskScreen(
   Scaffold(
       content = { paddingValues ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp).padding(paddingValues),
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(16.dp)
+                    .padding(paddingValues)
+                    .verticalScroll(scrollState),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
               // Title Input
               OutlinedTextField(
@@ -173,7 +184,7 @@ fun CreateTaskScreen(
                             }
                           })
                           .testTag(CreateTaskScreenTestTags.DUE_DATE))
-              val dateRegex = Regex("""^\d{2}/\d{2}/\d{4}$""")
+              val dateRegex = createTaskViewModel.dateRegex
               if (createTaskState.dueDate.isNotBlank() &&
                   !dateRegex.matches(createTaskState.dueDate) &&
                   hasTouchedDate) {
@@ -183,7 +194,6 @@ fun CreateTaskScreen(
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.testTag(CreateTaskScreenTestTags.ERROR_MSG))
               }
-
               Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
                 OutlinedButton(
                     onClick = {
@@ -202,12 +212,10 @@ fun CreateTaskScreen(
                       createTaskViewModel.addTask(context)
                       navigationFunction(navigationController, true, null)
                     },
-                    enabled =
-                        createTaskState.title.isNotBlank() &&
-                            createTaskState.description.isNotBlank() &&
-                            dateRegex.matches(createTaskState.dueDate),
+                    enabled = inputValid,
                     modifier =
-                        Modifier.fillMaxWidth(0.7f).testTag(CreateTaskScreenTestTags.SAVE_TASK),
+                        Modifier.fillMaxWidth(SAVE_BUTTON_SIZE)
+                            .testTag(CreateTaskScreenTestTags.SAVE_TASK),
                     colors = EurekaStyles.PrimaryButtonColors()) {
                       Text("Save")
                     }
