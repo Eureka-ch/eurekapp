@@ -5,6 +5,12 @@ import ch.eureka.eurekapp.model.authentication.AuthRepository
 import ch.eureka.eurekapp.model.authentication.AuthRepositoryProvider
 import ch.eureka.eurekapp.model.data.IdGenerator
 
+/**
+ * The viewModel responsible for handling project creation in the app
+ *
+ * @param projectsRepository the project repository to access the projects' database
+ * @param authenticationRepository the authentication repository that handles user authentication
+ */
 class CreateProjectViewModel(
     private val projectsRepository: ProjectRepository = ProjectRepositoryProvider.repository,
     private val authenticationRepository: AuthRepository = AuthRepositoryProvider.repository

@@ -21,6 +21,7 @@ import ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens.Create
 import com.google.firebase.auth.FirebaseUser
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
@@ -31,11 +32,11 @@ class CreateProjectScreenTest : TestCase() {
 
   class MockedProjectsRepository : ProjectRepository {
     override fun getProjectById(projectId: String): Flow<Project?> {
-      TODO("Not yet implemented")
+      return flow { null }
     }
 
     override fun getProjectsForCurrentUser(skipCache: Boolean): Flow<List<Project>> {
-      TODO("Not yet implemented")
+      return flow { null }
     }
 
     override suspend fun createProject(
@@ -85,7 +86,7 @@ class CreateProjectScreenTest : TestCase() {
     }
 
     override fun signOut(): Result<Unit> {
-      TODO("Not yet implemented")
+      return Result.success(Unit)
     }
 
     override fun getUserId(): Result<String?> {
@@ -218,8 +219,6 @@ class CreateProjectScreenTest : TestCase() {
       composeRule.onNodeWithTag(CreateProjectScreenTestTags.CREATE_RPOJECT_BUTTON).performClick()
 
       composeRule.waitForIdle()
-
-      Thread.sleep(5000)
       assert(createdProject)
     }
   }
