@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.model.data.invitation
 
+import android.util.Log
 import ch.eureka.eurekapp.model.data.FirestorePaths
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore

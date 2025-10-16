@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.Color
 object EColors {
 
   // Brand colors from Figma templates
-  private val PrimaryRed = Color(0xFFE83E3E) // Exact red from Figma header
+  val PrimaryRed = Color(0xFFE83E3E) // Exact red from Figma header
   private val DarkPrimaryRed = Color(0xFFB71C1C) // Darker variant for dark theme
   private val SecondaryOrange = Color(0xFFFF9500) // Orange for warnings/meetings
   private val TertiaryGreen = Color(0xFF22C55E) // Green for success/tasks

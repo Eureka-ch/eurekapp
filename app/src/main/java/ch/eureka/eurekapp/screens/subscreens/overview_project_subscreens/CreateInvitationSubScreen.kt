@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.screens.subscreens.overview_project_subscreens
 
+import android.graphics.Paint
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -18,9 +20,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -46,21 +50,37 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.model.data.IdGenerator
+import ch.eureka.eurekapp.model.data.invitation.CreateInvitationViewModel
+import ch.eureka.eurekapp.model.data.invitation.Invitation
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.GrayTextColor2
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.LightingBlue
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.PrimaryRed
 import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.ui.theme.Typography
 import ch.eureka.eurekapp.utils.Utils.convertMillisToDate
+import kotlinx.coroutines.launch
 
 @Composable
-fun CreateInvitationSubscreens(onInvitationCreate: () -> Unit) {
+fun CreateInvitationSubscreen(
+    projectId: String,
+    createInvitationViewModel: CreateInvitationViewModel = viewModel(),
+    onInvitationCreate: () -> Unit
+    ) {
   val scrollState = rememberScrollState()
+
+  val createInvitationToken = remember { mutableStateOf<Invitation?>(null) }
+  val createdInvitation = remember { mutableStateOf<Boolean>(false) }
+
+  val errorText = remember { mutableStateOf<String>("") }
   Column(
       modifier = Modifier.fillMaxSize().background(color = LightColorScheme.background),
       horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.SpaceEvenly) {
-        Column(modifier = Modifier.padding(vertical = 2.dp, horizontal = 10.dp)) {
+      verticalArrangement = Arrangement.Top) {
+        Column(modifier = Modifier.padding(vertical = 5.dp, horizontal = 10.dp).weight(2f)) {
           Text(
               text = "Create Invitation Token",
               style = Typography.titleLarge,
@@ -70,25 +90,100 @@ fun CreateInvitationSubscreens(onInvitationCreate: () -> Unit) {
               style = Typography.titleMedium,
               color = GrayTextColor2)
         }
-        // project creation
-        Surface(
-            modifier =
-                Modifier.border(
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.weight(8f)
+        ){
+            // project creation
+            Surface(
+                modifier =
+                    Modifier.border(
                         border = BorderStroke(width = 1.dp, color = BorderGrayColor),
                         shape = RoundedCornerShape(16.dp))
-                    .fillMaxWidth(0.95f)
-                    .fillMaxHeight(0.9f),
-            shadowElevation = 3.dp,
-            color = Color.White,
-            shape = RoundedCornerShape(16.dp)) {
-              Column(
-                  modifier =
-                      Modifier.padding(vertical = 5.dp).fillMaxWidth().verticalScroll(scrollState),
-                  horizontalAlignment = Alignment.CenterHorizontally,
-                  verticalArrangement = Arrangement.Top) {
-                    Row() {}
-                  }
+                        .fillMaxWidth(0.95f)
+                        .fillMaxHeight(0.6f),
+                shadowElevation = 3.dp,
+                color = Color.White,
+                shape = RoundedCornerShape(16.dp)) {
+                Column(
+                    modifier =
+                        Modifier.padding(vertical = 5.dp).fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center) {
+
+                    Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically){
+                        if(createInvitationToken.value != null){
+                            Text("Invitation token: " + createInvitationToken.value!!.token, textAlign = TextAlign.Center,
+                                style = Typography.titleMedium, fontWeight = FontWeight(500))
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.weight(2f))
+
+                    Row(modifier = Modifier.weight(1f)) {
+                        FilledTonalButton(
+                            modifier = Modifier.width(200.dp).height(60.dp).padding(horizontal = 10.dp),
+                            shape = RoundedCornerShape(7.dp),
+                            enabled = !createdInvitation.value,
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = PrimaryRed
+                            ),
+                            onClick = {
+                                val invitationToCreate = Invitation(
+                                    token = IdGenerator.generateUniqueToken(),
+                                    projectId = projectId,
+                                )
+                                createInvitationViewModel.viewModelScope.launch {
+                                    createInvitationViewModel
+                                        .createInvitation(invitationToCreate,
+                                            onFailureCallback = {
+                                                errorText.value = "Failed to create invitation"
+                                            }, onSuccessCallback = {
+                                                createdInvitation.value = true
+                                                createInvitationToken.value = invitationToCreate
+                                            })
+                                }
+                            }
+                        ) {
+                            Text("Create invitation", style = Typography.titleMedium,
+                                fontWeight = FontWeight(500), color = LightColorScheme.surface)
+                        }
+
+                        FilledTonalButton(
+                            modifier = Modifier.width(200.dp).height(60.dp).padding(horizontal = 10.dp),
+                            shape = RoundedCornerShape(7.dp),
+                            enabled = !createdInvitation.value,
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = PrimaryRed
+                            ),
+                            onClick = {
+                                val invitationToCreate = Invitation(
+                                    token = IdGenerator.generateUniqueToken(),
+                                    projectId = projectId,
+                                )
+                                createInvitationViewModel.viewModelScope.launch {
+                                    createInvitationViewModel
+                                        .createInvitation(invitationToCreate,
+                                            onFailureCallback = {
+                                                errorText.value = "Failed to create invitation"
+                                            }, onSuccessCallback = {
+                                                createdInvitation.value = true
+                                                createInvitationToken.value = invitationToCreate
+                                            })
+                                }
+                            }
+                        ) {
+                            Text("Copy to clipboard", style = Typography.titleMedium, fontWeight = FontWeight(500), color = LightColorScheme.surface)
+                        }
+                    }
+
+                    Row(){
+                        Text(errorText.value)
+                    }
+                }
             }
+        }
       }
 }
 
@@ -106,7 +201,7 @@ private val defaultPopupProperties =
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateProjectTextField(
+fun CreateInvitationTextField(
     title: String,
     textValue: MutableState<String>,
     placeHolderText: String,
@@ -115,19 +210,7 @@ fun CreateProjectTextField(
     errorText: String,
     minLine: Int = 1,
     testTag: String,
-    datePickerButtonTag: String = "",
-    isDatePicker: Boolean = false
 ) {
-  var showDatePicker by remember { mutableStateOf(false) }
-  val datePickerState = rememberDatePickerState()
-
-  val selectedDate =
-      datePickerState.selectedDateMillis?.let {
-        val converted = convertMillisToDate(it)
-        textValue.value = converted
-        isErrorState.value = inputIsError(textValue.value)
-        converted
-      } ?: ""
 
   Column(
       modifier = Modifier.fillMaxWidth(),
@@ -150,20 +233,16 @@ fun CreateProjectTextField(
               Spacer(modifier = Modifier.padding(2.dp))
               OutlinedTextField(
                   minLines = minLine,
-                  singleLine = isDatePicker,
-                  readOnly = isDatePicker,
                   modifier =
                       Modifier.padding(horizontal = 5.dp, vertical = 0.dp)
                           .background(color = LightColorScheme.surface)
                           .fillMaxWidth()
                           .testTag(testTag),
                   shape = textFieldShape,
-                  value = if (!isDatePicker) textValue.value else selectedDate,
+                  value = textValue.value,
                   onValueChange = {
-                    if (!isDatePicker) {
                       textValue.value = it
                       isErrorState.value = inputIsError(it)
-                    }
                   },
                   textStyle = textTypography,
                   placeholder = {
@@ -173,17 +252,6 @@ fun CreateProjectTextField(
                       TextFieldDefaults.outlinedTextFieldColors(
                           focusedBorderColor = GrayTextColor2,
                           unfocusedBorderColor = BorderGrayColor),
-                  trailingIcon = {
-                    if (isDatePicker) {
-                      IconButton(
-                          modifier = Modifier.testTag(datePickerButtonTag),
-                          onClick = { showDatePicker = !showDatePicker }) {
-                            Icon(
-                                imageVector = Icons.Default.DateRange,
-                                contentDescription = "Select date")
-                          }
-                    }
-                  },
                   isError = isErrorState.value)
             }
         Row(
@@ -196,26 +264,4 @@ fun CreateProjectTextField(
               }
             }
       }
-
-  if (showDatePicker) {
-    Popup(
-        onDismissRequest = { showDatePicker = false },
-        alignment = Alignment.Center,
-        properties = defaultPopupProperties) {
-          Box(
-              contentAlignment = Alignment.Center,
-              modifier =
-                  Modifier.fillMaxWidth(0.85f)
-                      .shadow(elevation = 4.dp)
-                      .background(LightColorScheme.surface)) {
-                DatePicker(
-                    colors =
-                        DatePickerDefaults.colors(
-                            selectedDayContainerColor = LightingBlue,
-                            todayDateBorderColor = LightingBlue),
-                    state = datePickerState,
-                    showModeToggle = false)
-              }
-        }
-  }
 }
