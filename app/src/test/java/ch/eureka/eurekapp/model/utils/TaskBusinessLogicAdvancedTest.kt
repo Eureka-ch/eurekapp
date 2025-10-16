@@ -76,7 +76,8 @@ class TaskBusinessLogicAdvancedTest {
   @Test
   fun `formatDueDate returns Overdue for past dates`() {
     val yesterday = Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000)
-    val task = Task(taskID = "test", projectId = "proj", title = "Test", dueDate = Timestamp(yesterday))
+    val task =
+        Task(taskID = "test", projectId = "proj", title = "Test", dueDate = Timestamp(yesterday))
     val formatted = TaskBusinessLogic.formatDueDate(task)
     assertEquals("Overdue", formatted)
   }
@@ -127,11 +128,7 @@ class TaskBusinessLogicAdvancedTest {
   @Test
   fun `isValidTask validates required fields correctly`() {
     // Valid task
-    val validTask = Task(
-        taskID = "task-123",
-        title = "Valid Task",
-        projectId = "project-123"
-    )
+    val validTask = Task(taskID = "task-123", title = "Valid Task", projectId = "project-123")
     assertTrue(TaskBusinessLogic.isValidTask(validTask))
 
     // Invalid: empty taskID

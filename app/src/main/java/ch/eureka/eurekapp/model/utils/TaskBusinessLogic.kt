@@ -3,7 +3,6 @@ package ch.eureka.eurekapp.model.utils
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.task.getDaysUntilDue
-import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.*
 
