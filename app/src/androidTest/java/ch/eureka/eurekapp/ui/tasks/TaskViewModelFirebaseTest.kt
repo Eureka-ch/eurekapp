@@ -25,7 +25,8 @@ import org.junit.runner.RunWith
  * Integration tests for TaskViewModel with Firebase Emulator
  *
  * These tests verify the ViewModel works correctly with real Firebase data. Requires Firebase
- * emulator to be running: firebase emulators:start
+ * emulator to be running: firebase emulators:start Firebase configuration fixed: project ID now
+ * matches google-services.json
  *
  * @author Assisted by AI for comprehensive test coverage
  */
