@@ -104,12 +104,13 @@ private val titleToScreensMap =
         TaskSpecificScreens.AutoTaskAssignmentScreen.title to
             TaskSpecificScreens.AutoTaskAssignmentScreen,
         TaskSpecificScreens.TaskDependencePage.title to TaskSpecificScreens.TaskDependencePage,
+        TaskSpecificScreens.CreateTaskScreen.title to TaskSpecificScreens.CreateTaskScreen,
 
         // Ideas Specific Screens
         IdeasSpecificScreens.CreateIdeasScreen.title to IdeasSpecificScreens.CreateIdeasScreen,
 
         // Meetings specific screens
-        MeetingsSpecificScreens.CameraScreen.title to MeetingsSpecificScreens.CameraScreen,
+        SharedScreens.CameraScreen.title to SharedScreens.CameraScreen,
         MeetingsSpecificScreens.AddMeetingScreen.title to MeetingsSpecificScreens.AddMeetingScreen,
         MeetingsSpecificScreens.AudioTranscriptScreen.title to
             MeetingsSpecificScreens.AudioTranscriptScreen,
