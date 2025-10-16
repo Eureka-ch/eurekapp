@@ -156,9 +156,7 @@ fun NavigationMenu() {
               } // TODO : change this after "Create project" is implemented
               composable(MainScreens.ProfileScreen.title) { ProfileScreen() }
               composable(MainScreens.IdeasScreen.title) { IdeasScreen(navigationController) }
-              composable(MainScreens.OverviewProjectScreen.title) {
-                OverviewProjectsScreen()
-              }
+              composable(MainScreens.OverviewProjectScreen.title) { OverviewProjectsScreen() }
               composable(MainScreens.TasksScreen.title) { TasksScreen(navigationController) }
               composable("${TaskSpecificScreens.CreateTaskScreen.title}/{projectId}") {
                   backStackEntry ->
