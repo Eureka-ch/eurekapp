@@ -34,6 +34,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -74,6 +75,10 @@ fun CreateInvitationSubscreen(
 
   val createInvitationToken = remember { mutableStateOf<Invitation?>(null) }
   val createdInvitation = remember { mutableStateOf<Boolean>(false) }
+
+  val copyToClipBoard = remember {derivedStateOf {
+      createdInvitation.value
+  }}
 
   val errorText = remember { mutableStateOf<String>("") }
   Column(
@@ -123,7 +128,7 @@ fun CreateInvitationSubscreen(
 
                     Row(modifier = Modifier.weight(1f)) {
                         FilledTonalButton(
-                            modifier = Modifier.width(190.dp).height(50.dp).padding(horizontal = 15.dp),
+                            modifier = Modifier.width(190.dp).height(80.dp).padding(horizontal = 15.dp),
                             shape = RoundedCornerShape(7.dp),
                             enabled = !createdInvitation.value,
                             colors = ButtonDefaults.filledTonalButtonColors(
@@ -151,9 +156,9 @@ fun CreateInvitationSubscreen(
                         }
 
                         FilledTonalButton(
-                            modifier = Modifier.width(190.dp).height(50.dp).padding(horizontal = 10.dp),
+                            modifier = Modifier.width(190.dp).height(80.dp).padding(horizontal = 10.dp),
                             shape = RoundedCornerShape(7.dp),
-                            enabled = !createdInvitation.value,
+                            enabled = copyToClipBoard.value,
                             colors = ButtonDefaults.filledTonalButtonColors(
                                 containerColor = PrimaryRed
                             ),
