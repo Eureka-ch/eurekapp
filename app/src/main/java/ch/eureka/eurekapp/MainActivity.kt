@@ -28,6 +28,7 @@ import ch.eureka.eurekapp.navigation.NavigationMenu
 import ch.eureka.eurekapp.resources.C
 import ch.eureka.eurekapp.screens.PhotoScreen
 import ch.eureka.eurekapp.ui.authentication.SignInScreen
+import ch.eureka.eurekapp.ui.authentication.TokenEntryScreen
 import ch.eureka.eurekapp.ui.theme.EurekappTheme
 import com.google.firebase.auth.FirebaseAuth
 
@@ -50,16 +51,34 @@ class MainActivity : ComponentActivity() {
   }
 }
 
+/**
+ * Navigation state for the authentication flow.
+ */
+enum class AuthState {
+  SIGNED_OUT,
+  AWAITING_TOKEN,
+  AUTHENTICATED
+}
+
 @Composable
 fun Eurekapp(
     context: Context = LocalContext.current,
     credentialManager: CredentialManager = CredentialManager.create(context),
 ) {
-  var signedIn by remember { mutableStateOf(false) }
-  if (!signedIn) {
-    SignInScreen(credentialManager = credentialManager, onSignedIn = { signedIn = true })
-  } else {
-    NavigationMenu()
+  var authState by remember { mutableStateOf(AuthState.SIGNED_OUT) }
+
+  when (authState) {
+    AuthState.SIGNED_OUT -> {
+      SignInScreen(
+          credentialManager = credentialManager,
+          onSignedIn = { authState = AuthState.AWAITING_TOKEN })
+    }
+    AuthState.AWAITING_TOKEN -> {
+      TokenEntryScreen(onTokenValidated = { authState = AuthState.AUTHENTICATED })
+    }
+    AuthState.AUTHENTICATED -> {
+      NavigationMenu()
+    }
   }
 }
 
