@@ -90,7 +90,7 @@ class MockInvitationRepository : InvitationRepository {
     markInvitationAsUsedCalls.add(Pair(token, userId))
 
     if (shouldThrowException) {
-      throw exceptionToThrow
+      return Result.failure(exceptionToThrow)
     }
 
     if (shouldFailMarkAsUsed) {
