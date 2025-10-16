@@ -7,23 +7,89 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import ch.eureka.eurekapp.model.authentication.AuthRepositoryFirebase
+import androidx.credentials.Credential
+import ch.eureka.eurekapp.model.authentication.AuthRepository
 import ch.eureka.eurekapp.model.data.project.CreateProjectViewModel
-import ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository
+import ch.eureka.eurekapp.model.data.project.Member
+import ch.eureka.eurekapp.model.data.project.Project
+import ch.eureka.eurekapp.model.data.project.ProjectRepository
+import ch.eureka.eurekapp.model.data.project.ProjectRole
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens.CreateProjectScreen
 import ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens.CreateProjectScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
+import com.google.firebase.auth.FirebaseUser
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.tasks.await
-import org.junit.After
-import org.junit.Before
+import kotlinx.coroutines.flow.Flow
 import org.junit.Rule
 import org.junit.Test
 
 class CreateProjectScreenTest : TestCase() {
   @get:Rule val composeRule = createComposeRule()
+
+  class MockedProjectsRepository : ProjectRepository {
+    override fun getProjectById(projectId: String): Flow<Project?> {
+      TODO("Not yet implemented")
+    }
+
+    override fun getProjectsForCurrentUser(skipCache: Boolean): Flow<List<Project>> {
+      TODO("Not yet implemented")
+    }
+
+    override suspend fun createProject(
+        project: Project,
+        creatorId: String,
+        creatorRole: ProjectRole
+    ): Result<String> {
+      return Result.success(project.projectId)
+    }
+
+    override suspend fun updateProject(project: Project): Result<Unit> {
+      TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteProject(projectId: String): Result<Unit> {
+      TODO("Not yet implemented")
+    }
+
+    override fun getMembers(projectId: String): Flow<List<Member>> {
+      TODO("Not yet implemented")
+    }
+
+    override suspend fun addMember(
+        projectId: String,
+        userId: String,
+        role: ProjectRole
+    ): Result<Unit> {
+      TODO("Not yet implemented")
+    }
+
+    override suspend fun removeMember(projectId: String, userId: String): Result<Unit> {
+      TODO("Not yet implemented")
+    }
+
+    override suspend fun updateMemberRole(
+        projectId: String,
+        userId: String,
+        role: ProjectRole
+    ): Result<Unit> {
+      TODO("Not yet implemented")
+    }
+  }
+
+  class MockedAuthRepositoryFirebase : AuthRepository {
+    override suspend fun signInWithGoogle(credential: Credential): Result<FirebaseUser> {
+      TODO("Not yet implemented")
+    }
+
+    override fun signOut(): Result<Unit> {
+      TODO("Not yet implemented")
+    }
+
+    override fun getUserId(): Result<String?> {
+      return Result.success("ilias-id")
+    }
+  }
 
   @Test
   fun testTextInputFieldsInCreateProjectScreenTest() {
@@ -95,32 +161,14 @@ class CreateProjectScreenTest : TestCase() {
     composeRule.waitForIdle()
   }
 
-  @Before
-  fun setup() = runBlocking {
-    if (!FirebaseEmulator.isRunning) {
-      throw IllegalStateException("Firebase Emulator must be running for tests")
-    }
-
-    // Clear first before signing in
-    FirebaseEmulator.clearFirestoreEmulator()
-    // Sign in anonymously first to ensure auth is established before clearing data
-    val authResult = FirebaseEmulator.auth.signInAnonymously().await()
-    // Verify auth state is properly set
-    if (FirebaseEmulator.auth.currentUser == null) {
-      throw IllegalStateException("Auth state not properly established after sign-in")
-    }
-  }
-
-  @After open fun tearDown() = runBlocking { FirebaseEmulator.clearFirestoreEmulator() }
-
   @Test
   fun createProjectWorks() {
 
     val firestore = FirebaseEmulator.firestore
-    val auth = FirebaseEmulator.auth
-    val firebaseProjectsRepository = FirestoreProjectRepository(firestore = firestore, auth = auth)
+    val auth = MockedAuthRepositoryFirebase()
+    val firebaseProjectsRepository = MockedProjectsRepository()
 
-    val authRepository = AuthRepositoryFirebase(auth = auth)
+    val authRepository = auth
 
     val createProjectScreenViewModel =
         CreateProjectViewModel(

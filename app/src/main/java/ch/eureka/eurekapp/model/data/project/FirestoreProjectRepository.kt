@@ -156,8 +156,4 @@ class FirestoreProjectRepository(
         .update("role", role.name)
         .await()
   }
-
-  override suspend fun getNewProjectId(): Result<String> = runCatching {
-    firestore.collection(FirestorePaths.PROJECTS).document().id
-  }
 }

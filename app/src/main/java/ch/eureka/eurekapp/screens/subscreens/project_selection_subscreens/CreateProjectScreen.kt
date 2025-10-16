@@ -307,7 +307,7 @@ fun CreateProjectScreen(
                                       (Utils.stringIsEmptyOrBlank(endDate.value) ||
                                           Utils.isDateParseableToStandardAppPattern(
                                               endDate.value))) {
-                                    if (newId != null && currentUserId != null) {
+                                    if (currentUserId != null) {
                                       val projectToAdd =
                                           Project(
                                               projectId = newId,

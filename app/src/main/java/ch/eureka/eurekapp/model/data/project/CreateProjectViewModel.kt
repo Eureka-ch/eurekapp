@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.model.data.project
 import androidx.lifecycle.ViewModel
 import ch.eureka.eurekapp.model.authentication.AuthRepository
 import ch.eureka.eurekapp.model.authentication.AuthRepositoryProvider
+import ch.eureka.eurekapp.model.data.IdGenerator
 
 class CreateProjectViewModel(
     private val projectsRepository: ProjectRepository = ProjectRepositoryProvider.repository,
@@ -25,7 +26,7 @@ class CreateProjectViewModel(
     return authenticationRepository.getUserId().getOrNull()
   }
 
-  suspend fun getNewProjectId(): String? {
-    return projectsRepository.getNewProjectId().getOrNull()
+  suspend fun getNewProjectId(): String {
+    return IdGenerator.generateProjectId()
   }
 }
