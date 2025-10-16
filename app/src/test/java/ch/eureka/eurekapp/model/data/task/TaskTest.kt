@@ -439,8 +439,6 @@ class TaskTest {
     assertEquals(14L, result)
   }
 
-
-
   @Test
   fun determinePriority_withBoundaryOneDay_returnsHighPriority() {
     val now = Timestamp.now()
