@@ -13,10 +13,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.authentication.AuthRepository
 import ch.eureka.eurekapp.model.authentication.AuthRepositoryProvider
+import ch.eureka.eurekapp.model.data.user.User
+import ch.eureka.eurekapp.model.data.user.UserRepository
+import ch.eureka.eurekapp.model.data.user.UserRepositoryProvider
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -39,9 +44,12 @@ data class AuthUIState(
  * ViewModel for the SignIn view.
  *
  * @property repository The repository used to perform authentication operations.
+ * @property userRepository The repository used to save user profile data.
  */
-class SignInViewModel(private val repository: AuthRepository = AuthRepositoryProvider.repository) :
-    ViewModel() {
+class SignInViewModel(
+    private val repository: AuthRepository = AuthRepositoryProvider.repository,
+    private val userRepository: UserRepository = UserRepositoryProvider.repository
+) : ViewModel() {
 
   private val _uiState = MutableStateFlow(AuthUIState())
   val uiState: StateFlow<AuthUIState> = _uiState
@@ -114,9 +122,43 @@ class SignInViewModel(private val repository: AuthRepository = AuthRepositoryPro
         val credential = getCredential(context, signInRequest, credentialManager)
 
         // Pass the credential to the repository
-        repository.signInWithGoogle(credential).fold({ user ->
-          _uiState.update {
-            it.copy(isLoading = false, user = user, errorMsg = null, signedOut = false)
+        repository.signInWithGoogle(credential).fold({ firebaseUser ->
+          viewModelScope.launch {
+            // Check if user already exists in database
+            val existingUser = userRepository.getUserById(firebaseUser.uid).firstOrNull()
+
+            val userToSave =
+                existingUser?.copy(
+                    photoUrl = firebaseUser.photoUrl?.toString() ?: existingUser.photoUrl,
+                    lastActive = Timestamp.now())
+                    ?: User(
+                        uid = firebaseUser.uid,
+                        displayName = firebaseUser.displayName ?: "",
+                        email = firebaseUser.email ?: "",
+                        photoUrl = firebaseUser.photoUrl?.toString() ?: "",
+                        lastActive = Timestamp.now())
+
+            userRepository
+                .saveUser(userToSave)
+                .fold(
+                    onSuccess = {
+                      _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            user = firebaseUser,
+                            errorMsg = null,
+                            signedOut = false)
+                      }
+                    },
+                    onFailure = { error ->
+                      _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMsg = "Failed to save user data: ${error.localizedMessage}",
+                            signedOut = true,
+                            user = null)
+                      }
+                    })
           }
         }) { failure ->
           _uiState.update {
