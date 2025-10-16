@@ -1,6 +1,7 @@
 package ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -104,7 +105,8 @@ fun CreateProjectScreen(
     createProjectViewModel: CreateProjectViewModel = viewModel(),
     startDate: MutableState<String> = remember { mutableStateOf<String>("") },
     // for injecting it during testing,
-    onProjectCreated: () -> Unit = {}
+    onProjectCreated: () -> Unit = {},
+    scrollState: ScrollState = rememberScrollState()
 ) {
   val projectName = remember { mutableStateOf<String>("") }
   val projectNameError = remember { mutableStateOf<Boolean>(false) }
@@ -123,8 +125,6 @@ fun CreateProjectScreen(
   val linkGithubRepository = remember { mutableStateOf<Boolean>(false) }
 
   val githubUrl = remember { mutableStateOf<String>("") }
-
-  val scrollState = rememberScrollState()
 
   var failedToCreateProjectText by remember { mutableStateOf<String>("") }
 

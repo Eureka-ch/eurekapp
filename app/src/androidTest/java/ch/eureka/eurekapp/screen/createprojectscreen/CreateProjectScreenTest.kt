@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.screen.createprojectscreen
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
@@ -176,11 +177,13 @@ class CreateProjectScreenTest : TestCase() {
 
       var createdProject = false
 
+      val scrollState = ScrollState(0)
       composeRule.setContent {
         CreateProjectScreen(
             createProjectViewModel = createProjectScreenViewModel,
             startDate = startDateInjectedState,
-            onProjectCreated = { createdProject = true })
+            onProjectCreated = { createdProject = true },
+            scrollState = scrollState)
       }
 
       composeRule
@@ -205,6 +208,12 @@ class CreateProjectScreenTest : TestCase() {
       composeRule
           .onNodeWithTag(CreateProjectScreenTestTags.createProjectStatusTestTag(ProjectStatus.OPEN))
           .performClick()
+
+      composeRule.runOnIdle {
+        runBlocking {
+          scrollState.scrollTo(scrollState.maxValue)
+        } // set scroll position to 300 pixels
+      }
 
       composeRule.onNodeWithTag(CreateProjectScreenTestTags.CREATE_RPOJECT_BUTTON).performClick()
 
