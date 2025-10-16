@@ -7,8 +7,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.screens.IdeasScreenTestTags
-import ch.eureka.eurekapp.screens.MeetingsScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
+import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.ui.profile.ProfileScreenTestTags
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import org.junit.Rule
@@ -23,7 +23,7 @@ class NavigationMenuTest : TestCase() {
   private val createIdeasScreen = IdeasSpecificScreens.CreateIdeasScreen
 
   private val addMeetingScreen = MeetingsSpecificScreens.AddMeetingScreen
-  private val cameraScreen = MeetingsSpecificScreens.CameraScreen
+  private val cameraScreen = SharedScreens.CameraScreen
   private val audioTranscriptScreen = MeetingsSpecificScreens.AudioTranscriptScreen
 
   @get:Rule val composeTestRule = createComposeRule()
@@ -68,6 +68,6 @@ class NavigationMenuTest : TestCase() {
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
 
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON).performClick()
-    composeTestRule.onNodeWithTag(MeetingsScreenTestTags.MEETINGS_SCREEN_TEXT).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_SCREEN).assertIsDisplayed()
   }
 }
