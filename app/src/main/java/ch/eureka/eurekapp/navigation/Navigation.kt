@@ -44,9 +44,9 @@ object MainScreens {
   val TasksScreen = MainScreen("Tasks Screen")
 }
 
-object OverviewProjectSpecificScreens{
-    val CreateInvitationScreen = SubScreen("Create Invitation Screen",
-        MainScreens.OverviewProjectScreen)
+object OverviewProjectSpecificScreens {
+  val CreateInvitationScreen =
+      SubScreen("Create Invitation Screen", MainScreens.OverviewProjectScreen)
 }
 
 object TaskSpecificScreens {
@@ -111,11 +111,9 @@ private val titleToScreensMap =
         // Project selection specific screens
         ProjectSelectionSpecificScreens.CreateProjectScreen.title to
             ProjectSelectionSpecificScreens.CreateProjectScreen,
-        //Overview project specific screens
-       OverviewProjectSpecificScreens.CreateInvitationScreen.title to
-               OverviewProjectSpecificScreens.CreateInvitationScreen
-    )
-
+        // Overview project specific screens
+        OverviewProjectSpecificScreens.CreateInvitationScreen.title to
+            OverviewProjectSpecificScreens.CreateInvitationScreen)
 
 @Composable
 fun NavigationMenu() {

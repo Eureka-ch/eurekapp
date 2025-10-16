@@ -7,7 +7,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.screens.subscreens.overview_project_subscreens.CreateInvitationSubscreen
-import ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens.CreateProjectScreen
 
 object OverviewProjectsScreenTestTags {
   const val OVERVIEW_PROJECTS_SCREEN_TEXT = "OverviewProjectsScreenText"
@@ -19,8 +18,5 @@ fun OverviewProjectsScreen(navigationController: NavHostController = rememberNav
       "Overview Projects Screen",
       modifier = Modifier.testTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT))
   // Camera()
-    CreateInvitationSubscreen(
-        projectId = "KWBupYqndWMhMAlR1AnD",
-        onInvitationCreate = {}
-    )
+  CreateInvitationSubscreen(projectId = "KWBupYqndWMhMAlR1AnD", onInvitationCreate = {})
 }

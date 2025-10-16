@@ -4,14 +4,17 @@ import androidx.lifecycle.ViewModel
 
 class CreateInvitationViewModel(
     val invitationRepository: InvitationRepository = InvitationRepositoryProvider.repository
-): ViewModel() {
+) : ViewModel() {
 
-    suspend fun createInvitation(invitation: Invitation, onSuccessCallback: () -> Unit,
-                                 onFailureCallback: () -> Unit){
-        if(invitationRepository.createInvitation(invitation).isSuccess){
-            onSuccessCallback()
-        }else{
-            onFailureCallback()
-        }
+  suspend fun createInvitation(
+      invitation: Invitation,
+      onSuccessCallback: () -> Unit,
+      onFailureCallback: () -> Unit
+  ) {
+    if (invitationRepository.createInvitation(invitation).isSuccess) {
+      onSuccessCallback()
+    } else {
+      onFailureCallback()
     }
+  }
 }

@@ -14,45 +14,37 @@ import org.junit.Rule
 import org.junit.Test
 
 class CreateProjectScreenTest : TestCase() {
-    @get:Rule val composeRule = createComposeRule()
+  @get:Rule val composeRule = createComposeRule()
 
-    class MockInvitationRepository: InvitationRepository {
-        override fun getInvitationByToken(token: String): Flow<Invitation?> {
-            TODO("Not yet implemented")
-        }
-
-        override fun getProjectInvitations(projectId: String): Flow<List<Invitation>> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun createInvitation(invitation: Invitation): Result<Unit> {
-            return Result.success(Unit)
-        }
-
-        override suspend fun markInvitationAsUsed(
-            token: String,
-            userId: String
-        ): Result<Unit> {
-            TODO("Not yet implemented")
-        }
-
+  class MockInvitationRepository : InvitationRepository {
+    override fun getInvitationByToken(token: String): Flow<Invitation?> {
+      TODO("Not yet implemented")
     }
 
-
-    @Test
-    fun testInvitationUI(){
-        runBlocking {
-            composeRule.setContent {
-                CreateInvitationSubscreen("kddjfdshf") {}
-            }
-
-            composeRule.onNodeWithTag(CreateInvitationSubScreen.CREATE_INVITATION_BUTTON).performClick()
-
-            Thread.sleep(5000)
-            composeRule.waitForIdle()
-
-            composeRule.onNodeWithTag(CreateInvitationSubScreen.COPY_INVITATION_BUTTON).performClick()
-        }
-
+    override fun getProjectInvitations(projectId: String): Flow<List<Invitation>> {
+      TODO("Not yet implemented")
     }
+
+    override suspend fun createInvitation(invitation: Invitation): Result<Unit> {
+      return Result.success(Unit)
+    }
+
+    override suspend fun markInvitationAsUsed(token: String, userId: String): Result<Unit> {
+      TODO("Not yet implemented")
+    }
+  }
+
+  @Test
+  fun testInvitationUI() {
+    runBlocking {
+      composeRule.setContent { CreateInvitationSubscreen("kddjfdshf") {} }
+
+      composeRule.onNodeWithTag(CreateInvitationSubScreen.CREATE_INVITATION_BUTTON).performClick()
+
+      Thread.sleep(5000)
+      composeRule.waitForIdle()
+
+      composeRule.onNodeWithTag(CreateInvitationSubScreen.COPY_INVITATION_BUTTON).performClick()
+    }
+  }
 }
