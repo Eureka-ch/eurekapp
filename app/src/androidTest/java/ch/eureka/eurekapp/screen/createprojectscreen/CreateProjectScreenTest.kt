@@ -14,10 +14,15 @@ import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens.CreateProjectScreen
 import ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens.CreateProjectScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
+import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
+import org.junit.After
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class CreateProjectScreenTest {
+class CreateProjectScreenTest : TestCase() {
   @get:Rule val composeRule = createComposeRule()
 
   @Test
@@ -90,8 +95,27 @@ class CreateProjectScreenTest {
     composeRule.waitForIdle()
   }
 
+  @Before
+  fun setup() = runBlocking {
+    if (!FirebaseEmulator.isRunning) {
+      throw IllegalStateException("Firebase Emulator must be running for tests")
+    }
+
+    // Clear first before signing in
+    FirebaseEmulator.clearFirestoreEmulator()
+    // Sign in anonymously first to ensure auth is established before clearing data
+    val authResult = FirebaseEmulator.auth.signInAnonymously().await()
+    // Verify auth state is properly set
+    if (FirebaseEmulator.auth.currentUser == null) {
+      throw IllegalStateException("Auth state not properly established after sign-in")
+    }
+  }
+
+  @After open fun tearDown() = runBlocking { FirebaseEmulator.clearFirestoreEmulator() }
+
   @Test
   fun createProjectWorks() {
+
     val firestore = FirebaseEmulator.firestore
     val auth = FirebaseEmulator.auth
     val firebaseProjectsRepository = FirestoreProjectRepository(firestore = firestore, auth = auth)
@@ -105,9 +129,13 @@ class CreateProjectScreenTest {
 
     val startDateInjectedState = mutableStateOf<String>("24/12/2007")
 
+    var createdProject = false
+
     composeRule.setContent {
       CreateProjectScreen(
-          createProjectViewModel = createProjectScreenViewModel, startDate = startDateInjectedState)
+          createProjectViewModel = createProjectScreenViewModel,
+          startDate = startDateInjectedState,
+          onProjectCreated = { createdProject = true })
     }
 
     composeRule
@@ -136,5 +164,6 @@ class CreateProjectScreenTest {
     composeRule.onNodeWithTag(CreateProjectScreenTestTags.CREATE_RPOJECT_BUTTON).performClick()
 
     Thread.sleep(5000)
+    assert(createdProject == true)
   }
 }
