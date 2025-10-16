@@ -9,11 +9,23 @@ package ch.eureka.eurekapp.ui.tasks
 
 import ch.eureka.eurekapp.model.data.task.Task
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TaskUiStateTest {
+
+  @Test
+  fun `TaskUiState has correct default values`() {
+    val state = TaskUiState()
+
+    assertEquals(TaskFilter.MINE, state.selectedFilter)
+    assertTrue(state.rawTasks.isEmpty())
+    assertFalse(state.isLoading)
+    assertNull(state.error)
+    assertNull(state.projectId)
+  }
 
   @Test
   fun `TaskUiState can be created with custom values`() {

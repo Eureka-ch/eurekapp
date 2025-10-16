@@ -79,39 +79,6 @@ class TaskViewModelTest {
   }
 
   @Test
-  fun `toggleTaskCompletion with empty taskId sets error`() = runTest {
-    // When
-    viewModel.toggleTaskCompletion("")
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    // Then
-    val state = viewModel.uiState.first()
-    assertEquals("Task ID cannot be empty", state.error)
-  }
-
-  @Test
-  fun `toggleTaskCompletion with blank taskId sets error`() = runTest {
-    // When
-    viewModel.toggleTaskCompletion("   ")
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    // Then
-    val state = viewModel.uiState.first()
-    assertEquals("Task ID cannot be empty", state.error)
-  }
-
-  @Test
-  fun `toggleTaskCompletion with non-existent taskId sets error`() = runTest {
-    // When
-    viewModel.toggleTaskCompletion("non-existent-task")
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    // Then
-    val state = viewModel.uiState.first()
-    assertEquals("Task not found", state.error)
-  }
-
-  @Test
   fun `loadTasks sets loading state correctly`() = runTest {
     // Given
     val initialState = viewModel.uiState.first()

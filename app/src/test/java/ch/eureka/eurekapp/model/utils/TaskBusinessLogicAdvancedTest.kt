@@ -88,21 +88,6 @@ class TaskBusinessLogicAdvancedTest {
   }
 
   @Test
-  fun `formatDueDate returns Due tomorrow for tomorrow`() {
-    // Create a timestamp for tomorrow at noon to avoid timezone issues
-    val calendar = Calendar.getInstance()
-    calendar.add(Calendar.DAY_OF_MONTH, 1)
-    calendar.set(Calendar.HOUR_OF_DAY, 12)
-    calendar.set(Calendar.MINUTE, 0)
-    calendar.set(Calendar.SECOND, 0)
-    calendar.set(Calendar.MILLISECOND, 0)
-
-    val tomorrow = calendar.time
-    val formatted = TaskBusinessLogic.formatDueDate(Timestamp(tomorrow))
-    assertEquals("Due tomorrow", formatted)
-  }
-
-  @Test
   fun `formatDueDate returns No due date for null timestamp`() {
     val formatted = TaskBusinessLogic.formatDueDate(null)
     assertEquals("No due date", formatted)

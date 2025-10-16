@@ -8,6 +8,7 @@
  */
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.utils.TaskBusinessLogic
 import com.google.firebase.Timestamp
 import java.util.*
 import org.junit.Assert.assertFalse
@@ -29,7 +30,7 @@ class TaskValidationTest {
             dueDate = Timestamp(Date()),
             projectId = "project-123")
 
-    assertTrue(isValidTask(task))
+    assertTrue(TaskBusinessLogic.isValidTask(task))
   }
 
   @Test
@@ -44,7 +45,7 @@ class TaskValidationTest {
             dueDate = Timestamp(Date()),
             projectId = "project-123")
 
-    assertFalse(isValidTask(task))
+    assertFalse(TaskBusinessLogic.isValidTask(task))
   }
 
   @Test
@@ -59,7 +60,7 @@ class TaskValidationTest {
             dueDate = Timestamp(Date()),
             projectId = "project-123")
 
-    assertFalse(isValidTask(task))
+    assertFalse(TaskBusinessLogic.isValidTask(task))
   }
 
   @Test
@@ -74,7 +75,7 @@ class TaskValidationTest {
             dueDate = Timestamp(Date()),
             projectId = "project-123")
 
-    assertFalse(isValidTask(task))
+    assertFalse(TaskBusinessLogic.isValidTask(task))
   }
 
   @Test
@@ -89,7 +90,7 @@ class TaskValidationTest {
             dueDate = Timestamp(Date()),
             projectId = "")
 
-    assertFalse(isValidTask(task))
+    assertFalse(TaskBusinessLogic.isValidTask(task))
   }
 
   @Test
@@ -104,7 +105,7 @@ class TaskValidationTest {
             dueDate = Timestamp(Date()),
             projectId = "project-123")
 
-    assertTrue(isValidTask(task))
+    assertTrue(TaskBusinessLogic.isValidTask(task))
   }
 
   @Test
@@ -119,7 +120,7 @@ class TaskValidationTest {
             dueDate = null,
             projectId = "project-123")
 
-    assertTrue(isValidTask(task))
+    assertTrue(TaskBusinessLogic.isValidTask(task))
   }
 
   @Test
@@ -134,7 +135,7 @@ class TaskValidationTest {
             dueDate = Timestamp(Date()),
             projectId = "project-123")
 
-    assertTrue(isValidTask(task))
+    assertTrue(TaskBusinessLogic.isValidTask(task))
   }
 
   @Test
@@ -149,16 +150,6 @@ class TaskValidationTest {
             dueDate = Timestamp(Date()),
             projectId = "project-123")
 
-    assertTrue(isValidTask(task))
-  }
-
-  /** Validation logic for tasks Tests the business rules for task validity */
-  private fun isValidTask(task: Task): Boolean {
-    // Required fields validation
-    if (task.taskID.isBlank()) return false
-    if (task.title.isBlank()) return false
-    if (task.projectId.isBlank()) return false
-
-    return true
+    assertTrue(TaskBusinessLogic.isValidTask(task))
   }
 }

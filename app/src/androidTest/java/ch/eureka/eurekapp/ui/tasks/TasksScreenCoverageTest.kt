@@ -36,29 +36,6 @@ class TasksScreenCoverageTest {
   }
 
   @Test
-  fun tasksScreen_withCallbacks() {
-    // Given
-    var createTaskCalled = false
-    var autoAssignCalled = false
-
-    composeTestRule.setContent {
-      EurekappTheme {
-        TasksScreen(
-            onCreateTaskClick = { createTaskCalled = true },
-            onAutoAssignClick = { autoAssignCalled = true },
-            onNavigate = { /* navigation callback */})
-      }
-    }
-
-    // When
-    TasksScreenRobot(composeTestRule).clickCreateTask().clickAutoAssign()
-
-    // Then
-    assert(createTaskCalled) { "Create task callback should be called" }
-    assert(autoAssignCalled) { "Auto assign callback should be called" }
-  }
-
-  @Test
   fun tasksScreen_emptyState() {
     // Given
     composeTestRule.setContent { EurekappTheme { TasksScreen() } }

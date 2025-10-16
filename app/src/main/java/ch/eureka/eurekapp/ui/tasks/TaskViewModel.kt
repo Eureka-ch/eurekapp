@@ -2,12 +2,15 @@ package ch.eureka.eurekapp.ui.tasks
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.template.TaskTemplate
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.utils.TaskBusinessLogic
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -51,7 +54,9 @@ enum class TaskFilter {
  */
 class TaskViewModel(private val taskRepository: TaskRepository) : ViewModel() {
 
-  constructor() : this(MockTaskRepository())
+  // Default constructor for production - uses Firebase
+  constructor() :
+      this(FirestoreTaskRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance()))
 
   private val _uiState = MutableStateFlow(TaskUiState())
   val uiState: StateFlow<TaskUiState> = _uiState.asStateFlow()
@@ -62,8 +67,8 @@ class TaskViewModel(private val taskRepository: TaskRepository) : ViewModel() {
 
   init {
     loadTasks()
-    loadAssignees() // TODO: Implement when UserRepository is available
-    loadTemplates() // TODO: Implement when TemplateRepository is available
+    loadAssignees()
+    loadTemplates()
   }
 
   /**

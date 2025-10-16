@@ -92,6 +92,21 @@ object TaskBusinessLogic {
   }
 
   /**
+   * Validates if a task meets the required business rules
+   *
+   * @param task The task to validate
+   * @return true if the task is valid, false otherwise
+   */
+  fun isValidTask(task: Task): Boolean {
+    // Required fields validation
+    if (task.taskID.isBlank()) return false
+    if (task.title.isBlank()) return false
+    if (task.projectId.isBlank()) return false
+
+    return true
+  }
+
+  /**
    * Checks if a task is completed
    *
    * @param task The task to check

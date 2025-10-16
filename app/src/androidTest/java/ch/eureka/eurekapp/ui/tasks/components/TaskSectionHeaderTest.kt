@@ -1,10 +1,9 @@
-package ch.eureka.eurekapp.ui.tâches.components
+package ch.eureka.eurekapp.ui.tasks.components
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import ch.eureka.eurekapp.ui.tasks.components.TaskSectionHeader
 import ch.eureka.eurekapp.ui.theme.EurekappTheme
 import org.junit.Rule
 import org.junit.Test
@@ -47,7 +46,7 @@ class TaskSectionHeaderTest {
     }
 
     // Then
-    composeTestRule.onNodeWithText("$taskCount tasks").assertIsDisplayed()
+    composeTestRule.onNodeWithText("$taskCount Tasks").assertIsDisplayed()
   }
 
   @Test
@@ -61,7 +60,7 @@ class TaskSectionHeaderTest {
     }
 
     // Then
-    composeTestRule.onNodeWithText("1 task").assertIsDisplayed()
+    composeTestRule.onNodeWithText("1 Task").assertIsDisplayed()
   }
 
   @Test
@@ -75,7 +74,7 @@ class TaskSectionHeaderTest {
     }
 
     // Then
-    composeTestRule.onNodeWithText("0 no task").assertIsDisplayed()
+    composeTestRule.onNodeWithText("0 No task").assertIsDisplayed()
   }
 
   @Test
@@ -89,6 +88,6 @@ class TaskSectionHeaderTest {
     }
 
     // Then
-    composeTestRule.onNodeWithText("$taskCount tasks").assertIsDisplayed()
+    composeTestRule.onNodeWithText("$taskCount Tasks").assertIsDisplayed()
   }
 }
