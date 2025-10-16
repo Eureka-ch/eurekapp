@@ -44,6 +44,11 @@ object MainScreens {
   val TasksScreen = MainScreen("Tasks Screen")
 }
 
+object OverviewProjectSpecificScreens{
+    val CreateInvitationScreen = SubScreen("Create Invitation Screen",
+        MainScreens.OverviewProjectScreen)
+}
+
 object TaskSpecificScreens {
   // The screen where the user will be able to see a specific task's detail
   val TasksDetailScreen = SubScreen("Task Detail Screen", MainScreens.TasksScreen)
@@ -105,7 +110,12 @@ private val titleToScreensMap =
 
         // Project selection specific screens
         ProjectSelectionSpecificScreens.CreateProjectScreen.title to
-            ProjectSelectionSpecificScreens.CreateProjectScreen)
+            ProjectSelectionSpecificScreens.CreateProjectScreen,
+        //Overview project specific screens
+       OverviewProjectSpecificScreens.CreateInvitationScreen.title to
+               OverviewProjectSpecificScreens.CreateInvitationScreen
+    )
+
 
 @Composable
 fun NavigationMenu() {
