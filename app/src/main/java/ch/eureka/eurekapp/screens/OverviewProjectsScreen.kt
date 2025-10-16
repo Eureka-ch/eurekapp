@@ -17,6 +17,5 @@ fun OverviewProjectsScreen(navigationController: NavHostController = rememberNav
   Text(
       "Overview Projects Screen",
       modifier = Modifier.testTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT))
-  // Camera()
-  CreateInvitationSubscreen(projectId = "KWBupYqndWMhMAlR1AnD", onInvitationCreate = {})
+  Camera()
 }

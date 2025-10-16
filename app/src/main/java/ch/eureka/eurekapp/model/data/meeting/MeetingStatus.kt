@@ -7,16 +7,16 @@ import ch.eureka.eurekapp.model.data.StringSerializableEnum
  *
  * Note: This file was co-authored by Claude Code.
  */
-enum class MeetingStatus : StringSerializableEnum {
+enum class MeetingStatus(val description: String) : StringSerializableEnum {
+  /** Meeting was proposed and members can vote for it's format and datetime. */
+  OPEN_TO_VOTES("Voting in progress"),
+
   /** Meeting is planned but has not started yet. */
-  SCHEDULED,
+  SCHEDULED("Scheduled"),
 
   /** Meeting is currently taking place. */
-  IN_PROGRESS,
+  IN_PROGRESS("In progress"),
 
   /** Meeting has finished. */
-  COMPLETED,
-
-  /** Meeting was cancelled and will not take place. */
-  CANCELLED
+  COMPLETED("Completed")
 }
