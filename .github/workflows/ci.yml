@@ -133,7 +133,7 @@ jobs:
         run: |
           if [ -e "firebase.json" ] && jq -e '.emulators' firebase.json >/dev/null; then
             echo "Starting Firebase emulators for instrumentation tests..."
-            firebase emulators:start --only storage,firestore,auth --project eureka-app-ch &
+            firebase emulators:start --project eureka-app-ch &
             sleep 20
             echo "Firebase emulators started"
           else
