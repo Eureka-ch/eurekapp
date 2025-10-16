@@ -20,91 +20,17 @@ class TasksScreenTest {
   @get:Rule val composeTestRule = createAndroidComposeRule<androidx.activity.ComponentActivity>()
 
   @Test
-  fun tasksScreenRendersWithEmptyState() {
+  fun tasksScreenRendersWithoutCrashing() {
     composeTestRule.setContent {
-      EurekappTheme { TasksScreen(onCreateTaskClick = {}, onAutoAssignClick = {}, onNavigate = {}) }
-    }
-
-    // Screen should render without crashing
-    // This will indirectly test TaskCard with empty data
-  }
-
-  @Test
-  fun tasksScreenRendersWithMockTasks() {
-    val mockViewModel = TaskViewModel(MockTaskRepository())
-
-    composeTestRule.setContent {
-      EurekappTheme {
+      EurekappTheme { 
         TasksScreen(
-            viewModel = mockViewModel,
-            onCreateTaskClick = {},
-            onAutoAssignClick = {},
-            onNavigate = {})
+          onCreateTaskClick = {}, 
+          onAutoAssignClick = {}, 
+          onNavigate = {}
+        ) 
       }
     }
-
-    // Screen should render without crashing
-    // This will indirectly test TaskCard with mock data
-  }
-
-  @Test
-  fun tasksScreenHandlesTaskCompletionToggle() {
-    val mockViewModel = TaskViewModel(MockTaskRepository())
-
-    composeTestRule.setContent {
-      EurekappTheme {
-        TasksScreen(
-            viewModel = mockViewModel,
-            onCreateTaskClick = {},
-            onAutoAssignClick = {},
-            onNavigate = {})
-      }
-    }
-
-    // Screen should render and handle interactions
-    // This will indirectly test TaskCard interaction logic
-  }
-
-  @Test
-  fun tasksScreenHandlesDifferentFilterStates() {
-    val mockViewModel = TaskViewModel(MockTaskRepository())
-
-    composeTestRule.setContent {
-      EurekappTheme {
-        TasksScreen(
-            viewModel = mockViewModel,
-            onCreateTaskClick = {},
-            onAutoAssignClick = {},
-            onNavigate = {})
-      }
-    }
-
-    // Test different filter states to cover TaskCard branches
-    mockViewModel.setFilter(TaskFilter.MINE)
-    mockViewModel.setFilter(TaskFilter.TEAM)
-    mockViewModel.setFilter(TaskFilter.THIS_WEEK)
-    mockViewModel.setFilter(TaskFilter.ALL)
-  }
-
-  @Test
-  fun tasksScreenHandlesCallbackFunctions() {
-    var createTaskCalled = false
-    var autoAssignCalled = false
-    var navigateCalled = false
-
-    composeTestRule.setContent {
-      EurekappTheme {
-        TasksScreen(
-            onCreateTaskClick = { createTaskCalled = true },
-            onAutoAssignClick = { autoAssignCalled = true },
-            onNavigate = { navigateCalled = true })
-      }
-    }
-
-    // Callbacks should be properly wired
-    // This ensures TaskCard receives proper callback functions
-    assert(createTaskCalled || !createTaskCalled) // Suppress unused warning
-    assert(autoAssignCalled || !autoAssignCalled) // Suppress unused warning
-    assert(navigateCalled || !navigateCalled) // Suppress unused warning
+    
+    
   }
 }

@@ -8,6 +8,7 @@
  */
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.utils.TaskBusinessLogic
 import com.google.firebase.Timestamp
 import java.util.*
 import org.junit.Assert.assertEquals
