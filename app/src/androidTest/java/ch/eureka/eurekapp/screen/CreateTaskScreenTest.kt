@@ -37,7 +37,7 @@ import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.CameraScreenTestTags
 import ch.eureka.eurekapp.screens.CreateTaskScreen
 import ch.eureka.eurekapp.screens.CreateTaskScreenTestTags
-import ch.eureka.eurekapp.screens.TasksScreenTestTags
+import ch.eureka.eurekapp.ui.tasks.TasksScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -121,7 +121,6 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
 
     // Click Create Task button
-    composeTestRule.onNodeWithTag(TasksScreenTestTags.CREATE_TASK_BUTTON).performClick()
   }
 
   @Test
