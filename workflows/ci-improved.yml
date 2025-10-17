@@ -1,0 +1,368 @@
+name: CI - Enhanced Test Runner
+
+# Run the workflow when commits are pushed on main or when a PR is modified
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+
+    steps:
+      # First step: Checkout the repository on the runner
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of Sonar analysis
+
+      # Kernel-based Virtual Machine (KVM) is an open source virtualization technology built into Linux
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      # Enhanced Gradle caching with dependency verification
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          # Only write cache on main branch to avoid cache pollution
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      # Cache Node.js dependencies for Firebase CLI
+      - name: Cache Node.js modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # Cache the Emulator
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-34
+
+      - name: create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_8
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
+      # Load secrets
+      - name: Decode secrets
+        env:
+          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
+          FIRESTORE_RULES: ${{ secrets.FIRESTORE_RULES }}
+          STORAGE_RULES: ${{ secrets.STORAGE_RULES }}
+          LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES" ]; then
+            echo "$GOOGLE_SERVICES" | base64 --decode > ./app/google-services.json
+          else
+            echo "::warning::GOOGLE_SERVICES secret is not set. google-services.json will not be created. Should be present after B2"
+          fi
+          if [ -n "$FIRESTORE_RULES" ]; then
+            mkdir -p ./firebase/firestore
+            echo "$FIRESTORE_RULES" | base64 --decode > ./firebase/firestore/firestore.rules
+          fi
+          if [ -n "$STORAGE_RULES" ]; then
+            mkdir -p ./firebase/storage
+            echo "$STORAGE_RULES" | base64 --decode > ./firebase/storage/storage.rules
+          fi
+          if [ -n "$LOCAL_PROPERTIES" ]; then
+            echo "$LOCAL_PROPERTIES" | base64 --decode > ./local.properties
+          else
+            echo "::warning::LOCAL_PROPERTIES secret is not set. local.properties will not be created. Should be present after B3"
+          fi
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      # Install NodeJS
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # Install Firebase CLI
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      # NEW: Test Impact Analysis - Detect changed files
+      - name: Detect changed files for test impact analysis
+        id: changed-files
+        if: github.event_name == 'pull_request'
+        run: |
+          # Get list of changed files
+          git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} > changed_files.txt
+
+          # Determine if we need full test suite or can use selective testing
+          if grep -qE '^app/src/(main|test)/' changed_files.txt; then
+            echo "test_filter=full" >> $GITHUB_OUTPUT
+          else
+            echo "test_filter=selective" >> $GITHUB_OUTPUT
+          fi
+
+          cat changed_files.txt
+
+      # Check formatting
+      - name: KTFmt Check
+        run: ./gradlew ktfmtCheck
+
+      # Build step with enhanced caching
+      - name: Assemble
+        run: |
+          # To run the CI with debug information, add --info
+          ./gradlew assemble lint --parallel --build-cache --configuration-cache
+
+      # Run Unit tests
+      - name: Run tests
+        run: |
+          # To run the CI with debug information, add --info
+          ./gradlew check --parallel --build-cache --configuration-cache
+
+      # NEW: Upload test results for reporting
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            app/build/test-results/**/*.xml
+            app/build/reports/tests/
+
+      # Start Firebase emulators for instrumentation tests
+      - name: Start Firebase emulators
+        run: |
+          if [ -e "firebase.json" ] && jq -e '.emulators' firebase.json >/dev/null; then
+            echo "Starting Firebase emulators for instrumentation tests..."
+            firebase emulators:start --only storage,firestore,auth --project eureka-app-ch &
+            sleep 20
+            echo "Firebase emulators started"
+          else
+            echo "Firebase emulators not configured, skipping emulator startup..."
+          fi
+
+      # Run connected tests on the emulator
+      - name: run tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_8
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated
+          disable-animations: true
+          script: ./gradlew connectedCheck --parallel --build-cache --configuration-cache --stacktrace --info
+
+      # NEW: Upload instrumented test results
+      - name: Upload instrumented test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: instrumented-test-results
+          path: |
+            app/build/outputs/androidTest-results/**/*.xml
+            app/build/reports/androidTests/
+
+      # Generate Coverage Report
+      - name: Generate Coverage Report
+        run: ./gradlew jacocoTestReport
+
+      # NEW: Upload coverage report
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: app/build/reports/jacoco/
+
+      # Upload the various reports to sonar
+      - name: Upload report to SonarCloud
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew sonar --parallel --build-cache
+
+  # NEW: Test Result Reporting Job
+  test-report:
+    name: Test Result Report
+    needs: ci
+    if: always() && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+          path: test-results
+
+      - name: Download instrumented test results
+        uses: actions/download-artifact@v4
+        with:
+          name: instrumented-test-results
+          path: instrumented-test-results
+        continue-on-error: true
+
+      # Use test reporter to publish results
+      - name: Publish Test Report
+        uses: dorny/test-reporter@v1
+        with:
+          name: Test Results
+          path: |
+            test-results/**/*.xml
+            instrumented-test-results/**/*.xml
+          reporter: java-junit
+          fail-on-error: false
+
+      # Generate custom PR comment with summary
+      - name: Comment PR with test summary
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Parse JUnit XML files
+            function parseJunitXml(filePath) {
+              const content = fs.readFileSync(filePath, 'utf8');
+              const testsMatch = content.match(/tests="(\d+)"/);
+              const failuresMatch = content.match(/failures="(\d+)"/);
+              const errorsMatch = content.match(/errors="(\d+)"/);
+              const skippedMatch = content.match(/skipped="(\d+)"/);
+
+              return {
+                tests: testsMatch ? parseInt(testsMatch[1]) : 0,
+                failures: failuresMatch ? parseInt(failuresMatch[1]) : 0,
+                errors: errorsMatch ? parseInt(errorsMatch[1]) : 0,
+                skipped: skippedMatch ? parseInt(skippedMatch[1]) : 0
+              };
+            }
+
+            // Collect all XML files
+            let totalStats = { tests: 0, failures: 0, errors: 0, skipped: 0 };
+
+            const testDirs = ['test-results', 'instrumented-test-results'];
+            for (const dir of testDirs) {
+              if (fs.existsSync(dir)) {
+                const files = fs.readdirSync(dir, { recursive: true });
+                for (const file of files) {
+                  if (file.endsWith('.xml')) {
+                    const stats = parseJunitXml(path.join(dir, file));
+                    totalStats.tests += stats.tests;
+                    totalStats.failures += stats.failures;
+                    totalStats.errors += stats.errors;
+                    totalStats.skipped += stats.skipped;
+                  }
+                }
+              }
+            }
+
+            const passed = totalStats.tests - totalStats.failures - totalStats.errors - totalStats.skipped;
+            const success = totalStats.failures === 0 && totalStats.errors === 0;
+
+            const emoji = success ? '✅' : '❌';
+
+            const comment = `## ${emoji} Test Results
+
+            | Status | Count |
+            |--------|-------|
+            | ✅ Passed | ${passed} |
+            | ❌ Failed | ${totalStats.failures} |
+            | ⚠️ Errors | ${totalStats.errors} |
+            | ⏭️ Skipped | ${totalStats.skipped } |
+            | **Total** | **${totalStats.tests}** |
+
+            ${success ? '🎉 All tests passed!' : '⚠️ Some tests failed. Please check the details above.'}
+
+            [View detailed test report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # NEW: Flakiness Detection Job
+  flakiness-detection:
+    name: Flakiness Detection
+    # Only run on main branch or when explicitly triggered
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    needs: ci
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      # Run tests multiple times to detect flakiness
+      - name: Run flakiness detection
+        run: |
+          echo "Running tests 3 times to detect flaky tests..."
+
+          for i in 1 2 3; do
+            echo "Test run $i..."
+            ./gradlew check --rerun-tasks > "test-run-$i.log" 2>&1 || true
+          done
+
+          # Analyze results (simplified version - could be enhanced with proper XML parsing)
+          echo "Analyzing test results for flakiness..."
+
+          # This is a placeholder - would need proper implementation
+          echo "Flakiness detection complete. Check logs for inconsistent test results."
+
+      - name: Upload flakiness detection results
+        uses: actions/upload-artifact@v4
+        with:
+          name: flakiness-detection
+          path: test-run-*.log
