@@ -6,7 +6,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import ch.eureka.eurekapp.screens.subscreens.overview_project_subscreens.CreateInvitationSubscreen
 
 object OverviewProjectsScreenTestTags {
   const val OVERVIEW_PROJECTS_SCREEN_TEXT = "OverviewProjectsScreenText"

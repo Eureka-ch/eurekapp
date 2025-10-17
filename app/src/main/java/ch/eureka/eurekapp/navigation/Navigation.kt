@@ -116,7 +116,6 @@ private val titleToScreensMap =
         IdeasSpecificScreens.CreateIdeasScreen.title to IdeasSpecificScreens.CreateIdeasScreen,
 
         // Meetings specific screens
-        MeetingsSpecificScreens.CameraScreen.title to MeetingsSpecificScreens.CameraScreen,
         MeetingsSpecificScreens.AddMeetingScreen.title to MeetingsSpecificScreens.AddMeetingScreen,
         MeetingsSpecificScreens.AudioTranscriptScreen.title to
             MeetingsSpecificScreens.AudioTranscriptScreen,
