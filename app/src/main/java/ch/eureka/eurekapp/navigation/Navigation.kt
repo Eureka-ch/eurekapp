@@ -23,6 +23,7 @@ import ch.eureka.eurekapp.screens.MeetingsScreen
 import ch.eureka.eurekapp.screens.OverviewProjectsScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
 import ch.eureka.eurekapp.screens.TasksScreen
+import ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens.CreateProjectScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
 
@@ -76,13 +77,16 @@ object MeetingsSpecificScreens {
   // Sub page to the meetings screen where the user will be able to start the recording
   // in order to make an audio transcript
   val AudioTranscriptScreen = SubScreen("Audio Transcript Screen", MainScreens.MeetingsScreen)
-  // Sub page to the meetings Screen where the user will be able to take pictures
-  val CameraScreen = SubScreen("Camera Screen", MainScreens.MeetingsScreen)
 }
 
 object SharedScreens {
   // Page where the user will be able to take pictures related to both tasks and meetings
   val CameraScreen = SharedScreen("Camera Screen")
+}
+
+object ProjectSelectionSpecificScreens {
+  // Create Project Screen
+  val CreateProjectScreen = SubScreen("Create Project Screen", MainScreens.ProjectSelectionScreen)
 }
 
 private val titleToScreensMap =
@@ -93,8 +97,27 @@ private val titleToScreensMap =
         MainScreens.ProfileScreen.title to MainScreens.ProfileScreen,
         MainScreens.IdeasScreen.title to MainScreens.IdeasScreen,
         MainScreens.ProjectSelectionScreen.title to MainScreens.ProjectSelectionScreen,
+
+        // Task specific screens
+        TaskSpecificScreens.TasksEditScreen.title to TaskSpecificScreens.TasksEditScreen,
+        TaskSpecificScreens.TasksDetailScreen.title to TaskSpecificScreens.TasksDetailScreen,
+        TaskSpecificScreens.AutoTaskAssignmentScreen.title to
+            TaskSpecificScreens.AutoTaskAssignmentScreen,
+        TaskSpecificScreens.TaskDependencePage.title to TaskSpecificScreens.TaskDependencePage,
         TaskSpecificScreens.CreateTaskScreen.title to TaskSpecificScreens.CreateTaskScreen,
-        SharedScreens.CameraScreen.title to SharedScreens.CameraScreen)
+
+        // Ideas Specific Screens
+        IdeasSpecificScreens.CreateIdeasScreen.title to IdeasSpecificScreens.CreateIdeasScreen,
+
+        // Meetings specific screens
+        SharedScreens.CameraScreen.title to SharedScreens.CameraScreen,
+        MeetingsSpecificScreens.AddMeetingScreen.title to MeetingsSpecificScreens.AddMeetingScreen,
+        MeetingsSpecificScreens.AudioTranscriptScreen.title to
+            MeetingsSpecificScreens.AudioTranscriptScreen,
+
+        // Project selection specific screens
+        ProjectSelectionSpecificScreens.CreateProjectScreen.title to
+            ProjectSelectionSpecificScreens.CreateProjectScreen)
 
 @Composable
 fun NavigationMenu() {
@@ -133,9 +156,7 @@ fun NavigationMenu() {
               } // TODO : change this after "Create project" is implemented
               composable(MainScreens.ProfileScreen.title) { ProfileScreen() }
               composable(MainScreens.IdeasScreen.title) { IdeasScreen(navigationController) }
-              composable(MainScreens.OverviewProjectScreen.title) {
-                OverviewProjectsScreen(navigationController)
-              }
+              composable(MainScreens.OverviewProjectScreen.title) { OverviewProjectsScreen() }
               composable(MainScreens.TasksScreen.title) { TasksScreen(navigationController) }
               composable("${TaskSpecificScreens.CreateTaskScreen.title}/{projectId}") {
                   backStackEntry ->
