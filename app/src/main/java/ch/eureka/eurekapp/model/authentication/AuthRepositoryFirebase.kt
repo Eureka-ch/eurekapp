@@ -65,6 +65,10 @@ class AuthRepositoryFirebase(
   }
 
   override fun getUserId(): Result<String?> {
-    return Result.success(auth.currentUser?.uid)
+    if (auth.currentUser == null) {
+      return Result.failure(IllegalArgumentException("No user logged in!"))
+    } else {
+      return Result.success(auth.currentUser?.uid)
+    }
   }
 }
