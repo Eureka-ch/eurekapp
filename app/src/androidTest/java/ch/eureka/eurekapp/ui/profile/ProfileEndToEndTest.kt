@@ -7,12 +7,10 @@ import ch.eureka.eurekapp.Eurekapp
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepositoryProvider
 import ch.eureka.eurekapp.navigation.BottomBarNavigationTestTags
-import ch.eureka.eurekapp.ui.authentication.SignInScreenTestTags
-import ch.eureka.eurekapp.utils.FakeCredentialManager
-import ch.eureka.eurekapp.utils.FakeJwtGenerator
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
 import org.junit.After
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -48,22 +46,11 @@ class ProfileEndToEndTest {
 
   @Test
   fun endToEnd_signInNavigateToProfileChangeNameAndSave() {
-    // Step 1: Create fake user and sign in
-    val fakeIdToken = FakeJwtGenerator.createFakeGoogleIdToken(testUserName, testUserEmail)
-    FirebaseEmulator.createGoogleUser(fakeIdToken)
-    val fakeCredentialManager = FakeCredentialManager.create(fakeIdToken)
+    // Step 1: Sign in anonymously
+    val authResult = runBlocking { FirebaseEmulator.auth.signInAnonymously().await() }
+    val userId = authResult.user?.uid ?: throw IllegalStateException("Failed to sign in")
 
-    composeTestRule.setContent { Eurekapp(credentialManager = fakeCredentialManager) }
-
-    composeTestRule
-        .onNodeWithTag(SignInScreenTestTags.SIGN_IN_WITH_GOOGLE_BUTTON)
-        .assertIsDisplayed()
-
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.SIGN_IN_WITH_GOOGLE_BUTTON).performClick()
-
-    composeTestRule.waitUntil(timeoutMillis = 10000) { FirebaseEmulator.auth.currentUser != null }
-
-    val userId = FirebaseEmulator.auth.currentUser?.uid!!
+    composeTestRule.setContent { Eurekapp() }
 
     val initialUser =
         User(

@@ -56,7 +56,7 @@ fun Eurekapp(
 
   LaunchedEffect(auth.currentUser) { FirestoreRepositoriesProvider.userChange() }
 
-  var signedIn by remember { mutableStateOf(false) }
+  var signedIn by remember { mutableStateOf(auth.currentUser != null) }
   if (!signedIn) {
     SignInScreen(credentialManager = credentialManager, onSignedIn = { signedIn = true })
   } else {
