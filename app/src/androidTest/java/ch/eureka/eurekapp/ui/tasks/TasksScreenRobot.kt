@@ -7,6 +7,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import ch.eureka.eurekapp.screens.TasksScreenTestTags
 
 /**
  * Robot pattern for TasksScreen UI tests Provides a fluent API for interacting with the TasksScreen

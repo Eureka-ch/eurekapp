@@ -11,6 +11,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.user.User
+import ch.eureka.eurekapp.screens.TaskAndUsers
+import ch.eureka.eurekapp.screens.TasksScreen
+import ch.eureka.eurekapp.screens.TasksScreenTestTags
+import ch.eureka.eurekapp.screens.getFilterTag
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
 import org.junit.Rule

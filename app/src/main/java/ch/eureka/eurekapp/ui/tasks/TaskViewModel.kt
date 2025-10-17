@@ -12,17 +12,20 @@ import ch.eureka.eurekapp.model.data.task.getDaysUntilDue
 import ch.eureka.eurekapp.model.data.user.FirestoreUserRepository
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
+import ch.eureka.eurekapp.screens.TaskAndUsers
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /** Data class combining Task with its assigned Users */
@@ -86,34 +89,42 @@ open class TaskScreenViewModel(
     private val currentUserId: String? = FirebaseAuth.getInstance().currentUser?.uid
 ) : ViewModel() {
 
-  protected open val _uiState = MutableStateFlow(TaskScreenUiState())
+  private val _selectedFilter = MutableStateFlow<TaskScreenFilter>(TaskScreenFilter.Mine)
+  private val _error = MutableStateFlow<String?>(null)
 
   // Flow 1: Tasks assigned to current user
-  private val userTasks = taskRepository.getTasksForCurrentUser()
-  private val _selectedFilter = MutableStateFlow<TaskScreenFilter>(TaskScreenFilter.Mine)
+  private val userTasks =
+      taskRepository
+          .getTasksForCurrentUser()
+          .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
   // Flow 2: All tasks in user's projects, filtered to exclude user's tasks (team tasks)
   @OptIn(ExperimentalCoroutinesApi::class)
   private val teamTasks: Flow<List<Task>> =
-      projectRepository.getProjectsForCurrentUser().flatMapLatest { projects ->
-        if (projects.isEmpty()) {
-          flowOf(emptyList())
-        } else {
-          // Combine all task flows from all projects
-          combine(
-              projects.map { project -> taskRepository.getTasksInProject(project.projectId) }) {
-                  tasksArrays ->
-                tasksArrays
-                    .flatMap { it.toList() }
-                    .filter { task ->
-                      currentUserId != null && !task.assignedUserIds.contains(currentUserId)
-                    }
-              }
-        }
-      }
+      projectRepository
+          .getProjectsForCurrentUser()
+          .flatMapLatest { projects ->
+            if (projects.isEmpty()) {
+              flowOf(emptyList())
+            } else {
+              // Combine all task flows from all projects
+              combine(
+                  projects.map { project ->
+                    taskRepository.getTasksInProject(project.projectId)
+                  }) { tasksArrays ->
+                    tasksArrays
+                        .flatMap { it.toList() }
+                        .filter { task ->
+                          currentUserId != null && !task.assignedUserIds.contains(currentUserId)
+                        }
+                  }
+            }
+          }
+          .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-  init {
-    viewModelScope.launch {
-      combine(userTasks, teamTasks, _selectedFilter) { userTasks, teamTasks, filter ->
+  open val uiState: StateFlow<TaskScreenUiState> =
+      combine(userTasks, teamTasks, _selectedFilter, _error) { userTasks, teamTasks, filter, error
+            ->
             val tasks =
                 when (filter) {
                   is TaskScreenFilter.Mine -> userTasks
@@ -126,34 +137,29 @@ open class TaskScreenViewModel(
                         daysUntilDue in 0..7
                       }
                 }
-            Pair(filter, tasks)
+            Triple(filter, tasks, error)
           }
-          .flatMapLatest { (filter, tasks) ->
+          .flatMapLatest { (filter, tasks, error) ->
             // For each task, fetch its assignees
             if (tasks.isEmpty()) {
-              flowOf(Pair(filter, emptyList<TaskAndUsers>()))
+              flowOf(Triple(filter, emptyList<TaskAndUsers>(), error))
             } else {
               combine(
                   tasks.map { task ->
                     getAssignees(task).map { users -> TaskAndUsers(task, users) }
                   }) { tasksAndUsersArray ->
-                    Pair(filter, tasksAndUsersArray.toList())
+                    Triple(filter, tasksAndUsersArray.toList(), error)
                   }
             }
           }
-          .collect { (filter, tasksAndUsers) ->
-            _uiState.emit(
-                _uiState.value.copy(
-                    tasksAndUsers = tasksAndUsers,
-                    selectedFilter = filter,
-                    isLoading = false,
-                    error = null))
+          .map { (filter, tasksAndUsers, error) ->
+            TaskScreenUiState(
+                tasksAndUsers = tasksAndUsers,
+                selectedFilter = filter,
+                isLoading = false,
+                error = error)
           }
-    }
-  }
-
-  open val uiState: StateFlow<TaskScreenUiState>
-    get() = _uiState
+          .stateIn(viewModelScope, SharingStarted.Eagerly, TaskScreenUiState(isLoading = true))
 
   /**
    * Set the current task filter
@@ -178,9 +184,7 @@ open class TaskScreenViewModel(
       val updatedTask = task.copy(status = newStatus)
       val result = taskRepository.updateTask(updatedTask)
       if (result.isFailure) {
-        _uiState.value =
-            _uiState.value.copy(
-                error = "Failed to update task: ${result.exceptionOrNull()?.message}")
+        _error.value = "Failed to update task: ${result.exceptionOrNull()?.message}"
       }
     }
   }

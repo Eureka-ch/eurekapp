@@ -1,6 +1,5 @@
 package ch.eureka.eurekapp.navigation
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -16,15 +15,20 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.project.Project
+import ch.eureka.eurekapp.model.data.project.ProjectRole
+import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.CreateTaskScreen
 import ch.eureka.eurekapp.screens.IdeasScreen
-import ch.eureka.eurekapp.screens.MeetingsScreen
 import ch.eureka.eurekapp.screens.OverviewProjectsScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
+import ch.eureka.eurekapp.screens.TasksScreen
+import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
-import ch.eureka.eurekapp.ui.profile.ProfileViewModel
-import ch.eureka.eurekapp.ui.tasks.TasksScreen
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 abstract class Screen(val title: String)
 
@@ -99,11 +103,29 @@ private val titleToScreensMap =
 @Composable
 fun NavigationMenu() {
   val navigationController = rememberNavController()
-
+  val projectRepository = FirestoreRepositoriesProvider.projectRepository
   val navBackStackEntry by navigationController.currentBackStackEntryAsState()
   val currentRoute = navBackStackEntry?.destination?.route
-
   val currentScreen = remember { mutableStateOf<Screen>(MainScreens.OverviewProjectScreen) }
+  val auth = Firebase.auth
+  val testProjectId = "test-project-id"
+  // this is hardcoded for current release
+  val testProject =
+      Project(
+          projectId = testProjectId,
+          name = "Test Project",
+          description = "This is a test project",
+          status = ProjectStatus.OPEN,
+          createdBy = auth.currentUser?.uid ?: "unknown",
+          memberIds = listOf(auth.currentUser?.uid ?: "unknown"),
+      )
+
+  LaunchedEffect(Unit) {
+    projectRepository.createProject(
+        project = testProject,
+        creatorRole = ProjectRole.OWNER,
+        creatorId = auth.currentUser?.uid ?: "unknown")
+  }
 
   LaunchedEffect(currentRoute) {
     val screenRoute = currentRoute?.substringBefore('/') ?: currentRoute
@@ -128,26 +150,28 @@ fun NavigationMenu() {
               composable(MainScreens.ProjectSelectionScreen.title) {
                 ProjectSelectionScreen(navigationController)
               }
-              composable(MainScreens.ProfileScreen.title) {
-                ProfileScreen(viewModel = ProfileViewModel())
-              }
-              composable(MainScreens.MeetingsScreen.title) { MeetingsScreen(navigationController) }
+              composable(MainScreens.MeetingsScreen.title) {
+                MeetingScreen("1234")
+              } // TODO : change this after "Create project" is implemented
+              composable(MainScreens.ProfileScreen.title) { ProfileScreen() }
               composable(MainScreens.IdeasScreen.title) { IdeasScreen(navigationController) }
               composable(MainScreens.OverviewProjectScreen.title) {
                 OverviewProjectsScreen(navigationController)
               }
               composable(MainScreens.TasksScreen.title) {
-                TasksScreen(onNavigate = { route -> navigationController.navigate(route) })
+                TasksScreen(
+                    onCreateTaskClick = {
+                      navigationFunction(
+                          navigationController,
+                          destination = TaskSpecificScreens.CreateTaskScreen,
+                          args = arrayOf(testProjectId))
+                    })
               }
               composable("${TaskSpecificScreens.CreateTaskScreen.title}/{projectId}") {
                   backStackEntry ->
-                val projectId = backStackEntry.arguments?.getString("projectId")
                 val context = LocalContext.current
 
-                projectId?.let { CreateTaskScreen(projectId, navigationController) }
-                    ?: run {
-                      Toast.makeText(context, "Project ID is null", Toast.LENGTH_SHORT).show()
-                    }
+                CreateTaskScreen(testProjectId, navigationController)
               }
               composable(SharedScreens.CameraScreen.title) { Camera(navigationController) }
             }

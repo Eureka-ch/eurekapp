@@ -10,7 +10,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 /** Action buttons for the Task screen "+ New Task" and "Auto-assign" buttons */
@@ -26,7 +28,7 @@ fun TaskActionButtons(
         // "+ New Task" button (outlined)
         OutlinedButton(
             onClick = onCreateTaskClick,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).testTag(TasksScreenTestTags.CREATE_TASK_BUTTON),
             colors =
                 ButtonDefaults.outlinedButtonColors(
                     containerColor = MaterialTheme.colorScheme.surface,

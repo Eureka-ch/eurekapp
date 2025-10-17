@@ -22,7 +22,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "ch.eureka.eurekapp.EurekaTestRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
