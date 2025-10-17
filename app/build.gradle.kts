@@ -44,10 +44,10 @@ android {
             )
         }
 
-    debug {
-        enableUnitTestCoverage = true
-        enableAndroidTestCoverage = true
-    }
+        debug {
+            enableUnitTestCoverage = true
+            enableAndroidTestCoverage = true
+        }
     }
 
     testCoverage {
@@ -187,11 +187,11 @@ dependencies {
     globalTestImplementation(libs.compose.test.junit)
     debugImplementation(libs.compose.test.manifest)
     androidTestImplementation(platform(libs.androidx.compose.bom))
-        testImplementation(libs.mockito.core)
-        testImplementation(libs.mockito.kotlin)
-        androidTestImplementation(libs.mockito.android)
-        androidTestImplementation(libs.mockito.kotlin)
-        testImplementation(libs.robolectric)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    androidTestImplementation(libs.mockito.android)
+    androidTestImplementation(libs.mockito.kotlin)
+    testImplementation(libs.robolectric)
 
     // Kaspresso test framework
     globalTestImplementation(libs.kaspresso)
