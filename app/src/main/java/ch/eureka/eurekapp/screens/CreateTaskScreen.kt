@@ -210,6 +210,7 @@ fun CreateTaskScreen(
                 Button(
                     onClick = {
                       createTaskViewModel.addTask(context)
+                      Thread.sleep(1000) // wait for the task to be created before navigating
                       navigationFunction(navigationController, true, null)
                     },
                     enabled = inputValid,
