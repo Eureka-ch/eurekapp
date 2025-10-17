@@ -35,6 +35,21 @@ android {
         buildConfigField("String", "DEEPSEEK_API_KEY", "\"${properties.getProperty("DEEPSEEK_API_KEY", "")}\"")
     }
 
+    signingConfigs {
+        create("release") {
+            val keystorePropertiesFile = rootProject.file("keystore.properties")
+            if (keystorePropertiesFile.exists()) {
+                val keystoreProperties = Properties()
+                keystoreProperties.load(keystorePropertiesFile.inputStream())
+
+                storeFile = file(keystoreProperties.getProperty("storeFile") ?: "release-keystore.jks")
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -42,12 +57,13 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
 
-    debug {
-        enableUnitTestCoverage = true
-        enableAndroidTestCoverage = true
-    }
+        debug {
+            enableUnitTestCoverage = true
+            enableAndroidTestCoverage = true
+        }
     }
 
     testCoverage {
@@ -187,11 +203,11 @@ dependencies {
     globalTestImplementation(libs.compose.test.junit)
     debugImplementation(libs.compose.test.manifest)
     androidTestImplementation(platform(libs.androidx.compose.bom))
-        testImplementation(libs.mockito.core)
-        testImplementation(libs.mockito.kotlin)
-        androidTestImplementation(libs.mockito.android)
-        androidTestImplementation(libs.mockito.kotlin)
-        testImplementation(libs.robolectric)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    androidTestImplementation(libs.mockito.android)
+    androidTestImplementation(libs.mockito.kotlin)
+    testImplementation(libs.robolectric)
 
     // Kaspresso test framework
     globalTestImplementation(libs.kaspresso)
