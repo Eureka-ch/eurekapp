@@ -24,31 +24,34 @@ jobs:
           java-version: 17
 
       # Step 3: Cache Gradle dependencies (optional but speeds up builds)
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
       - name: Decode secrets
         env:
           GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
           LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
+          KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
+          KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES }}
         run: |
           if [ -n "$GOOGLE_SERVICES" ]; then
             echo "$GOOGLE_SERVICES" | base64 --decode > ./app/google-services.json
           else
-            echo "::warning::GOOGLE_SERVICES secret is not set. google-services.json will not be created."
+            echo ":⚠️:GOOGLE_SERVICES secret is not set. google-services.json will not be created."
           fi
           if [ -n "$LOCAL_PROPERTIES" ]; then
             echo "$LOCAL_PROPERTIES" | base64 --decode > ./local.properties
           else
-            echo "::warning::LOCAL_PROPERTIES secret is not set. local.properties will not be created."
+            echo ":⚠️:LOCAL_PROPERTIES secret is not set. local.properties will not be created."
           fi
+          if [ -n "$KEYSTORE_FILE" ]; then
+            echo "$KEYSTORE_FILE" | base64 --decode > ./app/release-keystore.jks
+          else
+            echo ":⚠️:KEYSTORE_FILE secret is not set. Using debug keystore."
+          fi
+          if [ -n "$KEYSTORE_PROPERTIES" ]; then
+            echo "$KEYSTORE_PROPERTIES" | base64 --decode > ./keystore.properties
+          else
+            echo ":⚠️:KEYSTORE_PROPERTIES secret is not set."
+          fi
+      
 
       # Step 4: Make Gradle executable
       - name: Grant execute permission for Gradle
@@ -56,11 +59,11 @@ jobs:
 
       # Step 5: Build the APK
       - name: Build Debug APK
-        run: ./gradlew build
+        run: ./gradlew assembleDebug
 
       # Step 6: Upload the APK as an artifact
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: APK
-          path: app/build/outputs/apk/release/eurekapp.apk
+          path: app/build/outputs/apk/debug/app-debug.apk
