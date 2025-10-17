@@ -233,7 +233,7 @@ class CreateTaskScreenTests : TestCase() {
     assert(!isPhotoSaved(context, "Pictures/EurekApp/"))
   }
 
- /* @Test
+  /* @Test
   fun testDefectiveFileRepository() {
     val viewModel =
         CreateTaskViewModel(taskRepository, fileRepository = DefectiveFakeFileRepository())
