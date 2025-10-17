@@ -27,7 +27,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -44,7 +43,6 @@ import ch.eureka.eurekapp.navigation.SharedScreens
 import ch.eureka.eurekapp.navigation.navigationFunction
 import ch.eureka.eurekapp.ui.camera.LocalPhotoViewer
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
-import kotlinx.coroutines.launch
 
 object CreateTaskScreenTestTags {
   const val TITLE = "title"
@@ -61,6 +59,7 @@ const val SAVE_BUTTON_SIZE = 0.7f
 
 /*
 Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
+Co-Authored-By: Claude <noreply@anthropic.com>
 */
 
 /**
@@ -89,18 +88,7 @@ fun CreateTaskScreen(
           ?: remember { mutableStateOf("") }
 
   val context = LocalContext.current
-  val coroutineScope = rememberCoroutineScope()
   val scrollState = rememberScrollState()
-
-  DisposableEffect(Unit) {
-    onDispose {
-      coroutineScope.launch {
-        for (uri in createTaskState.attachmentUris) {
-          createTaskViewModel.deletePhoto(context, uri)
-        }
-      }
-    }
-  }
 
   LaunchedEffect(projectId) { createTaskViewModel.setProjectId(projectId) }
 
@@ -114,6 +102,24 @@ fun CreateTaskScreen(
   LaunchedEffect(photoUri) {
     if (photoUri.isNotEmpty()) {
       createTaskViewModel.addAttachment(photoUri.toUri())
+    }
+  }
+
+  LaunchedEffect(createTaskState.taskSaved) {
+    if (createTaskState.taskSaved) {
+      navigationFunction(navigationController, true, null)
+      createTaskViewModel.resetSaveState()
+    }
+  }
+
+  DisposableEffect(Unit) {
+    onDispose {
+      // Clean up photos when navigating away if task wasn't saved
+      if (!createTaskState.taskSaved) {
+        createTaskState.attachmentUris.forEach { uri ->
+          createTaskViewModel.deletePhoto(context, uri)
+        }
+      }
     }
   }
 
@@ -208,17 +214,13 @@ fun CreateTaskScreen(
 
                 // Save Button
                 Button(
-                    onClick = {
-                      createTaskViewModel.addTask(context)
-                      Thread.sleep(1000) // wait for the task to be created before navigating
-                      navigationFunction(navigationController, true, null)
-                    },
-                    enabled = inputValid,
+                    onClick = { createTaskViewModel.addTask(context) },
+                    enabled = inputValid && !createTaskState.isSaving,
                     modifier =
                         Modifier.fillMaxWidth(SAVE_BUTTON_SIZE)
                             .testTag(CreateTaskScreenTestTags.SAVE_TASK),
                     colors = EurekaStyles.PrimaryButtonColors()) {
-                      Text("Save")
+                      Text(if (createTaskState.isSaving) "Saving..." else "Save")
                     }
               }
               createTaskState.attachmentUris.forEachIndexed { index, file ->
@@ -226,10 +228,8 @@ fun CreateTaskScreen(
                   Text("Photo ${index + 1}")
                   IconButton(
                       onClick = {
-                        coroutineScope.launch {
-                          if (createTaskViewModel.deletePhoto(context, file)) {
-                            createTaskViewModel.removeAttachment(index)
-                          }
+                        if (createTaskViewModel.deletePhoto(context, file)) {
+                          createTaskViewModel.removeAttachment(index)
                         }
                       },
                       modifier = Modifier.testTag(CreateTaskScreenTestTags.DELETE_PHOTO)) {

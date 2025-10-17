@@ -5,6 +5,10 @@ import ch.eureka.eurekapp.model.data.task.TaskRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
+/*
+Co-Authored-By: Claude <noreply@anthropic.com>
+*/
+
 /**
  * Configurable mock implementation of TaskRepository for testing
  *
@@ -14,9 +18,11 @@ class MockTaskRepository : TaskRepository {
   private var currentUserTasks: Flow<List<Task>> = flowOf(emptyList())
   private val projectTasks = mutableMapOf<String, Flow<List<Task>>>()
   private var updateTaskResult: Result<Unit> = Result.success(Unit)
+  private var createTaskResult: Result<String> = Result.success("mock-task-id")
 
   // Track method calls for verification
   val updateTaskCalls = mutableListOf<Task>()
+  val createTaskCalls = mutableListOf<Task>()
   val getTasksForCurrentUserCalls = mutableListOf<Unit>()
   val getTasksInProjectCalls = mutableListOf<String>()
 
@@ -35,12 +41,19 @@ class MockTaskRepository : TaskRepository {
     updateTaskResult = result
   }
 
+  /** Configure the result returned by createTask() */
+  fun setCreateTaskResult(result: Result<String>) {
+    createTaskResult = result
+  }
+
   /** Clear all configuration */
   fun reset() {
     currentUserTasks = flowOf(emptyList())
     projectTasks.clear()
     updateTaskResult = Result.success(Unit)
+    createTaskResult = Result.success("mock-task-id")
     updateTaskCalls.clear()
+    createTaskCalls.clear()
     getTasksForCurrentUserCalls.clear()
     getTasksInProjectCalls.clear()
   }
@@ -57,7 +70,10 @@ class MockTaskRepository : TaskRepository {
     return currentUserTasks
   }
 
-  override suspend fun createTask(task: Task): Result<String> = Result.success("mock-task-id")
+  override suspend fun createTask(task: Task): Result<String> {
+    createTaskCalls.add(task)
+    return createTaskResult
+  }
 
   override suspend fun updateTask(task: Task): Result<Unit> {
     updateTaskCalls.add(task)

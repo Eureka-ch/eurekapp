@@ -19,6 +19,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,18 +29,21 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 
 /*
 Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
 Portions of this code were generated with the help of Grok.
+Co-Authored-By: Claude <noreply@anthropic.com>
 */
 
 /** ViewModel for the CreateTask screen. This ViewModel manages the state of input fields. */
 class CreateTaskViewModel(
     private val taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
-    private val fileRepository: FileStorageRepository = FirestoreRepositoriesProvider.fileRepository
+    private val fileRepository: FileStorageRepository =
+        FirestoreRepositoriesProvider.fileRepository,
+    private val getCurrentUserId: () -> String? = { Firebase.auth.currentUser?.uid },
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
   // CreateTask state
   private val _uiState = MutableStateFlow(CreateTaskState())
@@ -66,8 +70,11 @@ class CreateTaskViewModel(
     _uiState.value = _uiState.value.copy(errorMsg = errorMsg)
   }
 
-  private fun saveFilesOnRepository(taskId: String): Result<List<String>> = runBlocking {
-    try {
+  private suspend fun saveFilesOnRepository(
+      taskId: String,
+      context: Context
+  ): Result<List<String>> {
+    return try {
       val state = _uiState.value
       val photoUrls = mutableListOf<String>()
       for (uri in state.attachmentUris) {
@@ -80,14 +87,22 @@ class CreateTaskViewModel(
             }
         val photoUrl =
             photoSaveResult.getOrElse { exception ->
-              return@runBlocking Result.failure(exception)
+              return Result.failure(exception)
             }
         photoUrls.add(photoUrl)
+
+        // Delete local file after successful upload
+        deletePhoto(context, uri)
       }
       Result.success(photoUrls)
     } catch (e: Exception) {
       Result.failure(e)
     }
+  }
+
+  /** Resets the save state to allow creating another task */
+  fun resetSaveState() {
+    _uiState.value = _uiState.value.copy(isSaving = false, taskSaved = false)
   }
 
   /** Adds a Task */
@@ -110,7 +125,7 @@ class CreateTaskViewModel(
           return
         }
 
-    val currentUser = Firebase.auth.currentUser?.uid ?: throw Exception("User not logged in.")
+    val currentUser = getCurrentUserId() ?: throw Exception("User not logged in.")
 
     val handler = CoroutineExceptionHandler { _, exception ->
       Log.e("CreateTaskViewModel", exception.message ?: "Unknown error")
@@ -118,17 +133,21 @@ class CreateTaskViewModel(
       Handler(Looper.getMainLooper()).post {
         Toast.makeText(context.applicationContext, "Unable to save task", Toast.LENGTH_SHORT).show()
       }
+      _uiState.value = _uiState.value.copy(isSaving = false)
     }
 
-    viewModelScope.launch(Dispatchers.IO + handler) {
+    _uiState.value = _uiState.value.copy(isSaving = true)
+
+    viewModelScope.launch(dispatcher + handler) {
       val taskId = IdGenerator.generateTaskId()
-      val photoUrlsResult = saveFilesOnRepository(taskId)
+      val photoUrlsResult = saveFilesOnRepository(taskId, context)
       val photoUrls =
           photoUrlsResult.getOrElse { exception ->
             handler.handleException(coroutineContext, exception)
             return@launch
           }
-      addTaskToRepository(
+
+      val task =
           Task(
               taskID = taskId,
               projectId = state.projectId,
@@ -137,14 +156,16 @@ class CreateTaskViewModel(
               assignedUserIds = listOf(currentUser),
               dueDate = Timestamp(date),
               attachmentUrls = photoUrls,
-              createdBy = currentUser))
-      clearErrorMsg()
-    }
-  }
+              createdBy = currentUser)
 
-  private fun addTaskToRepository(task: Task) {
-    viewModelScope.launch {
-      taskRepository.createTask(task).onFailure { setErrorMsg("Failed to add Task.") }
+      taskRepository.createTask(task).onFailure {
+        setErrorMsg("Failed to add Task.")
+        _uiState.value = _uiState.value.copy(isSaving = false)
+        return@launch
+      }
+
+      clearErrorMsg()
+      _uiState.value = _uiState.value.copy(isSaving = false, taskSaved = true)
     }
   }
 
@@ -182,7 +203,12 @@ class CreateTaskViewModel(
   }
 
   fun deletePhoto(context: Context, photoUri: Uri): Boolean {
-    val rowsDeleted = context.contentResolver.delete(photoUri, null, null)
-    return rowsDeleted > 0
+    return try {
+      val rowsDeleted = context.contentResolver.delete(photoUri, null, null)
+      rowsDeleted > 0
+    } catch (e: SecurityException) {
+      Log.w("CreateTaskViewModel", "Failed to delete photo: ${e.message}")
+      false
+    }
   }
 }

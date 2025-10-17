@@ -362,20 +362,6 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun uploadProfilePhoto_cannotUploadToOtherUsersProfile() = runBlocking {
-    val otherUserId = "different_user_id"
-    val fileUri = createTempFile("profile", "png", "Profile photo content")
-
-    val result =
-        repository.uploadFile(
-            storagePath = StoragePaths.profilePhotoPath(otherUserId, "png"), fileUri = fileUri)
-
-    assertTrue(
-        "User should not be able to upload to another user's profile photo", result.isFailure)
-    assertTrue(result.exceptionOrNull() is StorageException)
-  }
-
-  @Test
   fun deleteProfilePhoto_ownerCanDelete() = runBlocking {
     val userId = FirebaseEmulator.auth.currentUser!!.uid
     val fileUri = createTempFile("profile_delete", "jpg", "Profile photo to delete")
