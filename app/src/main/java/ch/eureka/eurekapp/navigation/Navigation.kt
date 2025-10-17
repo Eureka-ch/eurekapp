@@ -50,6 +50,11 @@ object MainScreens {
   val TasksScreen = MainScreen("Tasks Screen")
 }
 
+object OverviewProjectSpecificScreens {
+  val CreateInvitationScreen =
+      SubScreen("Create Invitation Screen", MainScreens.OverviewProjectScreen)
+}
+
 object TaskSpecificScreens {
   // The screen where the user will be able to see a specific task's detail
   val TasksDetailScreen = SubScreen("Task Detail Screen", MainScreens.TasksScreen)
@@ -77,6 +82,8 @@ object MeetingsSpecificScreens {
   // Sub page to the meetings screen where the user will be able to start the recording
   // in order to make an audio transcript
   val AudioTranscriptScreen = SubScreen("Audio Transcript Screen", MainScreens.MeetingsScreen)
+  // Sub page to the meetings Screen where the user will be able to take pictures
+  val CameraScreen = SubScreen("Camera Screen", MainScreens.MeetingsScreen)
 }
 
 object SharedScreens {
