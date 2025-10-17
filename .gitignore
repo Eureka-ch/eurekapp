@@ -14,6 +14,12 @@ local.properties
 # Firebase config
 app/google-services.json
 
+# Keystore files (sensitive)
+keystore.properties
+*.jks
+*.keystore
+app/release-keystore.jks
+
 
 
 # Log files
