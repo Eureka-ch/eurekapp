@@ -5,17 +5,35 @@
 # For more details, see
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep source file and line numbers for debugging stack traces
+-keepattributes SourceFile,LineNumberTable
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Keep generic signature for Firebase/Firestore serialization
+-keepattributes Signature
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Keep annotations
+-keepattributes *Annotation*
+
+# Firebase/Firestore data model classes
+# Keep all data classes in the model.data package
+-keep class ch.eureka.eurekapp.model.data.** { *; }
+
+# Keep Kotlin data classes used with Firebase
+-keep @kotlinx.serialization.Serializable class ** { *; }
+
+# Keep Parcelable classes
+-keepclassmembers class * implements android.os.Parcelable {
+    public static final android.os.Parcelable$Creator CREATOR;
+}
+
+# Coroutines
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
+
+# Retrofit/OkHttp (if used)
+-dontwarn okhttp3.**
+-dontwarn retrofit2.**
+
+# Compose
+-keep class androidx.compose.runtime.** { *; }
+-keep class androidx.compose.ui.** { *; }
