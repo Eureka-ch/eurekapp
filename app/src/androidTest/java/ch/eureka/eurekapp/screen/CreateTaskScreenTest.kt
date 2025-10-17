@@ -153,6 +153,7 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ERROR_MSG).assertIsDisplayed()
   }
 
+  /** This is our end-to-end test. */
   @Test
   fun testTakingPhotos() {
     navigateToCreateTaskScreen()
