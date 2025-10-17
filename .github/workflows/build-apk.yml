@@ -61,6 +61,16 @@ jobs:
           else
             echo "::warning::KEYSTORE_PROPERTIES secret is not set."
           fi
+          if [ -n "$KEYSTORE_FILE" ]; then
+            echo "$KEYSTORE_FILE" | base64 --decode > ./app/release-keystore.jks
+          else
+            echo "::warning::KEYSTORE_FILE secret is not set. APK will not be signed."
+          fi
+          if [ -n "$KEYSTORE_PROPERTIES" ]; then
+            echo "$KEYSTORE_PROPERTIES" | base64 --decode > ./keystore.properties
+          else
+            echo "::warning::KEYSTORE_PROPERTIES secret is not set."
+          fi
 
       # Step 4: Make Gradle executable
       - name: Grant execute permission for Gradle

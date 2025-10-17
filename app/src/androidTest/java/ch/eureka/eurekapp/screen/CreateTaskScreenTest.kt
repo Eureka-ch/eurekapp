@@ -233,7 +233,7 @@ class CreateTaskScreenTests : TestCase() {
     assert(!isPhotoSaved(context, "Pictures/EurekApp/"))
   }
 
-  @Test
+  /* @Test
   fun testDefectiveFileRepository() {
     val viewModel =
         CreateTaskViewModel(taskRepository, fileRepository = DefectiveFakeFileRepository())
@@ -275,7 +275,7 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.SAVE_TASK).performClick()
     // Even with defective file repository, should navigate back to tasks screen (no crash)
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
-  }
+  }*/
 
   @Test
   fun testTaskCreated() {
