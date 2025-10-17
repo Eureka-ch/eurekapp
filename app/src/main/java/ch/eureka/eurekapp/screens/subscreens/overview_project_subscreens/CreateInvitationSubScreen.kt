@@ -43,7 +43,6 @@ import ch.eureka.eurekapp.model.data.invitation.CreateInvitationViewModel
 import ch.eureka.eurekapp.model.data.invitation.Invitation
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.GrayTextColor2
-import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.PrimaryRed
 import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.ui.theme.Typography
 import kotlinx.coroutines.launch
@@ -128,7 +127,7 @@ fun CreateInvitationSubscreen(
                                 enabled = !createdInvitation.value,
                                 colors =
                                     ButtonDefaults.filledTonalButtonColors(
-                                        containerColor = PrimaryRed),
+                                        containerColor = LightColorScheme.primary),
                                 onClick = {
                                   val invitationToCreate =
                                       Invitation(
@@ -138,8 +137,8 @@ fun CreateInvitationSubscreen(
                                   createInvitationViewModel.viewModelScope.launch {
                                     createInvitationViewModel.createInvitation(
                                         invitationToCreate,
-                                        onFailureCallback = {
-                                          errorText.value = "Failed to create invitation"
+                                        onFailureCallback = { error ->
+                                          errorText.value = error.message.toString()
                                         },
                                         onSuccessCallback = {
                                           createdInvitation.value = true
@@ -165,7 +164,7 @@ fun CreateInvitationSubscreen(
                                 enabled = copyToClipBoard.value,
                                 colors =
                                     ButtonDefaults.filledTonalButtonColors(
-                                        containerColor = PrimaryRed),
+                                        containerColor = LightColorScheme.primary),
                                 onClick = {
                                   if (createInvitationToken.value != null) {
                                     copyToClipboard(context, createInvitationToken.value!!.token)

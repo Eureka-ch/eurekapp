@@ -9,12 +9,13 @@ class CreateInvitationViewModel(
   suspend fun createInvitation(
       invitation: Invitation,
       onSuccessCallback: () -> Unit,
-      onFailureCallback: () -> Unit
+      onFailureCallback: (Throwable) -> Unit
   ) {
-    if (invitationRepository.createInvitation(invitation).isSuccess) {
+    val invitationTransmit = invitationRepository.createInvitation(invitation)
+    if (invitationTransmit.isSuccess) {
       onSuccessCallback()
     } else {
-      onFailureCallback()
+      onFailureCallback(invitationTransmit.exceptionOrNull()!!)
     }
   }
 }
