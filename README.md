@@ -18,4 +18,4 @@ EurekApp is an application for teams to collaborate on projects. It allows for e
 
 ## Figma Project link
 View the complete design on [Figma](https://www.figma.com/design/bKRZnuU5m3tkV8UKezHdAy/Eureka-figma?node-id=0-1).
-# CI Trigger
+

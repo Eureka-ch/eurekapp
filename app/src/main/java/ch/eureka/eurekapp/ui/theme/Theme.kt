@@ -1,10 +1,7 @@
 package ch.eureka.eurekapp.ui.theme
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import ch.eureka.eurekapp.ui.designsystem.tokens.LocalSpacing
-import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
+import ch.eureka.eurekapp.ui.designsystem.EurekaTheme
 
 /**
  * Legacy theme wrapper that now delegates to the new token-based values. Screens calling
@@ -12,10 +9,6 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
  */
 @Composable
 fun EurekappTheme(darkTheme: Boolean = false, content: @Composable () -> Unit) {
-  CompositionLocalProvider(LocalSpacing provides Spacing) {
-    MaterialTheme(
-        colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,
-        typography = Typography,
-        content = content)
-  }
+  // Delegate to the design system theme
+  EurekaTheme(darkTheme = darkTheme, content = content)
 }

@@ -51,4 +51,22 @@ object EurekaStyles {
   @Composable
   fun OutlinedButtonBorder() =
       BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+
+  // Card styles using Eureka colors directly
+  @Composable
+  fun TaskCardColors() =
+      CardDefaults.cardColors(
+          containerColor = EColors.LightSurface, // Pure white from Eureka
+          contentColor = EColors.LightOnSurface)
+
+  @Composable fun TaskCardBorder() = BorderStroke(width = 1.dp, color = EColors.LightOutlineVariant)
+
+  // Text colors using Eureka colors directly
+  @Composable
+  fun TaskTitleColor(isCompleted: Boolean) =
+      if (isCompleted) EColors.LightOnSurfaceVariant else EColors.LightOnSurface
+
+  @Composable fun TaskSecondaryTextColor() = EColors.LightOnSurfaceVariant
+
+  @Composable fun TaskSeparatorColor() = EColors.LightOutlineVariant
 }

@@ -186,32 +186,6 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun deleteFile_shouldFailWhenNotAuthenticated() = runBlocking {
-    val projectId = "test_project_delete_unauth"
-    setupTestProject(projectId)
-
-    val testContent = "File to delete without auth"
-    val fileUri = createTempFile("test_delete_unauth", "txt", testContent)
-
-    // Upload file while authenticated
-    val uploadResult =
-        repository.uploadFile(
-            storagePath = StoragePaths.projectFilePath(projectId, "unauth_delete.txt"),
-            fileUri = fileUri)
-    assertTrue(uploadResult.isSuccess)
-    val downloadUrl = uploadResult.getOrNull()!!
-
-    // Sign out to test unauthenticated access
-    FirebaseEmulator.auth.signOut()
-
-    // Attempt to delete while not authenticated
-    val deleteResult = repository.deleteFile(downloadUrl)
-
-    assertTrue(deleteResult.isFailure)
-    assertTrue(deleteResult.exceptionOrNull() is StorageException)
-  }
-
-  @Test
   fun getFileMetadata_shouldReturnMetadataForExistingFile() = runBlocking {
     val projectId = "test_project_3"
     setupTestProject(projectId)

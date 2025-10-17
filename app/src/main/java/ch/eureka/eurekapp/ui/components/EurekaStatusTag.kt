@@ -26,7 +26,7 @@ fun EurekaStatusTag(
                     StatusType.SUCCESS -> MaterialTheme.colorScheme.tertiary
                     StatusType.WARNING -> MaterialTheme.colorScheme.secondary
                     StatusType.ERROR -> MaterialTheme.colorScheme.error
-                    StatusType.INFO -> MaterialTheme.colorScheme.surfaceVariant
+                    StatusType.INFO -> Color.White // Blanc pur pour les tags
                   }),
       shape = RoundedCornerShape(4.dp),
       modifier = modifier) {
@@ -38,7 +38,7 @@ fun EurekaStatusTag(
                   StatusType.SUCCESS,
                   StatusType.WARNING,
                   StatusType.ERROR -> Color.White
-                  StatusType.INFO -> MaterialTheme.colorScheme.onSurfaceVariant
+                  StatusType.INFO -> Color(0xFF212121) // Texte foncé sur fond blanc
                 },
             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
       }

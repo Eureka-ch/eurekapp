@@ -1,6 +1,8 @@
 package ch.eureka.eurekapp.model.data.task
 
 import com.google.firebase.Timestamp
+import java.time.temporal.ChronoUnit
+import kotlin.compareTo
 
 /**
  * Data class representing a task within a project.
@@ -33,5 +35,25 @@ data class Task(
     val dueDate: Timestamp? = null,
     val attachmentUrls: List<String> = emptyList(),
     val customData: Map<String, Any> = emptyMap(),
-    val createdBy: String = ""
+    val createdBy: String = "",
 )
+
+fun getDaysUntilDue(task: Task, now: Timestamp): Long? {
+  val dueDate = task.dueDate?.toDate() ?: return null
+  val currentDate = now.toDate()
+  return ChronoUnit.DAYS.between(currentDate.toInstant(), dueDate.toInstant())
+}
+
+fun determinePriority(task: Task, now: Timestamp): String {
+  val timestamp = task.dueDate
+  if (timestamp == null) return "Low Priority"
+
+  val diffInDays = getDaysUntilDue(task, now) ?: return "Low Priority"
+
+  return when {
+    diffInDays < 0 -> "Critical Priority"
+    diffInDays <= 1L -> "High Priority"
+    diffInDays <= 3L -> "Medium Priority"
+    else -> "Low Priority"
+  }
+}

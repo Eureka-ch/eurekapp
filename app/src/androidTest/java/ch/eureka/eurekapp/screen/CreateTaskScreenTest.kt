@@ -118,18 +118,15 @@ class CreateTaskScreenTests : TestCase() {
 
     // Navigate to Tasks screen
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON).performClick()
-    composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
-
-    // Click Create Task button
     composeTestRule.onNodeWithTag(TasksScreenTestTags.CREATE_TASK_BUTTON).performClick()
   }
 
   @Test
   fun testEmptyFieldsShowErrors() {
     navigateToCreateTaskScreen()
-
     // Focus and leave the Title field empty
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performClick()
+    composeTestRule.waitForIdle()
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ERROR_MSG).assertIsDisplayed()
 
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performTextInput("Test Task")

@@ -26,6 +26,14 @@ object ETypography {
 
   val value =
       Typography(
+          // Headlines: 32sp
+          headlineLarge =
+              TextStyle(
+                  fontFamily = FontFamily.Default,
+                  fontWeight = FontWeight.Bold,
+                  fontSize = 32.sp,
+                  lineHeight = 40.sp,
+                  letterSpacing = 0.sp),
           // Titles: 22-28sp
           displayLarge =
               TextStyle(

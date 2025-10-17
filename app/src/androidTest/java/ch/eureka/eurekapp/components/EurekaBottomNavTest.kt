@@ -49,7 +49,7 @@ class EurekaBottomNavTest {
                 listOf(NavItem("Tasks", null), NavItem("Ideas", null), NavItem("Home", null)))
       }
     }
-
+    composeTestRule.waitForIdle()
     // Check that the selected item is marked as selected
     composeTestRule.onNodeWithText("Ideas").assertIsSelected()
   }

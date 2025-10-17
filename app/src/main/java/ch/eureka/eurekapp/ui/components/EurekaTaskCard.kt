@@ -1,9 +1,14 @@
 package ch.eureka.eurekapp.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,9 +20,14 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 /** Task card component used on tasks and project screens */
@@ -33,80 +43,129 @@ fun EurekaTaskCard(
     onToggleComplete: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+  // No local state - use controlled state from parent
   Card(
       shape = RoundedCornerShape(16.dp),
-      elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+      elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+      colors = EurekaStyles.TaskCardColors(),
+      border = EurekaStyles.TaskCardBorder(),
       modifier = modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.padding(Spacing.md),
-            verticalAlignment = Alignment.CenterVertically) {
-              // Checkbox or completion indicator
-              if (isCompleted) {
-                Text(
-                    text = "✓",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.tertiary)
-              } else {
-                Checkbox(
-                    checked = false,
-                    onCheckedChange = { onToggleComplete() },
-                    colors =
-                        CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary))
-              }
+        Column(modifier = Modifier.padding(Spacing.lg)) { // Plus de padding
 
-              Spacer(modifier = Modifier.width(Spacing.sm))
+          // Top row: Title (left) + Checkbox (right)
+          Row(
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.SpaceBetween,
+              modifier = Modifier.fillMaxWidth()) {
 
-              Column(modifier = Modifier.weight(1f)) {
+                // Task title aligned to the left
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface)
+                    color = EurekaStyles.TaskTitleColor(isCompleted),
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f))
 
-                // Metadata row
-                if (dueDate.isNotEmpty() || assignee.isNotEmpty()) {
-                  Row {
-                    if (dueDate.isNotEmpty()) {
-                      Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "⏰ $dueDate",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                      }
-                    }
-
-                    if (assignee.isNotEmpty()) {
-                      if (dueDate.isNotEmpty()) Spacer(modifier = Modifier.width(Spacing.sm))
-                      Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "👤 $assignee",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                      }
-                    }
-                  }
-                }
-
-                // Tags row
-                if (priority.isNotEmpty()) {
-                  Row { EurekaStatusTag(text = priority, type = StatusType.INFO) }
-                }
-              }
-
-              // Progress indicator
-              if (progressText.isNotEmpty() || progressValue > 0f) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                  LinearProgressIndicator(
-                      progress = { progressValue },
-                      modifier = Modifier.width(60.dp),
-                      color = MaterialTheme.colorScheme.tertiary)
-                  if (progressText.isNotEmpty()) {
+                // Checkbox aligned to the right
+                Box(modifier = Modifier.clickable { onToggleComplete() }) {
+                  if (isCompleted) {
                     Text(
-                        text = progressText,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        text = "✓",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.tertiary)
+                  } else {
+                    Checkbox(
+                        checked = false,
+                        onCheckedChange = { onToggleComplete() },
+                        colors =
+                            CheckboxDefaults.colors(
+                                checkedColor = MaterialTheme.colorScheme.primary),
+                        modifier = Modifier.testTag("checkbox"))
                   }
                 }
+
+                // Pas de pourcentage en haut
               }
+
+          Spacer(modifier = Modifier.height(Spacing.sm))
+
+          // Middle row: Due date + Assignee
+          if (dueDate.isNotEmpty() || assignee.isNotEmpty()) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()) {
+                  if (dueDate.isNotEmpty()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                      Text(
+                          text = "⏰ $dueDate",
+                          style = MaterialTheme.typography.bodySmall,
+                          color = EurekaStyles.TaskSecondaryTextColor())
+                    }
+                  }
+
+                  if (assignee.isNotEmpty()) {
+                    if (dueDate.isNotEmpty()) {
+                      Spacer(modifier = Modifier.width(Spacing.md))
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                      Text(
+                          text = "👤 $assignee",
+                          style = MaterialTheme.typography.bodySmall,
+                          color = EurekaStyles.TaskSecondaryTextColor())
+                    }
+                  }
+                }
+          }
+
+          Spacer(modifier = Modifier.height(Spacing.sm))
+
+          // Priority tag ou Done
+          if (isCompleted) {
+            Row {
+              EurekaStatusTag(text = "Done", type = StatusType.SUCCESS) // Vert pour Done
             }
+          } else if (priority.isNotEmpty()) {
+            Row { EurekaStatusTag(text = priority, type = StatusType.INFO) }
+          }
+
+          Spacer(modifier = Modifier.height(Spacing.md))
+
+          // Separator line
+          androidx.compose.foundation.layout.Box(
+              modifier =
+                  Modifier.fillMaxWidth()
+                      .height(1.dp)
+                      .background(EurekaStyles.TaskSeparatorColor()))
+
+          Spacer(modifier = Modifier.height(Spacing.sm))
+
+          // Bottom row: Progress label + Progress bar
+          if (progressText.isNotEmpty() || progressValue > 0f) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()) {
+                  Text(
+                      text = "Progression",
+                      style = MaterialTheme.typography.bodySmall,
+                      color = EurekaStyles.TaskSecondaryTextColor(),
+                      modifier = Modifier.weight(1f))
+
+                  LinearProgressIndicator(
+                      progress = { if (isCompleted) 1.0f else progressValue }, // 100% si cochée
+                      modifier = Modifier.width(60.dp).height(6.dp),
+                      color = MaterialTheme.colorScheme.primary,
+                      trackColor = EurekaStyles.TaskSeparatorColor())
+
+                  Spacer(modifier = Modifier.width(Spacing.xs))
+
+                  // Pourcentage à côté de la barre
+                  Text(
+                      text = if (isCompleted) "100%" else progressText,
+                      style = MaterialTheme.typography.labelMedium,
+                      color = EurekaStyles.TaskSecondaryTextColor(),
+                      fontWeight = FontWeight.Bold)
+                }
+          }
+        }
       }
 }

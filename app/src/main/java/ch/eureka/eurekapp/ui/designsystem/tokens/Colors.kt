@@ -35,18 +35,18 @@ object EColors {
   val BorderGrayColor = Color(0xFFE5E7EB)
 
   // Light theme colors from Figma
-  private val LightBackground = Color(0xFFF5F5F5) // Light gray background
-  private val LightSurface = Color.White // White cards/surfaces
-  private val LightOnSurface = Color(0xFF212121) // Dark text for titles
-  private val LightOnSurfaceVariant = Color(0xFF757575) // Medium gray for body text
-  private val LightOutlineVariant = Color(0xFF9E9E9E) // Light gray for secondary text
+  val LightBackground = Color.White // Pure white background
+  val LightSurface = Color.White // White cards/surfaces
+  val LightOnSurface = Color(0xFF212121) // Dark text for titles
+  val LightOnSurfaceVariant = Color(0xFF424242) // Darker gray for better contrast
+  val LightOutlineVariant = Color(0xFF9E9E9E) // Light gray for secondary text
 
   // Dark theme colors
-  private val DarkBackground = Color(0xFF121212)
-  private val DarkSurface = Color(0xFF1C1B1F)
-  private val DarkOnSurface = Color(0xFFE6E1E5)
-  private val DarkOnSurfaceVariant = Color(0xFFCAC4D0)
-  private val DarkOutlineVariant = Color(0xFF49454F)
+  val DarkBackground = Color(0xFF121212)
+  val DarkSurface = Color(0xFF1C1B1F)
+  val DarkOnSurface = Color(0xFFE6E1E5)
+  val DarkOnSurfaceVariant = Color(0xFFCAC4D0)
+  val DarkOutlineVariant = Color(0xFF49454F)
 
   val light =
       lightColorScheme(
@@ -60,7 +60,11 @@ object EColors {
           onBackground = LightOnSurface,
           surface = LightSurface,
           onSurface = LightOnSurface,
+          surfaceVariant = Color.White, // Force surfaceVariant to white
           onSurfaceVariant = LightOnSurfaceVariant,
+          surfaceContainer = Color.White, // Force surfaceContainer to white
+          surfaceContainerHigh = Color.White, // Force surfaceContainerHigh to white
+          surfaceContainerHighest = Color.White, // Force surfaceContainerHighest to white
           outlineVariant = LightOutlineVariant,
           error = Color(0xFFB3261E),
           onError = Color.White)

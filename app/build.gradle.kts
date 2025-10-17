@@ -1,5 +1,6 @@
 import java.util.Properties
 import org.gradle.kotlin.dsl.implementation
+import org.gradle.kotlin.dsl.invoke
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -21,7 +22,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "ch.eureka.eurekapp.EurekaTestRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -228,6 +229,8 @@ dependencies {
 
     // Coil for image loading
     implementation(libs.coil.compose)
+    testImplementation(kotlin("test"))
+
 }
 
 tasks.withType<Test> {
@@ -275,6 +278,9 @@ tasks.register("jacocoTestReport", JacocoReport::class) {
         logger.quiet("Wrote summarized jacoco test coverage report xml to ${reportFile.absolutePath}")
     }
 }
+
+
+
 
 // Custom task to run Firestore emulator tests
 tasks.register<Exec>("firestoreEmulatorTests") {
