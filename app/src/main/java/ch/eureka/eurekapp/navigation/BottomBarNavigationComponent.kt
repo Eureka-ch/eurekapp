@@ -115,9 +115,7 @@ fun BottomBarNavigationComponent(
               modifier =
                   Modifier.weight(1f).testTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON),
               "Tasks",
-              onClick = {
-                navigationFunction(navigationController, destination = MainScreens.TasksScreen)
-              },
+              onClick = { navigationController.navigate(Route.Tasks) },
               iconVector = Icons.Outlined.AssignmentTurnedIn,
               pressedIconVector = Icons.Filled.AssignmentTurnedIn,
               isPressed = isTasksPressed)
@@ -125,9 +123,7 @@ fun BottomBarNavigationComponent(
               modifier =
                   Modifier.weight(1f).testTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON),
               "Ideas",
-              onClick = {
-                navigationFunction(navigationController, destination = MainScreens.IdeasScreen)
-              },
+              onClick = { navigationController.navigate(Route.Ideas) },
               iconVector = Icons.Outlined.Lightbulb,
               pressedIconVector = Icons.Filled.Lightbulb,
               isPressed = isIdeasScreenPressed)
@@ -139,19 +135,14 @@ fun BottomBarNavigationComponent(
                   HomeIconButton(
                       modifier =
                           Modifier.testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
-                      onClick = {
-                        navigationFunction(
-                            navigationController, destination = MainScreens.OverviewProjectScreen)
-                      })
+                      onClick = { navigationController.navigate(Route.OverviewProject) })
                 }
               }
           CustomIconButtonComposable(
               modifier =
                   Modifier.weight(1f).testTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON),
               "Meetings",
-              onClick = {
-                navigationFunction(navigationController, destination = MainScreens.MeetingsScreen)
-              },
+              onClick = { navigationController.navigate(Route.Meetings) },
               iconVector = Icons.Default.CalendarToday,
               pressedIconVector = Icons.Filled.CalendarToday,
               isPressed = isMeetingScreenPressed)
@@ -159,9 +150,7 @@ fun BottomBarNavigationComponent(
               modifier =
                   Modifier.weight(1f).testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON),
               "Profile",
-              onClick = {
-                navigationFunction(navigationController, destination = MainScreens.ProfileScreen)
-              },
+              onClick = { navigationController.navigate(Route.Profile) },
               iconVector = Icons.Outlined.AccountCircle,
               pressedIconVector = Icons.Filled.AccountCircle,
               isPressed = isProfileScreenPressed)

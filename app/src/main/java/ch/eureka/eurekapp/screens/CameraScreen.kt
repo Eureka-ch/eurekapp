@@ -32,7 +32,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.camera.CameraViewModel
-import ch.eureka.eurekapp.navigation.navigationFunction
 import ch.eureka.eurekapp.ui.camera.LocalPhotoViewer
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
@@ -88,7 +87,7 @@ fun CameraScreen(
               navigationController.previousBackStackEntry
                   ?.savedStateHandle
                   ?.set("photoUri", cameraState.picture.toString())
-              navigationFunction(navigationController, true, null)
+              navigationController.popBackStack()
             },
             colors = EurekaStyles.PrimaryButtonColors(),
             modifier =

@@ -9,7 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -37,17 +36,26 @@ import kotlinx.serialization.Serializable
 sealed interface Route {
   // Main screens
   @Serializable data object ProjectSelection : Route
+
   @Serializable data object OverviewProject : Route
+
   @Serializable data object Profile : Route
+
   @Serializable data object Meetings : Route
+
   @Serializable data object Ideas : Route
+
   @Serializable data object Tasks : Route
 
   // Task specific screens
   @Serializable data class CreateTask(val projectId: String) : Route
+
   @Serializable data class TaskDetail(val taskId: String) : Route
+
   @Serializable data class TaskEdit(val taskId: String) : Route
+
   @Serializable data object AutoTaskAssignment : Route
+
   @Serializable data object TaskDependence : Route
 
   // Ideas specific screens
@@ -55,6 +63,7 @@ sealed interface Route {
 
   // Meetings specific screens
   @Serializable data object AddMeeting : Route
+
   @Serializable data object AudioTranscript : Route
 
   // Project selection specific screens
@@ -68,17 +77,14 @@ sealed interface Route {
 }
 
 // Legacy Screen classes for backward compatibility during migration
-@Deprecated("Use Route sealed interface instead")
-abstract class Screen(val title: String)
+@Deprecated("Use Route sealed interface instead") abstract class Screen(val title: String)
 
-@Deprecated("Use Route sealed interface instead")
-class MainScreen(title: String) : Screen(title)
+@Deprecated("Use Route sealed interface instead") class MainScreen(title: String) : Screen(title)
 
 @Deprecated("Use Route sealed interface instead")
 class SubScreen(title: String, val parentScreen: MainScreen) : Screen(title)
 
-@Deprecated("Use Route sealed interface instead")
-class SharedScreen(title: String) : Screen(title)
+@Deprecated("Use Route sealed interface instead") class SharedScreen(title: String) : Screen(title)
 
 // Legacy screen object definitions - deprecated in favor of Route sealed interface
 @Deprecated("Use Route sealed interface instead")
@@ -212,8 +218,7 @@ fun NavigationMenu() {
               // Overview project screens
               composable<Route.CreateInvitation> {
                 ch.eureka.eurekapp.screens.subscreens.overview_project_subscreens
-                    .CreateInvitationSubScreen
-                    .CreateInvitationScreen()
+                    .CreateInvitationSubscreen(projectId = testProjectId, onInvitationCreate = {})
               }
             }
       }

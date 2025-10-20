@@ -39,8 +39,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.tasks.CreateTaskViewModel
-import ch.eureka.eurekapp.navigation.SharedScreens
-import ch.eureka.eurekapp.navigation.navigationFunction
+import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.ui.camera.LocalPhotoViewer
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
@@ -107,7 +106,7 @@ fun CreateTaskScreen(
 
   LaunchedEffect(createTaskState.taskSaved) {
     if (createTaskState.taskSaved) {
-      navigationFunction(navigationController, true, null)
+      navigationController.popBackStack()
       createTaskViewModel.resetSaveState()
     }
   }
@@ -202,11 +201,7 @@ fun CreateTaskScreen(
               }
               Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
                 OutlinedButton(
-                    onClick = {
-                      navigationFunction(
-                          navigationController = navigationController,
-                          destination = SharedScreens.CameraScreen)
-                    },
+                    onClick = { navigationController.navigate(Route.Camera) },
                     colors = EurekaStyles.OutlinedButtonColors(),
                     modifier = Modifier.testTag(CreateTaskScreenTestTags.ADD_PHOTO)) {
                       Text("Add Photo")
