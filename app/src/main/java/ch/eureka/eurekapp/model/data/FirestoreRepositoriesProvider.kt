@@ -4,21 +4,20 @@ import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.file.FirebaseFileStorageRepository
 import ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository
 import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
-import com.google.firebase.firestore.firestore
-import com.google.firebase.storage.storage
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 
 object FirestoreRepositoriesProvider {
   private val _taskRepository: FirestoreTaskRepository by lazy {
-    FirestoreTaskRepository(Firebase.firestore, Firebase.auth)
+    FirestoreTaskRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
   }
 
   private val _projectRepository: FirestoreProjectRepository by lazy {
-    FirestoreProjectRepository(Firebase.firestore, Firebase.auth)
+    FirestoreProjectRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
   }
   private val _fileRepository: FileStorageRepository by lazy {
-    FirebaseFileStorageRepository(Firebase.storage, Firebase.auth)
+    FirebaseFileStorageRepository(FirebaseStorage.getInstance(), FirebaseAuth.getInstance())
   }
 
   var taskRepository = _taskRepository
@@ -26,8 +25,11 @@ object FirestoreRepositoriesProvider {
   var projectRepository = _projectRepository
 
   fun userChange() {
-    taskRepository = FirestoreTaskRepository(Firebase.firestore, Firebase.auth)
-    fileRepository = FirebaseFileStorageRepository(Firebase.storage, Firebase.auth)
-    projectRepository = FirestoreProjectRepository(Firebase.firestore, Firebase.auth)
+    taskRepository =
+        FirestoreTaskRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
+    fileRepository =
+        FirebaseFileStorageRepository(FirebaseStorage.getInstance(), FirebaseAuth.getInstance())
+    projectRepository =
+        FirestoreProjectRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
   }
 }

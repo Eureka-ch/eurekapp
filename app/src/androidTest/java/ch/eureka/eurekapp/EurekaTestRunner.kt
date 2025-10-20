@@ -2,10 +2,9 @@ package ch.eureka.eurekapp
 
 import android.os.Bundle
 import androidx.test.runner.AndroidJUnitRunner
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
-import com.google.firebase.firestore.firestore
-import com.google.firebase.storage.storage
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 
 /**
  * Custom test runner that configures Firebase emulators for all instrumented tests.
@@ -18,8 +17,8 @@ class EurekaTestRunner : AndroidJUnitRunner() {
     super.onCreate(arguments)
 
     // Configure Firebase to use local emulators
-    Firebase.firestore.useEmulator("10.0.2.2", 8080)
-    Firebase.auth.useEmulator("10.0.2.2", 9099)
-    Firebase.storage.useEmulator("10.0.2.2", 9199)
+    FirebaseFirestore.getInstance().useEmulator("10.0.2.2", 8080)
+    FirebaseAuth.getInstance().useEmulator("10.0.2.2", 9099)
+    FirebaseStorage.getInstance().useEmulator("10.0.2.2", 9199)
   }
 }

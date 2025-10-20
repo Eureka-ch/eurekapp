@@ -8,10 +8,8 @@ package ch.eureka.eurekapp.model.authentication
 import androidx.credentials.Credential
 import androidx.credentials.CustomCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.auth
 import kotlinx.coroutines.tasks.await
 
 /**
@@ -25,7 +23,7 @@ import kotlinx.coroutines.tasks.await
  *   Firebase credentials.
  */
 class AuthRepositoryFirebase(
-    private val auth: FirebaseAuth = Firebase.auth,
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
     private val helper: GoogleSignInHelper = DefaultGoogleSignInHelper()
 ) : AuthRepository {
 

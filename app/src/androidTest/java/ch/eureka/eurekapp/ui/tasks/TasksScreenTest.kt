@@ -51,7 +51,7 @@ class TasksScreenTest {
   private val tomorrow =
       Timestamp(
           java.util.Date(now + 24 * 60 * 60 * 1000 + 1000)) // Add extra second to avoid "due today"
-  private val twoWeeksAway = Timestamp(java.util.Date(now + 14 * 24 * 60 * 60 * 1000))
+  private val twoWeeksAway = Timestamp(java.util.Date(now + 15 * 24 * 60 * 60 * 1000))
 
   @Before
   fun setUp() {
@@ -347,6 +347,7 @@ class TasksScreenTest {
     composeTestRule.onNodeWithText("⏰ Due tomorrow").assertIsDisplayed()
 
     taskList.performScrollToNode(hasText(tasks[2].title))
+
     composeTestRule.onNodeWithText("⏰ Due in more than a week").assertIsDisplayed()
 
     taskList.performScrollToNode(hasText(tasks[3].title))

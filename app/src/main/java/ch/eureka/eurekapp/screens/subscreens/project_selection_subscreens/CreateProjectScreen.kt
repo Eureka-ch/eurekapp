@@ -35,9 +35,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -470,7 +470,7 @@ fun CreateProjectTextField(
                     Text(placeHolderText, style = textTypography, color = GrayTextColor2)
                   },
                   colors =
-                      TextFieldDefaults.outlinedTextFieldColors(
+                      OutlinedTextFieldDefaults.colors(
                           focusedBorderColor = GrayTextColor2,
                           unfocusedBorderColor = BorderGrayColor),
                   trailingIcon = {

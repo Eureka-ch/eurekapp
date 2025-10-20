@@ -6,11 +6,10 @@ Portions of the code in this file are copy-pasted from the Bootcamp solution pro
 package ch.eureka.eurekapp.utils
 
 import android.util.Log
-import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
-import com.google.firebase.auth.auth
-import com.google.firebase.firestore.firestore
-import com.google.firebase.storage.storage
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import io.mockk.InternalPlatformDsl.toArray
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -25,13 +24,13 @@ import org.json.JSONObject
  */
 object FirebaseEmulator {
   val auth
-    get() = Firebase.auth
+    get() = FirebaseAuth.getInstance()
 
   val firestore
-    get() = Firebase.firestore
+    get() = FirebaseFirestore.getInstance()
 
   val storage
-    get() = Firebase.storage
+    get() = FirebaseStorage.getInstance()
 
   const val HOST = "10.0.2.2"
   const val EMULATORS_PORT = 4400
@@ -80,7 +79,7 @@ object FirebaseEmulator {
       Log.d("FirebaseEmulator", "Firestore emulator configured at $HOST:$FIRESTORE_PORT")
       storage.useEmulator(HOST, STORAGE_PORT)
       Log.d("FirebaseEmulator", "Storage emulator configured at $HOST:$STORAGE_PORT")
-      assert(Firebase.firestore.firestoreSettings.host.contains(HOST)) {
+      assert(FirebaseFirestore.getInstance().firestoreSettings.host.contains(HOST)) {
         "Failed to connect to Firebase Firestore Emulator."
       }
       Log.d("FirebaseEmulator", "All emulators successfully initialized")
