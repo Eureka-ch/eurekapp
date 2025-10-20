@@ -15,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRole
@@ -154,13 +155,20 @@ fun NavigationMenu() {
         creatorId = auth.currentUser?.uid ?: "unknown")
   }
 
+  // Legacy currentScreen tracking for BottomBarNavigationComponent
+  // TODO: Refactor BottomBarNavigationComponent to use Route instead of Screen
   LaunchedEffect(currentRoute) {
     val screenRoute = currentRoute?.substringBefore('/') ?: currentRoute
-    if (screenRoute != null) {
-      currentScreen.value = titleToScreensMap[screenRoute]!!
-    } else {
-      currentScreen.value = MainScreens.OverviewProjectScreen
-    }
+    currentScreen.value =
+        when {
+          screenRoute?.contains("ProjectSelection") == true -> MainScreens.ProjectSelectionScreen
+          screenRoute?.contains("OverviewProject") == true -> MainScreens.OverviewProjectScreen
+          screenRoute?.contains("Profile") == true -> MainScreens.ProfileScreen
+          screenRoute?.contains("Meetings") == true -> MainScreens.MeetingsScreen
+          screenRoute?.contains("Ideas") == true -> MainScreens.IdeasScreen
+          screenRoute?.contains("Tasks") == true -> MainScreens.TasksScreen
+          else -> MainScreens.OverviewProjectScreen
+        }
   }
   Scaffold(
       containerColor = Color.White,
@@ -173,36 +181,54 @@ fun NavigationMenu() {
         NavHost(
             modifier = Modifier.padding(innerPadding),
             navController = navigationController,
-            startDestination = MainScreens.ProjectSelectionScreen.title) {
-              composable(MainScreens.ProjectSelectionScreen.title) {
-                ProjectSelectionScreen(navigationController)
-              }
-              composable(MainScreens.MeetingsScreen.title) {
+            startDestination = Route.ProjectSelection) {
+              // Main screens
+              composable<Route.ProjectSelection> { ProjectSelectionScreen(navigationController) }
+              composable<Route.Meetings> {
                 MeetingScreen("1234")
               } // TODO : change this after "Create project" is implemented
-              composable(MainScreens.ProfileScreen.title) { ProfileScreen() }
-              composable(MainScreens.IdeasScreen.title) { IdeasScreen(navigationController) }
-              composable(MainScreens.OverviewProjectScreen.title) { OverviewProjectsScreen() }
-              composable(MainScreens.TasksScreen.title) {
+              composable<Route.Profile> { ProfileScreen() }
+              composable<Route.Ideas> { IdeasScreen(navigationController) }
+              composable<Route.OverviewProject> { OverviewProjectsScreen() }
+              composable<Route.Tasks> {
                 TasksScreen(
                     onCreateTaskClick = {
-                      navigationFunction(
-                          navigationController,
-                          destination = TaskSpecificScreens.CreateTaskScreen,
-                          args = arrayOf(testProjectId))
+                      navigationController.navigate(Route.CreateTask(projectId = testProjectId))
                     })
               }
-              composable("${TaskSpecificScreens.CreateTaskScreen.title}/{projectId}") {
-                  backStackEntry ->
-                val context = LocalContext.current
 
-                CreateTaskScreen(testProjectId, navigationController)
+              // Task screens
+              composable<Route.CreateTask> { backStackEntry ->
+                val createTaskRoute = backStackEntry.toRoute<Route.CreateTask>()
+                CreateTaskScreen(createTaskRoute.projectId, navigationController)
               }
-              composable(SharedScreens.CameraScreen.title) { Camera(navigationController) }
+
+              // Shared screens
+              composable<Route.Camera> { Camera(navigationController) }
+
+              // Project screens
+              composable<Route.CreateProject> { CreateProjectScreen() }
+
+              // Overview project screens
+              composable<Route.CreateInvitation> {
+                ch.eureka.eurekapp.screens.subscreens.overview_project_subscreens
+                    .CreateInvitationSubScreen
+                    .CreateInvitationScreen()
+              }
             }
       }
 }
 
+/**
+ * Legacy navigation helper function.
+ *
+ * @deprecated Use navController.navigate(Route.SomeRoute) for forward navigation and
+ *   navController.popBackStack() for back navigation instead.
+ */
+@Deprecated(
+    "Use navController.navigate(Route.SomeRoute) or navController.popBackStack() instead",
+    ReplaceWith(
+        "if (goBack) navigationController.popBackStack() else navigationController.navigate(destination)"))
 fun navigationFunction(
     navigationController: NavController,
     goBack: Boolean = false,
