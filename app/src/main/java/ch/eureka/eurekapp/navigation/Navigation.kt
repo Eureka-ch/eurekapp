@@ -28,106 +28,104 @@ import ch.eureka.eurekapp.screens.TasksScreen
 import ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens.CreateProjectScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
-import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import kotlinx.serialization.Serializable
 
+// Type-safe navigation routes using Kotlin Serialization
+sealed interface Route {
+  // Main screens
+  @Serializable data object ProjectSelection : Route
+  @Serializable data object OverviewProject : Route
+  @Serializable data object Profile : Route
+  @Serializable data object Meetings : Route
+  @Serializable data object Ideas : Route
+  @Serializable data object Tasks : Route
+
+  // Task specific screens
+  @Serializable data class CreateTask(val projectId: String) : Route
+  @Serializable data class TaskDetail(val taskId: String) : Route
+  @Serializable data class TaskEdit(val taskId: String) : Route
+  @Serializable data object AutoTaskAssignment : Route
+  @Serializable data object TaskDependence : Route
+
+  // Ideas specific screens
+  @Serializable data object CreateIdeas : Route
+
+  // Meetings specific screens
+  @Serializable data object AddMeeting : Route
+  @Serializable data object AudioTranscript : Route
+
+  // Project selection specific screens
+  @Serializable data object CreateProject : Route
+
+  // Overview project specific screens
+  @Serializable data object CreateInvitation : Route
+
+  // Shared screens
+  @Serializable data object Camera : Route
+}
+
+// Legacy Screen classes for backward compatibility during migration
+@Deprecated("Use Route sealed interface instead")
 abstract class Screen(val title: String)
 
+@Deprecated("Use Route sealed interface instead")
 class MainScreen(title: String) : Screen(title)
 
+@Deprecated("Use Route sealed interface instead")
 class SubScreen(title: String, val parentScreen: MainScreen) : Screen(title)
 
+@Deprecated("Use Route sealed interface instead")
 class SharedScreen(title: String) : Screen(title)
 
+// Legacy screen object definitions - deprecated in favor of Route sealed interface
+@Deprecated("Use Route sealed interface instead")
 object MainScreens {
-  // The general page where the user will select the project he wants to see or accept an invitation
   val ProjectSelectionScreen = MainScreen("General Overview")
-  // The page where the user will have a general overview of the project he selected
   val OverviewProjectScreen = MainScreen("Overview Project Screen")
-  // The page where the user will be able to see their profile details (and edit them)
   val ProfileScreen = MainScreen("Profile Screen")
-  // The page where the user will be able to see the meetings
   val MeetingsScreen = MainScreen("Meetings Screen")
-  // The Screen where the user will be able to see ideas
   val IdeasScreen = MainScreen("Ideas Screen")
-  // The screen where the user will see all the tasks
   val TasksScreen = MainScreen("Tasks Screen")
 }
 
+@Deprecated("Use Route sealed interface instead")
 object OverviewProjectSpecificScreens {
   val CreateInvitationScreen =
       SubScreen("Create Invitation Screen", MainScreens.OverviewProjectScreen)
 }
 
+@Deprecated("Use Route sealed interface instead")
 object TaskSpecificScreens {
-  // The screen where the user will be able to see a specific task's detail
   val TasksDetailScreen = SubScreen("Task Detail Screen", MainScreens.TasksScreen)
-
-  // The screen where the user will be able to edit a task
   val TasksEditScreen = SubScreen("Task Edit Screen", MainScreens.TasksScreen)
-
-  // The screen with AI suggestions on how to share tasks and time between members of the team
   val AutoTaskAssignmentScreen = SubScreen("Task Assignment Screen", MainScreens.TasksScreen)
-
-  // The screen showing dependences between tasks.
   val TaskDependencePage = SubScreen("Task Dependence Page", MainScreens.TasksScreen)
-
   val CreateTaskScreen = SubScreen("Create task screen", MainScreens.TasksScreen)
 }
 
+@Deprecated("Use Route sealed interface instead")
 object IdeasSpecificScreens {
-  // The screen where we could get ideas from our chat and AI suggestions
   val CreateIdeasScreen = SubScreen("Create Ideas Screen", MainScreens.IdeasScreen)
 }
 
+@Deprecated("Use Route sealed interface instead")
 object MeetingsSpecificScreens {
-  // Add Meeting Screen
   val AddMeetingScreen = SubScreen("Add Meeting Screen", MainScreens.MeetingsScreen)
-  // Sub page to the meetings screen where the user will be able to start the recording
-  // in order to make an audio transcript
   val AudioTranscriptScreen = SubScreen("Audio Transcript Screen", MainScreens.MeetingsScreen)
-  // Sub page to the meetings Screen where the user will be able to take pictures
   val CameraScreen = SubScreen("Camera Screen", MainScreens.MeetingsScreen)
 }
 
+@Deprecated("Use Route sealed interface instead")
 object SharedScreens {
-  // Page where the user will be able to take pictures related to both tasks and meetings
   val CameraScreen = SharedScreen("Camera Screen")
 }
 
+@Deprecated("Use Route sealed interface instead")
 object ProjectSelectionSpecificScreens {
-  // Create Project Screen
   val CreateProjectScreen = SubScreen("Create Project Screen", MainScreens.ProjectSelectionScreen)
 }
-
-private val titleToScreensMap =
-    mapOf<String, Screen>(
-        MainScreens.MeetingsScreen.title to MainScreens.MeetingsScreen,
-        MainScreens.TasksScreen.title to MainScreens.TasksScreen,
-        MainScreens.OverviewProjectScreen.title to MainScreens.OverviewProjectScreen,
-        MainScreens.ProfileScreen.title to MainScreens.ProfileScreen,
-        MainScreens.IdeasScreen.title to MainScreens.IdeasScreen,
-        MainScreens.ProjectSelectionScreen.title to MainScreens.ProjectSelectionScreen,
-
-        // Task specific screens
-        TaskSpecificScreens.TasksEditScreen.title to TaskSpecificScreens.TasksEditScreen,
-        TaskSpecificScreens.TasksDetailScreen.title to TaskSpecificScreens.TasksDetailScreen,
-        TaskSpecificScreens.AutoTaskAssignmentScreen.title to
-            TaskSpecificScreens.AutoTaskAssignmentScreen,
-        TaskSpecificScreens.TaskDependencePage.title to TaskSpecificScreens.TaskDependencePage,
-        TaskSpecificScreens.CreateTaskScreen.title to TaskSpecificScreens.CreateTaskScreen,
-
-        // Ideas Specific Screens
-        IdeasSpecificScreens.CreateIdeasScreen.title to IdeasSpecificScreens.CreateIdeasScreen,
-
-        // Meetings specific screens
-        SharedScreens.CameraScreen.title to SharedScreens.CameraScreen,
-        MeetingsSpecificScreens.AddMeetingScreen.title to MeetingsSpecificScreens.AddMeetingScreen,
-        MeetingsSpecificScreens.AudioTranscriptScreen.title to
-            MeetingsSpecificScreens.AudioTranscriptScreen,
-
-        // Project selection specific screens
-        ProjectSelectionSpecificScreens.CreateProjectScreen.title to
-            ProjectSelectionSpecificScreens.CreateProjectScreen)
 
 @Composable
 fun NavigationMenu() {
@@ -136,7 +134,7 @@ fun NavigationMenu() {
   val navBackStackEntry by navigationController.currentBackStackEntryAsState()
   val currentRoute = navBackStackEntry?.destination?.route
   val currentScreen = remember { mutableStateOf<Screen>(MainScreens.OverviewProjectScreen) }
-  val auth = FirebaseAuth.getInstance()
+  val auth = Firebase.auth
   val testProjectId = "test-project-id"
   // this is hardcoded for current release
   val testProject =
