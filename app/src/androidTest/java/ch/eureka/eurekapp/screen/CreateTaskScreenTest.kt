@@ -331,7 +331,8 @@ class CreateTaskScreenTests : TestCase() {
             description = "Description",
             dueDate = com.google.firebase.Timestamp(date), // 15/10/2025
             attachmentUrls = listOf(),
-            createdBy = FirebaseAuth.getInstance().currentUser!!.uid)
+            createdBy = testUserId,
+        )
 
     viewModel.viewModelScope.launch(Dispatchers.IO) {
       val tasks = taskRepository.getTasksForCurrentUser().first()
