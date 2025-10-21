@@ -339,7 +339,6 @@ class TasksScreenTest {
 
     val taskList = composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_LIST)
 
-    // Scroll to each task and verify due date
     taskList.performScrollToNode(hasText(tasks[0].title))
     composeTestRule.onNodeWithText("Overdue").assertIsDisplayed()
 
