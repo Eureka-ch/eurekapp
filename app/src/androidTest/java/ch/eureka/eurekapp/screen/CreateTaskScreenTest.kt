@@ -317,6 +317,7 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DELETE_PHOTO).assertIsDisplayed()
 
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.SAVE_TASK).performClick()
+    composeTestRule.waitForIdle()
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
 
     val dateText = "15/10/2025"
@@ -366,7 +367,7 @@ class CreateTaskScreenTests : TestCase() {
 
     // Save button should be enabled now
     saveButton.performClick()
-
+    composeTestRule.waitForIdle()
     // Ensure navigation back to tasks screen (pop back)
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
   }

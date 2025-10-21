@@ -49,8 +49,7 @@ class TasksScreenTest {
   private val now = System.currentTimeMillis()
   private val yesterday = Timestamp(java.util.Date(now - 24 * 60 * 60 * 1000))
   private val tomorrow =
-      Timestamp(
-          java.util.Date(now + 24 * 60 * 60 * 1000 + 1000)) // Add extra second to avoid "due today"
+      Timestamp(java.util.Date(now + 25 * 60 * 60 * 1000)) // Add extra second to avoid "due today"
   private val twoWeeksAway = Timestamp(java.util.Date(now + 15 * 24 * 60 * 60 * 1000))
 
   @Before
@@ -334,22 +333,31 @@ class TasksScreenTest {
               TaskScreenViewModel(
                   mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"))
     }
-
-    composeTestRule.waitUntilExactlyOneExists(hasText("⏰ Overdue"), 3000)
+    composeTestRule.waitForIdle()
 
     val taskList = composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_LIST)
 
+    // Verify overdue task
     taskList.performScrollToNode(hasText(tasks[0].title))
-    composeTestRule.onNodeWithText("Overdue").assertIsDisplayed()
+    composeTestRule.waitUntilExactlyOneExists(hasText(tasks[0].title), 3000)
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("⏰ Overdue").assertIsDisplayed()
 
+    // Verify tomorrow task
     taskList.performScrollToNode(hasText(tasks[1].title))
+    composeTestRule.waitUntilExactlyOneExists(hasText(tasks[1].title), 3000)
+    composeTestRule.waitForIdle()
     composeTestRule.onNodeWithText("⏰ Due tomorrow").assertIsDisplayed()
 
+    // Verify two weeks away task
     taskList.performScrollToNode(hasText(tasks[2].title))
-
+    composeTestRule.waitUntilExactlyOneExists(hasText(tasks[2].title), 3000)
+    taskList.performScrollToNode(hasText("⏰ Due in more than a week"))
     composeTestRule.onNodeWithText("⏰ Due in more than a week").assertIsDisplayed()
 
+    // Verify no due date task
     taskList.performScrollToNode(hasText(tasks[3].title))
+    composeTestRule.waitUntilExactlyOneExists(hasText(tasks[3].title), 3000)
     composeTestRule.onNodeWithText("⏰ No due date").assertIsDisplayed()
   }
 
