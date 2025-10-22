@@ -28,8 +28,7 @@ import ch.eureka.eurekapp.screens.TasksScreen
 import ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens.CreateProjectScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
+import com.google.firebase.auth.FirebaseAuth
 
 abstract class Screen(val title: String)
 
@@ -137,7 +136,7 @@ fun NavigationMenu() {
   val navBackStackEntry by navigationController.currentBackStackEntryAsState()
   val currentRoute = navBackStackEntry?.destination?.route
   val currentScreen = remember { mutableStateOf<Screen>(MainScreens.OverviewProjectScreen) }
-  val auth = Firebase.auth
+  val auth = FirebaseAuth.getInstance()
   val testProjectId = "test-project-id"
   // this is hardcoded for current release
   val testProject =

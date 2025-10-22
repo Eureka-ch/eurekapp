@@ -14,9 +14,8 @@ import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
-import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
-import com.google.firebase.auth.auth
+import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlinx.coroutines.CoroutineDispatcher
@@ -42,7 +41,7 @@ class CreateTaskViewModel(
     private val taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
     private val fileRepository: FileStorageRepository =
         FirestoreRepositoriesProvider.fileRepository,
-    private val getCurrentUserId: () -> String? = { Firebase.auth.currentUser?.uid },
+    private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
   // CreateTask state

@@ -5,6 +5,8 @@ import org.gradle.kotlin.dsl.invoke
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.kotlinxSerialization)
+    alias(libs.plugins.composeCompiler)
     alias(libs.plugins.ktfmt)
     alias(libs.plugins.gms)
     alias(libs.plugins.sonar)
@@ -13,12 +15,12 @@ plugins {
 
 android {
     namespace = "ch.eureka.eurekapp"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "ch.eureka.eurekapp"
         minSdk = 28
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -77,10 +79,6 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.2"
     }
 
     compileOptions {
@@ -164,81 +162,46 @@ configurations.forEach { configuration ->
 }
 
 dependencies {
+    // AndroidX Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(libs.material)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(platform(libs.compose.bom))
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.10")
-    testImplementation(libs.junit)
-    globalTestImplementation(libs.androidx.junit)
-    globalTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.material)
 
-    // ------------- Firebase/Firestore ------------------
+    // Kotlin
+    implementation(libs.kotlin.reflect)
+
+    // Firebase BOM (manages versions)
+    implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
-    implementation(libs.firebase.auth.ktx)
-    implementation(libs.firebase.database.ktx)
+    implementation(libs.firebase.database)
     implementation(libs.firebase.firestore)
-    implementation(libs.firebase.storage.ktx)
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.ui.auth)
     implementation(libs.kotlinx.coroutines.play.services)
 
-    // ------------- Jetpack Compose ------------------
+    // Jetpack Compose BOM (manages versions)
     val composeBom = platform(libs.compose.bom)
     implementation(composeBom)
     globalTestImplementation(composeBom)
 
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.graphics)
-    // Material Design 3
     implementation(libs.compose.material3)
-    // Integration with activities
     implementation(libs.compose.activity)
-    //Navigation library
-    implementation(libs.androidx.navigation.compose)
-    //Extended icons library
-    implementation(libs.androidx.material.icons.extended)
-
-    // Integration with ViewModels
     implementation(libs.compose.viewmodel)
-    // Android Studio Preview support
     implementation(libs.compose.preview)
     debugImplementation(libs.compose.tooling)
-    // UI Tests
-    globalTestImplementation(libs.compose.test.junit)
-    debugImplementation(libs.compose.test.manifest)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    testImplementation(libs.mockito.core)
-    testImplementation(libs.mockito.kotlin)
-    androidTestImplementation(libs.mockito.android)
-    androidTestImplementation(libs.mockito.kotlin)
-    testImplementation(libs.robolectric)
+    implementation(libs.androidx.material.icons.extended)
 
-    // Kaspresso test framework
-    globalTestImplementation(libs.kaspresso)
-    globalTestImplementation(libs.kaspresso.compose)
+    // Navigation
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.kotlinx.serialization.json)
 
-    // Robolectric
-    testImplementation(libs.robolectric)
-
-    // Firebase
-    implementation(libs.firebase.database.ktx)
-    implementation(libs.firebase.firestore)
-    implementation(libs.firebase.ui.auth)
-    implementation(libs.firebase.auth.ktx)
-    implementation(libs.firebase.auth)
-
-    // Credential Manager (for Google Sign-In)
+    // Credential Manager (Google Sign-In)
     implementation(libs.credentials)
     implementation(libs.credentials.play.services.auth)
     implementation(libs.googleid)
-
-    // Networking with OkHttp
-    implementation(libs.okhttp)
-
-    // Testing Unit
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.mockk.android)
-    testImplementation(libs.mockk)
 
     // Camera
     implementation(libs.androidx.camera.core)
@@ -247,10 +210,34 @@ dependencies {
     implementation(libs.androidx.camera.view)
     implementation(libs.guava)
 
-    // Coil for image loading
+    // Image Loading
     implementation(libs.coil.compose)
+
+    // Networking
+    implementation(libs.okhttp)
+
+    // Testing - Unit
+    testImplementation(libs.junit)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.mockk)
+    testImplementation(libs.robolectric)
     testImplementation(kotlin("test"))
 
+    // Testing - Android
+    globalTestImplementation(libs.androidx.junit)
+    globalTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.mockito.android)
+    androidTestImplementation(libs.mockito.kotlin)
+    androidTestImplementation(libs.mockk.android)
+
+    // Testing - Kaspresso
+    globalTestImplementation(libs.kaspresso)
+    globalTestImplementation(libs.kaspresso.compose)
+
+    // Testing - Compose
+    globalTestImplementation(libs.compose.test.junit)
+    debugImplementation(libs.compose.test.manifest)
 }
 
 tasks.withType<Test> {
