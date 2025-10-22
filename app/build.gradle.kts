@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.kotlinxSerialization)
-    alias(libs.plugins.kotlinxSerialization)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.ktfmt)
     alias(libs.plugins.gms)
