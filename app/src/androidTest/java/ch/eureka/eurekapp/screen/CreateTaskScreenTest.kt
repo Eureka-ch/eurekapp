@@ -39,7 +39,6 @@ import ch.eureka.eurekapp.screens.CreateTaskScreen
 import ch.eureka.eurekapp.screens.CreateTaskScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.StorageMetadata
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import kotlinx.coroutines.Dispatchers
