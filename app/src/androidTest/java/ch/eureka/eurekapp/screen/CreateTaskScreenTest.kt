@@ -369,8 +369,13 @@ class CreateTaskScreenTests : TestCase() {
 
     // Save button should be enabled now
     saveButton.performClick()
-    composeTestRule.waitForIdle()
-    // Ensure navigation back to tasks screen (pop back)
+    // Wait for navigation back to tasks screen
+    composeTestRule.waitUntil(timeoutMillis = 3_000) {
+      composeTestRule
+          .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
   }
 
