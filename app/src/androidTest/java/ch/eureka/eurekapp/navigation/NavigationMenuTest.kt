@@ -1,6 +1,5 @@
 package ch.eureka.eurekapp.navigation
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -19,10 +18,9 @@ class NavigationMenuTest : TestCase() {
 
   @Test
   fun testNavigationBottomBarComponent() {
-    val currentScreen = mutableStateOf<Screen>(MainScreens.ProfileScreen)
     composeTestRule.setContent {
       val navigationController = rememberNavController()
-      BottomBarNavigationComponent(navigationController, currentScreen)
+      BottomBarNavigationComponent(navigationController)
     }
 
     composeTestRule
@@ -44,7 +42,6 @@ class NavigationMenuTest : TestCase() {
 
   @Test
   fun testAllPages() {
-    val currentScreen = mutableStateOf<Screen>(MainScreens.ProfileScreen)
     composeTestRule.setContent { NavigationMenu() }
 
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON).performClick()
