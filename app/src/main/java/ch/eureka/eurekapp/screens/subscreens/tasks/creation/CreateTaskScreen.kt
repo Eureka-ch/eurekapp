@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.screens
+package ch.eureka.eurekapp.screens.subscreens.tasks.creation
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement

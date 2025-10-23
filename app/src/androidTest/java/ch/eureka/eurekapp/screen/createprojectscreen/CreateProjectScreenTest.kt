@@ -16,8 +16,8 @@ import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.project.ProjectRole
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
-import ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens.CreateProjectScreen
-import ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens.CreateProjectScreenTestTags
+import ch.eureka.eurekapp.screens.subscreens.projects.creation.CreateProjectScreen
+import ch.eureka.eurekapp.screens.subscreens.projects.creation.CreateProjectScreenTestTags
 import com.google.firebase.auth.FirebaseUser
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import kotlinx.coroutines.flow.Flow
