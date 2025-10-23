@@ -222,7 +222,13 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DELETE_PHOTO).assertIsDisplayed()
 
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.SAVE_TASK).performClick()
-    // Ensure navigation back to tasks screen (pop back)
+    // Wait for navigation back to tasks screen
+    composeTestRule.waitUntil(timeoutMillis = 3_000) {
+      composeTestRule
+          .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
     assert(!isPhotoSaved(context, "Pictures/EurekApp/"))
   }

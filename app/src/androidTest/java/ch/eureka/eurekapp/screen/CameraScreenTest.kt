@@ -47,7 +47,12 @@ class CameraScreenTest {
 
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
 
-    Thread.sleep(5000)
+    composeTestRule.waitUntil(timeoutMillis = 6_000) {
+      composeTestRule
+          .onAllNodesWithTag(CameraScreenTestTags.TAKE_PHOTO)
+          .fetchSemanticsNodes()
+          .isEmpty()
+    }
 
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).assertIsNotDisplayed()
 
@@ -59,7 +64,12 @@ class CameraScreenTest {
 
     composeTestRule.onNodeWithTag(CameraScreenTestTags.DELETE_PHOTO).performClick()
 
-    Thread.sleep(5000)
+    composeTestRule.waitUntil(timeoutMillis = 6_000) {
+      composeTestRule
+          .onAllNodesWithTag(CameraScreenTestTags.TAKE_PHOTO)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
 
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).assertIsDisplayed()
 
