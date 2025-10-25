@@ -509,4 +509,34 @@ class ProfileScreenTest {
         .onNodeWithTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD)
         .assertTextEquals("Display Name", "New Name From Server")
   }
+
+  @Test
+  fun profileScreen_editMode_enforcesMaxCharacterLimit() {
+    // Given
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
+    composeTestRule.onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+
+    // When
+    val maxText = "a".repeat(50)
+    composeTestRule
+        .onNodeWithTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD)
+        .performTextReplacement(maxText)
+    composeTestRule.waitForIdle()
+
+    // Then
+    composeTestRule.onNodeWithText(maxText).assertExists()
+    composeTestRule.onNodeWithText("50/50").assertExists()
+
+    // When
+    composeTestRule
+        .onNodeWithTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD)
+        .performTextInput("charles")
+    composeTestRule.waitForIdle()
+
+    // Then
+    composeTestRule.onNodeWithText(maxText).assertExists()
+    composeTestRule.onNodeWithText("50/50").assertExists()
+  }
 }

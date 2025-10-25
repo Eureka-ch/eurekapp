@@ -120,8 +120,14 @@ fun ProfileScreen(
                   if (uiState.isEditing) {
                     OutlinedTextField(
                         value = editedDisplayName,
-                        onValueChange = { editedDisplayName = it },
+                        onValueChange = {
+                          if (it.length <= 50) {
+                            editedDisplayName = it
+                          }
+                        },
                         label = { Text("Display Name") },
+                        supportingText = { Text("${editedDisplayName.length}/50") },
+                        singleLine = true,
                         modifier =
                             Modifier.fillMaxWidth()
                                 .testTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD))
