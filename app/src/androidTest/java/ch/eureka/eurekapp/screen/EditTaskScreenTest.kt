@@ -326,7 +326,12 @@ open class EditTaskScreenTest : TestCase() {
             .performTextInput("25/12/2025")
 
         composeTestRule.onNodeWithTag(EditTaskScreenTestTags.SAVE_TASK).performClick()
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          composeTestRule
+              .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
+              .fetchSemanticsNodes()
+              .isNotEmpty()
+        }
         composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
 
         // Verify task updated
@@ -359,7 +364,12 @@ open class EditTaskScreenTest : TestCase() {
         composeTestRule.waitForIdle()
 
         composeTestRule.onNodeWithTag(EditTaskScreenTestTags.DELETE_TASK).performClick()
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          composeTestRule
+              .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
+              .fetchSemanticsNodes()
+              .isNotEmpty()
+        }
         composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
 
         // Verify task deleted
@@ -441,7 +451,12 @@ open class EditTaskScreenTest : TestCase() {
             .performTextInput("15/10/2025")
 
         saveButton.performClick()
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          composeTestRule
+              .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
+              .fetchSemanticsNodes()
+              .isNotEmpty()
+        }
         composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
       }
 
