@@ -8,10 +8,9 @@ import coil.compose.AsyncImage
 // Portions of this code were generated with the help of Grok.
 @Composable
 fun PhotoViewer(image: Any, modifier: Modifier = Modifier) {
-    AsyncImage(
-        model = image,
-        contentDescription = "Remote Photo",
-        contentScale = ContentScale.Fit,
-        modifier = modifier
-    )
+  AsyncImage(
+      model = image,
+      contentDescription = "Remote Photo",
+      contentScale = ContentScale.Fit,
+      modifier = modifier)
 }

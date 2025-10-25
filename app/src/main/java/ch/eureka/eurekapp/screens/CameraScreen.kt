@@ -32,7 +32,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.camera.CameraViewModel
-import ch.eureka.eurekapp.ui.camera.LocalPhotoViewer
+import ch.eureka.eurekapp.ui.camera.PhotoViewer
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 object CameraScreenTestTags {
@@ -72,8 +72,7 @@ fun CameraScreen(
     Box(modifier = Modifier.fillMaxSize()) {
       if (cameraState.picture != null) {
         cameraState.picture?.let { uri ->
-          LocalPhotoViewer(
-              uri, modifier = Modifier.fillMaxSize().testTag(CameraScreenTestTags.PHOTO))
+          PhotoViewer(uri, modifier = Modifier.fillMaxSize().testTag(CameraScreenTestTags.PHOTO))
         }
         OutlinedButton(
             onClick = { cameraViewModel.deletePhoto() },

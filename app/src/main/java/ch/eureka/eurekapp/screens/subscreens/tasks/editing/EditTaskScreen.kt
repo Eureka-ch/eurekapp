@@ -1,5 +1,6 @@
-package ch.eureka.eurekapp.screens.subscreens.tasks.creation
+package ch.eureka.eurekapp.screens.subscreens.tasks.editing
 
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,12 +39,13 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import ch.eureka.eurekapp.model.tasks.CreateTaskViewModel
+import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.tasks.EditTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.ui.camera.PhotoViewer
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
-object CreateTaskScreenTestTags {
+object EditTaskScreenTestTags {
   const val TITLE = "title"
   const val DESCRIPTION = "description"
   const val DUE_DATE = "due_date"
@@ -52,32 +54,36 @@ object CreateTaskScreenTestTags {
   const val PHOTO = "photo"
   const val DELETE_PHOTO = "delete_photo"
   const val ERROR_MSG = "error_msg"
+  const val DELETE_TASK = "delete_task"
+  const val STATUS_BUTTON = "task_status"
+  const val CANCEL_BUTTON = "cancel_button"
 }
 
-const val CREATE_SCREEN_PHOTO_BUTTON_SIZE = 0.3f
-
+const val EDIT_SCREEN_SMALL_BUTTON_SIZE = 0.3f
 /*
 Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
 Co-Authored-By: Claude <noreply@anthropic.com>
 */
 
 /**
- * A composable screen for creating a new task within a project.
+ * A composable screen for editing an existing task within a project.
  *
- * @param projectId The ID of the project to which the new task will be added.
+ * @param projectId The ID of the project that contains the task.
+ * @param taskId The ID of the task to be edited
  * @param navigationController The NavHostController for handling navigation actions.
- * @param createTaskViewModel The CreateTaskViewModel instance responsible for managing task
- *   creation state.
+ * @param editTaskViewModel The EditTaskViewModel instance responsible for managing task editing
+ *   state.
  */
 @Composable
-fun CreateTaskScreen(
+fun EditTaskScreen(
     projectId: String,
+    taskId: String,
     navigationController: NavHostController = rememberNavController(),
-    createTaskViewModel: CreateTaskViewModel = viewModel(),
+    editTaskViewModel: EditTaskViewModel = viewModel(),
 ) {
-  val createTaskState by createTaskViewModel.uiState.collectAsState()
-  val inputValid by createTaskViewModel.inputValid.collectAsState()
-  val errorMsg = createTaskState.errorMsg
+  val editTaskState by editTaskViewModel.uiState.collectAsState()
+  val inputValid by editTaskViewModel.inputValid.collectAsState()
+  val errorMsg = editTaskState.errorMsg
   var hasTouchedTitle by remember { mutableStateOf(false) }
   var hasTouchedDescription by remember { mutableStateOf(false) }
   var hasTouchedDate by remember { mutableStateOf(false) }
@@ -88,37 +94,36 @@ fun CreateTaskScreen(
 
   val context = LocalContext.current
   val scrollState = rememberScrollState()
-  var isNavigatingToCamera by remember { mutableStateOf(false) }
 
-  LaunchedEffect(projectId) { createTaskViewModel.setProjectId(projectId) }
+  LaunchedEffect(projectId) { editTaskViewModel.setProjectId(projectId) }
+
+  LaunchedEffect(taskId) { editTaskViewModel.loadTask(projectId, taskId) }
 
   LaunchedEffect(errorMsg) {
     if (errorMsg != null) {
       Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
-      createTaskViewModel.clearErrorMsg()
+      editTaskViewModel.clearErrorMsg()
     }
   }
 
   LaunchedEffect(photoUri) {
     if (photoUri.isNotEmpty()) {
-      createTaskViewModel.addAttachment(photoUri.toUri())
+      editTaskViewModel.addAttachment(photoUri.toUri())
     }
   }
 
-  LaunchedEffect(createTaskState.taskSaved) {
-    if (createTaskState.taskSaved) {
+  LaunchedEffect(editTaskState.taskSaved) {
+    if (editTaskState.taskSaved) {
       navigationController.popBackStack()
-      createTaskViewModel.resetSaveState()
+      editTaskViewModel.resetSaveState()
     }
   }
 
   DisposableEffect(Unit) {
     onDispose {
       // Clean up photos when navigating away if task wasn't saved
-      if (!isNavigatingToCamera) {
-        createTaskState.attachmentUris.forEach { uri ->
-          createTaskViewModel.deletePhoto(context, uri)
-        }
+      if (!editTaskState.taskSaved) {
+        editTaskState.attachmentUris.forEach { uri -> editTaskViewModel.deletePhoto(context, uri) }
       }
     }
   }
@@ -134,8 +139,8 @@ fun CreateTaskScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
               // Title Input
               OutlinedTextField(
-                  value = createTaskState.title,
-                  onValueChange = { createTaskViewModel.setTitle(it) },
+                  value = editTaskState.title,
+                  onValueChange = { editTaskViewModel.setTitle(it) },
                   label = { Text("Title") },
                   placeholder = { Text("Name the task") },
                   modifier =
@@ -145,19 +150,19 @@ fun CreateTaskScreen(
                               hasTouchedTitle = true
                             }
                           })
-                          .testTag(CreateTaskScreenTestTags.TITLE))
-              if (createTaskState.title.isBlank() && hasTouchedTitle) {
+                          .testTag(EditTaskScreenTestTags.TITLE))
+              if (editTaskState.title.isBlank() && hasTouchedTitle) {
                 Text(
                     text = "Title cannot be empty",
                     color = Color.Red,
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.testTag(CreateTaskScreenTestTags.ERROR_MSG))
+                    modifier = Modifier.testTag(EditTaskScreenTestTags.ERROR_MSG))
               }
 
               // Description Input
               OutlinedTextField(
-                  value = createTaskState.description,
-                  onValueChange = { createTaskViewModel.setDescription(it) },
+                  value = editTaskState.description,
+                  onValueChange = { editTaskViewModel.setDescription(it) },
                   label = { Text("Description") },
                   placeholder = { Text("Describe the task") },
                   modifier =
@@ -167,19 +172,19 @@ fun CreateTaskScreen(
                               hasTouchedDescription = true
                             }
                           })
-                          .testTag(CreateTaskScreenTestTags.DESCRIPTION))
-              if (createTaskState.description.isBlank() && hasTouchedDescription) {
+                          .testTag(EditTaskScreenTestTags.DESCRIPTION))
+              if (editTaskState.description.isBlank() && hasTouchedDescription) {
                 Text(
                     text = "Description cannot be empty",
                     color = Color.Red,
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.testTag(CreateTaskScreenTestTags.ERROR_MSG))
+                    modifier = Modifier.testTag(EditTaskScreenTestTags.ERROR_MSG))
               }
 
               // Due Date Input
               OutlinedTextField(
-                  value = createTaskState.dueDate,
-                  onValueChange = { createTaskViewModel.setDueDate(it) },
+                  value = editTaskState.dueDate,
+                  onValueChange = { editTaskViewModel.setDueDate(it) },
                   label = { Text("Due date") },
                   placeholder = { Text("01/01/1970") },
                   modifier =
@@ -189,56 +194,97 @@ fun CreateTaskScreen(
                               hasTouchedDate = true
                             }
                           })
-                          .testTag(CreateTaskScreenTestTags.DUE_DATE))
-              val dateRegex = createTaskViewModel.dateRegex
-              if (createTaskState.dueDate.isNotBlank() &&
-                  !dateRegex.matches(createTaskState.dueDate) &&
+                          .testTag(EditTaskScreenTestTags.DUE_DATE))
+              val dateRegex = editTaskViewModel.dateRegex
+              if (editTaskState.dueDate.isNotBlank() &&
+                  !dateRegex.matches(editTaskState.dueDate) &&
                   hasTouchedDate) {
                 Text(
                     text = "Invalid format (must be dd/MM/yyyy)",
                     color = Color.Red,
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.testTag(CreateTaskScreenTestTags.ERROR_MSG))
+                    modifier = Modifier.testTag(EditTaskScreenTestTags.ERROR_MSG))
               }
+
+              Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+                OutlinedButton(
+                    onClick = { editTaskViewModel.setStatus(TaskStatus.CANCELLED) },
+                    colors = EurekaStyles.OutlinedButtonColors(),
+                    modifier =
+                        Modifier.fillMaxWidth(EDIT_SCREEN_SMALL_BUTTON_SIZE)
+                            .testTag(EditTaskScreenTestTags.CANCEL_BUTTON)) {
+                      Text("Cancel")
+                    }
+
+                OutlinedButton(
+                    onClick = { editTaskViewModel.setStatus(getNextStatus(editTaskState.status)) },
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(EditTaskScreenTestTags.STATUS_BUTTON)) {
+                      Text(text = editTaskState.status.name.replace("_", " "))
+                    }
+              }
+
+              OutlinedButton(
+                  onClick = { navigationController.navigate(Route.Camera) },
+                  colors = EurekaStyles.OutlinedButtonColors(),
+                  modifier = Modifier.fillMaxWidth().testTag(EditTaskScreenTestTags.ADD_PHOTO)) {
+                    Text("Add Photo")
+                  }
+
               Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
                 OutlinedButton(
                     onClick = {
-                      isNavigatingToCamera = true
-                      navigationController.navigate(Route.Camera)
+                      navigationController.popBackStack()
+                      editTaskViewModel.deleteTask(projectId, taskId)
                     },
-                    colors = EurekaStyles.OutlinedButtonColors(),
+                    enabled = !editTaskState.isSaving,
                     modifier =
-                        Modifier.fillMaxWidth(CREATE_SCREEN_PHOTO_BUTTON_SIZE)
-                            .testTag(CreateTaskScreenTestTags.ADD_PHOTO)) {
-                      Text("Add Photo")
+                        Modifier.fillMaxWidth(EDIT_SCREEN_SMALL_BUTTON_SIZE)
+                            .testTag(EditTaskScreenTestTags.DELETE_TASK),
+                    colors = EurekaStyles.OutlinedButtonColors()) {
+                      Text("Delete Task")
                     }
 
                 // Save Button
                 Button(
-                    onClick = { createTaskViewModel.addTask(context) },
-                    enabled = inputValid && !createTaskState.isSaving,
-                    modifier = Modifier.fillMaxWidth().testTag(CreateTaskScreenTestTags.SAVE_TASK),
+                    onClick = { editTaskViewModel.editTask(context) },
+                    enabled = inputValid && !editTaskState.isSaving,
+                    modifier = Modifier.fillMaxWidth().testTag(EditTaskScreenTestTags.SAVE_TASK),
                     colors = EurekaStyles.PrimaryButtonColors()) {
-                      Text(if (createTaskState.isSaving) "Saving..." else "Save")
+                      Text(if (editTaskState.isSaving) "Saving..." else "Save")
                     }
               }
-              createTaskState.attachmentUris.forEachIndexed { index, file ->
+              val allAttachments = editTaskState.attachmentUrls + editTaskState.attachmentUris
+              allAttachments.forEachIndexed { index, file ->
                 Row {
                   Text("Photo ${index + 1}")
                   IconButton(
                       onClick = {
-                        if (createTaskViewModel.deletePhoto(context, file)) {
-                          createTaskViewModel.removeAttachment(index)
+                        val uri =
+                            when (file) {
+                              is String -> file.toUri()
+                              else -> file as Uri
+                            }
+                        if (editTaskViewModel.deletePhoto(context, uri)) {
+                          editTaskViewModel.removeAttachment(index)
                         }
                       },
-                      modifier = Modifier.testTag(CreateTaskScreenTestTags.DELETE_PHOTO)) {
+                      modifier = Modifier.testTag(EditTaskScreenTestTags.DELETE_PHOTO)) {
                         Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
                       }
                   PhotoViewer(
-                      file,
-                      modifier = Modifier.size(100.dp).testTag(CreateTaskScreenTestTags.PHOTO))
+                      file, modifier = Modifier.size(100.dp).testTag(EditTaskScreenTestTags.PHOTO))
                 }
               }
             }
       })
+}
+
+fun getNextStatus(currentStatus: TaskStatus): TaskStatus {
+  return when (currentStatus) {
+    TaskStatus.TODO -> TaskStatus.IN_PROGRESS
+    TaskStatus.IN_PROGRESS -> TaskStatus.COMPLETED
+    TaskStatus.COMPLETED -> TaskStatus.TODO
+    TaskStatus.CANCELLED -> TaskStatus.TODO
+  }
 }

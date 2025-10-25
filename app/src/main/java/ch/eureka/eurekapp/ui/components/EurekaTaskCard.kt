@@ -51,10 +51,7 @@ fun EurekaTaskCard(
       elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
       colors = EurekaStyles.TaskCardColors(),
       border = EurekaStyles.TaskCardBorder(),
-      modifier = modifier.fillMaxWidth().clickable(
-          role = Role.Button,
-          onClick = onClick
-      )) {
+      modifier = modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick)) {
         Column(modifier = Modifier.padding(Spacing.lg)) { // Plus de padding
 
           // Top row: Title (left) + Checkbox (right)
