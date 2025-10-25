@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
@@ -41,6 +42,7 @@ fun EurekaTaskCard(
     progressValue: Float = 0f,
     isCompleted: Boolean = false,
     onToggleComplete: () -> Unit = {},
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
   // No local state - use controlled state from parent
@@ -49,7 +51,10 @@ fun EurekaTaskCard(
       elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
       colors = EurekaStyles.TaskCardColors(),
       border = EurekaStyles.TaskCardBorder(),
-      modifier = modifier.fillMaxWidth()) {
+      modifier = modifier.fillMaxWidth().clickable(
+          role = Role.Button,
+          onClick = onClick
+      )) {
         Column(modifier = Modifier.padding(Spacing.lg)) { // Plus de padding
 
           // Top row: Title (left) + Checkbox (right)

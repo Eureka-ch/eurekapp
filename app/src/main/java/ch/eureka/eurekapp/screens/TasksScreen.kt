@@ -59,6 +59,7 @@ data class TaskAndUsers(val task: Task, val users: List<User>)
 private fun TaskCard(
     taskAndUsers: TaskAndUsers,
     onToggleComplete: () -> Unit,
+    onTaskClick: (String, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
   val (task, users) = taskAndUsers
@@ -81,6 +82,7 @@ private fun TaskCard(
       dueDate = daysUntilDue?.let { formatDueDate(it) } ?: "No due date",
       priority = determinePriority(task, now),
       onToggleComplete = onToggleComplete,
+      onClick = { onTaskClick(task.taskID, task.projectId) },
       modifier = modifier)
 }
 
@@ -108,7 +110,7 @@ fun formatDueDate(diffInDays: Long): String {
 @Composable
 fun TasksScreen(
     modifier: Modifier = Modifier,
-    onTaskClick: (Task) -> Unit = {},
+    onTaskClick: (String, String) -> Unit = {_, _ -> },
     onCreateTaskClick: () -> Unit = {},
     onAutoAssignClick: () -> Unit = {},
     onNavigate: (String) -> Unit = {},
@@ -222,12 +224,14 @@ fun TasksScreen(
                   taskSection(
                       title = "Current Tasks",
                       tasksAndUsers = currentTaskAndUsers,
-                      viewModel = viewModel)
+                      viewModel = viewModel,
+                      onTaskClick = onTaskClick)
                   taskSection(
                       title = "Recently Completed",
                       tasksAndUsers = completedTaskAndUsers,
                       viewModel = viewModel,
-                      modifier = Modifier.padding(top = Spacing.lg))
+                      modifier = Modifier.padding(top = Spacing.lg),
+                      onTaskClick = onTaskClick)
                   if (currentTaskAndUsers.isEmpty() && completedTaskAndUsers.isEmpty()) {
                     item {
                       Column(
@@ -259,7 +263,8 @@ private fun LazyListScope.taskSection(
     title: String,
     tasksAndUsers: List<TaskAndUsers>,
     viewModel: TaskScreenViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onTaskClick: (String, String) -> Unit = {_, _ -> }
 ) {
   if (tasksAndUsers.isEmpty()) return
   item { TaskSectionHeader(title = title, taskCount = tasksAndUsers.size, modifier = modifier) }
@@ -267,6 +272,7 @@ private fun LazyListScope.taskSection(
     TaskCard(
         taskAndUsers,
         onToggleComplete = { viewModel.toggleTaskCompletion(taskAndUsers.task) },
+        onTaskClick = onTaskClick
     )
   }
 }
