@@ -28,6 +28,7 @@ class SignInScreenTest {
   @Before
   fun setup() {
     assumeTrue("Firebase Emulator is not running", FirebaseEmulator.isRunning)
+    FirebaseEmulator.clearFirestoreEmulator()
     FirebaseEmulator.clearAuthEmulator()
   }
 
