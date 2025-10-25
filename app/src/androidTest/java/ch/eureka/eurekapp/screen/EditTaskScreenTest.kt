@@ -83,6 +83,7 @@ open class EditTaskScreenTest : TestCase() {
 
     // Clear first before signing in
     FirebaseEmulator.clearFirestoreEmulator()
+    FirebaseEmulator.clearAuthEmulator()
     // Sign in anonymously first to ensure auth is established before clearing data
     val authResult = FirebaseEmulator.auth.signInAnonymously().await()
     testUserId = authResult.user?.uid ?: throw IllegalStateException("Failed to sign in")
