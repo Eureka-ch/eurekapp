@@ -66,8 +66,8 @@ jobs:
           arch: x86_64
           profile: pixel_7_pro
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated -memory 4096 -cores 2
+          disable-animations: true
           script: echo "Generated AVD snapshot for caching."
 
       # Load google-services.json and local.properties from the secrets
@@ -150,7 +150,7 @@ jobs:
           arch: x86_64
           profile: pixel_7_pro
           force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated -memory 4096 -cores 2
           disable-animations: true
           script: ./gradlew connectedCheck --parallel --build-cache --stacktrace --info
 

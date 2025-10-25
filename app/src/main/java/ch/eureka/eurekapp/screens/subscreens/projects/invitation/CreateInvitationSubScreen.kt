@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.screens.subscreens.overview_project_subscreens
+package ch.eureka.eurekapp.screens.subscreens.projects.invitation
 
 import android.content.ClipData
 import android.content.ClipboardManager
