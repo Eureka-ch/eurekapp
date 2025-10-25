@@ -175,7 +175,7 @@ class ProfileScreenTest {
     // Then
     composeTestRule
         .onNodeWithTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD)
-        .assertTextEquals("Display Name", "John Doe")
+        .assertTextEquals("Display Name", "John Doe", "8/50")
   }
 
   @Test
@@ -194,7 +194,7 @@ class ProfileScreenTest {
     // Then
     composeTestRule
         .onNodeWithTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD)
-        .assertTextEquals("Display Name", "New Name")
+        .assertTextEquals("Display Name", "New Name", "8/50")
   }
 
   @Test
@@ -507,6 +507,36 @@ class ProfileScreenTest {
     // Then
     composeTestRule
         .onNodeWithTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD)
-        .assertTextEquals("Display Name", "New Name From Server")
+        .assertTextEquals("Display Name", "New Name From Server", "20/50")
+  }
+
+  @Test
+  fun profileScreen_editMode_enforcesMaxCharacterLimit() {
+    // Given
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
+    composeTestRule.onNodeWithTag(ProfileScreenTestTags.EDIT_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+
+    // When
+    val maxText = "a".repeat(50)
+    composeTestRule
+        .onNodeWithTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD)
+        .performTextReplacement(maxText)
+    composeTestRule.waitForIdle()
+
+    // Then
+    composeTestRule.onNodeWithText(maxText).assertExists()
+    composeTestRule.onNodeWithText("50/50").assertExists()
+
+    // When
+    composeTestRule
+        .onNodeWithTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD)
+        .performTextInput("charles")
+    composeTestRule.waitForIdle()
+
+    // Then
+    composeTestRule.onNodeWithText(maxText).assertExists()
+    composeTestRule.onNodeWithText("50/50").assertExists()
   }
 }
