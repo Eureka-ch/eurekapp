@@ -9,7 +9,10 @@ import ch.eureka.eurekapp.ui.authentication.SignInScreenTestTags.SIGN_IN_WITH_GO
 import ch.eureka.eurekapp.utils.FakeCredentialManager
 import ch.eureka.eurekapp.utils.FakeJwtGenerator
 import ch.eureka.eurekapp.utils.FirebaseEmulator
+import com.google.firebase.auth.GoogleAuthProvider
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -61,7 +64,6 @@ class SignInScreenTest {
     assertTrue("The onSignedIn callback should have been called.", hasNavigated.get())
   }
 
-  /*
   @Test
   fun canSignInWithExistingAccount() {
     val email = "existing@test.com"
@@ -76,6 +78,8 @@ class SignInScreenTest {
 
     FirebaseEmulator.auth.signOut()
 
+    composeTestRule.waitUntil(3000) { FirebaseEmulator.auth.currentUser == null }
+
     composeTestRule.setContent {
       SignInScreen(credentialManager = FakeCredentialManager.create(fakeIdToken))
     }
@@ -86,5 +90,4 @@ class SignInScreenTest {
 
     assertEquals(email, FirebaseEmulator.auth.currentUser!!.email)
   }
-   */
 }
