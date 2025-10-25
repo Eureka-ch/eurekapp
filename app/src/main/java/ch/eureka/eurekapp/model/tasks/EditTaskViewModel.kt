@@ -46,8 +46,8 @@ class EditTaskViewModel(
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
     // CreateTask state
-    private val _uiState = MutableStateFlow(CreateTaskState())
-    val uiState: StateFlow<CreateTaskState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(EditTaskState())
+    val uiState: StateFlow<EditTaskState> = _uiState.asStateFlow()
 
     val dateRegex = Regex("""^\d{2}/\d{2}/\d{4}$""")
 
@@ -106,7 +106,7 @@ class EditTaskViewModel(
     }
 
     /** Adds a Task */
-    fun addTask(context: Context) {
+    fun editTask(context: Context) {
         val state = _uiState.value
         val dateStr = state.dueDate
 
@@ -139,8 +139,7 @@ class EditTaskViewModel(
         _uiState.value = _uiState.value.copy(isSaving = true)
 
         viewModelScope.launch(dispatcher + handler) {
-            val taskId = IdGenerator.generateTaskId()
-            val photoUrlsResult = saveFilesOnRepository(taskId, context)
+            val photoUrlsResult = saveFilesOnRepository(uiState.value.taskId, context)
             val photoUrls =
                 photoUrlsResult.getOrElse { exception ->
                     handler.handleException(coroutineContext, exception)
@@ -149,7 +148,7 @@ class EditTaskViewModel(
 
             val task =
                 Task(
-                    taskID = taskId,
+                    taskID = uiState.value.taskId,
                     projectId = state.projectId,
                     title = state.title,
                     description = state.description,
@@ -226,7 +225,13 @@ class EditTaskViewModel(
                             dueDate = task.dueDate?.let { date ->
                                 SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(date.toDate())
                             } ?: "",
+                            templateId = task.templateId,
                             projectId = task.projectId,
+                            taskId = task.taskID,
+                            assignedUserIds = task.assignedUserIds,
+                            attachmentUrls = task.attachmentUrls,
+                            status = task.status,
+                            customData = task.customData,
                         )
                     } else {
                         setErrorMsg("Task not found.")

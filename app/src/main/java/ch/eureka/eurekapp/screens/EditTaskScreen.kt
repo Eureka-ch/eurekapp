@@ -41,7 +41,7 @@ import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.tasks.EditTaskViewModel
 import ch.eureka.eurekapp.navigation.SharedScreens
 import ch.eureka.eurekapp.navigation.navigationFunction
-import ch.eureka.eurekapp.ui.camera.LocalPhotoViewer
+import ch.eureka.eurekapp.ui.camera.PhotoViewer
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 object EditTaskScreenTestTags {
@@ -218,7 +218,7 @@ fun EditTaskScreen(
 
                     // Save Button
                     Button(
-                        onClick = { editTaskViewModel.addTask(context) },
+                        onClick = { editTaskViewModel.editTask(context) },
                         enabled = inputValid && !editTaskState.isSaving,
                         modifier =
                             Modifier.fillMaxWidth(EDIT_SCREEN_SAVE_BUTTON_SIZE)
@@ -227,19 +227,21 @@ fun EditTaskScreen(
                         Text(if (editTaskState.isSaving) "Saving..." else "Save")
                     }
                 }
-                editTaskState.attachmentUris.forEachIndexed { index, file ->
+                val allAttachments = editTaskState.attachmentUrls + editTaskState.attachmentUris
+                allAttachments.forEachIndexed { index, file ->
                     Row {
                         Text("Photo ${index + 1}")
                         IconButton(
                             onClick = {
+                                /*
                                 if (editTaskViewModel.deletePhoto(context, file)) {
                                     editTaskViewModel.removeAttachment(index)
-                                }
+                                }*/
                             },
                             modifier = Modifier.testTag(CreateTaskScreenTestTags.DELETE_PHOTO)) {
                             Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
                         }
-                        LocalPhotoViewer(
+                        PhotoViewer(
                             file,
                             modifier = Modifier.size(100.dp).testTag(CreateTaskScreenTestTags.PHOTO))
                     }
