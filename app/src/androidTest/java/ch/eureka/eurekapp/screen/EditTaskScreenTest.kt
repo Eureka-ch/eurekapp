@@ -97,7 +97,11 @@ open class EditTaskScreenTest : TestCase() {
     clearTestPhotos()
   }
 
-  @After fun tearDown() = runBlocking { FirebaseEmulator.clearFirestoreEmulator() }
+  @After
+  fun tearDown() = runBlocking {
+    FirebaseEmulator.clearFirestoreEmulator()
+    FirebaseEmulator.clearAuthEmulator()
+  }
 
   private val taskRepository: TaskRepository =
       FirestoreTaskRepository(firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
