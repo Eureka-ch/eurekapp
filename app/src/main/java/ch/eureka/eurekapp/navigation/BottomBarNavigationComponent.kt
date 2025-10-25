@@ -58,6 +58,14 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
   val navBackStackEntry by navigationController.currentBackStackEntryAsState()
   val currentDestination = navBackStackEntry?.destination
 
+  fun navigateToTab(route: Any) {
+    navigationController.navigate(route) {
+      popUpTo(navigationController.graph.startDestinationId) { saveState = true }
+      launchSingleTop = true
+      restoreState = true
+    }
+  }
+
   val isTasksPressed by
       remember(currentDestination) {
         derivedStateOf {
@@ -106,7 +114,7 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
               modifier =
                   Modifier.weight(1f).testTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON),
               "Tasks",
-              onClick = { navigationController.navigate(Route.TasksSection.Tasks) },
+              onClick = { navigateToTab(Route.TasksSection.Tasks) },
               iconVector = Icons.Outlined.AssignmentTurnedIn,
               pressedIconVector = Icons.Filled.AssignmentTurnedIn,
               isPressed = isTasksPressed)
@@ -114,7 +122,7 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
               modifier =
                   Modifier.weight(1f).testTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON),
               "Ideas",
-              onClick = { navigationController.navigate(Route.IdeasSection.Ideas) },
+              onClick = { navigateToTab(Route.IdeasSection.Ideas) },
               iconVector = Icons.Outlined.Lightbulb,
               pressedIconVector = Icons.Filled.Lightbulb,
               isPressed = isIdeasScreenPressed)
@@ -126,14 +134,14 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
                   HomeIconButton(
                       modifier =
                           Modifier.testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
-                      onClick = { navigationController.navigate(Route.OverviewProject) })
+                      onClick = { navigateToTab(Route.OverviewProject) })
                 }
               }
           CustomIconButtonComposable(
               modifier =
                   Modifier.weight(1f).testTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON),
               "Meetings",
-              onClick = { navigationController.navigate(Route.MeetingsSection.Meetings) },
+              onClick = { navigateToTab(Route.MeetingsSection.Meetings) },
               iconVector = Icons.Default.CalendarToday,
               pressedIconVector = Icons.Filled.CalendarToday,
               isPressed = isMeetingScreenPressed)
@@ -141,7 +149,7 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
               modifier =
                   Modifier.weight(1f).testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON),
               "Profile",
-              onClick = { navigationController.navigate(Route.Profile) },
+              onClick = { navigateToTab(Route.Profile) },
               iconVector = Icons.Outlined.AccountCircle,
               pressedIconVector = Icons.Filled.AccountCircle,
               isPressed = isProfileScreenPressed)
