@@ -175,7 +175,7 @@ class ProfileScreenTest {
     // Then
     composeTestRule
         .onNodeWithTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD)
-        .assertTextEquals("Display Name", "John Doe")
+        .assertTextEquals("Display Name", "John Doe", "8/50")
   }
 
   @Test
@@ -194,7 +194,7 @@ class ProfileScreenTest {
     // Then
     composeTestRule
         .onNodeWithTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD)
-        .assertTextEquals("Display Name", "New Name")
+        .assertTextEquals("Display Name", "New Name", "8/50")
   }
 
   @Test
@@ -507,7 +507,7 @@ class ProfileScreenTest {
     // Then
     composeTestRule
         .onNodeWithTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD)
-        .assertTextEquals("Display Name", "New Name From Server")
+        .assertTextEquals("Display Name", "New Name From Server", "20/50")
   }
 
   @Test
