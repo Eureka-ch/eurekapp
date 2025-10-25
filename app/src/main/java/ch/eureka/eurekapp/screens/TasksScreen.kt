@@ -47,6 +47,7 @@ object TasksScreenTestTags {
   const val TASK_LIST = "taskList"
   const val CREATE_TASK_BUTTON = "createTaskButton"
   const val AUTO_ASSIGN_BUTTON = "autoAssignButton"
+  const val TASK_CARD = "taskCard"
 }
 
 data class TaskAndUsers(val task: Task, val users: List<User>)
@@ -83,7 +84,7 @@ private fun TaskCard(
       priority = determinePriority(task, now),
       onToggleComplete = onToggleComplete,
       onClick = { onTaskClick(task.taskID, task.projectId) },
-      modifier = modifier)
+      modifier = modifier.testTag(TasksScreenTestTags.TASK_CARD))
 }
 
 /** Format due date for display */
@@ -110,7 +111,7 @@ fun formatDueDate(diffInDays: Long): String {
 @Composable
 fun TasksScreen(
     modifier: Modifier = Modifier,
-    onTaskClick: (String, String) -> Unit = {_, _ -> },
+    onTaskClick: (String, String) -> Unit = { _, _ -> },
     onCreateTaskClick: () -> Unit = {},
     onAutoAssignClick: () -> Unit = {},
     onNavigate: (String) -> Unit = {},
@@ -264,7 +265,7 @@ private fun LazyListScope.taskSection(
     tasksAndUsers: List<TaskAndUsers>,
     viewModel: TaskScreenViewModel,
     modifier: Modifier = Modifier,
-    onTaskClick: (String, String) -> Unit = {_, _ -> }
+    onTaskClick: (String, String) -> Unit = { _, _ -> }
 ) {
   if (tasksAndUsers.isEmpty()) return
   item { TaskSectionHeader(title = title, taskCount = tasksAndUsers.size, modifier = modifier) }
@@ -272,8 +273,7 @@ private fun LazyListScope.taskSection(
     TaskCard(
         taskAndUsers,
         onToggleComplete = { viewModel.toggleTaskCompletion(taskAndUsers.task) },
-        onTaskClick = onTaskClick
-    )
+        onTaskClick = onTaskClick)
   }
 }
 

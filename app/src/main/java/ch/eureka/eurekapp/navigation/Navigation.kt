@@ -22,6 +22,7 @@ import ch.eureka.eurekapp.screens.TasksScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.creation.CreateProjectScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitationSubscreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
+import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
 import com.google.firebase.Firebase
@@ -51,7 +52,7 @@ sealed interface Route {
 
     @Serializable data class TaskDetail(val taskId: String) : TasksSection
 
-    @Serializable data class TaskEdit(val taskId: String) : TasksSection
+    @Serializable data class TaskEdit(val projectId: String, val taskId: String) : TasksSection
 
     @Serializable data object AutoTaskAssignment : TasksSection
 
@@ -151,11 +152,20 @@ fun NavigationMenu() {
                     onCreateTaskClick = {
                       navigationController.navigate(
                           Route.TasksSection.CreateTask(projectId = testProjectId))
+                    },
+                    onTaskClick = { taskId, projectId ->
+                      navigationController.navigate(
+                          Route.TasksSection.TaskEdit(projectId = testProjectId, taskId = taskId))
                     })
               }
               composable<Route.TasksSection.CreateTask> { backStackEntry ->
                 val createTaskRoute = backStackEntry.toRoute<Route.TasksSection.CreateTask>()
                 CreateTaskScreen(createTaskRoute.projectId, navigationController)
+              }
+
+              composable<Route.TasksSection.TaskEdit> { backStackEntry ->
+                val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.TaskEdit>()
+                EditTaskScreen(editTaskRoute.projectId, editTaskRoute.taskId, navigationController)
               }
 
               // Ideas section
