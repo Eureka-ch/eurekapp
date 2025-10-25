@@ -169,6 +169,14 @@ class CreateTaskScreenTests : TestCase() {
     // After taking photo, save the photo
     composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).performClick()
 
+    // Wait for navigation back to CreateTaskScreen
+    composeTestRule.waitUntil(timeoutMillis = 3_000) {
+      composeTestRule
+          .onAllNodesWithTag(CreateTaskScreenTestTags.PHOTO)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+
     // Now the photo should be displayed in Create Task screen
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.PHOTO).assertIsDisplayed()
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).assertIsDisplayed()
@@ -213,6 +221,14 @@ class CreateTaskScreenTests : TestCase() {
 
     // After taking photo, save the photo
     composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).performClick()
+
+    // Wait for navigation back to CreateTaskScreen
+    composeTestRule.waitUntil(timeoutMillis = 3_000) {
+      composeTestRule
+          .onAllNodesWithTag(CreateTaskScreenTestTags.PHOTO)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
 
     assert(isPhotoSaved(context, "Pictures/EurekApp/"))
 
@@ -311,6 +327,14 @@ class CreateTaskScreenTests : TestCase() {
 
     // After taking photo, save the photo
     composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).performClick()
+
+    // Wait for navigation back to CreateTaskScreen
+    composeTestRule.waitUntil(timeoutMillis = 3_000) {
+      composeTestRule
+          .onAllNodesWithTag(CreateTaskScreenTestTags.PHOTO)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
 
     // Now the photo should be displayed in Create Task screen and inputs conserved
     composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.PHOTO).assertIsDisplayed()
