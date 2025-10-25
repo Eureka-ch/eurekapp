@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.screens
 
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -233,10 +234,13 @@ fun EditTaskScreen(
                         Text("Photo ${index + 1}")
                         IconButton(
                             onClick = {
-                                /*
-                                if (editTaskViewModel.deletePhoto(context, file)) {
+                                val uri = when(file) {
+                                    is String -> file.toUri()
+                                    else -> file as Uri
+                                }
+                                if (editTaskViewModel.deletePhoto(context, uri)) {
                                     editTaskViewModel.removeAttachment(index)
-                                }*/
+                                }
                             },
                             modifier = Modifier.testTag(CreateTaskScreenTestTags.DELETE_PHOTO)) {
                             Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")

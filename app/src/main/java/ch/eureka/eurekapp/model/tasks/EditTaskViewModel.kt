@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 
 /*
@@ -194,6 +195,10 @@ class EditTaskViewModel(
                 attachmentUris =
                     _uiState.value.attachmentUris.toMutableList().also {
                         if (index in it.indices) it.removeAt(index)
+                    },
+                attachmentUrls =
+                    _uiState.value.attachmentUrls.toMutableList().also {
+                        if (index in it.indices) it.removeAt(index)
                     })
     }
 
@@ -203,10 +208,27 @@ class EditTaskViewModel(
 
     fun deletePhoto(context: Context, photoUri: Uri): Boolean {
         return try {
-            val rowsDeleted = context.contentResolver.delete(photoUri, null, null)
-            rowsDeleted > 0
+            when(photoUri.scheme) {
+                "content", "file" -> {
+                    val rowsDeleted = context.contentResolver.delete(photoUri, null, null)
+                    rowsDeleted > 0
+                }
+                "http", "https" -> {
+                    val result = runBlocking {
+                        fileRepository.deleteFile(photoUri.toString())
+                    }
+                    result.isSuccess
+                }
+                else -> {
+                    Log.w("CreateTaskViewModel", "Unsupported URI scheme: ${photoUri.scheme}")
+                    false
+                }
+            }
         } catch (e: SecurityException) {
             Log.w("CreateTaskViewModel", "Failed to delete photo: ${e.message}")
+            false
+        } catch (e: Exception) {
+            Log.w("CreateTaskViewModel", "Unexpected error: ${e.message}")
             false
         }
     }
