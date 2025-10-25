@@ -54,7 +54,7 @@ object CreateTaskScreenTestTags {
   const val ERROR_MSG = "error_msg"
 }
 
-const val SAVE_BUTTON_SIZE = 0.7f
+const val CREATE_SCREEN_SAVE_BUTTON_SIZE = 0.7f
 
 /*
 Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
@@ -212,7 +212,7 @@ fun CreateTaskScreen(
                     onClick = { createTaskViewModel.addTask(context) },
                     enabled = inputValid && !createTaskState.isSaving,
                     modifier =
-                        Modifier.fillMaxWidth(SAVE_BUTTON_SIZE)
+                        Modifier.fillMaxWidth(CREATE_SCREEN_SAVE_BUTTON_SIZE)
                             .testTag(CreateTaskScreenTestTags.SAVE_TASK),
                     colors = EurekaStyles.PrimaryButtonColors()) {
                       Text(if (createTaskState.isSaving) "Saving..." else "Save")
