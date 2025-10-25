@@ -39,6 +39,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.tasks.EditTaskViewModel
 import ch.eureka.eurekapp.navigation.SharedScreens
 import ch.eureka.eurekapp.navigation.navigationFunction
@@ -54,10 +55,11 @@ object EditTaskScreenTestTags {
     const val PHOTO = "photo"
     const val DELETE_PHOTO = "delete_photo"
     const val ERROR_MSG = "error_msg"
+    const val DELETE_TASK = "delete_task"
+    const val STATUS_BUTTON = "task_status"
 }
 
-const val EDIT_SCREEN_SAVE_BUTTON_SIZE = 0.7f
-
+const val EDIT_SCREEN_SMALL_BUTTON_SIZE = 0.3f
 /*
 Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
 Co-Authored-By: Claude <noreply@anthropic.com>
@@ -150,13 +152,15 @@ fun EditTaskScreen(
                                     hasTouchedTitle = true
                                 }
                             })
-                            .testTag(CreateTaskScreenTestTags.TITLE))
+                            .testTag(EditTaskScreenTestTags.TITLE)
+                )
                 if (editTaskState.title.isBlank() && hasTouchedTitle) {
                     Text(
                         text = "Title cannot be empty",
                         color = Color.Red,
                         style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.testTag(CreateTaskScreenTestTags.ERROR_MSG))
+                        modifier = Modifier.testTag(EditTaskScreenTestTags.ERROR_MSG)
+                    )
                 }
 
                 // Description Input
@@ -172,13 +176,15 @@ fun EditTaskScreen(
                                     hasTouchedDescription = true
                                 }
                             })
-                            .testTag(CreateTaskScreenTestTags.DESCRIPTION))
+                            .testTag(EditTaskScreenTestTags.DESCRIPTION)
+                )
                 if (editTaskState.description.isBlank() && hasTouchedDescription) {
                     Text(
                         text = "Description cannot be empty",
                         color = Color.Red,
                         style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.testTag(CreateTaskScreenTestTags.ERROR_MSG))
+                        modifier = Modifier.testTag(EditTaskScreenTestTags.ERROR_MSG)
+                    )
                 }
 
                 // Due Date Input
@@ -194,62 +200,123 @@ fun EditTaskScreen(
                                     hasTouchedDate = true
                                 }
                             })
-                            .testTag(CreateTaskScreenTestTags.DUE_DATE))
+                            .testTag(EditTaskScreenTestTags.DUE_DATE)
+                )
                 val dateRegex = editTaskViewModel.dateRegex
                 if (editTaskState.dueDate.isNotBlank() &&
                     !dateRegex.matches(editTaskState.dueDate) &&
-                    hasTouchedDate) {
+                    hasTouchedDate
+                ) {
                     Text(
                         text = "Invalid format (must be dd/MM/yyyy)",
                         color = Color.Red,
                         style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.testTag(CreateTaskScreenTestTags.ERROR_MSG))
+                        modifier = Modifier.testTag(EditTaskScreenTestTags.ERROR_MSG)
+                    )
                 }
+
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
                     OutlinedButton(
-                        onClick = {
-                            navigationFunction(
-                                navigationController = navigationController,
-                                destination = SharedScreens.CameraScreen)
-                        },
+                        onClick = { editTaskViewModel.setStatus(TaskStatus.CANCELLED) },
                         colors = EurekaStyles.OutlinedButtonColors(),
-                        modifier = Modifier.testTag(CreateTaskScreenTestTags.ADD_PHOTO)) {
-                        Text("Add Photo")
+                        modifier = Modifier.fillMaxWidth(EDIT_SCREEN_SMALL_BUTTON_SIZE)
+                            .testTag(EditTaskScreenTestTags.ADD_PHOTO)
+                    ) {
+                        Text("Cancel")
                     }
 
-                    // Save Button
-                    Button(
-                        onClick = { editTaskViewModel.editTask(context) },
-                        enabled = inputValid && !editTaskState.isSaving,
+                    OutlinedButton(
+                        onClick = {
+                            editTaskViewModel.setStatus(getNextStatus(editTaskState.status))
+                        },
                         modifier =
-                            Modifier.fillMaxWidth(EDIT_SCREEN_SAVE_BUTTON_SIZE)
-                                .testTag(CreateTaskScreenTestTags.SAVE_TASK),
-                        colors = EurekaStyles.PrimaryButtonColors()) {
-                        Text(if (editTaskState.isSaving) "Saving..." else "Save")
+                            Modifier.fillMaxWidth()
+                                .testTag(EditTaskScreenTestTags.STATUS_BUTTON)
+                    ) {
+                        Text(text = editTaskState.status.name.replace("_", " "))
                     }
                 }
-                val allAttachments = editTaskState.attachmentUrls + editTaskState.attachmentUris
-                allAttachments.forEachIndexed { index, file ->
-                    Row {
-                        Text("Photo ${index + 1}")
-                        IconButton(
+
+                OutlinedButton(
+                    onClick = {
+                        navigationFunction(
+                            navigationController = navigationController,
+                            destination = SharedScreens.CameraScreen
+                        )
+                    },
+                    colors = EurekaStyles.OutlinedButtonColors(),
+                    modifier = Modifier.fillMaxWidth().testTag(EditTaskScreenTestTags.ADD_PHOTO)
+                ) {
+                    Text("Add Photo")
+                }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        OutlinedButton(
                             onClick = {
-                                val uri = when(file) {
-                                    is String -> file.toUri()
-                                    else -> file as Uri
-                                }
-                                if (editTaskViewModel.deletePhoto(context, uri)) {
-                                    editTaskViewModel.removeAttachment(index)
-                                }
+                                navigationController.popBackStack()
+                                editTaskViewModel.deleteTask(projectId, taskId)
                             },
-                            modifier = Modifier.testTag(CreateTaskScreenTestTags.DELETE_PHOTO)) {
-                            Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
+                            enabled = !editTaskState.isSaving,
+                            modifier =
+                                Modifier.fillMaxWidth(EDIT_SCREEN_SMALL_BUTTON_SIZE)
+                                    .testTag(EditTaskScreenTestTags.DELETE_TASK),
+                            colors = EurekaStyles.OutlinedButtonColors()
+                        ) {
+                            Text("Delete Task")
                         }
-                        PhotoViewer(
-                            file,
-                            modifier = Modifier.size(100.dp).testTag(CreateTaskScreenTestTags.PHOTO))
+
+                        // Save Button
+                        Button(
+                            onClick = { editTaskViewModel.editTask(context) },
+                            enabled = inputValid && !editTaskState.isSaving,
+                            modifier =
+                                Modifier.fillMaxWidth()
+                                    .testTag(EditTaskScreenTestTags.SAVE_TASK),
+                            colors = EurekaStyles.PrimaryButtonColors()
+                        ) {
+                            Text(if (editTaskState.isSaving) "Saving..." else "Save")
+                        }
                     }
-                }
+                    val allAttachments = editTaskState.attachmentUrls + editTaskState.attachmentUris
+                    allAttachments.forEachIndexed { index, file ->
+                        Row {
+                            Text("Photo ${index + 1}")
+                            IconButton(
+                                onClick = {
+                                    val uri = when (file) {
+                                        is String -> file.toUri()
+                                        else -> file as Uri
+                                    }
+                                    if (editTaskViewModel.deletePhoto(context, uri)) {
+                                        editTaskViewModel.removeAttachment(index)
+                                    }
+                                },
+                                modifier = Modifier.testTag(EditTaskScreenTestTags.DELETE_PHOTO)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Delete,
+                                    contentDescription = "Delete file"
+                                )
+                            }
+                            PhotoViewer(
+                                file,
+                                modifier = Modifier.size(100.dp)
+                                    .testTag(EditTaskScreenTestTags.PHOTO)
+                            )
+                        }
+                    }
             }
         })
+}
+
+fun getNextStatus(currentStatus: TaskStatus): TaskStatus {
+    return when (currentStatus) {
+        TaskStatus.TODO -> TaskStatus.IN_PROGRESS
+        TaskStatus.IN_PROGRESS -> TaskStatus.COMPLETED
+        TaskStatus.COMPLETED -> TaskStatus.TODO
+        TaskStatus.CANCELLED -> TaskStatus.TODO
+    }
 }

@@ -9,11 +9,11 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
-import ch.eureka.eurekapp.model.data.IdGenerator
 import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
+import ch.eureka.eurekapp.model.data.task.TaskStatus
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
@@ -106,7 +106,7 @@ class EditTaskViewModel(
         _uiState.value = _uiState.value.copy(isSaving = false, taskSaved = false)
     }
 
-    /** Adds a Task */
+    /** Edits a Task */
     fun editTask(context: Context) {
         val state = _uiState.value
         val dateStr = state.dueDate
@@ -141,7 +141,7 @@ class EditTaskViewModel(
 
         viewModelScope.launch(dispatcher + handler) {
             val photoUrlsResult = saveFilesOnRepository(uiState.value.taskId, context)
-            val photoUrls =
+            val newPhotoUrls =
                 photoUrlsResult.getOrElse { exception ->
                     handler.handleException(coroutineContext, exception)
                     return@launch
@@ -155,11 +155,12 @@ class EditTaskViewModel(
                     description = state.description,
                     assignedUserIds = listOf(currentUser),
                     dueDate = Timestamp(date),
-                    attachmentUrls = photoUrls,
-                    createdBy = currentUser)
+                    attachmentUrls = state.attachmentUrls + newPhotoUrls,
+                    createdBy = currentUser,
+                    status = state.status)
 
-            taskRepository.createTask(task).onFailure {
-                setErrorMsg("Failed to add Task.")
+            taskRepository.updateTask(task).onFailure {
+                setErrorMsg("Failed to update Task.")
                 _uiState.value = _uiState.value.copy(isSaving = false)
                 return@launch
             }
@@ -260,5 +261,27 @@ class EditTaskViewModel(
                     }
                 }
         }
+    }
+
+    fun deleteTask(projectId: String, taskId: String) {
+        for(url in _uiState.value.attachmentUrls) {
+            viewModelScope.launch(dispatcher) {
+                fileRepository.deleteFile(url)
+                    .onFailure { exception ->
+                        Log.w("EditTaskViewModel", "Failed to delete attachment: ${exception.message}")
+                    }
+            }
+        }
+
+        viewModelScope.launch(dispatcher) {
+            taskRepository.deleteTask(projectId, taskId)
+                .onFailure { exception ->
+                    setErrorMsg("Failed to delete Task: ${exception.message}")
+                }
+        }
+    }
+
+    fun setStatus(status: TaskStatus) {
+        _uiState.value = _uiState.value.copy(status = status)
     }
 }
