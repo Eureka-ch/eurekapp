@@ -6,24 +6,25 @@ import ch.eureka.eurekapp.model.data.task.TaskStatus
 /*
 Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
 Co-Authored-By: Claude <noreply@anthropic.com>
+Portions of this code were generated with the help of Grok.
 */
 
 /** State for the CreateTaskScreen screen. This state holds the data needed to create a new Task */
 data class EditTaskState(
-    val templateId: String = "",
-    val projectId: String = "",
+    override val title: String = "",
+    override val description: String = "",
+    override val dueDate: String = "",
+    val templateId: String? = null,
+    override val projectId: String = "",
     val taskId: String = "",
-    val title: String = "",
-    val description: String = "",
-    val status: TaskStatus = TaskStatus.TODO,
     val assignedUserIds: List<String> = emptyList(),
-    val dueDate: String = "",
-    val attachmentUris: List<Uri> = emptyList(),
+    override val attachmentUris: List<Uri> = emptyList(),
     val attachmentUrls: List<String> = emptyList(),
+    val status: TaskStatus = TaskStatus.TODO,
     val customData: Map<String, Any> = emptyMap(),
-    val errorMsg: String? = null,
-    val isSaving: Boolean = false,
-    val taskSaved: Boolean = false,
+    override val isSaving: Boolean = false,
+    override val taskSaved: Boolean = false,
     val isDeleting: Boolean = false,
-    val taskDeleted: Boolean = false
-)
+    val taskDeleted: Boolean = false,
+    override val errorMsg: String? = null
+) : TaskStateCommon
