@@ -372,7 +372,23 @@ open class EditTaskScreenTest : TestCase() {
 
         composeTestRule.waitForIdle()
 
+        // First, click delete to show dialog
         composeTestRule.onNodeWithTag(EditTaskScreenTestTags.DELETE_TASK).performClick()
+        // Verify dialog is shown
+        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.CONFIRM_DELETE).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.CANCEL_DELETE).assertIsDisplayed()
+        // Click cancel to dismiss dialog
+        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.CANCEL_DELETE).performClick()
+        // Verify dialog is dismissed
+        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.CONFIRM_DELETE).assertIsNotDisplayed()
+        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.CANCEL_DELETE).assertIsNotDisplayed()
+        // Click delete again to show dialog
+        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.DELETE_TASK).performClick()
+        // Verify dialog is shown again
+        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.CONFIRM_DELETE).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.CANCEL_DELETE).assertIsDisplayed()
+        // Confirm deletion
+        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.CONFIRM_DELETE).performClick()
         composeTestRule.waitUntil(timeoutMillis = 5000) {
           composeTestRule
               .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
