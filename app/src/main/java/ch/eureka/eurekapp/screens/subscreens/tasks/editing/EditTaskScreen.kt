@@ -42,6 +42,8 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 object EditTaskScreenTestTags {
   const val DELETE_TASK = "delete_task"
   const val STATUS_BUTTON = "task_status"
+  const val CONFIRM_DELETE = "confirm_delete"
+  const val CANCEL_DELETE = "cancel_delete"
 }
 
 const val EDIT_SCREEN_SMALL_BUTTON_SIZE = 0.3f
@@ -81,6 +83,7 @@ fun EditTaskScreen(
   val context = LocalContext.current
   val scrollState = rememberScrollState()
   var isNavigatingToCamera by remember { mutableStateOf(false) }
+  var showDeleteDialog by remember { mutableStateOf(false) }
 
   LaunchedEffect(projectId) { editTaskViewModel.setProjectId(projectId) }
 
@@ -154,45 +157,52 @@ fun EditTaskScreen(
                   onFocusChanged = { hasTouchedDate = true },
                   dateRegex = editTaskViewModel.dateRegex)
 
-              Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-                OutlinedButton(
-                    onClick = {
-                      isNavigatingToCamera = true
-                      navigationController.navigate(Route.Camera)
-                    },
-                    colors = EurekaStyles.OutlinedButtonColors(),
-                    modifier =
-                        Modifier.fillMaxWidth(EDIT_SCREEN_SMALL_BUTTON_SIZE)
-                            .testTag(CommonTaskTestTags.ADD_PHOTO)) {
-                      Text("Add Photo")
-                    }
-                OutlinedButton(
-                    onClick = { editTaskViewModel.setStatus(getNextStatus(editTaskState.status)) },
-                    modifier =
-                        Modifier.fillMaxWidth().testTag(EditTaskScreenTestTags.STATUS_BUTTON)) {
-                      Text(text = editTaskState.status.name.replace("_", " "))
-                    }
-              }
+              Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    OutlinedButton(
+                        onClick = {
+                          isNavigatingToCamera = true
+                          navigationController.navigate(Route.Camera)
+                        },
+                        colors = EurekaStyles.OutlinedButtonColors(),
+                        modifier =
+                            Modifier.fillMaxWidth(EDIT_SCREEN_SMALL_BUTTON_SIZE)
+                                .testTag(CommonTaskTestTags.ADD_PHOTO)) {
+                          Text("Add Photo")
+                        }
+                    OutlinedButton(
+                        onClick = {
+                          editTaskViewModel.setStatus(getNextStatus(editTaskState.status))
+                        },
+                        modifier =
+                            Modifier.fillMaxWidth().testTag(EditTaskScreenTestTags.STATUS_BUTTON)) {
+                          Text(text = editTaskState.status.name.replace("_", " "))
+                        }
+                  }
 
-              Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-                OutlinedButton(
-                    onClick = { editTaskViewModel.deleteTask(projectId, taskId) },
-                    enabled = !editTaskState.isSaving && !editTaskState.isDeleting,
-                    modifier =
-                        Modifier.fillMaxWidth(EDIT_SCREEN_SMALL_BUTTON_SIZE)
-                            .testTag(EditTaskScreenTestTags.DELETE_TASK),
-                    colors = EurekaStyles.OutlinedButtonColors()) {
-                      Text(if (editTaskState.isDeleting) "Deleting..." else "Delete Task")
-                    }
+              Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    OutlinedButton(
+                        onClick = { showDeleteDialog = true },
+                        enabled = !editTaskState.isSaving && !editTaskState.isDeleting,
+                        modifier =
+                            Modifier.fillMaxWidth(EDIT_SCREEN_SMALL_BUTTON_SIZE)
+                                .testTag(EditTaskScreenTestTags.DELETE_TASK),
+                        colors = EurekaStyles.OutlinedButtonColors()) {
+                          Text(if (editTaskState.isDeleting) "Deleting..." else "Delete Task")
+                        }
 
-                Button(
-                    onClick = { editTaskViewModel.editTask(context) },
-                    enabled = inputValid && !editTaskState.isSaving && !editTaskState.isDeleting,
-                    modifier = Modifier.fillMaxWidth().testTag(CommonTaskTestTags.SAVE_TASK),
-                    colors = EurekaStyles.PrimaryButtonColors()) {
-                      Text(if (editTaskState.isSaving) "Saving..." else "Save")
-                    }
-              }
+                    Button(
+                        onClick = { editTaskViewModel.editTask(context) },
+                        enabled =
+                            inputValid && !editTaskState.isSaving && !editTaskState.isDeleting,
+                        modifier = Modifier.fillMaxWidth().testTag(CommonTaskTestTags.SAVE_TASK),
+                        colors = EurekaStyles.PrimaryButtonColors()) {
+                          Text(if (editTaskState.isSaving) "Saving..." else "Save")
+                        }
+                  }
 
               val allAttachments = editTaskState.attachmentUrls + editTaskState.attachmentUris
               AttachmentsList(
@@ -202,6 +212,30 @@ fun EditTaskScreen(
                   })
             }
       })
+
+  if (showDeleteDialog) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = { showDeleteDialog = false },
+        title = { Text("Confirm Deletion") },
+        text = { Text("Are you sure you want to delete the task?") },
+        confirmButton = {
+          Button(
+              onClick = {
+                showDeleteDialog = false
+                editTaskViewModel.deleteTask(projectId, taskId)
+              },
+              modifier = Modifier.testTag(EditTaskScreenTestTags.CONFIRM_DELETE)) {
+                Text("Yes")
+              }
+        },
+        dismissButton = {
+          OutlinedButton(
+              onClick = { showDeleteDialog = false },
+              modifier = Modifier.testTag(EditTaskScreenTestTags.CANCEL_DELETE)) {
+                Text("No")
+              }
+        })
+  }
 }
 
 fun getNextStatus(currentStatus: TaskStatus): TaskStatus {
