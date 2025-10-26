@@ -411,11 +411,8 @@ open class EditTaskScreenTest : TestCase() {
         composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
         composeTestRule.waitForIdle()
 
-        // Verify status changed
-        viewModel.viewModelScope.launch(Dispatchers.IO) {
-          val task = taskRepository.getTaskById(projectId, taskId).first()
-          assert(task?.status == TaskStatus.IN_PROGRESS)
-        }
+        val task = taskRepository.getTaskById(projectId, taskId).first()
+        assert(task?.status == TaskStatus.IN_PROGRESS)
       }
 
   @Test
