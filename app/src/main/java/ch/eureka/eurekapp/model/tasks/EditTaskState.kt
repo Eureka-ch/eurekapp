@@ -20,6 +20,7 @@ data class EditTaskState(
     val assignedUserIds: List<String> = emptyList(),
     override val attachmentUris: List<Uri> = emptyList(),
     val attachmentUrls: List<String> = emptyList(),
+    val deletedAttachmentUrls: Set<String> = emptySet(),
     val status: TaskStatus = TaskStatus.TODO,
     val customData: Map<String, Any> = emptyMap(),
     override val isSaving: Boolean = false,

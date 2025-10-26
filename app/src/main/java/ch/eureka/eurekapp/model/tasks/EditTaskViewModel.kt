@@ -120,10 +120,12 @@ class EditTaskViewModel(
           _uiState.value.copy(
               attachmentUris = currentUris.toMutableList().apply { removeAt(index) })
     } else if (index - currentUris.size in currentUrls.indices) {
+      val urlIndex = index - currentUris.size
+      val urlToDelete = currentUrls[urlIndex]
       _uiState.value =
           _uiState.value.copy(
-              attachmentUrls =
-                  currentUrls.toMutableList().apply { removeAt(index - currentUris.size) })
+              attachmentUrls = currentUrls.toMutableList().apply { removeAt(urlIndex) },
+              deletedAttachmentUrls = state.deletedAttachmentUrls + urlToDelete)
     }
   }
 
@@ -163,6 +165,8 @@ class EditTaskViewModel(
           .collect { task ->
             if (!_uiState.value.isDeleting && !_uiState.value.taskDeleted) {
               if (task != null) {
+                val deletedUrls = _uiState.value.deletedAttachmentUrls
+                val filteredAttachments = task.attachmentUrls.filterNot { it in deletedUrls }
                 _uiState.value =
                     _uiState.value.copy(
                         title = task.title,
@@ -173,7 +177,7 @@ class EditTaskViewModel(
                         projectId = task.projectId,
                         taskId = task.taskID,
                         assignedUserIds = task.assignedUserIds,
-                        attachmentUrls = task.attachmentUrls,
+                        attachmentUrls = filteredAttachments,
                         status = task.status,
                         customData = task.customData,
                     )
