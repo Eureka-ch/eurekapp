@@ -352,10 +352,13 @@ open class EditTaskScreenTest : TestCase() {
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
+        val remoteUrl1 = "https://fake.com/photo1.jpg"
+        val remoteUrl2 = "https://fake.com/photo2.jpg"
         setupTestProject(projectId)
-        setupTestTask(projectId, taskId)
+        setupTestTask(projectId, taskId, attachmentUrls = listOf(remoteUrl1, remoteUrl2))
 
-        val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        val fileRepository = FakeFileRepository()
+        val viewModel = EditTaskViewModel(taskRepository, fileRepository = fileRepository)
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
@@ -383,6 +386,10 @@ open class EditTaskScreenTest : TestCase() {
           val task = taskRepository.getTaskById(projectId, taskId).first()
           assert(task == null)
         }
+
+        // Verify all remote attachments were deleted
+        assert(fileRepository.deletedFiles.contains(remoteUrl1))
+        assert(fileRepository.deletedFiles.contains(remoteUrl2))
       }
 
   @Test
