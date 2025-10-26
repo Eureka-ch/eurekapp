@@ -17,7 +17,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.CloudUpload
+import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material.icons.outlined.Stop
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,6 +28,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,16 +39,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.model.audio.AudioRecordingViewModel
+import ch.eureka.eurekapp.model.audio.RECORDING_STATE
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
 import ch.eureka.eurekapp.ui.theme.DarkColorScheme
 import ch.eureka.eurekapp.ui.theme.Typography
+import kotlinx.coroutines.launch
 
 @Composable
 fun MeetingAudioRecordingScreen(
     context: Context = LocalContext.current,
     projectId: String,
     meetingId: String,
-
+    audioRecordingViewModel: AudioRecordingViewModel = viewModel()
     ){
 
     var microphonePermissionIsGranted by remember{mutableStateOf(
@@ -57,6 +66,8 @@ fun MeetingAudioRecordingScreen(
     ) { isGranted: Boolean ->
         microphonePermissionIsGranted = isGranted
     }
+
+    val recordingStatus = audioRecordingViewModel.isRecording.collectAsState()
 
 
     LaunchedEffect(Unit) {
@@ -107,23 +118,99 @@ fun MeetingAudioRecordingScreen(
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ){
-                    IconButton(
-                        shape = CircleShape,
-                        onClick = {}
-                    ) {
-                        Icon(Icons.Outlined.Stop, null)
+                    when(recordingStatus.value) {
+                        RECORDING_STATE.PAUSED -> {
+                            StopButton(
+                                onClick = {
+                                    audioRecordingViewModel.stopRecording()
+                                }
+                            )
+                            PlayButton(
+                                onClick = {
+                                    audioRecordingViewModel.resumeRecording()
+                                }
+                            )
+                            SaveButton(
+                                onClick = {
+                                    audioRecordingViewModel.viewModelScope.launch {
+                                        audioRecordingViewModel.saveRecordingToDatabase(projectId,
+                                            meetingId)
+                                    }
+                                }
+                            )
+                        }
+                        RECORDING_STATE.STOPPED -> {
+                            PlayButton(
+                                onClick = {
+                                    audioRecordingViewModel.startRecording(context,
+                                        "${projectId}_${meetingId}.mp4")
+                                }
+                            )
+                        }
+                        RECORDING_STATE.RUNNING -> {
+                            PauseButton(
+                                onClick = {
+                                    audioRecordingViewModel.pauseRecording()
+                                }
+                            )
+                        }
                     }
-                    /**Start-Pause button**/
-                    IconButton(
-                        shape = CircleShape,
-                        onClick = {}
-                    ) {
-                        Icon(Icons.Outlined.PlayArrow, null)
-                    }
+                }
+
+                Row(modifier = Modifier.weight(1f)){
+
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+
                 }
 
             }
 
         }
+    }
+}
+
+@Composable
+fun PlayButton(onClick: () -> Unit){
+    IconButton(
+        shape = CircleShape,
+        onClick = onClick
+    ) {
+        Icon(Icons.Outlined.PlayArrow, null)
+    }
+}
+
+@Composable
+fun PauseButton(onClick: () -> Unit){
+    IconButton(
+        shape = CircleShape,
+        onClick = {}
+    ) {
+        Icon(Icons.Outlined.Pause, null)
+    }
+}
+
+@Composable
+fun StopButton(onClick: () -> Unit){
+    IconButton(
+        shape = CircleShape,
+        onClick = {}
+    ) {
+        Icon(Icons.Outlined.Stop, null)
+    }
+}
+
+@Composable
+fun SaveButton(onClick: () -> Unit){
+    IconButton(
+        shape = CircleShape,
+        onClick = {}
+    ) {
+        Icon(Icons.Outlined.CloudUpload, null)
     }
 }

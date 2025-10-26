@@ -71,11 +71,14 @@ class AudioRecordingViewModel(
     }
 
     suspend fun saveRecordingToDatabase(projectId: String, meetingId: String){
-        if(_recordingUri.value != null){
-            fileStorageRepository
+        if(_recordingUri.value != null && isRecording.value == RECORDING_STATE.PAUSED){
+            if(fileStorageRepository
                 .uploadFile(StoragePaths.meetingAttachmentPath(projectId,
                     meetingId, "${_recordingUri.value!!.lastPathSegment}.mp4"),
-                    _recordingUri.value!!)
+                    _recordingUri.value!!).isFailure){
+
+            }
+
         }
     }
 
