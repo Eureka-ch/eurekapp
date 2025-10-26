@@ -12,7 +12,6 @@ import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -45,8 +44,9 @@ abstract class BaseTaskViewModel<T : TaskStateCommon>(
     protected val dispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
-  protected abstract val _uiState: MutableStateFlow<T>
   abstract val uiState: StateFlow<T>
+
+  protected abstract fun getState(): T
 
   val dateRegex = Regex("""^\d{2}/\d{2}/\d{4}$""")
   private val dateFormat =
@@ -97,24 +97,31 @@ abstract class BaseTaskViewModel<T : TaskStateCommon>(
       attachmentUris: List<Uri>
   ): Result<List<String>> {
     return try {
-      val photoUrls = mutableListOf<String>()
-      for (uri in attachmentUris) {
-        val photoSaveResult =
-            withTimeout(5000L) {
-              fileRepository.uploadFile(
-                  StoragePaths.taskAttachmentPath(projectId, taskId, "${uri.lastPathSegment}.jpg"),
-                  uri)
-            }
-        val photoUrl =
-            photoSaveResult.getOrElse { exception ->
+      val photoUrls =
+          attachmentUris.map { uri ->
+            uploadSingleFile(taskId, context, projectId, uri).getOrElse { exception ->
               return Result.failure(exception)
             }
-        photoUrls.add(photoUrl)
-
-        // Delete local file after successful upload
-        deletePhotoSuspend(context, uri)
-      }
+          }
       Result.success(photoUrls)
+    } catch (e: Exception) {
+      Result.failure(e)
+    }
+  }
+
+  /** Uploads a single file to the repository */
+  private suspend fun uploadSingleFile(
+      taskId: String,
+      context: Context,
+      projectId: String,
+      uri: Uri
+  ): Result<String> {
+    return try {
+      val path = StoragePaths.taskAttachmentPath(projectId, taskId, "${uri.lastPathSegment}.jpg")
+      val photoUrl = withTimeout(5000L) { fileRepository.uploadFile(path, uri) }.getOrThrow()
+
+      deletePhotoSuspend(context, uri)
+      Result.success(photoUrl)
     } catch (e: Exception) {
       Result.failure(e)
     }
@@ -140,14 +147,14 @@ abstract class BaseTaskViewModel<T : TaskStateCommon>(
   }
 
   fun addAttachment(uri: Uri) {
-    val currentUris = _uiState.value.attachmentUris
+    val currentUris = getState().attachmentUris
     if (!currentUris.contains(uri)) {
       updateState { copyWithAttachmentUris(currentUris + uri) }
     }
   }
 
   open fun removeAttachment(index: Int) {
-    val currentUris = _uiState.value.attachmentUris
+    val currentUris = getState().attachmentUris
     if (index in currentUris.indices) {
       updateState { copyWithAttachmentUris(currentUris.toMutableList().apply { removeAt(index) }) }
     }
