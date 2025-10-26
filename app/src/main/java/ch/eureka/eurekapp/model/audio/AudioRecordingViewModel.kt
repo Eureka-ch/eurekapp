@@ -2,6 +2,7 @@ package ch.eureka.eurekapp.model.audio
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import ch.eureka.eurekapp.model.data.StoragePaths
@@ -34,8 +35,7 @@ class AudioRecordingViewModel(
                 recordingRepository = LocalAudioRecordingRepository(context)
             }
             val createdRecordingUri = recordingRepository!!.createRecording(fileName)
-            if(createdRecordingUri.isFailure ||
-                recordingRepository!!.resumeRecording().isFailure){
+            if(createdRecordingUri.isFailure){
                 return
             }
             _recordingUri.value = createdRecordingUri.getOrNull()
@@ -54,10 +54,13 @@ class AudioRecordingViewModel(
 
     fun pauseRecording(){
         if(_isRecording.value == RECORDING_STATE.RUNNING){
-            if(recordingRepository!!.pauseRecording().isFailure){
+            val result = recordingRepository!!.pauseRecording()
+            if(result.isFailure){
+                Log.d("AudioTranscriptScreen", result.exceptionOrNull()?.message.toString())
                 return
             }
-            _isRecording.value == RECORDING_STATE.PAUSED
+            _isRecording.value = RECORDING_STATE.PAUSED
+            Log.d("AudioTranscriptScreen", _isRecording.value.toString())
         }
     }
 

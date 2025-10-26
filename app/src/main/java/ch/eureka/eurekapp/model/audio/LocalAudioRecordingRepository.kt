@@ -15,54 +15,60 @@ class LocalAudioRecordingRepository(
     private var recordingState: RECORDING_STATE = RECORDING_STATE.STOPPED
 
     override fun createRecording(fileName: String): Result<Uri> {
-        if(recording != null){
-            return Result.failure(
-                IllegalArgumentException("You already have a recording!"))
-        }
-        recording = File(context.filesDir, fileName)
+        return runCatching {
+            if(recording != null){
+                throw RuntimeException("You already have a recording!")
+            }
+            recording = File(context.filesDir, fileName)
 
-        audioRecorder = MediaRecorder().apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-            setOutputFile(recording!!.absolutePath)
-            prepare()
+            audioRecorder = MediaRecorder().apply {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                setOutputFile(recording!!.absolutePath)
+                prepare()
+                start()
+            }
+            recordingState = RECORDING_STATE.RUNNING
+            Uri.fromFile(recording!!)
         }
-        recordingState = RECORDING_STATE.PAUSED
-        return Result.success(Uri.fromFile(recording!!))
     }
 
     override fun clearRecording(): Result<Unit> {
-        if(recordingState == RECORDING_STATE.PAUSED){
-            audioRecorder!!.stop()
-            recording!!.delete()
-            recording = null
-            recordingState = RECORDING_STATE.STOPPED
-            return Result.success(Unit)
-        }else{
-            return Result.failure(
-                IllegalArgumentException("Recording did not exist!"))
+        return runCatching {
+            if(recordingState == RECORDING_STATE.PAUSED){
+                audioRecorder!!.stop()
+                recording!!.delete()
+                recording = null
+                recordingState = RECORDING_STATE.STOPPED
+                Unit
+            }else{
+                throw RuntimeException("Recording did not exist!")
+            }
         }
     }
 
     override fun pauseRecording(): Result<Unit> {
-        if(recordingState == RECORDING_STATE.RUNNING){
-            audioRecorder!!.pause()
-            recordingState = RECORDING_STATE.PAUSED
-            return Result.success(Unit)
-        }else{
-            return Result.failure(RuntimeException(
-                "Cannot pause the recording!"))
+        return runCatching {
+            if(recordingState == RECORDING_STATE.RUNNING){
+                audioRecorder!!.pause()
+                recordingState = RECORDING_STATE.PAUSED
+                Unit
+            }else{
+               throw RuntimeException(
+                    "Cannot pause the recording!")
+            }
         }
     }
 
     override fun resumeRecording(): Result<Unit> {
-        if(recordingState == RECORDING_STATE.PAUSED){
-            audioRecorder!!.resume()
-            return Result.success(Unit)
-        }else{
-            return Result.failure(
-                RuntimeException("Cannot resume the recording!"))
+        return runCatching {
+            if(recordingState == RECORDING_STATE.PAUSED){
+                audioRecorder!!.resume()
+                Unit
+            }else{
+                throw RuntimeException("Cannot resume the recording!")
+            }
         }
     }
 }

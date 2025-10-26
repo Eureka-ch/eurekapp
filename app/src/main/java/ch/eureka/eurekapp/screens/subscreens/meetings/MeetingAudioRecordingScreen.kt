@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,8 +24,10 @@ import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material.icons.outlined.Stop
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +39,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -45,6 +51,7 @@ import ch.eureka.eurekapp.model.audio.AudioRecordingViewModel
 import ch.eureka.eurekapp.model.audio.RECORDING_STATE
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
 import ch.eureka.eurekapp.ui.theme.DarkColorScheme
+import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.ui.theme.Typography
 import kotlinx.coroutines.launch
 
@@ -59,7 +66,7 @@ fun MeetingAudioRecordingScreen(
     var microphonePermissionIsGranted by remember{mutableStateOf(
         ContextCompat.checkSelfPermission(context,
         Manifest.permission.RECORD_AUDIO) ==
-            PackageManager.PERMISSION_DENIED)}
+            PackageManager.PERMISSION_GRANTED)}
 
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -85,7 +92,7 @@ fun MeetingAudioRecordingScreen(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ){
-            Text("Audio Recording", style = Typography.titleMedium,
+            Text("Audio Recording", modifier = Modifier.padding(10.dp), style = Typography.titleMedium,
                 color = DarkColorScheme.background)
         }
 
@@ -111,12 +118,14 @@ fun MeetingAudioRecordingScreen(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ){
-                    Text("00:45", style = Typography.titleMedium,
+                    Text("00:45", modifier = Modifier.padding(10.dp), style = Typography.titleMedium,
                         color = DarkColorScheme.background)
                 }
 
                 Row(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ){
                     when(recordingStatus.value) {
                         RECORDING_STATE.PAUSED -> {
@@ -178,18 +187,23 @@ fun MeetingAudioRecordingScreen(
 @Composable
 fun PlayButton(onClick: () -> Unit){
     IconButton(
+        modifier = Modifier.border(1.dp, BorderGrayColor, CircleShape).size(80.dp).clip(CircleShape),
         shape = CircleShape,
         onClick = onClick
     ) {
-        Icon(Icons.Outlined.PlayArrow, null)
+        Icon(modifier = Modifier.size(50.dp), imageVector = Icons.Outlined.PlayArrow, contentDescription = null)
     }
 }
 
 @Composable
 fun PauseButton(onClick: () -> Unit){
     IconButton(
+        modifier = Modifier.border(1.dp, BorderGrayColor, CircleShape).size(80.dp).clip(CircleShape),
         shape = CircleShape,
-        onClick = {}
+        onClick = onClick,
+        colors = IconButtonDefaults.iconButtonColors(
+            containerColor = LightColorScheme.primary
+        )
     ) {
         Icon(Icons.Outlined.Pause, null)
     }
@@ -199,7 +213,7 @@ fun PauseButton(onClick: () -> Unit){
 fun StopButton(onClick: () -> Unit){
     IconButton(
         shape = CircleShape,
-        onClick = {}
+        onClick = onClick
     ) {
         Icon(Icons.Outlined.Stop, null)
     }
@@ -209,7 +223,7 @@ fun StopButton(onClick: () -> Unit){
 fun SaveButton(onClick: () -> Unit){
     IconButton(
         shape = CircleShape,
-        onClick = {}
+        onClick = onClick
     ) {
         Icon(Icons.Outlined.CloudUpload, null)
     }
