@@ -45,6 +45,7 @@ import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.CameraScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreen
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreenTestTags
 import ch.eureka.eurekapp.ui.tasks.TaskScreenViewModel
@@ -180,15 +181,15 @@ open class EditTaskScreenTest : TestCase() {
         composeTestRule.waitForIdle()
 
         // Clear title and focus
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.TITLE).performTextClearance()
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.TITLE).performClick()
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.ERROR_MSG).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.TITLE).performTextInput("Valid Title")
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextClearance()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performClick()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.ERROR_MSG).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Valid Title")
 
         // Clear description and focus
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.DESCRIPTION).performTextClearance()
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.DESCRIPTION).performClick()
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.ERROR_MSG).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performTextClearance()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performClick()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.ERROR_MSG).assertIsDisplayed()
       }
 
   @Test
@@ -214,10 +215,8 @@ open class EditTaskScreenTest : TestCase() {
         composeTestRule.waitForIdle()
 
         // Input invalid date
-        composeTestRule
-            .onNodeWithTag(EditTaskScreenTestTags.DUE_DATE)
-            .performTextInput("invalid-date")
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.ERROR_MSG).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("invalid-date")
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.ERROR_MSG).assertIsDisplayed()
       }
 
   @Test
@@ -249,7 +248,7 @@ open class EditTaskScreenTest : TestCase() {
         composeTestRule.waitForIdle()
 
         // Verify fields are loaded
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.TITLE).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
         composeTestRule.onNodeWithTag(EditTaskScreenTestTags.STATUS_BUTTON).assertIsDisplayed()
       }
 
@@ -276,10 +275,10 @@ open class EditTaskScreenTest : TestCase() {
         composeTestRule.waitForIdle()
 
         // Initially, no photo
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.PHOTO).assertIsNotDisplayed()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsNotDisplayed()
 
         // Add photo
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.ADD_PHOTO).performClick()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_PHOTO).performClick()
         composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
 
         composeTestRule.waitUntil(timeoutMillis = 5000) {
@@ -291,12 +290,12 @@ open class EditTaskScreenTest : TestCase() {
 
         composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).performClick()
 
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.PHOTO).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.DELETE_PHOTO).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).assertIsDisplayed()
 
         // Delete photo
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.DELETE_PHOTO).performClick()
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.PHOTO).assertIsNotDisplayed()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).performClick()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsNotDisplayed()
       }
 
   @Test
@@ -321,20 +320,18 @@ open class EditTaskScreenTest : TestCase() {
 
         composeTestRule.waitForIdle()
 
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.TITLE).performTextClearance()
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.DESCRIPTION).performTextClearance()
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.DUE_DATE).performTextClearance()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextClearance()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performTextClearance()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextClearance()
 
         // Edit fields
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.TITLE).performTextInput("Edited Task")
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Edited Task")
         composeTestRule
-            .onNodeWithTag(EditTaskScreenTestTags.DESCRIPTION)
+            .onNodeWithTag(CommonTaskTestTags.DESCRIPTION)
             .performTextInput("Edited Desc")
-        composeTestRule
-            .onNodeWithTag(EditTaskScreenTestTags.DUE_DATE)
-            .performTextInput("25/12/2025")
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("25/12/2025")
 
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.SAVE_TASK).performClick()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
         composeTestRule.waitUntil(timeoutMillis = 5000) {
           composeTestRule
               .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
@@ -411,7 +408,7 @@ open class EditTaskScreenTest : TestCase() {
         composeTestRule.waitForIdle()
 
         composeTestRule.onNodeWithTag(EditTaskScreenTestTags.STATUS_BUTTON).performClick()
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.SAVE_TASK).performClick()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
         composeTestRule.waitForIdle()
 
         // Verify status changed
@@ -443,21 +440,17 @@ open class EditTaskScreenTest : TestCase() {
 
         composeTestRule.waitForIdle()
 
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.TITLE).performTextClearance()
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.DESCRIPTION).performTextClearance()
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.DUE_DATE).performTextClearance()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextClearance()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performTextClearance()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextClearance()
 
-        val saveButton = composeTestRule.onNodeWithTag(EditTaskScreenTestTags.SAVE_TASK)
+        val saveButton = composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK)
         saveButton.performClick() // Should not save with invalid input
 
         // Make valid
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.TITLE).performTextInput("Valid Title")
-        composeTestRule
-            .onNodeWithTag(EditTaskScreenTestTags.DESCRIPTION)
-            .performTextInput("Valid Desc")
-        composeTestRule
-            .onNodeWithTag(EditTaskScreenTestTags.DUE_DATE)
-            .performTextInput("15/10/2025")
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Valid Title")
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performTextInput("Valid Desc")
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("15/10/2025")
 
         saveButton.performClick()
         composeTestRule.waitUntil(timeoutMillis = 5000) {
@@ -534,7 +527,7 @@ open class EditTaskScreenTest : TestCase() {
         composeTestRule.waitForIdle()
 
         // Verify navigation to EditTaskScreen
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.TITLE).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
 
         taskViewModel.cleanupForTest()
       }
@@ -725,10 +718,10 @@ open class EditTaskScreenTest : TestCase() {
         composeTestRule.waitForIdle()
 
         // Wait for photo to be displayed
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.PHOTO).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsDisplayed()
 
         // Click delete photo
-        composeTestRule.onNodeWithTag(EditTaskScreenTestTags.DELETE_PHOTO).performClick()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).performClick()
 
         composeTestRule.waitForIdle()
 
