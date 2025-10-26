@@ -23,5 +23,7 @@ data class EditTaskState(
     val customData: Map<String, Any> = emptyMap(),
     val errorMsg: String? = null,
     val isSaving: Boolean = false,
-    val taskSaved: Boolean = false
+    val taskSaved: Boolean = false,
+    val isDeleting: Boolean = false,
+    val taskDeleted: Boolean = false
 )

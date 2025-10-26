@@ -1,6 +1,5 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks.editing
 
-import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -94,10 +93,15 @@ fun EditTaskScreen(
 
   val context = LocalContext.current
   val scrollState = rememberScrollState()
+  var isNavigatingToCamera by remember { mutableStateOf(false) }
 
   LaunchedEffect(projectId) { editTaskViewModel.setProjectId(projectId) }
 
-  LaunchedEffect(taskId) { editTaskViewModel.loadTask(projectId, taskId) }
+  LaunchedEffect(taskId) {
+    if (!editTaskState.isDeleting && !editTaskState.taskDeleted) {
+      editTaskViewModel.loadTask(projectId, taskId)
+    }
+  }
 
   LaunchedEffect(errorMsg) {
     if (errorMsg != null) {
@@ -119,11 +123,18 @@ fun EditTaskScreen(
     }
   }
 
+  LaunchedEffect(editTaskState.taskDeleted) {
+    if (editTaskState.taskDeleted) {
+      navigationController.popBackStack()
+      editTaskViewModel.resetDeleteState()
+    }
+  }
+
   DisposableEffect(Unit) {
     onDispose {
-      // Clean up photos when navigating away if task wasn't saved
-      if (!editTaskState.taskSaved) {
-        editTaskState.attachmentUris.forEach { uri -> editTaskViewModel.deletePhoto(context, uri) }
+      // Clean up photos when navigating away if task wasn't saved or deleted
+      if (!isNavigatingToCamera) {
+        editTaskViewModel.deletePhotosOnDispose(context, editTaskState.attachmentUris)
       }
     }
   }
@@ -208,14 +219,16 @@ fun EditTaskScreen(
 
               Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
                 OutlinedButton(
-                    onClick = { editTaskViewModel.setStatus(TaskStatus.CANCELLED) },
+                    onClick = {
+                      isNavigatingToCamera = true
+                      navigationController.navigate(Route.Camera)
+                    },
                     colors = EurekaStyles.OutlinedButtonColors(),
                     modifier =
                         Modifier.fillMaxWidth(EDIT_SCREEN_SMALL_BUTTON_SIZE)
-                            .testTag(EditTaskScreenTestTags.CANCEL_BUTTON)) {
-                      Text("Cancel")
+                            .testTag(EditTaskScreenTestTags.ADD_PHOTO)) {
+                      Text("Add Photo")
                     }
-
                 OutlinedButton(
                     onClick = { editTaskViewModel.setStatus(getNextStatus(editTaskState.status)) },
                     modifier =
@@ -224,31 +237,21 @@ fun EditTaskScreen(
                     }
               }
 
-              OutlinedButton(
-                  onClick = { navigationController.navigate(Route.Camera) },
-                  colors = EurekaStyles.OutlinedButtonColors(),
-                  modifier = Modifier.fillMaxWidth().testTag(EditTaskScreenTestTags.ADD_PHOTO)) {
-                    Text("Add Photo")
-                  }
-
               Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
                 OutlinedButton(
-                    onClick = {
-                      navigationController.popBackStack()
-                      editTaskViewModel.deleteTask(projectId, taskId)
-                    },
-                    enabled = !editTaskState.isSaving,
+                    onClick = { editTaskViewModel.deleteTask(projectId, taskId) },
+                    enabled = !editTaskState.isSaving && !editTaskState.isDeleting,
                     modifier =
                         Modifier.fillMaxWidth(EDIT_SCREEN_SMALL_BUTTON_SIZE)
                             .testTag(EditTaskScreenTestTags.DELETE_TASK),
                     colors = EurekaStyles.OutlinedButtonColors()) {
-                      Text("Delete Task")
+                      Text(if (editTaskState.isDeleting) "Deleting..." else "Delete Task")
                     }
 
                 // Save Button
                 Button(
                     onClick = { editTaskViewModel.editTask(context) },
-                    enabled = inputValid && !editTaskState.isSaving,
+                    enabled = inputValid && !editTaskState.isSaving && !editTaskState.isDeleting,
                     modifier = Modifier.fillMaxWidth().testTag(EditTaskScreenTestTags.SAVE_TASK),
                     colors = EurekaStyles.PrimaryButtonColors()) {
                       Text(if (editTaskState.isSaving) "Saving..." else "Save")
@@ -259,16 +262,7 @@ fun EditTaskScreen(
                 Row {
                   Text("Photo ${index + 1}")
                   IconButton(
-                      onClick = {
-                        val uri =
-                            when (file) {
-                              is String -> file.toUri()
-                              else -> file as Uri
-                            }
-                        if (editTaskViewModel.deletePhoto(context, uri)) {
-                          editTaskViewModel.removeAttachment(index)
-                        }
-                      },
+                      onClick = { editTaskViewModel.removeAttachmentAndDelete(context, index) },
                       modifier = Modifier.testTag(EditTaskScreenTestTags.DELETE_PHOTO)) {
                         Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
                       }
@@ -284,7 +278,7 @@ fun getNextStatus(currentStatus: TaskStatus): TaskStatus {
   return when (currentStatus) {
     TaskStatus.TODO -> TaskStatus.IN_PROGRESS
     TaskStatus.IN_PROGRESS -> TaskStatus.COMPLETED
-    TaskStatus.COMPLETED -> TaskStatus.TODO
+    TaskStatus.COMPLETED -> TaskStatus.CANCELLED
     TaskStatus.CANCELLED -> TaskStatus.TODO
   }
 }
