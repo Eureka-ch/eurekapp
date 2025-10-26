@@ -62,8 +62,6 @@ class EditTaskViewModel(
     val currentUser = getCurrentUserId() ?: throw Exception("User not logged in.")
 
     val handler = CoroutineExceptionHandler { _, exception ->
-      android.util.Log.e("EditTaskViewModel", exception.message ?: "Unknown error")
-
       Handler(Looper.getMainLooper()).post {
         Toast.makeText(context.applicationContext, "Unable to save task", Toast.LENGTH_SHORT).show()
       }
