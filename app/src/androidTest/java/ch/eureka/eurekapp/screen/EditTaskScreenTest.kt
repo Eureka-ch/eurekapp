@@ -4,7 +4,9 @@ import android.Manifest
 import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
@@ -30,6 +32,7 @@ import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.project.ProjectRole
+import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
@@ -52,6 +55,7 @@ import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -116,7 +120,7 @@ open class EditTaskScreenTest : TestCase() {
             projectId = projectId,
             name = "Test Project",
             description = "Test project for integration tests",
-            status = ch.eureka.eurekapp.model.data.project.ProjectStatus.OPEN,
+            status = ProjectStatus.OPEN,
             createdBy = testUserId,
             memberIds = listOf(testUserId))
     projectRef.set(project).await()
@@ -479,7 +483,11 @@ open class EditTaskScreenTest : TestCase() {
             dueDate = "15/10/2025")
 
         val taskViewModel =
-            TaskScreenViewModel(taskRepository, FakeProjectRepository(), FakeUserRepository())
+            TestableTaskScreenViewModel(
+                taskRepository,
+                FakeProjectRepository(),
+                FakeUserRepository(),
+                currentUserId = testUserId)
 
         composeTestRule.setContent {
           val navController = rememberNavController()
@@ -527,6 +535,8 @@ open class EditTaskScreenTest : TestCase() {
 
         // Verify navigation to EditTaskScreen
         composeTestRule.onNodeWithTag(EditTaskScreenTestTags.TITLE).assertIsDisplayed()
+
+        taskViewModel.cleanupForTest()
       }
 
   private fun clearTestPhotos() {
@@ -573,9 +583,7 @@ open class EditTaskScreenTest : TestCase() {
             editTaskViewModel = viewModel)
       }
       composable<Route.TasksSection.Tasks> {
-        androidx.compose.material3.Text(
-            "Tasks Screen",
-            modifier = androidx.compose.ui.Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
+        Text("Tasks Screen", modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
       }
       composable<Route.Camera> { Camera(navigationController = navController) }
     }
@@ -727,4 +735,15 @@ open class EditTaskScreenTest : TestCase() {
         // Verify deleteFile was called for the remote URL
         assert(fileRepository.deletedFiles.contains(remoteUrl))
       }
+}
+
+class TestableTaskScreenViewModel(
+    taskRepository: TaskRepository,
+    projectRepository: ProjectRepository,
+    userRepository: UserRepository,
+    currentUserId: String?
+) : TaskScreenViewModel(taskRepository, projectRepository, userRepository, currentUserId) {
+  fun cleanupForTest() {
+    viewModelScope.cancel()
+  }
 }
