@@ -238,6 +238,9 @@ dependencies {
     // Testing - Compose
     globalTestImplementation(libs.compose.test.junit)
     debugImplementation(libs.compose.test.manifest)
+
+    // Google Cloud STT  
+    implementation("com.google.cloud:google-cloud-speech:4.43.0")
 }
 
 tasks.withType<Test> {
