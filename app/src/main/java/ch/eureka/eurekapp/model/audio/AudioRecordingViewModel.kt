@@ -66,22 +66,32 @@ class AudioRecordingViewModel(
 
     fun stopRecording(){
         if(_isRecording.value == RECORDING_STATE.PAUSED){
-            if(recordingRepository!!.clearRecording().isFailure){
+            val result = recordingRepository!!.clearRecording()
+            if(result.isFailure){
+                Log.d("AudioTranscriptScreen", result.exceptionOrNull()?.message.toString())
                 return
             }
-            _isRecording.value == RECORDING_STATE.STOPPED
+            _isRecording.value = RECORDING_STATE.STOPPED
         }
     }
 
-    suspend fun saveRecordingToDatabase(projectId: String, meetingId: String){
+    fun deleteLocalRecording(){
+        recordingRepository!!.deleteRecording()
+    }
+
+    suspend fun saveRecordingToDatabase(projectId: String, meetingId: String, onSuccesfulUpload: (String) -> Unit, onFailureUpload: (Throwable) -> Unit){
         if(_recordingUri.value != null && isRecording.value == RECORDING_STATE.PAUSED){
-            if(fileStorageRepository
+            stopRecording()
+            val result = fileStorageRepository
                 .uploadFile(StoragePaths.meetingAttachmentPath(projectId,
                     meetingId, "${_recordingUri.value!!.lastPathSegment}.mp4"),
-                    _recordingUri.value!!).isFailure){
-
+                    _recordingUri.value!!)
+            if(result.isFailure){
+                onFailureUpload(result.exceptionOrNull()!!)
+            }else{
+                deleteLocalRecording()
+                onSuccesfulUpload(result.getOrNull()!!)
             }
-
         }
     }
 

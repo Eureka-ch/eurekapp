@@ -56,7 +56,7 @@ fun Eurekapp(
     SignInScreen(credentialManager = credentialManager, onSignedIn = { signedIn = true })
   } else {
     //NavigationMenu()
-      MeetingAudioRecordingScreen(context, "", "")
+      MeetingAudioRecordingScreen(context, "test-project-id", "test-meeting-id")
   }
 }
 

@@ -10,9 +10,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -25,6 +27,7 @@ import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material.icons.outlined.Stop
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -42,7 +45,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewModelScope
@@ -53,6 +58,8 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
 import ch.eureka.eurekapp.ui.theme.DarkColorScheme
 import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.ui.theme.Typography
+import ch.eureka.eurekapp.utils.Formatters
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -77,9 +84,40 @@ fun MeetingAudioRecordingScreen(
     val recordingStatus = audioRecordingViewModel.isRecording.collectAsState()
 
 
+    var canShowAITranscriptButton by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         if(!microphonePermissionIsGranted){
             launcher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
+    var timeInSeconds by remember { mutableStateOf<Long>(0L) }
+
+    var errorText by remember { mutableStateOf<String>("") }
+    var uploadText by remember { mutableStateOf<String>("") }
+    var canPressUploadButton by remember { mutableStateOf<Boolean>(true) }
+
+    var firebaseDownloadURI by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(recordingStatus.value) {
+        while(recordingStatus.value == RECORDING_STATE.RUNNING){
+            delay(1000)
+            timeInSeconds += 1
+        }
+    }
+
+    LaunchedEffect(uploadText) {
+        if(uploadText != ""){
+            delay(5000)
+            uploadText = ""
+        }
+    }
+
+    LaunchedEffect(errorText) {
+        if(errorText != ""){
+            delay(5000)
+            errorText = ""
         }
     }
 
@@ -89,10 +127,11 @@ fun MeetingAudioRecordingScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Row(
+            modifier = Modifier.height(120.dp),
             horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Top
         ){
-            Text("Audio Recording", modifier = Modifier.padding(10.dp), style = Typography.titleMedium,
+            Text("\uD83C\uDFA4 Audio Recording", modifier = Modifier.padding(10.dp), style = Typography.titleLarge,
                 color = DarkColorScheme.background)
         }
 
@@ -103,7 +142,7 @@ fun MeetingAudioRecordingScreen(
                     border = BorderStroke(width = 1.dp, color = BorderGrayColor),
                     shape = RoundedCornerShape(16.dp))
                     .fillMaxWidth(0.95f)
-                    .fillMaxHeight(0.9f),
+                    .fillMaxHeight(0.6f),
             shadowElevation = 3.dp,
             color = Color.White,
             shape = RoundedCornerShape(16.dp)) {
@@ -118,7 +157,7 @@ fun MeetingAudioRecordingScreen(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ){
-                    Text("00:45", modifier = Modifier.padding(10.dp), style = Typography.titleMedium,
+                    Text(Formatters.formatTime(timeInSeconds), modifier = Modifier.padding(10.dp), style = Typography.titleMedium,
                         color = DarkColorScheme.background)
                 }
 
@@ -132,6 +171,8 @@ fun MeetingAudioRecordingScreen(
                             StopButton(
                                 onClick = {
                                     audioRecordingViewModel.stopRecording()
+                                    audioRecordingViewModel.deleteLocalRecording()
+                                    timeInSeconds = 0
                                 }
                             )
                             PlayButton(
@@ -140,10 +181,21 @@ fun MeetingAudioRecordingScreen(
                                 }
                             )
                             SaveButton(
+                                enabled = canPressUploadButton,
                                 onClick = {
                                     audioRecordingViewModel.viewModelScope.launch {
+                                        canPressUploadButton = false
                                         audioRecordingViewModel.saveRecordingToDatabase(projectId,
-                                            meetingId)
+                                            meetingId,
+                                            onSuccesfulUpload = { firebaseURL ->
+                                                uploadText = "Uploaded successfully!"
+                                                canShowAITranscriptButton = true
+                                                firebaseDownloadURI = firebaseURL
+                                            },
+                                            onFailureUpload = { exception ->
+                                                errorText = if(exception.message != null) exception.message.toString() else ""
+                                            }
+                                        )
                                     }
                                 }
                             )
@@ -152,7 +204,7 @@ fun MeetingAudioRecordingScreen(
                             PlayButton(
                                 onClick = {
                                     audioRecordingViewModel.startRecording(context,
-                                        "${projectId}_${meetingId}.mp4")
+                                        "${projectId}_${meetingId}")
                                 }
                             )
                         }
@@ -166,16 +218,31 @@ fun MeetingAudioRecordingScreen(
                     }
                 }
 
-                Row(modifier = Modifier.weight(1f)){
-
-                }
-
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ){
+                    Text(errorText, style = Typography.labelMedium, fontWeight = FontWeight(500), color = LightColorScheme.error, modifier = Modifier.padding(10.dp))
+                    Text(uploadText, style = Typography.labelMedium, fontWeight = FontWeight(500), color = DarkColorScheme.background, modifier = Modifier.padding(10.dp))
+                }
 
+                Spacer(modifier = Modifier.weight(1f))
+
+                if(canShowAITranscriptButton){
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(20.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        ElevatedButton(
+                            modifier = Modifier.size(width = 250.dp, height = 50.dp),
+                            onClick = {}
+                        ) {
+                            Row(){
+                                Text("\uD83E\uDDE0 Generate AI Transcript", style = Typography.titleMedium)
+                            }
+                        }
+                    }
                 }
 
             }
@@ -185,46 +252,66 @@ fun MeetingAudioRecordingScreen(
 }
 
 @Composable
-fun PlayButton(onClick: () -> Unit){
-    IconButton(
-        modifier = Modifier.border(1.dp, BorderGrayColor, CircleShape).size(80.dp).clip(CircleShape),
-        shape = CircleShape,
-        onClick = onClick
-    ) {
-        Icon(modifier = Modifier.size(50.dp), imageVector = Icons.Outlined.PlayArrow, contentDescription = null)
+fun CustomIconButtonForAudioRecording(
+    onClick: () -> Unit,
+    iconVector: ImageVector,
+    backgroundColor: Color = LightColorScheme.surface,
+    enabled: Boolean = true
+){
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(15.dp)
+    ){
+        Surface(
+            modifier = Modifier.size(70.dp),
+            shape = CircleShape,
+            color = backgroundColor,
+            tonalElevation = 6.dp, // or shadowElevation in M2
+            border = BorderStroke(1.dp, BorderGrayColor)
+        ) {
+            IconButton(
+                enabled = enabled,
+                onClick = onClick,
+            ) {
+                Icon(modifier = Modifier.size(35.dp), imageVector = iconVector,
+                    contentDescription = null)
+            }
+        }
     }
+
+}
+
+@Composable
+fun PlayButton(onClick: () -> Unit){
+    CustomIconButtonForAudioRecording(
+        onClick = onClick,
+        iconVector = Icons.Outlined.PlayArrow
+    )
 }
 
 @Composable
 fun PauseButton(onClick: () -> Unit){
-    IconButton(
-        modifier = Modifier.border(1.dp, BorderGrayColor, CircleShape).size(80.dp).clip(CircleShape),
-        shape = CircleShape,
+    CustomIconButtonForAudioRecording(
         onClick = onClick,
-        colors = IconButtonDefaults.iconButtonColors(
-            containerColor = LightColorScheme.primary
-        )
-    ) {
-        Icon(Icons.Outlined.Pause, null)
-    }
+        iconVector = Icons.Outlined.Pause,
+        LightColorScheme.primary
+    )
 }
 
 @Composable
 fun StopButton(onClick: () -> Unit){
-    IconButton(
-        shape = CircleShape,
-        onClick = onClick
-    ) {
-        Icon(Icons.Outlined.Stop, null)
-    }
+    CustomIconButtonForAudioRecording(
+        onClick = onClick,
+        iconVector = Icons.Outlined.Stop
+    )
 }
 
 @Composable
-fun SaveButton(onClick: () -> Unit){
-    IconButton(
-        shape = CircleShape,
-        onClick = onClick
-    ) {
-        Icon(Icons.Outlined.CloudUpload, null)
-    }
+fun SaveButton(onClick: () -> Unit, enabled: Boolean){
+    CustomIconButtonForAudioRecording(
+        onClick = onClick,
+        enabled = enabled,
+        iconVector = Icons.Outlined.CloudUpload
+    )
 }

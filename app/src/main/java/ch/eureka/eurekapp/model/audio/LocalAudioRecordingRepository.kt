@@ -38,12 +38,10 @@ class LocalAudioRecordingRepository(
         return runCatching {
             if(recordingState == RECORDING_STATE.PAUSED){
                 audioRecorder!!.stop()
-                recording!!.delete()
-                recording = null
                 recordingState = RECORDING_STATE.STOPPED
                 Unit
             }else{
-                throw RuntimeException("Recording did not exist!")
+                throw RuntimeException("Recording was not paused!")
             }
         }
     }
@@ -68,6 +66,15 @@ class LocalAudioRecordingRepository(
                 Unit
             }else{
                 throw RuntimeException("Cannot resume the recording!")
+            }
+        }
+    }
+
+    override fun deleteRecording(): Result<Unit> {
+        return runCatching {
+            if(recording != null){
+                recording!!.delete()
+                recording = null
             }
         }
     }
