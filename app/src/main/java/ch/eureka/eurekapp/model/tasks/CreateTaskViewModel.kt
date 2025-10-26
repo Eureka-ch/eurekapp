@@ -67,35 +67,43 @@ class CreateTaskViewModel(
 
     updateState { copy(isSaving = true) }
 
-    viewModelScope.launch(dispatcher + handler) {
-      val taskId = IdGenerator.generateTaskId()
-      val photoUrlsResult =
-          saveFilesOnRepository(taskId, context, state.projectId, state.attachmentUris)
-      val photoUrls =
-          photoUrlsResult.getOrElse { exception ->
-            handler.handleException(coroutineContext, exception)
-            return@launch
-          }
+    val taskId = IdGenerator.generateTaskId()
 
-      val task =
-          Task(
-              taskID = taskId,
-              projectId = state.projectId,
-              title = state.title,
-              description = state.description,
-              assignedUserIds = listOf(currentUser),
-              dueDate = timestamp,
-              attachmentUrls = photoUrls,
-              createdBy = currentUser)
-
-      taskRepository.createTask(task).onFailure {
-        setErrorMsg("Failed to add Task.")
+    saveFilesAsync(taskId, context, state.projectId, state.attachmentUris) { photoUrlsResult ->
+      if (photoUrlsResult.isFailure) {
+        val exception = photoUrlsResult.exceptionOrNull()
+        Log.e("CreateTaskViewModel", exception?.message ?: "Unknown error")
+        Handler(Looper.getMainLooper()).post {
+          Toast.makeText(context.applicationContext, "Unable to save task", Toast.LENGTH_SHORT)
+              .show()
+        }
         updateState { copy(isSaving = false) }
-        return@launch
+        return@saveFilesAsync
       }
 
-      clearErrorMsg()
-      updateState { copy(isSaving = false, taskSaved = true) }
+      val photoUrls = photoUrlsResult.getOrThrow()
+
+      viewModelScope.launch(dispatcher + handler) {
+        val task =
+            Task(
+                taskID = taskId,
+                projectId = state.projectId,
+                title = state.title,
+                description = state.description,
+                assignedUserIds = listOf(currentUser),
+                dueDate = timestamp,
+                attachmentUrls = photoUrls,
+                createdBy = currentUser)
+
+        taskRepository.createTask(task).onFailure {
+          setErrorMsg("Failed to add Task.")
+          updateState { copy(isSaving = false) }
+          return@launch
+        }
+
+        clearErrorMsg()
+        updateState { copy(isSaving = false, taskSaved = true) }
+      }
     }
   }
 

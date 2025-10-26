@@ -63,7 +63,7 @@ class EditTaskViewModel(
 
     val currentUser = getCurrentUserId() ?: throw Exception("User not logged in.")
 
-    val handler = CoroutineExceptionHandler { _, exception ->
+    val handler = CoroutineExceptionHandler { _, _ ->
       Handler(Looper.getMainLooper()).post {
         Toast.makeText(context.applicationContext, "Unable to save task", Toast.LENGTH_SHORT).show()
       }
@@ -72,35 +72,41 @@ class EditTaskViewModel(
 
     updateState { copy(isSaving = true) }
 
-    viewModelScope.launch(dispatcher + handler) {
-      val photoUrlsResult =
-          saveFilesOnRepository(state.taskId, context, state.projectId, state.attachmentUris)
-      val newPhotoUrls =
-          photoUrlsResult.getOrElse { exception ->
-            handler.handleException(coroutineContext, exception)
-            return@launch
-          }
-
-      val task =
-          Task(
-              taskID = state.taskId,
-              projectId = state.projectId,
-              title = state.title,
-              description = state.description,
-              assignedUserIds = listOf(currentUser),
-              dueDate = timestamp,
-              attachmentUrls = state.attachmentUrls + newPhotoUrls,
-              createdBy = currentUser,
-              status = state.status)
-
-      taskRepository.updateTask(task).onFailure { _ ->
-        setErrorMsg("Failed to update Task.")
+    saveFilesAsync(state.taskId, context, state.projectId, state.attachmentUris) { photoUrlsResult
+      ->
+      if (photoUrlsResult.isFailure) {
+        Handler(Looper.getMainLooper()).post {
+          Toast.makeText(context.applicationContext, "Unable to save task", Toast.LENGTH_SHORT)
+              .show()
+        }
         updateState { copy(isSaving = false) }
-        return@launch
+        return@saveFilesAsync
       }
 
-      clearErrorMsg()
-      updateState { copy(isSaving = false, taskSaved = true) }
+      val newPhotoUrls = photoUrlsResult.getOrThrow()
+
+      viewModelScope.launch(dispatcher + handler) {
+        val task =
+            Task(
+                taskID = state.taskId,
+                projectId = state.projectId,
+                title = state.title,
+                description = state.description,
+                assignedUserIds = listOf(currentUser),
+                dueDate = timestamp,
+                attachmentUrls = state.attachmentUrls + newPhotoUrls,
+                createdBy = currentUser,
+                status = state.status)
+
+        taskRepository.updateTask(task).onFailure { _ ->
+          setErrorMsg("Failed to update Task.")
+          updateState { copy(isSaving = false) }
+          return@launch
+        }
+
+        clearErrorMsg()
+        updateState { copy(isSaving = false, taskSaved = true) }
+      }
     }
   }
 
@@ -132,8 +138,8 @@ class EditTaskViewModel(
           else -> file as Uri
         }
 
-    viewModelScope.launch(dispatcher) {
-      if (deletePhotoSuspend(context, uri)) {
+    deletePhotoAsync(context, uri) { success ->
+      if (success) {
         removeAttachment(index)
       }
     }
