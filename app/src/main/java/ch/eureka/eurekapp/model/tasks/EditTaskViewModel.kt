@@ -38,8 +38,10 @@ class EditTaskViewModel(
     dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : BaseTaskViewModel<EditTaskState>(taskRepository, fileRepository, getCurrentUserId, dispatcher) {
 
-  override val _uiState = MutableStateFlow(EditTaskState())
+  private val _uiState = MutableStateFlow(EditTaskState())
   override val uiState: StateFlow<EditTaskState> = _uiState.asStateFlow()
+
+  override fun getState(): EditTaskState = _uiState.value
 
   private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
@@ -91,7 +93,7 @@ class EditTaskViewModel(
               createdBy = currentUser,
               status = state.status)
 
-      taskRepository.updateTask(task).onFailure {
+      taskRepository.updateTask(task).onFailure { _ ->
         setErrorMsg("Failed to update Task.")
         updateState { copy(isSaving = false) }
         return@launch
@@ -196,7 +198,7 @@ class EditTaskViewModel(
             _uiState.value = _uiState.value.copy(isDeleting = false)
             return@launch
           }
-          .onSuccess {
+          .onSuccess { _ ->
             _uiState.value = _uiState.value.copy(isDeleting = false, taskDeleted = true)
           }
     }

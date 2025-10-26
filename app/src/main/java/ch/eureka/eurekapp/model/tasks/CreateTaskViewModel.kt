@@ -37,8 +37,11 @@ class CreateTaskViewModel(
     BaseTaskViewModel<CreateTaskState>(
         taskRepository, fileRepository, getCurrentUserId, dispatcher) {
 
-  override val _uiState = MutableStateFlow(CreateTaskState())
+  private val _uiState = MutableStateFlow(CreateTaskState())
   override val uiState: StateFlow<CreateTaskState> = _uiState.asStateFlow()
+
+  /** Returns the current state. */
+  override fun getState(): CreateTaskState = _uiState.value
 
   /** Adds a Task */
   fun addTask(context: Context) {
