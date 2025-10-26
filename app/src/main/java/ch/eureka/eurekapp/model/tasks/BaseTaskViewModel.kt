@@ -90,7 +90,7 @@ abstract class BaseTaskViewModel<T : TaskStateCommon>(
   }
 
   /** Uploads attachments to the repository */
-  protected suspend fun saveFilesOnRepository(
+  private suspend fun saveFilesOnRepository(
       taskId: String,
       context: Context,
       projectId: String,
@@ -165,7 +165,7 @@ abstract class BaseTaskViewModel<T : TaskStateCommon>(
   }
 
   /** Deletes a photo from storage */
-  protected suspend fun deletePhotoSuspend(context: Context, photoUri: Uri): Boolean {
+  private suspend fun deletePhotoSuspend(context: Context, photoUri: Uri): Boolean {
     return try {
       when (photoUri.scheme) {
         "content",
@@ -193,6 +193,28 @@ abstract class BaseTaskViewModel<T : TaskStateCommon>(
   fun deletePhotosOnDispose(context: Context, photoUris: List<Uri>) {
     viewModelScope.launch(dispatcher) {
       photoUris.forEach { uri -> deletePhotoSuspend(context, uri) }
+    }
+  }
+
+  /** Helper function for subclasses to save files - wraps the suspend function */
+  protected fun saveFilesAsync(
+      taskId: String,
+      context: Context,
+      projectId: String,
+      attachmentUris: List<Uri>,
+      onResult: (Result<List<String>>) -> Unit
+  ) {
+    viewModelScope.launch(dispatcher) {
+      val result = saveFilesOnRepository(taskId, context, projectId, attachmentUris)
+      onResult(result)
+    }
+  }
+
+  /** Helper function for subclasses to delete photos - wraps the suspend function */
+  protected fun deletePhotoAsync(context: Context, photoUri: Uri, onResult: (Boolean) -> Unit) {
+    viewModelScope.launch(dispatcher) {
+      val result = deletePhotoSuspend(context, photoUri)
+      onResult(result)
     }
   }
 
