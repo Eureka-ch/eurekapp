@@ -10,14 +10,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.IdGenerator
-import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
-import com.google.firebase.Timestamp
+import ch.eureka.eurekapp.screens.subscreens.tasks.TaskCommonConstants
+import ch.eureka.eurekapp.screens.subscreens.tasks.TaskFileOperations
+import ch.eureka.eurekapp.screens.subscreens.tasks.TaskValidation
 import com.google.firebase.auth.FirebaseAuth
-import java.text.SimpleDateFormat
-import java.util.Locale
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +27,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeout
 
 /*
 Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
@@ -48,14 +46,12 @@ class CreateTaskViewModel(
   private val _uiState = MutableStateFlow(CreateTaskState())
   val uiState: StateFlow<CreateTaskState> = _uiState.asStateFlow()
 
-  val dateRegex = Regex("""^\d{2}/\d{2}/\d{4}$""")
+  val dateRegex = TaskCommonConstants.DATE_REGEX
 
   val inputValid: StateFlow<Boolean> =
       _uiState
           .map { state ->
-            state.title.isNotBlank() &&
-                state.description.isNotBlank() &&
-                dateRegex.matches(state.dueDate)
+            TaskValidation.isValidInput(state.title, state.description, state.dueDate)
           }
           .stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = false)
 
@@ -73,30 +69,13 @@ class CreateTaskViewModel(
       taskId: String,
       context: Context
   ): Result<List<String>> {
-    return try {
-      val state = _uiState.value
-      val photoUrls = mutableListOf<String>()
-      for (uri in state.attachmentUris) {
-        val photoSaveResult =
-            withTimeout(5000L) {
-              fileRepository.uploadFile(
-                  StoragePaths.taskAttachmentPath(
-                      state.projectId, taskId, "${uri.lastPathSegment}.jpg"),
-                  uri)
-            }
-        val photoUrl =
-            photoSaveResult.getOrElse { exception ->
-              return Result.failure(exception)
-            }
-        photoUrls.add(photoUrl)
-
-        // Delete local file after successful upload
-        deletePhoto(context, uri)
-      }
-      Result.success(photoUrls)
-    } catch (e: Exception) {
-      Result.failure(e)
-    }
+    val state = _uiState.value
+    return TaskFileOperations.uploadAttachments(
+        projectId = state.projectId,
+        taskId = taskId,
+        attachmentUris = state.attachmentUris,
+        fileRepository = fileRepository,
+        onDelete = { uri -> deletePhotoSuspend(context, uri) })
   }
 
   /** Resets the save state to allow creating another task */
@@ -107,22 +86,13 @@ class CreateTaskViewModel(
   /** Adds a Task */
   fun addTask(context: Context) {
     val state = _uiState.value
-    val dateStr = state.dueDate
 
-    if (!dateRegex.matches(dateStr)) {
-      setErrorMsg("Invalid format, date must be DD/MM/YYYY.")
+    val timestampResult = TaskValidation.parseDateString(state.dueDate)
+    if (timestampResult.isFailure) {
+      setErrorMsg(timestampResult.exceptionOrNull()?.message ?: "Invalid date")
       return
     }
-
-    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    dateFormat.isLenient = false
-    val date =
-        try {
-          dateFormat.parse(dateStr)
-        } catch (e: Exception) {
-          setErrorMsg("Invalid date value: $dateStr")
-          return
-        }
+    val timestamp = timestampResult.getOrThrow()
 
     val currentUser = getCurrentUserId() ?: throw Exception("User not logged in.")
 
@@ -153,7 +123,7 @@ class CreateTaskViewModel(
               title = state.title,
               description = state.description,
               assignedUserIds = listOf(currentUser),
-              dueDate = Timestamp(date),
+              dueDate = timestamp,
               attachmentUrls = photoUrls,
               createdBy = currentUser)
 
@@ -199,6 +169,10 @@ class CreateTaskViewModel(
 
   fun setProjectId(id: String) {
     _uiState.value = _uiState.value.copy(projectId = id)
+  }
+
+  private suspend fun deletePhotoSuspend(context: Context, photoUri: Uri): Boolean {
+    return TaskFileOperations.deletePhoto(context, photoUri, fileRepository)
   }
 
   fun deletePhoto(context: Context, photoUri: Uri): Boolean {
