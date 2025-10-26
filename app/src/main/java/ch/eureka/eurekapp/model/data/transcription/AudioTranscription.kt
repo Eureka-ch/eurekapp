@@ -12,7 +12,7 @@ data class AudioTranscription(
     val projectId: String = "",
     val audioDownloadUrl: String = "",
     val transcriptionText: String = "",
-    val status: String = "",
+    val status: TranscriptionStatus = TranscriptionStatus.PENDING,
     val errorMessage: String? = null,
     val createdAt: Timestamp = Timestamp.now(),
     val createdBy: String = ""
