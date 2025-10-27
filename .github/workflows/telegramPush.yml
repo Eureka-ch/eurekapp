@@ -13,24 +13,6 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 1
-    
-    - name: Extract Firestore Rules
-      if: github.ref_name == 'feature/project-selection-task-creation'
-      run: |
-        mkdir -p firebase/firestore firebase/storage
-        echo "${{ secrets.FIRESTORE_RULES }}" | base64 -d > firebase/firestore/firestore.rules
-        echo "${{ secrets.STORAGE_RULES }}" | base64 -d > firebase/storage/storage.rules
-        echo "✅ Rules files created!"
-    
-    - name: Commit and push rules
-      if: github.ref_name == 'feature/project-selection-task-creation'
-      continue-on-error: true
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        git add firebase/firestore/firestore.rules firebase/storage/storage.rules
-        git diff --cached --quiet || git commit -m "Add firebase security rules"
-        git push || echo "Push failed or nothing to push"
 
     - name: Send Telegram notification
       env:
