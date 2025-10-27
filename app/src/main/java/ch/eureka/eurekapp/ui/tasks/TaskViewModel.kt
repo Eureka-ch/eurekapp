@@ -28,8 +28,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/** Data class combining Task with its assigned Users
- * Portions of this code were generated with the help of IA.
+/**
+ * Data class combining Task with its assigned Users Portions of this code were generated with the
+ * help of IA.
  */
 
 /** UI state data class for TasksScreen Contains all the data needed to render the tasks screen */
@@ -56,7 +57,8 @@ sealed class TaskScreenFilter(val displayName: String) {
   object All : TaskScreenFilter(ALL_DISPLAY_NAME)
 
   /** Show tasks from a specific project */
-  data class ByProject(val projectId: String, val projectName: String) : TaskScreenFilter(projectName)
+  data class ByProject(val projectId: String, val projectName: String) :
+      TaskScreenFilter(projectName)
 
   /**
    * Constants for task filter options Centralizes filter option strings for better maintainability
@@ -134,29 +136,33 @@ open class TaskScreenViewModel(
           .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
   open val uiState: StateFlow<TaskScreenUiState> =
-      combine(userTasks, teamTasks, _selectedFilter, _error, availableProjects) { userTasks, teamTasks, filter, error, projects
-            ->
+      combine(userTasks, teamTasks, _selectedFilter, _error, availableProjects) {
+              userTasks,
+              teamTasks,
+              filter,
+              error,
+              projects ->
             // Extract tasks based on filter
-            val taskFlow = when (filter) {
-              is TaskScreenFilter.Mine -> flowOf(userTasks)
-              is TaskScreenFilter.Team -> flowOf(teamTasks)
-              is TaskScreenFilter.All -> flowOf(userTasks + teamTasks)
-              is TaskScreenFilter.ThisWeek ->
-                  flowOf(
-                      (userTasks + teamTasks).filter { task ->
-                        val now = Timestamp.now()
-                        val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
-                        daysUntilDue in 0..7
-                      })
-              is TaskScreenFilter.ByProject -> taskRepository.getTasksInProject(filter.projectId)
-            }
+            val taskFlow =
+                when (filter) {
+                  is TaskScreenFilter.Mine -> flowOf(userTasks)
+                  is TaskScreenFilter.Team -> flowOf(teamTasks)
+                  is TaskScreenFilter.All -> flowOf(userTasks + teamTasks)
+                  is TaskScreenFilter.ThisWeek ->
+                      flowOf(
+                          (userTasks + teamTasks).filter { task ->
+                            val now = Timestamp.now()
+                            val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
+                            daysUntilDue in 0..7
+                          })
+                  is TaskScreenFilter.ByProject ->
+                      taskRepository.getTasksInProject(filter.projectId)
+                }
             Triple(filter, taskFlow, error to projects)
           }
           .flatMapLatest { (filter, taskFlow, errorProjects) ->
             val (error, projects) = errorProjects
-            taskFlow.map { tasks ->
-              Triple(filter, tasks, error to projects)
-            }
+            taskFlow.map { tasks -> Triple(filter, tasks, error to projects) }
           }
           .flatMapLatest { (filter, tasks, errorProjects) ->
             // For each task, fetch its assignees

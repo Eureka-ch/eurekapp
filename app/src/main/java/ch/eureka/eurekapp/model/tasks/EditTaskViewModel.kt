@@ -74,8 +74,7 @@ class EditTaskViewModel(
     updateState { copy(isSaving = true) }
 
     val projectIdToUse = state.selectedProjectId.takeIf { it.isNotEmpty() } ?: state.projectId
-    saveFilesAsync(state.taskId, context, projectIdToUse, state.attachmentUris) { photoUrlsResult
-      ->
+    saveFilesAsync(state.taskId, context, projectIdToUse, state.attachmentUris) { photoUrlsResult ->
       if (photoUrlsResult.isFailure) {
         Handler(Looper.getMainLooper()).post {
           Toast.makeText(context.applicationContext, "Unable to save task", Toast.LENGTH_SHORT)

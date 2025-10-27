@@ -30,7 +30,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
-import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.tasks.EditTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
@@ -92,11 +91,10 @@ fun EditTaskScreen(
 
   // Fetch available projects
   LaunchedEffect(Unit) {
-    FirestoreRepositoriesProvider.projectRepository
-        .getProjectsForCurrentUser()
-        .collect { projects ->
-          editTaskViewModel.setAvailableProjects(projects)
-        }
+    FirestoreRepositoriesProvider.projectRepository.getProjectsForCurrentUser().collect { projects
+      ->
+      editTaskViewModel.setAvailableProjects(projects)
+    }
   }
 
   // Set projectId from param and select it
