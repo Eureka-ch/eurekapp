@@ -73,7 +73,8 @@ class EditTaskViewModel(
 
     updateState { copy(isSaving = true) }
 
-    saveFilesAsync(state.taskId, context, state.projectId, state.attachmentUris) { photoUrlsResult
+    val projectIdToUse = state.selectedProjectId.takeIf { it.isNotEmpty() } ?: state.projectId
+    saveFilesAsync(state.taskId, context, projectIdToUse, state.attachmentUris) { photoUrlsResult
       ->
       if (photoUrlsResult.isFailure) {
         Handler(Looper.getMainLooper()).post {
@@ -90,7 +91,7 @@ class EditTaskViewModel(
         val task =
             Task(
                 taskID = state.taskId,
-                projectId = state.projectId,
+                projectId = projectIdToUse,
                 title = state.title,
                 description = state.description,
                 assignedUserIds = listOf(currentUser),

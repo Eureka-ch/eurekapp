@@ -52,14 +52,14 @@ Portions of this code were generated with the help of Grok.
 /**
  * A composable screen for creating a new task within a project.
  *
- * @param projectId The ID of the project to which the new task will be added.
+ * @param projectId Optional ID of the project (for backward compatibility).
  * @param navigationController The NavHostController for handling navigation actions.
  * @param createTaskViewModel The CreateTaskViewModel instance responsible for managing task
  *   creation state.
  */
 @Composable
 fun CreateTaskScreen(
-    projectId: String,
+    projectId: String = "",
     navigationController: NavHostController = rememberNavController(),
     createTaskViewModel: CreateTaskViewModel = viewModel(),
 ) {

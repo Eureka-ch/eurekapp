@@ -27,3 +27,4 @@ firestore-debug.log
 # Firebase rules (deployed via CI)
 firebase/**/*.rules
 /release-keystore.jks
+/perso 

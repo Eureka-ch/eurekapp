@@ -29,11 +29,14 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.tasks.EditTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AttachmentsList
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.ProjectSelectionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDescriptionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskTitleField
@@ -72,6 +75,8 @@ fun EditTaskScreen(
   val editTaskState by editTaskViewModel.uiState.collectAsState()
   val inputValid by editTaskViewModel.inputValid.collectAsState()
   val errorMsg = editTaskState.errorMsg
+  val selectedProjectId = editTaskState.selectedProjectId
+  val availableProjects = editTaskState.availableProjects
   var hasTouchedTitle by remember { mutableStateOf(false) }
   var hasTouchedDescription by remember { mutableStateOf(false) }
   var hasTouchedDate by remember { mutableStateOf(false) }
@@ -85,7 +90,20 @@ fun EditTaskScreen(
   var isNavigatingToCamera by remember { mutableStateOf(false) }
   var showDeleteDialog by remember { mutableStateOf(false) }
 
-  LaunchedEffect(projectId) { editTaskViewModel.setProjectId(projectId) }
+  // Fetch available projects
+  LaunchedEffect(Unit) {
+    FirestoreRepositoriesProvider.projectRepository
+        .getProjectsForCurrentUser()
+        .collect { projects ->
+          editTaskViewModel.setAvailableProjects(projects)
+        }
+  }
+
+  // Set projectId from param and select it
+  LaunchedEffect(projectId) {
+    editTaskViewModel.setProjectId(projectId)
+    editTaskViewModel.setSelectedProjectId(projectId)
+  }
 
   LaunchedEffect(taskId) {
     if (!editTaskState.isDeleting && !editTaskState.taskDeleted) {
@@ -156,6 +174,13 @@ fun EditTaskScreen(
                   hasTouched = hasTouchedDate,
                   onFocusChanged = { hasTouchedDate = true },
                   dateRegex = editTaskViewModel.dateRegex)
+
+              ProjectSelectionField(
+                  projects = availableProjects,
+                  selectedProjectId = selectedProjectId,
+                  onProjectSelected = { projectId ->
+                    editTaskViewModel.setSelectedProjectId(projectId)
+                  })
 
               Row(
                   modifier = Modifier.fillMaxWidth(),
