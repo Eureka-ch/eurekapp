@@ -31,7 +31,9 @@ import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
-/** Task card component used on tasks and project screens */
+/** Task card component used on tasks and project screens 
+ * Portions of this code were generated with the help of IA.
+*/
 @Composable
 fun EurekaTaskCard(
     title: String,

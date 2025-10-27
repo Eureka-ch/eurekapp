@@ -28,14 +28,17 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/** Data class combining Task with its assigned Users */
+/** Data class combining Task with its assigned Users
+ * Portions of this code were generated with the help of IA.
+ */
 
 /** UI state data class for TasksScreen Contains all the data needed to render the tasks screen */
 data class TaskScreenUiState(
     val tasksAndUsers: List<TaskAndUsers> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val selectedFilter: TaskScreenFilter = TaskScreenFilter.Mine
+    val selectedFilter: TaskScreenFilter = TaskScreenFilter.Mine,
+    val availableProjects: List<ch.eureka.eurekapp.model.data.project.Project> = emptyList()
 )
 
 /** Sealed class representing different task filtering options with their data */
@@ -52,7 +55,9 @@ sealed class TaskScreenFilter(val displayName: String) {
   /** Show all tasks */
   object All : TaskScreenFilter(ALL_DISPLAY_NAME)
 
-  /** Show tasks from specific projects */
+  /** Show tasks from a specific project */
+  data class ByProject(val projectId: String, val projectName: String) : TaskScreenFilter(projectName)
+
   /**
    * Constants for task filter options Centralizes filter option strings for better maintainability
    * and localization
@@ -92,6 +97,12 @@ open class TaskScreenViewModel(
   private val _selectedFilter = MutableStateFlow<TaskScreenFilter>(TaskScreenFilter.Mine)
   private val _error = MutableStateFlow<String?>(null)
 
+  // Flow 0: Available projects
+  private val availableProjects =
+      projectRepository
+          .getProjectsForCurrentUser()
+          .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
   // Flow 1: Tasks assigned to current user
   private val userTasks =
       taskRepository
@@ -123,41 +134,51 @@ open class TaskScreenViewModel(
           .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
   open val uiState: StateFlow<TaskScreenUiState> =
-      combine(userTasks, teamTasks, _selectedFilter, _error) { userTasks, teamTasks, filter, error
+      combine(userTasks, teamTasks, _selectedFilter, _error, availableProjects) { userTasks, teamTasks, filter, error, projects
             ->
-            val tasks =
-                when (filter) {
-                  is TaskScreenFilter.Mine -> userTasks
-                  is TaskScreenFilter.Team -> teamTasks
-                  is TaskScreenFilter.All -> userTasks + teamTasks
-                  is TaskScreenFilter.ThisWeek ->
+            // Extract tasks based on filter
+            val taskFlow = when (filter) {
+              is TaskScreenFilter.Mine -> flowOf(userTasks)
+              is TaskScreenFilter.Team -> flowOf(teamTasks)
+              is TaskScreenFilter.All -> flowOf(userTasks + teamTasks)
+              is TaskScreenFilter.ThisWeek ->
+                  flowOf(
                       (userTasks + teamTasks).filter { task ->
                         val now = Timestamp.now()
                         val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
                         daysUntilDue in 0..7
-                      }
-                }
-            Triple(filter, tasks, error)
+                      })
+              is TaskScreenFilter.ByProject -> taskRepository.getTasksInProject(filter.projectId)
+            }
+            Triple(filter, taskFlow, error to projects)
           }
-          .flatMapLatest { (filter, tasks, error) ->
+          .flatMapLatest { (filter, taskFlow, errorProjects) ->
+            val (error, projects) = errorProjects
+            taskFlow.map { tasks ->
+              Triple(filter, tasks, error to projects)
+            }
+          }
+          .flatMapLatest { (filter, tasks, errorProjects) ->
             // For each task, fetch its assignees
             if (tasks.isEmpty()) {
-              flowOf(Triple(filter, emptyList<TaskAndUsers>(), error))
+              flowOf(Triple(filter, emptyList<TaskAndUsers>(), errorProjects))
             } else {
               combine(
                   tasks.map { task ->
                     getAssignees(task).map { users -> TaskAndUsers(task, users) }
                   }) { tasksAndUsersArray ->
-                    Triple(filter, tasksAndUsersArray.toList(), error)
+                    Triple(filter, tasksAndUsersArray.toList(), errorProjects)
                   }
             }
           }
-          .map { (filter, tasksAndUsers, error) ->
+          .map { (filter, tasksAndUsers, errorProjects) ->
+            val (error, projects) = errorProjects
             TaskScreenUiState(
                 tasksAndUsers = tasksAndUsers,
                 selectedFilter = filter,
                 isLoading = false,
-                error = error)
+                error = error,
+                availableProjects = projects)
           }
           .stateIn(viewModelScope, SharingStarted.Eagerly, TaskScreenUiState(isLoading = true))
 
