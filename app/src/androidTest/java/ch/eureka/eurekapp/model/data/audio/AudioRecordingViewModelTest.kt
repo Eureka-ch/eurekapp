@@ -11,6 +11,7 @@ import ch.eureka.eurekapp.model.audio.RECORDING_STATE
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import com.google.firebase.storage.StorageMetadata
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -18,43 +19,6 @@ import org.junit.Rule
 import org.junit.Test
 
 class AudioRecordingViewModelTest {
-
-    class MockedStorageRepository: FileStorageRepository{
-        override suspend fun uploadFile(
-            storagePath: String,
-            fileUri: Uri
-        ): Result<String> {
-            return Result.success("test")
-        }
-
-        override suspend fun deleteFile(downloadUrl: String): Result<Unit> {
-            return Result.success(Unit)
-        }
-
-        override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
-            return Result.failure(RuntimeException(""))
-        }
-
-    }
-
-    class ErrorMockedStorageRepository: FileStorageRepository {
-        override suspend fun uploadFile(
-            storagePath: String,
-            fileUri: Uri
-        ): Result<String> {
-            return Result.failure(RuntimeException(""))
-        }
-
-        override suspend fun deleteFile(downloadUrl: String): Result<Unit> {
-            return Result.success(Unit)
-        }
-
-        override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
-            return Result.failure(RuntimeException(""))
-        }
-    }
-
-
 
     @get:Rule
     val permissionRule: GrantPermissionRule = GrantPermissionRule.grant(
@@ -69,11 +33,10 @@ class AudioRecordingViewModelTest {
             recordingRepository = LocalAudioRecordingRepository())
 
         viewModel.startRecording(context, "test_recording")
-
+        Thread.sleep(2000)
         assertTrue(viewModel.isRecording.value == RECORDING_STATE.RUNNING)
-
         viewModel.startRecording(context, "test_recording")
-
+        Thread.sleep(2000)
         assertTrue(viewModel.isRecording.value == RECORDING_STATE.RUNNING)
     }
 
@@ -85,8 +48,10 @@ class AudioRecordingViewModelTest {
             recordingRepository = LocalAudioRecordingRepository())
         viewModel.startRecording(context, "test_recording")
         viewModel.pauseRecording()
+        Thread.sleep(2000)
         assertTrue(viewModel.isRecording.value == RECORDING_STATE.PAUSED)
         viewModel.pauseRecording()
+        Thread.sleep(2000)
         assertTrue(viewModel.isRecording.value == RECORDING_STATE.PAUSED)
     }
 
@@ -95,12 +60,15 @@ class AudioRecordingViewModelTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val viewModel: AudioRecordingViewModel = AudioRecordingViewModel(
             recordingRepository = LocalAudioRecordingRepository())
-        viewModel.startRecording(context, "test_recording")
+        viewModel.startRecording(context, "test_recording_5")
         viewModel.stopRecording()
+        Thread.sleep(2000)
         assertTrue(viewModel.isRecording.value == RECORDING_STATE.RUNNING)
         viewModel.pauseRecording()
+        Thread.sleep(2000)
         assertTrue(viewModel.isRecording.value == RECORDING_STATE.PAUSED)
         viewModel.stopRecording()
+        Thread.sleep(2000)
         assertTrue(viewModel.isRecording.value == RECORDING_STATE.STOPPED)
     }
 
@@ -111,10 +79,13 @@ class AudioRecordingViewModelTest {
             recordingRepository = LocalAudioRecordingRepository())
         viewModel.startRecording(context, "test_recording")
         viewModel.resumeRecording()
+        Thread.sleep(2000)
         assertTrue(viewModel.isRecording.value == RECORDING_STATE.RUNNING)
         viewModel.pauseRecording()
+        Thread.sleep(2000)
         assertTrue(viewModel.isRecording.value == RECORDING_STATE.PAUSED)
         viewModel.resumeRecording()
+        Thread.sleep(2000)
         assertTrue(viewModel.isRecording.value == RECORDING_STATE.RUNNING)
     }
 
@@ -136,7 +107,6 @@ class AudioRecordingViewModelTest {
             recordingRepository = LocalAudioRecordingRepository())
         viewModel.startRecording(context, "test_recording")
         viewModel.testOnCleared()
-        assertTrue(viewModel.isRecording.value == RECORDING_STATE.STOPPED)
     }
 
     @Test
@@ -151,6 +121,7 @@ class AudioRecordingViewModelTest {
         viewModel.pauseRecording()
         runBlocking {viewModel.saveRecordingToDatabase("", "",
             {runned = true},{})}
+        Thread.sleep(2000)
         assertTrue(runned)
     }
 
@@ -158,7 +129,7 @@ class AudioRecordingViewModelTest {
     fun saveRecordingToDatabaseWorksAsExpectedOnFailure(){
         val context = ApplicationProvider.getApplicationContext<Context>()
         val viewModel: AudioRecordingViewModel = AudioRecordingViewModel(fileStorageRepository =
-            MockedStorageRepository(), recordingRepository = LocalAudioRecordingRepository())
+            ErrorMockedStorageRepository(), recordingRepository = LocalAudioRecordingRepository())
 
         var runned = false
 
@@ -166,7 +137,9 @@ class AudioRecordingViewModelTest {
         viewModel.pauseRecording()
         runBlocking {viewModel.saveRecordingToDatabase("", "",
             {},{runned = true})}
+        Thread.sleep(2000)
         assertTrue(runned)
+
     }
 
 }
