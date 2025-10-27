@@ -3,6 +3,8 @@ package ch.eureka.eurekapp.model.audio
 import android.content.Context
 import android.net.Uri
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
+
 /**
  * Interface defining operations for managing audio recordings.
  *
@@ -17,12 +19,13 @@ interface AudioRecordingRepository {
      * Creates a new audio recording file with the given [fileName] and starts recording.
      *
      * @param fileName The name of the file to create for the recording.
+     * @param context The context object from which we are executing this function
      * @return A [Result] wrapping a [Uri] pointing to the newly created recording file
      *         on success, or an exception describing the failure.
      *
      * Note: This documentation has been AI-generated.
      */
-    fun createRecording(fileName: String): Result<Uri>
+    fun createRecording(context: Context, fileName: String): Result<Uri>
 
     /**
      * Clears the current recording without deleting the file.
@@ -65,4 +68,10 @@ interface AudioRecordingRepository {
      * Note: This documentation has been AI-generated.
      */
     fun deleteRecording(): Result<Unit>
+
+    /**
+     * Get the recording state as an observable flow
+     * @return the recording state of the recorder as an observable flow
+     **/
+    fun getRecordingStateFlow(): StateFlow<RECORDING_STATE>
 }

@@ -67,7 +67,8 @@ fun MeetingAudioRecordingScreen(
     context: Context = LocalContext.current,
     projectId: String,
     meetingId: String,
-    audioRecordingViewModel: AudioRecordingViewModel = viewModel()
+    audioRecordingViewModel: AudioRecordingViewModel = viewModel(),
+    onGenerateAITranscript: (String) -> Unit = {}
     ){
 
     var microphonePermissionIsGranted by remember{mutableStateOf(
@@ -204,7 +205,9 @@ fun MeetingAudioRecordingScreen(
                             PlayButton(
                                 onClick = {
                                     audioRecordingViewModel.startRecording(context,
-                                        "${projectId}_${meetingId}")
+                                        "${projectId}_${meetingId}.mp4")
+                                    canPressUploadButton = true
+                                    timeInSeconds = 0
                                 }
                             )
                         }
@@ -219,11 +222,12 @@ fun MeetingAudioRecordingScreen(
                 }
 
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ){
-                    Text(errorText, style = Typography.labelMedium, fontWeight = FontWeight(500), color = LightColorScheme.error, modifier = Modifier.padding(10.dp))
-                    Text(uploadText, style = Typography.labelMedium, fontWeight = FontWeight(500), color = DarkColorScheme.background, modifier = Modifier.padding(10.dp))
+                    Text(errorText, style = Typography.labelMedium, fontWeight = FontWeight(500), color = LightColorScheme.error, modifier = Modifier.padding(vertical = 10.dp))
+                    Text(uploadText, style = Typography.labelMedium, fontWeight = FontWeight(500), color = DarkColorScheme.background, modifier = Modifier.padding(vertical = 10.dp))
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -236,7 +240,7 @@ fun MeetingAudioRecordingScreen(
                     ){
                         ElevatedButton(
                             modifier = Modifier.size(width = 250.dp, height = 50.dp),
-                            onClick = {}
+                            onClick = {onGenerateAITranscript(firebaseDownloadURI!!)}
                         ) {
                             Row(){
                                 Text("\uD83E\uDDE0 Generate AI Transcript", style = Typography.titleMedium)

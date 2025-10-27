@@ -3,18 +3,20 @@ package ch.eureka.eurekapp.model.audio
 import android.content.Context
 import android.media.MediaRecorder
 import android.net.Uri
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
 
 
 
 class LocalAudioRecordingRepository(
-    val context: Context
 ): AudioRecordingRepository {
     private var recording: File? = null
     private var audioRecorder: MediaRecorder? = null
-    private var recordingState: RECORDING_STATE = RECORDING_STATE.STOPPED
+    private var recordingState: MutableStateFlow<RECORDING_STATE> = MutableStateFlow(RECORDING_STATE.STOPPED)
 
-    override fun createRecording(fileName: String): Result<Uri> {
+    override fun createRecording(context: Context, fileName: String): Result<Uri> {
         return runCatching {
             if(recording != null){
                 throw RuntimeException("You already have a recording!")
@@ -29,16 +31,17 @@ class LocalAudioRecordingRepository(
                 prepare()
                 start()
             }
-            recordingState = RECORDING_STATE.RUNNING
+            recordingState.value = RECORDING_STATE.RUNNING
             Uri.fromFile(recording!!)
         }
     }
 
     override fun clearRecording(): Result<Unit> {
         return runCatching {
-            if(recordingState == RECORDING_STATE.PAUSED){
+            if(recordingState.value == RECORDING_STATE.PAUSED){
                 audioRecorder!!.stop()
-                recordingState = RECORDING_STATE.STOPPED
+                audioRecorder!!.release()
+                recordingState.value = RECORDING_STATE.STOPPED
                 Unit
             }else{
                 throw RuntimeException("Recording was not paused!")
@@ -48,9 +51,9 @@ class LocalAudioRecordingRepository(
 
     override fun pauseRecording(): Result<Unit> {
         return runCatching {
-            if(recordingState == RECORDING_STATE.RUNNING){
+            if(recordingState.value == RECORDING_STATE.RUNNING){
                 audioRecorder!!.pause()
-                recordingState = RECORDING_STATE.PAUSED
+                recordingState.value = RECORDING_STATE.PAUSED
                 Unit
             }else{
                throw RuntimeException(
@@ -61,8 +64,9 @@ class LocalAudioRecordingRepository(
 
     override fun resumeRecording(): Result<Unit> {
         return runCatching {
-            if(recordingState == RECORDING_STATE.PAUSED){
+            if(recordingState.value == RECORDING_STATE.PAUSED){
                 audioRecorder!!.resume()
+                recordingState.value = RECORDING_STATE.RUNNING
                 Unit
             }else{
                 throw RuntimeException("Cannot resume the recording!")
@@ -77,5 +81,9 @@ class LocalAudioRecordingRepository(
                 recording = null
             }
         }
+    }
+
+    override fun getRecordingStateFlow(): StateFlow<RECORDING_STATE> {
+        return recordingState.asStateFlow()
     }
 }

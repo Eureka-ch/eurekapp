@@ -11,6 +11,7 @@ import ch.eureka.eurekapp.model.data.file.FirebaseFileStorageRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class AudioRecordingViewModel(
@@ -18,73 +19,59 @@ class AudioRecordingViewModel(
         FirebaseFileStorageRepository(
         FirebaseStorage.getInstance(),
         FirebaseAuth.getInstance()
-    )
+    ),
+    val recordingRepository: LocalAudioRecordingRepository = AudioRecordingRepositoryProvider.repository
 ): ViewModel() {
     private val _recordingUri: MutableStateFlow<Uri?> = MutableStateFlow(null)
     val recordingUri = _recordingUri.asStateFlow()
 
-    private val _isRecording: MutableStateFlow<RECORDING_STATE> =
-        MutableStateFlow(RECORDING_STATE.STOPPED)
-    val isRecording = _isRecording.asStateFlow()
-
-    private var recordingRepository: AudioRecordingRepository? = null
-
+    val isRecording: StateFlow<RECORDING_STATE> = recordingRepository.getRecordingStateFlow()
     fun startRecording(context: Context, fileName: String){
-        if(_isRecording.value == RECORDING_STATE.STOPPED){
-            if(recordingRepository == null){
-                recordingRepository = LocalAudioRecordingRepository(context)
-            }
-            val createdRecordingUri = recordingRepository!!.createRecording(fileName)
-            if(createdRecordingUri.isFailure){
-                return
-            }
-            _recordingUri.value = createdRecordingUri.getOrNull()
-            _isRecording.value = RECORDING_STATE.RUNNING
+        val createdRecordingUri = recordingRepository.createRecording(context, fileName)
+        if(createdRecordingUri.isFailure){
+            return
         }
+        _recordingUri.value = createdRecordingUri.getOrNull()
     }
 
     fun resumeRecording(){
-        if(_isRecording.value == RECORDING_STATE.PAUSED){
-            if(recordingRepository!!.resumeRecording().isFailure){
+        if(isRecording.value == RECORDING_STATE.PAUSED){
+            if(recordingRepository.resumeRecording().isFailure){
                 return
             }
-            _isRecording.value = RECORDING_STATE.RUNNING
         }
     }
 
     fun pauseRecording(){
-        if(_isRecording.value == RECORDING_STATE.RUNNING){
-            val result = recordingRepository!!.pauseRecording()
+        if(isRecording.value == RECORDING_STATE.RUNNING){
+            val result = recordingRepository.pauseRecording()
             if(result.isFailure){
-                Log.d("AudioTranscriptScreen", result.exceptionOrNull()?.message.toString())
                 return
             }
-            _isRecording.value = RECORDING_STATE.PAUSED
-            Log.d("AudioTranscriptScreen", _isRecording.value.toString())
         }
     }
 
     fun stopRecording(){
-        if(_isRecording.value == RECORDING_STATE.PAUSED){
-            val result = recordingRepository!!.clearRecording()
+        if(isRecording.value == RECORDING_STATE.PAUSED){
+            val result = recordingRepository.clearRecording()
             if(result.isFailure){
-                Log.d("AudioTranscriptScreen", result.exceptionOrNull()?.message.toString())
                 return
             }
-            _isRecording.value = RECORDING_STATE.STOPPED
         }
     }
 
     fun deleteLocalRecording(){
-        recordingRepository!!.deleteRecording()
+        recordingRepository.deleteRecording()
     }
 
-    suspend fun saveRecordingToDatabase(projectId: String, meetingId: String, onSuccesfulUpload: (String) -> Unit, onFailureUpload: (Throwable) -> Unit){
+    suspend fun saveRecordingToDatabase(projectId: String, meetingId: String,
+                                        onSuccesfulUpload: (String) -> Unit,
+                                        onFailureUpload: (Throwable) -> Unit){
         if(_recordingUri.value != null && isRecording.value == RECORDING_STATE.PAUSED){
             stopRecording()
             val result = fileStorageRepository
                 .uploadFile(StoragePaths.meetingAttachmentPath(projectId,
-                    meetingId, "${_recordingUri.value!!.lastPathSegment}.mp4"),
+                    meetingId, "${_recordingUri.value!!.lastPathSegment}"),
                     _recordingUri.value!!)
             if(result.isFailure){
                 onFailureUpload(result.exceptionOrNull()!!)
@@ -101,8 +88,13 @@ class AudioRecordingViewModel(
         if(isRecording.value == RECORDING_STATE.RUNNING){
            pauseRecording()
            stopRecording()
+            deleteLocalRecording()
         }else if(isRecording.value == RECORDING_STATE.PAUSED){
             stopRecording()
         }
+    }
+
+    fun testOnCleared(){
+        onCleared()
     }
 }
