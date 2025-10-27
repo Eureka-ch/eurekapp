@@ -68,8 +68,9 @@ class CreateTaskViewModel(
     updateState { copy(isSaving = true) }
 
     val taskId = IdGenerator.generateTaskId()
+    val projectIdToUse = state.selectedProjectId.takeIf { it.isNotEmpty() } ?: state.projectId
 
-    saveFilesAsync(taskId, context, state.projectId, state.attachmentUris) { photoUrlsResult ->
+    saveFilesAsync(taskId, context, projectIdToUse, state.attachmentUris) { photoUrlsResult ->
       if (photoUrlsResult.isFailure) {
         val exception = photoUrlsResult.exceptionOrNull()
         Log.e("CreateTaskViewModel", exception?.message ?: "Unknown error")
@@ -87,7 +88,7 @@ class CreateTaskViewModel(
         val task =
             Task(
                 taskID = taskId,
-                projectId = state.projectId,
+                projectId = projectIdToUse,
                 title = state.title,
                 description = state.description,
                 assignedUserIds = listOf(currentUser),
@@ -137,4 +138,10 @@ class CreateTaskViewModel(
   override fun CreateTaskState.copyWithAttachmentUris(uris: List<Uri>) = copy(attachmentUris = uris)
 
   override fun CreateTaskState.copyWithProjectId(projectId: String) = copy(projectId = projectId)
+
+  override fun CreateTaskState.copyWithSelectedProjectId(projectId: String) =
+      copy(selectedProjectId = projectId)
+
+  override fun CreateTaskState.copyWithAvailableProjects(projects: List<Project>) =
+      copy(availableProjects = projects)
 }

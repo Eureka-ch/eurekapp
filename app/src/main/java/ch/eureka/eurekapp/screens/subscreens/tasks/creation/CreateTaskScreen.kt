@@ -29,10 +29,13 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.tasks.CreateTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AttachmentsList
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.ProjectSelectionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDescriptionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskTitleField
@@ -63,6 +66,8 @@ fun CreateTaskScreen(
   val createTaskState by createTaskViewModel.uiState.collectAsState()
   val inputValid by createTaskViewModel.inputValid.collectAsState()
   val errorMsg = createTaskState.errorMsg
+  val selectedProjectId = createTaskState.selectedProjectId
+  val availableProjects = createTaskState.availableProjects
   var hasTouchedTitle by remember { mutableStateOf(false) }
   var hasTouchedDescription by remember { mutableStateOf(false) }
   var hasTouchedDate by remember { mutableStateOf(false) }
@@ -75,7 +80,22 @@ fun CreateTaskScreen(
   val scrollState = rememberScrollState()
   var isNavigatingToCamera by remember { mutableStateOf(false) }
 
-  LaunchedEffect(projectId) { createTaskViewModel.setProjectId(projectId) }
+  // Fetch available projects
+  LaunchedEffect(Unit) {
+    FirestoreRepositoriesProvider.projectRepository
+        .getProjectsForCurrentUser()
+        .collect { projects ->
+          createTaskViewModel.setAvailableProjects(projects)
+        }
+  }
+
+  // If projectId passed from navigation, set it as selected
+  LaunchedEffect(projectId) {
+    if (projectId.isNotEmpty()) {
+      createTaskViewModel.setProjectId(projectId)
+      createTaskViewModel.setSelectedProjectId(projectId)
+    }
+  }
 
   LaunchedEffect(errorMsg) {
     if (errorMsg != null) {
@@ -135,6 +155,13 @@ fun CreateTaskScreen(
                   hasTouched = hasTouchedDate,
                   onFocusChanged = { hasTouchedDate = true },
                   dateRegex = createTaskViewModel.dateRegex)
+
+              ProjectSelectionField(
+                  projects = availableProjects,
+                  selectedProjectId = selectedProjectId,
+                  onProjectSelected = { projectId ->
+                    createTaskViewModel.setSelectedProjectId(projectId)
+                  })
 
               Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
                 OutlinedButton(
