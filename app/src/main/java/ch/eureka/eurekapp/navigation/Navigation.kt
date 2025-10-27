@@ -82,7 +82,8 @@ sealed interface Route {
 
     @Serializable data object AddMeeting : MeetingsSection
 
-    @Serializable data class AudioTranscript(val projectId: String, val meetingId: String) : MeetingsSection
+    @Serializable
+    data class AudioTranscript(val projectId: String, val meetingId: String) : MeetingsSection
   }
 
   // Project selection section
@@ -168,10 +169,7 @@ fun NavigationMenu() {
               } // TODO : change this after "Create project" is implemented
 
               composable<Route.MeetingsSection.AudioTranscript> {
-                MeetingAudioRecordingScreen(
-                  projectId = testProjectId,
-                  meetingId = "1234"
-                )
+                MeetingAudioRecordingScreen(projectId = testProjectId, meetingId = "1234")
               }
 
               // Project selection section

@@ -22,7 +22,6 @@ import androidx.credentials.CredentialManager
 import ch.eureka.eurekapp.model.authentication.AuthRepository
 import ch.eureka.eurekapp.navigation.NavigationMenu
 import ch.eureka.eurekapp.resources.C
-import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScreen
 import ch.eureka.eurekapp.ui.authentication.SignInScreen
 import ch.eureka.eurekapp.ui.theme.EurekappTheme
 import com.google.firebase.auth.FirebaseAuth
@@ -55,8 +54,7 @@ fun Eurekapp(
   if (!signedIn) {
     SignInScreen(credentialManager = credentialManager, onSignedIn = { signedIn = true })
   } else {
-    //NavigationMenu()
-      MeetingAudioRecordingScreen(context, "test-project-id", "test-meeting-id")
+    NavigationMenu()
   }
 }
 

@@ -1,6 +1,5 @@
 package ch.eureka.eurekapp.utils
 
-import android.annotation.SuppressLint
 import java.text.SimpleDateFormat
 import java.util.*
 

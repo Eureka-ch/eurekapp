@@ -2,7 +2,6 @@ package ch.eureka.eurekapp.ui.meeting.audio
 
 import android.Manifest
 import android.content.Context
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -18,71 +17,70 @@ import org.junit.Rule
 import org.junit.Test
 
 class MeetingAudioRecordingScreenTest {
-    @get:Rule
-    val composeTestRule = createComposeRule()
+  @get:Rule val composeTestRule = createComposeRule()
 
-    @get:Rule
-    val permissionRule: GrantPermissionRule = GrantPermissionRule.grant(
-        Manifest.permission.RECORD_AUDIO
-    )
-    @Test
-    fun recordingWorks(){
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        composeTestRule.setContent {
-            MeetingAudioRecordingScreen(
-                context = context,
-                projectId = "test-project-id",
-                meetingId = "meeting-id",
-                audioRecordingViewModel = AudioRecordingViewModel(
-                    fileStorageRepository = MockedStorageRepository(),
-                    recordingRepository = LocalAudioRecordingRepository())
-            )
-        }
+  @get:Rule
+  val permissionRule: GrantPermissionRule =
+      GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO)
 
-        composeTestRule.waitForIdle()
-
-        composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.START_RECORDING_BUTTON)
-            .assertIsDisplayed()
-        composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.START_RECORDING_BUTTON)
-            .performClick()
-
-        Thread.sleep(2000)
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.PAUSE_RECORDING_BUTTON)
-            .assertIsDisplayed()
-        composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.PAUSE_RECORDING_BUTTON)
-            .performClick()
-
-        Thread.sleep(2000)
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.STOP_RECORDING_BUTTON)
-            .assertIsDisplayed()
-        composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.STOP_RECORDING_BUTTON)
-            .performClick()
-
-        Thread.sleep(2000)
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.START_RECORDING_BUTTON)
-            .assertIsDisplayed()
-        composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.START_RECORDING_BUTTON)
-            .performClick()
-
-        Thread.sleep(2000)
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.PAUSE_RECORDING_BUTTON)
-            .assertIsDisplayed()
-        composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.PAUSE_RECORDING_BUTTON)
-            .performClick()
-        Thread.sleep(2000)
-        composeTestRule.waitForIdle()
-
-
-        composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.UPLOAD_TO_DATABASE_BUTTON)
-            .assertIsDisplayed()
-        composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.UPLOAD_TO_DATABASE_BUTTON)
-            .performClick()
-        Thread.sleep(2000)
-        composeTestRule.waitForIdle()
-
+  @Test
+  fun recordingWorks() {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    composeTestRule.setContent {
+      MeetingAudioRecordingScreen(
+          context = context,
+          projectId = "test-project-id",
+          meetingId = "meeting-id",
+          audioRecordingViewModel =
+              AudioRecordingViewModel(
+                  fileStorageRepository = MockedStorageRepository(),
+                  recordingRepository = LocalAudioRecordingRepository()))
     }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(MeetingAudioScreenTestTags.START_RECORDING_BUTTON)
+        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.START_RECORDING_BUTTON).performClick()
+
+    Thread.sleep(2000)
+    composeTestRule.waitForIdle()
+    composeTestRule
+        .onNodeWithTag(MeetingAudioScreenTestTags.PAUSE_RECORDING_BUTTON)
+        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.PAUSE_RECORDING_BUTTON).performClick()
+
+    Thread.sleep(2000)
+    composeTestRule.waitForIdle()
+    composeTestRule
+        .onNodeWithTag(MeetingAudioScreenTestTags.STOP_RECORDING_BUTTON)
+        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.STOP_RECORDING_BUTTON).performClick()
+
+    Thread.sleep(2000)
+    composeTestRule.waitForIdle()
+    composeTestRule
+        .onNodeWithTag(MeetingAudioScreenTestTags.START_RECORDING_BUTTON)
+        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.START_RECORDING_BUTTON).performClick()
+
+    Thread.sleep(2000)
+    composeTestRule.waitForIdle()
+    composeTestRule
+        .onNodeWithTag(MeetingAudioScreenTestTags.PAUSE_RECORDING_BUTTON)
+        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.PAUSE_RECORDING_BUTTON).performClick()
+    Thread.sleep(2000)
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(MeetingAudioScreenTestTags.UPLOAD_TO_DATABASE_BUTTON)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingAudioScreenTestTags.UPLOAD_TO_DATABASE_BUTTON)
+        .performClick()
+    Thread.sleep(2000)
+    composeTestRule.waitForIdle()
+  }
 }

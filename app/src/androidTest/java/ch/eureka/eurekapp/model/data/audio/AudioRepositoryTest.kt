@@ -8,101 +8,94 @@ import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.audio.LocalAudioRecordingRepository
 import ch.eureka.eurekapp.model.audio.RECORDING_STATE
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScreen
-import io.mockk.MockKSettings.relaxed
 import junit.framework.TestCase.assertTrue
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mockito.mock
 
 class AudioRepositoryTest {
-    @get:Rule
-    val composeTestRule = createComposeRule()
+  @get:Rule val composeTestRule = createComposeRule()
 
-    @get:Rule
-    val permissionRule: GrantPermissionRule = GrantPermissionRule.grant(
-        android.Manifest.permission.RECORD_AUDIO
-    )
+  @get:Rule
+  val permissionRule: GrantPermissionRule =
+      GrantPermissionRule.grant(android.Manifest.permission.RECORD_AUDIO)
 
-    @Test
-    fun testCreateRecordingWorks(){
-        val context: Context = ApplicationProvider.getApplicationContext()
-        composeTestRule.setContent {
-            val context = LocalContext.current
-            MeetingAudioRecordingScreen(
-                projectId = "test-project-id",
-                meetingId = "test-meeting-id"
-            )
-        }
-        val repo = LocalAudioRecordingRepository()
-
-        val result = repo.createRecording(context, "mock_recording_2.mp4")
-
-        assertTrue(repo.getRecordingStateFlow().value == RECORDING_STATE.RUNNING)
-
-        repo.clearRecording()
-        repo.deleteRecording()
+  @Test
+  fun testCreateRecordingWorks() {
+    val context: Context = ApplicationProvider.getApplicationContext()
+    composeTestRule.setContent {
+      val context = LocalContext.current
+      MeetingAudioRecordingScreen(projectId = "test-project-id", meetingId = "test-meeting-id")
     }
+    val repo = LocalAudioRecordingRepository()
 
-    @Test
-    fun testPauseAndResumeRecordingWorks(){
-        val context: Context = ApplicationProvider.getApplicationContext()
-        val repo = LocalAudioRecordingRepository()
+    val result = repo.createRecording(context, "mock_recording_2.mp4")
 
-        val recordingState = repo.getRecordingStateFlow()
+    assertTrue(repo.getRecordingStateFlow().value == RECORDING_STATE.RUNNING)
 
-        val result = repo.createRecording(context, "mock_recording_2.mp4")
+    repo.clearRecording()
+    repo.deleteRecording()
+  }
 
-        assertTrue(recordingState.value == RECORDING_STATE.RUNNING)
-        Thread.sleep(1000)
-        repo.pauseRecording()
-        assertTrue(recordingState.value == RECORDING_STATE.PAUSED)
-        Thread.sleep(2000)
-        repo.resumeRecording()
-        assertTrue(recordingState.value == RECORDING_STATE.RUNNING)
+  @Test
+  fun testPauseAndResumeRecordingWorks() {
+    val context: Context = ApplicationProvider.getApplicationContext()
+    val repo = LocalAudioRecordingRepository()
 
-        repo.clearRecording()
-        repo.deleteRecording()
-    }
+    val recordingState = repo.getRecordingStateFlow()
 
-    @Test
-    fun completelyStopAndDeleteRecording(){
-        val context: Context = ApplicationProvider.getApplicationContext()
-        val repo = LocalAudioRecordingRepository()
+    val result = repo.createRecording(context, "mock_recording_2.mp4")
 
-        val recordingState = repo.getRecordingStateFlow()
+    assertTrue(recordingState.value == RECORDING_STATE.RUNNING)
+    Thread.sleep(1000)
+    repo.pauseRecording()
+    assertTrue(recordingState.value == RECORDING_STATE.PAUSED)
+    Thread.sleep(2000)
+    repo.resumeRecording()
+    assertTrue(recordingState.value == RECORDING_STATE.RUNNING)
 
-        repo.createRecording(context, "mock_recording_2.mp4")
+    repo.clearRecording()
+    repo.deleteRecording()
+  }
 
-        assertTrue(recordingState.value == RECORDING_STATE.RUNNING)
+  @Test
+  fun completelyStopAndDeleteRecording() {
+    val context: Context = ApplicationProvider.getApplicationContext()
+    val repo = LocalAudioRecordingRepository()
 
-        Thread.sleep(2000)
+    val recordingState = repo.getRecordingStateFlow()
 
-        repo.pauseRecording()
-        Thread.sleep(1000)
-        repo.clearRecording()
+    repo.createRecording(context, "mock_recording_2.mp4")
 
-        assertTrue(recordingState.value == RECORDING_STATE.STOPPED)
+    assertTrue(recordingState.value == RECORDING_STATE.RUNNING)
 
-        repo.deleteRecording()
-    }
+    Thread.sleep(2000)
 
-    @Test
-    fun testNotAllowedStatesActuallyWork(){
-        val context: Context = ApplicationProvider.getApplicationContext()
-        val repo = LocalAudioRecordingRepository()
+    repo.pauseRecording()
+    Thread.sleep(1000)
+    repo.clearRecording()
 
-        repo.createRecording(context, "mock_recording_2.mp4")
-        val result = repo.createRecording(context, "mock_recording_2.mp4")
-        assertTrue(result.isFailure)
+    assertTrue(recordingState.value == RECORDING_STATE.STOPPED)
 
-        val result2 = repo.resumeRecording()
-        assertTrue(result2.isFailure)
+    repo.deleteRecording()
+  }
 
-        val result3 = repo.clearRecording()
-        assertTrue(result3.isFailure)
+  @Test
+  fun testNotAllowedStatesActuallyWork() {
+    val context: Context = ApplicationProvider.getApplicationContext()
+    val repo = LocalAudioRecordingRepository()
 
-        repo.pauseRecording()
-        val result4 = repo.pauseRecording()
-        assertTrue(result4.isFailure)
-    }
+    repo.createRecording(context, "mock_recording_2.mp4")
+    val result = repo.createRecording(context, "mock_recording_2.mp4")
+    assertTrue(result.isFailure)
+
+    val result2 = repo.resumeRecording()
+    assertTrue(result2.isFailure)
+
+    val result3 = repo.clearRecording()
+    assertTrue(result3.isFailure)
+
+    repo.pauseRecording()
+    val result4 = repo.pauseRecording()
+    assertTrue(result4.isFailure)
+  }
 }
