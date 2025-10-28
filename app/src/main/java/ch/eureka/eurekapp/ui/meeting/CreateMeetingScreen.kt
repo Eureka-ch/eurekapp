@@ -1,3 +1,7 @@
+/*
+Portions of the code in this file were written with the help of chatGPT.
+Portions of the code in this file are copy-pasted from the Bootcamp solution B3 provided by the SwEnt staff.
+*/
 package ch.eureka.eurekapp.ui.meeting
 
 import android.widget.Toast
@@ -49,6 +53,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+/** Test tags for the create meeting screen. */
 object CreateMeetingScreenTestTags {
   const val CREATE_MEETING_SCREEN_TITLE = "CreateMeetingScreenTitle"
   const val CREATE_MEETING_SCREEN_DESCRIPTION = "CreateMeetingScreenDescription"
@@ -60,6 +65,14 @@ object CreateMeetingScreenTestTags {
   const val CREATE_MEETING_BUTTON = "CreateMeetingButton"
 }
 
+/**
+ * Composable that displays the create meeting proposal screen.
+ *
+ * @param projectId The ID of the project on which to create meetings for.
+ * @param onDone Function called when meeting proposal was correctly created and saved on the
+ *   database.
+ * @param createMeetingViewModel View model associated with create meeting screen.
+ */
 @Composable
 fun CreateMeetingScreen(
     projectId: String,
@@ -169,6 +182,15 @@ fun CreateMeetingScreen(
       })
 }
 
+/**
+ * Composable that displays a text field to select a date.
+ *
+ * @param selectedDate The already selected date to display in the text field.
+ * @param label The label of the text field.
+ * @param placeHolder The placeholder of the text field.
+ * @param tag The test tag for the text field.
+ * @param onDateSelected Function executed when the date has been picked.
+ */
 @Composable
 fun DateInputField(
     selectedDate: LocalDate,
@@ -222,6 +244,18 @@ fun DateInputField(
   }
 }
 
+/**
+ * Composable that displays a text field to select a time.
+ *
+ * @param selectedTime The already selected time to display in the text field.
+ * @param label The label of the text field.
+ * @param placeHolder The placeholder of the text field.
+ * @param onFieldTouched Function executed when the text field is touched (focused).
+ * @param isInvalid Marker that is true if the time selected is invalid, false otherwise.
+ * @param invalidTimeMsg Message to display in case the selected time is invalid.
+ * @param tag The test tag for the text field.
+ * @param onTimeSelected Function executed when the time has been picked.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimeInputField(
