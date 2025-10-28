@@ -22,6 +22,7 @@ import ch.eureka.eurekapp.screens.TasksScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.creation.CreateProjectScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitationSubscreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
+import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
 import com.google.firebase.Firebase
@@ -80,6 +81,8 @@ sealed interface Route {
     @Serializable data object Meetings : MeetingsSection
 
     @Serializable data object AddMeeting : MeetingsSection
+
+    @Serializable data class MeetingDetail(val projectId: String, val meetingId: String) : MeetingsSection
 
     @Serializable data object AudioTranscript : MeetingsSection
   }
@@ -163,18 +166,38 @@ fun NavigationMenu() {
 
               // Meetings section
               composable<Route.MeetingsSection.Meetings> {
-                MeetingScreen("1234")
-              } // TODO : change this after "Create project" is implemented
+                MeetingScreen(
+                    projectId = testProjectId,
+                    onMeetingClick = { projectId, meetingId ->
+                      navigationController.navigate(
+                          Route.MeetingsSection.MeetingDetail(
+                              projectId = projectId, meetingId = meetingId))
+                    })
+              }
+              composable<Route.MeetingsSection.MeetingDetail> { backStackEntry ->
+                val meetingDetailRoute =
+                    backStackEntry.toRoute<Route.MeetingsSection.MeetingDetail>()
+                MeetingDetailScreen(
+                    projectId = meetingDetailRoute.projectId,
+                    meetingId = meetingDetailRoute.meetingId,
+                    onNavigateBack = { navigationController.popBackStack() },
+                    onJoinMeeting = { link ->
+                      // TODO: Implement join meeting functionality
+                    },
+                    onRecordMeeting = {
+                      // TODO: Implement recording functionality
+                    },
+                    onViewTranscript = {
+                      // TODO: Navigate to transcript screen
+                    })
+              }
 
-              // Project selection section
               composable<Route.ProjectSelectionSection.CreateProject> { CreateProjectScreen() }
 
-              // Overview project section
               composable<Route.OverviewProjectSection.CreateInvitation> {
                 CreateInvitationSubscreen(projectId = testProjectId, onInvitationCreate = {})
               }
 
-              // Shared screens
               composable<Route.Camera> { Camera(navigationController) }
             }
       }
