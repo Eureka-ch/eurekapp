@@ -33,8 +33,8 @@ import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.CameraScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
-import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.google.firebase.storage.StorageMetadata
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
@@ -119,15 +119,15 @@ class CreateTaskScreenTests : TestCase() {
   fun testEmptyFieldsShowErrors() {
     navigateToCreateTaskScreen()
     // Focus and leave the Title field empty
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performClick()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performClick()
     composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ERROR_MSG).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.ERROR_MSG).assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performTextInput("Test Task")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Test Task")
 
     // Focus and leave the Description field empty
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DESCRIPTION).performClick()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ERROR_MSG).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performClick()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.ERROR_MSG).assertIsDisplayed()
   }
 
   @Test
@@ -135,16 +135,14 @@ class CreateTaskScreenTests : TestCase() {
     navigateToCreateTaskScreen()
 
     // Input title and description
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performTextInput("Test Task")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Test Task")
     composeTestRule
-        .onNodeWithTag(CreateTaskScreenTestTags.DESCRIPTION)
+        .onNodeWithTag(CommonTaskTestTags.DESCRIPTION)
         .performTextInput("Some description")
 
     // Input invalid date
-    composeTestRule
-        .onNodeWithTag(CreateTaskScreenTestTags.DUE_DATE)
-        .performTextInput("invalid-date")
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ERROR_MSG).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("invalid-date")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.ERROR_MSG).assertIsDisplayed()
   }
 
   /** This is our end-to-end test. */
@@ -153,10 +151,10 @@ class CreateTaskScreenTests : TestCase() {
     navigateToCreateTaskScreen()
 
     // Initially, no photo should be displayed
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.PHOTO).assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsNotDisplayed()
 
     // Click add photo button to navigate to Camera screen
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ADD_PHOTO).performClick()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_PHOTO).performClick()
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
 
     composeTestRule.waitUntil(timeoutMillis = 5000) {
@@ -171,20 +169,17 @@ class CreateTaskScreenTests : TestCase() {
 
     // Wait for navigation back to CreateTaskScreen
     composeTestRule.waitUntil(timeoutMillis = 3_000) {
-      composeTestRule
-          .onAllNodesWithTag(CreateTaskScreenTestTags.PHOTO)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
+      composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).fetchSemanticsNodes().isNotEmpty()
     }
 
     // Now the photo should be displayed in Create Task screen
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.PHOTO).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DELETE_PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).assertIsDisplayed()
 
     // Delete the photo
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DELETE_PHOTO).performClick()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.PHOTO).assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).performClick()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsNotDisplayed()
   }
 
   @Test
@@ -202,14 +197,12 @@ class CreateTaskScreenTests : TestCase() {
     assert(!isPhotoSaved(context, "Pictures/EurekApp/"))
 
     // Fill in valid inputs
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performTextInput("Task 1")
-    composeTestRule
-        .onNodeWithTag(CreateTaskScreenTestTags.DESCRIPTION)
-        .performTextInput("Description")
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DUE_DATE).performTextInput("15/10/2025")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Task 1")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performTextInput("Description")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("15/10/2025")
 
     // Click add photo button to navigate to Camera screen
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ADD_PHOTO).performClick()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_PHOTO).performClick()
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
 
     composeTestRule.waitUntil(timeoutMillis = 5000) {
@@ -224,20 +217,17 @@ class CreateTaskScreenTests : TestCase() {
 
     // Wait for navigation back to CreateTaskScreen
     composeTestRule.waitUntil(timeoutMillis = 3_000) {
-      composeTestRule
-          .onAllNodesWithTag(CreateTaskScreenTestTags.PHOTO)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
+      composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).fetchSemanticsNodes().isNotEmpty()
     }
 
     assert(isPhotoSaved(context, "Pictures/EurekApp/"))
 
     // Now the photo should be displayed in Create Task screen and inputs conserved
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.PHOTO).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DELETE_PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.SAVE_TASK).performClick()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
     // Wait for navigation back to tasks screen
     composeTestRule.waitUntil(timeoutMillis = 3_000) {
       composeTestRule
@@ -263,14 +253,18 @@ class CreateTaskScreenTests : TestCase() {
     }
 
     // Fill in valid inputs
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performTextInput("Task 1")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags
+    .TITLE).performTextInput("Task 1")
     composeTestRule
-        .onNodeWithTag(CreateTaskScreenTestTags.DESCRIPTION)
+        .onNodeWithTag(CommonTaskTestTags
+        .DESCRIPTION)
         .performTextInput("Description")
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DUE_DATE).performTextInput("15/10/2025")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags
+    .DUE_DATE).performTextInput("15/10/2025")
 
     // Click add photo button to navigate to Camera screen
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ADD_PHOTO).performClick()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags
+    .ADD_PHOTO).performClick()
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
 
     composeTestRule.waitUntil(timeoutMillis = 5000) {
@@ -284,11 +278,15 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).performClick()
 
     // Now the photo should be displayed in Create Task screen and inputs conserved
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.PHOTO).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DELETE_PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags
+    .PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags
+    .TITLE).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags
+    .DELETE_PHOTO).assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.SAVE_TASK).performClick()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags
+    .SAVE_TASK).performClick()
     // Even with defective file repository, should navigate back to tasks screen (no crash)
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
   }*/
@@ -308,14 +306,12 @@ class CreateTaskScreenTests : TestCase() {
     }
 
     // Fill in valid inputs
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performTextInput("Task 1")
-    composeTestRule
-        .onNodeWithTag(CreateTaskScreenTestTags.DESCRIPTION)
-        .performTextInput("Description")
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DUE_DATE).performTextInput("15/10/2025")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Task 1")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performTextInput("Description")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("15/10/2025")
 
     // Click add photo button to navigate to Camera screen
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ADD_PHOTO).performClick()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_PHOTO).performClick()
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
 
     composeTestRule.waitUntil(timeoutMillis = 5000) {
@@ -330,18 +326,15 @@ class CreateTaskScreenTests : TestCase() {
 
     // Wait for navigation back to CreateTaskScreen
     composeTestRule.waitUntil(timeoutMillis = 3_000) {
-      composeTestRule
-          .onAllNodesWithTag(CreateTaskScreenTestTags.PHOTO)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
+      composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).fetchSemanticsNodes().isNotEmpty()
     }
 
     // Now the photo should be displayed in Create Task screen and inputs conserved
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.PHOTO).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DELETE_PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.SAVE_TASK).performClick()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
     composeTestRule.waitUntil(timeoutMillis = 5000) {
       composeTestRule
           .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
@@ -383,18 +376,16 @@ class CreateTaskScreenTests : TestCase() {
       navController.navigate(Route.TasksSection.CreateTask(projectId = projectId))
     }
 
-    val saveButton = composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.SAVE_TASK)
+    val saveButton = composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK)
 
     // Initially, Save button should be disabled
     saveButton.performClick()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
 
     // Fill in valid inputs
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performTextInput("Task 1")
-    composeTestRule
-        .onNodeWithTag(CreateTaskScreenTestTags.DESCRIPTION)
-        .performTextInput("Description")
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DUE_DATE).performTextInput("15/10/2025")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Task 1")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performTextInput("Description")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("15/10/2025")
 
     // Save button should be enabled now
     saveButton.performClick()
