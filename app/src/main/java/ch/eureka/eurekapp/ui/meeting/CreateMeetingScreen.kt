@@ -98,6 +98,11 @@ fun CreateMeetingScreen(
 
   Scaffold(
       content = { padding ->
+        /*
+        `padding` value is not symmetric here, it is zero on the left and on the right but non-zero
+        on the top and on the bottom. Thus it is more beautiful to only apply a constant padding of
+        `10` on the top, bottom, left and right.
+         */
         Column(modifier = Modifier.fillMaxSize().padding(10.dp)) {
           Text(
               modifier = Modifier.testTag(CreateMeetingScreenTestTags.CREATE_MEETING_SCREEN_TITLE),
@@ -146,27 +151,33 @@ fun CreateMeetingScreen(
 
           Spacer(Modifier.height(8.dp))
 
-          TimeInputField(
-              selectedTime = uiState.startTime,
-              label = "Start Time",
-              placeHolder = "Select start time",
-              onFieldTouched = { createMeetingViewModel.touchStartTime() },
-              isInvalid = uiState.hasTouchedStartTime && uiState.startTime.isAfter(uiState.endTime),
-              invalidTimeMsg = "Start time should be smaller than end time",
-              tag = CreateMeetingScreenTestTags.INPUT_MEETING_START_TIME,
-              onTimeSelected = { createMeetingViewModel.setStartTime(it) })
+          val starTimeConfig =
+              TimeInputFieldConfig(
+                  selectedTime = uiState.startTime,
+                  label = "Start Time",
+                  placeHolder = "Select start time",
+                  onFieldTouched = { createMeetingViewModel.touchStartTime() },
+                  isInvalid =
+                      uiState.hasTouchedStartTime && uiState.startTime.isAfter(uiState.endTime),
+                  invalidTimeMsg = "Start time should be smaller than end time",
+                  tag = CreateMeetingScreenTestTags.INPUT_MEETING_START_TIME,
+                  onTimeSelected = { createMeetingViewModel.setStartTime(it) })
+          TimeInputField(config = starTimeConfig)
 
           Spacer(Modifier.height(8.dp))
 
-          TimeInputField(
-              selectedTime = uiState.endTime,
-              label = "End Time",
-              placeHolder = "Select end time",
-              onFieldTouched = { createMeetingViewModel.touchEndTime() },
-              isInvalid = uiState.hasTouchedEndTime && uiState.endTime.isBefore(uiState.startTime),
-              invalidTimeMsg = "End time should be greater than start time",
-              tag = CreateMeetingScreenTestTags.INPUT_MEETING_END_TIME,
-              onTimeSelected = { createMeetingViewModel.setEndTime(it) })
+          val endTimeConfig =
+              TimeInputFieldConfig(
+                  selectedTime = uiState.endTime,
+                  label = "End Time",
+                  placeHolder = "Select end time",
+                  onFieldTouched = { createMeetingViewModel.touchEndTime() },
+                  isInvalid =
+                      uiState.hasTouchedEndTime && uiState.endTime.isBefore(uiState.startTime),
+                  invalidTimeMsg = "End time should be greater than start time",
+                  tag = CreateMeetingScreenTestTags.INPUT_MEETING_END_TIME,
+                  onTimeSelected = { createMeetingViewModel.setEndTime(it) })
+          TimeInputField(config = endTimeConfig)
 
           Spacer(Modifier.height(8.dp))
 
@@ -245,7 +256,7 @@ fun DateInputField(
 }
 
 /**
- * Composable that displays a text field to select a time.
+ * Data class representing the configuration of a [TimeInputField] composable.
  *
  * @param selectedTime The already selected time to display in the text field.
  * @param label The label of the text field.
@@ -256,36 +267,43 @@ fun DateInputField(
  * @param tag The test tag for the text field.
  * @param onTimeSelected Function executed when the time has been picked.
  */
+data class TimeInputFieldConfig(
+    val selectedTime: LocalTime,
+    val label: String,
+    val placeHolder: String,
+    val onFieldTouched: () -> Unit,
+    val isInvalid: Boolean,
+    val invalidTimeMsg: String,
+    val tag: String,
+    val onTimeSelected: (LocalTime) -> Unit
+)
+
+/**
+ * Composable that displays a text field to select a time.
+ *
+ * @param config The time input field config.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TimeInputField(
-    selectedTime: LocalTime,
-    label: String,
-    placeHolder: String,
-    onFieldTouched: () -> Unit,
-    isInvalid: Boolean,
-    invalidTimeMsg: String,
-    tag: String,
-    onTimeSelected: (LocalTime) -> Unit
-) {
+fun TimeInputField(config: TimeInputFieldConfig) {
   var showDialog by remember { mutableStateOf(false) }
 
-  val initialHour = selectedTime.hour
-  val initialMinute = selectedTime.minute
+  val initialHour = config.selectedTime.hour
+  val initialMinute = config.selectedTime.minute
   val timePickerState =
       rememberTimePickerState(
           initialHour = initialHour, initialMinute = initialMinute, is24Hour = true)
 
-  val displayText = selectedTime.format(DateTimeFormatter.ofPattern("HH:mm"))
+  val displayText = config.selectedTime.format(DateTimeFormatter.ofPattern("HH:mm"))
 
   OutlinedTextField(
       value = displayText,
       onValueChange = {},
-      label = { Text(label) },
-      placeholder = { Text(placeHolder) },
+      label = { Text(config.label) },
+      placeholder = { Text(config.placeHolder) },
       readOnly = true,
       trailingIcon = {
-        IconButton(onClick = { showDialog = true }, modifier = Modifier.testTag(tag)) {
+        IconButton(onClick = { showDialog = true }, modifier = Modifier.testTag(config.tag)) {
           Icon(Icons.Default.AccessTime, contentDescription = "Select time")
         }
       },
@@ -294,12 +312,12 @@ fun TimeInputField(
               .clickable { showDialog = true }
               .onFocusChanged { focusState ->
                 if (focusState.isFocused) {
-                  onFieldTouched()
+                  config.onFieldTouched()
                 }
               })
-  if (isInvalid) {
+  if (config.isInvalid) {
     Text(
-        text = invalidTimeMsg,
+        text = config.invalidTimeMsg,
         color = Color.Red,
         style = MaterialTheme.typography.bodySmall,
         modifier = Modifier.testTag(CreateMeetingScreenTestTags.ERROR_MSG))
@@ -313,7 +331,7 @@ fun TimeInputField(
           TextButton(
               onClick = {
                 showDialog = false
-                onTimeSelected(LocalTime.of(timePickerState.hour, timePickerState.minute))
+                config.onTimeSelected(LocalTime.of(timePickerState.hour, timePickerState.minute))
               }) {
                 Text("OK")
               }
