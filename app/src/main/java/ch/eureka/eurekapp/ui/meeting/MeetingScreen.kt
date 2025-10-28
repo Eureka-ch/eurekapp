@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.HowToVote
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Schedule
@@ -28,6 +29,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -78,6 +80,7 @@ object MeetingScreenTestTags {
   const val VIEW_TRANSCRIPT_BUTTON = "SeeTranscriptButton"
   const val NO_UPCOMING_MEETINGS_MESSAGE = "NoUpcomingMeetingsMessageTest"
   const val NO_PAST_MEETINGS_MESSAGE = "NoPastMeetingsMessage"
+  const val CREATE_MEETING_BUTTON = "CreateMeetingButton"
 }
 
 /**
@@ -90,6 +93,7 @@ object MeetingScreenTestTags {
 @Composable
 fun MeetingScreen(
     projectId: String,
+    onCreateMeeting: () -> Unit,
     meetingViewModel: MeetingViewModel = viewModel(),
 ) {
 
@@ -107,6 +111,13 @@ fun MeetingScreen(
   LaunchedEffect(Unit) { meetingViewModel.loadMeetings(projectId) }
 
   Scaffold(
+      floatingActionButton = {
+        FloatingActionButton(
+            onClick = { onCreateMeeting() },
+            modifier = Modifier.testTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON)) {
+              Icon(imageVector = Icons.Default.Add, contentDescription = "Create meeting")
+            }
+      },
       content = { padding ->
         Column(
             modifier =
