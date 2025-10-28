@@ -1,0 +1,294 @@
+package ch.eureka.eurekapp.ui.meeting
+
+import android.widget.Toast
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDialog
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+
+object CreateMeetingScreenTestTags {
+  const val CREATE_MEETING_SCREEN_TITLE = "CreateMeetingScreenTitle"
+  const val CREATE_MEETING_SCREEN_DESCRIPTION = "CreateMeetingScreenDescription"
+  const val ERROR_MSG = "ErrorMsg"
+  const val INPUT_MEETING_TITLE = "InputMeetingTitle"
+  const val INPUT_MEETING_DATE = "InputMeetingDate"
+  const val INPUT_MEETING_START_TIME = "InputMeetingStartTime"
+  const val INPUT_MEETING_END_TIME = "InputMeetingEndTime"
+  const val CREATE_MEETING_BUTTON = "CreateMeetingButton"
+}
+
+@Composable
+fun CreateMeetingScreen(
+    projectId: String,
+    onDone: () -> Unit,
+    createMeetingViewModel: CreateMeetingViewModel = viewModel()
+) {
+
+  val context = LocalContext.current
+  val uiState by createMeetingViewModel.uiState.collectAsState()
+
+  LaunchedEffect(uiState.errorMsg) {
+    uiState.errorMsg?.let {
+      Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+      createMeetingViewModel.clearErrorMsg()
+    }
+  }
+
+  LaunchedEffect(uiState.meetingSaved) {
+    if (uiState.meetingSaved) {
+      onDone()
+    }
+  }
+
+  Scaffold(
+      content = { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(10.dp)) {
+          Text(
+              modifier = Modifier.testTag(CreateMeetingScreenTestTags.CREATE_MEETING_SCREEN_TITLE),
+              text = "Create Meeting",
+              style = MaterialTheme.typography.headlineSmall,
+              fontWeight = FontWeight.Bold)
+          Spacer(modifier = Modifier.height(8.dp))
+          Text(
+              modifier =
+                  Modifier.testTag(CreateMeetingScreenTestTags.CREATE_MEETING_SCREEN_DESCRIPTION),
+              text = "Create a team meeting proposal",
+              style = MaterialTheme.typography.bodyMedium,
+              color = Color.Gray)
+
+          Spacer(Modifier.height(16.dp))
+
+          OutlinedTextField(
+              value = uiState.title,
+              onValueChange = { createMeetingViewModel.setTitle(it) },
+              label = { Text("Title") },
+              placeholder = { Text("Title of the meeting") },
+              modifier =
+                  Modifier.fillMaxWidth()
+                      .testTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
+                      .onFocusChanged { focusState ->
+                        if (focusState.isFocused) {
+                          createMeetingViewModel.touchTitle()
+                        }
+                      })
+          if (uiState.title.isBlank() && uiState.hasTouchedTitle) {
+            Text(
+                text = "Title cannot be empty",
+                color = Color.Red,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.testTag(CreateMeetingScreenTestTags.ERROR_MSG))
+          }
+
+          Spacer(Modifier.height(8.dp))
+
+          DateInputField(
+              selectedDate = uiState.date,
+              label = "Date",
+              placeHolder = "Select date",
+              tag = CreateMeetingScreenTestTags.INPUT_MEETING_DATE,
+              onDateSelected = { createMeetingViewModel.setDate(it) })
+
+          Spacer(Modifier.height(8.dp))
+
+          TimeInputField(
+              selectedTime = uiState.startTime,
+              label = "Start Time",
+              placeHolder = "Select start time",
+              onFieldTouched = { createMeetingViewModel.touchStartTime() },
+              isInvalid = uiState.hasTouchedStartTime && uiState.startTime.isAfter(uiState.endTime),
+              invalidTimeMsg = "Start time should be smaller than end time",
+              tag = CreateMeetingScreenTestTags.INPUT_MEETING_START_TIME,
+              onTimeSelected = { createMeetingViewModel.setStartTime(it) })
+
+          Spacer(Modifier.height(8.dp))
+
+          TimeInputField(
+              selectedTime = uiState.endTime,
+              label = "End Time",
+              placeHolder = "Select end time",
+              onFieldTouched = { createMeetingViewModel.touchEndTime() },
+              isInvalid = uiState.hasTouchedEndTime && uiState.endTime.isBefore(uiState.startTime),
+              invalidTimeMsg = "End time should be greater than start time",
+              tag = CreateMeetingScreenTestTags.INPUT_MEETING_END_TIME,
+              onTimeSelected = { createMeetingViewModel.setEndTime(it) })
+
+          Spacer(Modifier.height(8.dp))
+
+          Button(
+              onClick = { createMeetingViewModel.createMeeting(projectId) },
+              modifier =
+                  Modifier.fillMaxWidth()
+                      .testTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON),
+              enabled = uiState.isValid) {
+                Text("Save")
+              }
+        }
+      })
+}
+
+@Composable
+fun DateInputField(
+    selectedDate: LocalDate,
+    label: String,
+    placeHolder: String,
+    tag: String,
+    onDateSelected: (LocalDate) -> Unit
+) {
+  var showDialog by remember { mutableStateOf(false) }
+
+  val datePickerState =
+      rememberDatePickerState(
+          initialSelectedDateMillis =
+              selectedDate.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli())
+
+  val displayText = selectedDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
+  OutlinedTextField(
+      value = displayText,
+      onValueChange = {},
+      label = { Text(label) },
+      placeholder = { Text(placeHolder) },
+      readOnly = true,
+      trailingIcon = {
+        IconButton(onClick = { showDialog = true }) {
+          Icon(Icons.Default.DateRange, contentDescription = "Select date")
+        }
+      },
+      modifier = Modifier.fillMaxWidth().testTag(tag).clickable { showDialog = true })
+
+  if (showDialog) {
+    DatePickerDialog(
+        onDismissRequest = { showDialog = false },
+        confirmButton = {
+          TextButton(
+              onClick = {
+                showDialog = false
+                datePickerState.selectedDateMillis?.let { millis ->
+                  val newDate =
+                      Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
+                  onDateSelected(newDate)
+                }
+              }) {
+                Text("OK")
+              }
+        },
+        dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } }) {
+          DatePicker(
+              state = datePickerState, modifier = Modifier.verticalScroll(rememberScrollState()))
+        }
+  }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TimeInputField(
+    selectedTime: LocalTime,
+    label: String,
+    placeHolder: String,
+    onFieldTouched: () -> Unit,
+    isInvalid: Boolean,
+    invalidTimeMsg: String,
+    tag: String,
+    onTimeSelected: (LocalTime) -> Unit
+) {
+  var showDialog by remember { mutableStateOf(false) }
+
+  val initialHour = selectedTime.hour
+  val initialMinute = selectedTime.minute
+  val timePickerState =
+      rememberTimePickerState(
+          initialHour = initialHour, initialMinute = initialMinute, is24Hour = true)
+
+  val displayText = selectedTime.format(DateTimeFormatter.ofPattern("HH:mm"))
+
+  OutlinedTextField(
+      value = displayText,
+      onValueChange = {},
+      label = { Text(label) },
+      placeholder = { Text(placeHolder) },
+      readOnly = true,
+      trailingIcon = {
+        IconButton(onClick = { showDialog = true }) {
+          Icon(Icons.Default.AccessTime, contentDescription = "Select time")
+        }
+      },
+      modifier =
+          Modifier.fillMaxWidth()
+              .testTag(tag)
+              .clickable { showDialog = true }
+              .onFocusChanged { focusState ->
+                if (focusState.isFocused) {
+                  onFieldTouched()
+                }
+              })
+  if (isInvalid) {
+    Text(
+        text = invalidTimeMsg,
+        color = Color.Red,
+        style = MaterialTheme.typography.bodySmall,
+        modifier = Modifier.testTag(CreateMeetingScreenTestTags.ERROR_MSG))
+  }
+
+  if (showDialog) {
+    TimePickerDialog(
+        title = { Text("Select time") },
+        onDismissRequest = { showDialog = false },
+        confirmButton = {
+          TextButton(
+              onClick = {
+                showDialog = false
+                onTimeSelected(LocalTime.of(timePickerState.hour, timePickerState.minute))
+              }) {
+                Text("OK")
+              }
+        },
+        dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } }) {
+          TimePicker(
+              state = timePickerState,
+          )
+        }
+  }
+}
