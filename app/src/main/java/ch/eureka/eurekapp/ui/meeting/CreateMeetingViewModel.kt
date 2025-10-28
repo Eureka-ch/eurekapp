@@ -35,7 +35,7 @@ import kotlinx.coroutines.launch
  *   false otherwise.
  * @param hasTouchedStartTime Marker set to true if the user has already clicked on the start time
  *   field, false otherwise.
- * @param hasTouchedEndTime Marker set to true if the user has already clicked ont the start time
+ * @param hasTouchedEndTime Marker set to true if the user has already clicked on the start time
  *   field, false otherwise.
  * @param errorMsg Error message to display.
  */
@@ -50,7 +50,7 @@ data class CreateMeetingUIState(
     val hasTouchedEndTime: Boolean = false,
     val errorMsg: String? = null
 ) {
-  /** Sates whether the UI is in a state where the meeting can be saved. */
+  /** States whether the UI is in a state where the meeting can be saved. */
   val isValid: Boolean
     get() = title.isNotBlank() && startTime.isBefore(endTime)
 }
