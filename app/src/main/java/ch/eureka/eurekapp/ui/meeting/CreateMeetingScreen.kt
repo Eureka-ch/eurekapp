@@ -215,11 +215,11 @@ fun DateInputField(
       placeholder = { Text(placeHolder) },
       readOnly = true,
       trailingIcon = {
-        IconButton(onClick = { showDialog = true }) {
+        IconButton(onClick = { showDialog = true }, modifier = Modifier.testTag(tag)) {
           Icon(Icons.Default.DateRange, contentDescription = "Select date")
         }
       },
-      modifier = Modifier.fillMaxWidth().testTag(tag).clickable { showDialog = true })
+      modifier = Modifier.fillMaxWidth().clickable { showDialog = true })
 
   if (showDialog) {
     DatePickerDialog(
@@ -285,13 +285,12 @@ fun TimeInputField(
       placeholder = { Text(placeHolder) },
       readOnly = true,
       trailingIcon = {
-        IconButton(onClick = { showDialog = true }) {
+        IconButton(onClick = { showDialog = true }, modifier = Modifier.testTag(tag)) {
           Icon(Icons.Default.AccessTime, contentDescription = "Select time")
         }
       },
       modifier =
           Modifier.fillMaxWidth()
-              .testTag(tag)
               .clickable { showDialog = true }
               .onFocusChanged { focusState ->
                 if (focusState.isFocused) {
