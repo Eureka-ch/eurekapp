@@ -359,6 +359,9 @@ open class EditTaskScreenTest : TestCase() {
 
         val fileRepository = FakeFileRepository()
         val viewModel = EditTaskViewModel(taskRepository, fileRepository = fileRepository)
+        // Set available projects to prevent crash in ProjectSelectionField
+        viewModel.setAvailableProjects(
+            listOf(Project(projectId = projectId, name = "Test Project")))
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
