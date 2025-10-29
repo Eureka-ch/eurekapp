@@ -19,6 +19,7 @@ import ch.eureka.eurekapp.screens.IdeasScreen
 import ch.eureka.eurekapp.screens.OverviewProjectsScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
 import ch.eureka.eurekapp.screens.TasksScreen
+import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.creation.CreateProjectScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitationSubscreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
@@ -85,7 +86,8 @@ sealed interface Route {
 
     @Serializable data class CreateMeeting(val projectId: String) : MeetingsSection
 
-    @Serializable data object AudioTranscript : MeetingsSection
+    @Serializable
+    data class AudioTranscript(val projectId: String, val meetingId: String) : MeetingsSection
   }
 
   // Project selection section
@@ -190,6 +192,10 @@ fun NavigationMenu() {
                 CreateMeetingScreen(
                     createMeetingCreationRoute.projectId,
                     { navigationController.navigate(Route.MeetingsSection.Meetings) })
+              }
+
+              composable<Route.MeetingsSection.AudioTranscript> {
+                MeetingAudioRecordingScreen(projectId = testProjectId, meetingId = "1234")
               }
 
               // Project selection section

@@ -29,4 +29,14 @@ object Formatters {
     val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     return formatter.format(Date(millis))
   }
+
+  /**
+   * @param seconds seconds to format to mm:ss
+   * @return a string which formats seconds in mm:ss
+   */
+  fun formatTime(seconds: Long): String {
+    val minutes = seconds / 60
+    val secs = seconds % 60
+    return String.format("%${if(minutes > 100) "03" else "02"}d:%02d", minutes, secs)
+  }
 }
