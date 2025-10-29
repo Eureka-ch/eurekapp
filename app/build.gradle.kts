@@ -178,6 +178,7 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.ui.auth)
+    implementation("com.google.firebase:firebase-functions")
     implementation(libs.kotlinx.coroutines.play.services)
 
     // Jetpack Compose BOM (manages versions)
@@ -239,8 +240,6 @@ dependencies {
     globalTestImplementation(libs.compose.test.junit)
     debugImplementation(libs.compose.test.manifest)
 
-    // Google Cloud STT  
-    implementation("com.google.cloud:google-cloud-speech:4.43.0")
 }
 
 tasks.withType<Test> {

@@ -7,7 +7,8 @@ interface SpeechToTextRepository {
   suspend fun transcribeAudio(
       audioDownloadUrl: String,
       meetingId: String,
-      projectId: String
+      projectId: String,
+      languageCode: String = "en-US"
   ): Result<String>
 
   /** Get all transcriptions for a meeting with real time updates */

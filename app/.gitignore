@@ -5,6 +5,3 @@
 local.properties
 
 google-services.json
-
-# Google Cloud credentials
-app/src/main/assets/eureka-stt-service-account.json

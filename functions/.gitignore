@@ -1,0 +1,6 @@
+lib/
+node_modules/
+eureka-stt-service-account.json
+*.log
+package-lock.json
+.firebase/
