@@ -89,6 +89,4 @@ class MeetingViewModel(
   fun selectTab(tab: MeetingTab) {
     _uiState.update { it.copy(selectedTab = tab) }
   }
-
-  // TODO : add `addMeeting` here later.
 }
