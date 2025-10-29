@@ -49,10 +49,11 @@ class CreateMeetingViewModelTest {
 
   @Test
   fun uiState_isValid_logicIsCorrect() {
+    val time = LocalTime.of(10, 0)
+
     var state = CreateMeetingUIState()
     assertFalse("Default state should be invalid", state.isValid)
 
-    val time = LocalTime.now()
     state = state.copy(title = "Valid Title", startTime = time, endTime = time)
     assertFalse("State with equal times should be invalid", state.isValid)
 
