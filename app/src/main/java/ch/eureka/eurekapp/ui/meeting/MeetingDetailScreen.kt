@@ -7,6 +7,7 @@ package ch.eureka.eurekapp.ui.meeting
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -232,7 +233,8 @@ private fun MeetingDetailContent(
     onDeleteMeeting: () -> Unit,
 ) {
   LazyColumn(
-      modifier = modifier.fillMaxSize().padding(16.dp),
+      modifier = Modifier.fillMaxSize().then(modifier),
+      contentPadding = PaddingValues(16.dp),
       verticalArrangement = Arrangement.spacedBy(16.dp)) {
         // Meeting header
         item { MeetingHeader(meeting = meeting) }
@@ -588,3 +590,4 @@ private fun DeleteConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Uni
       },
       modifier = Modifier.testTag(MeetingDetailScreenTestTags.DELETE_CONFIRMATION_DIALOG))
 }
+
