@@ -15,8 +15,7 @@ import kotlinx.coroutines.tasks.await
  *
  * This calls a Cloud function to handle transcription server side.
  *
- * Note : minor parts of this file were written by GPT-5 (ChatGPT)
- * Co-author : GPT-5
+ * Note : minor parts of this file were written by GPT-5 (ChatGPT) Co-author : GPT-5
  */
 class CloudFunctionSpeechToTextRepository(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),

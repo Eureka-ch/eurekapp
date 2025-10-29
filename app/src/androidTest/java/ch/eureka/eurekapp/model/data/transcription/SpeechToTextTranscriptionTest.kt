@@ -18,10 +18,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Integration test for Speech-to-Text transcription with real Firebase Storage audio file. 
+ * Integration test for Speech-to-Text transcription with real Firebase Storage audio file.
  *
- * Note :This file was partially written by ChatGPT (GPT-5)
- * Co-author : GPT-5 
+ * Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5
  */
 @RunWith(AndroidJUnit4::class)
 class SpeechToTextTranscriptionTest {
