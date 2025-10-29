@@ -86,7 +86,8 @@ sealed interface Route {
 
     @Serializable data class CreateMeeting(val projectId: String) : MeetingsSection
 
-    @Serializable data class MeetingDetail(val projectId: String, val meetingId: String) : MeetingsSection
+    @Serializable
+    data class MeetingDetail(val projectId: String, val meetingId: String) : MeetingsSection
 
     @Serializable data object AudioTranscript : MeetingsSection
   }
