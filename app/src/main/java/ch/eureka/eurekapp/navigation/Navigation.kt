@@ -23,6 +23,7 @@ import ch.eureka.eurekapp.screens.subscreens.projects.creation.CreateProjectScre
 import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitationSubscreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
+import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
 import com.google.firebase.Firebase
@@ -80,7 +81,9 @@ sealed interface Route {
 
     @Serializable data object Meetings : MeetingsSection
 
-    @Serializable data object AddMeeting : MeetingsSection
+    @Serializable data class MeetingsOverview(val projectId: String) : MeetingsSection
+
+    @Serializable data class CreateMeeting(val projectId: String) : MeetingsSection
 
     @Serializable data object AudioTranscript : MeetingsSection
   }
@@ -169,8 +172,21 @@ fun NavigationMenu() {
 
               // Meetings section
               composable<Route.MeetingsSection.Meetings> {
-                MeetingScreen("1234")
-              } // TODO : change this after "Create project" is implemented
+                MeetingScreen(
+                    testProjectId,
+                    {
+                      navigationController.navigate(
+                          Route.MeetingsSection.CreateMeeting(testProjectId))
+                    })
+              }
+
+              composable<Route.MeetingsSection.CreateMeeting> { backStackEntry ->
+                val createMeetingCreationRoute =
+                    backStackEntry.toRoute<Route.MeetingsSection.CreateMeeting>()
+                CreateMeetingScreen(
+                    createMeetingCreationRoute.projectId,
+                    { navigationController.navigate(Route.MeetingsSection.Meetings) })
+              }
 
               // Project selection section
               composable<Route.ProjectSelectionSection.CreateProject> { CreateProjectScreen() }

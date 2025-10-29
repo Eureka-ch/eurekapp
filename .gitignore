@@ -33,3 +33,6 @@ firebase/**/*.rules
 firebase/firestore/firestore.rules
 firebase/firestore/firestore.indexes.json
 firebase/storage/storage.rules 
+/base64_keystore_properties.txt
+/base64_release-keystore.txt
+/keystore.properties
