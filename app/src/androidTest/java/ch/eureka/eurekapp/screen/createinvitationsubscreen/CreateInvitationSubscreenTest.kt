@@ -5,8 +5,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import ch.eureka.eurekapp.model.data.invitation.Invitation
 import ch.eureka.eurekapp.model.data.invitation.InvitationRepository
-import ch.eureka.eurekapp.screens.subscreens.overview_project_subscreens.CreateInvitationSubScreen
-import ch.eureka.eurekapp.screens.subscreens.overview_project_subscreens.CreateInvitationSubscreen
+import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitationSubScreen
+import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitationSubscreen
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking

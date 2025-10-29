@@ -5,7 +5,6 @@ import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
@@ -19,6 +18,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
@@ -28,16 +28,13 @@ import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.tasks.CreateTaskViewModel
 import ch.eureka.eurekapp.navigation.BottomBarNavigationTestTags
-import ch.eureka.eurekapp.navigation.MainScreens
 import ch.eureka.eurekapp.navigation.NavigationMenu
-import ch.eureka.eurekapp.navigation.Screen
-import ch.eureka.eurekapp.navigation.SharedScreens
-import ch.eureka.eurekapp.navigation.TaskSpecificScreens
+import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.CameraScreenTestTags
-import ch.eureka.eurekapp.screens.CreateTaskScreen
-import ch.eureka.eurekapp.screens.CreateTaskScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.google.firebase.storage.StorageMetadata
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
@@ -111,7 +108,6 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   private fun navigateToCreateTaskScreen() {
-    val currentScreen = mutableStateOf<Screen>(MainScreens.ProfileScreen)
     composeTestRule.setContent { NavigationMenu() }
 
     // Navigate to Tasks screen
@@ -123,15 +119,15 @@ class CreateTaskScreenTests : TestCase() {
   fun testEmptyFieldsShowErrors() {
     navigateToCreateTaskScreen()
     // Focus and leave the Title field empty
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performClick()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performClick()
     composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ERROR_MSG).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.ERROR_MSG).assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performTextInput("Test Task")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Test Task")
 
     // Focus and leave the Description field empty
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DESCRIPTION).performClick()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ERROR_MSG).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performClick()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.ERROR_MSG).assertIsDisplayed()
   }
 
   @Test
@@ -139,16 +135,14 @@ class CreateTaskScreenTests : TestCase() {
     navigateToCreateTaskScreen()
 
     // Input title and description
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performTextInput("Test Task")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Test Task")
     composeTestRule
-        .onNodeWithTag(CreateTaskScreenTestTags.DESCRIPTION)
+        .onNodeWithTag(CommonTaskTestTags.DESCRIPTION)
         .performTextInput("Some description")
 
     // Input invalid date
-    composeTestRule
-        .onNodeWithTag(CreateTaskScreenTestTags.DUE_DATE)
-        .performTextInput("invalid-date")
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ERROR_MSG).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("invalid-date")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.ERROR_MSG).assertIsDisplayed()
   }
 
   /** This is our end-to-end test. */
@@ -157,10 +151,10 @@ class CreateTaskScreenTests : TestCase() {
     navigateToCreateTaskScreen()
 
     // Initially, no photo should be displayed
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.PHOTO).assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsNotDisplayed()
 
     // Click add photo button to navigate to Camera screen
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ADD_PHOTO).performClick()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_PHOTO).performClick()
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
 
     composeTestRule.waitUntil(timeoutMillis = 5000) {
@@ -173,14 +167,19 @@ class CreateTaskScreenTests : TestCase() {
     // After taking photo, save the photo
     composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).performClick()
 
+    // Wait for navigation back to CreateTaskScreen
+    composeTestRule.waitUntil(timeoutMillis = 3_000) {
+      composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).fetchSemanticsNodes().isNotEmpty()
+    }
+
     // Now the photo should be displayed in Create Task screen
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.PHOTO).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DELETE_PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).assertIsDisplayed()
 
     // Delete the photo
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DELETE_PHOTO).performClick()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.PHOTO).assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).performClick()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsNotDisplayed()
   }
 
   @Test
@@ -192,20 +191,18 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.setContent {
       val navController = rememberNavController()
       FakeNavGraph(projectId = projectId, navController = navController, viewModel = viewModel)
-      navController.navigate(TaskSpecificScreens.CreateTaskScreen.title)
+      navController.navigate(Route.TasksSection.CreateTask(projectId = projectId))
     }
 
     assert(!isPhotoSaved(context, "Pictures/EurekApp/"))
 
     // Fill in valid inputs
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performTextInput("Task 1")
-    composeTestRule
-        .onNodeWithTag(CreateTaskScreenTestTags.DESCRIPTION)
-        .performTextInput("Description")
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DUE_DATE).performTextInput("15/10/2025")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Task 1")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performTextInput("Description")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("15/10/2025")
 
     // Click add photo button to navigate to Camera screen
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ADD_PHOTO).performClick()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_PHOTO).performClick()
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
 
     composeTestRule.waitUntil(timeoutMillis = 5000) {
@@ -218,15 +215,26 @@ class CreateTaskScreenTests : TestCase() {
     // After taking photo, save the photo
     composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).performClick()
 
+    // Wait for navigation back to CreateTaskScreen
+    composeTestRule.waitUntil(timeoutMillis = 3_000) {
+      composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).fetchSemanticsNodes().isNotEmpty()
+    }
+
     assert(isPhotoSaved(context, "Pictures/EurekApp/"))
 
     // Now the photo should be displayed in Create Task screen and inputs conserved
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.PHOTO).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DELETE_PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.SAVE_TASK).performClick()
-    // Ensure navigation back to tasks screen (pop back)
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
+    // Wait for navigation back to tasks screen
+    composeTestRule.waitUntil(timeoutMillis = 3_000) {
+      composeTestRule
+          .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
     assert(!isPhotoSaved(context, "Pictures/EurekApp/"))
   }
@@ -241,18 +249,22 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.setContent {
       val navController = rememberNavController()
       FakeNavGraph(projectId = projectId, navController = navController, viewModel = viewModel)
-      navController.navigate(TaskSpecificScreens.CreateTaskScreen.title)
+      navController.navigate(Route.TasksSection.CreateTask(projectId = projectId))
     }
 
     // Fill in valid inputs
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performTextInput("Task 1")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags
+    .TITLE).performTextInput("Task 1")
     composeTestRule
-        .onNodeWithTag(CreateTaskScreenTestTags.DESCRIPTION)
+        .onNodeWithTag(CommonTaskTestTags
+        .DESCRIPTION)
         .performTextInput("Description")
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DUE_DATE).performTextInput("15/10/2025")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags
+    .DUE_DATE).performTextInput("15/10/2025")
 
     // Click add photo button to navigate to Camera screen
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ADD_PHOTO).performClick()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags
+    .ADD_PHOTO).performClick()
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
 
     composeTestRule.waitUntil(timeoutMillis = 5000) {
@@ -266,11 +278,15 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).performClick()
 
     // Now the photo should be displayed in Create Task screen and inputs conserved
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.PHOTO).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DELETE_PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags
+    .PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags
+    .TITLE).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags
+    .DELETE_PHOTO).assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.SAVE_TASK).performClick()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags
+    .SAVE_TASK).performClick()
     // Even with defective file repository, should navigate back to tasks screen (no crash)
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
   }*/
@@ -286,18 +302,16 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.setContent {
       val navController = rememberNavController()
       FakeNavGraph(projectId = projectId, navController = navController, viewModel = viewModel)
-      navController.navigate(TaskSpecificScreens.CreateTaskScreen.title)
+      navController.navigate(Route.TasksSection.CreateTask(projectId = projectId))
     }
 
     // Fill in valid inputs
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performTextInput("Task 1")
-    composeTestRule
-        .onNodeWithTag(CreateTaskScreenTestTags.DESCRIPTION)
-        .performTextInput("Description")
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DUE_DATE).performTextInput("15/10/2025")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Task 1")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performTextInput("Description")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("15/10/2025")
 
     // Click add photo button to navigate to Camera screen
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ADD_PHOTO).performClick()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_PHOTO).performClick()
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
 
     composeTestRule.waitUntil(timeoutMillis = 5000) {
@@ -310,13 +324,23 @@ class CreateTaskScreenTests : TestCase() {
     // After taking photo, save the photo
     composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).performClick()
 
-    // Now the photo should be displayed in Create Task screen and inputs conserved
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.PHOTO).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DELETE_PHOTO).assertIsDisplayed()
+    // Wait for navigation back to CreateTaskScreen
+    composeTestRule.waitUntil(timeoutMillis = 3_000) {
+      composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).fetchSemanticsNodes().isNotEmpty()
+    }
 
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.SAVE_TASK).performClick()
-    composeTestRule.waitForIdle()
+    // Now the photo should be displayed in Create Task screen and inputs conserved
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
 
     val dateText = "15/10/2025"
@@ -349,26 +373,29 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.setContent {
       val navController = rememberNavController()
       FakeNavGraph(projectId = projectId, navController = navController, viewModel = viewModel)
-      navController.navigate(TaskSpecificScreens.CreateTaskScreen.title)
+      navController.navigate(Route.TasksSection.CreateTask(projectId = projectId))
     }
 
-    val saveButton = composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.SAVE_TASK)
+    val saveButton = composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK)
 
     // Initially, Save button should be disabled
     saveButton.performClick()
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
 
     // Fill in valid inputs
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.TITLE).performTextInput("Task 1")
-    composeTestRule
-        .onNodeWithTag(CreateTaskScreenTestTags.DESCRIPTION)
-        .performTextInput("Description")
-    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.DUE_DATE).performTextInput("15/10/2025")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Task 1")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performTextInput("Description")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("15/10/2025")
 
     // Save button should be enabled now
     saveButton.performClick()
-    composeTestRule.waitForIdle()
-    // Ensure navigation back to tasks screen (pop back)
+    // Wait for navigation back to tasks screen
+    composeTestRule.waitUntil(timeoutMillis = 3_000) {
+      composeTestRule
+          .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
   }
 
@@ -422,20 +449,21 @@ class CreateTaskScreenTests : TestCase() {
       navController: NavHostController,
       viewModel: CreateTaskViewModel
   ) {
-    NavHost(navController, startDestination = MainScreens.TasksScreen.title) {
-      composable(TaskSpecificScreens.CreateTaskScreen.title) {
+    NavHost(navController, startDestination = Route.TasksSection.Tasks) {
+      composable<Route.TasksSection.CreateTask> { backStackEntry ->
+        val createTaskRoute = backStackEntry.toRoute<Route.TasksSection.CreateTask>()
         CreateTaskScreen(
-            projectId = projectId,
+            projectId = createTaskRoute.projectId,
             navigationController = navController,
             createTaskViewModel = viewModel)
       }
-      composable(MainScreens.TasksScreen.title) {
+      composable<Route.TasksSection.Tasks> {
         // Fake Tasks screen for testing pop back
         androidx.compose.material3.Text(
             "Tasks Screen",
             modifier = androidx.compose.ui.Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
       }
-      composable(SharedScreens.CameraScreen.title) { Camera(navigationController = navController) }
+      composable<Route.Camera> { Camera(navigationController = navController) }
     }
   }
 

@@ -24,7 +24,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -39,6 +38,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.compose.currentBackStackEntryAsState
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 
 object BottomBarNavigationTestTags {
@@ -50,56 +52,53 @@ object BottomBarNavigationTestTags {
 }
 
 @Composable
-fun BottomBarNavigationComponent(
-    navigationController: NavController,
-    currentScreen: MutableState<Screen>
-) {
+fun BottomBarNavigationComponent(navigationController: NavController) {
   val configuration = LocalConfiguration.current
   val screenTotalHeight = configuration.screenHeightDp
+  val navBackStackEntry by navigationController.currentBackStackEntryAsState()
+  val currentDestination = navBackStackEntry?.destination
+
+  fun navigateToTab(route: Any) {
+    navigationController.navigate(route) {
+      popUpTo(navigationController.graph.startDestinationId) { saveState = true }
+      launchSingleTop = true
+      restoreState = true
+    }
+  }
+
   val isTasksPressed by
-      remember(currentScreen) {
+      remember(currentDestination) {
         derivedStateOf {
-          (currentScreen.value == MainScreens.TasksScreen ||
-              (currentScreen.value is SubScreen &&
-                  (currentScreen.value as SubScreen).parentScreen == MainScreens.TasksScreen))
+          Route.TasksSection.routes.any { routeClass ->
+            currentDestination?.hierarchy?.any { it.hasRoute(routeClass) } == true
+          }
         }
       }
 
   val isProfileScreenPressed by
-      remember(currentScreen) {
+      remember(currentDestination) {
         derivedStateOf {
-          (currentScreen.value == MainScreens.ProfileScreen ||
-              (currentScreen.value is SubScreen &&
-                  (currentScreen.value as SubScreen).parentScreen == MainScreens.ProfileScreen))
+          currentDestination?.hierarchy?.any { it.hasRoute(Route.Profile::class) } == true
         }
       }
 
-  /**
-   * val isOverviewProjectScreenPressed by remember(currentScreen) { derivedStateOf {
-   * (currentScreen.value == MainScreens.OverviewProjectScreen || (currentScreen.value is SubScreen
-   * && (currentScreen.value as SubScreen).parentScreen == MainScreens.OverviewProjectScreen)) } }
-   */
   val isIdeasScreenPressed by
-      remember(currentScreen) {
+      remember(currentDestination) {
         derivedStateOf {
-          (currentScreen.value == MainScreens.IdeasScreen ||
-              (currentScreen.value is SubScreen &&
-                  (currentScreen.value as SubScreen).parentScreen == MainScreens.IdeasScreen))
+          Route.IdeasSection.routes.any { routeClass ->
+            currentDestination?.hierarchy?.any { it.hasRoute(routeClass) } == true
+          }
         }
       }
 
-  /**
-   * val isProjectSelectionScreenPressed by remember(currentScreen) { derivedStateOf {
-   * (currentScreen.value == MainScreens.ProjectSelectionScreen || (currentScreen.value is SubScreen
-   * && (currentScreen.value as SubScreen).parentScreen == MainScreens.ProjectSelectionScreen)) } }
-   */
-  val isMeetingScreenPressed by remember {
-    derivedStateOf {
-      (currentScreen.value == MainScreens.MeetingsScreen ||
-          (currentScreen.value is SubScreen &&
-              (currentScreen.value as SubScreen).parentScreen == MainScreens.MeetingsScreen))
-    }
-  }
+  val isMeetingScreenPressed by
+      remember(currentDestination) {
+        derivedStateOf {
+          Route.MeetingsSection.routes.any { routeClass ->
+            currentDestination?.hierarchy?.any { it.hasRoute(routeClass) } == true
+          }
+        }
+      }
 
   BottomAppBar(
       containerColor = EColors.light.surface,
@@ -115,9 +114,7 @@ fun BottomBarNavigationComponent(
               modifier =
                   Modifier.weight(1f).testTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON),
               "Tasks",
-              onClick = {
-                navigationFunction(navigationController, destination = MainScreens.TasksScreen)
-              },
+              onClick = { navigateToTab(Route.TasksSection.Tasks) },
               iconVector = Icons.Outlined.AssignmentTurnedIn,
               pressedIconVector = Icons.Filled.AssignmentTurnedIn,
               isPressed = isTasksPressed)
@@ -125,9 +122,7 @@ fun BottomBarNavigationComponent(
               modifier =
                   Modifier.weight(1f).testTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON),
               "Ideas",
-              onClick = {
-                navigationFunction(navigationController, destination = MainScreens.IdeasScreen)
-              },
+              onClick = { navigateToTab(Route.IdeasSection.Ideas) },
               iconVector = Icons.Outlined.Lightbulb,
               pressedIconVector = Icons.Filled.Lightbulb,
               isPressed = isIdeasScreenPressed)
@@ -139,19 +134,14 @@ fun BottomBarNavigationComponent(
                   HomeIconButton(
                       modifier =
                           Modifier.testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
-                      onClick = {
-                        navigationFunction(
-                            navigationController, destination = MainScreens.OverviewProjectScreen)
-                      })
+                      onClick = { navigateToTab(Route.OverviewProject) })
                 }
               }
           CustomIconButtonComposable(
               modifier =
                   Modifier.weight(1f).testTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON),
               "Meetings",
-              onClick = {
-                navigationFunction(navigationController, destination = MainScreens.MeetingsScreen)
-              },
+              onClick = { navigateToTab(Route.MeetingsSection.Meetings) },
               iconVector = Icons.Default.CalendarToday,
               pressedIconVector = Icons.Filled.CalendarToday,
               isPressed = isMeetingScreenPressed)
@@ -159,9 +149,7 @@ fun BottomBarNavigationComponent(
               modifier =
                   Modifier.weight(1f).testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON),
               "Profile",
-              onClick = {
-                navigationFunction(navigationController, destination = MainScreens.ProfileScreen)
-              },
+              onClick = { navigateToTab(Route.Profile) },
               iconVector = Icons.Outlined.AccountCircle,
               pressedIconVector = Icons.Filled.AccountCircle,
               isPressed = isProfileScreenPressed)

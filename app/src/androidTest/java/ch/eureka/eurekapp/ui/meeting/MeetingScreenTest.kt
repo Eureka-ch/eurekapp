@@ -45,7 +45,7 @@ class MeetingScreenTest {
     composeTestRule.setContent {
       // Assuming you have a Theme wrapper, otherwise, you can remove it.
       // YourAppTheme {
-      MeetingScreen(projectId = "test_project", meetingViewModel = viewModel)
+      MeetingScreen(projectId = "test_project", onCreateMeeting = {}, meetingViewModel = viewModel)
       // }
     }
   }

@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.screens.subscreens.project_selection_subscreens
+package ch.eureka.eurekapp.screens.subscreens.projects.creation
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ScrollState

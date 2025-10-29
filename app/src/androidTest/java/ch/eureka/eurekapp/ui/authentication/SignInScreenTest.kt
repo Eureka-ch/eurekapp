@@ -28,6 +28,7 @@ class SignInScreenTest {
   @Before
   fun setup() {
     assumeTrue("Firebase Emulator is not running", FirebaseEmulator.isRunning)
+    FirebaseEmulator.clearFirestoreEmulator()
     FirebaseEmulator.clearAuthEmulator()
   }
 
@@ -77,6 +78,8 @@ class SignInScreenTest {
     }
 
     FirebaseEmulator.auth.signOut()
+
+    composeTestRule.waitUntil(3000) { FirebaseEmulator.auth.currentUser == null }
 
     composeTestRule.setContent {
       SignInScreen(credentialManager = FakeCredentialManager.create(fakeIdToken))
