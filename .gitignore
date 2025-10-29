@@ -28,3 +28,8 @@ firestore-debug.log
 firebase/**/*.rules
 /release-keystore.jks
 /perso 
+
+# Ignore local Firebase emulator rules and indexes
+firebase/firestore/firestore.rules
+firebase/firestore/firestore.indexes.json
+firebase/storage/storage.rules 

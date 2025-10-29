@@ -29,7 +29,6 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.tasks.CreateTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AttachmentsList
@@ -49,23 +48,21 @@ Portions of this code were generated with the help of Grok.
 */
 
 /**
- * A composable screen for creating a new task within a project.
+ * A composable screen for creating a new task.
  *
- * @param projectId Optional ID of the project (for backward compatibility).
  * @param navigationController The NavHostController for handling navigation actions.
  * @param createTaskViewModel The CreateTaskViewModel instance responsible for managing task
  *   creation state.
  */
 @Composable
 fun CreateTaskScreen(
-    projectId: String = "",
     navigationController: NavHostController = rememberNavController(),
     createTaskViewModel: CreateTaskViewModel = viewModel(),
 ) {
   val createTaskState by createTaskViewModel.uiState.collectAsState()
   val inputValid by createTaskViewModel.inputValid.collectAsState()
   val errorMsg = createTaskState.errorMsg
-  val selectedProjectId = createTaskState.selectedProjectId
+  val projectId = createTaskState.projectId
   val availableProjects = createTaskState.availableProjects
   var hasTouchedTitle by remember { mutableStateOf(false) }
   var hasTouchedDescription by remember { mutableStateOf(false) }
@@ -78,22 +75,6 @@ fun CreateTaskScreen(
   val context = LocalContext.current
   val scrollState = rememberScrollState()
   var isNavigatingToCamera by remember { mutableStateOf(false) }
-
-  // Fetch available projects
-  LaunchedEffect(Unit) {
-    FirestoreRepositoriesProvider.projectRepository.getProjectsForCurrentUser().collect { projects
-      ->
-      createTaskViewModel.setAvailableProjects(projects)
-    }
-  }
-
-  // If projectId passed from navigation, set it as selected
-  LaunchedEffect(projectId) {
-    if (projectId.isNotEmpty()) {
-      createTaskViewModel.setProjectId(projectId)
-      createTaskViewModel.setSelectedProjectId(projectId)
-    }
-  }
 
   LaunchedEffect(errorMsg) {
     if (errorMsg != null) {
@@ -156,10 +137,8 @@ fun CreateTaskScreen(
 
               ProjectSelectionField(
                   projects = availableProjects,
-                  selectedProjectId = selectedProjectId,
-                  onProjectSelected = { projectId ->
-                    createTaskViewModel.setSelectedProjectId(projectId)
-                  })
+                  selectedProjectId = projectId,
+                  onProjectSelected = { projectId -> createTaskViewModel.setProjectId(projectId) })
 
               Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
                 OutlinedButton(

@@ -15,10 +15,13 @@ data class CreateTaskState(
     override val description: String = "",
     override val dueDate: String = "",
     override val projectId: String = "",
-    override val selectedProjectId: String = "",
     override val availableProjects: List<Project> = emptyList(),
     override val attachmentUris: List<Uri> = emptyList(),
     override val isSaving: Boolean = false,
     override val taskSaved: Boolean = false,
     override val errorMsg: String? = null
-) : TaskStateCommon
+) : TaskStateCommon {
+  // For CreateTask, selectedProjectId is always equal to projectId (redundant field)
+  override val selectedProjectId: String
+    get() = projectId
+}

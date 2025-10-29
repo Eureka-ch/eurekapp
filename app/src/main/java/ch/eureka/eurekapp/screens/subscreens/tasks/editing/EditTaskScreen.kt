@@ -29,7 +29,6 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.tasks.EditTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
@@ -74,8 +73,6 @@ fun EditTaskScreen(
   val editTaskState by editTaskViewModel.uiState.collectAsState()
   val inputValid by editTaskViewModel.inputValid.collectAsState()
   val errorMsg = editTaskState.errorMsg
-  val selectedProjectId = editTaskState.selectedProjectId
-  val availableProjects = editTaskState.availableProjects
   var hasTouchedTitle by remember { mutableStateOf(false) }
   var hasTouchedDescription by remember { mutableStateOf(false) }
   var hasTouchedDate by remember { mutableStateOf(false) }
@@ -88,20 +85,6 @@ fun EditTaskScreen(
   val scrollState = rememberScrollState()
   var isNavigatingToCamera by remember { mutableStateOf(false) }
   var showDeleteDialog by remember { mutableStateOf(false) }
-
-  // Fetch available projects
-  LaunchedEffect(Unit) {
-    FirestoreRepositoriesProvider.projectRepository.getProjectsForCurrentUser().collect { projects
-      ->
-      editTaskViewModel.setAvailableProjects(projects)
-    }
-  }
-
-  // Set projectId from param and select it
-  LaunchedEffect(projectId) {
-    editTaskViewModel.setProjectId(projectId)
-    editTaskViewModel.setSelectedProjectId(projectId)
-  }
 
   LaunchedEffect(taskId) {
     if (!editTaskState.isDeleting && !editTaskState.taskDeleted) {
@@ -174,8 +157,8 @@ fun EditTaskScreen(
                   dateRegex = editTaskViewModel.dateRegex)
 
               ProjectSelectionField(
-                  projects = availableProjects,
-                  selectedProjectId = selectedProjectId,
+                  projects = editTaskState.availableProjects,
+                  selectedProjectId = editTaskState.selectedProjectId,
                   onProjectSelected = { projectId ->
                     editTaskViewModel.setSelectedProjectId(projectId)
                   })

@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.Project
+import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
@@ -20,9 +21,11 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /*
@@ -35,25 +38,36 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 class EditTaskViewModel(
     taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
     fileRepository: FileStorageRepository = FirestoreRepositoriesProvider.fileRepository,
+    projectRepository: ProjectRepository = FirestoreRepositoriesProvider.projectRepository,
     getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : BaseTaskViewModel<EditTaskState>(taskRepository, fileRepository, getCurrentUserId, dispatcher) {
 
-  private val _uiState = MutableStateFlow(EditTaskState())
-  override val uiState: StateFlow<EditTaskState> = _uiState.asStateFlow()
-
-  override fun getState(): EditTaskState = _uiState.value
-
   private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+
+  // Flow for available projects - using flow pattern like TaskScreenViewModel
+  private val availableProjectsFlow =
+      projectRepository
+          .getProjectsForCurrentUser()
+          .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList<Project>())
+
+  private val _baseUiState = MutableStateFlow(EditTaskState())
+  override val uiState: StateFlow<EditTaskState> =
+      combine(_baseUiState, availableProjectsFlow) { state, projects ->
+            state.copy(availableProjects = projects)
+          }
+          .stateIn(viewModelScope, SharingStarted.Eagerly, EditTaskState())
+
+  override fun getState(): EditTaskState = _baseUiState.value
 
   /** Resets the delete state after navigation or handling */
   fun resetDeleteState() {
-    _uiState.value = _uiState.value.copy(taskDeleted = false)
+    _baseUiState.value = _baseUiState.value.copy(taskDeleted = false)
   }
 
   /** Edits a Task */
   fun editTask(context: Context) {
-    val state = _uiState.value
+    val state = uiState.value
 
     val timestampResult = parseDateString(state.dueDate)
     if (timestampResult.isFailure) {
@@ -112,26 +126,26 @@ class EditTaskViewModel(
   }
 
   override fun removeAttachment(index: Int) {
-    val state = _uiState.value
+    val state = _baseUiState.value
     val currentUris = state.attachmentUris
     val currentUrls = state.attachmentUrls
 
     if (index in currentUris.indices) {
-      _uiState.value =
-          _uiState.value.copy(
+      _baseUiState.value =
+          _baseUiState.value.copy(
               attachmentUris = currentUris.toMutableList().apply { removeAt(index) })
     } else if (index - currentUris.size in currentUrls.indices) {
       val urlIndex = index - currentUris.size
       val urlToDelete = currentUrls[urlIndex]
-      _uiState.value =
-          _uiState.value.copy(
+      _baseUiState.value =
+          _baseUiState.value.copy(
               attachmentUrls = currentUrls.toMutableList().apply { removeAt(urlIndex) },
               deletedAttachmentUrls = state.deletedAttachmentUrls + urlToDelete)
     }
   }
 
   fun removeAttachmentAndDelete(context: Context, index: Int) {
-    val allAttachments = _uiState.value.attachmentUrls + _uiState.value.attachmentUris
+    val allAttachments = _baseUiState.value.attachmentUrls + _baseUiState.value.attachmentUris
     if (index !in allAttachments.indices) return
 
     val file = allAttachments[index]
@@ -150,7 +164,7 @@ class EditTaskViewModel(
 
   fun loadTask(projectId: String, taskId: String) {
     // Don't load task if it's being deleted or already deleted
-    if (_uiState.value.isDeleting || _uiState.value.taskDeleted) {
+    if (_baseUiState.value.isDeleting || _baseUiState.value.taskDeleted) {
       return
     }
 
@@ -159,23 +173,24 @@ class EditTaskViewModel(
           .getTaskById(projectId, taskId)
           .catch { exception ->
             // Only show error if we're not in the process of deleting
-            if (!_uiState.value.isDeleting && !_uiState.value.taskDeleted) {
+            if (!_baseUiState.value.isDeleting && !_baseUiState.value.taskDeleted) {
               setErrorMsg("Failed to load Task: ${exception.message}")
             }
           }
           .collect { task ->
-            if (!_uiState.value.isDeleting && !_uiState.value.taskDeleted) {
+            if (!_baseUiState.value.isDeleting && !_baseUiState.value.taskDeleted) {
               if (task != null) {
-                val deletedUrls = _uiState.value.deletedAttachmentUrls
+                val deletedUrls = _baseUiState.value.deletedAttachmentUrls
                 val filteredAttachments = task.attachmentUrls.filterNot { it in deletedUrls }
-                _uiState.value =
-                    _uiState.value.copy(
+                _baseUiState.value =
+                    _baseUiState.value.copy(
                         title = task.title,
                         description = task.description,
                         dueDate =
                             task.dueDate?.let { date -> dateFormat.format(date.toDate()) } ?: "",
                         templateId = task.templateId,
                         projectId = task.projectId,
+                        selectedProjectId = task.projectId,
                         taskId = task.taskID,
                         assignedUserIds = task.assignedUserIds,
                         attachmentUrls = filteredAttachments,
@@ -191,9 +206,9 @@ class EditTaskViewModel(
   }
 
   fun deleteTask(projectId: String, taskId: String) {
-    _uiState.value = _uiState.value.copy(isDeleting = true)
+    _baseUiState.value = _baseUiState.value.copy(isDeleting = true)
 
-    for (url in _uiState.value.attachmentUrls) {
+    for (url in _baseUiState.value.attachmentUrls) {
       viewModelScope.launch(dispatcher) {
         fileRepository.deleteFile(url).onFailure { exception ->
           setErrorMsg("Failed to delete attachment: ${exception.message}")
@@ -206,22 +221,22 @@ class EditTaskViewModel(
           .deleteTask(projectId, taskId)
           .onFailure { exception ->
             setErrorMsg("Failed to delete Task: ${exception.message}")
-            _uiState.value = _uiState.value.copy(isDeleting = false)
+            _baseUiState.value = _baseUiState.value.copy(isDeleting = false)
             return@launch
           }
           .onSuccess { _ ->
-            _uiState.value = _uiState.value.copy(isDeleting = false, taskDeleted = true)
+            _baseUiState.value = _baseUiState.value.copy(isDeleting = false, taskDeleted = true)
           }
     }
   }
 
   fun setStatus(status: TaskStatus) {
-    _uiState.value = _uiState.value.copy(status = status)
+    _baseUiState.value = _baseUiState.value.copy(status = status)
   }
 
   // State update implementations
   override fun updateState(update: EditTaskState.() -> EditTaskState) {
-    _uiState.value = _uiState.value.update()
+    _baseUiState.value = _baseUiState.value.update()
   }
 
   override fun EditTaskState.copyWithErrorMsg(errorMsg: String?) = copy(errorMsg = errorMsg)

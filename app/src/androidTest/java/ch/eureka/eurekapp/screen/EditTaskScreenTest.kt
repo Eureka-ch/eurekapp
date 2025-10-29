@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -274,8 +275,13 @@ open class EditTaskScreenTest : TestCase() {
 
         composeTestRule.waitForIdle()
 
-        // Initially, no photo
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsNotDisplayed()
+        // Ensure no initial photo previews are present (clean up if any residuals)
+        val existingDeletes =
+            composeTestRule.onAllNodesWithTag(CommonTaskTestTags.DELETE_PHOTO).fetchSemanticsNodes()
+        repeat(existingDeletes.size) {
+          composeTestRule.onAllNodesWithTag(CommonTaskTestTags.DELETE_PHOTO)[0].performClick()
+        }
+        composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).assertCountEquals(0)
 
         // Add photo
         composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_PHOTO).performClick()
@@ -306,10 +312,14 @@ open class EditTaskScreenTest : TestCase() {
         setupTestProject(projectId)
         setupTestTask(projectId, taskId)
 
-        val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
-        // Set available projects to prevent crash in ProjectSelectionField
-        viewModel.setAvailableProjects(
-            listOf(Project(projectId = projectId, name = "Test Project")))
+        val mockProjectRepository = FakeProjectRepository()
+        mockProjectRepository.setCurrentUserProjects(
+            flowOf(listOf(Project(projectId = projectId, name = "Test Project"))))
+        val viewModel =
+            EditTaskViewModel(
+                taskRepository,
+                fileRepository = FakeFileRepository(),
+                projectRepository = mockProjectRepository)
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
@@ -361,10 +371,14 @@ open class EditTaskScreenTest : TestCase() {
         setupTestTask(projectId, taskId, attachmentUrls = listOf(remoteUrl1, remoteUrl2))
 
         val fileRepository = FakeFileRepository()
-        val viewModel = EditTaskViewModel(taskRepository, fileRepository = fileRepository)
-        // Set available projects to prevent crash in ProjectSelectionField
-        viewModel.setAvailableProjects(
-            listOf(Project(projectId = projectId, name = "Test Project")))
+        val mockProjectRepository = FakeProjectRepository()
+        mockProjectRepository.setCurrentUserProjects(
+            flowOf(listOf(Project(projectId = projectId, name = "Test Project"))))
+        val viewModel =
+            EditTaskViewModel(
+                taskRepository,
+                fileRepository = fileRepository,
+                projectRepository = mockProjectRepository)
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
@@ -522,9 +536,14 @@ open class EditTaskScreenTest : TestCase() {
             composable<Route.TasksSection.TaskEdit> { backStackEntry ->
               val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.TaskEdit>()
 
+              val fakeProjectRepository = FakeProjectRepository()
+              fakeProjectRepository.setCurrentUserProjects(
+                  flowOf(listOf(Project(projectId = projectId, name = "Test Project"))))
               val editTaskViewModel: EditTaskViewModel =
                   viewModel(
-                      factory = EditTaskViewModelFactory(taskRepository, FakeFileRepository()))
+                      factory =
+                          EditTaskViewModelFactory(
+                              taskRepository, FakeFileRepository(), fakeProjectRepository))
 
               EditTaskScreen(
                   projectId = editTaskRoute.projectId,
@@ -651,6 +670,12 @@ open class EditTaskScreenTest : TestCase() {
   }
 
   class FakeProjectRepository : ProjectRepository {
+    private var currentUserProjects: Flow<List<Project>> = flowOf(emptyList())
+
+    fun setCurrentUserProjects(flow: Flow<List<Project>>) {
+      currentUserProjects = flow
+    }
+
     override fun getProjectById(projectId: String): Flow<Project?> {
       // Return a dummy project or null as needed
       return flowOf(
@@ -658,8 +683,7 @@ open class EditTaskScreenTest : TestCase() {
     }
 
     override fun getProjectsForCurrentUser(skipCache: Boolean): Flow<List<Project>> {
-      // Return an empty list or a single fake project
-      return flowOf(emptyList())
+      return currentUserProjects
     }
 
     override suspend fun createProject(
@@ -707,13 +731,14 @@ open class EditTaskScreenTest : TestCase() {
 
   class EditTaskViewModelFactory(
       private val taskRepository: TaskRepository,
-      private val fileRepository: FileStorageRepository
+      private val fileRepository: FileStorageRepository,
+      private val projectRepository: ProjectRepository
   ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
       if (modelClass.isAssignableFrom(EditTaskViewModel::class.java)) {
-        return EditTaskViewModel(taskRepository, fileRepository) as T
+        return EditTaskViewModel(taskRepository, fileRepository, projectRepository) as T
       }
       throw IllegalArgumentException("Unknown ViewModel class: $modelClass")
     }

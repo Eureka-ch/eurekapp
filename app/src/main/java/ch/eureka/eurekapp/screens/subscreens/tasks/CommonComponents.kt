@@ -1,20 +1,26 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
@@ -23,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.ui.camera.PhotoViewer
 
-// Portions of this code were generated with the help of Grok.
+// Portions of this code were generated with the help of AI.
 
 object CommonTaskTestTags {
   const val TITLE = "title"
@@ -154,6 +160,7 @@ fun AttachmentsList(
   }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProjectSelectionField(
     projects: List<Project>,
@@ -161,11 +168,12 @@ fun ProjectSelectionField(
     onProjectSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+  var expanded by remember { mutableStateOf(false) }
+  val selectedProject = projects.firstOrNull { it.projectId == selectedProjectId }
+  val selectedProjectName = selectedProject?.name ?: "No project selected yet"
+
   Column(modifier = modifier) {
-    Text(
-        text = "Select Project",
-        style = MaterialTheme.typography.titleMedium,
-        modifier = Modifier.testTag(CommonTaskTestTags.PROJECT_SELECTION_TITLE))
+    Text(text = "Select Project", style = MaterialTheme.typography.titleMedium)
 
     if (projects.isEmpty()) {
       Text(
@@ -174,20 +182,32 @@ fun ProjectSelectionField(
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           modifier = Modifier.testTag(CommonTaskTestTags.NO_PROJECTS_AVAILABLE))
     } else {
-      projects.forEach { project ->
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+      Box(modifier = Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = selectedProjectName,
+            onValueChange = {},
+            readOnly = true,
+            placeholder = { Text("No project selected yet") },
             modifier =
                 Modifier.fillMaxWidth()
-                    .padding(vertical = 4.dp)
-                    .testTag("${CommonTaskTestTags.PROJECT_RADIO}_${project.projectId}")) {
-              RadioButton(
-                  selected = selectedProjectId == project.projectId,
-                  onClick = { onProjectSelected(project.projectId) })
-              Text(
-                  text = project.name,
-                  modifier =
-                      Modifier.testTag("${CommonTaskTestTags.PROJECT_NAME}_${project.projectId}"))
+                    .clickable { expanded = !expanded }
+                    .testTag(CommonTaskTestTags.PROJECT_SELECTION_TITLE))
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.testTag("${CommonTaskTestTags.PROJECT_RADIO}_menu")) {
+              projects.forEach { project ->
+                DropdownMenuItem(
+                    text = { Text(project.name) },
+                    onClick = {
+                      onProjectSelected(project.projectId)
+                      expanded = false
+                    },
+                    modifier =
+                        Modifier.testTag(
+                            "${CommonTaskTestTags.PROJECT_RADIO}_${project.projectId}"))
+              }
             }
       }
     }

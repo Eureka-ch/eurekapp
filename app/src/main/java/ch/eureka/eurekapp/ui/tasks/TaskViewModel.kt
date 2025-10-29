@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.ui.tasks
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository
+import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
 import ch.eureka.eurekapp.model.data.task.Task
@@ -33,13 +34,37 @@ import kotlinx.coroutines.launch
  * help of IA.
  */
 
+/** Internal data class for flow state management */
+private data class TaskFlowState(
+    val filter: TaskScreenFilter,
+    val taskFlow: Flow<List<Task>>,
+    val error: String?,
+    val projects: List<Project>
+)
+
+/** Internal data class for tasks state */
+private data class TasksState(
+    val filter: TaskScreenFilter,
+    val tasks: List<Task>,
+    val error: String?,
+    val projects: List<Project>
+)
+
+/** Internal data class for tasks with users state */
+private data class TasksWithUsersState(
+    val filter: TaskScreenFilter,
+    val tasksAndUsers: List<TaskAndUsers>,
+    val error: String?,
+    val projects: List<Project>
+)
+
 /** UI state data class for TasksScreen Contains all the data needed to render the tasks screen */
 data class TaskScreenUiState(
     val tasksAndUsers: List<TaskAndUsers> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
     val selectedFilter: TaskScreenFilter = TaskScreenFilter.Mine,
-    val availableProjects: List<ch.eureka.eurekapp.model.data.project.Project> = emptyList()
+    val availableProjects: List<Project> = emptyList()
 )
 
 /** Sealed class representing different task filtering options with their data */
@@ -158,33 +183,42 @@ open class TaskScreenViewModel(
                   is TaskScreenFilter.ByProject ->
                       taskRepository.getTasksInProject(filter.projectId)
                 }
-            Triple(filter, taskFlow, error to projects)
+            TaskFlowState(filter, taskFlow, error, projects)
           }
-          .flatMapLatest { (filter, taskFlow, errorProjects) ->
-            val (error, projects) = errorProjects
-            taskFlow.map { tasks -> Triple(filter, tasks, error to projects) }
+          .flatMapLatest { flowState ->
+            flowState.taskFlow.map { tasks ->
+              TasksState(flowState.filter, tasks, flowState.error, flowState.projects)
+            }
           }
-          .flatMapLatest { (filter, tasks, errorProjects) ->
+          .flatMapLatest { tasksState ->
             // For each task, fetch its assignees
-            if (tasks.isEmpty()) {
-              flowOf(Triple(filter, emptyList<TaskAndUsers>(), errorProjects))
+            if (tasksState.tasks.isEmpty()) {
+              flowOf(
+                  TasksWithUsersState(
+                      tasksState.filter,
+                      emptyList<TaskAndUsers>(),
+                      tasksState.error,
+                      tasksState.projects))
             } else {
               combine(
-                  tasks.map { task ->
+                  tasksState.tasks.map { task ->
                     getAssignees(task).map { users -> TaskAndUsers(task, users) }
                   }) { tasksAndUsersArray ->
-                    Triple(filter, tasksAndUsersArray.toList(), errorProjects)
+                    TasksWithUsersState(
+                        tasksState.filter,
+                        tasksAndUsersArray.toList(),
+                        tasksState.error,
+                        tasksState.projects)
                   }
             }
           }
-          .map { (filter, tasksAndUsers, errorProjects) ->
-            val (error, projects) = errorProjects
+          .map { state ->
             TaskScreenUiState(
-                tasksAndUsers = tasksAndUsers,
-                selectedFilter = filter,
+                tasksAndUsers = state.tasksAndUsers,
+                selectedFilter = state.filter,
                 isLoading = false,
-                error = error,
-                availableProjects = projects)
+                error = state.error,
+                availableProjects = state.projects)
           }
           .stateIn(viewModelScope, SharingStarted.Eagerly, TaskScreenUiState(isLoading = true))
 
