@@ -197,7 +197,12 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CommonTaskTestTags.NO_PROJECTS_AVAILABLE).assertIsDisplayed()
   }
 
-  @After fun tearDown() = runBlocking { FirebaseEmulator.clearFirestoreEmulator() }
+  @After
+  fun tearDown() = runBlocking {
+    // Ensure both Firestore and Auth are reset between tests to avoid leaking auth state
+    FirebaseEmulator.clearFirestoreEmulator()
+    FirebaseEmulator.clearAuthEmulator()
+  }
 
   private val taskRepository: TaskRepository =
       FirestoreTaskRepository(firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
