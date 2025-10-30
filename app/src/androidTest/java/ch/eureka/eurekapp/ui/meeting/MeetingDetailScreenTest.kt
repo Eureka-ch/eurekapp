@@ -36,12 +36,10 @@ class MeetingDetailScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
-  // Flows to control test data
   private val meetingFlow = MutableStateFlow<Meeting?>(null)
   private val participantsFlow = MutableStateFlow<List<Participant>>(emptyList())
   private var deleteResult = Result.success(Unit)
 
-  // Mock repository with controllable flows
   private val repositoryMock =
       object : MeetingRepositoryMock() {
         override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> {
@@ -79,26 +77,19 @@ class MeetingDetailScreenTest {
     }
   }
 
-  // --- Loading and Error States ---
-
   @Test
   fun loadingStateDisplaysLoadingIndicator() {
-    // Create a custom repository that never emits to keep loading state
     val neverEmittingRepository =
         object : MeetingRepositoryMock() {
           override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> {
-            return flow {
-              // Never emit - keeps loading state active
-            }
+            return flow {}
           }
 
           override fun getParticipants(
               projectId: String,
               meetingId: String
           ): Flow<List<Participant>> {
-            return flow {
-              // Never emit - keeps loading state active
-            }
+            return flow {}
           }
         }
 
@@ -108,21 +99,18 @@ class MeetingDetailScreenTest {
           projectId = "test_project", meetingId = "test_meeting", viewModel = viewModel)
     }
 
-    // Check loading indicator is displayed
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.LOADING_INDICATOR).assertIsDisplayed()
   }
 
   @Test
   fun errorStateDisplaysErrorMessage() {
-    meetingFlow.value = null // Null meeting triggers error
+    meetingFlow.value = null
     setContent()
 
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.ERROR_MESSAGE).assertIsDisplayed()
   }
-
-  // --- Meeting Information Display ---
 
   @Test
   fun scheduledVirtualMeetingDisplaysAllInformation() {
@@ -134,18 +122,14 @@ class MeetingDetailScreenTest {
 
     composeTestRule.waitForIdle()
 
-    // Verify title and status
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_TITLE).assertIsDisplayed()
     composeTestRule.onNodeWithText(meeting.title).assertIsDisplayed()
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_STATUS).assertIsDisplayed()
 
-    // Verify datetime
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_DATETIME).assertIsDisplayed()
 
-    // Verify format
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_FORMAT).assertIsDisplayed()
 
-    // Verify link for virtual meeting
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_LINK).assertIsDisplayed()
     composeTestRule.onNodeWithText(meeting.link!!).assertIsDisplayed()
   }
@@ -160,10 +144,8 @@ class MeetingDetailScreenTest {
 
     composeTestRule.waitForIdle()
 
-    // Verify title
     composeTestRule.onNodeWithText(meeting.title).assertIsDisplayed()
 
-    // Verify location
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_LOCATION).assertIsDisplayed()
     composeTestRule.onNodeWithText(meeting.location!!.name).assertIsDisplayed()
   }
@@ -193,8 +175,6 @@ class MeetingDetailScreenTest {
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_STATUS).assertIsDisplayed()
     composeTestRule.onNodeWithText(MeetingStatus.IN_PROGRESS.description).assertIsDisplayed()
   }
-
-  // --- Participants Section ---
 
   @Test
   fun participantsSectionDisplaysWithNoParticipants() {
@@ -230,16 +210,11 @@ class MeetingDetailScreenTest {
         .assertIsDisplayed()
     composeTestRule.onNodeWithText("Participants (3)").assertIsDisplayed()
 
-    // Verify participant names are displayed (checking at least the first one)
     composeTestRule.onNodeWithText("user_anna_1").assertIsDisplayed()
     composeTestRule.onNodeWithText("user_ben_2").assertIsDisplayed()
 
-    // Note: Role names are displayed as-is from the enum (e.g., "HOST", "PARTICIPANT")
-    // Verifying at least one role is present
     composeTestRule.onNodeWithText("HOST").assertIsDisplayed()
   }
-
-  // --- Attachments Section ---
 
   @Test
   fun attachmentsSectionDisplaysNoAttachmentsMessage() {
@@ -262,9 +237,7 @@ class MeetingDetailScreenTest {
   @Test
   fun attachmentsSectionDisplaysAttachments() {
     val meeting =
-        MeetingProvider.sampleMeetings.first {
-          it.meetingID == "meet_completed_virtual_05" // Has 2 attachments
-        }
+        MeetingProvider.sampleMeetings.first { it.meetingID == "meet_completed_virtual_05" }
     meetingFlow.value = meeting
     participantsFlow.value = emptyList()
     setContent()
@@ -278,13 +251,10 @@ class MeetingDetailScreenTest {
         .onNodeWithText("Attachments (${meeting.attachmentUrls.size})")
         .assertIsDisplayed()
 
-    // Verify attachment URLs are displayed
     meeting.attachmentUrls.forEach { url ->
       composeTestRule.onNodeWithText(url).assertIsDisplayed()
     }
   }
-
-  // --- Action Buttons ---
 
   @Test
   fun scheduledVirtualMeetingShowsJoinButton() {
@@ -344,8 +314,6 @@ class MeetingDetailScreenTest {
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.DELETE_BUTTON).assertIsDisplayed()
   }
 
-  // --- Button Actions ---
-
   @Test
   fun joinMeetingButtonTriggersCallback() {
     val meeting =
@@ -399,8 +367,6 @@ class MeetingDetailScreenTest {
     assert(transcriptCalled) { "Expected view transcript callback to be called" }
   }
 
-  // --- Delete Confirmation Dialog ---
-
   @Test
   fun deleteButtonShowsConfirmationDialog() {
     val meeting = MeetingProvider.sampleMeetings.first()
@@ -410,18 +376,14 @@ class MeetingDetailScreenTest {
 
     composeTestRule.waitForIdle()
 
-    // Click delete button
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.DELETE_BUTTON).performClick()
 
-    // Wait for dialog animation to complete
     composeTestRule.waitForIdle()
 
-    // Verify dialog appears
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.DELETE_CONFIRMATION_DIALOG)
         .assertIsDisplayed()
 
-    // Verify dialog content (using substring to avoid duplicate text issues)
     composeTestRule
         .onNodeWithText(
             "Are you sure you want to delete this meeting? This action cannot be undone.")
@@ -437,13 +399,10 @@ class MeetingDetailScreenTest {
 
     composeTestRule.waitForIdle()
 
-    // Click delete button to show dialog
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.DELETE_BUTTON).performClick()
 
-    // Click cancel
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.CANCEL_DELETE_BUTTON).performClick()
 
-    // Verify dialog is dismissed
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.DELETE_CONFIRMATION_DIALOG)
         .assertDoesNotExist()
@@ -461,20 +420,14 @@ class MeetingDetailScreenTest {
 
     composeTestRule.waitForIdle()
 
-    // Click delete button to show dialog
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.DELETE_BUTTON).performClick()
 
-    // Click confirm
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.CONFIRM_DELETE_BUTTON).performClick()
 
-    // Wait for async delete operation
     composeTestRule.waitForIdle()
 
-    // Verify navigation back was called
     assert(navigateBackCalled) { "Expected navigateBack to be called after successful delete" }
   }
-
-  // --- Real-time Updates ---
 
   @Test
   fun screenUpdatesWhenMeetingDataChanges() {
@@ -486,7 +439,6 @@ class MeetingDetailScreenTest {
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithText(meeting1.title).assertIsDisplayed()
 
-    // Update meeting data
     val meeting2 = meeting1.copy(title = "Updated Meeting Title")
     meetingFlow.value = meeting2
 
@@ -504,15 +456,12 @@ class MeetingDetailScreenTest {
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithText("Participants (0)").assertIsDisplayed()
 
-    // Add participants
     participantsFlow.value = listOf(Participant(userId = "user_anna_1", role = MeetingRole.HOST))
 
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithText("Participants (1)").assertIsDisplayed()
     composeTestRule.onNodeWithText("user_anna_1").assertIsDisplayed()
   }
-
-  // --- Error Handling Tests ---
 
   @Test
   fun deleteFailureDoesNotNavigateBack() {
@@ -525,15 +474,12 @@ class MeetingDetailScreenTest {
     setContent(onNavigateBack = { navigateBackCalled = true })
     composeTestRule.waitForIdle()
 
-    // Click delete button
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.DELETE_BUTTON).performClick()
     composeTestRule.waitForIdle()
 
-    // Confirm delete
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.CONFIRM_DELETE_BUTTON).performClick()
     composeTestRule.waitForIdle()
 
-    // Verify navigation was NOT called on delete failure
     assert(!navigateBackCalled) { "navigateBack should not be called when delete fails" }
   }
 
@@ -545,7 +491,6 @@ class MeetingDetailScreenTest {
     setContent()
     composeTestRule.waitForIdle()
 
-    // Verify error message is shown
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.ERROR_MESSAGE).assertIsDisplayed()
   }
 
@@ -557,8 +502,6 @@ class MeetingDetailScreenTest {
     setContent()
     composeTestRule.waitForIdle()
 
-    // Verify meeting detail content sections are not shown when there's an error
-    // Note: TopAppBar title may still show "Meeting" as fallback
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.PARTICIPANTS_SECTION)
         .assertDoesNotExist()
@@ -576,7 +519,6 @@ class MeetingDetailScreenTest {
     setContent()
     composeTestRule.waitForIdle()
 
-    // Verify participants section shows empty state
     composeTestRule.onNodeWithText("Participants (0)").assertIsDisplayed()
   }
 
@@ -589,7 +531,6 @@ class MeetingDetailScreenTest {
     setContent()
     composeTestRule.waitForIdle()
 
-    // Verify no attachments message
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.NO_ATTACHMENTS_MESSAGE)
         .assertIsDisplayed()
@@ -597,24 +538,20 @@ class MeetingDetailScreenTest {
 
   @Test
   fun errorRecoveryAfterSuccessfulRetry() {
-    // Start with error state
     meetingFlow.value = null
     participantsFlow.value = emptyList()
 
     setContent()
     composeTestRule.waitForIdle()
 
-    // Verify error is shown
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.ERROR_MESSAGE).assertIsDisplayed()
 
-    // Simulate successful data load (recovery)
     val meeting = MeetingProvider.sampleMeetings.first()
     meetingFlow.value = meeting
     participantsFlow.value = listOf(Participant(userId = "user1", role = MeetingRole.HOST))
 
     composeTestRule.waitForIdle()
 
-    // Verify error is gone and content is shown
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.ERROR_MESSAGE).assertDoesNotExist()
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_TITLE).assertIsDisplayed()
     composeTestRule.onNodeWithText(meeting.title).assertIsDisplayed()

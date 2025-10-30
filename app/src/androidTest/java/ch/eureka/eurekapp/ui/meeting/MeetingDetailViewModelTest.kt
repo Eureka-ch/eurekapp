@@ -136,7 +136,6 @@ class MeetingDetailViewModelTest {
 
   @Test
   fun loadMeetingDetailsRejectsInvalidTitle() = runTest {
-    // Create a meeting with blank title
     val invalidMeeting = testMeeting.copy(title = "")
     repositoryMock.meetingToReturn.value = invalidMeeting
     repositoryMock.participantsToReturn.value = testParticipants
@@ -147,13 +146,12 @@ class MeetingDetailViewModelTest {
 
     val uiState = viewModel.uiState.value
     assertFalse(uiState.isLoading)
-    assertNull(uiState.meeting) // Meeting should be null due to validation failure
+    assertNull(uiState.meeting)
     assertEquals("Meeting has invalid title", uiState.errorMsg)
   }
 
   @Test
   fun loadMeetingDetailsRejectsInPersonMeetingWithoutLocation() = runTest {
-    // Create an in-person meeting with null location
     val invalidMeeting = testMeeting.copy(format = MeetingFormat.IN_PERSON, location = null)
     repositoryMock.meetingToReturn.value = invalidMeeting
     repositoryMock.participantsToReturn.value = testParticipants
@@ -164,13 +162,12 @@ class MeetingDetailViewModelTest {
 
     val uiState = viewModel.uiState.value
     assertFalse(uiState.isLoading)
-    assertNull(uiState.meeting) // Meeting should be null due to validation failure
+    assertNull(uiState.meeting)
     assertEquals("In-person meeting must have a location", uiState.errorMsg)
   }
 
   @Test
   fun loadMeetingDetailsRejectsVirtualMeetingWithoutLink() = runTest {
-    // Create a virtual meeting with null link
     val invalidMeeting = testMeeting.copy(format = MeetingFormat.VIRTUAL, link = null)
     repositoryMock.meetingToReturn.value = invalidMeeting
     repositoryMock.participantsToReturn.value = testParticipants
@@ -181,7 +178,7 @@ class MeetingDetailViewModelTest {
 
     val uiState = viewModel.uiState.value
     assertFalse(uiState.isLoading)
-    assertNull(uiState.meeting) // Meeting should be null due to validation failure
+    assertNull(uiState.meeting)
     assertEquals("Virtual meeting must have a link", uiState.errorMsg)
   }
 
@@ -204,7 +201,6 @@ class MeetingDetailViewModelTest {
 
   @Test
   fun loadMeetingDetailsUpdatesWhenDataChanges() = runTest {
-    // Initial data
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
@@ -216,7 +212,6 @@ class MeetingDetailViewModelTest {
     assertEquals("Test Meeting", initialState.meeting?.title)
     assertEquals(2, initialState.participants.size)
 
-    // Update data (simulating real-time Firestore updates)
     val updatedMeeting = testMeeting.copy(title = "Updated Meeting Title")
     val updatedParticipants =
         listOf(
@@ -278,7 +273,6 @@ class MeetingDetailViewModelTest {
     viewModel.deleteMeeting(testProjectId, testMeetingId)
     testDispatcher.scheduler.advanceUntilIdle()
 
-    // After completion, loading should be false
     val finalState = viewModel.uiState.value
     assertFalse(finalState.isLoading)
     assertTrue(finalState.deleteSuccess)
@@ -286,7 +280,6 @@ class MeetingDetailViewModelTest {
 
   @Test
   fun clearErrorMsgSetsErrorMsgToNull() = runTest {
-    // Set up meeting data
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
@@ -294,7 +287,6 @@ class MeetingDetailViewModelTest {
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
-    // Trigger an error via delete failure
     val errorMessage = "Delete failed"
     repositoryMock.deleteResult = Result.failure(Exception(errorMessage))
     viewModel.deleteMeeting(testProjectId, testMeetingId)
@@ -303,7 +295,6 @@ class MeetingDetailViewModelTest {
     assertNotNull(viewModel.uiState.value.errorMsg)
     assertEquals(errorMessage, viewModel.uiState.value.errorMsg)
 
-    // Clear the error
     viewModel.clearErrorMsg()
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -312,7 +303,6 @@ class MeetingDetailViewModelTest {
 
   @Test
   fun clearErrorMsgDoesNotAffectOtherStateProperties() = runTest {
-    // Load meeting data first
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
@@ -320,7 +310,6 @@ class MeetingDetailViewModelTest {
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
-    // Trigger an error via delete failure
     val errorMessage = "Delete operation failed"
     repositoryMock.deleteResult = Result.failure(Exception(errorMessage))
     viewModel.deleteMeeting(testProjectId, testMeetingId)
@@ -330,20 +319,17 @@ class MeetingDetailViewModelTest {
     assertNotNull(stateBeforeClear.errorMsg)
     assertEquals(errorMessage, stateBeforeClear.errorMsg)
 
-    // Clear error
     viewModel.clearErrorMsg()
     testDispatcher.scheduler.advanceUntilIdle()
 
     val stateAfterClear = viewModel.uiState.value
     assertNull(stateAfterClear.errorMsg)
-    // Other properties should remain unchanged
     assertEquals(stateBeforeClear.isLoading, stateAfterClear.isLoading)
     assertEquals(stateBeforeClear.deleteSuccess, stateAfterClear.deleteSuccess)
   }
 
   @Test
   fun deleteSuccessPreservedAcrossFlowUpdates() = runTest {
-    // Load meeting
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
@@ -351,18 +337,15 @@ class MeetingDetailViewModelTest {
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
-    // Delete meeting
     repositoryMock.deleteResult = Result.success(Unit)
     viewModel.deleteMeeting(testProjectId, testMeetingId)
     testDispatcher.scheduler.advanceUntilIdle()
 
     assertTrue(viewModel.uiState.value.deleteSuccess)
 
-    // Simulate Flow update
     repositoryMock.meetingToReturn.value = testMeeting.copy(title = "Updated")
     testDispatcher.scheduler.advanceUntilIdle()
 
-    // deleteSuccess should still be true
     assertTrue(viewModel.uiState.value.deleteSuccess)
   }
 }
@@ -397,7 +380,6 @@ class MeetingDetailRepositoryMock : MeetingRepository {
     return deleteResult
   }
 
-  // Unused methods for this test suite
   override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> = flowOf(emptyList())
 
   override fun getMeetingsForTask(projectId: String, taskId: String): Flow<List<Meeting>> =

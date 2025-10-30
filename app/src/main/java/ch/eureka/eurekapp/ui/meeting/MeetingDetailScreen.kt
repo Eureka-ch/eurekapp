@@ -1,7 +1,3 @@
-/*
- * Note: This file was co-authored by Claude Code.
- */
-
 package ch.eureka.eurekapp.ui.meeting
 
 import android.widget.Toast
@@ -24,6 +20,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.HowToVote
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Schedule
@@ -68,7 +65,7 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.utils.Formatters
 
 /**
- * Test tags for MeetingDetailScreen composables.
+ * Test tags for MeetingDetailScreen composable.
  *
  * Provides semantic identifiers for UI testing with Compose UI Test framework. Each constant
  * represents a unique testTag applied to composables in MeetingDetailScreen, enabling reliable and
@@ -99,6 +96,8 @@ object MeetingDetailScreenTestTags {
   const val DELETE_CONFIRMATION_DIALOG = "DeleteConfirmationDialog"
   const val CONFIRM_DELETE_BUTTON = "ConfirmDeleteButton"
   const val CANCEL_DELETE_BUTTON = "CancelDeleteButton"
+  const val VOTE_TIME_BUTTON = "VoteForTimeButton"
+  const val VOTE_FORMAT_BUTTON = "VoteForFormatButton"
 }
 
 /**
@@ -126,12 +125,13 @@ fun MeetingDetailScreen(
     onJoinMeeting: (String) -> Unit = {},
     onRecordMeeting: () -> Unit = {},
     onViewTranscript: () -> Unit = {},
+    onVoteForTime: () -> Unit = {},
+    onVoteForFormat: () -> Unit = {},
 ) {
   val context = LocalContext.current
   val uiState by viewModel.uiState.collectAsState()
   var showDeleteDialog by remember { mutableStateOf(false) }
 
-  // Show error message if there is any
   LaunchedEffect(uiState.errorMsg) {
     uiState.errorMsg?.let {
       Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
@@ -139,7 +139,6 @@ fun MeetingDetailScreen(
     }
   }
 
-  // Navigate back on successful deletion
   LaunchedEffect(uiState.deleteSuccess) {
     if (uiState.deleteSuccess) {
       Toast.makeText(context, "Meeting deleted successfully", Toast.LENGTH_SHORT).show()
@@ -174,12 +173,13 @@ fun MeetingDetailScreen(
                 onJoinMeeting = onJoinMeeting,
                 onRecordMeeting = onRecordMeeting,
                 onViewTranscript = onViewTranscript,
-                onDeleteMeeting = { showDeleteDialog = true })
+                onDeleteMeeting = { showDeleteDialog = true },
+                onVoteForTime = onVoteForTime,
+                onVoteForFormat = onVoteForFormat)
           } ?: ErrorScreen(message = uiState.errorMsg ?: "Meeting not found")
         }
       })
 
-  // Delete confirmation dialog
   if (showDeleteDialog) {
     DeleteConfirmationDialog(
         onConfirm = {
@@ -245,35 +245,33 @@ private fun MeetingDetailContent(
     onRecordMeeting: () -> Unit,
     onViewTranscript: () -> Unit,
     onDeleteMeeting: () -> Unit,
+    onVoteForTime: () -> Unit,
+    onVoteForFormat: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
   LazyColumn(
       modifier = Modifier.fillMaxSize().then(modifier),
       contentPadding = PaddingValues(16.dp),
       verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        // Meeting header
         item { MeetingHeader(meeting = meeting) }
 
-        // Meeting information
         item { MeetingInformationCard(meeting = meeting) }
 
-        // Participants section
         item { ParticipantsSection(participants = participants) }
 
-        // Attachments section
         item { AttachmentsSection(attachments = meeting.attachmentUrls) }
 
-        // Action buttons
         item {
           ActionButtonsSection(
               meeting = meeting,
               onJoinMeeting = onJoinMeeting,
               onRecordMeeting = onRecordMeeting,
               onViewTranscript = onViewTranscript,
-              onDeleteMeeting = onDeleteMeeting)
+              onDeleteMeeting = onDeleteMeeting,
+              onVoteForTime = onVoteForTime,
+              onVoteForFormat = onVoteForFormat)
         }
 
-        // Bottom spacing
         item { Spacer(modifier = Modifier.height(16.dp)) }
       }
 }
@@ -331,7 +329,6 @@ private fun MeetingInformationCard(meeting: Meeting) {
 
               HorizontalDivider()
 
-              // Date and time
               if (meeting.datetime != null) {
                 InfoRow(
                     icon = Icons.Default.Schedule,
@@ -340,7 +337,6 @@ private fun MeetingInformationCard(meeting: Meeting) {
                     testTag = MeetingDetailScreenTestTags.MEETING_DATETIME)
               }
 
-              // Format
               meeting.format?.let { format ->
                 InfoRow(
                     icon =
@@ -353,7 +349,6 @@ private fun MeetingInformationCard(meeting: Meeting) {
                     testTag = MeetingDetailScreenTestTags.MEETING_FORMAT)
               }
 
-              // Location (for in-person meetings)
               if (meeting.format == MeetingFormat.IN_PERSON && meeting.location != null) {
                 InfoRow(
                     icon = Icons.Default.Place,
@@ -362,7 +357,6 @@ private fun MeetingInformationCard(meeting: Meeting) {
                     testTag = MeetingDetailScreenTestTags.MEETING_LOCATION)
               }
 
-              // Link (for virtual meetings)
               if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
                 InfoRow(
                     icon = Icons.Default.VideoCall,
@@ -562,6 +556,8 @@ private fun ActionButtonsSection(
     onRecordMeeting: () -> Unit,
     onViewTranscript: () -> Unit,
     onDeleteMeeting: () -> Unit,
+    onVoteForTime: () -> Unit,
+    onVoteForFormat: () -> Unit
 ) {
   Column(
       modifier =
@@ -605,10 +601,29 @@ private fun ActionButtonsSection(
                   Text("View Transcript")
                 }
           }
-          else -> {}
+          MeetingStatus.OPEN_TO_VOTES -> {
+            Button(
+                onClick = onVoteForTime,
+                modifier =
+                    Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.VOTE_TIME_BUTTON)) {
+                  Icon(imageVector = Icons.Default.HowToVote, contentDescription = "Vote for time")
+                  Spacer(modifier = Modifier.width(8.dp))
+                  Text("Vote for time")
+                }
+
+            Button(
+                onClick = onVoteForFormat,
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .testTag(MeetingDetailScreenTestTags.VOTE_FORMAT_BUTTON)) {
+                  Icon(
+                      imageVector = Icons.Default.HowToVote, contentDescription = "Vote for format")
+                  Spacer(modifier = Modifier.width(8.dp))
+                  Text("Vote for format")
+                }
+          }
         }
 
-        // Delete button (always available)
         OutlinedButton(
             onClick = onDeleteMeeting,
             modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.DELETE_BUTTON),

@@ -33,7 +33,6 @@ import com.google.firebase.auth.auth
 import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
 
-// Type-safe navigation routes using Kotlin Serialization
 sealed interface Route {
   // Main screens
   @Serializable data object ProjectSelection : Route
@@ -42,7 +41,6 @@ sealed interface Route {
 
   @Serializable data object Profile : Route
 
-  // Tasks section - all task-related screens
   sealed interface TasksSection : Route {
     companion object {
       val routes: Set<KClass<out TasksSection>>
@@ -62,7 +60,6 @@ sealed interface Route {
     @Serializable data object TaskDependence : TasksSection
   }
 
-  // Ideas section - all ideas-related screens
   sealed interface IdeasSection : Route {
     companion object {
       val routes: Set<KClass<out IdeasSection>>
@@ -74,7 +71,6 @@ sealed interface Route {
     @Serializable data object CreateIdeas : IdeasSection
   }
 
-  // Meetings section - all meetings-related screens
   sealed interface MeetingsSection : Route {
     companion object {
       val routes: Set<KClass<out MeetingsSection>>
@@ -94,7 +90,6 @@ sealed interface Route {
     data class AudioTranscript(val projectId: String, val meetingId: String) : MeetingsSection
   }
 
-  // Project selection section
   sealed interface ProjectSelectionSection : Route {
     companion object {
       val routes: Set<KClass<out ProjectSelectionSection>>
@@ -104,7 +99,6 @@ sealed interface Route {
     @Serializable data object CreateProject : ProjectSelectionSection
   }
 
-  // Overview project section
   sealed interface OverviewProjectSection : Route {
     companion object {
       val routes: Set<KClass<out OverviewProjectSection>>
@@ -114,7 +108,6 @@ sealed interface Route {
     @Serializable data object CreateInvitation : OverviewProjectSection
   }
 
-  // Shared screens (used across multiple sections)
   @Serializable data object Camera : Route
 }
 
@@ -124,7 +117,6 @@ fun NavigationMenu() {
   val projectRepository = FirestoreRepositoriesProvider.projectRepository
   val auth = Firebase.auth
   val testProjectId = "test-project-id"
-  // this is hardcoded for current release
   val testProject =
       Project(
           projectId = testProjectId,
@@ -202,15 +194,7 @@ fun NavigationMenu() {
                     projectId = meetingDetailRoute.projectId,
                     meetingId = meetingDetailRoute.meetingId,
                     onNavigateBack = { navigationController.popBackStack() },
-                    onJoinMeeting = { link ->
-                      // TODO: Implement join meeting functionality
-                    },
-                    onRecordMeeting = {
-                      // TODO: Implement recording functionality
-                    },
-                    onViewTranscript = {
-                      // TODO: Navigate to transcript screen
-                    })
+                )
               }
 
               composable<Route.MeetingsSection.CreateMeeting> { backStackEntry ->
@@ -225,7 +209,6 @@ fun NavigationMenu() {
                 MeetingAudioRecordingScreen(projectId = testProjectId, meetingId = "1234")
               }
 
-              // Project selection section
               composable<Route.ProjectSelectionSection.CreateProject> { CreateProjectScreen() }
 
               composable<Route.OverviewProjectSection.CreateInvitation> {
