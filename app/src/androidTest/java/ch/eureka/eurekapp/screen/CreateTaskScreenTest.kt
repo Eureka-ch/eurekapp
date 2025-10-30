@@ -14,7 +14,6 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -41,11 +40,9 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.google.firebase.storage.StorageMetadata
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
@@ -587,7 +584,7 @@ class CreateTaskScreenTests : TestCase() {
             createdBy = testUserId,
         )
 
-    viewModel.viewModelScope.launch(Dispatchers.IO) {
+    runBlocking {
       val tasks = taskRepository.getTasksForCurrentUser().first()
       val found = tasks.any { it.title == task.title && it.dueDate == task.dueDate }
       assert(found)

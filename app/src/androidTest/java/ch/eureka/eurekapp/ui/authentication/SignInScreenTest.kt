@@ -78,9 +78,7 @@ class SignInScreenTest {
     }
 
     FirebaseEmulator.auth.signOut()
-    // Ensure sign-out is fully propagated and Firestore state is clean before re-signing in
-    spinWait(5_000) { FirebaseEmulator.auth.currentUser == null }
-    FirebaseEmulator.clearFirestoreEmulator()
+    composeTestRule.waitUntil(3000) { FirebaseEmulator.auth.currentUser == null }
 
     composeTestRule.setContent {
       SignInScreen(credentialManager = FakeCredentialManager.create(fakeIdToken))
@@ -92,18 +90,4 @@ class SignInScreenTest {
 
     assertEquals(email, FirebaseEmulator.auth.currentUser!!.email)
   }
-}
-
-// Simple spin-wait helper that doesn't depend on compose test scheduler
-private fun spinWait(timeoutMs: Long = 3_000, condition: () -> Boolean) {
-  val start = System.currentTimeMillis()
-  while (System.currentTimeMillis() - start < timeoutMs) {
-    if (condition()) return
-    try {
-      Thread.sleep(25)
-    } catch (_: InterruptedException) {
-      // ignore
-    }
-  }
-  throw AssertionError("Condition not met in ${timeoutMs}ms")
 }

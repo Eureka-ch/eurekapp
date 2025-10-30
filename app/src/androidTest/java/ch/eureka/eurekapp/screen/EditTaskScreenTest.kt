@@ -353,11 +353,9 @@ open class EditTaskScreenTest : TestCase() {
         }
         composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
 
-        // Verify task updated
-        viewModel.viewModelScope.launch(Dispatchers.IO) {
-          val task = taskRepository.getTaskById(projectId, taskId).first()
-          assert(task?.title == "Edited Task")
-        }
+        // Verify task updated without leaving background coroutines running
+        val task = taskRepository.getTaskById(projectId, taskId).first()
+        assert(task?.title == "Edited Task")
       }
 
   @Test
