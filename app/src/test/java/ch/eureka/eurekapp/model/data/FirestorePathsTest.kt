@@ -19,6 +19,7 @@ class FirestorePathsTest {
     TestCase.assertEquals("meetings", FirestorePaths.MEETINGS)
     TestCase.assertEquals("taskTemplates", FirestorePaths.TASK_TEMPLATES)
     TestCase.assertEquals("tasks", FirestorePaths.TASKS)
+    TestCase.assertEquals("transcriptions", FirestorePaths.TRANSCRIPTIONS)
   }
 
   @Test
@@ -142,5 +143,23 @@ class FirestorePathsTest {
     val userId = "user789"
     val expected = "projects/project123/meetings/meeting456/participants/user789"
     TestCase.assertEquals(expected, FirestorePaths.participantPath(projectId, meetingId, userId))
+  }
+
+  @Test
+  fun transcriptionsPath_shouldReturnCorrectPath() {
+    val projectId = "project123"
+    val meetingId = "meeting456"
+    val expected = "projects/project123/meetings/meeting456/transcriptions"
+    TestCase.assertEquals(expected, FirestorePaths.transcriptionsPath(projectId, meetingId))
+  }
+
+  @Test
+  fun transcriptionPath_shouldReturnCorrectPath() {
+    val projectId = "project123"
+    val meetingId = "meeting456"
+    val transcriptionId = "transcription789"
+    val expected = "projects/project123/meetings/meeting456/transcriptions/transcription789"
+    TestCase.assertEquals(
+        expected, FirestorePaths.transcriptionPath(projectId, meetingId, transcriptionId))
   }
 }
