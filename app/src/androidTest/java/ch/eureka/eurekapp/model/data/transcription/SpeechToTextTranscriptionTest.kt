@@ -3,11 +3,10 @@ package ch.eureka.eurekapp.model.data.transcription
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import com.google.firebase.firestore.firestore
 import com.google.firebase.functions.functions
-import com.google.firebase.storage.storage
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
@@ -38,34 +37,22 @@ class SpeechToTextTranscriptionTest {
   fun setup() = runBlocking {
     context = ApplicationProvider.getApplicationContext()
 
-    // Configure Firebase emulators BEFORE getting instances
-    try {
-      Firebase.firestore.useEmulator("10.0.2.2", 8080)
-    } catch (e: IllegalStateException) {
-      // Already configured - ignore
-    }
-
-    try {
-      Firebase.storage.useEmulator("10.0.2.2", 9199)
-    } catch (e: IllegalStateException) {
-      // Already configured - ignore
-    }
-
+    // Use FirebaseEmulator
     val functions = Firebase.functions
-    try {
-      functions.useEmulator("10.0.2.2", 5001)
-    } catch (e: IllegalStateException) {
-      // Already configured - ignore
+    if (FirebaseEmulator.isRunning) {
+      functions.useEmulator(FirebaseEmulator.HOST, 5001)
     }
 
     // Sign in anonymously for testing (Cloud Function requires authentication)
-    if (Firebase.auth.currentUser == null) {
-      Firebase.auth.signInAnonymously().await()
+    if (FirebaseEmulator.auth.currentUser == null) {
+      FirebaseEmulator.auth.signInAnonymously().await()
     }
 
     repository =
         CloudFunctionSpeechToTextRepository(
-            firestore = Firebase.firestore, auth = Firebase.auth, functions = functions)
+            firestore = FirebaseEmulator.firestore,
+            auth = FirebaseEmulator.auth,
+            functions = functions)
   }
 
   @Test
