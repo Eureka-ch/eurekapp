@@ -6,16 +6,18 @@ package ch.eureka.eurekapp.ui.meeting
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ch.eureka.eurekapp.model.data.meeting.FirestoreMeetingRepository
+import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
+import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.Participant
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
@@ -41,52 +43,76 @@ data class MeetingDetailUIState(
  * Manages the state and business logic for displaying detailed meeting information, including
  * real-time updates of meeting data and participants list.
  *
+ * @property projectId The ID of the project containing the meeting.
+ * @property meetingId The ID of the meeting to display.
  * @property repository The repository for meeting data operations.
  */
 class MeetingDetailViewModel(
-    private val repository: MeetingRepository = FirestoreMeetingRepository(),
+    private val projectId: String,
+    private val meetingId: String,
+    private val repository: MeetingRepository = FirestoreRepositoriesProvider.meetingRepository,
 ) : ViewModel() {
 
-  private val _uiState = MutableStateFlow(MeetingDetailUIState())
-  val uiState: StateFlow<MeetingDetailUIState> = _uiState
+  private val _deleteSuccess = MutableStateFlow(false)
+  private val _errorMsg = MutableStateFlow<String?>(null)
 
-  /** Clears the error message in the UI state. */
-  fun clearErrorMsg() {
-    _uiState.update { it.copy(errorMsg = null) }
+  /**
+   * Validates that all required fields of a meeting are valid.
+   *
+   * @param meeting The meeting to validate, or null if not found.
+   * @return Error message if validation fails, null if all fields are valid.
+   */
+  private fun validateMeeting(meeting: Meeting?): String? {
+    if (meeting == null) return "Meeting not found"
+
+    return when {
+      meeting.title.isBlank() -> "Meeting has invalid title"
+      meeting.meetingID.isBlank() -> "Meeting has invalid ID"
+      meeting.format == MeetingFormat.IN_PERSON && meeting.location == null ->
+          "In-person meeting must have a location"
+      meeting.format == MeetingFormat.VIRTUAL && meeting.link.isNullOrBlank() ->
+          "Virtual meeting must have a link"
+      else -> null
+    }
   }
 
   /**
-   * Load the meeting details and participants with real-time updates.
+   * UI state combining meeting data, participants, and operation states.
    *
-   * This method combines two Flows (meeting data and participants) to provide real-time updates
-   * when either the meeting or its participants change.
+   * Follows the project's Flow pattern: declarative state initialization in init block using
+   * stateIn() with WhileSubscribed strategy for automatic lifecycle management.
    *
-   * @param projectId The ID of the project containing the meeting.
-   * @param meetingId The ID of the meeting to load.
+   * Validates all meeting fields before displaying - if any required field is invalid, shows an
+   * error message instead of displaying potentially corrupted data.
    */
-  fun loadMeetingDetails(projectId: String, meetingId: String) {
-    viewModelScope.launch {
+  val uiState: StateFlow<MeetingDetailUIState> =
       combine(
               repository.getMeetingById(projectId, meetingId),
-              repository.getParticipants(projectId, meetingId)) { meeting, participants ->
+              repository.getParticipants(projectId, meetingId),
+              _deleteSuccess,
+              _errorMsg) { meeting, participants, deleteSuccess, errorMsg ->
+                val validationError = validateMeeting(meeting)
                 MeetingDetailUIState(
-                    meeting = meeting,
+                    meeting = if (validationError == null) meeting else null,
                     participants = participants,
                     isLoading = false,
-                    errorMsg = if (meeting == null) "Meeting not found" else null)
+                    errorMsg = errorMsg ?: validationError,
+                    deleteSuccess = deleteSuccess)
               }
-          .onStart { _uiState.update { it.copy(isLoading = true) } }
+          .onStart { emit(MeetingDetailUIState(isLoading = true)) }
           .catch { e ->
-            _uiState.update {
-              it.copy(isLoading = false, errorMsg = e.message ?: "Failed to load meeting details")
-            }
+            emit(
+                MeetingDetailUIState(
+                    isLoading = false, errorMsg = e.message ?: "Failed to load meeting details"))
           }
-          .collect { newState ->
-            _uiState.update { currentState ->
-              newState.copy(deleteSuccess = currentState.deleteSuccess)
-            }
-          }
-    }
+          .stateIn(
+              scope = viewModelScope,
+              started = SharingStarted.WhileSubscribed(5000),
+              initialValue = MeetingDetailUIState(isLoading = true))
+
+  /** Clears the error message in the UI state. */
+  fun clearErrorMsg() {
+    _errorMsg.value = null
   }
 
   /**
@@ -97,15 +123,10 @@ class MeetingDetailViewModel(
    */
   fun deleteMeeting(projectId: String, meetingId: String) {
     viewModelScope.launch {
-      _uiState.update { it.copy(isLoading = true) }
       repository
           .deleteMeeting(projectId, meetingId)
-          .onSuccess { _uiState.update { it.copy(isLoading = false, deleteSuccess = true) } }
-          .onFailure { e ->
-            _uiState.update {
-              it.copy(isLoading = false, errorMsg = e.message ?: "Failed to delete meeting")
-            }
-          }
+          .onSuccess { _deleteSuccess.value = true }
+          .onFailure { e -> _errorMsg.value = e.message ?: "Failed to delete meeting" }
     }
   }
 }

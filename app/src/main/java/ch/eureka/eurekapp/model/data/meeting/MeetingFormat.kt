@@ -9,7 +9,7 @@ import ch.eureka.eurekapp.model.data.StringSerializableEnum
  */
 enum class MeetingFormat(val description: String) : StringSerializableEnum {
   /** The meeting is in-person. */
-  IN_PERSON("In-Person"),
+  IN_PERSON("In person"),
 
   /** Meeting is virtual (ex: Google Meet, Zoom, etc). */
   VIRTUAL("Virtual")
