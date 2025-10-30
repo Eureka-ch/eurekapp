@@ -9,7 +9,7 @@ jobs:
   notify:
     # Skip: self-posting (any workflow whose name starts with "Telegram") and bot runs
     if: ${{ github.actor != 'github-actions[bot]' && !startsWith(github.event.workflow.name, 'Telegram') }}
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     continue-on-error: true
     steps:
       - name: Checkout repo (required for local actions and scripts)
