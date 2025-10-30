@@ -125,7 +125,7 @@ object MeetingProvider {
               status = MeetingStatus.COMPLETED,
               datetime = createTimestamp(2025, 10, 10, 11, 0), // Last Friday 11 AM
               format = MeetingFormat.VIRTUAL,
-              link = null,
+              link = "https://meet.google.com/api-docs-review",
               attachmentUrls =
                   listOf(
                       "https://storage.example.com/api_docs_recording.mp4",
