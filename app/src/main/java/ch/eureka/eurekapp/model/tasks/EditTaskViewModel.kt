@@ -49,14 +49,14 @@ class EditTaskViewModel(
   private val availableProjectsFlow =
       projectRepository
           .getProjectsForCurrentUser()
-          .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList<Project>())
+          .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList<Project>())
 
   private val _baseUiState = MutableStateFlow(EditTaskState())
   override val uiState: StateFlow<EditTaskState> =
       combine(_baseUiState, availableProjectsFlow) { state, projects ->
             state.copy(availableProjects = projects)
           }
-          .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), EditTaskState())
+          .stateIn(viewModelScope, SharingStarted.Eagerly, EditTaskState())
 
   override fun getState(): EditTaskState = _baseUiState.value
 

@@ -128,13 +128,13 @@ open class TaskScreenViewModel(
   private val availableProjects =
       projectRepository
           .getProjectsForCurrentUser()
-          .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+          .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
   // Flow 1: Tasks assigned to current user
   private val userTasks =
       taskRepository
           .getTasksForCurrentUser()
-          .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+          .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
   // Flow 2: All tasks in user's projects, filtered to exclude user's tasks (team tasks)
   @OptIn(ExperimentalCoroutinesApi::class)
@@ -158,7 +158,7 @@ open class TaskScreenViewModel(
                   }
             }
           }
-          .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+          .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
   open val uiState: StateFlow<TaskScreenUiState> =
       combine(userTasks, teamTasks, _selectedFilter, _error, availableProjects) {
@@ -220,10 +220,7 @@ open class TaskScreenViewModel(
                 error = state.error,
                 availableProjects = state.projects)
           }
-          .stateIn(
-              viewModelScope,
-              SharingStarted.WhileSubscribed(5_000),
-              TaskScreenUiState(isLoading = true))
+          .stateIn(viewModelScope, SharingStarted.Eagerly, TaskScreenUiState(isLoading = true))
 
   /**
    * Set the current task filter
