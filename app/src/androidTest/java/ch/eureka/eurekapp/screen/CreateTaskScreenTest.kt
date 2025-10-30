@@ -87,8 +87,6 @@ class CreateTaskScreenTests : TestCase() {
 
   @Test
   fun projectSelection_showsList_and_selectsProject() {
-    val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
-    lastCreateVm = viewModel
     val projectId = "project123"
 
     // Provide a fake project list via a fake repository-injected VM
@@ -770,5 +768,40 @@ class CreateTaskScreenTests : TestCase() {
     override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
       return Result.failure(Exception("No metadata"))
     }
+  }
+
+  class FakeProjectRepository : ProjectRepository {
+    override fun getProjectById(projectId: String): Flow<Project?> =
+        flowOf(Project(projectId = projectId, name = "Fake Project"))
+
+    override fun getProjectsForCurrentUser(skipCache: Boolean): Flow<List<Project>> =
+        flowOf(emptyList())
+
+    override suspend fun createProject(
+        project: Project,
+        creatorId: String,
+        creatorRole: ProjectRole
+    ): Result<String> = Result.success(project.projectId)
+
+    override suspend fun updateProject(project: Project): Result<Unit> = Result.success(Unit)
+
+    override suspend fun deleteProject(projectId: String): Result<Unit> = Result.success(Unit)
+
+    override fun getMembers(projectId: String): Flow<List<Member>> = flowOf(emptyList())
+
+    override suspend fun addMember(
+        projectId: String,
+        userId: String,
+        role: ProjectRole
+    ): Result<Unit> = Result.success(Unit)
+
+    override suspend fun removeMember(projectId: String, userId: String): Result<Unit> =
+        Result.success(Unit)
+
+    override suspend fun updateMemberRole(
+        projectId: String,
+        userId: String,
+        role: ProjectRole
+    ): Result<Unit> = Result.success(Unit)
   }
 }

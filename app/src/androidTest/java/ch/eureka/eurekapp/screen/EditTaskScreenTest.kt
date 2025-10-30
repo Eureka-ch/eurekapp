@@ -172,7 +172,6 @@ open class EditTaskScreenTest : TestCase() {
 
         val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
         lastEditVm = viewModel
-        lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
@@ -270,6 +269,7 @@ open class EditTaskScreenTest : TestCase() {
         setupTestTask(projectId, taskId)
 
         val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
@@ -445,6 +445,7 @@ open class EditTaskScreenTest : TestCase() {
         setupTestTask(projectId, taskId, status = TaskStatus.TODO)
 
         val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
@@ -475,6 +476,7 @@ open class EditTaskScreenTest : TestCase() {
         setupTestTask(projectId, taskId)
 
         val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
@@ -763,6 +765,7 @@ open class EditTaskScreenTest : TestCase() {
 
         val fileRepository = FakeFileRepository()
         val viewModel = EditTaskViewModel(taskRepository, fileRepository = fileRepository)
+        lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
