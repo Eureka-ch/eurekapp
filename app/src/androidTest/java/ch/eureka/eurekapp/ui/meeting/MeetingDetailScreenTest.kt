@@ -66,7 +66,7 @@ class MeetingDetailScreenTest {
       onRecordMeeting: () -> Unit = {},
       onViewTranscript: () -> Unit = {}
   ) {
-    val viewModel = MeetingDetailViewModel(repositoryMock)
+    val viewModel = MeetingDetailViewModel("test_project", "test_meeting", repositoryMock)
     composeTestRule.setContent {
       MeetingDetailScreen(
           projectId = "test_project",
@@ -102,7 +102,7 @@ class MeetingDetailScreenTest {
           }
         }
 
-    val viewModel = MeetingDetailViewModel(neverEmittingRepository)
+    val viewModel = MeetingDetailViewModel("test_project", "test_meeting", neverEmittingRepository)
     composeTestRule.setContent {
       MeetingDetailScreen(
           projectId = "test_project", meetingId = "test_meeting", viewModel = viewModel)

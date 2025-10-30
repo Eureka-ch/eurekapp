@@ -114,7 +114,7 @@ object MeetingDetailScreenTestTags {
 fun MeetingDetailScreen(
     projectId: String,
     meetingId: String,
-    viewModel: MeetingDetailViewModel = viewModel(),
+    viewModel: MeetingDetailViewModel = viewModel { MeetingDetailViewModel(projectId, meetingId) },
     onNavigateBack: () -> Unit = {},
     onJoinMeeting: (String) -> Unit = {},
     onRecordMeeting: () -> Unit = {},
@@ -123,9 +123,6 @@ fun MeetingDetailScreen(
   val context = LocalContext.current
   val uiState by viewModel.uiState.collectAsState()
   var showDeleteDialog by remember { mutableStateOf(false) }
-
-  // Load meeting details on screen initialization
-  LaunchedEffect(Unit) { viewModel.loadMeetingDetails(projectId, meetingId) }
 
   // Show error message if there is any
   LaunchedEffect(uiState.errorMsg) {
@@ -403,7 +400,7 @@ private fun ParticipantsSection(participants: List<Participant>) {
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray)
               } else {
-                participants.forEach { participant -> ParticipantItem(participant = participant) }
+                participants.forEach { ParticipantItem(participant = it) }
               }
             }
       }
