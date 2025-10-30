@@ -205,8 +205,6 @@ class CreateTaskScreenTests : TestCase() {
 
   @After
   fun tearDown() = runBlocking {
-    // Dispose composition to ensure lifecycle ViewModels are cleared
-    composeTestRule.setContent { androidx.compose.material3.Text("disposed") }
     // Cancel any raw, injected ViewModel that might still be alive
     lastCreateVm?.viewModelScope?.cancel()
     lastCreateVm = null

@@ -35,8 +35,6 @@ class SignInScreenTest {
 
   @After
   fun tearDown() {
-    // Dispose any potential composition to ensure lifecycle-backed VMs are cleared
-    composeTestRule.setContent { androidx.compose.material3.Text("disposed") }
     // Reset emulators to avoid cross-test leakage
     FirebaseEmulator.clearFirestoreEmulator()
     FirebaseEmulator.clearAuthEmulator()
