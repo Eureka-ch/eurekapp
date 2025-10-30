@@ -27,12 +27,6 @@ firestore-debug.log
 # Firebase rules (deployed via CI)
 firebase/**/*.rules
 /release-keystore.jks
-/perso 
-
-# Ignore local Firebase emulator rules and indexes
-firebase/firestore/firestore.rules
-firebase/firestore/firestore.indexes.json
-firebase/storage/storage.rules 
 /base64_keystore_properties.txt
 /base64_release-keystore.txt
 /keystore.properties
