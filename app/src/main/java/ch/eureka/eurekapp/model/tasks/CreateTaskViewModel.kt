@@ -46,14 +46,14 @@ class CreateTaskViewModel(
   private val availableProjectsFlow =
       projectRepository
           .getProjectsForCurrentUser()
-          .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList<Project>())
+          .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList<Project>())
 
   private val _baseUiState = MutableStateFlow(CreateTaskState())
   override val uiState: StateFlow<CreateTaskState> =
       combine(_baseUiState, availableProjectsFlow) { state, projects ->
             state.copy(availableProjects = projects)
           }
-          .stateIn(viewModelScope, SharingStarted.Eagerly, CreateTaskState())
+          .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CreateTaskState())
 
   /** Returns the current state. */
   override fun getState(): CreateTaskState = _baseUiState.value
