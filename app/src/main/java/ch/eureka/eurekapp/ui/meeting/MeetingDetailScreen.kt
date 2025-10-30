@@ -67,6 +67,13 @@ import ch.eureka.eurekapp.model.data.meeting.Participant
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.utils.Formatters
 
+/**
+ * Test tags for MeetingDetailScreen composables.
+ *
+ * Provides semantic identifiers for UI testing with Compose UI Test framework. Each constant
+ * represents a unique testTag applied to composables in MeetingDetailScreen, enabling reliable and
+ * maintainable UI test assertions.
+ */
 object MeetingDetailScreenTestTags {
   const val MEETING_DETAIL_SCREEN = "MeetingDetailScreen"
   const val LOADING_INDICATOR = "LoadingIndicator"
@@ -156,23 +163,19 @@ fun MeetingDetailScreen(
             })
       },
       content = { padding ->
-        when {
-          uiState.isLoading -> {
-            LoadingScreen()
-          }
-          uiState.meeting == null -> {
-            ErrorScreen(message = uiState.errorMsg ?: "Meeting not found")
-          }
-          else -> {
+        if (uiState.isLoading) {
+          LoadingScreen()
+        } else {
+          uiState.meeting?.let { meeting ->
             MeetingDetailContent(
                 modifier = Modifier.padding(padding),
-                meeting = uiState.meeting!!,
+                meeting = meeting,
                 participants = uiState.participants,
                 onJoinMeeting = onJoinMeeting,
                 onRecordMeeting = onRecordMeeting,
                 onViewTranscript = onViewTranscript,
                 onDeleteMeeting = { showDeleteDialog = true })
-          }
+          } ?: ErrorScreen(message = uiState.errorMsg ?: "Meeting not found")
         }
       })
 
@@ -203,7 +206,11 @@ private fun LoadingScreen() {
       }
 }
 
-/** Error message screen. */
+/**
+ * Error message screen.
+ *
+ * @param message The error message to display to the user.
+ */
 @Composable
 private fun ErrorScreen(message: String) {
   Column(
@@ -218,16 +225,27 @@ private fun ErrorScreen(message: String) {
       }
 }
 
-/** Main content displaying meeting details. */
+/**
+ * Main content displaying meeting details.
+ *
+ * @param meeting The meeting to display.
+ * @param participants List of participants in the meeting.
+ * @param onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
+ *   link.
+ * @param onRecordMeeting Callback invoked when user clicks record meeting button.
+ * @param onViewTranscript Callback invoked when user clicks view transcript button.
+ * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
+ * @param modifier Modifier to be applied to the root composable.
+ */
 @Composable
 private fun MeetingDetailContent(
-    modifier: Modifier = Modifier,
     meeting: Meeting,
     participants: List<Participant>,
     onJoinMeeting: (String) -> Unit,
     onRecordMeeting: () -> Unit,
     onViewTranscript: () -> Unit,
     onDeleteMeeting: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
   LazyColumn(
       modifier = Modifier.fillMaxSize().then(modifier),
@@ -260,7 +278,11 @@ private fun MeetingDetailContent(
       }
 }
 
-/** Meeting status badge. */
+/**
+ * Meeting status badge.
+ *
+ * @param meeting The meeting to display the status badge for.
+ */
 @Composable
 private fun MeetingHeader(meeting: Meeting) {
   Column(modifier = Modifier.fillMaxWidth()) {
@@ -289,7 +311,11 @@ private fun MeetingHeader(meeting: Meeting) {
   }
 }
 
-/** Card displaying meeting information (date, time, format, location/link). */
+/**
+ * Card displaying meeting information (date, time, format, location/link).
+ *
+ * @param meeting The meeting to display information for.
+ */
 @Composable
 private fun MeetingInformationCard(meeting: Meeting) {
   Card(
@@ -318,8 +344,10 @@ private fun MeetingInformationCard(meeting: Meeting) {
               meeting.format?.let { format ->
                 InfoRow(
                     icon =
-                        if (format == MeetingFormat.VIRTUAL) Icons.Default.VideoCall
-                        else Icons.Default.Place,
+                        when (format) {
+                          MeetingFormat.VIRTUAL -> Icons.Default.VideoCall
+                          MeetingFormat.IN_PERSON -> Icons.Default.Place
+                        },
                     label = "Format",
                     value = format.description,
                     testTag = MeetingDetailScreenTestTags.MEETING_FORMAT)
@@ -346,7 +374,14 @@ private fun MeetingInformationCard(meeting: Meeting) {
       }
 }
 
-/** Reusable information row component. */
+/**
+ * Reusable information row component.
+ *
+ * @param icon The icon to display at the start of the row.
+ * @param label The label text describing the information.
+ * @param value The value text to display.
+ * @param testTag The test tag for UI testing.
+ */
 @Composable
 private fun InfoRow(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -371,7 +406,11 @@ private fun InfoRow(
   }
 }
 
-/** Section displaying meeting participants. */
+/**
+ * Section displaying meeting participants.
+ *
+ * @param participants The list of participants to display.
+ */
 @Composable
 private fun ParticipantsSection(participants: List<Participant>) {
   Card(
@@ -406,7 +445,11 @@ private fun ParticipantsSection(participants: List<Participant>) {
       }
 }
 
-/** Individual participant item. */
+/**
+ * Individual participant item.
+ *
+ * @param participant The participant to display.
+ */
 @Composable
 private fun ParticipantItem(participant: Participant) {
   Row(
@@ -442,7 +485,11 @@ private fun ParticipantItem(participant: Participant) {
       }
 }
 
-/** Section displaying meeting attachments. */
+/**
+ * Section displaying meeting attachments.
+ *
+ * @param attachments The list of attachment URLs to display.
+ */
 @Composable
 private fun AttachmentsSection(attachments: List<String>) {
   Card(
@@ -478,7 +525,11 @@ private fun AttachmentsSection(attachments: List<String>) {
       }
 }
 
-/** Individual attachment item. */
+/**
+ * Individual attachment item.
+ *
+ * @param attachmentUrl The URL of the attachment to display.
+ */
 @Composable
 private fun AttachmentItem(attachmentUrl: String) {
   Row(
@@ -494,7 +545,16 @@ private fun AttachmentItem(attachmentUrl: String) {
       }
 }
 
-/** Action buttons section (join, record, transcript, delete). */
+/**
+ * Action buttons section (join, record, transcript, delete).
+ *
+ * @param meeting The meeting for which to display action buttons.
+ * @param onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
+ *   link.
+ * @param onRecordMeeting Callback invoked when user clicks record meeting button.
+ * @param onViewTranscript Callback invoked when user clicks view transcript button.
+ * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
+ */
 @Composable
 private fun ActionButtonsSection(
     meeting: Meeting,
@@ -562,7 +622,12 @@ private fun ActionButtonsSection(
       }
 }
 
-/** Delete confirmation dialog. */
+/**
+ * Delete confirmation dialog.
+ *
+ * @param onConfirm Callback invoked when user confirms deletion.
+ * @param onDismiss Callback invoked when user dismisses the dialog.
+ */
 @Composable
 private fun DeleteConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
   AlertDialog(
