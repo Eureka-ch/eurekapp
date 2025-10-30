@@ -30,6 +30,8 @@ class SignInScreenTest {
     assumeTrue("Firebase Emulator is not running", FirebaseEmulator.isRunning)
     FirebaseEmulator.clearFirestoreEmulator()
     FirebaseEmulator.clearAuthEmulator()
+    // Ensure we always start from a clean auth state
+    composeTestRule.waitUntil(3_000) { FirebaseEmulator.auth.currentUser == null }
   }
 
   @Test
@@ -78,8 +80,9 @@ class SignInScreenTest {
     }
 
     FirebaseEmulator.auth.signOut()
-
-    composeTestRule.waitUntil(3000) { FirebaseEmulator.auth.currentUser == null }
+    // Ensure sign-out is fully propagated and Firestore state is clean before re-signing in
+    composeTestRule.waitUntil(5_000) { FirebaseEmulator.auth.currentUser == null }
+    FirebaseEmulator.clearFirestoreEmulator()
 
     composeTestRule.setContent {
       SignInScreen(credentialManager = FakeCredentialManager.create(fakeIdToken))
