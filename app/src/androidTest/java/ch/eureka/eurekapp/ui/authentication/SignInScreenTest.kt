@@ -13,6 +13,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Assert.*
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -28,6 +29,15 @@ class SignInScreenTest {
   @Before
   fun setup() {
     assumeTrue("Firebase Emulator is not running", FirebaseEmulator.isRunning)
+    FirebaseEmulator.clearFirestoreEmulator()
+    FirebaseEmulator.clearAuthEmulator()
+  }
+
+  @After
+  fun tearDown() {
+    // Dispose any potential composition to ensure lifecycle-backed VMs are cleared
+    composeTestRule.setContent { androidx.compose.material3.Text("disposed") }
+    // Reset emulators to avoid cross-test leakage
     FirebaseEmulator.clearFirestoreEmulator()
     FirebaseEmulator.clearAuthEmulator()
   }

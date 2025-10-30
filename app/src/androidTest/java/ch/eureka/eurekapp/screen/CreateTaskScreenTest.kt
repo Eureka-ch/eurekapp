@@ -60,6 +60,7 @@ class CreateTaskScreenTests : TestCase() {
 
   var testUserId: String = ""
   private lateinit var context: Context
+  private var lastCreateVm: CreateTaskViewModel? = null
 
   @Before
   fun setup() = runBlocking {
@@ -85,6 +86,7 @@ class CreateTaskScreenTests : TestCase() {
   @Test
   fun projectSelection_showsList_and_selectsProject() {
     val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+    lastCreateVm = viewModel
     val projectId = "project123"
 
     // Provide a fake project list via a fake repository-injected VM
@@ -129,6 +131,7 @@ class CreateTaskScreenTests : TestCase() {
             taskRepository,
             fileRepository = FakeFileRepository(),
             projectRepository = fakeProjectRepository)
+    lastCreateVm = injectedVm
 
     composeTestRule.setContent {
       val navController = rememberNavController()
@@ -187,6 +190,7 @@ class CreateTaskScreenTests : TestCase() {
     val injectedVm =
         CreateTaskViewModel(
             taskRepository, fileRepository = FakeFileRepository(), projectRepository = emptyRepo)
+    lastCreateVm = injectedVm
 
     composeTestRule.setContent {
       val navController = rememberNavController()
@@ -199,6 +203,11 @@ class CreateTaskScreenTests : TestCase() {
 
   @After
   fun tearDown() = runBlocking {
+    // Dispose composition to ensure lifecycle ViewModels are cleared
+    composeTestRule.setContent { androidx.compose.material3.Text("disposed") }
+    // Cancel any raw, injected ViewModel that might still be alive
+    lastCreateVm?.viewModelScope?.cancel()
+    lastCreateVm = null
     // Ensure both Firestore and Auth are reset between tests to avoid leaking auth state
     FirebaseEmulator.clearFirestoreEmulator()
     FirebaseEmulator.clearAuthEmulator()
@@ -366,6 +375,7 @@ class CreateTaskScreenTests : TestCase() {
             taskRepository,
             fileRepository = FakeFileRepository(),
             projectRepository = fakeProjectRepository)
+    lastCreateVm = viewModel
 
     // Inject the view model into the screen
     composeTestRule.setContent {
@@ -522,6 +532,7 @@ class CreateTaskScreenTests : TestCase() {
             taskRepository,
             fileRepository = FakeFileRepository(),
             projectRepository = fakeProjectRepository)
+    lastCreateVm = viewModel
 
     runBlocking { setupTestProject(projectId, ProjectRole.OWNER) }
 
@@ -636,6 +647,7 @@ class CreateTaskScreenTests : TestCase() {
         }
 
     val viewModel = CreateTaskViewModel(taskRepository, projectRepository = fakeProjectRepository)
+    lastCreateVm = viewModel
 
     // Inject the view model into the screen
     composeTestRule.setContent {

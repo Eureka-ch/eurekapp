@@ -80,6 +80,7 @@ open class EditTaskScreenTest : TestCase() {
 
   var testUserId: String = ""
   private lateinit var context: Context
+  private var lastEditVm: EditTaskViewModel? = null
 
   @Before
   fun setup() = runBlocking {
@@ -105,6 +106,11 @@ open class EditTaskScreenTest : TestCase() {
 
   @After
   fun tearDown() = runBlocking {
+    // Dispose composition to ensure lifecycle ViewModels are cleared
+    composeTestRule.setContent { androidx.compose.material3.Text("disposed") }
+    // Cancel any raw, injected ViewModel that might still be alive
+    lastEditVm?.viewModelScope?.cancel()
+    lastEditVm = null
     FirebaseEmulator.clearFirestoreEmulator()
     FirebaseEmulator.clearAuthEmulator()
   }
@@ -167,6 +173,8 @@ open class EditTaskScreenTest : TestCase() {
         setupTestTask(projectId, taskId)
 
         val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        lastEditVm = viewModel
+        lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
@@ -202,6 +210,7 @@ open class EditTaskScreenTest : TestCase() {
         setupTestTask(projectId, taskId)
 
         val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
@@ -235,6 +244,7 @@ open class EditTaskScreenTest : TestCase() {
             status = TaskStatus.IN_PROGRESS)
 
         val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
@@ -320,6 +330,7 @@ open class EditTaskScreenTest : TestCase() {
                 taskRepository,
                 fileRepository = FakeFileRepository(),
                 projectRepository = mockProjectRepository)
+        lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
@@ -377,6 +388,7 @@ open class EditTaskScreenTest : TestCase() {
                 taskRepository,
                 fileRepository = fileRepository,
                 projectRepository = mockProjectRepository)
+        lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
