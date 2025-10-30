@@ -227,6 +227,8 @@ dependencies {
     // Testing - Android
     globalTestImplementation(libs.androidx.junit)
     globalTestImplementation(libs.androidx.espresso.core)
+    globalTestImplementation(libs.androidx.lifecycle.runtime.ktx)
+    globalTestImplementation(libs.androidx.lifecycle.viewmodel.ktx)
     androidTestImplementation(libs.mockito.android)
     androidTestImplementation(libs.mockito.kotlin)
     androidTestImplementation(libs.mockk.android)
