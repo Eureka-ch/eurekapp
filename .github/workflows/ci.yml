@@ -412,10 +412,49 @@ jobs:
           disable-animations: true
           script: echo "AVD snapshot generated"
 
+  build-functions:
+    name: Build Cloud Functions
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.functions == 'true'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Cache Cloud Functions dependencies
+        uses: actions/cache@v4
+        with:
+          path: functions/node_modules
+          key: ${{ runner.os }}-functions-${{ hashFiles('functions/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-functions-
+
+      - name: Build Cloud Functions
+        run: |
+          cd functions
+          npm install
+          npm run build
+          cd ..
+
+      - name: Upload built functions
+        uses: actions/upload-artifact@v4
+        with:
+          name: functions-build
+          path: functions/
+          retention-days: 1
+
   instrumented-tests:
     name: Instrumented Tests (Shard ${{ matrix.shard }})
     runs-on: ubuntu-latest
-    needs: [changes, build-app, build-tests, setup-avd]
+    needs: [changes, build-app, build-tests, setup-avd, build-functions]
     if: needs.changes.outputs.android == 'true' || needs.changes.outputs.functions == 'true'
 
     # To modify shard count:
@@ -448,6 +487,12 @@ jobs:
         with:
           name: test-apk
           path: app/build/outputs/apk/androidTest/debug
+
+      - name: Download Cloud Functions
+        uses: actions/download-artifact@v4
+        with:
+          name: functions-build
+          path: functions/
 
       - name: Enable KVM group perms
         run: |
@@ -554,21 +599,6 @@ jobs:
 
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
-
-      - name: Cache Cloud Functions dependencies
-        uses: actions/cache@v4
-        with:
-          path: functions/node_modules
-          key: ${{ runner.os }}-functions-${{ hashFiles('functions/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-functions-
-
-      - name: Build Cloud Functions
-        run: |
-          cd functions
-          npm install
-          npm run build
-          cd ..
 
       - name: Start Firebase emulators
         run: |
