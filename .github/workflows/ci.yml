@@ -574,7 +574,7 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated -memory 4096 -cores 4
           disable-animations: true
-          script: ./gradlew connectedCheck -x lint --parallel --build-cache -Pandroid.testInstrumentationRunnerArguments.numShards=$TOTAL_SHARDS -Pandroid.testInstrumentationRunnerArguments.shardIndex=${{ matrix.shard }}
+          script: ./gradlew connectedCheck -x lint --parallel --build-cache --no-configuration-cache -Pandroid.testInstrumentationRunnerArguments.numShards=$TOTAL_SHARDS -Pandroid.testInstrumentationRunnerArguments.shardIndex=${{ matrix.shard }}
 
       - name: Upload instrumented test results and coverage
         if: always()
