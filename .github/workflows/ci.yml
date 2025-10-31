@@ -114,6 +114,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # Cache Firebase CLI
+      - name: Cache Firebase CLI
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-firebase-cli-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-firebase-cli-
 
       # Install Firebase CLI
       - name: Install Firebase CLI
