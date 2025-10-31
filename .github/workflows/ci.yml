@@ -397,9 +397,6 @@ jobs:
           echo "  Expected: ~50 tests per shard"
           echo "============================================"
 
-      - name: Install Python dependencies
-        run: pip3 install androidtestxmlgenerator
-
       - name: run tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -437,9 +434,14 @@ jobs:
               app/build/outputs/code_coverage/debugAndroidTest/connected/coverage-${{ matrix.shard }}.ec || echo "No coverage file found"
 
             # Convert raw instrumentation output to JUnit XML
+            # Using androidtestxmlgenerator by Aki Koskinen (MIT License)
+            # https://github.com/akikoskinen/androidtestxmlgenerator
+            echo "Downloading XML generator..."
+            git clone --depth 1 https://github.com/akikoskinen/androidtestxmlgenerator.git /tmp/xmlgen
+
             echo "Generating JUnit XML report..."
             mkdir -p app/build/outputs/androidTest-results/connected
-            androidtestxmlgenerator instrumentation_output.txt \
+            python3 /tmp/xmlgen/androidtestxmlgenerator instrumentation_output.txt \
               app/build/outputs/androidTest-results/connected/TEST-shard-${{ matrix.shard }}.xml
 
       - name: Upload instrumented test results and coverage
