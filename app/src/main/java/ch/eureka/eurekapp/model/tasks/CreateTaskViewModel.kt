@@ -45,7 +45,7 @@ class CreateTaskViewModel(
 
   /** Adds a Task */
   fun addTask(context: Context) {
-    val state = _uiState.value
+    val state = uiState.value
 
     val timestampResult = parseDateString(state.dueDate)
     if (timestampResult.isFailure) {
@@ -68,8 +68,9 @@ class CreateTaskViewModel(
     updateState { copy(isSaving = true) }
 
     val taskId = IdGenerator.generateTaskId()
+    val projectIdToUse = state.projectId
 
-    saveFilesAsync(taskId, context, state.projectId, state.attachmentUris) { photoUrlsResult ->
+    saveFilesAsync(taskId, context, projectIdToUse, state.attachmentUris) { photoUrlsResult ->
       if (photoUrlsResult.isFailure) {
         val exception = photoUrlsResult.exceptionOrNull()
         Log.e("CreateTaskViewModel", exception?.message ?: "Unknown error")
@@ -87,7 +88,7 @@ class CreateTaskViewModel(
         val task =
             Task(
                 taskID = taskId,
-                projectId = state.projectId,
+                projectId = projectIdToUse,
                 title = state.title,
                 description = state.description,
                 assignedUserIds = listOf(currentUser),

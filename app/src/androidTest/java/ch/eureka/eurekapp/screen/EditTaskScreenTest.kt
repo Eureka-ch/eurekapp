@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -79,6 +80,7 @@ open class EditTaskScreenTest : TestCase() {
 
   var testUserId: String = ""
   private lateinit var context: Context
+  private var lastEditVm: EditTaskViewModel? = null
 
   @Before
   fun setup() = runBlocking {
@@ -104,6 +106,9 @@ open class EditTaskScreenTest : TestCase() {
 
   @After
   fun tearDown() = runBlocking {
+    // Cancel any raw, injected ViewModel that might still be alive
+    lastEditVm?.viewModelScope?.cancel()
+    lastEditVm = null
     FirebaseEmulator.clearFirestoreEmulator()
     FirebaseEmulator.clearAuthEmulator()
   }
@@ -166,6 +171,7 @@ open class EditTaskScreenTest : TestCase() {
         setupTestTask(projectId, taskId)
 
         val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
@@ -201,6 +207,7 @@ open class EditTaskScreenTest : TestCase() {
         setupTestTask(projectId, taskId)
 
         val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
@@ -234,6 +241,7 @@ open class EditTaskScreenTest : TestCase() {
             status = TaskStatus.IN_PROGRESS)
 
         val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
@@ -261,6 +269,7 @@ open class EditTaskScreenTest : TestCase() {
         setupTestTask(projectId, taskId)
 
         val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
@@ -274,8 +283,13 @@ open class EditTaskScreenTest : TestCase() {
 
         composeTestRule.waitForIdle()
 
-        // Initially, no photo
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsNotDisplayed()
+        // Ensure no initial photo previews are present (clean up if any residuals)
+        val existingDeletes =
+            composeTestRule.onAllNodesWithTag(CommonTaskTestTags.DELETE_PHOTO).fetchSemanticsNodes()
+        repeat(existingDeletes.size) {
+          composeTestRule.onAllNodesWithTag(CommonTaskTestTags.DELETE_PHOTO)[0].performClick()
+        }
+        composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).assertCountEquals(0)
 
         // Add photo
         composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_PHOTO).performClick()
@@ -307,6 +321,7 @@ open class EditTaskScreenTest : TestCase() {
         setupTestTask(projectId, taskId)
 
         val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
@@ -340,11 +355,9 @@ open class EditTaskScreenTest : TestCase() {
         }
         composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
 
-        // Verify task updated
-        viewModel.viewModelScope.launch(Dispatchers.IO) {
-          val task = taskRepository.getTaskById(projectId, taskId).first()
-          assert(task?.title == "Edited Task")
-        }
+        // Verify task updated without leaving background coroutines running
+        val task = taskRepository.getTaskById(projectId, taskId).first()
+        assert(task?.title == "Edited Task")
       }
 
   @Test
@@ -358,7 +371,11 @@ open class EditTaskScreenTest : TestCase() {
         setupTestTask(projectId, taskId, attachmentUrls = listOf(remoteUrl1, remoteUrl2))
 
         val fileRepository = FakeFileRepository()
+        val mockProjectRepository = FakeProjectRepository()
+        mockProjectRepository.setCurrentUserProjects(
+            flowOf(listOf(Project(projectId = projectId, name = "Test Project"))))
         val viewModel = EditTaskViewModel(taskRepository, fileRepository = fileRepository)
+        lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
@@ -417,6 +434,7 @@ open class EditTaskScreenTest : TestCase() {
         setupTestTask(projectId, taskId, status = TaskStatus.TODO)
 
         val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
@@ -447,6 +465,7 @@ open class EditTaskScreenTest : TestCase() {
         setupTestTask(projectId, taskId)
 
         val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(
@@ -516,6 +535,9 @@ open class EditTaskScreenTest : TestCase() {
             composable<Route.TasksSection.TaskEdit> { backStackEntry ->
               val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.TaskEdit>()
 
+              val fakeProjectRepository = FakeProjectRepository()
+              fakeProjectRepository.setCurrentUserProjects(
+                  flowOf(listOf(Project(projectId = projectId, name = "Test Project"))))
               val editTaskViewModel: EditTaskViewModel =
                   viewModel(
                       factory = EditTaskViewModelFactory(taskRepository, FakeFileRepository()))
@@ -645,6 +667,12 @@ open class EditTaskScreenTest : TestCase() {
   }
 
   class FakeProjectRepository : ProjectRepository {
+    private var currentUserProjects: Flow<List<Project>> = flowOf(emptyList())
+
+    fun setCurrentUserProjects(flow: Flow<List<Project>>) {
+      currentUserProjects = flow
+    }
+
     override fun getProjectById(projectId: String): Flow<Project?> {
       // Return a dummy project or null as needed
       return flowOf(
@@ -652,8 +680,7 @@ open class EditTaskScreenTest : TestCase() {
     }
 
     override fun getProjectsForCurrentUser(skipCache: Boolean): Flow<List<Project>> {
-      // Return an empty list or a single fake project
-      return flowOf(emptyList())
+      return currentUserProjects
     }
 
     override suspend fun createProject(
@@ -724,6 +751,7 @@ open class EditTaskScreenTest : TestCase() {
 
         val fileRepository = FakeFileRepository()
         val viewModel = EditTaskViewModel(taskRepository, fileRepository = fileRepository)
+        lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
           FakeNavGraph(

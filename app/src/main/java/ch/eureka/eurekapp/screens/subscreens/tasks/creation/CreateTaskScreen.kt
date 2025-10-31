@@ -33,6 +33,7 @@ import ch.eureka.eurekapp.model.tasks.CreateTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AttachmentsList
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.ProjectSelectionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDescriptionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskTitleField
@@ -47,22 +48,22 @@ Portions of this code were generated with the help of Grok.
 */
 
 /**
- * A composable screen for creating a new task within a project.
+ * A composable screen for creating a new task.
  *
- * @param projectId The ID of the project to which the new task will be added.
  * @param navigationController The NavHostController for handling navigation actions.
  * @param createTaskViewModel The CreateTaskViewModel instance responsible for managing task
  *   creation state.
  */
 @Composable
 fun CreateTaskScreen(
-    projectId: String,
     navigationController: NavHostController = rememberNavController(),
     createTaskViewModel: CreateTaskViewModel = viewModel(),
 ) {
   val createTaskState by createTaskViewModel.uiState.collectAsState()
   val inputValid by createTaskViewModel.inputValid.collectAsState()
   val errorMsg = createTaskState.errorMsg
+  val projectId = createTaskState.projectId
+  val availableProjects = createTaskState.availableProjects
   var hasTouchedTitle by remember { mutableStateOf(false) }
   var hasTouchedDescription by remember { mutableStateOf(false) }
   var hasTouchedDate by remember { mutableStateOf(false) }
@@ -74,8 +75,6 @@ fun CreateTaskScreen(
   val context = LocalContext.current
   val scrollState = rememberScrollState()
   var isNavigatingToCamera by remember { mutableStateOf(false) }
-
-  LaunchedEffect(projectId) { createTaskViewModel.setProjectId(projectId) }
 
   LaunchedEffect(errorMsg) {
     if (errorMsg != null) {
@@ -135,6 +134,11 @@ fun CreateTaskScreen(
                   hasTouched = hasTouchedDate,
                   onFocusChanged = { hasTouchedDate = true },
                   dateRegex = createTaskViewModel.dateRegex)
+
+              ProjectSelectionField(
+                  projects = availableProjects,
+                  selectedProjectId = projectId,
+                  onProjectSelected = { projectId -> createTaskViewModel.setProjectId(projectId) })
 
               Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
                 OutlinedButton(

@@ -34,6 +34,7 @@ import ch.eureka.eurekapp.model.tasks.EditTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AttachmentsList
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.ProjectSelectionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDescriptionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskTitleField
@@ -84,8 +85,6 @@ fun EditTaskScreen(
   val scrollState = rememberScrollState()
   var isNavigatingToCamera by remember { mutableStateOf(false) }
   var showDeleteDialog by remember { mutableStateOf(false) }
-
-  LaunchedEffect(projectId) { editTaskViewModel.setProjectId(projectId) }
 
   LaunchedEffect(taskId) {
     if (!editTaskState.isDeleting && !editTaskState.taskDeleted) {
@@ -156,6 +155,11 @@ fun EditTaskScreen(
                   hasTouched = hasTouchedDate,
                   onFocusChanged = { hasTouchedDate = true },
                   dateRegex = editTaskViewModel.dateRegex)
+
+              ProjectSelectionField(
+                  projects = editTaskState.availableProjects,
+                  selectedProjectId = editTaskState.projectId,
+                  onProjectSelected = { projectId -> editTaskViewModel.setProjectId(projectId) })
 
               Row(
                   modifier = Modifier.fillMaxWidth(),

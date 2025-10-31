@@ -54,7 +54,7 @@ data class TaskAndUsers(val task: Task, val users: List<User>)
 
 /**
  * Render a task card with individual properties Uses ViewModel computed properties directly for
- * better performance
+ * better performance Portions of this code were generated with the help of IA.
  */
 @Composable
 private fun TaskCard(
@@ -164,6 +164,7 @@ fun TasksScreen(
           LazyRow(
               horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
               modifier = Modifier.padding(bottom = Spacing.sm)) {
+                // Standard filters (Mine, Team, ThisWeek, All)
                 items(TaskScreenFilter.Companion.values) { filter ->
                   FilterChip(
                       onClick = { setFilter(filter) },
@@ -176,6 +177,25 @@ fun TasksScreen(
                               selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
                               containerColor = MaterialTheme.colorScheme.surface,
                               labelColor = MaterialTheme.colorScheme.onSurface))
+                }
+
+                // Project filters
+                items(uiState.availableProjects) { project ->
+                  val projectFilter = TaskScreenFilter.ByProject(project.projectId, project.name)
+                  FilterChip(
+                      onClick = { setFilter(projectFilter) },
+                      label = { Text(project.name) },
+                      selected =
+                          uiState.selectedFilter is TaskScreenFilter.ByProject &&
+                              (uiState.selectedFilter as TaskScreenFilter.ByProject).projectId ==
+                                  project.projectId,
+                      modifier = Modifier.testTag("filter_${project.projectId}"),
+                      colors =
+                          FilterChipDefaults.filterChipColors(
+                              selectedContainerColor = MaterialTheme.colorScheme.secondary,
+                              selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
+                              containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                              labelColor = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
               }
 

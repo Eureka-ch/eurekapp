@@ -38,12 +38,12 @@ class EditTaskViewModel(
     dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : BaseTaskViewModel<EditTaskState>(taskRepository, fileRepository, getCurrentUserId, dispatcher) {
 
+  private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+
   private val _uiState = MutableStateFlow(EditTaskState())
   override val uiState: StateFlow<EditTaskState> = _uiState.asStateFlow()
 
   override fun getState(): EditTaskState = _uiState.value
-
-  private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
   /** Resets the delete state after navigation or handling */
   fun resetDeleteState() {
@@ -52,7 +52,7 @@ class EditTaskViewModel(
 
   /** Edits a Task */
   fun editTask(context: Context) {
-    val state = _uiState.value
+    val state = uiState.value
 
     val timestampResult = parseDateString(state.dueDate)
     if (timestampResult.isFailure) {

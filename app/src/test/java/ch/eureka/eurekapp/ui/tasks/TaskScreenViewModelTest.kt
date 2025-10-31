@@ -398,7 +398,7 @@ class TaskScreenViewModelTest {
     advanceUntilIdle()
 
     // Verify initial state
-    var uiState = viewModel.uiState.value
+    var uiState = viewModel.uiState.first()
     assertEquals(1, uiState.tasksAndUsers.size)
     assertEquals("Initial Task", uiState.tasksAndUsers[0].task.title)
 
@@ -413,7 +413,7 @@ class TaskScreenViewModelTest {
     advanceUntilIdle()
 
     // Verify state updated
-    uiState = viewModel.uiState.value
+    uiState = viewModel.uiState.first()
     assertEquals(2, uiState.tasksAndUsers.size)
     assertEquals("Initial Task", uiState.tasksAndUsers[0].task.title)
     assertEquals("Updated Task", uiState.tasksAndUsers[1].task.title)
@@ -439,7 +439,7 @@ class TaskScreenViewModelTest {
     advanceUntilIdle()
 
     // Verify initial user
-    var uiState = viewModel.uiState.value
+    var uiState = viewModel.uiState.first()
     assertEquals("Alice", uiState.tasksAndUsers[0].users[0].displayName)
 
     // Update user data
@@ -448,7 +448,7 @@ class TaskScreenViewModelTest {
     advanceUntilIdle()
 
     // Verify user data updated
-    uiState = viewModel.uiState.value
+    uiState = viewModel.uiState.first()
     assertEquals("Alice Updated", uiState.tasksAndUsers[0].users[0].displayName)
   }
 
@@ -475,7 +475,7 @@ class TaskScreenViewModelTest {
     advanceUntilIdle()
 
     // Initially no projects, so no team tasks
-    var uiState = viewModel.uiState.value
+    var uiState = viewModel.uiState.first()
     assertEquals(0, uiState.tasksAndUsers.size)
 
     // Add project
@@ -483,7 +483,7 @@ class TaskScreenViewModelTest {
     advanceUntilIdle()
 
     // Verify team task appears
-    uiState = viewModel.uiState.value
+    uiState = viewModel.uiState.first()
     assertEquals(1, uiState.tasksAndUsers.size)
     assertEquals("Team Task", uiState.tasksAndUsers[0].task.title)
   }
@@ -514,7 +514,7 @@ class TaskScreenViewModelTest {
     advanceUntilIdle()
 
     // Start with Mine filter
-    var uiState = viewModel.uiState.value
+    var uiState = viewModel.uiState.first()
     assertEquals(TaskScreenFilter.Mine, uiState.selectedFilter)
     assertEquals(1, uiState.tasksAndUsers.size)
 

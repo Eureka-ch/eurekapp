@@ -1,6 +1,7 @@
 package ch.eureka.eurekapp.model.tasks
 
 import android.net.Uri
+import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 
 /*
@@ -16,6 +17,7 @@ data class EditTaskState(
     override val dueDate: String = "",
     val templateId: String? = null,
     override val projectId: String = "",
+    override val availableProjects: List<Project> = emptyList(),
     val taskId: String = "",
     val assignedUserIds: List<String> = emptyList(),
     override val attachmentUris: List<Uri> = emptyList(),

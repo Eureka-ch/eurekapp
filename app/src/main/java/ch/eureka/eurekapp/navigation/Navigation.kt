@@ -50,7 +50,7 @@ sealed interface Route {
 
     @Serializable data object Tasks : TasksSection
 
-    @Serializable data class CreateTask(val projectId: String) : TasksSection
+    @Serializable data object CreateTask : TasksSection
 
     @Serializable data class TaskDetail(val taskId: String) : TasksSection
 
@@ -152,18 +152,14 @@ fun NavigationMenu() {
               composable<Route.TasksSection.Tasks> {
                 TasksScreen(
                     onCreateTaskClick = {
-                      navigationController.navigate(
-                          Route.TasksSection.CreateTask(projectId = testProjectId))
+                      navigationController.navigate(Route.TasksSection.CreateTask)
                     },
                     onTaskClick = { taskId, projectId ->
                       navigationController.navigate(
-                          Route.TasksSection.TaskEdit(projectId = testProjectId, taskId = taskId))
+                          Route.TasksSection.TaskEdit(projectId = projectId, taskId = taskId))
                     })
               }
-              composable<Route.TasksSection.CreateTask> { backStackEntry ->
-                val createTaskRoute = backStackEntry.toRoute<Route.TasksSection.CreateTask>()
-                CreateTaskScreen(createTaskRoute.projectId, navigationController)
-              }
+              composable<Route.TasksSection.CreateTask> { CreateTaskScreen(navigationController) }
 
               composable<Route.TasksSection.TaskEdit> { backStackEntry ->
                 val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.TaskEdit>()

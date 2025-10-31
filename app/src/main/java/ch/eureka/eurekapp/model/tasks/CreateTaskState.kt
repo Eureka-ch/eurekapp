@@ -1,6 +1,7 @@
 package ch.eureka.eurekapp.model.tasks
 
 import android.net.Uri
+import ch.eureka.eurekapp.model.data.project.Project
 
 /*
 Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
@@ -14,6 +15,7 @@ data class CreateTaskState(
     override val description: String = "",
     override val dueDate: String = "",
     override val projectId: String = "",
+    override val availableProjects: List<Project> = emptyList(),
     override val attachmentUris: List<Uri> = emptyList(),
     override val isSaving: Boolean = false,
     override val taskSaved: Boolean = false,

@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
+import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
@@ -30,6 +31,7 @@ interface TaskStateCommon {
   val description: String
   val dueDate: String
   val projectId: String
+  val availableProjects: List<Project>
   val attachmentUris: List<Uri>
   val isSaving: Boolean
   val taskSaved: Boolean

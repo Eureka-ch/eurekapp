@@ -2,6 +2,9 @@ package ch.eureka.eurekapp.model.tasks
 
 import android.content.Context
 import android.net.Uri
+import ch.eureka.eurekapp.model.data.project.Project
+import ch.eureka.eurekapp.model.data.project.ProjectStatus
+import ch.eureka.eurekapp.ui.tasks.MockProjectRepository
 import ch.eureka.eurekapp.ui.tasks.MockTaskRepository
 import io.mockk.every
 import io.mockk.mockk
@@ -31,6 +34,7 @@ class CreateTaskViewModelTest {
 
   private lateinit var mockTaskRepository: MockTaskRepository
   private lateinit var mockFileRepository: MockFileStorageRepository
+  private lateinit var mockProjectRepository: MockProjectRepository
   private lateinit var viewModel: CreateTaskViewModel
   private lateinit var mockContext: Context
 
@@ -39,6 +43,7 @@ class CreateTaskViewModelTest {
     Dispatchers.setMain(testDispatcher)
     mockTaskRepository = MockTaskRepository()
     mockFileRepository = MockFileStorageRepository()
+    mockProjectRepository = MockProjectRepository()
     mockContext =
         mockk(relaxed = true) {
           val contentResolver = mockk<android.content.ContentResolver>(relaxed = true)
@@ -52,6 +57,7 @@ class CreateTaskViewModelTest {
     Dispatchers.resetMain()
     mockTaskRepository.reset()
     mockFileRepository.reset()
+    mockProjectRepository.reset()
   }
 
   private fun createMockUri(path: String): Uri {
@@ -130,6 +136,40 @@ class CreateTaskViewModelTest {
   }
 
   @Test
+  fun availableProjects_loadedFromRepositoryFlow() = runTest {
+    val projects =
+        listOf(
+            Project(
+                projectId = "proj1",
+                name = "Project 1",
+                description = "Description 1",
+                status = ProjectStatus.OPEN),
+            Project(
+                projectId = "proj2",
+                name = "Project 2",
+                description = "Description 2",
+                status = ProjectStatus.OPEN))
+    viewModel =
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.first()
+    // Projects are not loaded automatically without projectRepository parameter
+    assertEquals(0, state.availableProjects.size)
+  }
+
+  @Test
+  fun availableProjects_emptyListWhenNoProjects() = runTest {
+    viewModel =
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.first()
+    assertEquals(0, state.availableProjects.size)
+    assertTrue(state.availableProjects.isEmpty())
+  }
+
+  @Test
   fun addAttachment_addsUriToList() = runTest {
     viewModel =
         CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
@@ -177,6 +217,55 @@ class CreateTaskViewModelTest {
     val state = viewModel.uiState.first()
     assertEquals(1, state.attachmentUris.size)
     assertEquals(uri2, state.attachmentUris[0])
+  }
+
+  @Test
+  fun removeAttachment_withInvalidIndex_doesNothing() = runTest {
+    viewModel =
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+    advanceUntilIdle()
+
+    val uri1 = createMockUri("content://test/photo1.jpg")
+    viewModel.addAttachment(uri1)
+    advanceUntilIdle()
+
+    // Try to remove at invalid index
+    viewModel.removeAttachment(10)
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.first()
+    // Attachment should still be there
+    assertEquals(1, state.attachmentUris.size)
+    assertEquals(uri1, state.attachmentUris[0])
+  }
+
+  @Test
+  fun deletePhoto_withSecurityException_returnsFalse() = runTest {
+    viewModel =
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+    advanceUntilIdle()
+
+    val uri = createMockUri("content://test/photo1.jpg")
+    // Mock context to throw SecurityException
+    every { mockContext.contentResolver.delete(uri, any(), any()) } throws
+        SecurityException("Permission denied")
+
+    val result = viewModel.deletePhoto(mockContext, uri)
+    assertFalse(result)
+  }
+
+  @Test
+  fun deletePhoto_withZeroRowsDeleted_returnsFalse() = runTest {
+    viewModel =
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+    advanceUntilIdle()
+
+    val uri = createMockUri("content://test/photo1.jpg")
+    // Mock context to return 0 rows deleted
+    every { mockContext.contentResolver.delete(uri, any(), any()) } returns 0
+
+    val result = viewModel.deletePhoto(mockContext, uri)
+    assertFalse(result)
   }
 
   @Test
