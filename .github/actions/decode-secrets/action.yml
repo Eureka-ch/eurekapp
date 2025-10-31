@@ -1,0 +1,55 @@
+name: 'Decode Secrets'
+description: 'Decodes base64-encoded secrets for builds and tests'
+
+inputs:
+  level:
+    description: 'Secret level: build (google-services + local.properties), test (build + firebase rules), full (everything)'
+    required: true
+    default: 'full'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Decode google-services.json
+      if: inputs.level == 'build' || inputs.level == 'test' || inputs.level == 'full'
+      shell: bash
+      run: |
+        if [ -n "$GOOGLE_SERVICES" ]; then
+          echo "$GOOGLE_SERVICES" | base64 --decode > ./app/google-services.json
+        else
+          echo "::warning::GOOGLE_SERVICES secret is not set. google-services.json will not be created. Should be present after B2"
+        fi
+
+    - name: Decode local.properties
+      if: inputs.level == 'build' || inputs.level == 'test' || inputs.level == 'full'
+      shell: bash
+      run: |
+        if [ -n "$LOCAL_PROPERTIES" ]; then
+          echo "$LOCAL_PROPERTIES" | base64 --decode > ./local.properties
+        else
+          echo "::warning::LOCAL_PROPERTIES secret is not set. local.properties will not be created. Should be present after B3"
+        fi
+
+    - name: Decode Firebase rules
+      if: inputs.level == 'test' || inputs.level == 'full'
+      shell: bash
+      run: |
+        if [ -n "$FIRESTORE_RULES" ]; then
+          mkdir -p ./firebase/firestore
+          echo "$FIRESTORE_RULES" | base64 --decode > ./firebase/firestore/firestore.rules
+        fi
+        if [ -n "$STORAGE_RULES" ]; then
+          mkdir -p ./firebase/storage
+          echo "$STORAGE_RULES" | base64 --decode > ./firebase/storage/storage.rules
+        fi
+
+    - name: Decode Google Cloud credentials
+      if: inputs.level == 'full'
+      shell: bash
+      run: |
+        if [ -n "$GOOGLE_CLOUD_CREDENTIALS" ]; then
+          mkdir -p ./functions
+          echo "$GOOGLE_CLOUD_CREDENTIALS" | base64 --decode > ./functions/eureka-stt-service-account.json
+        else
+          echo "::warning::GOOGLE_CLOUD_CREDENTIALS secret is not set. Speech-to-Text transcription tests will fail."
+        fi
