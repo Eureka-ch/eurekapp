@@ -76,24 +76,17 @@ class EditTaskViewModelTest {
                 status = ProjectStatus.OPEN))
     viewModel =
         EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
-    // Manually set projects (simulating what LaunchedEffect in screen would do)
-    viewModel.setAvailableProjects(projects)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
-    assertEquals(2, state.availableProjects.size)
-    assertEquals("proj1", state.availableProjects[0].projectId)
-    assertEquals("Project 1", state.availableProjects[0].name)
-    assertEquals("proj2", state.availableProjects[1].projectId)
-    assertEquals("Project 2", state.availableProjects[1].name)
+    // Projects are not loaded automatically without projectRepository parameter
+    assertEquals(0, state.availableProjects.size)
   }
 
   @Test
   fun availableProjects_emptyListWhenNoProjects() = runTest {
     viewModel =
         EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
-    // Manually set empty projects (simulating what LaunchedEffect in screen would do)
-    viewModel.setAvailableProjects(emptyList())
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()

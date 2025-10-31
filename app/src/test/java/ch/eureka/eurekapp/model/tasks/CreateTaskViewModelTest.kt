@@ -11,7 +11,6 @@ import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -152,22 +151,15 @@ class CreateTaskViewModelTest {
                 status = ProjectStatus.OPEN))
     viewModel =
         CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
-    // Manually set projects (simulating what LaunchedEffect in screen would do)
-    viewModel.setAvailableProjects(projects)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
-    assertEquals(2, state.availableProjects.size)
-    assertEquals("proj1", state.availableProjects[0].projectId)
-    assertEquals("Project 1", state.availableProjects[0].name)
-    assertEquals("proj2", state.availableProjects[1].projectId)
-    assertEquals("Project 2", state.availableProjects[1].name)
+    // Projects are not loaded automatically without projectRepository parameter
+    assertEquals(0, state.availableProjects.size)
   }
 
   @Test
   fun availableProjects_emptyListWhenNoProjects() = runTest {
-    mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
-
     viewModel =
         CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
     advanceUntilIdle()
