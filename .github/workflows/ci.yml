@@ -68,7 +68,7 @@ jobs:
   lint-check:
     name: Lint Check
     runs-on: ubuntu-latest
-    needs: changes
+    needs: [changes, build]
     if: needs.changes.outputs.android == 'true'
 
     steps:
@@ -200,7 +200,7 @@ jobs:
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
-    needs: changes
+    needs: [changes, build]
     if: needs.changes.outputs.android == 'true'
 
     steps:
@@ -378,6 +378,14 @@ jobs:
           key: ${{ runner.os }}-firebase-cli-v1
           restore-keys: |
             ${{ runner.os }}-firebase-cli-
+
+      - name: Cache Firebase Emulators
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/firebase/emulators
+          key: ${{ runner.os }}-firebase-emulators-v1
+          restore-keys: |
+            ${{ runner.os }}-firebase-emulators-
 
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
