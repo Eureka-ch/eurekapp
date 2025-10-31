@@ -9,7 +9,6 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
-import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
