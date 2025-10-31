@@ -34,6 +34,9 @@ object FirestorePaths {
   /** Top-level invitations collection */
   const val INVITATIONS = "invitations"
 
+  /** Transcriptions subcollection name */
+  const val TRANSCRIPTIONS = "transcriptions"
+
   fun userPath(userId: String) = "$USERS/$userId"
 
   fun projectPath(projectId: String) = "$PROJECTS/$projectId"
@@ -75,4 +78,10 @@ object FirestorePaths {
   fun invitationsPath() = INVITATIONS
 
   fun invitationPath(invitationId: String) = "$INVITATIONS/$invitationId"
+
+  fun transcriptionsPath(projectId: String, meetingId: String) =
+      "${meetingPath(projectId, meetingId)}/$TRANSCRIPTIONS"
+
+  fun transcriptionPath(projectId: String, meetingId: String, transcriptionId: String) =
+      "${transcriptionsPath(projectId, meetingId)}/$transcriptionId"
 }

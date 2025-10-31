@@ -88,6 +88,7 @@ object MeetingScreenTestTags {
  *
  * @param meetingViewModel The view model associated to the meetings screen.
  * @param projectId The ID of the project to display the meetings from.
+ * @param onMeetingClick Callback when a meeting card is clicked, receives projectId and meetingId.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,6 +96,7 @@ fun MeetingScreen(
     projectId: String,
     onCreateMeeting: () -> Unit,
     meetingViewModel: MeetingViewModel = viewModel(),
+    onMeetingClick: (String, String) -> Unit = { _, _ -> },
 ) {
 
   val context = LocalContext.current
@@ -150,12 +152,16 @@ fun MeetingScreen(
                     MeetingsList(
                         modifier = Modifier.padding(padding),
                         meetings = uiState.upcomingMeetings,
-                        tabName = MeetingTab.UPCOMING.name.lowercase())
+                        tabName = MeetingTab.UPCOMING.name.lowercase(),
+                        projectId = projectId,
+                        onMeetingClick = onMeetingClick)
                 MeetingTab.PAST ->
                     MeetingsList(
                         modifier = Modifier.padding(padding),
                         meetings = uiState.pastMeetings,
-                        tabName = MeetingTab.PAST.name.lowercase())
+                        tabName = MeetingTab.PAST.name.lowercase(),
+                        projectId = projectId,
+                        onMeetingClick = onMeetingClick)
               }
             }
       })
@@ -167,12 +173,16 @@ fun MeetingScreen(
  * @param modifier Modifier used in the component.
  * @param meetings Meetings list to display.
  * @param tabName Name of the tab in which to display these meetings.
+ * @param projectId The ID of the project containing the meetings.
+ * @param onMeetingClick Callback when a meeting card is clicked.
  */
 @Composable
 fun MeetingsList(
     modifier: Modifier,
     meetings: List<Meeting>,
     tabName: String,
+    projectId: String = "",
+    onMeetingClick: (String, String) -> Unit = { _, _ -> },
 ) {
   if (meetings.isNotEmpty()) {
     LazyColumn(
@@ -181,7 +191,7 @@ fun MeetingsList(
           items(meetings.size) { index ->
             MeetingCard(
                 meeting = meetings[index],
-            )
+                onClick = { onMeetingClick(projectId, meetings[index].meetingID) })
           }
         }
   } else {
@@ -199,6 +209,7 @@ fun MeetingsList(
  * Component that displays the information of a meeting.
  *
  * @param meeting The meeting to display.
+ * @param onClick Function to execute when the card is clicked (for navigation to detail screen).
  * @param onJoinMeeting Function to execute when user clicks on button to join meeting.
  * @param onVoteForDateTime Function to execute when user clicks on button to vote for datetime.
  * @param onVoteForFormat Function to execute when user clicks on button to vote for meeting format
@@ -208,6 +219,7 @@ fun MeetingsList(
 @Composable
 fun MeetingCard(
     meeting: Meeting,
+    onClick: () -> Unit = {},
     onJoinMeeting: () -> Unit = {},
     onVoteForDateTime: () -> Unit = {},
     onVoteForFormat: () -> Unit = {},
@@ -221,6 +233,7 @@ fun MeetingCard(
           Modifier.fillMaxWidth()
               .padding(5.dp)
               .wrapContentHeight()
+              .clickable(onClick = onClick)
               .testTag(MeetingScreenTestTags.MEETING_CARD),
       shape = RoundedCornerShape(16.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {

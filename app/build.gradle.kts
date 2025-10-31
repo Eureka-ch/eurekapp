@@ -178,6 +178,7 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.ui.auth)
+    implementation("com.google.firebase:firebase-functions")
     implementation(libs.kotlinx.coroutines.play.services)
 
     // Jetpack Compose BOM (manages versions)
@@ -240,6 +241,7 @@ dependencies {
     // Testing - Compose
     globalTestImplementation(libs.compose.test.junit)
     debugImplementation(libs.compose.test.manifest)
+
 }
 
 tasks.withType<Test> {

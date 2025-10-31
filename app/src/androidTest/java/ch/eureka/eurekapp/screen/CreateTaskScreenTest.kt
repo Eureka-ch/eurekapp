@@ -661,7 +661,7 @@ class CreateTaskScreenTests : TestCase() {
     // Wait for navigation back to tasks screen
     composeTestRule.waitUntil(timeoutMillis = 5_000) {
       composeTestRule
-          .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
+          .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT, useUnmergedTree = true)
           .fetchSemanticsNodes()
           .isNotEmpty()
     }
