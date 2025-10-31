@@ -392,10 +392,45 @@ jobs:
             app/build/jacoco/**/*.exec
           compression-level: 9
 
+  setup-avd:
+    name: Setup AVD
+    runs-on: ubuntu-latest
+    needs: [changes]
+    if: needs.changes.outputs.android == 'true' || needs.changes.outputs.functions == 'true'
+
+    steps:
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-36-google_apis-x86_64-pixel_7_pro
+
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7_pro
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated -memory 4096 -cores 4
+          disable-animations: true
+          script: echo "AVD snapshot generated"
+
   instrumented-tests:
     name: Instrumented Tests (Shard ${{ matrix.shard }})
     runs-on: ubuntu-latest
-    needs: [changes, build-app, build-tests]
+    needs: [changes, build-app, build-tests, setup-avd]
     if: needs.changes.outputs.android == 'true' || needs.changes.outputs.functions == 'true'
 
     # To modify shard count:
@@ -566,15 +601,18 @@ jobs:
 
       - name: run tests
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          ORG_GRADLE_PROJECT_numShards: ${{ env.TOTAL_SHARDS }}
+          ORG_GRADLE_PROJECT_shardIndex: ${{ matrix.shard }}
         with:
           api-level: 36
           target: google_apis
           arch: x86_64
           profile: pixel_7_pro
           force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated -memory 4096 -cores 4
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated -memory 4096 -cores 4
           disable-animations: true
-          script: ./gradlew connectedCheck -x lint --parallel --build-cache --no-configuration-cache -Pandroid.testInstrumentationRunnerArguments.numShards=$TOTAL_SHARDS -Pandroid.testInstrumentationRunnerArguments.shardIndex=${{ matrix.shard }}
+          script: ./gradlew connectedCheck -x lint --parallel --build-cache
 
       - name: Upload instrumented test results and coverage
         if: always()
