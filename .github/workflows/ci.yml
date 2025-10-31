@@ -298,7 +298,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-firebase-cli-${{ github.sha }}
+          key: ${{ runner.os }}-firebase-cli-v1
           restore-keys: |
             ${{ runner.os }}-firebase-cli-
 
