@@ -408,7 +408,7 @@ jobs:
           script: |
             export ORG_GRADLE_PROJECT_numShards=4
             export ORG_GRADLE_PROJECT_shardIndex=${{ matrix.shard }}
-            ./gradlew connectedDebugAndroidTest -x lint --parallel --build-cache
+            ./gradlew connectedDebugAndroidTest -x assembleDebug -x assembleDebugAndroidTest -x compileDebugKotlin -x compileDebugJavaWithJavac -x compileDebugAndroidTestKotlin -x compileDebugAndroidTestJavaWithJavac -x lint --parallel --build-cache
 
       - name: Upload instrumented test results and coverage
         if: always()
