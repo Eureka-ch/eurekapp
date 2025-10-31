@@ -11,7 +11,6 @@ import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -75,14 +74,10 @@ class EditTaskViewModelTest {
                 name = "Project 2",
                 description = "Description 2",
                 status = ProjectStatus.OPEN))
-    mockProjectRepository.setCurrentUserProjects(flowOf(projects))
-
     viewModel =
-        EditTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+    // Manually set projects (simulating what LaunchedEffect in screen would do)
+    viewModel.setAvailableProjects(projects)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -95,14 +90,10 @@ class EditTaskViewModelTest {
 
   @Test
   fun availableProjects_emptyListWhenNoProjects() = runTest {
-    mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
-
     viewModel =
-        EditTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+    // Manually set empty projects (simulating what LaunchedEffect in screen would do)
+    viewModel.setAvailableProjects(emptyList())
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -113,11 +104,7 @@ class EditTaskViewModelTest {
   @Test
   fun viewModel_initialState_hasCorrectDefaults() = runTest {
     viewModel =
-        EditTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()

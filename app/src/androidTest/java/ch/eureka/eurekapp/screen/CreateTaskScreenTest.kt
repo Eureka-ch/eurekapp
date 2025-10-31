@@ -126,11 +126,7 @@ class CreateTaskScreenTests : TestCase() {
           ): Result<Unit> = Result.success(Unit)
         }
 
-    val injectedVm =
-        CreateTaskViewModel(
-            taskRepository,
-            fileRepository = FakeFileRepository(),
-            projectRepository = fakeProjectRepository)
+    val injectedVm = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
     lastCreateVm = injectedVm
 
     composeTestRule.setContent {
@@ -187,9 +183,7 @@ class CreateTaskScreenTests : TestCase() {
           ): Result<Unit> = Result.success(Unit)
         }
 
-    val injectedVm =
-        CreateTaskViewModel(
-            taskRepository, fileRepository = FakeFileRepository(), projectRepository = emptyRepo)
+    val injectedVm = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
     lastCreateVm = injectedVm
 
     composeTestRule.setContent {
@@ -368,11 +362,7 @@ class CreateTaskScreenTests : TestCase() {
           ): Result<Unit> = Result.success(Unit)
         }
 
-    val viewModel =
-        CreateTaskViewModel(
-            taskRepository,
-            fileRepository = FakeFileRepository(),
-            projectRepository = fakeProjectRepository)
+    val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
     lastCreateVm = viewModel
 
     // Inject the view model into the screen
@@ -525,11 +515,7 @@ class CreateTaskScreenTests : TestCase() {
           ): Result<Unit> = Result.success(Unit)
         }
 
-    val viewModel =
-        CreateTaskViewModel(
-            taskRepository,
-            fileRepository = FakeFileRepository(),
-            projectRepository = fakeProjectRepository)
+    val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
     lastCreateVm = viewModel
 
     runBlocking { setupTestProject(projectId, ProjectRole.OWNER) }
@@ -644,7 +630,7 @@ class CreateTaskScreenTests : TestCase() {
           ): Result<Unit> = Result.success(Unit)
         }
 
-    val viewModel = CreateTaskViewModel(taskRepository, projectRepository = fakeProjectRepository)
+    val viewModel = CreateTaskViewModel(taskRepository)
     lastCreateVm = viewModel
 
     // Inject the view model into the screen

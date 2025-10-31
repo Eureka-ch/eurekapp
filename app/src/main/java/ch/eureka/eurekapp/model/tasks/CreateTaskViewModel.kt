@@ -11,7 +11,6 @@ import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.IdGenerator
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.Project
-import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -19,10 +18,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /*
@@ -35,28 +32,17 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 class CreateTaskViewModel(
     taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
     fileRepository: FileStorageRepository = FirestoreRepositoriesProvider.fileRepository,
-    projectRepository: ProjectRepository = FirestoreRepositoriesProvider.projectRepository,
     getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) :
     BaseTaskViewModel<CreateTaskState>(
         taskRepository, fileRepository, getCurrentUserId, dispatcher) {
 
-  // Flow for available projects - using flow pattern like TaskScreenViewModel
-  private val availableProjectsFlow =
-      projectRepository
-          .getProjectsForCurrentUser()
-          .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList<Project>())
-
-  private val _baseUiState = MutableStateFlow(CreateTaskState())
-  override val uiState: StateFlow<CreateTaskState> =
-      combine(_baseUiState, availableProjectsFlow) { state, projects ->
-            state.copy(availableProjects = projects)
-          }
-          .stateIn(viewModelScope, SharingStarted.Eagerly, CreateTaskState())
+  private val _uiState = MutableStateFlow(CreateTaskState())
+  override val uiState: StateFlow<CreateTaskState> = _uiState.asStateFlow()
 
   /** Returns the current state. */
-  override fun getState(): CreateTaskState = _baseUiState.value
+  override fun getState(): CreateTaskState = _uiState.value
 
   /** Adds a Task */
   fun addTask(context: Context) {
@@ -135,7 +121,7 @@ class CreateTaskViewModel(
 
   // State update implementations
   override fun updateState(update: CreateTaskState.() -> CreateTaskState) {
-    _baseUiState.value = _baseUiState.value.update()
+    _uiState.value = _uiState.value.update()
   }
 
   override fun CreateTaskState.copyWithErrorMsg(errorMsg: String?) = copy(errorMsg = errorMsg)

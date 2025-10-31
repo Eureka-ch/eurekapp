@@ -86,6 +86,13 @@ fun EditTaskScreen(
   var isNavigatingToCamera by remember { mutableStateOf(false) }
   var showDeleteDialog by remember { mutableStateOf(false) }
 
+  // Fetch available projects
+  LaunchedEffect(Unit) {
+    ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider.projectRepository
+        .getProjectsForCurrentUser()
+        .collect { projects -> editTaskViewModel.setAvailableProjects(projects) }
+  }
+
   LaunchedEffect(taskId) {
     if (!editTaskState.isDeleting && !editTaskState.taskDeleted) {
       editTaskViewModel.loadTask(projectId, taskId)

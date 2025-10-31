@@ -76,6 +76,13 @@ fun CreateTaskScreen(
   val scrollState = rememberScrollState()
   var isNavigatingToCamera by remember { mutableStateOf(false) }
 
+  // Fetch available projects
+  LaunchedEffect(Unit) {
+    ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider.projectRepository
+        .getProjectsForCurrentUser()
+        .collect { projects -> createTaskViewModel.setAvailableProjects(projects) }
+  }
+
   LaunchedEffect(errorMsg) {
     if (errorMsg != null) {
       Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()

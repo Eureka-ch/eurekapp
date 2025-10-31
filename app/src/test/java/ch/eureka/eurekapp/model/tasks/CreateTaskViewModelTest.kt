@@ -71,11 +71,7 @@ class CreateTaskViewModelTest {
   @Test
   fun viewModel_initialState_hasCorrectDefaults() = runTest {
     viewModel =
-        CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -91,11 +87,7 @@ class CreateTaskViewModelTest {
   @Test
   fun setTitle_updatesStateCorrectly() = runTest {
     viewModel =
-        CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
     advanceUntilIdle()
 
     viewModel.setTitle("New Task Title")
@@ -108,11 +100,7 @@ class CreateTaskViewModelTest {
   @Test
   fun setDescription_updatesStateCorrectly() = runTest {
     viewModel =
-        CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
     advanceUntilIdle()
 
     viewModel.setDescription("Task description")
@@ -125,11 +113,7 @@ class CreateTaskViewModelTest {
   @Test
   fun setDueDate_updatesStateCorrectly() = runTest {
     viewModel =
-        CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
     advanceUntilIdle()
 
     viewModel.setDueDate("01/01/2025")
@@ -142,11 +126,7 @@ class CreateTaskViewModelTest {
   @Test
   fun setProjectId_updatesStateCorrectly() = runTest {
     viewModel =
-        CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
     advanceUntilIdle()
 
     viewModel.setProjectId("project123")
@@ -170,14 +150,10 @@ class CreateTaskViewModelTest {
                 name = "Project 2",
                 description = "Description 2",
                 status = ProjectStatus.OPEN))
-    mockProjectRepository.setCurrentUserProjects(flowOf(projects))
-
     viewModel =
-        CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+    // Manually set projects (simulating what LaunchedEffect in screen would do)
+    viewModel.setAvailableProjects(projects)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -193,11 +169,7 @@ class CreateTaskViewModelTest {
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
 
     viewModel =
-        CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -208,11 +180,7 @@ class CreateTaskViewModelTest {
   @Test
   fun addAttachment_addsUriToList() = runTest {
     viewModel =
-        CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
     advanceUntilIdle()
 
     val uri = createMockUri("content://test/photo1.jpg")
@@ -227,11 +195,7 @@ class CreateTaskViewModelTest {
   @Test
   fun addAttachment_doesNotAddDuplicate() = runTest {
     viewModel =
-        CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
     advanceUntilIdle()
 
     val uri = createMockUri("content://test/photo1.jpg")
@@ -246,11 +210,7 @@ class CreateTaskViewModelTest {
   @Test
   fun removeAttachment_removesUriAtIndex() = runTest {
     viewModel =
-        CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
     advanceUntilIdle()
 
     val uri1 = createMockUri("content://test/photo1.jpg")
@@ -270,11 +230,7 @@ class CreateTaskViewModelTest {
   @Test
   fun inputValid_returnsFalseWhenTitleIsBlank() = runTest {
     viewModel =
-        CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
     advanceUntilIdle()
 
     viewModel.setDescription("Description")
@@ -288,11 +244,7 @@ class CreateTaskViewModelTest {
   @Test
   fun inputValid_returnsFalseWhenDescriptionIsBlank() = runTest {
     viewModel =
-        CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
     advanceUntilIdle()
 
     viewModel.setTitle("Title")
@@ -306,11 +258,7 @@ class CreateTaskViewModelTest {
   @Test
   fun inputValid_returnsFalseWhenDateIsInvalid() = runTest {
     viewModel =
-        CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
     advanceUntilIdle()
 
     viewModel.setTitle("Title")
@@ -325,11 +273,7 @@ class CreateTaskViewModelTest {
   @Test
   fun inputValid_returnsTrueWhenAllFieldsAreValid() = runTest {
     viewModel =
-        CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
     advanceUntilIdle()
 
     viewModel.setTitle("Title")
@@ -345,11 +289,7 @@ class CreateTaskViewModelTest {
   fun addTask_setsIsSavingTrueDuringSave() = runTest {
     viewModel =
         CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            { "test-user-123" },
-            testDispatcher)
+            mockTaskRepository, mockFileRepository, { "test-user-123" }, testDispatcher)
     viewModel.setProjectId("project123")
     viewModel.setTitle("Test Task")
     viewModel.setDescription("Test Description")
@@ -369,11 +309,7 @@ class CreateTaskViewModelTest {
   fun addTask_withPhotos_uploadsPhotosAndCreatesTask() = runTest {
     viewModel =
         CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            { "test-user-123" },
-            testDispatcher)
+            mockTaskRepository, mockFileRepository, { "test-user-123" }, testDispatcher)
     viewModel.setProjectId("project123")
     viewModel.setTitle("Test Task")
     viewModel.setDescription("Test Description")
@@ -399,11 +335,7 @@ class CreateTaskViewModelTest {
   fun addTask_withFileUploadError_setsIsSavingToFalse() = runTest {
     viewModel =
         CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            { "test-user-123" },
-            testDispatcher)
+            mockTaskRepository, mockFileRepository, { "test-user-123" }, testDispatcher)
     viewModel.setProjectId("project123")
     viewModel.setTitle("Test Task")
     viewModel.setDescription("Test Description")
@@ -428,11 +360,7 @@ class CreateTaskViewModelTest {
   fun addTask_withTaskCreationError_setsIsSavingToFalse() = runTest {
     viewModel =
         CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            { "test-user-123" },
-            testDispatcher)
+            mockTaskRepository, mockFileRepository, { "test-user-123" }, testDispatcher)
     viewModel.setProjectId("project123")
     viewModel.setTitle("Test Task")
     viewModel.setDescription("Test Description")
@@ -453,11 +381,7 @@ class CreateTaskViewModelTest {
   @Test
   fun addTask_withInvalidDate_setsErrorMessage() = runTest {
     viewModel =
-        CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
     viewModel.setProjectId("project123")
     viewModel.setTitle("Test Task")
     viewModel.setDescription("Test Description")
@@ -476,11 +400,7 @@ class CreateTaskViewModelTest {
   fun resetSaveState_resetsIsSavingAndTaskSaved() = runTest {
     viewModel =
         CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            { "test-user-123" },
-            testDispatcher)
+            mockTaskRepository, mockFileRepository, { "test-user-123" }, testDispatcher)
     viewModel.setProjectId("project123")
     viewModel.setTitle("Test Task")
     viewModel.setDescription("Test Description")
@@ -506,11 +426,7 @@ class CreateTaskViewModelTest {
   @Test
   fun clearErrorMsg_clearsErrorMessage() = runTest {
     viewModel =
-        CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
     viewModel.setDueDate("invalid-date")
     viewModel.addTask(mockContext)
     advanceUntilIdle()
@@ -531,11 +447,7 @@ class CreateTaskViewModelTest {
   @Test
   fun dateRegex_matchesValidDates() {
     viewModel =
-        CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
 
     assertTrue(viewModel.dateRegex.matches("01/01/2025"))
     assertTrue(viewModel.dateRegex.matches("31/12/2024"))
@@ -545,11 +457,7 @@ class CreateTaskViewModelTest {
   @Test
   fun dateRegex_rejectsInvalidDates() {
     viewModel =
-        CreateTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            dispatcher = testDispatcher)
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
 
     assertFalse(viewModel.dateRegex.matches("1/1/2025"))
     assertFalse(viewModel.dateRegex.matches("2025-01-01"))

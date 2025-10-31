@@ -320,14 +320,7 @@ open class EditTaskScreenTest : TestCase() {
         setupTestProject(projectId)
         setupTestTask(projectId, taskId)
 
-        val mockProjectRepository = FakeProjectRepository()
-        mockProjectRepository.setCurrentUserProjects(
-            flowOf(listOf(Project(projectId = projectId, name = "Test Project"))))
-        val viewModel =
-            EditTaskViewModel(
-                taskRepository,
-                fileRepository = FakeFileRepository(),
-                projectRepository = mockProjectRepository)
+        val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
         lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
@@ -381,11 +374,7 @@ open class EditTaskScreenTest : TestCase() {
         val mockProjectRepository = FakeProjectRepository()
         mockProjectRepository.setCurrentUserProjects(
             flowOf(listOf(Project(projectId = projectId, name = "Test Project"))))
-        val viewModel =
-            EditTaskViewModel(
-                taskRepository,
-                fileRepository = fileRepository,
-                projectRepository = mockProjectRepository)
+        val viewModel = EditTaskViewModel(taskRepository, fileRepository = fileRepository)
         lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
@@ -551,9 +540,7 @@ open class EditTaskScreenTest : TestCase() {
                   flowOf(listOf(Project(projectId = projectId, name = "Test Project"))))
               val editTaskViewModel: EditTaskViewModel =
                   viewModel(
-                      factory =
-                          EditTaskViewModelFactory(
-                              taskRepository, FakeFileRepository(), fakeProjectRepository))
+                      factory = EditTaskViewModelFactory(taskRepository, FakeFileRepository()))
 
               EditTaskScreen(
                   projectId = editTaskRoute.projectId,
@@ -741,14 +728,13 @@ open class EditTaskScreenTest : TestCase() {
 
   class EditTaskViewModelFactory(
       private val taskRepository: TaskRepository,
-      private val fileRepository: FileStorageRepository,
-      private val projectRepository: ProjectRepository
+      private val fileRepository: FileStorageRepository
   ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
       if (modelClass.isAssignableFrom(EditTaskViewModel::class.java)) {
-        return EditTaskViewModel(taskRepository, fileRepository, projectRepository) as T
+        return EditTaskViewModel(taskRepository, fileRepository) as T
       }
       throw IllegalArgumentException("Unknown ViewModel class: $modelClass")
     }
