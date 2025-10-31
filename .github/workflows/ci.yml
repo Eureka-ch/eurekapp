@@ -362,6 +362,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-firebase-emulators-
 
+      - name: Cache Cloud Functions dependencies
+        uses: actions/cache@v4
+        with:
+          path: functions/node_modules
+          key: ${{ runner.os }}-functions-${{ hashFiles('functions/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-functions-
+
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
@@ -388,7 +396,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         env:
           ORG_GRADLE_PROJECT_numShards: "4"
-          ORG_GRADLE_PROJECT_shardIndex: ${{ matrix.shard }}
+          ORG_GRADLE_PROJECT_shardIndex: "${{ matrix.shard }}"
         with:
           api-level: 36
           target: google_apis
@@ -397,7 +405,10 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated -memory 4096 -cores 4
           disable-animations: true
-          script: ./gradlew connectedCheck -x lint -x assembleDebug -x assembleDebugAndroidTest --parallel --build-cache
+          script: |
+            export ORG_GRADLE_PROJECT_numShards=4
+            export ORG_GRADLE_PROJECT_shardIndex=${{ matrix.shard }}
+            ./gradlew connectedDebugAndroidTest -x lint --parallel --build-cache
 
       - name: Upload instrumented test results and coverage
         if: always()
