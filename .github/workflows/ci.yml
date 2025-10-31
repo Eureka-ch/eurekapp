@@ -13,9 +13,35 @@ on:
       - reopened
 
 jobs:
-  code-quality:
-    name: Code Quality
+  changes:
+    name: Detect Changes
     runs-on: ubuntu-latest
+    outputs:
+      android: ${{ steps.filter.outputs.android }}
+      functions: ${{ steps.filter.outputs.functions }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            android:
+              - 'app/**'
+              - 'gradle/**'
+              - '**.gradle'
+              - '**.gradle.kts'
+              - '**.kt'
+              - '**.xml'
+              - '.github/workflows/ci.yml'
+            functions:
+              - 'functions/**'
+              - 'firebase.json'
+
+  ktfmt-check:
+    name: KTFmt Check
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
 
     steps:
       - name: Checkout
@@ -39,9 +65,73 @@ jobs:
       - name: KTFmt Check
         run: ./gradlew ktfmtCheck
 
+  lint-check:
+    name: Lint Check
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Decode secrets
+        env:
+          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
+          FIRESTORE_RULES: ${{ secrets.FIRESTORE_RULES }}
+          STORAGE_RULES: ${{ secrets.STORAGE_RULES }}
+          GOOGLE_CLOUD_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
+
+        run: |
+          if [ -n "$GOOGLE_SERVICES" ]; then
+            echo "$GOOGLE_SERVICES" | base64 --decode > ./app/google-services.json
+          else
+            echo "::warning::GOOGLE_SERVICES secret is not set. google-services.json will not be created. Should be present after B2"
+          fi
+          if [ -n "$FIRESTORE_RULES" ]; then
+            mkdir -p ./firebase/firestore
+            echo "$FIRESTORE_RULES" | base64 --decode > ./firebase/firestore/firestore.rules
+          fi
+          if [ -n "$STORAGE_RULES" ]; then
+            mkdir -p ./firebase/storage
+            echo "$STORAGE_RULES" | base64 --decode > ./firebase/storage/storage.rules
+          fi
+          if [ -n "$GOOGLE_CLOUD_CREDENTIALS" ]; then
+            mkdir -p ./functions
+            echo "$GOOGLE_CLOUD_CREDENTIALS" | base64 --decode > ./functions/eureka-stt-service-account.json
+          else
+            echo "::warning::GOOGLE_CLOUD_CREDENTIALS secret is not set. Speech-to-Text transcription tests will fail."
+          fi
+
+          if [ -n "$LOCAL_PROPERTIES" ]; then
+            echo "$LOCAL_PROPERTIES" | base64 --decode > ./local.properties
+          else
+            echo "::warning::LOCAL_PROPERTIES secret is not set. local.properties will not be created. Should be present after B3"
+          fi
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Lint Check
+        run: ./gradlew lint --parallel --build-cache
+
   build-and-unit-tests:
     name: Build & Unit Tests
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
 
     steps:
       - name: Checkout
@@ -97,23 +187,26 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Assemble
-        run: ./gradlew assemble lint --parallel --build-cache
+        run: ./gradlew assemble --parallel --build-cache
 
       - name: Run unit tests
-        run: ./gradlew check --parallel --build-cache
+        run: ./gradlew check -x lint --parallel --build-cache
 
-      - name: Upload test results
+      - name: Upload test results and coverage
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: unit-test-results
           path: |
-            app/build/test-results/
-            app/build/reports/
+            app/build/test-results/**/*.xml
+            app/build/jacoco/**/*.exec
+          compression-level: 9
 
   instrumented-tests:
     name: Instrumented Tests
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.android == 'true' || needs.changes.outputs.functions == 'true'
 
     steps:
       - name: Checkout
@@ -248,22 +341,23 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated -memory 4096 -cores 4
           disable-animations: true
-          script: ./gradlew connectedCheck --parallel --build-cache --stacktrace --info
+          script: ./gradlew connectedCheck -x lint --parallel --build-cache --stacktrace --info
 
-      - name: Upload instrumented test results
+      - name: Upload instrumented test results and coverage
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: instrumented-test-results
           path: |
-            app/build/outputs/androidTest-results/
-            app/build/reports/androidTests/
+            app/build/outputs/androidTest-results/**/*.xml
+            app/build/outputs/code_coverage/**/*
+          compression-level: 9
 
   reports:
     name: Coverage & SonarCloud
     runs-on: ubuntu-latest
-    needs: [build-and-unit-tests, instrumented-tests]
-    if: always()
+    needs: [ktfmt-check, lint-check, build-and-unit-tests, instrumented-tests]
+    if: success()
 
     steps:
       - name: Checkout
