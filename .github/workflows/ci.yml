@@ -293,12 +293,6 @@ jobs:
           name: test-apk
           path: app/build/outputs/apk/androidTest/debug
 
-      - name: Download Cloud Functions
-        uses: actions/download-artifact@v4
-        with:
-          name: functions-build
-          path: functions/
-
       - name: Enable KVM group perms
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -372,6 +366,12 @@ jobs:
 
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
+
+      - name: Build Cloud Functions
+        run: |
+          cd functions
+          npm install
+          npm run build
 
       - name: Start Firebase emulators
         run: |
