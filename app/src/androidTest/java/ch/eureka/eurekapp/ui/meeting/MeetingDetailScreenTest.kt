@@ -70,10 +70,12 @@ class MeetingDetailScreenTest {
           projectId = "test_project",
           meetingId = "test_meeting",
           viewModel = viewModel,
-          onNavigateBack = onNavigateBack,
-          onJoinMeeting = onJoinMeeting,
-          onRecordMeeting = onRecordMeeting,
-          onViewTranscript = onViewTranscript)
+          actionsConfig =
+              MeetingDetailActionsConfig(
+                  onNavigateBack = onNavigateBack,
+                  onJoinMeeting = onJoinMeeting,
+                  onRecordMeeting = onRecordMeeting,
+                  onViewTranscript = onViewTranscript))
     }
   }
 

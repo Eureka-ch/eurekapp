@@ -101,6 +101,24 @@ object MeetingDetailScreenTestTags {
 }
 
 /**
+ * Data class representing all the actions than can be executed by buttons on the meeting detail
+ * screen.
+ *
+ * @param onNavigateBack Callback to navigate back to the previous screen.
+ * @param onJoinMeeting Callback when user clicks join meeting button.
+ * @param onRecordMeeting Callback when user clicks record button.
+ * @param onViewTranscript Callback when user clicks view transcript button.
+ */
+data class MeetingDetailActionsConfig(
+    val onNavigateBack: () -> Unit = {},
+    val onJoinMeeting: (String) -> Unit = {},
+    val onRecordMeeting: () -> Unit = {},
+    val onViewTranscript: () -> Unit = {},
+    val onVoteForTime: () -> Unit = {},
+    val onVoteForFormat: () -> Unit = {},
+)
+
+/**
  * Main composable for the meeting detail screen.
  *
  * Displays comprehensive information about a meeting including title, date/time, format,
@@ -110,10 +128,7 @@ object MeetingDetailScreenTestTags {
  * @param projectId The ID of the project containing the meeting.
  * @param meetingId The ID of the meeting to display.
  * @param viewModel The ViewModel managing the meeting detail state.
- * @param onNavigateBack Callback to navigate back to the previous screen.
- * @param onJoinMeeting Callback when user clicks join meeting button.
- * @param onRecordMeeting Callback when user clicks record button.
- * @param onViewTranscript Callback when user clicks view transcript button.
+ * @param actionsConfig The actions that can be executed with buttons on the detail meeting screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -121,12 +136,7 @@ fun MeetingDetailScreen(
     projectId: String,
     meetingId: String,
     viewModel: MeetingDetailViewModel = viewModel { MeetingDetailViewModel(projectId, meetingId) },
-    onNavigateBack: () -> Unit = {},
-    onJoinMeeting: (String) -> Unit = {},
-    onRecordMeeting: () -> Unit = {},
-    onViewTranscript: () -> Unit = {},
-    onVoteForTime: () -> Unit = {},
-    onVoteForFormat: () -> Unit = {},
+    actionsConfig: MeetingDetailActionsConfig = MeetingDetailActionsConfig()
 ) {
   val context = LocalContext.current
   val uiState by viewModel.uiState.collectAsState()
@@ -142,7 +152,7 @@ fun MeetingDetailScreen(
   LaunchedEffect(uiState.deleteSuccess) {
     if (uiState.deleteSuccess) {
       Toast.makeText(context, "Meeting deleted successfully", Toast.LENGTH_SHORT).show()
-      onNavigateBack()
+      actionsConfig.onNavigateBack()
     }
   }
 
@@ -156,7 +166,7 @@ fun MeetingDetailScreen(
                   modifier = Modifier.testTag(MeetingDetailScreenTestTags.MEETING_TITLE))
             },
             navigationIcon = {
-              IconButton(onClick = onNavigateBack) {
+              IconButton(onClick = actionsConfig.onNavigateBack) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Navigate back")
               }
             })
@@ -164,18 +174,25 @@ fun MeetingDetailScreen(
       content = { padding ->
         if (uiState.isLoading) {
           LoadingScreen()
+        } else if (uiState.meeting == null) {
+          Text(
+              modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MESSAGE),
+              text =
+                  "There was an error while loading meetings : ${uiState.errorMsg ?: throw IllegalStateException("Error message should not be null if meeting is null.")}")
         } else {
           uiState.meeting?.let { meeting ->
             MeetingDetailContent(
                 modifier = Modifier.padding(padding),
                 meeting = meeting,
                 participants = uiState.participants,
-                onJoinMeeting = onJoinMeeting,
-                onRecordMeeting = onRecordMeeting,
-                onViewTranscript = onViewTranscript,
-                onDeleteMeeting = { showDeleteDialog = true },
-                onVoteForTime = onVoteForTime,
-                onVoteForFormat = onVoteForFormat)
+                actionsConfig =
+                    MeetingDetailContentActionsConfig(
+                        onJoinMeeting = actionsConfig.onJoinMeeting,
+                        onRecordMeeting = actionsConfig.onRecordMeeting,
+                        onViewTranscript = actionsConfig.onViewTranscript,
+                        onDeleteMeeting = { showDeleteDialog = true },
+                        onVoteForTime = actionsConfig.onVoteForTime,
+                        onVoteForFormat = actionsConfig.onVoteForFormat))
           } ?: ErrorScreen(message = uiState.errorMsg ?: "Meeting not found")
         }
       })
@@ -226,27 +243,39 @@ private fun ErrorScreen(message: String) {
 }
 
 /**
- * Main content displaying meeting details.
+ * Data class representing all the actions that can be executed by the buttons in the detail
+ * content.
  *
- * @param meeting The meeting to display.
- * @param participants List of participants in the meeting.
  * @param onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
  *   link.
  * @param onRecordMeeting Callback invoked when user clicks record meeting button.
  * @param onViewTranscript Callback invoked when user clicks view transcript button.
  * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
+ * @param onVoteForTime Callback invoked when user votes for time button.
+ * @param onVoteForFormat Callback invoked when user votes for format button.
+ */
+data class MeetingDetailContentActionsConfig(
+    val onJoinMeeting: (String) -> Unit,
+    val onRecordMeeting: () -> Unit,
+    val onViewTranscript: () -> Unit,
+    val onDeleteMeeting: () -> Unit,
+    val onVoteForTime: () -> Unit,
+    val onVoteForFormat: () -> Unit,
+)
+
+/**
+ * Main content displaying meeting details.
+ *
+ * @param meeting The meeting to display.
+ * @param participants List of participants in the meeting.
+ * @param actionsConfig Actions that can be executed by buttons in the detail content.
  * @param modifier Modifier to be applied to the root composable.
  */
 @Composable
 private fun MeetingDetailContent(
     meeting: Meeting,
     participants: List<Participant>,
-    onJoinMeeting: (String) -> Unit,
-    onRecordMeeting: () -> Unit,
-    onViewTranscript: () -> Unit,
-    onDeleteMeeting: () -> Unit,
-    onVoteForTime: () -> Unit,
-    onVoteForFormat: () -> Unit,
+    actionsConfig: MeetingDetailContentActionsConfig,
     modifier: Modifier = Modifier,
 ) {
   LazyColumn(
@@ -264,12 +293,12 @@ private fun MeetingDetailContent(
         item {
           ActionButtonsSection(
               meeting = meeting,
-              onJoinMeeting = onJoinMeeting,
-              onRecordMeeting = onRecordMeeting,
-              onViewTranscript = onViewTranscript,
-              onDeleteMeeting = onDeleteMeeting,
-              onVoteForTime = onVoteForTime,
-              onVoteForFormat = onVoteForFormat)
+              onJoinMeeting = actionsConfig.onJoinMeeting,
+              onRecordMeeting = actionsConfig.onRecordMeeting,
+              onViewTranscript = actionsConfig.onViewTranscript,
+              onDeleteMeeting = actionsConfig.onDeleteMeeting,
+              onVoteForTime = actionsConfig.onVoteForTime,
+              onVoteForFormat = actionsConfig.onVoteForFormat)
         }
 
         item { Spacer(modifier = Modifier.height(16.dp)) }
