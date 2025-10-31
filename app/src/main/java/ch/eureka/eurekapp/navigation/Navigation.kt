@@ -25,6 +25,8 @@ import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitatio
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
+import ch.eureka.eurekapp.ui.meeting.MeetingDetailActionsConfig
+import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
 import com.google.firebase.Firebase
@@ -32,7 +34,6 @@ import com.google.firebase.auth.auth
 import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
 
-// Type-safe navigation routes using Kotlin Serialization
 sealed interface Route {
   // Main screens
   @Serializable data object ProjectSelection : Route
@@ -41,7 +42,6 @@ sealed interface Route {
 
   @Serializable data object Profile : Route
 
-  // Tasks section - all task-related screens
   sealed interface TasksSection : Route {
     companion object {
       val routes: Set<KClass<out TasksSection>>
@@ -61,7 +61,6 @@ sealed interface Route {
     @Serializable data object TaskDependence : TasksSection
   }
 
-  // Ideas section - all ideas-related screens
   sealed interface IdeasSection : Route {
     companion object {
       val routes: Set<KClass<out IdeasSection>>
@@ -73,7 +72,6 @@ sealed interface Route {
     @Serializable data object CreateIdeas : IdeasSection
   }
 
-  // Meetings section - all meetings-related screens
   sealed interface MeetingsSection : Route {
     companion object {
       val routes: Set<KClass<out MeetingsSection>>
@@ -87,10 +85,12 @@ sealed interface Route {
     @Serializable data class CreateMeeting(val projectId: String) : MeetingsSection
 
     @Serializable
+    data class MeetingDetail(val projectId: String, val meetingId: String) : MeetingsSection
+
+    @Serializable
     data class AudioTranscript(val projectId: String, val meetingId: String) : MeetingsSection
   }
 
-  // Project selection section
   sealed interface ProjectSelectionSection : Route {
     companion object {
       val routes: Set<KClass<out ProjectSelectionSection>>
@@ -100,7 +100,6 @@ sealed interface Route {
     @Serializable data object CreateProject : ProjectSelectionSection
   }
 
-  // Overview project section
   sealed interface OverviewProjectSection : Route {
     companion object {
       val routes: Set<KClass<out OverviewProjectSection>>
@@ -110,7 +109,6 @@ sealed interface Route {
     @Serializable data object CreateInvitation : OverviewProjectSection
   }
 
-  // Shared screens (used across multiple sections)
   @Serializable data object Camera : Route
 }
 
@@ -120,7 +118,6 @@ fun NavigationMenu() {
   val projectRepository = FirestoreRepositoriesProvider.projectRepository
   val auth = Firebase.auth
   val testProjectId = "test-project-id"
-  // this is hardcoded for current release
   val testProject =
       Project(
           projectId = testProjectId,
@@ -179,11 +176,28 @@ fun NavigationMenu() {
               // Meetings section
               composable<Route.MeetingsSection.Meetings> {
                 MeetingScreen(
-                    testProjectId,
-                    {
+                    projectId = testProjectId,
+                    onCreateMeeting = {
                       navigationController.navigate(
                           Route.MeetingsSection.CreateMeeting(testProjectId))
+                    },
+                    onMeetingClick = { projectId, meetingId ->
+                      navigationController.navigate(
+                          Route.MeetingsSection.MeetingDetail(
+                              projectId = projectId, meetingId = meetingId))
                     })
+              }
+
+              composable<Route.MeetingsSection.MeetingDetail> { backStackEntry ->
+                val meetingDetailRoute =
+                    backStackEntry.toRoute<Route.MeetingsSection.MeetingDetail>()
+                MeetingDetailScreen(
+                    projectId = meetingDetailRoute.projectId,
+                    meetingId = meetingDetailRoute.meetingId,
+                    actionsConfig =
+                        MeetingDetailActionsConfig(
+                            onNavigateBack = { navigationController.popBackStack() }),
+                )
               }
 
               composable<Route.MeetingsSection.CreateMeeting> { backStackEntry ->
@@ -198,15 +212,12 @@ fun NavigationMenu() {
                 MeetingAudioRecordingScreen(projectId = testProjectId, meetingId = "1234")
               }
 
-              // Project selection section
               composable<Route.ProjectSelectionSection.CreateProject> { CreateProjectScreen() }
 
-              // Overview project section
               composable<Route.OverviewProjectSection.CreateInvitation> {
                 CreateInvitationSubscreen(projectId = testProjectId, onInvitationCreate = {})
               }
 
-              // Shared screens
               composable<Route.Camera> { Camera(navigationController) }
             }
       }

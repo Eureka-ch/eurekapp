@@ -142,24 +142,40 @@ class MeetingScreenTest {
     setContent()
 
     // Assert voting-specific elements are visible
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_STATUS_TEXT).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_TIMESLOT).assertIsDisplayed()
     composeTestRule
-        .onNodeWithTag(MeetingScreenTestTags.MEETING_VOTE_FOR_DATETIME_MESSAGE)
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_STATUS_TEXT, useUnmergedTree = true)
         .assertIsDisplayed()
     composeTestRule
-        .onNodeWithTag(MeetingScreenTestTags.MEETING_VOTE_FOR_FORMAT_MESSAGE)
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_TIMESLOT, useUnmergedTree = true)
         .assertIsDisplayed()
     composeTestRule
-        .onNodeWithTag(MeetingScreenTestTags.VOTE_FOR_DATETIME_BUTTON)
+        .onNodeWithTag(
+            MeetingScreenTestTags.MEETING_VOTE_FOR_DATETIME_MESSAGE, useUnmergedTree = true)
         .assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.VOTE_FOR_FORMAT_BUTTON).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(
+            MeetingScreenTestTags.MEETING_VOTE_FOR_FORMAT_MESSAGE, useUnmergedTree = true)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.VOTE_FOR_DATETIME_BUTTON, useUnmergedTree = true)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.VOTE_FOR_FORMAT_BUTTON, useUnmergedTree = true)
+        .assertIsDisplayed()
 
     // Assert other elements are NOT visible
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME).assertDoesNotExist()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON).assertDoesNotExist()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.DIRECTIONS_BUTTON).assertDoesNotExist()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.VIEW_SUMMARY_BUTTON).assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME, useUnmergedTree = true)
+        .assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON, useUnmergedTree = true)
+        .assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.DIRECTIONS_BUTTON, useUnmergedTree = true)
+        .assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.VIEW_SUMMARY_BUTTON, useUnmergedTree = true)
+        .assertDoesNotExist()
   }
 
   @Test
@@ -170,15 +186,25 @@ class MeetingScreenTest {
     setContent()
 
     // Assert scheduled virtual elements are visible
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_LINK).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME, useUnmergedTree = true)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_LINK, useUnmergedTree = true)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON, useUnmergedTree = true)
+        .assertIsDisplayed()
 
     // Assert other elements are NOT visible
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_LOCATION).assertDoesNotExist()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.DIRECTIONS_BUTTON).assertDoesNotExist()
     composeTestRule
-        .onNodeWithTag(MeetingScreenTestTags.VOTE_FOR_DATETIME_BUTTON)
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_LOCATION, useUnmergedTree = true)
+        .assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.DIRECTIONS_BUTTON, useUnmergedTree = true)
+        .assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.VOTE_FOR_DATETIME_BUTTON, useUnmergedTree = true)
         .assertDoesNotExist()
   }
 
@@ -190,14 +216,26 @@ class MeetingScreenTest {
     setContent()
 
     // Assert scheduled in-person elements are visible
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_LOCATION).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.DIRECTIONS_BUTTON).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.RECORD_BUTTON).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME, useUnmergedTree = true)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_LOCATION, useUnmergedTree = true)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.DIRECTIONS_BUTTON, useUnmergedTree = true)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.RECORD_BUTTON, useUnmergedTree = true)
+        .assertIsDisplayed()
 
     // Assert other elements are NOT visible
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_LINK).assertDoesNotExist()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON).assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_LINK, useUnmergedTree = true)
+        .assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON, useUnmergedTree = true)
+        .assertDoesNotExist()
   }
 
   @Test
@@ -207,12 +245,20 @@ class MeetingScreenTest {
     setContent()
 
     // Assert in-progress virtual elements are visible (same as scheduled)
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_LINK).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME, useUnmergedTree = true)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_LINK, useUnmergedTree = true)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON, useUnmergedTree = true)
+        .assertIsDisplayed()
 
     // Assert other elements are NOT visible
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.DIRECTIONS_BUTTON).assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.DIRECTIONS_BUTTON, useUnmergedTree = true)
+        .assertDoesNotExist()
   }
 
   @Test
@@ -223,13 +269,23 @@ class MeetingScreenTest {
     setContent()
 
     // Assert in-progress in-person elements are visible (same as scheduled)
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_LOCATION).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.DIRECTIONS_BUTTON).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.RECORD_BUTTON).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME, useUnmergedTree = true)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_LOCATION, useUnmergedTree = true)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.DIRECTIONS_BUTTON, useUnmergedTree = true)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.RECORD_BUTTON, useUnmergedTree = true)
+        .assertIsDisplayed()
 
     // Assert other elements are NOT visible
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON).assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON, useUnmergedTree = true)
+        .assertDoesNotExist()
   }
 
   @Test
@@ -242,13 +298,23 @@ class MeetingScreenTest {
     composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_TAB_PAST).performClick()
 
     // Assert completed elements are visible
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.VIEW_SUMMARY_BUTTON).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.VIEW_TRANSCRIPT_BUTTON).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME, useUnmergedTree = true)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.VIEW_SUMMARY_BUTTON, useUnmergedTree = true)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.VIEW_TRANSCRIPT_BUTTON, useUnmergedTree = true)
+        .assertIsDisplayed()
 
     // Assert the link is hidden for completed virtual meetings, as per the code
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_LINK).assertDoesNotExist()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON).assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_LINK, useUnmergedTree = true)
+        .assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON, useUnmergedTree = true)
+        .assertDoesNotExist()
   }
 
   @Test
@@ -260,14 +326,26 @@ class MeetingScreenTest {
     composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_TAB_PAST).performClick()
 
     // Assert completed elements are visible
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_LOCATION).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.VIEW_SUMMARY_BUTTON).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.VIEW_TRANSCRIPT_BUTTON).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME, useUnmergedTree = true)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_LOCATION, useUnmergedTree = true)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.VIEW_SUMMARY_BUTTON, useUnmergedTree = true)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.VIEW_TRANSCRIPT_BUTTON, useUnmergedTree = true)
+        .assertIsDisplayed()
 
     // Assert other elements are NOT visible
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.DIRECTIONS_BUTTON).assertDoesNotExist()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.RECORD_BUTTON).assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.DIRECTIONS_BUTTON, useUnmergedTree = true)
+        .assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(MeetingScreenTestTags.RECORD_BUTTON, useUnmergedTree = true)
+        .assertDoesNotExist()
   }
 }
 

@@ -217,7 +217,10 @@ class CreateTaskScreenTests : TestCase() {
 
     // Wait for navigation back to CreateTaskScreen
     composeTestRule.waitUntil(timeoutMillis = 3_000) {
-      composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).fetchSemanticsNodes().isNotEmpty()
+      composeTestRule
+          .onAllNodesWithTag(CommonTaskTestTags.PHOTO, useUnmergedTree = true)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
     }
 
     assert(isPhotoSaved(context, "Pictures/EurekApp/"))
@@ -392,7 +395,7 @@ class CreateTaskScreenTests : TestCase() {
     // Wait for navigation back to tasks screen
     composeTestRule.waitUntil(timeoutMillis = 3_000) {
       composeTestRule
-          .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
+          .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT, useUnmergedTree = true)
           .fetchSemanticsNodes()
           .isNotEmpty()
     }
