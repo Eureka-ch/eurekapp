@@ -419,13 +419,7 @@ jobs:
 
             # Run instrumented tests with sharding and coverage
             echo "Running shard ${{ matrix.shard }} of 8..."
-            adb -s emulator-5554 shell am instrument -w -r \
-              -e numShards 8 \
-              -e shardIndex ${{ matrix.shard }} \
-              -e coverage true \
-              -e coverageFile /data/data/ch.eureka.eurekapp/files/coverage.ec \
-              ch.eureka.eurekapp.test/ch.eureka.eurekapp.EurekaTestRunner \
-              | tee instrumentation_output.txt
+            adb -s emulator-5554 shell am instrument -w -r -e numShards 8 -e shardIndex ${{ matrix.shard }} -e coverage true -e coverageFile /data/data/ch.eureka.eurekapp/files/coverage.ec ch.eureka.eurekapp.test/ch.eureka.eurekapp.EurekaTestRunner | tee instrumentation_output.txt
 
             # Pull coverage file
             echo "Pulling coverage data..."
