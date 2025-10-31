@@ -73,8 +73,8 @@ class EditTaskViewModel(
 
     updateState { copy(isSaving = true) }
 
-    val projectIdToUse = state.selectedProjectId.takeIf { it.isNotEmpty() } ?: state.projectId
-    saveFilesAsync(state.taskId, context, projectIdToUse, state.attachmentUris) { photoUrlsResult ->
+    saveFilesAsync(state.taskId, context, state.projectId, state.attachmentUris) { photoUrlsResult
+      ->
       if (photoUrlsResult.isFailure) {
         Handler(Looper.getMainLooper()).post {
           Toast.makeText(context.applicationContext, "Unable to save task", Toast.LENGTH_SHORT)
@@ -90,7 +90,7 @@ class EditTaskViewModel(
         val task =
             Task(
                 taskID = state.taskId,
-                projectId = projectIdToUse,
+                projectId = state.projectId,
                 title = state.title,
                 description = state.description,
                 assignedUserIds = listOf(currentUser),
@@ -176,7 +176,6 @@ class EditTaskViewModel(
                             task.dueDate?.let { date -> dateFormat.format(date.toDate()) } ?: "",
                         templateId = task.templateId,
                         projectId = task.projectId,
-                        selectedProjectId = task.projectId,
                         taskId = task.taskID,
                         assignedUserIds = task.assignedUserIds,
                         attachmentUrls = filteredAttachments,
@@ -240,10 +239,4 @@ class EditTaskViewModel(
   override fun EditTaskState.copyWithAttachmentUris(uris: List<Uri>) = copy(attachmentUris = uris)
 
   override fun EditTaskState.copyWithProjectId(projectId: String) = copy(projectId = projectId)
-
-  override fun EditTaskState.copyWithSelectedProjectId(projectId: String) =
-      copy(selectedProjectId = projectId)
-
-  override fun EditTaskState.copyWithAvailableProjects(projects: List<Project>) =
-      copy(availableProjects = projects)
 }

@@ -165,10 +165,8 @@ fun EditTaskScreen(
 
               ProjectSelectionField(
                   projects = editTaskState.availableProjects,
-                  selectedProjectId = editTaskState.selectedProjectId,
-                  onProjectSelected = { projectId ->
-                    editTaskViewModel.setSelectedProjectId(projectId)
-                  })
+                  selectedProjectId = editTaskState.projectId,
+                  onProjectSelected = { projectId -> editTaskViewModel.setProjectId(projectId) })
 
               Row(
                   modifier = Modifier.fillMaxWidth(),

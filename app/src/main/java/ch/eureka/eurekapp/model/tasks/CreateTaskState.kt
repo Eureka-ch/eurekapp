@@ -20,8 +20,4 @@ data class CreateTaskState(
     override val isSaving: Boolean = false,
     override val taskSaved: Boolean = false,
     override val errorMsg: String? = null
-) : TaskStateCommon {
-  // For CreateTask, selectedProjectId is always equal to projectId (redundant field)
-  override val selectedProjectId: String
-    get() = projectId
-}
+) : TaskStateCommon

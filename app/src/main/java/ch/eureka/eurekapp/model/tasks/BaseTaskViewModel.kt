@@ -31,7 +31,6 @@ interface TaskStateCommon {
   val description: String
   val dueDate: String
   val projectId: String
-  val selectedProjectId: String
   val availableProjects: List<Project>
   val attachmentUris: List<Uri>
   val isSaving: Boolean
@@ -167,14 +166,6 @@ abstract class BaseTaskViewModel<T : TaskStateCommon>(
     updateState { copyWithProjectId(id) }
   }
 
-  fun setSelectedProjectId(id: String) {
-    updateState { copyWithSelectedProjectId(id) }
-  }
-
-  fun setAvailableProjects(projects: List<Project>) {
-    updateState { copyWithAvailableProjects(projects) }
-  }
-
   /** Deletes a photo from storage */
   private suspend fun deletePhotoSuspend(context: Context, photoUri: Uri): Boolean {
     return try {
@@ -245,8 +236,4 @@ abstract class BaseTaskViewModel<T : TaskStateCommon>(
   protected abstract fun T.copyWithAttachmentUris(uris: List<Uri>): T
 
   protected abstract fun T.copyWithProjectId(projectId: String): T
-
-  protected abstract fun T.copyWithSelectedProjectId(projectId: String): T
-
-  protected abstract fun T.copyWithAvailableProjects(projects: List<Project>): T
 }

@@ -17,7 +17,6 @@ data class EditTaskState(
     override val dueDate: String = "",
     val templateId: String? = null,
     override val projectId: String = "",
-    override val selectedProjectId: String = "",
     override val availableProjects: List<Project> = emptyList(),
     val taskId: String = "",
     val assignedUserIds: List<String> = emptyList(),

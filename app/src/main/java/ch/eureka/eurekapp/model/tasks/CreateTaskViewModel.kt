@@ -139,10 +139,4 @@ class CreateTaskViewModel(
   override fun CreateTaskState.copyWithAttachmentUris(uris: List<Uri>) = copy(attachmentUris = uris)
 
   override fun CreateTaskState.copyWithProjectId(projectId: String) = copy(projectId = projectId)
-
-  override fun CreateTaskState.copyWithSelectedProjectId(projectId: String) =
-      copy(projectId = projectId)
-
-  override fun CreateTaskState.copyWithAvailableProjects(projects: List<Project>) =
-      copy(availableProjects = projects)
 }
