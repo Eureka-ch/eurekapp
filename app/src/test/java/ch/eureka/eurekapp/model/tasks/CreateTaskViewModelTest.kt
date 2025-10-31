@@ -220,6 +220,55 @@ class CreateTaskViewModelTest {
   }
 
   @Test
+  fun removeAttachment_withInvalidIndex_doesNothing() = runTest {
+    viewModel =
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+    advanceUntilIdle()
+
+    val uri1 = createMockUri("content://test/photo1.jpg")
+    viewModel.addAttachment(uri1)
+    advanceUntilIdle()
+
+    // Try to remove at invalid index
+    viewModel.removeAttachment(10)
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.first()
+    // Attachment should still be there
+    assertEquals(1, state.attachmentUris.size)
+    assertEquals(uri1, state.attachmentUris[0])
+  }
+
+  @Test
+  fun deletePhoto_withSecurityException_returnsFalse() = runTest {
+    viewModel =
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+    advanceUntilIdle()
+
+    val uri = createMockUri("content://test/photo1.jpg")
+    // Mock context to throw SecurityException
+    every { mockContext.contentResolver.delete(uri, any(), any()) } throws
+        SecurityException("Permission denied")
+
+    val result = viewModel.deletePhoto(mockContext, uri)
+    assertFalse(result)
+  }
+
+  @Test
+  fun deletePhoto_withZeroRowsDeleted_returnsFalse() = runTest {
+    viewModel =
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+    advanceUntilIdle()
+
+    val uri = createMockUri("content://test/photo1.jpg")
+    // Mock context to return 0 rows deleted
+    every { mockContext.contentResolver.delete(uri, any(), any()) } returns 0
+
+    val result = viewModel.deletePhoto(mockContext, uri)
+    assertFalse(result)
+  }
+
+  @Test
   fun inputValid_returnsFalseWhenTitleIsBlank() = runTest {
     viewModel =
         CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
