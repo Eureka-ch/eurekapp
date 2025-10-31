@@ -612,7 +612,7 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated -memory 4096 -cores 4
           disable-animations: true
-          script: ./gradlew connectedCheck -x lint --parallel --build-cache
+          script: ./gradlew connectedCheck -x lint -x assembleDebug -x assembleDebugAndroidTest --parallel --build-cache
 
       - name: Upload instrumented test results and coverage
         if: always()
