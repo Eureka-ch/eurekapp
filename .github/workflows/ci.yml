@@ -397,6 +397,9 @@ jobs:
           echo "  Expected: ~50 tests per shard"
           echo "============================================"
 
+      - name: Install Python dependencies
+        run: pip3 install androidtestxmlgenerator
+
       - name: run tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -407,7 +410,37 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated -memory 4096 -cores 4
           disable-animations: true
-          script: ./gradlew connectedDebugAndroidTest -x assembleDebug -x assembleDebugAndroidTest -x compileDebugKotlin -x compileDebugJavaWithJavac -x compileDebugAndroidTestKotlin -x compileDebugAndroidTestJavaWithJavac -x lint --parallel --build-cache -Pandroid.testInstrumentationRunnerArguments.numShards=8 -Pandroid.testInstrumentationRunnerArguments.shardIndex=${{ matrix.shard }}
+          script: |
+            set -e
+
+            # Install APKs (bypasses Gradle rebuild)
+            echo "Installing app APK..."
+            adb -s emulator-5554 install -r app/build/outputs/apk/debug/app-debug.apk
+
+            echo "Installing test APK..."
+            adb -s emulator-5554 install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+
+            # Run instrumented tests with sharding and coverage
+            echo "Running shard ${{ matrix.shard }} of 8..."
+            adb -s emulator-5554 shell am instrument -w -r \
+              -e numShards 8 \
+              -e shardIndex ${{ matrix.shard }} \
+              -e coverage true \
+              -e coverageFile /data/data/ch.eureka.eurekapp/files/coverage.ec \
+              ch.eureka.eurekapp.test/ch.eureka.eurekapp.EurekaTestRunner \
+              | tee instrumentation_output.txt
+
+            # Pull coverage file
+            echo "Pulling coverage data..."
+            mkdir -p app/build/outputs/code_coverage/debugAndroidTest/connected
+            adb -s emulator-5554 pull /data/data/ch.eureka.eurekapp/files/coverage.ec \
+              app/build/outputs/code_coverage/debugAndroidTest/connected/coverage-${{ matrix.shard }}.ec || echo "No coverage file found"
+
+            # Convert raw instrumentation output to JUnit XML
+            echo "Generating JUnit XML report..."
+            mkdir -p app/build/outputs/androidTest-results/connected
+            androidtestxmlgenerator instrumentation_output.txt \
+              app/build/outputs/androidTest-results/connected/TEST-shard-${{ matrix.shard }}.xml
 
       - name: Upload instrumented test results and coverage
         if: always()
