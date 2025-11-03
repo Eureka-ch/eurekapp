@@ -1,5 +1,5 @@
 /*
-Portions of the code in this file were written with the help of chatGPT.
+Portions of the code in this file were written with the help of chatGPT and Gemini.
 Portions of the code in this file are copy-pasted from the Bootcamp solution B3 provided by the SwEnt staff.
 */
 package ch.eureka.eurekapp.ui.meeting
@@ -7,16 +7,22 @@ package ch.eureka.eurekapp.ui.meeting
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.HourglassTop
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -25,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -36,14 +43,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -60,8 +70,8 @@ object CreateMeetingScreenTestTags {
   const val ERROR_MSG = "ErrorMsg"
   const val INPUT_MEETING_TITLE = "InputMeetingTitle"
   const val INPUT_MEETING_DATE = "InputMeetingDate"
-  const val INPUT_MEETING_START_TIME = "InputMeetingStartTime"
-  const val INPUT_MEETING_END_TIME = "InputMeetingEndTime"
+  const val INPUT_MEETING_TIME = "InputMeetingTime"
+  const val INPUT_MEETING_DURATION = "InputMeetingDuration"
   const val CREATE_MEETING_BUTTON = "CreateMeetingButton"
 }
 
@@ -142,6 +152,10 @@ fun CreateMeetingScreen(
 
           Spacer(Modifier.height(8.dp))
 
+          // TODO : add duration input field
+
+          Spacer(Modifier.height(8.dp))
+
           DateInputField(
               selectedDate = uiState.date,
               label = "Date",
@@ -151,33 +165,23 @@ fun CreateMeetingScreen(
 
           Spacer(Modifier.height(8.dp))
 
-          val starTimeConfig =
-              TimeInputFieldConfig(
-                  selectedTime = uiState.startTime,
-                  label = "Start Time",
-                  placeHolder = "Select start time",
-                  onFieldTouched = { createMeetingViewModel.touchStartTime() },
-                  isInvalid =
-                      uiState.hasTouchedStartTime && uiState.startTime.isAfter(uiState.endTime),
-                  invalidTimeMsg = "Start time should be smaller than end time",
-                  tag = CreateMeetingScreenTestTags.INPUT_MEETING_START_TIME,
-                  onTimeSelected = { createMeetingViewModel.setStartTime(it) })
-          TimeInputField(config = starTimeConfig)
+          TimeInputField(
+              selectedTime = uiState.time,
+              label = "Time",
+              placeHolder = "Select time",
+              tag = CreateMeetingScreenTestTags.INPUT_MEETING_TIME,
+              onTimeSelected = { createMeetingViewModel.setTime(it) })
 
           Spacer(Modifier.height(8.dp))
 
-          val endTimeConfig =
-              TimeInputFieldConfig(
-                  selectedTime = uiState.endTime,
-                  label = "End Time",
-                  placeHolder = "Select end time",
-                  onFieldTouched = { createMeetingViewModel.touchEndTime() },
-                  isInvalid =
-                      uiState.hasTouchedEndTime && uiState.endTime.isBefore(uiState.startTime),
-                  invalidTimeMsg = "End time should be greater than start time",
-                  tag = CreateMeetingScreenTestTags.INPUT_MEETING_END_TIME,
-                  onTimeSelected = { createMeetingViewModel.setEndTime(it) })
-          TimeInputField(config = endTimeConfig)
+          DurationInputField(
+              duration = uiState.duration,
+              label = "Duration",
+              placeholder = "Select duration",
+              durationOptions = listOf(5, 10, 15, 20, 30, 45, 60),
+              tag = CreateMeetingScreenTestTags.INPUT_MEETING_DURATION,
+              onDurationSelected = { createMeetingViewModel.setDuration(it) },
+          )
 
           Spacer(Modifier.height(8.dp))
 
@@ -256,72 +260,45 @@ fun DateInputField(
 }
 
 /**
- * Data class representing the configuration of a [TimeInputField] composable.
+ * Composable that displays a text field to select a time.
  *
  * @param selectedTime The already selected time to display in the text field.
  * @param label The label of the text field.
  * @param placeHolder The placeholder of the text field.
- * @param onFieldTouched Function executed when the text field is touched (focused).
- * @param isInvalid Marker that is true if the time selected is invalid, false otherwise.
- * @param invalidTimeMsg Message to display in case the selected time is invalid.
  * @param tag The test tag for the text field.
  * @param onTimeSelected Function executed when the time has been picked.
  */
-data class TimeInputFieldConfig(
-    val selectedTime: LocalTime,
-    val label: String,
-    val placeHolder: String,
-    val onFieldTouched: () -> Unit,
-    val isInvalid: Boolean,
-    val invalidTimeMsg: String,
-    val tag: String,
-    val onTimeSelected: (LocalTime) -> Unit
-)
-
-/**
- * Composable that displays a text field to select a time.
- *
- * @param config The time input field config.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TimeInputField(config: TimeInputFieldConfig) {
+fun TimeInputField(
+    selectedTime: LocalTime,
+    label: String,
+    placeHolder: String,
+    tag: String,
+    onTimeSelected: (LocalTime) -> Unit
+) {
   var showDialog by remember { mutableStateOf(false) }
 
-  val initialHour = config.selectedTime.hour
-  val initialMinute = config.selectedTime.minute
+  val initialHour = selectedTime.hour
+  val initialMinute = selectedTime.minute
   val timePickerState =
       rememberTimePickerState(
           initialHour = initialHour, initialMinute = initialMinute, is24Hour = true)
 
-  val displayText = config.selectedTime.format(DateTimeFormatter.ofPattern("HH:mm"))
+  val displayText = selectedTime.format(DateTimeFormatter.ofPattern("HH:mm"))
 
   OutlinedTextField(
       value = displayText,
       onValueChange = {},
-      label = { Text(config.label) },
-      placeholder = { Text(config.placeHolder) },
+      label = { Text(label) },
+      placeholder = { Text(placeHolder) },
       readOnly = true,
       trailingIcon = {
-        IconButton(onClick = { showDialog = true }, modifier = Modifier.testTag(config.tag)) {
+        IconButton(onClick = { showDialog = true }, modifier = Modifier.testTag(tag)) {
           Icon(Icons.Default.AccessTime, contentDescription = "Select time")
         }
       },
-      modifier =
-          Modifier.fillMaxWidth()
-              .clickable { showDialog = true }
-              .onFocusChanged { focusState ->
-                if (focusState.isFocused) {
-                  config.onFieldTouched()
-                }
-              })
-  if (config.isInvalid) {
-    Text(
-        text = config.invalidTimeMsg,
-        color = Color.Red,
-        style = MaterialTheme.typography.bodySmall,
-        modifier = Modifier.testTag(CreateMeetingScreenTestTags.ERROR_MSG))
-  }
+      modifier = Modifier.fillMaxWidth().clickable { showDialog = true })
 
   if (showDialog) {
     TimePickerDialog(
@@ -331,7 +308,7 @@ fun TimeInputField(config: TimeInputFieldConfig) {
           TextButton(
               onClick = {
                 showDialog = false
-                config.onTimeSelected(LocalTime.of(timePickerState.hour, timePickerState.minute))
+                onTimeSelected(LocalTime.of(timePickerState.hour, timePickerState.minute))
               }) {
                 Text("OK")
               }
@@ -341,5 +318,79 @@ fun TimeInputField(config: TimeInputFieldConfig) {
               state = timePickerState,
           )
         }
+  }
+}
+
+/**
+ * Composable that displays a text field to select a duration.
+ *
+ * @param duration The already selected duration to display in the text field.
+ * @param label The label of the text field.
+ * @param placeholder The placeholder of the text field.
+ * @param durationOptions List of durations available for the user to choose from.
+ * @param tag The test tag for the text field.
+ * @param onDurationSelected Function executed when the duration has been picked.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DurationInputField(
+    duration: Int,
+    label: String,
+    placeholder: String,
+    durationOptions: List<Int>,
+    tag: String,
+    onDurationSelected: (Int) -> Unit,
+) {
+  var showDialog by remember { mutableStateOf(false) }
+  var tempSelectedOption by remember { mutableIntStateOf(durationOptions.first()) }
+
+  OutlinedTextField(
+      value = "$duration minutes",
+      onValueChange = {},
+      label = { Text(label) },
+      placeholder = { Text(placeholder) },
+      readOnly = true,
+      trailingIcon = {
+        IconButton(onClick = { showDialog = true }, modifier = Modifier.testTag(tag)) {
+          Icon(Icons.Default.HourglassTop, contentDescription = "Select duration")
+        }
+      },
+      modifier = Modifier.fillMaxWidth().clickable { showDialog = true })
+
+  if (showDialog) {
+    AlertDialog(
+        onDismissRequest = { showDialog = false },
+        title = { Text("Select Duration") },
+        text = {
+          Column(Modifier.selectableGroup()) {
+            durationOptions.forEach { option ->
+              Row(
+                  Modifier.fillMaxWidth()
+                      .selectable(
+                          selected = tempSelectedOption == option,
+                          onClick = { tempSelectedOption = option },
+                          role = Role.RadioButton)
+                      .padding(vertical = 12.dp),
+                  verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(
+                        selected = tempSelectedOption == option,
+                        onClick = null // recommended practice: handle click on `Row`
+                        )
+                    Spacer(Modifier.width(8.dp))
+                    Text("$option minutes")
+                  }
+            }
+          }
+        },
+        confirmButton = {
+          TextButton(
+              onClick = {
+                showDialog = false
+                onDurationSelected(tempSelectedOption)
+              }) {
+                Text("OK")
+              }
+        },
+        dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } })
   }
 }

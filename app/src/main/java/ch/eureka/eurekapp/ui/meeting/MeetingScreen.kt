@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.HowToVote
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Schedule
@@ -266,7 +267,7 @@ fun MeetingCard(
               Column(modifier = Modifier.fillMaxWidth()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                   Icon(
-                      imageVector = Icons.Default.Schedule,
+                      imageVector = Icons.Default.HourglassTop,
                       contentDescription = "Schedule icon.",
                       modifier = Modifier.size(16.dp),
                       tint = MaterialTheme.colorScheme.onSurfaceVariant)

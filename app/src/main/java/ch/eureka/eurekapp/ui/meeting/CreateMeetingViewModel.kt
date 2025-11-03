@@ -6,11 +6,13 @@ package ch.eureka.eurekapp.ui.meeting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.IdGenerator
+import ch.eureka.eurekapp.model.data.meeting.DateTimeVote
 import ch.eureka.eurekapp.model.data.meeting.FirestoreMeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -26,31 +28,25 @@ import kotlinx.coroutines.launch
  *
  * @param title The title of the meeting to be created.
  * @param date The date of the time slot for the meeting to be created.
- * @param startTime The start time of the time slot for the meeting to be created.
- * @param endTime The start time of the time slot for the meeting to be created.
+ * @param time The start time of the time slot for the meeting to be created.
+ * @param duration The duration of the meeting.
  * @param meetingSaved Marker set to true if the meeting waa successfully saved, false otherwise.
  * @param hasTouchedTitle Marker set to true if the user has already clicked on the title field,
  *   false otherwise.
- * @param hasTouchedStartTime Marker set to true if the user has already clicked on the start time
- *   field, false otherwise.
- * @param hasTouchedEndTime Marker set to true if the user has already clicked on the start time
- *   field, false otherwise.
  * @param errorMsg Error message to display.
  */
 data class CreateMeetingUIState(
     val title: String = "",
     val date: LocalDate = LocalDate.now(),
-    val startTime: LocalTime = LocalTime.now(),
-    val endTime: LocalTime = LocalTime.now(),
+    val time: LocalTime = LocalTime.now(),
+    val duration: Int = 0,
     val meetingSaved: Boolean = false,
     val hasTouchedTitle: Boolean = false,
-    val hasTouchedStartTime: Boolean = false,
-    val hasTouchedEndTime: Boolean = false,
     val errorMsg: String? = null
 ) {
   /** States whether the UI is in a state where the meeting can be saved. */
   val isValid: Boolean
-    get() = title.isNotBlank() && startTime.isBefore(endTime)
+    get() = title.isNotBlank() && duration >= 5
 }
 
 /**
@@ -91,7 +87,7 @@ class CreateMeetingViewModel(
   }
 
   /**
-   * Set the date of the meeting proposal to be created.
+   * Set a proposed initial date for the meeting to be created.
    *
    * @param date The date of the meeting proposal to be created.
    */
@@ -100,21 +96,21 @@ class CreateMeetingViewModel(
   }
 
   /**
-   * Set the start time for the time slot of the meeting proposal to be created.
+   * Set a proposed initial time for the meeting to be created
    *
-   * @param startTime The start time of the timeslot of the meeting proposal to be created.
+   * @param time The time of the meeting proposal to be created.
    */
-  fun setStartTime(startTime: LocalTime) {
-    _uiState.update { it.copy(startTime = startTime) }
+  fun setTime(time: LocalTime) {
+    _uiState.update { it.copy(time = time) }
   }
 
   /**
-   * Set the end time for the time slot of the meeting proposal to be created.
+   * Set duration fo the meeting to be created.
    *
-   * @param endTime The end time of the timeslot of the meeting proposal to be created.
+   * @param duration The duration of the meeting to be created.
    */
-  fun setEndTime(endTime: LocalTime) {
-    _uiState.update { it.copy(endTime = endTime) }
+  fun setDuration(duration: Int) {
+    _uiState.update { it.copy(duration = duration) }
   }
 
   /** Mark the the meeting proposal as saved in the database. */
@@ -125,16 +121,6 @@ class CreateMeetingViewModel(
   /** Mark the title field as touched. */
   fun touchTitle() {
     _uiState.update { it.copy(hasTouchedTitle = true) }
-  }
-
-  /** Mark the start time field as touched. */
-  fun touchStartTime() {
-    _uiState.update { it.copy(hasTouchedStartTime = true) }
-  }
-
-  /** Mark the end time field as touched. */
-  fun touchEndTime() {
-    _uiState.update { it.copy(hasTouchedEndTime = true) }
   }
 
   /**
@@ -155,13 +141,9 @@ class CreateMeetingViewModel(
       return
     }
 
-    // These two lines where written with the help of chatGPT
-    val startTimeInstant =
-        LocalDateTime.of(uiState.value.date, uiState.value.startTime)
-            .atZone(ZoneId.systemDefault())
-            .toInstant()
-    val endTimeInstant =
-        LocalDateTime.of(uiState.value.date, uiState.value.endTime)
+    // These this line was written with the help of chatGPT
+    val timeInstant =
+        LocalDateTime.of(uiState.value.date, uiState.value.time)
             .atZone(ZoneId.systemDefault())
             .toInstant()
 
@@ -171,6 +153,8 @@ class CreateMeetingViewModel(
             projectId = projectId,
             title = uiState.value.title,
             status = MeetingStatus.OPEN_TO_VOTES,
+            duration = uiState.value.duration,
+            dateTimeVotes = listOf(DateTimeVote(Timestamp(timeInstant), 1, listOf(creatorId))),
             createdBy = creatorId)
 
     viewModelScope.launch {
