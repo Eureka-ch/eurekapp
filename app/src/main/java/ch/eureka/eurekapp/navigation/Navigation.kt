@@ -24,6 +24,7 @@ import ch.eureka.eurekapp.screens.subscreens.projects.creation.CreateProjectScre
 import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitationSubscreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
+import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailActionsConfig
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreen
@@ -52,7 +53,7 @@ sealed interface Route {
 
     @Serializable data object CreateTask : TasksSection
 
-    @Serializable data class TaskDetail(val taskId: String) : TasksSection
+    @Serializable data class TaskDetail(val projectId: String, val taskId: String) : TasksSection
 
     @Serializable data class TaskEdit(val projectId: String, val taskId: String) : TasksSection
 
@@ -156,7 +157,7 @@ fun NavigationMenu() {
                     },
                     onTaskClick = { taskId, projectId ->
                       navigationController.navigate(
-                          Route.TasksSection.TaskEdit(projectId = projectId, taskId = taskId))
+                          Route.TasksSection.TaskDetail(projectId = testProjectId, taskId = taskId))
                     })
               }
               composable<Route.TasksSection.CreateTask> { CreateTaskScreen(navigationController) }
@@ -164,6 +165,11 @@ fun NavigationMenu() {
               composable<Route.TasksSection.TaskEdit> { backStackEntry ->
                 val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.TaskEdit>()
                 EditTaskScreen(editTaskRoute.projectId, editTaskRoute.taskId, navigationController)
+              }
+
+              composable<Route.TasksSection.TaskDetail> { backStackEntry ->
+                val taskDetailRoute = backStackEntry.toRoute<Route.TasksSection.TaskDetail>()
+                  ViewTaskScreen(taskDetailRoute.projectId, taskDetailRoute.taskId, navigationController)
               }
 
               // Ideas section

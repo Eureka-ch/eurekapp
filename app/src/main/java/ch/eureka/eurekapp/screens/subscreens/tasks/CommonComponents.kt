@@ -53,13 +53,15 @@ fun TaskTitleField(
     onValueChange: (String) -> Unit,
     hasTouched: Boolean,
     onFocusChanged: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
   OutlinedTextField(
       value = value,
       onValueChange = onValueChange,
       label = { Text("Title") },
       placeholder = { Text("Name the task") },
+      enabled = enabled,
       modifier =
           modifier
               .fillMaxWidth()
@@ -69,7 +71,7 @@ fun TaskTitleField(
                 }
               }
               .testTag(CommonTaskTestTags.TITLE))
-  if (value.isBlank() && hasTouched) {
+  if (enabled && value.isBlank() && hasTouched) {
     Text(
         text = "Title cannot be empty",
         color = Color.Red,
@@ -84,13 +86,15 @@ fun TaskDescriptionField(
     onValueChange: (String) -> Unit,
     hasTouched: Boolean,
     onFocusChanged: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
   OutlinedTextField(
       value = value,
       onValueChange = onValueChange,
       label = { Text("Description") },
       placeholder = { Text("Describe the task") },
+      enabled = enabled,
       modifier =
           modifier
               .fillMaxWidth()
@@ -100,7 +104,7 @@ fun TaskDescriptionField(
                 }
               }
               .testTag(CommonTaskTestTags.DESCRIPTION))
-  if (value.isBlank() && hasTouched) {
+  if (enabled && value.isBlank() && hasTouched) {
     Text(
         text = "Description cannot be empty",
         color = Color.Red,
@@ -116,13 +120,15 @@ fun TaskDueDateField(
     hasTouched: Boolean,
     onFocusChanged: (Boolean) -> Unit,
     dateRegex: Regex,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
   OutlinedTextField(
       value = value,
       onValueChange = onValueChange,
       label = { Text("Due date") },
       placeholder = { Text("01/01/1970") },
+      enabled = enabled,
       modifier =
           modifier
               .fillMaxWidth()
@@ -132,7 +138,7 @@ fun TaskDueDateField(
                 }
               }
               .testTag(CommonTaskTestTags.DUE_DATE))
-  if (value.isNotBlank() && !dateRegex.matches(value) && hasTouched) {
+  if (enabled && value.isNotBlank() && !dateRegex.matches(value) && hasTouched) {
     Text(
         text = "Invalid format (must be dd/MM/yyyy)",
         color = Color.Red,
@@ -144,17 +150,20 @@ fun TaskDueDateField(
 @Composable
 fun AttachmentsList(
     attachments: List<Any>,
-    onDelete: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onDelete: ((Int) -> Unit)? = null,
+    isReadOnly: Boolean = false
 ) {
   attachments.forEachIndexed { index, file ->
     Row(modifier = modifier) {
       Text("Photo ${index + 1}")
-      IconButton(
-          onClick = { onDelete(index) },
-          modifier = Modifier.testTag(CommonTaskTestTags.DELETE_PHOTO)) {
-            Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
-          }
+      if (!isReadOnly && onDelete != null) {
+        IconButton(
+            onClick = { onDelete(index) },
+            modifier = Modifier.testTag(CommonTaskTestTags.DELETE_PHOTO)) {
+              Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
+            }
+      }
       PhotoViewer(file, modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.PHOTO))
     }
   }
