@@ -34,7 +34,7 @@ class CreateTaskViewModel(
     getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) :
-    BaseTaskViewModel<CreateTaskState>(
+    ReadWriteTaskViewModel<CreateTaskState>(
         taskRepository, fileRepository, getCurrentUserId, dispatcher) {
 
   private val _uiState = MutableStateFlow(CreateTaskState())

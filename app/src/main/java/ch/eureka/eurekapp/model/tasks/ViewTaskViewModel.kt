@@ -1,11 +1,8 @@
 package ch.eureka.eurekapp.model.tasks
 
-import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
-import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.task.TaskRepository
-import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlinx.coroutines.CoroutineDispatcher
@@ -24,15 +21,11 @@ import kotlinx.coroutines.launch
  */
 class ViewTaskViewModel(
     taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
-    fileRepository: FileStorageRepository = FirestoreRepositoriesProvider.fileRepository,
-    getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     dispatcher: CoroutineDispatcher = Dispatchers.IO
-) : BaseTaskViewModel<ViewTaskState>(taskRepository, fileRepository, getCurrentUserId, dispatcher) {
+) : ReadTaskViewModel<ViewTaskState>(taskRepository, dispatcher) {
 
   private val _uiState = MutableStateFlow(ViewTaskState())
   override val uiState: StateFlow<ViewTaskState> = _uiState.asStateFlow()
-
-  override fun getState(): ViewTaskState = _uiState.value
 
   private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
@@ -73,24 +66,10 @@ class ViewTaskViewModel(
     }
   }
 
-  // State update implementations
+  // State update implementations (only what's needed for read-only view)
   override fun updateState(update: ViewTaskState.() -> ViewTaskState) {
     _uiState.value = _uiState.value.update()
   }
 
   override fun ViewTaskState.copyWithErrorMsg(errorMsg: String?) = copy(errorMsg = errorMsg)
-
-  override fun ViewTaskState.copyWithSaveState(isSaving: Boolean, taskSaved: Boolean) =
-      copy(isSaving = isSaving, taskSaved = taskSaved)
-
-  override fun ViewTaskState.copyWithTitle(title: String) = copy(title = title)
-
-  override fun ViewTaskState.copyWithDescription(description: String) =
-      copy(description = description)
-
-  override fun ViewTaskState.copyWithDueDate(dueDate: String) = copy(dueDate = dueDate)
-
-  override fun ViewTaskState.copyWithAttachmentUris(uris: List<Uri>) = copy(attachmentUris = uris)
-
-  override fun ViewTaskState.copyWithProjectId(projectId: String) = copy(projectId = projectId)
 }
