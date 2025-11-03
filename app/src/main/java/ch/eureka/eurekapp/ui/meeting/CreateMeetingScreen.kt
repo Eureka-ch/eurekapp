@@ -152,8 +152,6 @@ fun CreateMeetingScreen(
 
           Spacer(Modifier.height(8.dp))
 
-          // TODO : add duration input field
-
           Spacer(Modifier.height(8.dp))
 
           DateInputField(
@@ -295,7 +293,7 @@ fun TimeInputField(
       readOnly = true,
       trailingIcon = {
         IconButton(onClick = { showDialog = true }, modifier = Modifier.testTag(tag)) {
-          Icon(Icons.Default.AccessTime, contentDescription = "Select time")
+          Icon(Icons.Default.AccessTime, contentDescription = placeHolder)
         }
       },
       modifier = Modifier.fillMaxWidth().clickable { showDialog = true })
