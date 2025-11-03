@@ -72,10 +72,12 @@ class MeetingViewModel(
                           .sortedBy { m ->
                             m.datetime
                                 ?: m.dateTimeVotes
-                                    .filter { dtv -> dtv.votes > 0 }
-                                    .minOfOrNull { e -> e.dateTime }
-                          } // will never be null because there is always at least a vote
-                          // that has a non-zero votes
+                                    .filter { dtv -> dtv.voters.isNotEmpty() }
+                                    .minOfOrNull { e ->
+                                      e.dateTime
+                                    } // will never give null because there is always at least a
+                            // vote that has a non-zero votes
+                          }
                           .reversed(),
                   pastMeetings =
                       meetings
@@ -83,10 +85,12 @@ class MeetingViewModel(
                           .sortedBy { m ->
                             m.datetime
                                 ?: m.dateTimeVotes
-                                    .filter { dtv -> dtv.votes > 0 }
-                                    .minOfOrNull { e -> e.dateTime }
-                          } // will never be null because there is always at least a vote
-                          // that has a non-zero votes
+                                    .filter { dtv -> dtv.voters.isNotEmpty() }
+                                    .minOfOrNull { e ->
+                                      e.dateTime
+                                    } // will never give null because there is always at least a
+                            // vote that has a non-zero votes
+                          }
                           .reversed())
             }
           }

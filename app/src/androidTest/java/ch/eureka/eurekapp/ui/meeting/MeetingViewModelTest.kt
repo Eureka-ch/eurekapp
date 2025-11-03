@@ -116,8 +116,8 @@ class MeetingViewModelTest {
             datetime = null,
             dateTimeVotes =
                 listOf(
-                    DateTimeVote(Timestamp(Date(baseTime - 1000000)), 1),
-                    DateTimeVote(Timestamp(Date(baseTime + 1000001)), 2)))
+                    DateTimeVote(Timestamp(Date(baseTime - 1000000)), listOf("u1")),
+                    DateTimeVote(Timestamp(Date(baseTime + 1000001)), listOf("u1", "u2"))))
 
     repositoryMock.meetingsToReturn = listOf(meetingWithDatetime, meetingWithTime)
 

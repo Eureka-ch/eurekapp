@@ -154,7 +154,7 @@ class CreateMeetingViewModel(
             title = uiState.value.title,
             status = MeetingStatus.OPEN_TO_VOTES,
             duration = uiState.value.duration,
-            dateTimeVotes = listOf(DateTimeVote(Timestamp(timeInstant), 1, listOf(creatorId))),
+            dateTimeVotes = listOf(DateTimeVote(Timestamp(timeInstant), listOf(creatorId))),
             createdBy = creatorId)
 
     viewModelScope.launch {

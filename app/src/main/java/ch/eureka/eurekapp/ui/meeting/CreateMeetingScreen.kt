@@ -75,6 +75,9 @@ object CreateMeetingScreenTestTags {
   const val CREATE_MEETING_BUTTON = "CreateMeetingButton"
 }
 
+/** Spacing between each component or subcomponent on the screen. */
+const val SPACING = 8
+
 /**
  * Composable that displays the create meeting proposal screen.
  *
@@ -119,7 +122,7 @@ fun CreateMeetingScreen(
               text = "Create Meeting",
               style = MaterialTheme.typography.headlineSmall,
               fontWeight = FontWeight.Bold)
-          Spacer(modifier = Modifier.height(8.dp))
+          Spacer(modifier = Modifier.height(SPACING.dp))
           Text(
               modifier =
                   Modifier.testTag(CreateMeetingScreenTestTags.CREATE_MEETING_SCREEN_DESCRIPTION),
@@ -127,7 +130,7 @@ fun CreateMeetingScreen(
               style = MaterialTheme.typography.bodyMedium,
               color = Color.Gray)
 
-          Spacer(Modifier.height(16.dp))
+          Spacer(Modifier.height((2 * SPACING).dp))
 
           OutlinedTextField(
               value = uiState.title,
@@ -150,9 +153,7 @@ fun CreateMeetingScreen(
                 modifier = Modifier.testTag(CreateMeetingScreenTestTags.ERROR_MSG))
           }
 
-          Spacer(Modifier.height(8.dp))
-
-          Spacer(Modifier.height(8.dp))
+          Spacer(Modifier.height(SPACING.dp))
 
           DateInputField(
               selectedDate = uiState.date,
@@ -161,7 +162,7 @@ fun CreateMeetingScreen(
               tag = CreateMeetingScreenTestTags.INPUT_MEETING_DATE,
               onDateSelected = { createMeetingViewModel.setDate(it) })
 
-          Spacer(Modifier.height(8.dp))
+          Spacer(Modifier.height(SPACING.dp))
 
           TimeInputField(
               selectedTime = uiState.time,
@@ -170,7 +171,7 @@ fun CreateMeetingScreen(
               tag = CreateMeetingScreenTestTags.INPUT_MEETING_TIME,
               onTimeSelected = { createMeetingViewModel.setTime(it) })
 
-          Spacer(Modifier.height(8.dp))
+          Spacer(Modifier.height(SPACING.dp))
 
           DurationInputField(
               duration = uiState.duration,
@@ -181,7 +182,7 @@ fun CreateMeetingScreen(
               onDurationSelected = { createMeetingViewModel.setDuration(it) },
           )
 
-          Spacer(Modifier.height(8.dp))
+          Spacer(Modifier.height(SPACING.dp))
 
           Button(
               onClick = { createMeetingViewModel.createMeeting(projectId) },
@@ -374,7 +375,7 @@ fun DurationInputField(
                         selected = tempSelectedOption == option,
                         onClick = null // recommended practice: handle click on `Row`
                         )
-                    Spacer(Modifier.width(8.dp))
+                    Spacer(Modifier.width(SPACING.dp))
                     Text("$option minutes")
                   }
             }

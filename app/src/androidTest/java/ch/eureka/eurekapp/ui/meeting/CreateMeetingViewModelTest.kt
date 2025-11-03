@@ -223,7 +223,7 @@ class CreateMeetingViewModelTest {
     // --- Assert DateTimeVote Content ---
     assertEquals(1, createdMeeting.dateTimeVotes.size)
     val vote = createdMeeting.dateTimeVotes[0]
-    assertEquals(1, vote.votes)
+    assertEquals(1, vote.voters.size)
     assertEquals(listOf(userId), vote.voters)
     assertEquals(expectedInstant.epochSecond, vote.dateTime.seconds)
   }

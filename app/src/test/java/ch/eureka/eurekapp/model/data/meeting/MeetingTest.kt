@@ -187,8 +187,8 @@ class MeetingTest {
     val timestamp2 = Timestamp(Date(0))
     val dateVotes =
         listOf(
-            DateTimeVote(dateTime = timestamp, votes = 2, voters = listOf("u1", "u2")),
-            DateTimeVote(dateTime = timestamp2, votes = 1, voters = listOf("u3")))
+            DateTimeVote(dateTime = timestamp, voters = listOf("u1", "u2")),
+            DateTimeVote(dateTime = timestamp2, voters = listOf("u3")))
     // *** END MODIFICATION ***
 
     val formatVotes = listOf(MeetingFormatVote("user1", MeetingFormat.VIRTUAL))

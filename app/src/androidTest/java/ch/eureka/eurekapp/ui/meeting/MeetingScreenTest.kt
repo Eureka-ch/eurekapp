@@ -10,6 +10,7 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.Participant
+import kotlin.collections.filter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
@@ -74,7 +75,9 @@ class MeetingScreenTest {
         MeetingProvider.sampleMeetings
             .sortedBy { m ->
               m.datetime
-                  ?: m.dateTimeVotes.filter { dtv -> dtv.votes > 0 }.minOfOrNull { e -> e.dateTime }
+                  ?: m.dateTimeVotes
+                      .filter { dtv -> dtv.voters.isNotEmpty() }
+                      .minOfOrNull { e -> e.dateTime }
             }
             .reversed()
             .first { it.status != MeetingStatus.COMPLETED }
@@ -85,7 +88,9 @@ class MeetingScreenTest {
         MeetingProvider.sampleMeetings
             .sortedBy { m ->
               m.datetime
-                  ?: m.dateTimeVotes.filter { dtv -> dtv.votes > 0 }.minOfOrNull { e -> e.dateTime }
+                  ?: m.dateTimeVotes
+                      .filter { dtv -> dtv.voters.isNotEmpty() }
+                      .minOfOrNull { e -> e.dateTime }
             }
             .reversed()
             .first { it.status == MeetingStatus.COMPLETED }

@@ -16,7 +16,7 @@ import com.google.firebase.Timestamp
  * @property taskId Optional ID of the task this meeting is associated with.
  * @property title The name/title of the meeting.
  * @property status Current status of the meeting (SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED).
- * @property duration Duration fo the meeting in minutes
+ * @property duration Duration of the meeting in minutes.
  * @property dateTimeVotes Votes of every member of the project for the date and time of the
  *   meeting.
  * @property formatVotes Votes of every member of the project for the format of the meeting.
