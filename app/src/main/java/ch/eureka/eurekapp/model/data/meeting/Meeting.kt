@@ -36,7 +36,7 @@ data class Meeting(
     val title: String = "",
     val status: MeetingStatus = MeetingStatus.OPEN_TO_VOTES,
     val duration: Int = 30,
-    val dateTimeVotes: Map<Timestamp, Int> = emptyMap(),
+    val dateTimeVotes: List<DateTimeVote> = emptyList(),
     val formatVotes: List<MeetingFormatVote> = emptyList(),
     val datetime: Timestamp? = Timestamp.now(),
     val format: MeetingFormat? = null,

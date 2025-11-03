@@ -14,7 +14,8 @@ import org.junit.Test
 /**
  * Test suite for Meeting model.
  *
- * Note: Some of these tests were co-authored by Claude Code and chatGPT.
+ * Note: Some of these tests were co-authored by Claude Code and chatGPT. Updated by Gemini to
+ * support List<DateTimeVote>.
  */
 class MeetingTest {
 
@@ -27,9 +28,9 @@ class MeetingTest {
     assertNull(meeting.taskId)
     assertEquals("", meeting.title)
     assertEquals(MeetingStatus.OPEN_TO_VOTES, meeting.status)
-    assertEquals(30, meeting.duration) // Check default duration
+    assertEquals(30, meeting.duration)
     assertEquals(emptyList<String>(), meeting.attachmentUrls)
-    assertTrue(meeting.dateTimeVotes.isEmpty())
+    assertTrue(meeting.dateTimeVotes.isEmpty()) // This now checks an empty List
     assertTrue(meeting.formatVotes.isEmpty())
     assertNotNull(meeting.datetime) // Default is Timestamp.now()
     assertNull(meeting.format)
@@ -172,7 +173,7 @@ class MeetingTest {
     assertTrue(meetingString.contains("mtg123"))
     assertTrue(meetingString.contains("prj123"))
     assertTrue(meetingString.contains("Sprint Planning"))
-    assertTrue(meetingString.contains("duration=30")) // Check new field
+    assertTrue(meetingString.contains("duration=30"))
   }
 
   @Test
@@ -180,10 +181,16 @@ class MeetingTest {
     val timestamp = Timestamp.now()
     val location = Location(latitude = 46.0, longitude = 7.0)
     val duration = 90
-    // Updated to match Map<Timestamp, Int>
-    val dateVotes: Map<Timestamp, Int> = mapOf(timestamp to 2, Timestamp(Date(0)) to 1)
-    // This assumes MeetingFormatVote is a data class like: data class MeetingFormatVote(val userId:
-    // String, val format: MeetingFormat)
+
+    // *** MODIFIED HERE ***
+    // Updated to match List<DateTimeVote>
+    val timestamp2 = Timestamp(Date(0))
+    val dateVotes =
+        listOf(
+            DateTimeVote(dateTime = timestamp, votes = 2, voters = listOf("u1", "u2")),
+            DateTimeVote(dateTime = timestamp2, votes = 1, voters = listOf("u3")))
+    // *** END MODIFICATION ***
+
     val formatVotes = listOf(MeetingFormatVote("user1", MeetingFormat.VIRTUAL))
 
     val meeting =
@@ -201,7 +208,7 @@ class MeetingTest {
             createdBy = "user123",
             participantIds = listOf("u1", "u2"),
             duration = duration,
-            dateTimeVotes = dateVotes,
+            dateTimeVotes = dateVotes, // Assign new list
             formatVotes = formatVotes)
 
     assertEquals("m123", meeting.meetingID)
@@ -216,8 +223,8 @@ class MeetingTest {
     assertEquals(listOf("url1", "url2"), meeting.attachmentUrls)
     assertEquals("user123", meeting.createdBy)
     assertEquals(listOf("u1", "u2"), meeting.participantIds)
-    assertEquals(duration, meeting.duration) // Check duration
-    assertEquals(dateVotes, meeting.dateTimeVotes)
+    assertEquals(duration, meeting.duration)
+    assertEquals(dateVotes, meeting.dateTimeVotes) // Check new list
     assertEquals(formatVotes, meeting.formatVotes)
   }
 
@@ -249,7 +256,11 @@ class MeetingTest {
     assertEquals("Kickoff", meeting.component4()) // title
     assertEquals(MeetingStatus.OPEN_TO_VOTES, meeting.component5()) // status
     assertEquals(30, meeting.component6()) // duration
-    assertEquals(emptyMap<Timestamp, Int>(), meeting.component7()) // dateTimeVotes
+
+    // *** MODIFIED HERE ***
+    assertEquals(emptyList<DateTimeVote>(), meeting.component7()) // dateTimeVotes
+    // *** END MODIFICATION ***
+
     assertEquals(emptyList<MeetingFormatVote>(), meeting.component8()) // formatVotes
     assertNotNull(meeting.component9()) // datetime
     assertNull(meeting.component10()) // format
