@@ -72,7 +72,10 @@ class MeetingScreenTest {
     // Find an upcoming meeting's title
     val upcomingMeeting =
         MeetingProvider.sampleMeetings
-            .sortedBy { m -> m.datetime ?: m.dateTimeVotes.filter { e -> e.value != 0 }.keys.min() }
+            .sortedBy { m ->
+              m.datetime
+                  ?: m.dateTimeVotes.filter { dtv -> dtv.votes > 0 }.minOfOrNull { e -> e.dateTime }
+            }
             .reversed()
             .first { it.status != MeetingStatus.COMPLETED }
     composeTestRule.onNodeWithText(upcomingMeeting.title).assertIsDisplayed()
@@ -80,7 +83,10 @@ class MeetingScreenTest {
     // Ensure a past meeting's title is not displayed
     val pastMeeting =
         MeetingProvider.sampleMeetings
-            .sortedBy { m -> m.datetime ?: m.dateTimeVotes.filter { e -> e.value != 0 }.keys.min() }
+            .sortedBy { m ->
+              m.datetime
+                  ?: m.dateTimeVotes.filter { dtv -> dtv.votes > 0 }.minOfOrNull { e -> e.dateTime }
+            }
             .reversed()
             .first { it.status == MeetingStatus.COMPLETED }
     composeTestRule.onNodeWithText(pastMeeting.title).assertDoesNotExist()

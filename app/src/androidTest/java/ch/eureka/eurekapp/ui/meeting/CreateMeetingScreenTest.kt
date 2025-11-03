@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.ui.meeting
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -15,6 +16,7 @@ import java.time.temporal.ChronoUnit
 import java.util.TimeZone
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -76,10 +78,11 @@ class CreateMeetingScreenTest {
         .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE)
         .assertIsDisplayed()
     composeTestRule
-        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_START_TIME)
+        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TIME)
         .assertIsDisplayed()
+    // *** ADDED THIS CHECK ***
     composeTestRule
-        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_END_TIME)
+        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DURATION)
         .assertIsDisplayed()
 
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.ERROR_MSG).assertDoesNotExist()
@@ -115,50 +118,6 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun startTime_onFocusChanged_triggersTouchStartTime() {
-    assertFalse(viewModel.uiState.value.hasTouchedStartTime)
-
-    composeTestRule.onNodeWithText("Start Time").performClick()
-
-    composeTestRule.waitForIdle()
-    assertTrue(viewModel.uiState.value.hasTouchedStartTime)
-  }
-
-  @Test
-  fun endTime_onFocusChanged_triggersTouchEndTime() {
-    assertFalse(viewModel.uiState.value.hasTouchedEndTime)
-
-    composeTestRule.onNodeWithText("End Time").performClick()
-
-    composeTestRule.waitForIdle()
-    assertTrue(viewModel.uiState.value.hasTouchedEndTime)
-  }
-
-  @Test
-  fun timeValidation_whenStartTimeAfterEndTime_showsError() {
-    composeTestRule.runOnIdle {
-      viewModel.setStartTime(LocalTime.of(14, 0))
-      viewModel.setEndTime(LocalTime.of(12, 0))
-      viewModel.touchStartTime()
-    }
-
-    composeTestRule.onNodeWithText("Start time should be smaller than end time").assertIsDisplayed()
-
-    composeTestRule.runOnIdle { viewModel.touchEndTime() }
-
-    composeTestRule.onNodeWithText("End time should be greater than start time").assertIsDisplayed()
-
-    composeTestRule.runOnIdle { viewModel.setStartTime(LocalTime.of(11, 0)) }
-
-    composeTestRule
-        .onNodeWithText("Start time should be smaller than end time")
-        .assertDoesNotExist()
-    composeTestRule
-        .onNodeWithText("End time should be greater than start time")
-        .assertDoesNotExist()
-  }
-
-  @Test
   fun saveButton_isEnabled_whenStateIsValid() {
     composeTestRule
         .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
@@ -169,10 +128,11 @@ class CreateMeetingScreenTest {
         .performTextInput("Valid Meeting Title")
 
     composeTestRule.runOnIdle {
-      viewModel.setStartTime(LocalTime.of(10, 0))
-      viewModel.setEndTime(LocalTime.of(11, 0))
+      viewModel.setTime(LocalTime.of(10, 0))
+      viewModel.setDuration(15) // This sets the duration directly on the VM
     }
 
+    // Button is enabled because state is valid (title + duration >= 5)
     composeTestRule
         .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
         .assertIsEnabled()
@@ -194,8 +154,8 @@ class CreateMeetingScreenTest {
         .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
         .performTextInput("My Successful Meeting")
     composeTestRule.runOnIdle {
-      viewModel.setStartTime(LocalTime.of(9, 30))
-      viewModel.setEndTime(LocalTime.of(10, 30))
+      viewModel.setTime(LocalTime.of(9, 30))
+      viewModel.setDuration(15) // Set valid duration
     }
 
     composeTestRule
@@ -220,16 +180,21 @@ class CreateMeetingScreenTest {
         .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
         .performTextInput("My Failed Meeting")
     composeTestRule.runOnIdle {
-      viewModel.setStartTime(LocalTime.of(10, 0))
-      viewModel.setEndTime(LocalTime.of(11, 0))
+      viewModel.setTime(LocalTime.of(10, 0))
+      viewModel.setDuration(30) // Set valid duration
     }
 
-    composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON).performClick()
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
+        .assertIsEnabled() // Ensure button is enabled before click
+        .performClick()
 
     composeTestRule.waitForIdle()
 
     assertFalse("onDone callback was invoked on failure", onDoneCalled)
 
+    // The LaunchedEffect should show the toast, then immediately set the error to null
+    // We check that the VM state is clean
     assertNull("errorMsg was not cleared by the LaunchedEffect", viewModel.uiState.value.errorMsg)
   }
 
@@ -263,9 +228,7 @@ class CreateMeetingScreenTest {
 
   @Test
   fun timeInputField_opensDialog_andCancels() {
-    composeTestRule
-        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_START_TIME)
-        .performClick()
+    composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TIME).performClick()
 
     composeTestRule.onNodeWithText("Select time").assertIsDisplayed()
 
@@ -276,9 +239,9 @@ class CreateMeetingScreenTest {
 
   @Test
   fun timeInputField_opensDialogWithIcon_andConfirms() {
-    val initialTimeTruncated = viewModel.uiState.value.endTime.truncatedTo(ChronoUnit.MINUTES)
+    val initialTimeTruncated = viewModel.uiState.value.time.truncatedTo(ChronoUnit.MINUTES)
 
-    composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_END_TIME).performClick()
+    composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TIME).performClick()
 
     composeTestRule.onNodeWithText("Select time").assertIsDisplayed()
 
@@ -286,8 +249,92 @@ class CreateMeetingScreenTest {
 
     composeTestRule.onNodeWithText("Select time").assertDoesNotExist()
 
-    val actualTimeTruncated = viewModel.uiState.value.endTime.truncatedTo(ChronoUnit.MINUTES)
+    val actualTimeTruncated = viewModel.uiState.value.time.truncatedTo(ChronoUnit.MINUTES)
 
     assertEquals(initialTimeTruncated, actualTimeTruncated)
+  }
+
+  // --- NEW TESTS FOR DURATION INPUT FIELD ---
+
+  @Test
+  fun durationInputField_opensDialog_andCancels() {
+    val initialDuration = viewModel.uiState.value.duration
+    assertEquals(0, initialDuration) // Check initial state
+
+    // Click the duration field text area
+    composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DURATION).performClick()
+
+    // Dialog appears
+    composeTestRule.onNodeWithText("Select Duration").assertIsDisplayed()
+    findOkButton().assertIsDisplayed()
+
+    // Click on an option but then cancel
+    composeTestRule.onNodeWithText("30 minutes").performClick()
+    findCancelButton().performClick()
+
+    // Dialog disappears
+    composeTestRule.onNodeWithText("Select Duration").assertDoesNotExist()
+
+    // Value is unchanged in the view model
+    assertEquals(initialDuration, viewModel.uiState.value.duration)
+  }
+
+  @Test
+  fun durationInputField_opensDialogWithIcon_selectsOption_andConfirms() {
+    val initialDuration = viewModel.uiState.value.duration
+    assertEquals(0, initialDuration)
+
+    // Click the duration field icon (this part is correct)
+    composeTestRule.onNodeWithContentDescription("Select duration").performClick()
+
+    // Dialog appears
+    composeTestRule.onNodeWithText("Select Duration").assertIsDisplayed()
+
+    // Select "45 minutes"
+    composeTestRule.onNodeWithText("45 minutes").performClick()
+
+    // Click OK
+    findOkButton().performClick()
+
+    // Dialog disappears
+    composeTestRule.onNodeWithText("Select Duration").assertDoesNotExist()
+
+    // Check that the view model and text field are updated
+    val newDuration = viewModel.uiState.value.duration
+    assertNotEquals(initialDuration, newDuration)
+    assertEquals(45, newDuration)
+
+    // Find the node by its label text "Duration" and check its value
+    composeTestRule
+        .onNodeWithText("Duration")
+        .assertTextEquals("Duration", "45 minutes") // Check the OutlinedTextField value
+  }
+
+  @Test
+  fun saveButton_isEnabled_afterSelectingAllInputsViaUI() {
+    // 1. Initially, button is disabled
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
+        .assertIsNotEnabled()
+
+    // 2. Enter a title
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
+        .performTextInput("Full UI Test Meeting")
+
+    // 3. Button is still disabled (duration is 0)
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
+        .assertIsNotEnabled()
+
+    // 4. Select a duration
+    composeTestRule.onNodeWithContentDescription("Select duration").performClick()
+    composeTestRule.onNodeWithText("30 minutes").performClick()
+    findOkButton().performClick()
+
+    // 5. Button is now enabled
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
+        .assertIsEnabled()
   }
 }
