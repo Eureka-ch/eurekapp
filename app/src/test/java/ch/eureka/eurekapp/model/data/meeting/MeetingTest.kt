@@ -27,11 +27,11 @@ class MeetingTest {
     assertNull(meeting.taskId)
     assertEquals("", meeting.title)
     assertEquals(MeetingStatus.OPEN_TO_VOTES, meeting.status)
+    assertEquals(30, meeting.duration) // Check default duration
     assertEquals(emptyList<String>(), meeting.attachmentUrls)
-    assertNotNull(meeting.timeSlot)
     assertTrue(meeting.dateTimeVotes.isEmpty())
     assertTrue(meeting.formatVotes.isEmpty())
-    assertNotNull(meeting.datetime)
+    assertNotNull(meeting.datetime) // Default is Timestamp.now()
     assertNull(meeting.format)
     assertNull(meeting.location)
     assertNull(meeting.link)
@@ -42,7 +42,8 @@ class MeetingTest {
   @Test
   fun meeting_withParameters_setsCorrectValues() {
     val attachments = listOf("url1", "url2")
-    val timeSlot = TimeSlot(Timestamp.now(), Timestamp.now())
+    val testTimestamp = Timestamp.now()
+    val testDuration = 60
 
     val meeting =
         Meeting(
@@ -52,7 +53,8 @@ class MeetingTest {
             title = "Sprint Planning",
             status = MeetingStatus.SCHEDULED,
             attachmentUrls = attachments,
-            timeSlot = timeSlot)
+            duration = testDuration,
+            datetime = testTimestamp)
 
     assertEquals("mtg123", meeting.meetingID)
     assertEquals("prj123", meeting.projectId)
@@ -60,7 +62,8 @@ class MeetingTest {
     assertEquals("Sprint Planning", meeting.title)
     assertEquals(MeetingStatus.SCHEDULED, meeting.status)
     assertEquals(attachments, meeting.attachmentUrls)
-    assertEquals(timeSlot, meeting.timeSlot)
+    assertEquals(testTimestamp, meeting.datetime)
+    assertEquals(testDuration, meeting.duration)
   }
 
   @Test
@@ -96,7 +99,7 @@ class MeetingTest {
   @Test
   fun meeting_equals_comparesCorrectly() {
     val fixedTimestamp = Timestamp(Date(0))
-    val fixedTimeSlot = TimeSlot(fixedTimestamp, fixedTimestamp)
+    val fixedDuration = 60
     val meeting1 =
         Meeting(
             meetingID = "mtg123",
@@ -104,7 +107,7 @@ class MeetingTest {
             taskId = "task123",
             title = "Sprint Planning",
             datetime = fixedTimestamp,
-            timeSlot = fixedTimeSlot,
+            duration = fixedDuration,
             status = MeetingStatus.SCHEDULED)
     val meeting2 =
         Meeting(
@@ -113,7 +116,7 @@ class MeetingTest {
             taskId = "task123",
             title = "Sprint Planning",
             datetime = fixedTimestamp,
-            timeSlot = fixedTimeSlot,
+            duration = fixedDuration,
             status = MeetingStatus.SCHEDULED)
     val meeting3 =
         Meeting(
@@ -122,7 +125,7 @@ class MeetingTest {
             taskId = null,
             title = "Retrospective",
             datetime = fixedTimestamp,
-            timeSlot = fixedTimeSlot,
+            duration = fixedDuration,
             status = MeetingStatus.COMPLETED)
 
     assertEquals(meeting1, meeting2)
@@ -132,7 +135,7 @@ class MeetingTest {
   @Test
   fun meeting_hashCode_isConsistent() {
     val fixedTimestamp = Timestamp(Date(0))
-    val fixedTimeSlot = TimeSlot(fixedTimestamp, fixedTimestamp)
+    val fixedDuration = 60
     val meeting1 =
         Meeting(
             meetingID = "mtg123",
@@ -140,7 +143,7 @@ class MeetingTest {
             taskId = "task123",
             title = "Sprint Planning",
             datetime = fixedTimestamp,
-            timeSlot = fixedTimeSlot,
+            duration = fixedDuration,
             status = MeetingStatus.SCHEDULED)
     val meeting2 =
         Meeting(
@@ -149,7 +152,7 @@ class MeetingTest {
             taskId = "task123",
             title = "Sprint Planning",
             datetime = fixedTimestamp,
-            timeSlot = fixedTimeSlot,
+            duration = fixedDuration,
             status = MeetingStatus.SCHEDULED)
 
     assertEquals(meeting1.hashCode(), meeting2.hashCode())
@@ -169,14 +172,18 @@ class MeetingTest {
     assertTrue(meetingString.contains("mtg123"))
     assertTrue(meetingString.contains("prj123"))
     assertTrue(meetingString.contains("Sprint Planning"))
+    assertTrue(meetingString.contains("duration=30")) // Check new field
   }
 
   @Test
   fun testFullConstructorAndPropertyValues() {
     val timestamp = Timestamp.now()
     val location = Location(latitude = 46.0, longitude = 7.0)
-    val timeSlot = TimeSlot(timestamp, Timestamp(Date(timestamp.toDate().time + 60000)))
-    val dateVotes = listOf(MeetingDateTimeVotes("user1", listOf(timestamp)))
+    val duration = 90
+    // Updated to match Map<Timestamp, Int>
+    val dateVotes: Map<Timestamp, Int> = mapOf(timestamp to 2, Timestamp(Date(0)) to 1)
+    // This assumes MeetingFormatVote is a data class like: data class MeetingFormatVote(val userId:
+    // String, val format: MeetingFormat)
     val formatVotes = listOf(MeetingFormatVote("user1", MeetingFormat.VIRTUAL))
 
     val meeting =
@@ -193,7 +200,7 @@ class MeetingTest {
             attachmentUrls = listOf("url1", "url2"),
             createdBy = "user123",
             participantIds = listOf("u1", "u2"),
-            timeSlot = timeSlot,
+            duration = duration,
             dateTimeVotes = dateVotes,
             formatVotes = formatVotes)
 
@@ -209,7 +216,7 @@ class MeetingTest {
     assertEquals(listOf("url1", "url2"), meeting.attachmentUrls)
     assertEquals("user123", meeting.createdBy)
     assertEquals(listOf("u1", "u2"), meeting.participantIds)
-    assertEquals(timeSlot, meeting.timeSlot)
+    assertEquals(duration, meeting.duration) // Check duration
     assertEquals(dateVotes, meeting.dateTimeVotes)
     assertEquals(formatVotes, meeting.formatVotes)
   }
@@ -235,10 +242,21 @@ class MeetingTest {
     assertTrue(str.contains("proj1"))
     assertTrue(str.contains("Kickoff"))
 
-    // Component functions
-    assertEquals("id123", meeting.component1())
-    assertEquals("proj1", meeting.component2())
+    // Test all component functions for 100% data class coverage
+    assertEquals("id123", meeting.component1()) // meetingID
+    assertEquals("proj1", meeting.component2()) // projectId
     assertNull(meeting.component3()) // taskId
-    assertEquals("Kickoff", meeting.component4())
+    assertEquals("Kickoff", meeting.component4()) // title
+    assertEquals(MeetingStatus.OPEN_TO_VOTES, meeting.component5()) // status
+    assertEquals(30, meeting.component6()) // duration
+    assertEquals(emptyMap<Timestamp, Int>(), meeting.component7()) // dateTimeVotes
+    assertEquals(emptyList<MeetingFormatVote>(), meeting.component8()) // formatVotes
+    assertNotNull(meeting.component9()) // datetime
+    assertNull(meeting.component10()) // format
+    assertNull(meeting.component11()) // location
+    assertNull(meeting.component12()) // link
+    assertEquals(emptyList<String>(), meeting.component13()) // attachmentUrls
+    assertEquals("", meeting.component14()) // createdBy
+    assertEquals(emptyList<String>(), meeting.component15()) // participantIds
   }
 }
