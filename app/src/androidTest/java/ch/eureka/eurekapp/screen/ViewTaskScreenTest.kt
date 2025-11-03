@@ -156,7 +156,7 @@ open class ViewTaskScreenTest : TestCase() {
             dueDate = "20/12/2024",
             status = TaskStatus.IN_PROGRESS)
 
-        val viewModel = ViewTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        val viewModel = ViewTaskViewModel(taskRepository)
         lastViewVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
@@ -191,7 +191,7 @@ open class ViewTaskScreenTest : TestCase() {
         setupTestProject(projectId)
         // Do not setup task
 
-        val viewModel = ViewTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        val viewModel = ViewTaskViewModel(taskRepository)
         lastViewVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
@@ -221,7 +221,7 @@ open class ViewTaskScreenTest : TestCase() {
         setupTestProject(projectId)
         setupTestTask(projectId, taskId, attachmentUrls = listOf(attachmentUrl1, attachmentUrl2))
 
-        val viewModel = ViewTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        val viewModel = ViewTaskViewModel(taskRepository)
         lastViewVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
@@ -248,7 +248,7 @@ open class ViewTaskScreenTest : TestCase() {
         setupTestProject(projectId)
         setupTestTask(projectId, taskId)
 
-        val viewModel = ViewTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        val viewModel = ViewTaskViewModel(taskRepository)
         lastViewVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
@@ -286,7 +286,7 @@ open class ViewTaskScreenTest : TestCase() {
             description = "Read Only Description",
             dueDate = "25/11/2025")
 
-        val viewModel = ViewTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        val viewModel = ViewTaskViewModel(taskRepository)
         lastViewVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
@@ -315,7 +315,7 @@ open class ViewTaskScreenTest : TestCase() {
         setupTestProject(projectId)
         setupTestTask(projectId, taskId, status = TaskStatus.COMPLETED)
 
-        val viewModel = ViewTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        val viewModel = ViewTaskViewModel(taskRepository)
         lastViewVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
@@ -342,7 +342,7 @@ open class ViewTaskScreenTest : TestCase() {
         setupTestProject(projectId)
         setupTestTask(projectId, taskId, attachmentUrls = emptyList())
 
-        val viewModel = ViewTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        val viewModel = ViewTaskViewModel(taskRepository)
         lastViewVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
@@ -476,9 +476,7 @@ open class ViewTaskScreenTest : TestCase() {
     // Create a single, remembered ViewTaskViewModel instance so it is stable across navigation.
     // This ensures the ViewModel keeps collecting updates (and ViewTaskScreen reloads data)
     // when navigating to EditTaskScreen and back.
-    val sharedViewModel = remember {
-      ViewTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
-    }
+    val sharedViewModel = remember { ViewTaskViewModel(taskRepository) }
     // Also remember TaskScreenViewModel to prevent orphaned listeners
     val sharedTaskScreenViewModel = remember { TaskScreenViewModel() }
 
@@ -519,9 +517,7 @@ open class ViewTaskScreenTest : TestCase() {
   ) {
     // Use the provided ViewModel if given, otherwise create a remembered instance so the VM is
     // stable.
-    val vm =
-        viewModel
-            ?: remember { ViewTaskViewModel(taskRepository, fileRepository = FakeFileRepository()) }
+    val vm = viewModel ?: remember { ViewTaskViewModel(taskRepository) }
     NavHost(
         navController,
         startDestination = Route.TasksSection.TaskDetail(projectId = projectId, taskId = taskId)) {

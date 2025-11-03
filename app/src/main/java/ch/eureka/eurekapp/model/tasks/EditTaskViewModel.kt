@@ -36,7 +36,9 @@ class EditTaskViewModel(
     fileRepository: FileStorageRepository = FirestoreRepositoriesProvider.fileRepository,
     getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     dispatcher: CoroutineDispatcher = Dispatchers.IO
-) : BaseTaskViewModel<EditTaskState>(taskRepository, fileRepository, getCurrentUserId, dispatcher) {
+) :
+    ReadWriteTaskViewModel<EditTaskState>(
+        taskRepository, fileRepository, getCurrentUserId, dispatcher) {
 
   private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
