@@ -69,12 +69,18 @@ class MeetingViewModel(
                   upcomingMeetings =
                       meetings
                           .filterNot { meeting -> meeting.status == MeetingStatus.COMPLETED }
-                          .sortedBy { m -> m.datetime ?: m.timeSlot.startTime }
+                          .sortedBy { m ->
+                            m.datetime ?: m.dateTimeVotes.filter { e -> e.value != 0 }.keys.min()
+                          } // will never throw exception because there is always at least a key
+                          // that has a non-zero value
                           .reversed(),
                   pastMeetings =
                       meetings
                           .filter { meeting -> meeting.status == MeetingStatus.COMPLETED }
-                          .sortedBy { m -> m.datetime ?: m.timeSlot.startTime }
+                          .sortedBy { m ->
+                            m.datetime ?: m.dateTimeVotes.filter { e -> e.value != 0 }.keys.min()
+                          } // will never throw exception because there is always at least a key
+                          // that has a non-zero value
                           .reversed())
             }
           }

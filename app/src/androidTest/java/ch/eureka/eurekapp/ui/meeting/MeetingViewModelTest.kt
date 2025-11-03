@@ -114,10 +114,10 @@ class MeetingViewModelTest {
             title = "With TimeSlot",
             status = MeetingStatus.SCHEDULED,
             datetime = null,
-            timeSlot =
-                TimeSlot(
-                    startTime = Timestamp(Date(baseTime - 1000000)),
-                    endTime = Timestamp(Date(baseTime))))
+            dateTimeVotes =
+                mapOf(
+                    Timestamp(Date(baseTime - 1000000)) to 1,
+                    Timestamp(Date(baseTime + 1000001)) to 2))
 
     repositoryMock.meetingsToReturn = listOf(meetingWithDatetime, meetingWithTimeSlot)
 

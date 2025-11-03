@@ -75,6 +75,11 @@ object MeetingProvider {
               title = "Bravo Project Weekly Sync",
               status = MeetingStatus.SCHEDULED,
               duration = 30,
+              dateTimeVotes =
+                  mapOf(
+                      createTimestamp(2025, 10, 20, 10, 0) to 2, // user 0, 2
+                      createTimestamp(2025, 11, 20, 21, 0) to 1, // user 1
+                  ),
               datetime = createTimestamp(2025, 10, 17, 15, 0), // This Friday 3 PM
               format = MeetingFormat.VIRTUAL,
               link = "https://meet.google.com/abc-defg-hij",
@@ -89,6 +94,10 @@ object MeetingProvider {
               title = "Database Migration Strategy",
               status = MeetingStatus.SCHEDULED,
               duration = 90,
+              dateTimeVotes =
+                  mapOf(
+                      createTimestamp(2025, 10, 20, 10, 0) to 2,
+                  ),
               datetime = createTimestamp(2025, 10, 22, 10, 30), // Next Wednesday 10:30 AM
               format = MeetingFormat.IN_PERSON,
               location = lausanneOffice,
@@ -102,6 +111,10 @@ object MeetingProvider {
               title = "Q4 Marketing Brainstorm",
               status = MeetingStatus.COMPLETED,
               duration = 60,
+              dateTimeVotes =
+                  mapOf(
+                      createTimestamp(2026, 1, 1, 9, 0) to 6,
+                  ),
               datetime = createTimestamp(2025, 10, 13, 14, 0), // Last Monday 2 PM
               format = MeetingFormat.IN_PERSON,
               location = zurichHub,
@@ -117,6 +130,10 @@ object MeetingProvider {
               title = "API Documentation Final Review",
               status = MeetingStatus.COMPLETED,
               duration = 60,
+              dateTimeVotes =
+                  mapOf(
+                      createTimestamp(2025, 4, 5, 12, 0) to 1,
+                  ),
               datetime = createTimestamp(2025, 10, 10, 11, 0), // Last Friday 11 AM
               format = MeetingFormat.VIRTUAL,
               link = "https://meet.google.com/api-docs-review",
@@ -148,6 +165,10 @@ object MeetingProvider {
               title = "Client On-site Visit Planning",
               status = MeetingStatus.OPEN_TO_VOTES,
               duration = 120,
+              dateTimeVotes =
+                  mapOf(
+                      createTimestamp(2025, 4, 5, 12, 0) to 1,
+                  ),
               // `timeSlot` property removed
               // dateTimeVotes uses default emptyMap()
               // formatVotes uses default emptyList()
@@ -164,6 +185,10 @@ object MeetingProvider {
               title = "Bravo Project All-Hands",
               status = MeetingStatus.SCHEDULED,
               duration = 45,
+              dateTimeVotes =
+                  mapOf(
+                      createTimestamp(2025, 4, 5, 12, 0) to 1,
+                  ),
               datetime = createTimestamp(2025, 11, 3, 16, 0),
               format = MeetingFormat.VIRTUAL,
               link = "https://teams.microsoft.com/...",
@@ -177,6 +202,10 @@ object MeetingProvider {
               title = "Quick Check-in",
               status = MeetingStatus.SCHEDULED,
               duration = 15,
+              dateTimeVotes =
+                  mapOf(
+                      createTimestamp(2025, 4, 5, 12, 0) to 1,
+                  ),
               datetime = createTimestamp(2025, 10, 17, 9, 15),
               format = MeetingFormat.VIRTUAL, // Format is required for scheduled meetings
               createdBy = userIds[0],
@@ -189,6 +218,10 @@ object MeetingProvider {
               title = "Budget Preliminary Discussion",
               status = MeetingStatus.COMPLETED,
               duration = 60,
+              dateTimeVotes =
+                  mapOf(
+                      createTimestamp(2025, 4, 5, 12, 0) to 1,
+                  ),
               datetime = createTimestamp(2025, 9, 30, 13, 0),
               format = MeetingFormat.IN_PERSON,
               location = lausanneOffice,
@@ -229,6 +262,10 @@ object MeetingProvider {
               title = "2026 Project Apollo Roadmap",
               status = MeetingStatus.SCHEDULED,
               duration = 180,
+              dateTimeVotes =
+                  mapOf(
+                      createTimestamp(2025, 4, 5, 12, 0) to 1,
+                  ),
               datetime = createTimestamp(2025, 12, 15, 11, 0),
               format = MeetingFormat.IN_PERSON,
               location = genevaClientHQ,
@@ -242,6 +279,10 @@ object MeetingProvider {
               title = "Bravo Project Weekly Sync (Part 2)",
               status = MeetingStatus.SCHEDULED,
               duration = 30,
+              dateTimeVotes =
+                  mapOf(
+                      createTimestamp(2025, 4, 5, 12, 0) to 1,
+                  ),
               datetime = createTimestamp(2025, 10, 17, 16, 0), // Right after meeting #2
               format = MeetingFormat.VIRTUAL,
               link = "https://meet.google.com/abc-defg-hij",
@@ -276,6 +317,10 @@ object MeetingProvider {
               title = "Urgent Hotfix Discussion",
               status = MeetingStatus.IN_PROGRESS,
               duration = 45,
+              dateTimeVotes =
+                  mapOf(
+                      createTimestamp(2025, 4, 5, 12, 0) to 1,
+                  ),
               datetime = createTimestamp(2025, 10, 16, 16, 45), // Today 4:45 PM
               format = MeetingFormat.IN_PERSON,
               location = lausanneOffice,

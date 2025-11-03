@@ -72,7 +72,7 @@ class MeetingScreenTest {
     // Find an upcoming meeting's title
     val upcomingMeeting =
         MeetingProvider.sampleMeetings
-            .sortedBy { m -> m.datetime ?: m.timeSlot.startTime }
+            .sortedBy { m -> m.datetime ?: m.dateTimeVotes.filter { e -> e.value != 0 }.keys.min() }
             .reversed()
             .first { it.status != MeetingStatus.COMPLETED }
     composeTestRule.onNodeWithText(upcomingMeeting.title).assertIsDisplayed()
@@ -80,7 +80,7 @@ class MeetingScreenTest {
     // Ensure a past meeting's title is not displayed
     val pastMeeting =
         MeetingProvider.sampleMeetings
-            .sortedBy { m -> m.datetime ?: m.timeSlot.startTime }
+            .sortedBy { m -> m.datetime ?: m.dateTimeVotes.filter { e -> e.value != 0 }.keys.min() }
             .reversed()
             .first { it.status == MeetingStatus.COMPLETED }
     composeTestRule.onNodeWithText(pastMeeting.title).assertDoesNotExist()
@@ -146,7 +146,7 @@ class MeetingScreenTest {
         .onNodeWithTag(MeetingScreenTestTags.MEETING_STATUS_TEXT, useUnmergedTree = true)
         .assertIsDisplayed()
     composeTestRule
-        .onNodeWithTag(MeetingScreenTestTags.MEETING_TIMESLOT, useUnmergedTree = true)
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_DURATION, useUnmergedTree = true)
         .assertIsDisplayed()
     composeTestRule
         .onNodeWithTag(

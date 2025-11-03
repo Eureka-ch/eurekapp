@@ -11,8 +11,6 @@ import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
-import ch.eureka.eurekapp.model.data.meeting.TimeSlot
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -173,10 +171,6 @@ class CreateMeetingViewModel(
             projectId = projectId,
             title = uiState.value.title,
             status = MeetingStatus.OPEN_TO_VOTES,
-            timeSlot =
-                TimeSlot(
-                    startTime = Timestamp(startTimeInstant.epochSecond, startTimeInstant.nano),
-                    endTime = Timestamp(endTimeInstant.epochSecond, endTimeInstant.nano)),
             createdBy = creatorId)
 
     viewModelScope.launch {

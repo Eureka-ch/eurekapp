@@ -50,7 +50,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
-import ch.eureka.eurekapp.model.data.meeting.formatTimeSlot
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.utils.Formatters
 
@@ -65,7 +64,7 @@ object MeetingScreenTestTags {
   const val MEETING_TITLE = "MeetingTitle"
   const val MEETING_STATUS_TEXT = "MeetingStatusText"
   const val MEETING_DATETIME = "MeetingDateTime"
-  const val MEETING_TIMESLOT = "MeetingTimeSlot"
+  const val MEETING_DURATION = "MeetingDuration"
   const val MEETING_VOTE_FOR_DATETIME_MESSAGE = "MeetingVoteForDateTimeMessage"
   const val MEETING_VOTE_FOR_FORMAT_MESSAGE = "MeetingVoteForFormatMessage"
   const val MEETING_LINK = "MeetingLink"
@@ -141,7 +140,7 @@ fun MeetingScreen(
               Spacer(Modifier.height(16.dp))
 
               RoundedTabRow(
-                  tabs = MeetingTab.values(),
+                  tabs = MeetingTab.entries.toTypedArray(),
                   selectedTab = uiState.selectedTab,
                   onTabSelected = { meetingViewModel.selectTab(it) })
 
@@ -273,8 +272,8 @@ fun MeetingCard(
                       tint = MaterialTheme.colorScheme.onSurfaceVariant)
                   Spacer(modifier = Modifier.width(4.dp))
                   Text(
-                      modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_TIMESLOT),
-                      text = meeting.timeSlot.formatTimeSlot(),
+                      modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_DURATION),
+                      text = "${meeting.duration} minutes",
                       style = MaterialTheme.typography.bodySmall,
                       color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
