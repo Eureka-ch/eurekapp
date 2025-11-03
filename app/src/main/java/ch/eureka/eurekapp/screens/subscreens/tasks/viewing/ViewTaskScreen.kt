@@ -25,7 +25,6 @@ import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.tasks.ViewTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AttachmentsList
-import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDescriptionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskTitleField
@@ -59,11 +58,7 @@ fun ViewTaskScreen(
   val context = LocalContext.current
   val scrollState = rememberScrollState()
 
-  LaunchedEffect(projectId) { viewTaskViewModel.setProjectId(projectId) }
-
-  LaunchedEffect(taskId) {
-    viewTaskViewModel.loadTask(projectId, taskId)
-  }
+  LaunchedEffect(taskId) { viewTaskViewModel.loadTask(projectId, taskId) }
 
   LaunchedEffect(errorMsg) {
     if (errorMsg != null) {
@@ -74,7 +69,8 @@ fun ViewTaskScreen(
 
   DisposableEffect(Unit) {
     onDispose {
-      // Clean up photos when navigating away
+      // Clean up photos when navigating away, if any (usually none in view mode as everything
+      // should be already uploaded)
       viewTaskViewModel.deletePhotosOnDispose(context, viewTaskState.attachmentUris)
     }
   }
@@ -113,7 +109,9 @@ fun ViewTaskScreen(
               Text(text = "Status: ${viewTaskState.status.name.replace("_", " ")}")
 
               Button(
-                  onClick = { navigationController.navigate(Route.TasksSection.TaskEdit(projectId, taskId)) },
+                  onClick = {
+                    navigationController.navigate(Route.TasksSection.TaskEdit(projectId, taskId))
+                  },
                   modifier = Modifier.testTag(ViewTaskScreenTestTags.EDIT_TASK),
                   colors = EurekaStyles.PrimaryButtonColors()) {
                     Text("Edit Task")
@@ -122,7 +120,7 @@ fun ViewTaskScreen(
               val allAttachments = viewTaskState.attachmentUrls + viewTaskState.attachmentUris
               AttachmentsList(
                   attachments = allAttachments,
-                  onDelete = null,  // Pass null to indicate read-only mode
+                  onDelete = null, // Pass null to indicate read-only mode
                   isReadOnly = true)
             }
       })

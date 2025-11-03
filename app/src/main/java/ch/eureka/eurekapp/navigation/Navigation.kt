@@ -169,7 +169,8 @@ fun NavigationMenu() {
 
               composable<Route.TasksSection.TaskDetail> { backStackEntry ->
                 val taskDetailRoute = backStackEntry.toRoute<Route.TasksSection.TaskDetail>()
-                  ViewTaskScreen(taskDetailRoute.projectId, taskDetailRoute.taskId, navigationController)
+                ViewTaskScreen(
+                    taskDetailRoute.projectId, taskDetailRoute.taskId, navigationController)
               }
 
               // Ideas section
