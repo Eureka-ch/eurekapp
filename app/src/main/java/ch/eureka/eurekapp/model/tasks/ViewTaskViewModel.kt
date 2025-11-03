@@ -19,8 +19,8 @@ import kotlinx.coroutines.launch
 // Portions of this code were generated with the help of Grok.
 
 /**
- * ViewModel for viewing task details.
- * This ViewModel is responsible only for loading and displaying task information.
+ * ViewModel for viewing task details. This ViewModel is responsible only for loading and displaying
+ * task information.
  */
 class ViewTaskViewModel(
     taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
@@ -38,6 +38,7 @@ class ViewTaskViewModel(
 
   /**
    * Loads a task by its ID and updates the UI state.
+   *
    * @param projectId The ID of the project containing the task
    * @param taskId The ID of the task to load
    */
@@ -57,13 +58,13 @@ class ViewTaskViewModel(
                   _uiState.value.copy(
                       title = task.title,
                       description = task.description,
-                      dueDate = task.dueDate?.let { date -> dateFormat.format(date.toDate()) } ?: "",
+                      dueDate =
+                          task.dueDate?.let { date -> dateFormat.format(date.toDate()) } ?: "",
                       projectId = task.projectId,
                       taskId = task.taskID,
                       attachmentUrls = task.attachmentUrls,
                       status = task.status,
-                      isLoading = false
-                  )
+                      isLoading = false)
             } else {
               setErrorMsg("Task not found.")
               _uiState.value = _uiState.value.copy(isLoading = false)
@@ -84,7 +85,8 @@ class ViewTaskViewModel(
 
   override fun ViewTaskState.copyWithTitle(title: String) = copy(title = title)
 
-  override fun ViewTaskState.copyWithDescription(description: String) = copy(description = description)
+  override fun ViewTaskState.copyWithDescription(description: String) =
+      copy(description = description)
 
   override fun ViewTaskState.copyWithDueDate(dueDate: String) = copy(dueDate = dueDate)
 
@@ -92,4 +94,3 @@ class ViewTaskViewModel(
 
   override fun ViewTaskState.copyWithProjectId(projectId: String) = copy(projectId = projectId)
 }
-
