@@ -125,7 +125,6 @@ fun TaskDueDateField(
     onFocusChanged: (Boolean) -> Unit,
     dateRegex: Regex,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true,
     readOnly: Boolean = false
 ) {
   OutlinedTextField(
@@ -133,7 +132,6 @@ fun TaskDueDateField(
       onValueChange = onValueChange,
       label = { Text("Due date") },
       placeholder = { Text("01/01/1970") },
-      enabled = enabled,
       readOnly = readOnly,
       modifier =
           modifier
@@ -144,7 +142,7 @@ fun TaskDueDateField(
                 }
               }
               .testTag(CommonTaskTestTags.DUE_DATE))
-  if (enabled && value.isNotBlank() && !dateRegex.matches(value) && hasTouched) {
+  if (value.isNotBlank() && !dateRegex.matches(value) && hasTouched) {
     Text(
         text = "Invalid format (must be dd/MM/yyyy)",
         color = Color.Red,

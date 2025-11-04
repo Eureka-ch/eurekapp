@@ -39,8 +39,6 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
 
   abstract override val uiState: StateFlow<T>
 
-  protected abstract fun getState(): T
-
   val inputValid: StateFlow<Boolean> by lazy {
     uiState
         .map { state -> isValidInput(state.title, state.description, state.dueDate) }
