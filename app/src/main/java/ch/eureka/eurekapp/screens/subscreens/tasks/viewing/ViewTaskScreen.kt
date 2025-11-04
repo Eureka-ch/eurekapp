@@ -15,11 +15,11 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.tasks.ViewTaskViewModel
@@ -51,14 +51,12 @@ fun ViewTaskScreen(
     projectId: String,
     taskId: String,
     navigationController: NavHostController = rememberNavController(),
-    viewTaskViewModel: ViewTaskViewModel = viewModel(),
+    viewTaskViewModel: ViewTaskViewModel = remember { ViewTaskViewModel(projectId, taskId) },
 ) {
   val viewTaskState by viewTaskViewModel.uiState.collectAsState()
   val errorMsg = viewTaskState.errorMsg
   val context = LocalContext.current
   val scrollState = rememberScrollState()
-
-  LaunchedEffect(taskId) { viewTaskViewModel.loadTask(projectId, taskId) }
 
   LaunchedEffect(errorMsg) {
     if (errorMsg != null) {
@@ -89,14 +87,14 @@ fun ViewTaskScreen(
                   onValueChange = {},
                   hasTouched = false,
                   onFocusChanged = {},
-                  enabled = false)
+                  readOnly = true)
 
               TaskDescriptionField(
                   value = viewTaskState.description,
                   onValueChange = {},
                   hasTouched = false,
                   onFocusChanged = {},
-                  enabled = false)
+                  readOnly = true)
 
               TaskDueDateField(
                   value = viewTaskState.dueDate,
@@ -104,7 +102,7 @@ fun ViewTaskScreen(
                   hasTouched = false,
                   onFocusChanged = {},
                   dateRegex = viewTaskViewModel.dateRegex,
-                  enabled = false)
+                  readOnly = true)
 
               Text(text = "Status: ${viewTaskState.status.name.replace("_", " ")}")
 

@@ -6,9 +6,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -156,7 +158,7 @@ open class ViewTaskScreenTest : TestCase() {
             dueDate = "20/12/2024",
             status = TaskStatus.IN_PROGRESS)
 
-        val viewModel = ViewTaskViewModel(taskRepository)
+        val viewModel = ViewTaskViewModel(projectId, taskId, taskRepository)
         lastViewVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
@@ -191,7 +193,7 @@ open class ViewTaskScreenTest : TestCase() {
         setupTestProject(projectId)
         // Do not setup task
 
-        val viewModel = ViewTaskViewModel(taskRepository)
+        val viewModel = ViewTaskViewModel(projectId, taskId, taskRepository)
         lastViewVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
@@ -221,7 +223,7 @@ open class ViewTaskScreenTest : TestCase() {
         setupTestProject(projectId)
         setupTestTask(projectId, taskId, attachmentUrls = listOf(attachmentUrl1, attachmentUrl2))
 
-        val viewModel = ViewTaskViewModel(taskRepository)
+        val viewModel = ViewTaskViewModel(projectId, taskId, taskRepository)
         lastViewVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
@@ -248,7 +250,7 @@ open class ViewTaskScreenTest : TestCase() {
         setupTestProject(projectId)
         setupTestTask(projectId, taskId)
 
-        val viewModel = ViewTaskViewModel(taskRepository)
+        val viewModel = ViewTaskViewModel(projectId, taskId, taskRepository)
         lastViewVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
@@ -286,7 +288,7 @@ open class ViewTaskScreenTest : TestCase() {
             description = "Read Only Description",
             dueDate = "25/11/2025")
 
-        val viewModel = ViewTaskViewModel(taskRepository)
+        val viewModel = ViewTaskViewModel(projectId, taskId, taskRepository)
         lastViewVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
@@ -301,10 +303,27 @@ open class ViewTaskScreenTest : TestCase() {
 
         composeTestRule.waitForIdle()
 
-        // Verify fields are not enabled (read-only)
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsNotEnabled()
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).assertIsNotEnabled()
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).assertIsNotEnabled()
+        // Verify fields are displayed with original values
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).assertIsDisplayed()
+
+        // Custom matcher to check if a node is read-only (doesn't have SetText action)
+        val isReadOnly =
+            SemanticsMatcher("Field is read-only (no SetText action)") {
+              val hasSetText = it.config.contains(SemanticsActions.SetText)
+              !hasSetText
+            }
+
+        // Verify that all fields are read-only by checking they don't have SetText action
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assert(isReadOnly)
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).assert(isReadOnly)
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).assert(isReadOnly)
+
+        // Verify the original values remain displayed
+        composeTestRule.onNodeWithText("Read Only Task").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Read Only Description").assertIsDisplayed()
+        composeTestRule.onNodeWithText("25/11/2025").assertIsDisplayed()
       }
 
   @Test
@@ -315,7 +334,7 @@ open class ViewTaskScreenTest : TestCase() {
         setupTestProject(projectId)
         setupTestTask(projectId, taskId, status = TaskStatus.COMPLETED)
 
-        val viewModel = ViewTaskViewModel(taskRepository)
+        val viewModel = ViewTaskViewModel(projectId, taskId, taskRepository)
         lastViewVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
@@ -342,7 +361,7 @@ open class ViewTaskScreenTest : TestCase() {
         setupTestProject(projectId)
         setupTestTask(projectId, taskId, attachmentUrls = emptyList())
 
-        val viewModel = ViewTaskViewModel(taskRepository)
+        val viewModel = ViewTaskViewModel(projectId, taskId, taskRepository)
         lastViewVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
@@ -476,7 +495,7 @@ open class ViewTaskScreenTest : TestCase() {
     // Create a single, remembered ViewTaskViewModel instance so it is stable across navigation.
     // This ensures the ViewModel keeps collecting updates (and ViewTaskScreen reloads data)
     // when navigating to EditTaskScreen and back.
-    val sharedViewModel = remember { ViewTaskViewModel(taskRepository) }
+    val sharedViewModel = remember { ViewTaskViewModel("project123", "task123", taskRepository) }
     // Also remember TaskScreenViewModel to prevent orphaned listeners
     val sharedTaskScreenViewModel = remember { TaskScreenViewModel() }
 
@@ -517,7 +536,7 @@ open class ViewTaskScreenTest : TestCase() {
   ) {
     // Use the provided ViewModel if given, otherwise create a remembered instance so the VM is
     // stable.
-    val vm = viewModel ?: remember { ViewTaskViewModel(taskRepository) }
+    val vm = viewModel ?: remember { ViewTaskViewModel(projectId, taskId, taskRepository) }
     NavHost(
         navController,
         startDestination = Route.TasksSection.TaskDetail(projectId = projectId, taskId = taskId)) {

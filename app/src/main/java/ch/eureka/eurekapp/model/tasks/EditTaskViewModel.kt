@@ -13,8 +13,6 @@ import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import com.google.firebase.auth.FirebaseAuth
-import java.text.SimpleDateFormat
-import java.util.Locale
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -40,9 +38,8 @@ class EditTaskViewModel(
     ReadWriteTaskViewModel<EditTaskState>(
         taskRepository, fileRepository, getCurrentUserId, dispatcher) {
 
-  private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-
   private val _uiState = MutableStateFlow(EditTaskState())
+  override val mutableUiState: MutableStateFlow<EditTaskState> = _uiState
   override val uiState: StateFlow<EditTaskState> = _uiState.asStateFlow()
 
   override fun getState(): EditTaskState = _uiState.value
@@ -221,10 +218,6 @@ class EditTaskViewModel(
   }
 
   // State update implementations
-  override fun updateState(update: EditTaskState.() -> EditTaskState) {
-    _uiState.value = _uiState.value.update()
-  }
-
   override fun EditTaskState.copyWithErrorMsg(errorMsg: String?) = copy(errorMsg = errorMsg)
 
   override fun EditTaskState.copyWithSaveState(isSaving: Boolean, taskSaved: Boolean) =
