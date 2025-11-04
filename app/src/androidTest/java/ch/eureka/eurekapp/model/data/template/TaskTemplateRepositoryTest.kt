@@ -1,5 +1,8 @@
 package ch.eureka.eurekapp.model.data.template
 
+import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
+import ch.eureka.eurekapp.model.data.template.field.FieldType
+import ch.eureka.eurekapp.model.data.template.field.serialization.FirestoreConverters
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import ch.eureka.eurekapp.utils.FirestoreRepositoryTest
 import junit.framework.TestCase.assertEquals
@@ -45,7 +48,11 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
             projectId = projectId,
             title = "Bug Fix Template",
             description = "Template for fixing bugs",
-            definedFields = mapOf("priority" to "high", "type" to "bug"),
+            definedFields =
+                TaskTemplateSchema(
+                    listOf(
+                        FieldDefinition("priority", "Priority", FieldType.Text()),
+                        FieldDefinition("type", "Type", FieldType.Text()))),
             createdBy = testUserId)
 
     val result = repository.createTemplate(template)
@@ -61,7 +68,8 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
             .document("template1")
             .get()
             .await()
-            .toObject(TaskTemplate::class.java)
+            .data
+            ?.let { FirestoreConverters.mapToTaskTemplate(it) }
 
     assertNotNull(savedTemplate)
     assertEquals(template.templateID, savedTemplate?.templateID)
@@ -80,7 +88,7 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
             projectId = projectId,
             title = "Feature Template",
             description = "Template for new features",
-            definedFields = emptyMap(),
+            definedFields = TaskTemplateSchema(),
             createdBy = testUserId)
     repository.createTemplate(template)
 
@@ -114,7 +122,7 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
             projectId = projectId,
             title = "Template 3",
             description = "",
-            definedFields = emptyMap(),
+            definedFields = TaskTemplateSchema(),
             createdBy = testUserId)
     val template2 =
         TaskTemplate(
@@ -122,7 +130,7 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
             projectId = projectId,
             title = "Template 4",
             description = "",
-            definedFields = emptyMap(),
+            definedFields = TaskTemplateSchema(),
             createdBy = testUserId)
     repository.createTemplate(template1)
     repository.createTemplate(template2)
@@ -157,7 +165,7 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
             projectId = projectId,
             title = "Original Title",
             description = "Original Description",
-            definedFields = emptyMap(),
+            definedFields = TaskTemplateSchema(),
             createdBy = testUserId)
     repository.createTemplate(template)
 
@@ -165,7 +173,8 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
         template.copy(
             title = "Updated Title",
             description = "Updated Description",
-            definedFields = mapOf("status" to "active"),
+            definedFields =
+                TaskTemplateSchema(listOf(FieldDefinition("status", "Status", FieldType.Text()))),
             createdBy = testUserId)
     val result = repository.updateTemplate(updatedTemplate)
 
@@ -179,12 +188,13 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
             .document("template7")
             .get()
             .await()
-            .toObject(TaskTemplate::class.java)
+            .data
+            ?.let { FirestoreConverters.mapToTaskTemplate(it) }
 
     assertNotNull(savedTemplate)
     assertEquals("Updated Title", savedTemplate?.title)
     assertEquals("Updated Description", savedTemplate?.description)
-    assertEquals(1, savedTemplate?.definedFields?.size)
+    assertEquals(1, savedTemplate?.definedFields?.fields?.size)
   }
 
   @Test
@@ -198,7 +208,7 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
             projectId = projectId,
             title = "To Delete",
             description = "",
-            definedFields = emptyMap(),
+            definedFields = TaskTemplateSchema(),
             createdBy = testUserId)
     repository.createTemplate(template)
 
@@ -214,7 +224,8 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
             .document("template8")
             .get()
             .await()
-            .toObject(TaskTemplate::class.java)
+            .data
+            ?.let { FirestoreConverters.mapToTaskTemplate(it) }
 
     assertNull(deletedTemplate)
   }
