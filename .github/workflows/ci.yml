@@ -416,49 +416,49 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-0
-          path: app/build/outputs/androidTest-results/
+          path: app/build/outputs/
 
       - name: Download instrumented test results (Shard 1)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-1
-          path: app/build/outputs/androidTest-results/
+          path: app/build/outputs/
 
       - name: Download instrumented test results (Shard 2)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-2
-          path: app/build/outputs/androidTest-results/
+          path: app/build/outputs/
 
       - name: Download instrumented test results (Shard 3)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-3
-          path: app/build/outputs/androidTest-results/
+          path: app/build/outputs/
 
       - name: Download instrumented test results (Shard 4)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-4
-          path: app/build/outputs/androidTest-results/
+          path: app/build/outputs/
 
       - name: Download instrumented test results (Shard 5)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-5
-          path: app/build/outputs/androidTest-results/
+          path: app/build/outputs/
 
       - name: Download instrumented test results (Shard 6)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-6
-          path: app/build/outputs/androidTest-results/
+          path: app/build/outputs/
 
       - name: Download instrumented test results (Shard 7)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-7
-          path: app/build/outputs/androidTest-results/
+          path: app/build/outputs/
 
       - name: Verify downloaded artifacts
         run: |
