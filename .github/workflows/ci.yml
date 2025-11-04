@@ -59,8 +59,8 @@ jobs:
       - name: KTFmt Check
         run: ./gradlew ktfmtCheck
 
-  lint-check:
-    name: Lint Check
+  build:
+    name: Build & Lint
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.android == 'true'
@@ -82,8 +82,18 @@ jobs:
         with:
           level: build
 
-      - name: Lint Check
-        run: ./gradlew lint --parallel --build-cache
+      - name: Build and Lint
+        run: ./gradlew compileDebugKotlin compileDebugJavaWithJavac lint --parallel --build-cache
+
+      - name: Upload build artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            app/build/tmp/kotlin-classes/debug/**
+            app/build/reports/lint-results-debug.xml
+          compression-level: 9
 
   unit-tests:
     name: Unit Tests
@@ -337,7 +347,7 @@ jobs:
   reports:
     name: Coverage & SonarCloud
     runs-on: ubuntu-latest
-    needs: [ktfmt-check, lint-check, unit-tests, instrumented-tests]
+    needs: [ktfmt-check, unit-tests, instrumented-tests, build]
     if: success()
 
     steps:
@@ -396,6 +406,12 @@ jobs:
           name: unit-test-results
           path: app/build/test-results/
 
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: app/build/
+
       - name: Download instrumented test results (Shard 0)
         uses: actions/download-artifact@v4
         with:
@@ -446,11 +462,16 @@ jobs:
 
       - name: Verify downloaded artifacts
         run: |
-          echo "Checking for coverage files..."
+          echo "Checking for downloaded artifacts..."
+          echo "Coverage files:"
           find app/build -name "*.exec" -o -name "*.ec" || echo "No coverage files found"
+          echo "Compiled classes:"
+          find app/build/tmp/kotlin-classes/debug -type f | head -5 || echo "No compiled classes found"
+          echo "Lint report:"
+          ls -la app/build/reports/lint-results-debug.xml 2>/dev/null || echo "Lint report not found"
 
       - name: Generate Coverage Report
-        run: ./gradlew jacocoTestReport --rerun-tasks
+        run: ./gradlew jacocoTestReport
 
       - name: Upload report to SonarCloud
         env:
