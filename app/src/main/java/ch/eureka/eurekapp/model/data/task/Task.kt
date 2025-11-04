@@ -21,7 +21,7 @@ import kotlin.compareTo
  * @property assignedUserIds List of user IDs assigned to this task.
  * @property dueDate Optional deadline for task completion.
  * @property attachmentUrls List of file URLs attached to this task (PDFs, images, etc.).
- * @property customData Template-specific data stored as key-value pairs.
+ * @property customData Template-specific data stored as strongly-typed field values.
  * @property createdBy User ID of the person who created this task.
  */
 data class Task(
@@ -34,7 +34,7 @@ data class Task(
     val assignedUserIds: List<String> = emptyList(),
     val dueDate: Timestamp? = null,
     val attachmentUrls: List<String> = emptyList(),
-    val customData: Map<String, Any> = emptyMap(),
+    val customData: TaskCustomData = TaskCustomData(),
     val createdBy: String = "",
 )
 
