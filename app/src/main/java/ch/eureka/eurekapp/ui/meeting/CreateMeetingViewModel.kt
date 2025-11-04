@@ -42,11 +42,16 @@ data class CreateMeetingUIState(
     val duration: Int = 0,
     val meetingSaved: Boolean = false,
     val hasTouchedTitle: Boolean = false,
+    val hasTouchedDate: Boolean = false,
+    val hasTouchedTime: Boolean = false,
     val errorMsg: String? = null
 ) {
   /** States whether the UI is in a state where the meeting can be saved. */
   val isValid: Boolean
-    get() = title.isNotBlank() && duration >= 5
+    get() =
+        title.isNotBlank() &&
+            duration >= 5 &&
+            LocalDateTime.of(date, time).isAfter(LocalDateTime.now())
 }
 
 /**
@@ -121,6 +126,16 @@ class CreateMeetingViewModel(
   /** Mark the title field as touched. */
   fun touchTitle() {
     _uiState.update { it.copy(hasTouchedTitle = true) }
+  }
+
+  /** Mark the date field as touched. */
+  fun touchDate() {
+    _uiState.update { it.copy(hasTouchedDate = true) }
+  }
+
+  /** Mark the time field as touched. */
+  fun touchTime() {
+    _uiState.update { it.copy(hasTouchedTime = true) }
   }
 
   /**

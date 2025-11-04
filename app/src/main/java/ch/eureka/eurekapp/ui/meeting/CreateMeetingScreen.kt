@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -160,7 +161,8 @@ fun CreateMeetingScreen(
               label = "Date",
               placeHolder = "Select date",
               tag = CreateMeetingScreenTestTags.INPUT_MEETING_DATE,
-              onDateSelected = { createMeetingViewModel.setDate(it) })
+              onDateSelected = { createMeetingViewModel.setDate(it) },
+              onDateTouched = { createMeetingViewModel.touchDate() })
 
           Spacer(Modifier.height(SPACING.dp))
 
@@ -169,7 +171,8 @@ fun CreateMeetingScreen(
               label = "Time",
               placeHolder = "Select time",
               tag = CreateMeetingScreenTestTags.INPUT_MEETING_TIME,
-              onTimeSelected = { createMeetingViewModel.setTime(it) })
+              onTimeSelected = { createMeetingViewModel.setTime(it) },
+              onTimeTouched = { createMeetingViewModel.touchTime() })
 
           Spacer(Modifier.height(SPACING.dp))
 
@@ -184,6 +187,15 @@ fun CreateMeetingScreen(
 
           Spacer(Modifier.height(SPACING.dp))
 
+          if (uiState.hasTouchedDate &&
+              uiState.hasTouchedTime &&
+              LocalDateTime.of(uiState.date, uiState.time).isBefore(LocalDateTime.now())) {
+            Text(
+                text = "Meeting should be scheduled in the future.",
+                color = Color.Red,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.testTag(CreateMeetingScreenTestTags.ERROR_MSG))
+          }
           Button(
               onClick = { createMeetingViewModel.createMeeting(projectId) },
               modifier =
@@ -204,6 +216,7 @@ fun CreateMeetingScreen(
  * @param placeHolder The placeholder of the text field.
  * @param tag The test tag for the text field.
  * @param onDateSelected Function executed when the date has been picked.
+ * @param onDateTouched Function executed when the text field has been touched.
  */
 @Composable
 fun DateInputField(
@@ -211,7 +224,8 @@ fun DateInputField(
     label: String,
     placeHolder: String,
     tag: String,
-    onDateSelected: (LocalDate) -> Unit
+    onDateSelected: (LocalDate) -> Unit,
+    onDateTouched: () -> Unit
 ) {
   var showDialog by remember { mutableStateOf(false) }
 
@@ -229,11 +243,20 @@ fun DateInputField(
       placeholder = { Text(placeHolder) },
       readOnly = true,
       trailingIcon = {
-        IconButton(onClick = { showDialog = true }, modifier = Modifier.testTag(tag)) {
-          Icon(Icons.Default.DateRange, contentDescription = "Select date")
-        }
+        IconButton(
+            onClick = {
+              showDialog = true
+              onDateTouched()
+            },
+            modifier = Modifier.testTag(tag)) {
+              Icon(Icons.Default.DateRange, contentDescription = "Select date")
+            }
       },
-      modifier = Modifier.fillMaxWidth().clickable { showDialog = true })
+      modifier =
+          Modifier.fillMaxWidth().clickable {
+            showDialog = true
+            onDateTouched()
+          })
 
   if (showDialog) {
     DatePickerDialog(
@@ -266,6 +289,7 @@ fun DateInputField(
  * @param placeHolder The placeholder of the text field.
  * @param tag The test tag for the text field.
  * @param onTimeSelected Function executed when the time has been picked.
+ * @param onTimeTouched Function executed when the text field has been touched.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -274,7 +298,8 @@ fun TimeInputField(
     label: String,
     placeHolder: String,
     tag: String,
-    onTimeSelected: (LocalTime) -> Unit
+    onTimeSelected: (LocalTime) -> Unit,
+    onTimeTouched: () -> Unit
 ) {
   var showDialog by remember { mutableStateOf(false) }
 
@@ -293,11 +318,20 @@ fun TimeInputField(
       placeholder = { Text(placeHolder) },
       readOnly = true,
       trailingIcon = {
-        IconButton(onClick = { showDialog = true }, modifier = Modifier.testTag(tag)) {
-          Icon(Icons.Default.AccessTime, contentDescription = placeHolder)
-        }
+        IconButton(
+            onClick = {
+              showDialog = true
+              onTimeTouched()
+            },
+            modifier = Modifier.testTag(tag)) {
+              Icon(Icons.Default.AccessTime, contentDescription = placeHolder)
+            }
       },
-      modifier = Modifier.fillMaxWidth().clickable { showDialog = true })
+      modifier =
+          Modifier.fillMaxWidth().clickable {
+            showDialog = true
+            onTimeTouched()
+          })
 
   if (showDialog) {
     TimePickerDialog(

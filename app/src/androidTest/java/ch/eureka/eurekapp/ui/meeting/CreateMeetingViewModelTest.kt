@@ -37,6 +37,10 @@ class CreateMeetingViewModelTest {
 
   private var currentUserId: String? = "test-user-id"
 
+  // Helpers for future/past times
+  private val futureDateTime: LocalDateTime = LocalDateTime.now().plusDays(1)
+  private val pastDateTime: LocalDateTime = LocalDateTime.now().minusDays(1)
+
   @Before
   fun setup() {
     Dispatchers.setMain(testDispatcher)
@@ -53,28 +57,41 @@ class CreateMeetingViewModelTest {
 
   @Test
   fun uiState_isValid_logicIsCorrect() {
-    var state = CreateMeetingUIState()
-    assertFalse("Default state (empty title, 0 duration) should be invalid", state.isValid)
+    // Base state with valid title, duration, and future time
+    var state =
+        CreateMeetingUIState(
+            title = "Valid Title",
+            duration = 10,
+            date = futureDateTime.toLocalDate(),
+            time = futureDateTime.toLocalTime())
+    assertTrue("Base valid state should be valid", state.isValid)
 
     // Test title validation
-    state = state.copy(duration = 30)
-    assertFalse("State with 0 duration but no title should be invalid", state.isValid)
-
-    state = state.copy(title = " ", duration = 30)
+    state = state.copy(title = "")
+    assertFalse("State with empty title should be invalid", state.isValid)
+    state = state.copy(title = " ")
     assertFalse("State with blank title should be invalid", state.isValid)
 
     // Test duration validation
     state = state.copy(title = "Valid Title", duration = 0)
-    assertFalse("State with valid title but 0 duration should be invalid", state.isValid)
-
+    assertFalse("State with 0 duration should be invalid", state.isValid)
     state = state.copy(duration = 4)
     assertFalse("State with duration < 5 should be invalid", state.isValid)
 
-    state = state.copy(duration = 5)
-    assertTrue("State with duration = 5 should be valid", state.isValid)
+    // Test time validation
+    state =
+        state.copy(
+            duration = 10, date = pastDateTime.toLocalDate(), time = pastDateTime.toLocalTime())
+    assertFalse("State with past date/time should be invalid", state.isValid)
 
-    state = state.copy(duration = 30)
-    assertTrue("State with duration > 5 should be valid", state.isValid)
+    // Test combination
+    state =
+        state.copy(
+            title = "",
+            duration = 0,
+            date = pastDateTime.toLocalDate(),
+            time = pastDateTime.toLocalTime())
+    assertFalse("Completely invalid state should be invalid", state.isValid)
   }
 
   @Test
@@ -87,8 +104,10 @@ class CreateMeetingViewModelTest {
     assertEquals(0, uiState.duration) // Check default duration
     assertFalse(uiState.meetingSaved)
     assertFalse(uiState.hasTouchedTitle)
+    assertFalse(uiState.hasTouchedDate) // New field check
+    assertFalse(uiState.hasTouchedTime) // New field check
     assertNull(uiState.errorMsg)
-    assertFalse("Initial state should be invalid", uiState.isValid)
+    assertFalse("Initial state should be invalid (duration=0)", uiState.isValid)
   }
 
   @Test
@@ -122,14 +141,14 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun setTime_updatesTime() { // Renamed from setStartTime_updatesStartTime
+  fun setTime_updatesTime() {
     val newTime = LocalTime.of(14, 30)
     viewModel.setTime(newTime)
     assertEquals(newTime, viewModel.uiState.value.time)
   }
 
   @Test
-  fun setDuration_updatesDuration() { // New test
+  fun setDuration_updatesDuration() {
     val newDuration = 45
     viewModel.setDuration(newDuration)
     assertEquals(newDuration, viewModel.uiState.value.duration)
@@ -148,9 +167,39 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
+  fun touchDate_updatesHasTouchedDate() { // New test
+    viewModel.touchDate()
+    assertTrue(viewModel.uiState.value.hasTouchedDate)
+  }
+
+  @Test
+  fun touchTime_updatesHasTouchedTime() { // New test
+    viewModel.touchTime()
+    assertTrue(viewModel.uiState.value.hasTouchedTime)
+  }
+
+  @Test
   fun createMeeting_whenStateIsInvalid_setsErrorAndReturns() {
     viewModel.setTitle("") // Ensure state is invalid
     assertFalse(viewModel.uiState.value.isValid)
+
+    viewModel.createMeeting("project-123")
+
+    assertEquals("At least one field is not set", viewModel.uiState.value.errorMsg)
+    assertFalse(viewModel.uiState.value.meetingSaved)
+    assertNull(repositoryMock.lastMeetingCreated) // Repository should not be called
+  }
+
+  @Test
+  fun createMeeting_whenTimeIsInPast_setsErrorAndReturns() { // New test for time validity
+    // Setup valid state first, but with a past time
+    viewModel.setTitle("Valid Title")
+    viewModel.setDuration(30)
+    viewModel.setDate(pastDateTime.toLocalDate())
+    viewModel.setTime(pastDateTime.toLocalTime())
+
+    assertFalse(
+        "State should be invalid because time is in the past", viewModel.uiState.value.isValid)
 
     viewModel.createMeeting("project-123")
 
@@ -164,6 +213,8 @@ class CreateMeetingViewModelTest {
     // Setup valid state first
     viewModel.setTitle("Valid Title")
     viewModel.setDuration(30)
+    viewModel.setDate(futureDateTime.toLocalDate()) // Set future date
+    viewModel.setTime(futureDateTime.toLocalTime()) // Set future time
     assertTrue(viewModel.uiState.value.isValid)
 
     currentUserId = null // Log out user
@@ -178,8 +229,8 @@ class CreateMeetingViewModelTest {
   @Test
   fun createMeeting_whenValid_repositorySuccess_setsMeetingSaved() = runTest {
     val title = "Successful Meeting"
-    val date = LocalDate.of(2025, 12, 25)
-    val time = LocalTime.of(10, 0)
+    val date = futureDateTime.toLocalDate() // Use future date
+    val time = futureDateTime.toLocalTime() // Use future time
     val duration = 60
     val projectId = "project-success"
     val userId = "test-user-id"
@@ -223,7 +274,7 @@ class CreateMeetingViewModelTest {
     // --- Assert DateTimeVote Content ---
     assertEquals(1, createdMeeting.dateTimeVotes.size)
     val vote = createdMeeting.dateTimeVotes[0]
-    assertEquals(1, vote.voters.size)
+    // Assuming DateTimeVote is (Timestamp, List<String>)
     assertEquals(listOf(userId), vote.voters)
     assertEquals(expectedInstant.epochSecond, vote.dateTime.seconds)
   }
@@ -232,6 +283,8 @@ class CreateMeetingViewModelTest {
   fun createMeeting_whenValid_repositoryFailure_setsErrorMsg() = runTest {
     viewModel.setTitle("Failed Meeting")
     viewModel.setDuration(15) // Use new duration setter
+    viewModel.setDate(futureDateTime.toLocalDate()) // Set future date
+    viewModel.setTime(futureDateTime.toLocalTime()) // Set future time
     assertTrue(viewModel.uiState.value.isValid)
 
     assertEquals("test-user-id", currentUserId)
@@ -252,12 +305,15 @@ class CreateMeetingViewModelTest {
 
   @Test
   fun createMeetingUiState_copy_worksAsExpected() {
-    val originalState = CreateMeetingUIState(title = "Original", duration = 10)
-    val copiedState = originalState.copy(title = "Copied")
+    val originalState =
+        CreateMeetingUIState(title = "Original", duration = 10, hasTouchedDate = false)
+    val copiedState = originalState.copy(title = "Copied", hasTouchedDate = true)
 
     assertEquals("Original", originalState.title)
     assertEquals(10, originalState.duration)
+    assertFalse(originalState.hasTouchedDate) // Check original
     assertEquals("Copied", copiedState.title)
     assertEquals(10, copiedState.duration)
+    assertTrue(copiedState.hasTouchedDate) // Check copy
   }
 }
