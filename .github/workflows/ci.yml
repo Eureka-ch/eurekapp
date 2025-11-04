@@ -473,6 +473,15 @@ jobs:
       - name: Generate Coverage Report
         run: ./gradlew jacocoTestReport
 
+      - name: Upload Coverage Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            app/build/reports/jacoco/jacocoTestReport/**
+          compression-level: 9
+
       - name: Upload report to SonarCloud
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
