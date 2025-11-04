@@ -144,34 +144,50 @@ open class ViewTaskScreenTest : TestCase() {
     taskRepository.updateTask(task).getOrThrow()
   }
 
+  /**
+   * Helper function to setup a test with common boilerplate code.
+   *
+   * @param projectId The project ID to use
+   * @param taskId The task ID to use
+   * @param taskSetup Optional lambda to setup the task with custom parameters
+   */
+  private suspend fun setupViewTaskTest(
+      projectId: String = "project123",
+      taskId: String = "task123",
+      taskSetup: (suspend () -> Unit)? = null
+  ) {
+    setupTestProject(projectId)
+    taskSetup?.invoke()
+
+    val viewModel = ViewTaskViewModel(projectId, taskId, taskRepository)
+    lastViewVm = viewModel
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      FakeNavGraph(
+          projectId = projectId,
+          taskId = taskId,
+          navController = navController,
+          viewModel = viewModel)
+      navController.navigate(Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
+    }
+
+    composeTestRule.waitForIdle()
+  }
+
   @Test
   fun testTaskLoadedCorrectly() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
-        setupTestProject(projectId)
-        setupTestTask(
-            projectId,
-            taskId,
-            title = "Loaded Task",
-            description = "Loaded Desc",
-            dueDate = "20/12/2024",
-            status = TaskStatus.IN_PROGRESS)
-
-        val viewModel = ViewTaskViewModel(projectId, taskId, taskRepository)
-        lastViewVm = viewModel
-        composeTestRule.setContent {
-          val navController = rememberNavController()
-          FakeNavGraph(
-              projectId = projectId,
-              taskId = taskId,
-              navController = navController,
-              viewModel = viewModel)
-          navController.navigate(
-              Route.TasksSection.TaskDetail(projectId = projectId, taskId = taskId))
+        setupViewTaskTest(projectId, taskId) {
+          setupTestTask(
+              projectId,
+              taskId,
+              title = "Loaded Task",
+              description = "Loaded Desc",
+              dueDate = "20/12/2024",
+              status = TaskStatus.IN_PROGRESS)
         }
-
-        composeTestRule.waitForIdle()
 
         // Verify fields are loaded and displayed
         composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
@@ -190,23 +206,7 @@ open class ViewTaskScreenTest : TestCase() {
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "nonexistent"
-        setupTestProject(projectId)
-        // Do not setup task
-
-        val viewModel = ViewTaskViewModel(projectId, taskId, taskRepository)
-        lastViewVm = viewModel
-        composeTestRule.setContent {
-          val navController = rememberNavController()
-          FakeNavGraph(
-              projectId = projectId,
-              taskId = taskId,
-              navController = navController,
-              viewModel = viewModel)
-          navController.navigate(
-              Route.TasksSection.TaskDetail(projectId = projectId, taskId = taskId))
-        }
-
-        composeTestRule.waitForIdle()
+        setupViewTaskTest(projectId, taskId)
 
         // Verify the app does not crash and shows a reasonable UI state
         // Edit button should still be displayed even if task not found
@@ -220,23 +220,9 @@ open class ViewTaskScreenTest : TestCase() {
         val taskId = "task123"
         val attachmentUrl1 = "https://fake.com/photo1.jpg"
         val attachmentUrl2 = "https://fake.com/photo2.jpg"
-        setupTestProject(projectId)
-        setupTestTask(projectId, taskId, attachmentUrls = listOf(attachmentUrl1, attachmentUrl2))
-
-        val viewModel = ViewTaskViewModel(projectId, taskId, taskRepository)
-        lastViewVm = viewModel
-        composeTestRule.setContent {
-          val navController = rememberNavController()
-          FakeNavGraph(
-              projectId = projectId,
-              taskId = taskId,
-              navController = navController,
-              viewModel = viewModel)
-          navController.navigate(
-              Route.TasksSection.TaskDetail(projectId = projectId, taskId = taskId))
+        setupViewTaskTest(projectId, taskId) {
+          setupTestTask(projectId, taskId, attachmentUrls = listOf(attachmentUrl1, attachmentUrl2))
         }
-
-        composeTestRule.waitForIdle()
 
         // Verify attachments are displayed
         composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).assertCountEquals(2)
@@ -247,23 +233,7 @@ open class ViewTaskScreenTest : TestCase() {
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
-        setupTestProject(projectId)
-        setupTestTask(projectId, taskId)
-
-        val viewModel = ViewTaskViewModel(projectId, taskId, taskRepository)
-        lastViewVm = viewModel
-        composeTestRule.setContent {
-          val navController = rememberNavController()
-          FakeNavGraph(
-              projectId = projectId,
-              taskId = taskId,
-              navController = navController,
-              viewModel = viewModel)
-          navController.navigate(
-              Route.TasksSection.TaskDetail(projectId = projectId, taskId = taskId))
-        }
-
-        composeTestRule.waitForIdle()
+        setupViewTaskTest(projectId, taskId) { setupTestTask(projectId, taskId) }
 
         // Click edit button
         composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.EDIT_TASK).performClick()
@@ -280,28 +250,14 @@ open class ViewTaskScreenTest : TestCase() {
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
-        setupTestProject(projectId)
-        setupTestTask(
-            projectId,
-            taskId,
-            title = "Read Only Task",
-            description = "Read Only Description",
-            dueDate = "25/11/2025")
-
-        val viewModel = ViewTaskViewModel(projectId, taskId, taskRepository)
-        lastViewVm = viewModel
-        composeTestRule.setContent {
-          val navController = rememberNavController()
-          FakeNavGraph(
-              projectId = projectId,
-              taskId = taskId,
-              navController = navController,
-              viewModel = viewModel)
-          navController.navigate(
-              Route.TasksSection.TaskDetail(projectId = projectId, taskId = taskId))
+        setupViewTaskTest(projectId, taskId) {
+          setupTestTask(
+              projectId,
+              taskId,
+              title = "Read Only Task",
+              description = "Read Only Description",
+              dueDate = "25/11/2025")
         }
-
-        composeTestRule.waitForIdle()
 
         // Verify fields are displayed with original values
         composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
@@ -331,23 +287,9 @@ open class ViewTaskScreenTest : TestCase() {
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
-        setupTestProject(projectId)
-        setupTestTask(projectId, taskId, status = TaskStatus.COMPLETED)
-
-        val viewModel = ViewTaskViewModel(projectId, taskId, taskRepository)
-        lastViewVm = viewModel
-        composeTestRule.setContent {
-          val navController = rememberNavController()
-          FakeNavGraph(
-              projectId = projectId,
-              taskId = taskId,
-              navController = navController,
-              viewModel = viewModel)
-          navController.navigate(
-              Route.TasksSection.TaskDetail(projectId = projectId, taskId = taskId))
+        setupViewTaskTest(projectId, taskId) {
+          setupTestTask(projectId, taskId, status = TaskStatus.COMPLETED)
         }
-
-        composeTestRule.waitForIdle()
 
         // Verify status is displayed
         composeTestRule.onNodeWithText("Status: COMPLETED").assertIsDisplayed()
@@ -358,23 +300,9 @@ open class ViewTaskScreenTest : TestCase() {
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
-        setupTestProject(projectId)
-        setupTestTask(projectId, taskId, attachmentUrls = emptyList())
-
-        val viewModel = ViewTaskViewModel(projectId, taskId, taskRepository)
-        lastViewVm = viewModel
-        composeTestRule.setContent {
-          val navController = rememberNavController()
-          FakeNavGraph(
-              projectId = projectId,
-              taskId = taskId,
-              navController = navController,
-              viewModel = viewModel)
-          navController.navigate(
-              Route.TasksSection.TaskDetail(projectId = projectId, taskId = taskId))
+        setupViewTaskTest(projectId, taskId) {
+          setupTestTask(projectId, taskId, attachmentUrls = emptyList())
         }
-
-        composeTestRule.waitForIdle()
 
         // Verify no attachments are displayed
         composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).assertCountEquals(0)
@@ -433,7 +361,7 @@ open class ViewTaskScreenTest : TestCase() {
           val navController = rememberNavController()
           FullNavigationGraph(navController = navController)
           navController.navigate(
-              Route.TasksSection.TaskDetail(projectId = projectId, taskId = taskId))
+              Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
         }
 
         composeTestRule.waitForIdle()
@@ -505,13 +433,13 @@ open class ViewTaskScreenTest : TestCase() {
         lastTaskScreenVm = sharedTaskScreenViewModel
         TasksScreen(
             onTaskClick = { taskId, projectId ->
-              navController.navigate(Route.TasksSection.TaskDetail(projectId, taskId))
+              navController.navigate(Route.TasksSection.ViewTask(projectId, taskId))
             },
             onCreateTaskClick = { navController.navigate(Route.TasksSection.CreateTask) },
             viewModel = sharedTaskScreenViewModel)
       }
-      composable<Route.TasksSection.TaskDetail> { backStackEntry ->
-        val taskDetailRoute = backStackEntry.toRoute<Route.TasksSection.TaskDetail>()
+      composable<Route.TasksSection.ViewTask> { backStackEntry ->
+        val taskDetailRoute = backStackEntry.toRoute<Route.TasksSection.ViewTask>()
         // expose the same instance for test teardown / inspection
         lastViewVm = sharedViewModel
         ViewTaskScreen(
@@ -520,8 +448,8 @@ open class ViewTaskScreenTest : TestCase() {
             navigationController = navController,
             viewTaskViewModel = sharedViewModel)
       }
-      composable<Route.TasksSection.TaskEdit> { backStackEntry ->
-        val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.TaskEdit>()
+      composable<Route.TasksSection.EditTask> { backStackEntry ->
+        val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.EditTask>()
         EditTaskScreen(editTaskRoute.projectId, editTaskRoute.taskId, navController)
       }
     }
@@ -539,15 +467,15 @@ open class ViewTaskScreenTest : TestCase() {
     val vm = viewModel ?: remember { ViewTaskViewModel(projectId, taskId, taskRepository) }
     NavHost(
         navController,
-        startDestination = Route.TasksSection.TaskDetail(projectId = projectId, taskId = taskId)) {
-          composable<Route.TasksSection.TaskDetail> {
+        startDestination = Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId)) {
+          composable<Route.TasksSection.ViewTask> {
             ViewTaskScreen(
                 projectId = projectId,
                 taskId = taskId,
                 navigationController = navController,
                 viewTaskViewModel = vm)
           }
-          composable<Route.TasksSection.TaskEdit> {
+          composable<Route.TasksSection.EditTask> {
             // Dummy edit screen for navigation test
             Text(
                 "Edit Task Screen",

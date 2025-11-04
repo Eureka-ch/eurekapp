@@ -53,9 +53,9 @@ sealed interface Route {
 
     @Serializable data object CreateTask : TasksSection
 
-    @Serializable data class TaskDetail(val projectId: String, val taskId: String) : TasksSection
+    @Serializable data class ViewTask(val projectId: String, val taskId: String) : TasksSection
 
-    @Serializable data class TaskEdit(val projectId: String, val taskId: String) : TasksSection
+    @Serializable data class EditTask(val projectId: String, val taskId: String) : TasksSection
 
     @Serializable data object AutoTaskAssignment : TasksSection
 
@@ -157,18 +157,18 @@ fun NavigationMenu() {
                     },
                     onTaskClick = { taskId, projectId ->
                       navigationController.navigate(
-                          Route.TasksSection.TaskDetail(projectId = testProjectId, taskId = taskId))
+                          Route.TasksSection.ViewTask(projectId = testProjectId, taskId = taskId))
                     })
               }
               composable<Route.TasksSection.CreateTask> { CreateTaskScreen(navigationController) }
 
-              composable<Route.TasksSection.TaskEdit> { backStackEntry ->
-                val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.TaskEdit>()
+              composable<Route.TasksSection.EditTask> { backStackEntry ->
+                val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.EditTask>()
                 EditTaskScreen(editTaskRoute.projectId, editTaskRoute.taskId, navigationController)
               }
 
-              composable<Route.TasksSection.TaskDetail> { backStackEntry ->
-                val taskDetailRoute = backStackEntry.toRoute<Route.TasksSection.TaskDetail>()
+              composable<Route.TasksSection.ViewTask> { backStackEntry ->
+                val taskDetailRoute = backStackEntry.toRoute<Route.TasksSection.ViewTask>()
                 ViewTaskScreen(
                     taskDetailRoute.projectId, taskDetailRoute.taskId, navigationController)
               }
