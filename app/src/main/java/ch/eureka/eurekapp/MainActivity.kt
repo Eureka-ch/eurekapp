@@ -20,16 +20,11 @@ import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.credentials.CredentialManager
 import ch.eureka.eurekapp.model.authentication.AuthRepository
-import ch.eureka.eurekapp.model.data.task.TaskRepositoryProvider
-import ch.eureka.eurekapp.navigation.NavigationMenu
 import ch.eureka.eurekapp.resources.C
-import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScreen
-import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependencesScreen
+import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesScreen
 import ch.eureka.eurekapp.ui.authentication.SignInScreen
 import ch.eureka.eurekapp.ui.theme.EurekappTheme
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.tasks.await
 
 class MainActivity : ComponentActivity() {
   private lateinit var auth: FirebaseAuth
@@ -60,7 +55,7 @@ fun Eurekapp(
   if (!signedIn) {
     SignInScreen(credentialManager = credentialManager, onSignedIn = { signedIn = true })
   } else {
-      TaskDependencesScreen(
+      TaskDependenciesScreen(
           projectId = "test-project-id",
           taskId = "task_3bc9fe52-d6b7-4e05-abb6-b8c6e114acbc"
       )
