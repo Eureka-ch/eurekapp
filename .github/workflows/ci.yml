@@ -396,6 +396,12 @@ jobs:
           name: unit-test-results
           path: app/build/test-results/
 
+      - name: Download instrumented test results (Shard 0)
+        uses: actions/download-artifact@v4
+        with:
+          name: instrumented-test-results-shard-0
+          path: app/build/outputs/androidTest-results/
+
       - name: Download instrumented test results (Shard 1)
         uses: actions/download-artifact@v4
         with:
@@ -418,6 +424,24 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-4
+          path: app/build/outputs/androidTest-results/
+
+      - name: Download instrumented test results (Shard 5)
+        uses: actions/download-artifact@v4
+        with:
+          name: instrumented-test-results-shard-5
+          path: app/build/outputs/androidTest-results/
+
+      - name: Download instrumented test results (Shard 6)
+        uses: actions/download-artifact@v4
+        with:
+          name: instrumented-test-results-shard-6
+          path: app/build/outputs/androidTest-results/
+
+      - name: Download instrumented test results (Shard 7)
+        uses: actions/download-artifact@v4
+        with:
+          name: instrumented-test-results-shard-7
           path: app/build/outputs/androidTest-results/
 
       - name: Generate Coverage Report
