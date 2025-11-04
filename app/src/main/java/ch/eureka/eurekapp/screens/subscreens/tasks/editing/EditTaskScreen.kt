@@ -37,6 +37,7 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.ProjectSelectionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDescriptionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
+import ch.eureka.eurekapp.screens.subscreens.tasks.TaskReminderField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskTitleField
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
@@ -155,6 +156,10 @@ fun EditTaskScreen(
                   hasTouched = hasTouchedDate,
                   onFocusChanged = { hasTouchedDate = true },
                   dateRegex = editTaskViewModel.dateRegex)
+
+              TaskReminderField(
+                  value = editTaskState.reminderTime,
+                  onValueChange = { editTaskViewModel.setReminderTime(it) })
 
               ProjectSelectionField(
                   projects = editTaskState.availableProjects,

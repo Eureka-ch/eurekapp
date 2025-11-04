@@ -27,6 +27,7 @@ import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.task.determinePriority
 import ch.eureka.eurekapp.model.data.task.getDaysUntilDue
+import ch.eureka.eurekapp.model.data.task.getDueDateTag
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
 import ch.eureka.eurekapp.ui.components.NavItem
@@ -73,6 +74,7 @@ private fun TaskCard(
       }
   val now = Timestamp.now()
   val daysUntilDue = getDaysUntilDue(task, now)
+  val dueDateTag = getDueDateTag(task, now)
 
   EurekaTaskCard(
       title = task.title,
@@ -81,6 +83,7 @@ private fun TaskCard(
       progressValue = progressValue,
       isCompleted = task.status == TaskStatus.COMPLETED,
       dueDate = daysUntilDue?.let { formatDueDate(it) } ?: "No due date",
+      dueDateTag = dueDateTag,
       priority = determinePriority(task, now),
       onToggleComplete = onToggleComplete,
       onClick = { onTaskClick(task.taskID, task.projectId) },

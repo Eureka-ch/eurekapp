@@ -81,6 +81,41 @@ abstract class BaseTaskViewModel<T : TaskStateCommon>(
     }
   }
 
+  protected fun parseReminderTime(dueDateStr: String, reminderTimeStr: String): Result<Timestamp> {
+    if (!dateRegex.matches(dueDateStr)) {
+      return Result.failure(IllegalArgumentException("Invalid due date format"))
+    }
+
+    val timeRegex = Regex("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")
+    if (!timeRegex.matches(reminderTimeStr)) {
+      return Result.failure(
+          IllegalArgumentException("Invalid reminder time format (must be HH:mm)"))
+    }
+
+    return try {
+      val dueDate =
+          dateFormat.parse(dueDateStr)
+              ?: return Result.failure(IllegalArgumentException("Invalid due date value"))
+
+      val timeParts = reminderTimeStr.split(":")
+      val hours = timeParts[0].toInt()
+      val minutes = timeParts[1].toInt()
+
+      val calendar =
+          java.util.Calendar.getInstance().apply {
+            time = dueDate
+            set(java.util.Calendar.HOUR_OF_DAY, hours)
+            set(java.util.Calendar.MINUTE, minutes)
+            set(java.util.Calendar.SECOND, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+          }
+
+      Result.success(Timestamp(calendar.time))
+    } catch (e: Exception) {
+      Result.failure(IllegalArgumentException("Invalid reminder time: ${e.message}"))
+    }
+  }
+
   /** Clears the error message in the UI state. */
   fun clearErrorMsg() {
     updateState { copyWithErrorMsg(null) }

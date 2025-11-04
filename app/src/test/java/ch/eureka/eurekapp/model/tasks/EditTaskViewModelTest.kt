@@ -104,6 +104,7 @@ class EditTaskViewModelTest {
     assertEquals("", state.title)
     assertEquals("", state.description)
     assertEquals("", state.dueDate)
+    assertEquals("", state.reminderTime)
     assertEquals(emptyList<Uri>(), state.attachmentUris)
     assertFalse(state.isSaving)
     assertFalse(state.taskSaved)

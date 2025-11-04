@@ -171,6 +171,162 @@ class TaskScreenViewModelTest {
   }
 
   @Test
+  fun viewModel_setFilterToToday_showsOnlyTasksDueToday() = runTest {
+    val baseTime = System.currentTimeMillis()
+    val calendar = java.util.Calendar.getInstance()
+    calendar.timeInMillis = baseTime
+    calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
+    calendar.set(java.util.Calendar.MINUTE, 0)
+    calendar.set(java.util.Calendar.SECOND, 0)
+    calendar.set(java.util.Calendar.MILLISECOND, 0)
+    val today = Timestamp(calendar.time)
+
+    val tomorrowCalendar = java.util.Calendar.getInstance()
+    tomorrowCalendar.timeInMillis = baseTime
+    tomorrowCalendar.add(java.util.Calendar.DAY_OF_YEAR, 1)
+    tomorrowCalendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
+    tomorrowCalendar.set(java.util.Calendar.MINUTE, 0)
+    tomorrowCalendar.set(java.util.Calendar.SECOND, 0)
+    tomorrowCalendar.set(java.util.Calendar.MILLISECOND, 0)
+    val tomorrowNormalized = Timestamp(tomorrowCalendar.time)
+
+    val taskDueToday =
+        Task(
+            taskID = "task1",
+            projectId = "proj1",
+            title = "Due Today",
+            assignedUserIds = listOf("user1"),
+            dueDate = today)
+    val taskDueTomorrow =
+        Task(
+            taskID = "task2",
+            projectId = "proj1",
+            title = "Due Tomorrow",
+            assignedUserIds = listOf("user1"),
+            dueDate = tomorrowNormalized)
+
+    mockTaskRepository.setCurrentUserTasks(flowOf(listOf(taskDueToday, taskDueTomorrow)))
+    mockUserRepository.setUsers(testUser1)
+
+    viewModel =
+        TaskScreenViewModel(
+            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+    advanceUntilIdle()
+
+    viewModel.setFilter(TaskScreenFilter.Today)
+    advanceUntilIdle()
+
+    val uiState = viewModel.uiState.first()
+    assertEquals(TaskScreenFilter.Today, uiState.selectedFilter)
+    assertEquals(1, uiState.tasksAndUsers.size)
+    assertEquals("Due Today", uiState.tasksAndUsers[0].task.title)
+  }
+
+  @Test
+  fun viewModel_setFilterToTomorrow_showsOnlyTasksDueTomorrow() = runTest {
+    val baseTime = System.currentTimeMillis()
+    val calendar = java.util.Calendar.getInstance()
+    calendar.timeInMillis = baseTime
+    calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
+    calendar.set(java.util.Calendar.MINUTE, 0)
+    calendar.set(java.util.Calendar.SECOND, 0)
+    calendar.set(java.util.Calendar.MILLISECOND, 0)
+    val today = Timestamp(calendar.time)
+
+    val tomorrowCalendar = java.util.Calendar.getInstance()
+    tomorrowCalendar.timeInMillis = baseTime
+    tomorrowCalendar.add(java.util.Calendar.DAY_OF_YEAR, 1)
+    tomorrowCalendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
+    tomorrowCalendar.set(java.util.Calendar.MINUTE, 0)
+    tomorrowCalendar.set(java.util.Calendar.SECOND, 0)
+    tomorrowCalendar.set(java.util.Calendar.MILLISECOND, 0)
+    val tomorrowNormalized = Timestamp(tomorrowCalendar.time)
+
+    val taskDueToday =
+        Task(
+            taskID = "task1",
+            projectId = "proj1",
+            title = "Due Today",
+            assignedUserIds = listOf("user1"),
+            dueDate = today)
+    val taskDueTomorrow =
+        Task(
+            taskID = "task2",
+            projectId = "proj1",
+            title = "Due Tomorrow",
+            assignedUserIds = listOf("user1"),
+            dueDate = tomorrowNormalized)
+
+    mockTaskRepository.setCurrentUserTasks(flowOf(listOf(taskDueToday, taskDueTomorrow)))
+    mockUserRepository.setUsers(testUser1)
+
+    viewModel =
+        TaskScreenViewModel(
+            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+    advanceUntilIdle()
+
+    viewModel.setFilter(TaskScreenFilter.Tomorrow)
+    advanceUntilIdle()
+
+    val uiState = viewModel.uiState.first()
+    assertEquals(TaskScreenFilter.Tomorrow, uiState.selectedFilter)
+    assertEquals(1, uiState.tasksAndUsers.size)
+    assertEquals("Due Tomorrow", uiState.tasksAndUsers[0].task.title)
+  }
+
+  @Test
+  fun viewModel_setFilterToOverdue_showsOnlyOverdueTasks() = runTest {
+    val baseTime = System.currentTimeMillis()
+    val calendar = java.util.Calendar.getInstance()
+    calendar.timeInMillis = baseTime
+    calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
+    calendar.set(java.util.Calendar.MINUTE, 0)
+    calendar.set(java.util.Calendar.SECOND, 0)
+    calendar.set(java.util.Calendar.MILLISECOND, 0)
+    val today = Timestamp(calendar.time)
+
+    val yesterdayCalendar = java.util.Calendar.getInstance()
+    yesterdayCalendar.timeInMillis = baseTime
+    yesterdayCalendar.add(java.util.Calendar.DAY_OF_YEAR, -1)
+    yesterdayCalendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
+    yesterdayCalendar.set(java.util.Calendar.MINUTE, 0)
+    yesterdayCalendar.set(java.util.Calendar.SECOND, 0)
+    yesterdayCalendar.set(java.util.Calendar.MILLISECOND, 0)
+    val yesterdayNormalized = Timestamp(yesterdayCalendar.time)
+
+    val taskOverdue =
+        Task(
+            taskID = "task1",
+            projectId = "proj1",
+            title = "Overdue Task",
+            assignedUserIds = listOf("user1"),
+            dueDate = yesterdayNormalized)
+    val taskDueToday =
+        Task(
+            taskID = "task2",
+            projectId = "proj1",
+            title = "Due Today",
+            assignedUserIds = listOf("user1"),
+            dueDate = today)
+
+    mockTaskRepository.setCurrentUserTasks(flowOf(listOf(taskOverdue, taskDueToday)))
+    mockUserRepository.setUsers(testUser1)
+
+    viewModel =
+        TaskScreenViewModel(
+            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+    advanceUntilIdle()
+
+    viewModel.setFilter(TaskScreenFilter.Overdue)
+    advanceUntilIdle()
+
+    val uiState = viewModel.uiState.first()
+    assertEquals(TaskScreenFilter.Overdue, uiState.selectedFilter)
+    assertEquals(1, uiState.tasksAndUsers.size)
+    assertEquals("Overdue Task", uiState.tasksAndUsers[0].task.title)
+  }
+
+  @Test
   fun viewModel_setFilterToThisWeek_showsOnlyTasksDueThisWeek() = runTest {
     val taskDueTomorrow =
         Task(
@@ -627,10 +783,13 @@ class TaskScreenViewModelTest {
   fun taskScreenFilter_companion_values_containsAllFilters() {
     val values = TaskScreenFilter.values
 
-    assertEquals(4, values.size)
+    assertEquals(7, values.size)
     assertTrue(values.contains(TaskScreenFilter.Mine))
     assertTrue(values.contains(TaskScreenFilter.Team))
+    assertTrue(values.contains(TaskScreenFilter.Today))
+    assertTrue(values.contains(TaskScreenFilter.Tomorrow))
     assertTrue(values.contains(TaskScreenFilter.ThisWeek))
+    assertTrue(values.contains(TaskScreenFilter.Overdue))
     assertTrue(values.contains(TaskScreenFilter.All))
   }
 
@@ -638,11 +797,14 @@ class TaskScreenViewModelTest {
   fun taskScreenFilter_values_areInCorrectOrder() {
     val values = TaskScreenFilter.values
 
-    assertEquals(4, values.size)
+    assertEquals(7, values.size)
     assertEquals(TaskScreenFilter.Mine, values[0])
     assertEquals(TaskScreenFilter.Team, values[1])
-    assertEquals(TaskScreenFilter.ThisWeek, values[2])
-    assertEquals(TaskScreenFilter.All, values[3])
+    assertEquals(TaskScreenFilter.Today, values[2])
+    assertEquals(TaskScreenFilter.Tomorrow, values[3])
+    assertEquals(TaskScreenFilter.ThisWeek, values[4])
+    assertEquals(TaskScreenFilter.Overdue, values[5])
+    assertEquals(TaskScreenFilter.All, values[6])
   }
 
   // Tests for TaskAndUsers data class

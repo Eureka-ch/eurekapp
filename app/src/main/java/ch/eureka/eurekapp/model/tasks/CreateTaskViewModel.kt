@@ -54,6 +54,11 @@ class CreateTaskViewModel(
     }
     val timestamp = timestampResult.getOrThrow()
 
+    val reminderTimestamp =
+        if (state.reminderTime.isNotBlank() && state.dueDate.isNotBlank()) {
+          parseReminderTime(state.dueDate, state.reminderTime).getOrNull()
+        } else null
+
     val currentUser = getCurrentUserId() ?: throw Exception("User not logged in.")
 
     val handler = CoroutineExceptionHandler { _, exception ->
@@ -93,6 +98,7 @@ class CreateTaskViewModel(
                 description = state.description,
                 assignedUserIds = listOf(currentUser),
                 dueDate = timestamp,
+                reminderTime = reminderTimestamp,
                 attachmentUrls = photoUrls,
                 createdBy = currentUser)
 
@@ -138,4 +144,8 @@ class CreateTaskViewModel(
   override fun CreateTaskState.copyWithAttachmentUris(uris: List<Uri>) = copy(attachmentUris = uris)
 
   override fun CreateTaskState.copyWithProjectId(projectId: String) = copy(projectId = projectId)
+
+  fun setReminderTime(reminderTime: String) {
+    updateState { copy(reminderTime = reminderTime) }
+  }
 }

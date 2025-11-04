@@ -14,6 +14,7 @@ data class CreateTaskState(
     override val title: String = "",
     override val description: String = "",
     override val dueDate: String = "",
+    val reminderTime: String = "",
     override val projectId: String = "",
     override val availableProjects: List<Project> = emptyList(),
     override val attachmentUris: List<Uri> = emptyList(),

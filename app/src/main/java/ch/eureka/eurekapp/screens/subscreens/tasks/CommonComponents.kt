@@ -35,6 +35,7 @@ object CommonTaskTestTags {
   const val TITLE = "title"
   const val DESCRIPTION = "description"
   const val DUE_DATE = "due_date"
+  const val REMINDER_TIME = "reminder_time"
   const val ADD_PHOTO = "add_photo"
   const val SAVE_TASK = "save_task"
   const val PHOTO = "photo"
@@ -135,6 +136,30 @@ fun TaskDueDateField(
   if (value.isNotBlank() && !dateRegex.matches(value) && hasTouched) {
     Text(
         text = "Invalid format (must be dd/MM/yyyy)",
+        color = Color.Red,
+        style = MaterialTheme.typography.bodySmall,
+        modifier = Modifier.testTag(CommonTaskTestTags.ERROR_MSG))
+  }
+}
+
+@Composable
+fun TaskReminderField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+  val timeRegex = Regex("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")
+
+  OutlinedTextField(
+      value = value,
+      onValueChange = onValueChange,
+      label = { Text("Reminder time") },
+      placeholder = { Text("HH:mm") },
+      modifier = modifier.fillMaxWidth().testTag(CommonTaskTestTags.REMINDER_TIME))
+
+  if (value.isNotBlank() && !timeRegex.matches(value)) {
+    Text(
+        text = "Invalid format (must be HH:mm)",
         color = Color.Red,
         style = MaterialTheme.typography.bodySmall,
         modifier = Modifier.testTag(CommonTaskTestTags.ERROR_MSG))
