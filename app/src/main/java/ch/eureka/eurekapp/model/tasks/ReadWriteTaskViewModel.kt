@@ -9,8 +9,6 @@ import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import com.google.firebase.Timestamp
-import java.text.SimpleDateFormat
-import java.util.Locale
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,20 +23,14 @@ Portions of this code were generated with the help of Grok.
 */
 
 /** Interface for common task state properties */
-interface TaskStateCommon {
-  val title: String
-  val description: String
-  val dueDate: String
-  val projectId: String
-  val availableProjects: List<Project>
-  val attachmentUris: List<Uri>
+interface TaskStateReadWrite : TaskStateRead {
   val isSaving: Boolean
   val taskSaved: Boolean
-  val errorMsg: String?
+  val availableProjects: List<Project>
 }
 
 /** Base ViewModel for task creation and editing with shared functionality */
-abstract class ReadWriteTaskViewModel<T : TaskStateCommon>(
+abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
     taskRepository: TaskRepository,
     protected val fileRepository: FileStorageRepository,
     protected val getCurrentUserId: () -> String?,
@@ -48,9 +40,6 @@ abstract class ReadWriteTaskViewModel<T : TaskStateCommon>(
   abstract override val uiState: StateFlow<T>
 
   protected abstract fun getState(): T
-
-  private val dateFormat =
-      SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).apply { isLenient = false }
 
   val inputValid: StateFlow<Boolean> by lazy {
     uiState
@@ -137,16 +126,17 @@ abstract class ReadWriteTaskViewModel<T : TaskStateCommon>(
   }
 
   fun addAttachment(uri: Uri) {
-    val currentUris = uiState.value.attachmentUris
-    if (!currentUris.contains(uri)) {
-      updateState { copyWithAttachmentUris(currentUris + uri) }
+    if (!uiState.value.attachmentUris.contains(uri)) {
+      updateState { copyWithAttachmentUris(uiState.value.attachmentUris + uri) }
     }
   }
 
   open fun removeAttachment(index: Int) {
-    val currentUris = uiState.value.attachmentUris
-    if (index in currentUris.indices) {
-      updateState { copyWithAttachmentUris(currentUris.toMutableList().apply { removeAt(index) }) }
+    if (index in uiState.value.attachmentUris.indices) {
+      updateState {
+        copyWithAttachmentUris(
+            uiState.value.attachmentUris.toMutableList().apply { removeAt(index) })
+      }
     }
   }
 
@@ -169,12 +159,12 @@ abstract class ReadWriteTaskViewModel<T : TaskStateCommon>(
           result.isSuccess
         }
         else -> {
-          Log.w("BaseTaskViewModel", "Unsupported URI scheme: ${photoUri.scheme}")
+          Log.w("ReadWriteTaskViewModel", "Unsupported URI scheme: ${photoUri.scheme}")
           false
         }
       }
     } catch (e: Exception) {
-      Log.w("BaseTaskViewModel", "Failed to delete photo: ${e.message}")
+      Log.w("ReadWriteTaskViewModel", "Failed to delete photo: ${e.message}")
       false
     }
   }
@@ -202,10 +192,6 @@ abstract class ReadWriteTaskViewModel<T : TaskStateCommon>(
   }
 
   // Abstract methods for state updates
-  protected abstract override fun updateState(update: T.() -> T)
-
-  protected abstract override fun T.copyWithErrorMsg(errorMsg: String?): T
-
   protected abstract fun T.copyWithSaveState(isSaving: Boolean, taskSaved: Boolean): T
 
   protected abstract fun T.copyWithTitle(title: String): T

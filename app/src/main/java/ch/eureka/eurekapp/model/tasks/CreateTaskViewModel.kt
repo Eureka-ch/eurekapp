@@ -38,6 +38,7 @@ class CreateTaskViewModel(
         taskRepository, fileRepository, getCurrentUserId, dispatcher) {
 
   private val _uiState = MutableStateFlow(CreateTaskState())
+  override val mutableUiState: MutableStateFlow<CreateTaskState> = _uiState
   override val uiState: StateFlow<CreateTaskState> = _uiState.asStateFlow()
 
   /** Returns the current state. */
@@ -119,10 +120,6 @@ class CreateTaskViewModel(
   }
 
   // State update implementations
-  override fun updateState(update: CreateTaskState.() -> CreateTaskState) {
-    _uiState.value = _uiState.value.update()
-  }
-
   override fun CreateTaskState.copyWithErrorMsg(errorMsg: String?) = copy(errorMsg = errorMsg)
 
   override fun CreateTaskState.copyWithSaveState(isSaving: Boolean, taskSaved: Boolean) =

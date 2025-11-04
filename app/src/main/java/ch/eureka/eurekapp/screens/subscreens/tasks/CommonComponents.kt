@@ -54,7 +54,8 @@ fun TaskTitleField(
     hasTouched: Boolean,
     onFocusChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    readOnly: Boolean = false
 ) {
   OutlinedTextField(
       value = value,
@@ -62,6 +63,7 @@ fun TaskTitleField(
       label = { Text("Title") },
       placeholder = { Text("Name the task") },
       enabled = enabled,
+      readOnly = readOnly,
       modifier =
           modifier
               .fillMaxWidth()
@@ -87,7 +89,8 @@ fun TaskDescriptionField(
     hasTouched: Boolean,
     onFocusChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    readOnly: Boolean = false
 ) {
   OutlinedTextField(
       value = value,
@@ -95,6 +98,7 @@ fun TaskDescriptionField(
       label = { Text("Description") },
       placeholder = { Text("Describe the task") },
       enabled = enabled,
+      readOnly = readOnly,
       modifier =
           modifier
               .fillMaxWidth()
@@ -121,7 +125,8 @@ fun TaskDueDateField(
     onFocusChanged: (Boolean) -> Unit,
     dateRegex: Regex,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    readOnly: Boolean = false
 ) {
   OutlinedTextField(
       value = value,
@@ -129,6 +134,7 @@ fun TaskDueDateField(
       label = { Text("Due date") },
       placeholder = { Text("01/01/1970") },
       enabled = enabled,
+      readOnly = readOnly,
       modifier =
           modifier
               .fillMaxWidth()
