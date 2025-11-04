@@ -31,6 +31,34 @@ import ch.eureka.eurekapp.ui.camera.PhotoViewer
 
 // Portions of this code were generated with the help of AI.
 
+/**
+ * Helper function to determine if an error should be shown for a field.
+ * @param readOnly Whether the field is read-only
+ * @param value The current value of the field
+ * @param hasTouched Whether the field has been touched/focused
+ * @return true if the error should be displayed
+ */
+private fun shouldShowError(readOnly: Boolean = false, value: String, hasTouched: Boolean): Boolean {
+  return !readOnly && value.isBlank() && hasTouched
+}
+
+/**
+ * Helper function to determine if a date format error should be shown.
+ * @param readOnly Whether the field is read-only
+ * @param value The current value of the field
+ * @param dateRegex The regex pattern for valid date format
+ * @param hasTouched Whether the field has been touched/focused
+ * @return true if the date format error should be displayed
+ */
+private fun shouldShowDateFormatError(
+    readOnly: Boolean,
+    value: String,
+    dateRegex: Regex,
+    hasTouched: Boolean
+): Boolean {
+  return !readOnly && value.isNotBlank() && !dateRegex.matches(value) && hasTouched
+}
+
 object CommonTaskTestTags {
   const val TITLE = "title"
   const val DESCRIPTION = "description"
@@ -54,7 +82,6 @@ fun TaskTitleField(
     hasTouched: Boolean,
     onFocusChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true,
     readOnly: Boolean = false
 ) {
   OutlinedTextField(
@@ -62,7 +89,6 @@ fun TaskTitleField(
       onValueChange = onValueChange,
       label = { Text("Title") },
       placeholder = { Text("Name the task") },
-      enabled = enabled,
       readOnly = readOnly,
       modifier =
           modifier
@@ -73,7 +99,7 @@ fun TaskTitleField(
                 }
               }
               .testTag(CommonTaskTestTags.TITLE))
-  if (enabled && value.isBlank() && hasTouched) {
+  if (shouldShowError(readOnly, value, hasTouched)) {
     Text(
         text = "Title cannot be empty",
         color = Color.Red,
@@ -89,7 +115,6 @@ fun TaskDescriptionField(
     hasTouched: Boolean,
     onFocusChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true,
     readOnly: Boolean = false
 ) {
   OutlinedTextField(
@@ -97,7 +122,6 @@ fun TaskDescriptionField(
       onValueChange = onValueChange,
       label = { Text("Description") },
       placeholder = { Text("Describe the task") },
-      enabled = enabled,
       readOnly = readOnly,
       modifier =
           modifier
@@ -108,7 +132,7 @@ fun TaskDescriptionField(
                 }
               }
               .testTag(CommonTaskTestTags.DESCRIPTION))
-  if (enabled && value.isBlank() && hasTouched) {
+  if (shouldShowError(readOnly, value, hasTouched)) {
     Text(
         text = "Description cannot be empty",
         color = Color.Red,
@@ -142,7 +166,13 @@ fun TaskDueDateField(
                 }
               }
               .testTag(CommonTaskTestTags.DUE_DATE))
-  if (value.isNotBlank() && !dateRegex.matches(value) && hasTouched) {
+  if (shouldShowError(readOnly, value, hasTouched)) {
+    Text(
+        text = "Due date cannot be empty",
+        color = Color.Red,
+        style = MaterialTheme.typography.bodySmall,
+        modifier = Modifier.testTag(CommonTaskTestTags.ERROR_MSG))
+  } else if (shouldShowDateFormatError(readOnly, value, dateRegex, hasTouched)) {
     Text(
         text = "Invalid format (must be dd/MM/yyyy)",
         color = Color.Red,
