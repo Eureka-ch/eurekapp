@@ -107,16 +107,15 @@ fun ViewTaskScreen(
 
               Button(
                   onClick = {
-                    navigationController.navigate(Route.TasksSection.TaskEdit(projectId, taskId))
+                    navigationController.navigate(Route.TasksSection.EditTask(projectId, taskId))
                   },
                   modifier = Modifier.testTag(ViewTaskScreenTestTags.EDIT_TASK),
                   colors = EurekaStyles.PrimaryButtonColors()) {
                     Text("Edit Task")
                   }
 
-              val allAttachments = viewTaskState.attachmentUrls + viewTaskState.attachmentUris
               AttachmentsList(
-                  attachments = allAttachments,
+                  attachments = viewTaskState.attachmentUrls + viewTaskState.attachmentUris,
                   onDelete = null, // Pass null to indicate read-only mode
                   isReadOnly = true)
             }

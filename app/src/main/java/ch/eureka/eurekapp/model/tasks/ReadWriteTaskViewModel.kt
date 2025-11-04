@@ -2,7 +2,6 @@ package ch.eureka.eurekapp.model.tasks
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
@@ -167,12 +166,10 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
           result.isSuccess
         }
         else -> {
-          Log.w("ReadWriteTaskViewModel", "Unsupported URI scheme: ${photoUri.scheme}")
           false
         }
       }
-    } catch (e: Exception) {
-      Log.w("ReadWriteTaskViewModel", "Failed to delete photo: ${e.message}")
+    } catch (_: Exception) {
       false
     }
   }
