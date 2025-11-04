@@ -12,10 +12,6 @@ on:
       - synchronize
       - reopened
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   changes:
     name: Detect Changes
@@ -98,10 +94,9 @@ jobs:
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
-    needs: changes
-    if: needs.changes.outputs.android == 'true'
 
     steps:
+      # First step : Checkout the repository on the runner
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -134,103 +129,28 @@ jobs:
             app/build/outputs/unit_test_code_coverage/**/*.exec
           compression-level: 9
 
-  setup-avd:
-    name: Setup AVD
-    runs-on: ubuntu-latest
-    needs: [changes]
-    if: needs.changes.outputs.android == 'true' || needs.changes.outputs.functions == 'true'
 
-    steps:
+      # Kernel-based Virtual Machine (KVM) is an open source virtualization technology built into Linux. Enabling it allows the Android emulator to run faster.
       - name: Enable KVM group perms
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: AVD cache
-        uses: actions/cache@v4
-        id: avd-cache
+      - name: Setup JDK
+        uses: actions/setup-java@v4
         with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/adb*
-          key: avd-36-google_apis-x86_64-pixel_7_pro
+          distribution: "temurin"
+          java-version: "17"
 
-      - name: Create AVD and generate snapshot for caching
-        if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 36
-          target: google_apis
-          arch: x86_64
-          profile: pixel_7_pro
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated -memory 4096 -cores 4
-          disable-animations: true
-          script: echo "AVD snapshot generated"
+      # Caching is a very useful part of a CI, as a workflow is executed in a clean environment every time,
+      # this means that one would need to re-download and re-process gradle files for every run. Which is very time consuming.
+      #
+      # To avoid that, we cache the the gradle folder to reuse it later.
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v3
 
-  build-functions:
-    name: Build Cloud Functions
-    runs-on: ubuntu-latest
-    needs: changes
-    if: needs.changes.outputs.android == 'true' || needs.changes.outputs.functions == 'true'
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Setup NodeJS
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Cache Cloud Functions dependencies
-        uses: actions/cache@v4
-        with:
-          path: functions/node_modules
-          key: ${{ runner.os }}-functions-${{ hashFiles('functions/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-functions-
-
-      - name: Build Cloud Functions
-        run: |
-          cd functions
-          npm install
-          npm run build
-          cd ..
-
-  instrumented-tests:
-    name: Instrumented Tests (Shard ${{ matrix.shard }})
-    runs-on: ubuntu-latest
-    needs: [changes, setup-avd, build-functions]
-    if: needs.changes.outputs.android == 'true' || needs.changes.outputs.functions == 'true'
-
-    # To modify shard count:
-    # 1. Update numShards in gradle command (currently 8)
-    # 2. Update matrix.shard array to [0, 1, ..., N-1]
-    # 3. Update job name "Shard X/N" if desired
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [0, 1, 2, 3, 4, 5, 6, 7]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Enable KVM group perms
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
-      - name: Setup Android Build
-        uses: ./.github/actions/setup-android-build
-
+      # Cache the Emulator, if the cache does not hit, create the emulator
       - name: AVD cache
         uses: actions/cache@v4
         id: avd-cache
@@ -249,7 +169,7 @@ jobs:
           arch: x86_64
           profile: pixel_7_pro
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated -memory 4096 -cores 4
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated -memory 4096 -cores 2
           disable-animations: true
           script: echo "Generated AVD snapshot for caching."
 
@@ -398,10 +318,12 @@ jobs:
           fi
 
       - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
+        run: |
+          chmod +x ./gradlew
 
-      - name: Download unit test results
-        uses: actions/download-artifact@v4
+        # Install NodeJS
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
         with:
           name: unit-test-results
           path: app/build/
@@ -418,29 +340,59 @@ jobs:
           name: instrumented-test-results-shard-0
           path: app/build/outputs/androidTest-results/
 
-      - name: Download instrumented test results (Shard 1)
-        uses: actions/download-artifact@v4
-        with:
-          name: instrumented-test-results-shard-1
-          path: app/build/outputs/androidTest-results/
+      # Install Firebase CLI
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
 
-      - name: Download instrumented test results (Shard 2)
-        uses: actions/download-artifact@v4
-        with:
-          name: instrumented-test-results-shard-2
-          path: app/build/outputs/androidTest-results/
+      # Build Cloud Functions
+      - name: Build Cloud Functions
+        run: |
+          cd functions
+          npm install
+          npm run build
+          cd ..
 
-      - name: Download instrumented test results (Shard 3)
-        uses: actions/download-artifact@v4
-        with:
-          name: instrumented-test-results-shard-3
-          path: app/build/outputs/androidTest-results/
+      # Check formatting
+      - name: KTFmt Check
+        run: |
+          ./gradlew ktfmtCheck
 
-      - name: Download instrumented test results (Shard 4)
-        uses: actions/download-artifact@v4
+      # This step runs gradle commands to build the application
+      - name: Assemble
+        run: |
+          # To run the CI with debug information, add --info
+          ./gradlew assemble lint --parallel --build-cache
+
+      # Run Unit tests
+      - name: Run tests
+        run: |
+          # To run the CI with debug information, add --info
+          ./gradlew check --parallel --build-cache
+
+        # Start Firebase emulators for instrumentation tests
+      - name: Start Firebase emulators
+        run: |
+          if [ -e "firebase.json" ] && jq -e '.emulators' firebase.json >/dev/null; then
+            echo "Starting Firebase emulators for instrumentation tests..."
+            firebase emulators:start --only storage,firestore,auth,functions --project eureka-app-ch &
+            sleep 20
+            echo "Firebase emulators started"
+          else
+            echo "Firebase emulators not configured, skipping emulator startup..."
+          fi
+
+      # Run connected tests on the emulator
+      - name: run tests
+        uses: reactivecircus/android-emulator-runner@v2
         with:
-          name: instrumented-test-results-shard-4
-          path: app/build/outputs/androidTest-results/
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7_pro
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated -memory 4096 -cores 2
+          disable-animations: true
+          script: ./gradlew connectedCheck --parallel --build-cache --stacktrace --info
 
       - name: Download instrumented test results (Shard 5)
         uses: actions/download-artifact@v4
@@ -471,8 +423,10 @@ jobs:
           ls -la app/build/reports/lint-results-debug.xml 2>/dev/null || echo "Lint report not found"
 
       - name: Generate Coverage Report
-        run: ./gradlew jacocoTestReport
+        run: |
+          ./gradlew jacocoTestReport
 
+      # Upload the various reports to sonar
       - name: Upload report to SonarCloud
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

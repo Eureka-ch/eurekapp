@@ -69,12 +69,28 @@ class MeetingViewModel(
                   upcomingMeetings =
                       meetings
                           .filterNot { meeting -> meeting.status == MeetingStatus.COMPLETED }
-                          .sortedBy { m -> m.datetime ?: m.timeSlot.startTime }
+                          .sortedBy { m ->
+                            m.datetime
+                                ?: m.dateTimeVotes
+                                    .filter { dtv -> dtv.voters.isNotEmpty() }
+                                    .minOfOrNull { e ->
+                                      e.dateTime
+                                    } // will never give null because there is always at least a
+                            // vote that has a non-zero votes
+                          }
                           .reversed(),
                   pastMeetings =
                       meetings
                           .filter { meeting -> meeting.status == MeetingStatus.COMPLETED }
-                          .sortedBy { m -> m.datetime ?: m.timeSlot.startTime }
+                          .sortedBy { m ->
+                            m.datetime
+                                ?: m.dateTimeVotes
+                                    .filter { dtv -> dtv.voters.isNotEmpty() }
+                                    .minOfOrNull { e ->
+                                      e.dateTime
+                                    } // will never give null because there is always at least a
+                            // vote that has a non-zero votes
+                          }
                           .reversed())
             }
           }

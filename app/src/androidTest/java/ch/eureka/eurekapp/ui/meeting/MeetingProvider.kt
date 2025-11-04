@@ -1,12 +1,11 @@
 package ch.eureka.eurekapp.ui.meeting
 
 import ch.eureka.eurekapp.model.data.map.Location
+import ch.eureka.eurekapp.model.data.meeting.DateTimeVote // Added this import
 import ch.eureka.eurekapp.model.data.meeting.Meeting
-import ch.eureka.eurekapp.model.data.meeting.MeetingDateTimeVotes
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormatVote
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
-import ch.eureka.eurekapp.model.data.meeting.TimeSlot
 import com.google.firebase.Timestamp
 import java.util.Calendar
 
@@ -50,22 +49,18 @@ object MeetingProvider {
               taskId = taskIds[0],
               title = "Apollo UI Refresh Kick-off",
               status = MeetingStatus.OPEN_TO_VOTES,
-              timeSlot =
-                  TimeSlot(
-                      startTime = createTimestamp(2025, 10, 20, 9, 0), // Next Monday 9 AM
-                      endTime = createTimestamp(2025, 10, 20, 17, 0) // Next Monday 5 PM
-                      ),
+              duration = 60,
               dateTimeVotes =
-                  listOf(
-                      MeetingDateTimeVotes(
-                          userIds[0], listOf(createTimestamp(2025, 10, 20, 10, 0))),
-                      MeetingDateTimeVotes(
-                          userIds[1],
-                          listOf(
-                              createTimestamp(2025, 10, 20, 11, 0),
-                              createTimestamp(2025, 10, 20, 14, 0))),
-                      MeetingDateTimeVotes(
-                          userIds[2], listOf(createTimestamp(2025, 10, 20, 10, 0)))),
+                  listOf( // Updated to List<DateTimeVote>
+                      DateTimeVote(
+                          dateTime = createTimestamp(2025, 10, 20, 10, 0),
+                          voters = listOf(userIds[0], userIds[2])),
+                      DateTimeVote(
+                          dateTime = createTimestamp(2025, 10, 20, 11, 0),
+                          voters = listOf(userIds[1])),
+                      DateTimeVote(
+                          dateTime = createTimestamp(2025, 10, 20, 14, 0),
+                          voters = listOf(userIds[1]))),
               formatVotes =
                   listOf(
                       MeetingFormatVote(userIds[0], MeetingFormat.VIRTUAL),
@@ -84,6 +79,15 @@ object MeetingProvider {
               projectId = projectIds[1],
               title = "Bravo Project Weekly Sync",
               status = MeetingStatus.SCHEDULED,
+              duration = 30,
+              dateTimeVotes =
+                  listOf( // Updated to List<DateTimeVote>
+                      DateTimeVote(
+                          dateTime = createTimestamp(2025, 10, 20, 10, 0),
+                          voters = listOf(userIds[0], userIds[2])),
+                      DateTimeVote(
+                          dateTime = createTimestamp(2025, 11, 20, 21, 0),
+                          voters = listOf(userIds[1]))),
               datetime = createTimestamp(2025, 10, 17, 15, 0), // This Friday 3 PM
               format = MeetingFormat.VIRTUAL,
               link = "https://meet.google.com/abc-defg-hij",
@@ -97,6 +101,12 @@ object MeetingProvider {
               taskId = taskIds[1],
               title = "Database Migration Strategy",
               status = MeetingStatus.SCHEDULED,
+              duration = 90,
+              dateTimeVotes =
+                  listOf( // Updated to List<DateTimeVote>
+                      DateTimeVote(
+                          dateTime = createTimestamp(2025, 10, 20, 10, 0),
+                          voters = listOf(userIds[0], userIds[2]))),
               datetime = createTimestamp(2025, 10, 22, 10, 30), // Next Wednesday 10:30 AM
               format = MeetingFormat.IN_PERSON,
               location = lausanneOffice,
@@ -109,6 +119,10 @@ object MeetingProvider {
               projectId = projectIds[2],
               title = "Q4 Marketing Brainstorm",
               status = MeetingStatus.COMPLETED,
+              duration = 60,
+              dateTimeVotes =
+                  listOf( // Updated to List<DateTimeVote>
+                      DateTimeVote(dateTime = createTimestamp(2026, 1, 1, 9, 0), voters = userIds)),
               datetime = createTimestamp(2025, 10, 13, 14, 0), // Last Monday 2 PM
               format = MeetingFormat.IN_PERSON,
               location = zurichHub,
@@ -123,6 +137,12 @@ object MeetingProvider {
               taskId = taskIds[2],
               title = "API Documentation Final Review",
               status = MeetingStatus.COMPLETED,
+              duration = 60,
+              dateTimeVotes =
+                  listOf( // Updated to List<DateTimeVote>
+                      DateTimeVote(
+                          dateTime = createTimestamp(2025, 4, 5, 12, 0),
+                          voters = listOf(userIds[4]))),
               datetime = createTimestamp(2025, 10, 10, 11, 0), // Last Friday 11 AM
               format = MeetingFormat.VIRTUAL,
               link = "https://meet.google.com/api-docs-review",
@@ -140,6 +160,8 @@ object MeetingProvider {
               projectId = projectIds[0],
               title = "Live Demo & Feedback Session",
               status = MeetingStatus.IN_PROGRESS,
+              duration = 60,
+              // dateTimeVotes uses default emptyList()
               datetime = createTimestamp(2025, 10, 16, 17, 0), // Today 5 PM
               format = MeetingFormat.VIRTUAL,
               link = "https://zoom.us/j/1234567890",
@@ -152,10 +174,13 @@ object MeetingProvider {
               projectId = projectIds[2],
               title = "Client On-site Visit Planning",
               status = MeetingStatus.OPEN_TO_VOTES,
-              timeSlot =
-                  TimeSlot(
-                      startTime = createTimestamp(2025, 10, 27, 9, 0),
-                      endTime = createTimestamp(2025, 10, 29, 17, 0)),
+              duration = 120,
+              dateTimeVotes =
+                  listOf( // Updated to List<DateTimeVote>
+                      DateTimeVote(
+                          dateTime = createTimestamp(2025, 4, 5, 12, 0),
+                          voters = listOf(userIds[3]))),
+              // formatVotes uses default emptyList()
               datetime = null,
               format = null,
               createdBy = userIds[3],
@@ -168,6 +193,12 @@ object MeetingProvider {
               taskId = null,
               title = "Bravo Project All-Hands",
               status = MeetingStatus.SCHEDULED,
+              duration = 45,
+              dateTimeVotes =
+                  listOf( // Updated to List<DateTimeVote>
+                      DateTimeVote(
+                          dateTime = createTimestamp(2025, 4, 5, 12, 0),
+                          voters = listOf(userIds[1]))),
               datetime = createTimestamp(2025, 11, 3, 16, 0),
               format = MeetingFormat.VIRTUAL,
               link = "https://teams.microsoft.com/...",
@@ -180,6 +211,12 @@ object MeetingProvider {
               projectId = projectIds[0],
               title = "Quick Check-in",
               status = MeetingStatus.SCHEDULED,
+              duration = 15,
+              dateTimeVotes =
+                  listOf( // Updated to List<DateTimeVote>
+                      DateTimeVote(
+                          dateTime = createTimestamp(2025, 4, 5, 12, 0),
+                          voters = listOf(userIds[0]))),
               datetime = createTimestamp(2025, 10, 17, 9, 15),
               format = MeetingFormat.VIRTUAL, // Format is required for scheduled meetings
               createdBy = userIds[0],
@@ -191,6 +228,12 @@ object MeetingProvider {
               projectId = projectIds[2],
               title = "Budget Preliminary Discussion",
               status = MeetingStatus.COMPLETED,
+              duration = 60,
+              dateTimeVotes =
+                  listOf( // Updated to List<DateTimeVote>
+                      DateTimeVote(
+                          dateTime = createTimestamp(2025, 4, 5, 12, 0),
+                          voters = listOf(userIds[3]))),
               datetime = createTimestamp(2025, 9, 30, 13, 0),
               format = MeetingFormat.IN_PERSON,
               location = lausanneOffice,
@@ -203,25 +246,21 @@ object MeetingProvider {
               projectId = projectIds[1],
               title = "Service Architecture Planning",
               status = MeetingStatus.OPEN_TO_VOTES,
-              timeSlot =
-                  TimeSlot(
-                      startTime = createTimestamp(2025, 10, 27, 9, 0),
-                      endTime = createTimestamp(2025, 10, 28, 17, 0)),
+              duration = 120,
               dateTimeVotes =
-                  listOf(
-                      MeetingDateTimeVotes(
-                          userIds[0], listOf(createTimestamp(2025, 10, 27, 10, 0))),
-                      MeetingDateTimeVotes(
-                          userIds[1], listOf(createTimestamp(2025, 10, 28, 14, 0))),
-                      MeetingDateTimeVotes(
-                          userIds[2],
-                          listOf(
-                              createTimestamp(2025, 10, 27, 10, 0),
-                              createTimestamp(2025, 10, 28, 11, 0))),
-                      MeetingDateTimeVotes(
-                          userIds[3], listOf(createTimestamp(2025, 10, 28, 14, 0))),
-                      MeetingDateTimeVotes(
-                          userIds[4], listOf(createTimestamp(2025, 10, 27, 13, 0)))),
+                  listOf( // Updated to List<DateTimeVote>
+                      DateTimeVote(
+                          dateTime = createTimestamp(2025, 10, 27, 10, 0),
+                          voters = listOf(userIds[0], userIds[2])),
+                      DateTimeVote(
+                          dateTime = createTimestamp(2025, 10, 28, 14, 0),
+                          voters = listOf(userIds[1], userIds[3])),
+                      DateTimeVote(
+                          dateTime = createTimestamp(2025, 10, 28, 11, 0),
+                          voters = listOf(userIds[2])),
+                      DateTimeVote(
+                          dateTime = createTimestamp(2025, 10, 27, 13, 0),
+                          voters = listOf(userIds[4]))),
               formatVotes =
                   listOf(
                       MeetingFormatVote(userIds[0], MeetingFormat.IN_PERSON),
@@ -240,6 +279,12 @@ object MeetingProvider {
               projectId = projectIds[0],
               title = "2026 Project Apollo Roadmap",
               status = MeetingStatus.SCHEDULED,
+              duration = 180,
+              dateTimeVotes =
+                  listOf( // Updated to List<DateTimeVote>
+                      DateTimeVote(
+                          dateTime = createTimestamp(2025, 4, 5, 12, 0),
+                          voters = listOf(userIds[0]))),
               datetime = createTimestamp(2025, 12, 15, 11, 0),
               format = MeetingFormat.IN_PERSON,
               location = genevaClientHQ,
@@ -252,6 +297,12 @@ object MeetingProvider {
               projectId = projectIds[1],
               title = "Bravo Project Weekly Sync (Part 2)",
               status = MeetingStatus.SCHEDULED,
+              duration = 30,
+              dateTimeVotes =
+                  listOf( // Updated to List<DateTimeVote>
+                      DateTimeVote(
+                          dateTime = createTimestamp(2025, 4, 5, 12, 0),
+                          voters = listOf(userIds[1]))),
               datetime = createTimestamp(2025, 10, 17, 16, 0), // Right after meeting #2
               format = MeetingFormat.VIRTUAL,
               link = "https://meet.google.com/abc-defg-hij",
@@ -265,6 +316,7 @@ object MeetingProvider {
               projectId = projectIds[2],
               title = "Social Media Campaign Launch",
               status = MeetingStatus.COMPLETED,
+              duration = 45,
               datetime = createTimestamp(2025, 10, 1, 10, 0),
               format = MeetingFormat.VIRTUAL,
               link = null,
@@ -273,10 +325,10 @@ object MeetingProvider {
               participantIds = listOf(userIds[2], userIds[3]),
               // Historical voting data can be preserved:
               dateTimeVotes =
-                  listOf(
-                      MeetingDateTimeVotes(userIds[2], listOf(createTimestamp(2025, 10, 1, 10, 0))),
-                      MeetingDateTimeVotes(
-                          userIds[3], listOf(createTimestamp(2025, 10, 1, 10, 0)))),
+                  listOf( // Updated to List<DateTimeVote>
+                      DateTimeVote(
+                          dateTime = createTimestamp(2025, 10, 1, 10, 0),
+                          voters = listOf(userIds[2], userIds[3]))),
               formatVotes =
                   listOf(
                       MeetingFormatVote(userIds[2], MeetingFormat.VIRTUAL),
@@ -288,6 +340,12 @@ object MeetingProvider {
               projectId = projectIds[0],
               title = "Urgent Hotfix Discussion",
               status = MeetingStatus.IN_PROGRESS,
+              duration = 45,
+              dateTimeVotes =
+                  listOf( // Updated to List<DateTimeVote>
+                      DateTimeVote(
+                          dateTime = createTimestamp(2025, 4, 5, 12, 0),
+                          voters = listOf(userIds[0]))),
               datetime = createTimestamp(2025, 10, 16, 16, 45), // Today 4:45 PM
               format = MeetingFormat.IN_PERSON,
               location = lausanneOffice,
