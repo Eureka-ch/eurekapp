@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.model.data.task
 
+import ch.eureka.eurekapp.model.data.template.field.FieldValue
 import com.google.firebase.Timestamp
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -18,7 +19,10 @@ class TaskTest {
     val assignedUsers = listOf("user1", "user2")
     val dueDate = Timestamp(1000, 0)
     val attachments = listOf("uri1", "uri2")
-    val customData = mapOf("priority" to "high", "hours" to 5)
+    val customData =
+        TaskCustomData(
+            mapOf(
+                "priority" to FieldValue.TextValue("high"), "hours" to FieldValue.NumberValue(5.0)))
     val task =
         Task(
             taskID = "task123",
@@ -132,11 +136,11 @@ class TaskTest {
             taskID = "task123",
             assignedUserIds = emptyList(),
             attachmentUrls = emptyList(),
-            customData = emptyMap())
+            customData = TaskCustomData())
 
     assertEquals(emptyList<String>(), task.assignedUserIds)
     assertEquals(emptyList<String>(), task.attachmentUrls)
-    assertEquals(emptyMap<String, Any>(), task.customData)
+    assertEquals(TaskCustomData(), task.customData)
   }
 
   @Test
@@ -171,7 +175,7 @@ class TaskTest {
 
   @Test
   fun task_withSingleCustomDataField_setsCorrectValue() {
-    val customData = mapOf("priority" to "high")
+    val customData = TaskCustomData(mapOf("priority" to FieldValue.TextValue("high")))
     val task = Task(taskID = "task123", customData = customData)
 
     assertEquals(customData, task.customData)
@@ -180,7 +184,11 @@ class TaskTest {
   @Test
   fun task_withMultipleCustomDataFields_setsCorrectValues() {
     val customData =
-        mapOf("priority" to "high", "hours" to 5, "category" to "bug", "estimated" to true)
+        TaskCustomData(
+            mapOf(
+                "priority" to FieldValue.TextValue("high"),
+                "hours" to FieldValue.NumberValue(5.0),
+                "category" to FieldValue.TextValue("bug")))
     val task = Task(taskID = "task123", customData = customData)
 
     assertEquals(customData, task.customData)
@@ -189,8 +197,11 @@ class TaskTest {
   @Test
   fun task_withDifferentDataTypesInCustomData_setsCorrectValues() {
     val customData =
-        mapOf(
-            "stringField" to "value", "intField" to 42, "boolField" to true, "doubleField" to 3.14)
+        TaskCustomData(
+            mapOf(
+                "stringField" to FieldValue.TextValue("value"),
+                "numberField" to FieldValue.NumberValue(42.0),
+                "dateField" to FieldValue.DateValue("2024-01-15")))
     val task = Task(taskID = "task123", customData = customData)
 
     assertEquals(customData, task.customData)
@@ -261,7 +272,7 @@ class TaskTest {
     assertEquals(emptyList<String>(), task.assignedUserIds)
     assertNull(task.dueDate)
     assertEquals(emptyList<String>(), task.attachmentUrls)
-    assertEquals(emptyMap<String, Any>(), task.customData)
+    assertEquals(TaskCustomData(), task.customData)
     assertEquals("", task.createdBy)
   }
 
@@ -271,7 +282,11 @@ class TaskTest {
     val dueDate = Timestamp(1234567890, 0)
     val attachments = listOf("url1", "url2", "url3")
     val customData =
-        mapOf("priority" to "high", "hours" to 8, "category" to "feature", "estimated" to false)
+        TaskCustomData(
+            mapOf(
+                "priority" to FieldValue.TextValue("high"),
+                "hours" to FieldValue.NumberValue(8.0),
+                "category" to FieldValue.TextValue("feature")))
 
     val task =
         Task(

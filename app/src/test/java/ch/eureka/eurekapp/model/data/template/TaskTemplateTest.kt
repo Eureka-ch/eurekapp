@@ -1,5 +1,7 @@
 package ch.eureka.eurekapp.model.data.template
 
+import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
+import ch.eureka.eurekapp.model.data.template.field.FieldType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
@@ -19,12 +21,16 @@ class TaskTemplateTest {
     assertEquals("", template.projectId)
     assertEquals("", template.title)
     assertEquals("", template.description)
-    assertEquals(emptyMap<String, Any>(), template.definedFields)
+    assertEquals(TaskTemplateSchema(), template.definedFields)
   }
 
   @Test
   fun taskTemplate_withParameters_setsCorrectValues() {
-    val fields = mapOf("priority" to "high", "estimate" to 5)
+    val fields =
+        TaskTemplateSchema(
+            listOf(
+                FieldDefinition("priority", "Priority", FieldType.Text()),
+                FieldDefinition("estimate", "Estimate", FieldType.Number())))
     val template =
         TaskTemplate(
             templateID = "tmpl123",
