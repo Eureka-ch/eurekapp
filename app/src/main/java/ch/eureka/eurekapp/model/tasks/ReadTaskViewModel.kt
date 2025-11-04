@@ -8,7 +8,6 @@ import ch.eureka.eurekapp.model.data.task.TaskRepository
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
@@ -30,7 +29,6 @@ abstract class ReadTaskViewModel<T : TaskStateRead>(
     protected val dispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
-  protected open val mutableUiState: MutableStateFlow<T>? = null
   abstract val uiState: StateFlow<T>
 
   protected val dateFormat =
@@ -63,9 +61,7 @@ abstract class ReadTaskViewModel<T : TaskStateRead>(
   }
 
   /** Updates the UI state with the given update function */
-  protected fun updateState(update: T.() -> T) {
-    mutableUiState?.value = mutableUiState?.value?.update() ?: return
-  }
+  protected abstract fun updateState(update: T.() -> T)
 
   /** Abstract method to copy state with new error message */
   protected abstract fun T.copyWithErrorMsg(errorMsg: String?): T
