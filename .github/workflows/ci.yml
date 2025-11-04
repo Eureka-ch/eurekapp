@@ -444,8 +444,13 @@ jobs:
           name: instrumented-test-results-shard-7
           path: app/build/outputs/androidTest-results/
 
+      - name: Verify downloaded artifacts
+        run: |
+          echo "Checking for coverage files..."
+          find app/build -name "*.exec" -o -name "*.ec" || echo "No coverage files found"
+
       - name: Generate Coverage Report
-        run: ./gradlew jacocoTestReport
+        run: ./gradlew jacocoTestReport --rerun-tasks
 
       - name: Upload report to SonarCloud
         env:
