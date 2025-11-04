@@ -127,7 +127,7 @@ fun EurekaTaskCard(
 
           if (dueDateTag != null && !isCompleted) {
             Row(
-                modifier = Modifier.padding(bottom = Spacing.xs),
+                modifier = Modifier.padding(bottom = Spacing.xs).testTag("dueDateTag"),
                 verticalAlignment = Alignment.CenterVertically) {
                   val tagType =
                       when {
@@ -135,8 +135,7 @@ fun EurekaTaskCard(
                         dueDateTag.contains("hour") -> StatusType.WARNING
                         else -> StatusType.INFO
                       }
-                  EurekaStatusTag(
-                      text = dueDateTag, type = tagType, modifier = Modifier.testTag("dueDateTag"))
+                  EurekaStatusTag(text = dueDateTag, type = tagType)
                 }
           }
 
