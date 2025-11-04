@@ -135,10 +135,7 @@ class EurekaTaskCardTest {
     composeTestRule.setContent {
       EurekappTheme {
         EurekaTaskCard(
-            title = "Normal Task",
-            dueDate = "Tomorrow",
-            dueDateTag = null,
-            isCompleted = false)
+            title = "Normal Task", dueDate = "Tomorrow", dueDateTag = null, isCompleted = false)
       }
     }
 
