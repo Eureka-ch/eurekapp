@@ -112,4 +112,37 @@ class EurekaTaskCardTest {
     // Should have registered all clicks
     assert(clickCount == 5)
   }
+
+  @Test
+  fun taskCardDisplaysDueDateTagWhenProvided() {
+    composeTestRule.setContent {
+      EurekappTheme {
+        EurekaTaskCard(
+            title = "Urgent Task",
+            dueDate = "Today",
+            dueDateTag = "Due in 2 hours",
+            isCompleted = false)
+      }
+    }
+
+    composeTestRule.onNodeWithText("Urgent Task").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("dueDateTag").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Due in 2 hours").assertIsDisplayed()
+  }
+
+  @Test
+  fun taskCardHidesDueDateTagWhenNotProvided() {
+    composeTestRule.setContent {
+      EurekappTheme {
+        EurekaTaskCard(
+            title = "Normal Task",
+            dueDate = "Tomorrow",
+            dueDateTag = null,
+            isCompleted = false)
+      }
+    }
+
+    composeTestRule.onNodeWithText("Normal Task").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("dueDateTag").assertIsNotDisplayed()
+  }
 }
