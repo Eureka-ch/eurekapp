@@ -238,7 +238,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-36-pixel7pro
+          key: avd-36-google_apis-x86_64-pixel_7_pro
 
       - name: create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
