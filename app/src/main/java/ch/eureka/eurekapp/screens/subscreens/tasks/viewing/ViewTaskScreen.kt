@@ -61,7 +61,6 @@ fun ViewTaskScreen(
   LaunchedEffect(errorMsg) {
     if (errorMsg != null) {
       Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
-      viewTaskViewModel.clearErrorMsg()
     }
   }
 

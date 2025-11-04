@@ -45,6 +45,16 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
         .stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = false)
   }
 
+  /** Clears the error message in the UI state. */
+  fun clearErrorMsg() {
+    updateState { copyWithErrorMsg(null) }
+  }
+
+  /** Sets an error message in the UI state. */
+  protected fun setErrorMsg(errorMsg: String) {
+    updateState { copyWithErrorMsg(errorMsg) }
+  }
+
   /** Validates if the input fields are valid */
   fun isValidInput(title: String, description: String, dueDate: String): Boolean {
     return title.isNotBlank() && description.isNotBlank() && dateRegex.matches(dueDate)
@@ -190,6 +200,12 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
   }
 
   // Abstract methods for state updates
+  /** Updates the UI state with the given update function */
+  protected abstract fun updateState(update: T.() -> T)
+
+  /** Abstract method to copy state with new error message */
+  protected abstract fun T.copyWithErrorMsg(errorMsg: String?): T
+
   protected abstract fun T.copyWithSaveState(isSaving: Boolean, taskSaved: Boolean): T
 
   protected abstract fun T.copyWithTitle(title: String): T

@@ -36,16 +36,6 @@ abstract class ReadTaskViewModel<T : TaskStateRead>(
 
   val dateRegex = Regex("""^\d{2}/\d{2}/\d{4}$""")
 
-  /** Clears the error message in the UI state. */
-  fun clearErrorMsg() {
-    updateState { copyWithErrorMsg(null) }
-  }
-
-  /** Sets an error message in the UI state. */
-  protected fun setErrorMsg(errorMsg: String) {
-    updateState { copyWithErrorMsg(errorMsg) }
-  }
-
   /** Deletes photos when composable is disposed (simple, local-only attempt). */
   fun deletePhotosOnDispose(context: Context, photoUris: List<Uri>) {
     viewModelScope.launch(dispatcher) {
@@ -59,10 +49,4 @@ abstract class ReadTaskViewModel<T : TaskStateRead>(
       }
     }
   }
-
-  /** Updates the UI state with the given update function */
-  protected abstract fun updateState(update: T.() -> T)
-
-  /** Abstract method to copy state with new error message */
-  protected abstract fun T.copyWithErrorMsg(errorMsg: String?): T
 }

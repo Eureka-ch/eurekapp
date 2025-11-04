@@ -52,8 +52,4 @@ class ViewTaskViewModel(
               scope = viewModelScope,
               started = SharingStarted.WhileSubscribed(5000),
               initialValue = ViewTaskState())
-
-  override fun ViewTaskState.copyWithErrorMsg(errorMsg: String?): ViewTaskState {
-    return copy(errorMsg = errorMsg)
-  }
 }

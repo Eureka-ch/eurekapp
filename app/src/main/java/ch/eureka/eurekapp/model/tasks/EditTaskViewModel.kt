@@ -203,9 +203,7 @@ class EditTaskViewModel(
             updateState { copy(isDeleting = false) }
             return@launch
           }
-          .onSuccess { _ ->
-            updateState { copy(isDeleting = false, taskDeleted = true) }
-          }
+          .onSuccess { _ -> updateState { copy(isDeleting = false, taskDeleted = true) } }
     }
   }
 

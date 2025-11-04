@@ -33,17 +33,23 @@ import ch.eureka.eurekapp.ui.camera.PhotoViewer
 
 /**
  * Helper function to determine if an error should be shown for a field.
+ *
  * @param readOnly Whether the field is read-only
  * @param value The current value of the field
  * @param hasTouched Whether the field has been touched/focused
  * @return true if the error should be displayed
  */
-private fun shouldShowError(readOnly: Boolean = false, value: String, hasTouched: Boolean): Boolean {
+private fun shouldShowError(
+    readOnly: Boolean = false,
+    value: String,
+    hasTouched: Boolean
+): Boolean {
   return !readOnly && value.isBlank() && hasTouched
 }
 
 /**
  * Helper function to determine if a date format error should be shown.
+ *
  * @param readOnly Whether the field is read-only
  * @param value The current value of the field
  * @param dateRegex The regex pattern for valid date format
