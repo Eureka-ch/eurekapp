@@ -75,4 +75,15 @@ object StoragePaths {
    */
   fun meetingAttachmentPath(projectId: String, meetingId: String, filename: String) =
       "$PROJECTS/$projectId/$MEETINGS/$meetingId/$filename"
+
+  /**
+   * Generate storage path for meeting transcription audio files.
+   *
+   * @param projectId The project ID
+   * @param meetingId The meeting ID
+   * @param filename The filename to store
+   * @return Storage path: projects/{projectId}/meetings/{meetingId}/transcriptions/{filename}
+   */
+  fun meetingTranscriptionAudioPath(projectId: String, meetingId: String, filename: String) =
+      "$PROJECTS/$projectId/$MEETINGS/$meetingId/transcriptions/$filename"
 }

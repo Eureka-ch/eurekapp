@@ -115,14 +115,15 @@ object MeetingDetailScreenTestTags {
  *
  * @param onNavigateBack Callback to navigate back to the previous screen.
  * @param onJoinMeeting Callback when user clicks join meeting button.
- * @param onRecordMeeting Callback when user clicks record button.
- * @param onViewTranscript Callback when user clicks view transcript button.
+ * @param onRecordMeeting Callback when user clicks record button, receives projectId and meetingId.
+ * @param onViewTranscript Callback when user clicks view transcript button, receives projectId and
+ *   meetingId.
  */
 data class MeetingDetailActionsConfig(
     val onNavigateBack: () -> Unit = {},
     val onJoinMeeting: (String) -> Unit = {},
-    val onRecordMeeting: () -> Unit = {},
-    val onViewTranscript: () -> Unit = {},
+    val onRecordMeeting: (String, String) -> Unit = { _, _ -> },
+    val onViewTranscript: (String, String) -> Unit = { _, _ -> },
     val onVoteForTime: () -> Unit = {},
     val onVoteForFormat: () -> Unit = {},
 )
@@ -283,8 +284,10 @@ private fun ErrorScreen(message: String) {
  *
  * @param onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
  *   link.
- * @param onRecordMeeting Callback invoked when user clicks record meeting button.
- * @param onViewTranscript Callback invoked when user clicks view transcript button.
+ * @param onRecordMeeting Callback invoked when user clicks record meeting button, receives
+ *   projectId and meetingId.
+ * @param onViewTranscript Callback invoked when user clicks view transcript button, receives
+ *   projectId and meetingId.
  * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
  * @param onVoteForTime Callback invoked when user votes for time button.
  * @param onVoteForFormat Callback invoked when user votes for format button.
@@ -297,8 +300,8 @@ private fun ErrorScreen(message: String) {
  */
 data class MeetingDetailContentActionsConfig(
     val onJoinMeeting: (String) -> Unit,
-    val onRecordMeeting: () -> Unit,
-    val onViewTranscript: () -> Unit,
+    val onRecordMeeting: (String, String) -> Unit,
+    val onViewTranscript: (String, String) -> Unit,
     val onDeleteMeeting: () -> Unit,
     val onVoteForTime: () -> Unit,
     val onVoteForFormat: () -> Unit,
@@ -876,12 +879,31 @@ private fun AttachmentItem(attachmentUrl: String) {
  * Action buttons section (join, record, transcript, delete, edit).
  *
  * @param meeting The meeting for which to display action buttons.
+<<<<<<< HEAD
  * @param actionsConfig Configuration for action button callbacks.
+=======
+ * @param onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
+ *   link.
+ * @param onRecordMeeting Callback invoked when user clicks record meeting button, receives
+ *   projectId and meetingId.
+ * @param onViewTranscript Callback invoked when user clicks view transcript button, receives
+ *   projectId and meetingId.
+ * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
+>>>>>>> 064c44e (feat(meetings): add audio transcript screen with storage integration)
  */
 @Composable
 private fun ActionButtonsSection(
     meeting: Meeting,
+<<<<<<< HEAD
     actionsConfig: ActionButtonsConfig,
+=======
+    onJoinMeeting: (String) -> Unit,
+    onRecordMeeting: (String, String) -> Unit,
+    onViewTranscript: (String, String) -> Unit,
+    onDeleteMeeting: () -> Unit,
+    onVoteForTime: () -> Unit,
+    onVoteForFormat: () -> Unit
+>>>>>>> 064c44e (feat(meetings): add audio transcript screen with storage integration)
 ) {
   Column(
       modifier =
@@ -908,7 +930,11 @@ private fun ActionButtonsSection(
                   }
             }
             OutlinedButton(
+<<<<<<< HEAD
                 onClick = actionsConfig.onRecordMeeting,
+=======
+                onClick = { onRecordMeeting(meeting.projectId, meeting.meetingID) },
+>>>>>>> 064c44e (feat(meetings): add audio transcript screen with storage integration)
                 modifier =
                     Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.RECORD_BUTTON)) {
                   Text("Start Recording")
@@ -916,7 +942,11 @@ private fun ActionButtonsSection(
           }
           MeetingStatus.COMPLETED -> {
             Button(
+<<<<<<< HEAD
                 onClick = actionsConfig.onViewTranscript,
+=======
+                onClick = { onViewTranscript(meeting.projectId, meeting.meetingID) },
+>>>>>>> 064c44e (feat(meetings): add audio transcript screen with storage integration)
                 modifier =
                     Modifier.fillMaxWidth()
                         .testTag(MeetingDetailScreenTestTags.VIEW_TRANSCRIPT_BUTTON)) {
