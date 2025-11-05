@@ -127,17 +127,40 @@ class StoragePathsTest {
   }
 
   @Test
+  fun meetingTranscriptionAudioPath_generatesCorrectPath() {
+    val projectId = "projectABC"
+    val meetingId = "meetingXYZ"
+    val filename = "audio.mp3"
+
+    val result = StoragePaths.meetingTranscriptionAudioPath(projectId, meetingId, filename)
+
+    assertEquals("projects/projectABC/meetings/meetingXYZ/transcriptions/audio.mp3", result)
+  }
+
+  @Test
+  fun meetingTranscriptionAudioPath_handlesVariousAudioFormats() {
+    val projectId = "proj123"
+    val meetingId = "meet456"
+
+    val mp3Path = StoragePaths.meetingTranscriptionAudioPath(projectId, meetingId, "recording.mp3")
+
+    assertEquals("projects/proj123/meetings/meet456/transcriptions/recording.mp3", mp3Path)
+  }
+
+  @Test
   fun allPaths_handleEmptyStrings() {
     // Test that empty strings don't break path generation
     val emptyUser = StoragePaths.userFilePath("", "file.txt")
     val emptyProject = StoragePaths.projectFilePath("", "file.txt")
     val emptyTask = StoragePaths.taskAttachmentPath("", "", "file.txt")
     val emptyMeeting = StoragePaths.meetingAttachmentPath("", "", "file.txt")
+    val emptyTranscription = StoragePaths.meetingTranscriptionAudioPath("", "", "file.txt")
 
     assertEquals("users//file.txt", emptyUser)
     assertEquals("projects//file.txt", emptyProject)
     assertEquals("projects//tasks//file.txt", emptyTask)
     assertEquals("projects//meetings//file.txt", emptyMeeting)
+    assertEquals("projects//meetings//transcriptions/file.txt", emptyTranscription)
   }
 
   @Test
