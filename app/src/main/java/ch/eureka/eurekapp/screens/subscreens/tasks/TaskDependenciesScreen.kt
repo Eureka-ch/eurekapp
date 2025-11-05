@@ -50,17 +50,17 @@ import ch.eureka.eurekapp.ui.theme.Typography
 /**
  * ⚠️ Disclaimer: The following documentation was written by AI (ChatGPT - GPT-5).
  *
- * Contains utility functions that generate test tags for the Task Dependencies screen,
- * improving test automation and component targeting.
+ * Contains utility functions that generate test tags for the Task Dependencies screen, improving
+ * test automation and component targeting.
  */
-object TaskDependenciesScreenTestTags{
-    fun getFilteringNameTestTag(identifier: String): String{
-        return "filtering_name_test_tag_$identifier"
-    }
+object TaskDependenciesScreenTestTags {
+  fun getFilteringNameTestTag(identifier: String): String {
+    return "filtering_name_test_tag_$identifier"
+  }
 
-    fun getDependentTaskTestTag(task: Task): String{
-        return "dependent_task_test_tag_${task.taskID}"
-    }
+  fun getDependentTaskTestTag(task: Task): String {
+    return "dependent_task_test_tag_${task.taskID}"
+  }
 }
 
 /**
@@ -77,33 +77,27 @@ fun TaskDependenciesScreen(
     projectId: String,
     taskId: String,
     taskDependenciesViewModel: TaskDependenciesViewModel = viewModel()
-){
-    val projectUsers = taskDependenciesViewModel.getProjectUsers(projectId).collectAsState(
-        emptyList())
+) {
+  val projectUsers =
+      taskDependenciesViewModel.getProjectUsers(projectId).collectAsState(emptyList())
 
-    val task = taskDependenciesViewModel.getTaskFromRepository(projectId, taskId)
-        .collectAsState(null)
+  val task = taskDependenciesViewModel.getTaskFromRepository(projectId, taskId).collectAsState(null)
 
+  var nameFilter by remember { mutableStateOf("All") }
 
-    var nameFilter by remember { mutableStateOf("All") }
-
-    Column(modifier = Modifier.padding(vertical = 2.dp, horizontal = 10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally) {
+  Column(
+      modifier = Modifier.padding(vertical = 2.dp, horizontal = 10.dp),
+      horizontalAlignment = Alignment.CenterHorizontally) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.Start,
-        ){
-            Text(
-                text = "Dependencies",
-                style = Typography.titleLarge,
-                fontWeight = FontWeight(600))
-            Text(
-                text =
-                    "Visualise order and detect blocking",
-                style = Typography.titleMedium,
-                color = GrayTextColor2)
+        ) {
+          Text(text = "Dependencies", style = Typography.titleLarge, fontWeight = FontWeight(600))
+          Text(
+              text = "Visualise order and detect blocking",
+              style = Typography.titleMedium,
+              color = GrayTextColor2)
         }
-
 
         /*
         Filter section
@@ -111,77 +105,75 @@ fun TaskDependenciesScreen(
         Row(
             modifier = Modifier.padding(10.dp),
             horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            Surface(
-                modifier =
-                    Modifier.border(
-                        border = BorderStroke(width = 1.dp, color = BorderGrayColor),
-                        shape = RoundedCornerShape(16.dp))
-                        .fillMaxWidth(0.95f),
-                shadowElevation = 3.dp,
-                color = Color.White,
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(vertical = 7.dp)
-                ){
-                    Text("Filtering", style = Typography.titleMedium,
-                        fontWeight = FontWeight(500), modifier = Modifier
-                            .padding(horizontal = 13.dp))
+            verticalAlignment = Alignment.CenterVertically) {
+              Surface(
+                  modifier =
+                      Modifier.border(
+                              border = BorderStroke(width = 1.dp, color = BorderGrayColor),
+                              shape = RoundedCornerShape(16.dp))
+                          .fillMaxWidth(0.95f),
+                  shadowElevation = 3.dp,
+                  color = Color.White,
+                  shape = RoundedCornerShape(16.dp)) {
+                    Column(modifier = Modifier.padding(vertical = 7.dp)) {
+                      Text(
+                          "Filtering",
+                          style = Typography.titleMedium,
+                          fontWeight = FontWeight(500),
+                          modifier = Modifier.padding(horizontal = 13.dp))
 
-                    FlowRow(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        OutlinedButton(
-                            modifier = Modifier.testTag(TaskDependenciesScreenTestTags.getFilteringNameTestTag("All")),
-                            onClick = {
-                                nameFilter = "All"
-                            },
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = if(nameFilter == "All")
-                                    LightColorScheme.onPrimary else DarkColorScheme.background,
-                                containerColor = if(nameFilter == "All")
-                                    LightColorScheme.primary else LightColorScheme.surface
-                            ),
-                            shape = RoundedCornerShape(16.dp),
-                            border = BorderStroke(width = 1.dp, BorderGrayColor)
-                        ){
-                            Text("All", style =
-                                Typography.labelSmall)
-                        }
-                        projectUsers.value.mapNotNull { userFlow ->
-                            val user = userFlow.collectAsState(null)
-                            if(user.value == null){
-                                return@mapNotNull null
-                            }
-                            else{
-                                OutlinedButton(
-                                    modifier = Modifier.testTag(TaskDependenciesScreenTestTags
-                                        .getFilteringNameTestTag(user.value!!.displayName)),
-                                    onClick = {
-                                        nameFilter = user.value!!.uid
-                                    },
-                                    colors = ButtonDefaults.outlinedButtonColors(
-                                        contentColor = if(nameFilter == user.value!!.uid)
-                                            LightColorScheme.onPrimary else DarkColorScheme.background,
-                                        containerColor = if(nameFilter == user.value!!.uid)
-                                            LightColorScheme.primary else LightColorScheme.surface
-                                    ),
-                                    shape = RoundedCornerShape(16.dp),
-                                    border = BorderStroke(width = 1.dp, BorderGrayColor)
-                                ){
-                                    Text(user.value!!.displayName, style =
-                                        Typography.labelSmall)
+                      FlowRow(
+                          modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
+                          horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            OutlinedButton(
+                                modifier =
+                                    Modifier.testTag(
+                                        TaskDependenciesScreenTestTags.getFilteringNameTestTag(
+                                            "All")),
+                                onClick = { nameFilter = "All" },
+                                colors =
+                                    ButtonDefaults.outlinedButtonColors(
+                                        contentColor =
+                                            if (nameFilter == "All") LightColorScheme.onPrimary
+                                            else DarkColorScheme.background,
+                                        containerColor =
+                                            if (nameFilter == "All") LightColorScheme.primary
+                                            else LightColorScheme.surface),
+                                shape = RoundedCornerShape(16.dp),
+                                border = BorderStroke(width = 1.dp, BorderGrayColor)) {
+                                  Text("All", style = Typography.labelSmall)
                                 }
+                            projectUsers.value.mapNotNull { userFlow ->
+                              val user = userFlow.collectAsState(null)
+                              if (user.value == null) {
+                                return@mapNotNull null
+                              } else {
+                                OutlinedButton(
+                                    modifier =
+                                        Modifier.testTag(
+                                            TaskDependenciesScreenTestTags.getFilteringNameTestTag(
+                                                user.value!!.displayName)),
+                                    onClick = { nameFilter = user.value!!.uid },
+                                    colors =
+                                        ButtonDefaults.outlinedButtonColors(
+                                            contentColor =
+                                                if (nameFilter == user.value!!.uid)
+                                                    LightColorScheme.onPrimary
+                                                else DarkColorScheme.background,
+                                            containerColor =
+                                                if (nameFilter == user.value!!.uid)
+                                                    LightColorScheme.primary
+                                                else LightColorScheme.surface),
+                                    shape = RoundedCornerShape(16.dp),
+                                    border = BorderStroke(width = 1.dp, BorderGrayColor)) {
+                                      Text(user.value!!.displayName, style = Typography.labelSmall)
+                                    }
+                              }
                             }
-
-                        }
+                          }
                     }
-                }
+                  }
             }
-        }
         val verticalScrollState = rememberScrollState()
         val horizontalScrollState = rememberScrollState()
 
@@ -191,57 +183,50 @@ fun TaskDependenciesScreen(
         Row(
             modifier = Modifier.padding(10.dp),
             horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            Surface(
-                modifier =
-                    Modifier.border(
-                        border = BorderStroke(width = 1.dp, color = BorderGrayColor),
-                        shape = RoundedCornerShape(16.dp))
-                        .fillMaxWidth(0.95f),
-                shadowElevation = 3.dp,
-                color = Color.White,
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(vertical = 7.dp)
-                ) {
-                    Text("Dependencies", style = Typography.titleMedium,
-                        fontWeight = FontWeight(500), modifier = Modifier
-                            .padding(horizontal = 13.dp))
-                    if(task.value != null){
+            verticalAlignment = Alignment.CenterVertically) {
+              Surface(
+                  modifier =
+                      Modifier.border(
+                              border = BorderStroke(width = 1.dp, color = BorderGrayColor),
+                              shape = RoundedCornerShape(16.dp))
+                          .fillMaxWidth(0.95f),
+                  shadowElevation = 3.dp,
+                  color = Color.White,
+                  shape = RoundedCornerShape(16.dp)) {
+                    Column(modifier = Modifier.padding(vertical = 7.dp)) {
+                      Text(
+                          "Dependencies",
+                          style = Typography.titleMedium,
+                          fontWeight = FontWeight(500),
+                          modifier = Modifier.padding(horizontal = 13.dp))
+                      if (task.value != null) {
                         Row(
-                            modifier = Modifier.padding(vertical = 5.dp, horizontal = 5.dp).fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ){
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .verticalScroll(verticalScrollState)
-                                    .horizontalScroll(horizontalScrollState).fillMaxWidth(),
-                                contentAlignment = Alignment.TopCenter
-                            ){
-                                Column(
-                                    modifier = Modifier.fillMaxWidth()
-                                ){
-                                    TreeView(
-                                        isParent = true,
-                                        projectId = projectId,
-                                        task = task.value,
-                                        taskDependenciesViewModel = taskDependenciesViewModel,
-                                        filterName = nameFilter
-                                    )
-                                }
+                            modifier =
+                                Modifier.padding(vertical = 5.dp, horizontal = 5.dp).fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically) {
+                              Box(
+                                  modifier =
+                                      Modifier.weight(1f)
+                                          .verticalScroll(verticalScrollState)
+                                          .horizontalScroll(horizontalScrollState)
+                                          .fillMaxWidth(),
+                                  contentAlignment = Alignment.TopCenter) {
+                                    Column(modifier = Modifier.fillMaxWidth()) {
+                                      TreeView(
+                                          isParent = true,
+                                          projectId = projectId,
+                                          task = task.value,
+                                          taskDependenciesViewModel = taskDependenciesViewModel,
+                                          filterName = nameFilter)
+                                    }
+                                  }
                             }
-                        }
+                      }
                     }
-                }
+                  }
             }
-        }
-    }
+      }
 }
-
-
 
 /**
  * ⚠️ Disclaimer: This documentation was written by AI (ChatGPT - GPT-5).
@@ -249,43 +234,57 @@ fun TaskDependenciesScreen(
  * Displays a task and its dependent tasks recursively in a tree structure.
  */
 @Composable
-fun TreeView(modifier: Modifier = Modifier, isParent: Boolean = false, projectId: String, task: Task?,
-             taskDependenciesViewModel: TaskDependenciesViewModel, filterName: String){
-    if(task != null){
-        var maxChildWidth by remember { mutableStateOf(0) }
-        var tasksDependentOn = remember(task.taskID) {taskDependenciesViewModel
-            .getDependentTasksForTask(projectId,task)}
-        Row(horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = modifier.fillMaxWidth().padding(horizontal = 10.dp)){
-            if(!isParent){
-                Icon(Icons.AutoMirrored.Filled.ArrowRightAlt, null)
-            }
-            TaskSurfaceComponent(task, filterName)
-            EqualWidthChildrenColumn(tasksDependentOn.filter{task2 ->
-                val task2 = task2.collectAsState(null)
-                return@filter task2.value != null && (task2.value!!.status == TaskStatus.TODO ||
-                        task2.value!!.status == TaskStatus.IN_PROGRESS)
-            }.map{ task2 ->
-                {
-                    key(task2.hashCode()) {
+fun TreeView(
+    modifier: Modifier = Modifier,
+    isParent: Boolean = false,
+    projectId: String,
+    task: Task?,
+    taskDependenciesViewModel: TaskDependenciesViewModel,
+    filterName: String
+) {
+  if (task != null) {
+    var maxChildWidth by remember { mutableStateOf(0) }
+    var tasksDependentOn =
+        remember(task.taskID) {
+          taskDependenciesViewModel.getDependentTasksForTask(projectId, task)
+        }
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.fillMaxWidth().padding(horizontal = 10.dp)) {
+          if (!isParent) {
+            Icon(Icons.AutoMirrored.Filled.ArrowRightAlt, null)
+          }
+          TaskSurfaceComponent(task, filterName)
+          EqualWidthChildrenColumn(
+              tasksDependentOn
+                  .filter { task2 ->
+                    val task2 = task2.collectAsState(null)
+                    return@filter task2.value != null &&
+                        (task2.value!!.status == TaskStatus.TODO ||
+                            task2.value!!.status == TaskStatus.IN_PROGRESS)
+                  }
+                  .map { task2 ->
+                    {
+                      key(task2.hashCode()) {
                         val taskState = task2.collectAsState(null)
                         Log.d("TaskDependenciesScreen", taskState.value.toString())
                         if (taskState.value != null) {
-                            TreeView(
-                                modifier = Modifier.testTag(TaskDependenciesScreenTestTags
-                                    .getDependentTaskTestTag(taskState.value!!)),
-                                projectId = projectId,
-                                task = taskState.value,
-                                taskDependenciesViewModel = taskDependenciesViewModel,
-                                filterName = filterName
-                            )
+                          TreeView(
+                              modifier =
+                                  Modifier.testTag(
+                                      TaskDependenciesScreenTestTags.getDependentTaskTestTag(
+                                          taskState.value!!)),
+                              projectId = projectId,
+                              task = taskState.value,
+                              taskDependenciesViewModel = taskDependenciesViewModel,
+                              filterName = filterName)
                         }
+                      }
                     }
-                }
-            })
+                  })
         }
-    }
+  }
 }
 
 /**
@@ -294,38 +293,37 @@ fun TreeView(modifier: Modifier = Modifier, isParent: Boolean = false, projectId
  * Ensures that child composables in a column have uniform width and height.
  */
 @Composable
-fun EqualWidthChildrenColumn(
-    children: List<@Composable () -> Unit>
-){
-    SubcomposeLayout { constraints ->
-        val placeables = children.mapNotNull { child ->
-            val measurables = subcompose(child.hashCode(), child)
-            val placeable = measurables.firstOrNull()?.measure(constraints
-                .copy(minHeight = 0, maxHeight = Constraints.Infinity))
-            placeable
+fun EqualWidthChildrenColumn(children: List<@Composable () -> Unit>) {
+  SubcomposeLayout { constraints ->
+    val placeables =
+        children.mapNotNull { child ->
+          val measurables = subcompose(child.hashCode(), child)
+          val placeable =
+              measurables
+                  .firstOrNull()
+                  ?.measure(constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity))
+          placeable
         }
 
-        val maxWidth = placeables.maxOfOrNull { it.width } ?: 0
-        val maxHeight = placeables.maxOfOrNull { it.height } ?: 0
+    val maxWidth = placeables.maxOfOrNull { it.width } ?: 0
+    val maxHeight = placeables.maxOfOrNull { it.height } ?: 0
 
-        val equalHeightConstraints = constraints.copy(
-            minHeight = maxHeight,
-            maxHeight = maxHeight
-        )
+    val equalHeightConstraints = constraints.copy(minHeight = maxHeight, maxHeight = maxHeight)
 
-        val equalHeightPlaceables = children.mapNotNull { child ->
-            val measurables = subcompose("layout_$child", child)
-            measurables.firstOrNull()?.measure(equalHeightConstraints)
+    val equalHeightPlaceables =
+        children.mapNotNull { child ->
+          val measurables = subcompose("layout_$child", child)
+          measurables.firstOrNull()?.measure(equalHeightConstraints)
         }
 
-        layout(width = maxWidth, height = maxHeight * equalHeightPlaceables.size) {
-            var yPosition = 0
-            equalHeightPlaceables.forEach { placeable ->
-                placeable.placeRelative(x = 0, y = yPosition)
-                yPosition += maxHeight
-            }
-        }
+    layout(width = maxWidth, height = maxHeight * equalHeightPlaceables.size) {
+      var yPosition = 0
+      equalHeightPlaceables.forEach { placeable ->
+        placeable.placeRelative(x = 0, y = yPosition)
+        yPosition += maxHeight
+      }
     }
+  }
 }
 
 /**
@@ -334,29 +332,27 @@ fun EqualWidthChildrenColumn(
  * Represents an individual task as a clickable surface component.
  */
 @Composable
-fun TaskSurfaceComponent(task: Task, filterName: String = "All"){
-    val taskContainsFilterName = task.assignedUserIds.contains(filterName)
-    OutlinedButton(
-        modifier = Modifier,
-        onClick = {},
-        colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = DarkColorScheme.background,
-            containerColor = if(taskContainsFilterName) LightColorScheme.primary
-            else LightColorScheme.surface
-        ),
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(width = 1.dp, BorderGrayColor)
-    ){
+fun TaskSurfaceComponent(task: Task, filterName: String = "All") {
+  val taskContainsFilterName = task.assignedUserIds.contains(filterName)
+  OutlinedButton(
+      modifier = Modifier,
+      onClick = {},
+      colors =
+          ButtonDefaults.outlinedButtonColors(
+              contentColor = DarkColorScheme.background,
+              containerColor =
+                  if (taskContainsFilterName) LightColorScheme.primary
+                  else LightColorScheme.surface),
+      shape = RoundedCornerShape(16.dp),
+      border = BorderStroke(width = 1.dp, BorderGrayColor)) {
         Row(
             horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            Text(
-                task.title,
-                style = Typography.labelSmall,
-                color = if(taskContainsFilterName) LightColorScheme.onPrimary
-                else DarkBackground
-            )
-        }
-    }
+            verticalAlignment = Alignment.CenterVertically) {
+              Text(
+                  task.title,
+                  style = Typography.labelSmall,
+                  color =
+                      if (taskContainsFilterName) LightColorScheme.onPrimary else DarkBackground)
+            }
+      }
 }

@@ -12,7 +12,6 @@ import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.user.FirestoreUserRepository
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
-import ch.eureka.eurekapp.model.data.user.UserRepositoryProvider
 import ch.eureka.eurekapp.model.tasks.TaskDependenciesViewModel
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesScreenTestTags
@@ -23,69 +22,70 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-class TaskDependenciesScreenTest: TestCase(){
-    @get: Rule
-    val composeTestRule = createComposeRule()
 
-    private lateinit var projectRepository: ProjectRepository
-    private lateinit var tasksRepository: TaskRepository
-    private lateinit var usersRepository: UserRepository
-    @Before
-    fun setup() = runBlocking {
-        FirebaseEmulator.auth.signInAnonymously()
-        delay(500)
-        FirebaseEmulator.clearFirestoreEmulator()
-        usersRepository = FirestoreUserRepository(
-        firestore = FirebaseEmulator.firestore,
-        auth = FirebaseEmulator.auth
-        )
+class TaskDependenciesScreenTest : TestCase() {
+  @get:Rule val composeTestRule = createComposeRule()
 
-        tasksRepository = FirestoreTaskRepository(
-        firestore = FirebaseEmulator.firestore,
-        auth = FirebaseEmulator.auth
-        )
+  private lateinit var projectRepository: ProjectRepository
+  private lateinit var tasksRepository: TaskRepository
+  private lateinit var usersRepository: UserRepository
 
-        projectRepository = FirestoreProjectRepository(
-        firestore = FirebaseEmulator.firestore,
-        auth = FirebaseEmulator.auth
-        )
+  @Before
+  fun setup() = runBlocking {
+    FirebaseEmulator.auth.signInAnonymously()
+    delay(500)
+    FirebaseEmulator.clearFirestoreEmulator()
+    usersRepository =
+        FirestoreUserRepository(
+            firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
 
-        usersRepository.saveUser(User().copy(uid = "user1", displayName = "user1"))
-        usersRepository.saveUser(User().copy(uid = "user2", displayName = "user2"))
-        projectRepository.createProject(Project().copy(projectId = "test-project-id",
-        memberIds = listOf("user1")), "user1")
-        projectRepository.updateProject(Project().copy(projectId = "test-project-id",
-            memberIds = listOf("user1", "user2")))
-        tasksRepository.createTask(Task().copy(taskID = "task1", projectId = "test-project-id",
-        dependingOnTasks = listOf("task2")))
-        tasksRepository.createTask(Task().copy(taskID = "task2", projectId = "test-project-id"))
-        delay(500)
-    }
+    tasksRepository =
+        FirestoreTaskRepository(
+            firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
 
-    @Test
-    fun testTaskDependenciesScreenCorrectlyShowsEverything(){
-        val viewModel = TaskDependenciesViewModel(
+    projectRepository =
+        FirestoreProjectRepository(
+            firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+
+    usersRepository.saveUser(User().copy(uid = "user1", displayName = "user1"))
+    usersRepository.saveUser(User().copy(uid = "user2", displayName = "user2"))
+    projectRepository.createProject(
+        Project().copy(projectId = "test-project-id", memberIds = listOf("user1")), "user1")
+    projectRepository.updateProject(
+        Project().copy(projectId = "test-project-id", memberIds = listOf("user1", "user2")))
+    tasksRepository.createTask(
+        Task()
+            .copy(
+                taskID = "task1",
+                projectId = "test-project-id",
+                dependingOnTasks = listOf("task2")))
+    tasksRepository.createTask(Task().copy(taskID = "task2", projectId = "test-project-id"))
+    delay(500)
+  }
+
+  @Test
+  fun testTaskDependenciesScreenCorrectlyShowsEverything() {
+    val viewModel =
+        TaskDependenciesViewModel(
             tasksRepository = tasksRepository,
             usersRepository = usersRepository,
-            projectsRepository = projectRepository
-        )
+            projectsRepository = projectRepository)
 
-        composeTestRule.setContent {
-            TaskDependenciesScreen(
-                projectId = "test-project-id",
-                taskId = "task1",
-                taskDependenciesViewModel = viewModel
-            )
-        }
-
-        composeTestRule.waitForIdle()
-
-        composeTestRule
-            .onNodeWithTag(TaskDependenciesScreenTestTags
-                .getFilteringNameTestTag("user1")).performClick()
-        composeTestRule.onNodeWithTag(TaskDependenciesScreenTestTags
-            .getFilteringNameTestTag("All")).performClick()
-        composeTestRule.onNodeWithTag(TaskDependenciesScreenTestTags
-            .getFilteringNameTestTag("user2")).performClick()
+    composeTestRule.setContent {
+      TaskDependenciesScreen(
+          projectId = "test-project-id", taskId = "task1", taskDependenciesViewModel = viewModel)
     }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(TaskDependenciesScreenTestTags.getFilteringNameTestTag("user1"))
+        .performClick()
+    composeTestRule
+        .onNodeWithTag(TaskDependenciesScreenTestTags.getFilteringNameTestTag("All"))
+        .performClick()
+    composeTestRule
+        .onNodeWithTag(TaskDependenciesScreenTestTags.getFilteringNameTestTag("user2"))
+        .performClick()
+  }
 }

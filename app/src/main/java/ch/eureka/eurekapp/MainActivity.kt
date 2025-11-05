@@ -55,10 +55,8 @@ fun Eurekapp(
   if (!signedIn) {
     SignInScreen(credentialManager = credentialManager, onSignedIn = { signedIn = true })
   } else {
-      TaskDependenciesScreen(
-          projectId = "test-project-id",
-          taskId = "task_3bc9fe52-d6b7-4e05-abb6-b8c6e114acbc"
-      )
+    TaskDependenciesScreen(
+        projectId = "test-project-id", taskId = "task_3bc9fe52-d6b7-4e05-abb6-b8c6e114acbc")
   }
 }
 
