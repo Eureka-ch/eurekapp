@@ -87,5 +87,7 @@ class TaskDependenciesScreenTest : TestCase() {
     composeTestRule
         .onNodeWithTag(TaskDependenciesScreenTestTags.getFilteringNameTestTag("user2"))
         .performClick()
+
+    composeTestRule.waitForIdle()
   }
 }
