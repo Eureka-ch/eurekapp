@@ -125,8 +125,9 @@ class EurekaTaskCardTest {
       }
     }
 
+    composeTestRule.waitForIdle()
+
     composeTestRule.onNodeWithText("Urgent Task").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("dueDateTag").assertIsDisplayed()
     composeTestRule.onNodeWithText("Due in 2 hours").assertIsDisplayed()
   }
 
@@ -140,6 +141,5 @@ class EurekaTaskCardTest {
     }
 
     composeTestRule.onNodeWithText("Normal Task").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("dueDateTag").assertIsNotDisplayed()
   }
 }

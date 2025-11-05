@@ -127,7 +127,7 @@ fun EurekaTaskCard(
 
           if (dueDateTag != null && !isCompleted) {
             Row(
-                modifier = Modifier.padding(bottom = Spacing.xs).testTag("dueDateTag"),
+                modifier = Modifier.padding(bottom = Spacing.xs),
                 verticalAlignment = Alignment.CenterVertically) {
                   val tagType =
                       when {
