@@ -37,6 +37,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -63,6 +64,10 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.Participant
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.utils.Formatters
+import com.google.firebase.Timestamp
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 
 /**
  * Test tags for MeetingDetailScreen composable.
@@ -98,6 +103,9 @@ object MeetingDetailScreenTestTags {
   const val CANCEL_DELETE_BUTTON = "CancelDeleteButton"
   const val VOTE_TIME_BUTTON = "VoteForTimeButton"
   const val VOTE_FORMAT_BUTTON = "VoteForFormatButton"
+  const val EDIT_BUTTON = "EditButton"
+  const val SAVE_BUTTON = "SaveButton"
+  const val CANCEL_EDIT_BUTTON = "CancelEditButton"
 }
 
 /**
@@ -156,6 +164,13 @@ fun MeetingDetailScreen(
     }
   }
 
+  LaunchedEffect(uiState.updateSuccess) {
+    if (uiState.updateSuccess) {
+      Toast.makeText(context, "Meeting updated successfully", Toast.LENGTH_SHORT).show()
+      viewModel.clearUpdateSuccess()
+    }
+  }
+
   Scaffold(
       modifier = Modifier.testTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN),
       topBar = {
@@ -185,6 +200,11 @@ fun MeetingDetailScreen(
                 modifier = Modifier.padding(padding),
                 meeting = meeting,
                 participants = uiState.participants,
+                isEditMode = uiState.isEditMode,
+                isSaving = uiState.isSaving,
+                editTitle = uiState.editTitle,
+                editDateTime = uiState.editDateTime,
+                editDuration = uiState.editDuration,
                 actionsConfig =
                     MeetingDetailContentActionsConfig(
                         onJoinMeeting = actionsConfig.onJoinMeeting,
@@ -192,7 +212,13 @@ fun MeetingDetailScreen(
                         onViewTranscript = actionsConfig.onViewTranscript,
                         onDeleteMeeting = { showDeleteDialog = true },
                         onVoteForTime = actionsConfig.onVoteForTime,
-                        onVoteForFormat = actionsConfig.onVoteForFormat))
+                        onVoteForFormat = actionsConfig.onVoteForFormat,
+                        onEditMeeting = { viewModel.toggleEditMode(meeting) },
+                        onSaveMeeting = { viewModel.saveMeetingChanges(meeting) },
+                        onCancelEdit = { viewModel.toggleEditMode(null) },
+                        onUpdateTitle = viewModel::updateEditTitle,
+                        onUpdateDateTime = viewModel::updateEditDateTime,
+                        onUpdateDuration = viewModel::updateEditDuration))
           } ?: ErrorScreen(message = uiState.errorMsg ?: "Meeting not found")
         }
       })
@@ -253,6 +279,12 @@ private fun ErrorScreen(message: String) {
  * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
  * @param onVoteForTime Callback invoked when user votes for time button.
  * @param onVoteForFormat Callback invoked when user votes for format button.
+ * @param onEditMeeting Callback invoked when user clicks edit meeting button.
+ * @param onSaveMeeting Callback invoked when user saves meeting changes.
+ * @param onCancelEdit Callback invoked when user cancels edit mode.
+ * @param onUpdateTitle Callback invoked when edit title changes.
+ * @param onUpdateDateTime Callback invoked when edit date/time changes.
+ * @param onUpdateDuration Callback invoked when edit duration changes.
  */
 data class MeetingDetailContentActionsConfig(
     val onJoinMeeting: (String) -> Unit,
@@ -261,6 +293,12 @@ data class MeetingDetailContentActionsConfig(
     val onDeleteMeeting: () -> Unit,
     val onVoteForTime: () -> Unit,
     val onVoteForFormat: () -> Unit,
+    val onEditMeeting: () -> Unit,
+    val onSaveMeeting: () -> Unit,
+    val onCancelEdit: () -> Unit,
+    val onUpdateTitle: (String) -> Unit,
+    val onUpdateDateTime: (Timestamp) -> Unit,
+    val onUpdateDuration: (Int) -> Unit,
 )
 
 /**
@@ -268,6 +306,11 @@ data class MeetingDetailContentActionsConfig(
  *
  * @param meeting The meeting to display.
  * @param participants List of participants in the meeting.
+ * @param isEditMode Whether the screen is in edit mode.
+ * @param isSaving Whether a save operation is in progress.
+ * @param editTitle The edit title value.
+ * @param editDateTime The edit date/time value.
+ * @param editDuration The edit duration value.
  * @param actionsConfig Actions that can be executed by buttons in the detail content.
  * @param modifier Modifier to be applied to the root composable.
  */
@@ -275,6 +318,11 @@ data class MeetingDetailContentActionsConfig(
 private fun MeetingDetailContent(
     meeting: Meeting,
     participants: List<Participant>,
+    isEditMode: Boolean,
+    isSaving: Boolean,
+    editTitle: String,
+    editDateTime: Timestamp?,
+    editDuration: Int,
     actionsConfig: MeetingDetailContentActionsConfig,
     modifier: Modifier = Modifier,
 ) {
@@ -284,21 +332,41 @@ private fun MeetingDetailContent(
       verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item { MeetingHeader(meeting = meeting) }
 
-        item { MeetingInformationCard(meeting = meeting) }
+        item {
+          if (isEditMode) {
+            EditableMeetingInfoCard(
+                editTitle = editTitle,
+                editDateTime = editDateTime,
+                editDuration = editDuration,
+                onTitleChange = actionsConfig.onUpdateTitle,
+                onDateTimeChange = actionsConfig.onUpdateDateTime,
+                onDurationChange = actionsConfig.onUpdateDuration)
+          } else {
+            MeetingInformationCard(meeting = meeting)
+          }
+        }
 
         item { ParticipantsSection(participants = participants) }
 
         item { AttachmentsSection(attachments = meeting.attachmentUrls) }
 
         item {
-          ActionButtonsSection(
-              meeting = meeting,
-              onJoinMeeting = actionsConfig.onJoinMeeting,
-              onRecordMeeting = actionsConfig.onRecordMeeting,
-              onViewTranscript = actionsConfig.onViewTranscript,
-              onDeleteMeeting = actionsConfig.onDeleteMeeting,
-              onVoteForTime = actionsConfig.onVoteForTime,
-              onVoteForFormat = actionsConfig.onVoteForFormat)
+          if (isEditMode) {
+            EditModeButtons(
+                onSave = actionsConfig.onSaveMeeting,
+                onCancel = actionsConfig.onCancelEdit,
+                isSaving = isSaving)
+          } else {
+            ActionButtonsSection(
+                meeting = meeting,
+                onJoinMeeting = actionsConfig.onJoinMeeting,
+                onRecordMeeting = actionsConfig.onRecordMeeting,
+                onViewTranscript = actionsConfig.onViewTranscript,
+                onDeleteMeeting = actionsConfig.onDeleteMeeting,
+                onVoteForTime = actionsConfig.onVoteForTime,
+                onVoteForFormat = actionsConfig.onVoteForFormat,
+                onEditMeeting = actionsConfig.onEditMeeting)
+          }
         }
 
         item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -398,6 +466,94 @@ private fun MeetingInformationCard(meeting: Meeting) {
 }
 
 /**
+ * Card displaying editable meeting information fields.
+ *
+ * @param editTitle The title being edited.
+ * @param editDateTime The date/time being edited.
+ * @param editDuration The duration being edited.
+ * @param onTitleChange Callback when title changes.
+ * @param onDateTimeChange Callback when date/time changes.
+ * @param onDurationChange Callback when duration changes.
+ */
+@Composable
+private fun EditableMeetingInfoCard(
+    editTitle: String,
+    editDateTime: Timestamp?,
+    editDuration: Int,
+    onTitleChange: (String) -> Unit,
+    onDateTimeChange: (Timestamp) -> Unit,
+    onDurationChange: (Int) -> Unit
+) {
+  // Convert Timestamp to LocalDate and LocalTime
+  val localDateTime =
+      editDateTime?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDateTime()
+  val editDate = localDateTime?.toLocalDate() ?: LocalDate.now()
+  val editTime = localDateTime?.toLocalTime() ?: LocalTime.now()
+
+  Card(
+      modifier = Modifier.fillMaxWidth(),
+      shape = RoundedCornerShape(16.dp),
+      elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {
+        Column(
+            modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+              Text(
+                  text = "Edit Meeting Information",
+                  style = MaterialTheme.typography.titleMedium,
+                  fontWeight = FontWeight.SemiBold)
+
+              HorizontalDivider()
+
+              // Title field
+              OutlinedTextField(
+                  value = editTitle,
+                  onValueChange = onTitleChange,
+                  label = { Text("Title") },
+                  placeholder = { Text("Meeting title") },
+                  modifier = Modifier.fillMaxWidth())
+
+              // Date field
+              DateInputField(
+                  selectedDate = editDate,
+                  label = "Date",
+                  placeHolder = "Select date",
+                  tag = "EditMeetingDate",
+                  onDateSelected = { newDate ->
+                    val newDateTime =
+                        java.time.LocalDateTime.of(newDate, editTime)
+                            .atZone(ZoneId.systemDefault())
+                            .toInstant()
+                    onDateTimeChange(Timestamp(newDateTime.epochSecond, newDateTime.nano))
+                  },
+                  onDateTouched = {})
+
+              // Time field
+              TimeInputField(
+                  selectedTime = editTime,
+                  label = "Time",
+                  placeHolder = "Select time",
+                  tag = "EditMeetingTime",
+                  onTimeSelected = { newTime ->
+                    val newDateTime =
+                        java.time.LocalDateTime.of(editDate, newTime)
+                            .atZone(ZoneId.systemDefault())
+                            .toInstant()
+                    onDateTimeChange(Timestamp(newDateTime.epochSecond, newDateTime.nano))
+                  },
+                  onTimeTouched = {})
+
+              // Duration field
+              DurationInputField(
+                  duration = editDuration,
+                  label = "Duration",
+                  placeholder = "Select duration",
+                  durationOptions = listOf(15, 30, 45, 60, 90, 120),
+                  tag = "EditMeetingDuration",
+                  onDurationSelected = onDurationChange)
+            }
+      }
+}
+
+/**
  * Reusable information row component.
  *
  * @param icon The icon to display at the start of the row.
@@ -418,7 +574,7 @@ private fun InfoRow(
         contentDescription = label,
         modifier = Modifier.size(20.dp),
         tint = MaterialTheme.colorScheme.primary)
-    Spacer(modifier = Modifier.width(12.dp))
+    Spacer(modifier = Modifier.width(8.dp))
     Column {
       Text(text = label, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
       Text(
@@ -569,7 +725,7 @@ private fun AttachmentItem(attachmentUrl: String) {
 }
 
 /**
- * Action buttons section (join, record, transcript, delete).
+ * Action buttons section (join, record, transcript, delete, edit).
  *
  * @param meeting The meeting for which to display action buttons.
  * @param onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
@@ -577,6 +733,7 @@ private fun AttachmentItem(attachmentUrl: String) {
  * @param onRecordMeeting Callback invoked when user clicks record meeting button.
  * @param onViewTranscript Callback invoked when user clicks view transcript button.
  * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
+ * @param onEditMeeting Callback invoked when user clicks edit meeting button.
  */
 @Composable
 private fun ActionButtonsSection(
@@ -586,7 +743,8 @@ private fun ActionButtonsSection(
     onViewTranscript: () -> Unit,
     onDeleteMeeting: () -> Unit,
     onVoteForTime: () -> Unit,
-    onVoteForFormat: () -> Unit
+    onVoteForFormat: () -> Unit,
+    onEditMeeting: () -> Unit
 ) {
   Column(
       modifier =
@@ -653,6 +811,13 @@ private fun ActionButtonsSection(
           }
         }
 
+        // Edit button
+        OutlinedButton(
+            onClick = onEditMeeting,
+            modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.EDIT_BUTTON)) {
+              Text("Edit Meeting")
+            }
+
         OutlinedButton(
             onClick = onDeleteMeeting,
             modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.DELETE_BUTTON),
@@ -664,6 +829,42 @@ private fun ActionButtonsSection(
               Text("Delete Meeting")
             }
       }
+}
+
+/**
+ * Edit mode buttons (Save and Cancel).
+ *
+ * @param onSave Callback invoked when user clicks save button.
+ * @param onCancel Callback invoked when user clicks cancel button.
+ * @param isSaving Whether a save operation is in progress.
+ */
+@Composable
+private fun EditModeButtons(onSave: () -> Unit, onCancel: () -> Unit, isSaving: Boolean) {
+  Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Text(
+        text = "Edit Mode",
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.SemiBold)
+
+    Button(
+        onClick = onSave,
+        modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.SAVE_BUTTON),
+        enabled = !isSaving) {
+          if (isSaving) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp), color = MaterialTheme.colorScheme.onPrimary)
+          } else {
+            Text("Save Changes")
+          }
+        }
+
+    OutlinedButton(
+        onClick = onCancel,
+        modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.CANCEL_EDIT_BUTTON),
+        enabled = !isSaving) {
+          Text("Cancel")
+        }
+  }
 }
 
 /**
