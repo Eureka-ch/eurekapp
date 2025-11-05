@@ -71,7 +71,7 @@ class AudioRecordingViewModel(
       stopRecording()
       val result =
           fileStorageRepository.uploadFile(
-              StoragePaths.meetingAttachmentPath(
+              StoragePaths.meetingTranscriptionAudioPath(
                   projectId, meetingId, "${_recordingUri.value!!.lastPathSegment}"),
               _recordingUri.value!!)
       if (result.isFailure) {
