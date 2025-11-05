@@ -67,9 +67,7 @@ object TranscriptScreenTestTags {
 /**
  * Screen displaying meeting audio with transcript and AI summary generation.
  *
- *
  * Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5
- *
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

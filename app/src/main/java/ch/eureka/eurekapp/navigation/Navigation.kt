@@ -125,8 +125,10 @@ sealed interface Route {
 fun NavigationMenu() {
   val navigationController = rememberNavController()
   val projectRepository = FirestoreRepositoriesProvider.projectRepository
+  val meetingRepository = FirestoreRepositoriesProvider.meetingRepository
   val auth = Firebase.auth
   val testProjectId = "test-project-id"
+  val testMeetingId = "test-meeting"
   val testProject =
       Project(
           projectId = testProjectId,
