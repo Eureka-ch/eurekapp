@@ -50,12 +50,15 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.audio.AudioRecordingViewModel
 import ch.eureka.eurekapp.model.audio.RECORDING_STATE
+import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
 import ch.eureka.eurekapp.ui.theme.DarkColorScheme
 import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.ui.theme.Typography
 import ch.eureka.eurekapp.utils.Formatters
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 object MeetingAudioScreenTestTags {
@@ -72,7 +75,8 @@ fun MeetingAudioRecordingScreen(
     projectId: String,
     meetingId: String,
     audioRecordingViewModel: AudioRecordingViewModel = viewModel(),
-    onGenerateAITranscript: (String) -> Unit = {}
+    meetingRepository: MeetingRepository = FirestoreRepositoriesProvider.meetingRepository,
+    onNavigateToTranscript: (String, String) -> Unit = { _, _ -> }
 ) {
 
   var microphonePermissionIsGranted by remember {
@@ -193,6 +197,23 @@ fun MeetingAudioRecordingScreen(
                                             uploadText = "Uploaded successfully!"
                                             canShowAITranscriptButton = true
                                             firebaseDownloadURI = firebaseURL
+
+                                            // Save audio URL
+                                            audioRecordingViewModel.viewModelScope.launch {
+                                              val meeting =
+                                                  meetingRepository
+                                                      .getMeetingById(projectId, meetingId)
+                                                      .first()
+                                              meeting?.let {
+                                                if (!it.attachmentUrls.contains(firebaseURL)) {
+                                                  val updatedAttachments =
+                                                      it.attachmentUrls + firebaseURL
+                                                  val updatedMeeting =
+                                                      it.copy(attachmentUrls = updatedAttachments)
+                                                  meetingRepository.updateMeeting(updatedMeeting)
+                                                }
+                                              }
+                                            }
                                           },
                                           onFailureUpload = { exception ->
                                             errorText =
@@ -248,13 +269,13 @@ fun MeetingAudioRecordingScreen(
                           horizontalArrangement = Arrangement.Center,
                           verticalAlignment = Alignment.CenterVertically) {
                             ElevatedButton(
-                                modifier = Modifier.size(width = 250.dp, height = 50.dp),
-                                onClick = { onGenerateAITranscript(firebaseDownloadURI!!) }) {
-                                  Row() {
-                                    Text(
-                                        "\uD83E\uDDE0 Generate AI Transcript",
-                                        style = Typography.titleMedium)
-                                  }
+                                modifier =
+                                    Modifier.size(width = 250.dp, height = 50.dp)
+                                        .testTag(
+                                            MeetingAudioScreenTestTags
+                                                .GENERATE_AI_TRANSCRIPT_BUTTON),
+                                onClick = { onNavigateToTranscript(projectId, meetingId) }) {
+                                  Row() { Text("View Transcript", style = Typography.titleMedium) }
                                 }
                           }
                     }
