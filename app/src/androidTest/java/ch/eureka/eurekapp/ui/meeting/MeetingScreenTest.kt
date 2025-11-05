@@ -10,6 +10,7 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.Participant
+import kotlin.collections.filter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
@@ -72,7 +73,12 @@ class MeetingScreenTest {
     // Find an upcoming meeting's title
     val upcomingMeeting =
         MeetingProvider.sampleMeetings
-            .sortedBy { m -> m.datetime ?: m.timeSlot.startTime }
+            .sortedBy { m ->
+              m.datetime
+                  ?: m.dateTimeVotes
+                      .filter { dtv -> dtv.voters.isNotEmpty() }
+                      .minOfOrNull { e -> e.dateTime }
+            }
             .reversed()
             .first { it.status != MeetingStatus.COMPLETED }
     composeTestRule.onNodeWithText(upcomingMeeting.title).assertIsDisplayed()
@@ -80,7 +86,12 @@ class MeetingScreenTest {
     // Ensure a past meeting's title is not displayed
     val pastMeeting =
         MeetingProvider.sampleMeetings
-            .sortedBy { m -> m.datetime ?: m.timeSlot.startTime }
+            .sortedBy { m ->
+              m.datetime
+                  ?: m.dateTimeVotes
+                      .filter { dtv -> dtv.voters.isNotEmpty() }
+                      .minOfOrNull { e -> e.dateTime }
+            }
             .reversed()
             .first { it.status == MeetingStatus.COMPLETED }
     composeTestRule.onNodeWithText(pastMeeting.title).assertDoesNotExist()
@@ -146,7 +157,7 @@ class MeetingScreenTest {
         .onNodeWithTag(MeetingScreenTestTags.MEETING_STATUS_TEXT, useUnmergedTree = true)
         .assertIsDisplayed()
     composeTestRule
-        .onNodeWithTag(MeetingScreenTestTags.MEETING_TIMESLOT, useUnmergedTree = true)
+        .onNodeWithTag(MeetingScreenTestTags.MEETING_DURATION, useUnmergedTree = true)
         .assertIsDisplayed()
     composeTestRule
         .onNodeWithTag(

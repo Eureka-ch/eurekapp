@@ -108,18 +108,18 @@ class MeetingViewModelTest {
             datetime = Timestamp(Date(baseTime + 1000000)))
 
     // One meeting with only timeSlot (older)
-    val meetingWithTimeSlot =
+    val meetingWithTime =
         Meeting(
             meetingID = "2",
             title = "With TimeSlot",
             status = MeetingStatus.SCHEDULED,
             datetime = null,
-            timeSlot =
-                TimeSlot(
-                    startTime = Timestamp(Date(baseTime - 1000000)),
-                    endTime = Timestamp(Date(baseTime))))
+            dateTimeVotes =
+                listOf(
+                    DateTimeVote(Timestamp(Date(baseTime - 1000000)), listOf("u1")),
+                    DateTimeVote(Timestamp(Date(baseTime + 1000001)), listOf("u1", "u2"))))
 
-    repositoryMock.meetingsToReturn = listOf(meetingWithDatetime, meetingWithTimeSlot)
+    repositoryMock.meetingsToReturn = listOf(meetingWithDatetime, meetingWithTime)
 
     viewModel.loadMeetings("projectABC")
     testDispatcher.scheduler.advanceUntilIdle()
