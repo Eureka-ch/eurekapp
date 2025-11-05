@@ -3,7 +3,7 @@ package ch.eureka.eurekapp.ui.tasks
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -35,7 +35,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class TasksScreenTest {
 
-  @get:Rule val composeTestRule = createAndroidComposeRule<androidx.activity.ComponentActivity>()
+  @get:Rule val composeTestRule = createComposeRule()
 
   private lateinit var mockTaskRepository: MockTaskRepository
   private lateinit var mockProjectRepository: MockProjectRepository
