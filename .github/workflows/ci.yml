@@ -83,7 +83,7 @@ jobs:
           level: build
 
       - name: Build and Lint
-        run: ./gradlew compileDebugKotlin compileDebugJavaWithJavac lint --parallel --build-cache
+        run: ./gradlew assembleDebug lint --parallel --build-cache
 
       - name: Upload build artifacts
         if: always()
