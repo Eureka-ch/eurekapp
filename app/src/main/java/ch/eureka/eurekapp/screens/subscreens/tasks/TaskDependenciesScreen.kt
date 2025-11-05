@@ -32,11 +32,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.task.Task
+import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.tasks.TaskDependenciesViewModel
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.DarkBackground
@@ -133,6 +135,7 @@ fun TaskDependenciesScreen(
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         OutlinedButton(
+                            modifier = Modifier.testTag(TaskDependenciesScreenTestTags.getFilteringNameTestTag("All")),
                             onClick = {
                                 nameFilter = "All"
                             },
@@ -155,6 +158,8 @@ fun TaskDependenciesScreen(
                             }
                             else{
                                 OutlinedButton(
+                                    modifier = Modifier.testTag(TaskDependenciesScreenTestTags
+                                        .getFilteringNameTestTag(user.value!!.displayName)),
                                     onClick = {
                                         nameFilter = user.value!!.uid
                                     },
@@ -248,19 +253,28 @@ fun TreeView(modifier: Modifier = Modifier, isParent: Boolean = false, projectId
              taskDependenciesViewModel: TaskDependenciesViewModel, filterName: String){
     if(task != null){
         var maxChildWidth by remember { mutableStateOf(0) }
-        var tasksDependentOn = remember(task.taskID) {taskDependenciesViewModel.getDependentTasksForTask(projectId,task)}
-        Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically, modifier = modifier.fillMaxWidth().padding(horizontal = 10.dp)){
+        var tasksDependentOn = remember(task.taskID) {taskDependenciesViewModel
+            .getDependentTasksForTask(projectId,task)}
+        Row(horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = modifier.fillMaxWidth().padding(horizontal = 10.dp)){
             if(!isParent){
                 Icon(Icons.AutoMirrored.Filled.ArrowRightAlt, null)
             }
             TaskSurfaceComponent(task, filterName)
-            EqualWidthChildrenColumn(tasksDependentOn.map{ task2 ->
+            EqualWidthChildrenColumn(tasksDependentOn.filter{task2 ->
+                val task2 = task2.collectAsState(null)
+                return@filter task2.value != null && (task2.value!!.status == TaskStatus.TODO ||
+                        task2.value!!.status == TaskStatus.IN_PROGRESS)
+            }.map{ task2 ->
                 {
                     key(task2.hashCode()) {
                         val taskState = task2.collectAsState(null)
                         Log.d("TaskDependenciesScreen", taskState.value.toString())
                         if (taskState.value != null) {
                             TreeView(
+                                modifier = Modifier.testTag(TaskDependenciesScreenTestTags
+                                    .getDependentTaskTestTag(taskState.value!!)),
                                 projectId = projectId,
                                 task = taskState.value,
                                 taskDependenciesViewModel = taskDependenciesViewModel,
@@ -286,7 +300,8 @@ fun EqualWidthChildrenColumn(
     SubcomposeLayout { constraints ->
         val placeables = children.mapNotNull { child ->
             val measurables = subcompose(child.hashCode(), child)
-            val placeable = measurables.firstOrNull()?.measure(constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity))
+            val placeable = measurables.firstOrNull()?.measure(constraints
+                .copy(minHeight = 0, maxHeight = Constraints.Infinity))
             placeable
         }
 
