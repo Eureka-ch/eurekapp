@@ -119,9 +119,6 @@ fun MeetingTranscriptViewScreen(
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)) {
-                  // Audio Player
-                  item { uiState.audioUrl?.let { audioUrl -> AudioPlayer(audioUrl = audioUrl) } }
-
                   // Transcript Section
                   item {
                     when {
