@@ -32,6 +32,9 @@ class TaskDependenciesScreenTest : TestCase() {
 
   @Before
   fun setup() = runBlocking {
+    if (!FirebaseEmulator.isRunning) {
+      throw IllegalStateException("Firebase Emulator must be running for tests")
+    }
     FirebaseEmulator.auth.signInAnonymously()
     delay(500)
     FirebaseEmulator.clearFirestoreEmulator()
