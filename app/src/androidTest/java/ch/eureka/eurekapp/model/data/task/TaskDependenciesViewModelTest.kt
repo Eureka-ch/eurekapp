@@ -133,52 +133,45 @@ class TaskDependenciesViewModelTest {
   }
 
   @Test
-  fun testGetDependentTasksForTaskWorks() {
-    runBlocking {
-      val viewModel =
-          TaskDependenciesViewModel(
-              tasksRepository = TasksFakeRepository(),
-              usersRepository = UserFakeRepository(),
-              projectsRepository = ProjectFakeRepository())
+  fun testGetDependentTasksForTaskWorks() = runBlocking {
+    val viewModel =
+        TaskDependenciesViewModel(
+            tasksRepository = TasksFakeRepository(),
+            usersRepository = UserFakeRepository(),
+            projectsRepository = ProjectFakeRepository())
 
-      val dummyTask = Task(dependingOnTasks = listOf("task1", "task2", "task3"))
+    val dummyTask = Task(dependingOnTasks = listOf("task1", "task2", "task3"))
 
-      // This should return three dummy tasks with id the corresponding element of the list
+    // This should return three dummy tasks with id the corresponding element of the list
 
-      val list = viewModel.getDependentTasksForTask("test-project-id", dummyTask)
+    val list = viewModel.getDependentTasksForTask("test-project-id", dummyTask)
 
-      list.forEachIndexed { i, taskFlow ->
-        assertEquals("test-project-id", taskFlow.first()!!.projectId)
-        assertEquals("task${i+1}", taskFlow.first()!!.taskID)
-      }
+    list.forEachIndexed { i, taskFlow ->
+      assertEquals("test-project-id", taskFlow.first()!!.projectId)
+      assertEquals("task${i+1}", taskFlow.first()!!.taskID)
     }
   }
 
   @Test
-  fun getProjectUsersWorks() {
-    runBlocking {
-      val viewModel =
-          TaskDependenciesViewModel(
-              tasksRepository = TasksFakeRepository(),
-              usersRepository = UserFakeRepository(),
-              projectsRepository = ProjectFakeRepository())
+  fun getProjectUsersWorks() = runBlocking {
+    val viewModel =
+        TaskDependenciesViewModel(
+            tasksRepository = TasksFakeRepository(),
+            usersRepository = UserFakeRepository(),
+            projectsRepository = ProjectFakeRepository())
 
-      assertEquals(
-          "user1", viewModel.getProjectUsers("test-project-id").first().get(0).first()!!.uid)
-    }
+    assertEquals("user1", viewModel.getProjectUsers("test-project-id").first().get(0).first()!!.uid)
   }
 
   @Test
-  fun getTaskFromRepositoryWorks() {
-    runBlocking {
-      val viewModel =
-          TaskDependenciesViewModel(
-              tasksRepository = TasksFakeRepository(),
-              usersRepository = UserFakeRepository(),
-              projectsRepository = ProjectFakeRepository())
+  fun getTaskFromRepositoryWorks() = runBlocking {
+    val viewModel =
+        TaskDependenciesViewModel(
+            tasksRepository = TasksFakeRepository(),
+            usersRepository = UserFakeRepository(),
+            projectsRepository = ProjectFakeRepository())
 
-      val task = viewModel.getTaskFromRepository("test-project-id", "task1")
-      assertEquals("task1", task.first()!!.taskID)
-    }
+    val task = viewModel.getTaskFromRepository("test-project-id", "task1")
+    assertEquals("task1", task.first()!!.taskID)
   }
 }

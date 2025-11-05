@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.ui.tasks.dependencies
+package ch.eureka.eurekapp.screen
 
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -17,8 +17,9 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -32,12 +33,11 @@ class TaskDependenciesScreenTest : TestCase() {
 
   @Before
   fun setup() = runBlocking {
+    FirebaseEmulator.clearFirestoreEmulator()
     if (!FirebaseEmulator.isRunning) {
       throw IllegalStateException("Firebase Emulator must be running for tests")
     }
-    FirebaseEmulator.auth.signInAnonymously()
-    delay(500)
-    FirebaseEmulator.clearFirestoreEmulator()
+    FirebaseEmulator.auth.signInAnonymously().await()
     usersRepository =
         FirestoreUserRepository(
             firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
@@ -63,7 +63,7 @@ class TaskDependenciesScreenTest : TestCase() {
                 projectId = "test-project-id",
                 dependingOnTasks = listOf("task2")))
     tasksRepository.createTask(Task().copy(taskID = "task2", projectId = "test-project-id"))
-    delay(500)
+    Unit
   }
 
   @Test
@@ -92,5 +92,12 @@ class TaskDependenciesScreenTest : TestCase() {
         .performClick()
 
     composeTestRule.waitForIdle()
+  }
+
+  @After
+  fun tearDown() = runBlocking {
+    // Ensure both Firestore and Auth are reset between tests to avoid leaking auth state
+    FirebaseEmulator.clearFirestoreEmulator()
+    FirebaseEmulator.clearAuthEmulator()
   }
 }

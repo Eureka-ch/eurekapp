@@ -1,14 +1,12 @@
 package ch.eureka.eurekapp.model.tasks
 
 import androidx.lifecycle.ViewModel
+import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
-import ch.eureka.eurekapp.model.data.project.ProjectRepositoryProvider
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
-import ch.eureka.eurekapp.model.data.task.TaskRepositoryProvider
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
-import ch.eureka.eurekapp.model.data.user.UserRepositoryProvider
 import kotlin.collections.emptyList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -23,9 +21,10 @@ import kotlinx.coroutines.flow.map
  * Disclaimer: This documentation was written by AI (ChatGPT - GPT-5).
  */
 class TaskDependenciesViewModel(
-    private val tasksRepository: TaskRepository = TaskRepositoryProvider._repository,
-    private val usersRepository: UserRepository = UserRepositoryProvider.repository,
-    private val projectsRepository: ProjectRepository = ProjectRepositoryProvider.repository
+    private val tasksRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
+    private val usersRepository: UserRepository = FirestoreRepositoriesProvider.userRepository,
+    private val projectsRepository: ProjectRepository =
+        FirestoreRepositoriesProvider.projectRepository
 ) : ViewModel() {
 
   /**
