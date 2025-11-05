@@ -61,8 +61,8 @@ class MeetingDetailScreenTest {
   private fun setContent(
       onNavigateBack: () -> Unit = {},
       onJoinMeeting: (String) -> Unit = {},
-      onRecordMeeting: () -> Unit = {},
-      onViewTranscript: () -> Unit = {}
+      onRecordMeeting: (String, String) -> Unit = { _, _ -> },
+      onViewTranscript: (String, String) -> Unit = { _, _ -> }
   ) {
     val viewModel = MeetingDetailViewModel("test_project", "test_meeting", repositoryMock)
     composeTestRule.setContent {
@@ -344,7 +344,7 @@ class MeetingDetailScreenTest {
     participantsFlow.value = emptyList()
 
     var recordCalled = false
-    setContent(onRecordMeeting = { recordCalled = true })
+    setContent(onRecordMeeting = { _, _ -> recordCalled = true })
 
     composeTestRule.waitForIdle()
 
@@ -360,7 +360,7 @@ class MeetingDetailScreenTest {
     participantsFlow.value = emptyList()
 
     var transcriptCalled = false
-    setContent(onViewTranscript = { transcriptCalled = true })
+    setContent(onViewTranscript = { _, _ -> transcriptCalled = true })
 
     composeTestRule.waitForIdle()
 
