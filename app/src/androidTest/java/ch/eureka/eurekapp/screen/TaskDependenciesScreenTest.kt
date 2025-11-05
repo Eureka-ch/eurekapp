@@ -24,7 +24,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class TaskDependenciesScreenTest : TestCase() {
+open class TaskDependenciesScreenTest : TestCase() {
   @get:Rule val composeTestRule = createComposeRule()
 
   private lateinit var projectRepository: ProjectRepository
@@ -68,34 +68,36 @@ class TaskDependenciesScreenTest : TestCase() {
 
   @Test
   fun testTaskDependenciesScreenCorrectlyShowsEverything() {
-    val viewModel =
-        TaskDependenciesViewModel(
-            tasksRepository = tasksRepository,
-            usersRepository = usersRepository,
-            projectsRepository = projectRepository)
+    runBlocking {
+      val viewModel =
+          TaskDependenciesViewModel(
+              tasksRepository = tasksRepository,
+              usersRepository = usersRepository,
+              projectsRepository = projectRepository)
 
-    composeTestRule.setContent {
-      TaskDependenciesScreen(
-          projectId = "test-project-id", taskId = "task1", taskDependenciesViewModel = viewModel)
+      composeTestRule.setContent {
+        TaskDependenciesScreen(
+            projectId = "test-project-id", taskId = "task1", taskDependenciesViewModel = viewModel)
+      }
+
+      composeTestRule.waitForIdle()
+
+      Thread.sleep(3000)
+
+      composeTestRule
+          .onNodeWithTag(TaskDependenciesScreenTestTags.getFilteringNameTestTag("user1"))
+          .performClick()
+      composeTestRule
+          .onNodeWithTag(TaskDependenciesScreenTestTags.getFilteringNameTestTag("All"))
+          .performClick()
+      composeTestRule
+          .onNodeWithTag(TaskDependenciesScreenTestTags.getFilteringNameTestTag("user2"))
+          .performClick()
+
+      Thread.sleep(3000)
+
+      composeTestRule.waitForIdle()
     }
-
-    composeTestRule.waitForIdle()
-
-    Thread.sleep(3000)
-
-    composeTestRule
-        .onNodeWithTag(TaskDependenciesScreenTestTags.getFilteringNameTestTag("user1"))
-        .performClick()
-    composeTestRule
-        .onNodeWithTag(TaskDependenciesScreenTestTags.getFilteringNameTestTag("All"))
-        .performClick()
-    composeTestRule
-        .onNodeWithTag(TaskDependenciesScreenTestTags.getFilteringNameTestTag("user2"))
-        .performClick()
-
-    Thread.sleep(3000)
-
-    composeTestRule.waitForIdle()
   }
 
   @After
