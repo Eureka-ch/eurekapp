@@ -186,7 +186,7 @@ class TranscriptViewModel(
       _errorMsg.value = null
 
       try {
-        val systemPrompt = "Summarize this meeting transcript in 3 concise bullet points."
+        val systemPrompt = "Summarize this meeting transcript."
         val response = chatbotRepository.sendMessage(systemPrompt, transcriptText)
         _summary.value = response
       } catch (e: Exception) {
