@@ -107,6 +107,14 @@ fun MeetingTranscriptViewScreen(
                 verticalArrangement = Arrangement.spacedBy(24.dp)) {
                   // Transcript Section
                   item {
+                    if (uiState.errorMsg != null) {
+                      Text(
+                          text = uiState.errorMsg ?: "",
+                          color = MaterialTheme.colorScheme.error,
+                          modifier = Modifier.testTag(TranscriptScreenTestTags.ERROR_MESSAGE))
+                      Spacer(modifier = Modifier.height(8.dp))
+                    }
+
                     when {
                       !uiState.hasTranscript && !uiState.isGeneratingTranscript -> {
                         Button(

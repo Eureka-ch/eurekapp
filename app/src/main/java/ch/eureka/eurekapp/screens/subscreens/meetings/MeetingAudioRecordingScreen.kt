@@ -93,6 +93,9 @@ fun MeetingAudioRecordingScreen(
 
   val recordingStatus = audioRecordingViewModel.isRecording.collectAsState()
 
+  val meetingState =
+      meetingRepository.getMeetingById(projectId, meetingId).collectAsState(initial = null)
+
   var canShowAITranscriptButton by remember { mutableStateOf(false) }
 
   LaunchedEffect(Unit) {
@@ -108,6 +111,13 @@ fun MeetingAudioRecordingScreen(
   var canPressUploadButton by remember { mutableStateOf<Boolean>(true) }
 
   var firebaseDownloadURI by remember { mutableStateOf<String?>(null) }
+
+  // If a transcript already exists for this meeting, show the View Transcript button
+  LaunchedEffect(meetingState.value?.transcriptId) {
+    if (meetingState.value?.transcriptId != null) {
+      canShowAITranscriptButton = true
+    }
+  }
 
   LaunchedEffect(recordingStatus.value) {
     while (recordingStatus.value == RECORDING_STATE.RUNNING) {
