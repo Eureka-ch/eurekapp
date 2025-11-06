@@ -8,7 +8,11 @@ import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import kotlin.collections.emptyList
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 /**
@@ -26,7 +30,6 @@ class TaskDependenciesViewModel(
     private val projectsRepository: ProjectRepository =
         FirestoreRepositoriesProvider.projectRepository
 ) : ViewModel() {
-
   /**
    * Retrieves the list of dependent tasks for a given task.
    *
@@ -36,8 +39,12 @@ class TaskDependenciesViewModel(
    *
    * Disclaimer: This description was written by AI (ChatGPT - GPT-5).
    */
-  fun getDependentTasksForTask(projectId: String, task: Task): List<Flow<Task?>> {
-    return task.dependingOnTasks.map { taskId -> tasksRepository.getTaskById(projectId, taskId) }
+  fun getDependentTasksForTask(projectId: String, task: Task): Flow<List<Task?>> {
+    return combine(
+        task.dependingOnTasks.map { taskId -> tasksRepository.getTaskById(projectId, taskId) }) {
+            tasksArray ->
+          tasksArray.toList()
+        }
   }
 
   /**
@@ -48,12 +55,13 @@ class TaskDependenciesViewModel(
    *
    * Disclaimer: This description was written by AI (ChatGPT - GPT-5).
    */
-  fun getProjectUsers(projectId: String): Flow<List<Flow<User?>>> {
-    return projectsRepository.getProjectById(projectId).map { project ->
+  @OptIn(ExperimentalCoroutinesApi::class)
+  fun getProjectUsers(projectId: String): Flow<List<User?>> {
+    return projectsRepository.getProjectById(projectId).flatMapLatest { project ->
       val ids = project?.memberIds.orEmpty()
-      if (ids.isEmpty()) return@map emptyList()
+      if (ids.isEmpty()) return@flatMapLatest flowOf(emptyList())
 
-      ids.map { userId -> usersRepository.getUserById(userId) }
+      combine(ids.map { userId -> usersRepository.getUserById(userId) }) { array -> array.toList() }
     }
   }
 

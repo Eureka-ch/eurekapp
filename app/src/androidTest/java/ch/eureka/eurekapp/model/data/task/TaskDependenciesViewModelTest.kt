@@ -144,11 +144,11 @@ class TaskDependenciesViewModelTest {
 
     // This should return three dummy tasks with id the corresponding element of the list
 
-    val list = viewModel.getDependentTasksForTask("test-project-id", dummyTask)
+    val list = viewModel.getDependentTasksForTask("test-project-id", dummyTask).first()
 
     list.forEachIndexed { i, taskFlow ->
-      assertEquals("test-project-id", taskFlow.first()!!.projectId)
-      assertEquals("task${i+1}", taskFlow.first()!!.taskID)
+      assertEquals("test-project-id", taskFlow!!.projectId)
+      assertEquals("task${i+1}", taskFlow.taskID)
     }
   }
 
@@ -160,7 +160,7 @@ class TaskDependenciesViewModelTest {
             usersRepository = UserFakeRepository(),
             projectsRepository = ProjectFakeRepository())
 
-    assertEquals("user1", viewModel.getProjectUsers("test-project-id").first().get(0).first()!!.uid)
+    assertEquals("user1", viewModel.getProjectUsers("test-project-id").first()[0]!!.uid)
   }
 
   @Test
