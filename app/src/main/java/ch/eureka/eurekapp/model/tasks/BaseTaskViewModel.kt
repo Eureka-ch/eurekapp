@@ -9,6 +9,7 @@ import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.TaskRepository
+import ch.eureka.eurekapp.utils.Formatters
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -86,8 +87,7 @@ abstract class BaseTaskViewModel<T : TaskStateCommon>(
       return Result.failure(IllegalArgumentException("Invalid due date format"))
     }
 
-    val timeRegex = Regex("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")
-    if (!timeRegex.matches(reminderTimeStr)) {
+    if (!Formatters.timeRegex.matches(reminderTimeStr)) {
       return Result.failure(
           IllegalArgumentException("Invalid reminder time format (must be HH:mm)"))
     }

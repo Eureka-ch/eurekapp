@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.ui.camera.PhotoViewer
+import ch.eureka.eurekapp.utils.Formatters
 
 // Portions of this code were generated with the help of AI.
 
@@ -148,8 +149,6 @@ fun TaskReminderField(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-  val timeRegex = Regex("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")
-
   OutlinedTextField(
       value = value,
       onValueChange = onValueChange,
@@ -157,7 +156,7 @@ fun TaskReminderField(
       placeholder = { Text("HH:mm") },
       modifier = modifier.fillMaxWidth().testTag(CommonTaskTestTags.REMINDER_TIME))
 
-  if (value.isNotBlank() && !timeRegex.matches(value)) {
+  if (value.isNotBlank() && !Formatters.timeRegex.matches(value)) {
     Text(
         text = "Invalid format (must be HH:mm)",
         color = Color.Red,
