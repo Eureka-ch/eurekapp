@@ -12,21 +12,14 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TaskCustomData(val data: Map<String, FieldValue> = emptyMap()) {
 
-  fun getValue(fieldId: String): FieldValue? {
-    return data[fieldId]
-  }
+  fun getValue(fieldId: String): FieldValue? = data[fieldId]
 
-  fun hasValue(fieldId: String): Boolean {
-    return data.containsKey(fieldId)
-  }
+  fun hasValue(fieldId: String): Boolean = fieldId in data
 
-  fun setValue(fieldId: String, value: FieldValue): TaskCustomData {
-    return copy(data = data + (fieldId to value))
-  }
+  fun setValue(fieldId: String, value: FieldValue): TaskCustomData =
+      copy(data = data + (fieldId to value))
 
-  fun removeValue(fieldId: String): TaskCustomData {
-    return copy(data = data - fieldId)
-  }
+  fun removeValue(fieldId: String): TaskCustomData = copy(data = data - fieldId)
 
   fun validate(schema: TaskTemplateSchema): ValidationResult {
     val errors = mutableListOf<String>()
@@ -52,15 +45,11 @@ data class TaskCustomData(val data: Map<String, FieldValue> = emptyMap()) {
 
       val validationResult = FieldValidator.validate(value, fieldDef)
       if (validationResult is FieldValidationResult.Invalid) {
-        validationResult.errors.forEach { error -> errors.add("Field '$fieldId': $error") }
+        errors.addAll(validationResult.errors.map { "Field '$fieldId': $it" })
       }
     }
 
-    return if (errors.isEmpty()) {
-      ValidationResult.Success
-    } else {
-      ValidationResult.Failure(errors)
-    }
+    return if (errors.isEmpty()) ValidationResult.Success else ValidationResult.Failure(errors)
   }
 }
 

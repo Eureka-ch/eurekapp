@@ -27,11 +27,8 @@ object FieldValidator {
           validateMultiSelect(value, fieldDef.type as FieldType.MultiSelect, errors)
     }
 
-    return if (errors.isEmpty()) {
-      FieldValidationResult.Valid
-    } else {
-      FieldValidationResult.Invalid(errors)
-    }
+    return if (errors.isEmpty()) FieldValidationResult.Valid
+    else FieldValidationResult.Invalid(errors)
   }
 
   private fun validateText(
@@ -39,22 +36,17 @@ object FieldValidator {
       type: FieldType.Text,
       errors: MutableList<String>
   ) {
-    type.maxLength?.let {
-      if (value.value.length > it) {
-        errors.add("Text exceeds maxLength of $it characters")
-      }
-    }
+    type.maxLength
+        ?.takeIf { value.value.length > it }
+        ?.let { errors.add("Text exceeds maxLength of $it characters") }
 
-    type.minLength?.let {
-      if (value.value.length < it) {
-        errors.add("Text is shorter than minLength of $it characters")
-      }
-    }
+    type.minLength
+        ?.takeIf { value.value.length < it }
+        ?.let { errors.add("Text is shorter than minLength of $it characters") }
 
     type.pattern?.let { pattern ->
       try {
-        val regex = Regex(pattern)
-        if (!regex.matches(value.value)) {
+        if (!Regex(pattern).matches(value.value)) {
           errors.add("Text does not match required pattern")
         }
       } catch (e: Exception) {
@@ -68,17 +60,11 @@ object FieldValidator {
       type: FieldType.Number,
       errors: MutableList<String>
   ) {
-    type.min?.let {
-      if (value.value < it) {
-        errors.add("Number is less than minimum of $it")
-      }
-    }
+    type.min?.takeIf { value.value < it }?.let { errors.add("Number is less than minimum of $it") }
 
-    type.max?.let {
-      if (value.value > it) {
-        errors.add("Number is greater than maximum of $it")
-      }
-    }
+    type.max
+        ?.takeIf { value.value > it }
+        ?.let { errors.add("Number is greater than maximum of $it") }
   }
 
   private fun validateDate(
@@ -107,23 +93,21 @@ object FieldValidator {
     val allowedValues = type.options.map { it.value }
 
     if (!type.allowCustom) {
-      val invalidValues = value.values.filter { it !in allowedValues }
-      if (invalidValues.isNotEmpty()) {
-        errors.add("Values $invalidValues are not in allowed options: $allowedValues")
-      }
+      value.values
+          .filter { it !in allowedValues }
+          .takeIf { it.isNotEmpty() }
+          ?.let { invalidValues ->
+            errors.add("Values $invalidValues are not in allowed options: $allowedValues")
+          }
     }
 
-    type.minSelections?.let {
-      if (value.values.size < it) {
-        errors.add("Must select at least $it options")
-      }
-    }
+    type.minSelections
+        ?.takeIf { value.values.size < it }
+        ?.let { errors.add("Must select at least $it options") }
 
-    type.maxSelections?.let {
-      if (value.values.size > it) {
-        errors.add("Must select at most $it options")
-      }
-    }
+    type.maxSelections
+        ?.takeIf { value.values.size > it }
+        ?.let { errors.add("Must select at most $it options") }
   }
 }
 

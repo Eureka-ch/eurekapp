@@ -17,9 +17,8 @@ import com.google.firebase.Timestamp
 
 object FirestoreConverters {
 
-  fun schemaToMap(schema: TaskTemplateSchema): Map<String, Any> {
-    return mapOf("fields" to schema.fields.map { fieldDefinitionToMap(it) })
-  }
+  fun schemaToMap(schema: TaskTemplateSchema): Map<String, Any> =
+      mapOf("fields" to schema.fields.map { fieldDefinitionToMap(it) })
 
   fun mapToSchema(map: Map<String, Any>): TaskTemplateSchema {
     @Suppress("UNCHECKED_CAST")
@@ -28,9 +27,8 @@ object FirestoreConverters {
     return TaskTemplateSchema(fields)
   }
 
-  fun customDataToMap(customData: TaskCustomData): Map<String, Any> {
-    return customData.data.mapValues { (_, value) -> fieldValueToMap(value) }
-  }
+  fun customDataToMap(customData: TaskCustomData): Map<String, Any> =
+      customData.data.mapValues { (_, value) -> fieldValueToMap(value) }
 
   fun mapToCustomData(map: Map<String, Any>): TaskCustomData {
     @Suppress("UNCHECKED_CAST")
@@ -38,15 +36,13 @@ object FirestoreConverters {
     return TaskCustomData(data)
   }
 
-  private fun fieldDefinitionToMap(field: FieldDefinition): Map<String, Any> {
-    val map = mutableMapOf<String, Any>()
-    map["id"] = field.id
-    map["label"] = field.label
-    map["type"] = fieldTypeToMap(field.type)
-    map["required"] = field.required
-    field.description?.let { map["description"] = it }
-    field.defaultValue?.let { map["defaultValue"] = fieldValueToMap(it) }
-    return map
+  private fun fieldDefinitionToMap(field: FieldDefinition): Map<String, Any> = buildMap {
+    put("id", field.id)
+    put("label", field.label)
+    put("type", fieldTypeToMap(field.type))
+    put("required", field.required)
+    field.description?.let { put("description", it) }
+    field.defaultValue?.let { put("defaultValue", fieldValueToMap(it)) }
   }
 
   private fun mapToFieldDefinition(map: Map<String, Any>): FieldDefinition {
@@ -60,43 +56,40 @@ object FirestoreConverters {
         defaultValue = (map["defaultValue"] as? Map<String, Any>)?.let { mapToFieldValue(it) })
   }
 
-  private fun fieldTypeToMap(fieldType: FieldType): Map<String, Any> {
-    val map = mutableMapOf<String, Any>()
-    map["typeKey"] = fieldType.typeKey.name
+  private fun fieldTypeToMap(fieldType: FieldType): Map<String, Any> = buildMap {
+    put("typeKey", fieldType.typeKey.name)
 
     when (fieldType) {
       is FieldType.Text -> {
-        fieldType.maxLength?.let { map["maxLength"] = it }
-        fieldType.minLength?.let { map["minLength"] = it }
-        fieldType.pattern?.let { map["pattern"] = it }
-        fieldType.placeholder?.let { map["placeholder"] = it }
+        fieldType.maxLength?.let { put("maxLength", it) }
+        fieldType.minLength?.let { put("minLength", it) }
+        fieldType.pattern?.let { put("pattern", it) }
+        fieldType.placeholder?.let { put("placeholder", it) }
       }
       is FieldType.Number -> {
-        fieldType.min?.let { map["min"] = it }
-        fieldType.max?.let { map["max"] = it }
-        fieldType.step?.let { map["step"] = it }
-        fieldType.decimals?.let { map["decimals"] = it }
-        fieldType.unit?.let { map["unit"] = it }
+        fieldType.min?.let { put("min", it) }
+        fieldType.max?.let { put("max", it) }
+        fieldType.step?.let { put("step", it) }
+        fieldType.decimals?.let { put("decimals", it) }
+        fieldType.unit?.let { put("unit", it) }
       }
       is FieldType.Date -> {
-        fieldType.minDate?.let { map["minDate"] = it }
-        fieldType.maxDate?.let { map["maxDate"] = it }
-        map["includeTime"] = fieldType.includeTime
-        fieldType.format?.let { map["format"] = it }
+        fieldType.minDate?.let { put("minDate", it) }
+        fieldType.maxDate?.let { put("maxDate", it) }
+        put("includeTime", fieldType.includeTime)
+        fieldType.format?.let { put("format", it) }
       }
       is FieldType.SingleSelect -> {
-        map["options"] = fieldType.options.map { selectOptionToMap(it) }
-        map["allowCustom"] = fieldType.allowCustom
+        put("options", fieldType.options.map { selectOptionToMap(it) })
+        put("allowCustom", fieldType.allowCustom)
       }
       is FieldType.MultiSelect -> {
-        map["options"] = fieldType.options.map { selectOptionToMap(it) }
-        fieldType.minSelections?.let { map["minSelections"] = it }
-        fieldType.maxSelections?.let { map["maxSelections"] = it }
-        map["allowCustom"] = fieldType.allowCustom
+        put("options", fieldType.options.map { selectOptionToMap(it) })
+        fieldType.minSelections?.let { put("minSelections", it) }
+        fieldType.maxSelections?.let { put("maxSelections", it) }
+        put("allowCustom", fieldType.allowCustom)
       }
     }
-
-    return map
   }
 
   private fun mapToFieldType(map: Map<String, Any>): FieldType {
@@ -139,12 +132,10 @@ object FirestoreConverters {
     }
   }
 
-  private fun selectOptionToMap(option: SelectOption): Map<String, Any> {
-    val map = mutableMapOf<String, Any>()
-    map["value"] = option.value
-    map["label"] = option.label
-    option.description?.let { map["description"] = it }
-    return map
+  private fun selectOptionToMap(option: SelectOption): Map<String, Any> = buildMap {
+    put("value", option.value)
+    put("label", option.label)
+    option.description?.let { put("description", it) }
   }
 
   private fun mapToSelectOption(map: Map<String, Any>): SelectOption {
@@ -154,19 +145,16 @@ object FirestoreConverters {
         description = map["description"] as? String)
   }
 
-  private fun fieldValueToMap(fieldValue: FieldValue): Map<String, Any> {
-    val map = mutableMapOf<String, Any>()
-    map["typeKey"] = fieldValue.typeKey.name
+  private fun fieldValueToMap(fieldValue: FieldValue): Map<String, Any> = buildMap {
+    put("typeKey", fieldValue.typeKey.name)
 
     when (fieldValue) {
-      is FieldValue.TextValue -> map["value"] = fieldValue.value
-      is FieldValue.NumberValue -> map["value"] = fieldValue.value
-      is FieldValue.DateValue -> map["value"] = fieldValue.value
-      is FieldValue.SingleSelectValue -> map["value"] = fieldValue.value
-      is FieldValue.MultiSelectValue -> map["values"] = fieldValue.values
+      is FieldValue.TextValue -> put("value", fieldValue.value)
+      is FieldValue.NumberValue -> put("value", fieldValue.value)
+      is FieldValue.DateValue -> put("value", fieldValue.value)
+      is FieldValue.SingleSelectValue -> put("value", fieldValue.value)
+      is FieldValue.MultiSelectValue -> put("values", fieldValue.values)
     }
-
-    return map
   }
 
   private fun mapToFieldValue(map: Map<String, Any>): FieldValue {
@@ -184,20 +172,18 @@ object FirestoreConverters {
     }
   }
 
-  fun taskToMap(task: Task): Map<String, Any?> {
-    val map = mutableMapOf<String, Any?>()
-    map["taskID"] = task.taskID
-    map["templateId"] = task.templateId
-    map["projectId"] = task.projectId
-    map["title"] = task.title
-    map["description"] = task.description
-    map["status"] = task.status.name
-    map["assignedUserIds"] = task.assignedUserIds
-    map["dueDate"] = task.dueDate
-    map["attachmentUrls"] = task.attachmentUrls
-    map["customData"] = customDataToMap(task.customData)
-    map["createdBy"] = task.createdBy
-    return map
+  fun taskToMap(task: Task): Map<String, Any?> = buildMap {
+    put("taskID", task.taskID)
+    put("templateId", task.templateId)
+    put("projectId", task.projectId)
+    put("title", task.title)
+    put("description", task.description)
+    put("status", task.status.name)
+    put("assignedUserIds", task.assignedUserIds)
+    put("dueDate", task.dueDate)
+    put("attachmentUrls", task.attachmentUrls)
+    put("customData", customDataToMap(task.customData))
+    put("createdBy", task.createdBy)
   }
 
   fun mapToTask(map: Map<String, Any>): Task {
@@ -218,15 +204,13 @@ object FirestoreConverters {
         createdBy = map["createdBy"] as? String ?: "")
   }
 
-  fun taskTemplateToMap(template: TaskTemplate): Map<String, Any> {
-    val map = mutableMapOf<String, Any>()
-    map["templateID"] = template.templateID
-    map["projectId"] = template.projectId
-    map["title"] = template.title
-    map["description"] = template.description
-    map["definedFields"] = schemaToMap(template.definedFields)
-    map["createdBy"] = template.createdBy
-    return map
+  fun taskTemplateToMap(template: TaskTemplate): Map<String, Any> = buildMap {
+    put("templateID", template.templateID)
+    put("projectId", template.projectId)
+    put("title", template.title)
+    put("description", template.description)
+    put("definedFields", schemaToMap(template.definedFields))
+    put("createdBy", template.createdBy)
   }
 
   fun mapToTaskTemplate(map: Map<String, Any>): TaskTemplate {

@@ -14,26 +14,18 @@ data class TaskTemplateSchema(val fields: List<FieldDefinition> = emptyList()) {
     require(fieldIds.distinct().size == fieldIds.size) { "Field IDs must be unique" }
   }
 
-  fun getField(id: String): FieldDefinition? {
-    return fields.find { it.id == id }
-  }
+  fun getField(id: String): FieldDefinition? = fields.find { it.id == id }
 
-  fun hasField(id: String): Boolean {
-    return fields.any { it.id == id }
-  }
+  fun hasField(id: String): Boolean = fields.any { it.id == id }
 
-  fun getRequiredFields(): List<FieldDefinition> {
-    return fields.filter { it.required }
-  }
+  fun getRequiredFields(): List<FieldDefinition> = fields.filter { it.required }
 
   fun addField(field: FieldDefinition): TaskTemplateSchema {
     require(!hasField(field.id)) { "Field with id '${field.id}' already exists" }
     return copy(fields = fields + field)
   }
 
-  fun removeField(id: String): TaskTemplateSchema {
-    return copy(fields = fields.filter { it.id != id })
-  }
+  fun removeField(id: String): TaskTemplateSchema = copy(fields = fields.filter { it.id != id })
 
   fun updateField(id: String, updatedField: FieldDefinition): TaskTemplateSchema {
     require(hasField(id)) { "Field with id '$id' does not exist" }
