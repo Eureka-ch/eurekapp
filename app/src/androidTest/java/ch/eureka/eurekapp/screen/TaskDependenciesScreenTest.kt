@@ -82,8 +82,6 @@ open class TaskDependenciesScreenTest : TestCase() {
 
       composeTestRule.waitForIdle()
 
-      Thread.sleep(3000)
-
       composeTestRule
           .onNodeWithTag(TaskDependenciesScreenTestTags.getFilteringNameTestTag("user1"))
           .performClick()
@@ -93,8 +91,6 @@ open class TaskDependenciesScreenTest : TestCase() {
       composeTestRule
           .onNodeWithTag(TaskDependenciesScreenTestTags.getFilteringNameTestTag("user2"))
           .performClick()
-
-      Thread.sleep(3000)
 
       composeTestRule.waitForIdle()
     }
