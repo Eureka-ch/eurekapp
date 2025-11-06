@@ -21,4 +21,4 @@ data class CreateTaskState(
     override val isSaving: Boolean = false,
     override val taskSaved: Boolean = false,
     override val errorMsg: String? = null
-) : TaskStateCommon
+) : TaskStateReadWrite

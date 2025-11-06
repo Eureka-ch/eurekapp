@@ -2,8 +2,6 @@ package ch.eureka.eurekapp.model.tasks
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
@@ -11,8 +9,6 @@ import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.utils.Formatters
 import com.google.firebase.Timestamp
-import java.text.SimpleDateFormat
-import java.util.Locale
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -27,38 +23,36 @@ Portions of this code were generated with the help of Grok.
 */
 
 /** Interface for common task state properties */
-interface TaskStateCommon {
-  val title: String
-  val description: String
-  val dueDate: String
-  val projectId: String
-  val availableProjects: List<Project>
-  val attachmentUris: List<Uri>
+interface TaskStateReadWrite : TaskStateRead {
   val isSaving: Boolean
   val taskSaved: Boolean
-  val errorMsg: String?
+  val availableProjects: List<Project>
 }
 
 /** Base ViewModel for task creation and editing with shared functionality */
-abstract class BaseTaskViewModel<T : TaskStateCommon>(
-    protected val taskRepository: TaskRepository,
+abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
+    taskRepository: TaskRepository,
     protected val fileRepository: FileStorageRepository,
     protected val getCurrentUserId: () -> String?,
-    protected val dispatcher: CoroutineDispatcher
-) : ViewModel() {
+    dispatcher: CoroutineDispatcher
+) : ReadTaskViewModel<T>(taskRepository, dispatcher) {
 
-  abstract val uiState: StateFlow<T>
-
-  protected abstract fun getState(): T
-
-  val dateRegex = Regex("""^\d{2}/\d{2}/\d{4}$""")
-  private val dateFormat =
-      SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).apply { isLenient = false }
+  abstract override val uiState: StateFlow<T>
 
   val inputValid: StateFlow<Boolean> by lazy {
     uiState
         .map { state -> isValidInput(state.title, state.description, state.dueDate) }
         .stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = false)
+  }
+
+  /** Clears the error message in the UI state. */
+  fun clearErrorMsg() {
+    updateState { copyWithErrorMsg(null) }
+  }
+
+  /** Sets an error message in the UI state. */
+  protected fun setErrorMsg(errorMsg: String) {
+    updateState { copyWithErrorMsg(errorMsg) }
   }
 
   /** Validates if the input fields are valid */
@@ -82,6 +76,7 @@ abstract class BaseTaskViewModel<T : TaskStateCommon>(
     }
   }
 
+  /** Parses a reminder time string to Timestamp */
   protected fun parseReminderTime(dueDateStr: String, reminderTimeStr: String): Result<Timestamp> {
     if (!dateRegex.matches(dueDateStr)) {
       return Result.failure(IllegalArgumentException("Invalid due date format"))
@@ -114,16 +109,6 @@ abstract class BaseTaskViewModel<T : TaskStateCommon>(
     } catch (e: Exception) {
       Result.failure(IllegalArgumentException("Invalid reminder time: ${e.message}"))
     }
-  }
-
-  /** Clears the error message in the UI state. */
-  fun clearErrorMsg() {
-    updateState { copyWithErrorMsg(null) }
-  }
-
-  /** Sets an error message in the UI state. */
-  protected fun setErrorMsg(errorMsg: String) {
-    updateState { copyWithErrorMsg(errorMsg) }
   }
 
   /** Uploads attachments to the repository */
@@ -184,16 +169,17 @@ abstract class BaseTaskViewModel<T : TaskStateCommon>(
   }
 
   fun addAttachment(uri: Uri) {
-    val currentUris = getState().attachmentUris
-    if (!currentUris.contains(uri)) {
-      updateState { copyWithAttachmentUris(currentUris + uri) }
+    if (!uiState.value.attachmentUris.contains(uri)) {
+      updateState { copyWithAttachmentUris(uiState.value.attachmentUris + uri) }
     }
   }
 
   open fun removeAttachment(index: Int) {
-    val currentUris = getState().attachmentUris
-    if (index in currentUris.indices) {
-      updateState { copyWithAttachmentUris(currentUris.toMutableList().apply { removeAt(index) }) }
+    if (index in uiState.value.attachmentUris.indices) {
+      updateState {
+        copyWithAttachmentUris(
+            uiState.value.attachmentUris.toMutableList().apply { removeAt(index) })
+      }
     }
   }
 
@@ -216,20 +202,11 @@ abstract class BaseTaskViewModel<T : TaskStateCommon>(
           result.isSuccess
         }
         else -> {
-          Log.w("BaseTaskViewModel", "Unsupported URI scheme: ${photoUri.scheme}")
           false
         }
       }
-    } catch (e: Exception) {
-      Log.w("BaseTaskViewModel", "Failed to delete photo: ${e.message}")
+    } catch (_: Exception) {
       false
-    }
-  }
-
-  /** Deletes photos when composable is disposed */
-  fun deletePhotosOnDispose(context: Context, photoUris: List<Uri>) {
-    viewModelScope.launch(dispatcher) {
-      photoUris.forEach { uri -> deletePhotoSuspend(context, uri) }
     }
   }
 
@@ -256,8 +233,10 @@ abstract class BaseTaskViewModel<T : TaskStateCommon>(
   }
 
   // Abstract methods for state updates
+  /** Updates the UI state with the given update function */
   protected abstract fun updateState(update: T.() -> T)
 
+  /** Abstract method to copy state with new error message */
   protected abstract fun T.copyWithErrorMsg(errorMsg: String?): T
 
   protected abstract fun T.copyWithSaveState(isSaving: Boolean, taskSaved: Boolean): T

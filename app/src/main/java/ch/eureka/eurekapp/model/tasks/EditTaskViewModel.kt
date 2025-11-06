@@ -13,8 +13,6 @@ import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import com.google.firebase.auth.FirebaseAuth
-import java.text.SimpleDateFormat
-import java.util.Locale
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -36,19 +34,18 @@ class EditTaskViewModel(
     fileRepository: FileStorageRepository = FirestoreRepositoriesProvider.fileRepository,
     getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     dispatcher: CoroutineDispatcher = Dispatchers.IO
-) : BaseTaskViewModel<EditTaskState>(taskRepository, fileRepository, getCurrentUserId, dispatcher) {
+) :
+    ReadWriteTaskViewModel<EditTaskState>(
+        taskRepository, fileRepository, getCurrentUserId, dispatcher) {
 
-  private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-  private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+  private val timeFormat = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
 
   private val _uiState = MutableStateFlow(EditTaskState())
   override val uiState: StateFlow<EditTaskState> = _uiState.asStateFlow()
 
-  override fun getState(): EditTaskState = _uiState.value
-
   /** Resets the delete state after navigation or handling */
   fun resetDeleteState() {
-    _uiState.value = _uiState.value.copy(taskDeleted = false)
+    updateState { copy(taskDeleted = false) }
   }
 
   /** Edits a Task */
@@ -118,21 +115,19 @@ class EditTaskViewModel(
   }
 
   override fun removeAttachment(index: Int) {
-    val state = _uiState.value
-    val currentUris = state.attachmentUris
-    val currentUrls = state.attachmentUrls
+    val currentUris = uiState.value.attachmentUris
+    val currentUrls = uiState.value.attachmentUrls
 
     if (index in currentUris.indices) {
-      _uiState.value =
-          _uiState.value.copy(
-              attachmentUris = currentUris.toMutableList().apply { removeAt(index) })
+      updateState { copy(attachmentUris = currentUris.toMutableList().apply { removeAt(index) }) }
     } else if (index - currentUris.size in currentUrls.indices) {
       val urlIndex = index - currentUris.size
       val urlToDelete = currentUrls[urlIndex]
-      _uiState.value =
-          _uiState.value.copy(
-              attachmentUrls = currentUrls.toMutableList().apply { removeAt(urlIndex) },
-              deletedAttachmentUrls = state.deletedAttachmentUrls + urlToDelete)
+      updateState {
+        copy(
+            attachmentUrls = currentUrls.toMutableList().apply { removeAt(urlIndex) },
+            deletedAttachmentUrls = deletedAttachmentUrls + urlToDelete)
+      }
     }
   }
 
@@ -174,23 +169,24 @@ class EditTaskViewModel(
               if (task != null) {
                 val deletedUrls = _uiState.value.deletedAttachmentUrls
                 val filteredAttachments = task.attachmentUrls.filterNot { it in deletedUrls }
-                _uiState.value =
-                    _uiState.value.copy(
-                        title = task.title,
-                        description = task.description,
-                        dueDate =
-                            task.dueDate?.let { date -> dateFormat.format(date.toDate()) } ?: "",
-                        reminderTime =
-                            task.reminderTime?.let { time -> timeFormat.format(time.toDate()) }
-                                ?: "",
-                        templateId = task.templateId,
-                        projectId = task.projectId,
-                        taskId = task.taskID,
-                        assignedUserIds = task.assignedUserIds,
-                        attachmentUrls = filteredAttachments,
-                        status = task.status,
-                        customData = task.customData,
-                    )
+                updateState {
+                  copy(
+                      title = task.title,
+                      description = task.description,
+                      dueDate =
+                          task.dueDate?.let { date -> dateFormat.format(date.toDate()) } ?: "",
+                      reminderTime =
+                          task.reminderTime?.let { time -> timeFormat.format(time.toDate()) }
+                              ?: "",
+                      templateId = task.templateId,
+                      projectId = task.projectId,
+                      taskId = task.taskID,
+                      assignedUserIds = task.assignedUserIds,
+                      attachmentUrls = filteredAttachments,
+                      status = task.status,
+                      customData = task.customData,
+                  )
+                }
               } else {
                 setErrorMsg("Task not found.")
               }
@@ -200,7 +196,7 @@ class EditTaskViewModel(
   }
 
   fun deleteTask(projectId: String, taskId: String) {
-    _uiState.value = _uiState.value.copy(isDeleting = true)
+    updateState { copy(isDeleting = true) }
 
     for (url in _uiState.value.attachmentUrls) {
       viewModelScope.launch(dispatcher) {
@@ -215,24 +211,18 @@ class EditTaskViewModel(
           .deleteTask(projectId, taskId)
           .onFailure { exception ->
             setErrorMsg("Failed to delete Task: ${exception.message}")
-            _uiState.value = _uiState.value.copy(isDeleting = false)
+            updateState { copy(isDeleting = false) }
             return@launch
           }
-          .onSuccess { _ ->
-            _uiState.value = _uiState.value.copy(isDeleting = false, taskDeleted = true)
-          }
+          .onSuccess { _ -> updateState { copy(isDeleting = false, taskDeleted = true) } }
     }
   }
 
   fun setStatus(status: TaskStatus) {
-    _uiState.value = _uiState.value.copy(status = status)
+    updateState { copy(status = status) }
   }
 
   // State update implementations
-  override fun updateState(update: EditTaskState.() -> EditTaskState) {
-    _uiState.value = _uiState.value.update()
-  }
-
   override fun EditTaskState.copyWithErrorMsg(errorMsg: String?) = copy(errorMsg = errorMsg)
 
   override fun EditTaskState.copyWithSaveState(isSaving: Boolean, taskSaved: Boolean) =
@@ -248,6 +238,10 @@ class EditTaskViewModel(
   override fun EditTaskState.copyWithAttachmentUris(uris: List<Uri>) = copy(attachmentUris = uris)
 
   override fun EditTaskState.copyWithProjectId(projectId: String) = copy(projectId = projectId)
+
+  override fun updateState(update: EditTaskState.() -> EditTaskState) {
+    _uiState.value = _uiState.value.update()
+  }
 
   fun setReminderTime(reminderTime: String) {
     updateState { copy(reminderTime = reminderTime) }

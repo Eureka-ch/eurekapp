@@ -180,7 +180,7 @@ open class EditTaskScreenTest : TestCase() {
               navController = navController,
               viewModel = viewModel)
           navController.navigate(
-              Route.TasksSection.TaskEdit(projectId = projectId, taskId = taskId))
+              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
         }
 
         // Wait for task to load
@@ -216,7 +216,7 @@ open class EditTaskScreenTest : TestCase() {
               navController = navController,
               viewModel = viewModel)
           navController.navigate(
-              Route.TasksSection.TaskEdit(projectId = projectId, taskId = taskId))
+              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
         }
 
         composeTestRule.waitForIdle()
@@ -250,7 +250,7 @@ open class EditTaskScreenTest : TestCase() {
               navController = navController,
               viewModel = viewModel)
           navController.navigate(
-              Route.TasksSection.TaskEdit(projectId = projectId, taskId = taskId))
+              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
         }
 
         composeTestRule.waitForIdle()
@@ -278,7 +278,7 @@ open class EditTaskScreenTest : TestCase() {
               navController = navController,
               viewModel = viewModel)
           navController.navigate(
-              Route.TasksSection.TaskEdit(projectId = projectId, taskId = taskId))
+              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
         }
 
         composeTestRule.waitForIdle()
@@ -330,7 +330,7 @@ open class EditTaskScreenTest : TestCase() {
               navController = navController,
               viewModel = viewModel)
           navController.navigate(
-              Route.TasksSection.TaskEdit(projectId = projectId, taskId = taskId))
+              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
         }
 
         composeTestRule.waitForIdle()
@@ -384,7 +384,7 @@ open class EditTaskScreenTest : TestCase() {
               navController = navController,
               viewModel = viewModel)
           navController.navigate(
-              Route.TasksSection.TaskEdit(projectId = projectId, taskId = taskId))
+              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
         }
 
         composeTestRule.waitForIdle()
@@ -443,7 +443,7 @@ open class EditTaskScreenTest : TestCase() {
               navController = navController,
               viewModel = viewModel)
           navController.navigate(
-              Route.TasksSection.TaskEdit(projectId = projectId, taskId = taskId))
+              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
         }
 
         composeTestRule.waitForIdle()
@@ -474,7 +474,7 @@ open class EditTaskScreenTest : TestCase() {
               navController = navController,
               viewModel = viewModel)
           navController.navigate(
-              Route.TasksSection.TaskEdit(projectId = projectId, taskId = taskId))
+              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
         }
 
         composeTestRule.waitForIdle()
@@ -528,12 +528,12 @@ open class EditTaskScreenTest : TestCase() {
               TasksScreen(
                   onTaskClick = { tId, pId ->
                     navController.navigate(
-                        Route.TasksSection.TaskEdit(projectId = pId, taskId = tId))
+                        Route.TasksSection.EditTask(projectId = pId, taskId = tId))
                   },
                   viewModel = taskViewModel)
             }
-            composable<Route.TasksSection.TaskEdit> { backStackEntry ->
-              val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.TaskEdit>()
+            composable<Route.TasksSection.EditTask> { backStackEntry ->
+              val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.EditTask>()
 
               val fakeProjectRepository = FakeProjectRepository()
               fakeProjectRepository.setCurrentUserProjects(
@@ -610,7 +610,7 @@ open class EditTaskScreenTest : TestCase() {
       viewModel: EditTaskViewModel
   ) {
     NavHost(navController, startDestination = Route.TasksSection.Tasks) {
-      composable<Route.TasksSection.TaskEdit> {
+      composable<Route.TasksSection.EditTask> {
         EditTaskScreen(
             projectId = projectId,
             taskId = taskId,
@@ -760,7 +760,7 @@ open class EditTaskScreenTest : TestCase() {
               navController = navController,
               viewModel = viewModel)
           navController.navigate(
-              Route.TasksSection.TaskEdit(projectId = projectId, taskId = taskId))
+              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
         }
 
         composeTestRule.waitForIdle()

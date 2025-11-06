@@ -24,6 +24,7 @@ import ch.eureka.eurekapp.screens.subscreens.projects.creation.CreateProjectScre
 import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitationSubscreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
+import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailActionsConfig
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreen
@@ -52,9 +53,9 @@ sealed interface Route {
 
     @Serializable data object CreateTask : TasksSection
 
-    @Serializable data class TaskDetail(val taskId: String) : TasksSection
+    @Serializable data class ViewTask(val projectId: String, val taskId: String) : TasksSection
 
-    @Serializable data class TaskEdit(val projectId: String, val taskId: String) : TasksSection
+    @Serializable data class EditTask(val projectId: String, val taskId: String) : TasksSection
 
     @Serializable data object AutoTaskAssignment : TasksSection
 
@@ -156,14 +157,20 @@ fun NavigationMenu() {
                     },
                     onTaskClick = { taskId, projectId ->
                       navigationController.navigate(
-                          Route.TasksSection.TaskEdit(projectId = projectId, taskId = taskId))
+                          Route.TasksSection.ViewTask(projectId = testProjectId, taskId = taskId))
                     })
               }
               composable<Route.TasksSection.CreateTask> { CreateTaskScreen(navigationController) }
 
-              composable<Route.TasksSection.TaskEdit> { backStackEntry ->
-                val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.TaskEdit>()
+              composable<Route.TasksSection.EditTask> { backStackEntry ->
+                val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.EditTask>()
                 EditTaskScreen(editTaskRoute.projectId, editTaskRoute.taskId, navigationController)
+              }
+
+              composable<Route.TasksSection.ViewTask> { backStackEntry ->
+                val taskDetailRoute = backStackEntry.toRoute<Route.TasksSection.ViewTask>()
+                ViewTaskScreen(
+                    taskDetailRoute.projectId, taskDetailRoute.taskId, navigationController)
               }
 
               // Ideas section

@@ -31,4 +31,4 @@ data class EditTaskState(
     val isDeleting: Boolean = false,
     val taskDeleted: Boolean = false,
     override val errorMsg: String? = null
-) : TaskStateCommon
+) : TaskStateReadWrite

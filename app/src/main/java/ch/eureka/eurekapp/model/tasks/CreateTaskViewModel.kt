@@ -34,14 +34,11 @@ class CreateTaskViewModel(
     getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) :
-    BaseTaskViewModel<CreateTaskState>(
+    ReadWriteTaskViewModel<CreateTaskState>(
         taskRepository, fileRepository, getCurrentUserId, dispatcher) {
 
   private val _uiState = MutableStateFlow(CreateTaskState())
   override val uiState: StateFlow<CreateTaskState> = _uiState.asStateFlow()
-
-  /** Returns the current state. */
-  override fun getState(): CreateTaskState = _uiState.value
 
   /** Adds a Task */
   fun addTask(context: Context) {
@@ -125,10 +122,6 @@ class CreateTaskViewModel(
   }
 
   // State update implementations
-  override fun updateState(update: CreateTaskState.() -> CreateTaskState) {
-    _uiState.value = _uiState.value.update()
-  }
-
   override fun CreateTaskState.copyWithErrorMsg(errorMsg: String?) = copy(errorMsg = errorMsg)
 
   override fun CreateTaskState.copyWithSaveState(isSaving: Boolean, taskSaved: Boolean) =
@@ -144,6 +137,10 @@ class CreateTaskViewModel(
   override fun CreateTaskState.copyWithAttachmentUris(uris: List<Uri>) = copy(attachmentUris = uris)
 
   override fun CreateTaskState.copyWithProjectId(projectId: String) = copy(projectId = projectId)
+
+  override fun updateState(update: CreateTaskState.() -> CreateTaskState) {
+    _uiState.value = _uiState.value.update()
+  }
 
   fun setReminderTime(reminderTime: String) {
     updateState { copy(reminderTime = reminderTime) }
