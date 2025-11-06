@@ -26,6 +26,7 @@ import com.google.firebase.Timestamp
  * @property location Optional location of the meeting.
  * @property link Optional link to the meeting on a video communication service.
  * @property attachmentUrls List of file URLs attached to this meeting (notes, recordings, etc.).
+ * @property audioUrl Optional URL of the audio recording for transcription
  * @property transcriptId Optional ID linking to the transcription document of this meeting
  * @property createdBy User ID of the person who created this meeting.
  * @property participantIds List of user IDs who are participants in this meeting (for efficient
@@ -45,6 +46,7 @@ data class Meeting(
     val location: Location? = null,
     val link: String? = null,
     val attachmentUrls: List<String> = emptyList(),
+    val audioUrl: String? = null,
     val transcriptId: String? = null,
     val createdBy: String = "",
     val participantIds: List<String> = emptyList(),

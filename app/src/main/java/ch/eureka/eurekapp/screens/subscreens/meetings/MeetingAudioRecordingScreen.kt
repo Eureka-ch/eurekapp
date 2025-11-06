@@ -205,13 +205,8 @@ fun MeetingAudioRecordingScreen(
                                                       .getMeetingById(projectId, meetingId)
                                                       .first()
                                               meeting?.let {
-                                                if (!it.attachmentUrls.contains(firebaseURL)) {
-                                                  val updatedAttachments =
-                                                      it.attachmentUrls + firebaseURL
-                                                  val updatedMeeting =
-                                                      it.copy(attachmentUrls = updatedAttachments)
-                                                  meetingRepository.updateMeeting(updatedMeeting)
-                                                }
+                                                val updatedMeeting = it.copy(audioUrl = firebaseURL)
+                                                meetingRepository.updateMeeting(updatedMeeting)
                                               }
                                             }
                                           },
