@@ -176,8 +176,7 @@ class EditTaskViewModel(
                       dueDate =
                           task.dueDate?.let { date -> dateFormat.format(date.toDate()) } ?: "",
                       reminderTime =
-                          task.reminderTime?.let { time -> timeFormat.format(time.toDate()) }
-                              ?: "",
+                          task.reminderTime?.let { time -> timeFormat.format(time.toDate()) } ?: "",
                       templateId = task.templateId,
                       projectId = task.projectId,
                       taskId = task.taskID,
