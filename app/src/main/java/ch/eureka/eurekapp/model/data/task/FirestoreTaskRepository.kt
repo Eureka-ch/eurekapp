@@ -27,7 +27,7 @@ class FirestoreTaskRepository(
                 close(error)
                 return@addSnapshotListener
               }
-              val task = snapshot?.data?.let { FirestoreConverters.mapToTask(it) }
+              val task = parseSnapshot(snapshot?.data)
               trySend(task)
             }
     awaitClose { listener.remove() }
@@ -45,9 +45,7 @@ class FirestoreTaskRepository(
                 return@addSnapshotListener
               }
               val tasks =
-                  snapshot?.documents?.mapNotNull { doc ->
-                    doc.data?.let { FirestoreConverters.mapToTask(it) }
-                  } ?: emptyList()
+                  snapshot?.documents?.mapNotNull { doc -> parseSnapshot(doc.data) } ?: emptyList()
               trySend(tasks)
             }
     awaitClose { listener.remove() }
@@ -72,9 +70,7 @@ class FirestoreTaskRepository(
                 return@addSnapshotListener
               }
               val tasks =
-                  snapshot?.documents?.mapNotNull { doc ->
-                    doc.data?.let { FirestoreConverters.mapToTask(it) }
-                  } ?: emptyList()
+                  snapshot?.documents?.mapNotNull { doc -> parseSnapshot(doc.data) } ?: emptyList()
               trySend(tasks)
             }
     awaitClose { listener.remove() }
@@ -134,5 +130,13 @@ class FirestoreTaskRepository(
         .document(taskId)
         .update("assignedUserIds", FieldValue.arrayRemove(userId))
         .await()
+  }
+
+  private fun parseSnapshot(data: Map<String, Any>?): Task? {
+    return try {
+      data?.let { FirestoreConverters.mapToTask(it) }
+    } catch (e: Exception) {
+      null
+    }
   }
 }
