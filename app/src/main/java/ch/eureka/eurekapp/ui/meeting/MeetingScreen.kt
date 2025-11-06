@@ -89,6 +89,7 @@ object MeetingScreenTestTags {
  * @param meetingViewModel The view model associated to the meetings screen.
  * @param projectId The ID of the project to display the meetings from.
  * @param onMeetingClick Callback when a meeting card is clicked, receives projectId and meetingId.
+ * @param onVoteForDateTimeClick Callback when the "Vote for datetime" button is clicked.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,6 +98,7 @@ fun MeetingScreen(
     onCreateMeeting: () -> Unit,
     meetingViewModel: MeetingViewModel = viewModel(),
     onMeetingClick: (String, String) -> Unit = { _, _ -> },
+    onVoteForDateTimeClick: (String, String) -> Unit = { _, _ -> }
 ) {
 
   val context = LocalContext.current
@@ -154,14 +156,16 @@ fun MeetingScreen(
                         meetings = uiState.upcomingMeetings,
                         tabName = MeetingTab.UPCOMING.name.lowercase(),
                         projectId = projectId,
-                        onMeetingClick = onMeetingClick)
+                        onMeetingClick = onMeetingClick,
+                        onVoteForDateTimeClick = onVoteForDateTimeClick)
                 MeetingTab.PAST ->
                     MeetingsList(
                         modifier = Modifier.padding(padding),
                         meetings = uiState.pastMeetings,
                         tabName = MeetingTab.PAST.name.lowercase(),
                         projectId = projectId,
-                        onMeetingClick = onMeetingClick)
+                        onMeetingClick = onMeetingClick,
+                        onVoteForDateTimeClick = onVoteForDateTimeClick)
               }
             }
       })
@@ -175,6 +179,7 @@ fun MeetingScreen(
  * @param tabName Name of the tab in which to display these meetings.
  * @param projectId The ID of the project containing the meetings.
  * @param onMeetingClick Callback when a meeting card is clicked.
+ * @param onVoteForDateTimeClick Callback when the "Vote for datetime" button is clicked.
  */
 @Composable
 fun MeetingsList(
@@ -183,6 +188,7 @@ fun MeetingsList(
     tabName: String,
     projectId: String = "",
     onMeetingClick: (String, String) -> Unit = { _, _ -> },
+    onVoteForDateTimeClick: (String, String) -> Unit = { _, _ -> }
 ) {
   if (meetings.isNotEmpty()) {
     LazyColumn(
@@ -191,7 +197,13 @@ fun MeetingsList(
           items(meetings.size) { index ->
             MeetingCard(
                 meeting = meetings[index],
-                onClick = { onMeetingClick(projectId, meetings[index].meetingID) })
+                config =
+                    MeetingCardConfig(
+                        onClick = { onMeetingClick(projectId, meetings[index].meetingID) },
+                        onVoteForDateTime = {
+                          onVoteForDateTimeClick(projectId, meetings[index].meetingID)
+                        }),
+            )
           }
         }
   } else {
@@ -206,34 +218,45 @@ fun MeetingsList(
 }
 
 /**
- * Component that displays the information of a meeting.
+ * Data class representing all the actions that can be executed by buttons on a meeting card.
  *
- * @param meeting The meeting to display.
  * @param onClick Function to execute when the card is clicked (for navigation to detail screen).
  * @param onJoinMeeting Function to execute when user clicks on button to join meeting.
  * @param onVoteForDateTime Function to execute when user clicks on button to vote for datetime.
  * @param onVoteForFormat Function to execute when user clicks on button to vote for meeting format
  * @param onDirections Function to execute when user clicks on button to navigate to a meeting.
  * @param onRecord Function to execute when user clicks on record button.
+ * @param onViewSummary Function to execute whe user clicks on view summary button.
+ * @param onViewTranscript Function to execute whe user clicks on view transcript button.
+ */
+data class MeetingCardConfig(
+    val onClick: () -> Unit = {},
+    val onJoinMeeting: () -> Unit = {},
+    val onVoteForDateTime: () -> Unit = {},
+    val onVoteForFormat: () -> Unit = {},
+    val onDirections: () -> Unit = {},
+    val onRecord: () -> Unit = {},
+    val onViewSummary: () -> Unit = {},
+    val onViewTranscript: () -> Unit = {},
+)
+
+/**
+ * Component that displays the information of a meeting.
+ *
+ * @param meeting The meeting to display.
+ * @param config The meeting card config.
  */
 @Composable
 fun MeetingCard(
     meeting: Meeting,
-    onClick: () -> Unit = {},
-    onJoinMeeting: () -> Unit = {},
-    onVoteForDateTime: () -> Unit = {},
-    onVoteForFormat: () -> Unit = {},
-    onDirections: () -> Unit = {},
-    onRecord: () -> Unit = {},
-    onViewSummary: () -> Unit = {},
-    onSeeTranscript: () -> Unit = {},
+    config: MeetingCardConfig,
 ) {
   Card(
       modifier =
           Modifier.fillMaxWidth()
               .padding(5.dp)
               .wrapContentHeight()
-              .clickable(onClick = onClick)
+              .clickable(onClick = config.onClick)
               .testTag(MeetingScreenTestTags.MEETING_CARD),
       shape = RoundedCornerShape(16.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {
@@ -401,14 +424,14 @@ fun MeetingCard(
                 when (meeting.status) {
                   MeetingStatus.OPEN_TO_VOTES -> {
                     Button(
-                        onClick = onVoteForDateTime,
+                        onClick = config.onVoteForDateTime,
                         modifier = Modifier.testTag(MeetingScreenTestTags.VOTE_FOR_DATETIME_BUTTON),
                     ) {
                       Text("Vote for datetime")
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Button(
-                        onClick = onVoteForFormat,
+                        onClick = config.onVoteForFormat,
                         modifier = Modifier.testTag(MeetingScreenTestTags.VOTE_FOR_FORMAT_BUTTON),
                     ) {
                       Text("Vote for format")
@@ -419,14 +442,14 @@ fun MeetingCard(
                     when (meeting.format) {
                       MeetingFormat.IN_PERSON -> {
                         Button(
-                            onClick = onDirections,
+                            onClick = config.onDirections,
                             modifier = Modifier.testTag(MeetingScreenTestTags.DIRECTIONS_BUTTON),
                         ) {
                           Text("Directions")
                         }
                         Spacer(modifier = Modifier.width(10.dp))
                         Button(
-                            onClick = onRecord,
+                            onClick = config.onRecord,
                             modifier = Modifier.testTag(MeetingScreenTestTags.RECORD_BUTTON),
                         ) {
                           Text("Record")
@@ -434,7 +457,7 @@ fun MeetingCard(
                       }
                       MeetingFormat.VIRTUAL -> {
                         Button(
-                            onClick = onJoinMeeting,
+                            onClick = config.onJoinMeeting,
                             modifier = Modifier.testTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON),
                         ) {
                           Text("Join meeting")
@@ -447,14 +470,14 @@ fun MeetingCard(
                   }
                   MeetingStatus.COMPLETED -> {
                     Button(
-                        onClick = onViewSummary,
+                        onClick = config.onViewSummary,
                         modifier = Modifier.testTag(MeetingScreenTestTags.VIEW_SUMMARY_BUTTON),
                     ) {
                       Text("View summary")
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Button(
-                        onClick = onSeeTranscript,
+                        onClick = config.onViewTranscript,
                         modifier = Modifier.testTag(MeetingScreenTestTags.VIEW_TRANSCRIPT_BUTTON),
                     ) {
                       Text("Transcript")
