@@ -159,7 +159,9 @@ class TaskCustomDataTest {
 
   @Test
   fun `validate returns success for valid data`() {
-    val schema = createSchema(textField("title", "Title", required = true), numberField("priority", "Priority"))
+    val schema =
+        createSchema(
+            textField("title", "Title", required = true), numberField("priority", "Priority"))
     val customData = TaskCustomData(mapOf("title" to FieldValue.TextValue("My Task")))
     assertValidationSuccess(customData, schema)
   }
@@ -175,7 +177,8 @@ class TaskCustomDataTest {
   fun `validate returns failure for undefined field`() {
     val schema = createSchema(textField("title", "Title"))
     val customData = TaskCustomData(mapOf("undefined_field" to FieldValue.TextValue("Some value")))
-    assertValidationFailure(customData, schema, 1, "Field 'undefined_field' is not defined in schema")
+    assertValidationFailure(
+        customData, schema, 1, "Field 'undefined_field' is not defined in schema")
   }
 
   @Test
@@ -187,25 +190,39 @@ class TaskCustomDataTest {
 
   @Test
   fun `validate returns multiple errors`() {
-    val schema = createSchema(textField("title", "Title", required = true), numberField("priority", "Priority", required = true))
-    val customData = TaskCustomData(mapOf("priority" to FieldValue.TextValue("wrong type"), "extra" to FieldValue.TextValue("extra")))
+    val schema =
+        createSchema(
+            textField("title", "Title", required = true),
+            numberField("priority", "Priority", required = true))
+    val customData =
+        TaskCustomData(
+            mapOf(
+                "priority" to FieldValue.TextValue("wrong type"),
+                "extra" to FieldValue.TextValue("extra")))
     assertValidationFailure(customData, schema, 3)
   }
 
   @Test
   fun `validate succeeds with all field types`() {
-    val schema = createSchema(
-        textField("text", "Text"),
-        numberField("number", "Number"),
-        FieldDefinition("date", "Date", FieldType.Date()),
-        FieldDefinition("select", "Select", FieldType.SingleSelect(listOf(SelectOption("opt1", "Option 1")))),
-        FieldDefinition("multi", "Multi", FieldType.MultiSelect(listOf(SelectOption("opt1", "Option 1")))))
-    val customData = TaskCustomData(mapOf(
-        "text" to FieldValue.TextValue("value"),
-        "number" to FieldValue.NumberValue(42.0),
-        "date" to FieldValue.DateValue("2024-01-15"),
-        "select" to FieldValue.SingleSelectValue("opt1"),
-        "multi" to FieldValue.MultiSelectValue(listOf("opt1"))))
+    val schema =
+        createSchema(
+            textField("text", "Text"),
+            numberField("number", "Number"),
+            FieldDefinition("date", "Date", FieldType.Date()),
+            FieldDefinition(
+                "select",
+                "Select",
+                FieldType.SingleSelect(listOf(SelectOption("opt1", "Option 1")))),
+            FieldDefinition(
+                "multi", "Multi", FieldType.MultiSelect(listOf(SelectOption("opt1", "Option 1")))))
+    val customData =
+        TaskCustomData(
+            mapOf(
+                "text" to FieldValue.TextValue("value"),
+                "number" to FieldValue.NumberValue(42.0),
+                "date" to FieldValue.DateValue("2024-01-15"),
+                "select" to FieldValue.SingleSelectValue("opt1"),
+                "multi" to FieldValue.MultiSelectValue(listOf("opt1"))))
     assertValidationSuccess(customData, schema)
   }
 
