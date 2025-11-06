@@ -240,10 +240,3 @@ fun DateTimeVoteCard(
             }
       }
 }
-
-// @Preview(name = "Not Voted", showBackground = true)
-// @Composable
-// fun DateTimeVoteCardPreviewNotVoted() {
-//  val sampleVote = DateTimeVote(dateTime = Timestamp.now(), voters = listOf("u1"))
-//  EurekappTheme { DateTimeVoteCard(dateTimeVote = sampleVote, isVoted = false, addVote = {}) {} }
-// }

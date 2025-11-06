@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.flowOf
  * [DateTimeVoteViewModel]:
  * - [getMeetingById]
  * - [updateMeeting]
+ *
+ * Note: this file was written with the help of Gemini
  */
 class DateTimeVoteRepositoryMock : BaseMockMeetingRepository() {
 
