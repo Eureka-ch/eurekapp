@@ -48,6 +48,9 @@ data class MeetingDetailUIState(
     val editDuration: Int = 30,
     val updateSuccess: Boolean = false,
     val isSaving: Boolean = false,
+    val hasTouchedTitle: Boolean = false,
+    val hasTouchedDateTime: Boolean = false,
+    val hasTouchedDuration: Boolean = false,
 )
 
 /**
@@ -74,6 +77,9 @@ class MeetingDetailViewModel(
   private val _editDuration = MutableStateFlow(30)
   private val _updateSuccess = MutableStateFlow(false)
   private val _isSaving = MutableStateFlow(false)
+  private val _hasTouchedTitle = MutableStateFlow(false)
+  private val _hasTouchedDateTime = MutableStateFlow(false)
+  private val _hasTouchedDuration = MutableStateFlow(false)
 
   /**
    * Validates that all required fields of a meeting are valid.
@@ -118,7 +124,13 @@ class MeetingDetailViewModel(
               },
               combine(_editDuration, _updateSuccess, _isSaving) { duration, success, saving ->
                 SaveState(duration, success, saving)
-              }) { meeting, participants, editState, saveState ->
+              },
+              combine(_hasTouchedTitle, _hasTouchedDateTime, _hasTouchedDuration) {
+                  title,
+                  dateTime,
+                  duration ->
+                TouchState(title, dateTime, duration)
+              }) { meeting, participants, editState, saveState, touchState ->
                 val validationError = validateMeeting(meeting)
                 MeetingDetailUIState(
                     meeting = if (validationError == null) meeting else null,
@@ -131,7 +143,10 @@ class MeetingDetailViewModel(
                     editDateTime = editState.editDateTime,
                     editDuration = saveState.editDuration,
                     updateSuccess = saveState.updateSuccess,
-                    isSaving = saveState.isSaving)
+                    isSaving = saveState.isSaving,
+                    hasTouchedTitle = touchState.hasTouchedTitle,
+                    hasTouchedDateTime = touchState.hasTouchedDateTime,
+                    hasTouchedDuration = touchState.hasTouchedDuration)
               }
           .onStart { emit(MeetingDetailUIState(isLoading = true)) }
           .catch { e ->
@@ -156,6 +171,12 @@ class MeetingDetailViewModel(
       val editDuration: Int,
       val updateSuccess: Boolean,
       val isSaving: Boolean
+  )
+
+  private data class TouchState(
+      val hasTouchedTitle: Boolean,
+      val hasTouchedDateTime: Boolean,
+      val hasTouchedDuration: Boolean
   )
 
   /** Clears the error message in the UI state. */
@@ -191,6 +212,9 @@ class MeetingDetailViewModel(
       _editDateTime.value = null
       _editDuration.value = 30
       _errorMsg.value = null
+      _hasTouchedTitle.value = false
+      _hasTouchedDateTime.value = false
+      _hasTouchedDuration.value = false
     } else {
       // Entering edit mode - populate fields with current values
       meeting?.let {
@@ -228,6 +252,21 @@ class MeetingDetailViewModel(
    */
   fun updateEditDuration(duration: Int) {
     _editDuration.value = duration
+  }
+
+  /** Mark the title field as touched. */
+  fun touchTitle() {
+    _hasTouchedTitle.value = true
+  }
+
+  /** Mark the date/time field as touched. */
+  fun touchDateTime() {
+    _hasTouchedDateTime.value = true
+  }
+
+  /** Mark the duration field as touched. */
+  fun touchDuration() {
+    _hasTouchedDuration.value = true
   }
 
   /**
