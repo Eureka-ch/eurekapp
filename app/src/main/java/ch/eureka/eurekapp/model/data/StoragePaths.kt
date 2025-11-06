@@ -16,7 +16,8 @@ package ch.eureka.eurekapp.model.data
  * - projects/{projectId}/{filename} - Project-level files
  * - projects/{projectId}/tasks/{taskId}/attachments/{filename} - Task attachments
  * - projects/{projectId}/meetings/{meetingId}/attachments/{filename} - Meeting attachments
- * - projects/{projectId}/meetings/{meetingId}/transcriptions/{filename} - Meeting audio transcriptions
+ * - projects/{projectId}/meetings/{meetingId}/transcriptions/{filename} - Meeting audio
+ *   transcriptions
  */
 object StoragePaths {
   private const val PROFILE_PHOTOS = "profilePhotos"

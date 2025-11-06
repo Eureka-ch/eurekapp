@@ -189,10 +189,7 @@ class TranscriptViewModelTest {
     assertNull(state.errorMsg)
   }
 
-  private fun createTestMeeting(
-      audioUrl: String? = null,
-      transcriptId: String? = null
-  ) =
+  private fun createTestMeeting(audioUrl: String? = null, transcriptId: String? = null) =
       Meeting(
           meetingID = meetingId,
           projectId = projectId,
