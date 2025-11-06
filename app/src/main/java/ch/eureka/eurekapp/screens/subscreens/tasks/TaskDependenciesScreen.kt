@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.tasks.TaskDependenciesViewModel
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.DarkBackground
@@ -46,6 +47,7 @@ import ch.eureka.eurekapp.ui.theme.DarkColorScheme
 import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.ui.theme.Typography
 
+private val allUser = User(uid = "All", displayName = "All")
 /**
  * ⚠️ Disclaimer: The following documentation was written by AI (ChatGPT - GPT-5).
  *
@@ -97,46 +99,11 @@ fun TaskDependenciesScreen(
               FlowRow(
                   modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
                   horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    OutlinedButton(
-                        modifier =
-                            Modifier.testTag(
-                                TaskDependenciesScreenTestTags.getFilteringNameTestTag("All")),
-                        onClick = { nameFilter = "All" },
-                        colors =
-                            ButtonDefaults.outlinedButtonColors(
-                                contentColor =
-                                    if (nameFilter == "All") LightColorScheme.onPrimary
-                                    else DarkColorScheme.background,
-                                containerColor =
-                                    if (nameFilter == "All") LightColorScheme.primary
-                                    else LightColorScheme.surface),
-                        shape = RoundedCornerShape(16.dp),
-                        border = BorderStroke(width = 1.dp, BorderGrayColor)) {
-                          Text("All", style = Typography.labelSmall)
-                        }
-                    projectUsers.value.mapNotNull { user ->
-                      if (user == null) {
-                        return@mapNotNull null
-                      } else {
-                        OutlinedButton(
-                            modifier =
-                                Modifier.testTag(
-                                    TaskDependenciesScreenTestTags.getFilteringNameTestTag(
-                                        user.displayName)),
-                            onClick = { nameFilter = user.uid },
-                            colors =
-                                ButtonDefaults.outlinedButtonColors(
-                                    contentColor =
-                                        if (nameFilter == user.uid) LightColorScheme.onPrimary
-                                        else DarkColorScheme.background,
-                                    containerColor =
-                                        if (nameFilter == user.uid) LightColorScheme.primary
-                                        else LightColorScheme.surface),
-                            shape = RoundedCornerShape(16.dp),
-                            border = BorderStroke(width = 1.dp, BorderGrayColor)) {
-                              Text(user.displayName, style = Typography.labelSmall)
-                            }
-                      }
+                    FilterButton(
+                        user = allUser, onClick = { nameFilter = "All" }, nameFilter = nameFilter)
+                    projectUsers.value.filterNotNull().map { user ->
+                      FilterButton(
+                          user = user, onClick = { nameFilter = user.uid }, nameFilter = nameFilter)
                     }
                   }
             })
@@ -164,7 +131,7 @@ fun TaskDependenciesScreen(
                               TreeView(
                                   isParent = true,
                                   projectId = projectId,
-                                  task = task.value,
+                                  task = task.value!!,
                                   taskDependenciesViewModel = taskDependenciesViewModel,
                                   filterName = nameFilter)
                             }
@@ -172,6 +139,27 @@ fun TaskDependenciesScreen(
                     }
               }
             })
+      }
+}
+
+@Composable
+fun FilterButton(user: User, onClick: () -> Unit, nameFilter: String) {
+  OutlinedButton(
+      modifier =
+          Modifier.testTag(
+              TaskDependenciesScreenTestTags.getFilteringNameTestTag(user.displayName)),
+      onClick = onClick,
+      colors =
+          ButtonDefaults.outlinedButtonColors(
+              contentColor =
+                  if (nameFilter == user.uid) LightColorScheme.onPrimary
+                  else DarkColorScheme.background,
+              containerColor =
+                  if (nameFilter == user.uid) LightColorScheme.primary
+                  else LightColorScheme.surface),
+      shape = RoundedCornerShape(16.dp),
+      border = BorderStroke(width = 1.dp, BorderGrayColor)) {
+        Text(user.displayName, style = Typography.labelSmall)
       }
 }
 
@@ -199,46 +187,43 @@ fun TreeView(
     modifier: Modifier = Modifier,
     isParent: Boolean = false,
     projectId: String,
-    task: Task?,
+    task: Task,
     taskDependenciesViewModel: TaskDependenciesViewModel,
     filterName: String
 ) {
-  if (task != null) {
-    var tasksDependentOn =
-        taskDependenciesViewModel.getDependentTasksForTask(projectId, task).collectAsState(listOf())
-    Row(
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.fillMaxWidth().padding(horizontal = 10.dp)) {
-          if (!isParent) {
-            Icon(Icons.AutoMirrored.Filled.ArrowRightAlt, null)
-          }
-          TaskSurfaceComponent(task, filterName)
-          EqualWidthChildrenColumn(
-              tasksDependentOn.value
-                  .filter { task2 ->
-                    return@filter task2 != null &&
-                        (task2.status == TaskStatus.TODO || task2.status == TaskStatus.IN_PROGRESS)
-                  }
-                  .map { task2 ->
-                    {
-                      key(task2.hashCode()) {
-                        if (task2 != null) {
-                          TreeView(
-                              modifier =
-                                  Modifier.testTag(
-                                      TaskDependenciesScreenTestTags.getDependentTaskTestTag(
-                                          task2)),
-                              projectId = projectId,
-                              task = task2,
-                              taskDependenciesViewModel = taskDependenciesViewModel,
-                              filterName = filterName)
-                        }
+  val tasksDependentOn =
+      taskDependenciesViewModel.getDependentTasksForTask(projectId, task).collectAsState(listOf())
+  Row(
+      horizontalArrangement = Arrangement.Center,
+      verticalAlignment = Alignment.CenterVertically,
+      modifier = modifier.fillMaxWidth().padding(horizontal = 10.dp)) {
+        if (!isParent) {
+          Icon(Icons.AutoMirrored.Filled.ArrowRightAlt, null)
+        }
+        TaskSurfaceComponent(task, filterName)
+        EqualWidthChildrenColumn(
+            tasksDependentOn.value
+                .filter { task2 ->
+                  return@filter task2 != null &&
+                      (task2.status == TaskStatus.TODO || task2.status == TaskStatus.IN_PROGRESS)
+                }
+                .map { task2 ->
+                  {
+                    key(task2.hashCode()) {
+                      if (task2 != null) {
+                        TreeView(
+                            modifier =
+                                Modifier.testTag(
+                                    TaskDependenciesScreenTestTags.getDependentTaskTestTag(task2)),
+                            projectId = projectId,
+                            task = task2,
+                            taskDependenciesViewModel = taskDependenciesViewModel,
+                            filterName = filterName)
                       }
                     }
-                  })
-        }
-  }
+                  }
+                })
+      }
 }
 
 /**
