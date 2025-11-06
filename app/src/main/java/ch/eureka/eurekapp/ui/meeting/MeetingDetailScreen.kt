@@ -78,35 +78,35 @@ import java.time.ZoneId
  * maintainable UI test assertions.
  */
 object MeetingDetailScreenTestTags {
-    const val MEETING_DETAIL_SCREEN = "MeetingDetailScreen"
-    const val LOADING_INDICATOR = "LoadingIndicator"
-    const val ERROR_MESSAGE = "ErrorMessage"
-    const val MEETING_TITLE = "MeetingDetailTitle"
-    const val MEETING_STATUS = "MeetingDetailStatus"
-    const val MEETING_DATETIME = "MeetingDetailDateTime"
-    const val MEETING_FORMAT = "MeetingDetailFormat"
-    const val MEETING_LOCATION = "MeetingDetailLocation"
-    const val MEETING_LINK = "MeetingDetailLink"
-    const val PARTICIPANTS_SECTION = "ParticipantsSection"
-    const val PARTICIPANT_ITEM = "ParticipantItem"
-    const val PARTICIPANT_NAME = "ParticipantName"
-    const val PARTICIPANT_ROLE = "ParticipantRole"
-    const val ATTACHMENTS_SECTION = "AttachmentsSection"
-    const val ATTACHMENT_ITEM = "AttachmentItem"
-    const val NO_ATTACHMENTS_MESSAGE = "NoAttachmentsMessage"
-    const val ACTION_BUTTONS_SECTION = "ActionButtonsSection"
-    const val JOIN_MEETING_BUTTON = "JoinMeetingButton"
-    const val RECORD_BUTTON = "RecordButton"
-    const val VIEW_TRANSCRIPT_BUTTON = "ViewTranscriptButton"
-    const val DELETE_BUTTON = "DeleteButton"
-    const val DELETE_CONFIRMATION_DIALOG = "DeleteConfirmationDialog"
-    const val CONFIRM_DELETE_BUTTON = "ConfirmDeleteButton"
-    const val CANCEL_DELETE_BUTTON = "CancelDeleteButton"
-    const val VOTE_TIME_BUTTON = "VoteForTimeButton"
-    const val VOTE_FORMAT_BUTTON = "VoteForFormatButton"
-    const val EDIT_BUTTON = "EditButton"
-    const val SAVE_BUTTON = "SaveButton"
-    const val CANCEL_EDIT_BUTTON = "CancelEditButton"
+  const val MEETING_DETAIL_SCREEN = "MeetingDetailScreen"
+  const val LOADING_INDICATOR = "LoadingIndicator"
+  const val ERROR_MESSAGE = "ErrorMessage"
+  const val MEETING_TITLE = "MeetingDetailTitle"
+  const val MEETING_STATUS = "MeetingDetailStatus"
+  const val MEETING_DATETIME = "MeetingDetailDateTime"
+  const val MEETING_FORMAT = "MeetingDetailFormat"
+  const val MEETING_LOCATION = "MeetingDetailLocation"
+  const val MEETING_LINK = "MeetingDetailLink"
+  const val PARTICIPANTS_SECTION = "ParticipantsSection"
+  const val PARTICIPANT_ITEM = "ParticipantItem"
+  const val PARTICIPANT_NAME = "ParticipantName"
+  const val PARTICIPANT_ROLE = "ParticipantRole"
+  const val ATTACHMENTS_SECTION = "AttachmentsSection"
+  const val ATTACHMENT_ITEM = "AttachmentItem"
+  const val NO_ATTACHMENTS_MESSAGE = "NoAttachmentsMessage"
+  const val ACTION_BUTTONS_SECTION = "ActionButtonsSection"
+  const val JOIN_MEETING_BUTTON = "JoinMeetingButton"
+  const val RECORD_BUTTON = "RecordButton"
+  const val VIEW_TRANSCRIPT_BUTTON = "ViewTranscriptButton"
+  const val DELETE_BUTTON = "DeleteButton"
+  const val DELETE_CONFIRMATION_DIALOG = "DeleteConfirmationDialog"
+  const val CONFIRM_DELETE_BUTTON = "ConfirmDeleteButton"
+  const val CANCEL_DELETE_BUTTON = "CancelDeleteButton"
+  const val VOTE_TIME_BUTTON = "VoteForTimeButton"
+  const val VOTE_FORMAT_BUTTON = "VoteForFormatButton"
+  const val EDIT_BUTTON = "EditButton"
+  const val SAVE_BUTTON = "SaveButton"
+  const val CANCEL_EDIT_BUTTON = "CancelEditButton"
 }
 
 /**
@@ -147,115 +147,115 @@ fun MeetingDetailScreen(
     viewModel: MeetingDetailViewModel = viewModel { MeetingDetailViewModel(projectId, meetingId) },
     actionsConfig: MeetingDetailActionsConfig = MeetingDetailActionsConfig()
 ) {
-    val context = LocalContext.current
-    val uiState by viewModel.uiState.collectAsState()
-    var showDeleteDialog by remember { mutableStateOf(false) }
+  val context = LocalContext.current
+  val uiState by viewModel.uiState.collectAsState()
+  var showDeleteDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(uiState.errorMsg) {
-        uiState.errorMsg?.let {
-            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-            viewModel.clearErrorMsg()
-        }
+  LaunchedEffect(uiState.errorMsg) {
+    uiState.errorMsg?.let {
+      Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+      viewModel.clearErrorMsg()
     }
+  }
 
-    LaunchedEffect(uiState.deleteSuccess) {
-        if (uiState.deleteSuccess) {
-            Toast.makeText(context, "Meeting deleted successfully", Toast.LENGTH_SHORT).show()
-            actionsConfig.onNavigateBack()
-        }
+  LaunchedEffect(uiState.deleteSuccess) {
+    if (uiState.deleteSuccess) {
+      Toast.makeText(context, "Meeting deleted successfully", Toast.LENGTH_SHORT).show()
+      actionsConfig.onNavigateBack()
     }
+  }
 
-    LaunchedEffect(uiState.updateSuccess) {
-        if (uiState.updateSuccess) {
-            Toast.makeText(context, "Meeting updated successfully", Toast.LENGTH_SHORT).show()
-            viewModel.clearUpdateSuccess()
-        }
+  LaunchedEffect(uiState.updateSuccess) {
+    if (uiState.updateSuccess) {
+      Toast.makeText(context, "Meeting updated successfully", Toast.LENGTH_SHORT).show()
+      viewModel.clearUpdateSuccess()
     }
+  }
 
-    Scaffold(
-        modifier = Modifier.testTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN),
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = uiState.meeting?.title ?: "Meeting",
-                        modifier = Modifier.testTag(MeetingDetailScreenTestTags.MEETING_TITLE))
-                },
-                navigationIcon = {
-                    IconButton(onClick = actionsConfig.onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Navigate back")
-                    }
-                })
-        },
-        content = { padding ->
-            if (uiState.isLoading) {
-                LoadingScreen()
-            } else if (uiState.meeting == null) {
-                Text(
-                    modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MESSAGE),
-                    text =
-                        "There was an error while loading meetings : ${uiState.errorMsg ?: throw IllegalStateException("Error message should not be null if meeting is null.")}")
-            } else {
-                uiState.meeting?.let { meeting ->
-                    MeetingDetailContent(
-                        modifier = Modifier.padding(padding),
-                        meeting = meeting,
-                        participants = uiState.participants,
-                        editConfig =
-                            EditConfig(
-                                isEditMode = uiState.isEditMode,
-                                isSaving = uiState.isSaving,
-                                editTitle = uiState.editTitle,
-                                editDateTime = uiState.editDateTime,
-                                editDuration = uiState.editDuration,
-                                hasTouchedTitle = uiState.hasTouchedTitle,
-                                hasTouchedDateTime = uiState.hasTouchedDateTime,
-                                hasTouchedDuration = uiState.hasTouchedDuration),
-                        actionsConfig =
-                            MeetingDetailContentActionsConfig(
-                                onJoinMeeting = actionsConfig.onJoinMeeting,
-                                onRecordMeeting = actionsConfig.onRecordMeeting,
-                                onViewTranscript = actionsConfig.onViewTranscript,
-                                onDeleteMeeting = { showDeleteDialog = true },
-                                onVoteForTime = actionsConfig.onVoteForTime,
-                                onVoteForFormat = actionsConfig.onVoteForFormat,
-                                onEditMeeting = { viewModel.toggleEditMode(meeting) },
-                                onSaveMeeting = { viewModel.saveMeetingChanges(meeting) },
-                                onCancelEdit = { viewModel.toggleEditMode(null) },
-                                onUpdateTitle = viewModel::updateEditTitle,
-                                onUpdateDateTime = viewModel::updateEditDateTime,
-                                onUpdateDuration = viewModel::updateEditDuration,
-                                onTouchTitle = viewModel::touchTitle,
-                                onTouchDateTime = viewModel::touchDateTime,
-                                onTouchDuration = viewModel::touchDuration))
-                } ?: ErrorScreen(message = uiState.errorMsg ?: "Meeting not found")
-            }
-        })
-
-    if (showDeleteDialog) {
-        DeleteConfirmationDialog(
-            onConfirm = {
-                showDeleteDialog = false
-                viewModel.deleteMeeting(projectId, meetingId)
+  Scaffold(
+      modifier = Modifier.testTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN),
+      topBar = {
+        TopAppBar(
+            title = {
+              Text(
+                  text = uiState.meeting?.title ?: "Meeting",
+                  modifier = Modifier.testTag(MeetingDetailScreenTestTags.MEETING_TITLE))
             },
-            onDismiss = { showDeleteDialog = false })
-    }
+            navigationIcon = {
+              IconButton(onClick = actionsConfig.onNavigateBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Navigate back")
+              }
+            })
+      },
+      content = { padding ->
+        if (uiState.isLoading) {
+          LoadingScreen()
+        } else if (uiState.meeting == null) {
+          Text(
+              modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MESSAGE),
+              text =
+                  "There was an error while loading meetings : ${uiState.errorMsg ?: throw IllegalStateException("Error message should not be null if meeting is null.")}")
+        } else {
+          uiState.meeting?.let { meeting ->
+            MeetingDetailContent(
+                modifier = Modifier.padding(padding),
+                meeting = meeting,
+                participants = uiState.participants,
+                editConfig =
+                    EditConfig(
+                        isEditMode = uiState.isEditMode,
+                        isSaving = uiState.isSaving,
+                        editTitle = uiState.editTitle,
+                        editDateTime = uiState.editDateTime,
+                        editDuration = uiState.editDuration,
+                        hasTouchedTitle = uiState.hasTouchedTitle,
+                        hasTouchedDateTime = uiState.hasTouchedDateTime,
+                        hasTouchedDuration = uiState.hasTouchedDuration),
+                actionsConfig =
+                    MeetingDetailContentActionsConfig(
+                        onJoinMeeting = actionsConfig.onJoinMeeting,
+                        onRecordMeeting = actionsConfig.onRecordMeeting,
+                        onViewTranscript = actionsConfig.onViewTranscript,
+                        onDeleteMeeting = { showDeleteDialog = true },
+                        onVoteForTime = actionsConfig.onVoteForTime,
+                        onVoteForFormat = actionsConfig.onVoteForFormat,
+                        onEditMeeting = { viewModel.toggleEditMode(meeting) },
+                        onSaveMeeting = { viewModel.saveMeetingChanges(meeting) },
+                        onCancelEdit = { viewModel.toggleEditMode(null) },
+                        onUpdateTitle = viewModel::updateEditTitle,
+                        onUpdateDateTime = viewModel::updateEditDateTime,
+                        onUpdateDuration = viewModel::updateEditDuration,
+                        onTouchTitle = viewModel::touchTitle,
+                        onTouchDateTime = viewModel::touchDateTime,
+                        onTouchDuration = viewModel::touchDuration))
+          } ?: ErrorScreen(message = uiState.errorMsg ?: "Meeting not found")
+        }
+      })
+
+  if (showDeleteDialog) {
+    DeleteConfirmationDialog(
+        onConfirm = {
+          showDeleteDialog = false
+          viewModel.deleteMeeting(projectId, meetingId)
+        },
+        onDismiss = { showDeleteDialog = false })
+  }
 }
 
 /** Loading indicator screen. */
 @Composable
 private fun LoadingScreen() {
-    Column(
-        modifier =
-            Modifier.fillMaxSize()
-                .padding(16.dp)
-                .testTag(MeetingDetailScreenTestTags.LOADING_INDICATOR),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center) {
+  Column(
+      modifier =
+          Modifier.fillMaxSize()
+              .padding(16.dp)
+              .testTag(MeetingDetailScreenTestTags.LOADING_INDICATOR),
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalArrangement = Arrangement.Center) {
         CircularProgressIndicator()
         Spacer(modifier = Modifier.height(16.dp))
         Text(text = "Loading meeting details...", style = MaterialTheme.typography.bodyMedium)
-    }
+      }
 }
 
 /**
@@ -265,16 +265,16 @@ private fun LoadingScreen() {
  */
 @Composable
 private fun ErrorScreen(message: String) {
-    Column(
-        modifier =
-            Modifier.fillMaxSize().padding(16.dp).testTag(MeetingDetailScreenTestTags.ERROR_MESSAGE),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center) {
+  Column(
+      modifier =
+          Modifier.fillMaxSize().padding(16.dp).testTag(MeetingDetailScreenTestTags.ERROR_MESSAGE),
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalArrangement = Arrangement.Center) {
         Text(
             text = message,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.error)
-    }
+      }
 }
 
 /**
@@ -282,7 +282,7 @@ private fun ErrorScreen(message: String) {
  * content.
  *
  * @param onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
- * link.
+ *   link.
  * @param onRecordMeeting Callback invoked when user clicks record meeting button.
  * @param onViewTranscript Callback invoked when user clicks view transcript button.
  * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
@@ -371,17 +371,18 @@ private fun MeetingDetailContent(
     actionsConfig: MeetingDetailContentActionsConfig,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize().then(modifier),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)) {
+  LazyColumn(
+      modifier = Modifier.fillMaxSize().then(modifier),
+      contentPadding = PaddingValues(16.dp),
+      verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item { MeetingHeader(meeting = meeting) }
 
         item {
-            if (editConfig.isEditMode) {
-                // ppbbbb
-                EditableMeetingInfoCard(
-                    config = EditableMeetingInfoCardConfig(
+          if (editConfig.isEditMode) {
+            // ppbbbb
+            EditableMeetingInfoCard(
+                config =
+                    EditableMeetingInfoCardConfig(
                         editTitle = editConfig.editTitle,
                         editDateTime = editConfig.editDateTime,
                         editDuration = editConfig.editDuration,
@@ -394,12 +395,10 @@ private fun MeetingDetailContent(
                         onDurationChange = actionsConfig.onUpdateDuration,
                         onTouchTitle = actionsConfig.onTouchTitle,
                         onTouchDateTime = actionsConfig.onTouchDateTime,
-                        onTouchDuration = actionsConfig.onTouchDuration
-                    )
-                )
-            } else {
-                MeetingInformationCard(meeting = meeting)
-            }
+                        onTouchDuration = actionsConfig.onTouchDuration))
+          } else {
+            MeetingInformationCard(meeting = meeting)
+          }
         }
 
         item { ParticipantsSection(participants = participants) }
@@ -407,30 +406,30 @@ private fun MeetingDetailContent(
         item { AttachmentsSection(attachments = meeting.attachmentUrls) }
 
         item {
-            if (editConfig.isEditMode) {
-                EditModeButtons(
-                    onSave = actionsConfig.onSaveMeeting,
-                    onCancel = actionsConfig.onCancelEdit,
-                    isSaving = editConfig.isSaving)
-            } else {
-                ActionButtonsSection(
-                    meeting = meeting,
-                    actionsConfig =
-                        ActionButtonsConfig(
-                            onJoinMeeting = actionsConfig.onJoinMeeting,
-                            onRecordMeeting = actionsConfig.onRecordMeeting,
-                            onViewTranscript = actionsConfig.onViewTranscript,
-                            onDeleteMeeting = actionsConfig.onDeleteMeeting,
-                            onVoteForTime = actionsConfig.onVoteForTime,
-                            onVoteForFormat = actionsConfig.onVoteForFormat,
-                            onEditMeeting = actionsConfig.onEditMeeting,
-                        ),
-                )
-            }
+          if (editConfig.isEditMode) {
+            EditModeButtons(
+                onSave = actionsConfig.onSaveMeeting,
+                onCancel = actionsConfig.onCancelEdit,
+                isSaving = editConfig.isSaving)
+          } else {
+            ActionButtonsSection(
+                meeting = meeting,
+                actionsConfig =
+                    ActionButtonsConfig(
+                        onJoinMeeting = actionsConfig.onJoinMeeting,
+                        onRecordMeeting = actionsConfig.onRecordMeeting,
+                        onViewTranscript = actionsConfig.onViewTranscript,
+                        onDeleteMeeting = actionsConfig.onDeleteMeeting,
+                        onVoteForTime = actionsConfig.onVoteForTime,
+                        onVoteForFormat = actionsConfig.onVoteForFormat,
+                        onEditMeeting = actionsConfig.onEditMeeting,
+                    ),
+            )
+          }
         }
 
         item { Spacer(modifier = Modifier.height(16.dp)) }
-    }
+      }
 }
 
 /**
@@ -440,30 +439,30 @@ private fun MeetingDetailContent(
  */
 @Composable
 private fun MeetingHeader(meeting: Meeting) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color =
-                when (meeting.status) {
-                    MeetingStatus.OPEN_TO_VOTES -> MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                    MeetingStatus.SCHEDULED -> MaterialTheme.colorScheme.error.copy(alpha = 0.1f)
-                    MeetingStatus.IN_PROGRESS -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f)
-                    MeetingStatus.COMPLETED -> MaterialTheme.colorScheme.surfaceVariant
-                },
-            modifier = Modifier.testTag(MeetingDetailScreenTestTags.MEETING_STATUS)) {
-            Text(
-                text = meeting.status.description,
-                style = MaterialTheme.typography.labelMedium,
-                color =
-                    when (meeting.status) {
-                        MeetingStatus.OPEN_TO_VOTES -> Color.Blue
-                        MeetingStatus.SCHEDULED -> Color.Red
-                        MeetingStatus.IN_PROGRESS -> Color.Green
-                        MeetingStatus.COMPLETED -> Color.DarkGray
-                    },
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp))
+  Column(modifier = Modifier.fillMaxWidth()) {
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color =
+            when (meeting.status) {
+              MeetingStatus.OPEN_TO_VOTES -> MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+              MeetingStatus.SCHEDULED -> MaterialTheme.colorScheme.error.copy(alpha = 0.1f)
+              MeetingStatus.IN_PROGRESS -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f)
+              MeetingStatus.COMPLETED -> MaterialTheme.colorScheme.surfaceVariant
+            },
+        modifier = Modifier.testTag(MeetingDetailScreenTestTags.MEETING_STATUS)) {
+          Text(
+              text = meeting.status.description,
+              style = MaterialTheme.typography.labelMedium,
+              color =
+                  when (meeting.status) {
+                    MeetingStatus.OPEN_TO_VOTES -> Color.Blue
+                    MeetingStatus.SCHEDULED -> Color.Red
+                    MeetingStatus.IN_PROGRESS -> Color.Green
+                    MeetingStatus.COMPLETED -> Color.DarkGray
+                  },
+              modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp))
         }
-    }
+  }
 }
 
 /**
@@ -473,69 +472,70 @@ private fun MeetingHeader(meeting: Meeting) {
  */
 @Composable
 private fun MeetingInformationCard(meeting: Meeting) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {
+  Card(
+      modifier = Modifier.fillMaxWidth(),
+      shape = RoundedCornerShape(16.dp),
+      elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {
         Column(
             modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(
-                text = "Meeting Information",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold)
+              Text(
+                  text = "Meeting Information",
+                  style = MaterialTheme.typography.titleMedium,
+                  fontWeight = FontWeight.SemiBold)
 
-            HorizontalDivider()
+              HorizontalDivider()
 
-            if (meeting.datetime != null) {
+              if (meeting.datetime != null) {
                 InfoRow(
                     icon = Icons.Default.Schedule,
                     label = "Date & Time",
                     value = Formatters.formatDateTime(meeting.datetime.toDate()),
                     testTag = MeetingDetailScreenTestTags.MEETING_DATETIME)
-            }
+              }
 
-            meeting.format?.let { format ->
+              meeting.format?.let { format ->
                 InfoRow(
                     icon =
                         when (format) {
-                            MeetingFormat.VIRTUAL -> Icons.Default.VideoCall
-                            MeetingFormat.IN_PERSON -> Icons.Default.Place
+                          MeetingFormat.VIRTUAL -> Icons.Default.VideoCall
+                          MeetingFormat.IN_PERSON -> Icons.Default.Place
                         },
                     label = "Format",
                     value = format.description,
                     testTag = MeetingDetailScreenTestTags.MEETING_FORMAT)
-            }
+              }
 
-            if (meeting.format == MeetingFormat.IN_PERSON && meeting.location != null) {
+              if (meeting.format == MeetingFormat.IN_PERSON && meeting.location != null) {
                 InfoRow(
                     icon = Icons.Default.Place,
                     label = "Location",
                     value = meeting.location.name,
                     testTag = MeetingDetailScreenTestTags.MEETING_LOCATION)
-            }
+              }
 
-            if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
+              if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
                 InfoRow(
                     icon = Icons.Default.VideoCall,
                     label = "Meeting Link",
                     value = meeting.link,
                     testTag = MeetingDetailScreenTestTags.MEETING_LINK)
+              }
             }
-        }
-    }
+      }
 }
 
 /**
  * Holds all editable meeting information fields and their interaction callbacks.
  *
- * This configuration object groups the editable title, date/time, and duration fields
- * along with their respective change and touch event handlers. It helps reduce
- * the number of parameters passed to [EditableMeetingInfoCard].
+ * This configuration object groups the editable title, date/time, and duration fields along with
+ * their respective change and touch event handlers. It helps reduce the number of parameters passed
+ * to [EditableMeetingInfoCard].
  *
  * @property editTitle The current editable title of the meeting.
  * @property editDateTime The currently selected editable meeting date and time.
  * @property editDuration The editable meeting duration, in minutes.
- * @property meetingStatus The current status of the meeting (e.g., scheduled, completed, cancelled).
+ * @property meetingStatus The current status of the meeting (e.g., scheduled, completed,
+ *   cancelled).
  * @property hasTouchedTitle Whether the title field has been interacted with.
  * @property hasTouchedDateTime Whether the date/time field has been interacted with.
  * @property hasTouchedDuration Whether the duration field has been interacted with.
@@ -546,7 +546,6 @@ private fun MeetingInformationCard(meeting: Meeting) {
  * @property onTouchDateTime Callback triggered when the date/time field is first touched.
  * @property onTouchDuration Callback triggered when the duration field is first touched.
  */
-
 data class EditableMeetingInfoCardConfig(
     val editTitle: String,
     val editDateTime: Timestamp?,
@@ -566,55 +565,54 @@ data class EditableMeetingInfoCardConfig(
 /**
  * Editable card displaying meeting information in edit mode.
  *
- * Provides editable input fields for meeting title, date/time, and duration,
- * using configuration data supplied through [EditableMeetingInfoCardConfig].
+ * Provides editable input fields for meeting title, date/time, and duration, using configuration
+ * data supplied through [EditableMeetingInfoCardConfig].
  *
- * @param config The configuration containing editable field values, state flags,
- * and callbacks for change and touch events.
+ * @param config The configuration containing editable field values, state flags, and callbacks for
+ *   change and touch events.
  */
-
 @Composable
 private fun EditableMeetingInfoCard(config: EditableMeetingInfoCardConfig) {
-    // Convert Timestamp to LocalDate and LocalTime
-    val localDateTime =
-        config.editDateTime?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDateTime()
-    val editDate = localDateTime?.toLocalDate() ?: LocalDate.now()
-    val editTime = localDateTime?.toLocalTime() ?: LocalTime.now()
+  // Convert Timestamp to LocalDate and LocalTime
+  val localDateTime =
+      config.editDateTime?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDateTime()
+  val editDate = localDateTime?.toLocalDate() ?: LocalDate.now()
+  val editTime = localDateTime?.toLocalTime() ?: LocalTime.now()
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {
+  Card(
+      modifier = Modifier.fillMaxWidth(),
+      shape = RoundedCornerShape(16.dp),
+      elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {
         Column(
             modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(
-                text = "Edit Meeting Information",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold)
+              Text(
+                  text = "Edit Meeting Information",
+                  style = MaterialTheme.typography.titleMedium,
+                  fontWeight = FontWeight.SemiBold)
 
-            HorizontalDivider()
+              HorizontalDivider()
 
-            // Title field
-            OutlinedTextField(
-                value = config.editTitle,
-                onValueChange = config.onTitleChange,
-                label = { Text("Title") },
-                placeholder = { Text("Meeting title") },
-                modifier =
-                    Modifier.fillMaxWidth().onFocusChanged { focusState ->
+              // Title field
+              OutlinedTextField(
+                  value = config.editTitle,
+                  onValueChange = config.onTitleChange,
+                  label = { Text("Title") },
+                  placeholder = { Text("Meeting title") },
+                  modifier =
+                      Modifier.fillMaxWidth().onFocusChanged { focusState ->
                         if (focusState.isFocused) {
-                            config.onTouchTitle()
+                          config.onTouchTitle()
                         }
-                    })
-            if (config.editTitle.isBlank() && config.hasTouchedTitle) {
+                      })
+              if (config.editTitle.isBlank() && config.hasTouchedTitle) {
                 Text(
                     text = "Title cannot be empty",
                     color = Color.Red,
                     style = MaterialTheme.typography.bodySmall)
-            }
+              }
 
-            // Date and Time fields - only editable when meeting is SCHEDULED
-            if (config.meetingStatus == MeetingStatus.SCHEDULED) {
+              // Date and Time fields - only editable when meeting is SCHEDULED
+              if (config.meetingStatus == MeetingStatus.SCHEDULED) {
                 // Date field
                 DateInputField(
                     selectedDate = editDate,
@@ -622,11 +620,11 @@ private fun EditableMeetingInfoCard(config: EditableMeetingInfoCardConfig) {
                     placeHolder = "Select date",
                     tag = "EditMeetingDate",
                     onDateSelected = { newDate ->
-                        val newDateTime =
-                            java.time.LocalDateTime.of(newDate, editTime)
-                                .atZone(ZoneId.systemDefault())
-                                .toInstant()
-                        config.onDateTimeChange(Timestamp(newDateTime.epochSecond, newDateTime.nano))
+                      val newDateTime =
+                          java.time.LocalDateTime.of(newDate, editTime)
+                              .atZone(ZoneId.systemDefault())
+                              .toInstant()
+                      config.onDateTimeChange(Timestamp(newDateTime.epochSecond, newDateTime.nano))
                     },
                     onDateTouched = { config.onTouchDateTime() })
 
@@ -637,41 +635,41 @@ private fun EditableMeetingInfoCard(config: EditableMeetingInfoCardConfig) {
                     placeHolder = "Select time",
                     tag = "EditMeetingTime",
                     onTimeSelected = { newTime ->
-                        val newDateTime =
-                            java.time.LocalDateTime.of(editDate, newTime)
-                                .atZone(ZoneId.systemDefault())
-                                .toInstant()
-                        config.onDateTimeChange(Timestamp(newDateTime.epochSecond, newDateTime.nano))
+                      val newDateTime =
+                          java.time.LocalDateTime.of(editDate, newTime)
+                              .atZone(ZoneId.systemDefault())
+                              .toInstant()
+                      config.onDateTimeChange(Timestamp(newDateTime.epochSecond, newDateTime.nano))
                     },
                     onTimeTouched = { config.onTouchDateTime() })
 
                 if (config.editDateTime == null && config.hasTouchedDateTime) {
-                    Text(
-                        text = "Date and time must be set",
-                        color = Color.Red,
-                        style = MaterialTheme.typography.bodySmall)
+                  Text(
+                      text = "Date and time must be set",
+                      color = Color.Red,
+                      style = MaterialTheme.typography.bodySmall)
                 }
-            }
+              }
 
-            // Duration field
-            DurationInputField(
-                duration = config.editDuration,
-                label = "Duration",
-                placeholder = "Select duration",
-                durationOptions = listOf(15, 30, 45, 60, 90, 120),
-                tag = "EditMeetingDuration",
-                onDurationSelected = { duration ->
+              // Duration field
+              DurationInputField(
+                  duration = config.editDuration,
+                  label = "Duration",
+                  placeholder = "Select duration",
+                  durationOptions = listOf(15, 30, 45, 60, 90, 120),
+                  tag = "EditMeetingDuration",
+                  onDurationSelected = { duration ->
                     config.onTouchDuration()
                     config.onDurationChange(duration)
-                })
-            if (config.editDuration <= 0 && config.hasTouchedDuration) {
+                  })
+              if (config.editDuration <= 0 && config.hasTouchedDuration) {
                 Text(
                     text = "Duration must be greater than 0",
                     color = Color.Red,
                     style = MaterialTheme.typography.bodySmall)
+              }
             }
-        }
-    }
+      }
 }
 
 /**
@@ -689,21 +687,21 @@ private fun InfoRow(
     value: String,
     testTag: String,
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            modifier = Modifier.size(20.dp),
-            tint = MaterialTheme.colorScheme.primary)
-        Spacer(modifier = Modifier.width(8.dp))
-        Column {
-            Text(text = label, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.testTag(testTag))
-        }
+  Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+    Icon(
+        imageVector = icon,
+        contentDescription = label,
+        modifier = Modifier.size(20.dp),
+        tint = MaterialTheme.colorScheme.primary)
+    Spacer(modifier = Modifier.width(8.dp))
+    Column {
+      Text(text = label, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+      Text(
+          text = value,
+          style = MaterialTheme.typography.bodyMedium,
+          modifier = Modifier.testTag(testTag))
     }
+  }
 }
 
 /**
@@ -713,13 +711,13 @@ private fun InfoRow(
  */
 @Composable
 private fun ParticipantsSection(participants: List<Participant>) {
-    Card(
-        modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.PARTICIPANTS_SECTION),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {
+  Card(
+      modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.PARTICIPANTS_SECTION),
+      shape = RoundedCornerShape(16.dp),
+      elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {
         Column(
             modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+              Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Participants",
@@ -729,20 +727,20 @@ private fun ParticipantsSection(participants: List<Participant>) {
                     text = "Participants (${participants.size})",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold)
-            }
+              }
 
-            HorizontalDivider()
+              HorizontalDivider()
 
-            if (participants.isEmpty()) {
+              if (participants.isEmpty()) {
                 Text(
                     text = "No participants yet",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray)
-            } else {
+              } else {
                 participants.forEach { ParticipantItem(participant = it) }
+              }
             }
-        }
-    }
+      }
 }
 
 /**
@@ -752,37 +750,37 @@ private fun ParticipantsSection(participants: List<Participant>) {
  */
 @Composable
 private fun ParticipantItem(participant: Participant) {
-    Row(
-        modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.PARTICIPANT_ITEM),
-        verticalAlignment = Alignment.CenterVertically) {
+  Row(
+      modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.PARTICIPANT_ITEM),
+      verticalAlignment = Alignment.CenterVertically) {
         Surface(
             shape = CircleShape,
             color = MaterialTheme.colorScheme.primaryContainer,
             modifier = Modifier.size(40.dp)) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Participant",
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(24.dp))
+              Column(
+                  modifier = Modifier.fillMaxSize(),
+                  horizontalAlignment = Alignment.CenterHorizontally,
+                  verticalArrangement = Arrangement.Center) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Participant",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(24.dp))
+                  }
             }
-        }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = participant.userId,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.testTag(MeetingDetailScreenTestTags.PARTICIPANT_NAME))
-            Text(
-                text = participant.role.name,
-                style = MaterialTheme.typography.labelSmall,
-                color = Color.Gray,
-                modifier = Modifier.testTag(MeetingDetailScreenTestTags.PARTICIPANT_ROLE))
+          Text(
+              text = participant.userId,
+              style = MaterialTheme.typography.bodyMedium,
+              modifier = Modifier.testTag(MeetingDetailScreenTestTags.PARTICIPANT_NAME))
+          Text(
+              text = participant.role.name,
+              style = MaterialTheme.typography.labelSmall,
+              color = Color.Gray,
+              modifier = Modifier.testTag(MeetingDetailScreenTestTags.PARTICIPANT_ROLE))
         }
-    }
+      }
 }
 
 /**
@@ -792,13 +790,13 @@ private fun ParticipantItem(participant: Participant) {
  */
 @Composable
 private fun AttachmentsSection(attachments: List<String>) {
-    Card(
-        modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.ATTACHMENTS_SECTION),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {
+  Card(
+      modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.ATTACHMENTS_SECTION),
+      shape = RoundedCornerShape(16.dp),
+      elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {
         Column(
             modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+              Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.AttachFile,
                     contentDescription = "Attachments",
@@ -808,21 +806,21 @@ private fun AttachmentsSection(attachments: List<String>) {
                     text = "Attachments (${attachments.size})",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold)
-            }
+              }
 
-            HorizontalDivider()
+              HorizontalDivider()
 
-            if (attachments.isEmpty()) {
+              if (attachments.isEmpty()) {
                 Text(
                     text = "No attachments",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray,
                     modifier = Modifier.testTag(MeetingDetailScreenTestTags.NO_ATTACHMENTS_MESSAGE))
-            } else {
+              } else {
                 attachments.forEach { attachment -> AttachmentItem(attachmentUrl = attachment) }
+              }
             }
-        }
-    }
+      }
 }
 
 /**
@@ -832,9 +830,9 @@ private fun AttachmentsSection(attachments: List<String>) {
  */
 @Composable
 private fun AttachmentItem(attachmentUrl: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.ATTACHMENT_ITEM),
-        verticalAlignment = Alignment.CenterVertically) {
+  Row(
+      modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.ATTACHMENT_ITEM),
+      verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = Icons.Default.Description,
             contentDescription = "Attachment",
@@ -842,7 +840,7 @@ private fun AttachmentItem(attachmentUrl: String) {
             modifier = Modifier.size(24.dp))
         Spacer(modifier = Modifier.width(12.dp))
         Text(text = attachmentUrl, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
-    }
+      }
 }
 
 /**
@@ -856,10 +854,10 @@ private fun ActionButtonsSection(
     meeting: Meeting,
     actionsConfig: ActionButtonsConfig,
 ) {
-    Column(
-        modifier =
-            Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.ACTION_BUTTONS_SECTION),
-        verticalArrangement = Arrangement.spacedBy(12.dp)) {
+  Column(
+      modifier =
+          Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.ACTION_BUTTONS_SECTION),
+      verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
             text = "Actions",
             style = MaterialTheme.typography.titleMedium,
@@ -867,66 +865,66 @@ private fun ActionButtonsSection(
 
         // Status-specific action buttons
         when (meeting.status) {
-            MeetingStatus.SCHEDULED,
-            MeetingStatus.IN_PROGRESS -> {
-                if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
-                    Button(
-                        onClick = { actionsConfig.onJoinMeeting(meeting.link) },
-                        modifier =
-                            Modifier.fillMaxWidth()
-                                .testTag(MeetingDetailScreenTestTags.JOIN_MEETING_BUTTON)) {
-                        Icon(imageVector = Icons.Default.VideoCall, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Join Meeting")
-                    }
-                }
-                OutlinedButton(
-                    onClick = actionsConfig.onRecordMeeting,
-                    modifier =
-                        Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.RECORD_BUTTON)) {
-                    Text("Start Recording")
-                }
-            }
-            MeetingStatus.COMPLETED -> {
-                Button(
-                    onClick = actionsConfig.onViewTranscript,
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .testTag(MeetingDetailScreenTestTags.VIEW_TRANSCRIPT_BUTTON)) {
-                    Icon(imageVector = Icons.Default.Description, contentDescription = null)
+          MeetingStatus.SCHEDULED,
+          MeetingStatus.IN_PROGRESS -> {
+            if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
+              Button(
+                  onClick = { actionsConfig.onJoinMeeting(meeting.link) },
+                  modifier =
+                      Modifier.fillMaxWidth()
+                          .testTag(MeetingDetailScreenTestTags.JOIN_MEETING_BUTTON)) {
+                    Icon(imageVector = Icons.Default.VideoCall, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("View Transcript")
-                }
+                    Text("Join Meeting")
+                  }
             }
-            MeetingStatus.OPEN_TO_VOTES -> {
-                Button(
-                    onClick = actionsConfig.onVoteForTime,
-                    modifier =
-                        Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.VOTE_TIME_BUTTON)) {
-                    Icon(imageVector = Icons.Default.HowToVote, contentDescription = "Vote for time")
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Vote for time")
+            OutlinedButton(
+                onClick = actionsConfig.onRecordMeeting,
+                modifier =
+                    Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.RECORD_BUTTON)) {
+                  Text("Start Recording")
+                }
+          }
+          MeetingStatus.COMPLETED -> {
+            Button(
+                onClick = actionsConfig.onViewTranscript,
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .testTag(MeetingDetailScreenTestTags.VIEW_TRANSCRIPT_BUTTON)) {
+                  Icon(imageVector = Icons.Default.Description, contentDescription = null)
+                  Spacer(modifier = Modifier.width(8.dp))
+                  Text("View Transcript")
+                }
+          }
+          MeetingStatus.OPEN_TO_VOTES -> {
+            Button(
+                onClick = actionsConfig.onVoteForTime,
+                modifier =
+                    Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.VOTE_TIME_BUTTON)) {
+                  Icon(imageVector = Icons.Default.HowToVote, contentDescription = "Vote for time")
+                  Spacer(modifier = Modifier.width(8.dp))
+                  Text("Vote for time")
                 }
 
-                Button(
-                    onClick = actionsConfig.onVoteForFormat,
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .testTag(MeetingDetailScreenTestTags.VOTE_FORMAT_BUTTON)) {
-                    Icon(
-                        imageVector = Icons.Default.HowToVote, contentDescription = "Vote for format")
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Vote for format")
+            Button(
+                onClick = actionsConfig.onVoteForFormat,
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .testTag(MeetingDetailScreenTestTags.VOTE_FORMAT_BUTTON)) {
+                  Icon(
+                      imageVector = Icons.Default.HowToVote, contentDescription = "Vote for format")
+                  Spacer(modifier = Modifier.width(8.dp))
+                  Text("Vote for format")
                 }
-            }
+          }
         }
 
         // Edit button
         OutlinedButton(
             onClick = actionsConfig.onEditMeeting,
             modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.EDIT_BUTTON)) {
-            Text("Edit Meeting")
-        }
+              Text("Edit Meeting")
+            }
 
         OutlinedButton(
             onClick = actionsConfig.onDeleteMeeting,
@@ -934,11 +932,11 @@ private fun ActionButtonsSection(
             colors =
                 ButtonDefaults.outlinedButtonColors(
                     contentColor = MaterialTheme.colorScheme.error)) {
-            Icon(imageVector = Icons.Default.Delete, contentDescription = null)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Delete Meeting")
-        }
-    }
+              Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+              Spacer(modifier = Modifier.width(8.dp))
+              Text("Delete Meeting")
+            }
+      }
 }
 
 /**
@@ -950,31 +948,31 @@ private fun ActionButtonsSection(
  */
 @Composable
 private fun EditModeButtons(onSave: () -> Unit, onCancel: () -> Unit, isSaving: Boolean) {
-    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(
-            text = "Edit Mode",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold)
+  Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Text(
+        text = "Edit Mode",
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.SemiBold)
 
-        Button(
-            onClick = onSave,
-            modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.SAVE_BUTTON),
-            enabled = !isSaving) {
-            if (isSaving) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp), color = MaterialTheme.colorScheme.onPrimary)
-            } else {
-                Text("Save Changes")
-            }
+    Button(
+        onClick = onSave,
+        modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.SAVE_BUTTON),
+        enabled = !isSaving) {
+          if (isSaving) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp), color = MaterialTheme.colorScheme.onPrimary)
+          } else {
+            Text("Save Changes")
+          }
         }
 
-        OutlinedButton(
-            onClick = onCancel,
-            modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.CANCEL_EDIT_BUTTON),
-            enabled = !isSaving) {
-            Text("Cancel")
+    OutlinedButton(
+        onClick = onCancel,
+        modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.CANCEL_EDIT_BUTTON),
+        enabled = !isSaving) {
+          Text("Cancel")
         }
-    }
+  }
 }
 
 /**
@@ -985,25 +983,25 @@ private fun EditModeButtons(onSave: () -> Unit, onCancel: () -> Unit, isSaving: 
  */
 @Composable
 private fun DeleteConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Delete Meeting") },
-        text = {
-            Text("Are you sure you want to delete this meeting? This action cannot be undone.")
-        },
-        confirmButton = {
-            TextButton(
-                onClick = onConfirm,
-                modifier = Modifier.testTag(MeetingDetailScreenTestTags.CONFIRM_DELETE_BUTTON)) {
-                Text("Delete", color = MaterialTheme.colorScheme.error)
+  AlertDialog(
+      onDismissRequest = onDismiss,
+      title = { Text("Delete Meeting") },
+      text = {
+        Text("Are you sure you want to delete this meeting? This action cannot be undone.")
+      },
+      confirmButton = {
+        TextButton(
+            onClick = onConfirm,
+            modifier = Modifier.testTag(MeetingDetailScreenTestTags.CONFIRM_DELETE_BUTTON)) {
+              Text("Delete", color = MaterialTheme.colorScheme.error)
             }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-                modifier = Modifier.testTag(MeetingDetailScreenTestTags.CANCEL_DELETE_BUTTON)) {
-                Text("Cancel")
+      },
+      dismissButton = {
+        TextButton(
+            onClick = onDismiss,
+            modifier = Modifier.testTag(MeetingDetailScreenTestTags.CANCEL_DELETE_BUTTON)) {
+              Text("Cancel")
             }
-        },
-        modifier = Modifier.testTag(MeetingDetailScreenTestTags.DELETE_CONFIRMATION_DIALOG))
+      },
+      modifier = Modifier.testTag(MeetingDetailScreenTestTags.DELETE_CONFIRMATION_DIALOG))
 }
