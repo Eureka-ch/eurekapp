@@ -16,6 +16,34 @@ import org.junit.Test
 
 class TaskCustomDataTest {
 
+  private fun createSchema(vararg fields: FieldDefinition) = TaskTemplateSchema(fields.toList())
+
+  private fun textField(id: String, label: String = id, required: Boolean = false) =
+      FieldDefinition(id, label, FieldType.Text(), required)
+
+  private fun numberField(id: String, label: String = id, required: Boolean = false) =
+      FieldDefinition(id, label, FieldType.Number(), required)
+
+  private fun assertValidationSuccess(customData: TaskCustomData, schema: TaskTemplateSchema) {
+    val result = customData.validate(schema)
+    assertTrue(result is ValidationResult.Success)
+  }
+
+  private fun assertValidationFailure(
+      customData: TaskCustomData,
+      schema: TaskTemplateSchema,
+      expectedErrorCount: Int,
+      errorSubstring: String? = null
+  ) {
+    val result = customData.validate(schema)
+    assertTrue(result is ValidationResult.Failure)
+    val errors = (result as ValidationResult.Failure).errors
+    assertEquals(expectedErrorCount, errors.size)
+    if (errorSubstring != null) {
+      assertTrue(errors.any { it.contains(errorSubstring) })
+    }
+  }
+
   @Test
   fun `empty data is valid`() {
     val customData = TaskCustomData()
@@ -131,119 +159,60 @@ class TaskCustomDataTest {
 
   @Test
   fun `validate returns success for valid data`() {
-    val schema =
-        TaskTemplateSchema(
-            listOf(
-                FieldDefinition("title", "Title", FieldType.Text(), required = true),
-                FieldDefinition("priority", "Priority", FieldType.Number(), required = false)))
-
+    val schema = createSchema(textField("title", "Title", required = true), numberField("priority", "Priority"))
     val customData = TaskCustomData(mapOf("title" to FieldValue.TextValue("My Task")))
-
-    val result = customData.validate(schema)
-    assertTrue(result is ValidationResult.Success)
+    assertValidationSuccess(customData, schema)
   }
 
   @Test
   fun `validate returns failure for missing required field`() {
-    val schema =
-        TaskTemplateSchema(
-            listOf(FieldDefinition("title", "Title", FieldType.Text(), required = true)))
-
+    val schema = createSchema(textField("title", "Title", required = true))
     val customData = TaskCustomData()
-
-    val result = customData.validate(schema)
-    assertTrue(result is ValidationResult.Failure)
-    val errors = (result as ValidationResult.Failure).errors
-    assertEquals(1, errors.size)
-    assertTrue(errors[0].contains("Required field 'title' is missing"))
+    assertValidationFailure(customData, schema, 1, "Required field 'title' is missing")
   }
 
   @Test
   fun `validate returns failure for undefined field`() {
-    val schema = TaskTemplateSchema(listOf(FieldDefinition("title", "Title", FieldType.Text())))
-
+    val schema = createSchema(textField("title", "Title"))
     val customData = TaskCustomData(mapOf("undefined_field" to FieldValue.TextValue("Some value")))
-
-    val result = customData.validate(schema)
-    assertTrue(result is ValidationResult.Failure)
-    val errors = (result as ValidationResult.Failure).errors
-    assertEquals(1, errors.size)
-    assertTrue(errors[0].contains("Field 'undefined_field' is not defined in schema"))
+    assertValidationFailure(customData, schema, 1, "Field 'undefined_field' is not defined in schema")
   }
 
   @Test
   fun `validate returns failure for type mismatch`() {
-    val schema =
-        TaskTemplateSchema(listOf(FieldDefinition("priority", "Priority", FieldType.Number())))
-
+    val schema = createSchema(numberField("priority", "Priority"))
     val customData = TaskCustomData(mapOf("priority" to FieldValue.TextValue("high")))
-
-    val result = customData.validate(schema)
-    assertTrue(result is ValidationResult.Failure)
-    val errors = (result as ValidationResult.Failure).errors
-    assertEquals(1, errors.size)
-    assertTrue(errors[0].contains("has incorrect type"))
+    assertValidationFailure(customData, schema, 1, "has incorrect type")
   }
 
   @Test
   fun `validate returns multiple errors`() {
-    val schema =
-        TaskTemplateSchema(
-            listOf(
-                FieldDefinition("title", "Title", FieldType.Text(), required = true),
-                FieldDefinition("priority", "Priority", FieldType.Number(), required = true)))
-
-    val customData =
-        TaskCustomData(
-            mapOf(
-                "priority" to FieldValue.TextValue("wrong type"),
-                "extra" to FieldValue.TextValue("extra")))
-
-    val result = customData.validate(schema)
-    assertTrue(result is ValidationResult.Failure)
-    val errors = (result as ValidationResult.Failure).errors
-    assertEquals(3, errors.size)
+    val schema = createSchema(textField("title", "Title", required = true), numberField("priority", "Priority", required = true))
+    val customData = TaskCustomData(mapOf("priority" to FieldValue.TextValue("wrong type"), "extra" to FieldValue.TextValue("extra")))
+    assertValidationFailure(customData, schema, 3)
   }
 
   @Test
   fun `validate succeeds with all field types`() {
-    val schema =
-        TaskTemplateSchema(
-            listOf(
-                FieldDefinition("text", "Text", FieldType.Text()),
-                FieldDefinition("number", "Number", FieldType.Number()),
-                FieldDefinition("date", "Date", FieldType.Date()),
-                FieldDefinition(
-                    "select",
-                    "Select",
-                    FieldType.SingleSelect(listOf(SelectOption("opt1", "Option 1")))),
-                FieldDefinition(
-                    "multi",
-                    "Multi",
-                    FieldType.MultiSelect(listOf(SelectOption("opt1", "Option 1"))))))
-
-    val customData =
-        TaskCustomData(
-            mapOf(
-                "text" to FieldValue.TextValue("value"),
-                "number" to FieldValue.NumberValue(42.0),
-                "date" to FieldValue.DateValue("2024-01-15"),
-                "select" to FieldValue.SingleSelectValue("opt1"),
-                "multi" to FieldValue.MultiSelectValue(listOf("opt1"))))
-
-    val result = customData.validate(schema)
-    assertTrue(result is ValidationResult.Success)
+    val schema = createSchema(
+        textField("text", "Text"),
+        numberField("number", "Number"),
+        FieldDefinition("date", "Date", FieldType.Date()),
+        FieldDefinition("select", "Select", FieldType.SingleSelect(listOf(SelectOption("opt1", "Option 1")))),
+        FieldDefinition("multi", "Multi", FieldType.MultiSelect(listOf(SelectOption("opt1", "Option 1")))))
+    val customData = TaskCustomData(mapOf(
+        "text" to FieldValue.TextValue("value"),
+        "number" to FieldValue.NumberValue(42.0),
+        "date" to FieldValue.DateValue("2024-01-15"),
+        "select" to FieldValue.SingleSelectValue("opt1"),
+        "multi" to FieldValue.MultiSelectValue(listOf("opt1"))))
+    assertValidationSuccess(customData, schema)
   }
 
   @Test
   fun `validate succeeds with empty data and no required fields`() {
-    val schema =
-        TaskTemplateSchema(
-            listOf(FieldDefinition("title", "Title", FieldType.Text(), required = false)))
-
+    val schema = createSchema(textField("title", "Title", required = false))
     val customData = TaskCustomData()
-
-    val result = customData.validate(schema)
-    assertTrue(result is ValidationResult.Success)
+    assertValidationSuccess(customData, schema)
   }
 }
