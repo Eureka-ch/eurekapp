@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Eurekapp"
 include(":app")
- 
+System.setProperty("sonar.gradle.skipCompile", "true")
