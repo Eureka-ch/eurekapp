@@ -9,6 +9,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
@@ -556,6 +557,142 @@ class MeetingDetailScreenTest {
 
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.ERROR_MESSAGE).assertDoesNotExist()
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_TITLE).assertIsDisplayed()
+    composeTestRule.onNodeWithText(meeting.title).assertIsDisplayed()
+  }
+
+  // --- Edit Mode Functionality Tests ---
+
+  @Test
+  fun editButtonIsDisplayedForScheduledMeeting() {
+    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
+
+    setContent()
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).assertIsDisplayed()
+  }
+
+  @Test
+  fun editModeDisplaysSaveAndCancelButtons() {
+    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
+
+    setContent()
+    composeTestRule.waitForIdle()
+
+    // Click edit button
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+
+    // Verify edit mode buttons appear
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.SAVE_BUTTON).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.CANCEL_EDIT_BUTTON)
+        .performScrollTo()
+        .assertIsDisplayed()
+
+    // Verify edit button is hidden
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).assertDoesNotExist()
+  }
+
+  @Test
+  fun editModeDisplaysEditableFields() {
+    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
+
+    setContent()
+    composeTestRule.waitForIdle()
+
+    // Enter edit mode
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+
+    // Verify editable field labels are displayed
+    composeTestRule.onNodeWithText("Edit Meeting Information").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Title").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Date").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Time").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Duration").assertIsDisplayed()
+  }
+
+  @Test
+  fun cancelButtonExitsEditModeAndRestoresView() {
+    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
+
+    setContent()
+    composeTestRule.waitForIdle()
+
+    // Enter edit mode
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+
+    // Verify in edit mode
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.SAVE_BUTTON).assertExists()
+
+    // Click cancel (scroll to it first as it's at the end of the screen)
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.CANCEL_EDIT_BUTTON)
+        .performScrollTo()
+        .performClick()
+    composeTestRule.waitForIdle()
+
+    // Verify back in view mode
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.SAVE_BUTTON).assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.CANCEL_EDIT_BUTTON)
+        .assertDoesNotExist()
+  }
+
+  @Test
+  fun editModeHidesActionButtons() {
+    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
+
+    setContent()
+    composeTestRule.waitForIdle()
+
+    // Verify action buttons section exists before edit mode
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.ACTION_BUTTONS_SECTION)
+        .assertIsDisplayed()
+
+    // Enter edit mode
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+
+    // Verify action buttons section is hidden
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.ACTION_BUTTONS_SECTION)
+        .assertDoesNotExist()
+  }
+
+  @Test
+  fun editModePreservesOriginalMeetingData() {
+    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
+
+    setContent()
+    composeTestRule.waitForIdle()
+
+    // Enter and exit edit mode without saving
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.CANCEL_EDIT_BUTTON)
+        .performScrollTo()
+        .performClick()
+    composeTestRule.waitForIdle()
+
+    // Verify original meeting title is still displayed
     composeTestRule.onNodeWithText(meeting.title).assertIsDisplayed()
   }
 }
