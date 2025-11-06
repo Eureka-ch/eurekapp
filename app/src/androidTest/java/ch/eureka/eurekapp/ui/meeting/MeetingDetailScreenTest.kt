@@ -695,4 +695,51 @@ class MeetingDetailScreenTest {
     // Verify original meeting title is still displayed
     composeTestRule.onNodeWithText(meeting.title).assertIsDisplayed()
   }
+
+  @Test
+  fun locationIsDisplayedForInPersonMeeting() {
+    val meeting = MeetingProvider.sampleMeetings.first { it.format == MeetingFormat.IN_PERSON }
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
+
+    setContent()
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_LOCATION).assertIsDisplayed()
+    composeTestRule.onNodeWithText(meeting.location!!.name).assertIsDisplayed()
+  }
+
+  @Test
+  fun actionButtonsAreHiddenDuringEditMode() {
+    val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.SCHEDULED }
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
+
+    setContent()
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.ACTION_BUTTONS_SECTION)
+        .assertDoesNotExist()
+  }
+
+  @Test
+  fun screenShowsUpdatedParticipantList() {
+    val meeting = MeetingProvider.sampleMeetings.first()
+    meetingFlow.value = meeting
+    participantsFlow.value = listOf(Participant("user1", MeetingRole.HOST))
+    setContent()
+    composeTestRule.waitForIdle()
+
+    participantsFlow.value =
+        listOf(
+            Participant("user1", MeetingRole.HOST), Participant("user2", MeetingRole.PARTICIPANT))
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithText("Participants (2)").assertIsDisplayed()
+    composeTestRule.onNodeWithText("user2").assertIsDisplayed()
+  }
 }

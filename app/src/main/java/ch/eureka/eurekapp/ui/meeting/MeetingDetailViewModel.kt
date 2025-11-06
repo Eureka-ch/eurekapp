@@ -45,7 +45,7 @@ data class MeetingDetailUIState(
     val isEditMode: Boolean = false,
     val editTitle: String = "",
     val editDateTime: Timestamp? = null,
-    val editDuration: Int = 30,
+    val editDuration: Int = 0,
     val updateSuccess: Boolean = false,
     val isSaving: Boolean = false,
     val hasTouchedTitle: Boolean = false,

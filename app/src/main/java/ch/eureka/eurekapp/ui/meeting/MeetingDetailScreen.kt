@@ -571,6 +571,15 @@ data class EditableMeetingInfoCardConfig(
  * @param config The configuration containing editable field values, state flags, and callbacks for
  *   change and touch events.
  */
+/**
+ * Editable card displaying meeting information in edit mode.
+ *
+ * Provides editable input fields for meeting title, date/time, and duration, using configuration
+ * data supplied through [EditableMeetingInfoCardConfig].
+ *
+ * @param config The configuration containing editable field values, state flags, and callbacks for
+ *   change and touch events.
+ */
 @Composable
 private fun EditableMeetingInfoCard(config: EditableMeetingInfoCardConfig) {
   // Convert Timestamp to LocalDate and LocalTime
@@ -592,84 +601,104 @@ private fun EditableMeetingInfoCard(config: EditableMeetingInfoCardConfig) {
 
               HorizontalDivider()
 
-              // Title field
-              OutlinedTextField(
-                  value = config.editTitle,
-                  onValueChange = config.onTitleChange,
-                  label = { Text("Title") },
-                  placeholder = { Text("Meeting title") },
-                  modifier =
-                      Modifier.fillMaxWidth().onFocusChanged { focusState ->
-                        if (focusState.isFocused) {
-                          config.onTouchTitle()
-                        }
-                      })
-              if (config.editTitle.isBlank() && config.hasTouchedTitle) {
-                Text(
-                    text = "Title cannot be empty",
-                    color = Color.Red,
-                    style = MaterialTheme.typography.bodySmall)
-              }
-
-              // Date and Time fields - only editable when meeting is SCHEDULED
-              if (config.meetingStatus == MeetingStatus.SCHEDULED) {
-                // Date field
-                DateInputField(
-                    selectedDate = editDate,
-                    label = "Date",
-                    placeHolder = "Select date",
-                    tag = "EditMeetingDate",
-                    onDateSelected = { newDate ->
-                      val newDateTime =
-                          java.time.LocalDateTime.of(newDate, editTime)
-                              .atZone(ZoneId.systemDefault())
-                              .toInstant()
-                      config.onDateTimeChange(Timestamp(newDateTime.epochSecond, newDateTime.nano))
-                    },
-                    onDateTouched = { config.onTouchDateTime() })
-
-                // Time field
-                TimeInputField(
-                    selectedTime = editTime,
-                    label = "Time",
-                    placeHolder = "Select time",
-                    tag = "EditMeetingTime",
-                    onTimeSelected = { newTime ->
-                      val newDateTime =
-                          java.time.LocalDateTime.of(editDate, newTime)
-                              .atZone(ZoneId.systemDefault())
-                              .toInstant()
-                      config.onDateTimeChange(Timestamp(newDateTime.epochSecond, newDateTime.nano))
-                    },
-                    onTimeTouched = { config.onTouchDateTime() })
-
-                if (config.editDateTime == null && config.hasTouchedDateTime) {
-                  Text(
-                      text = "Date and time must be set",
-                      color = Color.Red,
-                      style = MaterialTheme.typography.bodySmall)
-                }
-              }
-
-              // Duration field
-              DurationInputField(
-                  duration = config.editDuration,
-                  label = "Duration",
-                  placeholder = "Select duration",
-                  durationOptions = listOf(15, 30, 45, 60, 90, 120),
-                  tag = "EditMeetingDuration",
-                  onDurationSelected = { duration ->
-                    config.onTouchDuration()
-                    config.onDurationChange(duration)
-                  })
-              if (config.editDuration <= 0 && config.hasTouchedDuration) {
-                Text(
-                    text = "Duration must be greater than 0",
-                    color = Color.Red,
-                    style = MaterialTheme.typography.bodySmall)
-              }
+              EditableTitleField(config = config)
+              EditableDateTimeField(config = config, editDate = editDate, editTime = editTime)
+              EditableDurationField(config = config)
             }
       }
+}
+
+/** Helper composable for the Title field to reduce complexity. */
+@Composable
+private fun EditableTitleField(config: EditableMeetingInfoCardConfig) {
+  // Title field
+  OutlinedTextField(
+      value = config.editTitle,
+      onValueChange = config.onTitleChange,
+      label = { Text("Title") },
+      placeholder = { Text("Meeting title") },
+      modifier =
+          Modifier.fillMaxWidth().onFocusChanged { focusState ->
+            if (focusState.isFocused) {
+              config.onTouchTitle()
+            }
+          })
+  if (config.editTitle.isBlank() && config.hasTouchedTitle) {
+    Text(
+        text = "Title cannot be empty",
+        color = Color.Red,
+        style = MaterialTheme.typography.bodySmall)
+  }
+}
+
+/** Helper composable for the Date/Time fields to reduce complexity. */
+@Composable
+private fun EditableDateTimeField(
+    config: EditableMeetingInfoCardConfig,
+    editDate: LocalDate,
+    editTime: LocalTime
+) {
+  // Date and Time fields - only editable when meeting is SCHEDULED
+  if (config.meetingStatus == MeetingStatus.SCHEDULED) {
+    // Date field
+    DateInputField(
+        selectedDate = editDate,
+        label = "Date",
+        placeHolder = "Select date",
+        tag = "EditMeetingDate",
+        onDateSelected = { newDate ->
+          val newDateTime =
+              java.time.LocalDateTime.of(newDate, editTime)
+                  .atZone(ZoneId.systemDefault())
+                  .toInstant()
+          config.onDateTimeChange(Timestamp(newDateTime.epochSecond, newDateTime.nano))
+        },
+        onDateTouched = { config.onTouchDateTime() })
+
+    // Time field
+    TimeInputField(
+        selectedTime = editTime,
+        label = "Time",
+        placeHolder = "Select time",
+        tag = "EditMeetingTime",
+        onTimeSelected = { newTime ->
+          val newDateTime =
+              java.time.LocalDateTime.of(editDate, newTime)
+                  .atZone(ZoneId.systemDefault())
+                  .toInstant()
+          config.onDateTimeChange(Timestamp(newDateTime.epochSecond, newDateTime.nano))
+        },
+        onTimeTouched = { config.onTouchDateTime() })
+
+    if (config.editDateTime == null && config.hasTouchedDateTime) {
+      Text(
+          text = "Date and time must be set",
+          color = Color.Red,
+          style = MaterialTheme.typography.bodySmall)
+    }
+  }
+}
+
+/** Helper composable for the Duration field to reduce complexity. */
+@Composable
+private fun EditableDurationField(config: EditableMeetingInfoCardConfig) {
+  // Duration field
+  DurationInputField(
+      duration = config.editDuration,
+      label = "Duration",
+      placeholder = "Select duration",
+      durationOptions = listOf(15, 30, 45, 60, 90, 120),
+      tag = "EditMeetingDuration",
+      onDurationSelected = { duration ->
+        config.onTouchDuration()
+        config.onDurationChange(duration)
+      })
+  if (config.editDuration <= 0 && config.hasTouchedDuration) {
+    Text(
+        text = "Duration must be greater than 0",
+        color = Color.Red,
+        style = MaterialTheme.typography.bodySmall)
+  }
 }
 
 /**
