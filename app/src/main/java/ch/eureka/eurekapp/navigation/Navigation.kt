@@ -26,6 +26,7 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
+import ch.eureka.eurekapp.ui.meeting.DateTimeVoteScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailActionsConfig
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
@@ -84,6 +85,9 @@ sealed interface Route {
     @Serializable data class MeetingsOverview(val projectId: String) : MeetingsSection
 
     @Serializable data class CreateMeeting(val projectId: String) : MeetingsSection
+
+    @Serializable
+    data class DateTimeVotes(val projectId: String, val meetingId: String) : MeetingsSection
 
     @Serializable
     data class MeetingDetail(val projectId: String, val meetingId: String) : MeetingsSection
@@ -188,6 +192,11 @@ fun NavigationMenu() {
                       navigationController.navigate(
                           Route.MeetingsSection.MeetingDetail(
                               projectId = projectId, meetingId = meetingId))
+                    },
+                    onVoteForDateTimeClick = { projectId, meetingId ->
+                      navigationController.navigate(
+                          Route.MeetingsSection.DateTimeVotes(
+                              projectId = projectId, meetingId = meetingId))
                     })
               }
 
@@ -209,6 +218,16 @@ fun NavigationMenu() {
                 CreateMeetingScreen(
                     createMeetingCreationRoute.projectId,
                     { navigationController.navigate(Route.MeetingsSection.Meetings) })
+              }
+
+              composable<Route.MeetingsSection.DateTimeVotes> { backStackEntry ->
+                val dateTimeVotesRoute =
+                    backStackEntry.toRoute<Route.MeetingsSection.DateTimeVotes>()
+                DateTimeVoteScreen(
+                    projectId = dateTimeVotesRoute.projectId,
+                    meetingId = dateTimeVotesRoute.meetingId,
+                    onDone = { navigationController.navigate(Route.MeetingsSection.Meetings) },
+                )
               }
 
               composable<Route.MeetingsSection.AudioTranscript> {
