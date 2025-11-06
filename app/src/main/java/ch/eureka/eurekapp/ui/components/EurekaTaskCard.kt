@@ -39,6 +39,7 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 fun EurekaTaskCard(
     title: String,
     dueDate: String = "",
+    dueDateTag: String? = null,
     assignee: String = "",
     priority: String = "",
     progressText: String = "",
@@ -124,11 +125,23 @@ fun EurekaTaskCard(
 
           Spacer(modifier = Modifier.height(Spacing.sm))
 
+          if (dueDateTag != null && !isCompleted) {
+            Row(
+                modifier = Modifier.padding(bottom = Spacing.xs),
+                verticalAlignment = Alignment.CenterVertically) {
+                  val tagType =
+                      when {
+                        dueDateTag.contains("Overdue") -> StatusType.ERROR
+                        dueDateTag.contains("hour") -> StatusType.WARNING
+                        else -> StatusType.INFO
+                      }
+                  EurekaStatusTag(text = dueDateTag, type = tagType)
+                }
+          }
+
           // Priority tag ou Done
           if (isCompleted) {
-            Row {
-              EurekaStatusTag(text = "Done", type = StatusType.SUCCESS) // Vert pour Done
-            }
+            Row { EurekaStatusTag(text = "Done", type = StatusType.SUCCESS) }
           } else if (priority.isNotEmpty()) {
             Row { EurekaStatusTag(text = priority, type = StatusType.INFO) }
           }

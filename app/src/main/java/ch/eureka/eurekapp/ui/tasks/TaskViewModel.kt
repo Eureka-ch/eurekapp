@@ -75,8 +75,17 @@ sealed class TaskScreenFilter(val displayName: String) {
   /** Show tasks assigned to team members */
   object Team : TaskScreenFilter(TEAM_DISPLAY_NAME)
 
+  /** Show tasks due today */
+  object Today : TaskScreenFilter("Today")
+
+  /** Show tasks due tomorrow */
+  object Tomorrow : TaskScreenFilter("Tomorrow")
+
   /** Show tasks due this week */
   object ThisWeek : TaskScreenFilter(THIS_WEEK_DISPLAY_NAME)
+
+  /** Show overdue tasks */
+  object Overdue : TaskScreenFilter("Overdue")
 
   /** Show all tasks */
   object All : TaskScreenFilter(ALL_DISPLAY_NAME)
@@ -94,7 +103,7 @@ sealed class TaskScreenFilter(val displayName: String) {
     const val TEAM_DISPLAY_NAME = "Team"
     const val THIS_WEEK_DISPLAY_NAME = "This week"
     const val ALL_DISPLAY_NAME = "All"
-    val values by lazy { listOf(Mine, Team, ThisWeek, All) }
+    val values by lazy { listOf(Mine, Team, Today, Tomorrow, ThisWeek, Overdue, All) }
   }
 }
 
@@ -168,17 +177,37 @@ open class TaskScreenViewModel(
               error,
               projects ->
             // Extract tasks based on filter
+            val allTasks = userTasks + teamTasks
+            val now = Timestamp.now()
+
             val taskFlow =
                 when (filter) {
                   is TaskScreenFilter.Mine -> flowOf(userTasks)
                   is TaskScreenFilter.Team -> flowOf(teamTasks)
-                  is TaskScreenFilter.All -> flowOf(userTasks + teamTasks)
+                  is TaskScreenFilter.All -> flowOf(allTasks)
+                  is TaskScreenFilter.Today ->
+                      flowOf(
+                          allTasks.filter { task ->
+                            val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
+                            daysUntilDue == 0L
+                          })
+                  is TaskScreenFilter.Tomorrow ->
+                      flowOf(
+                          allTasks.filter { task ->
+                            val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
+                            daysUntilDue == 1L
+                          })
                   is TaskScreenFilter.ThisWeek ->
                       flowOf(
-                          (userTasks + teamTasks).filter { task ->
-                            val now = Timestamp.now()
+                          allTasks.filter { task ->
                             val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
                             daysUntilDue in 0..7
+                          })
+                  is TaskScreenFilter.Overdue ->
+                      flowOf(
+                          allTasks.filter { task ->
+                            val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
+                            daysUntilDue < 0
                           })
                   is TaskScreenFilter.ByProject ->
                       taskRepository.getTasksInProject(filter.projectId)

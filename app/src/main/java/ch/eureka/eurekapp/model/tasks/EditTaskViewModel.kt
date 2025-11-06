@@ -38,6 +38,8 @@ class EditTaskViewModel(
     ReadWriteTaskViewModel<EditTaskState>(
         taskRepository, fileRepository, getCurrentUserId, dispatcher) {
 
+  private val timeFormat = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+
   private val _uiState = MutableStateFlow(EditTaskState())
   override val uiState: StateFlow<EditTaskState> = _uiState.asStateFlow()
 
@@ -56,6 +58,11 @@ class EditTaskViewModel(
       return
     }
     val timestamp = timestampResult.getOrThrow()
+
+    val reminderTimestamp =
+        if (state.reminderTime.isNotBlank() && state.dueDate.isNotBlank()) {
+          parseReminderTime(state.dueDate, state.reminderTime).getOrNull()
+        } else null
 
     val currentUser = getCurrentUserId() ?: throw Exception("User not logged in.")
 
@@ -90,6 +97,7 @@ class EditTaskViewModel(
                 description = state.description,
                 assignedUserIds = listOf(currentUser),
                 dueDate = timestamp,
+                reminderTime = reminderTimestamp,
                 attachmentUrls = state.attachmentUrls + newPhotoUrls,
                 createdBy = currentUser,
                 status = state.status)
@@ -167,6 +175,8 @@ class EditTaskViewModel(
                       description = task.description,
                       dueDate =
                           task.dueDate?.let { date -> dateFormat.format(date.toDate()) } ?: "",
+                      reminderTime =
+                          task.reminderTime?.let { time -> timeFormat.format(time.toDate()) } ?: "",
                       templateId = task.templateId,
                       projectId = task.projectId,
                       taskId = task.taskID,
@@ -230,5 +240,9 @@ class EditTaskViewModel(
 
   override fun updateState(update: EditTaskState.() -> EditTaskState) {
     _uiState.value = _uiState.value.update()
+  }
+
+  fun setReminderTime(reminderTime: String) {
+    updateState { copy(reminderTime = reminderTime) }
   }
 }

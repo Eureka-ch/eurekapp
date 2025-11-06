@@ -7,6 +7,7 @@ import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.TaskRepository
+import ch.eureka.eurekapp.utils.Formatters
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
@@ -72,6 +73,41 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
       Result.success(Timestamp(date))
     } catch (e: Exception) {
       Result.failure(IllegalArgumentException("Invalid date value: $dateStr"))
+    }
+  }
+
+  /** Parses a reminder time string to Timestamp */
+  protected fun parseReminderTime(dueDateStr: String, reminderTimeStr: String): Result<Timestamp> {
+    if (!dateRegex.matches(dueDateStr)) {
+      return Result.failure(IllegalArgumentException("Invalid due date format"))
+    }
+
+    if (!Formatters.timeRegex.matches(reminderTimeStr)) {
+      return Result.failure(
+          IllegalArgumentException("Invalid reminder time format (must be HH:mm)"))
+    }
+
+    return try {
+      val dueDate =
+          dateFormat.parse(dueDateStr)
+              ?: return Result.failure(IllegalArgumentException("Invalid due date value"))
+
+      val timeParts = reminderTimeStr.split(":")
+      val hours = timeParts[0].toInt()
+      val minutes = timeParts[1].toInt()
+
+      val calendar =
+          java.util.Calendar.getInstance().apply {
+            time = dueDate
+            set(java.util.Calendar.HOUR_OF_DAY, hours)
+            set(java.util.Calendar.MINUTE, minutes)
+            set(java.util.Calendar.SECOND, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+          }
+
+      Result.success(Timestamp(calendar.time))
+    } catch (e: Exception) {
+      Result.failure(IllegalArgumentException("Invalid reminder time: ${e.message}"))
     }
   }
 

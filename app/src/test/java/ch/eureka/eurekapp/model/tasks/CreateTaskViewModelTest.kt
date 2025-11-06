@@ -77,6 +77,7 @@ class CreateTaskViewModelTest {
     assertEquals("", state.title)
     assertEquals("", state.description)
     assertEquals("", state.dueDate)
+    assertEquals("", state.reminderTime)
     assertEquals(emptyList<Uri>(), state.attachmentUris)
     assertFalse(state.isSaving)
     assertFalse(state.taskSaved)
@@ -504,5 +505,55 @@ class CreateTaskViewModelTest {
     assertFalse(viewModel.dateRegex.matches("2025-01-01"))
     assertFalse(viewModel.dateRegex.matches("invalid"))
     assertFalse(viewModel.dateRegex.matches(""))
+  }
+
+  @Test
+  fun addTask_withValidReminderTime_createsTaskWithReminder() = runTest {
+    viewModel =
+        CreateTaskViewModel(
+            mockTaskRepository, mockFileRepository, { "test-user-123" }, testDispatcher)
+    viewModel.setProjectId("project123")
+    viewModel.setTitle("Test Task")
+    viewModel.setDescription("Test Description")
+    viewModel.setDueDate("01/01/2025")
+    viewModel.setReminderTime("14:30")
+
+    viewModel.addTask(mockContext)
+    advanceUntilIdle()
+
+    // Verify task was created successfully
+    val state = viewModel.uiState.first()
+    assertFalse(state.isSaving)
+    assertTrue(state.taskSaved)
+
+    // Verify task was created with reminder time
+    assertTrue(mockTaskRepository.createTaskCalls.isNotEmpty())
+    val createdTask = mockTaskRepository.createTaskCalls[0]
+    assertTrue(createdTask.reminderTime != null)
+  }
+
+  @Test
+  fun addTask_withInvalidReminderTimeFormat_createsTaskWithoutReminder() = runTest {
+    viewModel =
+        CreateTaskViewModel(
+            mockTaskRepository, mockFileRepository, { "test-user-123" }, testDispatcher)
+    viewModel.setProjectId("project123")
+    viewModel.setTitle("Test Task")
+    viewModel.setDescription("Test Description")
+    viewModel.setDueDate("01/01/2025")
+    viewModel.setReminderTime("25:70") // Invalid time format
+
+    viewModel.addTask(mockContext)
+    advanceUntilIdle()
+
+    // Task should still be created but without reminder
+    val state = viewModel.uiState.first()
+    assertFalse(state.isSaving)
+    assertTrue(state.taskSaved)
+
+    // Verify task was created without reminder
+    assertTrue(mockTaskRepository.createTaskCalls.isNotEmpty())
+    val createdTask = mockTaskRepository.createTaskCalls[0]
+    assertTrue(createdTask.reminderTime == null)
   }
 }

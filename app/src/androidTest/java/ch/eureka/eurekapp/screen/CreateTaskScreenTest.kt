@@ -790,4 +790,61 @@ class CreateTaskScreenTests : TestCase() {
         role: ProjectRole
     ): Result<Unit> = Result.success(Unit)
   }
+
+  @Test
+  fun reminderTimeField_isDisplayed() {
+    val projectId = "project123"
+
+    val fakeProjectRepository =
+        object : ProjectRepository {
+          override fun getProjectById(projectId: String): Flow<Project?> =
+              flowOf(Project(projectId = projectId, name = "P-$projectId"))
+
+          override fun getProjectsForCurrentUser(skipCache: Boolean): Flow<List<Project>> =
+              flowOf(listOf(Project(projectId = projectId, name = "Test Project")))
+
+          override suspend fun createProject(
+              project: Project,
+              creatorId: String,
+              creatorRole: ProjectRole
+          ): Result<String> = Result.success(project.projectId)
+
+          override suspend fun updateProject(project: Project): Result<Unit> = Result.success(Unit)
+
+          override suspend fun deleteProject(projectId: String): Result<Unit> = Result.success(Unit)
+
+          override fun getMembers(projectId: String): Flow<List<Member>> = flowOf(emptyList())
+
+          override suspend fun addMember(
+              projectId: String,
+              userId: String,
+              role: ProjectRole
+          ): Result<Unit> = Result.success(Unit)
+
+          override suspend fun removeMember(projectId: String, userId: String): Result<Unit> =
+              Result.success(Unit)
+
+          override suspend fun updateMemberRole(
+              projectId: String,
+              userId: String,
+              role: ProjectRole
+          ): Result<Unit> = Result.success(Unit)
+        }
+
+    val injectedVm = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+    lastCreateVm = injectedVm
+
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      FakeNavGraph(navController = navController, viewModel = injectedVm)
+      navController.navigate(Route.TasksSection.CreateTask)
+    }
+    composeTestRule.waitForIdle()
+    composeTestRule.waitForIdle()
+
+    injectedVm.setProjectId(projectId)
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.REMINDER_TIME).assertIsDisplayed()
+  }
 }
