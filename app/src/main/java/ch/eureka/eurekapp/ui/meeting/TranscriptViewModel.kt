@@ -60,7 +60,7 @@ class TranscriptViewModel(
   private fun validateData(meeting: Meeting?): String? {
     return when {
       meeting == null -> "Meeting not found"
-      meeting.attachmentUrls.isEmpty() -> "No audio recording found for this meeting"
+      meeting.audioUrl.isNullOrBlank() -> "No audio recording found for this meeting"
       else -> null
     }
   }
@@ -97,8 +97,7 @@ class TranscriptViewModel(
 
                   TranscriptUIState(
                       meeting = if (validationError == null) m else null,
-                      audioUrl =
-                          if (validationError == null) m?.attachmentUrls?.firstOrNull() else null,
+                      audioUrl = if (validationError == null) m?.audioUrl else null,
                       transcriptionText =
                           if (validationError == null &&
                               transcript?.status == TranscriptionStatus.COMPLETED)

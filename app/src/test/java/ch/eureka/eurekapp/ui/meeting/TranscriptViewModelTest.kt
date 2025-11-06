@@ -59,7 +59,7 @@ class TranscriptViewModelTest {
 
   @Test
   fun `initial state is loading`() = runTest {
-    val meeting = createTestMeeting(attachmentUrls = listOf(audioUrl))
+    val meeting = createTestMeeting(audioUrl = audioUrl)
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
 
     viewModel =
@@ -94,7 +94,7 @@ class TranscriptViewModelTest {
 
   @Test
   fun `shows error when no audio recording found`() = runTest {
-    val meeting = createTestMeeting(attachmentUrls = emptyList())
+    val meeting = createTestMeeting(audioUrl = null)
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
 
     viewModel =
@@ -113,7 +113,7 @@ class TranscriptViewModelTest {
 
   @Test
   fun `loads meeting with audio successfully`() = runTest {
-    val meeting = createTestMeeting(attachmentUrls = listOf(audioUrl))
+    val meeting = createTestMeeting(audioUrl = audioUrl)
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
 
     viewModel =
@@ -134,7 +134,7 @@ class TranscriptViewModelTest {
 
   @Test
   fun `loads meeting with transcript successfully`() = runTest {
-    val meeting = createTestMeeting(attachmentUrls = listOf(audioUrl), transcriptId = transcriptId)
+    val meeting = createTestMeeting(audioUrl = audioUrl, transcriptId = transcriptId)
     val transcript =
         AudioTranscription(
             transcriptionId = transcriptId,
@@ -166,7 +166,7 @@ class TranscriptViewModelTest {
 
   @Test
   fun `clearErrorMsg clears error message`() = runTest {
-    val meeting = createTestMeeting(attachmentUrls = emptyList())
+    val meeting = createTestMeeting(audioUrl = null)
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
 
     viewModel =
@@ -190,7 +190,7 @@ class TranscriptViewModelTest {
   }
 
   private fun createTestMeeting(
-      attachmentUrls: List<String> = emptyList(),
+      audioUrl: String? = null,
       transcriptId: String? = null
   ) =
       Meeting(
@@ -200,6 +200,6 @@ class TranscriptViewModelTest {
           status = MeetingStatus.SCHEDULED,
           createdBy = "test-user",
           participantIds = listOf("test-user"),
-          attachmentUrls = attachmentUrls,
+          audioUrl = audioUrl,
           transcriptId = transcriptId)
 }

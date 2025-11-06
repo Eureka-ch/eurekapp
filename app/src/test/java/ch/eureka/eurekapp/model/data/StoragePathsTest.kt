@@ -90,7 +90,7 @@ class StoragePathsTest {
 
     val result = StoragePaths.taskAttachmentPath(projectId, taskId, filename)
 
-    assertEquals("projects/project789/tasks/task123/screenshot.png", result)
+    assertEquals("projects/project789/tasks/task123/attachments/screenshot.png", result)
   }
 
   @Test
@@ -101,7 +101,7 @@ class StoragePathsTest {
 
     val result = StoragePaths.taskAttachmentPath(projectId, taskId, filename)
 
-    assertEquals("projects/project789/tasks/task123/archive.tar.gz", result)
+    assertEquals("projects/project789/tasks/task123/attachments/archive.tar.gz", result)
   }
 
   @Test
@@ -112,7 +112,7 @@ class StoragePathsTest {
 
     val result = StoragePaths.meetingAttachmentPath(projectId, meetingId, filename)
 
-    assertEquals("projects/projectABC/meetings/meetingXYZ/notes.txt", result)
+    assertEquals("projects/projectABC/meetings/meetingXYZ/attachments/notes.txt", result)
   }
 
   @Test
@@ -123,7 +123,7 @@ class StoragePathsTest {
 
     val result = StoragePaths.meetingAttachmentPath(projectId, meetingId, filename)
 
-    assertEquals("projects/projectABC/meetings/meetingXYZ/README", result)
+    assertEquals("projects/projectABC/meetings/meetingXYZ/attachments/README", result)
   }
 
   @Test
@@ -158,8 +158,8 @@ class StoragePathsTest {
 
     assertEquals("users//file.txt", emptyUser)
     assertEquals("projects//file.txt", emptyProject)
-    assertEquals("projects//tasks//file.txt", emptyTask)
-    assertEquals("projects//meetings//file.txt", emptyMeeting)
+    assertEquals("projects//tasks//attachments/file.txt", emptyTask)
+    assertEquals("projects//meetings//attachments/file.txt", emptyMeeting)
     assertEquals("projects//meetings//transcriptions/file.txt", emptyTranscription)
   }
 
