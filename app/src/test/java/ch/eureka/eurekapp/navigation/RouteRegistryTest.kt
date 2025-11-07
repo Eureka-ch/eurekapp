@@ -75,7 +75,11 @@ class RouteRegistryTest {
         "MeetingsSection should contain AudioTranscript",
         registeredRoutes.any { it.simpleName == "AudioTranscript" })
 
-    assertEquals("MeetingsSection should have 5 routes", 5, registeredRoutes.size)
+    assertTrue(
+        "MeetingsSection should contain DateTimeVotes",
+        registeredRoutes.any { it.simpleName == "DateTimeVotes" })
+
+    assertEquals("MeetingsSection should have 5 routes", 6, registeredRoutes.size)
   }
 
   @Test
