@@ -90,9 +90,10 @@ class DateTimeVoteViewModel(
     newVoters.add(userId)
 
     val newDateTimeVotes =
-        _uiState.value.dateTimeVotes.toMutableList().apply {
-          this[index] = this[index].copy(voters = newVoters.toList())
-        }
+        _uiState.value.dateTimeVotes
+            .toMutableList()
+            .apply { this[index] = this[index].copy(voters = newVoters.toList()) }
+            .toList()
     _uiState.update { it.copy(dateTimeVotes = newDateTimeVotes) }
   }
 
@@ -124,9 +125,10 @@ class DateTimeVoteViewModel(
     newVoters.remove(userId)
 
     val newDateTimeVotes =
-        _uiState.value.dateTimeVotes.toMutableList().apply {
-          this[index] = this[index].copy(voters = newVoters.toList())
-        }
+        _uiState.value.dateTimeVotes
+            .toMutableList()
+            .apply { this[index] = this[index].copy(voters = newVoters.toList()) }
+            .toList()
     _uiState.update { it.copy(dateTimeVotes = newDateTimeVotes) }
   }
 
