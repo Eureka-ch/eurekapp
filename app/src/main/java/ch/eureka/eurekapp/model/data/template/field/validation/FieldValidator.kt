@@ -21,7 +21,8 @@ object FieldValidator {
     when (value) {
       is FieldValue.TextValue -> validateText(value, fieldDef.type as FieldType.Text, errors)
       is FieldValue.NumberValue -> validateNumber(value, fieldDef.type as FieldType.Number, errors)
-      is FieldValue.DateValue -> validateDate(value, fieldDef.type as FieldType.Date, errors)
+      is FieldValue.DateValue ->
+          validateDate(value, fieldDef.type as FieldType.Date, errors as ImmutableList<String>)
       is FieldValue.SingleSelectValue ->
           validateSingleSelect(value, fieldDef.type as FieldType.SingleSelect, errors)
       is FieldValue.MultiSelectValue ->
