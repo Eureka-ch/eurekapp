@@ -420,8 +420,12 @@ private fun MeetingDetailContent(
                 actionsConfig =
                     ActionButtonsConfig(
                         onJoinMeeting = actionsConfig.onJoinMeeting,
-                        onRecordMeeting = actionsConfig.onRecordMeeting,
-                        onViewTranscript = actionsConfig.onViewTranscript,
+                        onRecordMeeting = {
+                          actionsConfig.onRecordMeeting(meeting.projectId, meeting.meetingID)
+                        },
+                        onViewTranscript = {
+                          actionsConfig.onViewTranscript(meeting.projectId, meeting.meetingID)
+                        },
                         onDeleteMeeting = actionsConfig.onDeleteMeeting,
                         onVoteForTime = actionsConfig.onVoteForTime,
                         onVoteForFormat = actionsConfig.onVoteForFormat,
@@ -911,7 +915,7 @@ private fun ActionButtonsSection(
                   }
             }
             OutlinedButton(
-                onClick = { actionsConfig.onRecordMeeting(meeting.projectId, meeting.meetingID) },
+                onClick = { actionsConfig.onRecordMeeting() },
                 modifier =
                     Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.RECORD_BUTTON)) {
                   Text("Start Recording")
@@ -919,7 +923,7 @@ private fun ActionButtonsSection(
           }
           MeetingStatus.COMPLETED -> {
             Button(
-                onClick = { actionsConfig.onViewTranscript(meeting.projectId, meeting.meetingID) },
+                onClick = { actionsConfig.onViewTranscript() },
                 modifier =
                     Modifier.fillMaxWidth()
                         .testTag(MeetingDetailScreenTestTags.VIEW_TRANSCRIPT_BUTTON)) {
