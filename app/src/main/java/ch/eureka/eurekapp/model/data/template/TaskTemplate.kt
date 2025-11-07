@@ -13,7 +13,7 @@ package ch.eureka.eurekapp.model.data.template
  * @property projectId ID of the project this template belongs to.
  * @property title The name of the template.
  * @property description Description of what this template is used for.
- * @property definedFields Map of custom field definitions (field name -> field properties).
+ * @property definedFields Strongly-typed schema defining custom fields for this template.
  * @property createdBy User ID of the person who created this template.
  */
 data class TaskTemplate(
@@ -21,6 +21,6 @@ data class TaskTemplate(
     val projectId: String = "",
     val title: String = "",
     val description: String = "",
-    val definedFields: Map<String, Any> = emptyMap(),
+    val definedFields: TaskTemplateSchema = TaskTemplateSchema(),
     val createdBy: String = ""
 )

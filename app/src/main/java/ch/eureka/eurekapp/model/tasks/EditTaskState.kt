@@ -1,6 +1,8 @@
 package ch.eureka.eurekapp.model.tasks
 
 import android.net.Uri
+import ch.eureka.eurekapp.model.data.project.Project
+import ch.eureka.eurekapp.model.data.task.TaskCustomData
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 
 /*
@@ -14,18 +16,20 @@ data class EditTaskState(
     override val title: String = "",
     override val description: String = "",
     override val dueDate: String = "",
+    val reminderTime: String = "",
     val templateId: String? = null,
     override val projectId: String = "",
+    override val availableProjects: List<Project> = emptyList(),
     val taskId: String = "",
     val assignedUserIds: List<String> = emptyList(),
     override val attachmentUris: List<Uri> = emptyList(),
     val attachmentUrls: List<String> = emptyList(),
     val deletedAttachmentUrls: Set<String> = emptySet(),
     val status: TaskStatus = TaskStatus.TODO,
-    val customData: Map<String, Any> = emptyMap(),
+    val customData: TaskCustomData = TaskCustomData(),
     override val isSaving: Boolean = false,
     override val taskSaved: Boolean = false,
     val isDeleting: Boolean = false,
     val taskDeleted: Boolean = false,
     override val errorMsg: String? = null
-) : TaskStateCommon
+) : TaskStateReadWrite

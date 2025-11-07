@@ -16,8 +16,7 @@ import com.google.firebase.Timestamp
  * @property taskId Optional ID of the task this meeting is associated with.
  * @property title The name/title of the meeting.
  * @property status Current status of the meeting (SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED).
- * @property timeSlot Timeslot in which the meeting should take place, this is defined by the user
- *   that creates the meeting proposal.
+ * @property duration Duration of the meeting in minutes.
  * @property dateTimeVotes Votes of every member of the project for the date and time of the
  *   meeting.
  * @property formatVotes Votes of every member of the project for the format of the meeting.
@@ -38,8 +37,8 @@ data class Meeting(
     val taskId: String? = null,
     val title: String = "",
     val status: MeetingStatus = MeetingStatus.OPEN_TO_VOTES,
-    val timeSlot: TimeSlot = TimeSlot(Timestamp.now(), Timestamp.now()),
-    val dateTimeVotes: List<MeetingDateTimeVotes> = emptyList(),
+    val duration: Int = 30,
+    val dateTimeVotes: List<DateTimeVote> = emptyList(),
     val formatVotes: List<MeetingFormatVote> = emptyList(),
     val datetime: Timestamp? = Timestamp.now(),
     val format: MeetingFormat? = null,

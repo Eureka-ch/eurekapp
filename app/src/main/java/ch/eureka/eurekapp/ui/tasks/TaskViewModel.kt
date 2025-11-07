@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.ui.tasks
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository
+import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
 import ch.eureka.eurekapp.model.data.task.Task
@@ -28,14 +29,42 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/** Data class combining Task with its assigned Users */
+/**
+ * Data class combining Task with its assigned Users Portions of this code were generated with the
+ * help of IA.
+ */
+
+/** Internal data class for flow state management */
+private data class TaskFlowState(
+    val filter: TaskScreenFilter,
+    val taskFlow: Flow<List<Task>>,
+    val error: String?,
+    val projects: List<Project>
+)
+
+/** Internal data class for tasks state */
+private data class TasksState(
+    val filter: TaskScreenFilter,
+    val tasks: List<Task>,
+    val error: String?,
+    val projects: List<Project>
+)
+
+/** Internal data class for tasks with users state */
+private data class TasksWithUsersState(
+    val filter: TaskScreenFilter,
+    val tasksAndUsers: List<TaskAndUsers>,
+    val error: String?,
+    val projects: List<Project>
+)
 
 /** UI state data class for TasksScreen Contains all the data needed to render the tasks screen */
 data class TaskScreenUiState(
     val tasksAndUsers: List<TaskAndUsers> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val selectedFilter: TaskScreenFilter = TaskScreenFilter.Mine
+    val selectedFilter: TaskScreenFilter = TaskScreenFilter.Mine,
+    val availableProjects: List<Project> = emptyList()
 )
 
 /** Sealed class representing different task filtering options with their data */
@@ -46,13 +75,25 @@ sealed class TaskScreenFilter(val displayName: String) {
   /** Show tasks assigned to team members */
   object Team : TaskScreenFilter(TEAM_DISPLAY_NAME)
 
+  /** Show tasks due today */
+  object Today : TaskScreenFilter("Today")
+
+  /** Show tasks due tomorrow */
+  object Tomorrow : TaskScreenFilter("Tomorrow")
+
   /** Show tasks due this week */
   object ThisWeek : TaskScreenFilter(THIS_WEEK_DISPLAY_NAME)
+
+  /** Show overdue tasks */
+  object Overdue : TaskScreenFilter("Overdue")
 
   /** Show all tasks */
   object All : TaskScreenFilter(ALL_DISPLAY_NAME)
 
-  /** Show tasks from specific projects */
+  /** Show tasks from a specific project */
+  data class ByProject(val projectId: String, val projectName: String) :
+      TaskScreenFilter(projectName)
+
   /**
    * Constants for task filter options Centralizes filter option strings for better maintainability
    * and localization
@@ -62,7 +103,7 @@ sealed class TaskScreenFilter(val displayName: String) {
     const val TEAM_DISPLAY_NAME = "Team"
     const val THIS_WEEK_DISPLAY_NAME = "This week"
     const val ALL_DISPLAY_NAME = "All"
-    val values by lazy { listOf(Mine, Team, ThisWeek, All) }
+    val values by lazy { listOf(Mine, Team, Today, Tomorrow, ThisWeek, Overdue, All) }
   }
 }
 
@@ -91,6 +132,12 @@ open class TaskScreenViewModel(
 
   private val _selectedFilter = MutableStateFlow<TaskScreenFilter>(TaskScreenFilter.Mine)
   private val _error = MutableStateFlow<String?>(null)
+
+  // Flow 0: Available projects
+  private val availableProjects =
+      projectRepository
+          .getProjectsForCurrentUser()
+          .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
   // Flow 1: Tasks assigned to current user
   private val userTasks =
@@ -123,41 +170,84 @@ open class TaskScreenViewModel(
           .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
   open val uiState: StateFlow<TaskScreenUiState> =
-      combine(userTasks, teamTasks, _selectedFilter, _error) { userTasks, teamTasks, filter, error
-            ->
-            val tasks =
+      combine(userTasks, teamTasks, _selectedFilter, _error, availableProjects) {
+              userTasks,
+              teamTasks,
+              filter,
+              error,
+              projects ->
+            // Extract tasks based on filter
+            val allTasks = userTasks + teamTasks
+            val now = Timestamp.now()
+
+            val taskFlow =
                 when (filter) {
-                  is TaskScreenFilter.Mine -> userTasks
-                  is TaskScreenFilter.Team -> teamTasks
-                  is TaskScreenFilter.All -> userTasks + teamTasks
+                  is TaskScreenFilter.Mine -> flowOf(userTasks)
+                  is TaskScreenFilter.Team -> flowOf(teamTasks)
+                  is TaskScreenFilter.All -> flowOf(allTasks)
+                  is TaskScreenFilter.Today ->
+                      flowOf(
+                          allTasks.filter { task ->
+                            val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
+                            daysUntilDue == 0L
+                          })
+                  is TaskScreenFilter.Tomorrow ->
+                      flowOf(
+                          allTasks.filter { task ->
+                            val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
+                            daysUntilDue == 1L
+                          })
                   is TaskScreenFilter.ThisWeek ->
-                      (userTasks + teamTasks).filter { task ->
-                        val now = Timestamp.now()
-                        val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
-                        daysUntilDue in 0..7
-                      }
+                      flowOf(
+                          allTasks.filter { task ->
+                            val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
+                            daysUntilDue in 0..7
+                          })
+                  is TaskScreenFilter.Overdue ->
+                      flowOf(
+                          allTasks.filter { task ->
+                            val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
+                            daysUntilDue < 0
+                          })
+                  is TaskScreenFilter.ByProject ->
+                      taskRepository.getTasksInProject(filter.projectId)
                 }
-            Triple(filter, tasks, error)
+            TaskFlowState(filter, taskFlow, error, projects)
           }
-          .flatMapLatest { (filter, tasks, error) ->
+          .flatMapLatest { flowState ->
+            flowState.taskFlow.map { tasks ->
+              TasksState(flowState.filter, tasks, flowState.error, flowState.projects)
+            }
+          }
+          .flatMapLatest { tasksState ->
             // For each task, fetch its assignees
-            if (tasks.isEmpty()) {
-              flowOf(Triple(filter, emptyList<TaskAndUsers>(), error))
+            if (tasksState.tasks.isEmpty()) {
+              flowOf(
+                  TasksWithUsersState(
+                      tasksState.filter,
+                      emptyList<TaskAndUsers>(),
+                      tasksState.error,
+                      tasksState.projects))
             } else {
               combine(
-                  tasks.map { task ->
+                  tasksState.tasks.map { task ->
                     getAssignees(task).map { users -> TaskAndUsers(task, users) }
                   }) { tasksAndUsersArray ->
-                    Triple(filter, tasksAndUsersArray.toList(), error)
+                    TasksWithUsersState(
+                        tasksState.filter,
+                        tasksAndUsersArray.toList(),
+                        tasksState.error,
+                        tasksState.projects)
                   }
             }
           }
-          .map { (filter, tasksAndUsers, error) ->
+          .map { state ->
             TaskScreenUiState(
-                tasksAndUsers = tasksAndUsers,
-                selectedFilter = filter,
+                tasksAndUsers = state.tasksAndUsers,
+                selectedFilter = state.filter,
                 isLoading = false,
-                error = error)
+                error = state.error,
+                availableProjects = state.projects)
           }
           .stateIn(viewModelScope, SharingStarted.Eagerly, TaskScreenUiState(isLoading = true))
 

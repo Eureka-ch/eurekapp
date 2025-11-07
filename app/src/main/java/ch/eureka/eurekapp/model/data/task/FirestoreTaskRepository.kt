@@ -1,6 +1,7 @@
 package ch.eureka.eurekapp.model.data.task
 
 import ch.eureka.eurekapp.model.data.FirestorePaths
+import ch.eureka.eurekapp.model.data.template.field.serialization.FirestoreConverters
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -26,7 +27,8 @@ class FirestoreTaskRepository(
                 close(error)
                 return@addSnapshotListener
               }
-              trySend(snapshot?.toObject(Task::class.java))
+              val task = parseSnapshot(snapshot?.data)
+              trySend(task)
             }
     awaitClose { listener.remove() }
   }
@@ -43,7 +45,7 @@ class FirestoreTaskRepository(
                 return@addSnapshotListener
               }
               val tasks =
-                  snapshot?.documents?.mapNotNull { it.toObject(Task::class.java) } ?: emptyList()
+                  snapshot?.documents?.mapNotNull { doc -> parseSnapshot(doc.data) } ?: emptyList()
               trySend(tasks)
             }
     awaitClose { listener.remove() }
@@ -68,7 +70,7 @@ class FirestoreTaskRepository(
                 return@addSnapshotListener
               }
               val tasks =
-                  snapshot?.documents?.mapNotNull { it.toObject(Task::class.java) } ?: emptyList()
+                  snapshot?.documents?.mapNotNull { doc -> parseSnapshot(doc.data) } ?: emptyList()
               trySend(tasks)
             }
     awaitClose { listener.remove() }
@@ -80,7 +82,7 @@ class FirestoreTaskRepository(
         .document(task.projectId)
         .collection(FirestorePaths.TASKS)
         .document(task.taskID)
-        .set(task)
+        .set(FirestoreConverters.taskToMap(task))
         .await()
     task.taskID
   }
@@ -91,7 +93,7 @@ class FirestoreTaskRepository(
         .document(task.projectId)
         .collection(FirestorePaths.TASKS)
         .document(task.taskID)
-        .set(task)
+        .set(FirestoreConverters.taskToMap(task))
         .await()
   }
 
@@ -128,5 +130,13 @@ class FirestoreTaskRepository(
         .document(taskId)
         .update("assignedUserIds", FieldValue.arrayRemove(userId))
         .await()
+  }
+
+  private fun parseSnapshot(data: Map<String, Any>?): Task? {
+    return try {
+      data?.let { FirestoreConverters.mapToTask(it) }
+    } catch (e: Exception) {
+      null
+    }
   }
 }

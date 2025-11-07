@@ -34,18 +34,15 @@ class CreateTaskViewModel(
     getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) :
-    BaseTaskViewModel<CreateTaskState>(
+    ReadWriteTaskViewModel<CreateTaskState>(
         taskRepository, fileRepository, getCurrentUserId, dispatcher) {
 
   private val _uiState = MutableStateFlow(CreateTaskState())
   override val uiState: StateFlow<CreateTaskState> = _uiState.asStateFlow()
 
-  /** Returns the current state. */
-  override fun getState(): CreateTaskState = _uiState.value
-
   /** Adds a Task */
   fun addTask(context: Context) {
-    val state = _uiState.value
+    val state = uiState.value
 
     val timestampResult = parseDateString(state.dueDate)
     if (timestampResult.isFailure) {
@@ -53,6 +50,11 @@ class CreateTaskViewModel(
       return
     }
     val timestamp = timestampResult.getOrThrow()
+
+    val reminderTimestamp =
+        if (state.reminderTime.isNotBlank() && state.dueDate.isNotBlank()) {
+          parseReminderTime(state.dueDate, state.reminderTime).getOrNull()
+        } else null
 
     val currentUser = getCurrentUserId() ?: throw Exception("User not logged in.")
 
@@ -68,8 +70,9 @@ class CreateTaskViewModel(
     updateState { copy(isSaving = true) }
 
     val taskId = IdGenerator.generateTaskId()
+    val projectIdToUse = state.projectId
 
-    saveFilesAsync(taskId, context, state.projectId, state.attachmentUris) { photoUrlsResult ->
+    saveFilesAsync(taskId, context, projectIdToUse, state.attachmentUris) { photoUrlsResult ->
       if (photoUrlsResult.isFailure) {
         val exception = photoUrlsResult.exceptionOrNull()
         Log.e("CreateTaskViewModel", exception?.message ?: "Unknown error")
@@ -87,11 +90,12 @@ class CreateTaskViewModel(
         val task =
             Task(
                 taskID = taskId,
-                projectId = state.projectId,
+                projectId = projectIdToUse,
                 title = state.title,
                 description = state.description,
                 assignedUserIds = listOf(currentUser),
                 dueDate = timestamp,
+                reminderTime = reminderTimestamp,
                 attachmentUrls = photoUrls,
                 createdBy = currentUser)
 
@@ -118,10 +122,6 @@ class CreateTaskViewModel(
   }
 
   // State update implementations
-  override fun updateState(update: CreateTaskState.() -> CreateTaskState) {
-    _uiState.value = _uiState.value.update()
-  }
-
   override fun CreateTaskState.copyWithErrorMsg(errorMsg: String?) = copy(errorMsg = errorMsg)
 
   override fun CreateTaskState.copyWithSaveState(isSaving: Boolean, taskSaved: Boolean) =
@@ -137,4 +137,12 @@ class CreateTaskViewModel(
   override fun CreateTaskState.copyWithAttachmentUris(uris: List<Uri>) = copy(attachmentUris = uris)
 
   override fun CreateTaskState.copyWithProjectId(projectId: String) = copy(projectId = projectId)
+
+  override fun updateState(update: CreateTaskState.() -> CreateTaskState) {
+    _uiState.value = _uiState.value.update()
+  }
+
+  fun setReminderTime(reminderTime: String) {
+    updateState { copy(reminderTime = reminderTime) }
+  }
 }

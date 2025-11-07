@@ -26,11 +26,11 @@ class RouteRegistryTest {
         "TasksSection should contain CreateTask",
         registeredRoutes.any { it.simpleName == "CreateTask" })
     assertTrue(
-        "TasksSection should contain TaskDetail",
-        registeredRoutes.any { it.simpleName == "TaskDetail" })
+        "TasksSection should contain ViewTask",
+        registeredRoutes.any { it.simpleName == "ViewTask" })
     assertTrue(
-        "TasksSection should contain TaskEdit",
-        registeredRoutes.any { it.simpleName == "TaskEdit" })
+        "TasksSection should contain EditTask",
+        registeredRoutes.any { it.simpleName == "EditTask" })
     assertTrue(
         "TasksSection should contain AutoTaskAssignment",
         registeredRoutes.any { it.simpleName == "AutoTaskAssignment" })
@@ -78,7 +78,15 @@ class RouteRegistryTest {
         "MeetingsSection should contain AudioTranscript",
         registeredRoutes.any { it.simpleName == "AudioTranscript" })
 
+<<<<<<< HEAD
     assertEquals("MeetingsSection should have 6 routes", 6, registeredRoutes.size)
+=======
+    assertTrue(
+        "MeetingsSection should contain DateTimeVotes",
+        registeredRoutes.any { it.simpleName == "DateTimeVotes" })
+
+    assertEquals("MeetingsSection should have 5 routes", 6, registeredRoutes.size)
+>>>>>>> origin/main
   }
 
   @Test
