@@ -22,7 +22,7 @@ import kotlin.compareTo
  * @property dueDate Optional deadline for task completion.
  * @property reminderTime Optional reminder time for the task.
  * @property attachmentUrls List of file URLs attached to this task (PDFs, images, etc.).
- * @property customData Template-specific data stored as key-value pairs.
+ * @property customData Template-specific data stored as strongly-typed field values.
  * @property createdBy User ID of the person who created this task.
  * @property dependingOnTasks the taskIds that this task depends on
  */
@@ -37,7 +37,7 @@ data class Task(
     val dueDate: Timestamp? = null,
     val reminderTime: Timestamp? = null,
     val attachmentUrls: List<String> = emptyList(),
-    val customData: Map<String, Any> = emptyMap(),
+    val customData: TaskCustomData = TaskCustomData(),
     val createdBy: String = "",
     val dependingOnTasks: List<String> = listOf()
 )
