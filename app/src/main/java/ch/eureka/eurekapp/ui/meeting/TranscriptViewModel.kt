@@ -134,7 +134,7 @@ class TranscriptViewModel(
   }
 
   /** Generates transcript from the audio URL */
-  fun generateTranscript() {
+  fun generateTranscript(languageCode: String = "en-US") {
     viewModelScope.launch {
       val meeting = uiState.value.meeting
       val audioUrl = uiState.value.audioUrl
@@ -153,7 +153,7 @@ class TranscriptViewModel(
                 audioDownloadUrl = audioUrl,
                 meetingId = meetingId,
                 projectId = projectId,
-                languageCode = "en-US")
+                languageCode = languageCode)
 
         result
             .onSuccess { transcriptId ->

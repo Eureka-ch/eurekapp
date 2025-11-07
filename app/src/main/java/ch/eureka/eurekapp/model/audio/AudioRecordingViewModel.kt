@@ -3,20 +3,25 @@ package ch.eureka.eurekapp.model.audio
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
+import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.file.FirebaseFileStorageRepository
+import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 
 class AudioRecordingViewModel(
     val fileStorageRepository: FileStorageRepository =
         FirebaseFileStorageRepository(FirebaseStorage.getInstance(), FirebaseAuth.getInstance()),
     val recordingRepository: LocalAudioRecordingRepository =
-        AudioRecordingRepositoryProvider.repository
+        AudioRecordingRepositoryProvider.repository,
+    private val meetingRepository: MeetingRepository =
+        FirestoreRepositoriesProvider.meetingRepository
 ) : ViewModel() {
   private val _recordingUri: MutableStateFlow<Uri?> = MutableStateFlow(null)
   val recordingUri = _recordingUri.asStateFlow()
@@ -78,7 +83,20 @@ class AudioRecordingViewModel(
         onFailureUpload(result.exceptionOrNull()!!)
       } else {
         deleteLocalRecording()
-        onSuccesfulUpload(result.getOrNull()!!)
+        val firebaseURL = result.getOrNull()!!
+
+        // Update meeting with audio URL
+        try {
+          val meeting = meetingRepository.getMeetingById(projectId, meetingId).first()
+          meeting?.let {
+            val updatedMeeting = it.copy(audioUrl = firebaseURL)
+            meetingRepository.updateMeeting(updatedMeeting)
+          }
+        } catch (e: Exception) {
+          // Log or handle error, but don't fail the upload
+        }
+
+        onSuccesfulUpload(firebaseURL)
       }
     }
   }

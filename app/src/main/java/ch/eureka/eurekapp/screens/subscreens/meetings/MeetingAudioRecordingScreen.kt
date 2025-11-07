@@ -58,7 +58,6 @@ import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.ui.theme.Typography
 import ch.eureka.eurekapp.utils.Formatters
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 object MeetingAudioScreenTestTags {
@@ -207,18 +206,6 @@ fun MeetingAudioRecordingScreen(
                                             uploadText = "Uploaded successfully!"
                                             canShowAITranscriptButton = true
                                             firebaseDownloadURI = firebaseURL
-
-                                            // Save audio URL
-                                            audioRecordingViewModel.viewModelScope.launch {
-                                              val meeting =
-                                                  meetingRepository
-                                                      .getMeetingById(projectId, meetingId)
-                                                      .first()
-                                              meeting?.let {
-                                                val updatedMeeting = it.copy(audioUrl = firebaseURL)
-                                                meetingRepository.updateMeeting(updatedMeeting)
-                                              }
-                                            }
                                           },
                                           onFailureUpload = { exception ->
                                             errorText =
