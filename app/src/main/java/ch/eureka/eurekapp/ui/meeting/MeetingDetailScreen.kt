@@ -339,9 +339,12 @@ data class EditConfig(
 /**
  * Configuration for action button callbacks.
  *
- * @param onJoinMeeting Callback invoked when user clicks join meeting button.
- * @param onRecordMeeting Callback invoked when user clicks record meeting button.
- * @param onViewTranscript Callback invoked when user clicks view transcript button.
+ * @param onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
+ *   link.
+ * @param onRecordMeeting Callback invoked when user clicks record meeting button, receives
+ *   projectId and meetingId.
+ * @param onViewTranscript Callback invoked when user clicks view transcript button, receives
+ *   projectId and meetingId.
  * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
  * @param onVoteForTime Callback invoked when user votes for time button.
  * @param onVoteForFormat Callback invoked when user votes for format button.
@@ -349,8 +352,8 @@ data class EditConfig(
  */
 data class ActionButtonsConfig(
     val onJoinMeeting: (String) -> Unit,
-    val onRecordMeeting: () -> Unit,
-    val onViewTranscript: () -> Unit,
+    val onRecordMeeting: (String, String) -> Unit,
+    val onViewTranscript: (String, String) -> Unit,
     val onDeleteMeeting: () -> Unit,
     val onVoteForTime: () -> Unit,
     val onVoteForFormat: () -> Unit,
@@ -879,31 +882,12 @@ private fun AttachmentItem(attachmentUrl: String) {
  * Action buttons section (join, record, transcript, delete, edit).
  *
  * @param meeting The meeting for which to display action buttons.
-<<<<<<< HEAD
- * @param onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
- *   link.
- * @param onRecordMeeting Callback invoked when user clicks record meeting button, receives
- *   projectId and meetingId.
- * @param onViewTranscript Callback invoked when user clicks view transcript button, receives
- *   projectId and meetingId.
- * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
-=======
  * @param actionsConfig Configuration for action button callbacks.
->>>>>>> origin/main
  */
 @Composable
 private fun ActionButtonsSection(
     meeting: Meeting,
-<<<<<<< HEAD
-    onJoinMeeting: (String) -> Unit,
-    onRecordMeeting: (String, String) -> Unit,
-    onViewTranscript: (String, String) -> Unit,
-    onDeleteMeeting: () -> Unit,
-    onVoteForTime: () -> Unit,
-    onVoteForFormat: () -> Unit
-=======
     actionsConfig: ActionButtonsConfig,
->>>>>>> origin/main
 ) {
   Column(
       modifier =
@@ -930,11 +914,7 @@ private fun ActionButtonsSection(
                   }
             }
             OutlinedButton(
-<<<<<<< HEAD
-                onClick = { onRecordMeeting(meeting.projectId, meeting.meetingID) },
-=======
-                onClick = actionsConfig.onRecordMeeting,
->>>>>>> origin/main
+                onClick = { actionsConfig.onRecordMeeting(meeting.projectId, meeting.meetingID) },
                 modifier =
                     Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.RECORD_BUTTON)) {
                   Text("Start Recording")
@@ -942,11 +922,7 @@ private fun ActionButtonsSection(
           }
           MeetingStatus.COMPLETED -> {
             Button(
-<<<<<<< HEAD
-                onClick = { onViewTranscript(meeting.projectId, meeting.meetingID) },
-=======
-                onClick = actionsConfig.onViewTranscript,
->>>>>>> origin/main
+                onClick = { actionsConfig.onViewTranscript(meeting.projectId, meeting.meetingID) },
                 modifier =
                     Modifier.fillMaxWidth()
                         .testTag(MeetingDetailScreenTestTags.VIEW_TRANSCRIPT_BUTTON)) {

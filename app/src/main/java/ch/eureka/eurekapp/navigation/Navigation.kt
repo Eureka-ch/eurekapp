@@ -236,7 +236,16 @@ fun NavigationMenu() {
                     { navigationController.navigate(Route.MeetingsSection.Meetings) })
               }
 
-<<<<<<< HEAD
+              composable<Route.MeetingsSection.DateTimeVotes> { backStackEntry ->
+                val dateTimeVotesRoute =
+                    backStackEntry.toRoute<Route.MeetingsSection.DateTimeVotes>()
+                DateTimeVoteScreen(
+                    projectId = dateTimeVotesRoute.projectId,
+                    meetingId = dateTimeVotesRoute.meetingId,
+                    onDone = { navigationController.navigate(Route.MeetingsSection.Meetings) },
+                )
+              }
+
               composable<Route.MeetingsSection.AudioRecording> { backStackEntry ->
                 val audioRecordingRoute =
                     backStackEntry.toRoute<Route.MeetingsSection.AudioRecording>()
@@ -257,20 +266,6 @@ fun NavigationMenu() {
                     projectId = audioTranscriptRoute.projectId,
                     meetingId = audioTranscriptRoute.meetingId,
                     onNavigateBack = { navigationController.popBackStack() })
-=======
-              composable<Route.MeetingsSection.DateTimeVotes> { backStackEntry ->
-                val dateTimeVotesRoute =
-                    backStackEntry.toRoute<Route.MeetingsSection.DateTimeVotes>()
-                DateTimeVoteScreen(
-                    projectId = dateTimeVotesRoute.projectId,
-                    meetingId = dateTimeVotesRoute.meetingId,
-                    onDone = { navigationController.navigate(Route.MeetingsSection.Meetings) },
-                )
-              }
-
-              composable<Route.MeetingsSection.AudioTranscript> {
-                MeetingAudioRecordingScreen(projectId = testProjectId, meetingId = "1234")
->>>>>>> origin/main
               }
 
               composable<Route.ProjectSelectionSection.CreateProject> { CreateProjectScreen() }
