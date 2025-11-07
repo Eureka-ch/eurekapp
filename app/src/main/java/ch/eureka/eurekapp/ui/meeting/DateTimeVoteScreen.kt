@@ -1,3 +1,4 @@
+/* Portions of this code were written with the help of Gemini */
 package ch.eureka.eurekapp.ui.meeting
 
 import android.widget.Toast

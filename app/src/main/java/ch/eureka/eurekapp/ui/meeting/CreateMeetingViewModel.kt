@@ -1,5 +1,6 @@
 /*
 Portions of the code in this file are inspired by the Bootcamp solution B3 provided by the SwEnt staff.
+Portions of the code in this file were written with the help of chatGPT.
  */
 package ch.eureka.eurekapp.ui.meeting
 
@@ -156,7 +157,6 @@ class CreateMeetingViewModel(
       return
     }
 
-    // These this line was written with the help of chatGPT
     val timeInstant =
         LocalDateTime.of(uiState.value.date, uiState.value.time)
             .atZone(ZoneId.systemDefault())

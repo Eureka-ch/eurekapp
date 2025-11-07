@@ -1,3 +1,4 @@
+/* Portions of this code were written with the help of Gemini and chatGPT */
 package ch.eureka.eurekapp.ui.meeting
 
 import android.widget.Toast
