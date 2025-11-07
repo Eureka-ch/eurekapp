@@ -165,7 +165,7 @@ class MeetingTranscriptViewScreenTest {
             projectId = "test-project",
             title = "Test Meeting",
             status = MeetingStatus.COMPLETED,
-            attachmentUrls = listOf("https://test.com/audio.mp4"))
+            audioUrl = "https://test.com/audio.mp4")
 
     meetingFlow.value = meeting
 
