@@ -6,7 +6,6 @@ package ch.eureka.eurekapp.model.data.template.field.validation
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.FieldValue
-import com.google.common.collect.ImmutableList
 
 object FieldValidator {
 
@@ -21,8 +20,7 @@ object FieldValidator {
     when (value) {
       is FieldValue.TextValue -> validateText(value, fieldDef.type as FieldType.Text, errors)
       is FieldValue.NumberValue -> validateNumber(value, fieldDef.type as FieldType.Number, errors)
-      is FieldValue.DateValue ->
-          validateDate(value, fieldDef.type as FieldType.Date, errors as ImmutableList<String>)
+      is FieldValue.DateValue -> validateDate(value, fieldDef.type as FieldType.Date, errors)
       is FieldValue.SingleSelectValue ->
           validateSingleSelect(value, fieldDef.type as FieldType.SingleSelect, errors)
       is FieldValue.MultiSelectValue ->
@@ -72,7 +70,7 @@ object FieldValidator {
   private fun validateDate(
       value: FieldValue.DateValue,
       type: FieldType.Date,
-      errors: ImmutableList<String>
+      errors: MutableList<String>
   ) {
     type.minDate
         ?.takeIf { value.value < it }
