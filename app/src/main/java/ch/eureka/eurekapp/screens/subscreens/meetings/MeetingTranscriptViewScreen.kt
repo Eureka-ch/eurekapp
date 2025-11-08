@@ -62,7 +62,12 @@ object TranscriptScreenTestTags {
 fun MeetingTranscriptViewScreen(
     projectId: String,
     meetingId: String,
-    viewModel: TranscriptViewModel = remember { TranscriptViewModel(projectId, meetingId) },
+    languageCode: String = "en-US",
+    viewModel: TranscriptViewModel =
+        remember(projectId, meetingId, languageCode) {
+          TranscriptViewModel(
+              projectId = projectId, meetingId = meetingId, defaultLanguageCode = languageCode)
+        },
     onNavigateBack: () -> Unit
 ) {
   val uiState by viewModel.uiState.collectAsState()
@@ -118,7 +123,7 @@ fun MeetingTranscriptViewScreen(
                     when {
                       !uiState.hasTranscript && !uiState.isGeneratingTranscript -> {
                         Button(
-                            onClick = { viewModel.generateTranscript() },
+                            onClick = { viewModel.generateTranscript(languageCode) },
                             modifier =
                                 Modifier.fillMaxWidth()
                                     .testTag(TranscriptScreenTestTags.GENERATE_TRANSCRIPT_BUTTON)) {

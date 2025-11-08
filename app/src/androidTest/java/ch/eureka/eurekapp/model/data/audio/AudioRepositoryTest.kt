@@ -7,8 +7,11 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.audio.LocalAudioRecordingRepository
 import ch.eureka.eurekapp.model.audio.RECORDING_STATE
+import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScreen
+import ch.eureka.eurekapp.ui.meeting.MeetingRepositoryMock
 import junit.framework.TestCase.assertTrue
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Rule
 import org.junit.Test
 
@@ -24,7 +27,14 @@ class AudioRepositoryTest {
     val context: Context = ApplicationProvider.getApplicationContext()
     composeTestRule.setContent {
       val context = LocalContext.current
-      MeetingAudioRecordingScreen(projectId = "test-project-id", meetingId = "test-meeting-id")
+      MeetingAudioRecordingScreen(
+          projectId = "test-project-id",
+          meetingId = "test-meeting-id",
+          meetingRepository =
+              object : MeetingRepositoryMock() {
+                override fun getMeetingById(projectId: String, meetingId: String) =
+                    flowOf(Meeting(projectId = projectId, meetingID = meetingId))
+              })
     }
     val repo = LocalAudioRecordingRepository()
 

@@ -7,6 +7,7 @@ import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.audio.AudioRecordingViewModel
 import ch.eureka.eurekapp.model.audio.LocalAudioRecordingRepository
 import ch.eureka.eurekapp.model.audio.RECORDING_STATE
+import ch.eureka.eurekapp.ui.meeting.MeetingRepositoryMock
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -108,7 +109,8 @@ class AudioRecordingViewModelTest {
     val viewModel: AudioRecordingViewModel =
         AudioRecordingViewModel(
             fileStorageRepository = MockedStorageRepository(),
-            recordingRepository = LocalAudioRecordingRepository())
+            recordingRepository = LocalAudioRecordingRepository(),
+            meetingRepository = object : MeetingRepositoryMock() {})
 
     var runned = false
 
@@ -125,7 +127,8 @@ class AudioRecordingViewModelTest {
     val viewModel: AudioRecordingViewModel =
         AudioRecordingViewModel(
             fileStorageRepository = ErrorMockedStorageRepository(),
-            recordingRepository = LocalAudioRecordingRepository())
+            recordingRepository = LocalAudioRecordingRepository(),
+            meetingRepository = object : MeetingRepositoryMock() {})
 
     var runned = false
 

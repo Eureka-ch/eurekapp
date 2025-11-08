@@ -46,7 +46,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.audio.AudioRecordingViewModel
 import ch.eureka.eurekapp.model.audio.RECORDING_STATE
@@ -109,11 +108,9 @@ fun MeetingAudioRecordingScreen(
   var uploadText by remember { mutableStateOf<String>("") }
   var canPressUploadButton by remember { mutableStateOf<Boolean>(true) }
 
-  var firebaseDownloadURI by remember { mutableStateOf<String?>(null) }
-
   // If a transcript already exists for this meeting, show the View Transcript button
   LaunchedEffect(meetingState.value?.transcriptId) {
-    if (meetingState.value?.transcriptId != null) {
+    if (meetingState.value?.transcriptId?.isNotBlank() == true) {
       canShowAITranscriptButton = true
     }
   }
@@ -197,23 +194,18 @@ fun MeetingAudioRecordingScreen(
                               SaveButton(
                                   enabled = canPressUploadButton,
                                   onClick = {
-                                    audioRecordingViewModel.viewModelScope.launch {
-                                      canPressUploadButton = false
-                                      audioRecordingViewModel.saveRecordingToDatabase(
-                                          projectId,
-                                          meetingId,
-                                          onSuccesfulUpload = { firebaseURL ->
-                                            uploadText = "Uploaded successfully!"
-                                            canShowAITranscriptButton = true
-                                            firebaseDownloadURI = firebaseURL
-                                          },
-                                          onFailureUpload = { exception ->
-                                            errorText =
-                                                if (exception.message != null)
-                                                    exception.message.toString()
-                                                else ""
-                                          })
-                                    }
+                                    canPressUploadButton = false
+                                    audioRecordingViewModel.uploadRecordingToDatabase(
+                                        projectId,
+                                        meetingId,
+                                        onSuccesfulUpload = {
+                                          uploadText = "Uploaded successfully!"
+                                          canShowAITranscriptButton = true
+                                        },
+                                        onFailureUpload = { exception ->
+                                          errorText = exception.message?.toString() ?: ""
+                                        },
+                                        onCompletion = { canPressUploadButton = true })
                                   },
                                   testTag = MeetingAudioScreenTestTags.UPLOAD_TO_DATABASE_BUTTON)
                             }

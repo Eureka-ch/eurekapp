@@ -129,7 +129,8 @@ class MeetingTranscriptViewScreenTest {
             title = "Test Meeting",
             status = MeetingStatus.COMPLETED,
             attachmentUrls = listOf("https://test.com/audio.mp4"),
-            transcriptId = null)
+            audioUrl = "https://test.com/audio.mp4",
+            transcriptId = "")
 
     meetingFlow.value = meeting
 
@@ -165,7 +166,7 @@ class MeetingTranscriptViewScreenTest {
             projectId = "test-project",
             title = "Test Meeting",
             status = MeetingStatus.COMPLETED,
-            audioUrl = "https://test.com/audio.mp4")
+            attachmentUrls = listOf("https://test.com/audio.mp4"))
 
     meetingFlow.value = meeting
 

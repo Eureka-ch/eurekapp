@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.model.audio
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
@@ -14,11 +15,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
-/*
- * ViewModel for AudioRecordingScreen
- * Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5
- */
 class AudioRecordingViewModel(
     val fileStorageRepository: FileStorageRepository =
         FirebaseFileStorageRepository(FirebaseStorage.getInstance(), FirebaseAuth.getInstance()),
@@ -70,39 +68,63 @@ class AudioRecordingViewModel(
     recordingRepository.deleteRecording()
   }
 
+  fun uploadRecordingToDatabase(
+      projectId: String,
+      meetingId: String,
+      onSuccesfulUpload: (String) -> Unit,
+      onFailureUpload: (Throwable) -> Unit,
+      onCompletion: () -> Unit = {}
+  ) {
+    viewModelScope.launch {
+      try {
+        saveRecordingToDatabase(projectId, meetingId, onSuccesfulUpload, onFailureUpload)
+      } finally {
+        onCompletion()
+      }
+    }
+  }
+
   suspend fun saveRecordingToDatabase(
       projectId: String,
       meetingId: String,
       onSuccesfulUpload: (String) -> Unit,
       onFailureUpload: (Throwable) -> Unit
   ) {
-    if (_recordingUri.value != null && isRecording.value == RECORDING_STATE.PAUSED) {
-      stopRecording()
-      val result =
-          fileStorageRepository.uploadFile(
-              StoragePaths.meetingTranscriptionAudioPath(
-                  projectId, meetingId, "${_recordingUri.value!!.lastPathSegment}"),
-              _recordingUri.value!!)
-      if (result.isFailure) {
-        onFailureUpload(result.exceptionOrNull()!!)
-      } else {
-        deleteLocalRecording()
-        val firebaseURL = result.getOrNull()!!
-
-        // Update meeting with audio URL
-        try {
-          val meeting = meetingRepository.getMeetingById(projectId, meetingId).first()
-          meeting?.let {
-            val updatedMeeting = it.copy(audioUrl = firebaseURL)
-            meetingRepository.updateMeeting(updatedMeeting)
-          }
-        } catch (e: Exception) {
-          // Log or handle error, but don't fail the upload
-        }
-
-        onSuccesfulUpload(firebaseURL)
-      }
+    if (_recordingUri.value == null || isRecording.value != RECORDING_STATE.PAUSED) {
+      onFailureUpload(IllegalStateException("No paused recording available to upload"))
+      return
     }
+
+    stopRecording()
+    val uploadResult =
+        fileStorageRepository.uploadFile(
+            StoragePaths.meetingTranscriptionAudioPath(
+                projectId, meetingId, "${_recordingUri.value!!.lastPathSegment}"),
+            _recordingUri.value!!)
+
+    uploadResult
+        .onFailure { error -> onFailureUpload(error) }
+        .onSuccess { firebaseUrl ->
+          val meetingResult = runCatching {
+            val meeting =
+                meetingRepository.getMeetingById(projectId, meetingId).first()
+                    ?: throw IllegalStateException("Meeting not found")
+
+            val updateResult = meetingRepository.updateMeeting(meeting.copy(audioUrl = firebaseUrl))
+            if (updateResult.isFailure) {
+              throw updateResult.exceptionOrNull()
+                  ?: RuntimeException("Failed to update meeting audio URL")
+            }
+            firebaseUrl
+          }
+
+          meetingResult
+              .onSuccess { url ->
+                deleteLocalRecording()
+                onSuccesfulUpload(url)
+              }
+              .onFailure { error -> onFailureUpload(error) }
+        }
   }
 
   override fun onCleared() {

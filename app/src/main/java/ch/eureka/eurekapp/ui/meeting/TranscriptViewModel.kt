@@ -50,6 +50,7 @@ class TranscriptViewModel(
     private val speechToTextRepository: SpeechToTextRepository =
         FirestoreRepositoriesProvider.speechToTextRepository,
     private val chatbotRepository: ChatbotRepository = ChatbotRepository(),
+    private val defaultLanguageCode: String = "en-US",
 ) : ViewModel() {
 
   private val _errorMsg = MutableStateFlow<String?>(null)
@@ -72,7 +73,7 @@ class TranscriptViewModel(
           .flatMapLatest { meeting ->
             // If meeting has transcriptId, observe the transcript, otherwise emit null
             val transcriptFlow =
-                if (meeting?.transcriptId != null) {
+                if (meeting?.transcriptId?.isNotBlank() == true) {
                   speechToTextRepository.getTranscriptionById(
                       projectId, meetingId, meeting.transcriptId)
                 } else {
@@ -107,7 +108,7 @@ class TranscriptViewModel(
                       summary = summary,
                       isSummarizing = isSummarizing,
                       isGeneratingTranscript = isGeneratingTranscript,
-                      hasTranscript = m?.transcriptId != null,
+                      hasTranscript = m?.transcriptId?.isNotBlank() == true,
                       errorMsg =
                           errorMsg
                               ?: validationError
@@ -134,7 +135,7 @@ class TranscriptViewModel(
   }
 
   /** Generates transcript from the audio URL */
-  fun generateTranscript(languageCode: String = "en-US") {
+  fun generateTranscript(languageCode: String = defaultLanguageCode) {
     viewModelScope.launch {
       val meeting = uiState.value.meeting
       val audioUrl = uiState.value.audioUrl
