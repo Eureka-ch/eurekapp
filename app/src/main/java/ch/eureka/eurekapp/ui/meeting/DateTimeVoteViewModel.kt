@@ -1,3 +1,6 @@
+/*
+Portions of the code in this file are inspired by the Bootcamp solution B3 provided by the SwEnt staff.
+*/
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.lifecycle.ViewModel
