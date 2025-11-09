@@ -79,7 +79,13 @@ class EditTaskViewModelTest {
                 description = "Description 2",
                 status = ProjectStatus.OPEN))
     viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, mockProjectRepository, mockUserRepository, { null }, testDispatcher)
+        EditTaskViewModel(
+            mockTaskRepository,
+            mockFileRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            { null },
+            testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -90,7 +96,13 @@ class EditTaskViewModelTest {
   @Test
   fun availableProjects_emptyListWhenNoProjects() = runTest {
     viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, mockProjectRepository, mockUserRepository, { null }, testDispatcher)
+        EditTaskViewModel(
+            mockTaskRepository,
+            mockFileRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            { null },
+            testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -101,7 +113,13 @@ class EditTaskViewModelTest {
   @Test
   fun viewModel_initialState_hasCorrectDefaults() = runTest {
     viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, mockProjectRepository, mockUserRepository, { null }, testDispatcher)
+        EditTaskViewModel(
+            mockTaskRepository,
+            mockFileRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            { null },
+            testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
