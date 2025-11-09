@@ -2,7 +2,6 @@ package ch.eureka.eurekapp.screen
 
 import android.Manifest
 import android.content.Context
-import android.net.Uri
 import android.provider.MediaStore
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -55,7 +54,6 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreenTestTag
 import ch.eureka.eurekapp.ui.tasks.TaskScreenViewModel
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.google.firebase.Timestamp
-import com.google.firebase.storage.StorageMetadata
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -1036,23 +1034,6 @@ open class EditTaskScreenTest : TestCase() {
         Text("Tasks Screen", modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
       }
       composable<Route.Camera> { Camera(navigationController = navController) }
-    }
-  }
-
-  class FakeFileRepository : FileStorageRepository {
-    val deletedFiles = mutableListOf<String>()
-
-    override suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String> {
-      return Result.success("https://fakeurl.com/file.jpg")
-    }
-
-    override suspend fun deleteFile(downloadUrl: String): Result<Unit> {
-      deletedFiles.add(downloadUrl)
-      return Result.success(Unit)
-    }
-
-    override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
-      return Result.success(StorageMetadata.Builder().setContentType("image/jpeg").build())
     }
   }
 

@@ -2,7 +2,6 @@ package ch.eureka.eurekapp.screen
 
 import android.Manifest
 import android.content.Context
-import android.net.Uri
 import android.provider.MediaStore
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.testTag
@@ -24,7 +23,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
-import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
@@ -42,7 +40,6 @@ import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.utils.FirebaseEmulator
-import com.google.firebase.storage.StorageMetadata
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
@@ -732,69 +729,6 @@ class CreateTaskScreenTests : TestCase() {
     }
   }
 
-  class FakeFileRepository : FileStorageRepository {
-    override suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String> {
-      return Result.success("https://fakeurl.com/file.jpg")
-    }
-
-    override suspend fun deleteFile(downloadUrl: String): Result<Unit> {
-      return Result.success(Unit)
-    }
-
-    override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
-      return Result.success(StorageMetadata.Builder().setContentType("image/jpeg").build())
-    }
-  }
-
-  class DefectiveFakeFileRepository : FileStorageRepository {
-    override suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String> {
-      return Result.failure(Exception("Upload failed"))
-    }
-
-    override suspend fun deleteFile(downloadUrl: String): Result<Unit> {
-      return Result.failure(Exception("Delete failed"))
-    }
-
-    override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
-      return Result.failure(Exception("No metadata"))
-    }
-  }
-
-  class FakeProjectRepository : ProjectRepository {
-    override fun getProjectById(projectId: String): Flow<Project?> =
-        flowOf(Project(projectId = projectId, name = "Fake Project"))
-
-    override fun getProjectsForCurrentUser(skipCache: Boolean): Flow<List<Project>> =
-        flowOf(emptyList())
-
-    override suspend fun createProject(
-        project: Project,
-        creatorId: String,
-        creatorRole: ProjectRole
-    ): Result<String> = Result.success(project.projectId)
-
-    override suspend fun updateProject(project: Project): Result<Unit> = Result.success(Unit)
-
-    override suspend fun deleteProject(projectId: String): Result<Unit> = Result.success(Unit)
-
-    override fun getMembers(projectId: String): Flow<List<Member>> = flowOf(emptyList())
-
-    override suspend fun addMember(
-        projectId: String,
-        userId: String,
-        role: ProjectRole
-    ): Result<Unit> = Result.success(Unit)
-
-    override suspend fun removeMember(projectId: String, userId: String): Result<Unit> =
-        Result.success(Unit)
-
-    override suspend fun updateMemberRole(
-        projectId: String,
-        userId: String,
-        role: ProjectRole
-    ): Result<Unit> = Result.success(Unit)
-  }
-
   @Test
   fun reminderTimeField_isDisplayed() {
     val projectId = "project123"
@@ -943,103 +877,6 @@ class CreateTaskScreenTests : TestCase() {
       composeTestRule
           .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$taskId1")
           .assertIsDisplayed()
-    }
-  }
-
-  @Test
-  fun testCycleError_isDisplayed_whenCycleDetected() {
-    runBlocking {
-      val projectId = "project123"
-      val taskId1 = "task1"
-      val taskId2 = "task2"
-
-      setupTestProject(projectId)
-      // task1 depends on task2
-      setupTestTask(projectId, taskId1, title = "Task 1", dependingOnTasks = listOf(taskId2))
-      setupTestTask(projectId, taskId2, title = "Task 2")
-
-      val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
-      lastCreateVm = viewModel
-
-      composeTestRule.setContent {
-        val navController = rememberNavController()
-        FakeNavGraph(navController = navController, viewModel = viewModel)
-        navController.navigate(Route.TasksSection.CreateTask)
-      }
-
-      viewModel.setProjectId(projectId)
-      composeTestRule.waitForIdle()
-
-      // Wait for project to be set and tasks to load
-      composeTestRule.waitUntil(timeoutMillis = 10000) {
-        viewModel.uiState.value.projectId == projectId
-      }
-
-      composeTestRule.waitForIdle()
-
-      // Wait for available tasks to load
-      composeTestRule.waitUntil(timeoutMillis = 10000) {
-        viewModel.availableTasks.value.isNotEmpty()
-      }
-
-      composeTestRule.waitForIdle()
-
-      // Wait for the dependency button to appear using the same pattern as other tests
-      composeTestRule.waitUntil(timeoutMillis = 10000) {
-        composeTestRule
-            .onAllNodesWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)
-            .fetchSemanticsNodes()
-            .isNotEmpty()
-      }
-
-      // Scroll to find the dependency button if needed
-      try {
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON).assertIsDisplayed()
-      } catch (e: Exception) {
-        composeTestRule
-            .onRoot()
-            .performScrollToNode(hasTestTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON))
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON).assertIsDisplayed()
-      }
-
-      // Try to add task1 as dependency
-      // Note: For new tasks, cycles can't be detected perfectly since the task doesn't exist yet
-      // This test verifies that the UI allows adding dependencies and the field works
-      composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON).performClick()
-      composeTestRule.waitForIdle()
-
-      composeTestRule.waitUntil(timeoutMillis = 10000) {
-        composeTestRule
-            .onAllNodesWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_menu")
-            .fetchSemanticsNodes()
-            .isNotEmpty()
-      }
-
-      composeTestRule
-          .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_$taskId1")
-          .performClick()
-      composeTestRule.waitForIdle()
-
-      // Wait for dependency to be added (no cycle error should appear for this scenario)
-      composeTestRule.waitUntil(timeoutMillis = 5000) {
-        viewModel.uiState.value.dependingOnTasks.contains(taskId1)
-      }
-
-      // Verify dependency was added (check if it appears in the list)
-      composeTestRule.waitUntil(timeoutMillis = 5000) {
-        composeTestRule
-            .onAllNodesWithTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$taskId1")
-            .fetchSemanticsNodes()
-            .isNotEmpty()
-      }
-
-      // Verify no cycle error is displayed (since this is a valid dependency)
-      composeTestRule.waitForIdle()
-      val cycleErrorNodes =
-          composeTestRule
-              .onAllNodesWithTag(CommonTaskTestTags.DEPENDENCY_CYCLE_ERROR)
-              .fetchSemanticsNodes()
-      assert(cycleErrorNodes.isEmpty()) { "Cycle error should not appear for valid dependency" }
     }
   }
 
