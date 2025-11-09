@@ -1,6 +1,5 @@
 package ch.eureka.eurekapp.utils
 
-import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import kotlinx.coroutines.flow.first
 
@@ -8,9 +7,9 @@ import kotlinx.coroutines.flow.first
 /**
  * Utility object for detecting cycles in task dependency graphs.
  *
- * Uses Depth-First Search (DFS) to detect cycles. A cycle exists if adding a dependency
- * would create a circular reference where task A depends on task B, and task B (directly
- * or indirectly) depends on task A.
+ * Uses Depth-First Search (DFS) to detect cycles. A cycle exists if adding a dependency would
+ * create a circular reference where task A depends on task B, and task B (directly or indirectly)
+ * depends on task A.
  */
 object TaskDependencyCycleDetector {
   /**
@@ -107,4 +106,3 @@ object TaskDependencyCycleDetector {
     return Result.success(Unit)
   }
 }
-

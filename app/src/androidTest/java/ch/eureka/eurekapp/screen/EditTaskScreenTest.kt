@@ -11,10 +11,13 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.lifecycle.ViewModel
@@ -144,7 +147,8 @@ open class EditTaskScreenTest : TestCase() {
       description: String = "Original Description",
       dueDate: String = "15/10/2025",
       status: TaskStatus = TaskStatus.TODO,
-      attachmentUrls: List<String> = emptyList()
+      attachmentUrls: List<String> = emptyList(),
+      dependingOnTasks: List<String> = emptyList()
   ) {
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val date = dateFormat.parse(dueDate)!!
@@ -158,7 +162,8 @@ open class EditTaskScreenTest : TestCase() {
             dueDate = Timestamp(date),
             attachmentUrls = attachmentUrls,
             createdBy = testUserId,
-            status = status)
+            status = status,
+            dependingOnTasks = dependingOnTasks)
     taskRepository.updateTask(task).getOrThrow()
   }
 
@@ -572,6 +577,409 @@ open class EditTaskScreenTest : TestCase() {
         composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
 
         taskViewModel.cleanupForTest()
+      }
+
+  @Test
+  fun testDependenciesLoadedFromTask() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+        val dependencyId = "task1"
+
+        setupTestProject(projectId)
+        setupTestTask(projectId, dependencyId, title = "Dependency Task")
+        setupTestTask(
+            projectId, taskId, title = "Main Task", dependingOnTasks = listOf(dependencyId))
+
+        val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        lastEditVm = viewModel
+
+        composeTestRule.setContent {
+          val navController = rememberNavController()
+          FakeNavGraph(
+              projectId = projectId,
+              taskId = taskId,
+              navController = navController,
+              viewModel = viewModel)
+          navController.navigate(
+              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
+        }
+
+        composeTestRule.waitForIdle()
+
+        // Wait for task to load
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+          viewModel.uiState.value.taskId == taskId
+        }
+
+        composeTestRule.waitForIdle()
+
+        // Wait for available tasks to load
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+          viewModel.availableTasks.value.isNotEmpty() || viewModel.availableTasks.value.isEmpty()
+        }
+
+        composeTestRule.waitForIdle()
+
+        // Scroll to find the dependency item if needed
+        try {
+          composeTestRule
+              .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId")
+              .assertIsDisplayed()
+        } catch (e: Exception) {
+          composeTestRule
+              .onRoot()
+              .performScrollToNode(
+                  hasTestTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId"))
+        }
+
+        // Verify dependency is displayed
+        composeTestRule
+            .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId")
+            .assertIsDisplayed()
+      }
+
+  @Test
+  fun testCurrentTask_isExcludedFromAvailableTasks() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+        val taskId1 = "task1"
+
+        setupTestProject(projectId)
+        setupTestTask(projectId, taskId, title = "Current Task")
+        setupTestTask(projectId, taskId1, title = "Other Task")
+
+        val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        lastEditVm = viewModel
+
+        composeTestRule.setContent {
+          val navController = rememberNavController()
+          FakeNavGraph(
+              projectId = projectId,
+              taskId = taskId,
+              navController = navController,
+              viewModel = viewModel)
+          navController.navigate(
+              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
+        }
+
+        composeTestRule.waitForIdle()
+
+        // Wait for task to load and available tasks to load
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+          viewModel.uiState.value.taskId == taskId
+        }
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+          viewModel.availableTasks.value.isNotEmpty()
+        }
+
+        composeTestRule.waitForIdle()
+
+        // Wait for the dependency button to appear using the same pattern as other tests
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+          composeTestRule
+              .onAllNodesWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)
+              .fetchSemanticsNodes()
+              .isNotEmpty()
+        }
+
+        // Scroll to find the dependency button if needed
+        try {
+          composeTestRule
+              .onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)
+              .assertIsDisplayed()
+        } catch (e: Exception) {
+          composeTestRule
+              .onRoot()
+              .performScrollToNode(hasTestTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON))
+          composeTestRule
+              .onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)
+              .assertIsDisplayed()
+        }
+
+        // Click add dependency button
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON).performClick()
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+          composeTestRule
+              .onAllNodesWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_menu")
+              .fetchSemanticsNodes()
+              .isNotEmpty()
+        }
+
+        // Verify current task is not in the list
+        composeTestRule
+            .onAllNodesWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_$taskId")
+            .assertCountEquals(0)
+
+        // Verify other task is available
+        composeTestRule
+            .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_$taskId1")
+            .assertIsDisplayed()
+      }
+
+  @Test
+  fun testEditTask_withDependencies_savesDependencies() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+        val dependencyId = "task1"
+
+        setupTestProject(projectId)
+        setupTestTask(projectId, dependencyId, title = "Dependency Task")
+        setupTestTask(projectId, taskId, title = "Main Task")
+
+        val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        lastEditVm = viewModel
+
+        composeTestRule.setContent {
+          val navController = rememberNavController()
+          FakeNavGraph(
+              projectId = projectId,
+              taskId = taskId,
+              navController = navController,
+              viewModel = viewModel)
+          navController.navigate(
+              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
+        }
+
+        composeTestRule.waitForIdle()
+
+        // Wait for task to load and available tasks to load
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+          viewModel.uiState.value.taskId == taskId
+        }
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+          viewModel.availableTasks.value.isNotEmpty()
+        }
+
+        composeTestRule.waitForIdle()
+
+        // Scroll to find the dependency button if needed
+        try {
+          composeTestRule
+              .onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)
+              .assertIsDisplayed()
+        } catch (e: Exception) {
+          composeTestRule
+              .onRoot()
+              .performScrollToNode(hasTestTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON))
+        }
+
+        // Add dependency
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON).performClick()
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+          composeTestRule
+              .onAllNodesWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_menu")
+              .fetchSemanticsNodes()
+              .isNotEmpty()
+        }
+
+        composeTestRule
+            .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_$dependencyId")
+            .performClick()
+        composeTestRule.waitForIdle()
+
+        // Save task
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          composeTestRule
+              .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
+              .fetchSemanticsNodes()
+              .isNotEmpty()
+        }
+
+        // Verify dependency was saved
+        val task = taskRepository.getTaskById(projectId, taskId).first()
+        assert(task?.dependingOnTasks?.contains(dependencyId) == true)
+      }
+
+  @Test
+  fun testRemoveDependency_removesFromList() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+        val dependencyId = "task1"
+
+        setupTestProject(projectId)
+        setupTestTask(projectId, dependencyId, title = "Dependency Task")
+        setupTestTask(
+            projectId, taskId, title = "Main Task", dependingOnTasks = listOf(dependencyId))
+
+        val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        lastEditVm = viewModel
+
+        composeTestRule.setContent {
+          val navController = rememberNavController()
+          FakeNavGraph(
+              projectId = projectId,
+              taskId = taskId,
+              navController = navController,
+              viewModel = viewModel)
+          navController.navigate(
+              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
+        }
+
+        composeTestRule.waitForIdle()
+
+        // Wait for task to load
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+          viewModel.uiState.value.taskId == taskId
+        }
+
+        composeTestRule.waitForIdle()
+
+        // Scroll to find the dependency item if needed
+        try {
+          composeTestRule
+              .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId")
+              .assertIsDisplayed()
+        } catch (e: Exception) {
+          composeTestRule
+              .onRoot()
+              .performScrollToNode(
+                  hasTestTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId"))
+        }
+
+        // Verify dependency is shown
+        composeTestRule
+            .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId")
+            .assertIsDisplayed()
+
+        // Click remove button
+        composeTestRule
+            .onNodeWithTag("${CommonTaskTestTags.REMOVE_DEPENDENCY}_$dependencyId")
+            .performClick()
+        composeTestRule.waitForIdle()
+
+        // Verify dependency is removed
+        composeTestRule
+            .onAllNodesWithTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId")
+            .assertCountEquals(0)
+      }
+
+  @Test
+  fun testCycleError_isDisplayed_whenCycleDetected() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+        val taskId1 = "task1"
+        val taskId2 = "task2"
+
+        setupTestProject(projectId)
+        // Create a cycle: taskId -> task1 -> task2 -> taskId
+        // task1 depends on task2
+        setupTestTask(projectId, taskId1, title = "Task 1", dependingOnTasks = listOf(taskId2))
+        // task2 depends on taskId (this creates the cycle when we try to make taskId depend on
+        // task1)
+        setupTestTask(projectId, taskId2, title = "Task 2", dependingOnTasks = listOf(taskId))
+        setupTestTask(projectId, taskId, title = "Main Task")
+
+        val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+        lastEditVm = viewModel
+
+        composeTestRule.setContent {
+          val navController = rememberNavController()
+          FakeNavGraph(
+              projectId = projectId,
+              taskId = taskId,
+              navController = navController,
+              viewModel = viewModel)
+          navController.navigate(
+              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
+        }
+
+        composeTestRule.waitForIdle()
+
+        // Wait for task to load and available tasks to load
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+          viewModel.uiState.value.taskId == taskId
+        }
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+          viewModel.availableTasks.value.isNotEmpty()
+        }
+
+        composeTestRule.waitForIdle()
+
+        // Wait for the dependency button to appear using the same pattern as other tests
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+          composeTestRule
+              .onAllNodesWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)
+              .fetchSemanticsNodes()
+              .isNotEmpty()
+        }
+
+        // Scroll to find the dependency button if needed
+        try {
+          composeTestRule
+              .onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)
+              .assertIsDisplayed()
+        } catch (e: Exception) {
+          composeTestRule
+              .onRoot()
+              .performScrollToNode(hasTestTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON))
+          composeTestRule
+              .onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)
+              .assertIsDisplayed()
+        }
+
+        // Try to add task1 as dependency (creates cycle)
+        // Cycle: taskId -> task1 -> task2 -> taskId
+        // Since task2 already depends on taskId, adding task1 as a dependency of taskId creates a
+        // cycle
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON).performClick()
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+          composeTestRule
+              .onAllNodesWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_menu")
+              .fetchSemanticsNodes()
+              .isNotEmpty()
+        }
+
+        composeTestRule
+            .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_$taskId1")
+            .performClick()
+        composeTestRule.waitForIdle()
+
+        // Wait for cycle error to appear (may take time for validation)
+        composeTestRule.waitUntil(timeoutMillis = 15000) {
+          try {
+            composeTestRule
+                .onNodeWithTag(CommonTaskTestTags.DEPENDENCY_CYCLE_ERROR)
+                .assertIsDisplayed()
+            true
+          } catch (e: Exception) {
+            // Try scrolling to find it
+            try {
+              composeTestRule
+                  .onRoot()
+                  .performScrollToNode(hasTestTag(CommonTaskTestTags.DEPENDENCY_CYCLE_ERROR))
+              composeTestRule
+                  .onNodeWithTag(CommonTaskTestTags.DEPENDENCY_CYCLE_ERROR)
+                  .assertIsDisplayed()
+              true
+            } catch (e2: Exception) {
+              false
+            }
+          }
+        }
+
+        // Verify cycle error is displayed
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DEPENDENCY_CYCLE_ERROR).assertIsDisplayed()
       }
 
   private fun clearTestPhotos() {

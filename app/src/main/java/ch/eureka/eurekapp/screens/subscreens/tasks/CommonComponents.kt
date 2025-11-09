@@ -315,55 +315,53 @@ fun TaskDependenciesSelectionField(
     modifier: Modifier = Modifier
 ) {
   var expanded by remember { mutableStateOf(false) }
-  
+
   // Filter out the current task from available tasks (can't depend on itself)
   val selectableTasks = availableTasks.filter { it.taskID != currentTaskId }
-  
+
   Column(modifier = modifier) {
     Text(text = "Task Dependencies", style = MaterialTheme.typography.titleMedium)
-    
+
     // Show selected dependencies
     if (selectedDependencyIds.isNotEmpty()) {
-      Column(
-          modifier = Modifier.fillMaxWidth(),
-          verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            selectedDependencyIds.forEach { dependencyId ->
-              val task = availableTasks.firstOrNull { it.taskID == dependencyId }
-              if (task != null) {
-                Row(
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .testTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId"),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically) {
-                      Text(
-                          text = task.title,
-                          style = MaterialTheme.typography.bodyMedium,
-                          modifier = Modifier.weight(1f))
-                      IconButton(
-                          onClick = { onDependencyRemoved(dependencyId) },
-                          modifier = Modifier.testTag("${CommonTaskTestTags.REMOVE_DEPENDENCY}_$dependencyId")) {
+      Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        selectedDependencyIds.forEach { dependencyId ->
+          val task = availableTasks.firstOrNull { it.taskID == dependencyId }
+          if (task != null) {
+            Row(
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .testTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId"),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically) {
+                  Text(
+                      text = task.title,
+                      style = MaterialTheme.typography.bodyMedium,
+                      modifier = Modifier.weight(1f))
+                  IconButton(
+                      onClick = { onDependencyRemoved(dependencyId) },
+                      modifier =
+                          Modifier.testTag(
+                              "${CommonTaskTestTags.REMOVE_DEPENDENCY}_$dependencyId")) {
                         Icon(
                             imageVector = Icons.Filled.Delete,
                             contentDescription = "Remove dependency")
                       }
-                    }
-              }
-            }
+                }
           }
+        }
+      }
     }
-    
+
     // Add dependency button/dropdown
     if (selectableTasks.isNotEmpty()) {
       Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedButton(
             onClick = { expanded = !expanded },
-            modifier =
-                Modifier.fillMaxWidth()
-                    .testTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)) {
+            modifier = Modifier.fillMaxWidth().testTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)) {
               Text("Add Dependency")
             }
-        
+
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
@@ -393,7 +391,7 @@ fun TaskDependenciesSelectionField(
           style = MaterialTheme.typography.bodyMedium,
           color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
-    
+
     // Show cycle error if present
     if (cycleError != null) {
       Text(

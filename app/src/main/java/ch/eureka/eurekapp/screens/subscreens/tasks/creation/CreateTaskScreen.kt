@@ -159,7 +159,9 @@ fun CreateTaskScreen(
                     availableTasks = availableTasks,
                     selectedDependencyIds = createTaskState.dependingOnTasks,
                     onDependencyAdded = { taskId -> createTaskViewModel.addDependency(taskId) },
-                    onDependencyRemoved = { taskId -> createTaskViewModel.removeDependency(taskId) },
+                    onDependencyRemoved = { taskId ->
+                      createTaskViewModel.removeDependency(taskId)
+                    },
                     currentTaskId = "",
                     cycleError = cycleError)
               }

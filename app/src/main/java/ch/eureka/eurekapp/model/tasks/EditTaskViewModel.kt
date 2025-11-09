@@ -12,6 +12,7 @@ import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.utils.TaskDependencyCycleDetector
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -21,7 +22,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
-import ch.eureka.eurekapp.utils.TaskDependencyCycleDetector
 
 /*
 Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
@@ -56,9 +56,7 @@ class EditTaskViewModel(
       return
     }
     viewModelScope.launch(dispatcher) {
-      taskRepository.getTasksInProject(projectId).collect { tasks ->
-        _availableTasks.value = tasks
-      }
+      taskRepository.getTasksInProject(projectId).collect { tasks -> _availableTasks.value = tasks }
     }
   }
 

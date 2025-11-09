@@ -17,6 +17,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 class MockTaskRepository : TaskRepository {
   private var currentUserTasks: Flow<List<Task>> = flowOf(emptyList())
   private val projectTasks = mutableMapOf<String, Flow<List<Task>>>()
+  private val tasksById = mutableMapOf<String, Task>()
   private var updateTaskResult: Result<Unit> = Result.success(Unit)
   private var createTaskResult: Result<String> = Result.success("mock-task-id")
 
@@ -25,6 +26,11 @@ class MockTaskRepository : TaskRepository {
   val createTaskCalls = mutableListOf<Task>()
   val getTasksForCurrentUserCalls = mutableListOf<Unit>()
   val getTasksInProjectCalls = mutableListOf<String>()
+
+  /** Add a task that can be retrieved by getTaskById */
+  fun addTask(task: Task) {
+    tasksById[task.taskID] = task
+  }
 
   /** Configure tasks returned by getTasksForCurrentUser() */
   fun setCurrentUserTasks(flow: Flow<List<Task>>) {
@@ -50,6 +56,7 @@ class MockTaskRepository : TaskRepository {
   fun reset() {
     currentUserTasks = flowOf(emptyList())
     projectTasks.clear()
+    tasksById.clear()
     updateTaskResult = Result.success(Unit)
     createTaskResult = Result.success("mock-task-id")
     updateTaskCalls.clear()
@@ -58,7 +65,9 @@ class MockTaskRepository : TaskRepository {
     getTasksInProjectCalls.clear()
   }
 
-  override fun getTaskById(projectId: String, taskId: String): Flow<Task?> = flowOf(null)
+  override fun getTaskById(projectId: String, taskId: String): Flow<Task?> {
+    return flowOf(tasksById[taskId])
+  }
 
   override fun getTasksInProject(projectId: String): Flow<List<Task>> {
     getTasksInProjectCalls.add(projectId)
@@ -72,11 +81,13 @@ class MockTaskRepository : TaskRepository {
 
   override suspend fun createTask(task: Task): Result<String> {
     createTaskCalls.add(task)
+    tasksById[task.taskID] = task
     return createTaskResult
   }
 
   override suspend fun updateTask(task: Task): Result<Unit> {
     updateTaskCalls.add(task)
+    tasksById[task.taskID] = task
     return updateTaskResult
   }
 
