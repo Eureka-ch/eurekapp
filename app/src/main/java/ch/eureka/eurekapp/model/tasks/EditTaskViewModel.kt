@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import ch.eureka.eurekapp.utils.TaskDependencyCycleDetector
 
 /*
 Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
@@ -42,6 +43,24 @@ class EditTaskViewModel(
 
   private val _uiState = MutableStateFlow(EditTaskState())
   override val uiState: StateFlow<EditTaskState> = _uiState.asStateFlow()
+
+  private val _availableTasks = MutableStateFlow<List<Task>>(emptyList())
+  val availableTasks: StateFlow<List<Task>> = _availableTasks.asStateFlow()
+
+  private val _cycleError = MutableStateFlow<String?>(null)
+  val cycleError: StateFlow<String?> = _cycleError.asStateFlow()
+
+  fun loadAvailableTasks(projectId: String) {
+    if (projectId.isEmpty()) {
+      _availableTasks.value = emptyList()
+      return
+    }
+    viewModelScope.launch(dispatcher) {
+      taskRepository.getTasksInProject(projectId).collect { tasks ->
+        _availableTasks.value = tasks
+      }
+    }
+  }
 
   /** Resets the delete state after navigation or handling */
   fun resetDeleteState() {
@@ -89,6 +108,16 @@ class EditTaskViewModel(
       val newPhotoUrls = photoUrlsResult.getOrThrow()
 
       viewModelScope.launch(dispatcher + handler) {
+        // Validate no cycles before saving
+        val cycleValidation =
+            TaskDependencyCycleDetector.validateNoCycles(
+                state.taskId, state.dependingOnTasks, state.projectId, taskRepository)
+        if (cycleValidation.isFailure) {
+          setErrorMsg(cycleValidation.exceptionOrNull()?.message ?: "Circular dependency detected")
+          updateState { copy(isSaving = false) }
+          return@launch
+        }
+
         val task =
             Task(
                 taskID = state.taskId,
@@ -100,7 +129,8 @@ class EditTaskViewModel(
                 reminderTime = reminderTimestamp,
                 attachmentUrls = state.attachmentUrls + newPhotoUrls,
                 createdBy = currentUser,
-                status = state.status)
+                status = state.status,
+                dependingOnTasks = state.dependingOnTasks)
 
         taskRepository.updateTask(task).onFailure { _ ->
           setErrorMsg("Failed to update Task.")
@@ -184,6 +214,7 @@ class EditTaskViewModel(
                       attachmentUrls = filteredAttachments,
                       status = task.status,
                       customData = task.customData,
+                      dependingOnTasks = task.dependingOnTasks,
                   )
                 }
               } else {
@@ -238,11 +269,37 @@ class EditTaskViewModel(
 
   override fun EditTaskState.copyWithProjectId(projectId: String) = copy(projectId = projectId)
 
+  override fun EditTaskState.copyWithDependencies(dependencies: List<String>) =
+      copy(dependingOnTasks = dependencies)
+
   override fun updateState(update: EditTaskState.() -> EditTaskState) {
     _uiState.value = _uiState.value.update()
   }
 
   fun setReminderTime(reminderTime: String) {
     updateState { copy(reminderTime = reminderTime) }
+  }
+
+  override fun addDependency(taskId: String) {
+    val currentDependencies = uiState.value.dependingOnTasks
+    if (!currentDependencies.contains(taskId)) {
+      viewModelScope.launch(dispatcher) {
+        val wouldCycle =
+            TaskDependencyCycleDetector.wouldCreateCycle(
+                uiState.value.taskId, taskId, uiState.value.projectId, taskRepository)
+        if (wouldCycle) {
+          _cycleError.value = "Adding this dependency would create a circular dependency"
+        } else {
+          _cycleError.value = null
+          updateState { copyWithDependencies(currentDependencies + taskId) }
+        }
+      }
+    }
+  }
+
+  override fun removeDependency(taskId: String) {
+    val currentDependencies = uiState.value.dependingOnTasks
+    updateState { copyWithDependencies(currentDependencies.filter { it != taskId }) }
+    _cycleError.value = null
   }
 }
