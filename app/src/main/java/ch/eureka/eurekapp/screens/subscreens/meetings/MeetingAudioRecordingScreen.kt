@@ -46,17 +46,17 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.audio.AudioRecordingViewModel
 import ch.eureka.eurekapp.model.audio.RECORDING_STATE
+import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
 import ch.eureka.eurekapp.ui.theme.DarkColorScheme
 import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.ui.theme.Typography
 import ch.eureka.eurekapp.utils.Formatters
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 object MeetingAudioScreenTestTags {
   const val START_RECORDING_BUTTON = "start recording button"
@@ -66,13 +66,15 @@ object MeetingAudioScreenTestTags {
   const val GENERATE_AI_TRANSCRIPT_BUTTON = "generate ai transcript button"
 }
 
+/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
 @Composable
 fun MeetingAudioRecordingScreen(
     context: Context = LocalContext.current,
     projectId: String,
     meetingId: String,
     audioRecordingViewModel: AudioRecordingViewModel = viewModel(),
-    onGenerateAITranscript: (String) -> Unit = {}
+    meetingRepository: MeetingRepository = FirestoreRepositoriesProvider.meetingRepository,
+    onNavigateToTranscript: (String, String) -> Unit = { _, _ -> }
 ) {
 
   var microphonePermissionIsGranted by remember {
@@ -89,6 +91,9 @@ fun MeetingAudioRecordingScreen(
 
   val recordingStatus = audioRecordingViewModel.isRecording.collectAsState()
 
+  val meetingState =
+      meetingRepository.getMeetingById(projectId, meetingId).collectAsState(initial = null)
+
   var canShowAITranscriptButton by remember { mutableStateOf(false) }
 
   LaunchedEffect(Unit) {
@@ -103,7 +108,12 @@ fun MeetingAudioRecordingScreen(
   var uploadText by remember { mutableStateOf<String>("") }
   var canPressUploadButton by remember { mutableStateOf<Boolean>(true) }
 
-  var firebaseDownloadURI by remember { mutableStateOf<String?>(null) }
+  // If a transcript already exists for this meeting, show the View Transcript button
+  LaunchedEffect(meetingState.value?.transcriptId) {
+    if (meetingState.value?.transcriptId?.isNotBlank() == true) {
+      canShowAITranscriptButton = true
+    }
+  }
 
   LaunchedEffect(recordingStatus.value) {
     while (recordingStatus.value == RECORDING_STATE.RUNNING) {
@@ -184,23 +194,18 @@ fun MeetingAudioRecordingScreen(
                               SaveButton(
                                   enabled = canPressUploadButton,
                                   onClick = {
-                                    audioRecordingViewModel.viewModelScope.launch {
-                                      canPressUploadButton = false
-                                      audioRecordingViewModel.saveRecordingToDatabase(
-                                          projectId,
-                                          meetingId,
-                                          onSuccesfulUpload = { firebaseURL ->
-                                            uploadText = "Uploaded successfully!"
-                                            canShowAITranscriptButton = true
-                                            firebaseDownloadURI = firebaseURL
-                                          },
-                                          onFailureUpload = { exception ->
-                                            errorText =
-                                                if (exception.message != null)
-                                                    exception.message.toString()
-                                                else ""
-                                          })
-                                    }
+                                    canPressUploadButton = false
+                                    audioRecordingViewModel.uploadRecordingToDatabase(
+                                        projectId,
+                                        meetingId,
+                                        onSuccesfulUpload = {
+                                          uploadText = "Uploaded successfully!"
+                                          canShowAITranscriptButton = true
+                                        },
+                                        onFailureUpload = { exception ->
+                                          errorText = exception.message?.toString() ?: ""
+                                        },
+                                        onCompletion = { canPressUploadButton = true })
                                   },
                                   testTag = MeetingAudioScreenTestTags.UPLOAD_TO_DATABASE_BUTTON)
                             }
@@ -248,13 +253,13 @@ fun MeetingAudioRecordingScreen(
                           horizontalArrangement = Arrangement.Center,
                           verticalAlignment = Alignment.CenterVertically) {
                             ElevatedButton(
-                                modifier = Modifier.size(width = 250.dp, height = 50.dp),
-                                onClick = { onGenerateAITranscript(firebaseDownloadURI!!) }) {
-                                  Row() {
-                                    Text(
-                                        "\uD83E\uDDE0 Generate AI Transcript",
-                                        style = Typography.titleMedium)
-                                  }
+                                modifier =
+                                    Modifier.size(width = 250.dp, height = 50.dp)
+                                        .testTag(
+                                            MeetingAudioScreenTestTags
+                                                .GENERATE_AI_TRANSCRIPT_BUTTON),
+                                onClick = { onNavigateToTranscript(projectId, meetingId) }) {
+                                  Row() { Text("View Transcript", style = Typography.titleMedium) }
                                 }
                           }
                     }

@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.model.data
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
+/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
 class StoragePathsTest {
 
   @Test
@@ -90,7 +91,7 @@ class StoragePathsTest {
 
     val result = StoragePaths.taskAttachmentPath(projectId, taskId, filename)
 
-    assertEquals("projects/project789/tasks/task123/screenshot.png", result)
+    assertEquals("projects/project789/tasks/task123/attachments/screenshot.png", result)
   }
 
   @Test
@@ -101,7 +102,7 @@ class StoragePathsTest {
 
     val result = StoragePaths.taskAttachmentPath(projectId, taskId, filename)
 
-    assertEquals("projects/project789/tasks/task123/archive.tar.gz", result)
+    assertEquals("projects/project789/tasks/task123/attachments/archive.tar.gz", result)
   }
 
   @Test
@@ -112,7 +113,7 @@ class StoragePathsTest {
 
     val result = StoragePaths.meetingAttachmentPath(projectId, meetingId, filename)
 
-    assertEquals("projects/projectABC/meetings/meetingXYZ/notes.txt", result)
+    assertEquals("projects/projectABC/meetings/meetingXYZ/attachments/notes.txt", result)
   }
 
   @Test
@@ -123,7 +124,28 @@ class StoragePathsTest {
 
     val result = StoragePaths.meetingAttachmentPath(projectId, meetingId, filename)
 
-    assertEquals("projects/projectABC/meetings/meetingXYZ/README", result)
+    assertEquals("projects/projectABC/meetings/meetingXYZ/attachments/README", result)
+  }
+
+  @Test
+  fun meetingTranscriptionAudioPath_generatesCorrectPath() {
+    val projectId = "projectABC"
+    val meetingId = "meetingXYZ"
+    val filename = "audio.mp3"
+
+    val result = StoragePaths.meetingTranscriptionAudioPath(projectId, meetingId, filename)
+
+    assertEquals("projects/projectABC/meetings/meetingXYZ/transcriptions/audio.mp3", result)
+  }
+
+  @Test
+  fun meetingTranscriptionAudioPath_handlesVariousAudioFormats() {
+    val projectId = "proj123"
+    val meetingId = "meet456"
+
+    val mp3Path = StoragePaths.meetingTranscriptionAudioPath(projectId, meetingId, "recording.mp3")
+
+    assertEquals("projects/proj123/meetings/meet456/transcriptions/recording.mp3", mp3Path)
   }
 
   @Test
@@ -133,11 +155,13 @@ class StoragePathsTest {
     val emptyProject = StoragePaths.projectFilePath("", "file.txt")
     val emptyTask = StoragePaths.taskAttachmentPath("", "", "file.txt")
     val emptyMeeting = StoragePaths.meetingAttachmentPath("", "", "file.txt")
+    val emptyTranscription = StoragePaths.meetingTranscriptionAudioPath("", "", "file.txt")
 
     assertEquals("users//file.txt", emptyUser)
     assertEquals("projects//file.txt", emptyProject)
-    assertEquals("projects//tasks//file.txt", emptyTask)
-    assertEquals("projects//meetings//file.txt", emptyMeeting)
+    assertEquals("projects//tasks//attachments/file.txt", emptyTask)
+    assertEquals("projects//meetings//attachments/file.txt", emptyMeeting)
+    assertEquals("projects//meetings//transcriptions/file.txt", emptyTranscription)
   }
 
   @Test
