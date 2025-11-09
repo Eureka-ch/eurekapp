@@ -35,7 +35,8 @@ Note: This file was partially written by GPT-5 Codex Co-author : GPT-5
 class CreateTaskViewModel(
     taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
     fileRepository: FileStorageRepository = FirestoreRepositoriesProvider.fileRepository,
-    private val projectRepository: ProjectRepository = FirestoreRepositoriesProvider.projectRepository,
+    private val projectRepository: ProjectRepository =
+        FirestoreRepositoriesProvider.projectRepository,
     private val userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository,
     getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     dispatcher: CoroutineDispatcher = Dispatchers.IO
@@ -170,9 +171,7 @@ class CreateTaskViewModel(
       projectRepository.getMembers(projectId).collect { members ->
         val users = mutableListOf<User>()
         members.forEach { member ->
-          userRepository.getUserById(member.userId).collect { user ->
-            user?.let { users.add(it) }
-          }
+          userRepository.getUserById(member.userId).collect { user -> user?.let { users.add(it) } }
         }
         updateState { copy(availableUsers = users) }
       }
@@ -187,11 +186,12 @@ class CreateTaskViewModel(
   /** Toggles a user in the assigned users list */
   fun toggleUserAssignment(userId: String) {
     val currentIds = uiState.value.selectedAssignedUserIds
-    val newIds = if (currentIds.contains(userId)) {
-      currentIds - userId
-    } else {
-      currentIds + userId
-    }
+    val newIds =
+        if (currentIds.contains(userId)) {
+          currentIds - userId
+        } else {
+          currentIds + userId
+        }
     updateState { copy(selectedAssignedUserIds = newIds) }
   }
 }

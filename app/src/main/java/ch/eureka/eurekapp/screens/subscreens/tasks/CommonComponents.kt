@@ -1,13 +1,16 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,11 +30,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.project.Project
+import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.camera.PhotoViewer
 import ch.eureka.eurekapp.utils.Formatters
 
 // Portions of this code were generated with the help of AI.
 
+/*
+Note: This file was partially written by GPT-5 Codex
+Co-author : GPT-5
+*/
 /**
  * Helper function to determine if an error should be shown for a field.
  *
@@ -81,6 +89,10 @@ object CommonTaskTestTags {
   const val PROJECT_NAME = "project_name"
   const val PROJECT_SELECTION_ERROR = "project_selection_error"
   const val NO_PROJECTS_AVAILABLE = "no_projects_available"
+  const val USER_ASSIGNMENT_TITLE = "user_assignment_title"
+  const val USER_ASSIGNMENT_MENU = "user_assignment_menu"
+  const val USER_CHECKBOX = "user_checkbox"
+  const val NO_USERS_AVAILABLE = "no_users_available"
 }
 
 @Composable
@@ -291,6 +303,79 @@ fun ProjectSelectionField(
           color = Color.Red,
           style = MaterialTheme.typography.bodySmall,
           modifier = Modifier.testTag(CommonTaskTestTags.PROJECT_SELECTION_ERROR))
+    }
+  }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UserAssignmentField(
+    availableUsers: List<User>,
+    selectedUserIds: List<String>,
+    onUserToggled: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
+) {
+  var expanded by remember { mutableStateOf(false) }
+  val selectedCount = selectedUserIds.size
+  val displayText =
+      when {
+        selectedCount == 0 -> "No users assigned"
+        selectedCount == 1 -> {
+          val user = availableUsers.firstOrNull { it.uid == selectedUserIds.first() }
+          user?.displayName?.ifBlank { user.email } ?: "1 user assigned"
+        }
+        else -> "$selectedCount users assigned"
+      }
+
+  Column(modifier = modifier) {
+    Text(text = "Assign Users", style = MaterialTheme.typography.titleMedium)
+
+    if (availableUsers.isEmpty()) {
+      Text(
+          text = "No users available in this project",
+          style = MaterialTheme.typography.bodyMedium,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+          modifier = Modifier.testTag(CommonTaskTestTags.NO_USERS_AVAILABLE))
+    } else {
+      Box(modifier = Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = displayText,
+            onValueChange = {},
+            readOnly = true,
+            enabled = enabled,
+            placeholder = { Text("Select users to assign") },
+            modifier =
+                Modifier.fillMaxWidth()
+                    .clickable(enabled = enabled) { expanded = !expanded }
+                    .testTag(CommonTaskTestTags.USER_ASSIGNMENT_TITLE))
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.testTag(CommonTaskTestTags.USER_ASSIGNMENT_MENU)) {
+              availableUsers.forEach { user ->
+                DropdownMenuItem(
+                    text = {
+                      Row(
+                          modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                          horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text(
+                                text = user.displayName.ifBlank { user.email },
+                                style = MaterialTheme.typography.bodyMedium)
+                            Checkbox(
+                                checked = selectedUserIds.contains(user.uid),
+                                onCheckedChange = null,
+                                modifier =
+                                    Modifier.testTag(
+                                        "${CommonTaskTestTags.USER_CHECKBOX}_${user.uid}"))
+                          }
+                    },
+                    onClick = { onUserToggled(user.uid) },
+                    modifier = Modifier.testTag("user_item_${user.uid}"))
+              }
+            }
+      }
     }
   }
 }
