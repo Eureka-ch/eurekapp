@@ -39,6 +39,7 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDescriptionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskReminderField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskTitleField
+import ch.eureka.eurekapp.screens.subscreens.tasks.UserAssignmentField
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 object EditTaskScreenTestTags {
@@ -53,6 +54,7 @@ const val EDIT_SCREEN_SMALL_BUTTON_SIZE = 0.3f
 Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
 Co-Authored-By: Claude <noreply@anthropic.com>
 Portions of this code were generated with the help of Grok.
+Note: This file was partially written by GPT-5 Codex Co-author : GPT-5
 */
 
 /**
@@ -165,6 +167,12 @@ fun EditTaskScreen(
                   projects = editTaskState.availableProjects,
                   selectedProjectId = editTaskState.projectId,
                   onProjectSelected = { projectId -> editTaskViewModel.setProjectId(projectId) })
+
+              UserAssignmentField(
+                  availableUsers = editTaskState.availableUsers,
+                  selectedUserIds = editTaskState.selectedAssignedUserIds,
+                  onUserToggled = { userId -> editTaskViewModel.toggleUserAssignment(userId) },
+                  enabled = editTaskState.projectId.isNotEmpty())
 
               Row(
                   modifier = Modifier.fillMaxWidth(),
