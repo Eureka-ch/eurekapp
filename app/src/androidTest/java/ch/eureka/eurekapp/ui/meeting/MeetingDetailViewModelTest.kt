@@ -348,6 +348,244 @@ class MeetingDetailViewModelTest {
 
     assertTrue(viewModel.uiState.value.deleteSuccess)
   }
+
+  @Test
+  fun toggleEditModeEntersEditMode() = runTest {
+    repositoryMock.meetingToReturn.value = testMeeting
+    repositoryMock.participantsToReturn.value = testParticipants
+
+    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    backgroundScope.launch { viewModel.uiState.collect {} }
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertFalse(viewModel.uiState.value.isEditMode)
+
+    viewModel.toggleEditMode(testMeeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    val uiState = viewModel.uiState.value
+    assertTrue(uiState.isEditMode)
+    assertEquals(testMeeting.title, uiState.editTitle)
+    assertEquals(testMeeting.datetime, uiState.editDateTime)
+    assertEquals(testMeeting.duration, uiState.editDuration)
+  }
+
+  @Test
+  fun toggleEditModeExitsEditModeAndResetsFields() = runTest {
+    repositoryMock.meetingToReturn.value = testMeeting
+    repositoryMock.participantsToReturn.value = testParticipants
+
+    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    backgroundScope.launch { viewModel.uiState.collect {} }
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.toggleEditMode(testMeeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+    assertTrue(viewModel.uiState.value.isEditMode)
+
+    viewModel.toggleEditMode(null)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    val uiState = viewModel.uiState.value
+    assertFalse(uiState.isEditMode)
+    assertEquals("", uiState.editTitle)
+    assertNull(uiState.editDateTime)
+    assertEquals(30, uiState.editDuration)
+  }
+
+  @Test
+  fun updateEditTitleUpdatesState() = runTest {
+    repositoryMock.meetingToReturn.value = testMeeting
+    repositoryMock.participantsToReturn.value = testParticipants
+
+    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    backgroundScope.launch { viewModel.uiState.collect {} }
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.toggleEditMode(testMeeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    val newTitle = "Updated Meeting Title"
+    viewModel.updateEditTitle(newTitle)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertEquals(newTitle, viewModel.uiState.value.editTitle)
+  }
+
+  @Test
+  fun updateEditDateTimeUpdatesState() = runTest {
+    repositoryMock.meetingToReturn.value = testMeeting
+    repositoryMock.participantsToReturn.value = testParticipants
+
+    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    backgroundScope.launch { viewModel.uiState.collect {} }
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.toggleEditMode(testMeeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    val newDateTime = Timestamp(Date(System.currentTimeMillis() + 86400000))
+    viewModel.updateEditDateTime(newDateTime)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertEquals(newDateTime, viewModel.uiState.value.editDateTime)
+  }
+
+  @Test
+  fun updateEditDurationUpdatesState() = runTest {
+    repositoryMock.meetingToReturn.value = testMeeting
+    repositoryMock.participantsToReturn.value = testParticipants
+
+    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    backgroundScope.launch { viewModel.uiState.collect {} }
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.toggleEditMode(testMeeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    val newDuration = 60
+    viewModel.updateEditDuration(newDuration)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertEquals(newDuration, viewModel.uiState.value.editDuration)
+  }
+
+  @Test
+  fun saveMeetingChangesSuccessfully() = runTest {
+    repositoryMock.meetingToReturn.value = testMeeting
+    repositoryMock.participantsToReturn.value = testParticipants
+    repositoryMock.updateResult = Result.success(Unit)
+
+    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    backgroundScope.launch { viewModel.uiState.collect {} }
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.toggleEditMode(testMeeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.updateEditTitle("Updated Title")
+    viewModel.updateEditDuration(60)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.saveMeetingChanges(testMeeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    val uiState = viewModel.uiState.value
+    assertTrue(uiState.updateSuccess)
+    assertFalse(uiState.isEditMode)
+    assertFalse(uiState.isSaving)
+    assertNull(uiState.errorMsg)
+  }
+
+  @Test
+  fun saveMeetingChangesHandlesFailure() = runTest {
+    val errorMessage = "Failed to update meeting"
+    repositoryMock.meetingToReturn.value = testMeeting
+    repositoryMock.participantsToReturn.value = testParticipants
+    repositoryMock.updateResult = Result.failure(Exception(errorMessage))
+
+    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    backgroundScope.launch { viewModel.uiState.collect {} }
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.toggleEditMode(testMeeting)
+    viewModel.updateEditTitle("Updated Title")
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.saveMeetingChanges(testMeeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    val uiState = viewModel.uiState.value
+    assertFalse(uiState.updateSuccess)
+    assertTrue(uiState.isEditMode)
+    assertFalse(uiState.isSaving)
+    assertEquals(errorMessage, uiState.errorMsg)
+  }
+
+  @Test
+  fun saveMeetingChangesRejectsBlankTitle() = runTest {
+    repositoryMock.meetingToReturn.value = testMeeting
+    repositoryMock.participantsToReturn.value = testParticipants
+
+    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    backgroundScope.launch { viewModel.uiState.collect {} }
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.toggleEditMode(testMeeting)
+    viewModel.updateEditTitle("")
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.saveMeetingChanges(testMeeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    val uiState = viewModel.uiState.value
+    assertFalse(uiState.updateSuccess)
+    assertEquals("Title cannot be empty", uiState.errorMsg)
+  }
+
+  @Test
+  fun saveMeetingChangesRejectsNullDateTime() = runTest {
+    repositoryMock.meetingToReturn.value = testMeeting
+    repositoryMock.participantsToReturn.value = testParticipants
+
+    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    backgroundScope.launch { viewModel.uiState.collect {} }
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.toggleEditMode(testMeeting)
+    viewModel.updateEditDateTime(null)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.saveMeetingChanges(testMeeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    val uiState = viewModel.uiState.value
+    assertFalse(uiState.updateSuccess)
+    assertEquals("Date and time must be set", uiState.errorMsg)
+  }
+
+  @Test
+  fun saveMeetingChangesRejectsNegativeDuration() = runTest {
+    repositoryMock.meetingToReturn.value = testMeeting
+    repositoryMock.participantsToReturn.value = testParticipants
+
+    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    backgroundScope.launch { viewModel.uiState.collect {} }
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.toggleEditMode(testMeeting)
+    viewModel.updateEditDuration(0)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.saveMeetingChanges(testMeeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    val uiState = viewModel.uiState.value
+    assertFalse(uiState.updateSuccess)
+    assertEquals("Duration must be greater than 0", uiState.errorMsg)
+  }
+
+  @Test
+  fun clearUpdateSuccessSetsUpdateSuccessToFalse() = runTest {
+    repositoryMock.meetingToReturn.value = testMeeting
+    repositoryMock.participantsToReturn.value = testParticipants
+    repositoryMock.updateResult = Result.success(Unit)
+
+    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    backgroundScope.launch { viewModel.uiState.collect {} }
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.toggleEditMode(testMeeting)
+    viewModel.saveMeetingChanges(testMeeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertTrue(viewModel.uiState.value.updateSuccess)
+
+    viewModel.clearUpdateSuccess()
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertFalse(viewModel.uiState.value.updateSuccess)
+  }
 }
 
 /** Mock repository for MeetingDetailViewModel tests with controllable flows. */
@@ -359,6 +597,7 @@ class MeetingDetailRepositoryMock : MeetingRepository {
   var shouldThrowParticipantsError = false
   var participantsErrorMessage = "Participants error"
   var deleteResult: Result<Unit> = Result.success(Unit)
+  var updateResult: Result<Unit> = Result.success(Unit)
 
   override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> {
     return if (shouldThrowMeetingError) {
@@ -396,7 +635,7 @@ class MeetingDetailRepositoryMock : MeetingRepository {
       creatorRole: MeetingRole
   ): Result<String> = Result.success("test-url")
 
-  override suspend fun updateMeeting(meeting: Meeting): Result<Unit> = Result.success(Unit)
+  override suspend fun updateMeeting(meeting: Meeting): Result<Unit> = updateResult
 
   override suspend fun addParticipant(
       projectId: String,

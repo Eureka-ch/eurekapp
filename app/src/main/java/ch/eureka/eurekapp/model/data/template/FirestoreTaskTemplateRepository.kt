@@ -1,6 +1,7 @@
 package ch.eureka.eurekapp.model.data.template
 
 import ch.eureka.eurekapp.model.data.FirestorePaths
+import ch.eureka.eurekapp.model.data.template.field.serialization.FirestoreConverters
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
@@ -26,7 +27,9 @@ class FirestoreTaskTemplateRepository(
                     close(error)
                     return@addSnapshotListener
                   }
-                  trySend(snapshot?.toObject(TaskTemplate::class.java))
+                  val taskTemplate =
+                      snapshot?.data?.let { FirestoreConverters.mapToTaskTemplate(it) }
+                  trySend(taskTemplate)
                 }
         awaitClose { listener.remove() }
       }
@@ -43,8 +46,9 @@ class FirestoreTaskTemplateRepository(
                 return@addSnapshotListener
               }
               val templates =
-                  snapshot?.documents?.mapNotNull { it.toObject(TaskTemplate::class.java) }
-                      ?: emptyList()
+                  snapshot?.documents?.mapNotNull { doc ->
+                    doc.data?.let { FirestoreConverters.mapToTaskTemplate(it) }
+                  } ?: emptyList()
               trySend(templates)
             }
     awaitClose { listener.remove() }
@@ -56,7 +60,7 @@ class FirestoreTaskTemplateRepository(
         .document(template.projectId)
         .collection(FirestorePaths.TASK_TEMPLATES)
         .document(template.templateID)
-        .set(template)
+        .set(FirestoreConverters.taskTemplateToMap(template))
         .await()
     template.templateID
   }
@@ -67,7 +71,7 @@ class FirestoreTaskTemplateRepository(
         .document(template.projectId)
         .collection(FirestorePaths.TASK_TEMPLATES)
         .document(template.templateID)
-        .set(template)
+        .set(FirestoreConverters.taskTemplateToMap(template))
         .await()
   }
 
