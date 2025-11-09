@@ -1,5 +1,6 @@
 /*
  * Portions of this file were co-authored by Claude Code (Anthropic AI assistant).
+ * Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5
  */
 package ch.eureka.eurekapp.model.data
 

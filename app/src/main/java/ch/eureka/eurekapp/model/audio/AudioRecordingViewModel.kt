@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
 class AudioRecordingViewModel(
     val fileStorageRepository: FileStorageRepository =
         FirebaseFileStorageRepository(FirebaseStorage.getInstance(), FirebaseAuth.getInstance()),

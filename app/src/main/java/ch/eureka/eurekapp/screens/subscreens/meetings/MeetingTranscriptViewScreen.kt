@@ -36,6 +36,8 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.meeting.TranscriptViewModel
 import ch.eureka.eurekapp.ui.theme.Typography
 
+/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
+
 /** Test tags for MeetingTranscriptViewScreen UI elements */
 object TranscriptScreenTestTags {
   const val TRANSCRIPT_SCREEN = "TranscriptScreen"
@@ -50,6 +52,109 @@ object TranscriptScreenTestTags {
   const val GENERATE_SUMMARY_BUTTON = "GenerateSummaryButton"
   const val SUMMARY_LOADING = "SummaryLoading"
   const val SUMMARY_TEXT = "SummaryText"
+}
+
+/** Displays error message with optional dismiss button for transcript errors. */
+@Composable
+private fun ErrorMessageDisplay(errorMsg: String?, onDismiss: (() -> Unit)? = null) {
+  if (errorMsg != null) {
+    Text(
+        text = errorMsg,
+        color = MaterialTheme.colorScheme.error,
+        modifier = Modifier.testTag(TranscriptScreenTestTags.ERROR_MESSAGE))
+    Spacer(modifier = Modifier.height(8.dp))
+    onDismiss?.let { Button(onClick = it) { Text("Dismiss") } }
+  }
+}
+
+/** Displays the transcript section based on the current transcription state. */
+@Composable
+private fun TranscriptSection(
+    hasTranscript: Boolean,
+    isGeneratingTranscript: Boolean,
+    transcriptionStatus: TranscriptionStatus?,
+    transcriptionText: String?,
+    errorMsg: String?,
+    languageCode: String,
+    onGenerateTranscript: (String) -> Unit
+) {
+  when {
+    !hasTranscript && !isGeneratingTranscript -> {
+      Button(
+          onClick = { onGenerateTranscript(languageCode) },
+          modifier =
+              Modifier.fillMaxWidth()
+                  .testTag(TranscriptScreenTestTags.GENERATE_TRANSCRIPT_BUTTON)) {
+            Text("Generate Transcript")
+          }
+    }
+    isGeneratingTranscript || transcriptionStatus == TranscriptionStatus.PENDING -> {
+      Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.Center,
+          verticalAlignment = Alignment.CenterVertically) {
+            CircularProgressIndicator(
+                modifier =
+                    Modifier.size(20.dp).testTag(TranscriptScreenTestTags.TRANSCRIPTION_LOADING))
+            Spacer(modifier = Modifier.size(12.dp))
+            Text("Generating transcript...")
+          }
+    }
+    transcriptionStatus == TranscriptionStatus.COMPLETED -> {
+      Text(
+          text = transcriptionText ?: "",
+          style = Typography.bodyMedium,
+          modifier = Modifier.testTag(TranscriptScreenTestTags.TRANSCRIPT_TEXT))
+    }
+    transcriptionStatus == TranscriptionStatus.FAILED -> {
+      Text(
+          text = errorMsg ?: "Transcription failed",
+          color = MaterialTheme.colorScheme.error,
+          modifier = Modifier.testTag(TranscriptScreenTestTags.TRANSCRIPTION_ERROR))
+    }
+  }
+}
+
+/** Displays the summary section with generation button or summary text. */
+@Composable
+private fun SummarySection(
+    isSummarizing: Boolean,
+    summary: String?,
+    onGenerateSummary: () -> Unit
+) {
+  Column(modifier = Modifier.fillMaxWidth()) {
+    HorizontalDivider(color = EColors.BorderGrayColor)
+    Spacer(modifier = Modifier.height(16.dp))
+
+    when {
+      isSummarizing -> {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically) {
+              CircularProgressIndicator(
+                  modifier = Modifier.size(20.dp).testTag(TranscriptScreenTestTags.SUMMARY_LOADING))
+              Spacer(modifier = Modifier.size(12.dp))
+              Text("Generating summary...")
+            }
+      }
+      summary != null -> {
+        Text(
+            text = summary,
+            style = Typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.testTag(TranscriptScreenTestTags.SUMMARY_TEXT))
+      }
+      else -> {
+        Button(
+            onClick = onGenerateSummary,
+            modifier =
+                Modifier.fillMaxWidth().testTag(TranscriptScreenTestTags.GENERATE_SUMMARY_BUTTON)) {
+              Text("Generate Summary")
+            }
+      }
+    }
+  }
 }
 
 /**
@@ -97,12 +202,8 @@ fun MeetingTranscriptViewScreen(
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
                 contentAlignment = Alignment.Center) {
                   Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = uiState.errorMsg ?: "An error occurred",
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.testTag(TranscriptScreenTestTags.ERROR_MESSAGE))
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { viewModel.clearErrorMsg() }) { Text("Dismiss") }
+                    ErrorMessageDisplay(
+                        errorMsg = uiState.errorMsg, onDismiss = { viewModel.clearErrorMsg() })
                   }
                 }
           }
@@ -112,94 +213,28 @@ fun MeetingTranscriptViewScreen(
                 verticalArrangement = Arrangement.spacedBy(24.dp)) {
                   // Transcript Section
                   item {
-                    if (uiState.errorMsg != null) {
-                      Text(
-                          text = uiState.errorMsg ?: "",
-                          color = MaterialTheme.colorScheme.error,
-                          modifier = Modifier.testTag(TranscriptScreenTestTags.ERROR_MESSAGE))
-                      Spacer(modifier = Modifier.height(8.dp))
+                    // Only show general error message if it's not a transcription error
+                    if (uiState.transcriptionStatus != TranscriptionStatus.FAILED) {
+                      ErrorMessageDisplay(errorMsg = uiState.errorMsg)
                     }
 
-                    when {
-                      !uiState.hasTranscript && !uiState.isGeneratingTranscript -> {
-                        Button(
-                            onClick = { viewModel.generateTranscript(languageCode) },
-                            modifier =
-                                Modifier.fillMaxWidth()
-                                    .testTag(TranscriptScreenTestTags.GENERATE_TRANSCRIPT_BUTTON)) {
-                              Text("Generate Transcript")
-                            }
-                      }
-                      uiState.isGeneratingTranscript ||
-                          uiState.transcriptionStatus == TranscriptionStatus.PENDING -> {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically) {
-                              CircularProgressIndicator(
-                                  modifier =
-                                      Modifier.size(20.dp)
-                                          .testTag(TranscriptScreenTestTags.TRANSCRIPTION_LOADING))
-                              Spacer(modifier = Modifier.size(12.dp))
-                              Text("Generating transcript...")
-                            }
-                      }
-                      uiState.transcriptionStatus == TranscriptionStatus.COMPLETED -> {
-                        Text(
-                            text = uiState.transcriptionText ?: "",
-                            style = Typography.bodyMedium,
-                            modifier = Modifier.testTag(TranscriptScreenTestTags.TRANSCRIPT_TEXT))
-                      }
-                      uiState.transcriptionStatus == TranscriptionStatus.FAILED -> {
-                        Text(
-                            text = uiState.errorMsg ?: "Transcription failed",
-                            color = MaterialTheme.colorScheme.error,
-                            modifier =
-                                Modifier.testTag(TranscriptScreenTestTags.TRANSCRIPTION_ERROR))
-                      }
-                    }
+                    TranscriptSection(
+                        hasTranscript = uiState.hasTranscript,
+                        isGeneratingTranscript = uiState.isGeneratingTranscript,
+                        transcriptionStatus = uiState.transcriptionStatus,
+                        transcriptionText = uiState.transcriptionText,
+                        errorMsg = uiState.errorMsg,
+                        languageCode = languageCode,
+                        onGenerateTranscript = { viewModel.generateTranscript(it) })
                   }
 
                   // Summary Section
                   item {
                     if (uiState.transcriptionStatus == TranscriptionStatus.COMPLETED) {
-                      Column(modifier = Modifier.fillMaxWidth()) {
-                        HorizontalDivider(color = EColors.BorderGrayColor)
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        when {
-                          uiState.isSummarizing -> {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically) {
-                                  CircularProgressIndicator(
-                                      modifier =
-                                          Modifier.size(20.dp)
-                                              .testTag(TranscriptScreenTestTags.SUMMARY_LOADING))
-                                  Spacer(modifier = Modifier.size(12.dp))
-                                  Text("Generating summary...")
-                                }
-                          }
-                          uiState.summary != null -> {
-                            Text(
-                                text = uiState.summary ?: "",
-                                style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.testTag(TranscriptScreenTestTags.SUMMARY_TEXT))
-                          }
-                          else -> {
-                            Button(
-                                onClick = { viewModel.generateSummary() },
-                                modifier =
-                                    Modifier.fillMaxWidth()
-                                        .testTag(
-                                            TranscriptScreenTestTags.GENERATE_SUMMARY_BUTTON)) {
-                                  Text("Generate Summary")
-                                }
-                          }
-                        }
-                      }
+                      SummarySection(
+                          isSummarizing = uiState.isSummarizing,
+                          summary = uiState.summary,
+                          onGenerateSummary = { viewModel.generateSummary() })
                     }
                   }
                 }

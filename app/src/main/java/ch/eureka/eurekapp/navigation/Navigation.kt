@@ -37,6 +37,7 @@ import com.google.firebase.auth.auth
 import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
 
+/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
 sealed interface Route {
   // Main screens
   @Serializable data object ProjectSelection : Route
@@ -125,10 +126,8 @@ sealed interface Route {
 fun NavigationMenu() {
   val navigationController = rememberNavController()
   val projectRepository = FirestoreRepositoriesProvider.projectRepository
-  val meetingRepository = FirestoreRepositoriesProvider.meetingRepository
   val auth = Firebase.auth
   val testProjectId = "test-project-id"
-  val testMeetingId = "test-meeting"
   val testProject =
       Project(
           projectId = testProjectId,

@@ -57,7 +57,6 @@ import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.ui.theme.Typography
 import ch.eureka.eurekapp.utils.Formatters
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 object MeetingAudioScreenTestTags {
   const val START_RECORDING_BUTTON = "start recording button"
@@ -67,6 +66,7 @@ object MeetingAudioScreenTestTags {
   const val GENERATE_AI_TRANSCRIPT_BUTTON = "generate ai transcript button"
 }
 
+/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
 @Composable
 fun MeetingAudioRecordingScreen(
     context: Context = LocalContext.current,

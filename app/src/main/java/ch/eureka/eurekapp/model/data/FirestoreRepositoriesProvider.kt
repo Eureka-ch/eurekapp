@@ -16,6 +16,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.functions.FirebaseFunctions
 import com.google.firebase.storage.FirebaseStorage
 
+/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
 object FirestoreRepositoriesProvider {
   private val _taskRepository: FirestoreTaskRepository by lazy {
     FirestoreTaskRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())

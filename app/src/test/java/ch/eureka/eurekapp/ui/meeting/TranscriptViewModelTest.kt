@@ -189,6 +189,200 @@ class TranscriptViewModelTest {
     assertNull(state.errorMsg)
   }
 
+  @Test
+  fun `generateTranscript fails when no audio url available`() = runTest {
+    val meeting = createTestMeeting(audioUrl = null)
+    coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
+
+    viewModel =
+        TranscriptViewModel(
+            projectId = projectId,
+            meetingId = meetingId,
+            meetingRepository = meetingRepository,
+            speechToTextRepository = speechToTextRepository,
+            chatbotRepository = chatbotRepository)
+    advanceUntilIdle()
+
+    viewModel.generateTranscript("en-US")
+    advanceUntilIdle()
+
+    // Should not call transcribeAudio since no audio URL
+    coVerify(exactly = 0) { speechToTextRepository.transcribeAudio(any(), any(), any(), any()) }
+  }
+
+  @Test
+  fun `generateTranscript with valid audio url does not throw`() = runTest {
+    val meeting = createTestMeeting(audioUrl = audioUrl)
+    coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
+    coEvery { speechToTextRepository.transcribeAudio(any(), any(), any(), any()) } returns
+        Result.success(transcriptId)
+    coEvery { meetingRepository.updateMeeting(any()) } returns Result.success(Unit)
+
+    viewModel =
+        TranscriptViewModel(
+            projectId = projectId,
+            meetingId = meetingId,
+            meetingRepository = meetingRepository,
+            speechToTextRepository = speechToTextRepository,
+            chatbotRepository = chatbotRepository)
+    advanceUntilIdle()
+
+    // Should not throw when called with valid audio
+    viewModel.generateTranscript("en-US")
+    advanceUntilIdle()
+  }
+
+  @Test
+  fun `generateTranscript with failure does not update meeting`() = runTest {
+    val meeting = createTestMeeting(audioUrl = audioUrl)
+    var updateCalled = false
+    coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
+    coEvery { speechToTextRepository.transcribeAudio(any(), any(), any(), any()) } returns
+        Result.failure(Exception("Network error"))
+    coEvery { meetingRepository.updateMeeting(any()) } answers
+        {
+          updateCalled = true
+          Result.success(Unit)
+        }
+
+    viewModel =
+        TranscriptViewModel(
+            projectId = projectId,
+            meetingId = meetingId,
+            meetingRepository = meetingRepository,
+            speechToTextRepository = speechToTextRepository,
+            chatbotRepository = chatbotRepository)
+    advanceUntilIdle()
+
+    viewModel.generateTranscript("en-US")
+    advanceUntilIdle()
+
+    // Meeting should NOT be updated on failure
+    assertFalse(updateCalled)
+  }
+
+  @Test
+  fun `generateSummary with no transcript does not call chatbot`() = runTest {
+    val meeting = createTestMeeting(audioUrl = audioUrl)
+    var chatbotCalled = false
+    coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
+    coEvery { chatbotRepository.sendMessage(any(), any()) } answers
+        {
+          chatbotCalled = true
+          "summary"
+        }
+
+    viewModel =
+        TranscriptViewModel(
+            projectId = projectId,
+            meetingId = meetingId,
+            meetingRepository = meetingRepository,
+            speechToTextRepository = speechToTextRepository,
+            chatbotRepository = chatbotRepository)
+    advanceUntilIdle()
+
+    viewModel.generateSummary()
+    advanceUntilIdle()
+
+    // Chatbot should NOT be called when there's no transcript
+    assertFalse(chatbotCalled)
+  }
+
+  @Test
+  fun `generateSummary with transcript text does not throw`() = runTest {
+    val meeting = createTestMeeting(audioUrl = audioUrl, transcriptId = transcriptId)
+    val transcript =
+        AudioTranscription(
+            transcriptionId = transcriptId,
+            meetingId = meetingId,
+            projectId = projectId,
+            audioDownloadUrl = audioUrl,
+            transcriptionText = "Test transcript text",
+            status = TranscriptionStatus.COMPLETED)
+
+    coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
+    coEvery {
+      speechToTextRepository.getTranscriptionById(projectId, meetingId, transcriptId)
+    } returns flowOf(transcript)
+    coEvery { chatbotRepository.sendMessage(any(), any()) } returns "Test summary"
+
+    viewModel =
+        TranscriptViewModel(
+            projectId = projectId,
+            meetingId = meetingId,
+            meetingRepository = meetingRepository,
+            speechToTextRepository = speechToTextRepository,
+            chatbotRepository = chatbotRepository)
+    advanceUntilIdle()
+
+    // Should not throw when called with valid transcript
+    viewModel.generateSummary()
+    advanceUntilIdle()
+  }
+
+  @Test
+  fun `transcript with pending status does not show text`() = runTest {
+    val meeting = createTestMeeting(audioUrl = audioUrl, transcriptId = transcriptId)
+    val transcript =
+        AudioTranscription(
+            transcriptionId = transcriptId,
+            meetingId = meetingId,
+            projectId = projectId,
+            audioDownloadUrl = audioUrl,
+            transcriptionText = "",
+            status = TranscriptionStatus.PENDING)
+
+    coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
+    coEvery {
+      speechToTextRepository.getTranscriptionById(projectId, meetingId, transcriptId)
+    } returns flowOf(transcript)
+
+    viewModel =
+        TranscriptViewModel(
+            projectId = projectId,
+            meetingId = meetingId,
+            meetingRepository = meetingRepository,
+            speechToTextRepository = speechToTextRepository,
+            chatbotRepository = chatbotRepository)
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.drop(1).first()
+    assertNull(state.transcriptionText)
+    assertEquals(TranscriptionStatus.PENDING, state.transcriptionStatus)
+  }
+
+  @Test
+  fun `transcript with failed status shows error`() = runTest {
+    val meeting = createTestMeeting(audioUrl = audioUrl, transcriptId = transcriptId)
+    val transcript =
+        AudioTranscription(
+            transcriptionId = transcriptId,
+            meetingId = meetingId,
+            projectId = projectId,
+            audioDownloadUrl = audioUrl,
+            transcriptionText = "",
+            status = TranscriptionStatus.FAILED,
+            errorMessage = "Audio quality too low")
+
+    coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
+    coEvery {
+      speechToTextRepository.getTranscriptionById(projectId, meetingId, transcriptId)
+    } returns flowOf(transcript)
+
+    viewModel =
+        TranscriptViewModel(
+            projectId = projectId,
+            meetingId = meetingId,
+            meetingRepository = meetingRepository,
+            speechToTextRepository = speechToTextRepository,
+            chatbotRepository = chatbotRepository)
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.drop(1).first()
+    assertEquals("Audio quality too low", state.errorMsg)
+    assertEquals(TranscriptionStatus.FAILED, state.transcriptionStatus)
+  }
+
   private fun createTestMeeting(audioUrl: String? = null, transcriptId: String? = null) =
       Meeting(
           meetingID = meetingId,

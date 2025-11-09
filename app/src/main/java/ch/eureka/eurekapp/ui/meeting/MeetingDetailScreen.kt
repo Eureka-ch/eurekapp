@@ -75,7 +75,8 @@ import java.time.ZoneId
  *
  * Provides semantic identifiers for UI testing with Compose UI Test framework. Each constant
  * represents a unique testTag applied to composables in MeetingDetailScreen, enabling reliable and
- * maintainable UI test assertions.
+ * maintainable UI test assertions. Note :This file was partially written by ChatGPT (GPT-5)
+ * Co-author : GPT-5
  */
 object MeetingDetailScreenTestTags {
   const val MEETING_DETAIL_SCREEN = "MeetingDetailScreen"
