@@ -6,6 +6,7 @@ import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.ui.tasks.MockProjectRepository
 import ch.eureka.eurekapp.ui.tasks.MockTaskRepository
+import ch.eureka.eurekapp.ui.tasks.MockUserRepository
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -35,6 +36,7 @@ class EditTaskViewModelTest {
   private lateinit var mockTaskRepository: MockTaskRepository
   private lateinit var mockFileRepository: MockFileStorageRepository
   private lateinit var mockProjectRepository: MockProjectRepository
+  private lateinit var mockUserRepository: MockUserRepository
   private lateinit var viewModel: EditTaskViewModel
   private lateinit var mockContext: Context
 
@@ -44,6 +46,7 @@ class EditTaskViewModelTest {
     mockTaskRepository = MockTaskRepository()
     mockFileRepository = MockFileStorageRepository()
     mockProjectRepository = MockProjectRepository()
+    mockUserRepository = MockUserRepository()
     mockContext =
         mockk(relaxed = true) {
           val contentResolver = mockk<android.content.ContentResolver>(relaxed = true)
@@ -58,6 +61,7 @@ class EditTaskViewModelTest {
     mockTaskRepository.reset()
     mockFileRepository.reset()
     mockProjectRepository.reset()
+    mockUserRepository.reset()
   }
 
   @Test
@@ -75,7 +79,7 @@ class EditTaskViewModelTest {
                 description = "Description 2",
                 status = ProjectStatus.OPEN))
     viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+        EditTaskViewModel(mockTaskRepository, mockFileRepository, mockProjectRepository, mockUserRepository, { null }, testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -86,7 +90,7 @@ class EditTaskViewModelTest {
   @Test
   fun availableProjects_emptyListWhenNoProjects() = runTest {
     viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+        EditTaskViewModel(mockTaskRepository, mockFileRepository, mockProjectRepository, mockUserRepository, { null }, testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -97,7 +101,7 @@ class EditTaskViewModelTest {
   @Test
   fun viewModel_initialState_hasCorrectDefaults() = runTest {
     viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+        EditTaskViewModel(mockTaskRepository, mockFileRepository, mockProjectRepository, mockUserRepository, { null }, testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
