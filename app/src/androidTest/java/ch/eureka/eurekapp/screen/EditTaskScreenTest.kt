@@ -839,6 +839,13 @@ open class EditTaskScreenTest : TestCase() {
 
         composeTestRule.waitForIdle()
 
+        // Wait for available tasks to load
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+          viewModel.availableTasks.value.isNotEmpty()
+        }
+
+        composeTestRule.waitForIdle()
+
         // Scroll to find the dependency item if needed
         try {
           composeTestRule

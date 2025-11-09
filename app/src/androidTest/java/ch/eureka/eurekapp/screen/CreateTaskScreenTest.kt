@@ -1031,6 +1031,13 @@ class CreateTaskScreenTests : TestCase() {
 
       composeTestRule.waitForIdle()
 
+      // Wait for available tasks to load
+      composeTestRule.waitUntil(timeoutMillis = 10000) {
+        viewModel.availableTasks.value.isNotEmpty()
+      }
+
+      composeTestRule.waitForIdle()
+
       // Scroll to dependency button if needed
       try {
         composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON).assertIsDisplayed()
