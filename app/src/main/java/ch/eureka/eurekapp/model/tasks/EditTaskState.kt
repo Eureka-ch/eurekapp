@@ -4,6 +4,7 @@ import android.net.Uri
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.TaskCustomData
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.data.user.User
 
 /*
 Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
@@ -20,8 +21,10 @@ data class EditTaskState(
     val templateId: String? = null,
     override val projectId: String = "",
     override val availableProjects: List<Project> = emptyList(),
+    val availableUsers: List<User> = emptyList(),
     val taskId: String = "",
     val assignedUserIds: List<String> = emptyList(),
+    val selectedAssignedUserIds: List<String> = emptyList(),
     override val attachmentUris: List<Uri> = emptyList(),
     val attachmentUrls: List<String> = emptyList(),
     val deletedAttachmentUrls: Set<String> = emptySet(),
