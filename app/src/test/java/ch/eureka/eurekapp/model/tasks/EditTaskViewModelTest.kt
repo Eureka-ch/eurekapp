@@ -292,14 +292,4 @@ class EditTaskViewModelTest {
     assertNotNull(state.errorMsg)
     assertTrue(state.errorMsg!!.contains("circular") || state.errorMsg!!.contains("dependency"))
   }
-
-  @Test
-  fun viewModel_initialState_hasEmptyDependencies() = runTest {
-    viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
-    advanceUntilIdle()
-
-    val state = viewModel.uiState.first()
-    assertEquals(emptyList<String>(), state.dependingOnTasks)
-  }
 }

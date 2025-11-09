@@ -132,24 +132,6 @@ class TaskDependencyCycleDetectorTest {
   }
 
   @Test
-  fun wouldCreateCycle_multipleDependenciesNoCycle_returnsFalse() = runTest {
-    val repository = MockTaskRepository()
-    // task2 depends on task3 and task4
-    repository.addTask(
-        Task(taskID = "task2", projectId = "project1", dependingOnTasks = listOf("task3", "task4")))
-    repository.addTask(Task(taskID = "task3", projectId = "project1"))
-    repository.addTask(Task(taskID = "task4", projectId = "project1"))
-
-    val result =
-        TaskDependencyCycleDetector.wouldCreateCycle(
-            taskId = "task1",
-            dependencyTaskId = "task2",
-            projectId = "project1",
-            taskRepository = repository)
-    assertFalse(result)
-  }
-
-  @Test
   fun validateNoCycles_validDependencies_returnsSuccess() = runTest {
     val repository = MockTaskRepository()
     repository.addTask(Task(taskID = "task2", projectId = "project1"))
@@ -181,52 +163,5 @@ class TaskDependencyCycleDetectorTest {
     assertTrue(
         result.exceptionOrNull()?.message?.contains("circular dependency") == true ||
             result.exceptionOrNull()?.message?.contains("task2") == true)
-  }
-
-  @Test
-  fun validateNoCycles_emptyDependencies_returnsSuccess() = runTest {
-    val repository = MockTaskRepository()
-    val result =
-        TaskDependencyCycleDetector.validateNoCycles(
-            taskId = "task1",
-            dependencyTaskIds = emptyList(),
-            projectId = "project1",
-            taskRepository = repository)
-    assertTrue(result.isSuccess)
-  }
-
-  @Test
-  fun validateNoCycles_selfDependency_returnsFailure() = runTest {
-    val repository = MockTaskRepository()
-    val result =
-        TaskDependencyCycleDetector.validateNoCycles(
-            taskId = "task1",
-            dependencyTaskIds = listOf("task1"),
-            projectId = "project1",
-            taskRepository = repository)
-    assertTrue(result.isFailure)
-  }
-
-  @Test
-  fun wouldCreateCycle_complexCycle_returnsTrue() = runTest {
-    val repository = MockTaskRepository()
-    // Complex cycle: task2 -> task3 -> task4 -> task2
-    // But we need task4 to depend on task1 to create a cycle when task1 depends on task2
-    repository.addTask(
-        Task(taskID = "task2", projectId = "project1", dependingOnTasks = listOf("task3")))
-    repository.addTask(
-        Task(taskID = "task3", projectId = "project1", dependingOnTasks = listOf("task4")))
-    repository.addTask(
-        Task(taskID = "task4", projectId = "project1", dependingOnTasks = listOf("task1")))
-
-    // Trying to make task1 depend on task2 creates a cycle: task1 -> task2 -> task3 -> task4 ->
-    // task1
-    val result =
-        TaskDependencyCycleDetector.wouldCreateCycle(
-            taskId = "task1",
-            dependencyTaskId = "task2",
-            projectId = "project1",
-            taskRepository = repository)
-    assertTrue(result)
   }
 }

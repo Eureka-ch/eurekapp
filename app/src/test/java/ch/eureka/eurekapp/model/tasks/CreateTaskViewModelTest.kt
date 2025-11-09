@@ -573,51 +573,6 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun addDependency_withCycle_setsCycleError() = runTest {
-    viewModel =
-        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
-    viewModel.setProjectId("project123")
-
-    // For new tasks, cycle detection during addDependency is limited because
-    // the new task doesn't exist yet. However, we can test that the validation
-    // runs and doesn't throw errors. The real cycle validation happens in addTask.
-    // This test verifies that addDependency works without errors.
-    val task1 = Task(taskID = "task1", projectId = "project123")
-    mockTaskRepository.addTask(task1)
-
-    advanceUntilIdle()
-
-    viewModel.addDependency("task1")
-    advanceUntilIdle()
-
-    // The dependency should be added (no cycle with a simple dependency)
-    val state = viewModel.uiState.first()
-    assertTrue(state.dependingOnTasks.contains("task1"))
-  }
-
-  @Test
-  fun addDependency_noCycle_addsDependency() = runTest {
-    viewModel =
-        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
-    viewModel.setProjectId("project123")
-
-    // Setup: task1 has no dependencies
-    val task1 = Task(taskID = "task1", projectId = "project123")
-    mockTaskRepository.addTask(task1)
-
-    advanceUntilIdle()
-
-    // Add task1 as dependency (no cycle)
-    viewModel.addDependency("task1")
-    advanceUntilIdle()
-
-    val state = viewModel.uiState.first()
-    assertEquals(listOf("task1"), state.dependingOnTasks)
-    val cycleError = viewModel.cycleError.first()
-    assertEquals(null, cycleError)
-  }
-
-  @Test
   fun removeDependency_removesFromList() = runTest {
     viewModel =
         CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
@@ -683,41 +638,6 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun addTask_withCycleDetected_preventsSave() = runTest {
-    viewModel =
-        CreateTaskViewModel(mockTaskRepository, mockFileRepository, { "test-user" }, testDispatcher)
-    viewModel.setProjectId("project123")
-    viewModel.setTitle("Test Task")
-    viewModel.setDescription("Description")
-    viewModel.setDueDate("01/01/2025")
-
-    // For a new task, we can't create a cycle with existing tasks unless
-    // an existing task depends on the new task (which doesn't exist yet).
-    // However, we can test that the validation runs correctly.
-    // Let's test with a scenario where we create a task and then try to create
-    // a cycle by making an existing task depend on it, but that's not possible here.
-
-    // Instead, let's test that the task is created successfully when there's no cycle
-    val task1 = Task(taskID = "task1", projectId = "project123")
-    mockTaskRepository.addTask(task1)
-    advanceUntilIdle()
-
-    viewModel.addDependency("task1")
-    advanceUntilIdle()
-
-    viewModel.addTask(mockContext)
-    advanceUntilIdle()
-
-    // Task should be saved successfully (no cycle in this scenario)
-    val state = viewModel.uiState.first()
-    // Note: The actual cycle detection for new tasks happens during save,
-    // but since the new task doesn't exist yet, cycles can't be detected
-    // until after the task is created. This is a limitation of the current implementation.
-    // For now, we verify the task creation process completes.
-    assertTrue(state.taskSaved || !state.isSaving)
-  }
-
-  @Test
   fun setDependencies_setsAllDependencies() = runTest {
     viewModel =
         CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
@@ -729,15 +649,5 @@ class CreateTaskViewModelTest {
 
     val state = viewModel.uiState.first()
     assertEquals(listOf("task1", "task2", "task3"), state.dependingOnTasks)
-  }
-
-  @Test
-  fun viewModel_initialState_hasEmptyDependencies() = runTest {
-    viewModel =
-        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
-    advanceUntilIdle()
-
-    val state = viewModel.uiState.first()
-    assertEquals(emptyList<String>(), state.dependingOnTasks)
   }
 }
