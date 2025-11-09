@@ -9,9 +9,12 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
+import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.data.user.User
+import ch.eureka.eurekapp.model.data.user.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -26,12 +29,15 @@ import kotlinx.coroutines.launch
 Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
 Portions of this code were generated with the help of Grok.
 Co-Authored-By: Claude <noreply@anthropic.com>
+Note: This file was partially written by GPT-5 Codex Co-author : GPT-5
 */
 
 /** ViewModel for the EditTask screen. This ViewModel manages the state of input fields. */
 class EditTaskViewModel(
     taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
     fileRepository: FileStorageRepository = FirestoreRepositoriesProvider.fileRepository,
+    private val projectRepository: ProjectRepository = FirestoreRepositoriesProvider.projectRepository,
+    private val userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository,
     getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) :
@@ -95,7 +101,7 @@ class EditTaskViewModel(
                 projectId = state.projectId,
                 title = state.title,
                 description = state.description,
-                assignedUserIds = listOf(currentUser),
+                assignedUserIds = state.selectedAssignedUserIds.ifEmpty { listOf(currentUser) },
                 dueDate = timestamp,
                 reminderTime = reminderTimestamp,
                 attachmentUrls = state.attachmentUrls + newPhotoUrls,
@@ -181,11 +187,14 @@ class EditTaskViewModel(
                       projectId = task.projectId,
                       taskId = task.taskID,
                       assignedUserIds = task.assignedUserIds,
+                      selectedAssignedUserIds = task.assignedUserIds,
                       attachmentUrls = filteredAttachments,
                       status = task.status,
                       customData = task.customData,
                   )
                 }
+                // Load project members after task is loaded
+                loadProjectMembers(task.projectId)
               } else {
                 setErrorMsg("Task not found.")
               }
@@ -244,5 +253,41 @@ class EditTaskViewModel(
 
   fun setReminderTime(reminderTime: String) {
     updateState { copy(reminderTime = reminderTime) }
+  }
+
+  /** Loads available users from the selected project */
+  fun loadProjectMembers(projectId: String) {
+    if (projectId.isBlank()) {
+      updateState { copy(availableUsers = emptyList()) }
+      return
+    }
+
+    viewModelScope.launch(dispatcher) {
+      projectRepository.getMembers(projectId).collect { members ->
+        val users = mutableListOf<User>()
+        members.forEach { member ->
+          userRepository.getUserById(member.userId).collect { user ->
+            user?.let { users.add(it) }
+          }
+        }
+        updateState { copy(availableUsers = users) }
+      }
+    }
+  }
+
+  /** Sets the assigned user IDs for the task */
+  fun setAssignedUsers(userIds: List<String>) {
+    updateState { copy(selectedAssignedUserIds = userIds) }
+  }
+
+  /** Toggles a user in the assigned users list */
+  fun toggleUserAssignment(userId: String) {
+    val currentIds = uiState.value.selectedAssignedUserIds
+    val newIds = if (currentIds.contains(userId)) {
+      currentIds - userId
+    } else {
+      currentIds + userId
+    }
+    updateState { copy(selectedAssignedUserIds = newIds) }
   }
 }
