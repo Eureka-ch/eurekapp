@@ -184,6 +184,7 @@ object FirestoreConverters {
     put("attachmentUrls", task.attachmentUrls)
     put("customData", customDataToMap(task.customData))
     put("createdBy", task.createdBy)
+    put("dependingOnTasks", task.dependingOnTasks)
   }
 
   fun mapToTask(map: Map<String, Any>): Task {
@@ -201,7 +202,8 @@ object FirestoreConverters {
         customData =
             (map["customData"] as? Map<String, Any>)?.let { mapToCustomData(it) }
                 ?: TaskCustomData(),
-        createdBy = map["createdBy"] as? String ?: "")
+        createdBy = map["createdBy"] as? String ?: "",
+        dependingOnTasks = (map["dependingOnTasks"] as? List<String>) ?: emptyList())
   }
 
   fun taskTemplateToMap(template: TaskTemplate): Map<String, Any> = buildMap {

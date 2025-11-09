@@ -27,6 +27,7 @@ interface TaskStateReadWrite : TaskStateRead {
   val isSaving: Boolean
   val taskSaved: Boolean
   val availableProjects: List<Project>
+  val dependingOnTasks: List<String>
 }
 
 /** Base ViewModel for task creation and editing with shared functionality */
@@ -187,6 +188,22 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
     updateState { copyWithProjectId(id) }
   }
 
+  fun setDependencies(dependencyTaskIds: List<String>) {
+    updateState { copyWithDependencies(dependencyTaskIds) }
+  }
+
+  open fun addDependency(taskId: String) {
+    val currentDependencies = uiState.value.dependingOnTasks
+    if (!currentDependencies.contains(taskId)) {
+      updateState { copyWithDependencies(currentDependencies + taskId) }
+    }
+  }
+
+  open fun removeDependency(taskId: String) {
+    val currentDependencies = uiState.value.dependingOnTasks
+    updateState { copyWithDependencies(currentDependencies.filter { it != taskId }) }
+  }
+
   /** Deletes a photo from storage */
   private suspend fun deletePhotoSuspend(context: Context, photoUri: Uri): Boolean {
     return try {
@@ -250,4 +267,6 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
   protected abstract fun T.copyWithAttachmentUris(uris: List<Uri>): T
 
   protected abstract fun T.copyWithProjectId(projectId: String): T
+
+  protected abstract fun T.copyWithDependencies(dependencies: List<String>): T
 }
