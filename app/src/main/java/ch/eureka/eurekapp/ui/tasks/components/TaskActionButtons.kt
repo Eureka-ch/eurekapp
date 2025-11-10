@@ -20,6 +20,7 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 fun TaskActionButtons(
     onCreateTaskClick: () -> Unit = {},
     onAutoAssignClick: () -> Unit = {},
+    actionsEnabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
   Row(
@@ -27,7 +28,7 @@ fun TaskActionButtons(
       horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         // "+ New Task" button (outlined)
         OutlinedButton(
-            onClick = onCreateTaskClick,
+            onClick = { if (actionsEnabled) onCreateTaskClick() },
             modifier = Modifier.weight(1f).testTag(TasksScreenTestTags.CREATE_TASK_BUTTON),
             colors =
                 ButtonDefaults.outlinedButtonColors(
@@ -41,7 +42,7 @@ fun TaskActionButtons(
 
         // "Auto-assign" button (filled)
         Button(
-            onClick = onAutoAssignClick,
+            onClick = { if (actionsEnabled) onAutoAssignClick() },
             modifier = Modifier.weight(1f),
             colors =
                 ButtonDefaults.buttonColors(

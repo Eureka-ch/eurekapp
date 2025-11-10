@@ -21,8 +21,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.task.determinePriority
@@ -37,6 +39,9 @@ import ch.eureka.eurekapp.ui.tasks.TaskScreenViewModel
 import ch.eureka.eurekapp.ui.tasks.components.TaskActionButtons
 import ch.eureka.eurekapp.ui.tasks.components.TaskSectionHeader
 import com.google.firebase.Timestamp
+
+// Portions of this code were generated with the help of AI.
+// Portions added by Jiří Gebauer partially generated with the help of Grok.
 
 /** Test tags used by UI tests. */
 object TasksScreenTestTags {
@@ -55,7 +60,7 @@ data class TaskAndUsers(val task: Task, val users: List<User>)
 
 /**
  * Render a task card with individual properties Uses ViewModel computed properties directly for
- * better performance Portions of this code were generated with the help of IA.
+ * better performance.
  */
 @Composable
 private fun TaskCard(
@@ -124,6 +129,7 @@ fun TasksScreen(
   val selectedFilter by remember { derivedStateOf { uiState.selectedFilter } }
   val tasksAndUsers by remember { derivedStateOf { uiState.tasksAndUsers } }
   val errorMsg by remember { derivedStateOf { uiState.error } }
+  val isConnected by remember { derivedStateOf { uiState.isConnected } }
 
   fun setFilter(filter: TaskScreenFilter) {
     viewModel.setFilter(filter)
@@ -160,6 +166,7 @@ fun TasksScreen(
             TaskActionButtons(
                 onCreateTaskClick = onCreateTaskClick,
                 onAutoAssignClick = onAutoAssignClick,
+                actionsEnabled = isConnected,
                 modifier = Modifier.padding(top = Spacing.md))
           }
 
@@ -245,6 +252,15 @@ fun TasksScreen(
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(Spacing.sm),
                 modifier = Modifier.testTag(TasksScreenTestTags.TASK_LIST)) {
+                  if (!isConnected) {
+                    item {
+                      Text(
+                          text = "You are offline. Some features may be unavailable.",
+                          style = MaterialTheme.typography.bodyMedium,
+                          color = MaterialTheme.colorScheme.error,
+                          modifier = Modifier.padding(Spacing.md))
+                    }
+                  }
                   taskSection(
                       title = "Current Tasks",
                       tasksAndUsers = currentTaskAndUsers,
