@@ -16,6 +16,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
+// Portions of this code were generated with the help of Grok.
+
 @ExperimentalCoroutinesApi
 class AuthRepositoryFirebaseTest {
 
@@ -103,5 +105,45 @@ class AuthRepositoryFirebaseTest {
     assertTrue(result.isFailure)
     assertTrue(result.exceptionOrNull()?.message!!.contains("Logout failed"))
   }
-}
 
+  @Test
+  fun getCurrentUserLoggedIn() {
+    val mockUser = mockk<FirebaseUser>()
+    every { mockAuth.currentUser } returns mockUser
+
+    val result = repo.getCurrentUser()
+
+    assertEquals(mockUser, result)
+  }
+
+  @Test
+  fun getCurrentUserNotLoggedIn() {
+    every { mockAuth.currentUser } returns null
+
+    val result = repo.getCurrentUser()
+
+    assertEquals(null, result)
+  }
+
+  @Test
+  fun getUserIdLoggedIn() {
+    val mockUser = mockk<FirebaseUser>()
+    every { mockUser.uid } returns "test-uid-123"
+    every { mockAuth.currentUser } returns mockUser
+
+    val result = repo.getUserId()
+
+    assertTrue(result.isSuccess)
+    assertEquals("test-uid-123", result.getOrNull())
+  }
+
+  @Test
+  fun getUserIdNotLoggedIn() {
+    every { mockAuth.currentUser } returns null
+
+    val result = repo.getUserId()
+
+    assertTrue(result.isFailure)
+    assertTrue(result.exceptionOrNull()?.message!!.contains("No user logged in"))
+  }
+}
