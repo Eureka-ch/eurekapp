@@ -1,6 +1,7 @@
 /*
 The following code comes from the solution of the part 3 of the SwEnt bootcamp made by the SwEnt team:
 https://github.com/swent-epfl/bootcamp-25-B3-Solution/blob/main/app/src/main/java/com/github/se/bootcamp/model/authentication/AuthRepositoryFirebase.kt
+Portions of this code were generated with the help of Grok.
 */
 
 package ch.eureka.eurekapp.model.authentication
@@ -69,4 +70,6 @@ class AuthRepositoryFirebase(
       return Result.success(auth.currentUser?.uid)
     }
   }
+
+  override fun getCurrentUser(): FirebaseUser? = auth.currentUser
 }
