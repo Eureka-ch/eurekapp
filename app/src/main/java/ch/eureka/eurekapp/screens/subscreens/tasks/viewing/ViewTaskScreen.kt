@@ -119,7 +119,8 @@ fun ViewTaskScreen(
                     text = "You are offline. Editing tasks is unavailable.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(16.dp).testTag(ViewTaskScreenTestTags.OFFLINE_MESSAGE))
+                    modifier =
+                        Modifier.padding(16.dp).testTag(ViewTaskScreenTestTags.OFFLINE_MESSAGE))
               }
 
               // Display assigned users

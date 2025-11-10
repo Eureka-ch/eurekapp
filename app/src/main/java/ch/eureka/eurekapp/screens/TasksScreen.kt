@@ -259,7 +259,9 @@ fun TasksScreen(
                           text = "You are offline. Some features may be unavailable.",
                           style = MaterialTheme.typography.bodyMedium,
                           color = MaterialTheme.colorScheme.error,
-                          modifier = Modifier.padding(Spacing.md).testTag(TasksScreenTestTags.OFFLINE_MESSAGE))
+                          modifier =
+                              Modifier.padding(Spacing.md)
+                                  .testTag(TasksScreenTestTags.OFFLINE_MESSAGE))
                     }
                   }
                   taskSection(
