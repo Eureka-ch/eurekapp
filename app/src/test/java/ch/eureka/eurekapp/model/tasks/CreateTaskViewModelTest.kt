@@ -2,6 +2,7 @@ package ch.eureka.eurekapp.model.tasks
 
 import android.content.Context
 import android.net.Uri
+import ch.eureka.eurekapp.model.data.IdGenerator
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.data.task.Task
@@ -9,6 +10,8 @@ import ch.eureka.eurekapp.ui.tasks.MockProjectRepository
 import ch.eureka.eurekapp.ui.tasks.MockTaskRepository
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -642,6 +645,68 @@ class CreateTaskViewModelTest {
 
     val cycleError = viewModel.cycleError.first()
     assertEquals(null, cycleError)
+  }
+
+  @Test
+  fun validateDependency_returnsTrueWhenProjectIdEmpty() = runTest {
+    viewModel =
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+    advanceUntilIdle()
+
+    val result = viewModel.validateDependency("task1")
+
+    assertTrue(result)
+    assertEquals(null, viewModel.cycleError.first())
+  }
+
+  @Test
+  fun validateDependency_noCycle_returnsTrueAndClearsError() = runTest {
+    mockkObject(IdGenerator)
+    try {
+      every { IdGenerator.generateTaskId() } returns "task_new"
+
+      viewModel =
+          CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+      viewModel.setProjectId("project123")
+      advanceUntilIdle()
+
+      val dependencyTask = Task(taskID = "task1", projectId = "project123")
+      mockTaskRepository.addTask(dependencyTask)
+
+      val result = viewModel.validateDependency("task1")
+      advanceUntilIdle()
+
+      assertTrue(result)
+      assertEquals(null, viewModel.cycleError.first())
+    } finally {
+      unmockkObject(IdGenerator)
+    }
+  }
+
+  @Test
+  fun validateDependency_cycleDetected_setsErrorAndReturnsFalse() = runTest {
+    mockkObject(IdGenerator)
+    try {
+      every { IdGenerator.generateTaskId() } returns "task_new"
+
+      viewModel =
+          CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+      viewModel.setProjectId("project123")
+      advanceUntilIdle()
+
+      val dependencyTask =
+          Task(taskID = "task1", projectId = "project123", dependingOnTasks = listOf("task_new"))
+      mockTaskRepository.addTask(dependencyTask)
+
+      val result = viewModel.validateDependency("task1")
+      advanceUntilIdle()
+
+      assertFalse(result)
+      assertEquals(
+          "Adding this dependency would create a circular dependency", viewModel.cycleError.first())
+    } finally {
+      unmockkObject(IdGenerator)
+    }
   }
 
   @Test
