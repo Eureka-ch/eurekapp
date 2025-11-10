@@ -960,7 +960,14 @@ open class EditTaskScreenTest : TestCase() {
             .performClick()
         composeTestRule.waitForIdle()
 
-        // Wait for cycle error to appear (may take time for validation)
+        // CRITICAL: Wait for the ViewModel's cycle detection coroutine to complete
+        // The addDependency function runs in viewModelScope.launch, so we need to wait
+        // for the cycleError state to be updated before checking the UI
+        composeTestRule.waitUntil(timeoutMillis = 15000) { viewModel.cycleError.value != null }
+
+        composeTestRule.waitForIdle()
+
+        // Wait for cycle error to appear in UI (may take time for recomposition)
         composeTestRule.waitUntil(timeoutMillis = 15000) {
           try {
             composeTestRule
