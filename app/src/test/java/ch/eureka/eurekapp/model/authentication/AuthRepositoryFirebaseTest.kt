@@ -104,3 +104,4 @@ class AuthRepositoryFirebaseTest {
     assertTrue(result.exceptionOrNull()?.message!!.contains("Logout failed"))
   }
 }
+
