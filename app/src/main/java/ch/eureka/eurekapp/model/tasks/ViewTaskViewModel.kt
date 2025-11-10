@@ -1,6 +1,8 @@
 package ch.eureka.eurekapp.model.tasks
 
 import androidx.lifecycle.viewModelScope
+import ch.eureka.eurekapp.model.connection.ConnectivityObserver
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.user.UserRepository
@@ -9,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -29,11 +32,45 @@ class ViewTaskViewModel(
     projectId: String,
     taskId: String,
     taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
+    dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver
     private val userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository,
     dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ReadTaskViewModel<ViewTaskState>(taskRepository, dispatcher) {
 
+  private val _isConnected =
+      connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
   override val uiState: StateFlow<ViewTaskState> =
+      combine(
+              taskRepository
+                  .getTaskById(projectId, taskId)
+                  .map { task ->
+                    if (task != null) {
+                      ViewTaskState(
+                          title = task.title,
+                          description = task.description,
+                          dueDate =
+                              task.dueDate?.let { date -> dateFormat.format(date.toDate()) } ?: "",
+                          projectId = task.projectId,
+                          taskId = task.taskID,
+                          attachmentUrls = task.attachmentUrls,
+                          status = task.status,
+                          isLoading = false,
+                          errorMsg = null)
+                    } else {
+                      ViewTaskState(isLoading = false, errorMsg = "Task not found.")
+                    }
+                  }
+                  .catch { exception ->
+                    emit(
+                        ViewTaskState(
+                            isLoading = false,
+                            errorMsg = "Failed to load Task: ${exception.message}"))
+                  },
+              _isConnected) { taskState, isConnected ->
+                taskState.copy(isConnected = isConnected)
+              }
       taskRepository
           .getTaskById(projectId, taskId)
           .flatMapLatest { task ->

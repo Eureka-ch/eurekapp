@@ -235,19 +235,24 @@ fun AttachmentsList(
     attachments: List<Any>,
     modifier: Modifier = Modifier,
     onDelete: ((Int) -> Unit)? = null,
-    isReadOnly: Boolean = false
+    isReadOnly: Boolean = false,
+    isConnected: Boolean = true
 ) {
   attachments.forEachIndexed { index, file ->
     Row(modifier = modifier) {
-      Text("Photo ${index + 1}")
-      if (!isReadOnly && onDelete != null) {
-        IconButton(
-            onClick = { onDelete(index) },
-            modifier = Modifier.testTag(CommonTaskTestTags.DELETE_PHOTO)) {
-              Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
-            }
+      if (!isConnected) {
+        Text("Photo ${index + 1}: Attachment available, but cannot be visualized offline.")
+      } else {
+        Text("Photo ${index + 1}")
+        if (!isReadOnly && onDelete != null) {
+          IconButton(
+              onClick = { onDelete(index) },
+              modifier = Modifier.testTag(CommonTaskTestTags.DELETE_PHOTO)) {
+                Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
+              }
+        }
+        PhotoViewer(file, modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.PHOTO))
       }
-      PhotoViewer(file, modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.PHOTO))
     }
   }
 }

@@ -47,7 +47,8 @@ fun EurekaTaskCard(
     isCompleted: Boolean = false,
     onToggleComplete: () -> Unit = {},
     onClick: () -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isEnabled: Boolean = true
 ) {
   // No local state - use controlled state from parent
   Card(
@@ -73,7 +74,7 @@ fun EurekaTaskCard(
                     modifier = Modifier.weight(1f))
 
                 // Checkbox aligned to the right
-                Box(modifier = Modifier.clickable { onToggleComplete() }) {
+                Box(modifier = Modifier.clickable(enabled = isEnabled) { onToggleComplete() }) {
                   if (isCompleted) {
                     Text(
                         text = "✓",
@@ -83,6 +84,7 @@ fun EurekaTaskCard(
                     Checkbox(
                         checked = false,
                         onCheckedChange = { onToggleComplete() },
+                        enabled = isEnabled,
                         colors =
                             CheckboxDefaults.colors(
                                 checkedColor = MaterialTheme.colorScheme.primary),

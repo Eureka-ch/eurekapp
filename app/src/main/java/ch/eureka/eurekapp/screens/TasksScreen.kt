@@ -21,10 +21,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.viewmodel.compose.viewModel
-import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.task.determinePriority
@@ -54,6 +52,7 @@ object TasksScreenTestTags {
   const val CREATE_TASK_BUTTON = "createTaskButton"
   const val AUTO_ASSIGN_BUTTON = "autoAssignButton"
   const val TASK_CARD = "taskCard"
+  const val OFFLINE_MESSAGE = "offlineMessage"
 }
 
 data class TaskAndUsers(val task: Task, val users: List<User>)
@@ -67,7 +66,8 @@ private fun TaskCard(
     taskAndUsers: TaskAndUsers,
     onToggleComplete: () -> Unit,
     onTaskClick: (String, String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isEnabled: Boolean = true
 ) {
   val (task, users) = taskAndUsers
   val progressValue =
@@ -92,6 +92,7 @@ private fun TaskCard(
       priority = determinePriority(task, now),
       onToggleComplete = onToggleComplete,
       onClick = { onTaskClick(task.taskID, task.projectId) },
+      isEnabled = isEnabled,
       modifier = modifier.testTag(TasksScreenTestTags.TASK_CARD))
 }
 
@@ -258,19 +259,21 @@ fun TasksScreen(
                           text = "You are offline. Some features may be unavailable.",
                           style = MaterialTheme.typography.bodyMedium,
                           color = MaterialTheme.colorScheme.error,
-                          modifier = Modifier.padding(Spacing.md))
+                          modifier = Modifier.padding(Spacing.md).testTag(TasksScreenTestTags.OFFLINE_MESSAGE))
                     }
                   }
                   taskSection(
                       title = "Current Tasks",
                       tasksAndUsers = currentTaskAndUsers,
                       viewModel = viewModel,
+                      isConnected = isConnected,
                       onTaskClick = onTaskClick)
                   taskSection(
                       title = "Recently Completed",
                       tasksAndUsers = completedTaskAndUsers,
                       viewModel = viewModel,
                       modifier = Modifier.padding(top = Spacing.lg),
+                      isConnected = isConnected,
                       onTaskClick = onTaskClick)
                   if (currentTaskAndUsers.isEmpty() && completedTaskAndUsers.isEmpty()) {
                     item {
@@ -304,6 +307,7 @@ private fun LazyListScope.taskSection(
     tasksAndUsers: List<TaskAndUsers>,
     viewModel: TaskScreenViewModel,
     modifier: Modifier = Modifier,
+    isConnected: Boolean = true,
     onTaskClick: (String, String) -> Unit = { _, _ -> }
 ) {
   if (tasksAndUsers.isEmpty()) return
@@ -312,7 +316,8 @@ private fun LazyListScope.taskSection(
     TaskCard(
         taskAndUsers,
         onToggleComplete = { viewModel.toggleTaskCompletion(taskAndUsers.task) },
-        onTaskClick = onTaskClick)
+        onTaskClick = onTaskClick,
+        isEnabled = isConnected)
   }
 }
 
