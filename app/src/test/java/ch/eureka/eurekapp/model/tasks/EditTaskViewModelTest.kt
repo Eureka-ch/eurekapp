@@ -154,6 +154,35 @@ class EditTaskViewModelTest {
   }
 
   @Test
+  fun addDependency_doesNotAddDuplicate() = runTest {
+    val task =
+        Task(
+            taskID = "task123",
+            projectId = "project123",
+            title = "Test Task",
+            description = "Description",
+            dueDate = Timestamp.now())
+    mockTaskRepository.addTask(task)
+
+    viewModel =
+        EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+    viewModel.loadTask("project123", "task123")
+    advanceUntilIdle()
+
+    val task1 = Task(taskID = "task1", projectId = "project123")
+    mockTaskRepository.addTask(task1)
+    advanceUntilIdle()
+
+    viewModel.addDependency("task1")
+    advanceUntilIdle()
+    viewModel.addDependency("task1")
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.first()
+    assertEquals(1, state.dependingOnTasks.count { it == "task1" })
+  }
+
+  @Test
   fun addDependency_withCycle_setsCycleError() = runTest {
     val task =
         Task(
@@ -206,6 +235,29 @@ class EditTaskViewModelTest {
 
     val state = viewModel.uiState.first()
     assertEquals(listOf("task2"), state.dependingOnTasks)
+  }
+
+  @Test
+  fun removeDependency_whenNotExists_doesNotCrash() = runTest {
+    val task =
+        Task(
+            taskID = "task123",
+            projectId = "project123",
+            title = "Test Task",
+            description = "Description",
+            dueDate = Timestamp.now())
+    mockTaskRepository.addTask(task)
+
+    viewModel =
+        EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+    viewModel.loadTask("project123", "task123")
+    advanceUntilIdle()
+
+    viewModel.removeDependency("nonexistent")
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.first()
+    assertEquals(emptyList<String>(), state.dependingOnTasks)
   }
 
   @Test

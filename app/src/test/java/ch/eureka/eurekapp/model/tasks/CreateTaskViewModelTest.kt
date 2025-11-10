@@ -573,6 +573,22 @@ class CreateTaskViewModelTest {
   }
 
   @Test
+  fun addDependency_doesNotAddDuplicate() = runTest {
+    viewModel =
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+    viewModel.setProjectId("project123")
+    advanceUntilIdle()
+
+    viewModel.addDependency("task1")
+    advanceUntilIdle()
+    viewModel.addDependency("task1")
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.first()
+    assertEquals(listOf("task1"), state.dependingOnTasks)
+  }
+
+  @Test
   fun removeDependency_removesFromList() = runTest {
     viewModel =
         CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
@@ -588,6 +604,20 @@ class CreateTaskViewModelTest {
 
     val state = viewModel.uiState.first()
     assertEquals(listOf("task2"), state.dependingOnTasks)
+  }
+
+  @Test
+  fun removeDependency_whenNotExists_doesNotCrash() = runTest {
+    viewModel =
+        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+    viewModel.setProjectId("project123")
+    advanceUntilIdle()
+
+    viewModel.removeDependency("nonexistent")
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.first()
+    assertEquals(emptyList<String>(), state.dependingOnTasks)
   }
 
   @Test
