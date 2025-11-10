@@ -577,6 +577,77 @@ open class EditTaskScreenTest : TestCase() {
         taskViewModel.cleanupForTest()
       }
 
+  // Helper functions for dependency tests only
+  private fun setupEditTaskScreenForDependencies(
+      projectId: String,
+      taskId: String
+  ): EditTaskViewModel {
+    val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+    lastEditVm = viewModel
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      FakeNavGraph(
+          projectId = projectId,
+          taskId = taskId,
+          navController = navController,
+          viewModel = viewModel)
+      navController.navigate(Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
+    }
+    composeTestRule.waitForIdle()
+    return viewModel
+  }
+
+  private fun waitForDependenciesReady(viewModel: EditTaskViewModel, taskId: String) {
+    composeTestRule.waitUntil(timeoutMillis = 10000) { viewModel.uiState.value.taskId == taskId }
+    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(timeoutMillis = 10000) { viewModel.availableTasks.value.isNotEmpty() }
+    composeTestRule.waitForIdle()
+  }
+
+  private fun scrollToDependencyButton() {
+    composeTestRule.waitUntil(timeoutMillis = 10000) {
+      composeTestRule
+          .onAllNodesWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+    try {
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON).assertIsDisplayed()
+    } catch (e: Exception) {
+      composeTestRule
+          .onRoot()
+          .performScrollToNode(hasTestTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON))
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON).assertIsDisplayed()
+    }
+  }
+
+  private fun openDependencyMenu() {
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(timeoutMillis = 10000) {
+      composeTestRule
+          .onAllNodesWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_menu")
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+  }
+
+  private fun scrollToDependencyItem(dependencyId: String) {
+    try {
+      composeTestRule
+          .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId")
+          .assertIsDisplayed()
+    } catch (e: Exception) {
+      composeTestRule
+          .onRoot()
+          .performScrollToNode(
+              hasTestTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId"))
+      composeTestRule
+          .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId")
+          .assertIsDisplayed()
+    }
+  }
+
   @Test
   fun testDependenciesLoadedFromTask() =
       runBlocking<Unit> {
@@ -589,49 +660,10 @@ open class EditTaskScreenTest : TestCase() {
         setupTestTask(
             projectId, taskId, title = "Main Task", dependingOnTasks = listOf(dependencyId))
 
-        val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
-        lastEditVm = viewModel
+        val viewModel = setupEditTaskScreenForDependencies(projectId, taskId)
+        waitForDependenciesReady(viewModel, taskId)
 
-        composeTestRule.setContent {
-          val navController = rememberNavController()
-          FakeNavGraph(
-              projectId = projectId,
-              taskId = taskId,
-              navController = navController,
-              viewModel = viewModel)
-          navController.navigate(
-              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
-        }
-
-        composeTestRule.waitForIdle()
-
-        // Wait for task to load
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-          viewModel.uiState.value.taskId == taskId
-        }
-
-        composeTestRule.waitForIdle()
-
-        // Wait for available tasks to load
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-          viewModel.availableTasks.value.isNotEmpty() || viewModel.availableTasks.value.isEmpty()
-        }
-
-        composeTestRule.waitForIdle()
-
-        // Scroll to find the dependency item if needed
-        try {
-          composeTestRule
-              .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId")
-              .assertIsDisplayed()
-        } catch (e: Exception) {
-          composeTestRule
-              .onRoot()
-              .performScrollToNode(
-                  hasTestTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId"))
-        }
-
-        // Verify dependency is displayed
+        scrollToDependencyItem(dependencyId)
         composeTestRule
             .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId")
             .assertIsDisplayed()
@@ -648,74 +680,14 @@ open class EditTaskScreenTest : TestCase() {
         setupTestTask(projectId, taskId, title = "Current Task")
         setupTestTask(projectId, taskId1, title = "Other Task")
 
-        val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
-        lastEditVm = viewModel
+        val viewModel = setupEditTaskScreenForDependencies(projectId, taskId)
+        waitForDependenciesReady(viewModel, taskId)
+        scrollToDependencyButton()
+        openDependencyMenu()
 
-        composeTestRule.setContent {
-          val navController = rememberNavController()
-          FakeNavGraph(
-              projectId = projectId,
-              taskId = taskId,
-              navController = navController,
-              viewModel = viewModel)
-          navController.navigate(
-              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
-        }
-
-        composeTestRule.waitForIdle()
-
-        // Wait for task to load and available tasks to load
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-          viewModel.uiState.value.taskId == taskId
-        }
-
-        composeTestRule.waitForIdle()
-
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-          viewModel.availableTasks.value.isNotEmpty()
-        }
-
-        composeTestRule.waitForIdle()
-
-        // Wait for the dependency button to appear using the same pattern as other tests
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-          composeTestRule
-              .onAllNodesWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)
-              .fetchSemanticsNodes()
-              .isNotEmpty()
-        }
-
-        // Scroll to find the dependency button if needed
-        try {
-          composeTestRule
-              .onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)
-              .assertIsDisplayed()
-        } catch (e: Exception) {
-          composeTestRule
-              .onRoot()
-              .performScrollToNode(hasTestTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON))
-          composeTestRule
-              .onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)
-              .assertIsDisplayed()
-        }
-
-        // Click add dependency button
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON).performClick()
-        composeTestRule.waitForIdle()
-
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-          composeTestRule
-              .onAllNodesWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_menu")
-              .fetchSemanticsNodes()
-              .isNotEmpty()
-        }
-
-        // Verify current task is not in the list
         composeTestRule
             .onAllNodesWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_$taskId")
             .assertCountEquals(0)
-
-        // Verify other task is available
         composeTestRule
             .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_$taskId1")
             .assertIsDisplayed()
@@ -732,63 +704,16 @@ open class EditTaskScreenTest : TestCase() {
         setupTestTask(projectId, dependencyId, title = "Dependency Task")
         setupTestTask(projectId, taskId, title = "Main Task")
 
-        val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
-        lastEditVm = viewModel
-
-        composeTestRule.setContent {
-          val navController = rememberNavController()
-          FakeNavGraph(
-              projectId = projectId,
-              taskId = taskId,
-              navController = navController,
-              viewModel = viewModel)
-          navController.navigate(
-              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
-        }
-
-        composeTestRule.waitForIdle()
-
-        // Wait for task to load and available tasks to load
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-          viewModel.uiState.value.taskId == taskId
-        }
-
-        composeTestRule.waitForIdle()
-
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-          viewModel.availableTasks.value.isNotEmpty()
-        }
-
-        composeTestRule.waitForIdle()
-
-        // Scroll to find the dependency button if needed
-        try {
-          composeTestRule
-              .onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)
-              .assertIsDisplayed()
-        } catch (e: Exception) {
-          composeTestRule
-              .onRoot()
-              .performScrollToNode(hasTestTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON))
-        }
-
-        // Add dependency
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON).performClick()
-        composeTestRule.waitForIdle()
-
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-          composeTestRule
-              .onAllNodesWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_menu")
-              .fetchSemanticsNodes()
-              .isNotEmpty()
-        }
+        val viewModel = setupEditTaskScreenForDependencies(projectId, taskId)
+        waitForDependenciesReady(viewModel, taskId)
+        scrollToDependencyButton()
+        openDependencyMenu()
 
         composeTestRule
             .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_$dependencyId")
             .performClick()
         composeTestRule.waitForIdle()
 
-        // Save task
         composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
         composeTestRule.waitUntil(timeoutMillis = 5000) {
           composeTestRule
@@ -797,7 +722,6 @@ open class EditTaskScreenTest : TestCase() {
               .isNotEmpty()
         }
 
-        // Verify dependency was saved
         val task = taskRepository.getTaskById(projectId, taskId).first()
         assert(task?.dependingOnTasks?.contains(dependencyId) == true)
       }
@@ -814,60 +738,19 @@ open class EditTaskScreenTest : TestCase() {
         setupTestTask(
             projectId, taskId, title = "Main Task", dependingOnTasks = listOf(dependencyId))
 
-        val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
-        lastEditVm = viewModel
+        val viewModel = setupEditTaskScreenForDependencies(projectId, taskId)
+        waitForDependenciesReady(viewModel, taskId)
 
-        composeTestRule.setContent {
-          val navController = rememberNavController()
-          FakeNavGraph(
-              projectId = projectId,
-              taskId = taskId,
-              navController = navController,
-              viewModel = viewModel)
-          navController.navigate(
-              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
-        }
-
-        composeTestRule.waitForIdle()
-
-        // Wait for task to load
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-          viewModel.uiState.value.taskId == taskId
-        }
-
-        composeTestRule.waitForIdle()
-
-        // Wait for available tasks to load
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-          viewModel.availableTasks.value.isNotEmpty()
-        }
-
-        composeTestRule.waitForIdle()
-
-        // Scroll to find the dependency item if needed
-        try {
-          composeTestRule
-              .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId")
-              .assertIsDisplayed()
-        } catch (e: Exception) {
-          composeTestRule
-              .onRoot()
-              .performScrollToNode(
-                  hasTestTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId"))
-        }
-
-        // Verify dependency is shown
+        scrollToDependencyItem(dependencyId)
         composeTestRule
             .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId")
             .assertIsDisplayed()
 
-        // Click remove button
         composeTestRule
             .onNodeWithTag("${CommonTaskTestTags.REMOVE_DEPENDENCY}_$dependencyId")
             .performClick()
         composeTestRule.waitForIdle()
 
-        // Verify dependency is removed
         composeTestRule
             .onAllNodesWithTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId")
             .assertCountEquals(0)
@@ -882,92 +765,23 @@ open class EditTaskScreenTest : TestCase() {
         val taskId2 = "task2"
 
         setupTestProject(projectId)
-        // Create a cycle: taskId -> task1 -> task2 -> taskId
-        // task1 depends on task2
         setupTestTask(projectId, taskId1, title = "Task 1", dependingOnTasks = listOf(taskId2))
-        // task2 depends on taskId (this creates the cycle when we try to make taskId depend on
-        // task1)
         setupTestTask(projectId, taskId2, title = "Task 2", dependingOnTasks = listOf(taskId))
         setupTestTask(projectId, taskId, title = "Main Task")
 
-        val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
-        lastEditVm = viewModel
-
-        composeTestRule.setContent {
-          val navController = rememberNavController()
-          FakeNavGraph(
-              projectId = projectId,
-              taskId = taskId,
-              navController = navController,
-              viewModel = viewModel)
-          navController.navigate(
-              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
-        }
-
-        composeTestRule.waitForIdle()
-
-        // Wait for task to load and available tasks to load
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-          viewModel.uiState.value.taskId == taskId
-        }
-
-        composeTestRule.waitForIdle()
-
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-          viewModel.availableTasks.value.isNotEmpty()
-        }
-
-        composeTestRule.waitForIdle()
-
-        // Wait for the dependency button to appear using the same pattern as other tests
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-          composeTestRule
-              .onAllNodesWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)
-              .fetchSemanticsNodes()
-              .isNotEmpty()
-        }
-
-        // Scroll to find the dependency button if needed
-        try {
-          composeTestRule
-              .onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)
-              .assertIsDisplayed()
-        } catch (e: Exception) {
-          composeTestRule
-              .onRoot()
-              .performScrollToNode(hasTestTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON))
-          composeTestRule
-              .onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)
-              .assertIsDisplayed()
-        }
-
-        // Try to add task1 as dependency (creates cycle)
-        // Cycle: taskId -> task1 -> task2 -> taskId
-        // Since task2 already depends on taskId, adding task1 as a dependency of taskId creates a
-        // cycle
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON).performClick()
-        composeTestRule.waitForIdle()
-
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-          composeTestRule
-              .onAllNodesWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_menu")
-              .fetchSemanticsNodes()
-              .isNotEmpty()
-        }
+        val viewModel = setupEditTaskScreenForDependencies(projectId, taskId)
+        waitForDependenciesReady(viewModel, taskId)
+        scrollToDependencyButton()
+        openDependencyMenu()
 
         composeTestRule
             .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_$taskId1")
             .performClick()
         composeTestRule.waitForIdle()
 
-        // CRITICAL: Wait for the ViewModel's cycle detection coroutine to complete
-        // The addDependency function runs in viewModelScope.launch, so we need to wait
-        // for the cycleError state to be updated before checking the UI
         composeTestRule.waitUntil(timeoutMillis = 15000) { viewModel.cycleError.value != null }
-
         composeTestRule.waitForIdle()
 
-        // Wait for cycle error to appear in UI (may take time for recomposition)
         composeTestRule.waitUntil(timeoutMillis = 15000) {
           try {
             composeTestRule
@@ -975,7 +789,6 @@ open class EditTaskScreenTest : TestCase() {
                 .assertIsDisplayed()
             true
           } catch (e: Exception) {
-            // Try scrolling to find it
             try {
               composeTestRule
                   .onRoot()
@@ -990,7 +803,6 @@ open class EditTaskScreenTest : TestCase() {
           }
         }
 
-        // Verify cycle error is displayed
         composeTestRule.onNodeWithTag(CommonTaskTestTags.DEPENDENCY_CYCLE_ERROR).assertIsDisplayed()
       }
 
