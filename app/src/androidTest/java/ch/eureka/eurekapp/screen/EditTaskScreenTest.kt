@@ -638,7 +638,7 @@ open class EditTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testCurrentTask_isExcludedFromAvailableTasks() =
+  fun testCurrentTaskIsexcludedfromavailabletasks() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -722,7 +722,7 @@ open class EditTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testEditTask_withDependencies_savesDependencies() =
+  fun testEditTaskWithdependenciesSavesdependencies() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -803,7 +803,7 @@ open class EditTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testRemoveDependency_removesFromList() =
+  fun testRemoveDependencyRemovesfromlist() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -874,7 +874,7 @@ open class EditTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testCycleError_isDisplayed_whenCycleDetected() =
+  fun testCycleErrorIsdisplayedWhencycledetected() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"

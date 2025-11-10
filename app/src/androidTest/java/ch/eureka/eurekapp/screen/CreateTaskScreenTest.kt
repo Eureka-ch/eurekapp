@@ -87,7 +87,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun projectSelection_showsList_and_selectsProject() {
+  fun projectSelectionShowslistAndSelectsproject() {
     val projectId = "project123"
 
     // Provide a fake project list via a fake repository-injected VM
@@ -148,7 +148,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun projectSelection_showsNoProjectsMessage_whenEmptyList() {
+  fun projectSelectionShowsnoprojectsmessageWhenemptylist() {
     val emptyRepo =
         object : ProjectRepository {
           override fun getProjectById(projectId: String): Flow<Project?> = flowOf(null)
@@ -730,7 +730,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun reminderTimeField_isDisplayed() {
+  fun reminderTimeFieldIsdisplayed() {
     val projectId = "project123"
 
     val fakeProjectRepository =
@@ -810,7 +810,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testAddDependency_showsDependencyInList() {
+  fun testAddDependencyShowsdependencyinlist() {
     runBlocking {
       val projectId = "project123"
       val taskId1 = "task1"
@@ -881,7 +881,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testTaskCreated_withDependencies_savesDependencies() {
+  fun testTaskCreatedWithdependenciesSavesdependencies() {
     runBlocking {
       val projectId = "project123"
       val taskId1 = "task1"
