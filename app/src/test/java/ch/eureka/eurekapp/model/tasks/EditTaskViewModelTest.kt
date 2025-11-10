@@ -26,6 +26,8 @@ import org.junit.Test
 
 /*
 Co-Authored-By: Claude <noreply@anthropic.com>
+Note: This file was partially written by GPT-5 Codex
+Co-author : GPT-5
 */
 
 @OptIn(ExperimentalCoroutinesApi::class)
