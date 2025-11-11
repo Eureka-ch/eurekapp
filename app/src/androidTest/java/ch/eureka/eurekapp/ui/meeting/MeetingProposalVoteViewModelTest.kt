@@ -150,7 +150,7 @@ class MeetingProposalVoteViewModelTest {
     testDispatcher.scheduler.advanceUntilIdle()
 
     val targetProposal = viewModel.uiState.value.meetingProposals[0]
-    viewModel.retractVoteForMeetingProposal(targetProposal, CURRENT_USER_VOTE)
+    viewModel.retractVoteForMeetingProposal(targetProposal)
 
     val updatedProposals = viewModel.uiState.value.meetingProposals
     assertEquals(1, updatedProposals[0].votes.size)
@@ -168,7 +168,7 @@ class MeetingProposalVoteViewModelTest {
     testDispatcher.scheduler.advanceUntilIdle()
 
     val invalidProposal = MeetingProposal()
-    viewModel.retractVoteForMeetingProposal(invalidProposal, CURRENT_USER_VOTE)
+    viewModel.retractVoteForMeetingProposal(invalidProposal)
 
     assertEquals(
         "Meeting proposal to retract vote for does not exists.", viewModel.uiState.value.errorMsg)
@@ -181,7 +181,7 @@ class MeetingProposalVoteViewModelTest {
     viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.retractVoteForMeetingProposal(TEST_PROPOSALS[0], OTHER_USER_VOTE)
+    viewModel.retractVoteForMeetingProposal(TEST_PROPOSALS[0])
     assertEquals("Not logged in", viewModel.uiState.value.errorMsg)
   }
 
@@ -193,7 +193,7 @@ class MeetingProposalVoteViewModelTest {
     testDispatcher.scheduler.advanceUntilIdle()
 
     val targetProposal = viewModel.uiState.value.meetingProposals[0]
-    viewModel.retractVoteForMeetingProposal(targetProposal, CURRENT_USER_VOTE)
+    viewModel.retractVoteForMeetingProposal(targetProposal)
 
     assertEquals(
         "Cannot retract vote since you did not vote in the first place",
