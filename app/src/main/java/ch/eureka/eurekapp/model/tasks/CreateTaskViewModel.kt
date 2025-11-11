@@ -35,14 +35,18 @@ Co-author : GPT-5
 class CreateTaskViewModel(
     taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
     fileRepository: FileStorageRepository = FirestoreRepositoriesProvider.fileRepository,
-    private val projectRepository: ProjectRepository =
-        FirestoreRepositoriesProvider.projectRepository,
-    private val userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository,
+    projectRepository: ProjectRepository = FirestoreRepositoriesProvider.projectRepository,
+    userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository,
     getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) :
     ReadWriteTaskViewModel<CreateTaskState>(
-        taskRepository, fileRepository, getCurrentUserId, dispatcher) {
+        taskRepository,
+        fileRepository,
+        projectRepository,
+        userRepository,
+        getCurrentUserId,
+        dispatcher) {
 
   private val _uiState = MutableStateFlow(CreateTaskState())
   override val uiState: StateFlow<CreateTaskState> = _uiState.asStateFlow()
@@ -167,46 +171,13 @@ class CreateTaskViewModel(
     _uiState.value = _uiState.value.update()
   }
 
-  fun setReminderTime(reminderTime: String) {
-    updateState { copy(reminderTime = reminderTime) }
-  }
+  override fun CreateTaskState.copyWithReminderTime(reminderTime: String) =
+      copy(reminderTime = reminderTime)
 
-  /** Loads available users from the selected project */
-  fun loadProjectMembers(projectId: String) {
-    if (projectId.isBlank()) {
-      updateState { copy(availableUsers = emptyList()) }
-      return
-    }
+  override fun CreateTaskState.copyWithAvailableUsers(
+      users: List<ch.eureka.eurekapp.model.data.user.User>
+  ) = copy(availableUsers = users)
 
-    viewModelScope.launch(dispatcher) {
-      projectRepository.getMembers(projectId).collect { members ->
-        if (members.isEmpty()) {
-          updateState { copy(availableUsers = emptyList()) }
-        } else {
-          // Collect all user flows
-          val userFlows = members.map { member -> userRepository.getUserById(member.userId) }
-          kotlinx.coroutines.flow
-              .combine(userFlows) { users -> users.toList().filterNotNull() }
-              .collect { users -> updateState { copy(availableUsers = users) } }
-        }
-      }
-    }
-  }
-
-  /** Sets the assigned user IDs for the task */
-  fun setAssignedUsers(userIds: List<String>) {
-    updateState { copy(selectedAssignedUserIds = userIds) }
-  }
-
-  /** Toggles a user in the assigned users list */
-  fun toggleUserAssignment(userId: String) {
-    val currentIds = uiState.value.selectedAssignedUserIds
-    val newIds =
-        if (currentIds.contains(userId)) {
-          currentIds - userId
-        } else {
-          currentIds + userId
-        }
-    updateState { copy(selectedAssignedUserIds = newIds) }
-  }
+  override fun CreateTaskState.copyWithSelectedAssignedUserIds(userIds: List<String>) =
+      copy(selectedAssignedUserIds = userIds)
 }

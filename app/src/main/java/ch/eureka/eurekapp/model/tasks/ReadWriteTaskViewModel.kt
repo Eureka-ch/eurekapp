@@ -6,7 +6,9 @@ import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.Project
+import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.task.TaskRepository
+import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.utils.Formatters
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.CoroutineDispatcher
@@ -20,6 +22,8 @@ import kotlinx.coroutines.withTimeout
 /*
 Co-Authored-By: Claude <noreply@anthropic.com>
 Portions of this code were generated with the help of Grok.
+Note: This file was partially written by GPT-5
+Codex Co-author : GPT-5
 */
 
 /** Interface for common task state properties */
@@ -27,12 +31,16 @@ interface TaskStateReadWrite : TaskStateRead {
   val isSaving: Boolean
   val taskSaved: Boolean
   val availableProjects: List<Project>
+  val availableUsers: List<ch.eureka.eurekapp.model.data.user.User>
+  val selectedAssignedUserIds: List<String>
 }
 
 /** Base ViewModel for task creation and editing with shared functionality */
 abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
     taskRepository: TaskRepository,
     protected val fileRepository: FileStorageRepository,
+    protected val projectRepository: ProjectRepository,
+    protected val userRepository: UserRepository,
     protected val getCurrentUserId: () -> String?,
     dispatcher: CoroutineDispatcher
 ) : ReadTaskViewModel<T>(taskRepository, dispatcher) {
@@ -232,6 +240,50 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
     }
   }
 
+  /** Sets the reminder time for the task */
+  fun setReminderTime(reminderTime: String) {
+    updateState { copyWithReminderTime(reminderTime) }
+  }
+
+  /** Loads available users from the selected project */
+  fun loadProjectMembers(projectId: String) {
+    if (projectId.isBlank()) {
+      updateState { copyWithAvailableUsers(emptyList()) }
+      return
+    }
+
+    viewModelScope.launch(dispatcher) {
+      projectRepository.getMembers(projectId).collect { members ->
+        if (members.isEmpty()) {
+          updateState { copyWithAvailableUsers(emptyList()) }
+        } else {
+          // Collect all user flows
+          val userFlows = members.map { member -> userRepository.getUserById(member.userId) }
+          kotlinx.coroutines.flow
+              .combine(userFlows) { users -> users.toList().filterNotNull() }
+              .collect { users -> updateState { copyWithAvailableUsers(users) } }
+        }
+      }
+    }
+  }
+
+  /** Sets the assigned user IDs for the task */
+  fun setAssignedUsers(userIds: List<String>) {
+    updateState { copyWithSelectedAssignedUserIds(userIds) }
+  }
+
+  /** Toggles a user in the assigned users list */
+  fun toggleUserAssignment(userId: String) {
+    val currentIds = uiState.value.selectedAssignedUserIds
+    val newIds =
+        if (currentIds.contains(userId)) {
+          currentIds - userId
+        } else {
+          currentIds + userId
+        }
+    updateState { copyWithSelectedAssignedUserIds(newIds) }
+  }
+
   // Abstract methods for state updates
   /** Updates the UI state with the given update function */
   protected abstract fun updateState(update: T.() -> T)
@@ -250,4 +302,12 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
   protected abstract fun T.copyWithAttachmentUris(uris: List<Uri>): T
 
   protected abstract fun T.copyWithProjectId(projectId: String): T
+
+  protected abstract fun T.copyWithReminderTime(reminderTime: String): T
+
+  protected abstract fun T.copyWithAvailableUsers(
+      users: List<ch.eureka.eurekapp.model.data.user.User>
+  ): T
+
+  protected abstract fun T.copyWithSelectedAssignedUserIds(userIds: List<String>): T
 }

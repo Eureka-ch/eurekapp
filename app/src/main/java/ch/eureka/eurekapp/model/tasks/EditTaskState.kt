@@ -10,6 +10,8 @@ import ch.eureka.eurekapp.model.data.user.User
 Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
 Co-Authored-By: Claude <noreply@anthropic.com>
 Portions of this code were generated with the help of Grok.
+Note: This file was partially written by GPT-5 Codex
+Co-author : GPT-5
 */
 
 /** State for the CreateTaskScreen screen. This state holds the data needed to create a new Task */
@@ -21,10 +23,10 @@ data class EditTaskState(
     val templateId: String? = null,
     override val projectId: String = "",
     override val availableProjects: List<Project> = emptyList(),
-    val availableUsers: List<User> = emptyList(),
+    override val availableUsers: List<User> = emptyList(),
     val taskId: String = "",
     val assignedUserIds: List<String> = emptyList(),
-    val selectedAssignedUserIds: List<String> = emptyList(),
+    override val selectedAssignedUserIds: List<String> = emptyList(),
     override val attachmentUris: List<Uri> = emptyList(),
     val attachmentUrls: List<String> = emptyList(),
     val deletedAttachmentUrls: Set<String> = emptySet(),
