@@ -7,9 +7,11 @@ package ch.eureka.eurekapp.ui.meeting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.IdGenerator
-import ch.eureka.eurekapp.model.data.meeting.DateTimeVote
 import ch.eureka.eurekapp.model.data.meeting.FirestoreMeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.Meeting
+import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
+import ch.eureka.eurekapp.model.data.meeting.MeetingProposal
+import ch.eureka.eurekapp.model.data.meeting.MeetingProposalVote
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
@@ -169,7 +171,13 @@ class CreateMeetingViewModel(
             title = uiState.value.title,
             status = MeetingStatus.OPEN_TO_VOTES,
             duration = uiState.value.duration,
-            dateTimeVotes = listOf(DateTimeVote(Timestamp(timeInstant), listOf(creatorId))),
+            meetingProposals =
+                listOf(
+                    MeetingProposal(
+                        Timestamp(timeInstant),
+                        listOf(
+                            MeetingProposalVote(
+                                creatorId, listOf(MeetingFormat.IN_PERSON))))), // TODO : fix later
             createdBy = creatorId)
 
     viewModelScope.launch {
