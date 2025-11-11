@@ -73,8 +73,7 @@ object MeetingScreenTestTags {
   const val JOIN_MEETING_BUTTON = "JoinMeetingButton"
   const val DIRECTIONS_BUTTON = "DirectionsButton"
   const val RECORD_BUTTON = "RecordButton"
-  const val VOTE_FOR_DATETIME_BUTTON = "VoteForDateTimeButton"
-  const val VOTE_FOR_FORMAT_BUTTON = "VoteForFormatButton"
+  const val VOTE_FOR_MEETING_PROPOSAL_BUTTON = "VoteForMeetingProposalButton"
 
   const val VIEW_SUMMARY_BUTTON = "SeeSummaryButton"
   const val VIEW_TRANSCRIPT_BUTTON = "SeeTranscriptButton"
@@ -428,16 +427,11 @@ fun MeetingCard(
                   MeetingStatus.OPEN_TO_VOTES -> {
                     Button( // TODO : fix this
                         onClick = config.onVoteForMeetingProposals,
-                        modifier = Modifier.testTag(MeetingScreenTestTags.VOTE_FOR_DATETIME_BUTTON),
+                        modifier =
+                            Modifier.testTag(
+                                MeetingScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON),
                     ) {
-                      Text("Vote for datetime")
-                    }
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Button(
-                        onClick = config.onVoteForFormat,
-                        modifier = Modifier.testTag(MeetingScreenTestTags.VOTE_FOR_FORMAT_BUTTON),
-                    ) {
-                      Text("Vote for format")
+                      Text("Vote for meeting proposals")
                     }
                   }
                   MeetingStatus.SCHEDULED,

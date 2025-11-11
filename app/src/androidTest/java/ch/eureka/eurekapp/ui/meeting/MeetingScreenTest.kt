@@ -168,10 +168,8 @@ class MeetingScreenTest {
             MeetingScreenTestTags.MEETING_VOTE_FOR_FORMAT_MESSAGE, useUnmergedTree = true)
         .assertIsDisplayed()
     composeTestRule
-        .onNodeWithTag(MeetingScreenTestTags.VOTE_FOR_DATETIME_BUTTON, useUnmergedTree = true)
-        .assertIsDisplayed()
-    composeTestRule
-        .onNodeWithTag(MeetingScreenTestTags.VOTE_FOR_FORMAT_BUTTON, useUnmergedTree = true)
+        .onNodeWithTag(
+            MeetingScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON, useUnmergedTree = true)
         .assertIsDisplayed()
 
     // Assert other elements are NOT visible
@@ -215,7 +213,8 @@ class MeetingScreenTest {
         .onNodeWithTag(MeetingScreenTestTags.DIRECTIONS_BUTTON, useUnmergedTree = true)
         .assertDoesNotExist()
     composeTestRule
-        .onNodeWithTag(MeetingScreenTestTags.VOTE_FOR_DATETIME_BUTTON, useUnmergedTree = true)
+        .onNodeWithTag(
+            MeetingScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON, useUnmergedTree = true)
         .assertDoesNotExist()
   }
 
