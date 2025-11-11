@@ -76,7 +76,8 @@ import java.time.ZoneId
  *
  * Provides semantic identifiers for UI testing with Compose UI Test framework. Each constant
  * represents a unique testTag applied to composables in MeetingDetailScreen, enabling reliable and
- * maintainable UI test assertions.
+ * maintainable UI test assertions. Note :This file was partially written by ChatGPT (GPT-5)
+ * Co-author : GPT-5
  */
 object MeetingDetailScreenTestTags {
   const val MEETING_DETAIL_SCREEN = "MeetingDetailScreen"
@@ -116,15 +117,16 @@ object MeetingDetailScreenTestTags {
  *
  * @param onNavigateBack Callback to navigate back to the previous screen.
  * @param onJoinMeeting Callback when user clicks join meeting button.
- * @param onRecordMeeting Callback when user clicks record button.
- * @param onViewTranscript Callback when user clicks view transcript button.
+ * @param onRecordMeeting Callback when user clicks record button, receives projectId and meetingId.
+ * @param onViewTranscript Callback when user clicks view transcript button, receives projectId and
+ *   meetingId.
  * @param onNavigateToMeeting Callback when user clicks navigate to meeting button.
  */
 data class MeetingDetailActionsConfig(
     val onNavigateBack: () -> Unit = {},
     val onJoinMeeting: (String) -> Unit = {},
-    val onRecordMeeting: () -> Unit = {},
-    val onViewTranscript: () -> Unit = {},
+    val onRecordMeeting: (String, String) -> Unit = { _, _ -> },
+    val onViewTranscript: (String, String) -> Unit = { _, _ -> },
     val onVoteForTime: () -> Unit = {},
     val onVoteForFormat: () -> Unit = {},
     val onNavigateToMeeting: () -> Unit = {},
@@ -287,8 +289,10 @@ private fun ErrorScreen(message: String) {
  *
  * @param onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
  *   link.
- * @param onRecordMeeting Callback invoked when user clicks record meeting button.
- * @param onViewTranscript Callback invoked when user clicks view transcript button.
+ * @param onRecordMeeting Callback invoked when user clicks record meeting button, receives
+ *   projectId and meetingId.
+ * @param onViewTranscript Callback invoked when user clicks view transcript button, receives
+ *   projectId and meetingId.
  * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
  * @param onVoteForTime Callback invoked when user votes for time button.
  * @param onVoteForFormat Callback invoked when user votes for format button.
@@ -302,8 +306,8 @@ private fun ErrorScreen(message: String) {
  */
 data class MeetingDetailContentActionsConfig(
     val onJoinMeeting: (String) -> Unit,
-    val onRecordMeeting: () -> Unit,
-    val onViewTranscript: () -> Unit,
+    val onRecordMeeting: (String, String) -> Unit,
+    val onViewTranscript: (String, String) -> Unit,
     val onDeleteMeeting: () -> Unit,
     val onVoteForTime: () -> Unit,
     val onVoteForFormat: () -> Unit,
@@ -342,9 +346,12 @@ data class EditConfig(
 /**
  * Configuration for action button callbacks.
  *
- * @param onJoinMeeting Callback invoked when user clicks join meeting button.
- * @param onRecordMeeting Callback invoked when user clicks record meeting button.
- * @param onViewTranscript Callback invoked when user clicks view transcript button.
+ * @param onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
+ *   link.
+ * @param onRecordMeeting Callback invoked when user clicks record meeting button, receives
+ *   projectId and meetingId.
+ * @param onViewTranscript Callback invoked when user clicks view transcript button, receives
+ *   projectId and meetingId.
  * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
  * @param onVoteForTime Callback invoked when user votes for time button.
  * @param onVoteForFormat Callback invoked when user votes for format button.
@@ -353,8 +360,8 @@ data class EditConfig(
  */
 data class ActionButtonsConfig(
     val onJoinMeeting: (String) -> Unit,
-    val onRecordMeeting: () -> Unit,
-    val onViewTranscript: () -> Unit,
+    val onRecordMeeting: (String, String) -> Unit,
+    val onViewTranscript: (String, String) -> Unit,
     val onDeleteMeeting: () -> Unit,
     val onVoteForTime: () -> Unit,
     val onVoteForFormat: () -> Unit,
@@ -925,7 +932,7 @@ private fun ActionButtonsSection(
                   }
             }
             OutlinedButton(
-                onClick = actionsConfig.onRecordMeeting,
+                onClick = { actionsConfig.onRecordMeeting(meeting.projectId, meeting.meetingID) },
                 modifier =
                     Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.RECORD_BUTTON)) {
                   Text("Start Recording")
@@ -933,7 +940,7 @@ private fun ActionButtonsSection(
           }
           MeetingStatus.COMPLETED -> {
             Button(
-                onClick = actionsConfig.onViewTranscript,
+                onClick = { actionsConfig.onViewTranscript(meeting.projectId, meeting.meetingID) },
                 modifier =
                     Modifier.fillMaxWidth()
                         .testTag(MeetingDetailScreenTestTags.VIEW_TRANSCRIPT_BUTTON)) {

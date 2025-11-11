@@ -20,6 +20,7 @@ import ch.eureka.eurekapp.screens.OverviewProjectsScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
 import ch.eureka.eurekapp.screens.TasksScreen
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScreen
+import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingTranscriptViewScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.creation.CreateProjectScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitationSubscreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
@@ -37,6 +38,7 @@ import com.google.firebase.auth.auth
 import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
 
+/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
 sealed interface Route {
   // Main screens
   @Serializable data object ProjectSelection : Route
@@ -92,6 +94,9 @@ sealed interface Route {
 
     @Serializable
     data class MeetingDetail(val projectId: String, val meetingId: String) : MeetingsSection
+
+    @Serializable
+    data class AudioRecording(val projectId: String, val meetingId: String) : MeetingsSection
 
     @Serializable
     data class AudioTranscript(val projectId: String, val meetingId: String) : MeetingsSection
@@ -218,6 +223,16 @@ fun NavigationMenu() {
                     actionsConfig =
                         MeetingDetailActionsConfig(
                             onNavigateBack = { navigationController.popBackStack() },
+                            onRecordMeeting = { projectId, meetingId ->
+                              navigationController.navigate(
+                                  Route.MeetingsSection.AudioRecording(
+                                      projectId = projectId, meetingId = meetingId))
+                            },
+                            onViewTranscript = { projectId, meetingId ->
+                              navigationController.navigate(
+                                  Route.MeetingsSection.AudioTranscript(
+                                      projectId = projectId, meetingId = meetingId))
+                            },
                             onNavigateToMeeting = {
                               navigationController.navigate(
                                   Route.MeetingsSection.MeetingNavigation(
@@ -254,8 +269,26 @@ fun NavigationMenu() {
                     onNavigateBack = { navigationController.popBackStack() })
               }
 
-              composable<Route.MeetingsSection.AudioTranscript> {
-                MeetingAudioRecordingScreen(projectId = testProjectId, meetingId = "1234")
+              composable<Route.MeetingsSection.AudioRecording> { backStackEntry ->
+                val audioRecordingRoute =
+                    backStackEntry.toRoute<Route.MeetingsSection.AudioRecording>()
+                MeetingAudioRecordingScreen(
+                    projectId = audioRecordingRoute.projectId,
+                    meetingId = audioRecordingRoute.meetingId,
+                    onNavigateToTranscript = { projectId, meetingId ->
+                      navigationController.navigate(
+                          Route.MeetingsSection.AudioTranscript(
+                              projectId = projectId, meetingId = meetingId))
+                    })
+              }
+
+              composable<Route.MeetingsSection.AudioTranscript> { backStackEntry ->
+                val audioTranscriptRoute =
+                    backStackEntry.toRoute<Route.MeetingsSection.AudioTranscript>()
+                MeetingTranscriptViewScreen(
+                    projectId = audioTranscriptRoute.projectId,
+                    meetingId = audioTranscriptRoute.meetingId,
+                    onNavigateBack = { navigationController.popBackStack() })
               }
 
               composable<Route.ProjectSelectionSection.CreateProject> { CreateProjectScreen() }

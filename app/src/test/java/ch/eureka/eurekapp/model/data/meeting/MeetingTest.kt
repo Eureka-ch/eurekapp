@@ -267,7 +267,9 @@ class MeetingTest {
     assertNull(meeting.component11()) // location
     assertNull(meeting.component12()) // link
     assertEquals(emptyList<String>(), meeting.component13()) // attachmentUrls
-    assertEquals("", meeting.component14()) // createdBy
-    assertEquals(emptyList<String>(), meeting.component15()) // participantIds
+    assertNull(meeting.component14())
+    assertNull(meeting.component15())
+    assertEquals("", meeting.component16()) // createdBy
+    assertEquals(emptyList<String>(), meeting.component17()) // participantIds
   }
 }

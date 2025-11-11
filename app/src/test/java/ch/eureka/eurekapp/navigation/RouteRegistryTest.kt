@@ -11,7 +11,8 @@ import org.junit.Test
  * The registries are now automatic - when you add a new route to a section, it's automatically
  * included via Kotlin's built-in sealedSubclasses property.
  *
- * Co-Authored-By: Claude <noreply@anthropic.com>
+ * Co-Authored-By: Claude <noreply@anthropic.com> Note :This file was partially written by ChatGPT
+ * (GPT-5) Co-author : GPT-5
  */
 class RouteRegistryTest {
 
@@ -72,9 +73,11 @@ class RouteRegistryTest {
         "MeetingsSection should contain MeetingDetail",
         registeredRoutes.any { it.simpleName == "MeetingDetail" })
     assertTrue(
+        "MeetingsSection should contain AudioRecording",
+        registeredRoutes.any { it.simpleName == "AudioRecording" })
+    assertTrue(
         "MeetingsSection should contain AudioTranscript",
         registeredRoutes.any { it.simpleName == "AudioTranscript" })
-
     assertTrue(
         "MeetingsSection should contain DateTimeVotes",
         registeredRoutes.any { it.simpleName == "DateTimeVotes" })
@@ -139,5 +142,34 @@ class RouteRegistryTest {
       assertEquals(
           "$sectionName should not contain duplicate routes", routes.size, routes.toSet().size)
     }
+  }
+
+  @Test
+  fun audioTranscriptRoute_createsWithProjectIdAndMeetingId() {
+    val route =
+        Route.MeetingsSection.AudioTranscript(
+            projectId = "test-project", meetingId = "test-meeting")
+    assertEquals("test-project", route.projectId)
+    assertEquals("test-meeting", route.meetingId)
+  }
+
+  @Test
+  fun audioRecordingRoute_createsWithProjectIdAndMeetingId() {
+    val route =
+        Route.MeetingsSection.AudioRecording(projectId = "test-project", meetingId = "test-meeting")
+    assertEquals("test-project", route.projectId)
+    assertEquals("test-meeting", route.meetingId)
+  }
+
+  @Test
+  fun meetingsSectionRoutes_includesBothAudioRecordingAndTranscript() {
+    val registeredRoutes = Route.MeetingsSection.routes
+
+    val hasAudioRecording = registeredRoutes.any { it.simpleName == "AudioRecording" }
+    val hasAudioTranscript = registeredRoutes.any { it.simpleName == "AudioTranscript" }
+
+    assertTrue(
+        "MeetingsSection should contain both AudioRecording and AudioTranscript routes",
+        hasAudioRecording && hasAudioTranscript)
   }
 }
