@@ -13,29 +13,38 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.People
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -55,6 +64,10 @@ object MeetingProposalVoteScreenTestTags {
   const val MEETING_PROPOSALS_VOTE_BUTTON = "MeetingProposalsVoteButton"
   const val ADD_MEETING_PROPOSALS = "AddMeetingProposalsVote"
   const val CONFIRM_MEETING_PROPOSALS_VOTES = "ConfirmMeetingProposalsVotes"
+  const val MEETING_FORMAT_POPUP_VALIDATE = "MeetingFormatPopupValidate"
+  const val MEETING_FORMAT_POPUP_CANCEL = "MeetingFormatPopupCancel"
+  const val IN_PERSON_OPTION = "InPersonOption"
+  const val VIRTUAL_OPTION = "VirtualOption"
 }
 
 /**
@@ -154,17 +167,14 @@ fun MeetingProposalVoteScreen(
                           .map { v -> v.userId }
                           .contains(meetingProposalVoteViewModel.userId)
                     },
-                    addVote = { meetingProposal ->
+                    addVote = { meetingProposal, formats ->
                       meetingProposalVoteViewModel.voteForMeetingProposal(
                           meetingProposal,
                           MeetingProposalVote(
-                              meetingProposalVoteViewModel.userId, listOf(MeetingFormat.IN_PERSON)))
+                              meetingProposalVoteViewModel.userId, formats.toList()))
                     },
                     removeVote = { meetingProposal ->
-                      meetingProposalVoteViewModel.retractVoteForMeetingProposal(
-                          meetingProposal,
-                          MeetingProposalVote(
-                              meetingProposalVoteViewModel.userId, listOf(MeetingFormat.IN_PERSON)))
+                      meetingProposalVoteViewModel.retractVoteForMeetingProposal(meetingProposal)
                     },
                 )
               }
@@ -187,7 +197,7 @@ fun MeetingProposalsList(
     modifier: Modifier,
     meetingProposals: List<MeetingProposal>,
     hasVoted: (MeetingProposal) -> Boolean,
-    addVote: (MeetingProposal) -> Unit,
+    addVote: (MeetingProposal, Set<MeetingFormat>) -> Unit,
     removeVote: (MeetingProposal) -> Unit,
 ) {
   if (meetingProposals.isNotEmpty()) {
@@ -215,13 +225,73 @@ fun MeetingProposalsList(
  *
  * Note : this composable was written with the help of Gemini
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MeetingProposalVoteCard(
     meetingProposal: MeetingProposal,
     hasVoted: Boolean,
-    addVote: (MeetingProposal) -> Unit,
+    addVote: (MeetingProposal, Set<MeetingFormat>) -> Unit,
     removeVote: (MeetingProposal) -> Unit,
 ) {
+
+  var showFormatDialog by remember { mutableStateOf(false) }
+  var selectedFormats by remember { mutableStateOf(emptySet<MeetingFormat>()) }
+
+  if (showFormatDialog) {
+    AlertDialog(
+        onDismissRequest = { showFormatDialog = false },
+        title = { Text("Select format(s)") },
+        text = {
+          Column {
+            FormatCheckboxRow(
+                text = MeetingFormat.IN_PERSON.description,
+                isSelected = selectedFormats.contains(MeetingFormat.IN_PERSON),
+                onToggle = {
+                  selectedFormats =
+                      if (selectedFormats.contains(MeetingFormat.IN_PERSON)) {
+                        selectedFormats - MeetingFormat.IN_PERSON
+                      } else {
+                        selectedFormats + MeetingFormat.IN_PERSON
+                      }
+                },
+                tag = MeetingProposalVoteScreenTestTags.IN_PERSON_OPTION)
+
+            FormatCheckboxRow(
+                text = MeetingFormat.VIRTUAL.description,
+                isSelected = selectedFormats.contains(MeetingFormat.VIRTUAL),
+                onToggle = {
+                  selectedFormats =
+                      if (selectedFormats.contains(MeetingFormat.VIRTUAL)) {
+                        selectedFormats - MeetingFormat.VIRTUAL
+                      } else {
+                        selectedFormats + MeetingFormat.VIRTUAL
+                      }
+                },
+                tag = MeetingProposalVoteScreenTestTags.VIRTUAL_OPTION)
+          }
+        },
+        confirmButton = {
+          TextButton(
+              modifier =
+                  Modifier.testTag(MeetingProposalVoteScreenTestTags.MEETING_FORMAT_POPUP_VALIDATE),
+              onClick = {
+                addVote(meetingProposal, selectedFormats)
+                showFormatDialog = false
+              },
+              enabled = selectedFormats.isNotEmpty()) {
+                Text("OK")
+              }
+        },
+        dismissButton = {
+          TextButton(
+              modifier =
+                  Modifier.testTag(MeetingProposalVoteScreenTestTags.MEETING_FORMAT_POPUP_CANCEL),
+              onClick = { showFormatDialog = false }) {
+                Text("Cancel")
+              }
+        })
+  }
+
   Card(
       modifier =
           Modifier.fillMaxWidth()
@@ -247,7 +317,12 @@ fun MeetingProposalVoteCard(
                       Modifier.testTag(
                           MeetingProposalVoteScreenTestTags.MEETING_PROPOSALS_VOTE_BUTTON),
                   onClick = {
-                    if (hasVoted) removeVote(meetingProposal) else addVote(meetingProposal)
+                    if (hasVoted) {
+                      removeVote(meetingProposal)
+                    } else {
+                      selectedFormats = emptySet()
+                      showFormatDialog = true
+                    }
                   },
                   label = { Text(text = "${meetingProposal.votes.size}") },
                   leadingIcon = {
@@ -263,5 +338,27 @@ fun MeetingProposalVoteCard(
                         AssistChipDefaults.assistChipColors()
                       })
             }
+      }
+}
+
+/**
+ * Composable to display check box in a row.
+ *
+ * @param text Text to display next to the check box.
+ * @param isSelected true if the checkbox is checked false otherwise.
+ * @param onToggle Function executed when the checkbox is checked/unchecked.
+ * @param tag Test tag to put on checkbox's text.
+ */
+@Composable
+fun FormatCheckboxRow(text: String, isSelected: Boolean, onToggle: () -> Unit, tag: String) {
+  Row(
+      verticalAlignment = Alignment.CenterVertically,
+      modifier =
+          Modifier.fillMaxWidth()
+              .toggleable(value = isSelected, onValueChange = { onToggle() }, role = Role.Checkbox)
+              .padding(vertical = 4.dp)
+              .testTag(tag)) {
+        Checkbox(checked = isSelected, onCheckedChange = null)
+        Text(text = text, modifier = Modifier.padding(start = 8.dp))
       }
 }
