@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 /**
  * Data class to represent the UI state of the meeting location screen.
  *
- * @property meeting The meeting whose location to display, or null if loading or not found.
+ * @property meeting The meeting whose location to display. Only present when valid.
  * @property isLoading Whether a data loading operation is in progress.
  * @property errorMsg An error message to display, or null if there is no error.
  */
