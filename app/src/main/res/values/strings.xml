@@ -3,4 +3,13 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_second">SecondActivity</string>
     <string name="web_client_id">1021015404615-uclj5u0b9ue7a0cqerq83vkk34e0qn9q.apps.googleusercontent.com</string>
+
+    <!-- Meeting Navigation Screen -->
+    <string name="meeting_location_title">Meeting Location</string>
+    <string name="meeting_not_found">Meeting not found</string>
+    <string name="meeting_location_not_available">Meeting location is not available</string>
+    <string name="meeting_load_failed">Failed to load meeting: %1$s</string>
+    <string name="loading_meeting_location">Loading meeting location…</string>
+    <string name="navigate_back">Navigate back</string>
+    <string name="location_marker">Location marker</string>
 </resources>
