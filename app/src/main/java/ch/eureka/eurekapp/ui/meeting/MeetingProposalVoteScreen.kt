@@ -18,7 +18,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.VideoCall
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
@@ -42,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -68,6 +71,8 @@ object MeetingProposalVoteScreenTestTags {
   const val MEETING_FORMAT_POPUP_CANCEL = "MeetingFormatPopupCancel"
   const val IN_PERSON_OPTION = "InPersonOption"
   const val VIRTUAL_OPTION = "VirtualOption"
+  const val IN_PERSON_BUTTON = "InPersonButton"
+  const val VIRTUAL_BUTTON = "VirtualButton"
 }
 
 /**
@@ -135,7 +140,7 @@ fun MeetingProposalVoteScreen(
         Column(
             modifier =
                 Modifier.fillMaxSize()
-                    .padding(10.dp)
+                    .padding(5.dp)
                     .testTag(MeetingProposalVoteScreenTestTags.MEETING_PROPOSALS_VOTE_SCREEN)) {
               Text(
                   modifier =
@@ -167,20 +172,48 @@ fun MeetingProposalVoteScreen(
                           .map { v -> v.userId }
                           .contains(meetingProposalVoteViewModel.userId)
                     },
-                    addVote = { meetingProposal, formats ->
-                      meetingProposalVoteViewModel.voteForMeetingProposal(
-                          meetingProposal,
-                          MeetingProposalVote(
-                              meetingProposalVoteViewModel.userId, formats.toList()))
+                    hasVotedForFormat = { meetingProposal, format ->
+                      meetingProposalVoteViewModel.hasVotedForFormat(meetingProposal, format)
                     },
-                    removeVote = { meetingProposal ->
-                      meetingProposalVoteViewModel.retractVoteForMeetingProposal(meetingProposal)
-                    },
-                )
+                    voteActions =
+                        MeetingProposalVoteActions(
+                            addVote = { meetingProposal, formats ->
+                              meetingProposalVoteViewModel.voteForMeetingProposal(
+                                  meetingProposal,
+                                  MeetingProposalVote(
+                                      meetingProposalVoteViewModel.userId, formats.toList()))
+                            },
+                            removeVote = { meetingProposal ->
+                              meetingProposalVoteViewModel.retractVoteForMeetingProposal(
+                                  meetingProposal)
+                            },
+                            addFormatVote = { meetingProposal, format ->
+                              meetingProposalVoteViewModel.addFormatVote(meetingProposal, format)
+                            },
+                            retractFormatVote = { meetingProposal, format ->
+                              meetingProposalVoteViewModel.retractFormatVote(
+                                  meetingProposal, format)
+                            }))
               }
             }
       })
 }
+
+/**
+ * Data class tha represents the voting actions that can be executed in a [MeetingProposalVoteCard]
+ * composable.
+ *
+ * @param addVote Function executed when the user add votes on a meeting proposal.
+ * @param removeVote Function executed when the user retract a vote on a meeting proposal.
+ * @param addFormatVote Function executed when the users vote for a specific format.
+ * @param retractFormatVote Function executed when the user retract a vote form a specific format.
+ */
+data class MeetingProposalVoteActions(
+    val addVote: (MeetingProposal, Set<MeetingFormat>) -> Unit,
+    val removeVote: (MeetingProposal) -> Unit,
+    val addFormatVote: (MeetingProposal, MeetingFormat) -> Unit,
+    val retractFormatVote: (MeetingProposal, MeetingFormat) -> Unit
+)
 
 /**
  * Composable that displays the list of meeting proposals for a meeting.
@@ -189,27 +222,32 @@ fun MeetingProposalVoteScreen(
  * @param meetingProposals Meeting proposals to be displayed
  * @param hasVoted Function that returns true if the current user has already voted for a meeting
  *   proposal
- * @param addVote Function executed when a user add a vote for a particular meeting proposal.
- * @param removeVote Function executed when a user retract a vote for a particular meeting proposal.
+ * @param hasVotedForFormat Function that returns true if the current user has already voted for a
+ *   given format for a given meeting proposal.
+ * @param voteActions Voting actions that can be executed by a user on a meeting proposal.
  */
 @Composable
 fun MeetingProposalsList(
     modifier: Modifier,
     meetingProposals: List<MeetingProposal>,
     hasVoted: (MeetingProposal) -> Boolean,
-    addVote: (MeetingProposal, Set<MeetingFormat>) -> Unit,
-    removeVote: (MeetingProposal) -> Unit,
+    hasVotedForFormat: (MeetingProposal, MeetingFormat) -> Boolean,
+    voteActions: MeetingProposalVoteActions,
 ) {
   if (meetingProposals.isNotEmpty()) {
     LazyColumn(
-        contentPadding = PaddingValues(vertical = 8.dp),
-        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+        contentPadding = PaddingValues(vertical = 4.dp),
+        modifier = modifier.fillMaxWidth().padding(horizontal = 1.dp)) {
           items(meetingProposals.size) { index ->
             MeetingProposalVoteCard(
                 meetingProposal = meetingProposals[index],
                 hasVoted = hasVoted(meetingProposals[index]),
-                addVote = addVote,
-                removeVote = removeVote)
+                hasVotedForInPersonFormat =
+                    hasVotedForFormat(meetingProposals[index], MeetingFormat.IN_PERSON),
+                hasVotedForVirtualFormat =
+                    hasVotedForFormat(meetingProposals[index], MeetingFormat.VIRTUAL),
+                voteActions = voteActions,
+            )
           }
         }
   }
@@ -219,9 +257,12 @@ fun MeetingProposalsList(
  * Composable that displays a vote for a certain meeting proposal and allows a user to vote for it.
  *
  * @param meetingProposal The meeting proposal vote to display and potentially vote for.
- * @param hasVoted True if the meeting proposal was voted byt the current user, false otherwise.
- * @param addVote Function executed when the user add votes on a meeting proposal.
- * @param removeVote Function executed when the user retract a vote on a meeting proposal.
+ * @param hasVoted True if the meeting proposal was voted by the current user, false otherwise.
+ * @param hasVotedForInPersonFormat True if the user voted for in-person format for the voting
+ *   proposal, false otherwise.
+ * @param hasVotedForVirtualFormat True if the user voted for virtual format for the voting
+ *   proposal, false otherwise.
+ * @param voteActions Actions that can be executed by a user on a meeting proposal.
  *
  * Note : this composable was written with the help of Gemini
  */
@@ -230,8 +271,9 @@ fun MeetingProposalsList(
 fun MeetingProposalVoteCard(
     meetingProposal: MeetingProposal,
     hasVoted: Boolean,
-    addVote: (MeetingProposal, Set<MeetingFormat>) -> Unit,
-    removeVote: (MeetingProposal) -> Unit,
+    hasVotedForInPersonFormat: Boolean,
+    hasVotedForVirtualFormat: Boolean,
+    voteActions: MeetingProposalVoteActions
 ) {
 
   var showFormatDialog by remember { mutableStateOf(false) }
@@ -275,7 +317,7 @@ fun MeetingProposalVoteCard(
               modifier =
                   Modifier.testTag(MeetingProposalVoteScreenTestTags.MEETING_FORMAT_POPUP_VALIDATE),
               onClick = {
-                addVote(meetingProposal, selectedFormats)
+                voteActions.addVote(meetingProposal, selectedFormats)
                 showFormatDialog = false
               },
               enabled = selectedFormats.isNotEmpty()) {
@@ -295,13 +337,13 @@ fun MeetingProposalVoteCard(
   Card(
       modifier =
           Modifier.fillMaxWidth()
-              .padding(5.dp)
+              .padding(2.dp)
               .wrapContentHeight()
               .testTag(MeetingProposalVoteScreenTestTags.MEETING_PROPOSALS_VOTE_CARD),
       shape = RoundedCornerShape(16.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween) {
               Text(
@@ -312,33 +354,96 @@ fun MeetingProposalVoteCard(
                       Modifier.testTag(
                           MeetingProposalVoteScreenTestTags.MEETING_PROPOSALS_VOTE_DATETIME))
 
-              AssistChip(
-                  modifier =
-                      Modifier.testTag(
-                          MeetingProposalVoteScreenTestTags.MEETING_PROPOSALS_VOTE_BUTTON),
-                  onClick = {
-                    if (hasVoted) {
-                      removeVote(meetingProposal)
-                    } else {
-                      selectedFormats = emptySet()
-                      showFormatDialog = true
-                    }
+              if (hasVoted) {
+
+                VotingScoreButton(
+                    hasVoted = hasVotedForInPersonFormat,
+                    addVote = {
+                      voteActions.addFormatVote(meetingProposal, MeetingFormat.IN_PERSON)
+                    },
+                    retractVote = {
+                      voteActions.retractFormatVote(meetingProposal, MeetingFormat.IN_PERSON)
+                    },
+                    numberOfVotes =
+                        meetingProposal.votes
+                            .filter { it.formatPreferences.contains(MeetingFormat.IN_PERSON) }
+                            .size,
+                    icon = Icons.Default.LocationOn,
+                    iconDescription = "In-person votes",
+                    tag = MeetingProposalVoteScreenTestTags.IN_PERSON_BUTTON)
+
+                VotingScoreButton(
+                    hasVoted = hasVotedForVirtualFormat,
+                    addVote = { voteActions.addFormatVote(meetingProposal, MeetingFormat.VIRTUAL) },
+                    retractVote = {
+                      voteActions.retractFormatVote(meetingProposal, MeetingFormat.VIRTUAL)
+                    },
+                    numberOfVotes =
+                        meetingProposal.votes
+                            .filter { it.formatPreferences.contains(MeetingFormat.VIRTUAL) }
+                            .size,
+                    icon = Icons.Default.VideoCall,
+                    iconDescription = "Virtual votes",
+                    tag = MeetingProposalVoteScreenTestTags.VIRTUAL_BUTTON)
+              }
+
+              VotingScoreButton(
+                  hasVoted = hasVoted,
+                  addVote = {
+                    selectedFormats = emptySet()
+                    showFormatDialog = true
                   },
-                  label = { Text(text = "${meetingProposal.votes.size}") },
-                  leadingIcon = {
-                    Icon(imageVector = Icons.Default.People, contentDescription = "Total votes")
-                  },
-                  colors =
-                      if (hasVoted) {
-                        AssistChipDefaults.assistChipColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            leadingIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                            labelColor = MaterialTheme.colorScheme.onPrimaryContainer)
-                      } else {
-                        AssistChipDefaults.assistChipColors()
-                      })
+                  retractVote = { voteActions.removeVote(meetingProposal) },
+                  numberOfVotes = meetingProposal.votes.size,
+                  icon = Icons.Default.People,
+                  iconDescription = "Total votes",
+                  tag = MeetingProposalVoteScreenTestTags.MEETING_PROPOSALS_VOTE_BUTTON,
+              )
             }
       }
+}
+
+/**
+ * Composable to display a voting button with votes count.
+ *
+ * @param hasVoted True if the current have voted, false otherwise.
+ * @param addVote Function executed when the user adds a vote.
+ * @param retractVote Function executed when the user retracts a vote.
+ * @param numberOfVotes The number of votes.
+ * @param icon The icon to put inside the vote button.
+ * @param iconDescription The description of the [icon]
+ * @param tag The test tag for th button.
+ */
+@Composable
+fun VotingScoreButton(
+    hasVoted: Boolean,
+    addVote: () -> Unit,
+    retractVote: () -> Unit,
+    numberOfVotes: Int,
+    icon: ImageVector,
+    iconDescription: String,
+    tag: String
+) {
+  AssistChip(
+      modifier = Modifier.testTag(tag),
+      onClick = {
+        if (hasVoted) {
+          retractVote()
+        } else {
+          addVote()
+        }
+      },
+      label = { Text(text = "$numberOfVotes") },
+      leadingIcon = { Icon(imageVector = icon, contentDescription = iconDescription) },
+      colors =
+          if (hasVoted) {
+            AssistChipDefaults.assistChipColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                leadingIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                labelColor = MaterialTheme.colorScheme.onPrimaryContainer)
+          } else {
+            AssistChipDefaults.assistChipColors()
+          })
 }
 
 /**
