@@ -16,7 +16,7 @@ import ch.eureka.eurekapp.model.data.project.ProjectRole
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.IdeasScreen
-import ch.eureka.eurekapp.screens.OverviewProjectsScreen
+import ch.eureka.eurekapp.screens.OverviewProjectScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
 import ch.eureka.eurekapp.screens.TasksScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.creation.CreateProjectScreen
@@ -34,7 +34,7 @@ sealed interface Route {
   // Main screens
   @Serializable data object ProjectSelection : Route
 
-  @Serializable data object OverviewProject : Route
+  @Serializable data class OverviewProject(val projectId: String) : Route
 
   @Serializable data object Profile : Route
 
@@ -147,10 +147,18 @@ fun NavigationMenu() {
                   navigationController.navigate(
                     Route.ProjectSelectionSection.CreateProject
                   )
+                },
+                onProjectSelectRequest = { project ->
+                  navigationController.navigate(
+                    Route.OverviewProject(projectId = project.projectId)
+                  )
                 }
               ) }
               composable<Route.Profile> { ProfileScreen() }
-              composable<Route.OverviewProject> { OverviewProjectsScreen() }
+              composable<Route.OverviewProject> { backStackEntry ->
+                val overviewProjectScreenRoute = backStackEntry.toRoute<Route.OverviewProject>()
+                OverviewProjectScreen(projectId = overviewProjectScreenRoute.projectId)
+              }
 
               // Tasks section
               composable<Route.TasksSection.Tasks> {

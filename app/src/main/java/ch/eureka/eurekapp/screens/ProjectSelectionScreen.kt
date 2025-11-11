@@ -25,8 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectSelectionScreenViewModel
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
@@ -44,6 +42,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.SuccessGreen
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.WarningOrange
@@ -56,14 +55,11 @@ object ProjectSelectionScreenTestTags {
 @Composable
 fun ProjectSelectionScreen(
     onCreateProjectRequest: () -> Unit,
+    onProjectSelectRequest: (Project) -> Unit,
     projectSelectionScreenViewModel: ProjectSelectionScreenViewModel = viewModel()
 ) {
     val projectsList = projectSelectionScreenViewModel.getProjectsForUser()
         .collectAsState(listOf())
-
-    LaunchedEffect(projectsList.value) {
-        Log.d("ProjectSelectionScreen", projectsList.value.toTypedArray().contentToString())
-    }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -75,10 +71,12 @@ fun ProjectSelectionScreen(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ){
-            CreateProjectButton(
+            CustomElevatedButton(
                 onClick = {
                     onCreateProjectRequest()
-                }
+                },
+                text = "+ Create Project",
+                typography = Typography.titleLarge
             )
         }
         LazyColumn(
@@ -86,16 +84,16 @@ fun ProjectSelectionScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             items(projectsList.value){ project ->
-                ProjectCard(project, projectSelectionScreenViewModel)
+                ProjectCard(project, projectSelectionScreenViewModel, onProjectSelectRequest)
             }
         }
     }
 }
 
 @Composable
-private fun CreateProjectButton(onClick: () -> Unit){
+private fun CustomElevatedButton(onClick: () -> Unit, text: String, typography: TextStyle){
     ElevatedButton(
-        modifier = Modifier.width(230.dp).height(80.dp).padding(vertical = 10.dp),
+        modifier = Modifier.padding(vertical = 10.dp),
         onClick = onClick,
         colors = ButtonDefaults.elevatedButtonColors(
             containerColor = LightingBlue
@@ -104,13 +102,15 @@ private fun CreateProjectButton(onClick: () -> Unit){
             defaultElevation = 8.dp
         ),
     ) {
-        Text("+ Create Project", style = Typography.titleLarge,
+        Text(text, style = typography,
             color = LightColorScheme.surface, textAlign = TextAlign.Center)
     }
 }
 
 @Composable
-private fun ProjectCard(project: Project, projectSelectionScreenViewModel: ProjectSelectionScreenViewModel){
+private fun ProjectCard(project: Project,
+                        projectSelectionScreenViewModel: ProjectSelectionScreenViewModel,
+                        onProjectSelectRequest: (Project) -> Unit){
     Card(
         modifier = Modifier.fillMaxWidth(0.9f).height(220.dp).padding(vertical = 10.dp),
         shape = RoundedCornerShape(16.dp),
@@ -137,23 +137,40 @@ private fun ProjectCard(project: Project, projectSelectionScreenViewModel: Proje
                 .getProjectUsersInformation(project.projectId)
                 .collectAsState(listOf())
 
+
+            //Description users and status
             Row(
                 modifier = Modifier.fillMaxSize(),
                 horizontalArrangement = Arrangement.Center,
             ){
-                Row(
+                Column(
                     modifier = Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.Top
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Top,
                 ){
-                    InformationContainer(project.description,
-                        iconVector = Icons.Default.Description, iconColor = WarningOrange)
+                    Row(
+                        modifier = Modifier.weight(2f)
+                    ){
+                        InformationContainer(project.description,
+                            iconVector = Icons.Default.Description, iconColor = WarningOrange)}
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.Center
+                    ){
+                        CustomElevatedButton(
+                            onClick = {
+                                onProjectSelectRequest(project)
+                            },
+                            text = "Navigate",
+                            typography = Typography.titleSmall
+                        )
+                    }
                 }
                 Column(
                     modifier = Modifier.weight(1f).fillMaxHeight()
                 ){
                     Row(
-                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        modifier = Modifier.weight(2f).fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ){
@@ -183,12 +200,24 @@ private fun ProjectCard(project: Project, projectSelectionScreenViewModel: Proje
 @Composable
 private fun InformationContainer(text: String, iconVector: ImageVector, iconColor: Color){
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Start,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
+        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ){
-        Icon(iconVector, null, tint = iconColor)
-        Text(text, style = Typography.labelMedium)
+        Row(
+            modifier = Modifier.fillMaxHeight(),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.Top
+        ){
+            Icon(iconVector, null, tint = iconColor)
+        }
+        Row(
+            modifier = Modifier.fillMaxHeight().padding(vertical = 5.dp, horizontal = 3.dp),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.Start
+        ){
+            Text(text, style = Typography.labelMedium)
+        }
     }
 }
 
