@@ -13,7 +13,6 @@ import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
-import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineDispatcher
@@ -29,7 +28,8 @@ import kotlinx.coroutines.launch
 Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
 Portions of this code were generated with the help of Grok.
 Co-Authored-By: Claude <noreply@anthropic.com>
-Note: This file was partially written by GPT-5 Codex Co-author : GPT-5
+Note: This file was partially written by GPT-5
+Codex Co-author : GPT-5
 */
 
 /** ViewModel for the EditTask screen. This ViewModel manages the state of input fields. */
@@ -49,6 +49,20 @@ class EditTaskViewModel(
 
   private val _uiState = MutableStateFlow(EditTaskState())
   override val uiState: StateFlow<EditTaskState> = _uiState.asStateFlow()
+
+  init {
+    // Load available projects
+    loadAvailableProjects()
+  }
+
+  /** Loads available projects for the current user */
+  private fun loadAvailableProjects() {
+    viewModelScope.launch(dispatcher) {
+      projectRepository.getProjectsForCurrentUser().collect { projects ->
+        updateState { copy(availableProjects = projects) }
+      }
+    }
+  }
 
   /** Resets the delete state after navigation or handling */
   fun resetDeleteState() {
@@ -265,11 +279,15 @@ class EditTaskViewModel(
 
     viewModelScope.launch(dispatcher) {
       projectRepository.getMembers(projectId).collect { members ->
-        val users = mutableListOf<User>()
-        members.forEach { member ->
-          userRepository.getUserById(member.userId).collect { user -> user?.let { users.add(it) } }
+        if (members.isEmpty()) {
+          updateState { copy(availableUsers = emptyList()) }
+        } else {
+          // Collect all user flows
+          val userFlows = members.map { member -> userRepository.getUserById(member.userId) }
+          kotlinx.coroutines.flow
+              .combine(userFlows) { users -> users.toList().filterNotNull() }
+              .collect { users -> updateState { copy(availableUsers = users) } }
         }
-        updateState { copy(availableUsers = users) }
       }
     }
   }

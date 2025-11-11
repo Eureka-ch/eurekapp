@@ -267,16 +267,14 @@ fun ProjectSelectionField(
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           modifier = Modifier.testTag(CommonTaskTestTags.NO_PROJECTS_AVAILABLE))
     } else {
-      Box(modifier = Modifier.fillMaxWidth()) {
+      Box(modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }) {
         OutlinedTextField(
             value = selectedProjectName,
             onValueChange = {},
             readOnly = true,
             placeholder = { Text("No project selected yet") },
-            modifier =
-                Modifier.fillMaxWidth()
-                    .clickable { expanded = !expanded }
-                    .testTag(CommonTaskTestTags.PROJECT_SELECTION_TITLE))
+            modifier = Modifier.fillMaxWidth().testTag(CommonTaskTestTags.PROJECT_SELECTION_TITLE),
+            enabled = false)
 
         DropdownMenu(
             expanded = expanded,
