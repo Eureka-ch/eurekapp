@@ -92,6 +92,7 @@ sealed interface Route {
     }
 
     @Serializable data object CreateProject : ProjectSelectionSection
+
   }
 
   // Overview project section
@@ -141,7 +142,13 @@ fun NavigationMenu() {
             navController = navigationController,
             startDestination = Route.ProjectSelection) {
               // Main screens
-              composable<Route.ProjectSelection> { ProjectSelectionScreen(navigationController) }
+              composable<Route.ProjectSelection> { ProjectSelectionScreen(
+                onCreateProjectRequest = {
+                  navigationController.navigate(
+                    Route.ProjectSelectionSection.CreateProject
+                  )
+                }
+              ) }
               composable<Route.Profile> { ProfileScreen() }
               composable<Route.OverviewProject> { OverviewProjectsScreen() }
 
@@ -167,7 +174,11 @@ fun NavigationMenu() {
               } // TODO : change this after "Create project" is implemented
 
               // Project selection section
-              composable<Route.ProjectSelectionSection.CreateProject> { CreateProjectScreen() }
+              composable<Route.ProjectSelectionSection.CreateProject> { CreateProjectScreen(
+                onProjectCreated = {
+                  navigationController.navigate(Route.ProjectSelection)
+                }
+              ) }
 
               // Overview project section
               composable<Route.OverviewProjectSection.CreateInvitation> {
