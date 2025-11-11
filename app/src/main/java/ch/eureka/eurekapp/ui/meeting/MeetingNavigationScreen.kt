@@ -44,8 +44,8 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
 
 /**
  * Test tags for MeetingNavigationScreen composable.
@@ -188,7 +188,7 @@ private fun MapView(meetingLocation: LatLng, meetingName: String) {
       cameraPositionState = cameraPositionState) {
         // Meeting location marker
         Marker(
-            state = MarkerState(position = meetingLocation),
+            state = rememberMarkerState(position = meetingLocation),
             title = meetingName,
             snippet = "Meeting Location")
       }
