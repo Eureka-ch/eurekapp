@@ -11,11 +11,11 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 // Portions of this code were generated with the help of Grok.
 
-class ConnectivityObserver private constructor(context: Context) {
+open class ConnectivityObserver internal constructor(context: Context) {
   private val connectivityManager =
       context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-  val isConnected: Flow<Boolean> =
+  open val isConnected: Flow<Boolean> =
       callbackFlow {
             val callback =
                 object : ConnectivityManager.NetworkCallback() {
