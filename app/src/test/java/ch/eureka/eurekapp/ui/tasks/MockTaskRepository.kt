@@ -71,7 +71,13 @@ class MockTaskRepository : TaskRepository {
 
   override fun getTasksInProject(projectId: String): Flow<List<Task>> {
     getTasksInProjectCalls.add(projectId)
-    return projectTasks[projectId] ?: flowOf(emptyList())
+    // If explicitly configured, use that
+    if (projectTasks.containsKey(projectId)) {
+      return projectTasks[projectId]!!
+    }
+    // Otherwise, return all tasks from tasksById that match the projectId
+    val tasksInProject = tasksById.values.filter { it.projectId == projectId }
+    return flowOf(tasksInProject)
   }
 
   override fun getTasksForCurrentUser(): Flow<List<Task>> {

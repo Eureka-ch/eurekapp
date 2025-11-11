@@ -41,35 +41,21 @@ class CreateTaskViewModel(
   private val _uiState = MutableStateFlow(CreateTaskState())
   override val uiState: StateFlow<CreateTaskState> = _uiState.asStateFlow()
 
-  private val _availableTasks = MutableStateFlow<List<Task>>(emptyList())
-  val availableTasks: StateFlow<List<Task>> = _availableTasks.asStateFlow()
-
-  private val _cycleError = MutableStateFlow<String?>(null)
-  val cycleError: StateFlow<String?> = _cycleError.asStateFlow()
-
-  fun loadAvailableTasks(projectId: String) {
-    if (projectId.isEmpty()) {
-      _availableTasks.value = emptyList()
-      return
-    }
-    viewModelScope.launch(dispatcher) {
-      taskRepository.getTasksInProject(projectId).collect { tasks -> _availableTasks.value = tasks }
-    }
-  }
+  // Placeholder used for dependency validation before the task is persisted.
+  private val placeholderTaskId = IdGenerator.generateTaskId()
 
   suspend fun validateDependency(dependencyTaskId: String): Boolean {
     val state = uiState.value
     if (state.projectId.isEmpty()) return true
 
-    val taskId = IdGenerator.generateTaskId() // For new tasks, we use a placeholder
     val wouldCycle =
         TaskDependencyCycleDetector.wouldCreateCycle(
-            taskId, dependencyTaskId, state.projectId, taskRepository)
+            placeholderTaskId, dependencyTaskId, state.projectId, taskRepository)
     if (wouldCycle) {
-      _cycleError.value = "Adding this dependency would create a circular dependency"
+      setCycleError("Adding this dependency would create a circular dependency")
       return false
     }
-    _cycleError.value = null
+    setCycleError(null)
     return true
   }
 
@@ -199,14 +185,13 @@ class CreateTaskViewModel(
       viewModelScope.launch(dispatcher) {
         // For new tasks, we can't validate cycles perfectly since task doesn't exist yet
         // But we can check if the dependency would create a cycle with existing tasks
-        val newTaskId = IdGenerator.generateTaskId()
         val wouldCycle =
             TaskDependencyCycleDetector.wouldCreateCycle(
-                newTaskId, taskId, uiState.value.projectId, taskRepository)
+                placeholderTaskId, taskId, uiState.value.projectId, taskRepository)
         if (wouldCycle) {
-          _cycleError.value = "Adding this dependency would create a circular dependency"
+          setCycleError("Adding this dependency would create a circular dependency")
         } else {
-          _cycleError.value = null
+          setCycleError(null)
           updateState { copyWithDependencies(currentDependencies + taskId) }
         }
       }
@@ -216,6 +201,6 @@ class CreateTaskViewModel(
   override fun removeDependency(taskId: String) {
     val currentDependencies = uiState.value.dependingOnTasks
     updateState { copyWithDependencies(currentDependencies.filter { it != taskId }) }
-    _cycleError.value = null
+    setCycleError(null)
   }
 }

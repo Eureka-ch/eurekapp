@@ -29,7 +29,10 @@ class TaskDependencyCycleDetectorTest {
       return flowOf(tasks[taskId])
     }
 
-    override fun getTasksInProject(projectId: String): Flow<List<Task>> = flowOf(emptyList())
+    override fun getTasksInProject(projectId: String): Flow<List<Task>> {
+      // Return all tasks that match the projectId
+      return flowOf(tasks.values.filter { it.projectId == projectId })
+    }
 
     override fun getTasksForCurrentUser(): Flow<List<Task>> = flowOf(emptyList())
 

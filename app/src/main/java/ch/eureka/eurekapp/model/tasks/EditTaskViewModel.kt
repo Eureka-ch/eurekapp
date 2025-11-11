@@ -44,22 +44,6 @@ class EditTaskViewModel(
   private val _uiState = MutableStateFlow(EditTaskState())
   override val uiState: StateFlow<EditTaskState> = _uiState.asStateFlow()
 
-  private val _availableTasks = MutableStateFlow<List<Task>>(emptyList())
-  val availableTasks: StateFlow<List<Task>> = _availableTasks.asStateFlow()
-
-  private val _cycleError = MutableStateFlow<String?>(null)
-  val cycleError: StateFlow<String?> = _cycleError.asStateFlow()
-
-  fun loadAvailableTasks(projectId: String) {
-    if (projectId.isEmpty()) {
-      _availableTasks.value = emptyList()
-      return
-    }
-    viewModelScope.launch(dispatcher) {
-      taskRepository.getTasksInProject(projectId).collect { tasks -> _availableTasks.value = tasks }
-    }
-  }
-
   /** Resets the delete state after navigation or handling */
   fun resetDeleteState() {
     updateState { copy(taskDeleted = false) }
@@ -286,9 +270,9 @@ class EditTaskViewModel(
             TaskDependencyCycleDetector.wouldCreateCycle(
                 uiState.value.taskId, taskId, uiState.value.projectId, taskRepository)
         if (wouldCycle) {
-          _cycleError.value = "Adding this dependency would create a circular dependency"
+          setCycleError("Adding this dependency would create a circular dependency")
         } else {
-          _cycleError.value = null
+          setCycleError(null)
           updateState { copyWithDependencies(currentDependencies + taskId) }
         }
       }
@@ -298,6 +282,6 @@ class EditTaskViewModel(
   override fun removeDependency(taskId: String) {
     val currentDependencies = uiState.value.dependingOnTasks
     updateState { copyWithDependencies(currentDependencies.filter { it != taskId }) }
-    _cycleError.value = null
+    setCycleError(null)
   }
 }

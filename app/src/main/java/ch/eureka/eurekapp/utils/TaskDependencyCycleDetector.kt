@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.utils
 
+import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import kotlinx.coroutines.flow.first
 
@@ -32,10 +33,12 @@ object TaskDependencyCycleDetector {
       return true
     }
 
+    val taskMap = taskRepository.getTasksInProject(projectId).first().associateBy { it.taskID }
+
     // Build the dependency graph starting from the dependency task
     // If we can reach the original task, there's a cycle
     val visited = mutableSetOf<String>()
-    return hasPathToTask(dependencyTaskId, taskId, projectId, taskRepository, visited)
+    return hasPathToTask(dependencyTaskId, taskId, taskMap, visited)
   }
 
   /**
@@ -48,11 +51,10 @@ object TaskDependencyCycleDetector {
    * @param visited Set of visited task IDs to prevent infinite loops
    * @return true if there's a path from startTaskId to targetTaskId, false otherwise
    */
-  private suspend fun hasPathToTask(
+  private fun hasPathToTask(
       startTaskId: String,
       targetTaskId: String,
-      projectId: String,
-      taskRepository: TaskRepository,
+      taskMap: Map<String, Task>,
       visited: MutableSet<String>
   ): Boolean {
     // If we've already visited this task, we're in a loop (but not necessarily the cycle we're
@@ -69,11 +71,11 @@ object TaskDependencyCycleDetector {
     visited.add(startTaskId)
 
     // Get the task and check all its dependencies
-    val task = taskRepository.getTaskById(projectId, startTaskId).first() ?: return false
+    val task = taskMap[startTaskId] ?: return false
 
     // Recursively check all dependencies
     for (dependencyId in task.dependingOnTasks) {
-      if (hasPathToTask(dependencyId, targetTaskId, projectId, taskRepository, visited)) {
+      if (hasPathToTask(dependencyId, targetTaskId, taskMap, visited)) {
         return true
       }
     }
@@ -96,8 +98,9 @@ object TaskDependencyCycleDetector {
       projectId: String,
       taskRepository: TaskRepository
   ): Result<Unit> {
+    val taskMap = taskRepository.getTasksInProject(projectId).first().associateBy { it.taskID }
     for (dependencyId in dependencyTaskIds) {
-      if (wouldCreateCycle(taskId, dependencyId, projectId, taskRepository)) {
+      if (taskId == dependencyId || hasPathToTask(dependencyId, taskId, taskMap, mutableSetOf())) {
         return Result.failure(
             IllegalArgumentException(
                 "Adding dependency '$dependencyId' would create a circular dependency"))
