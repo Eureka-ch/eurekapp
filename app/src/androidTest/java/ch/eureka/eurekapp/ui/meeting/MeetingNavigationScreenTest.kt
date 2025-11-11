@@ -5,8 +5,10 @@ package ch.eureka.eurekapp.ui.meeting
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import ch.eureka.eurekapp.model.data.map.Location
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
@@ -172,6 +174,96 @@ class MeetingNavigationScreenTest {
 
     // Verify the screen title is displayed (back button is in TopAppBar)
     composeTestRule.onNodeWithText("Meeting Location").assertIsDisplayed()
+  }
+
+  @Test
+  fun backButtonActuallyTriggersCallback() = runTest {
+    var navigatedBack = false
+    setContent(meeting = testMeeting, onNavigateBack = { navigatedBack = true })
+
+    composeTestRule.waitForIdle()
+
+    // Find and click the back button
+    composeTestRule.onNodeWithContentDescription("Navigate back").performClick()
+
+    // Verify callback was triggered
+    assert(navigatedBack)
+  }
+
+  @Test
+  fun errorScreenDisplaysCustomErrorMessage() = runTest {
+    val customErrorMessage = "Custom error occurred"
+    every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
+        kotlinx.coroutines.flow.flow { throw Exception(customErrorMessage) }
+
+    val viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, repositoryMock)
+
+    composeTestRule.setContent {
+      MeetingNavigationScreen(
+          projectId = testProjectId, meetingId = testMeetingId, viewModel = viewModel)
+    }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithTag(MeetingNavigationScreenTestTags.ERROR_MESSAGE).assertIsDisplayed()
+    composeTestRule.onNodeWithText("Failed to load meeting: $customErrorMessage", substring = true).assertIsDisplayed()
+  }
+
+  @Test
+  fun mapMarkerDisplaysCorrectTitle() = runTest {
+    setContent(meeting = testMeeting)
+
+    composeTestRule.waitForIdle()
+
+    // Map should be present
+    composeTestRule.onNodeWithTag(MeetingNavigationScreenTestTags.GOOGLE_MAP).assertExists()
+
+    // Verify location name is in info card
+    composeTestRule.onNodeWithText(testLocation.name).assertIsDisplayed()
+  }
+
+  @Test
+  fun infoCardDisplaysCorrectLocationIcon() = runTest {
+    setContent(meeting = testMeeting)
+
+    composeTestRule.waitForIdle()
+
+    // Verify info card is displayed
+    composeTestRule.onNodeWithTag(MeetingNavigationScreenTestTags.INFO_CARD).assertIsDisplayed()
+
+    // Verify location icon content description
+    composeTestRule.onNodeWithContentDescription("Location").assertExists()
+  }
+
+  @Test
+  fun loadingScreenDisplaysProgressIndicator() = runTest {
+    every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
+        kotlinx.coroutines.flow.flow { kotlinx.coroutines.delay(5000) }
+
+    val viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, repositoryMock)
+
+    composeTestRule.setContent {
+      MeetingNavigationScreen(
+          projectId = testProjectId, meetingId = testMeetingId, viewModel = viewModel)
+    }
+
+    // Verify loading indicator is displayed
+    composeTestRule
+        .onNodeWithTag(MeetingNavigationScreenTestTags.LOADING_INDICATOR)
+        .assertIsDisplayed()
+  }
+
+  @Test
+  fun scaffoldDisplaysTopAppBar() = runTest {
+    setContent(meeting = testMeeting)
+
+    composeTestRule.waitForIdle()
+
+    // Verify top app bar with title
+    composeTestRule.onNodeWithText("Meeting Location").assertIsDisplayed()
+
+    // Verify back button exists
+    composeTestRule.onNodeWithContentDescription("Navigate back").assertExists()
   }
 
   @Test
