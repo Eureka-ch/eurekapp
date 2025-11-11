@@ -76,7 +76,8 @@ fun ProjectSelectionScreen(
                     onCreateProjectRequest()
                 },
                 text = "+ Create Project",
-                typography = Typography.titleLarge
+                typography = Typography.titleLarge,
+                buttonColor = LightingBlue
             )
         }
         LazyColumn(
@@ -91,12 +92,13 @@ fun ProjectSelectionScreen(
 }
 
 @Composable
-private fun CustomElevatedButton(onClick: () -> Unit, text: String, typography: TextStyle){
+private fun CustomElevatedButton(onClick: () -> Unit, text: String, typography: TextStyle,
+                                 buttonColor: Color = LightColorScheme.primary){
     ElevatedButton(
         modifier = Modifier.padding(vertical = 10.dp),
         onClick = onClick,
         colors = ButtonDefaults.elevatedButtonColors(
-            containerColor = LightingBlue
+            containerColor = buttonColor
         ),
         elevation = ButtonDefaults.buttonElevation(
             defaultElevation = 8.dp
