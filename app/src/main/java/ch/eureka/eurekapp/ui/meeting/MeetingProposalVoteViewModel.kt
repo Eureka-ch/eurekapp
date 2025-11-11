@@ -109,11 +109,9 @@ class MeetingProposalVoteViewModel(
    * Retract vote for a given meeting proposal.
    *
    * @param meetingProposal The meeting proposal to retract the vote for.
-   * @param meetingProposalVote The vote for that meeting proposal to retract.
    */
   fun retractVoteForMeetingProposal(
       meetingProposal: MeetingProposal,
-      meetingProposalVote: MeetingProposalVote
   ) {
     val index = uiState.value.meetingProposals.indexOf(meetingProposal)
 
@@ -127,19 +125,17 @@ class MeetingProposalVoteViewModel(
       return
     }
 
-    val newVotes = _uiState.value.meetingProposals[index].votes.toMutableList()
-
-    if (!newVotes.map { it.userId }.contains(userId)) {
+    if (!_uiState.value.meetingProposals[index].votes.map { it.userId }.contains(userId)) {
       setErrorMsg("Cannot retract vote since you did not vote in the first place")
       return
     }
 
-    newVotes.remove(meetingProposalVote)
+    val newVotes = _uiState.value.meetingProposals[index].votes.filter { it.userId != userId }
 
     val newMeetingProposals =
         _uiState.value.meetingProposals
             .toMutableList()
-            .apply { this[index] = this[index].copy(votes = newVotes.toList()) }
+            .apply { this[index] = this[index].copy(votes = newVotes) }
             .toList()
     _uiState.update { it.copy(meetingProposals = newMeetingProposals) }
   }
