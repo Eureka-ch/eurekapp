@@ -12,4 +12,5 @@
     <string name="loading_meeting_location">Loading meeting location…</string>
     <string name="navigate_back">Navigate back</string>
     <string name="location_marker">Location marker</string>
+    <string name="location_icon">Location icon</string>
 </resources>

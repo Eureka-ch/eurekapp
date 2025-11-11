@@ -926,7 +926,9 @@ private fun ActionButtonsSection(
             if (meeting.format == MeetingFormat.IN_PERSON && meeting.location != null) {
               Button(
                   onClick = actionsConfig.onNavigateToMeeting, modifier = Modifier.fillMaxWidth()) {
-                    Icon(imageVector = Icons.Default.Place, contentDescription = null)
+                    Icon(
+                        imageVector = Icons.Default.Place,
+                        contentDescription = stringResource(R.string.location_icon))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("View Location")
                   }
