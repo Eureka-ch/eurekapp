@@ -206,7 +206,9 @@ class MeetingNavigationScreenTest {
     composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag(MeetingNavigationScreenTestTags.ERROR_MESSAGE).assertIsDisplayed()
-    composeTestRule.onNodeWithText("Failed to load meeting: $customErrorMessage", substring = true).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithText("Failed to load meeting: $customErrorMessage", substring = true)
+        .assertIsDisplayed()
   }
 
   @Test
