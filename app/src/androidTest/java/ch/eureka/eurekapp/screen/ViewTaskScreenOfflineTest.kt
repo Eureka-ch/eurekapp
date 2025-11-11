@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.screen
 
+import android.content.Context
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -7,8 +8,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.UiDevice
-import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
+import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRole
@@ -23,14 +23,16 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.google.firebase.Timestamp
+import java.text.SimpleDateFormat
+import java.util.Locale
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 // Portions of this code were generated with the help of Grok.
 
@@ -38,12 +40,10 @@ class ViewTaskScreenOfflineTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
-  private val uiDevice: UiDevice =
-      UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-
   private var lastViewModel: ViewTaskViewModel? = null
   private var testUserId: String = ""
   private lateinit var context: android.content.Context
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
 
   private val taskRepository: TaskRepository =
       FirestoreTaskRepository(firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
@@ -65,18 +65,12 @@ class ViewTaskScreenOfflineTest {
     }
 
     context = InstrumentationRegistry.getInstrumentation().targetContext
-
-    ConnectivityObserverProvider.initialize(context)
+    mockConnectivityObserver = MockConnectivityObserver(context)
   }
 
   @After
   fun tearDown() = runBlocking {
     lastViewModel = null
-
-    // Re-enable network radios
-    uiDevice.executeShellCommand("svc wifi enable")
-    uiDevice.executeShellCommand("svc data enable")
-
     FirebaseEmulator.clearFirestoreEmulator()
     FirebaseEmulator.clearAuthEmulator()
   }
@@ -133,11 +127,10 @@ class ViewTaskScreenOfflineTest {
       setupTestProject(projectId)
       setupTestTask(projectId, taskId, title = "Offline Task")
 
-      // Disable network
-      uiDevice.executeShellCommand("svc wifi disable")
-      uiDevice.executeShellCommand("svc data disable")
+      mockConnectivityObserver.setConnected(false)
 
-      val viewModel = ViewTaskViewModel(projectId, taskId)
+      val viewModel =
+          ViewTaskViewModel(projectId, taskId, connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {
@@ -173,11 +166,10 @@ class ViewTaskScreenOfflineTest {
           dueDate = "15/12/2024",
           status = TaskStatus.IN_PROGRESS)
 
-      // Disable network
-      uiDevice.executeShellCommand("svc wifi disable")
-      uiDevice.executeShellCommand("svc data disable")
+      mockConnectivityObserver.setConnected(false)
 
-      val viewModel = ViewTaskViewModel(projectId, taskId)
+      val viewModel =
+          ViewTaskViewModel(projectId, taskId, connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {
@@ -208,11 +200,10 @@ class ViewTaskScreenOfflineTest {
       setupTestProject(projectId)
       setupTestTask(projectId, taskId)
 
-      // Disable network
-      uiDevice.executeShellCommand("svc wifi disable")
-      uiDevice.executeShellCommand("svc data disable")
+      mockConnectivityObserver.setConnected(false)
 
-      val viewModel = ViewTaskViewModel(projectId, taskId)
+      val viewModel =
+          ViewTaskViewModel(projectId, taskId, connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {
@@ -247,11 +238,10 @@ class ViewTaskScreenOfflineTest {
       setupTestProject(projectId)
       setupTestTask(projectId, taskId, attachmentUrls = listOf(attachmentUrl))
 
-      // Disable network
-      uiDevice.executeShellCommand("svc wifi disable")
-      uiDevice.executeShellCommand("svc data disable")
+      mockConnectivityObserver.setConnected(false)
 
-      val viewModel = ViewTaskViewModel(projectId, taskId)
+      val viewModel =
+          ViewTaskViewModel(projectId, taskId, connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {
@@ -281,7 +271,10 @@ class ViewTaskScreenOfflineTest {
       setupTestProject(projectId)
       setupTestTask(projectId, taskId, title = "Online Then Offline")
 
-      val viewModel = ViewTaskViewModel(projectId, taskId)
+      mockConnectivityObserver.setConnected(true)
+
+      val viewModel =
+          ViewTaskViewModel(projectId, taskId, connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {
@@ -298,16 +291,21 @@ class ViewTaskScreenOfflineTest {
       // Verify no offline message initially
       composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.OFFLINE_MESSAGE).assertDoesNotExist()
 
-      // Disable network
-      uiDevice.executeShellCommand("svc wifi disable")
-      uiDevice.executeShellCommand("svc data disable")
+      mockConnectivityObserver.setConnected(false)
 
-      // Wait for offline state to be detected
-      Thread.sleep(1000)
       composeTestRule.waitForIdle()
 
       // Verify offline message appears
       composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.OFFLINE_MESSAGE).assertIsDisplayed()
+    }
+  }
+
+  class MockConnectivityObserver(context: Context) : ConnectivityObserver(context) {
+    private val _isConnected = MutableStateFlow(true)
+    override val isConnected: Flow<Boolean> = _isConnected
+
+    fun setConnected(connected: Boolean) {
+      _isConnected.value = connected
     }
   }
 }

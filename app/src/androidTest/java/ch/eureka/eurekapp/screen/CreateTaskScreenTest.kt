@@ -23,6 +23,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
+import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
@@ -83,6 +85,7 @@ class CreateTaskScreenTests : TestCase() {
     }
 
     context = InstrumentationRegistry.getInstrumentation().targetContext
+    ConnectivityObserverProvider.initialize(context)
     clearTestPhotos()
   }
 

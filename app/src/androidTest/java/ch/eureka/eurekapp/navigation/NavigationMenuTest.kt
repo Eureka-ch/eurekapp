@@ -5,16 +5,46 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
+import androidx.test.platform.app.InstrumentationRegistry
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.screens.IdeasScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.ui.profile.ProfileScreenTestTags
+import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
+// Portions of this code were generated with the help of Grok.
+
 class NavigationMenuTest : TestCase() {
   @get:Rule val composeTestRule = createComposeRule()
+
+  @Before
+  fun setup() = runBlocking {
+    if (!FirebaseEmulator.isRunning) {
+      throw IllegalStateException("Firebase Emulator must be running for tests")
+    }
+
+    FirebaseEmulator.clearFirestoreEmulator()
+    FirebaseEmulator.clearAuthEmulator()
+
+    val authResult = FirebaseEmulator.auth.signInAnonymously().await()
+    if (authResult.user == null) {
+      throw IllegalStateException("Failed to sign in")
+    }
+
+    if (FirebaseEmulator.auth.currentUser == null) {
+      throw IllegalStateException("Auth state not properly established after sign-in")
+    }
+
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+    ConnectivityObserverProvider.initialize(context)
+  }
 
   @Test
   fun testNavigationBottomBarComponent() {

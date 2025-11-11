@@ -67,7 +67,7 @@ private fun TaskCard(
     onToggleComplete: () -> Unit,
     onTaskClick: (String, String) -> Unit,
     modifier: Modifier = Modifier,
-    isEnabled: Boolean = true
+    canToggleCompletion: Boolean = true
 ) {
   val (task, users) = taskAndUsers
   val progressValue =
@@ -92,7 +92,7 @@ private fun TaskCard(
       priority = determinePriority(task, now),
       onToggleComplete = onToggleComplete,
       onClick = { onTaskClick(task.taskID, task.projectId) },
-      isEnabled = isEnabled,
+      canToggleCompletion = canToggleCompletion,
       modifier = modifier.testTag(TasksScreenTestTags.TASK_CARD))
 }
 
@@ -319,7 +319,7 @@ private fun LazyListScope.taskSection(
         taskAndUsers,
         onToggleComplete = { viewModel.toggleTaskCompletion(taskAndUsers.task) },
         onTaskClick = onTaskClick,
-        isEnabled = isConnected)
+        canToggleCompletion = isConnected)
   }
 }
 

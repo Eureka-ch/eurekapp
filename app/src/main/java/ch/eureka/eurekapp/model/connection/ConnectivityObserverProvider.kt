@@ -2,6 +2,8 @@ package ch.eureka.eurekapp.model.connection
 
 import android.content.Context
 
+// Portions of this code were generated with the help of Grok.
+
 object ConnectivityObserverProvider {
   private var _connectivityObserver: ConnectivityObserver? = null
 
