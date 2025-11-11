@@ -60,11 +60,8 @@ object MeetingNavigationScreenTestTags {
   const val INFO_CARD = "NavigationInfoCard"
 }
 
-/** Constants for MeetingNavigationScreen. */
-private object Constants {
-  /** Default zoom level for the map when displaying meeting location. */
-  const val DEFAULT_MAP_ZOOM = 15f
-}
+/** Default zoom level for the map when displaying meeting location. */
+private const val DEFAULT_MAP_ZOOM = 15f
 
 /**
  * Main composable for the meeting location screen.
@@ -183,7 +180,7 @@ private fun MapContent(modifier: Modifier = Modifier, uiState: MeetingNavigation
 @Composable
 private fun MapView(meetingLocation: LatLng, meetingName: String) {
   val cameraPositionState = rememberCameraPositionState {
-    position = CameraPosition.fromLatLngZoom(meetingLocation, Constants.DEFAULT_MAP_ZOOM)
+    position = CameraPosition.fromLatLngZoom(meetingLocation, DEFAULT_MAP_ZOOM)
   }
 
   GoogleMap(
