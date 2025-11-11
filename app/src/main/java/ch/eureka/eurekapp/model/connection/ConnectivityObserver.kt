@@ -11,10 +11,19 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 // Portions of this code were generated with the help of Grok.
 
+/**
+ * A class that observes network connectivity changes and provides a Flow of connection status.
+ *
+ * @param context The application context for accessing system services.
+ */
 open class ConnectivityObserver internal constructor(context: Context) {
   private val connectivityManager =
       context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
+  /**
+   * A Flow that emits true when the device is connected to the internet, false otherwise. It emits
+   * the current state immediately and updates on changes.
+   */
   open val isConnected: Flow<Boolean> =
       callbackFlow {
             val callback =
@@ -23,7 +32,7 @@ open class ConnectivityObserver internal constructor(context: Context) {
                     trySend(true)
                   }
 
-                  override fun onLost(network: Network) {
+                  override fun onUnavailable() {
                     trySend(false)
                   }
                 }
@@ -42,6 +51,12 @@ open class ConnectivityObserver internal constructor(context: Context) {
           .distinctUntilChanged()
 
   companion object {
+    /**
+     * Returns an instance of ConnectivityObserver.
+     *
+     * @param context The application context.
+     * @return A new ConnectivityObserver instance.
+     */
     fun getInstance(context: Context): ConnectivityObserver {
       return ConnectivityObserver(context.applicationContext)
     }

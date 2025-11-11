@@ -1,11 +1,14 @@
 package ch.eureka.eurekapp.ui.tasks
 
+import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.screens.TaskAndUsers
 import com.google.firebase.Timestamp
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -23,6 +26,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
+// Portions of this code were generated with the help of Grok.
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class TaskScreenViewModelTest {
 
@@ -31,6 +36,7 @@ class TaskScreenViewModelTest {
   private lateinit var mockTaskRepository: MockTaskRepository
   private lateinit var mockProjectRepository: MockProjectRepository
   private lateinit var mockUserRepository: MockUserRepository
+  private lateinit var mockConnectivityObserver: ConnectivityObserver
   private lateinit var viewModel: TaskScreenViewModel
 
   private val testUser1 = User(uid = "user1", displayName = "Alice", email = "alice@test.com")
@@ -50,6 +56,8 @@ class TaskScreenViewModelTest {
     mockTaskRepository = MockTaskRepository()
     mockProjectRepository = MockProjectRepository()
     mockUserRepository = MockUserRepository()
+    mockConnectivityObserver = mockk()
+    every { mockConnectivityObserver.isConnected } returns flowOf(true)
   }
 
   @After
@@ -64,7 +72,11 @@ class TaskScreenViewModelTest {
   fun viewModel_initialState_hasCorrectDefaults() = runTest {
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     val uiState = viewModel.uiState.first()
@@ -94,7 +106,11 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     val uiState = viewModel.uiState.first()
@@ -125,7 +141,11 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     viewModel.setFilter(TaskScreenFilter.Team)
@@ -159,7 +179,11 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     viewModel.setFilter(TaskScreenFilter.All)
@@ -210,7 +234,11 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     viewModel.setFilter(TaskScreenFilter.Today)
@@ -262,7 +290,11 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     viewModel.setFilter(TaskScreenFilter.Tomorrow)
@@ -314,7 +346,11 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     viewModel.setFilter(TaskScreenFilter.Overdue)
@@ -348,7 +384,11 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     viewModel.setFilter(TaskScreenFilter.ThisWeek)
@@ -375,7 +415,11 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     viewModel.toggleTaskCompletion(task)
@@ -402,7 +446,11 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     viewModel.toggleTaskCompletion(task)
@@ -429,7 +477,11 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     viewModel.toggleTaskCompletion(task)
@@ -449,7 +501,11 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     val assignees = viewModel.getAssignees(task).first()
@@ -465,7 +521,11 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     val assignees = viewModel.getAssignees(task).first()
@@ -495,7 +555,11 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     viewModel.setFilter(TaskScreenFilter.Team)
@@ -511,7 +575,11 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     viewModel.setFilter(TaskScreenFilter.Team)
@@ -528,7 +596,11 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     assertTrue(mockTaskRepository.getTasksForCurrentUserCalls.size > 0)
@@ -550,7 +622,11 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     // Verify initial state
@@ -591,7 +667,11 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     // Verify initial user
@@ -624,7 +704,11 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     viewModel.setFilter(TaskScreenFilter.Team)
@@ -666,7 +750,11 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, currentUserId = "user1")
+            mockTaskRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            currentUserId = "user1",
+            mockConnectivityObserver)
     advanceUntilIdle()
 
     // Start with Mine filter

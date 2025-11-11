@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.model.tasks
 
+import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import com.google.firebase.Timestamp
@@ -36,12 +37,15 @@ class ViewTaskViewModelTest {
 
   private lateinit var mockTaskRepository: ch.eureka.eurekapp.model.data.task.TaskRepository
   private lateinit var mockUserRepository: ch.eureka.eurekapp.model.data.user.UserRepository
+  private lateinit var mockConnectivityObserver: ConnectivityObserver
   private lateinit var viewModel: ViewTaskViewModel
 
   @Before
   fun setUp() {
     Dispatchers.setMain(testDispatcher)
     mockTaskRepository = mockk()
+    mockConnectivityObserver = mockk()
+    every { mockConnectivityObserver.isConnected } returns flowOf(true)
     mockUserRepository = mockk()
   }
 
@@ -69,6 +73,9 @@ class ViewTaskViewModelTest {
     every { mockTaskRepository.getTaskById(projectId, taskId) } returns flowOf(task)
 
     viewModel =
+        ViewTaskViewModel(
+            projectId, taskId, mockTaskRepository, testDispatcher, mockConnectivityObserver)
+    viewModel =
         ViewTaskViewModel(projectId, taskId, mockTaskRepository, mockUserRepository, testDispatcher)
     advanceUntilIdle()
 
@@ -93,6 +100,9 @@ class ViewTaskViewModelTest {
 
     viewModel =
         ViewTaskViewModel(projectId, taskId, mockTaskRepository, mockUserRepository, testDispatcher)
+    viewModel =
+        ViewTaskViewModel(
+            projectId, taskId, mockTaskRepository, testDispatcher, mockConnectivityObserver)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -116,6 +126,9 @@ class ViewTaskViewModelTest {
 
     viewModel =
         ViewTaskViewModel(projectId, taskId, mockTaskRepository, mockUserRepository, testDispatcher)
+    viewModel =
+        ViewTaskViewModel(
+            projectId, taskId, mockTaskRepository, testDispatcher, mockConnectivityObserver)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -153,6 +166,9 @@ class ViewTaskViewModelTest {
 
     viewModel =
         ViewTaskViewModel(projectId, taskId, mockTaskRepository, mockUserRepository, testDispatcher)
+    viewModel =
+        ViewTaskViewModel(
+            projectId, taskId, mockTaskRepository, testDispatcher, mockConnectivityObserver)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()

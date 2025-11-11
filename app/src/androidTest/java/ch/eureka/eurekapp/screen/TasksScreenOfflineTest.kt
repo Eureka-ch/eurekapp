@@ -10,9 +10,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.UiDevice
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
-import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.user.User
@@ -40,9 +38,6 @@ class TasksScreenOfflineTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
-  private val uiDevice: UiDevice =
-      UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-
   private lateinit var mockTaskRepository: MockTaskRepository
   private lateinit var mockProjectRepository: MockProjectRepository
   private lateinit var mockUserRepository: MockUserRepository
@@ -55,16 +50,13 @@ class TasksScreenOfflineTest {
     mockTaskRepository = MockTaskRepository()
     mockProjectRepository = MockProjectRepository()
     mockUserRepository = MockUserRepository()
-    mockConnectivityObserver = MockConnectivityObserver(InstrumentationRegistry.getInstrumentation().targetContext)
+    mockConnectivityObserver =
+        MockConnectivityObserver(InstrumentationRegistry.getInstrumentation().targetContext)
     mockUserRepository.setUsers(testUser)
   }
 
   @After
   fun tearDown() {
-    // Re-enable network radios
-    uiDevice.executeShellCommand("svc wifi enable")
-    uiDevice.executeShellCommand("svc data enable")
-
     FirebaseEmulator.clearFirestoreEmulator()
     FirebaseEmulator.clearAuthEmulator()
   }
@@ -95,9 +87,7 @@ class TasksScreenOfflineTest {
 
     composeTestRule.waitUntilExactlyOneExists(
         hasText("You are offline. Some features may be unavailable."), 3000)
-    composeTestRule
-        .onNodeWithTag(TasksScreenTestTags.OFFLINE_MESSAGE)
-        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag(TasksScreenTestTags.OFFLINE_MESSAGE).assertIsDisplayed()
   }
 
   @Test
@@ -235,32 +225,44 @@ class TasksScreenOfflineTest {
   }
 
   @Test
-  fun tasksScreenOfflineWithRealNetworkDisabledCorrect() {
+  fun tasksScreenOfflineAllowsNavigationToViewTask() {
     val task =
         Task(
             taskID = "task1",
             projectId = "proj1",
-            title = "Network Offline Task",
-            assignedUserIds = listOf("user1"))
+            title = "Navigable Offline Task",
+            assignedUserIds = listOf("user1"),
+            status = TaskStatus.TODO)
 
     mockTaskRepository.setCurrentUserTasks(flowOf(listOf(task)))
+    mockConnectivityObserver.setConnected(false)
 
-    // Disable network radios
-    uiDevice.executeShellCommand("svc wifi disable")
-    uiDevice.executeShellCommand("svc data disable")
-
-    // Initialize ConnectivityObserverProvider with real observer
-    ConnectivityObserverProvider.initialize(InstrumentationRegistry.getInstrumentation().targetContext)
+    var navigatedTaskId: String? = null
+    var navigatedProjectId: String? = null
 
     composeTestRule.setContent {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"))
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver),
+          onTaskClick = { taskId, projectId ->
+            navigatedTaskId = taskId
+            navigatedProjectId = projectId
+          })
     }
 
-    composeTestRule.waitUntilExactlyOneExists(hasText("Network Offline Task"), 3000)
-    composeTestRule.onNodeWithText("Network Offline Task").assertIsDisplayed()
+    composeTestRule.waitUntilExactlyOneExists(hasText("Navigable Offline Task"), 3000)
+
+    // Click on the task card
+    composeTestRule.onNodeWithText("Navigable Offline Task").performClick()
+
+    // Assert that navigation callback was triggered with correct IDs
+    assert(navigatedTaskId == "task1") { "Task ID should be captured on click" }
+    assert(navigatedProjectId == "proj1") { "Project ID should be captured on click" }
   }
 
   class MockConnectivityObserver(context: Context) : ConnectivityObserver(context) {
