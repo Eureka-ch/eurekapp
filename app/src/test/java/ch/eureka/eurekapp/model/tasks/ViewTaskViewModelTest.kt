@@ -33,12 +33,14 @@ class ViewTaskViewModelTest {
   private val testDispatcher = UnconfinedTestDispatcher()
 
   private lateinit var mockTaskRepository: ch.eureka.eurekapp.model.data.task.TaskRepository
+  private lateinit var mockUserRepository: ch.eureka.eurekapp.model.data.user.UserRepository
   private lateinit var viewModel: ViewTaskViewModel
 
   @Before
   fun setUp() {
     Dispatchers.setMain(testDispatcher)
     mockTaskRepository = mockk()
+    mockUserRepository = mockk()
   }
 
   @After
@@ -56,7 +58,7 @@ class ViewTaskViewModelTest {
             projectId = projectId,
             title = "Test Task",
             description = "Test Description",
-            assignedUserIds = listOf("user1"),
+            assignedUserIds = emptyList(),
             dueDate = Timestamp.now(),
             attachmentUrls = listOf("url1", "url2"),
             status = TaskStatus.TODO,
@@ -64,7 +66,8 @@ class ViewTaskViewModelTest {
 
     every { mockTaskRepository.getTaskById(projectId, taskId) } returns flowOf(task)
 
-    viewModel = ViewTaskViewModel(projectId, taskId, mockTaskRepository, testDispatcher)
+    viewModel =
+        ViewTaskViewModel(projectId, taskId, mockTaskRepository, mockUserRepository, testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -76,6 +79,7 @@ class ViewTaskViewModelTest {
     assertEquals(TaskStatus.TODO, state.status)
     assertFalse(state.isLoading)
     assertNull(state.errorMsg)
+    assertEquals(emptyList<ch.eureka.eurekapp.model.data.user.User>(), state.assignedUsers)
   }
 
   @Test
@@ -85,7 +89,8 @@ class ViewTaskViewModelTest {
 
     every { mockTaskRepository.getTaskById(projectId, taskId) } returns flowOf(null)
 
-    viewModel = ViewTaskViewModel(projectId, taskId, mockTaskRepository, testDispatcher)
+    viewModel =
+        ViewTaskViewModel(projectId, taskId, mockTaskRepository, mockUserRepository, testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -107,7 +112,8 @@ class ViewTaskViewModelTest {
 
     every { mockTaskRepository.getTaskById(projectId, taskId) } returns flow { throw exception }
 
-    viewModel = ViewTaskViewModel(projectId, taskId, mockTaskRepository, testDispatcher)
+    viewModel =
+        ViewTaskViewModel(projectId, taskId, mockTaskRepository, mockUserRepository, testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -143,7 +149,8 @@ class ViewTaskViewModelTest {
 
     every { mockTaskRepository.getTaskById(projectId, taskId) } returns flowOf(task)
 
-    viewModel = ViewTaskViewModel(projectId, taskId, mockTaskRepository, testDispatcher)
+    viewModel =
+        ViewTaskViewModel(projectId, taskId, mockTaskRepository, mockUserRepository, testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()

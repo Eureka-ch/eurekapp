@@ -336,44 +336,44 @@ fun UserAssignmentField(
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           modifier = Modifier.testTag(CommonTaskTestTags.NO_USERS_AVAILABLE))
     } else {
-      Box(modifier = Modifier.fillMaxWidth()) {
-        OutlinedTextField(
-            value = displayText,
-            onValueChange = {},
-            readOnly = true,
-            enabled = enabled,
-            placeholder = { Text("Select users to assign") },
-            modifier =
-                Modifier.fillMaxWidth()
-                    .clickable(enabled = enabled) { expanded = !expanded }
-                    .testTag(CommonTaskTestTags.USER_ASSIGNMENT_TITLE))
+      Box(
+          modifier =
+              Modifier.fillMaxWidth().clickable(enabled = enabled) { expanded = !expanded }) {
+            OutlinedTextField(
+                value = displayText,
+                onValueChange = {},
+                readOnly = true,
+                placeholder = { Text("Select users to assign") },
+                modifier =
+                    Modifier.fillMaxWidth().testTag(CommonTaskTestTags.USER_ASSIGNMENT_TITLE),
+                enabled = false)
 
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.testTag(CommonTaskTestTags.USER_ASSIGNMENT_MENU)) {
-              availableUsers.forEach { user ->
-                DropdownMenuItem(
-                    text = {
-                      Row(
-                          modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                          horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text(
-                                text = user.displayName.ifBlank { user.email },
-                                style = MaterialTheme.typography.bodyMedium)
-                            Checkbox(
-                                checked = selectedUserIds.contains(user.uid),
-                                onCheckedChange = null,
-                                modifier =
-                                    Modifier.testTag(
-                                        "${CommonTaskTestTags.USER_CHECKBOX}_${user.uid}"))
-                          }
-                    },
-                    onClick = { onUserToggled(user.uid) },
-                    modifier = Modifier.testTag("user_item_${user.uid}"))
-              }
-            }
-      }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.testTag(CommonTaskTestTags.USER_ASSIGNMENT_MENU)) {
+                  availableUsers.forEach { user ->
+                    DropdownMenuItem(
+                        text = {
+                          Row(
+                              modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                              horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text(
+                                    text = user.displayName.ifBlank { user.email },
+                                    style = MaterialTheme.typography.bodyMedium)
+                                Checkbox(
+                                    checked = selectedUserIds.contains(user.uid),
+                                    onCheckedChange = null,
+                                    modifier =
+                                        Modifier.testTag(
+                                            "${CommonTaskTestTags.USER_CHECKBOX}_${user.uid}"))
+                              }
+                        },
+                        onClick = { onUserToggled(user.uid) },
+                        modifier = Modifier.testTag("user_item_${user.uid}"))
+                  }
+                }
+          }
     }
   }
 }

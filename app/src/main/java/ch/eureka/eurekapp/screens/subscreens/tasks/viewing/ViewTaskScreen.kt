@@ -105,6 +105,20 @@ fun ViewTaskScreen(
 
               Text(text = "Status: ${viewTaskState.status.name.replace("_", " ")}")
 
+              // Display assigned users
+              if (viewTaskState.assignedUsers.isNotEmpty()) {
+                Column {
+                  Text(
+                      text = "Assigned Users:",
+                      style = androidx.compose.material3.MaterialTheme.typography.titleMedium)
+                  viewTaskState.assignedUsers.forEach { user ->
+                    Text(
+                        text = "• ${user.displayName.ifBlank { user.email }}",
+                        style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
+                  }
+                }
+              }
+
               Button(
                   onClick = {
                     navigationController.navigate(Route.TasksSection.EditTask(projectId, taskId))
