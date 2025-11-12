@@ -74,9 +74,12 @@ class ViewTaskViewModelTest {
 
     viewModel =
         ViewTaskViewModel(
-            projectId, taskId, mockTaskRepository, testDispatcher, mockConnectivityObserver)
-    viewModel =
-        ViewTaskViewModel(projectId, taskId, mockTaskRepository, mockUserRepository, testDispatcher)
+            projectId,
+            taskId,
+            mockTaskRepository,
+            testDispatcher,
+            mockConnectivityObserver,
+            mockUserRepository)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -99,10 +102,13 @@ class ViewTaskViewModelTest {
     every { mockTaskRepository.getTaskById(projectId, taskId) } returns flowOf(null)
 
     viewModel =
-        ViewTaskViewModel(projectId, taskId, mockTaskRepository, mockUserRepository, testDispatcher)
-    viewModel =
         ViewTaskViewModel(
-            projectId, taskId, mockTaskRepository, testDispatcher, mockConnectivityObserver)
+            projectId,
+            taskId,
+            mockTaskRepository,
+            testDispatcher,
+            mockConnectivityObserver,
+            mockUserRepository)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -125,10 +131,13 @@ class ViewTaskViewModelTest {
     every { mockTaskRepository.getTaskById(projectId, taskId) } returns flow { throw exception }
 
     viewModel =
-        ViewTaskViewModel(projectId, taskId, mockTaskRepository, mockUserRepository, testDispatcher)
-    viewModel =
         ViewTaskViewModel(
-            projectId, taskId, mockTaskRepository, testDispatcher, mockConnectivityObserver)
+            projectId,
+            taskId,
+            mockTaskRepository,
+            testDispatcher,
+            mockConnectivityObserver,
+            mockUserRepository)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -165,10 +174,13 @@ class ViewTaskViewModelTest {
     every { mockTaskRepository.getTaskById(projectId, taskId) } returns flowOf(task)
 
     viewModel =
-        ViewTaskViewModel(projectId, taskId, mockTaskRepository, mockUserRepository, testDispatcher)
-    viewModel =
         ViewTaskViewModel(
-            projectId, taskId, mockTaskRepository, testDispatcher, mockConnectivityObserver)
+            projectId,
+            taskId,
+            mockTaskRepository,
+            testDispatcher,
+            mockConnectivityObserver,
+            mockUserRepository)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -200,7 +212,13 @@ class ViewTaskViewModelTest {
     every { mockUserRepository.getUserById(userId) } returns flowOf(user)
 
     viewModel =
-        ViewTaskViewModel(projectId, taskId, mockTaskRepository, mockUserRepository, testDispatcher)
+        ViewTaskViewModel(
+            projectId,
+            taskId,
+            mockTaskRepository,
+            testDispatcher,
+            mockConnectivityObserver,
+            mockUserRepository)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -246,7 +264,13 @@ class ViewTaskViewModelTest {
     every { mockUserRepository.getUserById(user3Id) } returns flowOf(user3)
 
     viewModel =
-        ViewTaskViewModel(projectId, taskId, mockTaskRepository, mockUserRepository, testDispatcher)
+        ViewTaskViewModel(
+            projectId,
+            taskId,
+            mockTaskRepository,
+            testDispatcher,
+            mockConnectivityObserver,
+            mockUserRepository)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -284,7 +308,13 @@ class ViewTaskViewModelTest {
     every { mockUserRepository.getUserById(user2Id) } returns flowOf(null)
 
     viewModel =
-        ViewTaskViewModel(projectId, taskId, mockTaskRepository, mockUserRepository, testDispatcher)
+        ViewTaskViewModel(
+            projectId,
+            taskId,
+            mockTaskRepository,
+            testDispatcher,
+            mockConnectivityObserver,
+            mockUserRepository)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
