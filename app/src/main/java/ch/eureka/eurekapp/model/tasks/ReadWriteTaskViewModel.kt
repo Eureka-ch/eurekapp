@@ -6,12 +6,15 @@ import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.Project
+import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.utils.Formatters
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -27,6 +30,7 @@ interface TaskStateReadWrite : TaskStateRead {
   val isSaving: Boolean
   val taskSaved: Boolean
   val availableProjects: List<Project>
+  val dependingOnTasks: List<String>
 }
 
 /** Base ViewModel for task creation and editing with shared functionality */
@@ -45,6 +49,12 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
         .stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = false)
   }
 
+  protected val availableTasksMutable = MutableStateFlow<List<Task>>(emptyList())
+  val availableTasks: StateFlow<List<Task>> = availableTasksMutable.asStateFlow()
+
+  protected val cycleErrorMutable = MutableStateFlow<String?>(null)
+  val cycleError: StateFlow<String?> = cycleErrorMutable.asStateFlow()
+
   /** Clears the error message in the UI state. */
   fun clearErrorMsg() {
     updateState { copyWithErrorMsg(null) }
@@ -58,6 +68,24 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
   /** Validates if the input fields are valid */
   fun isValidInput(title: String, description: String, dueDate: String): Boolean {
     return title.isNotBlank() && description.isNotBlank() && dateRegex.matches(dueDate)
+  }
+
+  /** Loads tasks that are available as dependencies for the selected project. */
+  open fun loadAvailableTasks(projectId: String) {
+    if (projectId.isEmpty()) {
+      availableTasksMutable.value = emptyList()
+      return
+    }
+    viewModelScope.launch(dispatcher) {
+      taskRepository.getTasksInProject(projectId).collect { tasks ->
+        availableTasksMutable.value = tasks
+      }
+    }
+  }
+
+  /** Helper for subclasses to update the cycle dependency error message. */
+  protected fun setCycleError(message: String?) {
+    cycleErrorMutable.value = message
   }
 
   /** Parses a date string to Timestamp */
@@ -187,6 +215,37 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
     updateState { copyWithProjectId(id) }
   }
 
+  /**
+   * Replaces the current dependency list with the provided task identifiers.
+   *
+   * Subclasses may perform additional validation before calling this helper.
+   */
+  fun setDependencies(dependencyTaskIds: List<String>) {
+    updateState { copyWithDependencies(dependencyTaskIds) }
+  }
+
+  /**
+   * Adds a dependency to the state if it is not already present.
+   *
+   * Subclasses can override to inject extra validation (e.g. cycle detection) before persisting.
+   */
+  open fun addDependency(taskId: String) {
+    val currentDependencies = uiState.value.dependingOnTasks
+    if (!currentDependencies.contains(taskId)) {
+      updateState { copyWithDependencies(currentDependencies + taskId) }
+    }
+  }
+
+  /**
+   * Removes the provided dependency identifier from the state if present.
+   *
+   * Subclasses should ensure any accompanying error state is cleared when invoking this method.
+   */
+  open fun removeDependency(taskId: String) {
+    val currentDependencies = uiState.value.dependingOnTasks
+    updateState { copyWithDependencies(currentDependencies.filter { it != taskId }) }
+  }
+
   /** Deletes a photo from storage */
   private suspend fun deletePhotoSuspend(context: Context, photoUri: Uri): Boolean {
     return try {
@@ -250,4 +309,6 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
   protected abstract fun T.copyWithAttachmentUris(uris: List<Uri>): T
 
   protected abstract fun T.copyWithProjectId(projectId: String): T
+
+  protected abstract fun T.copyWithDependencies(dependencies: List<String>): T
 }

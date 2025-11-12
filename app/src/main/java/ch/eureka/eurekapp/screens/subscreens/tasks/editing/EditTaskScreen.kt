@@ -35,6 +35,7 @@ import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AttachmentsList
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.ProjectSelectionField
+import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesSelectionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDescriptionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskReminderField
@@ -74,6 +75,8 @@ fun EditTaskScreen(
   val editTaskState by editTaskViewModel.uiState.collectAsState()
   val inputValid by editTaskViewModel.inputValid.collectAsState()
   val errorMsg = editTaskState.errorMsg
+  val availableTasks by editTaskViewModel.availableTasks.collectAsState()
+  val cycleError by editTaskViewModel.cycleError.collectAsState()
   var hasTouchedTitle by remember { mutableStateOf(false) }
   var hasTouchedDescription by remember { mutableStateOf(false) }
   var hasTouchedDate by remember { mutableStateOf(false) }
@@ -90,6 +93,12 @@ fun EditTaskScreen(
   LaunchedEffect(taskId) {
     if (!editTaskState.isDeleting && !editTaskState.taskDeleted) {
       editTaskViewModel.loadTask(projectId, taskId)
+    }
+  }
+
+  LaunchedEffect(editTaskState.projectId) {
+    if (editTaskState.projectId.isNotEmpty()) {
+      editTaskViewModel.loadAvailableTasks(editTaskState.projectId)
     }
   }
 
@@ -165,6 +174,16 @@ fun EditTaskScreen(
                   projects = editTaskState.availableProjects,
                   selectedProjectId = editTaskState.projectId,
                   onProjectSelected = { projectId -> editTaskViewModel.setProjectId(projectId) })
+
+              if (editTaskState.projectId.isNotEmpty()) {
+                TaskDependenciesSelectionField(
+                    availableTasks = availableTasks,
+                    selectedDependencyIds = editTaskState.dependingOnTasks,
+                    onDependencyAdded = { taskId -> editTaskViewModel.addDependency(taskId) },
+                    onDependencyRemoved = { taskId -> editTaskViewModel.removeDependency(taskId) },
+                    currentTaskId = editTaskState.taskId,
+                    cycleError = cycleError)
+              }
 
               Row(
                   modifier = Modifier.fillMaxWidth(),

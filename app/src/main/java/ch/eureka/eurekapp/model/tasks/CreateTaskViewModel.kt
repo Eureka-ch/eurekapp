@@ -12,6 +12,7 @@ import ch.eureka.eurekapp.model.data.IdGenerator
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
+import ch.eureka.eurekapp.utils.TaskDependencyCycleDetector
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -39,6 +40,24 @@ class CreateTaskViewModel(
 
   private val _uiState = MutableStateFlow(CreateTaskState())
   override val uiState: StateFlow<CreateTaskState> = _uiState.asStateFlow()
+
+  // Placeholder used for dependency validation before the task is persisted.
+  private val placeholderTaskId = IdGenerator.generateTaskId()
+
+  suspend fun validateDependency(dependencyTaskId: String): Boolean {
+    val state = uiState.value
+    if (state.projectId.isEmpty()) return true
+
+    val wouldCycle =
+        TaskDependencyCycleDetector.wouldCreateCycle(
+            placeholderTaskId, dependencyTaskId, state.projectId, taskRepository)
+    if (wouldCycle) {
+      setCycleError("Adding this dependency would create a circular dependency")
+      return false
+    }
+    setCycleError(null)
+    return true
+  }
 
   /** Adds a Task */
   fun addTask(context: Context) {
@@ -87,6 +106,16 @@ class CreateTaskViewModel(
       val photoUrls = photoUrlsResult.getOrThrow()
 
       viewModelScope.launch(dispatcher + handler) {
+        // Validate no cycles before saving
+        val cycleValidation =
+            TaskDependencyCycleDetector.validateNoCycles(
+                taskId, state.dependingOnTasks, projectIdToUse, taskRepository)
+        if (cycleValidation.isFailure) {
+          setErrorMsg(cycleValidation.exceptionOrNull()?.message ?: "Circular dependency detected")
+          updateState { copy(isSaving = false) }
+          return@launch
+        }
+
         val task =
             Task(
                 taskID = taskId,
@@ -97,7 +126,8 @@ class CreateTaskViewModel(
                 dueDate = timestamp,
                 reminderTime = reminderTimestamp,
                 attachmentUrls = photoUrls,
-                createdBy = currentUser)
+                createdBy = currentUser,
+                dependingOnTasks = state.dependingOnTasks)
 
         taskRepository.createTask(task).onFailure {
           setErrorMsg("Failed to add Task.")
@@ -138,11 +168,39 @@ class CreateTaskViewModel(
 
   override fun CreateTaskState.copyWithProjectId(projectId: String) = copy(projectId = projectId)
 
+  override fun CreateTaskState.copyWithDependencies(dependencies: List<String>) =
+      copy(dependingOnTasks = dependencies)
+
   override fun updateState(update: CreateTaskState.() -> CreateTaskState) {
     _uiState.value = _uiState.value.update()
   }
 
   fun setReminderTime(reminderTime: String) {
     updateState { copy(reminderTime = reminderTime) }
+  }
+
+  override fun addDependency(taskId: String) {
+    val currentDependencies = uiState.value.dependingOnTasks
+    if (!currentDependencies.contains(taskId)) {
+      viewModelScope.launch(dispatcher) {
+        // For new tasks, we can't validate cycles perfectly since task doesn't exist yet
+        // But we can check if the dependency would create a cycle with existing tasks
+        val wouldCycle =
+            TaskDependencyCycleDetector.wouldCreateCycle(
+                placeholderTaskId, taskId, uiState.value.projectId, taskRepository)
+        if (wouldCycle) {
+          setCycleError("Adding this dependency would create a circular dependency")
+        } else {
+          setCycleError(null)
+          updateState { copyWithDependencies(currentDependencies + taskId) }
+        }
+      }
+    }
+  }
+
+  override fun removeDependency(taskId: String) {
+    val currentDependencies = uiState.value.dependingOnTasks
+    updateState { copyWithDependencies(currentDependencies.filter { it != taskId }) }
+    setCycleError(null)
   }
 }
