@@ -27,6 +27,7 @@ import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.task.determinePriority
 import ch.eureka.eurekapp.model.data.task.getDaysUntilDue
+import ch.eureka.eurekapp.model.data.task.getDueDateTag
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
 import ch.eureka.eurekapp.ui.components.NavItem
@@ -47,18 +48,20 @@ object TasksScreenTestTags {
   const val TASK_LIST = "taskList"
   const val CREATE_TASK_BUTTON = "createTaskButton"
   const val AUTO_ASSIGN_BUTTON = "autoAssignButton"
+  const val TASK_CARD = "taskCard"
 }
 
 data class TaskAndUsers(val task: Task, val users: List<User>)
 
 /**
  * Render a task card with individual properties Uses ViewModel computed properties directly for
- * better performance
+ * better performance Portions of this code were generated with the help of IA.
  */
 @Composable
 private fun TaskCard(
     taskAndUsers: TaskAndUsers,
     onToggleComplete: () -> Unit,
+    onTaskClick: (String, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
   val (task, users) = taskAndUsers
@@ -71,6 +74,7 @@ private fun TaskCard(
       }
   val now = Timestamp.now()
   val daysUntilDue = getDaysUntilDue(task, now)
+  val dueDateTag = getDueDateTag(task, now)
 
   EurekaTaskCard(
       title = task.title,
@@ -79,9 +83,11 @@ private fun TaskCard(
       progressValue = progressValue,
       isCompleted = task.status == TaskStatus.COMPLETED,
       dueDate = daysUntilDue?.let { formatDueDate(it) } ?: "No due date",
+      dueDateTag = dueDateTag,
       priority = determinePriority(task, now),
       onToggleComplete = onToggleComplete,
-      modifier = modifier)
+      onClick = { onTaskClick(task.taskID, task.projectId) },
+      modifier = modifier.testTag(TasksScreenTestTags.TASK_CARD))
 }
 
 /** Format due date for display */
@@ -108,7 +114,7 @@ fun formatDueDate(diffInDays: Long): String {
 @Composable
 fun TasksScreen(
     modifier: Modifier = Modifier,
-    onTaskClick: (Task) -> Unit = {},
+    onTaskClick: (String, String) -> Unit = { _, _ -> },
     onCreateTaskClick: () -> Unit = {},
     onAutoAssignClick: () -> Unit = {},
     onNavigate: (String) -> Unit = {},
@@ -161,6 +167,7 @@ fun TasksScreen(
           LazyRow(
               horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
               modifier = Modifier.padding(bottom = Spacing.sm)) {
+                // Standard filters (Mine, Team, ThisWeek, All)
                 items(TaskScreenFilter.Companion.values) { filter ->
                   FilterChip(
                       onClick = { setFilter(filter) },
@@ -173,6 +180,25 @@ fun TasksScreen(
                               selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
                               containerColor = MaterialTheme.colorScheme.surface,
                               labelColor = MaterialTheme.colorScheme.onSurface))
+                }
+
+                // Project filters
+                items(uiState.availableProjects) { project ->
+                  val projectFilter = TaskScreenFilter.ByProject(project.projectId, project.name)
+                  FilterChip(
+                      onClick = { setFilter(projectFilter) },
+                      label = { Text(project.name) },
+                      selected =
+                          uiState.selectedFilter is TaskScreenFilter.ByProject &&
+                              (uiState.selectedFilter as TaskScreenFilter.ByProject).projectId ==
+                                  project.projectId,
+                      modifier = Modifier.testTag("filter_${project.projectId}"),
+                      colors =
+                          FilterChipDefaults.filterChipColors(
+                              selectedContainerColor = MaterialTheme.colorScheme.secondary,
+                              selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
+                              containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                              labelColor = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
               }
 
@@ -222,12 +248,14 @@ fun TasksScreen(
                   taskSection(
                       title = "Current Tasks",
                       tasksAndUsers = currentTaskAndUsers,
-                      viewModel = viewModel)
+                      viewModel = viewModel,
+                      onTaskClick = onTaskClick)
                   taskSection(
                       title = "Recently Completed",
                       tasksAndUsers = completedTaskAndUsers,
                       viewModel = viewModel,
-                      modifier = Modifier.padding(top = Spacing.lg))
+                      modifier = Modifier.padding(top = Spacing.lg),
+                      onTaskClick = onTaskClick)
                   if (currentTaskAndUsers.isEmpty() && completedTaskAndUsers.isEmpty()) {
                     item {
                       Column(
@@ -259,7 +287,8 @@ private fun LazyListScope.taskSection(
     title: String,
     tasksAndUsers: List<TaskAndUsers>,
     viewModel: TaskScreenViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onTaskClick: (String, String) -> Unit = { _, _ -> }
 ) {
   if (tasksAndUsers.isEmpty()) return
   item { TaskSectionHeader(title = title, taskCount = tasksAndUsers.size, modifier = modifier) }
@@ -267,7 +296,7 @@ private fun LazyListScope.taskSection(
     TaskCard(
         taskAndUsers,
         onToggleComplete = { viewModel.toggleTaskCompletion(taskAndUsers.task) },
-    )
+        onTaskClick = onTaskClick)
   }
 }
 

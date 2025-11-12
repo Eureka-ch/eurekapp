@@ -140,8 +140,10 @@ sonar { // edit these when setup sonar
         property("sonar.projectKey", "Eureka-ch_eurekapp")
         property("sonar.organization", "eureka-ch")
         property("sonar.host.url", "https://sonarcloud.io")
+        // Skip compilation during sonar analysis (classes are pre-compiled in build job)
+        property("sonar.gradle.skipCompile", "true")
         // Comma-separated paths to the various directories containing the *.xml JUnit report files. Each path may be absolute or relative to the project base directory.
-        property("sonar.junit.reportPaths", "${project.layout.buildDirectory.get()}/test-results/testDebugunitTest/")
+        property("sonar.junit.reportPaths", "${project.layout.buildDirectory.get()}/test-results/testDebugUnitTest/")
         // Paths to xml files with Android Lint issues. If the main flavor is changed, this file will have to be changed too.
         property("sonar.androidLint.reportPaths", "${project.layout.buildDirectory.get()}/reports/lint-results-debug.xml")
         // Paths to JaCoCo XML coverage report files.
@@ -178,7 +180,9 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.ui.auth)
+    implementation("com.google.firebase:firebase-functions")
     implementation(libs.kotlinx.coroutines.play.services)
+    implementation(libs.androidx.compose.ui)
 
     // Jetpack Compose BOM (manages versions)
     val composeBom = platform(libs.compose.bom)
@@ -227,6 +231,8 @@ dependencies {
     // Testing - Android
     globalTestImplementation(libs.androidx.junit)
     globalTestImplementation(libs.androidx.espresso.core)
+    globalTestImplementation(libs.androidx.lifecycle.runtime.ktx)
+    globalTestImplementation(libs.androidx.lifecycle.viewmodel.ktx)
     androidTestImplementation(libs.mockito.android)
     androidTestImplementation(libs.mockito.kotlin)
     androidTestImplementation(libs.mockk.android)
@@ -238,6 +244,7 @@ dependencies {
     // Testing - Compose
     globalTestImplementation(libs.compose.test.junit)
     debugImplementation(libs.compose.test.manifest)
+
 }
 
 tasks.withType<Test> {

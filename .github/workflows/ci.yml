@@ -76,6 +76,7 @@ jobs:
           GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
           FIRESTORE_RULES: ${{ secrets.FIRESTORE_RULES }}
           STORAGE_RULES: ${{ secrets.STORAGE_RULES }}
+          GOOGLE_CLOUD_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
 
         run: |
           if [ -n "$GOOGLE_SERVICES" ]; then
@@ -90,6 +91,12 @@ jobs:
           if [ -n "$STORAGE_RULES" ]; then
             mkdir -p ./firebase/storage
             echo "$STORAGE_RULES" | base64 --decode > ./firebase/storage/storage.rules
+          fi
+          if [ -n "$GOOGLE_CLOUD_CREDENTIALS" ]; then
+            mkdir -p ./functions
+            echo "$GOOGLE_CLOUD_CREDENTIALS" | base64 --decode > ./functions/eureka-stt-service-account.json
+          else
+            echo "::warning::GOOGLE_CLOUD_CREDENTIALS secret is not set. Speech-to-Text transcription tests will fail."
           fi
 
           if [ -n "$LOCAL_PROPERTIES" ]; then
@@ -111,6 +118,14 @@ jobs:
       # Install Firebase CLI
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
+
+      # Build Cloud Functions
+      - name: Build Cloud Functions
+        run: |
+          cd functions
+          npm install
+          npm run build
+          cd ..
 
       # Check formatting
       - name: KTFmt Check
@@ -134,7 +149,7 @@ jobs:
         run: |
           if [ -e "firebase.json" ] && jq -e '.emulators' firebase.json >/dev/null; then
             echo "Starting Firebase emulators for instrumentation tests..."
-            firebase emulators:start --only storage,firestore,auth --project eureka-app-ch &
+            firebase emulators:start --only storage,firestore,auth,functions --project eureka-app-ch &
             sleep 20
             echo "Firebase emulators started"
           else

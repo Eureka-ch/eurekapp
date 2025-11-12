@@ -6,29 +6,20 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.IdGenerator
-import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
-import java.text.SimpleDateFormat
-import java.util.Locale
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeout
 
 /*
 Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
@@ -38,91 +29,32 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 /** ViewModel for the CreateTask screen. This ViewModel manages the state of input fields. */
 class CreateTaskViewModel(
-    private val taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
-    private val fileRepository: FileStorageRepository =
-        FirestoreRepositoriesProvider.fileRepository,
-    private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
-) : ViewModel() {
-  // CreateTask state
+    taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
+    fileRepository: FileStorageRepository = FirestoreRepositoriesProvider.fileRepository,
+    getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
+    dispatcher: CoroutineDispatcher = Dispatchers.IO
+) :
+    ReadWriteTaskViewModel<CreateTaskState>(
+        taskRepository, fileRepository, getCurrentUserId, dispatcher) {
+
   private val _uiState = MutableStateFlow(CreateTaskState())
-  val uiState: StateFlow<CreateTaskState> = _uiState.asStateFlow()
-
-  val dateRegex = Regex("""^\d{2}/\d{2}/\d{4}$""")
-
-  val inputValid: StateFlow<Boolean> =
-      _uiState
-          .map { state ->
-            state.title.isNotBlank() &&
-                state.description.isNotBlank() &&
-                dateRegex.matches(state.dueDate)
-          }
-          .stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = false)
-
-  /** Clears the error message in the UI state. */
-  fun clearErrorMsg() {
-    _uiState.value = _uiState.value.copy(errorMsg = null)
-  }
-
-  /** Sets an error message in the UI state. */
-  private fun setErrorMsg(errorMsg: String) {
-    _uiState.value = _uiState.value.copy(errorMsg = errorMsg)
-  }
-
-  private suspend fun saveFilesOnRepository(
-      taskId: String,
-      context: Context
-  ): Result<List<String>> {
-    return try {
-      val state = _uiState.value
-      val photoUrls = mutableListOf<String>()
-      for (uri in state.attachmentUris) {
-        val photoSaveResult =
-            withTimeout(5000L) {
-              fileRepository.uploadFile(
-                  StoragePaths.taskAttachmentPath(
-                      state.projectId, taskId, "${uri.lastPathSegment}.jpg"),
-                  uri)
-            }
-        val photoUrl =
-            photoSaveResult.getOrElse { exception ->
-              return Result.failure(exception)
-            }
-        photoUrls.add(photoUrl)
-
-        // Delete local file after successful upload
-        deletePhoto(context, uri)
-      }
-      Result.success(photoUrls)
-    } catch (e: Exception) {
-      Result.failure(e)
-    }
-  }
-
-  /** Resets the save state to allow creating another task */
-  fun resetSaveState() {
-    _uiState.value = _uiState.value.copy(isSaving = false, taskSaved = false)
-  }
+  override val uiState: StateFlow<CreateTaskState> = _uiState.asStateFlow()
 
   /** Adds a Task */
   fun addTask(context: Context) {
-    val state = _uiState.value
-    val dateStr = state.dueDate
+    val state = uiState.value
 
-    if (!dateRegex.matches(dateStr)) {
-      setErrorMsg("Invalid format, date must be DD/MM/YYYY.")
+    val timestampResult = parseDateString(state.dueDate)
+    if (timestampResult.isFailure) {
+      setErrorMsg(timestampResult.exceptionOrNull()?.message ?: "Invalid date")
       return
     }
+    val timestamp = timestampResult.getOrThrow()
 
-    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    dateFormat.isLenient = false
-    val date =
-        try {
-          dateFormat.parse(dateStr)
-        } catch (e: Exception) {
-          setErrorMsg("Invalid date value: $dateStr")
-          return
-        }
+    val reminderTimestamp =
+        if (state.reminderTime.isNotBlank() && state.dueDate.isNotBlank()) {
+          parseReminderTime(state.dueDate, state.reminderTime).getOrNull()
+        } else null
 
     val currentUser = getCurrentUserId() ?: throw Exception("User not logged in.")
 
@@ -132,73 +64,51 @@ class CreateTaskViewModel(
       Handler(Looper.getMainLooper()).post {
         Toast.makeText(context.applicationContext, "Unable to save task", Toast.LENGTH_SHORT).show()
       }
-      _uiState.value = _uiState.value.copy(isSaving = false)
+      updateState { copy(isSaving = false) }
     }
 
-    _uiState.value = _uiState.value.copy(isSaving = true)
+    updateState { copy(isSaving = true) }
 
-    viewModelScope.launch(dispatcher + handler) {
-      val taskId = IdGenerator.generateTaskId()
-      val photoUrlsResult = saveFilesOnRepository(taskId, context)
-      val photoUrls =
-          photoUrlsResult.getOrElse { exception ->
-            handler.handleException(coroutineContext, exception)
-            return@launch
-          }
+    val taskId = IdGenerator.generateTaskId()
+    val projectIdToUse = state.projectId
 
-      val task =
-          Task(
-              taskID = taskId,
-              projectId = state.projectId,
-              title = state.title,
-              description = state.description,
-              assignedUserIds = listOf(currentUser),
-              dueDate = Timestamp(date),
-              attachmentUrls = photoUrls,
-              createdBy = currentUser)
-
-      taskRepository.createTask(task).onFailure {
-        setErrorMsg("Failed to add Task.")
-        _uiState.value = _uiState.value.copy(isSaving = false)
-        return@launch
+    saveFilesAsync(taskId, context, projectIdToUse, state.attachmentUris) { photoUrlsResult ->
+      if (photoUrlsResult.isFailure) {
+        val exception = photoUrlsResult.exceptionOrNull()
+        Log.e("CreateTaskViewModel", exception?.message ?: "Unknown error")
+        Handler(Looper.getMainLooper()).post {
+          Toast.makeText(context.applicationContext, "Unable to save task", Toast.LENGTH_SHORT)
+              .show()
+        }
+        updateState { copy(isSaving = false) }
+        return@saveFilesAsync
       }
 
-      clearErrorMsg()
-      _uiState.value = _uiState.value.copy(isSaving = false, taskSaved = true)
+      val photoUrls = photoUrlsResult.getOrThrow()
+
+      viewModelScope.launch(dispatcher + handler) {
+        val task =
+            Task(
+                taskID = taskId,
+                projectId = projectIdToUse,
+                title = state.title,
+                description = state.description,
+                assignedUserIds = listOf(currentUser),
+                dueDate = timestamp,
+                reminderTime = reminderTimestamp,
+                attachmentUrls = photoUrls,
+                createdBy = currentUser)
+
+        taskRepository.createTask(task).onFailure {
+          setErrorMsg("Failed to add Task.")
+          updateState { copy(isSaving = false) }
+          return@launch
+        }
+
+        clearErrorMsg()
+        updateState { copy(isSaving = false, taskSaved = true) }
+      }
     }
-  }
-
-  // Functions to update the UI state.
-
-  fun setTitle(title: String) {
-    _uiState.value = _uiState.value.copy(title = title)
-  }
-
-  fun setDescription(description: String) {
-    _uiState.value = _uiState.value.copy(description = description)
-  }
-
-  fun setDueDate(dueDate: String) {
-    _uiState.value = _uiState.value.copy(dueDate = dueDate)
-  }
-
-  fun addAttachment(uri: Uri) {
-    if (!_uiState.value.attachmentUris.contains(uri)) {
-      _uiState.value = _uiState.value.copy(attachmentUris = _uiState.value.attachmentUris + uri)
-    }
-  }
-
-  fun removeAttachment(index: Int) {
-    _uiState.value =
-        _uiState.value.copy(
-            attachmentUris =
-                _uiState.value.attachmentUris.toMutableList().also {
-                  if (index in it.indices) it.removeAt(index)
-                })
-  }
-
-  fun setProjectId(id: String) {
-    _uiState.value = _uiState.value.copy(projectId = id)
   }
 
   fun deletePhoto(context: Context, photoUri: Uri): Boolean {
@@ -209,5 +119,30 @@ class CreateTaskViewModel(
       Log.w("CreateTaskViewModel", "Failed to delete photo: ${e.message}")
       false
     }
+  }
+
+  // State update implementations
+  override fun CreateTaskState.copyWithErrorMsg(errorMsg: String?) = copy(errorMsg = errorMsg)
+
+  override fun CreateTaskState.copyWithSaveState(isSaving: Boolean, taskSaved: Boolean) =
+      copy(isSaving = isSaving, taskSaved = taskSaved)
+
+  override fun CreateTaskState.copyWithTitle(title: String) = copy(title = title)
+
+  override fun CreateTaskState.copyWithDescription(description: String) =
+      copy(description = description)
+
+  override fun CreateTaskState.copyWithDueDate(dueDate: String) = copy(dueDate = dueDate)
+
+  override fun CreateTaskState.copyWithAttachmentUris(uris: List<Uri>) = copy(attachmentUris = uris)
+
+  override fun CreateTaskState.copyWithProjectId(projectId: String) = copy(projectId = projectId)
+
+  override fun updateState(update: CreateTaskState.() -> CreateTaskState) {
+    _uiState.value = _uiState.value.update()
+  }
+
+  fun setReminderTime(reminderTime: String) {
+    updateState { copy(reminderTime = reminderTime) }
   }
 }

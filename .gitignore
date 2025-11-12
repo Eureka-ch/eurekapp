@@ -27,3 +27,6 @@ firestore-debug.log
 # Firebase rules (deployed via CI)
 firebase/**/*.rules
 /release-keystore.jks
+/base64_keystore_properties.txt
+/base64_release-keystore.txt
+/keystore.properties

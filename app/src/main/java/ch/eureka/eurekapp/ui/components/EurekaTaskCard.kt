@@ -25,22 +25,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
-/** Task card component used on tasks and project screens */
+/**
+ * Task card component used on tasks and project screens Portions of this code were generated with
+ * the help of IA.
+ */
 @Composable
 fun EurekaTaskCard(
     title: String,
     dueDate: String = "",
+    dueDateTag: String? = null,
     assignee: String = "",
     priority: String = "",
     progressText: String = "",
     progressValue: Float = 0f,
     isCompleted: Boolean = false,
     onToggleComplete: () -> Unit = {},
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
   // No local state - use controlled state from parent
@@ -49,7 +55,7 @@ fun EurekaTaskCard(
       elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
       colors = EurekaStyles.TaskCardColors(),
       border = EurekaStyles.TaskCardBorder(),
-      modifier = modifier.fillMaxWidth()) {
+      modifier = modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick)) {
         Column(modifier = Modifier.padding(Spacing.lg)) { // Plus de padding
 
           // Top row: Title (left) + Checkbox (right)
@@ -119,11 +125,23 @@ fun EurekaTaskCard(
 
           Spacer(modifier = Modifier.height(Spacing.sm))
 
+          if (dueDateTag != null && !isCompleted) {
+            Row(
+                modifier = Modifier.padding(bottom = Spacing.xs),
+                verticalAlignment = Alignment.CenterVertically) {
+                  val tagType =
+                      when {
+                        dueDateTag.contains("Overdue") -> StatusType.ERROR
+                        dueDateTag.contains("hour") -> StatusType.WARNING
+                        else -> StatusType.INFO
+                      }
+                  EurekaStatusTag(text = dueDateTag, type = tagType)
+                }
+          }
+
           // Priority tag ou Done
           if (isCompleted) {
-            Row {
-              EurekaStatusTag(text = "Done", type = StatusType.SUCCESS) // Vert pour Done
-            }
+            Row { EurekaStatusTag(text = "Done", type = StatusType.SUCCESS) }
           } else if (priority.isNotEmpty()) {
             Row { EurekaStatusTag(text = priority, type = StatusType.INFO) }
           }

@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.model.data.task
 
+import ch.eureka.eurekapp.model.data.template.field.FieldValue
 import com.google.firebase.Timestamp
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -18,7 +19,10 @@ class TaskTest {
     val assignedUsers = listOf("user1", "user2")
     val dueDate = Timestamp(1000, 0)
     val attachments = listOf("uri1", "uri2")
-    val customData = mapOf("priority" to "high", "hours" to 5)
+    val customData =
+        TaskCustomData(
+            mapOf(
+                "priority" to FieldValue.TextValue("high"), "hours" to FieldValue.NumberValue(5.0)))
     val task =
         Task(
             taskID = "task123",
@@ -132,11 +136,11 @@ class TaskTest {
             taskID = "task123",
             assignedUserIds = emptyList(),
             attachmentUrls = emptyList(),
-            customData = emptyMap())
+            customData = TaskCustomData())
 
     assertEquals(emptyList<String>(), task.assignedUserIds)
     assertEquals(emptyList<String>(), task.attachmentUrls)
-    assertEquals(emptyMap<String, Any>(), task.customData)
+    assertEquals(TaskCustomData(), task.customData)
   }
 
   @Test
@@ -171,7 +175,7 @@ class TaskTest {
 
   @Test
   fun task_withSingleCustomDataField_setsCorrectValue() {
-    val customData = mapOf("priority" to "high")
+    val customData = TaskCustomData(mapOf("priority" to FieldValue.TextValue("high")))
     val task = Task(taskID = "task123", customData = customData)
 
     assertEquals(customData, task.customData)
@@ -180,7 +184,11 @@ class TaskTest {
   @Test
   fun task_withMultipleCustomDataFields_setsCorrectValues() {
     val customData =
-        mapOf("priority" to "high", "hours" to 5, "category" to "bug", "estimated" to true)
+        TaskCustomData(
+            mapOf(
+                "priority" to FieldValue.TextValue("high"),
+                "hours" to FieldValue.NumberValue(5.0),
+                "category" to FieldValue.TextValue("bug")))
     val task = Task(taskID = "task123", customData = customData)
 
     assertEquals(customData, task.customData)
@@ -189,8 +197,11 @@ class TaskTest {
   @Test
   fun task_withDifferentDataTypesInCustomData_setsCorrectValues() {
     val customData =
-        mapOf(
-            "stringField" to "value", "intField" to 42, "boolField" to true, "doubleField" to 3.14)
+        TaskCustomData(
+            mapOf(
+                "stringField" to FieldValue.TextValue("value"),
+                "numberField" to FieldValue.NumberValue(42.0),
+                "dateField" to FieldValue.DateValue("2024-01-15")))
     val task = Task(taskID = "task123", customData = customData)
 
     assertEquals(customData, task.customData)
@@ -261,7 +272,7 @@ class TaskTest {
     assertEquals(emptyList<String>(), task.assignedUserIds)
     assertNull(task.dueDate)
     assertEquals(emptyList<String>(), task.attachmentUrls)
-    assertEquals(emptyMap<String, Any>(), task.customData)
+    assertEquals(TaskCustomData(), task.customData)
     assertEquals("", task.createdBy)
   }
 
@@ -271,7 +282,11 @@ class TaskTest {
     val dueDate = Timestamp(1234567890, 0)
     val attachments = listOf("url1", "url2", "url3")
     val customData =
-        mapOf("priority" to "high", "hours" to 8, "category" to "feature", "estimated" to false)
+        TaskCustomData(
+            mapOf(
+                "priority" to FieldValue.TextValue("high"),
+                "hours" to FieldValue.NumberValue(8.0),
+                "category" to FieldValue.TextValue("feature")))
 
     val task =
         Task(
@@ -413,20 +428,50 @@ class TaskTest {
   }
 
   @Test
-  fun getDaysUntilDue_withExactly23Hours_returnsZero() {
+  fun getDaysUntilDue_withExactly23Hours_returnsOne() {
     val now = Timestamp.now()
-    val almostOneDay = java.util.Date(now.toDate().time + 23 * 60 * 60 * 1000)
-    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(almostOneDay))
-    val result = getDaysUntilDue(task, now)
-    assertEquals(0L, result)
+    val calendar =
+        java.util.Calendar.getInstance().apply {
+          time = now.toDate()
+          set(java.util.Calendar.HOUR_OF_DAY, 1)
+          set(java.util.Calendar.MINUTE, 0)
+          set(java.util.Calendar.SECOND, 0)
+          set(java.util.Calendar.MILLISECOND, 0)
+        }
+    val nowNormalized = Timestamp(calendar.time)
+
+    val dueCalendar =
+        java.util.Calendar.getInstance().apply {
+          time = calendar.time
+          add(java.util.Calendar.HOUR_OF_DAY, 23)
+        }
+    val almostOneDay = Timestamp(dueCalendar.time)
+    val task = Task(taskID = "1", title = "Test Task", dueDate = almostOneDay)
+    val result = getDaysUntilDue(task, nowNormalized)
+    assertEquals(1L, result)
   }
 
   @Test
   fun getDaysUntilDue_withExactly25Hours_returnsOne() {
     val now = Timestamp.now()
-    val moreThanOneDay = java.util.Date(now.toDate().time + 25 * 60 * 60 * 1000)
-    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(moreThanOneDay))
-    val result = getDaysUntilDue(task, now)
+    val calendar =
+        java.util.Calendar.getInstance().apply {
+          time = now.toDate()
+          set(java.util.Calendar.HOUR_OF_DAY, 1)
+          set(java.util.Calendar.MINUTE, 0)
+          set(java.util.Calendar.SECOND, 0)
+          set(java.util.Calendar.MILLISECOND, 0)
+        }
+    val nowNormalized = Timestamp(calendar.time)
+
+    val dueCalendar =
+        java.util.Calendar.getInstance().apply {
+          time = calendar.time
+          add(java.util.Calendar.HOUR_OF_DAY, 25)
+        }
+    val moreThanOneDay = Timestamp(dueCalendar.time)
+    val task = Task(taskID = "1", title = "Test Task", dueDate = moreThanOneDay)
+    val result = getDaysUntilDue(task, nowNormalized)
     assertEquals(1L, result)
   }
 
@@ -490,5 +535,105 @@ class TaskTest {
     val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(oneDayAgo))
     val result = determinePriority(task, now)
     assertEquals("Critical Priority", result)
+  }
+
+  @Test
+  fun task_withReminderTime_setsCorrectValue() {
+    val reminderTime = Timestamp(1234567890, 0)
+    val task = Task(taskID = "task123", reminderTime = reminderTime)
+
+    assertEquals(reminderTime, task.reminderTime)
+  }
+
+  @Test
+  fun task_withoutReminderTime_setsNullReminderTime() {
+    val task = Task(taskID = "task123")
+
+    assertEquals(null, task.reminderTime)
+  }
+
+  @Test
+  fun getHoursUntilDue_withNullDueDate_returnsNull() {
+    val now = Timestamp.now()
+    val task = Task(taskID = "1", title = "Test Task", dueDate = null)
+    assertNull(getHoursUntilDue(task, now))
+  }
+
+  @Test
+  fun getHoursUntilDue_withPastDueDate_returnsNegativeValue() {
+    val now = Timestamp.now()
+    val twoHoursAgo = java.util.Date(now.toDate().time - 2 * 60 * 60 * 1000)
+    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(twoHoursAgo))
+    val result = getHoursUntilDue(task, now)
+    assertEquals(-2L, result)
+  }
+
+  @Test
+  fun getHoursUntilDue_withOneHourFromNow_returnsOne() {
+    val now = Timestamp.now()
+    val oneHourFromNow = java.util.Date(now.toDate().time + 60 * 60 * 1000)
+    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(oneHourFromNow))
+    val result = getHoursUntilDue(task, now)
+    assertEquals(1L, result)
+  }
+
+  @Test
+  fun getDueDateTag_withNullDueDate_returnsNull() {
+    val now = Timestamp.now()
+    val task = Task(taskID = "1", title = "Test Task", dueDate = null)
+    assertNull(getDueDateTag(task, now))
+  }
+
+  @Test
+  fun getDueDateTag_withOverdueTask_returnsOverdue() {
+    val now = Timestamp.now()
+    val oneHourAgo = java.util.Date(now.toDate().time - 60 * 60 * 1000)
+    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(oneHourAgo))
+    val result = getDueDateTag(task, now)
+    assertEquals("Overdue", result)
+  }
+
+  @Test
+  fun getDueDateTag_withTaskDueNow_returnsDueNow() {
+    val now = Timestamp.now()
+    val task = Task(taskID = "1", title = "Test Task", dueDate = now)
+    val result = getDueDateTag(task, now)
+    assertEquals("Due now", result)
+  }
+
+  @Test
+  fun getDueDateTag_withTaskDueInOneHour_returnsDueIn1Hour() {
+    val now = Timestamp.now()
+    val oneHourFromNow = java.util.Date(now.toDate().time + 60 * 60 * 1000)
+    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(oneHourFromNow))
+    val result = getDueDateTag(task, now)
+    assertEquals("Due in 1 hour", result)
+  }
+
+  @Test
+  fun getDueDateTag_withTaskDueInThreeHours_returnsDueIn3Hours() {
+    val now = Timestamp.now()
+    val threeHoursFromNow = java.util.Date(now.toDate().time + 3 * 60 * 60 * 1000)
+    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(threeHoursFromNow))
+    val result = getDueDateTag(task, now)
+    assertEquals("Due in 3 hours", result)
+  }
+
+  @Test
+  fun getDueDateTag_withTaskDueToday_returnsDueToday() {
+    val now = Timestamp.now()
+    val twelveHoursFromNow = java.util.Date(now.toDate().time + 12 * 60 * 60 * 1000)
+    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(twelveHoursFromNow))
+    val result = getDueDateTag(task, now)
+    assertEquals("Due today", result)
+  }
+
+  @Test
+  fun getDueDateTag_withTaskDueMoreThan24Hours_returnsNull() {
+    val now = Timestamp.now()
+    val twoDaysFromNow = java.util.Date(now.toDate().time + 2 * 24 * 60 * 60 * 1000)
+    val task = Task(taskID = "1", title = "Test Task", dueDate = Timestamp(twoDaysFromNow))
+    val result = getDueDateTag(task, now)
+    assertNull(result)
   }
 }
