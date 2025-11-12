@@ -295,6 +295,7 @@ class EditTaskViewModel(
 
   override fun EditTaskState.copyWithSelectedAssignedUserIds(userIds: List<String>) =
       copy(selectedAssignedUserIds = userIds)
+
   fun setReminderTime(reminderTime: String) {
     updateState { copy(reminderTime = reminderTime) }
   }

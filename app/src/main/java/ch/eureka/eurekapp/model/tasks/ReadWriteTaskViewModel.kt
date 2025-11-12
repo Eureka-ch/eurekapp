@@ -369,5 +369,6 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
   ): T
 
   protected abstract fun T.copyWithSelectedAssignedUserIds(userIds: List<String>): T
+
   protected abstract fun T.copyWithDependencies(dependencies: List<String>): T
 }

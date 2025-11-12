@@ -2,13 +2,13 @@ package ch.eureka.eurekapp.model.tasks
 
 import android.content.Context
 import android.net.Uri
-import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.IdGenerator
+import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRole
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
-import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.task.Task
+import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.tasks.MockProjectRepository
 import ch.eureka.eurekapp.ui.tasks.MockTaskRepository
 import ch.eureka.eurekapp.ui.tasks.MockUserRepository
@@ -982,6 +982,8 @@ class CreateTaskViewModelTest {
     assertTrue(mockUserRepository.getUserByIdCalls.contains("user1"))
     assertTrue(mockUserRepository.getUserByIdCalls.contains("user2"))
     assertTrue(mockUserRepository.getUserByIdCalls.contains("user3"))
+  }
+
   @Test
   fun addDependency_addsDependencyToList() = runTest {
     viewModel =

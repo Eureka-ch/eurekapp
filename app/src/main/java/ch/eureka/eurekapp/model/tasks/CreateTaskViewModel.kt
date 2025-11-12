@@ -68,6 +68,8 @@ class CreateTaskViewModel(
         updateState { copy(availableProjects = projects) }
       }
     }
+  }
+
   // Placeholder used for dependency validation before the task is persisted.
   private val placeholderTaskId = IdGenerator.generateTaskId()
 
@@ -211,6 +213,7 @@ class CreateTaskViewModel(
 
   override fun CreateTaskState.copyWithSelectedAssignedUserIds(userIds: List<String>) =
       copy(selectedAssignedUserIds = userIds)
+
   fun setReminderTime(reminderTime: String) {
     updateState { copy(reminderTime = reminderTime) }
   }
