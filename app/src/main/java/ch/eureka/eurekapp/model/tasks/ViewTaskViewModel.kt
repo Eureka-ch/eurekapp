@@ -38,39 +38,28 @@ class ViewTaskViewModel(
           .getTaskById(projectId, taskId)
           .flatMapLatest { task ->
             if (task != null) {
+              val baseState =
+                  ViewTaskState(
+                      title = task.title,
+                      description = task.description,
+                      dueDate =
+                          task.dueDate?.let { date -> dateFormat.format(date.toDate()) } ?: "",
+                      projectId = task.projectId,
+                      taskId = task.taskID,
+                      attachmentUrls = task.attachmentUrls,
+                      status = task.status,
+                      isLoading = false,
+                      errorMsg = null,
+                      assignedUsers = emptyList())
+
               if (task.assignedUserIds.isEmpty()) {
-                flowOf(
-                    ViewTaskState(
-                        title = task.title,
-                        description = task.description,
-                        dueDate =
-                            task.dueDate?.let { date -> dateFormat.format(date.toDate()) } ?: "",
-                        projectId = task.projectId,
-                        taskId = task.taskID,
-                        attachmentUrls = task.attachmentUrls,
-                        status = task.status,
-                        isLoading = false,
-                        errorMsg = null,
-                        assignedUsers = emptyList()))
+                flowOf(baseState)
               } else {
                 // Combine all user flows to get assigned users
                 val userFlows =
                     task.assignedUserIds.map { userId -> userRepository.getUserById(userId) }
                 combine(userFlows) { users -> users.toList().filterNotNull() }
-                    .map { assignedUsers ->
-                      ViewTaskState(
-                          title = task.title,
-                          description = task.description,
-                          dueDate =
-                              task.dueDate?.let { date -> dateFormat.format(date.toDate()) } ?: "",
-                          projectId = task.projectId,
-                          taskId = task.taskID,
-                          attachmentUrls = task.attachmentUrls,
-                          status = task.status,
-                          isLoading = false,
-                          errorMsg = null,
-                          assignedUsers = assignedUsers)
-                    }
+                    .map { assignedUsers -> baseState.copy(assignedUsers = assignedUsers) }
               }
             } else {
               flowOf(ViewTaskState(isLoading = false, errorMsg = "Task not found."))

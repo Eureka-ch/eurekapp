@@ -34,6 +34,8 @@ object ViewTaskScreenTestTags {
   const val EDIT_TASK = "edit_task"
   const val ASSIGNED_USERS_SECTION = "assigned_users_section"
   const val ASSIGNED_USER_ITEM = "assigned_user_item"
+
+  fun assignedUserItem(index: Int) = "${ASSIGNED_USER_ITEM}_$index"
 }
 
 /*
@@ -119,8 +121,7 @@ fun ViewTaskScreen(
                     Text(
                         text = "• ${user.displayName.ifBlank { user.email }}",
                         style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
-                        modifier =
-                            Modifier.testTag("${ViewTaskScreenTestTags.ASSIGNED_USER_ITEM}_$index"))
+                        modifier = Modifier.testTag(ViewTaskScreenTestTags.assignedUserItem(index)))
                   }
                 }
               }
