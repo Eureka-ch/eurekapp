@@ -158,15 +158,13 @@ fun MeetingProposalVoteScreen(
                       meetingProposalVoteViewModel.voteForMeetingProposal(
                           meetingProposal,
                           MeetingProposalVote(
-                              meetingProposalVoteViewModel.userId,
-                              listOf(MeetingFormat.IN_PERSON))) // TODO : fix later
+                              meetingProposalVoteViewModel.userId, listOf(MeetingFormat.IN_PERSON)))
                     },
                     removeVote = { meetingProposal ->
                       meetingProposalVoteViewModel.retractVoteForMeetingProposal(
                           meetingProposal,
                           MeetingProposalVote(
-                              meetingProposalVoteViewModel.userId,
-                              listOf(MeetingFormat.IN_PERSON))) // TODO : fix later
+                              meetingProposalVoteViewModel.userId, listOf(MeetingFormat.IN_PERSON)))
                     },
                 )
               }

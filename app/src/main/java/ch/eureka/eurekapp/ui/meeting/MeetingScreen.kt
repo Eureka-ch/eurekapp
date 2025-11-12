@@ -426,7 +426,7 @@ fun MeetingCard(
               verticalAlignment = Alignment.CenterVertically) {
                 when (meeting.status) {
                   MeetingStatus.OPEN_TO_VOTES -> {
-                    Button( // TODO : fix this
+                    Button(
                         onClick = config.onVoteForMeetingProposals,
                         modifier = Modifier.testTag(MeetingScreenTestTags.VOTE_FOR_DATETIME_BUTTON),
                     ) {

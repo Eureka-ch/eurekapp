@@ -175,9 +175,7 @@ class CreateMeetingViewModel(
                 listOf(
                     MeetingProposal(
                         Timestamp(timeInstant),
-                        listOf(
-                            MeetingProposalVote(
-                                creatorId, listOf(MeetingFormat.IN_PERSON))))), // TODO : fix later
+                        listOf(MeetingProposalVote(creatorId, listOf(MeetingFormat.IN_PERSON))))),
             createdBy = creatorId)
 
     viewModelScope.launch {
