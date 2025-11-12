@@ -849,6 +849,14 @@ class CreateTaskScreenTests : TestCase() {
 
       composeTestRule.waitForIdle()
 
+      // Wait for the UI to recompose and show the dependency button
+      composeTestRule.waitUntil(timeoutMillis = 10000) {
+        composeTestRule
+            .onAllNodesWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
+
       // Scroll to find the dependency button if needed
       try {
         composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON).assertIsDisplayed()
@@ -923,6 +931,14 @@ class CreateTaskScreenTests : TestCase() {
       }
 
       composeTestRule.waitForIdle()
+
+      // Wait for the UI to recompose and show the dependency button
+      composeTestRule.waitUntil(timeoutMillis = 10000) {
+        composeTestRule
+            .onAllNodesWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
 
       // Scroll to find the dependency button if needed
       try {

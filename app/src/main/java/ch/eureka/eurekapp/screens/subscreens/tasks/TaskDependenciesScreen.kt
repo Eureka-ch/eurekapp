@@ -69,6 +69,8 @@ object TaskDependenciesScreenTestTags {
   fun getDependentTaskTestTag(task: Task): String {
     return "dependent_task_test_tag_${task.taskID}"
   }
+
+  const val BACK_BUTTON = "back button"
 }
 
 /**
@@ -119,10 +121,14 @@ fun TaskDependenciesScreen(
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                           FilterButton(
-                              user = allUser, onClick = { nameFilter = "All" }, nameFilter = nameFilter)
+                              user = allUser,
+                              onClick = { nameFilter = "All" },
+                              nameFilter = nameFilter)
                           projectUsers.value.filterNotNull().map { user ->
                             FilterButton(
-                                user = user, onClick = { nameFilter = user.uid }, nameFilter = nameFilter)
+                                user = user,
+                                onClick = { nameFilter = user.uid },
+                                nameFilter = nameFilter)
                           }
                         }
                   })
@@ -137,7 +143,8 @@ fun TaskDependenciesScreen(
                   composable = {
                     if (task.value != null) {
                       Row(
-                          modifier = Modifier.padding(vertical = 5.dp, horizontal = 5.dp).fillMaxWidth(),
+                          modifier =
+                              Modifier.padding(vertical = 5.dp, horizontal = 5.dp).fillMaxWidth(),
                           verticalAlignment = Alignment.CenterVertically) {
                             Box(
                                 modifier =

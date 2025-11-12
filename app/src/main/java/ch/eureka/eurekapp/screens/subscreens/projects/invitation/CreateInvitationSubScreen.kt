@@ -127,7 +127,8 @@ fun CreateInvitationSubscreen(
                                     verticalAlignment = Alignment.CenterVertically) {
                                       if (createInvitationToken.value != null) {
                                         Text(
-                                            "Invitation token: " + createInvitationToken.value!!.token,
+                                            "Invitation token: " +
+                                                createInvitationToken.value!!.token,
                                             textAlign = TextAlign.Center,
                                             style = Typography.titleLarge,
                                             fontWeight = FontWeight(600))
@@ -143,7 +144,8 @@ fun CreateInvitationSubscreen(
                                               .height(80.dp)
                                               .padding(horizontal = 15.dp)
                                               .testTag(
-                                                  CreateInvitationSubScreen.CREATE_INVITATION_BUTTON),
+                                                  CreateInvitationSubScreen
+                                                      .CREATE_INVITATION_BUTTON),
                                       shape = RoundedCornerShape(7.dp),
                                       enabled = !createdInvitation.value,
                                       colors =
@@ -167,20 +169,21 @@ fun CreateInvitationSubscreen(
                                               })
                                         }
                                       }) {
-                                    Text(
-                                        "Create invitation",
-                                        style = Typography.titleSmall,
-                                        fontWeight = FontWeight(500),
-                                        color = LightColorScheme.surface,
-                                        textAlign = TextAlign.Center)
-                                  }
+                                        Text(
+                                            "Create invitation",
+                                            style = Typography.titleSmall,
+                                            fontWeight = FontWeight(500),
+                                            color = LightColorScheme.surface,
+                                            textAlign = TextAlign.Center)
+                                      }
 
                                   FilledTonalButton(
                                       modifier =
                                           Modifier.width(190.dp)
                                               .height(80.dp)
                                               .padding(horizontal = 10.dp)
-                                              .testTag(CreateInvitationSubScreen.COPY_INVITATION_BUTTON),
+                                              .testTag(
+                                                  CreateInvitationSubScreen.COPY_INVITATION_BUTTON),
                                       shape = RoundedCornerShape(7.dp),
                                       enabled = copyToClipBoard.value,
                                       colors =
@@ -188,25 +191,28 @@ fun CreateInvitationSubscreen(
                                               containerColor = LightColorScheme.primary),
                                       onClick = {
                                         if (createInvitationToken.value != null) {
-                                          copyToClipboard(context, createInvitationToken.value!!.token)
+                                          copyToClipboard(
+                                              context, createInvitationToken.value!!.token)
                                           Toast.makeText(
-                                                  context, "Copied to clipboard!", Toast.LENGTH_SHORT)
+                                                  context,
+                                                  "Copied to clipboard!",
+                                                  Toast.LENGTH_SHORT)
                                               .show()
                                         }
                                       }) {
-                                    Text(
-                                        "Copy to clipboard",
-                                        style = Typography.titleSmall,
-                                        fontWeight = FontWeight(500),
-                                        color = LightColorScheme.surface,
-                                        textAlign = TextAlign.Center)
-                                  }
+                                        Text(
+                                            "Copy to clipboard",
+                                            style = Typography.titleSmall,
+                                            fontWeight = FontWeight(500),
+                                            color = LightColorScheme.surface,
+                                            textAlign = TextAlign.Center)
+                                      }
                                 }
 
                                 Row() { Text(errorText.value) }
                               }
-                    }
-              }
+                        }
+                  }
             }
       })
 }

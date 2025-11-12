@@ -27,7 +27,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.model.data.transcription.TranscriptionStatus
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
@@ -35,9 +34,8 @@ import ch.eureka.eurekapp.ui.meeting.TranscriptViewModel
 import ch.eureka.eurekapp.ui.theme.Typography
 
 /**
- * Note :This file was partially written by ChatGPT (GPT-5) and Grok
- * Co-author : GPT-5
- * Co-author: Grok
+ * Note :This file was partially written by ChatGPT (GPT-5) and Grok Co-author : GPT-5 Co-author:
+ * Grok
  */
 
 /** Test tags for MeetingTranscriptViewScreen UI elements */
@@ -54,6 +52,7 @@ object TranscriptScreenTestTags {
   const val GENERATE_SUMMARY_BUTTON = "GenerateSummaryButton"
   const val SUMMARY_LOADING = "SummaryLoading"
   const val SUMMARY_TEXT = "SummaryText"
+  const val BACK_BUTTON = "back button"
 }
 
 /** Displays error message with optional dismiss button for transcript errors. */
@@ -184,7 +183,11 @@ fun MeetingTranscriptViewScreen(
       topBar = {
         TopAppBar(
             title = { Text("Transcript") },
-            navigationIcon = { BackButton(onClick = onNavigateBack, modifier = Modifier.testTag(CommonTaskTestTags.BACK_BUTTON)) })
+            navigationIcon = {
+              BackButton(
+                  onClick = onNavigateBack,
+                  modifier = Modifier.testTag(TranscriptScreenTestTags.BACK_BUTTON))
+            })
       }) { paddingValues ->
         when {
           uiState.isLoading -> {

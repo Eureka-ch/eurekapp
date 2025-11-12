@@ -17,7 +17,10 @@ import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioScreenTestTags
 import org.junit.Rule
 import org.junit.Test
 
-/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
+/**
+ * Note :This file was partially written by ChatGPT (GPT-5) and Grok Co-author : GPT-5 Co-author:
+ * Grok
+ */
 class MeetingAudioRecordingScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -113,12 +116,15 @@ class MeetingAudioRecordingScreenTest {
     }
 
     composeTestRule.waitForIdle()
-    Thread.sleep(1000)
 
-    composeTestRule
-        .onNodeWithTag(MeetingAudioScreenTestTags.GENERATE_AI_TRANSCRIPT_BUTTON)
-        .assertExists()
-    composeTestRule.onNodeWithText("View Transcript").assertExists()
+    composeTestRule.waitUntil(5000) {
+      try {
+        composeTestRule.onNodeWithText("View Transcript").assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
   }
 
   @Test
@@ -157,7 +163,17 @@ class MeetingAudioRecordingScreenTest {
     }
 
     composeTestRule.waitForIdle()
-    Thread.sleep(1000)
+
+    composeTestRule.waitUntil(5000) {
+      try {
+        composeTestRule
+            .onNodeWithTag(MeetingAudioScreenTestTags.GENERATE_AI_TRANSCRIPT_BUTTON)
+            .assertIsDisplayed()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
 
     composeTestRule
         .onNodeWithTag(MeetingAudioScreenTestTags.GENERATE_AI_TRANSCRIPT_BUTTON)

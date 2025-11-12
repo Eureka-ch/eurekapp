@@ -164,131 +164,133 @@ fun MeetingAudioRecordingScreen(
                   modifier = Modifier.height(120.dp),
                   horizontalArrangement = Arrangement.Center,
                   verticalAlignment = Alignment.Top) {
-                Text(
-                    "\uD83C\uDFA4 Audio Recording",
-                    modifier = Modifier.padding(10.dp),
-                    style = Typography.titleLarge,
-                    color = DarkColorScheme.background)
-              }
+                    Text(
+                        "\uD83C\uDFA4 Audio Recording",
+                        modifier = Modifier.padding(10.dp),
+                        style = Typography.titleLarge,
+                        color = DarkColorScheme.background)
+                  }
 
               Surface(
                   modifier =
-                    Modifier.border(
-                            border = BorderStroke(width = 1.dp, color = BorderGrayColor),
-                            shape = RoundedCornerShape(16.dp))
-                        .fillMaxWidth(0.95f)
-                        .fillMaxHeight(0.6f),
+                      Modifier.border(
+                              border = BorderStroke(width = 1.dp, color = BorderGrayColor),
+                              shape = RoundedCornerShape(16.dp))
+                          .fillMaxWidth(0.95f)
+                          .fillMaxHeight(0.6f),
                   shadowElevation = 3.dp,
                   color = Color.White,
                   shape = RoundedCornerShape(16.dp)) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center) {
-                      Row(
-                          modifier = Modifier.fillMaxWidth(),
-                          horizontalArrangement = Arrangement.Center,
-                          verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                Formatters.formatTime(timeInSeconds),
-                                modifier = Modifier.padding(10.dp),
-                                style = Typography.titleMedium,
-                                color = DarkColorScheme.background)
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center) {
+                          Row(
+                              modifier = Modifier.fillMaxWidth(),
+                              horizontalArrangement = Arrangement.Center,
+                              verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    Formatters.formatTime(timeInSeconds),
+                                    modifier = Modifier.padding(10.dp),
+                                    style = Typography.titleMedium,
+                                    color = DarkColorScheme.background)
+                              }
+
+                          Row(
+                              modifier = Modifier.fillMaxWidth(),
+                              horizontalArrangement = Arrangement.Center,
+                              verticalAlignment = Alignment.CenterVertically) {
+                                when (recordingStatus.value) {
+                                  RECORDING_STATE.PAUSED -> {
+                                    StopButton(
+                                        onClick = {
+                                          audioRecordingViewModel.stopRecording()
+                                          audioRecordingViewModel.deleteLocalRecording()
+                                          timeInSeconds = 0
+                                        },
+                                        testTag = MeetingAudioScreenTestTags.STOP_RECORDING_BUTTON)
+                                    PlayButton(
+                                        onClick = { audioRecordingViewModel.resumeRecording() },
+                                        testTag = MeetingAudioScreenTestTags.START_RECORDING_BUTTON)
+                                    SaveButton(
+                                        enabled = canPressUploadButton,
+                                        onClick = {
+                                          canPressUploadButton = false
+                                          audioRecordingViewModel.uploadRecordingToDatabase(
+                                              projectId,
+                                              meetingId,
+                                              onSuccesfulUpload = {
+                                                uploadText = "Uploaded successfully!"
+                                                canShowAITranscriptButton = true
+                                              },
+                                              onFailureUpload = { exception ->
+                                                errorText = exception.message?.toString() ?: ""
+                                              },
+                                              onCompletion = { canPressUploadButton = true })
+                                        },
+                                        testTag =
+                                            MeetingAudioScreenTestTags.UPLOAD_TO_DATABASE_BUTTON)
+                                  }
+                                  RECORDING_STATE.STOPPED -> {
+                                    PlayButton(
+                                        onClick = {
+                                          audioRecordingViewModel.startRecording(
+                                              context, "${projectId}_${meetingId}.mp4")
+                                          canPressUploadButton = true
+                                          timeInSeconds = 0
+                                        },
+                                        testTag = MeetingAudioScreenTestTags.START_RECORDING_BUTTON)
+                                  }
+                                  RECORDING_STATE.RUNNING -> {
+                                    PauseButton(
+                                        onClick = { audioRecordingViewModel.pauseRecording() },
+                                        testTag = MeetingAudioScreenTestTags.PAUSE_RECORDING_BUTTON)
+                                  }
+                                }
+                              }
+
+                          Row(
+                              modifier = Modifier.fillMaxWidth(),
+                              horizontalArrangement = Arrangement.Center,
+                              verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    errorText,
+                                    style = Typography.labelMedium,
+                                    fontWeight = FontWeight(500),
+                                    color = LightColorScheme.error,
+                                    modifier = Modifier.padding(vertical = 10.dp))
+                                Text(
+                                    uploadText,
+                                    style = Typography.labelMedium,
+                                    fontWeight = FontWeight(500),
+                                    color = DarkColorScheme.background,
+                                    modifier = Modifier.padding(vertical = 10.dp))
+                              }
+
+                          Spacer(modifier = Modifier.weight(1f))
+
+                          if (canShowAITranscriptButton) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(20.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically) {
+                                  ElevatedButton(
+                                      modifier =
+                                          Modifier.size(width = 250.dp, height = 50.dp)
+                                              .testTag(
+                                                  MeetingAudioScreenTestTags
+                                                      .GENERATE_AI_TRANSCRIPT_BUTTON),
+                                      onClick = { onNavigateToTranscript(projectId, meetingId) }) {
+                                        Row() {
+                                          Text("View Transcript", style = Typography.titleMedium)
+                                        }
+                                      }
+                                }
                           }
-
-                      Row(
-                          modifier = Modifier.fillMaxWidth(),
-                          horizontalArrangement = Arrangement.Center,
-                          verticalAlignment = Alignment.CenterVertically) {
-                            when (recordingStatus.value) {
-                              RECORDING_STATE.PAUSED -> {
-                                StopButton(
-                                    onClick = {
-                                      audioRecordingViewModel.stopRecording()
-                                      audioRecordingViewModel.deleteLocalRecording()
-                                      timeInSeconds = 0
-                                    },
-                                    testTag = MeetingAudioScreenTestTags.STOP_RECORDING_BUTTON)
-                                PlayButton(
-                                    onClick = { audioRecordingViewModel.resumeRecording() },
-                                    testTag = MeetingAudioScreenTestTags.START_RECORDING_BUTTON)
-                                SaveButton(
-                                    enabled = canPressUploadButton,
-                                    onClick = {
-                                      canPressUploadButton = false
-                                      audioRecordingViewModel.uploadRecordingToDatabase(
-                                          projectId,
-                                          meetingId,
-                                          onSuccesfulUpload = {
-                                            uploadText = "Uploaded successfully!"
-                                            canShowAITranscriptButton = true
-                                          },
-                                          onFailureUpload = { exception ->
-                                            errorText = exception.message?.toString() ?: ""
-                                          },
-                                          onCompletion = { canPressUploadButton = true })
-                                    },
-                                    testTag = MeetingAudioScreenTestTags.UPLOAD_TO_DATABASE_BUTTON)
-                              }
-                              RECORDING_STATE.STOPPED -> {
-                                PlayButton(
-                                    onClick = {
-                                      audioRecordingViewModel.startRecording(
-                                          context, "${projectId}_${meetingId}.mp4")
-                                      canPressUploadButton = true
-                                      timeInSeconds = 0
-                                    },
-                                    testTag = MeetingAudioScreenTestTags.START_RECORDING_BUTTON)
-                              }
-                              RECORDING_STATE.RUNNING -> {
-                                PauseButton(
-                                    onClick = { audioRecordingViewModel.pauseRecording() },
-                                    testTag = MeetingAudioScreenTestTags.PAUSE_RECORDING_BUTTON)
-                              }
-                            }
-                          }
-
-                      Row(
-                          modifier = Modifier.fillMaxWidth(),
-                          horizontalArrangement = Arrangement.Center,
-                          verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                errorText,
-                                style = Typography.labelMedium,
-                                fontWeight = FontWeight(500),
-                                color = LightColorScheme.error,
-                                modifier = Modifier.padding(vertical = 10.dp))
-                            Text(
-                                uploadText,
-                                style = Typography.labelMedium,
-                                fontWeight = FontWeight(500),
-                                color = DarkColorScheme.background,
-                                modifier = Modifier.padding(vertical = 10.dp))
-                          }
-
-                      Spacer(modifier = Modifier.weight(1f))
-
-                      if (canShowAITranscriptButton) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(20.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically) {
-                              ElevatedButton(
-                                  modifier =
-                                    Modifier.size(width = 250.dp, height = 50.dp)
-                                        .testTag(
-                                            MeetingAudioScreenTestTags
-                                                .GENERATE_AI_TRANSCRIPT_BUTTON),
-                                  onClick = { onNavigateToTranscript(projectId, meetingId) }) {
-                                Row() { Text("View Transcript", style = Typography.titleMedium) }
-                              }
-                            }
-                      }
-                    }
-              }
+                        }
+                  }
             }
-      }
-  )
+      })
 }
 
 @Composable

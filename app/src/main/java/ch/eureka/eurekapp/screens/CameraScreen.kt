@@ -35,10 +35,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.camera.CameraViewModel
 import ch.eureka.eurekapp.ui.camera.PhotoViewer
-import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
-import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 object CameraScreenTestTags {
   const val PHOTO = "photo"
@@ -48,6 +47,7 @@ object CameraScreenTestTags {
   const val SAVE_PHOTO = "save_photo"
   const val NO_PERMISSION = "no_permission"
   const val GRANT_PERMISSION = "grant_permission"
+  const val BACK_BUTTON = "back button"
 }
 
 // Portions of this code (and KDoc) were generated with the help of Grok.
@@ -80,7 +80,7 @@ fun CameraScreen(
             navigationIcon = {
               BackButton(
                   onClick = { navigationController.popBackStack() },
-                  modifier = Modifier.testTag(CommonTaskTestTags.BACK_BUTTON))
+                  modifier = Modifier.testTag(CameraScreenTestTags.BACK_BUTTON))
             })
       },
       content = { paddingValues ->
@@ -88,13 +88,15 @@ fun CameraScreen(
           Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             if (cameraState.picture != null) {
               cameraState.picture?.let { uri ->
-                PhotoViewer(uri, modifier = Modifier.fillMaxSize().testTag(CameraScreenTestTags.PHOTO))
+                PhotoViewer(
+                    uri, modifier = Modifier.fillMaxSize().testTag(CameraScreenTestTags.PHOTO))
               }
               OutlinedButton(
                   onClick = { cameraViewModel.deletePhoto() },
                   colors = EurekaStyles.OutlinedButtonColors(),
                   modifier =
-                      Modifier.align(Alignment.BottomStart).testTag(CameraScreenTestTags.DELETE_PHOTO)) {
+                      Modifier.align(Alignment.BottomStart)
+                          .testTag(CameraScreenTestTags.DELETE_PHOTO)) {
                     Text(text = "Delete photo")
                   }
               Button(
@@ -106,7 +108,8 @@ fun CameraScreen(
                   },
                   colors = EurekaStyles.PrimaryButtonColors(),
                   modifier =
-                      Modifier.align(Alignment.BottomEnd).testTag(CameraScreenTestTags.SAVE_PHOTO)) {
+                      Modifier.align(Alignment.BottomEnd)
+                          .testTag(CameraScreenTestTags.SAVE_PHOTO)) {
                     Text(text = "Save photo")
                   }
             } else if (cameraPreview != null) {
@@ -119,33 +122,36 @@ fun CameraScreen(
                   onClick = { cameraViewModel.takePhoto() },
                   colors = EurekaStyles.OutlinedButtonColors(),
                   modifier =
-                      Modifier.align(Alignment.BottomCenter).testTag(CameraScreenTestTags.TAKE_PHOTO)) {
+                      Modifier.align(Alignment.BottomCenter)
+                          .testTag(CameraScreenTestTags.TAKE_PHOTO)) {
                     Text(text = "Take photo")
                   }
             }
           }
         } else {
           val launcher =
-              rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
-                  isGranted ->
-                hasPermission = isGranted
+              rememberLauncherForActivityResult(
+                  contract = ActivityResultContracts.RequestPermission()) { isGranted ->
+                    hasPermission = isGranted
+                  }
+          Box(
+              modifier = Modifier.fillMaxSize().padding(paddingValues),
+              contentAlignment = Alignment.Center) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                      Text(
+                          text = "Camera permission is required.",
+                          style = MaterialTheme.typography.bodyLarge,
+                          modifier = Modifier.testTag(CameraScreenTestTags.NO_PERMISSION))
+                      Button(
+                          onClick = { launcher.launch(Manifest.permission.CAMERA) },
+                          colors = EurekaStyles.PrimaryButtonColors(),
+                          modifier = Modifier.testTag(CameraScreenTestTags.GRANT_PERMISSION)) {
+                            Text("Grant permission")
+                          }
+                    }
               }
-          Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                  Text(
-                      text = "Camera permission is required.",
-                      style = MaterialTheme.typography.bodyLarge,
-                      modifier = Modifier.testTag(CameraScreenTestTags.NO_PERMISSION))
-                  Button(
-                      onClick = { launcher.launch(Manifest.permission.CAMERA) },
-                      colors = EurekaStyles.PrimaryButtonColors(),
-                      modifier = Modifier.testTag(CameraScreenTestTags.GRANT_PERMISSION)) {
-                        Text("Grant permission")
-                      }
-                }
-          }
         }
       })
 }

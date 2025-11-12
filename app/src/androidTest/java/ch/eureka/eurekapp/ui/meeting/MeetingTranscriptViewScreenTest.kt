@@ -15,7 +15,8 @@ import org.junit.Test
 /**
  * Test suite for MeetingTranscriptViewScreen
  *
- * Note: This file was partially written by ChatGPT (GPT-5) Co-author: GPT-5
+ * Note: This file was partially written by ChatGPT (GPT-5) and Grok Co-author: GPT-5 Co-author:
+ * Grok
  */
 class MeetingTranscriptViewScreenTest {
 
@@ -252,7 +253,7 @@ class MeetingTranscriptViewScreenTest {
 
     composeTestRule.waitForIdle()
 
-    composeTestRule.onNodeWithContentDescription("Back").performClick()
+    composeTestRule.onNodeWithTag(TranscriptScreenTestTags.BACK_BUTTON).performClick()
     assert(backCalled)
   }
 

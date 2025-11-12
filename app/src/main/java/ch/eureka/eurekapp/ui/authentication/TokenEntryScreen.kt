@@ -21,10 +21,10 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import ch.eureka.eurekapp.ui.components.BackButton
-import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import ch.eureka.eurekapp.ui.components.BackButton
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 
 // Portions of this code were generated with the help of Grok.
 
