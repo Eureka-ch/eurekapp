@@ -88,6 +88,7 @@ object MeetingProposalVoteScreenTestTags {
 fun MeetingProposalVoteScreen(
     projectId: String,
     meetingId: String,
+    onCreateDateTimeFormatProposalForMeeting: () -> Unit,
     onDone: () -> Unit,
     meetingProposalVoteViewModel: MeetingProposalVoteViewModel = viewModel {
       MeetingProposalVoteViewModel(projectId, meetingId)
@@ -123,7 +124,7 @@ fun MeetingProposalVoteScreen(
       floatingActionButton = {
         Column(horizontalAlignment = Alignment.End) {
           FloatingActionButton(
-              onClick = {},
+              onClick = onCreateDateTimeFormatProposalForMeeting,
               modifier =
                   Modifier.testTag(MeetingProposalVoteScreenTestTags.ADD_MEETING_PROPOSALS)) {
                 Icon(

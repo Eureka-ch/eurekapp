@@ -30,13 +30,17 @@ import kotlinx.coroutines.launch
  * UI state of the screen to create meetings.
  *
  * @param title The title of the meeting to be created.
- * @param date The date of the time slot for the meeting to be created.
- * @param time The start time of the time slot for the meeting to be created.
+ * @param date The date of the the meeting to be created.
+ * @param time The start time of the the meeting to be created.
  * @param duration The duration of the meeting.
  * @param format The format of the meeting.
  * @param meetingSaved Marker set to true if the meeting waa successfully saved, false otherwise.
  * @param hasTouchedTitle Marker set to true if the user has already clicked on the title field,
  *   false otherwise.
+ * @param hasTouchedDate Marker set to true if the user has already clicked on the date field, false
+ *   otherwise.
+ * @param hasTouchedTime Marker set to true if the user has already clicked on the time field, false
+ *   otherwise.
  * @param errorMsg Error message to display.
  */
 data class CreateMeetingUIState(

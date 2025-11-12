@@ -115,7 +115,8 @@ class MeetingProposalVoteScreenTest {
           projectId = PROJECT_ID,
           meetingId = MEETING_ID,
           onDone = { onDoneCalled.value = true },
-          meetingProposalVoteViewModel = viewModel)
+          meetingProposalVoteViewModel = viewModel,
+          onCreateDateTimeFormatProposalForMeeting = {})
     }
   }
 
