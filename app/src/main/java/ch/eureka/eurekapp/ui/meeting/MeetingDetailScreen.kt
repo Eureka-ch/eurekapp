@@ -503,7 +503,7 @@ private fun MeetingInformationCard(meeting: Meeting) {
 
               HorizontalDivider()
 
-              if (meeting.datetime != null) {
+              if (meeting.datetime != null && meeting.status != MeetingStatus.IN_PROGRESS) {
                 InfoRow(
                     icon = Icons.Default.Schedule,
                     label = "Date & Time",
