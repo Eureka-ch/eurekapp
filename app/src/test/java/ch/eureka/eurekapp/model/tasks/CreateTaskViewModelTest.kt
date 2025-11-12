@@ -987,7 +987,13 @@ class CreateTaskViewModelTest {
   @Test
   fun addDependency_addsDependencyToList() = runTest {
     viewModel =
-        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+        CreateTaskViewModel(
+            mockTaskRepository,
+            mockFileRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            { null },
+            testDispatcher)
     viewModel.setProjectId("project123")
     advanceUntilIdle()
 
@@ -1001,7 +1007,13 @@ class CreateTaskViewModelTest {
   @Test
   fun addDependency_doesNotAddDuplicate() = runTest {
     viewModel =
-        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+        CreateTaskViewModel(
+            mockTaskRepository,
+            mockFileRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            { null },
+            testDispatcher)
     viewModel.setProjectId("project123")
     advanceUntilIdle()
 
@@ -1017,7 +1029,13 @@ class CreateTaskViewModelTest {
   @Test
   fun removeDependency_removesFromList() = runTest {
     viewModel =
-        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+        CreateTaskViewModel(
+            mockTaskRepository,
+            mockFileRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            { null },
+            testDispatcher)
     viewModel.setProjectId("project123")
     advanceUntilIdle()
 
@@ -1035,7 +1053,13 @@ class CreateTaskViewModelTest {
   @Test
   fun removeDependency_whenNotExists_doesNotCrash() = runTest {
     viewModel =
-        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+        CreateTaskViewModel(
+            mockTaskRepository,
+            mockFileRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            { null },
+            testDispatcher)
     viewModel.setProjectId("project123")
     advanceUntilIdle()
 
@@ -1049,7 +1073,13 @@ class CreateTaskViewModelTest {
   @Test
   fun removeDependency_clearsCycleError() = runTest {
     viewModel =
-        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+        CreateTaskViewModel(
+            mockTaskRepository,
+            mockFileRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            { null },
+            testDispatcher)
     viewModel.setProjectId("project123")
 
     val task1 = Task(taskID = "task1", projectId = "project123")
@@ -1073,7 +1103,13 @@ class CreateTaskViewModelTest {
   @Test
   fun validateDependency_returnsTrueWhenProjectIdEmpty() = runTest {
     viewModel =
-        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+        CreateTaskViewModel(
+            mockTaskRepository,
+            mockFileRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            { null },
+            testDispatcher)
     advanceUntilIdle()
 
     val result = viewModel.validateDependency("task1")
@@ -1089,7 +1125,13 @@ class CreateTaskViewModelTest {
       every { IdGenerator.generateTaskId() } returns "task_new"
 
       viewModel =
-          CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+          CreateTaskViewModel(
+              mockTaskRepository,
+              mockFileRepository,
+              mockProjectRepository,
+              mockUserRepository,
+              { null },
+              testDispatcher)
       viewModel.setProjectId("project123")
       advanceUntilIdle()
 
@@ -1113,7 +1155,13 @@ class CreateTaskViewModelTest {
       every { IdGenerator.generateTaskId() } returns "task_new"
 
       viewModel =
-          CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+          CreateTaskViewModel(
+              mockTaskRepository,
+              mockFileRepository,
+              mockProjectRepository,
+              mockUserRepository,
+              { null },
+              testDispatcher)
       viewModel.setProjectId("project123")
       advanceUntilIdle()
 
@@ -1135,7 +1183,13 @@ class CreateTaskViewModelTest {
   @Test
   fun addTask_withDependencies_savesDependencies() = runTest {
     viewModel =
-        CreateTaskViewModel(mockTaskRepository, mockFileRepository, { "test-user" }, testDispatcher)
+        CreateTaskViewModel(
+            mockTaskRepository,
+            mockFileRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            { "test-user" },
+            testDispatcher)
     viewModel.setProjectId("project123")
     viewModel.setTitle("Test Task")
     viewModel.setDescription("Description")
@@ -1158,7 +1212,13 @@ class CreateTaskViewModelTest {
   @Test
   fun setDependencies_setsAllDependencies() = runTest {
     viewModel =
-        CreateTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+        CreateTaskViewModel(
+            mockTaskRepository,
+            mockFileRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            { null },
+            testDispatcher)
     viewModel.setProjectId("project123")
     advanceUntilIdle()
 

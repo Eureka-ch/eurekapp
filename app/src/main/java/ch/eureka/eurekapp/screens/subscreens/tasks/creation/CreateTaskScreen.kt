@@ -98,6 +98,7 @@ fun CreateTaskScreen(
   LaunchedEffect(projectId) {
     if (projectId.isNotEmpty()) {
       createTaskViewModel.loadAvailableTasks(projectId)
+      createTaskViewModel.loadProjectMembers(projectId)
     }
   }
 
@@ -105,12 +106,6 @@ fun CreateTaskScreen(
     if (createTaskState.taskSaved) {
       navigationController.popBackStack()
       createTaskViewModel.resetSaveState()
-    }
-  }
-
-  LaunchedEffect(projectId) {
-    if (projectId.isNotEmpty()) {
-      createTaskViewModel.loadProjectMembers(projectId)
     }
   }
 

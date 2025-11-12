@@ -299,7 +299,13 @@ class EditTaskViewModelTest {
     mockTaskRepository.addTask(task1)
 
     viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, { "test-user" }, testDispatcher)
+        EditTaskViewModel(
+            mockTaskRepository,
+            mockFileRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            { "test-user" },
+            testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
 
@@ -333,7 +339,13 @@ class EditTaskViewModelTest {
     mockTaskRepository.addTask(task1)
 
     viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, { "test-user" }, testDispatcher)
+        EditTaskViewModel(
+            mockTaskRepository,
+            mockFileRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            { "test-user" },
+            testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
 

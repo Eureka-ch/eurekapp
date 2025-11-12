@@ -68,7 +68,6 @@ open class TaskDependenciesScreenTest : TestCase() {
 
   @org.junit.Ignore("Test fails on CI - needs investigation")
   @Test
-  @org.junit.Ignore("Test fails on CI - needs investigation")
   fun testTaskDependenciesScreenCorrectlyShowsEverything() {
     runBlocking {
       val viewModel =

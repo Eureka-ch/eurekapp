@@ -296,10 +296,6 @@ class EditTaskViewModel(
   override fun EditTaskState.copyWithSelectedAssignedUserIds(userIds: List<String>) =
       copy(selectedAssignedUserIds = userIds)
 
-  fun setReminderTime(reminderTime: String) {
-    updateState { copy(reminderTime = reminderTime) }
-  }
-
   override fun addDependency(taskId: String) {
     val currentDependencies = uiState.value.dependingOnTasks
     if (!currentDependencies.contains(taskId)) {

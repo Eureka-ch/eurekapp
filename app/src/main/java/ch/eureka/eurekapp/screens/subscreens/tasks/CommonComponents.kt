@@ -385,6 +385,7 @@ fun UserAssignmentField(
   }
 }
 
+@Composable
 fun TaskDependenciesSelectionField(
     availableTasks: List<ch.eureka.eurekapp.model.data.task.Task>,
     selectedDependencyIds: List<String>,
