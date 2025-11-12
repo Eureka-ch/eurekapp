@@ -10,7 +10,7 @@ import org.junit.Test
 /**
  * Unit tests for BaseFieldComponent logic functions.
  *
- * Portions of this code were generated with the help of AI.
+ * Portions of this code were generated with the help of Claude Sonnet 4.5.
  */
 class BaseFieldComponentLogicTest {
 

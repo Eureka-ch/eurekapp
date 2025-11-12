@@ -5,7 +5,7 @@ package ch.eureka.eurekapp.screens.subscreens.tasks
  *
  * This type-safe approach prevents illegal state combinations and makes field behavior explicit.
  *
- * Portions of this code were generated with the help of AI.
+ * Portions of this code were generated with the help of Claude Sonnet 4.5.
  *
  * @see EditOnly for creation flows where fields are always editable
  * @see ViewOnly for read-only display without editing capability
