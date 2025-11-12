@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.screens.subscreens.tasks
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -13,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
@@ -22,20 +24,16 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.utils.ExcludeFromJacocoGeneratedReport
 
 /**
- * Reusable field components for template fields.
- *
- * Portions of this code were generated with the help of AI.
- */
-
-/**
- * Text field component for template fields.
+ * Number field component for template fields.
  *
  * Supports:
- * - Text input with character limits
- * - Regex pattern validation
- * - Placeholder text
+ * - Numeric input with decimal support
+ * - Min/max value constraints
+ * - Unit suffix display (e.g., "kg", "m", "%")
+ * - Number formatting with configurable decimals
  * - View/Edit modes
- * - Character count display when maxLength is set
+ *
+ * Portions of this code were generated with the help of AI.
  *
  * @param fieldDefinition The field definition containing label, constraints, etc.
  * @param value The current field value (null if empty)
@@ -49,10 +47,10 @@ import ch.eureka.eurekapp.utils.ExcludeFromJacocoGeneratedReport
  * @param modifier The modifier to apply to the component
  */
 @Composable
-fun TextFieldComponent(
+fun NumberFieldComponent(
     fieldDefinition: FieldDefinition,
-    value: FieldValue.TextValue?,
-    onValueChange: (FieldValue.TextValue) -> Unit,
+    value: FieldValue.NumberValue?,
+    onValueChange: (FieldValue.NumberValue) -> Unit,
     mode: FieldInteractionMode,
     onModeToggle: () -> Unit = {},
     onSave: () -> Unit = {},
@@ -60,7 +58,7 @@ fun TextFieldComponent(
     showValidationErrors: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-  val fieldType = fieldDefinition.type as FieldType.Text
+  val fieldType = fieldDefinition.type as FieldType.Number
 
   BaseFieldComponent(
       fieldDefinition = fieldDefinition,
@@ -74,29 +72,44 @@ fun TextFieldComponent(
       showValidationErrors = showValidationErrors,
       modifier = modifier) { currentValue, onChange, isEditing ->
         if (isEditing) {
-          // Edit mode: show editable text field
           OutlinedTextField(
-              value = currentValue?.value ?: "",
-              onValueChange = { newText -> onChange(FieldValue.TextValue(newText)) },
-              placeholder = fieldType.placeholder?.let { { Text(it) } },
-              supportingText =
-                  fieldType.maxLength?.let { maxLength ->
-                    {
-                      val currentLength = currentValue?.value?.length ?: 0
-                      Text(
-                          text = "$currentLength / $maxLength",
-                          style = MaterialTheme.typography.bodySmall)
-                    }
+              value = currentValue?.value?.toString() ?: "",
+              onValueChange = { newText ->
+                val trimmedText = newText.trim()
+                if (trimmedText.isEmpty()) {
+                  return@OutlinedTextField
+                }
+                if (trimmedText.matches(Regex("^-?\\d*\\.?\\d*$"))) {
+                  trimmedText.toDoubleOrNull()?.let { parsedValue ->
+                    onChange(FieldValue.NumberValue(parsedValue))
+                  }
+                }
+              },
+              suffix =
+                  fieldType.unit?.let { unit ->
+                    { Text(text = unit, style = MaterialTheme.typography.bodyMedium) }
                   },
-              singleLine = false,
-              modifier = Modifier.fillMaxWidth().testTag("text_field_input_${fieldDefinition.id}"),
+              keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+              singleLine = true,
+              modifier =
+                  Modifier.fillMaxWidth().testTag("number_field_input_${fieldDefinition.id}"),
               colors = EurekaStyles.TextFieldColors())
         } else {
-          // View mode: show text value
+          val formattedValue =
+              currentValue?.let {
+                val decimals = fieldType.decimals ?: 0
+                val formatted = "%.${decimals}f".format(it.value)
+                if (fieldType.unit != null) {
+                  "$formatted ${fieldType.unit}"
+                } else {
+                  formatted
+                }
+              } ?: ""
+
           Text(
-              text = currentValue?.value ?: "",
+              text = formattedValue,
               style = MaterialTheme.typography.bodyLarge,
-              modifier = Modifier.testTag("text_field_value_${fieldDefinition.id}"))
+              modifier = Modifier.testTag("number_field_value_${fieldDefinition.id}"))
         }
       }
 }
@@ -104,18 +117,18 @@ fun TextFieldComponent(
 @ExcludeFromJacocoGeneratedReport
 @Preview(showBackground = true)
 @Composable
-private fun TextFieldComponentEditPreview() {
+private fun NumberFieldComponentEditPreview() {
   MaterialTheme {
-    var value by remember { mutableStateOf<FieldValue.TextValue?>(null) }
+    var value by remember { mutableStateOf<FieldValue.NumberValue?>(null) }
     Column(modifier = Modifier.padding(16.dp)) {
-      TextFieldComponent(
+      NumberFieldComponent(
           fieldDefinition =
               FieldDefinition(
-                  id = "description",
-                  label = "Description",
-                  type = FieldType.Text(maxLength = 200, placeholder = "Enter description"),
+                  id = "weight",
+                  label = "Weight",
+                  type = FieldType.Number(min = 0.0, max = 1000.0, decimals = 2, unit = "kg"),
                   required = true,
-                  description = "Provide a detailed description"),
+                  description = "Enter the weight in kilograms"),
           value = value,
           onValueChange = { value = it },
           mode = FieldInteractionMode.EditOnly,
@@ -127,17 +140,17 @@ private fun TextFieldComponentEditPreview() {
 @ExcludeFromJacocoGeneratedReport
 @Preview(showBackground = true)
 @Composable
-private fun TextFieldComponentViewPreview() {
+private fun NumberFieldComponentViewPreview() {
   MaterialTheme {
     Column(modifier = Modifier.padding(16.dp)) {
-      TextFieldComponent(
+      NumberFieldComponent(
           fieldDefinition =
               FieldDefinition(
-                  id = "description",
-                  label = "Description",
-                  type = FieldType.Text(maxLength = 200),
+                  id = "distance",
+                  label = "Distance",
+                  type = FieldType.Number(decimals = 1, unit = "m"),
                   required = false),
-          value = FieldValue.TextValue("This is a sample description text"),
+          value = FieldValue.NumberValue(42.5),
           onValueChange = {},
           mode = FieldInteractionMode.ViewOnly)
     }
@@ -147,21 +160,19 @@ private fun TextFieldComponentViewPreview() {
 @ExcludeFromJacocoGeneratedReport
 @Preview(showBackground = true)
 @Composable
-private fun TextFieldComponentToggleablePreview() {
+private fun NumberFieldComponentToggleablePreview() {
   MaterialTheme {
-    var value by remember {
-      mutableStateOf<FieldValue.TextValue?>(FieldValue.TextValue("Sample text"))
-    }
+    var value by remember { mutableStateOf<FieldValue.NumberValue?>(FieldValue.NumberValue(75.0)) }
     var mode by remember {
       mutableStateOf<FieldInteractionMode>(FieldInteractionMode.Toggleable(false))
     }
     Column(modifier = Modifier.padding(16.dp)) {
-      TextFieldComponent(
+      NumberFieldComponent(
           fieldDefinition =
               FieldDefinition(
-                  id = "description",
-                  label = "Description",
-                  type = FieldType.Text(maxLength = 200),
+                  id = "percentage",
+                  label = "Completion",
+                  type = FieldType.Number(min = 0.0, max = 100.0, decimals = 0, unit = "%"),
                   required = false),
           value = value,
           onValueChange = { value = it },

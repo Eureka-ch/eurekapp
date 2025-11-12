@@ -1,5 +1,8 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -15,11 +18,6 @@ import org.junit.Assert.assertNotNull
 import org.junit.Rule
 import org.junit.Test
 
-/**
- * Android UI tests for SingleSelectFieldComponent.
- *
- * Portions of this code were generated with the help of AI.
- */
 class SingleSelectFieldComponentTest {
 
   @get:Rule val composeTestRule = createComposeRule()
@@ -37,46 +35,42 @@ class SingleSelectFieldComponentTest {
           type = FieldType.SingleSelect(options = testOptions, allowCustom = false),
           required = false)
 
-  @Test
-  fun singleSelectFieldComponent_editMode_showsDropdown() {
+  private fun setFieldContent(
+      fieldDef: FieldDefinition = testFieldDefinition,
+      value: FieldValue.SingleSelectValue? = null,
+      onValueChange: (FieldValue.SingleSelectValue) -> Unit = {},
+      mode: FieldInteractionMode = FieldInteractionMode.EditOnly,
+      showValidationErrors: Boolean = false,
+      onModeToggle: () -> Unit = {}
+  ) {
     composeTestRule.setContent {
       SingleSelectFieldComponent(
-          fieldDefinition = testFieldDefinition,
-          value = null,
-          onValueChange = {},
-          mode = FieldInteractionMode.EditOnly)
+          fieldDefinition = fieldDef,
+          value = value,
+          onValueChange = onValueChange,
+          mode = mode,
+          showValidationErrors = showValidationErrors,
+          onModeToggle = onModeToggle)
     }
+  }
 
+  @Test
+  fun singleSelectFieldComponent_editMode_showsDropdown() {
+    setFieldContent()
     composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").assertIsDisplayed()
   }
 
   @Test
   fun singleSelectFieldComponent_editMode_menuOpensOnClick() {
-    composeTestRule.setContent {
-      SingleSelectFieldComponent(
-          fieldDefinition = testFieldDefinition,
-          value = null,
-          onValueChange = {},
-          mode = FieldInteractionMode.EditOnly)
-    }
-
+    setFieldContent()
     composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
-
     composeTestRule.onNodeWithTag("single_select_field_menu_test_select").assertIsDisplayed()
   }
 
   @Test
   fun singleSelectFieldComponent_editMode_displaysAllOptions() {
-    composeTestRule.setContent {
-      SingleSelectFieldComponent(
-          fieldDefinition = testFieldDefinition,
-          value = null,
-          onValueChange = {},
-          mode = FieldInteractionMode.EditOnly)
-    }
-
+    setFieldContent()
     composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
-
     composeTestRule.onNodeWithTag("single_select_option_low").assertIsDisplayed()
     composeTestRule.onNodeWithTag("single_select_option_medium").assertIsDisplayed()
     composeTestRule.onNodeWithTag("single_select_option_high").assertIsDisplayed()
@@ -84,22 +78,11 @@ class SingleSelectFieldComponentTest {
 
   @Test
   fun singleSelectFieldComponent_editMode_displaysOptionDescriptions() {
-    composeTestRule.setContent {
-      SingleSelectFieldComponent(
-          fieldDefinition = testFieldDefinition,
-          value = null,
-          onValueChange = {},
-          mode = FieldInteractionMode.EditOnly)
-    }
-
+    setFieldContent()
     composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
-
-    // Verify dropdown items are visible using test tags
     composeTestRule.onNodeWithTag("single_select_option_low").assertIsDisplayed()
     composeTestRule.onNodeWithTag("single_select_option_medium").assertIsDisplayed()
     composeTestRule.onNodeWithTag("single_select_option_high").assertIsDisplayed()
-
-    // Verify descriptions are displayed within the dropdown items
     composeTestRule.onNodeWithText("Low priority").assertIsDisplayed()
     composeTestRule.onNodeWithText("Medium priority").assertIsDisplayed()
     composeTestRule.onNodeWithText("High priority").assertIsDisplayed()
@@ -108,14 +91,7 @@ class SingleSelectFieldComponentTest {
   @Test
   fun singleSelectFieldComponent_editMode_selectingOptionUpdatesValue() {
     var capturedValue: FieldValue.SingleSelectValue? = null
-
-    composeTestRule.setContent {
-      SingleSelectFieldComponent(
-          fieldDefinition = testFieldDefinition,
-          value = null,
-          onValueChange = { capturedValue = it },
-          mode = FieldInteractionMode.EditOnly)
-    }
+    setFieldContent(onValueChange = { capturedValue = it })
 
     composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
     composeTestRule.onNodeWithTag("single_select_option_high").performClick()
@@ -126,54 +102,29 @@ class SingleSelectFieldComponentTest {
 
   @Test
   fun singleSelectFieldComponent_editMode_selectedValueDisplaysInTextField() {
-    composeTestRule.setContent {
-      SingleSelectFieldComponent(
-          fieldDefinition = testFieldDefinition,
-          value = FieldValue.SingleSelectValue("medium"),
-          onValueChange = {},
-          mode = FieldInteractionMode.EditOnly)
-    }
-
-    composeTestRule.onNodeWithText("medium").assertIsDisplayed()
+    setFieldContent(value = FieldValue.SingleSelectValue("medium"))
+    composeTestRule.onNodeWithText("Medium").assertIsDisplayed()
   }
 
   @Test
   fun singleSelectFieldComponent_viewMode_showsSelectedValue() {
-    composeTestRule.setContent {
-      SingleSelectFieldComponent(
-          fieldDefinition = testFieldDefinition,
-          value = FieldValue.SingleSelectValue("high"),
-          onValueChange = {},
-          mode = FieldInteractionMode.ViewOnly)
-    }
-
+    setFieldContent(
+        value = FieldValue.SingleSelectValue("high"), mode = FieldInteractionMode.ViewOnly)
     composeTestRule.onNodeWithTag("single_select_field_value_test_select").assertIsDisplayed()
     composeTestRule.onNodeWithText("High").assertIsDisplayed()
   }
 
   @Test
   fun singleSelectFieldComponent_viewMode_doesNotShowDropdown() {
-    composeTestRule.setContent {
-      SingleSelectFieldComponent(
-          fieldDefinition = testFieldDefinition,
-          value = FieldValue.SingleSelectValue("low"),
-          onValueChange = {},
-          mode = FieldInteractionMode.ViewOnly)
-    }
-
+    setFieldContent(
+        value = FieldValue.SingleSelectValue("low"), mode = FieldInteractionMode.ViewOnly)
     composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").assertDoesNotExist()
   }
 
   @Test
   fun singleSelectFieldComponent_viewMode_displaysOptionLabel() {
-    composeTestRule.setContent {
-      SingleSelectFieldComponent(
-          fieldDefinition = testFieldDefinition,
-          value = FieldValue.SingleSelectValue("medium"),
-          onValueChange = {},
-          mode = FieldInteractionMode.ViewOnly)
-    }
-
+    setFieldContent(
+        value = FieldValue.SingleSelectValue("medium"), mode = FieldInteractionMode.ViewOnly)
     composeTestRule.onNodeWithText("Medium").assertIsDisplayed()
   }
 
@@ -183,16 +134,12 @@ class SingleSelectFieldComponentTest {
         testFieldDefinition.copy(
             type = FieldType.SingleSelect(options = testOptions, allowCustom = true))
     var capturedValue: FieldValue.SingleSelectValue? = null
+    setFieldContent(fieldDef = fieldWithCustom, onValueChange = { capturedValue = it })
 
-    composeTestRule.setContent {
-      SingleSelectFieldComponent(
-          fieldDefinition = fieldWithCustom,
-          value = null,
-          onValueChange = { capturedValue = it },
-          mode = FieldInteractionMode.EditOnly)
-    }
-
-    // Type directly into the text field using the input test tag
+    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
+    composeTestRule.onNodeWithTag("single_select_option_custom").performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithTag("single_select_field_input_test_select").performClick()
     composeTestRule
         .onNodeWithTag("single_select_field_input_test_select")
         .performTextInput("custom")
@@ -206,138 +153,146 @@ class SingleSelectFieldComponentTest {
     val fieldWithCustom =
         testFieldDefinition.copy(
             type = FieldType.SingleSelect(options = testOptions, allowCustom = true))
-
-    composeTestRule.setContent {
-      SingleSelectFieldComponent(
-          fieldDefinition = fieldWithCustom,
-          value = FieldValue.SingleSelectValue("custom_value"),
-          onValueChange = {},
-          mode = FieldInteractionMode.ViewOnly)
-    }
-
+    setFieldContent(
+        fieldDef = fieldWithCustom,
+        value = FieldValue.SingleSelectValue("custom_value"),
+        mode = FieldInteractionMode.ViewOnly)
     composeTestRule.onNodeWithText("custom_value").assertIsDisplayed()
   }
 
   @Test
   fun singleSelectFieldComponent_toggleableMode_showsToggleButton() {
-    composeTestRule.setContent {
-      SingleSelectFieldComponent(
-          fieldDefinition = testFieldDefinition,
-          value = null,
-          onValueChange = {},
-          mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false))
-    }
-
+    setFieldContent(mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false))
     composeTestRule.onNodeWithTag("field_toggle_test_select").assertIsDisplayed()
   }
 
   @Test
   fun singleSelectFieldComponent_toggleableMode_callsOnModeToggle() {
     var toggleCalled = false
-
-    composeTestRule.setContent {
-      SingleSelectFieldComponent(
-          fieldDefinition = testFieldDefinition,
-          value = null,
-          onValueChange = {},
-          mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
-          onModeToggle = { toggleCalled = true })
-    }
+    setFieldContent(
+        mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
+        onModeToggle = { toggleCalled = true })
 
     composeTestRule.onNodeWithTag("field_toggle_test_select").performClick()
-
     assert(toggleCalled)
   }
 
   @Test
   fun singleSelectFieldComponent_requiredField_showsAsterisk() {
-    val requiredField = testFieldDefinition.copy(required = true)
-
-    composeTestRule.setContent {
-      SingleSelectFieldComponent(
-          fieldDefinition = requiredField,
-          value = null,
-          onValueChange = {},
-          mode = FieldInteractionMode.EditOnly)
-    }
-
+    setFieldContent(fieldDef = testFieldDefinition.copy(required = true))
     composeTestRule.onNodeWithText("Test Single Select *").assertIsDisplayed()
   }
 
   @Test
   fun singleSelectFieldComponent_withDescription_showsDescription() {
-    val fieldWithDescription = testFieldDefinition.copy(description = "Choose a priority level")
-
-    composeTestRule.setContent {
-      SingleSelectFieldComponent(
-          fieldDefinition = fieldWithDescription,
-          value = null,
-          onValueChange = {},
-          mode = FieldInteractionMode.EditOnly)
-    }
-
+    setFieldContent(fieldDef = testFieldDefinition.copy(description = "Choose a priority level"))
     composeTestRule.onNodeWithText("Choose a priority level").assertIsDisplayed()
   }
 
   @Test
   fun singleSelectFieldComponent_editMode_showsConstraintHint() {
-    composeTestRule.setContent {
-      SingleSelectFieldComponent(
-          fieldDefinition = testFieldDefinition,
-          value = null,
-          onValueChange = {},
-          mode = FieldInteractionMode.EditOnly)
-    }
-
+    setFieldContent()
     composeTestRule.onNodeWithText("3 options").assertIsDisplayed()
   }
 
   @Test
   fun singleSelectFieldComponent_allowCustomTrue_showsConstraintHint() {
-    val fieldWithCustom =
-        testFieldDefinition.copy(
-            type = FieldType.SingleSelect(options = testOptions, allowCustom = true))
-
-    composeTestRule.setContent {
-      SingleSelectFieldComponent(
-          fieldDefinition = fieldWithCustom,
-          value = null,
-          onValueChange = {},
-          mode = FieldInteractionMode.EditOnly)
-    }
-
+    setFieldContent(
+        fieldDef =
+            testFieldDefinition.copy(
+                type = FieldType.SingleSelect(options = testOptions, allowCustom = true)))
     composeTestRule.onNodeWithText("3 options (custom values allowed)").assertIsDisplayed()
   }
 
   @Test
   fun singleSelectFieldComponent_whenValidationEnabled_showsErrors() {
-    val requiredField = testFieldDefinition.copy(required = true)
-
-    composeTestRule.setContent {
-      SingleSelectFieldComponent(
-          fieldDefinition = requiredField,
-          value = null,
-          onValueChange = {},
-          mode = FieldInteractionMode.EditOnly,
-          showValidationErrors = true)
-    }
-
+    setFieldContent(
+        fieldDef = testFieldDefinition.copy(required = true), showValidationErrors = true)
     composeTestRule.onNodeWithText("This field is required").assertIsDisplayed()
   }
 
   @Test
   fun singleSelectFieldComponent_whenValidationDisabled_doesNotShowErrors() {
-    val requiredField = testFieldDefinition.copy(required = true)
-
-    composeTestRule.setContent {
-      SingleSelectFieldComponent(
-          fieldDefinition = requiredField,
-          value = null,
-          onValueChange = {},
-          mode = FieldInteractionMode.EditOnly,
-          showValidationErrors = false)
-    }
-
+    setFieldContent(
+        fieldDef = testFieldDefinition.copy(required = true), showValidationErrors = false)
     composeTestRule.onNodeWithText("This field is required").assertDoesNotExist()
+  }
+
+  @Test
+  fun singleSelectFieldComponent_allowCustomTrue_showsCustomValueOption() {
+    setFieldContent(
+        fieldDef =
+            testFieldDefinition.copy(
+                type = FieldType.SingleSelect(options = testOptions, allowCustom = true)))
+    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
+    composeTestRule.onNodeWithTag("single_select_option_custom").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Custom value").assertIsDisplayed()
+  }
+
+  @Test
+  fun singleSelectFieldComponent_allowCustomFalse_doesNotShowCustomValueOption() {
+    setFieldContent(
+        fieldDef =
+            testFieldDefinition.copy(
+                type = FieldType.SingleSelect(options = testOptions, allowCustom = false)))
+    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
+    composeTestRule.onNodeWithTag("single_select_option_custom").assertDoesNotExist()
+  }
+
+  @Test
+  fun singleSelectFieldComponent_customMode_showsPlaceholder() {
+    setFieldContent(
+        fieldDef =
+            testFieldDefinition.copy(
+                type = FieldType.SingleSelect(options = testOptions, allowCustom = true)))
+    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
+    composeTestRule.onNodeWithTag("single_select_option_custom").performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("Enter custom value").assertIsDisplayed()
+  }
+
+  @Test
+  fun singleSelectFieldComponent_switchFromPredefinedToCustom() {
+    val fieldWithCustom =
+        testFieldDefinition.copy(
+            type = FieldType.SingleSelect(options = testOptions, allowCustom = true))
+    var capturedValue: FieldValue.SingleSelectValue? = null
+    setFieldContent(
+        fieldDef = fieldWithCustom,
+        value = FieldValue.SingleSelectValue("low"),
+        onValueChange = { capturedValue = it })
+
+    composeTestRule.onNodeWithText("Low").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
+    composeTestRule.onNodeWithTag("single_select_option_custom").performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("Enter custom value").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("single_select_field_input_test_select").performClick()
+    composeTestRule
+        .onNodeWithTag("single_select_field_input_test_select")
+        .performTextInput("my custom value")
+
+    assertNotNull(capturedValue)
+    assertEquals("my custom value", capturedValue?.value)
+  }
+
+  @Test
+  fun singleSelectFieldComponent_switchFromCustomToPredefined() {
+    val fieldWithCustom =
+        testFieldDefinition.copy(
+            type = FieldType.SingleSelect(options = testOptions, allowCustom = true))
+    var currentValue: FieldValue.SingleSelectValue? by
+        mutableStateOf(FieldValue.SingleSelectValue("custom text"))
+    setFieldContent(
+        fieldDef = fieldWithCustom, value = currentValue, onValueChange = { currentValue = it })
+
+    composeTestRule.onNodeWithText("custom text").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
+    composeTestRule.onNodeWithTag("single_select_option_high").performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("High").assertIsDisplayed()
+
+    assertNotNull(currentValue)
+    assertEquals("high", currentValue?.value)
   }
 }

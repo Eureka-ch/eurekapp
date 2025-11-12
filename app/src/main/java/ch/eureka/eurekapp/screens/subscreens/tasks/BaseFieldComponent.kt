@@ -116,24 +116,30 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
     modifier: Modifier = Modifier,
     renderer: @Composable (value: V?, onValueChange: (V) -> Unit, isEditing: Boolean) -> Unit
 ) {
-  // Local state for Toggleable mode editing
-  var editingValue by remember { mutableStateOf<V?>(null) }
-  var originalValue by remember { mutableStateOf<V?>(null) }
+  var editingValue by
+      remember(mode) {
+        mutableStateOf(
+            if (mode is FieldInteractionMode.Toggleable && mode.isEditing) value else null)
+      }
+  var originalValue by
+      remember(mode) {
+        mutableStateOf(
+            if (mode is FieldInteractionMode.Toggleable && mode.isEditing) value else null)
+      }
 
-  // Track when entering/exiting edit mode
+  var prevIsEditing by remember { mutableStateOf(mode.isEditing) }
+
   LaunchedEffect(mode.isEditing) {
-    if (mode.isEditing && mode is FieldInteractionMode.Toggleable) {
-      // Entering edit mode: store original value and initialize editing value
+    if (mode.isEditing && !prevIsEditing && mode is FieldInteractionMode.Toggleable) {
       originalValue = value
       editingValue = value
-    } else if (!mode.isEditing) {
-      // Exiting edit mode: clear temporary state
+    } else if (!mode.isEditing && prevIsEditing) {
       editingValue = null
       originalValue = null
     }
+    prevIsEditing = mode.isEditing
   }
 
-  // Determine which value to use and how to handle changes
   val currentValue =
       if (mode is FieldInteractionMode.Toggleable && mode.isEditing) {
         editingValue
@@ -144,18 +150,14 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
   val handleValueChange: (V) -> Unit = { newValue ->
     when (mode) {
       is FieldInteractionMode.EditOnly -> {
-        // Immediate mode: notify parent right away
         onValueChange(newValue)
       }
       is FieldInteractionMode.Toggleable -> {
         if (mode.isEditing) {
-          // Buffered mode: store locally
           editingValue = newValue
         }
       }
-      is FieldInteractionMode.ViewOnly -> {
-        // No-op: shouldn't happen
-      }
+      is FieldInteractionMode.ViewOnly -> {}
     }
   }
 
@@ -169,7 +171,6 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
       }
 
   Column(modifier = modifier.fillMaxWidth().testTag("base_field_${fieldDefinition.id}")) {
-    // Label row with required indicator and mode toggle
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -187,10 +188,8 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
 
       if (mode.canToggle) {
         if (mode.isEditing) {
-          // Show save and cancel buttons when editing
           IconButton(
               onClick = {
-                // Save: commit changes to parent, then notify
                 editingValue?.let { onValueChange(it) }
                 onSave()
                 onModeToggle()
@@ -203,7 +202,6 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
               }
           IconButton(
               onClick = {
-                // Cancel: discard changes and exit edit mode
                 editingValue = originalValue
                 onCancel()
                 onModeToggle()
@@ -215,7 +213,6 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
                     tint = MaterialTheme.colorScheme.error)
               }
         } else {
-          // Show edit button when viewing
           IconButton(
               onClick = onModeToggle,
               modifier = Modifier.testTag("field_toggle_${fieldDefinition.id}")) {
@@ -228,7 +225,6 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
       }
     }
 
-    // Description if available
     fieldDefinition.description?.let { description ->
       Text(
           text = description,
@@ -240,10 +236,8 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
 
     Spacer(modifier = Modifier.height(8.dp))
 
-    // Field-specific renderer
     renderer(currentValue, handleValueChange, mode.isEditing)
 
-    // Constraint hints
     val hint = getConstraintHint(fieldType)
     if (hint != null && mode.isEditing) {
       Text(
@@ -253,7 +247,6 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
           modifier = Modifier.padding(top = 4.dp).testTag("field_hint_${fieldDefinition.id}"))
     }
 
-    // Validation errors
     if (validationResult is FieldValidationResult.Invalid) {
       validationResult.errors.forEach { error ->
         Text(

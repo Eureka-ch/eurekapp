@@ -7,10 +7,12 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -76,20 +78,34 @@ fun SingleSelectFieldComponent(
       showValidationErrors = showValidationErrors,
       modifier = modifier) { currentValue, onChange, isEditing ->
         if (isEditing) {
-          // Edit mode: show dropdown menu
           var expanded by remember { mutableStateOf(false) }
+          var isInCustomMode by remember { mutableStateOf(false) }
           var customText by remember { mutableStateOf("") }
 
-          // Determine if current value is a custom value (not in options)
           val isCustomValue =
               currentValue?.value?.let { currentVal ->
                 fieldType.options.none { it.value == currentVal }
               } ?: false
 
-          // Initialize custom text if current value is custom
-          if (isCustomValue && customText.isEmpty()) {
-            customText = currentValue?.value ?: ""
+          LaunchedEffect(currentValue) {
+            if (isCustomValue) {
+              isInCustomMode = true
+              customText = currentValue?.value ?: ""
+            } else {
+              isInCustomMode = false
+              customText = ""
+            }
           }
+
+          val displayValue =
+              when {
+                isInCustomMode -> customText
+                else -> {
+                  currentValue?.value?.let { value ->
+                    fieldType.options.find { it.value == value }?.label
+                  } ?: ""
+                }
+              }
 
           ExposedDropdownMenuBox(
               expanded = expanded,
@@ -98,15 +114,20 @@ fun SingleSelectFieldComponent(
                   Modifier.fillMaxWidth()
                       .testTag("single_select_field_dropdown_${fieldDefinition.id}")) {
                 OutlinedTextField(
-                    value = currentValue?.value ?: "",
+                    value = displayValue,
                     onValueChange = { newValue ->
-                      if (fieldType.allowCustom) {
+                      if (isInCustomMode) {
                         customText = newValue
                         onChange(FieldValue.SingleSelectValue(newValue))
                       }
                     },
-                    readOnly = !fieldType.allowCustom,
-                    label = { Text("Select option") },
+                    readOnly =
+                        when {
+                          !fieldType.allowCustom -> true
+                          isInCustomMode -> false
+                          else -> true
+                        },
+                    label = { Text(if (isInCustomMode) "Enter custom value" else "Select option") },
                     trailingIcon = {
                       ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                     },
@@ -135,18 +156,29 @@ fun SingleSelectFieldComponent(
                               }
                             },
                             onClick = {
+                              isInCustomMode = false
+                              customText = ""
                               onChange(FieldValue.SingleSelectValue(option.value))
                               expanded = false
                             },
                             modifier = Modifier.testTag("single_select_option_${option.value}"))
                       }
+
+                      if (fieldType.allowCustom) {
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                        DropdownMenuItem(
+                            text = { Text("Custom value") },
+                            onClick = {
+                              isInCustomMode = true
+                              expanded = false
+                            },
+                            modifier = Modifier.testTag("single_select_option_custom"))
+                      }
                     }
               }
         } else {
-          // View mode: show selected value as text
           val displayText =
               currentValue?.value?.let { currentVal ->
-                // Try to find matching option to show label, otherwise show raw value
                 fieldType.options.find { it.value == currentVal }?.label ?: currentVal
               } ?: ""
 
