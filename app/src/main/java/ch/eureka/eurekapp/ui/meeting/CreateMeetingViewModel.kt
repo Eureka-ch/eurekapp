@@ -33,6 +33,7 @@ import kotlinx.coroutines.launch
  * @param date The date of the time slot for the meeting to be created.
  * @param time The start time of the time slot for the meeting to be created.
  * @param duration The duration of the meeting.
+ * @param format The format of the meeting.
  * @param meetingSaved Marker set to true if the meeting waa successfully saved, false otherwise.
  * @param hasTouchedTitle Marker set to true if the user has already clicked on the title field,
  *   false otherwise.
@@ -43,6 +44,7 @@ data class CreateMeetingUIState(
     val date: LocalDate = LocalDate.now(),
     val time: LocalTime = LocalTime.now(),
     val duration: Int = 0,
+    val format: MeetingFormat = MeetingFormat.IN_PERSON,
     val meetingSaved: Boolean = false,
     val hasTouchedTitle: Boolean = false,
     val hasTouchedDate: Boolean = false,
@@ -121,6 +123,15 @@ class CreateMeetingViewModel(
     _uiState.update { it.copy(duration = duration) }
   }
 
+  /**
+   * Set the format of the meeting to be created.
+   *
+   * @param format The format of the meeting to be created.
+   */
+  fun setFormat(format: MeetingFormat) {
+    _uiState.update { it.copy(format = format) }
+  }
+
   /** Mark the the meeting proposal as saved in the database. */
   fun setMeetingSaved() {
     _uiState.update { it.copy(meetingSaved = true) }
@@ -175,7 +186,7 @@ class CreateMeetingViewModel(
                 listOf(
                     MeetingProposal(
                         Timestamp(timeInstant),
-                        listOf(MeetingProposalVote(creatorId, listOf(MeetingFormat.IN_PERSON))))),
+                        listOf(MeetingProposalVote(creatorId, listOf(uiState.value.format))))),
             createdBy = creatorId)
 
     viewModelScope.launch {

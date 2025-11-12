@@ -21,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -43,7 +44,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -51,12 +51,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -73,6 +75,7 @@ object CreateMeetingScreenTestTags {
   const val INPUT_MEETING_DATE = "InputMeetingDate"
   const val INPUT_MEETING_TIME = "InputMeetingTime"
   const val INPUT_MEETING_DURATION = "InputMeetingDuration"
+  const val INPUT_FORMAT = "InputFormat"
   const val CREATE_MEETING_BUTTON = "CreateMeetingButton"
 }
 
@@ -176,14 +179,35 @@ fun CreateMeetingScreen(
 
           Spacer(Modifier.height(SPACING.dp))
 
-          DurationInputField(
-              duration = uiState.duration,
-              label = "Duration",
-              placeholder = "Select duration",
-              durationOptions = listOf(5, 10, 15, 20, 30, 45, 60),
-              tag = CreateMeetingScreenTestTags.INPUT_MEETING_DURATION,
-              onDurationSelected = { createMeetingViewModel.setDuration(it) },
-          )
+          SingleChoiceInputField(
+              config =
+                  SingleChoiceInputFieldConfig(
+                      currentValue = uiState.duration,
+                      displayValue = { d -> "$d minutes" },
+                      label = "Duration",
+                      placeholder = "Select duration",
+                      icon = Icons.Default.HourglassTop,
+                      iconDescription = "Select duration",
+                      alertDialogTitle = "Select a duration",
+                      options = listOf(5, 10, 15, 20, 30, 45, 60),
+                      tag = CreateMeetingScreenTestTags.INPUT_MEETING_DURATION,
+                      onOptionSelected = { createMeetingViewModel.setDuration(it) }))
+
+          Spacer(Modifier.height(SPACING.dp))
+
+          SingleChoiceInputField(
+              config =
+                  SingleChoiceInputFieldConfig(
+                      currentValue = uiState.format,
+                      displayValue = { f -> f.description },
+                      label = "Format",
+                      placeholder = "Select format",
+                      icon = Icons.Default.Description,
+                      iconDescription = "Select format",
+                      alertDialogTitle = "Select a format",
+                      options = listOf(MeetingFormat.IN_PERSON, MeetingFormat.VIRTUAL),
+                      tag = CreateMeetingScreenTestTags.INPUT_FORMAT,
+                      onOptionSelected = { createMeetingViewModel.setFormat(it) }))
 
           Spacer(Modifier.height(SPACING.dp))
 
@@ -355,37 +379,52 @@ fun TimeInputField(
 }
 
 /**
- * Composable that displays a text field to select a duration.
+ * Generic data class representing the config of a [SingleChoiceInputField] component.
  *
- * @param duration The already selected duration to display in the text field.
- * @param label The label of the text field.
- * @param placeholder The placeholder of the text field.
- * @param durationOptions List of durations available for the user to choose from.
- * @param tag The test tag for the text field.
- * @param onDurationSelected Function executed when the duration has been picked.
+ * @property currentValue The current value to display in the text field.
+ * @property displayValue Function to display any value of type [T].
+ * @property label The label of the text field.
+ * @property placeholder The placeholder of the text field.
+ * @property icon The icon to display in the text field.
+ * @property iconDescription The description of [icon]
+ * @property alertDialogTitle The title of the alert dialog.
+ * @property options The options to choose one from.
+ * @property tag The test tag to put on tha text field.
+ * @property onOptionSelected Function executed when an option is selected.
  */
-@OptIn(ExperimentalMaterial3Api::class)
+data class SingleChoiceInputFieldConfig<T>(
+    val currentValue: T,
+    val displayValue: (T) -> String,
+    val label: String,
+    val placeholder: String,
+    val icon: ImageVector,
+    val iconDescription: String,
+    val alertDialogTitle: String,
+    val options: List<T>,
+    val tag: String,
+    val onOptionSelected: (T) -> Unit,
+)
+
+/**
+ * Composable to display a text field that when clicked opens a dialog with a radio button in it.
+ *
+ * @param config The config for that composable.
+ */
 @Composable
-fun DurationInputField(
-    duration: Int,
-    label: String,
-    placeholder: String,
-    durationOptions: List<Int>,
-    tag: String,
-    onDurationSelected: (Int) -> Unit,
-) {
+fun <U> SingleChoiceInputField(config: SingleChoiceInputFieldConfig<U>) {
+
   var showDialog by remember { mutableStateOf(false) }
-  var tempSelectedOption by remember { mutableIntStateOf(durationOptions.first()) }
+  var tempSelectedOption by remember { mutableStateOf(config.options.first()) }
 
   OutlinedTextField(
-      value = "$duration minutes",
+      value = config.displayValue(config.currentValue),
       onValueChange = {},
-      label = { Text(label) },
-      placeholder = { Text(placeholder) },
+      label = { Text(config.label) },
+      placeholder = { Text(config.placeholder) },
       readOnly = true,
       trailingIcon = {
-        IconButton(onClick = { showDialog = true }, modifier = Modifier.testTag(tag)) {
-          Icon(Icons.Default.HourglassTop, contentDescription = "Select duration")
+        IconButton(onClick = { showDialog = true }, modifier = Modifier.testTag(config.tag)) {
+          Icon(config.icon, contentDescription = config.iconDescription)
         }
       },
       modifier = Modifier.fillMaxWidth().clickable { showDialog = true })
@@ -393,10 +432,10 @@ fun DurationInputField(
   if (showDialog) {
     AlertDialog(
         onDismissRequest = { showDialog = false },
-        title = { Text("Select Duration") },
+        title = { Text(config.alertDialogTitle) },
         text = {
           Column(Modifier.selectableGroup()) {
-            durationOptions.forEach { option ->
+            config.options.forEach { option ->
               Row(
                   Modifier.fillMaxWidth()
                       .selectable(
@@ -410,7 +449,7 @@ fun DurationInputField(
                         onClick = null // recommended practice: handle click on `Row`
                         )
                     Spacer(Modifier.width(SPACING.dp))
-                    Text("$option minutes")
+                    Text(config.displayValue(option))
                   }
             }
           }
@@ -419,7 +458,7 @@ fun DurationInputField(
           TextButton(
               onClick = {
                 showDialog = false
-                onDurationSelected(tempSelectedOption)
+                config.onOptionSelected(tempSelectedOption)
               }) {
                 Text("OK")
               }
