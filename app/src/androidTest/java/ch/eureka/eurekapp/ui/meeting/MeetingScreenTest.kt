@@ -75,8 +75,8 @@ class MeetingScreenTest {
         MeetingProvider.sampleMeetings
             .sortedBy { m ->
               m.datetime
-                  ?: m.dateTimeVotes
-                      .filter { dtv -> dtv.voters.isNotEmpty() }
+                  ?: m.meetingProposals
+                      .filter { dtv -> dtv.votes.isNotEmpty() } // UPDATED
                       .minOfOrNull { e -> e.dateTime }
             }
             .reversed()
@@ -88,8 +88,8 @@ class MeetingScreenTest {
         MeetingProvider.sampleMeetings
             .sortedBy { m ->
               m.datetime
-                  ?: m.dateTimeVotes
-                      .filter { dtv -> dtv.voters.isNotEmpty() }
+                  ?: m.meetingProposals
+                      .filter { dtv -> dtv.votes.isNotEmpty() } // UPDATED
                       .minOfOrNull { e -> e.dateTime }
             }
             .reversed()
