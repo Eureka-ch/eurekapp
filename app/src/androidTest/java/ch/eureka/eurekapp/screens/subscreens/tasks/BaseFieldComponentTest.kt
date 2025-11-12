@@ -385,4 +385,151 @@ class BaseFieldComponentTest {
 
     assertEquals(newValue, receivedValue)
   }
+
+  @Test
+  fun baseFieldComponent_toggleableEditing_showsSaveAndCancelButtons() {
+    composeTestRule.setContent {
+      BaseFieldComponent(
+          fieldDefinition = testFieldDefinition,
+          fieldType = FieldType.Text(),
+          value = null,
+          onValueChange = {},
+          mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true)) { _, _, _ ->
+            Text("Test Content")
+          }
+    }
+
+    composeTestRule.onNodeWithTag("field_save_test_field").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("field_cancel_test_field").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("field_toggle_test_field").assertDoesNotExist()
+  }
+
+  @Test
+  fun baseFieldComponent_toggleableViewing_showsEditButton() {
+    composeTestRule.setContent {
+      BaseFieldComponent(
+          fieldDefinition = testFieldDefinition,
+          fieldType = FieldType.Text(),
+          value = null,
+          onValueChange = {},
+          mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false)) { _, _, _ ->
+            Text("Test Content")
+          }
+    }
+
+    composeTestRule.onNodeWithTag("field_toggle_test_field").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("field_save_test_field").assertDoesNotExist()
+    composeTestRule.onNodeWithTag("field_cancel_test_field").assertDoesNotExist()
+  }
+
+  @Test
+  fun baseFieldComponent_saveButton_commitsValueAndCallsCallbacks() {
+    var committedValue: FieldValue.TextValue? = null
+    var saveCalled = false
+    var toggleCalled = false
+    val editedValue = FieldValue.TextValue("Edited")
+
+    composeTestRule.setContent {
+      BaseFieldComponent<FieldType.Text, FieldValue.TextValue>(
+          fieldDefinition = testFieldDefinition,
+          fieldType = FieldType.Text(),
+          value = null,
+          onValueChange = { committedValue = it },
+          mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
+          onModeToggle = { toggleCalled = true },
+          onSave = { saveCalled = true }) { _, onValueChange, _ ->
+            // Simulate user editing
+            onValueChange(editedValue)
+            Text("Test Content")
+          }
+    }
+
+    composeTestRule.onNodeWithTag("field_save_test_field").performClick()
+
+    assertEquals(editedValue, committedValue)
+    assertTrue(saveCalled)
+    assertTrue(toggleCalled)
+  }
+
+  @Test
+  fun baseFieldComponent_cancelButton_discardsChangesAndCallsCallbacks() {
+    var committedValue: FieldValue.TextValue? = FieldValue.TextValue("Original")
+    var cancelCalled = false
+    var toggleCalled = false
+
+    composeTestRule.setContent {
+      BaseFieldComponent<FieldType.Text, FieldValue.TextValue>(
+          fieldDefinition = testFieldDefinition,
+          fieldType = FieldType.Text(),
+          value = committedValue,
+          onValueChange = { committedValue = it },
+          mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
+          onModeToggle = { toggleCalled = true },
+          onCancel = { cancelCalled = true }) { _, onValueChange, _ ->
+            // Simulate user editing
+            onValueChange(FieldValue.TextValue("Edited"))
+            Text("Test Content")
+          }
+    }
+
+    val originalValue = committedValue
+
+    composeTestRule.onNodeWithTag("field_cancel_test_field").performClick()
+
+    // Value should remain unchanged
+    assertEquals(originalValue, committedValue)
+    assertTrue(cancelCalled)
+    assertTrue(toggleCalled)
+  }
+
+  @Test
+  fun baseFieldComponent_editOnlyMode_callsOnValueChangeImmediately() {
+    var receivedValue: FieldValue.TextValue? = null
+    val newValue = FieldValue.TextValue("Immediate")
+
+    composeTestRule.setContent {
+      BaseFieldComponent<FieldType.Text, FieldValue.TextValue>(
+          fieldDefinition = testFieldDefinition,
+          fieldType = FieldType.Text(),
+          value = null,
+          onValueChange = { receivedValue = it },
+          mode = FieldInteractionMode.EditOnly) { _, onValueChange, _ ->
+            // Simulate user typing
+            onValueChange(newValue)
+            Text("Test Content")
+          }
+    }
+
+    // In EditOnly mode, onValueChange should be called immediately
+    assertEquals(newValue, receivedValue)
+  }
+
+  @Test
+  fun baseFieldComponent_toggleableMode_buffersChangesUntilSave() {
+    var committedValue: FieldValue.TextValue? = null
+    val editedValue = FieldValue.TextValue("Buffered")
+
+    composeTestRule.setContent {
+      BaseFieldComponent<FieldType.Text, FieldValue.TextValue>(
+          fieldDefinition = testFieldDefinition,
+          fieldType = FieldType.Text(),
+          value = null,
+          onValueChange = { committedValue = it },
+          mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true)) { _, onValueChange, _
+            ->
+            // Simulate user typing
+            onValueChange(editedValue)
+            Text("Test Content")
+          }
+    }
+
+    // Value should NOT be committed yet
+    assertEquals(null, committedValue)
+
+    // Click save
+    composeTestRule.onNodeWithTag("field_save_test_field").performClick()
+
+    // NOW value should be committed
+    assertEquals(editedValue, committedValue)
+  }
 }

@@ -7,12 +7,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,8 +38,50 @@ import ch.eureka.eurekapp.model.data.template.field.validation.FieldValidator
  * - Label display with required indicator (*)
  * - Validation error display
  * - Constraint hints
- * - Mode toggle button (for Toggleable mode)
+ * - Mode toggle button (for Toggleable mode) with save/cancel actions
  * - Field-specific rendering via renderer lambda
+ *
+ * ## Value Change Behavior by Mode:
+ *
+ * **EditOnly Mode:**
+ * - Changes are immediate
+ * - `onValueChange` is called on every user input
+ * - No save/cancel buttons shown
+ * - Example: Task creation form where all fields are editable
+ *
+ * **Toggleable Mode:**
+ * - Changes are buffered locally until user clicks save (✓) or cancel (✗)
+ * - Edit button shown when viewing, save/cancel buttons shown when editing
+ * - `onValueChange` is ONLY called when user clicks save button
+ * - `onCancel` is called when user clicks cancel button (changes discarded)
+ * - Example: Task editing where user can toggle individual fields
+ *
+ * **ViewOnly Mode:**
+ * - No editing allowed
+ * - `onValueChange` is never called
+ * - No buttons shown
+ * - Example: Completed or locked fields
+ *
+ * ## Usage Example:
+ * ```kotlin
+ * var fieldValue by remember { mutableStateOf<FieldValue.TextValue?>(null) }
+ * var mode by remember { mutableStateOf<FieldInteractionMode>(Toggleable(false)) }
+ *
+ * TextFieldComponent(
+ *     value = fieldValue,
+ *     onValueChange = { fieldValue = it }, // Only called on save in Toggleable mode
+ *     mode = mode,
+ *     onModeToggle = { mode = mode.toggleEditingState() },
+ *     onSave = {
+ *         // Optional: Trigger Firebase save, validation, etc.
+ *         viewModel.saveField(fieldValue)
+ *     },
+ *     onCancel = {
+ *         // Optional: Log cancellation, show message, etc.
+ *         Log.d("Form", "Edit cancelled")
+ *     }
+ * )
+ * ```
  *
  * Portions of this code were generated with the help of AI.
  *
@@ -40,10 +89,15 @@ import ch.eureka.eurekapp.model.data.template.field.validation.FieldValidator
  * @param V The specific FieldValue subtype
  * @param fieldDefinition The field definition containing label, type, and constraints
  * @param fieldType The specific field type instance
- * @param value The current field value (null if empty)
- * @param onValueChange Callback when the value changes
+ * @param value The current field value from parent state (null if empty)
+ * @param onValueChange Callback when value should be persisted. Called immediately in EditOnly
+ *   mode, only on save in Toggleable mode, never in ViewOnly mode.
  * @param mode The interaction mode (EditOnly, ViewOnly, or Toggleable)
- * @param onModeToggle Callback when mode toggle button is clicked (only for Toggleable mode)
+ * @param onModeToggle Callback when edit button is clicked (Toggleable mode only)
+ * @param onSave Optional callback when save button (✓) is clicked after `onValueChange`. Use for
+ *   persistence logic like Firebase saves. (Toggleable mode only)
+ * @param onCancel Optional callback when cancel button (✗) is clicked. Changes are automatically
+ *   discarded. (Toggleable mode only)
  * @param showValidationErrors Whether to display validation errors
  * @param modifier The modifier to apply to the root composable
  * @param renderer Lambda that renders the field-specific UI
@@ -56,14 +110,59 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
     onValueChange: (V) -> Unit,
     mode: FieldInteractionMode,
     onModeToggle: () -> Unit = {},
+    onSave: () -> Unit = {},
+    onCancel: () -> Unit = {},
     showValidationErrors: Boolean = false,
     modifier: Modifier = Modifier,
     renderer: @Composable (value: V?, onValueChange: (V) -> Unit, isEditing: Boolean) -> Unit
 ) {
+  // Local state for Toggleable mode editing
+  var editingValue by remember { mutableStateOf<V?>(null) }
+  var originalValue by remember { mutableStateOf<V?>(null) }
+
+  // Track when entering/exiting edit mode
+  LaunchedEffect(mode.isEditing) {
+    if (mode.isEditing && mode is FieldInteractionMode.Toggleable) {
+      // Entering edit mode: store original value and initialize editing value
+      originalValue = value
+      editingValue = value
+    } else if (!mode.isEditing) {
+      // Exiting edit mode: clear temporary state
+      editingValue = null
+      originalValue = null
+    }
+  }
+
+  // Determine which value to use and how to handle changes
+  val currentValue =
+      if (mode is FieldInteractionMode.Toggleable && mode.isEditing) {
+        editingValue
+      } else {
+        value
+      }
+
+  val handleValueChange: (V) -> Unit = { newValue ->
+    when (mode) {
+      is FieldInteractionMode.EditOnly -> {
+        // Immediate mode: notify parent right away
+        onValueChange(newValue)
+      }
+      is FieldInteractionMode.Toggleable -> {
+        if (mode.isEditing) {
+          // Buffered mode: store locally
+          editingValue = newValue
+        }
+      }
+      is FieldInteractionMode.ViewOnly -> {
+        // No-op: shouldn't happen
+      }
+    }
+  }
+
   val validationResult =
-      if (showValidationErrors && value != null) {
-        FieldValidator.validate(value, fieldDefinition)
-      } else if (showValidationErrors && fieldDefinition.required && value == null) {
+      if (showValidationErrors && currentValue != null) {
+        FieldValidator.validate(currentValue, fieldDefinition)
+      } else if (showValidationErrors && fieldDefinition.required && currentValue == null) {
         FieldValidationResult.Invalid(listOf("This field is required"))
       } else {
         FieldValidationResult.Valid
@@ -87,17 +186,45 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
           modifier = Modifier.weight(1f).testTag("field_label_${fieldDefinition.id}"))
 
       if (mode.canToggle) {
-        IconButton(
-            onClick = onModeToggle,
-            modifier = Modifier.testTag("field_toggle_${fieldDefinition.id}")) {
-              Icon(
-                  imageVector = Icons.Filled.Edit,
-                  contentDescription =
-                      if (mode.isEditing) "Switch to view mode" else "Switch to edit mode",
-                  tint =
-                      if (mode.isEditing) MaterialTheme.colorScheme.primary
-                      else MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+        if (mode.isEditing) {
+          // Show save and cancel buttons when editing
+          IconButton(
+              onClick = {
+                // Save: commit changes to parent, then notify
+                editingValue?.let { onValueChange(it) }
+                onSave()
+                onModeToggle()
+              },
+              modifier = Modifier.testTag("field_save_${fieldDefinition.id}")) {
+                Icon(
+                    imageVector = Icons.Filled.Check,
+                    contentDescription = "Save changes",
+                    tint = MaterialTheme.colorScheme.primary)
+              }
+          IconButton(
+              onClick = {
+                // Cancel: discard changes and exit edit mode
+                editingValue = originalValue
+                onCancel()
+                onModeToggle()
+              },
+              modifier = Modifier.testTag("field_cancel_${fieldDefinition.id}")) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Cancel changes",
+                    tint = MaterialTheme.colorScheme.error)
+              }
+        } else {
+          // Show edit button when viewing
+          IconButton(
+              onClick = onModeToggle,
+              modifier = Modifier.testTag("field_toggle_${fieldDefinition.id}")) {
+                Icon(
+                    imageVector = Icons.Filled.Edit,
+                    contentDescription = "Switch to edit mode",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant)
+              }
+        }
       }
     }
 
@@ -114,7 +241,7 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
     Spacer(modifier = Modifier.height(8.dp))
 
     // Field-specific renderer
-    renderer(value, onValueChange, mode.isEditing)
+    renderer(currentValue, handleValueChange, mode.isEditing)
 
     // Constraint hints
     val hint = getConstraintHint(fieldType)
