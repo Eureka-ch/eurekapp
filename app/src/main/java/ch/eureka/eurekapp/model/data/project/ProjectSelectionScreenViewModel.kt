@@ -8,6 +8,7 @@ import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -45,7 +46,8 @@ class ProjectSelectionScreenViewModel(
    */
   fun getProjectUsersInformation(projectId: String): Flow<List<User>> {
     return projectsRepository.getMembers(projectId).flatMapLatest { members ->
-      val usersFlow = members.map { member -> usersRepository.getUserById(member.userId) }
+      val usersFlow =
+          members.map { member -> usersRepository.getUserById(member.userId).catch { emit(null) } }
       combine(usersFlow) { flow -> flow.filterNotNull().toList() }
     }
   }

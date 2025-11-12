@@ -29,6 +29,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -73,7 +74,8 @@ fun ProjectSelectionScreen(
     onProjectSelectRequest: (Project) -> Unit,
     projectSelectionScreenViewModel: ProjectSelectionScreenViewModel = viewModel()
 ) {
-  val projectsList = projectSelectionScreenViewModel.getProjectsForUser().collectAsState(listOf())
+  val projectsList =
+      remember { projectSelectionScreenViewModel.getProjectsForUser() }.collectAsState(listOf())
 
   Column(
       modifier = Modifier.fillMaxSize(),
@@ -90,12 +92,25 @@ fun ProjectSelectionScreen(
                   buttonColor = LightingBlue,
                   testTag = ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON)
             }
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-              items(projectsList.value) { project ->
-                ProjectCard(project, projectSelectionScreenViewModel, onProjectSelectRequest)
+        if (projectsList.value.isEmpty()) {
+          Row(
+              modifier = Modifier.fillMaxSize(),
+              horizontalArrangement = Arrangement.Center,
+              verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "No projects yet. Create your first project!",
+                    style = Typography.bodyMedium,
+                    fontWeight = FontWeight(600))
               }
-            }
+        } else {
+          LazyColumn(
+              modifier = Modifier.fillMaxSize(),
+              horizontalAlignment = Alignment.CenterHorizontally) {
+                items(projectsList.value) { project ->
+                  ProjectCard(project, projectSelectionScreenViewModel, onProjectSelectRequest)
+                }
+              }
+        }
       }
 }
 
@@ -261,7 +276,7 @@ private val colorMap =
 @Composable
 private fun ProjectStatusDisplay(projectStatus: ProjectStatus) {
   Surface(
-      color = colorMap.get(projectStatus)!!,
+      color = colorMap.getOrDefault(projectStatus, LightColorScheme.onSurfaceVariant),
       modifier = Modifier.height(30.dp).width(130.dp),
       shape = RoundedCornerShape(16.dp),
       tonalElevation = 8.dp,
