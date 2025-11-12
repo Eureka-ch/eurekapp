@@ -21,16 +21,9 @@ import ch.eureka.eurekapp.screens.ProjectSelectionScreen
 import ch.eureka.eurekapp.screens.TasksScreen
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScreen
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingTranscriptViewScreen
-import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScreen
-import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingTranscriptViewScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.creation.CreateProjectScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitationSubscreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
-import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
-import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
-import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
-import ch.eureka.eurekapp.ui.meeting.DateTimeVoteScreen
-import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
@@ -115,7 +108,6 @@ sealed interface Route {
     }
 
     @Serializable data object CreateProject : ProjectSelectionSection
-
   }
 
   sealed interface OverviewProjectSection : Route {
@@ -162,18 +154,16 @@ fun NavigationMenu() {
             navController = navigationController,
             startDestination = Route.ProjectSelection) {
               // Main screens
-              composable<Route.ProjectSelection> { ProjectSelectionScreen(
-                onCreateProjectRequest = {
-                  navigationController.navigate(
-                    Route.ProjectSelectionSection.CreateProject
-                  )
-                },
-                onProjectSelectRequest = { project ->
-                  navigationController.navigate(
-                    Route.OverviewProject(projectId = project.projectId)
-                  )
-                }
-              ) }
+              composable<Route.ProjectSelection> {
+                ProjectSelectionScreen(
+                    onCreateProjectRequest = {
+                      navigationController.navigate(Route.ProjectSelectionSection.CreateProject)
+                    },
+                    onProjectSelectRequest = { project ->
+                      navigationController.navigate(
+                          Route.OverviewProject(projectId = project.projectId))
+                    })
+              }
               composable<Route.Profile> { ProfileScreen() }
               composable<Route.OverviewProject> { backStackEntry ->
                 val overviewProjectScreenRoute = backStackEntry.toRoute<Route.OverviewProject>()
@@ -250,11 +240,10 @@ fun NavigationMenu() {
               }
 
               // Project selection section
-              composable<Route.ProjectSelectionSection.CreateProject> { CreateProjectScreen(
-                onProjectCreated = {
-                  navigationController.navigate(Route.ProjectSelection)
-                }
-              ) }
+              composable<Route.ProjectSelectionSection.CreateProject> {
+                CreateProjectScreen(
+                    onProjectCreated = { navigationController.navigate(Route.ProjectSelection) })
+              }
               composable<Route.MeetingsSection.CreateMeeting> { backStackEntry ->
                 val createMeetingCreationRoute =
                     backStackEntry.toRoute<Route.MeetingsSection.CreateMeeting>()

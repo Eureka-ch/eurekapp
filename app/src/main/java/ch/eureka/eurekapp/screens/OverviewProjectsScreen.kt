@@ -4,7 +4,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import ch.eureka.eurekapp.model.data.project.Project
 
 object OverviewProjectsScreenTestTags {
   const val OVERVIEW_PROJECTS_SCREEN_TEXT = "OverviewProjectsScreenText" // The text of the overview
@@ -17,9 +16,7 @@ object OverviewProjectsScreenTestTags {
  * *
  */
 @Composable
-fun OverviewProjectScreen(
-    projectId: String
-) {
+fun OverviewProjectScreen(projectId: String) {
   Text(
       "Overview Projects Screen",
       modifier = Modifier.testTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT))

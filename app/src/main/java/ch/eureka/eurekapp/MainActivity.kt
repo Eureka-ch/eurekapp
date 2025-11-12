@@ -19,11 +19,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.credentials.CredentialManager
-import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.authentication.AuthRepository
 import ch.eureka.eurekapp.navigation.NavigationMenu
 import ch.eureka.eurekapp.resources.C
-import ch.eureka.eurekapp.screens.ProjectSelectionScreen
 import ch.eureka.eurekapp.ui.authentication.SignInScreen
 import ch.eureka.eurekapp.ui.theme.EurekappTheme
 import com.google.firebase.auth.FirebaseAuth
@@ -57,7 +55,7 @@ fun Eurekapp(
   if (!signedIn) {
     SignInScreen(credentialManager = credentialManager, onSignedIn = { signedIn = true })
   } else {
-      NavigationMenu()
+    NavigationMenu()
   }
 }
 
