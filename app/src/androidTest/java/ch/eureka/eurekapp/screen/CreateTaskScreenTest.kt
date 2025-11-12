@@ -2,17 +2,19 @@ package ch.eureka.eurekapp.screen
 
 import android.Manifest
 import android.content.Context
-import android.net.Uri
 import android.provider.MediaStore
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
@@ -21,7 +23,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
-import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
@@ -39,7 +40,6 @@ import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.utils.FirebaseEmulator
-import com.google.firebase.storage.StorageMetadata
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
@@ -48,12 +48,13 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-// Portions of this code were generated with the help of ChatGPT.
-
+// Portions of this code were generated with the help of AI.
 class CreateTaskScreenTests : TestCase() {
 
   @get:Rule val composeTestRule = createComposeRule()
@@ -86,7 +87,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun projectSelection_showsList_and_selectsProject() {
+  fun projectSelectionShowslistAndSelectsproject() {
     val projectId = "project123"
 
     // Provide a fake project list via a fake repository-injected VM
@@ -147,7 +148,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun projectSelection_showsNoProjectsMessage_whenEmptyList() {
+  fun projectSelectionShowsnoprojectsmessageWhenemptylist() {
     val emptyRepo =
         object : ProjectRepository {
           override fun getProjectById(projectId: String): Flow<Project?> = flowOf(null)
@@ -728,71 +729,8 @@ class CreateTaskScreenTests : TestCase() {
     }
   }
 
-  class FakeFileRepository : FileStorageRepository {
-    override suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String> {
-      return Result.success("https://fakeurl.com/file.jpg")
-    }
-
-    override suspend fun deleteFile(downloadUrl: String): Result<Unit> {
-      return Result.success(Unit)
-    }
-
-    override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
-      return Result.success(StorageMetadata.Builder().setContentType("image/jpeg").build())
-    }
-  }
-
-  class DefectiveFakeFileRepository : FileStorageRepository {
-    override suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String> {
-      return Result.failure(Exception("Upload failed"))
-    }
-
-    override suspend fun deleteFile(downloadUrl: String): Result<Unit> {
-      return Result.failure(Exception("Delete failed"))
-    }
-
-    override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
-      return Result.failure(Exception("No metadata"))
-    }
-  }
-
-  class FakeProjectRepository : ProjectRepository {
-    override fun getProjectById(projectId: String): Flow<Project?> =
-        flowOf(Project(projectId = projectId, name = "Fake Project"))
-
-    override fun getProjectsForCurrentUser(skipCache: Boolean): Flow<List<Project>> =
-        flowOf(emptyList())
-
-    override suspend fun createProject(
-        project: Project,
-        creatorId: String,
-        creatorRole: ProjectRole
-    ): Result<String> = Result.success(project.projectId)
-
-    override suspend fun updateProject(project: Project): Result<Unit> = Result.success(Unit)
-
-    override suspend fun deleteProject(projectId: String): Result<Unit> = Result.success(Unit)
-
-    override fun getMembers(projectId: String): Flow<List<Member>> = flowOf(emptyList())
-
-    override suspend fun addMember(
-        projectId: String,
-        userId: String,
-        role: ProjectRole
-    ): Result<Unit> = Result.success(Unit)
-
-    override suspend fun removeMember(projectId: String, userId: String): Result<Unit> =
-        Result.success(Unit)
-
-    override suspend fun updateMemberRole(
-        projectId: String,
-        userId: String,
-        role: ProjectRole
-    ): Result<Unit> = Result.success(Unit)
-  }
-
   @Test
-  fun reminderTimeField_isDisplayed() {
+  fun reminderTimeFieldIsdisplayed() {
     val projectId = "project123"
 
     val fakeProjectRepository =
@@ -846,5 +784,182 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag(CommonTaskTestTags.REMINDER_TIME).assertIsDisplayed()
+  }
+
+  private suspend fun setupTestTask(
+      projectId: String,
+      taskId: String,
+      title: String = "Test Task",
+      description: String = "Test Description",
+      dueDate: String = "15/10/2025",
+      dependingOnTasks: List<String> = emptyList()
+  ) {
+    val dateFormat = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
+    val date = dateFormat.parse(dueDate)!!
+    val task =
+        Task(
+            taskID = taskId,
+            projectId = projectId,
+            title = title,
+            description = description,
+            assignedUserIds = listOf(testUserId),
+            dueDate = com.google.firebase.Timestamp(date),
+            createdBy = testUserId,
+            dependingOnTasks = dependingOnTasks)
+    taskRepository.createTask(task).getOrThrow()
+  }
+
+  @Test
+  fun testAddDependencyShowsdependencyinlist() {
+    runBlocking {
+      val projectId = "project123"
+      val taskId1 = "task1"
+      val taskId2 = "task2"
+
+      setupTestProject(projectId)
+      setupTestTask(projectId, taskId1, title = "Task 1")
+      setupTestTask(projectId, taskId2, title = "Task 2")
+
+      val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+      lastCreateVm = viewModel
+
+      composeTestRule.setContent {
+        val navController = rememberNavController()
+        FakeNavGraph(navController = navController, viewModel = viewModel)
+        navController.navigate(Route.TasksSection.CreateTask)
+      }
+
+      viewModel.setProjectId(projectId)
+      composeTestRule.waitForIdle()
+
+      // Wait for project to be set and tasks to load
+      composeTestRule.waitUntil(timeoutMillis = 10000) {
+        viewModel.uiState.value.projectId == projectId
+      }
+
+      composeTestRule.waitForIdle()
+
+      // Wait for available tasks to load
+      composeTestRule.waitUntil(timeoutMillis = 10000) {
+        viewModel.availableTasks.value.isNotEmpty() || viewModel.availableTasks.value.isEmpty()
+      }
+
+      composeTestRule.waitForIdle()
+
+      // Scroll to find the dependency button if needed
+      try {
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON).assertIsDisplayed()
+      } catch (e: Exception) {
+        composeTestRule
+            .onRoot()
+            .performScrollToNode(hasTestTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON))
+      }
+
+      // Click add dependency button
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON).performClick()
+      composeTestRule.waitForIdle()
+
+      // Wait for dropdown menu
+      composeTestRule.waitUntil(timeoutMillis = 5000) {
+        composeTestRule
+            .onAllNodesWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_menu")
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
+
+      // Select a task from dropdown
+      composeTestRule
+          .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_$taskId1")
+          .performClick()
+      composeTestRule.waitForIdle()
+
+      // Verify dependency is displayed
+      composeTestRule
+          .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$taskId1")
+          .assertIsDisplayed()
+    }
+  }
+
+  @Test
+  fun testTaskCreatedWithdependenciesSavesdependencies() {
+    runBlocking {
+      val projectId = "project123"
+      val taskId1 = "task1"
+
+      setupTestProject(projectId)
+      setupTestTask(projectId, taskId1, title = "Dependency Task")
+
+      val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+      lastCreateVm = viewModel
+
+      composeTestRule.setContent {
+        val navController = rememberNavController()
+        FakeNavGraph(navController = navController, viewModel = viewModel)
+        navController.navigate(Route.TasksSection.CreateTask)
+      }
+
+      viewModel.setProjectId(projectId)
+      composeTestRule.waitForIdle()
+
+      // Wait for project to be set
+      composeTestRule.waitUntil(timeoutMillis = 10000) {
+        viewModel.uiState.value.projectId == projectId
+      }
+
+      composeTestRule.waitForIdle()
+
+      // Fill in valid inputs
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Main Task")
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performTextInput("Description")
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("15/10/2025")
+      composeTestRule.waitForIdle()
+
+      // Wait for available tasks to load
+      composeTestRule.waitUntil(timeoutMillis = 10000) {
+        viewModel.availableTasks.value.isNotEmpty()
+      }
+
+      composeTestRule.waitForIdle()
+
+      // Scroll to find the dependency button if needed
+      try {
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON).assertIsDisplayed()
+      } catch (e: Exception) {
+        composeTestRule
+            .onRoot()
+            .performScrollToNode(hasTestTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON))
+      }
+
+      // Add dependency
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON).performClick()
+      composeTestRule.waitForIdle()
+
+      composeTestRule.waitUntil(timeoutMillis = 10000) {
+        composeTestRule
+            .onAllNodesWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_menu")
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
+
+      composeTestRule
+          .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_$taskId1")
+          .performClick()
+      composeTestRule.waitForIdle()
+
+      // Save task
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
+      composeTestRule.waitUntil(timeoutMillis = 5000) {
+        composeTestRule
+            .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
+
+      // Verify task was created with dependency
+      val tasks = taskRepository.getTasksForCurrentUser().first()
+      val createdTask = tasks.find { it.title == "Main Task" }
+      assertNotNull(createdTask)
+      assertTrue(createdTask!!.dependingOnTasks.contains(taskId1))
+    }
   }
 }

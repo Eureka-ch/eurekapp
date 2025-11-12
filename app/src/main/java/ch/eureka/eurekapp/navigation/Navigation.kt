@@ -27,10 +27,10 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
-import ch.eureka.eurekapp.ui.meeting.DateTimeVoteScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailActionsConfig
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingNavigationScreen
+import ch.eureka.eurekapp.ui.meeting.MeetingProposalVoteScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
 import com.google.firebase.Firebase
@@ -90,7 +90,7 @@ sealed interface Route {
     @Serializable data class CreateMeeting(val projectId: String) : MeetingsSection
 
     @Serializable
-    data class DateTimeVotes(val projectId: String, val meetingId: String) : MeetingsSection
+    data class MeetingProposalVotes(val projectId: String, val meetingId: String) : MeetingsSection
 
     @Serializable
     data class MeetingDetail(val projectId: String, val meetingId: String) : MeetingsSection
@@ -202,9 +202,9 @@ fun NavigationMenu() {
                           Route.MeetingsSection.MeetingDetail(
                               projectId = projectId, meetingId = meetingId))
                     },
-                    onVoteForDateTimeClick = { projectId, meetingId ->
+                    onVoteForMeetingProposalClick = { projectId, meetingId ->
                       navigationController.navigate(
-                          Route.MeetingsSection.DateTimeVotes(
+                          Route.MeetingsSection.MeetingProposalVotes(
                               projectId = projectId, meetingId = meetingId))
                     },
                     onNavigateToMeeting = { projectId, meetingId ->
@@ -250,12 +250,12 @@ fun NavigationMenu() {
                     { navigationController.navigate(Route.MeetingsSection.Meetings) })
               }
 
-              composable<Route.MeetingsSection.DateTimeVotes> { backStackEntry ->
-                val dateTimeVotesRoute =
-                    backStackEntry.toRoute<Route.MeetingsSection.DateTimeVotes>()
-                DateTimeVoteScreen(
-                    projectId = dateTimeVotesRoute.projectId,
-                    meetingId = dateTimeVotesRoute.meetingId,
+              composable<Route.MeetingsSection.MeetingProposalVotes> { backStackEntry ->
+                val meetingProposalVotesRoute =
+                    backStackEntry.toRoute<Route.MeetingsSection.MeetingProposalVotes>()
+                MeetingProposalVoteScreen(
+                    projectId = meetingProposalVotesRoute.projectId,
+                    meetingId = meetingProposalVotesRoute.meetingId,
                     onDone = { navigationController.navigate(Route.MeetingsSection.Meetings) },
                 )
               }

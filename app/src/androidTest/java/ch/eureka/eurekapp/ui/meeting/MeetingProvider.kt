@@ -1,10 +1,10 @@
 package ch.eureka.eurekapp.ui.meeting
 
 import ch.eureka.eurekapp.model.data.map.Location
-import ch.eureka.eurekapp.model.data.meeting.DateTimeVote // Added this import
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
-import ch.eureka.eurekapp.model.data.meeting.MeetingFormatVote
+import ch.eureka.eurekapp.model.data.meeting.MeetingProposal
+import ch.eureka.eurekapp.model.data.meeting.MeetingProposalVote
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import com.google.firebase.Timestamp
 import java.util.Calendar
@@ -17,7 +17,6 @@ import java.util.Calendar
  */
 object MeetingProvider {
 
-  // Helper function to create Timestamps easily
   private fun createTimestamp(year: Int, month: Int, day: Int, hour: Int, minute: Int): Timestamp {
     val calendar = Calendar.getInstance()
     calendar.set(year, month - 1, day, hour, minute, 0)
@@ -38,11 +37,29 @@ object MeetingProvider {
   private val zurichHub =
       Location(latitude = 47.3769, longitude = 8.5417, name = "Zurich Innovation Hub")
 
+  // --- Reusable Vote Definitions ---
+  private val voteAnnaVirtual = MeetingProposalVote(userIds[0], listOf(MeetingFormat.VIRTUAL))
+  private val voteAnnaInPerson = MeetingProposalVote(userIds[0], listOf(MeetingFormat.IN_PERSON))
+  private val voteBenVirtual = MeetingProposalVote(userIds[1], listOf(MeetingFormat.VIRTUAL))
+  private val voteBenInPerson = MeetingProposalVote(userIds[1], listOf(MeetingFormat.IN_PERSON))
+  private val voteCharlieVirtual = MeetingProposalVote(userIds[2], listOf(MeetingFormat.VIRTUAL))
+  private val voteCharlieInPerson = MeetingProposalVote(userIds[2], listOf(MeetingFormat.IN_PERSON))
+  private val voteDianaVirtual = MeetingProposalVote(userIds[3], listOf(MeetingFormat.VIRTUAL))
+  private val voteDianaInPerson = MeetingProposalVote(userIds[3], listOf(MeetingFormat.IN_PERSON))
+  private val voteEthanVirtual = MeetingProposalVote(userIds[4], listOf(MeetingFormat.VIRTUAL))
+  private val voteEthanInPerson = MeetingProposalVote(userIds[4], listOf(MeetingFormat.IN_PERSON))
+
+  private val allVotesInPerson =
+      listOf(
+          voteAnnaInPerson,
+          voteBenInPerson,
+          voteCharlieInPerson,
+          voteDianaInPerson,
+          voteEthanInPerson)
+
   // --- Generated Meeting List ---
   val sampleMeetings: List<Meeting> =
       listOf(
-          // 1. OPEN_TO_VOTES: A typical meeting proposal where members can vote.
-          // Note: `datetime`, `format`, `location`, `link` must be null.
           Meeting(
               meetingID = "meet_vote_01",
               projectId = projectIds[0],
@@ -50,51 +67,42 @@ object MeetingProvider {
               title = "Apollo UI Refresh Kick-off",
               status = MeetingStatus.OPEN_TO_VOTES,
               duration = 60,
-              dateTimeVotes =
-                  listOf( // Updated to List<DateTimeVote>
-                      DateTimeVote(
-                          dateTime = createTimestamp(2025, 10, 20, 10, 0),
-                          voters = listOf(userIds[0], userIds[2])),
-                      DateTimeVote(
-                          dateTime = createTimestamp(2025, 10, 20, 11, 0),
-                          voters = listOf(userIds[1])),
-                      DateTimeVote(
-                          dateTime = createTimestamp(2025, 10, 20, 14, 0),
-                          voters = listOf(userIds[1]))),
-              formatVotes =
+              meetingProposals =
                   listOf(
-                      MeetingFormatVote(userIds[0], MeetingFormat.VIRTUAL),
-                      MeetingFormatVote(userIds[1], MeetingFormat.IN_PERSON),
-                      MeetingFormatVote(userIds[2], MeetingFormat.VIRTUAL)),
+                      MeetingProposal(
+                          dateTime = createTimestamp(2025, 10, 20, 10, 0),
+                          votes = listOf(voteAnnaVirtual, voteCharlieVirtual)),
+                      MeetingProposal(
+                          dateTime = createTimestamp(2025, 10, 20, 11, 0),
+                          votes = listOf(voteBenInPerson)),
+                      MeetingProposal(
+                          dateTime = createTimestamp(2025, 10, 20, 14, 0),
+                          votes = listOf(voteBenInPerson))),
               datetime = null,
               format = null,
               location = null,
               link = null,
               createdBy = userIds[0],
               participantIds = listOf(userIds[0], userIds[1], userIds[2])),
-
-          // 2. SCHEDULED (Virtual): A standard upcoming virtual meeting.
           Meeting(
               meetingID = "meet_scheduled_virtual_02",
               projectId = projectIds[1],
               title = "Bravo Project Weekly Sync",
               status = MeetingStatus.SCHEDULED,
               duration = 30,
-              dateTimeVotes =
-                  listOf( // Updated to List<DateTimeVote>
-                      DateTimeVote(
+              meetingProposals =
+                  listOf(
+                      MeetingProposal(
                           dateTime = createTimestamp(2025, 10, 20, 10, 0),
-                          voters = listOf(userIds[0], userIds[2])),
-                      DateTimeVote(
+                          votes = listOf(voteAnnaVirtual, voteCharlieVirtual)),
+                      MeetingProposal(
                           dateTime = createTimestamp(2025, 11, 20, 21, 0),
-                          voters = listOf(userIds[1]))),
-              datetime = createTimestamp(2025, 10, 17, 15, 0), // This Friday 3 PM
+                          votes = listOf(voteBenVirtual))),
+              datetime = createTimestamp(2025, 10, 17, 15, 0),
               format = MeetingFormat.VIRTUAL,
               link = "https://meet.google.com/abc-defg-hij",
               createdBy = userIds[1],
               participantIds = listOf(userIds[1], userIds[3], userIds[4])),
-
-          // 3. SCHEDULED (In-Person): A standard upcoming physical meeting.
           Meeting(
               meetingID = "meet_scheduled_inperson_03",
               projectId = projectIds[0],
@@ -102,35 +110,34 @@ object MeetingProvider {
               title = "Database Migration Strategy",
               status = MeetingStatus.SCHEDULED,
               duration = 90,
-              dateTimeVotes =
-                  listOf( // Updated to List<DateTimeVote>
-                      DateTimeVote(
+              meetingProposals =
+                  listOf(
+                      MeetingProposal(
                           dateTime = createTimestamp(2025, 10, 20, 10, 0),
-                          voters = listOf(userIds[0], userIds[2]))),
-              datetime = createTimestamp(2025, 10, 22, 10, 30), // Next Wednesday 10:30 AM
+                          votes = listOf(voteAnnaInPerson, voteCharlieInPerson))),
+              datetime = createTimestamp(2025, 10, 22, 10, 30),
               format = MeetingFormat.IN_PERSON,
               location = lausanneOffice,
               createdBy = userIds[2],
               participantIds = listOf(userIds[0], userIds[2], userIds[4])),
-
-          // 4. COMPLETED (In-Person): A past meeting with one attachment.
           Meeting(
               meetingID = "meet_completed_inperson_04",
               projectId = projectIds[2],
               title = "Q4 Marketing Brainstorm",
               status = MeetingStatus.COMPLETED,
               duration = 60,
-              dateTimeVotes =
-                  listOf( // Updated to List<DateTimeVote>
-                      DateTimeVote(dateTime = createTimestamp(2026, 1, 1, 9, 0), voters = userIds)),
-              datetime = createTimestamp(2025, 10, 13, 14, 0), // Last Monday 2 PM
+              meetingProposals =
+                  listOf(
+                      MeetingProposal(
+                          dateTime = createTimestamp(2026, 1, 1, 9, 0), votes = allVotesInPerson)),
+              datetime = createTimestamp(2025, 10, 13, 14, 0),
               format = MeetingFormat.IN_PERSON,
               location = zurichHub,
               attachmentUrls = listOf("https://storage.example.com/notes_q4_marketing.pdf"),
+              audioUrl = "https://storage.example.com/audio_q4_marketing.mp3",
+              transcriptId = "transcript_q4_marketing_abc",
               createdBy = userIds[3],
               participantIds = listOf(userIds[1], userIds[3])),
-
-          // 5. COMPLETED (Virtual): A past meeting with multiple attachments.
           Meeting(
               meetingID = "meet_completed_virtual_05",
               projectId = projectIds[1],
@@ -138,55 +145,53 @@ object MeetingProvider {
               title = "API Documentation Final Review",
               status = MeetingStatus.COMPLETED,
               duration = 60,
-              dateTimeVotes =
-                  listOf( // Updated to List<DateTimeVote>
-                      DateTimeVote(
+              meetingProposals =
+                  listOf(
+                      MeetingProposal(
                           dateTime = createTimestamp(2025, 4, 5, 12, 0),
-                          voters = listOf(userIds[4]))),
-              datetime = createTimestamp(2025, 10, 10, 11, 0), // Last Friday 11 AM
+                          votes = listOf(voteEthanVirtual))),
+              datetime = createTimestamp(2025, 10, 10, 11, 0),
               format = MeetingFormat.VIRTUAL,
               link = "https://meet.google.com/api-docs-review",
               attachmentUrls =
                   listOf(
                       "https://storage.example.com/api_docs_recording.mp4",
                       "https://storage.example.com/meeting_chat_log.txt"),
+              audioUrl = "https://storage.example.com/api_docs_recording.mp3",
+              transcriptId = "transcript_api_docs_xyz",
               createdBy = userIds[4],
-              participantIds = userIds // All users participated
-              ),
-
-          // 6. IN_PROGRESS (Virtual): A virtual meeting happening right now.
+              participantIds = userIds),
           Meeting(
               meetingID = "meet_inprogress_06",
               projectId = projectIds[0],
               title = "Live Demo & Feedback Session",
               status = MeetingStatus.IN_PROGRESS,
               duration = 60,
-              // dateTimeVotes uses default emptyList()
-              datetime = createTimestamp(2025, 10, 16, 17, 0), // Today 5 PM
+              meetingProposals =
+                  listOf(
+                      MeetingProposal(
+                          dateTime = createTimestamp(2025, 10, 16, 17, 0),
+                          votes = listOf(voteAnnaVirtual, voteBenVirtual, voteEthanVirtual))),
+              datetime = createTimestamp(2025, 10, 16, 17, 0),
               format = MeetingFormat.VIRTUAL,
               link = "https://zoom.us/j/1234567890",
               createdBy = userIds[0],
               participantIds = listOf(userIds[0], userIds[1], userIds[4])),
-
-          // 7. OPEN_TO_VOTES (No votes yet): A fresh proposal.
           Meeting(
               meetingID = "meet_vote_new_07",
               projectId = projectIds[2],
               title = "Client On-site Visit Planning",
               status = MeetingStatus.OPEN_TO_VOTES,
               duration = 120,
-              dateTimeVotes =
-                  listOf( // Updated to List<DateTimeVote>
-                      DateTimeVote(
+              meetingProposals =
+                  listOf(
+                      MeetingProposal(
                           dateTime = createTimestamp(2025, 4, 5, 12, 0),
-                          voters = listOf(userIds[3]))),
-              // formatVotes uses default emptyList()
+                          votes = listOf(voteDianaInPerson))),
               datetime = null,
               format = null,
               createdBy = userIds[3],
               participantIds = listOf(userIds[0], userIds[3])),
-
-          // 8. SCHEDULED (Project-Wide): A meeting not tied to a specific task.
           Meeting(
               meetingID = "meet_projectwide_08",
               projectId = projectIds[1],
@@ -194,123 +199,103 @@ object MeetingProvider {
               title = "Bravo Project All-Hands",
               status = MeetingStatus.SCHEDULED,
               duration = 45,
-              dateTimeVotes =
-                  listOf( // Updated to List<DateTimeVote>
-                      DateTimeVote(
+              meetingProposals =
+                  listOf(
+                      MeetingProposal(
                           dateTime = createTimestamp(2025, 4, 5, 12, 0),
-                          voters = listOf(userIds[1]))),
+                          votes = listOf(voteBenVirtual))),
               datetime = createTimestamp(2025, 11, 3, 16, 0),
               format = MeetingFormat.VIRTUAL,
               link = "https://teams.microsoft.com/...",
               createdBy = userIds[1],
               participantIds = userIds),
-
-          // 9. SCHEDULED (Minimal): A meeting with the minimum required fields.
           Meeting(
               meetingID = "meet_minimal_09",
               projectId = projectIds[0],
               title = "Quick Check-in",
               status = MeetingStatus.SCHEDULED,
               duration = 15,
-              dateTimeVotes =
-                  listOf( // Updated to List<DateTimeVote>
-                      DateTimeVote(
+              meetingProposals =
+                  listOf(
+                      MeetingProposal(
                           dateTime = createTimestamp(2025, 4, 5, 12, 0),
-                          voters = listOf(userIds[0]))),
+                          votes = listOf(voteAnnaVirtual))),
               datetime = createTimestamp(2025, 10, 17, 9, 15),
-              format = MeetingFormat.VIRTUAL, // Format is required for scheduled meetings
+              format = MeetingFormat.VIRTUAL,
               createdBy = userIds[0],
               participantIds = listOf(userIds[0], userIds[2])),
-
-          // 10. COMPLETED (No Attachments): A past meeting without any follow-up files.
           Meeting(
               meetingID = "meet_completed_no_attachments_10",
               projectId = projectIds[2],
               title = "Budget Preliminary Discussion",
               status = MeetingStatus.COMPLETED,
               duration = 60,
-              dateTimeVotes =
-                  listOf( // Updated to List<DateTimeVote>
-                      DateTimeVote(
+              meetingProposals =
+                  listOf(
+                      MeetingProposal(
                           dateTime = createTimestamp(2025, 4, 5, 12, 0),
-                          voters = listOf(userIds[3]))),
+                          votes = listOf(voteDianaInPerson))),
               datetime = createTimestamp(2025, 9, 30, 13, 0),
               format = MeetingFormat.IN_PERSON,
               location = lausanneOffice,
               createdBy = userIds[3],
               participantIds = listOf(userIds[3], userIds[4])),
-
-          // 11. OPEN_TO_VOTES (Complex): Proposal with a multi-day time slot and many participants.
           Meeting(
               meetingID = "meet_vote_complex_11",
               projectId = projectIds[1],
               title = "Service Architecture Planning",
               status = MeetingStatus.OPEN_TO_VOTES,
               duration = 120,
-              dateTimeVotes =
-                  listOf( // Updated to List<DateTimeVote>
-                      DateTimeVote(
-                          dateTime = createTimestamp(2025, 10, 27, 10, 0),
-                          voters = listOf(userIds[0], userIds[2])),
-                      DateTimeVote(
-                          dateTime = createTimestamp(2025, 10, 28, 14, 0),
-                          voters = listOf(userIds[1], userIds[3])),
-                      DateTimeVote(
-                          dateTime = createTimestamp(2025, 10, 28, 11, 0),
-                          voters = listOf(userIds[2])),
-                      DateTimeVote(
-                          dateTime = createTimestamp(2025, 10, 27, 13, 0),
-                          voters = listOf(userIds[4]))),
-              formatVotes =
+              meetingProposals =
                   listOf(
-                      MeetingFormatVote(userIds[0], MeetingFormat.IN_PERSON),
-                      MeetingFormatVote(userIds[1], MeetingFormat.VIRTUAL),
-                      MeetingFormatVote(userIds[2], MeetingFormat.VIRTUAL),
-                      MeetingFormatVote(userIds[3], MeetingFormat.IN_PERSON),
-                      MeetingFormatVote(userIds[4], MeetingFormat.IN_PERSON)),
+                      MeetingProposal(
+                          dateTime = createTimestamp(2025, 10, 27, 10, 0),
+                          votes = listOf(voteAnnaInPerson, voteCharlieVirtual)),
+                      MeetingProposal(
+                          dateTime = createTimestamp(2025, 10, 28, 14, 0),
+                          votes = listOf(voteBenVirtual, voteDianaInPerson)),
+                      MeetingProposal(
+                          dateTime = createTimestamp(2025, 10, 28, 11, 0),
+                          votes = listOf(voteCharlieVirtual)),
+                      MeetingProposal(
+                          dateTime = createTimestamp(2025, 10, 27, 13, 0),
+                          votes = listOf(voteEthanInPerson))),
               datetime = null,
               format = null,
               createdBy = userIds[4],
               participantIds = userIds),
-
-          // 12. SCHEDULED (Far Future): A meeting scheduled for a few months from now.
           Meeting(
               meetingID = "meet_future_12",
               projectId = projectIds[0],
               title = "2026 Project Apollo Roadmap",
               status = MeetingStatus.SCHEDULED,
               duration = 180,
-              dateTimeVotes =
-                  listOf( // Updated to List<DateTimeVote>
-                      DateTimeVote(
+              meetingProposals =
+                  listOf(
+                      MeetingProposal(
                           dateTime = createTimestamp(2025, 4, 5, 12, 0),
-                          voters = listOf(userIds[0]))),
+                          votes = listOf(voteAnnaInPerson))),
               datetime = createTimestamp(2025, 12, 15, 11, 0),
               format = MeetingFormat.IN_PERSON,
               location = genevaClientHQ,
               createdBy = userIds[0],
               participantIds = listOf(userIds[0], userIds[1], userIds[3])),
-
-          // 13. SCHEDULED (Back-to-Back): A meeting scheduled right after another one.
           Meeting(
               meetingID = "meet_backtoback_13",
               projectId = projectIds[1],
               title = "Bravo Project Weekly Sync (Part 2)",
               status = MeetingStatus.SCHEDULED,
               duration = 30,
-              dateTimeVotes =
-                  listOf( // Updated to List<DateTimeVote>
-                      DateTimeVote(
+              meetingProposals =
+                  listOf(
+                      MeetingProposal(
                           dateTime = createTimestamp(2025, 4, 5, 12, 0),
-                          voters = listOf(userIds[1]))),
-              datetime = createTimestamp(2025, 10, 17, 16, 0), // Right after meeting #2
+                          votes = listOf(voteBenVirtual))),
+              datetime = createTimestamp(2025, 10, 17, 16, 0),
               format = MeetingFormat.VIRTUAL,
               link = "https://meet.google.com/abc-defg-hij",
               createdBy = userIds[1],
               participantIds = listOf(userIds[1], userIds[3], userIds[4])),
-
-          // 14. COMPLETED (Post-Vote): A completed meeting that originated from a vote.
-          // It's useful to test if you want to show historical voting data.
           Meeting(
               meetingID = "meet_decided_from_vote_14",
               projectId = projectIds[2],
@@ -323,30 +308,23 @@ object MeetingProvider {
               attachmentUrls = listOf("https://storage.example.com/launch_summary.docx"),
               createdBy = userIds[2],
               participantIds = listOf(userIds[2], userIds[3]),
-              // Historical voting data can be preserved:
-              dateTimeVotes =
-                  listOf( // Updated to List<DateTimeVote>
-                      DateTimeVote(
-                          dateTime = createTimestamp(2025, 10, 1, 10, 0),
-                          voters = listOf(userIds[2], userIds[3]))),
-              formatVotes =
+              meetingProposals =
                   listOf(
-                      MeetingFormatVote(userIds[2], MeetingFormat.VIRTUAL),
-                      MeetingFormatVote(userIds[3], MeetingFormat.VIRTUAL))),
-
-          // 15. IN_PROGRESS (In-Person): An in-person meeting happening right now.
+                      MeetingProposal(
+                          dateTime = createTimestamp(2025, 10, 1, 10, 0),
+                          votes = listOf(voteCharlieVirtual, voteDianaVirtual)))),
           Meeting(
               meetingID = "meet_inprogress_inperson_15",
               projectId = projectIds[0],
               title = "Urgent Hotfix Discussion",
               status = MeetingStatus.IN_PROGRESS,
               duration = 45,
-              dateTimeVotes =
-                  listOf( // Updated to List<DateTimeVote>
-                      DateTimeVote(
+              meetingProposals =
+                  listOf(
+                      MeetingProposal(
                           dateTime = createTimestamp(2025, 4, 5, 12, 0),
-                          voters = listOf(userIds[0]))),
-              datetime = createTimestamp(2025, 10, 16, 16, 45), // Today 4:45 PM
+                          votes = listOf(voteAnnaInPerson))),
+              datetime = createTimestamp(2025, 10, 16, 16, 45),
               format = MeetingFormat.IN_PERSON,
               location = lausanneOffice,
               createdBy = userIds[0],

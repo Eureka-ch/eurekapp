@@ -80,14 +80,11 @@ class MeetingViewModelTest {
 
     val uiState = viewModel.uiState.value
 
-    // Check loading turned off
     assertFalse(uiState.isLoading)
 
-    // Filtering
     assertEquals(listOf(meeting1, meeting2), uiState.upcomingMeetings)
     assertEquals(listOf(meeting3), uiState.pastMeetings)
 
-    // Check sorting is reversed (newest first)
     val upcomingIds = uiState.upcomingMeetings.map { it.meetingID }
     val pastIds = uiState.pastMeetings.map { it.meetingID }
 
@@ -99,7 +96,6 @@ class MeetingViewModelTest {
   fun loadMeetingsSortsByTimeSlotWhenDatetimeIsNull() = runTest {
     val baseTime = Date().time
 
-    // One meeting with datetime (newer)
     val meetingWithDatetime =
         Meeting(
             meetingID = "1",
@@ -107,17 +103,21 @@ class MeetingViewModelTest {
             status = MeetingStatus.SCHEDULED,
             datetime = Timestamp(Date(baseTime + 1000000)))
 
-    // One meeting with only timeSlot (older)
+    // --- UPDATED to use new MeetingProposalVote structure ---
+    val dummyVote = MeetingProposalVote(userId = "u1")
     val meetingWithTime =
         Meeting(
             meetingID = "2",
             title = "With TimeSlot",
             status = MeetingStatus.SCHEDULED,
             datetime = null,
-            dateTimeVotes =
+            meetingProposals =
                 listOf(
-                    DateTimeVote(Timestamp(Date(baseTime - 1000000)), listOf("u1")),
-                    DateTimeVote(Timestamp(Date(baseTime + 1000001)), listOf("u1", "u2"))))
+                    MeetingProposal(Timestamp(Date(baseTime - 1000000)), listOf(dummyVote)),
+                    MeetingProposal(Timestamp(Date(baseTime + 1000001)), listOf(dummyVote)),
+                    MeetingProposal(
+                        Timestamp(Date(baseTime - 2000000)), emptyList()) // This one is ignored
+                    ))
 
     repositoryMock.meetingsToReturn = listOf(meetingWithDatetime, meetingWithTime)
 
@@ -126,10 +126,8 @@ class MeetingViewModelTest {
 
     val uiState = viewModel.uiState.value
 
-    // Should sort by datetime (or timeSlot.startTime) DESCENDING
     val upcomingIds = uiState.upcomingMeetings.map { it.meetingID }
 
-    // "1" should come before "2" (newer datetime first)
     assertEquals(listOf("1", "2"), upcomingIds)
     assertTrue(uiState.pastMeetings.isEmpty())
   }
@@ -139,7 +137,6 @@ class MeetingViewModelTest {
     repositoryMock.meetingsToReturn = listOf(Meeting(title = "Planning"))
     viewModel.loadMeetings("any_project_id")
 
-    // Execute coroutine
     testDispatcher.scheduler.advanceUntilIdle()
 
     assertFalse(viewModel.uiState.value.isLoading)
@@ -194,7 +191,6 @@ class MeetingViewModelTest {
   }
 }
 
-/** Mock repository to control meeting data for ViewModel tests. */
 class MeetingRepositoryMockViewmodel : MeetingRepository {
   var meetingsToReturn: List<Meeting> = emptyList()
   var shouldThrowError = false

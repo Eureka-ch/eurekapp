@@ -89,7 +89,8 @@ object MeetingScreenTestTags {
  * @param meetingViewModel The view model associated to the meetings screen.
  * @param projectId The ID of the project to display the meetings from.
  * @param onMeetingClick Callback when a meeting card is clicked, receives projectId and meetingId.
- * @param onVoteForDateTimeClick Callback when the "Vote for datetime" button is clicked.
+ * @param onVoteForMeetingProposalClick Callback when the "Vote for meeting proposals" button is
+ *   clicked.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -98,7 +99,7 @@ fun MeetingScreen(
     onCreateMeeting: () -> Unit,
     meetingViewModel: MeetingViewModel = viewModel(),
     onMeetingClick: (String, String) -> Unit = { _, _ -> },
-    onVoteForDateTimeClick: (String, String) -> Unit = { _, _ -> },
+    onVoteForMeetingProposalClick: (String, String) -> Unit = { _, _ -> },
     onNavigateToMeeting: (String, String) -> Unit = { _, _ -> }
 ) {
 
@@ -158,7 +159,7 @@ fun MeetingScreen(
                         tabName = MeetingTab.UPCOMING.name.lowercase(),
                         projectId = projectId,
                         onMeetingClick = onMeetingClick,
-                        onVoteForDateTimeClick = onVoteForDateTimeClick,
+                        onVoteForMeetingProposalClick = onVoteForMeetingProposalClick,
                         onNavigateToMeeting = onNavigateToMeeting)
                 MeetingTab.PAST ->
                     MeetingsList(
@@ -167,7 +168,7 @@ fun MeetingScreen(
                         tabName = MeetingTab.PAST.name.lowercase(),
                         projectId = projectId,
                         onMeetingClick = onMeetingClick,
-                        onVoteForDateTimeClick = onVoteForDateTimeClick,
+                        onVoteForMeetingProposalClick = onVoteForMeetingProposalClick,
                         onNavigateToMeeting = onNavigateToMeeting)
               }
             }
@@ -182,7 +183,8 @@ fun MeetingScreen(
  * @param tabName Name of the tab in which to display these meetings.
  * @param projectId The ID of the project containing the meetings.
  * @param onMeetingClick Callback when a meeting card is clicked.
- * @param onVoteForDateTimeClick Callback when the "Vote for datetime" button is clicked.
+ * @param onVoteForMeetingProposalClick Callback when the "Vote for meeting proposals" button is
+ *   clicked.
  */
 @Composable
 fun MeetingsList(
@@ -191,7 +193,7 @@ fun MeetingsList(
     tabName: String,
     projectId: String = "",
     onMeetingClick: (String, String) -> Unit = { _, _ -> },
-    onVoteForDateTimeClick: (String, String) -> Unit = { _, _ -> },
+    onVoteForMeetingProposalClick: (String, String) -> Unit = { _, _ -> },
     onNavigateToMeeting: (String, String) -> Unit = { _, _ -> }
 ) {
   if (meetings.isNotEmpty()) {
@@ -204,8 +206,8 @@ fun MeetingsList(
                 config =
                     MeetingCardConfig(
                         onClick = { onMeetingClick(projectId, meetings[index].meetingID) },
-                        onVoteForDateTime = {
-                          onVoteForDateTimeClick(projectId, meetings[index].meetingID)
+                        onVoteForMeetingProposals = {
+                          onVoteForMeetingProposalClick(projectId, meetings[index].meetingID)
                         },
                         onDirections = {
                           onNavigateToMeeting(projectId, meetings[index].meetingID)
@@ -229,7 +231,8 @@ fun MeetingsList(
  *
  * @param onClick Function to execute when the card is clicked (for navigation to detail screen).
  * @param onJoinMeeting Function to execute when user clicks on button to join meeting.
- * @param onVoteForDateTime Function to execute when user clicks on button to vote for datetime.
+ * @param onVoteForMeetingProposals Function to execute when user clicks on button to vote for
+ *   meeting proposals.
  * @param onVoteForFormat Function to execute when user clicks on button to vote for meeting format
  * @param onDirections Function to execute when user clicks on button to navigate to a meeting.
  * @param onRecord Function to execute when user clicks on record button.
@@ -239,7 +242,7 @@ fun MeetingsList(
 data class MeetingCardConfig(
     val onClick: () -> Unit = {},
     val onJoinMeeting: () -> Unit = {},
-    val onVoteForDateTime: () -> Unit = {},
+    val onVoteForMeetingProposals: () -> Unit = {},
     val onVoteForFormat: () -> Unit = {},
     val onDirections: () -> Unit = {},
     val onRecord: () -> Unit = {},
@@ -431,7 +434,7 @@ fun MeetingCard(
                 when (meeting.status) {
                   MeetingStatus.OPEN_TO_VOTES -> {
                     Button(
-                        onClick = config.onVoteForDateTime,
+                        onClick = config.onVoteForMeetingProposals,
                         modifier = Modifier.testTag(MeetingScreenTestTags.VOTE_FOR_DATETIME_BUTTON),
                     ) {
                       Text("Vote for datetime")

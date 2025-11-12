@@ -1,8 +1,10 @@
 package ch.eureka.eurekapp.ui.meeting
 
-import ch.eureka.eurekapp.model.data.meeting.DateTimeVote
 import ch.eureka.eurekapp.model.data.meeting.Meeting
-import com.google.firebase.Timestamp // You will need to mock this or have it available
+import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
+import ch.eureka.eurekapp.model.data.meeting.MeetingProposal
+import ch.eureka.eurekapp.model.data.meeting.MeetingProposalVote
+import com.google.firebase.Timestamp
 import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -16,16 +18,16 @@ import org.junit.Before
 import org.junit.Test
 
 /**
- * Test suite for [DateTimeVoteViewModel].
+ * Test suite for [MeetingProposalVoteViewModel].
  *
  * Note : some tests where generated with the help of Gemini
  */
 @ExperimentalCoroutinesApi
-class DateTimeVoteViewModelTest {
+class MeetingProposalVoteViewModelTest {
 
   private val testDispatcher = StandardTestDispatcher()
-  private lateinit var viewModel: DateTimeVoteViewModel
-  private lateinit var repositoryMock: DateTimeVoteRepositoryMock
+  private lateinit var viewModel: MeetingProposalVoteViewModel
+  private lateinit var repositoryMock: MeetingProposalVoteRepositoryMock
 
   private var currentUserId: String? = "test-user-id"
 
@@ -36,24 +38,29 @@ class DateTimeVoteViewModelTest {
 
     private val mockTimestamp = Timestamp(Date(1730000000L))
 
-    val VOTE_1 = DateTimeVote(dateTime = mockTimestamp, voters = listOf(OTHER_USER_ID))
-    val VOTE_2 = DateTimeVote(dateTime = mockTimestamp, voters = emptyList())
-    val TEST_VOTES = listOf(VOTE_1, VOTE_2)
+    // --- Updated Test Data ---
+    val OTHER_USER_VOTE = MeetingProposalVote(OTHER_USER_ID, listOf(MeetingFormat.VIRTUAL))
+    val CURRENT_USER_VOTE = MeetingProposalVote("test-user-id", listOf(MeetingFormat.IN_PERSON))
+
+    val VOTE_1 = MeetingProposal(dateTime = mockTimestamp, votes = listOf(OTHER_USER_VOTE))
+    val VOTE_2 = MeetingProposal(dateTime = mockTimestamp, votes = emptyList())
+    val TEST_PROPOSALS = listOf(VOTE_1, VOTE_2)
     val TEST_MEETING =
         Meeting(
-            meetingID = TEST_MEETING_ID, projectId = TEST_PROJECT_ID, dateTimeVotes = TEST_VOTES)
+            meetingID = TEST_MEETING_ID,
+            projectId = TEST_PROJECT_ID,
+            meetingProposals = TEST_PROPOSALS)
   }
 
   @Before
   fun setup() {
     Dispatchers.setMain(testDispatcher)
-    repositoryMock = DateTimeVoteRepositoryMock()
+    repositoryMock = MeetingProposalVoteRepositoryMock()
   }
 
-  /** Helper to create the ViewModel, allows for setting the user ID. */
   private fun createViewModel(userId: String? = currentUserId) {
     viewModel =
-        DateTimeVoteViewModel(
+        MeetingProposalVoteViewModel(
             projectId = TEST_PROJECT_ID,
             meetingId = TEST_MEETING_ID,
             repository = repositoryMock,
@@ -66,7 +73,7 @@ class DateTimeVoteViewModelTest {
   }
 
   @Test
-  fun clearErrorMsg_setsErrorMsgToNull() {
+  fun clearErrorMsgSetsErrorMsgToNull() {
     createViewModel()
     viewModel.setErrorMsg("An error")
     assertNotNull(viewModel.uiState.value.errorMsg)
@@ -76,7 +83,7 @@ class DateTimeVoteViewModelTest {
   }
 
   @Test
-  fun setErrorMsg_updatesErrorMsg() {
+  fun setErrorMsgUpdatesErrorMsg() {
     createViewModel()
     val errorMessage = "This is a test error"
     viewModel.setErrorMsg(errorMessage)
@@ -84,7 +91,7 @@ class DateTimeVoteViewModelTest {
   }
 
   @Test
-  fun setVotesSaved_updatesVotesSavedToTrue() {
+  fun setVotesSavedUpdatesVotesSavedToTrue() {
     createViewModel()
     assertFalse(viewModel.uiState.value.votesSaved)
     viewModel.setVotesSaved()
@@ -92,103 +99,101 @@ class DateTimeVoteViewModelTest {
   }
 
   @Test
-  fun voteForDateTime_whenUserLoggedInAndVoteExists_addsVote() = runTest {
+  fun voteForMeetingProposalWhenUserLoggedInAndProposalExistsAddsVote() = runTest {
     repositoryMock.setMeetingToReturn(TEST_MEETING)
     createViewModel()
-    viewModel.loadDateTimeVotes()
+    viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
-    // Act: Vote for the second option (which is empty)
-    val targetVote = viewModel.uiState.value.dateTimeVotes[1]
-    viewModel.voteForDateTime(targetVote)
+    val targetProposal = viewModel.uiState.value.meetingProposals[1]
+    viewModel.voteForMeetingProposal(targetProposal, CURRENT_USER_VOTE)
 
-    // Assert
-    val updatedVotes = viewModel.uiState.value.dateTimeVotes
-    assertEquals(2, updatedVotes.size)
-    assertEquals(1, updatedVotes[0].voters.size)
-    assertEquals(1, updatedVotes[1].voters.size)
-    assertTrue(updatedVotes[1].voters.contains(currentUserId))
+    val updatedProposals = viewModel.uiState.value.meetingProposals
+    assertEquals(2, updatedProposals.size)
+    assertEquals(1, updatedProposals[0].votes.size)
+    assertEquals(1, updatedProposals[1].votes.size)
+    assertTrue(updatedProposals[1].votes.contains(CURRENT_USER_VOTE))
     assertNull(viewModel.uiState.value.errorMsg)
   }
 
   @Test
-  fun voteForDateTime_whenVoteDoesNotExist_setsError() = runTest {
+  fun voteForMeetingProposalWhenProposalDoesNotExistSetsError() = runTest {
     repositoryMock.setMeetingToReturn(TEST_MEETING)
     createViewModel()
-    viewModel.loadDateTimeVotes()
+    viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
-    val invalidVote = DateTimeVote()
-    viewModel.voteForDateTime(invalidVote)
+    val invalidProposal = MeetingProposal()
+    viewModel.voteForMeetingProposal(invalidProposal, CURRENT_USER_VOTE)
 
-    assertEquals("Datetime to vote for does not exists.", viewModel.uiState.value.errorMsg)
+    assertEquals("Meeting proposal to vote for does not exists.", viewModel.uiState.value.errorMsg)
   }
 
   @Test
-  fun voteForDateTime_whenUserNotLoggedIn_setsError() = runTest {
+  fun voteForMeetingProposalWhenUserNotLoggedInSetsError() = runTest {
     repositoryMock.setMeetingToReturn(TEST_MEETING)
     createViewModel(userId = null)
-    viewModel.loadDateTimeVotes()
+    viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.voteForDateTime(TEST_VOTES[0])
+    viewModel.voteForMeetingProposal(TEST_PROPOSALS[0], CURRENT_USER_VOTE)
     assertEquals("Not logged in", viewModel.uiState.value.errorMsg)
   }
 
   @Test
-  fun retractVoteForDateTime_whenUserLoggedInAndVoteExists_removesVote() = runTest {
-    val votedVote = VOTE_1.copy(voters = listOf(OTHER_USER_ID, currentUserId!!))
-    val meetingWithVote = TEST_MEETING.copy(dateTimeVotes = listOf(votedVote, VOTE_2))
+  fun retractVoteForMeetingProposalWhenUserLoggedInAndVoteExistsRemovesVote() = runTest {
+    val votedProposal = VOTE_1.copy(votes = listOf(OTHER_USER_VOTE, CURRENT_USER_VOTE))
+    val meetingWithVote = TEST_MEETING.copy(meetingProposals = listOf(votedProposal, VOTE_2))
     repositoryMock.setMeetingToReturn(meetingWithVote)
     createViewModel()
-    viewModel.loadDateTimeVotes()
+    viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
-    val targetVote = viewModel.uiState.value.dateTimeVotes[0]
-    viewModel.retractVoteForDateTime(targetVote)
+    val targetProposal = viewModel.uiState.value.meetingProposals[0]
+    viewModel.retractVoteForMeetingProposal(targetProposal, CURRENT_USER_VOTE)
 
-    // Assert
-    val updatedVotes = viewModel.uiState.value.dateTimeVotes
-    assertEquals(1, updatedVotes[0].voters.size)
-    assertFalse(updatedVotes[0].voters.contains(currentUserId))
-    assertTrue(updatedVotes[0].voters.contains(OTHER_USER_ID))
-    assertEquals(0, updatedVotes[1].voters.size)
+    val updatedProposals = viewModel.uiState.value.meetingProposals
+    assertEquals(1, updatedProposals[0].votes.size)
+    assertFalse(updatedProposals[0].votes.contains(CURRENT_USER_VOTE))
+    assertTrue(updatedProposals[0].votes.contains(OTHER_USER_VOTE))
+    assertEquals(0, updatedProposals[1].votes.size)
     assertNull(viewModel.uiState.value.errorMsg)
   }
 
   @Test
-  fun retractVoteForDateTime_whenVoteDoesNotExist_setsError() = runTest {
+  fun retractVoteForMeetingProposalWhenProposalDoesNotExistSetsError() = runTest {
     repositoryMock.setMeetingToReturn(TEST_MEETING)
     createViewModel()
-    viewModel.loadDateTimeVotes()
+    viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
-    val invalidVote = DateTimeVote()
-    viewModel.retractVoteForDateTime(invalidVote)
+    val invalidProposal = MeetingProposal()
+    viewModel.retractVoteForMeetingProposal(invalidProposal, CURRENT_USER_VOTE)
 
-    assertEquals("Datetime to vote for does not exists.", viewModel.uiState.value.errorMsg)
+    assertEquals(
+        "Meeting proposal to retract vote for does not exists.", viewModel.uiState.value.errorMsg)
   }
 
   @Test
-  fun retractVoteForDateTime_whenUserNotLoggedIn_setsError() = runTest {
+  fun retractVoteForMeetingProposalWhenUserNotLoggedInSetsError() = runTest {
     repositoryMock.setMeetingToReturn(TEST_MEETING)
     createViewModel(userId = null)
-    viewModel.loadDateTimeVotes()
+    viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.retractVoteForDateTime(TEST_VOTES[0])
+    viewModel.retractVoteForMeetingProposal(TEST_PROPOSALS[0], OTHER_USER_VOTE)
     assertEquals("Not logged in", viewModel.uiState.value.errorMsg)
   }
 
   @Test
-  fun retractVoteForDateTime_whenUserDidNotVote_setsError() = runTest {
+  fun retractVoteForMeetingProposalWhenUserDidNotVoteSetsError() = runTest {
     repositoryMock.setMeetingToReturn(TEST_MEETING)
     createViewModel()
-    viewModel.loadDateTimeVotes()
+    viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
-    val targetVote = viewModel.uiState.value.dateTimeVotes[0]
-    viewModel.retractVoteForDateTime(targetVote)
+    val targetProposal = viewModel.uiState.value.meetingProposals[0]
+    viewModel.retractVoteForMeetingProposal(targetProposal, CURRENT_USER_VOTE)
 
     assertEquals(
         "Cannot retract vote since you did not vote in the first place",
@@ -196,28 +201,28 @@ class DateTimeVoteViewModelTest {
   }
 
   @Test
-  fun loadDateTimeVotes_onSuccess_updatesState() = runTest {
+  fun loadMeetingProposalsOnSuccessUpdatesState() = runTest {
     repositoryMock.setMeetingToReturn(TEST_MEETING)
     createViewModel()
 
-    viewModel.loadDateTimeVotes()
+    viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
     val state = viewModel.uiState.value
     assertFalse(state.isLoading)
-    assertEquals(TEST_VOTES, state.dateTimeVotes)
+    assertEquals(TEST_PROPOSALS, state.meetingProposals)
     assertEquals(TEST_MEETING, state.meeting)
     assertFalse(state.votesSaved)
     assertNull(state.errorMsg)
   }
 
   @Test
-  fun loadDateTimeVotes_onRepositoryException_setsError() = runTest {
+  fun loadMeetingProposalsOnRepositoryExceptionSetsError() = runTest {
     val error = Exception("Database is down")
     repositoryMock.setMeetingLoadToFail(error)
     createViewModel()
 
-    viewModel.loadDateTimeVotes()
+    viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
     val state = viewModel.uiState.value
@@ -226,11 +231,11 @@ class DateTimeVoteViewModelTest {
   }
 
   @Test
-  fun loadDateTimeVotes_whenMeetingIsNull_setsError() = runTest {
+  fun loadMeetingProposalsWhenMeetingIsNullSetsError() = runTest {
     repositoryMock.setMeetingToReturn(null)
     createViewModel()
 
-    viewModel.loadDateTimeVotes()
+    viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
     val state = viewModel.uiState.value
@@ -239,12 +244,12 @@ class DateTimeVoteViewModelTest {
   }
 
   @Test
-  fun loadDateTimeVotes_whenMeetingHasEmptyVotes_setsError() = runTest {
-    val emptyVoteMeeting = TEST_MEETING.copy(dateTimeVotes = emptyList())
-    repositoryMock.setMeetingToReturn(emptyVoteMeeting)
+  fun loadMeetingProposalsWhenMeetingHasEmptyProposalsSetsError() = runTest {
+    val emptyProposalMeeting = TEST_MEETING.copy(meetingProposals = emptyList())
+    repositoryMock.setMeetingToReturn(emptyProposalMeeting)
     createViewModel()
 
-    viewModel.loadDateTimeVotes()
+    viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
     val state = viewModel.uiState.value
@@ -253,35 +258,33 @@ class DateTimeVoteViewModelTest {
   }
 
   @Test
-  fun confirmDateTimeVotes_onSuccess_setsVotesSaved() = runTest {
-    // Load the meeting first
+  fun confirmMeetingProposalsVotesOnSuccessSetsVotesSaved() = runTest {
     repositoryMock.setMeetingToReturn(TEST_MEETING)
     createViewModel()
-    viewModel.loadDateTimeVotes()
+    viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
     repositoryMock.updateShouldSucceed = true
 
-    viewModel.confirmDateTimeVotes()
+    viewModel.confirmMeetingProposalsVotes()
     testDispatcher.scheduler.advanceUntilIdle()
 
-    // Assert
     assertTrue(viewModel.uiState.value.votesSaved)
     assertNull(viewModel.uiState.value.errorMsg)
     assertEquals(TEST_MEETING, repositoryMock.lastMeetingUpdated)
   }
 
   @Test
-  fun confirmDateTimeVotes_onFailure_setsErrorMsg() = runTest {
+  fun confirmMeetingProposalsVotesOnFailureSetsErrorMsg() = runTest {
     repositoryMock.setMeetingToReturn(TEST_MEETING)
     createViewModel()
-    viewModel.loadDateTimeVotes()
+    viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
     repositoryMock.updateShouldSucceed = false
     repositoryMock.updateFailureException = Exception("Update failed")
 
-    viewModel.confirmDateTimeVotes()
+    viewModel.confirmMeetingProposalsVotes()
     testDispatcher.scheduler.advanceUntilIdle()
 
     assertFalse(viewModel.uiState.value.votesSaved)
