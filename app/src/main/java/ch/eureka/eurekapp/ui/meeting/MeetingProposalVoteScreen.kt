@@ -113,6 +113,12 @@ fun MeetingProposalVoteScreen(
     }
   }
 
+  LaunchedEffect(meetingProposalVoteViewModel.userId) {
+    if (meetingProposalVoteViewModel.userId == null) {
+      meetingProposalVoteViewModel.setErrorMsg("Not logged in")
+    }
+  }
+
   Scaffold(
       floatingActionButton = {
         Column(horizontalAlignment = Alignment.End) {
@@ -161,9 +167,7 @@ fun MeetingProposalVoteScreen(
 
               Spacer(Modifier.height(8.dp))
 
-              if (meetingProposalVoteViewModel.userId == null) {
-                meetingProposalVoteViewModel.setErrorMsg("Not logged in")
-              } else {
+              if (meetingProposalVoteViewModel.userId != null) {
                 MeetingProposalsList(
                     modifier = Modifier.padding(padding),
                     meetingProposals = uiState.meetingProposals,

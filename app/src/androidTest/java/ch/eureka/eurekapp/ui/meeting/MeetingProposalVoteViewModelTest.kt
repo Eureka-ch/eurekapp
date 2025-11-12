@@ -73,7 +73,11 @@ class MeetingProposalVoteViewModelTest {
             projectId = TEST_PROJECT_ID,
             meetingProposals =
                 listOf(
-                    PROPOSAL_NO_VOTE, PROPOSAL_IN_PERSON_VOTE, PROPOSAL_BOTH_VOTE, PROPOSAL_EMPTY))
+                    PROPOSAL_NO_VOTE, // 0
+                    PROPOSAL_IN_PERSON_VOTE, // 1
+                    PROPOSAL_BOTH_VOTE, // 2
+                    PROPOSAL_EMPTY // 3
+                    ))
   }
 
   @Before
@@ -153,15 +157,21 @@ class MeetingProposalVoteViewModelTest {
     assertEquals("Meeting proposal to vote for does not exists.", viewModel.uiState.value.errorMsg)
   }
 
+  // --- TEST FIXED ---
   @Test
-  fun voteForMeetingProposalWhenUserNotLoggedInSetsError() = runTest {
+  fun voteForMeetingProposalWhenUserNotLoggedIn_doesNothing() = runTest {
     repositoryMock.setMeetingToReturn(ORIGINAL_TEST_MEETING)
     createViewModel(userId = null)
     viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
+    val originalProposals = viewModel.uiState.value.meetingProposals
     viewModel.voteForMeetingProposal(ORIGINAL_TEST_PROPOSALS[0], CURRENT_USER_VOTE)
-    assertEquals("Not logged in", viewModel.uiState.value.errorMsg)
+
+    // Assert state did not change
+    assertEquals(originalProposals, viewModel.uiState.value.meetingProposals)
+    // Assert no error was set
+    assertNull(viewModel.uiState.value.errorMsg)
   }
 
   @Test
@@ -199,15 +209,21 @@ class MeetingProposalVoteViewModelTest {
         "Meeting proposal to retract vote for does not exists.", viewModel.uiState.value.errorMsg)
   }
 
+  // --- TEST FIXED ---
   @Test
-  fun retractVoteForMeetingProposalWhenUserNotLoggedInSetsError() = runTest {
+  fun retractVoteForMeetingProposalWhenUserNotLoggedIn_doesNothing() = runTest {
     repositoryMock.setMeetingToReturn(ORIGINAL_TEST_MEETING)
     createViewModel(userId = null)
     viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
+    val originalProposals = viewModel.uiState.value.meetingProposals
     viewModel.retractVoteForMeetingProposal(ORIGINAL_TEST_PROPOSALS[0])
-    assertEquals("Not logged in", viewModel.uiState.value.errorMsg)
+
+    // Assert state did not change
+    assertEquals(originalProposals, viewModel.uiState.value.meetingProposals)
+    // Assert no error was set
+    assertNull(viewModel.uiState.value.errorMsg)
   }
 
   @Test
@@ -317,8 +333,9 @@ class MeetingProposalVoteViewModelTest {
     assertEquals(ORIGINAL_TEST_MEETING, repositoryMock.lastMeetingUpdated)
   }
 
+  // --- TEST FIXED ---
   @Test
-  fun hasVotedForFormat_whenUserNotLoggedIn_setsErrorAndReturnsFalse() = runTest {
+  fun hasVotedForFormat_whenUserNotLoggedIn_returnsFalseAndSetsNoError() = runTest {
     repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
     createViewModel(userId = null)
     viewModel.loadMeetingProposals()
@@ -328,7 +345,8 @@ class MeetingProposalVoteViewModelTest {
     val result = viewModel.hasVotedForFormat(proposal, MeetingFormat.IN_PERSON)
 
     assertFalse(result)
-    assertEquals("Not logged in", viewModel.uiState.value.errorMsg)
+    // Assert no error was set
+    assertNull(viewModel.uiState.value.errorMsg)
   }
 
   @Test
@@ -388,17 +406,23 @@ class MeetingProposalVoteViewModelTest {
     assertEquals("Meeting proposal to vote for does not exists.", viewModel.uiState.value.errorMsg)
   }
 
+  // --- TEST FIXED (from NPE to correct assertion) ---
   @Test
-  fun addFormatVote_ForAlreadyVotedMeetingProposal_whenUserNotLoggedIn_setsError() = runTest {
+  fun addFormatVote_ForAlreadyVotedMeetingProposal_whenUserNotLoggedIn_doesNothing() = runTest {
     repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
     createViewModel(userId = null)
     viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
+    val originalProposals = viewModel.uiState.value.meetingProposals
     val proposal = viewModel.uiState.value.meetingProposals[0]
+    // We call the function (which now has the null guard)
     viewModel.addFormatVoteForAlreadyVotedMeetingProposal(proposal, MeetingFormat.IN_PERSON)
 
-    assertEquals("Not logged in", viewModel.uiState.value.errorMsg)
+    // Assert state did not change
+    assertEquals(originalProposals, viewModel.uiState.value.meetingProposals)
+    // Assert no error was set
+    assertNull(viewModel.uiState.value.errorMsg)
   }
 
   @Test
@@ -467,17 +491,22 @@ class MeetingProposalVoteViewModelTest {
         "Meeting proposal to retract vote for does not exists.", viewModel.uiState.value.errorMsg)
   }
 
+  // --- TEST FIXED ---
   @Test
-  fun retractFormatVote_ForAlreadyVotedMeetingProposal_whenUserNotLoggedIn_setsError() = runTest {
+  fun retractFormatVote_ForAlreadyVotedMeetingProposal_whenUserNotLoggedIn_doesNothing() = runTest {
     repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
     createViewModel(userId = null)
     viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
+    val originalProposals = viewModel.uiState.value.meetingProposals
     val proposal = viewModel.uiState.value.meetingProposals[1]
     viewModel.retractFormatVoteForAlreadyVotedMeetingProposal(proposal, MeetingFormat.IN_PERSON)
 
-    assertEquals("Not logged in", viewModel.uiState.value.errorMsg)
+    // Assert state did not change
+    assertEquals(originalProposals, viewModel.uiState.value.meetingProposals)
+    // Assert no error was set
+    assertNull(viewModel.uiState.value.errorMsg)
   }
 
   @Test

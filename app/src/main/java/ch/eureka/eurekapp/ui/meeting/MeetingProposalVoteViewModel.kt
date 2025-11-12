@@ -73,19 +73,6 @@ class MeetingProposalVoteViewModel(
   }
 
   /**
-   * Check if a user is logged in and returns True if it is the case and false otherwise.
-   *
-   * @return True if the suer is logged and false otherwise.
-   */
-  fun userLoggedIn(): Boolean {
-    if (userId == null) {
-      setErrorMsg("Not logged in")
-      return false
-    }
-    return true
-  }
-
-  /**
    * Vote for a given meeting proposal.
    *
    * @param meetingProposal The meeting proposal to vote for.
@@ -103,7 +90,7 @@ class MeetingProposalVoteViewModel(
       return
     }
 
-    if (!userLoggedIn()) {
+    if (userId == null) {
       return
     }
 
@@ -133,7 +120,7 @@ class MeetingProposalVoteViewModel(
       return
     }
 
-    if (!userLoggedIn()) {
+    if (userId == null) {
       return
     }
 
@@ -161,7 +148,7 @@ class MeetingProposalVoteViewModel(
    * @return True if the user has voted for it and false otherwise.
    */
   fun hasVotedForFormat(meetingProposal: MeetingProposal, format: MeetingFormat): Boolean {
-    if (!userLoggedIn()) {
+    if (userId == null) {
       return false
     }
 
@@ -182,6 +169,10 @@ class MeetingProposalVoteViewModel(
 
     if (index < 0) {
       setErrorMsg("Meeting proposal to vote for does not exists.")
+      return
+    }
+
+    if (userId == null) {
       return
     }
 
@@ -224,8 +215,7 @@ class MeetingProposalVoteViewModel(
       return
     }
 
-    if (!userLoggedIn()) { // here check needed before call to hasVotedForFormat because we negate
-      // the result of that call
+    if (userId == null) {
       return
     }
 
