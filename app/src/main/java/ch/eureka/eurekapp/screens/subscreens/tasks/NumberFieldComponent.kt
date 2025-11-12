@@ -1,5 +1,7 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks
 
+/* Portions of this code were generated with the help of AI. */
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -26,19 +28,9 @@ import ch.eureka.eurekapp.utils.ExcludeFromJacocoGeneratedReport
 /**
  * Number field component for template fields.
  *
- * Supports:
- * - Numeric input with decimal support
- * - Min/max value constraints
- * - Unit suffix display (e.g., "kg", "m", "%")
- * - Number formatting with configurable decimals
- * - View/Edit modes
- *
- * Portions of this code were generated with the help of AI.
- *
  * @param fieldDefinition The field definition containing label, constraints, etc.
  * @param value The current field value (null if empty)
- * @param onValueChange Callback when the value changes (immediate in EditOnly, on save in
- *   Toggleable)
+ * @param onValueChange Callback when the value changes
  * @param mode The interaction mode (EditOnly, ViewOnly, or Toggleable)
  * @param onModeToggle Callback when mode toggle button is clicked
  * @param onSave Optional callback when save button is clicked (Toggleable mode only)

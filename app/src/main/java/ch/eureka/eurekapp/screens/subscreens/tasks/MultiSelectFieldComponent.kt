@@ -1,5 +1,7 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks
 
+/* Portions of this code were generated with the help of AI. */
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -34,20 +36,9 @@ import ch.eureka.eurekapp.utils.ExcludeFromJacocoGeneratedReport
 /**
  * Multi-select field component for template fields.
  *
- * Supports:
- * - Multiple selection with FilterChip components
- * - Min/max selection constraints
- * - Custom value input when allowCustom is enabled
- * - View/Edit modes
- * - Interactive chips in edit mode, read-only chips in view mode
- * - Validation and constraint hints
- *
- * Portions of this code were generated with the help of AI.
- *
  * @param fieldDefinition The field definition containing label, constraints, etc.
  * @param value The current field value (null if empty)
- * @param onValueChange Callback when the value changes (immediate in EditOnly, on save in
- *   Toggleable)
+ * @param onValueChange Callback when the value changes
  * @param mode The interaction mode (EditOnly, ViewOnly, or Toggleable)
  * @param onModeToggle Callback when mode toggle button is clicked
  * @param onSave Optional callback when save button is clicked (Toggleable mode only)

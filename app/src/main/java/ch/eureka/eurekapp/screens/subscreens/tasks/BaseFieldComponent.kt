@@ -1,5 +1,7 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks
 
+/* Portions of this code were generated with the help of AI. */
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,72 +36,18 @@ import ch.eureka.eurekapp.model.data.template.field.validation.FieldValidator
 /**
  * Generic base component for all template field types.
  *
- * Provides shared functionality including:
- * - Label display with required indicator (*)
- * - Validation error display
- * - Constraint hints
- * - Mode toggle button (for Toggleable mode) with save/cancel actions
- * - Field-specific rendering via renderer lambda
- *
- * ## Value Change Behavior by Mode:
- *
- * **EditOnly Mode:**
- * - Changes are immediate
- * - `onValueChange` is called on every user input
- * - No save/cancel buttons shown
- * - Example: Task creation form where all fields are editable
- *
- * **Toggleable Mode:**
- * - Changes are buffered locally until user clicks save (✓) or cancel (✗)
- * - Edit button shown when viewing, save/cancel buttons shown when editing
- * - `onValueChange` is ONLY called when user clicks save button
- * - `onCancel` is called when user clicks cancel button (changes discarded)
- * - Example: Task editing where user can toggle individual fields
- *
- * **ViewOnly Mode:**
- * - No editing allowed
- * - `onValueChange` is never called
- * - No buttons shown
- * - Example: Completed or locked fields
- *
- * ## Usage Example:
- * ```kotlin
- * var fieldValue by remember { mutableStateOf<FieldValue.TextValue?>(null) }
- * var mode by remember { mutableStateOf<FieldInteractionMode>(Toggleable(false)) }
- *
- * TextFieldComponent(
- *     value = fieldValue,
- *     onValueChange = { fieldValue = it }, // Only called on save in Toggleable mode
- *     mode = mode,
- *     onModeToggle = { mode = mode.toggleEditingState() },
- *     onSave = {
- *         // Optional: Trigger Firebase save, validation, etc.
- *         viewModel.saveField(fieldValue)
- *     },
- *     onCancel = {
- *         // Optional: Log cancellation, show message, etc.
- *         Log.d("Form", "Edit cancelled")
- *     }
- * )
- * ```
- *
- * Portions of this code were generated with the help of AI.
- *
  * @param T The specific FieldType subtype
  * @param V The specific FieldValue subtype
  * @param fieldDefinition The field definition containing label, type, and constraints
  * @param fieldType The specific field type instance
- * @param value The current field value from parent state (null if empty)
- * @param onValueChange Callback when value should be persisted. Called immediately in EditOnly
- *   mode, only on save in Toggleable mode, never in ViewOnly mode.
+ * @param value The current field value (null if empty)
+ * @param onValueChange Callback when the value changes
  * @param mode The interaction mode (EditOnly, ViewOnly, or Toggleable)
- * @param onModeToggle Callback when edit button is clicked (Toggleable mode only)
- * @param onSave Optional callback when save button (✓) is clicked after `onValueChange`. Use for
- *   persistence logic like Firebase saves. (Toggleable mode only)
- * @param onCancel Optional callback when cancel button (✗) is clicked. Changes are automatically
- *   discarded. (Toggleable mode only)
+ * @param onModeToggle Callback when mode toggle button is clicked
+ * @param onSave Optional callback when save button is clicked (Toggleable mode only)
+ * @param onCancel Optional callback when cancel button is clicked (Toggleable mode only)
  * @param showValidationErrors Whether to display validation errors
- * @param modifier The modifier to apply to the root composable
+ * @param modifier The modifier to apply to the component
  * @param renderer Lambda that renders the field-specific UI
  */
 @Composable
