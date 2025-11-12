@@ -17,7 +17,7 @@ import org.junit.Test
 /**
  * Android UI tests for NumberFieldComponent.
  *
- * Portions of this code were generated with the help of AI.
+ * Portions of this code were generated with the help of Claude Sonnet 4.5.
  */
 class NumberFieldComponentTest {
 

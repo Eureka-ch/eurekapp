@@ -1,6 +1,6 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks
 
-/* Portions of this code were generated with the help of AI. */
+/* Portions of this code were generated with the help of Claude Sonnet 4.5. */
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
