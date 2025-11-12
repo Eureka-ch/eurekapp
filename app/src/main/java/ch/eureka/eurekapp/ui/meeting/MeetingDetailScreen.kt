@@ -1,4 +1,4 @@
-/* Portions of this code were written with the help of Gemini and chatGPT */
+/* Portions of this code were written with the help of Claude Code */
 package ch.eureka.eurekapp.ui.meeting
 
 import android.widget.Toast
@@ -57,9 +57,11 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
@@ -120,6 +122,7 @@ object MeetingDetailScreenTestTags {
  * @param onRecordMeeting Callback when user clicks record button, receives projectId and meetingId.
  * @param onViewTranscript Callback when user clicks view transcript button, receives projectId and
  *   meetingId.
+ * @param onNavigateToMeeting Callback when user clicks navigate to meeting button.
  */
 data class MeetingDetailActionsConfig(
     val onNavigateBack: () -> Unit = {},
@@ -128,6 +131,7 @@ data class MeetingDetailActionsConfig(
     val onViewTranscript: (String, String) -> Unit = { _, _ -> },
     val onVoteForTime: () -> Unit = {},
     val onVoteForFormat: () -> Unit = {},
+    val onNavigateToMeeting: () -> Unit = {},
 )
 
 /**
@@ -230,7 +234,8 @@ fun MeetingDetailScreen(
                         onUpdateDuration = viewModel::updateEditDuration,
                         onTouchTitle = viewModel::touchTitle,
                         onTouchDateTime = viewModel::touchDateTime,
-                        onTouchDuration = viewModel::touchDuration))
+                        onTouchDuration = viewModel::touchDuration,
+                        onNavigateToMeeting = actionsConfig.onNavigateToMeeting))
           } ?: ErrorScreen(message = uiState.errorMsg ?: "Meeting not found")
         }
       })
@@ -299,6 +304,7 @@ private fun ErrorScreen(message: String) {
  * @param onUpdateTitle Callback invoked when edit title changes.
  * @param onUpdateDateTime Callback invoked when edit date/time changes.
  * @param onUpdateDuration Callback invoked when edit duration changes.
+ * @param onNavigateToMeeting Callback invoked when user clicks navigate to meeting button.
  */
 data class MeetingDetailContentActionsConfig(
     val onJoinMeeting: (String) -> Unit,
@@ -316,6 +322,7 @@ data class MeetingDetailContentActionsConfig(
     val onTouchTitle: () -> Unit,
     val onTouchDateTime: () -> Unit,
     val onTouchDuration: () -> Unit,
+    val onNavigateToMeeting: () -> Unit,
 )
 
 /**
@@ -351,6 +358,7 @@ data class EditConfig(
  * @param onVoteForTime Callback invoked when user votes for time button.
  * @param onVoteForFormat Callback invoked when user votes for format button.
  * @param onEditMeeting Callback invoked when user clicks edit meeting button.
+ * @param onNavigateToMeeting Callback invoked when user clicks navigate to meeting button.
  */
 data class ActionButtonsConfig(
     val onJoinMeeting: (String) -> Unit,
@@ -360,6 +368,7 @@ data class ActionButtonsConfig(
     val onVoteForTime: () -> Unit,
     val onVoteForFormat: () -> Unit,
     val onEditMeeting: () -> Unit,
+    val onNavigateToMeeting: () -> Unit,
 )
 
 /**
@@ -431,6 +440,7 @@ private fun MeetingDetailContent(
                         onVoteForTime = actionsConfig.onVoteForTime,
                         onVoteForFormat = actionsConfig.onVoteForFormat,
                         onEditMeeting = actionsConfig.onEditMeeting,
+                        onNavigateToMeeting = actionsConfig.onNavigateToMeeting,
                     ),
             )
           }
@@ -913,6 +923,16 @@ private fun ActionButtonsSection(
                     Icon(imageVector = Icons.Default.VideoCall, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Join Meeting")
+                  }
+            }
+            if (meeting.format == MeetingFormat.IN_PERSON && meeting.location != null) {
+              Button(
+                  onClick = actionsConfig.onNavigateToMeeting, modifier = Modifier.fillMaxWidth()) {
+                    Icon(
+                        imageVector = Icons.Default.Place,
+                        contentDescription = stringResource(R.string.location_icon))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("View Location")
                   }
             }
             OutlinedButton(

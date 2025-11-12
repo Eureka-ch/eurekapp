@@ -1,4 +1,4 @@
-/* Portions of this code were written with the help of chatGPT.*/
+/* Portions of this code were written with the help of Claude Code.*/
 
 package ch.eureka.eurekapp.ui.meeting
 
@@ -98,7 +98,8 @@ fun MeetingScreen(
     onCreateMeeting: () -> Unit,
     meetingViewModel: MeetingViewModel = viewModel(),
     onMeetingClick: (String, String) -> Unit = { _, _ -> },
-    onVoteForMeetingProposalClick: (String, String) -> Unit = { _, _ -> }
+    onVoteForMeetingProposalClick: (String, String) -> Unit = { _, _ -> },
+    onNavigateToMeeting: (String, String) -> Unit = { _, _ -> }
 ) {
 
   val context = LocalContext.current
@@ -157,7 +158,8 @@ fun MeetingScreen(
                         tabName = MeetingTab.UPCOMING.name.lowercase(),
                         projectId = projectId,
                         onMeetingClick = onMeetingClick,
-                        onVoteForMeetingProposalClick = onVoteForMeetingProposalClick)
+                        onVoteForMeetingProposalClick = onVoteForMeetingProposalClick,
+                        onNavigateToMeeting = onNavigateToMeeting)
                 MeetingTab.PAST ->
                     MeetingsList(
                         modifier = Modifier.padding(padding),
@@ -165,7 +167,8 @@ fun MeetingScreen(
                         tabName = MeetingTab.PAST.name.lowercase(),
                         projectId = projectId,
                         onMeetingClick = onMeetingClick,
-                        onVoteForMeetingProposalClick = onVoteForMeetingProposalClick)
+                        onVoteForMeetingProposalClick = onVoteForMeetingProposalClick,
+                        onNavigateToMeeting = onNavigateToMeeting)
               }
             }
       })
@@ -189,7 +192,8 @@ fun MeetingsList(
     tabName: String,
     projectId: String = "",
     onMeetingClick: (String, String) -> Unit = { _, _ -> },
-    onVoteForMeetingProposalClick: (String, String) -> Unit = { _, _ -> }
+    onVoteForMeetingProposalClick: (String, String) -> Unit = { _, _ -> },
+    onNavigateToMeeting: (String, String) -> Unit = { _, _ -> }
 ) {
   if (meetings.isNotEmpty()) {
     LazyColumn(
@@ -203,6 +207,9 @@ fun MeetingsList(
                         onClick = { onMeetingClick(projectId, meetings[index].meetingID) },
                         onVoteForMeetingProposals = {
                           onVoteForMeetingProposalClick(projectId, meetings[index].meetingID)
+                        },
+                        onDirections = {
+                          onNavigateToMeeting(projectId, meetings[index].meetingID)
                         }),
             )
           }

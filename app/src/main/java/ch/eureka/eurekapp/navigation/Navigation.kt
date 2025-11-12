@@ -29,6 +29,7 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailActionsConfig
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreen
+import ch.eureka.eurekapp.ui.meeting.MeetingNavigationScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingProposalVoteScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
@@ -99,6 +100,9 @@ sealed interface Route {
 
     @Serializable
     data class AudioTranscript(val projectId: String, val meetingId: String) : MeetingsSection
+
+    @Serializable
+    data class MeetingNavigation(val projectId: String, val meetingId: String) : MeetingsSection
   }
 
   sealed interface ProjectSelectionSection : Route {
@@ -214,6 +218,11 @@ fun NavigationMenu() {
                       navigationController.navigate(
                           Route.MeetingsSection.MeetingProposalVotes(
                               projectId = projectId, meetingId = meetingId))
+                    },
+                    onNavigateToMeeting = { projectId, meetingId ->
+                      navigationController.navigate(
+                          Route.MeetingsSection.MeetingNavigation(
+                              projectId = projectId, meetingId = meetingId))
                     })
               }
 
@@ -235,6 +244,12 @@ fun NavigationMenu() {
                               navigationController.navigate(
                                   Route.MeetingsSection.AudioTranscript(
                                       projectId = projectId, meetingId = meetingId))
+                            },
+                            onNavigateToMeeting = {
+                              navigationController.navigate(
+                                  Route.MeetingsSection.MeetingNavigation(
+                                      projectId = meetingDetailRoute.projectId,
+                                      meetingId = meetingDetailRoute.meetingId))
                             }),
                 )
               }
@@ -260,6 +275,15 @@ fun NavigationMenu() {
                     meetingId = meetingProposalVotesRoute.meetingId,
                     onDone = { navigationController.navigate(Route.MeetingsSection.Meetings) },
                 )
+              }
+
+              composable<Route.MeetingsSection.MeetingNavigation> { backStackEntry ->
+                val meetingNavigationRoute =
+                    backStackEntry.toRoute<Route.MeetingsSection.MeetingNavigation>()
+                MeetingNavigationScreen(
+                    projectId = meetingNavigationRoute.projectId,
+                    meetingId = meetingNavigationRoute.meetingId,
+                    onNavigateBack = { navigationController.popBackStack() })
               }
 
               composable<Route.MeetingsSection.AudioRecording> { backStackEntry ->

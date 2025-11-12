@@ -35,6 +35,10 @@ android {
             properties.load(localPropertiesFile.inputStream())
         }
         buildConfigField("String", "DEEPSEEK_API_KEY", "\"${properties.getProperty("DEEPSEEK_API_KEY", "")}\"")
+
+        // Google Maps API Key
+        val mapsApiKey = properties.getProperty("MAPS_API_KEY") ?: ""
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
     signingConfigs {
@@ -219,6 +223,10 @@ dependencies {
 
     // Networking
     implementation(libs.okhttp)
+
+    // Google Maps
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.location)
 
     // Testing - Unit
     testImplementation(libs.junit)
