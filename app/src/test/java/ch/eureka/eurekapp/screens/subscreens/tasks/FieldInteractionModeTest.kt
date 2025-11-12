@@ -7,7 +7,7 @@ import org.junit.Test
 /**
  * Unit tests for FieldInteractionMode and its extension functions.
  *
- * Portions of this code were generated with the help of AI.
+ * Portions of this code were generated with the help of Claude Sonnet 4.5.
  */
 class FieldInteractionModeTest {
 
