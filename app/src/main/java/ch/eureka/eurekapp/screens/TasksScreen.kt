@@ -171,8 +171,7 @@ private fun FilterBar(
               label = { Text(project.name) },
               selected =
                   uiState.selectedFilter is TaskScreenFilter.ByProject &&
-                      (uiState.selectedFilter as TaskScreenFilter.ByProject).projectId ==
-                          project.projectId,
+                      uiState.selectedFilter.projectId == project.projectId,
               modifier = Modifier.testTag("filter_${project.projectId}"),
               colors =
                   FilterChipDefaults.filterChipColors(

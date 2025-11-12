@@ -33,7 +33,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Data class combining Task with its assigned Users Portions of this code were generated with the
- * help of IA.
+ * help of AI. Portions added by Jiří Gebauer partially generated with the help of Grok.
  */
 
 /** Internal data class for flow state management */
@@ -185,6 +185,7 @@ open class TaskScreenViewModel(
           }
           .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
+  /** Flow representing the current connectivity status (true if connected, false otherwise) */
   private val _isConnected =
       connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 

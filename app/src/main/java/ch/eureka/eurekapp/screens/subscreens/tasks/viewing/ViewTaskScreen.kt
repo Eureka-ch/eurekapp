@@ -18,6 +18,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -140,11 +141,12 @@ fun ViewTaskScreen(
 
               Button(
                   onClick = {
-                    if (isConnected) {
-                      navigationController.navigate(Route.TasksSection.EditTask(projectId, taskId))
-                    }
+                    navigationController.navigate(Route.TasksSection.EditTask(projectId, taskId))
                   },
-                  modifier = Modifier.testTag(ViewTaskScreenTestTags.EDIT_TASK),
+                  enabled = isConnected,
+                  modifier =
+                      Modifier.testTag(ViewTaskScreenTestTags.EDIT_TASK)
+                          .alpha(if (isConnected) 1f else 0.6f),
                   colors = EurekaStyles.PrimaryButtonColors()) {
                     Text("Edit Task")
                   }
