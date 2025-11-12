@@ -188,11 +188,14 @@ fun MeetingProposalVoteScreen(
                                   meetingProposal)
                             },
                             addFormatVote = { meetingProposal, format ->
-                              meetingProposalVoteViewModel.addFormatVote(meetingProposal, format)
+                              meetingProposalVoteViewModel
+                                  .addFormatVoteForAlreadyVotedMeetingProposal(
+                                      meetingProposal, format)
                             },
                             retractFormatVote = { meetingProposal, format ->
-                              meetingProposalVoteViewModel.retractFormatVote(
-                                  meetingProposal, format)
+                              meetingProposalVoteViewModel
+                                  .retractFormatVoteForAlreadyVotedMeetingProposal(
+                                      meetingProposal, format)
                             }))
               }
             }

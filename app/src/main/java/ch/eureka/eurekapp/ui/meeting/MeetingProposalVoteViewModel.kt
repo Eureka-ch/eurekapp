@@ -73,6 +73,19 @@ class MeetingProposalVoteViewModel(
   }
 
   /**
+   * Check if a user is logged in and returns True if it is the case and false otherwise.
+   *
+   * @return True if the suer is logged and false otherwise.
+   */
+  fun userLoggedIn(): Boolean {
+    if (userId == null) {
+      setErrorMsg("Not logged in")
+      return false
+    }
+    return true
+  }
+
+  /**
    * Vote for a given meeting proposal.
    *
    * @param meetingProposal The meeting proposal to vote for.
@@ -90,8 +103,7 @@ class MeetingProposalVoteViewModel(
       return
     }
 
-    if (userId == null) {
-      setErrorMsg("Not logged in")
+    if (!userLoggedIn()) {
       return
     }
 
@@ -121,12 +133,11 @@ class MeetingProposalVoteViewModel(
       return
     }
 
-    if (userId == null) {
-      setErrorMsg("Not logged in")
+    if (!userLoggedIn()) {
       return
     }
 
-    if (!_uiState.value.meetingProposals[index].votes.map { it.userId }.contains(userId)) {
+    if (!_uiState.value.meetingProposals[index].votes.any { it.userId == userId }) {
       setErrorMsg("Cannot retract vote since you did not vote in the first place")
       return
     }
@@ -150,24 +161,23 @@ class MeetingProposalVoteViewModel(
    * @return True if the user has voted for it and false otherwise.
    */
   fun hasVotedForFormat(meetingProposal: MeetingProposal, format: MeetingFormat): Boolean {
-    if (userId == null) {
-      setErrorMsg("Not logged in")
+    if (!userLoggedIn()) {
       return false
     }
 
-    return meetingProposal.votes
-        .filter { it.formatPreferences.contains(format) }
-        .map { it.userId }
-        .contains(userId)
+    return meetingProposal.votes.any { it.userId == userId && format in it.formatPreferences }
   }
 
   /**
-   * Add a vote for a format.
+   * Add a vote for a format for a meeting proposal where the user have already voted for.
    *
    * @param meetingProposal The meeting proposal on which to add the format vote for.
    * @param format The format of the vote to add.
    */
-  fun addFormatVote(meetingProposal: MeetingProposal, format: MeetingFormat) {
+  fun addFormatVoteForAlreadyVotedMeetingProposal(
+      meetingProposal: MeetingProposal,
+      format: MeetingFormat
+  ) {
     val index = uiState.value.meetingProposals.indexOf(meetingProposal)
 
     if (index < 0) {
@@ -175,16 +185,7 @@ class MeetingProposalVoteViewModel(
       return
     }
 
-    if (userId == null) {
-      setErrorMsg("Not logged in")
-      return
-    }
-
-    if (_uiState.value.meetingProposals[index]
-        .votes
-        .filter { it.formatPreferences.contains(format) }
-        .map { it.userId }
-        .contains(userId)) {
+    if (hasVotedForFormat(_uiState.value.meetingProposals[index], format)) {
       setErrorMsg("Cannot add vote since you already vote in the first place")
       return
     }
@@ -207,12 +208,15 @@ class MeetingProposalVoteViewModel(
   }
 
   /**
-   * Retract a vote for a given format.
+   * Retract a vote for a given format for a meeting proposal where the user have already voted for.
    *
    * @param meetingProposal The meeting proposal on which to retract the format vote.
    * @param format The format of the vote to retract.
    */
-  fun retractFormatVote(meetingProposal: MeetingProposal, format: MeetingFormat) {
+  fun retractFormatVoteForAlreadyVotedMeetingProposal(
+      meetingProposal: MeetingProposal,
+      format: MeetingFormat
+  ) {
     val index = uiState.value.meetingProposals.indexOf(meetingProposal)
 
     if (index < 0) {
@@ -220,16 +224,12 @@ class MeetingProposalVoteViewModel(
       return
     }
 
-    if (userId == null) {
-      setErrorMsg("Not logged in")
+    if (!userLoggedIn()) { // here check needed before call to hasVotedForFormat because we negate
+      // the result of that call
       return
     }
 
-    if (!_uiState.value.meetingProposals[index]
-        .votes
-        .filter { it.formatPreferences.contains(format) }
-        .map { it.userId }
-        .contains(userId)) {
+    if (!hasVotedForFormat(_uiState.value.meetingProposals[index], format)) {
       setErrorMsg("Cannot retract vote since you did not vote in the first place")
       return
     }

@@ -376,130 +376,135 @@ class MeetingProposalVoteViewModelTest {
   // --- Tests for addFormatVote ---
 
   @Test
-  fun addFormatVote_whenProposalNotExists_setsError() = runTest {
+  fun addFormatVote_ForAlreadyVotedMeetingProposal_whenProposalNotExists_setsError() = runTest {
     repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
     createViewModel()
     viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
     val invalidProposal = MeetingProposal()
-    viewModel.addFormatVote(invalidProposal, MeetingFormat.IN_PERSON)
+    viewModel.addFormatVoteForAlreadyVotedMeetingProposal(invalidProposal, MeetingFormat.IN_PERSON)
 
     assertEquals("Meeting proposal to vote for does not exists.", viewModel.uiState.value.errorMsg)
   }
 
   @Test
-  fun addFormatVote_whenUserNotLoggedIn_setsError() = runTest {
+  fun addFormatVote_ForAlreadyVotedMeetingProposal_whenUserNotLoggedIn_setsError() = runTest {
     repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
     createViewModel(userId = null)
     viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
     val proposal = viewModel.uiState.value.meetingProposals[0]
-    viewModel.addFormatVote(proposal, MeetingFormat.IN_PERSON)
+    viewModel.addFormatVoteForAlreadyVotedMeetingProposal(proposal, MeetingFormat.IN_PERSON)
 
     assertEquals("Not logged in", viewModel.uiState.value.errorMsg)
   }
 
   @Test
-  fun addFormatVote_whenUserAlreadyVotedForFormat_setsError() = runTest {
-    repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
-    createViewModel()
-    viewModel.loadMeetingProposals()
-    testDispatcher.scheduler.advanceUntilIdle()
+  fun addFormatVote_whenUserAlreadyVotedForFormat_setsErrorForAlreadyVotedMeetingProposal() =
+      runTest {
+        repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
+        createViewModel()
+        viewModel.loadMeetingProposals()
+        testDispatcher.scheduler.advanceUntilIdle()
 
-    val proposal = viewModel.uiState.value.meetingProposals[1]
-    viewModel.addFormatVote(proposal, MeetingFormat.IN_PERSON)
+        val proposal = viewModel.uiState.value.meetingProposals[1]
+        viewModel.addFormatVoteForAlreadyVotedMeetingProposal(proposal, MeetingFormat.IN_PERSON)
 
-    assertEquals(
-        "Cannot add vote since you already vote in the first place",
-        viewModel.uiState.value.errorMsg)
-  }
+        assertEquals(
+            "Cannot add vote since you already vote in the first place",
+            viewModel.uiState.value.errorMsg)
+      }
 
   @Test
-  fun addFormatVote_whenUserHasVoteAndAddsNewFormat_succeeds() = runTest {
-    repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
-    createViewModel()
-    viewModel.loadMeetingProposals()
-    testDispatcher.scheduler.advanceUntilIdle()
+  fun addFormatVote_whenUserHasVoteAndAddsNewFormat_succeedsForAlreadyVotedMeetingProposal() =
+      runTest {
+        repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
+        createViewModel()
+        viewModel.loadMeetingProposals()
+        testDispatcher.scheduler.advanceUntilIdle()
 
-    val proposal = viewModel.uiState.value.meetingProposals[1]
-    viewModel.addFormatVote(proposal, MeetingFormat.VIRTUAL)
+        val proposal = viewModel.uiState.value.meetingProposals[1]
+        viewModel.addFormatVoteForAlreadyVotedMeetingProposal(proposal, MeetingFormat.VIRTUAL)
 
-    val updatedProposal = viewModel.uiState.value.meetingProposals[1]
-    val usersVote = updatedProposal.votes.find { it.userId == CURRENT_USER_ID }
+        val updatedProposal = viewModel.uiState.value.meetingProposals[1]
+        val usersVote = updatedProposal.votes.find { it.userId == CURRENT_USER_ID }
 
-    assertNull(viewModel.uiState.value.errorMsg)
-    assertNotNull(usersVote)
-    assertEquals(2, usersVote!!.formatPreferences.size)
-    assertTrue(
-        usersVote.formatPreferences.containsAll(
-            listOf(MeetingFormat.IN_PERSON, MeetingFormat.VIRTUAL)))
-  }
+        assertNull(viewModel.uiState.value.errorMsg)
+        assertNotNull(usersVote)
+        assertEquals(2, usersVote!!.formatPreferences.size)
+        assertTrue(
+            usersVote.formatPreferences.containsAll(
+                listOf(MeetingFormat.IN_PERSON, MeetingFormat.VIRTUAL)))
+      }
 
   @Test(expected = NullPointerException::class)
-  fun addFormatVote_whenUserHasNoVote_throwsNullPointerException() = runTest {
-    repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
-    createViewModel()
-    viewModel.loadMeetingProposals()
-    testDispatcher.scheduler.advanceUntilIdle()
+  fun addFormatVote_whenUserHasNoVote_ForAlreadyVotedMeetingProposal_throwsNullPointerException() =
+      runTest {
+        repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
+        createViewModel()
+        viewModel.loadMeetingProposals()
+        testDispatcher.scheduler.advanceUntilIdle()
 
-    val proposal = viewModel.uiState.value.meetingProposals[0]
+        val proposal = viewModel.uiState.value.meetingProposals[0]
 
-    viewModel.addFormatVote(proposal, MeetingFormat.IN_PERSON)
-  }
+        viewModel.addFormatVoteForAlreadyVotedMeetingProposal(proposal, MeetingFormat.IN_PERSON)
+      }
 
   @Test
-  fun retractFormatVote_whenProposalNotExists_setsError() = runTest {
+  fun retractFormatVote_ForAlreadyVotedMeetingProposal_whenProposalNotExists_setsError() = runTest {
     repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
     createViewModel()
     viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
     val invalidProposal = MeetingProposal()
-    viewModel.retractFormatVote(invalidProposal, MeetingFormat.IN_PERSON)
+    viewModel.retractFormatVoteForAlreadyVotedMeetingProposal(
+        invalidProposal, MeetingFormat.IN_PERSON)
 
     assertEquals(
         "Meeting proposal to retract vote for does not exists.", viewModel.uiState.value.errorMsg)
   }
 
   @Test
-  fun retractFormatVote_whenUserNotLoggedIn_setsError() = runTest {
+  fun retractFormatVote_ForAlreadyVotedMeetingProposal_whenUserNotLoggedIn_setsError() = runTest {
     repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
     createViewModel(userId = null)
     viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
     val proposal = viewModel.uiState.value.meetingProposals[1]
-    viewModel.retractFormatVote(proposal, MeetingFormat.IN_PERSON)
+    viewModel.retractFormatVoteForAlreadyVotedMeetingProposal(proposal, MeetingFormat.IN_PERSON)
 
     assertEquals("Not logged in", viewModel.uiState.value.errorMsg)
   }
 
   @Test
-  fun retractFormatVote_whenUserHasNotVotedForFormat_setsError() = runTest {
-    repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
-    createViewModel()
-    viewModel.loadMeetingProposals()
-    testDispatcher.scheduler.advanceUntilIdle()
+  fun retractFormatVote_whenUserHasNotVotedForFormat_setsErrorForAlreadyVotedMeetingProposal() =
+      runTest {
+        repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
+        createViewModel()
+        viewModel.loadMeetingProposals()
+        testDispatcher.scheduler.advanceUntilIdle()
 
-    val proposal = viewModel.uiState.value.meetingProposals[1]
-    viewModel.retractFormatVote(proposal, MeetingFormat.VIRTUAL)
+        val proposal = viewModel.uiState.value.meetingProposals[1]
+        viewModel.retractFormatVoteForAlreadyVotedMeetingProposal(proposal, MeetingFormat.VIRTUAL)
 
-    assertEquals(
-        "Cannot retract vote since you did not vote in the first place",
-        viewModel.uiState.value.errorMsg)
-  }
+        assertEquals(
+            "Cannot retract vote since you did not vote in the first place",
+            viewModel.uiState.value.errorMsg)
+      }
 
   @Test
-  fun retractFormatVote_whenUserHasNoVoteAtAll_setsError() = runTest {
+  fun retractFormatVote_whenUserHasNoVoteForAlreadyVotedMeetingProposalAtAll_setsError() = runTest {
     repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
     createViewModel()
     viewModel.loadMeetingProposals()
     testDispatcher.scheduler.advanceUntilIdle()
 
     val proposal = viewModel.uiState.value.meetingProposals[0]
-    viewModel.retractFormatVote(proposal, MeetingFormat.IN_PERSON)
+    viewModel.retractFormatVoteForAlreadyVotedMeetingProposal(proposal, MeetingFormat.IN_PERSON)
 
     assertEquals(
         "Cannot retract vote since you did not vote in the first place",
@@ -507,40 +512,42 @@ class MeetingProposalVoteViewModelTest {
   }
 
   @Test
-  fun retractFormatVote_whenUserVotedForMultipleFormats_removesOneFormat() = runTest {
-    repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
-    createViewModel()
-    viewModel.loadMeetingProposals()
-    testDispatcher.scheduler.advanceUntilIdle()
+  fun retractFormatVote_whenUserVotedForMultipleFormats_removesOneFormatForAlreadyVotedMeetingProposal() =
+      runTest {
+        repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
+        createViewModel()
+        viewModel.loadMeetingProposals()
+        testDispatcher.scheduler.advanceUntilIdle()
 
-    val proposal = viewModel.uiState.value.meetingProposals[2]
-    viewModel.retractFormatVote(proposal, MeetingFormat.IN_PERSON)
+        val proposal = viewModel.uiState.value.meetingProposals[2]
+        viewModel.retractFormatVoteForAlreadyVotedMeetingProposal(proposal, MeetingFormat.IN_PERSON)
 
-    val updatedProposal = viewModel.uiState.value.meetingProposals[2]
-    val usersVote = updatedProposal.votes.find { it.userId == CURRENT_USER_ID }
+        val updatedProposal = viewModel.uiState.value.meetingProposals[2]
+        val usersVote = updatedProposal.votes.find { it.userId == CURRENT_USER_ID }
 
-    assertNull(viewModel.uiState.value.errorMsg)
-    assertNotNull(usersVote)
-    assertEquals(1, usersVote!!.formatPreferences.size)
-    assertTrue(usersVote.formatPreferences.contains(MeetingFormat.VIRTUAL))
-    assertFalse(usersVote.formatPreferences.contains(MeetingFormat.IN_PERSON))
-  }
+        assertNull(viewModel.uiState.value.errorMsg)
+        assertNotNull(usersVote)
+        assertEquals(1, usersVote!!.formatPreferences.size)
+        assertTrue(usersVote.formatPreferences.contains(MeetingFormat.VIRTUAL))
+        assertFalse(usersVote.formatPreferences.contains(MeetingFormat.IN_PERSON))
+      }
 
   @Test
-  fun retractFormatVote_whenUserVotedForOnlyOneFormat_removesFormatAndLeavesEmptyList() = runTest {
-    repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
-    createViewModel()
-    viewModel.loadMeetingProposals()
-    testDispatcher.scheduler.advanceUntilIdle()
+  fun retractFormatVote_whenUserVotedForOnlyOneFormat_removesFormatAndLeavesEmptyListForAlreadyVotedMeetingProposal() =
+      runTest {
+        repositoryMock.setMeetingToReturn(TEST_MEETING_FOR_FORMATS)
+        createViewModel()
+        viewModel.loadMeetingProposals()
+        testDispatcher.scheduler.advanceUntilIdle()
 
-    val proposal = viewModel.uiState.value.meetingProposals[1]
-    viewModel.retractFormatVote(proposal, MeetingFormat.IN_PERSON)
+        val proposal = viewModel.uiState.value.meetingProposals[1]
+        viewModel.retractFormatVoteForAlreadyVotedMeetingProposal(proposal, MeetingFormat.IN_PERSON)
 
-    val updatedProposal = viewModel.uiState.value.meetingProposals[1]
-    val usersVote = updatedProposal.votes.find { it.userId == CURRENT_USER_ID }
+        val updatedProposal = viewModel.uiState.value.meetingProposals[1]
+        val usersVote = updatedProposal.votes.find { it.userId == CURRENT_USER_ID }
 
-    assertNull(viewModel.uiState.value.errorMsg)
-    assertNotNull(usersVote)
-    assertTrue(usersVote!!.formatPreferences.isEmpty())
-  }
+        assertNull(viewModel.uiState.value.errorMsg)
+        assertNotNull(usersVote)
+        assertTrue(usersVote!!.formatPreferences.isEmpty())
+      }
 }
