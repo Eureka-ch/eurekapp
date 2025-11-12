@@ -286,7 +286,7 @@ class MeetingDetailViewModel(
     return when {
       _editTitle.value.isBlank() -> "Title cannot be empty"
       editDateTime == null -> "Date and time must be set"
-      isDateTimeInPast -> "Meeting should be scheduled in the future"
+      isDateTimeInPast -> "Meeting should be scheduled in the future."
       _editDuration.value <= 0 -> "Duration must be greater than 0"
       else -> null
     }

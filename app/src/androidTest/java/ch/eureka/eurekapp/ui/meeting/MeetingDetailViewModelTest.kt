@@ -566,6 +566,28 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
+  fun saveMeetingChangesRejectsPastDateTime() = runTest {
+    repositoryMock.meetingToReturn.value = testMeeting
+    repositoryMock.participantsToReturn.value = testParticipants
+
+    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    backgroundScope.launch { viewModel.uiState.collect {} }
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.toggleEditMode(testMeeting)
+    val yesterday = Timestamp(Date(System.currentTimeMillis() - 86400000))
+    viewModel.updateEditDateTime(yesterday)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.saveMeetingChanges(testMeeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    val uiState = viewModel.uiState.value
+    assertFalse(uiState.updateSuccess)
+    assertEquals("Meeting should be scheduled in the future.", uiState.errorMsg)
+  }
+
+  @Test
   fun clearUpdateSuccessSetsUpdateSuccessToFalse() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
