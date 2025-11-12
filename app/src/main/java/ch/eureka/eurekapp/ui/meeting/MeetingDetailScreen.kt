@@ -694,6 +694,17 @@ private fun EditableDateTimeField(
           color = Color.Red,
           style = MaterialTheme.typography.bodySmall)
     }
+
+    // Check if datetime is in the past
+    if (config.editDateTime != null &&
+        config.hasTouchedDateTime &&
+        java.time.LocalDateTime.of(editDate, editTime)
+            .isBefore(java.time.LocalDateTime.now())) {
+      Text(
+          text = "Meeting should be scheduled in the future",
+          color = Color.Red,
+          style = MaterialTheme.typography.bodySmall)
+    }
   }
 }
 
