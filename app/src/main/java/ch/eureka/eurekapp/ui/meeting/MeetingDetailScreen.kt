@@ -504,43 +504,60 @@ private fun MeetingInformationCard(meeting: Meeting) {
 
               HorizontalDivider()
 
-              if (meeting.datetime != null && meeting.status != MeetingStatus.IN_PROGRESS) {
-                InfoRow(
-                    icon = Icons.Default.Schedule,
-                    label = "Date & Time",
-                    value = Formatters.formatDateTime(meeting.datetime.toDate()),
-                    testTag = MeetingDetailScreenTestTags.MEETING_DATETIME)
-              }
-
-              meeting.format?.let { format ->
-                InfoRow(
-                    icon =
-                        when (format) {
-                          MeetingFormat.VIRTUAL -> Icons.Default.VideoCall
-                          MeetingFormat.IN_PERSON -> Icons.Default.Place
-                        },
-                    label = "Format",
-                    value = format.description,
-                    testTag = MeetingDetailScreenTestTags.MEETING_FORMAT)
-              }
-
-              if (meeting.format == MeetingFormat.IN_PERSON && meeting.location != null) {
-                InfoRow(
-                    icon = Icons.Default.Place,
-                    label = "Location",
-                    value = meeting.location.name,
-                    testTag = MeetingDetailScreenTestTags.MEETING_LOCATION)
-              }
-
-              if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
-                InfoRow(
-                    icon = Icons.Default.VideoCall,
-                    label = "Meeting Link",
-                    value = meeting.link,
-                    testTag = MeetingDetailScreenTestTags.MEETING_LINK)
-              }
+              MeetingDateTimeInfo(meeting)
+              MeetingFormatInfo(meeting)
+              MeetingLocationInfo(meeting)
+              MeetingLinkInfo(meeting)
             }
       }
+}
+
+@Composable
+private fun MeetingDateTimeInfo(meeting: Meeting) {
+  if (meeting.datetime != null && meeting.status != MeetingStatus.IN_PROGRESS) {
+    InfoRow(
+        icon = Icons.Default.Schedule,
+        label = "Date & Time",
+        value = Formatters.formatDateTime(meeting.datetime.toDate()),
+        testTag = MeetingDetailScreenTestTags.MEETING_DATETIME)
+  }
+}
+
+@Composable
+private fun MeetingFormatInfo(meeting: Meeting) {
+  meeting.format?.let { format ->
+    InfoRow(
+        icon =
+            when (format) {
+              MeetingFormat.VIRTUAL -> Icons.Default.VideoCall
+              MeetingFormat.IN_PERSON -> Icons.Default.Place
+            },
+        label = "Format",
+        value = format.description,
+        testTag = MeetingDetailScreenTestTags.MEETING_FORMAT)
+  }
+}
+
+@Composable
+private fun MeetingLocationInfo(meeting: Meeting) {
+  if (meeting.format == MeetingFormat.IN_PERSON && meeting.location != null) {
+    InfoRow(
+        icon = Icons.Default.Place,
+        label = "Location",
+        value = meeting.location.name,
+        testTag = MeetingDetailScreenTestTags.MEETING_LOCATION)
+  }
+}
+
+@Composable
+private fun MeetingLinkInfo(meeting: Meeting) {
+  if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
+    InfoRow(
+        icon = Icons.Default.VideoCall,
+        label = "Meeting Link",
+        value = meeting.link,
+        testTag = MeetingDetailScreenTestTags.MEETING_LINK)
+  }
 }
 
 /**
