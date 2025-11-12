@@ -57,6 +57,7 @@ import org.junit.Rule
 import org.junit.Test
 
 // Portions of this code were generated with the help of AI.
+// Portions added by Jiří Gebauer were generated with the help of Grok.
 class CreateTaskScreenTests : TestCase() {
 
   @get:Rule val composeTestRule = createComposeRule()

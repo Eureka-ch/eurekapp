@@ -37,6 +37,7 @@ import ch.eureka.eurekapp.ui.camera.PhotoViewer
 import ch.eureka.eurekapp.utils.Formatters
 
 // Portions of this code were generated with the help of AI.
+// Portions added by Jiří Gebauer partially generated with the help of Grok.
 
 /*
 Note: This file was partially written by GPT-5 Codex
