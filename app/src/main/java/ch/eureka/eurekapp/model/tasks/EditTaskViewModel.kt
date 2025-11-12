@@ -14,6 +14,7 @@ import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.user.UserRepository
+import ch.eureka.eurekapp.utils.TaskDependencyCycleDetector
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -114,6 +115,16 @@ class EditTaskViewModel(
       val newPhotoUrls = photoUrlsResult.getOrThrow()
 
       viewModelScope.launch(dispatcher + handler) {
+        // Validate no cycles before saving
+        val cycleValidation =
+            TaskDependencyCycleDetector.validateNoCycles(
+                state.taskId, state.dependingOnTasks, state.projectId, taskRepository)
+        if (cycleValidation.isFailure) {
+          setErrorMsg(cycleValidation.exceptionOrNull()?.message ?: "Circular dependency detected")
+          updateState { copy(isSaving = false) }
+          return@launch
+        }
+
         val task =
             Task(
                 taskID = state.taskId,
@@ -125,7 +136,8 @@ class EditTaskViewModel(
                 reminderTime = reminderTimestamp,
                 attachmentUrls = state.attachmentUrls + newPhotoUrls,
                 createdBy = currentUser,
-                status = state.status)
+                status = state.status,
+                dependingOnTasks = state.dependingOnTasks)
 
         taskRepository.updateTask(task).onFailure { _ ->
           setErrorMsg("Failed to update Task.")
@@ -210,6 +222,7 @@ class EditTaskViewModel(
                       attachmentUrls = filteredAttachments,
                       status = task.status,
                       customData = task.customData,
+                      dependingOnTasks = task.dependingOnTasks,
                   )
                 }
                 // Load project members after task is loaded
@@ -266,6 +279,9 @@ class EditTaskViewModel(
 
   override fun EditTaskState.copyWithProjectId(projectId: String) = copy(projectId = projectId)
 
+  override fun EditTaskState.copyWithDependencies(dependencies: List<String>) =
+      copy(dependingOnTasks = dependencies)
+
   override fun updateState(update: EditTaskState.() -> EditTaskState) {
     _uiState.value = _uiState.value.update()
   }
@@ -279,4 +295,30 @@ class EditTaskViewModel(
 
   override fun EditTaskState.copyWithSelectedAssignedUserIds(userIds: List<String>) =
       copy(selectedAssignedUserIds = userIds)
+  fun setReminderTime(reminderTime: String) {
+    updateState { copy(reminderTime = reminderTime) }
+  }
+
+  override fun addDependency(taskId: String) {
+    val currentDependencies = uiState.value.dependingOnTasks
+    if (!currentDependencies.contains(taskId)) {
+      viewModelScope.launch(dispatcher) {
+        val wouldCycle =
+            TaskDependencyCycleDetector.wouldCreateCycle(
+                uiState.value.taskId, taskId, uiState.value.projectId, taskRepository)
+        if (wouldCycle) {
+          setCycleError("Adding this dependency would create a circular dependency")
+        } else {
+          setCycleError(null)
+          updateState { copyWithDependencies(currentDependencies + taskId) }
+        }
+      }
+    }
+  }
+
+  override fun removeDependency(taskId: String) {
+    val currentDependencies = uiState.value.dependingOnTasks
+    updateState { copyWithDependencies(currentDependencies.filter { it != taskId }) }
+    setCycleError(null)
+  }
 }

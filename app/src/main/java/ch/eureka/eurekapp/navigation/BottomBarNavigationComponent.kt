@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -32,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
@@ -53,8 +54,6 @@ object BottomBarNavigationTestTags {
 
 @Composable
 fun BottomBarNavigationComponent(navigationController: NavController) {
-  val configuration = LocalConfiguration.current
-  val screenTotalHeight = configuration.screenHeightDp
   val navBackStackEntry by navigationController.currentBackStackEntryAsState()
   val currentDestination = navBackStackEntry?.destination
 
@@ -105,7 +104,7 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
       modifier =
           Modifier.fillMaxWidth()
               .padding(horizontal = 15.dp, vertical = 10.dp)
-              .height((screenTotalHeight * 0.08f).dp)
+              .windowInsetsPadding(WindowInsets.navigationBars)
               .clip(RoundedCornerShape(25.dp)),
       tonalElevation = 8.dp,
       actions = {

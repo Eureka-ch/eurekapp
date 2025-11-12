@@ -17,6 +17,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
@@ -93,6 +95,11 @@ object CommonTaskTestTags {
   const val USER_ASSIGNMENT_MENU = "user_assignment_menu"
   const val USER_CHECKBOX = "user_checkbox"
   const val NO_USERS_AVAILABLE = "no_users_available"
+  const val TASK_DEPENDENCIES_FIELD = "task_dependencies_field"
+  const val TASK_DEPENDENCY_ITEM = "task_dependency_item"
+  const val REMOVE_DEPENDENCY = "remove_dependency"
+  const val ADD_DEPENDENCY_BUTTON = "add_dependency_button"
+  const val DEPENDENCY_CYCLE_ERROR = "dependency_cycle_error"
 }
 
 @Composable
@@ -374,6 +381,125 @@ fun UserAssignmentField(
                   }
                 }
           }
+    }
+  }
+}
+fun TaskDependenciesSelectionField(
+    availableTasks: List<ch.eureka.eurekapp.model.data.task.Task>,
+    selectedDependencyIds: List<String>,
+    onDependencyAdded: (String) -> Unit,
+    onDependencyRemoved: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    currentTaskId: String = "",
+    cycleError: String? = null
+) {
+  val selectableTasks =
+      remember(availableTasks, currentTaskId) {
+        availableTasks.filter { it.taskID != currentTaskId }
+      }
+
+  Column(modifier = modifier) {
+    Text(text = "Task Dependencies", style = MaterialTheme.typography.titleMedium)
+    DependencyList(
+        selectedDependencyIds = selectedDependencyIds,
+        availableTasks = availableTasks,
+        onDependencyRemoved = onDependencyRemoved)
+    DependencyPicker(
+        selectableTasks = selectableTasks,
+        selectedDependencyIds = selectedDependencyIds,
+        onDependencyAdded = onDependencyAdded,
+        onDependencyRemoved = onDependencyRemoved,
+        hasProjectTasks = availableTasks.isNotEmpty())
+    cycleError?.let {
+      Text(
+          text = it,
+          color = Color.Red,
+          style = MaterialTheme.typography.bodySmall,
+          modifier = Modifier.testTag(CommonTaskTestTags.DEPENDENCY_CYCLE_ERROR))
+    }
+  }
+}
+
+@Composable
+private fun DependencyList(
+    selectedDependencyIds: List<String>,
+    availableTasks: List<ch.eureka.eurekapp.model.data.task.Task>,
+    onDependencyRemoved: (String) -> Unit
+) {
+  if (selectedDependencyIds.isEmpty()) return
+
+  Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    selectedDependencyIds.forEach { dependencyId ->
+      val task = availableTasks.firstOrNull { it.taskID == dependencyId } ?: return@forEach
+      Row(
+          modifier =
+              Modifier.fillMaxWidth()
+                  .testTag("${CommonTaskTestTags.TASK_DEPENDENCY_ITEM}_$dependencyId"),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = task.title,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f))
+            IconButton(
+                onClick = { onDependencyRemoved(dependencyId) },
+                modifier =
+                    Modifier.testTag("${CommonTaskTestTags.REMOVE_DEPENDENCY}_$dependencyId")) {
+                  Icon(imageVector = Icons.Filled.Delete, contentDescription = "Remove dependency")
+                }
+          }
+    }
+  }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DependencyPicker(
+    selectableTasks: List<ch.eureka.eurekapp.model.data.task.Task>,
+    selectedDependencyIds: List<String>,
+    onDependencyAdded: (String) -> Unit,
+    onDependencyRemoved: (String) -> Unit,
+    hasProjectTasks: Boolean
+) {
+  var expanded by remember { mutableStateOf(false) }
+
+  when {
+    selectableTasks.isNotEmpty() -> {
+      Box(modifier = Modifier.fillMaxWidth()) {
+        OutlinedButton(
+            onClick = { expanded = !expanded },
+            modifier = Modifier.fillMaxWidth().testTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)) {
+              Text("Add Dependency")
+            }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.testTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_menu")) {
+              selectableTasks.forEach { task ->
+                val isSelected = selectedDependencyIds.contains(task.taskID)
+                DropdownMenuItem(
+                    text = { Text(task.title) },
+                    onClick = {
+                      if (isSelected) {
+                        onDependencyRemoved(task.taskID)
+                      } else {
+                        onDependencyAdded(task.taskID)
+                      }
+                      expanded = false
+                    },
+                    enabled = !isSelected,
+                    modifier =
+                        Modifier.testTag(
+                            "${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_${task.taskID}"))
+              }
+            }
+      }
+    }
+    !hasProjectTasks -> {
+      Text(
+          text = "No tasks available in this project",
+          style = MaterialTheme.typography.bodyMedium,
+          color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
   }
 }

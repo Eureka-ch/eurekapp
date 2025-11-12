@@ -36,5 +36,6 @@ data class EditTaskState(
     override val taskSaved: Boolean = false,
     val isDeleting: Boolean = false,
     val taskDeleted: Boolean = false,
-    override val errorMsg: String? = null
+    override val errorMsg: String? = null,
+    override val dependingOnTasks: List<String> = emptyList()
 ) : TaskStateReadWrite
