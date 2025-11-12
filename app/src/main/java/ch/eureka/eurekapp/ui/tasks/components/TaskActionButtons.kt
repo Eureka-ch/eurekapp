@@ -10,10 +10,13 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
+
+// Portions of this code were generated with the help of Grok.
 
 /** Action buttons for the Task screen "+ New Task" and "Auto-assign" buttons */
 @Composable
@@ -29,7 +32,11 @@ fun TaskActionButtons(
         // "+ New Task" button (outlined)
         OutlinedButton(
             onClick = { if (actionsEnabled) onCreateTaskClick() },
-            modifier = Modifier.weight(1f).testTag(TasksScreenTestTags.CREATE_TASK_BUTTON),
+            enabled = actionsEnabled,
+            modifier =
+                Modifier.weight(1f)
+                    .testTag(TasksScreenTestTags.CREATE_TASK_BUTTON)
+                    .alpha(if (actionsEnabled) 1f else 0.6f),
             colors =
                 ButtonDefaults.outlinedButtonColors(
                     containerColor = MaterialTheme.colorScheme.surface,
@@ -43,7 +50,8 @@ fun TaskActionButtons(
         // "Auto-assign" button (filled)
         Button(
             onClick = { if (actionsEnabled) onAutoAssignClick() },
-            modifier = Modifier.weight(1f),
+            enabled = actionsEnabled,
+            modifier = Modifier.weight(1f).alpha(if (actionsEnabled) 1f else 0.6f),
             colors =
                 ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,

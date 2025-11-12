@@ -20,10 +20,9 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +37,7 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 @Composable
 fun EurekaTaskCard(
     title: String,
+    modifier: Modifier = Modifier,
     dueDate: String = "",
     dueDateTag: String? = null,
     assignee: String = "",
@@ -47,7 +47,6 @@ fun EurekaTaskCard(
     isCompleted: Boolean = false,
     onToggleComplete: () -> Unit = {},
     onClick: () -> Unit = {},
-    modifier: Modifier = Modifier,
     canToggleCompletion: Boolean = true
 ) {
   // No local state - use controlled state from parent
@@ -76,7 +75,8 @@ fun EurekaTaskCard(
                 // Checkbox aligned to the right
                 Box(
                     modifier =
-                        Modifier.clickable(enabled = canToggleCompletion) { onToggleComplete() }) {
+                        Modifier.clickable(enabled = canToggleCompletion) { onToggleComplete() }
+                            .alpha(if (canToggleCompletion) 1f else 0.6f)) {
                       if (isCompleted) {
                         Text(
                             text = "✓",
