@@ -57,6 +57,10 @@ import org.junit.Rule
 import org.junit.Test
 
 // Portions of this code were generated with the help of Grok.
+/*
+Note: This file was partially written by GPT-5 Codex
+Co-author : GPT-5
+*/
 
 open class ViewTaskScreenTest : TestCase() {
 
@@ -119,6 +123,17 @@ open class ViewTaskScreenTest : TestCase() {
     memberRef.set(member).await()
   }
 
+  private suspend fun setupTestUser(userId: String, displayName: String = "", email: String = "") {
+    val user =
+        ch.eureka.eurekapp.model.data.user.User(
+            uid = userId,
+            displayName = displayName,
+            email = email,
+            photoUrl = "",
+            lastActive = Timestamp.now())
+    FirebaseEmulator.firestore.collection("users").document(userId).set(user).await()
+  }
+
   private suspend fun setupTestTask(
       projectId: String,
       taskId: String,
@@ -126,7 +141,8 @@ open class ViewTaskScreenTest : TestCase() {
       description: String = "Original Description",
       dueDate: String = "15/10/2025",
       status: TaskStatus = TaskStatus.TODO,
-      attachmentUrls: List<String> = emptyList()
+      attachmentUrls: List<String> = emptyList(),
+      assignedUserIds: List<String> = listOf()
   ) {
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val date = dateFormat.parse(dueDate)!!
@@ -136,7 +152,7 @@ open class ViewTaskScreenTest : TestCase() {
             projectId = projectId,
             title = title,
             description = description,
-            assignedUserIds = listOf(testUserId),
+            assignedUserIds = assignedUserIds.ifEmpty { listOf(testUserId) },
             dueDate = Timestamp(date),
             attachmentUrls = attachmentUrls,
             createdBy = testUserId,
@@ -416,6 +432,120 @@ open class ViewTaskScreenTest : TestCase() {
         // Verify the original title and description are still there
         composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
         composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).assertIsDisplayed()
+      }
+
+  @Test
+  fun testAssignedUsersDisplayedWithDisplayName() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+        val userId1 = "user1"
+        val userId2 = "user2"
+
+        setupTestUser(userId1, displayName = "Alice Johnson", email = "alice@test.com")
+        setupTestUser(userId2, displayName = "Bob Smith", email = "bob@test.com")
+
+        setupViewTaskTest(projectId, taskId) {
+          setupTestTask(projectId, taskId, assignedUserIds = listOf(userId1, userId2))
+        }
+
+        // Verify assigned users section is displayed
+        composeTestRule
+            .onNodeWithTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION)
+            .assertIsDisplayed()
+
+        // Verify the header text
+        composeTestRule.onNodeWithText("Assigned Users:").assertIsDisplayed()
+
+        // Verify individual users are displayed with their display names
+        composeTestRule.onNodeWithText("• Alice Johnson").assertIsDisplayed()
+        composeTestRule.onNodeWithText("• Bob Smith").assertIsDisplayed()
+
+        // Verify the users have proper test tags
+        composeTestRule
+            .onNodeWithTag("${ViewTaskScreenTestTags.ASSIGNED_USER_ITEM}_0")
+            .assertIsDisplayed()
+        composeTestRule
+            .onNodeWithTag("${ViewTaskScreenTestTags.ASSIGNED_USER_ITEM}_1")
+            .assertIsDisplayed()
+      }
+
+  @Test
+  fun testAssignedUsersDisplayedWithEmailWhenNoDisplayName() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+        val userId1 = "user1"
+
+        setupTestUser(userId1, displayName = "", email = "testuser@example.com")
+
+        setupViewTaskTest(projectId, taskId) {
+          setupTestTask(projectId, taskId, assignedUserIds = listOf(userId1))
+        }
+
+        // Verify assigned users section is displayed
+        composeTestRule
+            .onNodeWithTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION)
+            .assertIsDisplayed()
+
+        // Verify user is displayed with email when display name is blank
+        composeTestRule.onNodeWithText("• testuser@example.com").assertIsDisplayed()
+      }
+
+  @Test
+  fun testNoAssignedUsersNotDisplayed() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+
+        setupViewTaskTest(projectId, taskId) {
+          setupTestTask(projectId, taskId, assignedUserIds = emptyList())
+        }
+
+        // Verify assigned users section is NOT displayed when there are no assigned users
+        composeTestRule
+            .onNodeWithTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION)
+            .assertDoesNotExist()
+        composeTestRule.onNodeWithText("Assigned Users:").assertDoesNotExist()
+      }
+
+  @Test
+  fun testMultipleAssignedUsersDisplayed() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+        val userId1 = "user1"
+        val userId2 = "user2"
+        val userId3 = "user3"
+
+        setupTestUser(userId1, displayName = "Charlie Brown", email = "charlie@test.com")
+        setupTestUser(userId2, displayName = "Diana Prince", email = "diana@test.com")
+        setupTestUser(userId3, displayName = "", email = "eve@test.com")
+
+        setupViewTaskTest(projectId, taskId) {
+          setupTestTask(projectId, taskId, assignedUserIds = listOf(userId1, userId2, userId3))
+        }
+
+        // Verify assigned users section is displayed
+        composeTestRule
+            .onNodeWithTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION)
+            .assertIsDisplayed()
+
+        // Verify all three users are displayed
+        composeTestRule.onNodeWithText("• Charlie Brown").assertIsDisplayed()
+        composeTestRule.onNodeWithText("• Diana Prince").assertIsDisplayed()
+        composeTestRule.onNodeWithText("• eve@test.com").assertIsDisplayed()
+
+        // Verify all three user items have test tags
+        composeTestRule
+            .onNodeWithTag("${ViewTaskScreenTestTags.ASSIGNED_USER_ITEM}_0")
+            .assertIsDisplayed()
+        composeTestRule
+            .onNodeWithTag("${ViewTaskScreenTestTags.ASSIGNED_USER_ITEM}_1")
+            .assertIsDisplayed()
+        composeTestRule
+            .onNodeWithTag("${ViewTaskScreenTestTags.ASSIGNED_USER_ITEM}_2")
+            .assertIsDisplayed()
       }
 
   @Composable

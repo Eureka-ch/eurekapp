@@ -39,6 +39,7 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDescriptionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskReminderField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskTitleField
+import ch.eureka.eurekapp.screens.subscreens.tasks.UserAssignmentField
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 const val CREATE_SCREEN_PHOTO_BUTTON_SIZE = 0.3f
@@ -47,6 +48,7 @@ const val CREATE_SCREEN_PHOTO_BUTTON_SIZE = 0.3f
 Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
 Co-Authored-By: Claude <noreply@anthropic.com>
 Portions of this code were generated with the help of Grok.
+Note: This file was partially written by GPT-5 Codex Co-author : GPT-5
 */
 
 /**
@@ -96,6 +98,7 @@ fun CreateTaskScreen(
   LaunchedEffect(projectId) {
     if (projectId.isNotEmpty()) {
       createTaskViewModel.loadAvailableTasks(projectId)
+      createTaskViewModel.loadProjectMembers(projectId)
     }
   }
 
@@ -154,6 +157,11 @@ fun CreateTaskScreen(
                   selectedProjectId = projectId,
                   onProjectSelected = { projectId -> createTaskViewModel.setProjectId(projectId) })
 
+              UserAssignmentField(
+                  availableUsers = createTaskState.availableUsers,
+                  selectedUserIds = createTaskState.selectedAssignedUserIds,
+                  onUserToggled = { userId -> createTaskViewModel.toggleUserAssignment(userId) },
+                  enabled = projectId.isNotEmpty())
               if (projectId.isNotEmpty()) {
                 TaskDependenciesSelectionField(
                     availableTasks = availableTasks,

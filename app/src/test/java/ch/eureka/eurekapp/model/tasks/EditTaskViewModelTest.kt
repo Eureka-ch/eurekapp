@@ -7,6 +7,7 @@ import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.ui.tasks.MockProjectRepository
 import ch.eureka.eurekapp.ui.tasks.MockTaskRepository
+import ch.eureka.eurekapp.ui.tasks.MockUserRepository
 import com.google.firebase.Timestamp
 import io.mockk.every
 import io.mockk.mockk
@@ -28,6 +29,8 @@ import org.junit.Test
 
 /*
 Co-Authored-By: Claude <noreply@anthropic.com>
+Note: This file was partially written by GPT-5 Codex
+Co-author : GPT-5
 */
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -38,6 +41,7 @@ class EditTaskViewModelTest {
   private lateinit var mockTaskRepository: MockTaskRepository
   private lateinit var mockFileRepository: MockFileStorageRepository
   private lateinit var mockProjectRepository: MockProjectRepository
+  private lateinit var mockUserRepository: MockUserRepository
   private lateinit var viewModel: EditTaskViewModel
   private lateinit var mockContext: Context
 
@@ -47,6 +51,7 @@ class EditTaskViewModelTest {
     mockTaskRepository = MockTaskRepository()
     mockFileRepository = MockFileStorageRepository()
     mockProjectRepository = MockProjectRepository()
+    mockUserRepository = MockUserRepository()
     mockContext =
         mockk(relaxed = true) {
           val contentResolver = mockk<android.content.ContentResolver>(relaxed = true)
@@ -61,6 +66,7 @@ class EditTaskViewModelTest {
     mockTaskRepository.reset()
     mockFileRepository.reset()
     mockProjectRepository.reset()
+    mockUserRepository.reset()
   }
 
   @Test
@@ -78,7 +84,13 @@ class EditTaskViewModelTest {
                 description = "Description 2",
                 status = ProjectStatus.OPEN))
     viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+        EditTaskViewModel(
+            mockTaskRepository,
+            mockFileRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            { null },
+            testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -89,7 +101,13 @@ class EditTaskViewModelTest {
   @Test
   fun availableProjects_emptyListWhenNoProjects() = runTest {
     viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+        EditTaskViewModel(
+            mockTaskRepository,
+            mockFileRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            { null },
+            testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -100,7 +118,13 @@ class EditTaskViewModelTest {
   @Test
   fun viewModel_initialState_hasCorrectDefaults() = runTest {
     viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+        EditTaskViewModel(
+            mockTaskRepository,
+            mockFileRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            { null },
+            testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -275,7 +299,13 @@ class EditTaskViewModelTest {
     mockTaskRepository.addTask(task1)
 
     viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, { "test-user" }, testDispatcher)
+        EditTaskViewModel(
+            mockTaskRepository,
+            mockFileRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            { "test-user" },
+            testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
 
@@ -309,7 +339,13 @@ class EditTaskViewModelTest {
     mockTaskRepository.addTask(task1)
 
     viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, { "test-user" }, testDispatcher)
+        EditTaskViewModel(
+            mockTaskRepository,
+            mockFileRepository,
+            mockProjectRepository,
+            mockUserRepository,
+            { "test-user" },
+            testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
 
