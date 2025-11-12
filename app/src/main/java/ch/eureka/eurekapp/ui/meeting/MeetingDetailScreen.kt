@@ -700,8 +700,7 @@ private fun EditableDateTimeField(
 
     if (config.editDateTime != null &&
         config.hasTouchedDateTime &&
-        java.time.LocalDateTime.of(editDate, editTime)
-            .isBefore(java.time.LocalDateTime.now())) {
+        java.time.LocalDateTime.of(editDate, editTime).isBefore(java.time.LocalDateTime.now())) {
       Text(
           text = "Meeting should be scheduled in the future.",
           color = Color.Red,
