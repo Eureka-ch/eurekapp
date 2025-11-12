@@ -36,6 +36,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
@@ -59,9 +60,13 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.data.project.CreateProjectViewModel
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
+import ch.eureka.eurekapp.ui.components.BackButton
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BlackTextColor
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.GrayTextColor2
@@ -72,6 +77,8 @@ import ch.eureka.eurekapp.ui.theme.Typography
 import ch.eureka.eurekapp.utils.Formatters
 import ch.eureka.eurekapp.utils.Utils
 import kotlinx.coroutines.launch
+
+// Portions of this code were generated with the help of Grok.
 
 private val textTypography = Typography.bodyMedium
 private val titleTypography = Typography.titleSmall
@@ -105,6 +112,7 @@ private val defaultPopupProperties =
  *   date.
  * @property CALENDAR_ICON_BUTTON_END Tag for the calendar icon button associated with the end date.
  * @property CREATE_RPOJECT_BUTTON Tag for the "Create Project" button.
+ * @property BACK_BUTTON Tag for the back button.
  * @function createProjectStatusTestTag Generates a dynamic test tag for a given ProjectStatus.
  */
 object CreateProjectScreenTestTags {
@@ -121,6 +129,7 @@ object CreateProjectScreenTestTags {
   const val CALENDAR_ICON_BUTTON_END = "calendar icon end"
 
   const val CREATE_RPOJECT_BUTTON = "create project button"
+  const val BACK_BUTTON = "back_button"
 
   fun createProjectStatusTestTag(status: ProjectStatus): String {
     return "status: ${status.name}"
@@ -130,12 +139,14 @@ object CreateProjectScreenTestTags {
 /**
  * The screen to create projects
  *
+ * @param navigationController The NavHostController for handling navigation actions.
  * @param createProjectViewModel the view model that communicates with the repositories
  * @param startDate a startDate for the project just for injecting it during testing
  * @param onProjectCreated the function to execute on the project is created
  */
 @Composable
 fun CreateProjectScreen(
+    navigationController: NavHostController = rememberNavController(),
     createProjectViewModel: CreateProjectViewModel = viewModel(),
     startDate: MutableState<String> = remember { mutableStateOf<String>("") },
     // for injecting it during testing,
@@ -162,219 +173,234 @@ fun CreateProjectScreen(
 
   var failedToCreateProjectText by remember { mutableStateOf<String>("") }
 
-  Column(
-      modifier = Modifier.fillMaxSize().background(color = LightColorScheme.background),
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.SpaceEvenly) {
-        Column(modifier = Modifier.padding(vertical = 2.dp, horizontal = 10.dp)) {
-          Text(
-              text = "Create New Project",
-              style = Typography.titleLarge,
-              fontWeight = FontWeight(600))
-          Text(
-              text =
-                  "Define the core details. You can link Google Workspace and Github now or later.",
-              style = Typography.titleMedium,
-              color = GrayTextColor2)
-        }
-        // project creation
-        Surface(
+  Scaffold(
+      topBar = {
+        EurekaTopBar(
+            title = "Create New Project",
+            navigationIcon = {
+              BackButton(
+                  onClick = { navigationController.popBackStack() },
+                  modifier = Modifier.testTag(CreateProjectScreenTestTags.BACK_BUTTON))
+            })
+      },
+      content = { paddingValues ->
+        Column(
             modifier =
-                Modifier.border(
-                        border = BorderStroke(width = 1.dp, color = BorderGrayColor),
-                        shape = RoundedCornerShape(16.dp))
-                    .fillMaxWidth(0.95f)
-                    .fillMaxHeight(0.9f),
-            shadowElevation = 3.dp,
-            color = Color.White,
-            shape = RoundedCornerShape(16.dp)) {
-              Column(
+                Modifier.fillMaxSize()
+                    .background(color = LightColorScheme.background)
+                    .padding(paddingValues),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceEvenly) {
+              Column(modifier = Modifier.padding(vertical = 2.dp, horizontal = 10.dp)) {
+                Text(
+                    text = "Create New Project",
+                    style = Typography.titleLarge,
+                    fontWeight = FontWeight(600))
+                Text(
+                    text =
+                        "Define the core details. You can link Google Workspace and Github now or later.",
+                    style = Typography.titleMedium,
+                    color = GrayTextColor2)
+              }
+              // project creation
+              Surface(
                   modifier =
-                      Modifier.padding(vertical = 5.dp).fillMaxWidth().verticalScroll(scrollState),
-                  horizontalAlignment = Alignment.CenterHorizontally,
-                  verticalArrangement = Arrangement.Top) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically) {
-                          CreateProjectTextField(
-                              title = "Project name",
-                              placeHolderText = "Ex: SwEnt - Sprint Manager",
-                              textValue = projectName,
-                              inputIsError = { input -> Utils.stringIsEmptyOrBlank(input) },
-                              errorText = "Project name cannot be empty!",
-                              isErrorState = projectNameError,
-                              testTag =
-                                  CreateProjectScreenTestTags.PROJECT_NAME_TEST_TAG_TEXT_INPUT)
-                        }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically) {
-                          CreateProjectTextField(
-                              title = "Description",
-                              placeHolderText = "Short context and objectives...",
-                              textValue = projectDescription,
-                              inputIsError = { input -> Utils.stringIsEmptyOrBlank(input) },
-                              errorText = "Description cannot be empty!",
-                              minLine = 4,
-                              isErrorState = projectDescriptionError,
-                              testTag =
-                                  CreateProjectScreenTestTags.DESCRIPTION_NAME_TEST_TAG_TEXT_INPUT)
-                        }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically) {
-                          Row(
-                              modifier = Modifier.weight(1f),
-                              horizontalArrangement = Arrangement.Center,
-                              verticalAlignment = Alignment.CenterVertically) {
-                                CreateProjectTextField(
-                                    title = "Start",
-                                    placeHolderText = "dd/MM/yyyy",
-                                    isDatePicker = true,
-                                    textValue = startDate,
-                                    inputIsError = { input ->
-                                      !Utils.isDateParseableToStandardAppPattern(input)
-                                    },
-                                    errorText = "Date should be of the format dd/MM/yyyy",
-                                    isErrorState = startDateError,
-                                    testTag = CreateProjectScreenTestTags.START_DATE_TEST_TAG,
-                                    datePickerButtonTag =
-                                        CreateProjectScreenTestTags.CALENDAR_ICON_BUTTON_START)
-                              }
-                          Row(
-                              modifier = Modifier.weight(1f),
-                              horizontalArrangement = Arrangement.Center,
-                              verticalAlignment = Alignment.CenterVertically) {
-                                CreateProjectTextField(
-                                    title = "End (optional)",
-                                    placeHolderText = "dd/MM/yyyy",
-                                    isDatePicker = true,
-                                    textValue = endDate,
-                                    inputIsError = { input ->
-                                      !Utils.stringIsEmptyOrBlank(input) &&
-                                          !Utils.isDateParseableToStandardAppPattern(input)
-                                    },
-                                    errorText = "Date should be of the format dd/MM/yyyy",
-                                    isErrorState = endDateError,
-                                    testTag = CreateProjectScreenTestTags.END_DATE_TEST_TAG,
-                                    datePickerButtonTag =
-                                        CreateProjectScreenTestTags.CALENDAR_ICON_BUTTON_END)
-                              }
-                        }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically) {
-                          ProjectStateSelectionMenu(projectStatus = projectStatus)
-                        }
-
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 15.dp),
-                        thickness = 1.dp,
-                        color = BorderGrayColor)
-
+                      Modifier.border(
+                              border = BorderStroke(width = 1.dp, color = BorderGrayColor),
+                              shape = RoundedCornerShape(16.dp))
+                          .fillMaxWidth(0.95f)
+                          .fillMaxHeight(0.9f),
+                  shadowElevation = 3.dp,
+                  color = Color.White,
+                  shape = RoundedCornerShape(16.dp)) {
                     Column(
                         modifier =
-                            Modifier.fillMaxWidth().padding(horizontal = 15.dp, vertical = 5.dp),
-                        horizontalAlignment = Alignment.Start) {
-                          Text(
-                              "Integrations",
-                              style = Typography.titleMedium,
-                              fontWeight = FontWeight(600))
-                          CheckboxOptionComponent(
-                              "Enable Google Drive Folder",
-                              enableGoogleDriveFolderChecked,
-                              CreateProjectScreenTestTags
-                                  .CHECKBOX_ENABLE_GOOGLE_DRIVE_FOLDER_TEST_TAG)
-                          CheckboxOptionComponent(
-                              "Link Github Repository",
-                              linkGithubRepository,
-                              CreateProjectScreenTestTags.CHECKBOX_LINK_GITHUB_REPOSITORY)
+                            Modifier.padding(vertical = 5.dp).fillMaxWidth().verticalScroll(scrollState),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Top) {
+                          Row(
+                              modifier = Modifier.fillMaxWidth(),
+                              horizontalArrangement = Arrangement.Center,
+                              verticalAlignment = Alignment.CenterVertically) {
+                                CreateProjectTextField(
+                                    title = "Project name",
+                                    placeHolderText = "Ex: SwEnt - Sprint Manager",
+                                    textValue = projectName,
+                                    inputIsError = { input -> Utils.stringIsEmptyOrBlank(input) },
+                                    errorText = "Project name cannot be empty!",
+                                    isErrorState = projectNameError,
+                                    testTag =
+                                        CreateProjectScreenTestTags.PROJECT_NAME_TEST_TAG_TEXT_INPUT)
+                              }
+                          Row(
+                              modifier = Modifier.fillMaxWidth(),
+                              horizontalArrangement = Arrangement.Center,
+                              verticalAlignment = Alignment.CenterVertically) {
+                                CreateProjectTextField(
+                                    title = "Description",
+                                    placeHolderText = "Short context and objectives...",
+                                    textValue = projectDescription,
+                                    inputIsError = { input -> Utils.stringIsEmptyOrBlank(input) },
+                                    errorText = "Description cannot be empty!",
+                                    minLine = 4,
+                                    isErrorState = projectDescriptionError,
+                                    testTag =
+                                        CreateProjectScreenTestTags.DESCRIPTION_NAME_TEST_TAG_TEXT_INPUT)
+                              }
+                          Row(
+                              modifier = Modifier.fillMaxWidth(),
+                              horizontalArrangement = Arrangement.spacedBy(8.dp),
+                              verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                modifier = Modifier.weight(1f),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically) {
+                                  CreateProjectTextField(
+                                      title = "Start",
+                                      placeHolderText = "dd/MM/yyyy",
+                                      isDatePicker = true,
+                                      textValue = startDate,
+                                      inputIsError = { input ->
+                                        !Utils.isDateParseableToStandardAppPattern(input)
+                                      },
+                                      errorText = "Date should be of the format dd/MM/yyyy",
+                                      isErrorState = startDateError,
+                                      testTag = CreateProjectScreenTestTags.START_DATE_TEST_TAG,
+                                      datePickerButtonTag =
+                                          CreateProjectScreenTestTags.CALENDAR_ICON_BUTTON_START)
+                                }
+                            Row(
+                                modifier = Modifier.weight(1f),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically) {
+                                  CreateProjectTextField(
+                                      title = "End (optional)",
+                                      placeHolderText = "dd/MM/yyyy",
+                                      isDatePicker = true,
+                                      textValue = endDate,
+                                      inputIsError = { input ->
+                                        !Utils.stringIsEmptyOrBlank(input) &&
+                                            !Utils.isDateParseableToStandardAppPattern(input)
+                                      },
+                                      errorText = "Date should be of the format dd/MM/yyyy",
+                                      isErrorState = endDateError,
+                                      testTag = CreateProjectScreenTestTags.END_DATE_TEST_TAG,
+                                      datePickerButtonTag =
+                                          CreateProjectScreenTestTags.CALENDAR_ICON_BUTTON_END)
+                                }
+                          }
 
-                          if (linkGithubRepository.value) {
-                            Row(modifier = Modifier) {
-                              CreateProjectTextField(
-                                  title = "Github URL (optional)",
-                                  placeHolderText = "https://github.com/org/repo",
-                                  textValue = githubUrl,
-                                  inputIsError = { input -> false },
-                                  errorText = "",
-                                  testTag = CreateProjectScreenTestTags.GITHUB_URL_TEST_TAG)
+                          Row(
+                              modifier = Modifier.fillMaxWidth(),
+                              horizontalArrangement = Arrangement.Center,
+                              verticalAlignment = Alignment.CenterVertically) {
+                            ProjectStateSelectionMenu(projectStatus = projectStatus)
+                          }
+
+                          HorizontalDivider(
+                              modifier = Modifier.padding(horizontal = 15.dp),
+                              thickness = 1.dp,
+                              color = BorderGrayColor)
+
+                          Column(
+                              modifier =
+                                  Modifier.fillMaxWidth().padding(horizontal = 15.dp, vertical = 5.dp),
+                              horizontalAlignment = Alignment.Start) {
+                            Text(
+                                "Integrations",
+                                style = Typography.titleMedium,
+                                fontWeight = FontWeight(600))
+                            CheckboxOptionComponent(
+                                "Enable Google Drive Folder",
+                                enableGoogleDriveFolderChecked,
+                                CreateProjectScreenTestTags
+                                    .CHECKBOX_ENABLE_GOOGLE_DRIVE_FOLDER_TEST_TAG)
+                            CheckboxOptionComponent(
+                                "Link Github Repository",
+                                linkGithubRepository,
+                                CreateProjectScreenTestTags.CHECKBOX_LINK_GITHUB_REPOSITORY)
+
+                            if (linkGithubRepository.value) {
+                              Row(modifier = Modifier) {
+                                CreateProjectTextField(
+                                    title = "Github URL (optional)",
+                                    placeHolderText = "https://github.com/org/repo",
+                                    textValue = githubUrl,
+                                    inputIsError = { input -> false },
+                                    errorText = "",
+                                    testTag = CreateProjectScreenTestTags.GITHUB_URL_TEST_TAG)
+                              }
                             }
                           }
-                        }
 
-                    Spacer(modifier = Modifier.weight(1f))
+                          Spacer(modifier = Modifier.weight(1f))
 
-                    Row(
-                        modifier =
-                            Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 10.dp),
-                        horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.CenterVertically) {
-                          FilledTonalButton(
+                          Row(
                               modifier =
-                                  Modifier.width(140.dp)
-                                      .height(40.dp)
-                                      .testTag(CreateProjectScreenTestTags.CREATE_RPOJECT_BUTTON),
-                              onClick = {
-                                /** The method that handles the creation of a project */
-                                projectNameError.value =
-                                    Utils.stringIsEmptyOrBlank(projectName.value)
-                                projectDescriptionError.value =
-                                    Utils.stringIsEmptyOrBlank(projectDescription.value)
-                                startDateError.value =
-                                    !Utils.isDateParseableToStandardAppPattern(startDate.value)
-                                endDateError.value =
-                                    !Utils.stringIsEmptyOrBlank(endDate.value) &&
-                                        !Utils.isDateParseableToStandardAppPattern(endDate.value)
+                                  Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 10.dp),
+                              horizontalArrangement = Arrangement.Start,
+                              verticalAlignment = Alignment.CenterVertically) {
+                            FilledTonalButton(
+                                modifier =
+                                    Modifier.width(140.dp)
+                                        .height(40.dp)
+                                        .testTag(CreateProjectScreenTestTags.CREATE_RPOJECT_BUTTON),
+                                onClick = {
+                                  /** The method that handles the creation of a project */
+                                  projectNameError.value =
+                                      Utils.stringIsEmptyOrBlank(projectName.value)
+                                  projectDescriptionError.value =
+                                      Utils.stringIsEmptyOrBlank(projectDescription.value)
+                                  startDateError.value =
+                                      !Utils.isDateParseableToStandardAppPattern(startDate.value)
+                                  endDateError.value =
+                                      !Utils.stringIsEmptyOrBlank(endDate.value) &&
+                                          !Utils.isDateParseableToStandardAppPattern(endDate.value)
 
-                                val newId = createProjectViewModel.getNewProjectId()
-                                val currentUserId = createProjectViewModel.getCurrentUser()
-                                if (!projectNameError.value &&
-                                    !projectDescriptionError.value &&
-                                    !startDateError.value &&
-                                    (Utils.stringIsEmptyOrBlank(endDate.value) ||
-                                        Utils.isDateParseableToStandardAppPattern(endDate.value))) {
-                                  if (currentUserId != null) {
-                                    val projectToAdd =
-                                        Project(
-                                            projectId = newId,
-                                            createdBy = currentUserId,
-                                            memberIds = listOf(currentUserId),
-                                            name = projectName.value,
-                                            description = projectDescription.value,
-                                            status = projectStatus.value)
-                                    createProjectViewModel.viewModelScope.launch {
-                                      createProjectViewModel.createProject(
-                                          projectToCreate = projectToAdd,
-                                          onSuccessCallback = { onProjectCreated() },
-                                          onFailureCallback = {
-                                            failedToCreateProjectText =
-                                                "Failed to create the project..."
-                                          })
+                                  val newId = createProjectViewModel.getNewProjectId()
+                                  val currentUserId = createProjectViewModel.getCurrentUser()
+                                  if (!projectNameError.value &&
+                                      !projectDescriptionError.value &&
+                                      !startDateError.value &&
+                                      (Utils.stringIsEmptyOrBlank(endDate.value) ||
+                                          Utils.isDateParseableToStandardAppPattern(endDate.value))) {
+                                    if (currentUserId != null) {
+                                      val projectToAdd =
+                                          Project(
+                                              projectId = newId,
+                                              createdBy = currentUserId,
+                                              memberIds = listOf(currentUserId),
+                                              name = projectName.value,
+                                              description = projectDescription.value,
+                                              status = projectStatus.value)
+                                      createProjectViewModel.viewModelScope.launch {
+                                        createProjectViewModel.createProject(
+                                            projectToCreate = projectToAdd,
+                                            onSuccessCallback = { onProjectCreated() },
+                                            onFailureCallback = {
+                                              failedToCreateProjectText =
+                                                  "Failed to create the project..."
+                                            })
+                                      }
                                     }
                                   }
-                                }
-                              },
-                              colors =
-                                  ButtonDefaults.filledTonalButtonColors(
-                                      containerColor = LightingBlue)) {
-                                Text(
-                                    text = "Create Project",
-                                    color = WhiteTextColor,
-                                    fontWeight = FontWeight(500),
-                                    style = Typography.titleSmall)
-                              }
+                                },
+                                colors =
+                                    ButtonDefaults.filledTonalButtonColors(
+                                        containerColor = LightingBlue)) {
+                              Text(
+                                  text = "Create Project",
+                                  color = WhiteTextColor,
+                                  fontWeight = FontWeight(500),
+                                  style = Typography.titleSmall)
+                            }
 
-                          Text(failedToCreateProjectText, color = LightColorScheme.error)
-                        }
-                  }
-            }
+                            Text(failedToCreateProjectText, color = LightColorScheme.error)
+                          }
+                    }
+              }
       }
+  })
 }
 /**
  * A reusable text field component for project creation, supporting both regular text input and

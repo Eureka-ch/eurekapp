@@ -39,7 +39,9 @@ import com.google.firebase.auth.auth
 import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
 
-/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
+/** Note :This file was partially written by ChatGPT (GPT-5) and Grok
+ * Co-author : GPT-5
+ * Co-author: Grok*/
 sealed interface Route {
   // Main screens
   @Serializable data object ProjectSelection : Route
@@ -329,7 +331,8 @@ fun NavigationMenu() {
                       navigationController.navigate(
                           Route.MeetingsSection.AudioTranscript(
                               projectId = projectId, meetingId = meetingId))
-                    })
+                    },
+                    navigationController = navigationController)
               }
 
               composable<Route.MeetingsSection.AudioTranscript> { backStackEntry ->
@@ -341,10 +344,10 @@ fun NavigationMenu() {
                     onNavigateBack = { navigationController.popBackStack() })
               }
 
-              composable<Route.ProjectSelectionSection.CreateProject> { CreateProjectScreen() }
+              composable<Route.ProjectSelectionSection.CreateProject> { CreateProjectScreen(navigationController = navigationController) }
 
               composable<Route.OverviewProjectSection.CreateInvitation> {
-                CreateInvitationSubscreen(projectId = testProjectId, onInvitationCreate = {})
+                CreateInvitationSubscreen(projectId = testProjectId, onInvitationCreate = {}, navigationController = navigationController)
               }
 
               composable<Route.Camera> { Camera(navigationController) }

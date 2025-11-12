@@ -21,7 +21,12 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+
+// Portions of this code were generated with the help of Grok.
 
 /** Test tags for UI testing. */
 object TokenEntryScreenTestTags {
@@ -30,6 +35,7 @@ object TokenEntryScreenTestTags {
   const val VALIDATE_BUTTON = "validateButton"
   const val HELP_LINK = "helpLink"
   const val ERROR_TEXT = "errorText"
+  const val BACK_BUTTON = "back button"
 }
 
 /**
@@ -44,6 +50,7 @@ object TokenEntryScreenTestTags {
 @Composable
 fun TokenEntryScreen(
     tokenEntryViewModel: TokenEntryViewModel = viewModel(),
+    navigationController: NavHostController = rememberNavController(),
     onTokenValidated: () -> Unit = {}
 ) {
   val context = LocalContext.current
@@ -67,7 +74,14 @@ fun TokenEntryScreen(
 
   Scaffold(
       modifier = Modifier.fillMaxSize(),
-      topBar = { EurekaTopBar() },
+      topBar = {
+        EurekaTopBar(
+            navigationIcon = {
+              BackButton(
+                  onClick = { navigationController.popBackStack() },
+                  modifier = Modifier.testTag(TokenEntryScreenTestTags.BACK_BUTTON))
+            })
+      },
   ) { padding ->
     Column(
         modifier =

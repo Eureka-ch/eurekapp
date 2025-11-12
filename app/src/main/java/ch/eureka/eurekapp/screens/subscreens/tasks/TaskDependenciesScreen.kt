@@ -18,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowRightAlt
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,16 +37,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.tasks.TaskDependenciesViewModel
+import ch.eureka.eurekapp.ui.components.BackButton
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.DarkBackground
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.GrayTextColor2
 import ch.eureka.eurekapp.ui.theme.DarkColorScheme
 import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.ui.theme.Typography
+
+// Portions of this code were generated with the help of Grok.
 
 private val allUser = User(uid = "All", displayName = "All")
 /**
@@ -71,12 +78,14 @@ object TaskDependenciesScreenTestTags {
  *
  * @param projectId ID of the current project.
  * @param taskId ID of the root task being visualized.
+ * @param navigationController The NavHostController for handling navigation actions.
  * @param taskDependenciesViewModel ViewModel used to retrieve task and user data.
  */
 @Composable
 fun TaskDependenciesScreen(
     projectId: String,
     taskId: String,
+    navigationController: NavHostController = rememberNavController(),
     taskDependenciesViewModel: TaskDependenciesViewModel = viewModel()
 ) {
   val projectUsers =
@@ -86,60 +95,71 @@ fun TaskDependenciesScreen(
 
   var nameFilter by remember { mutableStateOf("All") }
 
-  Column(
-      modifier = Modifier.padding(vertical = 2.dp, horizontal = 10.dp),
-      horizontalAlignment = Alignment.CenterHorizontally) {
-        ScreenTitle()
-        /*
-        Filter section
-        **/
-        SurfaceComposable(
-            title = "Filtering",
-            composable = {
-              FlowRow(
-                  modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
-                  horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    FilterButton(
-                        user = allUser, onClick = { nameFilter = "All" }, nameFilter = nameFilter)
-                    projectUsers.value.filterNotNull().map { user ->
-                      FilterButton(
-                          user = user, onClick = { nameFilter = user.uid }, nameFilter = nameFilter)
-                    }
-                  }
-            })
-        val verticalScrollState = rememberScrollState()
-        val horizontalScrollState = rememberScrollState()
-
-        /*
-        Dependencies screen
-        **/
-        SurfaceComposable(
+  Scaffold(
+      topBar = {
+        EurekaTopBar(
             title = "Dependencies",
-            composable = {
-              if (task.value != null) {
-                Row(
-                    modifier = Modifier.padding(vertical = 5.dp, horizontal = 5.dp).fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically) {
-                      Box(
-                          modifier =
-                              Modifier.weight(1f)
-                                  .verticalScroll(verticalScrollState)
-                                  .horizontalScroll(horizontalScrollState)
-                                  .fillMaxWidth(),
-                          contentAlignment = Alignment.TopCenter) {
-                            Column(modifier = Modifier.fillMaxWidth()) {
-                              TreeView(
-                                  isParent = true,
-                                  projectId = projectId,
-                                  task = task.value!!,
-                                  taskDependenciesViewModel = taskDependenciesViewModel,
-                                  filterName = nameFilter)
-                            }
+            navigationIcon = {
+              BackButton(
+                  onClick = { navigationController.popBackStack() },
+                  modifier = Modifier.testTag(CommonTaskTestTags.BACK_BUTTON))
+            })
+      },
+      content = { paddingValues ->
+        Column(
+            modifier = Modifier.padding(paddingValues).padding(vertical = 2.dp, horizontal = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally) {
+              /*
+              Filter section
+              **/
+              SurfaceComposable(
+                  title = "Filtering",
+                  composable = {
+                    FlowRow(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                          FilterButton(
+                              user = allUser, onClick = { nameFilter = "All" }, nameFilter = nameFilter)
+                          projectUsers.value.filterNotNull().map { user ->
+                            FilterButton(
+                                user = user, onClick = { nameFilter = user.uid }, nameFilter = nameFilter)
+                          }
+                        }
+                  })
+              val verticalScrollState = rememberScrollState()
+              val horizontalScrollState = rememberScrollState()
+
+              /*
+              Dependencies screen
+              **/
+              SurfaceComposable(
+                  title = "Dependencies",
+                  composable = {
+                    if (task.value != null) {
+                      Row(
+                          modifier = Modifier.padding(vertical = 5.dp, horizontal = 5.dp).fillMaxWidth(),
+                          verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier =
+                                    Modifier.weight(1f)
+                                        .verticalScroll(verticalScrollState)
+                                        .horizontalScroll(horizontalScrollState)
+                                        .fillMaxWidth(),
+                                contentAlignment = Alignment.TopCenter) {
+                                  Column(modifier = Modifier.fillMaxWidth()) {
+                                    TreeView(
+                                        isParent = true,
+                                        projectId = projectId,
+                                        task = task.value!!,
+                                        taskDependenciesViewModel = taskDependenciesViewModel,
+                                        filterName = nameFilter)
+                                  }
+                                }
                           }
                     }
-              }
-            })
-      }
+                  })
+            }
+      })
 }
 
 @Composable
