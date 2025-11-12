@@ -808,6 +808,56 @@ open class EditTaskScreenTest : TestCase() {
         composeTestRule.onNodeWithTag(CommonTaskTestTags.DEPENDENCY_CYCLE_ERROR).assertIsDisplayed()
       }
 
+  @Test
+  fun testBackButtonNavigatesBack() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+        setupTestProject(projectId)
+        setupTestTask(projectId, taskId)
+
+        composeTestRule.setContent {
+          val navController = rememberNavController()
+          NavHost(navController, startDestination = Route.TasksSection.Tasks) {
+            composable<Route.TasksSection.Tasks> {
+              Text(
+                  "Tasks Screen",
+                  modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
+            }
+            composable<Route.TasksSection.EditTask> { backStackEntry ->
+              val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.EditTask>()
+
+              val viewModel =
+                  EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+              lastEditVm = viewModel
+
+              EditTaskScreen(
+                  projectId = editTaskRoute.projectId,
+                  taskId = editTaskRoute.taskId,
+                  navigationController = navController,
+                  editTaskViewModel = viewModel)
+            }
+          }
+          // Start on TasksScreen, then navigate to EditTaskScreen
+          navController.navigate(Route.TasksSection.Tasks)
+          navController.navigate(
+              Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
+        }
+
+        composeTestRule.waitForIdle()
+
+        // Verify we're on EditTaskScreen
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
+
+        // Click the back button
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.BACK_BUTTON).performClick()
+
+        composeTestRule.waitForIdle()
+
+        // Verify navigation back to TasksScreen
+        composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
+      }
+
   private fun clearTestPhotos() {
     val projection = arrayOf(MediaStore.Images.Media._ID)
     val selection = "${MediaStore.Images.Media.RELATIVE_PATH} = ?"

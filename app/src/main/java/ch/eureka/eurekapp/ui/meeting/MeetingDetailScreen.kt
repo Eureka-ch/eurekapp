@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
@@ -36,7 +35,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -67,12 +65,15 @@ import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.utils.Formatters
 import com.google.firebase.Timestamp
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
+
+// Portions of this code were written with the help of Grok.
 
 /**
  * Test tags for MeetingDetailScreen composable.
@@ -190,11 +191,7 @@ fun MeetingDetailScreen(
                   text = uiState.meeting?.title ?: "Meeting",
                   modifier = Modifier.testTag(MeetingDetailScreenTestTags.MEETING_TITLE))
             },
-            navigationIcon = {
-              IconButton(onClick = actionsConfig.onNavigateBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Navigate back")
-              }
-            })
+            navigationIcon = { BackButton(onClick = actionsConfig.onNavigateBack) })
       },
       content = { padding ->
         if (uiState.isLoading) {

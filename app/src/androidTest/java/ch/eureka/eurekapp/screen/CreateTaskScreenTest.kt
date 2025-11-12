@@ -965,4 +965,41 @@ class CreateTaskScreenTests : TestCase() {
       assertTrue(createdTask!!.dependingOnTasks.contains(taskId1))
     }
   }
+
+  @Test
+  fun testBackButtonNavigatesBack() {
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      NavHost(navController, startDestination = Route.TasksSection.Tasks) {
+        composable<Route.TasksSection.Tasks> {
+          // Fake Tasks screen for testing pop back
+          androidx.compose.material3.Text(
+              "Tasks Screen",
+              modifier =
+                  androidx.compose.ui.Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
+        }
+        composable<Route.TasksSection.CreateTask> {
+          val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+          lastCreateVm = viewModel
+          CreateTaskScreen(navigationController = navController, createTaskViewModel = viewModel)
+        }
+      }
+      // Start on TasksScreen, then navigate to CreateTaskScreen
+      navController.navigate(Route.TasksSection.Tasks)
+      navController.navigate(Route.TasksSection.CreateTask)
+    }
+
+    composeTestRule.waitForIdle()
+
+    // Verify we're on CreateTaskScreen
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
+
+    // Click the back button
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.BACK_BUTTON).performClick()
+
+    composeTestRule.waitForIdle()
+
+    // Verify navigation back to TasksScreen
+    composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
+  }
 }

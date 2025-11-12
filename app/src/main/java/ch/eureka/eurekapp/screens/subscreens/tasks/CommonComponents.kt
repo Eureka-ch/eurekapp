@@ -102,6 +102,7 @@ object CommonTaskTestTags {
   const val ADD_DEPENDENCY_BUTTON = "add_dependency_button"
   const val DEPENDENCY_CYCLE_ERROR = "dependency_cycle_error"
   const val OFFLINE_MESSAGE = "offline_message"
+  const val BACK_BUTTON = "back_button"
 }
 
 @Composable

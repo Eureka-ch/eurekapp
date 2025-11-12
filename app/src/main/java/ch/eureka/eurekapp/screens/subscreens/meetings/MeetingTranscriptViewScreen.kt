@@ -11,14 +11,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -32,11 +28,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.transcription.TranscriptionStatus
+import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.meeting.TranscriptViewModel
 import ch.eureka.eurekapp.ui.theme.Typography
 
-/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
+/**
+ * Note :This file was partially written by ChatGPT (GPT-5) and Grok Co-author : GPT-5 Co-author:
+ * Grok
+ */
 
 /** Test tags for MeetingTranscriptViewScreen UI elements */
 object TranscriptScreenTestTags {
@@ -182,11 +182,7 @@ fun MeetingTranscriptViewScreen(
       topBar = {
         TopAppBar(
             title = { Text("Transcript") },
-            navigationIcon = {
-              IconButton(onClick = onNavigateBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-              }
-            })
+            navigationIcon = { BackButton(onClick = onNavigateBack) })
       }) { paddingValues ->
         when {
           uiState.isLoading -> {

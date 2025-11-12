@@ -439,6 +439,37 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
+  fun testBackButtonNavigatesBack() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+        setupTestProject(projectId)
+        setupTestTask(projectId, taskId)
+
+        composeTestRule.setContent {
+          val navController = rememberNavController()
+          FullNavigationGraph(navController = navController)
+          // Start on TasksScreen, then navigate to ViewTaskScreen
+          navController.navigate(Route.TasksSection.Tasks)
+          navController.navigate(
+              Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
+        }
+
+        composeTestRule.waitForIdle()
+
+        // Verify we're on ViewTaskScreen
+        composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.EDIT_TASK).assertIsDisplayed()
+
+        // Click the back button
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.BACK_BUTTON).performClick()
+
+        composeTestRule.waitForIdle()
+
+        // Verify navigation back to TasksScreen
+        composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
+      }
+
+  @Test
   fun testAssignedUsersDisplayedWithDisplayName() =
       runBlocking<Unit> {
         val projectId = "project123"
