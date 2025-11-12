@@ -34,6 +34,7 @@ import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AttachmentsList
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.ProjectSelectionField
+import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesSelectionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDescriptionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskReminderField
@@ -67,6 +68,8 @@ fun CreateTaskScreen(
   val errorMsg = createTaskState.errorMsg
   val projectId = createTaskState.projectId
   val availableProjects = createTaskState.availableProjects
+  val availableTasks by createTaskViewModel.availableTasks.collectAsState()
+  val cycleError by createTaskViewModel.cycleError.collectAsState()
   var hasTouchedTitle by remember { mutableStateOf(false) }
   var hasTouchedDescription by remember { mutableStateOf(false) }
   var hasTouchedDate by remember { mutableStateOf(false) }
@@ -89,6 +92,12 @@ fun CreateTaskScreen(
   LaunchedEffect(photoUri) {
     if (photoUri.isNotEmpty()) {
       createTaskViewModel.addAttachment(photoUri.toUri())
+    }
+  }
+
+  LaunchedEffect(projectId) {
+    if (projectId.isNotEmpty()) {
+      createTaskViewModel.loadAvailableTasks(projectId)
     }
   }
 
@@ -158,6 +167,17 @@ fun CreateTaskScreen(
                   selectedUserIds = createTaskState.selectedAssignedUserIds,
                   onUserToggled = { userId -> createTaskViewModel.toggleUserAssignment(userId) },
                   enabled = projectId.isNotEmpty())
+              if (projectId.isNotEmpty()) {
+                TaskDependenciesSelectionField(
+                    availableTasks = availableTasks,
+                    selectedDependencyIds = createTaskState.dependingOnTasks,
+                    onDependencyAdded = { taskId -> createTaskViewModel.addDependency(taskId) },
+                    onDependencyRemoved = { taskId ->
+                      createTaskViewModel.removeDependency(taskId)
+                    },
+                    currentTaskId = "",
+                    cycleError = cycleError)
+              }
 
               Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
                 OutlinedButton(

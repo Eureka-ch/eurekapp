@@ -10,8 +10,9 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import ch.eureka.eurekapp.model.data.meeting.DateTimeVote
 import ch.eureka.eurekapp.model.data.meeting.Meeting
+import ch.eureka.eurekapp.model.data.meeting.MeetingProposal
+import ch.eureka.eurekapp.model.data.meeting.MeetingProposalVote
 import ch.eureka.eurekapp.utils.Formatters
 import com.google.firebase.Timestamp
 import org.junit.Assert.assertEquals
@@ -25,7 +26,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Refactored test suite for [DateTimeVoteScreen].
+ * Refactored test suite for [MeetingProposalVoteScreen].
  *
  * This suite addresses flakiness and timeouts by:
  * 1. Using `waitForIdle()` to sync the UI after actions.
@@ -35,12 +36,12 @@ import org.junit.runner.RunWith
  * Note : some tests were generated with the help of Gemini
  */
 @RunWith(AndroidJUnit4::class)
-class DateTimeVoteScreenTest {
+class MeetingProposalVoteScreenTest {
 
   @get:Rule val composeTestRule = createAndroidComposeRule<androidx.activity.ComponentActivity>()
 
-  private lateinit var viewModel: DateTimeVoteViewModel
-  private lateinit var repositoryMock: DateTimeVoteRepositoryMock
+  private lateinit var viewModel: MeetingProposalVoteViewModel
+  private lateinit var repositoryMock: MeetingProposalVoteRepositoryMock
   private val onDoneCalled = mutableStateOf(false)
 
   private val PROJECT_ID = "test-project"
@@ -48,15 +49,22 @@ class DateTimeVoteScreenTest {
   private val USER_ID = "test-user-id"
   private val OTHER_USER_ID = "other-user-id"
 
+  // --- Updated Mock Data ---
+  private val USER_VOTE = MeetingProposalVote(userId = USER_ID)
+  private val OTHER_USER_VOTE = MeetingProposalVote(userId = OTHER_USER_ID)
+
   private val MOCK_VOTE_1 =
-      DateTimeVote(dateTime = Timestamp(1730000000, 0), voters = listOf(USER_ID, OTHER_USER_ID))
+      MeetingProposal(
+          dateTime = Timestamp(1730000000, 0), votes = listOf(USER_VOTE, OTHER_USER_VOTE))
   private val MOCK_VOTE_2 =
-      DateTimeVote(dateTime = Timestamp(1730008000, 0), voters = listOf(OTHER_USER_ID))
+      MeetingProposal(dateTime = Timestamp(1730008000, 0), votes = listOf(OTHER_USER_VOTE))
+  // --- End Updated Mock Data ---
+
   private val MOCK_MEETING =
       Meeting(
           meetingID = MEETING_ID,
           title = "Test Meeting",
-          dateTimeVotes = listOf(MOCK_VOTE_1, MOCK_VOTE_2))
+          meetingProposals = listOf(MOCK_VOTE_1, MOCK_VOTE_2))
 
   private val DATE_1_STR = Formatters.formatDateTime(MOCK_VOTE_1.dateTime.toDate())
   private val DATE_2_STR = Formatters.formatDateTime(MOCK_VOTE_2.dateTime.toDate())
@@ -64,24 +72,24 @@ class DateTimeVoteScreenTest {
   @Before
   fun setUp() {
     onDoneCalled.value = false
-    repositoryMock = DateTimeVoteRepositoryMock()
+    repositoryMock = MeetingProposalVoteRepositoryMock()
   }
 
   /** Helper function to set the Composable content for a test. */
   private fun setContent(currentUserId: String? = USER_ID) {
     viewModel =
-        DateTimeVoteViewModel(
+        MeetingProposalVoteViewModel(
             projectId = PROJECT_ID,
             meetingId = MEETING_ID,
             repository = repositoryMock,
             getCurrentUserId = { currentUserId })
 
     composeTestRule.setContent {
-      DateTimeVoteScreen(
+      MeetingProposalVoteScreen(
           projectId = PROJECT_ID,
           meetingId = MEETING_ID,
           onDone = { onDoneCalled.value = true },
-          dateTimeVoteViewModel = viewModel)
+          meetingProposalVoteViewModel = viewModel)
     }
   }
 
@@ -95,17 +103,19 @@ class DateTimeVoteScreenTest {
     composeTestRule.waitForIdle()
 
     composeTestRule
-        .onNodeWithTag(DateTimeVoteScreenTestTags.DATETIME_VOTE_SCREEN)
+        .onNodeWithTag(MeetingProposalVoteScreenTestTags.MEETING_PROPOSALS_VOTE_SCREEN)
         .assertIsDisplayed()
     composeTestRule
-        .onNodeWithTag(DateTimeVoteScreenTestTags.DATETIME_VOTE_SCREEN_TITLE)
+        .onNodeWithTag(MeetingProposalVoteScreenTestTags.MEETING_PROPOSALS_VOTE_SCREEN_TITLE)
         .assertIsDisplayed()
     composeTestRule
-        .onNodeWithTag(DateTimeVoteScreenTestTags.DATETIME_VOTE_SCREEN_DESCRIPTION)
+        .onNodeWithTag(MeetingProposalVoteScreenTestTags.MEETING_PROPOSALS_VOTE_SCREEN_DESCRIPTION)
         .assertIsDisplayed()
-    composeTestRule.onNodeWithTag(DateTimeVoteScreenTestTags.ADD_DATETIME_VOTE).assertIsDisplayed()
     composeTestRule
-        .onNodeWithTag(DateTimeVoteScreenTestTags.CONFIRM_DATETIME_VOTES)
+        .onNodeWithTag(MeetingProposalVoteScreenTestTags.ADD_MEETING_PROPOSALS)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingProposalVoteScreenTestTags.CONFIRM_MEETING_PROPOSALS_VOTES)
         .assertIsDisplayed()
 
     composeTestRule.onNodeWithText(DATE_1_STR).assertIsDisplayed()
@@ -123,10 +133,12 @@ class DateTimeVoteScreenTest {
     composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithText("1", useUnmergedTree = true).assertIsDisplayed()
-    assertFalse(viewModel.uiState.value.dateTimeVotes[1].voters.contains(USER_ID))
+    // --- UPDATED Assertion ---
+    assertFalse(
+        viewModel.uiState.value.meetingProposals[1].votes.map { it.userId }.contains(USER_ID))
 
     composeTestRule
-        .onAllNodesWithTag(DateTimeVoteScreenTestTags.DATETIME_VOTE_VOTE_BUTTON)[1]
+        .onAllNodesWithTag(MeetingProposalVoteScreenTestTags.MEETING_PROPOSALS_VOTE_BUTTON)[1]
         .performClick()
 
     composeTestRule.waitForIdle()
@@ -135,29 +147,44 @@ class DateTimeVoteScreenTest {
     composeTestRule
         .onAllNodesWithText("2", useUnmergedTree = true)
         .assertCountEquals(2) // Both cards now show "2"
-    assertTrue(viewModel.uiState.value.dateTimeVotes[1].voters.contains(USER_ID))
+    // --- UPDATED Assertion ---
+    assertTrue(
+        viewModel.uiState.value.meetingProposals[1].votes.map { it.userId }.contains(USER_ID))
   }
 
   @Test
   fun test_userCanRetractVote_andStateUpdates() {
+    // Arrange
     repositoryMock.setMeetingToReturn(MOCK_MEETING)
     setContent()
     composeTestRule.waitForIdle()
 
-    composeTestRule.onNodeWithText("2", useUnmergedTree = true).assertIsDisplayed()
-    assertTrue(viewModel.uiState.value.dateTimeVotes[0].voters.contains(USER_ID))
+    composeTestRule.onNodeWithText("1", useUnmergedTree = true).assertIsDisplayed()
+
+    assertFalse(
+        viewModel.uiState.value.meetingProposals[1].votes.map { it.userId }.contains(USER_ID))
 
     composeTestRule
-        .onAllNodesWithTag(DateTimeVoteScreenTestTags.DATETIME_VOTE_VOTE_BUTTON)[0]
+        .onAllNodesWithTag(MeetingProposalVoteScreenTestTags.MEETING_PROPOSALS_VOTE_BUTTON)[1]
         .performClick()
 
     composeTestRule.waitForIdle()
 
-    composeTestRule.onNodeWithText("2", useUnmergedTree = true).assertDoesNotExist()
+    composeTestRule.onNodeWithText("1", useUnmergedTree = true).assertDoesNotExist()
+    composeTestRule.onAllNodesWithText("2", useUnmergedTree = true).assertCountEquals(2)
+
+    assertTrue(
+        viewModel.uiState.value.meetingProposals[1].votes.map { it.userId }.contains(USER_ID))
+
     composeTestRule
-        .onAllNodesWithText("1", useUnmergedTree = true)
-        .assertCountEquals(2) // Both cards now show "1"
-    assertFalse(viewModel.uiState.value.dateTimeVotes[0].voters.contains(USER_ID))
+        .onAllNodesWithTag(MeetingProposalVoteScreenTestTags.MEETING_PROPOSALS_VOTE_BUTTON)[1]
+        .performClick()
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithText("1", useUnmergedTree = true).assertExists()
+    assertFalse(
+        viewModel.uiState.value.meetingProposals[1].votes.map { it.userId }.contains(USER_ID))
   }
 
   @Test
@@ -168,7 +195,9 @@ class DateTimeVoteScreenTest {
     setContent()
     composeTestRule.waitForIdle()
 
-    composeTestRule.onNodeWithTag(DateTimeVoteScreenTestTags.CONFIRM_DATETIME_VOTES).performClick()
+    composeTestRule
+        .onNodeWithTag(MeetingProposalVoteScreenTestTags.CONFIRM_MEETING_PROPOSALS_VOTES)
+        .performClick()
 
     composeTestRule.waitUntil(timeoutMillis = 5000) { onDoneCalled.value }
 
@@ -176,7 +205,7 @@ class DateTimeVoteScreenTest {
     assertNotNull(
         "Repository should have received the updated meeting", repositoryMock.lastMeetingUpdated)
     assertEquals(
-        MOCK_MEETING.copy(dateTimeVotes = viewModel.uiState.value.dateTimeVotes),
+        MOCK_MEETING.copy(meetingProposals = viewModel.uiState.value.meetingProposals),
         repositoryMock.lastMeetingUpdated)
   }
 
@@ -189,7 +218,9 @@ class DateTimeVoteScreenTest {
     setContent()
     composeTestRule.waitForIdle()
 
-    composeTestRule.onNodeWithTag(DateTimeVoteScreenTestTags.CONFIRM_DATETIME_VOTES).performClick()
+    composeTestRule
+        .onNodeWithTag(MeetingProposalVoteScreenTestTags.CONFIRM_MEETING_PROPOSALS_VOTES)
+        .performClick()
 
     composeTestRule.waitUntil(timeoutMillis = 5000) { viewModel.uiState.value.errorMsg != null }
 
@@ -206,7 +237,7 @@ class DateTimeVoteScreenTest {
     composeTestRule.waitForIdle()
 
     composeTestRule
-        .onAllNodesWithTag(DateTimeVoteScreenTestTags.DATETIME_VOTE_CARD)
+        .onAllNodesWithTag(MeetingProposalVoteScreenTestTags.MEETING_PROPOSALS_VOTE_CARD)
         .assertCountEquals(0)
 
     composeTestRule.runOnIdle {
@@ -214,7 +245,8 @@ class DateTimeVoteScreenTest {
           "Error message should be null after being consumed by the UI",
           viewModel.uiState.value.errorMsg)
       assertTrue(
-          "DateTimeVotes list should be empty", viewModel.uiState.value.dateTimeVotes.isEmpty())
+          "MeetingProposals list should be empty", // --- UPDATED String ---
+          viewModel.uiState.value.meetingProposals.isEmpty())
     }
   }
 }
