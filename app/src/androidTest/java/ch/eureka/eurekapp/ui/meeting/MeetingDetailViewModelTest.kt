@@ -50,7 +50,7 @@ class MeetingDetailViewModelTest {
           title = "Test Meeting",
           status = MeetingStatus.SCHEDULED,
           format = MeetingFormat.VIRTUAL,
-          datetime = Timestamp(Date()),
+          datetime = Timestamp(Date(System.currentTimeMillis() + 86400000)), // Tomorrow
           link = "https://meet.test.com",
           location = null)
 
