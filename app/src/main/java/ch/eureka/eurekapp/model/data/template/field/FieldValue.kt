@@ -40,13 +40,13 @@ sealed interface FieldValue {
 
   @Serializable
   @SerialName("multi_select")
-  data class MultiSelectValue(values: List<String>) : FieldValue {
-    val values: List<String> = values.toList()
+  data class MultiSelectValue(val values: List<String>) : FieldValue {
+
     override val typeKey: FieldTypeKey = FieldTypeKey.MULTI_SELECT
 
     init {
-      require(this.values.all { it.isNotBlank() }) { "all values must not be blank" }
-      require(this.values.distinct().size == this.values.size) { "values must be unique" }
+      require(values.all { it.isNotBlank() }) { "all values must not be blank" }
+      require(values.distinct().size == values.size) { "values must be unique" }
     }
   }
 }
