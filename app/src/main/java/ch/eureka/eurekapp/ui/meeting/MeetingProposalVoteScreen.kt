@@ -261,6 +261,70 @@ fun MeetingProposalsList(
 }
 
 /**
+ * Displays the dialog for selecting meeting formats when voting.
+ *
+ * @param onDismissRequest Called when the user dismisses the dialog (e.g., clicks outside).
+ * @param onConfirm Called when the user clicks "OK", passing the set of selected formats.
+ */
+@Composable
+private fun MeetingFormatVoteDialog(
+    onDismissRequest: () -> Unit,
+    onConfirm: (Set<MeetingFormat>) -> Unit
+) {
+  var selectedFormats by remember { mutableStateOf(emptySet<MeetingFormat>()) }
+
+  AlertDialog(
+      onDismissRequest = onDismissRequest,
+      title = { Text("Select format(s)") },
+      text = {
+        Column {
+          FormatCheckboxRow(
+              text = MeetingFormat.IN_PERSON.description,
+              isSelected = selectedFormats.contains(MeetingFormat.IN_PERSON),
+              onToggle = {
+                selectedFormats =
+                    if (selectedFormats.contains(MeetingFormat.IN_PERSON)) {
+                      selectedFormats - MeetingFormat.IN_PERSON
+                    } else {
+                      selectedFormats + MeetingFormat.IN_PERSON
+                    }
+              },
+              tag = MeetingProposalVoteScreenTestTags.IN_PERSON_OPTION)
+
+          FormatCheckboxRow(
+              text = MeetingFormat.VIRTUAL.description,
+              isSelected = selectedFormats.contains(MeetingFormat.VIRTUAL),
+              onToggle = {
+                selectedFormats =
+                    if (selectedFormats.contains(MeetingFormat.VIRTUAL)) {
+                      selectedFormats - MeetingFormat.VIRTUAL
+                    } else {
+                      selectedFormats + MeetingFormat.VIRTUAL
+                    }
+              },
+              tag = MeetingProposalVoteScreenTestTags.VIRTUAL_OPTION)
+        }
+      },
+      confirmButton = {
+        TextButton(
+            modifier =
+                Modifier.testTag(MeetingProposalVoteScreenTestTags.MEETING_FORMAT_POPUP_VALIDATE),
+            onClick = { onConfirm(selectedFormats) },
+            enabled = selectedFormats.isNotEmpty()) {
+              Text("OK")
+            }
+      },
+      dismissButton = {
+        TextButton(
+            modifier =
+                Modifier.testTag(MeetingProposalVoteScreenTestTags.MEETING_FORMAT_POPUP_CANCEL),
+            onClick = { onDismissRequest() }) {
+              Text("Cancel")
+            }
+      })
+}
+
+/**
  * Composable that displays a vote for a certain meeting proposal and allows a user to vote for it.
  *
  * @param meetingProposal The meeting proposal vote to display and potentially vote for.
@@ -284,60 +348,13 @@ fun MeetingProposalVoteCard(
 ) {
 
   var showFormatDialog by remember { mutableStateOf(false) }
-  var selectedFormats by remember { mutableStateOf(emptySet<MeetingFormat>()) }
 
   if (showFormatDialog) {
-    AlertDialog(
+    MeetingFormatVoteDialog(
         onDismissRequest = { showFormatDialog = false },
-        title = { Text("Select format(s)") },
-        text = {
-          Column {
-            FormatCheckboxRow(
-                text = MeetingFormat.IN_PERSON.description,
-                isSelected = selectedFormats.contains(MeetingFormat.IN_PERSON),
-                onToggle = {
-                  selectedFormats =
-                      if (selectedFormats.contains(MeetingFormat.IN_PERSON)) {
-                        selectedFormats - MeetingFormat.IN_PERSON
-                      } else {
-                        selectedFormats + MeetingFormat.IN_PERSON
-                      }
-                },
-                tag = MeetingProposalVoteScreenTestTags.IN_PERSON_OPTION)
-
-            FormatCheckboxRow(
-                text = MeetingFormat.VIRTUAL.description,
-                isSelected = selectedFormats.contains(MeetingFormat.VIRTUAL),
-                onToggle = {
-                  selectedFormats =
-                      if (selectedFormats.contains(MeetingFormat.VIRTUAL)) {
-                        selectedFormats - MeetingFormat.VIRTUAL
-                      } else {
-                        selectedFormats + MeetingFormat.VIRTUAL
-                      }
-                },
-                tag = MeetingProposalVoteScreenTestTags.VIRTUAL_OPTION)
-          }
-        },
-        confirmButton = {
-          TextButton(
-              modifier =
-                  Modifier.testTag(MeetingProposalVoteScreenTestTags.MEETING_FORMAT_POPUP_VALIDATE),
-              onClick = {
-                voteActions.addVote(meetingProposal, selectedFormats)
-                showFormatDialog = false
-              },
-              enabled = selectedFormats.isNotEmpty()) {
-                Text("OK")
-              }
-        },
-        dismissButton = {
-          TextButton(
-              modifier =
-                  Modifier.testTag(MeetingProposalVoteScreenTestTags.MEETING_FORMAT_POPUP_CANCEL),
-              onClick = { showFormatDialog = false }) {
-                Text("Cancel")
-              }
+        onConfirm = { formats ->
+          voteActions.addVote(meetingProposal, formats)
+          showFormatDialog = false
         })
   }
 
@@ -397,7 +414,7 @@ fun MeetingProposalVoteCard(
               VotingScoreButton(
                   hasVoted = hasVoted,
                   addVote = {
-                    selectedFormats = emptySet()
+                    // selectedFormats = emptySet()
                     showFormatDialog = true
                   },
                   retractVote = { voteActions.removeVote(meetingProposal) },
