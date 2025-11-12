@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -33,9 +32,8 @@ class ViewTaskViewModel(
     taskId: String,
     taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
     dispatcher: CoroutineDispatcher = Dispatchers.IO,
-    connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver
-    private val userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository,
-    dispatcher: CoroutineDispatcher = Dispatchers.IO
+    connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver,
+    private val userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository
 ) : ReadTaskViewModel<ViewTaskState>(taskRepository, dispatcher) {
 
   private val _isConnected =
@@ -45,21 +43,36 @@ class ViewTaskViewModel(
       combine(
               taskRepository
                   .getTaskById(projectId, taskId)
-                  .map { task ->
+                  .flatMapLatest { task ->
                     if (task != null) {
-                      ViewTaskState(
-                          title = task.title,
-                          description = task.description,
-                          dueDate =
-                              task.dueDate?.let { date -> dateFormat.format(date.toDate()) } ?: "",
-                          projectId = task.projectId,
-                          taskId = task.taskID,
-                          attachmentUrls = task.attachmentUrls,
-                          status = task.status,
-                          isLoading = false,
-                          errorMsg = null)
+                      val baseState =
+                          ViewTaskState(
+                              title = task.title,
+                              description = task.description,
+                              dueDate =
+                                  task.dueDate?.let { date -> dateFormat.format(date.toDate()) }
+                                      ?: "",
+                              projectId = task.projectId,
+                              taskId = task.taskID,
+                              attachmentUrls = task.attachmentUrls,
+                              status = task.status,
+                              isLoading = false,
+                              errorMsg = null,
+                              assignedUsers = emptyList())
+
+                      if (task.assignedUserIds.isEmpty()) {
+                        flowOf(baseState)
+                      } else {
+                        // Combine all user flows to get assigned users
+                        val userFlows =
+                            task.assignedUserIds.map { userId ->
+                              userRepository.getUserById(userId)
+                            }
+                        combine(userFlows) { users -> users.toList().filterNotNull() }
+                            .map { assignedUsers -> baseState.copy(assignedUsers = assignedUsers) }
+                      }
                     } else {
-                      ViewTaskState(isLoading = false, errorMsg = "Task not found.")
+                      flowOf(ViewTaskState(isLoading = false, errorMsg = "Task not found."))
                     }
                   }
                   .catch { exception ->
@@ -71,42 +84,6 @@ class ViewTaskViewModel(
               _isConnected) { taskState, isConnected ->
                 taskState.copy(isConnected = isConnected)
               }
-      taskRepository
-          .getTaskById(projectId, taskId)
-          .flatMapLatest { task ->
-            if (task != null) {
-              val baseState =
-                  ViewTaskState(
-                      title = task.title,
-                      description = task.description,
-                      dueDate =
-                          task.dueDate?.let { date -> dateFormat.format(date.toDate()) } ?: "",
-                      projectId = task.projectId,
-                      taskId = task.taskID,
-                      attachmentUrls = task.attachmentUrls,
-                      status = task.status,
-                      isLoading = false,
-                      errorMsg = null,
-                      assignedUsers = emptyList())
-
-              if (task.assignedUserIds.isEmpty()) {
-                flowOf(baseState)
-              } else {
-                // Combine all user flows to get assigned users
-                val userFlows =
-                    task.assignedUserIds.map { userId -> userRepository.getUserById(userId) }
-                combine(userFlows) { users -> users.toList().filterNotNull() }
-                    .map { assignedUsers -> baseState.copy(assignedUsers = assignedUsers) }
-              }
-            } else {
-              flowOf(ViewTaskState(isLoading = false, errorMsg = "Task not found."))
-            }
-          }
-          .catch { exception ->
-            emit(
-                ViewTaskState(
-                    isLoading = false, errorMsg = "Failed to load Task: ${exception.message}"))
-          }
           .stateIn(
               scope = viewModelScope,
               started = SharingStarted.WhileSubscribed(5000),
