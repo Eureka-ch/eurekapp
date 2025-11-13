@@ -161,7 +161,7 @@ class BaseFieldComponentTest {
           value = null,
           onValueChange = {},
           mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
-          onModeToggle = { toggleCalled = true }) { _, _, _ ->
+          callbacks = FieldCallbacks(onModeToggle = { toggleCalled = true })) { _, _, _ ->
             Text("Test Content")
           }
     }
@@ -436,14 +436,19 @@ class BaseFieldComponentTest {
           value = null,
           onValueChange = { committedValue = it },
           mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
-          onModeToggle = { toggleCalled = true },
-          onSave = { saveCalled = true }) { _, onValueChange, _ ->
+          callbacks =
+              FieldCallbacks(
+                  onModeToggle = { toggleCalled = true }, onSave = { saveCalled = true })) {
+              _,
+              onValueChange,
+              _ ->
             // Simulate user editing
-            onValueChange(editedValue)
+            androidx.compose.runtime.SideEffect { onValueChange(editedValue) }
             Text("Test Content")
           }
     }
 
+    composeTestRule.waitForIdle()
     composeTestRule.onNodeWithTag("field_save_test_field").performClick()
 
     assertEquals(editedValue, committedValue)
@@ -464,8 +469,12 @@ class BaseFieldComponentTest {
           value = committedValue,
           onValueChange = { committedValue = it },
           mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
-          onModeToggle = { toggleCalled = true },
-          onCancel = { cancelCalled = true }) { _, onValueChange, _ ->
+          callbacks =
+              FieldCallbacks(
+                  onModeToggle = { toggleCalled = true }, onCancel = { cancelCalled = true })) {
+              _,
+              onValueChange,
+              _ ->
             // Simulate user editing
             onValueChange(FieldValue.TextValue("Edited"))
             Text("Test Content")
@@ -518,10 +527,12 @@ class BaseFieldComponentTest {
           mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true)) { _, onValueChange, _
             ->
             // Simulate user typing
-            onValueChange(editedValue)
+            androidx.compose.runtime.SideEffect { onValueChange(editedValue) }
             Text("Test Content")
           }
     }
+
+    composeTestRule.waitForIdle()
 
     // Value should NOT be committed yet
     assertEquals(null, committedValue)
