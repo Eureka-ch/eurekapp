@@ -108,8 +108,7 @@ object MeetingDetailScreenTestTags {
   const val DELETE_CONFIRMATION_DIALOG = "DeleteConfirmationDialog"
   const val CONFIRM_DELETE_BUTTON = "ConfirmDeleteButton"
   const val CANCEL_DELETE_BUTTON = "CancelDeleteButton"
-  const val VOTE_TIME_BUTTON = "VoteForTimeButton"
-  const val VOTE_FORMAT_BUTTON = "VoteForFormatButton"
+  const val VOTE_FOR_MEETING_PROPOSAL_BUTTON = "VoteForMeetingProposal"
   const val EDIT_BUTTON = "EditButton"
   const val SAVE_BUTTON = "SaveButton"
   const val CANCEL_EDIT_BUTTON = "CancelEditButton"
@@ -121,6 +120,8 @@ object MeetingDetailScreenTestTags {
  *
  * @param onNavigateBack Callback to navigate back to the previous screen.
  * @param onJoinMeeting Callback when user clicks join meeting button.
+ * @param onVoteForMeetingProposalClick Callback when the "Vote for meeting proposals" button is
+ *   clicked.
  * @param onRecordMeeting Callback when user clicks record button, receives projectId and meetingId.
  * @param onViewTranscript Callback when user clicks view transcript button, receives projectId and
  *   meetingId.
@@ -131,8 +132,7 @@ data class MeetingDetailActionsConfig(
     val onJoinMeeting: (String) -> Unit = {},
     val onRecordMeeting: (String, String) -> Unit = { _, _ -> },
     val onViewTranscript: (String, String) -> Unit = { _, _ -> },
-    val onVoteForTime: () -> Unit = {},
-    val onVoteForFormat: () -> Unit = {},
+    val onVoteForMeetingProposalClick: (String, String) -> Unit = { _, _ -> },
     val onNavigateToMeeting: () -> Unit = {},
 )
 
@@ -226,8 +226,9 @@ fun MeetingDetailScreen(
                         onRecordMeeting = actionsConfig.onRecordMeeting,
                         onViewTranscript = actionsConfig.onViewTranscript,
                         onDeleteMeeting = { showDeleteDialog = true },
-                        onVoteForTime = actionsConfig.onVoteForTime,
-                        onVoteForFormat = actionsConfig.onVoteForFormat,
+                        onVoteForMeetingProposals = {
+                          actionsConfig.onVoteForMeetingProposalClick(projectId, meetingId)
+                        },
                         onEditMeeting = { viewModel.toggleEditMode(meeting) },
                         onSaveMeeting = { viewModel.saveMeetingChanges(meeting) },
                         onCancelEdit = { viewModel.toggleEditMode(null) },
@@ -298,8 +299,7 @@ private fun ErrorScreen(message: String) {
  * @param onViewTranscript Callback invoked when user clicks view transcript button, receives
  *   projectId and meetingId.
  * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
- * @param onVoteForTime Callback invoked when user votes for time button.
- * @param onVoteForFormat Callback invoked when user votes for format button.
+ * @param onVoteForMeetingProposals Callback invoked when user votes for meeting proposals.
  * @param onEditMeeting Callback invoked when user clicks edit meeting button.
  * @param onSaveMeeting Callback invoked when user saves meeting changes.
  * @param onCancelEdit Callback invoked when user cancels edit mode.
@@ -313,8 +313,7 @@ data class MeetingDetailContentActionsConfig(
     val onRecordMeeting: (String, String) -> Unit,
     val onViewTranscript: (String, String) -> Unit,
     val onDeleteMeeting: () -> Unit,
-    val onVoteForTime: () -> Unit,
-    val onVoteForFormat: () -> Unit,
+    val onVoteForMeetingProposals: () -> Unit,
     val onEditMeeting: () -> Unit,
     val onSaveMeeting: () -> Unit,
     val onCancelEdit: () -> Unit,
@@ -357,8 +356,7 @@ data class EditConfig(
  * @param onViewTranscript Callback invoked when user clicks view transcript button, receives
  *   projectId and meetingId.
  * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
- * @param onVoteForTime Callback invoked when user votes for time button.
- * @param onVoteForFormat Callback invoked when user votes for format button.
+ * @param onVoteForMeetingProposals Callback invoked when user votes for meeting proposals.
  * @param onEditMeeting Callback invoked when user clicks edit meeting button.
  * @param onNavigateToMeeting Callback invoked when user clicks navigate to meeting button.
  */
@@ -367,8 +365,7 @@ data class ActionButtonsConfig(
     val onRecordMeeting: (String, String) -> Unit,
     val onViewTranscript: (String, String) -> Unit,
     val onDeleteMeeting: () -> Unit,
-    val onVoteForTime: () -> Unit,
-    val onVoteForFormat: () -> Unit,
+    val onVoteForMeetingProposals: () -> Unit,
     val onEditMeeting: () -> Unit,
     val onNavigateToMeeting: () -> Unit,
 )
@@ -439,8 +436,7 @@ private fun MeetingDetailContent(
                         onRecordMeeting = actionsConfig.onRecordMeeting,
                         onViewTranscript = actionsConfig.onViewTranscript,
                         onDeleteMeeting = actionsConfig.onDeleteMeeting,
-                        onVoteForTime = actionsConfig.onVoteForTime,
-                        onVoteForFormat = actionsConfig.onVoteForFormat,
+                        onVoteForMeetingProposals = actionsConfig.onVoteForMeetingProposals,
                         onEditMeeting = actionsConfig.onEditMeeting,
                         onNavigateToMeeting = actionsConfig.onNavigateToMeeting,
                     ),
@@ -993,24 +989,17 @@ private fun ActionButtonsSection(
                 }
           }
           MeetingStatus.OPEN_TO_VOTES -> {
-            Button(
-                onClick = actionsConfig.onVoteForTime,
-                modifier =
-                    Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.VOTE_TIME_BUTTON)) {
-                  Icon(imageVector = Icons.Default.HowToVote, contentDescription = "Vote for time")
-                  Spacer(modifier = Modifier.width(8.dp))
-                  Text("Vote for time")
-                }
 
             Button(
-                onClick = actionsConfig.onVoteForFormat,
+                onClick = actionsConfig.onVoteForMeetingProposals,
                 modifier =
                     Modifier.fillMaxWidth()
-                        .testTag(MeetingDetailScreenTestTags.VOTE_FORMAT_BUTTON)) {
+                        .testTag(MeetingDetailScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON)) {
                   Icon(
-                      imageVector = Icons.Default.HowToVote, contentDescription = "Vote for format")
+                      imageVector = Icons.Default.HowToVote,
+                      contentDescription = "Vote for meeting proposal")
                   Spacer(modifier = Modifier.width(8.dp))
-                  Text("Vote for format")
+                  Text("Vote for meeting proposals")
                 }
           }
         }

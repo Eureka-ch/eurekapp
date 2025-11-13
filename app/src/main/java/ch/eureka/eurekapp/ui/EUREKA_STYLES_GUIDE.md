@@ -39,7 +39,7 @@ OutlinedButton(
 OutlinedTextField(
     value = text,
     onValueChange = { text = it },
-    colors = EurekaStyles.TextFieldColors(),
+    colors = EurekaStyles.textFieldColors(),
     label = { Text("My Label") }
 )
 ```
