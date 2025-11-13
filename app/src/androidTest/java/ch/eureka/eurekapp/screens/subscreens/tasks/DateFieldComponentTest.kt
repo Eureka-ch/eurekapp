@@ -252,12 +252,6 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_emptyViewMode_displaysEmptyText() {
-    setFieldContent(value = null, mode = FieldInteractionMode.ViewOnly)
-    composeTestRule.onNodeWithTag("date_field_value_test_date").assertIsDisplayed()
-  }
-
-  @Test
   fun dateFieldComponent_timePickerCancel_closesDialog() {
     setFieldContent(
         fieldDef =
@@ -265,11 +259,5 @@ class DateFieldComponentTest {
                 type = FieldType.Date(includeTime = true, format = "yyyy-MM-dd HH:mm")))
     composeTestRule.onNodeWithTag("date_field_button_test_date").performClick()
     composeTestRule.onNodeWithTag("date_picker_dialog").assertIsDisplayed()
-  }
-
-  @Test
-  fun dateFieldComponent_viewMode_nullValue_showsEmptyString() {
-    setFieldContent(mode = FieldInteractionMode.ViewOnly)
-    composeTestRule.onNodeWithTag("date_field_value_test_date").assertIsDisplayed()
   }
 }

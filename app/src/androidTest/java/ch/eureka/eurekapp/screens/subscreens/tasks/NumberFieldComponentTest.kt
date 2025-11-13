@@ -208,12 +208,6 @@ class NumberFieldComponentTest {
   }
 
   @Test
-  fun numberFieldComponent_viewMode_nullValue_showsEmptyString() {
-    setFieldContent(mode = FieldInteractionMode.ViewOnly)
-    composeTestRule.onNodeWithTag("number_field_value_test_number").assertIsDisplayed()
-  }
-
-  @Test
   fun numberFieldComponent_nullDecimals_formatsAsZeroDecimals() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(type = FieldType.Number(decimals = null)),

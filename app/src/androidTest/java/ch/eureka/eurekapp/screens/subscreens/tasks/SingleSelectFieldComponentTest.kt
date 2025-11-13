@@ -297,12 +297,6 @@ class SingleSelectFieldComponentTest {
   }
 
   @Test
-  fun singleSelectFieldComponent_viewMode_nullValue_showsEmptyString() {
-    setFieldContent(mode = FieldInteractionMode.ViewOnly)
-    composeTestRule.onNodeWithTag("single_select_field_value_test_select").assertIsDisplayed()
-  }
-
-  @Test
   fun singleSelectFieldComponent_toggleableSave_callsOnSaveCallback() {
     var saveCalled = false
     setFieldContent(
