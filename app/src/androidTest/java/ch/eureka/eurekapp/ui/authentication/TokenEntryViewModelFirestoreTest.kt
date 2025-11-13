@@ -4,9 +4,10 @@ import ch.eureka.eurekapp.model.data.invitation.FirestoreInvitationRepository
 import ch.eureka.eurekapp.model.data.invitation.Invitation
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
@@ -71,7 +72,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act: Validate token
     viewModel.updateToken("FIRESTORE-TOKEN-1")
     viewModel.validateToken()
-    delay(500) // Allow validation to complete
+    withTimeout(5000) { viewModel.uiState.first { !it.isLoading } }
 
     // Assert: Success
     assertTrue(viewModel.uiState.value.validationSuccess)
@@ -98,7 +99,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act: Try to validate non-existent token
     viewModel.updateToken("NONEXISTENT-TOKEN")
     viewModel.validateToken()
-    delay(500) // Allow Firestore operations to complete
+    withTimeout(5000) { viewModel.uiState.first { !it.isLoading } }
 
     // Assert: Error shown
     assertFalse(viewModel.uiState.value.validationSuccess)
@@ -124,7 +125,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act: Try to use already-used token
     viewModel.updateToken("USED-FIRESTORE-TOKEN")
     viewModel.validateToken()
-    delay(500) // Allow Firestore operations to complete
+    withTimeout(5000) { viewModel.uiState.first { !it.isLoading } }
 
     // Assert: Error shown
     assertFalse(viewModel.uiState.value.validationSuccess)
@@ -156,7 +157,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act
     viewModel.updateToken(specialToken)
     viewModel.validateToken()
-    delay(500) // Allow Firestore operations to complete
+    withTimeout(5000) { viewModel.uiState.first { !it.isLoading } }
 
     // Assert
     assertTrue(viewModel.uiState.value.validationSuccess)
@@ -182,7 +183,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act: Validate first token
     viewModel.updateToken("TOKEN-1")
     viewModel.validateToken()
-    delay(500) // Allow Firestore operations to complete
+    withTimeout(5000) { viewModel.uiState.first { !it.isLoading } }
 
     assertTrue(viewModel.uiState.value.validationSuccess)
 
@@ -192,7 +193,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act: Validate second token
     viewModel2.updateToken("TOKEN-2")
     viewModel2.validateToken()
-    delay(500) // Allow Firestore operations to complete
+    withTimeout(5000) { viewModel2.uiState.first { !it.isLoading } }
 
     // Assert: Both succeeded
     assertTrue(viewModel2.uiState.value.validationSuccess)
@@ -221,7 +222,7 @@ class TokenEntryViewModelFirestoreTest {
     // only one would succeed. For this test, we verify the mechanism works with single user.
     viewModel.updateToken("RACE-TOKEN")
     viewModel.validateToken()
-    delay(500) // Allow Firestore operations to complete
+    withTimeout(5000) { viewModel.uiState.first { !it.isLoading } }
 
     // Verify token was marked as used
     val doc =
@@ -248,7 +249,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act: Validate orphaned invitation
     viewModel.updateToken("ORPHANED-TOKEN")
     viewModel.validateToken()
-    delay(500) // Allow Firestore operations to complete
+    withTimeout(5000) { viewModel.uiState.first { !it.isLoading } }
 
     // Assert: Validation succeeds (ViewModel doesn't check if project exists)
     assertTrue(viewModel.uiState.value.validationSuccess)
@@ -270,7 +271,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act: Input with whitespace
     viewModel.updateToken("  TRIM-TOKEN  ")
     viewModel.validateToken()
-    delay(500) // Allow Firestore operations to complete
+    withTimeout(5000) { viewModel.uiState.first { !it.isLoading } }
 
     // Assert: Successfully found and validated (token is trimmed in updateToken)
     assertTrue(viewModel.uiState.value.validationSuccess)
@@ -299,7 +300,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act: Try to find tokens
     viewModel.updateToken("CLEAR-1")
     viewModel.validateToken()
-    delay(500) // Allow Firestore operations to complete
+    withTimeout(5000) { viewModel.uiState.first { !it.isLoading } }
 
     // Assert: Token not found after clear
     assertFalse(viewModel.uiState.value.validationSuccess)

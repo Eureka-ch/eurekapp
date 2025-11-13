@@ -7,6 +7,8 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -32,7 +34,7 @@ class TokenEntryViewModelIntegrationTest {
   private val testDispatcher = StandardTestDispatcher()
 
   @Before
-  fun setup() {
+  fun setup() = runBlocking {
     Dispatchers.setMain(testDispatcher)
 
     // Setup Firebase Emulator
@@ -46,15 +48,8 @@ class TokenEntryViewModelIntegrationTest {
 
     auth = FirebaseEmulator.auth
 
-    // Sign in test user
-    auth.signInAnonymously().addOnCompleteListener { task ->
-      if (!task.isSuccessful) {
-        throw IllegalStateException("Failed to sign in test user")
-      }
-    }
-
-    // Wait for auth to complete
-    Thread.sleep(500)
+    // Sign in test user using await
+    auth.signInAnonymously().await()
 
     mockRepository = MockInvitationRepository()
     viewModel = TokenEntryViewModel(repository = mockRepository, auth = auth)

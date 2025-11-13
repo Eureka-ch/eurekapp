@@ -41,8 +41,12 @@ class CreateProjectScreenTest : TestCase() {
 
       composeRule.onNodeWithTag(CreateInvitationSubScreen.CREATE_INVITATION_BUTTON).performClick()
 
-      Thread.sleep(5000)
-      composeRule.waitForIdle()
+      composeRule.waitUntil(10000) {
+        composeRule
+            .onAllNodesWithTag(CreateInvitationSubScreen.COPY_INVITATION_BUTTON)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
 
       composeRule.onNodeWithTag(CreateInvitationSubScreen.COPY_INVITATION_BUTTON).performClick()
     }

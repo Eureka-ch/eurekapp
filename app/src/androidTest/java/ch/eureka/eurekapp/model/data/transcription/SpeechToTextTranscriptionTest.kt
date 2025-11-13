@@ -99,11 +99,11 @@ class SpeechToTextTranscriptionTest {
             }
             TranscriptionStatus.PENDING -> {
               // Still processing, wait and retry
-              kotlinx.coroutines.delay(2000) // Wait 2 seconds
+              kotlinx.coroutines.delay(500)
             }
           }
         } else {
-          kotlinx.coroutines.delay(2000)
+          kotlinx.coroutines.delay(500)
         }
       }
     }
@@ -122,12 +122,18 @@ class SpeechToTextTranscriptionTest {
 
     assertTrue("Should create transcription", createResult.isSuccess)
 
-    // Wait a bit for Firestore to update
-    kotlinx.coroutines.delay(2000)
-
-    // Get all transcriptions
+    // Wait for Firestore to update with retry
     val transcriptions =
-        repository.getTranscriptionsForMeeting(testProjectId, "$testMeetingId-list").first()
+        withTimeout(5000) {
+          var result =
+              repository.getTranscriptionsForMeeting(testProjectId, "$testMeetingId-list").first()
+          while (result.isEmpty()) {
+            kotlinx.coroutines.delay(200)
+            result =
+                repository.getTranscriptionsForMeeting(testProjectId, "$testMeetingId-list").first()
+          }
+          result
+        }
 
     assertFalse("Should have at least one transcription", transcriptions.isEmpty())
   }
@@ -163,12 +169,22 @@ class SpeechToTextTranscriptionTest {
 
     assertTrue("Should delete successfully", deleteResult.isSuccess)
 
-    // Verify it's gone
-    kotlinx.coroutines.delay(1000)
+    // Verify it's gone with retry
     val transcription =
-        repository
-            .getTranscriptionById(testProjectId, "$testMeetingId-delete", transcriptionId)
-            .first()
+        withTimeout(5000) {
+          var result =
+              repository
+                  .getTranscriptionById(testProjectId, "$testMeetingId-delete", transcriptionId)
+                  .first()
+          while (result != null) {
+            kotlinx.coroutines.delay(200)
+            result =
+                repository
+                    .getTranscriptionById(testProjectId, "$testMeetingId-delete", transcriptionId)
+                    .first()
+          }
+          result
+        }
 
     assertNull("Transcription should be null after deletion", transcription)
   }

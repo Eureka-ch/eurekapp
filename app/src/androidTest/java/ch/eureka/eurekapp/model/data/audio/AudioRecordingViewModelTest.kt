@@ -8,7 +8,9 @@ import ch.eureka.eurekapp.model.audio.AudioRecordingViewModel
 import ch.eureka.eurekapp.model.audio.LocalAudioRecordingRepository
 import ch.eureka.eurekapp.model.audio.RECORDING_STATE
 import ch.eureka.eurekapp.ui.meeting.MeetingRepositoryMock
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -20,66 +22,66 @@ class AudioRecordingViewModelTest {
       GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO)
 
   @Test
-  fun startRecordingWorksAsExpected() {
+  fun startRecordingWorksAsExpected() = runBlocking {
     val context = ApplicationProvider.getApplicationContext<Context>()
 
     val viewModel: AudioRecordingViewModel =
         AudioRecordingViewModel(recordingRepository = LocalAudioRecordingRepository())
 
     viewModel.startRecording(context, "test_recording")
-    Thread.sleep(2000)
+    withTimeout(5000) { viewModel.isRecording.first { it == RECORDING_STATE.RUNNING } }
     assertTrue(viewModel.isRecording.value == RECORDING_STATE.RUNNING)
     viewModel.startRecording(context, "test_recording")
-    Thread.sleep(2000)
+    withTimeout(5000) { viewModel.isRecording.first { it == RECORDING_STATE.RUNNING } }
     assertTrue(viewModel.isRecording.value == RECORDING_STATE.RUNNING)
   }
 
   @Test
-  fun pauseRecordingWorksAsExpected() {
+  fun pauseRecordingWorksAsExpected() = runBlocking {
     val context = ApplicationProvider.getApplicationContext<Context>()
 
     val viewModel: AudioRecordingViewModel =
         AudioRecordingViewModel(recordingRepository = LocalAudioRecordingRepository())
     viewModel.startRecording(context, "test_recording")
     viewModel.pauseRecording()
-    Thread.sleep(2000)
+    withTimeout(5000) { viewModel.isRecording.first { it == RECORDING_STATE.PAUSED } }
     assertTrue(viewModel.isRecording.value == RECORDING_STATE.PAUSED)
     viewModel.pauseRecording()
-    Thread.sleep(2000)
+    withTimeout(5000) { viewModel.isRecording.first { it == RECORDING_STATE.PAUSED } }
     assertTrue(viewModel.isRecording.value == RECORDING_STATE.PAUSED)
   }
 
   @Test
-  fun stopRecordingWorksAsExpected() {
+  fun stopRecordingWorksAsExpected() = runBlocking {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val viewModel: AudioRecordingViewModel =
         AudioRecordingViewModel(recordingRepository = LocalAudioRecordingRepository())
     viewModel.startRecording(context, "test_recording_5")
     viewModel.stopRecording()
-    Thread.sleep(2000)
+    withTimeout(5000) { viewModel.isRecording.first { it == RECORDING_STATE.RUNNING } }
     assertTrue(viewModel.isRecording.value == RECORDING_STATE.RUNNING)
     viewModel.pauseRecording()
-    Thread.sleep(2000)
+    withTimeout(5000) { viewModel.isRecording.first { it == RECORDING_STATE.PAUSED } }
     assertTrue(viewModel.isRecording.value == RECORDING_STATE.PAUSED)
     viewModel.stopRecording()
-    Thread.sleep(2000)
+    withTimeout(5000) { viewModel.isRecording.first { it == RECORDING_STATE.STOPPED } }
     assertTrue(viewModel.isRecording.value == RECORDING_STATE.STOPPED)
   }
 
   @Test
-  fun resumeRecordingWorksAsExpected() {
+  fun resumeRecordingWorksAsExpected() = runBlocking {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val viewModel: AudioRecordingViewModel =
         AudioRecordingViewModel(recordingRepository = LocalAudioRecordingRepository())
     viewModel.startRecording(context, "test_recording")
     viewModel.resumeRecording()
-    Thread.sleep(2000)
+    withTimeout(5000) { viewModel.isRecording.first { it == RECORDING_STATE.RUNNING } }
     assertTrue(viewModel.isRecording.value == RECORDING_STATE.RUNNING)
     viewModel.pauseRecording()
-    Thread.sleep(2000)
+    withTimeout(5000) { viewModel.isRecording.first { it == RECORDING_STATE.PAUSED } }
     assertTrue(viewModel.isRecording.value == RECORDING_STATE.PAUSED)
     viewModel.resumeRecording()
-    Thread.sleep(2000)
+    withTimeout(5000) { viewModel.isRecording.first { it == RECORDING_STATE.RUNNING } }
     assertTrue(viewModel.isRecording.value == RECORDING_STATE.RUNNING)
   }
 
@@ -104,7 +106,7 @@ class AudioRecordingViewModelTest {
   }
 
   @Test
-  fun saveRecordingToDatabaseWorksAsExpected() {
+  fun saveRecordingToDatabaseWorksAsExpected() = runBlocking {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val viewModel: AudioRecordingViewModel =
         AudioRecordingViewModel(
@@ -116,13 +118,17 @@ class AudioRecordingViewModelTest {
 
     viewModel.startRecording(context, "test_recording")
     viewModel.pauseRecording()
-    runBlocking { viewModel.saveRecordingToDatabase("", "", { runned = true }, {}) }
-    Thread.sleep(2000)
+    viewModel.saveRecordingToDatabase("", "", { runned = true }, {})
+    withTimeout(5000) {
+      while (!runned) {
+        kotlinx.coroutines.delay(100)
+      }
+    }
     assertTrue(runned)
   }
 
   @Test
-  fun saveRecordingToDatabaseWorksAsExpectedOnFailure() {
+  fun saveRecordingToDatabaseWorksAsExpectedOnFailure() = runBlocking {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val viewModel: AudioRecordingViewModel =
         AudioRecordingViewModel(
@@ -134,8 +140,12 @@ class AudioRecordingViewModelTest {
 
     viewModel.startRecording(context, "test_recording")
     viewModel.pauseRecording()
-    runBlocking { viewModel.saveRecordingToDatabase("", "", {}, { runned = true }) }
-    Thread.sleep(2000)
+    viewModel.saveRecordingToDatabase("", "", {}, { runned = true })
+    withTimeout(5000) {
+      while (!runned) {
+        kotlinx.coroutines.delay(100)
+      }
+    }
     assertTrue(runned)
   }
 }

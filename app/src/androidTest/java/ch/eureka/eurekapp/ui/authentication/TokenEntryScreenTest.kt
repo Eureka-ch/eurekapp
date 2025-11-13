@@ -5,6 +5,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import ch.eureka.eurekapp.model.data.invitation.Invitation
 import ch.eureka.eurekapp.model.data.invitation.MockInvitationRepository
 import ch.eureka.eurekapp.utils.FirebaseEmulator
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -28,7 +30,7 @@ class TokenEntryScreenTest {
   private var navigationCallbackInvoked = false
 
   @Before
-  fun setup() {
+  fun setup() = runBlocking {
 
     // Verify Firebase Emulator is running
     if (!FirebaseEmulator.isRunning) {
@@ -40,22 +42,9 @@ class TokenEntryScreenTest {
     FirebaseEmulator.clearAuthEmulator()
     FirebaseEmulator.clearFirestoreEmulator()
 
-    // Sign in test user anonymously (simpler than createGoogleUser)
+    // Sign in test user anonymously using await
     val auth = FirebaseEmulator.auth
-    // Sign in synchronously and wait
-    var signedIn = false
-    auth.signInAnonymously().addOnSuccessListener { signedIn = true }
-
-    // Wait for auth to complete
-    var attempts = 0
-    while (!signedIn && attempts < 50) {
-      Thread.sleep(100)
-      attempts++
-    }
-
-    if (!signedIn) {
-      throw IllegalStateException("Failed to sign in to Firebase Auth Emulator")
-    }
+    auth.signInAnonymously().await()
 
     // Setup mock repository and ViewModel
     mockRepository = MockInvitationRepository()

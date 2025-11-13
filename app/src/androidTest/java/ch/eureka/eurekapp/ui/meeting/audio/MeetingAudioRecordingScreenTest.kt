@@ -46,43 +46,62 @@ class MeetingAudioRecordingScreenTest {
         .assertIsDisplayed()
     composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.START_RECORDING_BUTTON).performClick()
 
-    Thread.sleep(2000)
-    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(5000) {
+      composeTestRule
+          .onAllNodesWithTag(MeetingAudioScreenTestTags.PAUSE_RECORDING_BUTTON)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
     composeTestRule
         .onNodeWithTag(MeetingAudioScreenTestTags.PAUSE_RECORDING_BUTTON)
         .assertIsDisplayed()
     composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.PAUSE_RECORDING_BUTTON).performClick()
 
-    Thread.sleep(2000)
-    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(5000) {
+      composeTestRule
+          .onAllNodesWithTag(MeetingAudioScreenTestTags.STOP_RECORDING_BUTTON)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
     composeTestRule
         .onNodeWithTag(MeetingAudioScreenTestTags.STOP_RECORDING_BUTTON)
         .assertIsDisplayed()
     composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.STOP_RECORDING_BUTTON).performClick()
 
-    Thread.sleep(2000)
-    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(5000) {
+      composeTestRule
+          .onAllNodesWithTag(MeetingAudioScreenTestTags.START_RECORDING_BUTTON)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
     composeTestRule
         .onNodeWithTag(MeetingAudioScreenTestTags.START_RECORDING_BUTTON)
         .assertIsDisplayed()
     composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.START_RECORDING_BUTTON).performClick()
 
-    Thread.sleep(2000)
-    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(5000) {
+      composeTestRule
+          .onAllNodesWithTag(MeetingAudioScreenTestTags.PAUSE_RECORDING_BUTTON)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
     composeTestRule
         .onNodeWithTag(MeetingAudioScreenTestTags.PAUSE_RECORDING_BUTTON)
         .assertIsDisplayed()
     composeTestRule.onNodeWithTag(MeetingAudioScreenTestTags.PAUSE_RECORDING_BUTTON).performClick()
-    Thread.sleep(2000)
-    composeTestRule.waitForIdle()
 
+    composeTestRule.waitUntil(5000) {
+      composeTestRule
+          .onAllNodesWithTag(MeetingAudioScreenTestTags.UPLOAD_TO_DATABASE_BUTTON)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
     composeTestRule
         .onNodeWithTag(MeetingAudioScreenTestTags.UPLOAD_TO_DATABASE_BUTTON)
         .assertIsDisplayed()
     composeTestRule
         .onNodeWithTag(MeetingAudioScreenTestTags.UPLOAD_TO_DATABASE_BUTTON)
         .performClick()
-    Thread.sleep(2000)
     composeTestRule.waitForIdle()
   }
 
@@ -113,8 +132,13 @@ class MeetingAudioRecordingScreenTest {
     }
 
     composeTestRule.waitForIdle()
-    Thread.sleep(1000)
 
+    composeTestRule.waitUntil(5000) {
+      composeTestRule
+          .onAllNodesWithTag(MeetingAudioScreenTestTags.GENERATE_AI_TRANSCRIPT_BUTTON)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
     composeTestRule
         .onNodeWithTag(MeetingAudioScreenTestTags.GENERATE_AI_TRANSCRIPT_BUTTON)
         .assertExists()
@@ -157,8 +181,13 @@ class MeetingAudioRecordingScreenTest {
     }
 
     composeTestRule.waitForIdle()
-    Thread.sleep(1000)
 
+    composeTestRule.waitUntil(5000) {
+      composeTestRule
+          .onAllNodesWithTag(MeetingAudioScreenTestTags.GENERATE_AI_TRANSCRIPT_BUTTON)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
     composeTestRule
         .onNodeWithTag(MeetingAudioScreenTestTags.GENERATE_AI_TRANSCRIPT_BUTTON)
         .performClick()

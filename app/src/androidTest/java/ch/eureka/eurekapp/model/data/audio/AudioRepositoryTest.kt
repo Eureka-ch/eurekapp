@@ -11,7 +11,10 @@ import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingRepositoryMock
 import junit.framework.TestCase.assertTrue
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.Rule
 import org.junit.Test
 
@@ -48,7 +51,7 @@ class AudioRepositoryTest {
   }
 
   @Test
-  fun testPauseAndResumeRecordingWorks() {
+  fun testPauseAndResumeRecordingWorks() = runBlocking {
     val context: Context = ApplicationProvider.getApplicationContext()
     val repo = LocalAudioRecordingRepository()
 
@@ -57,11 +60,11 @@ class AudioRepositoryTest {
     val result = repo.createRecording(context, "mock_recording_2.mp4")
 
     assertTrue(recordingState.value == RECORDING_STATE.RUNNING)
-    Thread.sleep(1000)
     repo.pauseRecording()
+    withTimeout(5000) { recordingState.first { it == RECORDING_STATE.PAUSED } }
     assertTrue(recordingState.value == RECORDING_STATE.PAUSED)
-    Thread.sleep(2000)
     repo.resumeRecording()
+    withTimeout(5000) { recordingState.first { it == RECORDING_STATE.RUNNING } }
     assertTrue(recordingState.value == RECORDING_STATE.RUNNING)
 
     repo.clearRecording()
@@ -69,7 +72,7 @@ class AudioRepositoryTest {
   }
 
   @Test
-  fun completelyStopAndDeleteRecording() {
+  fun completelyStopAndDeleteRecording() = runBlocking {
     val context: Context = ApplicationProvider.getApplicationContext()
     val repo = LocalAudioRecordingRepository()
 
@@ -79,11 +82,10 @@ class AudioRepositoryTest {
 
     assertTrue(recordingState.value == RECORDING_STATE.RUNNING)
 
-    Thread.sleep(2000)
-
     repo.pauseRecording()
-    Thread.sleep(1000)
+    withTimeout(5000) { recordingState.first { it == RECORDING_STATE.PAUSED } }
     repo.clearRecording()
+    withTimeout(5000) { recordingState.first { it == RECORDING_STATE.STOPPED } }
 
     assertTrue(recordingState.value == RECORDING_STATE.STOPPED)
 
