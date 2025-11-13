@@ -212,5 +212,10 @@ class TaskEndToEndTest : TestCase() {
     }
 
     composeTestRule.onNodeWithText("End-to-End Test Task").assertIsDisplayed()
+
+    // Sign out to avoid polluting other tests that check auth state
+    // Do this at the end of the test body, not in @After, to ensure all UI operations complete
+    // first
+    runBlocking { FirebaseEmulator.auth.signOut() }
   }
 }
