@@ -17,17 +17,25 @@ import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.screens.subscreens.tasks.getConstraintHint
 
 @Composable
-fun FieldCustomizationPreview(field: FieldDefinition, modifier: Modifier = Modifier) {
+fun FieldCustomizationPreview(
+    field: FieldDefinition,
+    modifier: Modifier = Modifier,
+    showTitle: Boolean = true
+) {
   Column(modifier = modifier.fillMaxWidth().testTag("field_preview_${field.id}")) {
-    Row {
-      Text(
-          field.label, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-      if (field.required) {
-        Text(" *", style = MaterialTheme.typography.titleMedium, color = Color.Red)
+    if (showTitle) {
+      Row {
+        Text(
+            field.label,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.weight(1f))
+        if (field.required) {
+          Text(" *", style = MaterialTheme.typography.titleMedium, color = Color.Red)
+        }
       }
-    }
 
-    Spacer(modifier = Modifier.height(4.dp))
+      Spacer(modifier = Modifier.height(4.dp))
+    }
 
     Text(
         "Type: ${getFieldTypeName(field.type)}",

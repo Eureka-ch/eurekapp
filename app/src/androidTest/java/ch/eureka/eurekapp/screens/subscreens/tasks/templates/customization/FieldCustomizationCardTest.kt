@@ -47,7 +47,10 @@ class FieldCustomizationCardTest {
           field = testField, mode = FieldInteractionMode.EditOnly, onFieldUpdate = {})
     }
 
-    composeTestRule.onNodeWithText("Field Configuration").assertIsDisplayed()
+    // Expand the card first
+    composeTestRule.onNodeWithTag("field_expand_button").performClick()
+    // Check that Advanced Configuration title is displayed
+    composeTestRule.onNodeWithText("Advanced Configuration").assertIsDisplayed()
   }
 
   @Test
@@ -57,6 +60,8 @@ class FieldCustomizationCardTest {
           field = testField, mode = FieldInteractionMode.EditOnly, onFieldUpdate = {})
     }
 
+    // Expand the card first
+    composeTestRule.onNodeWithTag("field_expand_button").performClick()
     composeTestRule.onNodeWithTag("field_label_input").assertIsDisplayed()
     composeTestRule.onNodeWithTag("field_required_checkbox").assertIsDisplayed()
   }
@@ -65,12 +70,16 @@ class FieldCustomizationCardTest {
   fun fieldCustomizationCard_actionButtons_allDisplayed() {
     composeTestRule.setContent {
       FieldCustomizationCard(
-          field = testField, mode = FieldInteractionMode.ViewOnly, onFieldUpdate = {})
+          field = testField, mode = FieldInteractionMode.EditOnly, onFieldUpdate = {})
     }
 
+    // Move up/down/duplicate buttons are visible in the header
     composeTestRule.onNodeWithTag("field_move_up_button").assertIsDisplayed()
     composeTestRule.onNodeWithTag("field_move_down_button").assertIsDisplayed()
     composeTestRule.onNodeWithTag("field_duplicate_button").assertIsDisplayed()
+
+    // Delete button only shows when expanded
+    composeTestRule.onNodeWithTag("field_expand_button").performClick()
     composeTestRule.onNodeWithTag("field_delete_button").assertIsDisplayed()
   }
 
@@ -79,7 +88,7 @@ class FieldCustomizationCardTest {
     composeTestRule.setContent {
       FieldCustomizationCard(
           field = testField,
-          mode = FieldInteractionMode.ViewOnly,
+          mode = FieldInteractionMode.EditOnly,
           onFieldUpdate = {},
           canMoveUp = false)
     }
@@ -92,7 +101,7 @@ class FieldCustomizationCardTest {
     composeTestRule.setContent {
       FieldCustomizationCard(
           field = testField,
-          mode = FieldInteractionMode.ViewOnly,
+          mode = FieldInteractionMode.EditOnly,
           onFieldUpdate = {},
           canMoveDown = false)
     }
@@ -106,11 +115,13 @@ class FieldCustomizationCardTest {
     composeTestRule.setContent {
       FieldCustomizationCard(
           field = testField,
-          mode = FieldInteractionMode.ViewOnly,
+          mode = FieldInteractionMode.EditOnly,
           onFieldUpdate = {},
           onDelete = { deleted = true })
     }
 
+    // Expand the card to see the delete button
+    composeTestRule.onNodeWithTag("field_expand_button").performClick()
     composeTestRule.onNodeWithTag("field_delete_button").performClick()
     assert(deleted)
   }
@@ -121,7 +132,7 @@ class FieldCustomizationCardTest {
     composeTestRule.setContent {
       FieldCustomizationCard(
           field = testField,
-          mode = FieldInteractionMode.ViewOnly,
+          mode = FieldInteractionMode.EditOnly,
           onFieldUpdate = {},
           onDuplicate = { duplicated = true })
     }
@@ -139,7 +150,8 @@ class FieldCustomizationCardTest {
           onFieldUpdate = {})
     }
 
-    composeTestRule.onNodeWithTag("field_edit_button").assertIsDisplayed()
+    // The expand button shows Edit icon in toggleable not-editing mode
+    composeTestRule.onNodeWithTag("field_expand_button").assertIsDisplayed()
   }
 
   @Test
@@ -151,7 +163,9 @@ class FieldCustomizationCardTest {
           onFieldUpdate = {})
     }
 
-    composeTestRule.onNodeWithTag("field_save_button").assertIsDisplayed()
+    // The expand button shows Check icon (save) when expanded in editing mode
+    // The cancel button is visible when editing
+    composeTestRule.onNodeWithTag("field_expand_button").assertIsDisplayed()
     composeTestRule.onNodeWithTag("field_cancel_button").assertIsDisplayed()
   }
 
@@ -166,7 +180,8 @@ class FieldCustomizationCardTest {
           onModeToggle = { toggled = true })
     }
 
-    composeTestRule.onNodeWithTag("field_edit_button").performClick()
+    // The expand button acts as edit button in toggleable not-editing mode
+    composeTestRule.onNodeWithTag("field_expand_button").performClick()
     assert(toggled)
   }
 
@@ -182,7 +197,9 @@ class FieldCustomizationCardTest {
           onModeToggle = { toggled = true })
     }
 
-    composeTestRule.onNodeWithTag("field_save_button").performClick()
+    // First expand the card, then click expand button again to save
+    composeTestRule.onNodeWithTag("field_expand_button").performClick()
+    composeTestRule.onNodeWithTag("field_expand_button").performClick()
     assertNotNull(updated)
     assert(toggled)
   }
@@ -212,8 +229,117 @@ class FieldCustomizationCardTest {
           onFieldUpdate = { updatedField = it })
     }
 
+    // Expand the card to access the label input
+    composeTestRule.onNodeWithTag("field_expand_button").performClick()
     composeTestRule.onNodeWithTag("field_label_input").performTextInput("X")
     assertNotNull(updatedField)
     assertEquals("XTest Field", updatedField?.label)
+  }
+
+  @Test
+  fun fieldCustomizationCard_viewOnlyMode_expandButtonTogglesExpansion() {
+    composeTestRule.setContent {
+      FieldCustomizationCard(
+          field = testField, mode = FieldInteractionMode.ViewOnly, onFieldUpdate = {})
+    }
+
+    // Initially collapsed - Advanced Configuration text should not exist
+    composeTestRule.onNodeWithText("Advanced Configuration").assertDoesNotExist()
+
+    // Click to expand
+    composeTestRule.onNodeWithTag("field_expand_button").performClick()
+    // Should now show the preview (expanded)
+    composeTestRule.onNodeWithText("Test Field").assertIsDisplayed()
+
+    // Click to collapse
+    composeTestRule.onNodeWithTag("field_expand_button").performClick()
+    // The preview should still be there
+    composeTestRule.onNodeWithText("Test Field").assertIsDisplayed()
+  }
+
+  @Test
+  fun fieldCustomizationCard_editOnlyMode_expandButtonTogglesExpansion() {
+    composeTestRule.setContent {
+      FieldCustomizationCard(
+          field = testField, mode = FieldInteractionMode.EditOnly, onFieldUpdate = {})
+    }
+
+    // Initially collapsed - label input should not exist
+    composeTestRule.onNodeWithTag("field_label_input").assertDoesNotExist()
+
+    // Click to expand
+    composeTestRule.onNodeWithTag("field_expand_button").performClick()
+    // Should now show the label input
+    composeTestRule.onNodeWithTag("field_label_input").assertIsDisplayed()
+
+    // Click to collapse
+    composeTestRule.onNodeWithTag("field_expand_button").performClick()
+    // Label input should no longer be visible
+    composeTestRule.onNodeWithTag("field_label_input").assertDoesNotExist()
+  }
+
+  @Test
+  fun fieldCustomizationCard_toggleableNotEditing_expandButtonEntersEditAndExpands() {
+    var toggled = false
+    composeTestRule.setContent {
+      FieldCustomizationCard(
+          field = testField,
+          mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
+          onFieldUpdate = {},
+          onModeToggle = { toggled = true })
+    }
+
+    // Initially collapsed and not editing
+    composeTestRule.onNodeWithTag("field_label_input").assertDoesNotExist()
+    assert(!toggled)
+
+    // Click to enter edit mode and expand
+    composeTestRule.onNodeWithTag("field_expand_button").performClick()
+    // Should have toggled to editing mode
+    assert(toggled)
+  }
+
+  @Test
+  fun fieldCustomizationCard_toggleableEditing_expandButtonSavesExitsAndCollapses() {
+    var updated: FieldDefinition? = null
+    var toggled = false
+    composeTestRule.setContent {
+      FieldCustomizationCard(
+          field = testField,
+          mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
+          onFieldUpdate = { updated = it },
+          onModeToggle = { toggled = true })
+    }
+
+    // First expand the card
+    composeTestRule.onNodeWithTag("field_expand_button").performClick()
+    // Should now be expanded and show label input
+    composeTestRule.onNodeWithTag("field_label_input").assertIsDisplayed()
+
+    // Click expand button again to save, exit edit, and collapse
+    composeTestRule.onNodeWithTag("field_expand_button").performClick()
+    // Should have saved and toggled
+    assertNotNull(updated)
+    assert(toggled)
+  }
+
+  @Test
+  fun fieldCustomizationCard_toggleableEditing_cancelButtonRevertsExitsAndCollapses() {
+    var toggled = false
+    composeTestRule.setContent {
+      FieldCustomizationCard(
+          field = testField,
+          mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
+          onFieldUpdate = {},
+          onModeToggle = { toggled = true })
+    }
+
+    // Cancel button should be visible when editing
+    composeTestRule.onNodeWithTag("field_cancel_button").assertIsDisplayed()
+
+    // Click cancel
+    composeTestRule.onNodeWithTag("field_cancel_button").performClick()
+    // Should have toggled (exited edit mode)
+    assert(toggled)
   }
 }

@@ -35,91 +35,50 @@ fun SelectOptionsEditor(
     Spacer(modifier = Modifier.height(8.dp))
 
     options.forEachIndexed { index, option ->
-      Column(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-          OutlinedTextField(
-              value = option.value,
-              onValueChange = { newValue ->
-                val updated = options.toMutableList()
-                updated[index] = option.copy(value = newValue)
-                onOptionsChange(updated)
-              },
-              label = { Text("Value") },
-              enabled = enabled,
-              modifier = Modifier.weight(1f).testTag("option_value_${option.value}"),
-              colors = EurekaStyles.TextFieldColors())
+      Row(
+          modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+          verticalAlignment = Alignment.CenterVertically) {
+            OutlinedTextField(
+                value = option.label,
+                onValueChange = { newLabel ->
+                  val updated = options.toMutableList()
+                  val sanitizedValue = sanitizeLabelToValue(newLabel)
+                  updated[index] = option.copy(label = newLabel, value = sanitizedValue)
+                  onOptionsChange(updated)
+                },
+                label = { Text("Label") },
+                enabled = enabled,
+                modifier = Modifier.weight(1f).testTag("option_label_${option.value}"),
+                colors = EurekaStyles.TextFieldColors())
 
-          Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
-          OutlinedTextField(
-              value = option.label,
-              onValueChange = { newLabel ->
-                val updated = options.toMutableList()
-                updated[index] = option.copy(label = newLabel)
-                onOptionsChange(updated)
-              },
-              label = { Text("Label") },
-              enabled = enabled,
-              modifier = Modifier.weight(1f).testTag("option_label_${option.value}"),
-              colors = EurekaStyles.TextFieldColors())
-
-          Spacer(modifier = Modifier.width(8.dp))
-
-          IconButton(
-              onClick = {
-                val updated = options.toMutableList()
-                updated.removeAt(index)
-                onOptionsChange(updated)
-              },
-              enabled = enabled && options.size > 2,
-              modifier = Modifier.testTag("option_delete_${option.value}")) {
-                Icon(Icons.Default.Delete, "Delete option")
-              }
-        }
-
-        option.description?.let { desc ->
-          OutlinedTextField(
-              value = desc,
-              onValueChange = { newDesc ->
-                val updated = options.toMutableList()
-                updated[index] = option.copy(description = newDesc.ifBlank { null })
-                onOptionsChange(updated)
-              },
-              label = { Text("Description (optional)") },
-              enabled = enabled,
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .padding(top = 4.dp)
-                      .testTag("option_desc_${option.value}"),
-              colors = EurekaStyles.TextFieldColors())
-        }
-            ?: run {
-              OutlinedTextField(
-                  value = "",
-                  onValueChange = { newDesc ->
-                    val updated = options.toMutableList()
-                    updated[index] = option.copy(description = newDesc.ifBlank { null })
-                    onOptionsChange(updated)
-                  },
-                  label = { Text("Description (optional)") },
-                  enabled = enabled,
-                  modifier =
-                      Modifier.fillMaxWidth()
-                          .padding(top = 4.dp)
-                          .testTag("option_desc_${option.value}"),
-                  colors = EurekaStyles.TextFieldColors())
-            }
-      }
+            IconButton(
+                onClick = {
+                  val updated = options.toMutableList()
+                  updated.removeAt(index)
+                  onOptionsChange(updated)
+                },
+                enabled = enabled && options.size > 2,
+                modifier = Modifier.testTag("option_delete_${option.value}")) {
+                  Icon(Icons.Default.Delete, "Delete option")
+                }
+          }
     }
 
     Button(
         onClick = {
           val nextId = options.size + 1
-          onOptionsChange(options + SelectOption("option$nextId", "Option $nextId", null))
+          val label = "Option $nextId"
+          onOptionsChange(options + SelectOption(sanitizeLabelToValue(label), label, null))
         },
         enabled = enabled,
         modifier = Modifier.testTag("add_option_button")) {
           Text("Add Option")
         }
   }
+}
+
+private fun sanitizeLabelToValue(label: String): String {
+  return label.lowercase().replace(Regex("[^a-z0-9]+"), "_").trim('_').ifBlank { "option" }
 }
