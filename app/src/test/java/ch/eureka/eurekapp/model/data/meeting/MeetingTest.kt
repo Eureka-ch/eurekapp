@@ -5,7 +5,6 @@ import com.google.firebase.Timestamp
 import java.util.Date
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -30,7 +29,7 @@ class MeetingTest {
     assertEquals(30, meeting.duration)
     assertEquals(emptyList<String>(), meeting.attachmentUrls)
     assertTrue(meeting.meetingProposals.isEmpty())
-    assertNotNull(meeting.datetime)
+    assertNull(meeting.datetime)
     assertNull(meeting.format)
     assertNull(meeting.location)
     assertNull(meeting.link)
@@ -257,7 +256,7 @@ class MeetingTest {
     assertEquals(MeetingStatus.OPEN_TO_VOTES, meeting.component5())
     assertEquals(30, meeting.component6())
     assertEquals(emptyList<MeetingProposal>(), meeting.component7())
-    assertNotNull(meeting.component8())
+    assertNull(meeting.component8())
     assertNull(meeting.component9())
     assertNull(meeting.component10())
     assertNull(meeting.component11())

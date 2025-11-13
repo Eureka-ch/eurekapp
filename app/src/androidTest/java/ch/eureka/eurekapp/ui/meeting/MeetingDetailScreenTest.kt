@@ -5,6 +5,7 @@
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -15,6 +16,8 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.Participant
+import com.google.firebase.Timestamp
+import java.util.Date
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
@@ -40,6 +43,7 @@ class MeetingDetailScreenTest {
   private val meetingFlow = MutableStateFlow<Meeting?>(null)
   private val participantsFlow = MutableStateFlow<List<Participant>>(emptyList())
   private var deleteResult = Result.success(Unit)
+  private lateinit var viewModel: MeetingDetailViewModel
 
   private val repositoryMock =
       object : MeetingRepositoryMock() {
@@ -65,7 +69,7 @@ class MeetingDetailScreenTest {
       onRecordMeeting: (String, String) -> Unit = { _, _ -> },
       onViewTranscript: (String, String) -> Unit = { _, _ -> }
   ) {
-    val viewModel = MeetingDetailViewModel("test_project", "test_meeting", repositoryMock)
+    viewModel = MeetingDetailViewModel("test_project", "test_meeting", repositoryMock)
     composeTestRule.setContent {
       MeetingDetailScreen(
           projectId = "test_project",
@@ -177,6 +181,18 @@ class MeetingDetailScreenTest {
 
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_STATUS).assertIsDisplayed()
     composeTestRule.onNodeWithText(MeetingStatus.IN_PROGRESS.description).assertIsDisplayed()
+  }
+
+  @Test
+  fun inProgressMeetingHidesDateTime() {
+    val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.IN_PROGRESS }
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
+    setContent()
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_DATETIME).assertDoesNotExist()
   }
 
   @Test
@@ -694,6 +710,32 @@ class MeetingDetailScreenTest {
 
     // Verify original meeting title is still displayed
     composeTestRule.onNodeWithText(meeting.title).assertIsDisplayed()
+  }
+
+  @Test
+  fun editModePastDateShowsErrorMessage() {
+    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
+
+    setContent()
+    composeTestRule.waitForIdle()
+
+    // Enter edit mode
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+
+    // Set a past date via ViewModel
+    viewModel.touchDateTime()
+    val yesterday = Timestamp(Date(System.currentTimeMillis() - 86400000))
+    viewModel.updateEditDateTime(yesterday)
+    composeTestRule.waitForIdle()
+
+    // Error message should appear
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.ERROR_MSG)
+        .assertIsDisplayed()
+        .assertTextEquals("Meeting should be scheduled in the future.")
   }
 
   @Test

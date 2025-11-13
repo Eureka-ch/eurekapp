@@ -50,7 +50,7 @@ class MeetingDetailViewModelTest {
           title = "Test Meeting",
           status = MeetingStatus.SCHEDULED,
           format = MeetingFormat.VIRTUAL,
-          datetime = Timestamp(Date()),
+          datetime = Timestamp(Date(System.currentTimeMillis() + 86400000)), // Tomorrow
           link = "https://meet.test.com",
           location = null)
 
@@ -563,6 +563,28 @@ class MeetingDetailViewModelTest {
     val uiState = viewModel.uiState.value
     assertFalse(uiState.updateSuccess)
     assertEquals("Duration must be greater than 0", uiState.errorMsg)
+  }
+
+  @Test
+  fun saveMeetingChangesRejectsPastDateTime() = runTest {
+    repositoryMock.meetingToReturn.value = testMeeting
+    repositoryMock.participantsToReturn.value = testParticipants
+
+    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    backgroundScope.launch { viewModel.uiState.collect {} }
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.toggleEditMode(testMeeting)
+    val yesterday = Timestamp(Date(System.currentTimeMillis() - 86400000))
+    viewModel.updateEditDateTime(yesterday)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    viewModel.saveMeetingChanges(testMeeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    val uiState = viewModel.uiState.value
+    assertFalse(uiState.updateSuccess)
+    assertEquals("Meeting should be scheduled in the future.", uiState.errorMsg)
   }
 
   @Test
