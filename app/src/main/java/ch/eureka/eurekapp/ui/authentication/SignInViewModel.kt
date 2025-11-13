@@ -109,11 +109,12 @@ class SignInViewModel(
       context: Context,
       request: GetCredentialRequest,
       credentialManager: CredentialManager
-  ) = try {
-      credentialManager.getCredential(context, request).credential
-  }catch (_: Exception){
-      null
-  }
+  ) =
+      try {
+        credentialManager.getCredential(context, request).credential
+      } catch (_: Exception) {
+        null
+      }
 
   /**
    * Initiates the Google sign-in flow and updates the UI state on success or failure.
@@ -134,8 +135,8 @@ class SignInViewModel(
       try {
         // Launch Credential Manager UI
         val credential = getCredential(context, signInRequest, credentialManager)
-        if(credential == null){
-            throw NoCredentialException("No credentials")
+        if (credential == null) {
+          throw NoCredentialException("No credentials")
         }
 
         // Pass the credential to the repository

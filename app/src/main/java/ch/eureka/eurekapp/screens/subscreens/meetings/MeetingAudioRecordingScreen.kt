@@ -107,8 +107,8 @@ fun MeetingAudioRecordingScreen(
   var canPressUploadButton by remember { mutableStateOf<Boolean>(true) }
 
   // If a transcript already exists for this meeting, show the View Transcript button
-  HandleExistingTranscript(meetingState.value,
-      onTranscriptFound = { canShowAITranscriptButton = true })
+  HandleExistingTranscript(
+      meetingState.value, onTranscriptFound = { canShowAITranscriptButton = true })
 
   TrackRecordingTime(recordingStatus.value) { timeInSeconds++ }
 
@@ -325,30 +325,24 @@ private fun HandleMicrophonePermission(
     permissionGranted: Boolean,
     launcher: ManagedActivityResultLauncher<String, Boolean>
 ) {
-    LaunchedEffect(permissionGranted) {
-        if (!permissionGranted) launcher.launch(Manifest.permission.RECORD_AUDIO)
-    }
+  LaunchedEffect(permissionGranted) {
+    if (!permissionGranted) launcher.launch(Manifest.permission.RECORD_AUDIO)
+  }
 }
 
 @Composable
-private fun TrackRecordingTime(
-    recordingState: RecordingState,
-    onTick: () -> Unit
-) {
-    LaunchedEffect(recordingState) {
-        while (recordingState == RecordingState.RUNNING) {
-            delay(1000)
-            onTick()
-        }
+private fun TrackRecordingTime(recordingState: RecordingState, onTick: () -> Unit) {
+  LaunchedEffect(recordingState) {
+    while (recordingState == RecordingState.RUNNING) {
+      delay(1000)
+      onTick()
     }
+  }
 }
 
 @Composable
-private fun HandleExistingTranscript(
-    meeting: Meeting?,
-    onTranscriptFound: () -> Unit
-) {
-    LaunchedEffect(meeting?.transcriptId) {
-        if (meeting?.transcriptId?.isNotBlank() == true) onTranscriptFound()
-    }
+private fun HandleExistingTranscript(meeting: Meeting?, onTranscriptFound: () -> Unit) {
+  LaunchedEffect(meeting?.transcriptId) {
+    if (meeting?.transcriptId?.isNotBlank() == true) onTranscriptFound()
+  }
 }

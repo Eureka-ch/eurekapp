@@ -14,12 +14,12 @@ class CreateInvitationViewModel(
       onFailureCallback: (Throwable) -> Unit
   ) {
     viewModelScope.launch {
-        val invitationTransmit = invitationRepository.createInvitation(invitation)
-        if (invitationTransmit.isSuccess) {
-            onSuccessCallback()
-        } else {
-            onFailureCallback(invitationTransmit.exceptionOrNull()!!)
-        }
+      val invitationTransmit = invitationRepository.createInvitation(invitation)
+      if (invitationTransmit.isSuccess) {
+        onSuccessCallback()
+      } else {
+        onFailureCallback(invitationTransmit.exceptionOrNull()!!)
+      }
     }
   }
 }

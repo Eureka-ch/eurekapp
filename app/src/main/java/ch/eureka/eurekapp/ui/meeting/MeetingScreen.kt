@@ -331,7 +331,7 @@ fun MeetingCard(
             MeetingStatus.IN_PROGRESS,
             MeetingStatus.COMPLETED -> {
               checkNotNull(meeting.datetime) {
-                  "Datetime should be set if meeting is not open to votes."
+                "Datetime should be set if meeting is not open to votes."
               }
               Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(

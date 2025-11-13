@@ -2,6 +2,7 @@ package ch.eureka.eurekapp.model.data.task
 
 import com.google.firebase.Timestamp
 import java.time.temporal.ChronoUnit
+
 /**
  * Data class representing a task within a project.
  *
@@ -84,6 +85,7 @@ fun getDueDateTag(task: Task, now: Timestamp): String? {
 }
 
 private const val lowPriority = "Low Priority"
+
 fun determinePriority(task: Task, now: Timestamp): String {
   val timestamp = task.dueDate
   if (timestamp == null) return "Low Priority"

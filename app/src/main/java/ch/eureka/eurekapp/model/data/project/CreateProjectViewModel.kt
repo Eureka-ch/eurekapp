@@ -24,12 +24,11 @@ class CreateProjectViewModel(
       onFailureCallback: () -> Unit
   ) {
     viewModelScope.launch {
-        if (projectsRepository.createProject(projectToCreate,
-                projectToCreate.createdBy).isSuccess) {
-            onSuccessCallback()
-        } else {
-            onFailureCallback()
-        }
+      if (projectsRepository.createProject(projectToCreate, projectToCreate.createdBy).isSuccess) {
+        onSuccessCallback()
+      } else {
+        onFailureCallback()
+      }
     }
   }
 

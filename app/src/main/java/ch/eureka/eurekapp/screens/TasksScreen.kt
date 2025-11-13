@@ -30,7 +30,6 @@ import ch.eureka.eurekapp.model.data.task.getDaysUntilDue
 import ch.eureka.eurekapp.model.data.task.getDueDateTag
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
-import ch.eureka.eurekapp.ui.components.NavItem
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.tasks.TaskScreenFilter
 import ch.eureka.eurekapp.ui.tasks.TaskScreenUiState
@@ -330,7 +329,6 @@ fun TasksScreen(
   fun setFilter(filter: TaskScreenFilter) {
     viewModel.setFilter(filter)
   }
-
 
   Scaffold(modifier = modifier.fillMaxSize().testTag(TasksScreenTestTags.TASKS_SCREEN_CONTENT)) {
       innerPadding ->

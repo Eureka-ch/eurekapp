@@ -68,15 +68,13 @@ class FirestoreInvitationRepository(private val firestore: FirebaseFirestore) :
             .runTransaction { transaction ->
               val snapshot = transaction[invitationRef]
 
-              check(snapshot.exists()){
-                  "Invitation not found"
-              }
+              check(snapshot.exists()) { "Invitation not found" }
 
               val invitation =
                   snapshot.toObject(Invitation::class.java)
                       ?: throw IllegalStateException("Invitation not found")
 
-                check(!(invitation.isUsed)) { "Invitation has already been used" }
+              check(!(invitation.isUsed)) { "Invitation has already been used" }
 
               // mark as used -> update the object and write it back
               invitation.isUsed = true
