@@ -20,6 +20,9 @@ open class ConnectivityObserver internal constructor(context: Context) {
   private val connectivityManager =
       context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
+  private fun hasInternetConnection(capabilities: NetworkCapabilities?): Boolean =
+      capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+
   /**
    * A Flow that emits true when the device is connected to the internet, false otherwise. It emits
    * the current state immediately and updates on changes.
@@ -38,34 +41,27 @@ open class ConnectivityObserver internal constructor(context: Context) {
 
                   override fun onLost(network: Network) {
                     // Network is completely lost, check current state
-                    val currentNetwork = connectivityManager.activeNetwork
-                    val capabilities = connectivityManager.getNetworkCapabilities(currentNetwork)
-                    val isCurrentlyConnected =
-                        capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) ==
-                            true
-                    trySend(isCurrentlyConnected)
+                    val capabilities =
+                        connectivityManager.getNetworkCapabilities(
+                            connectivityManager.activeNetwork)
+                    trySend(hasInternetConnection(capabilities))
                   }
 
                   override fun onCapabilitiesChanged(
                       network: Network,
                       networkCapabilities: NetworkCapabilities
                   ) {
-                    // Capabilities changed, re-evaluate internet access
-                    val hasInternet =
-                        networkCapabilities.hasCapability(
-                            NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                    trySend(hasInternet)
+                    // Capabilities changed, re-evaluate access
+                    trySend(hasInternetConnection(networkCapabilities))
                   }
                 }
 
             connectivityManager.registerDefaultNetworkCallback(callback)
 
             // Send initial state
-            val currentNetwork = connectivityManager.activeNetwork
-            val capabilities = connectivityManager.getNetworkCapabilities(currentNetwork)
-            val isCurrentlyConnected =
-                capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
-            trySend(isCurrentlyConnected)
+            val capabilities =
+                connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+            trySend(hasInternetConnection(capabilities))
 
             awaitClose { connectivityManager.unregisterNetworkCallback(callback) }
           }
