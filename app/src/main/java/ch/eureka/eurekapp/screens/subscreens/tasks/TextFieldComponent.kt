@@ -77,7 +77,7 @@ fun TextFieldComponent(
               modifier =
                   Modifier.fillMaxWidth()
                       .testTag(TextFieldComponentTestTags.input(fieldDefinition.id)),
-              colors = EurekaStyles.TextFieldColors())
+              colors = EurekaStyles.textFieldColors())
         } else {
           Text(
               text = currentValue?.value ?: "",

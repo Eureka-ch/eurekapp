@@ -70,6 +70,7 @@ object ProjectSelectionScreenTestTags {
 @Composable
 fun ProjectSelectionScreen(
     onCreateProjectRequest: () -> Unit,
+    onInputTokenRequest: () -> Unit,
     onProjectSelectRequest: (Project) -> Unit,
     projectSelectionScreenViewModel: ProjectSelectionScreenViewModel = viewModel()
 ) {
@@ -90,6 +91,13 @@ fun ProjectSelectionScreen(
                   typography = Typography.titleLarge,
                   buttonColor = LightingBlue,
                   testTag = ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON)
+              CustomElevatedButton(
+                  onClick = { onInputTokenRequest() },
+                  text = "Input Project Token",
+                  typography = Typography.titleLarge,
+                  buttonColor = LightingBlue,
+                  testTag = ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON,
+              )
             }
         if (projectsList.value.isEmpty()) {
           Row(

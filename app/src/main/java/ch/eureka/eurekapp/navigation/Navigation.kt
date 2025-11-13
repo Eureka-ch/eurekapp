@@ -26,6 +26,7 @@ import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitatio
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
+import ch.eureka.eurekapp.ui.authentication.TokenEntryScreen
 import ch.eureka.eurekapp.ui.meeting.CreateDateTimeFormatProposalForMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailActionsConfig
@@ -128,6 +129,7 @@ sealed interface Route {
     }
 
     @Serializable data object CreateInvitation : OverviewProjectSection
+    @Serializable data object TokenEntry : OverviewProjectSection
   }
 
   @Serializable data object Camera : Route
@@ -173,7 +175,23 @@ fun NavigationMenu() {
                     onProjectSelectRequest = { project ->
                       navigationController.navigate(
                           Route.OverviewProject(projectId = project.projectId))
-                    })
+                    },
+                    onInputTokenRequest = {
+                        navigationController.navigate(
+                            Route.OverviewProjectSection.TokenEntry
+                        )
+                    }
+
+                )
+              }
+              composable<Route.OverviewProjectSection.TokenEntry> {
+                  TokenEntryScreen(
+                      onTokenValidated = {
+                          navigationController.navigate(
+                              Route.ProjectSelection
+                          )
+                      }
+                  )
               }
               composable<Route.Profile> { ProfileScreen() }
               composable<Route.OverviewProject> { backStackEntry ->
