@@ -81,101 +81,185 @@ fun SingleSelectFieldComponent(
   ) { currentValue, onChange, isEditing ->
     if (isEditing) {
       var expanded by remember { mutableStateOf(false) }
+      var selectState by
+          remember(currentValue) { mutableStateOf(toSelectState(currentValue, fieldType)) }
 
-      fun FieldValue.SingleSelectValue?.toSelectState(): SelectState =
-          when {
-            this == null -> SelectState.Empty
-            fieldType.options.any { it.value == this.value } -> SelectState.Predefined(this.value)
-            else -> SelectState.Custom(this.value)
-          }
-
-      var selectState by remember(currentValue) { mutableStateOf(currentValue.toSelectState()) }
-
-      val displayValue =
-          when (val state = selectState) {
-            is SelectState.Empty -> ""
-            is SelectState.Predefined ->
-                fieldType.options.find { it.value == state.value }?.label ?: ""
-            is SelectState.Custom -> state.text
-          }
-
-      ExposedDropdownMenuBox(
+      SingleSelectEditMode(
+          fieldDefinition = fieldDefinition,
+          fieldType = fieldType,
+          selectState = selectState,
           expanded = expanded,
-          onExpandedChange = { expanded = !expanded },
-          modifier =
-              Modifier.fillMaxWidth()
-                  .testTag("single_select_field_dropdown_${fieldDefinition.id}")) {
-            OutlinedTextField(
-                value = displayValue,
-                onValueChange = { newValue ->
-                  if (selectState is SelectState.Custom) {
-                    selectState = SelectState.Custom(newValue)
-                    onChange(FieldValue.SingleSelectValue(newValue))
-                  }
-                },
-                readOnly = selectState !is SelectState.Custom || !fieldType.allowCustom,
-                label = {
-                  Text(
-                      if (selectState is SelectState.Custom) "Enter custom value"
-                      else "Select option")
-                },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                        .testTag("single_select_field_input_${fieldDefinition.id}"),
-                colors = EurekaStyles.TextFieldColors())
-
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                modifier = Modifier.testTag("single_select_field_menu_${fieldDefinition.id}")) {
-                  fieldType.options.forEach { option ->
-                    DropdownMenuItem(
-                        text = {
-                          Column {
-                            Text(text = option.label, style = MaterialTheme.typography.bodyLarge)
-                            option.description?.let { desc ->
-                              Text(
-                                  text = desc,
-                                  style = MaterialTheme.typography.bodySmall,
-                                  color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                          }
-                        },
-                        onClick = {
-                          selectState = SelectState.Predefined(option.value)
-                          onChange(FieldValue.SingleSelectValue(option.value))
-                          expanded = false
-                        },
-                        modifier = Modifier.testTag("single_select_option_${option.value}"))
-                  }
-
-                  if (fieldType.allowCustom) {
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                    DropdownMenuItem(
-                        text = { Text("Custom value") },
-                        onClick = {
-                          selectState = SelectState.Custom("")
-                          expanded = false
-                        },
-                        modifier = Modifier.testTag("single_select_option_custom"))
-                  }
-                }
-          }
+          onExpandedChange = { expanded = it },
+          onSelectStateChange = { selectState = it },
+          onChange = onChange)
     } else {
-      val displayText =
-          currentValue?.value?.let { currentVal ->
-            fieldType.options.find { it.value == currentVal }?.label ?: currentVal
-          } ?: ""
-
-      Text(
-          text = displayText,
-          style = MaterialTheme.typography.bodyLarge,
-          modifier = Modifier.testTag("single_select_field_value_${fieldDefinition.id}"))
+      SingleSelectViewMode(fieldDefinition, fieldType, currentValue)
     }
   }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SingleSelectEditMode(
+    fieldDefinition: FieldDefinition,
+    fieldType: FieldType.SingleSelect,
+    selectState: SelectState,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    onSelectStateChange: (SelectState) -> Unit,
+    onChange: (FieldValue.SingleSelectValue) -> Unit,
+) {
+  val displayValue = getDisplayValue(selectState, fieldType)
+
+  ExposedDropdownMenuBox(
+      expanded = expanded,
+      onExpandedChange = { onExpandedChange(!expanded) },
+      modifier =
+          Modifier.fillMaxWidth().testTag("single_select_field_dropdown_${fieldDefinition.id}")) {
+        OutlinedTextField(
+            value = displayValue,
+            onValueChange = { newValue ->
+              handleTextFieldValueChange(
+                  newValue, selectState, fieldType, onSelectStateChange, onChange)
+            },
+            readOnly = selectState !is SelectState.Custom || !fieldType.allowCustom,
+            label = { Text(getTextFieldLabel(selectState)) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier =
+                Modifier.fillMaxWidth()
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                    .testTag("single_select_field_input_${fieldDefinition.id}"),
+            colors = EurekaStyles.TextFieldColors())
+
+        RenderDropdownMenu(
+            fieldDefinition,
+            fieldType,
+            expanded,
+            onDismissRequest = { onExpandedChange(false) },
+            onSelectStateChange,
+            onChange)
+      }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RenderDropdownMenu(
+    fieldDefinition: FieldDefinition,
+    fieldType: FieldType.SingleSelect,
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    onSelectStateChange: (SelectState) -> Unit,
+    onChange: (FieldValue.SingleSelectValue) -> Unit,
+) {
+  ExposedDropdownMenu(
+      expanded = expanded,
+      onDismissRequest = onDismissRequest,
+      modifier = Modifier.testTag("single_select_field_menu_${fieldDefinition.id}")) {
+        RenderOptionMenuItems(fieldType, onSelectStateChange, onChange, onDismissRequest)
+        if (fieldType.allowCustom) {
+          RenderCustomMenuOption(onSelectStateChange, onDismissRequest)
+        }
+      }
+}
+
+@Composable
+private fun RenderOptionMenuItems(
+    fieldType: FieldType.SingleSelect,
+    onSelectStateChange: (SelectState) -> Unit,
+    onChange: (FieldValue.SingleSelectValue) -> Unit,
+    onDismiss: () -> Unit,
+) {
+  fieldType.options.forEach { option ->
+    DropdownMenuItem(
+        text = {
+          Column {
+            Text(text = option.label, style = MaterialTheme.typography.bodyLarge)
+            option.description?.let { desc ->
+              Text(
+                  text = desc,
+                  style = MaterialTheme.typography.bodySmall,
+                  color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+          }
+        },
+        onClick = {
+          onSelectStateChange(SelectState.Predefined(option.value))
+          onChange(FieldValue.SingleSelectValue(option.value))
+          onDismiss()
+        },
+        modifier = Modifier.testTag("single_select_option_${option.value}"))
+  }
+}
+
+@Composable
+private fun RenderCustomMenuOption(
+    onSelectStateChange: (SelectState) -> Unit,
+    onDismiss: () -> Unit,
+) {
+  HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+  DropdownMenuItem(
+      text = { Text("Custom value") },
+      onClick = {
+        onSelectStateChange(SelectState.Custom(""))
+        onDismiss()
+      },
+      modifier = Modifier.testTag("single_select_option_custom"))
+}
+
+@Composable
+private fun SingleSelectViewMode(
+    fieldDefinition: FieldDefinition,
+    fieldType: FieldType.SingleSelect,
+    currentValue: FieldValue.SingleSelectValue?,
+) {
+  val displayText = getViewModeDisplayText(currentValue, fieldType)
+  Text(
+      text = displayText,
+      style = MaterialTheme.typography.bodyLarge,
+      modifier = Modifier.testTag("single_select_field_value_${fieldDefinition.id}"))
+}
+
+private fun toSelectState(
+    value: FieldValue.SingleSelectValue?,
+    fieldType: FieldType.SingleSelect
+): SelectState =
+    when {
+      value == null -> SelectState.Empty
+      fieldType.options.any { it.value == value.value } -> SelectState.Predefined(value.value)
+      else -> SelectState.Custom(value.value)
+    }
+
+private fun getDisplayValue(selectState: SelectState, fieldType: FieldType.SingleSelect): String =
+    when (selectState) {
+      is SelectState.Empty -> ""
+      is SelectState.Predefined ->
+          fieldType.options.find { it.value == selectState.value }?.label ?: ""
+      is SelectState.Custom -> selectState.text
+    }
+
+private fun getTextFieldLabel(selectState: SelectState): String =
+    if (selectState is SelectState.Custom) "Enter custom value" else "Select option"
+
+private fun handleTextFieldValueChange(
+    newValue: String,
+    selectState: SelectState,
+    fieldType: FieldType.SingleSelect,
+    onSelectStateChange: (SelectState) -> Unit,
+    onChange: (FieldValue.SingleSelectValue) -> Unit,
+) {
+  if (selectState is SelectState.Custom) {
+    onSelectStateChange(SelectState.Custom(newValue))
+    onChange(FieldValue.SingleSelectValue(newValue))
+  }
+}
+
+private fun getViewModeDisplayText(
+    currentValue: FieldValue.SingleSelectValue?,
+    fieldType: FieldType.SingleSelect
+): String =
+    currentValue?.value?.let { currentVal ->
+      fieldType.options.find { it.value == currentVal }?.label ?: currentVal
+    } ?: ""
 
 @Preview(showBackground = true)
 @Composable
