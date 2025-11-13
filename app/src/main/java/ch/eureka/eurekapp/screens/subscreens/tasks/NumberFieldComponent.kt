@@ -72,16 +72,7 @@ fun NumberFieldComponent(
                   Modifier.fillMaxWidth().testTag("number_field_input_${fieldDefinition.id}"),
               colors = EurekaStyles.TextFieldColors())
         } else {
-          val formattedValue =
-              currentValue?.let {
-                val decimals = fieldType.decimals ?: 0
-                val formatted = "%.${decimals}f".format(it.value)
-                if (fieldType.unit != null) {
-                  "$formatted ${fieldType.unit}"
-                } else {
-                  formatted
-                }
-              } ?: ""
+          val formattedValue = formatNumberValue(currentValue, fieldType)
 
           Text(
               text = formattedValue,
@@ -89,4 +80,16 @@ fun NumberFieldComponent(
               modifier = Modifier.testTag("number_field_value_${fieldDefinition.id}"))
         }
       }
+}
+
+private fun formatNumberValue(value: FieldValue.NumberValue?, fieldType: FieldType.Number): String {
+  return value?.let {
+    val decimals = fieldType.decimals ?: 0
+    val formatted = "%.${decimals}f".format(it.value)
+    if (fieldType.unit != null) {
+      "$formatted ${fieldType.unit}"
+    } else {
+      formatted
+    }
+  } ?: ""
 }
