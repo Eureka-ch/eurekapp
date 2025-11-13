@@ -37,11 +37,9 @@ import java.time.format.DateTimeFormatter
  * @param value The current field value (null if empty)
  * @param onValueChange Callback when the value changes
  * @param mode The interaction mode (EditOnly, ViewOnly, or Toggleable)
- * @param onModeToggle Callback when mode toggle button is clicked
- * @param onSave Optional callback when save button is clicked (Toggleable mode only)
- * @param onCancel Optional callback when cancel button is clicked (Toggleable mode only)
  * @param showValidationErrors Whether to display validation errors
  * @param modifier The modifier to apply to the component
+ * @param callbacks the callbacks to be used by the parent
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,7 +67,6 @@ fun DateFieldComponent(
           var showDatePicker by remember { mutableStateOf(false) }
           var showTimePicker by remember { mutableStateOf(false) }
           var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
-          var selectedTime by remember { mutableStateOf<LocalTime?>(null) }
 
           OutlinedButton(
               onClick = { showDatePicker = true },
@@ -124,7 +121,6 @@ fun DateFieldComponent(
                   TextButton(
                       onClick = {
                         val time = LocalTime.of(timePickerState.hour, timePickerState.minute)
-                        selectedTime = time
                         val dateTime = LocalDateTime.of(selectedDate!!, time)
                         val isoString = dateTime.atZone(ZoneId.systemDefault()).toString()
                         onChange(FieldValue.DateValue(isoString))
@@ -171,7 +167,7 @@ private fun formatDateValue(dateValue: FieldValue.DateValue, fieldType: FieldTyp
         }
 
     zonedDateTime.format(formatter)
-  } catch (e: Exception) {
+  } catch (_: Exception) {
     dateValue.value
   }
 }
