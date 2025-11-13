@@ -131,34 +131,17 @@ private fun SingleSelectEditMode(
                     .testTag("single_select_field_input_${fieldDefinition.id}"),
             colors = EurekaStyles.TextFieldColors())
 
-        RenderDropdownMenu(
-            fieldDefinition,
-            fieldType,
-            expanded,
+        ExposedDropdownMenu(
+            expanded = expanded,
             onDismissRequest = { onExpandedChange(false) },
-            onSelectStateChange,
-            onChange)
-      }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun RenderDropdownMenu(
-    fieldDefinition: FieldDefinition,
-    fieldType: FieldType.SingleSelect,
-    expanded: Boolean,
-    onDismissRequest: () -> Unit,
-    onSelectStateChange: (SelectState) -> Unit,
-    onChange: (FieldValue.SingleSelectValue) -> Unit,
-) {
-  ExposedDropdownMenu(
-      expanded = expanded,
-      onDismissRequest = onDismissRequest,
-      modifier = Modifier.testTag("single_select_field_menu_${fieldDefinition.id}")) {
-        RenderOptionMenuItems(fieldType, onSelectStateChange, onChange, onDismissRequest)
-        if (fieldType.allowCustom) {
-          RenderCustomMenuOption(onSelectStateChange, onDismissRequest)
-        }
+            modifier = Modifier.testTag("single_select_field_menu_${fieldDefinition.id}")) {
+              RenderOptionMenuItems(fieldType, onSelectStateChange, onChange) {
+                onExpandedChange(false)
+              }
+              if (fieldType.allowCustom) {
+                RenderCustomMenuOption(onSelectStateChange) { onExpandedChange(false) }
+              }
+            }
       }
 }
 
