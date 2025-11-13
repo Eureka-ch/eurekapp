@@ -34,34 +34,43 @@ import ch.eureka.eurekapp.model.data.template.field.validation.FieldValidationRe
 import ch.eureka.eurekapp.model.data.template.field.validation.FieldValidator
 
 /**
+ * Callbacks for field interaction events.
+ *
+ * @param onModeToggle Callback when mode toggle button is clicked
+ * @param onSave Callback when save button is clicked (Toggleable mode only)
+ * @param onCancel Callback when cancel button is clicked (Toggleable mode only)
+ */
+data class FieldCallbacks(
+    val onModeToggle: () -> Unit = {},
+    val onSave: () -> Unit = {},
+    val onCancel: () -> Unit = {}
+)
+
+/**
  * Generic base component for all template field types.
  *
  * @param T The specific FieldType subtype
  * @param V The specific FieldValue subtype
+ * @param modifier The modifier to apply to the component
  * @param fieldDefinition The field definition containing label, type, and constraints
  * @param fieldType The specific field type instance
  * @param value The current field value (null if empty)
  * @param onValueChange Callback when the value changes
  * @param mode The interaction mode (EditOnly, ViewOnly, or Toggleable)
- * @param onModeToggle Callback when mode toggle button is clicked
- * @param onSave Optional callback when save button is clicked (Toggleable mode only)
- * @param onCancel Optional callback when cancel button is clicked (Toggleable mode only)
+ * @param callbacks Callbacks for field interaction events
  * @param showValidationErrors Whether to display validation errors
- * @param modifier The modifier to apply to the component
  * @param renderer Lambda that renders the field-specific UI
  */
 @Composable
 fun <T : FieldType, V : FieldValue> BaseFieldComponent(
+    modifier: Modifier = Modifier,
     fieldDefinition: FieldDefinition,
     fieldType: T,
     value: V?,
     onValueChange: (V) -> Unit,
     mode: FieldInteractionMode,
-    onModeToggle: () -> Unit = {},
-    onSave: () -> Unit = {},
-    onCancel: () -> Unit = {},
+    callbacks: FieldCallbacks = FieldCallbacks(),
     showValidationErrors: Boolean = false,
-    modifier: Modifier = Modifier,
     renderer: @Composable (value: V?, onValueChange: (V) -> Unit, isEditing: Boolean) -> Unit
 ) {
   var editingValue by
@@ -97,26 +106,17 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
 
   val handleValueChange: (V) -> Unit = { newValue ->
     when (mode) {
-      is FieldInteractionMode.EditOnly -> {
-        onValueChange(newValue)
-      }
+      is FieldInteractionMode.EditOnly -> onValueChange(newValue)
       is FieldInteractionMode.Toggleable -> {
         if (mode.isEditing) {
           editingValue = newValue
         }
       }
-      is FieldInteractionMode.ViewOnly -> {}
+      is FieldInteractionMode.ViewOnly -> Unit
     }
   }
 
-  val validationResult =
-      if (showValidationErrors && currentValue != null) {
-        FieldValidator.validate(currentValue, fieldDefinition)
-      } else if (showValidationErrors && fieldDefinition.required && currentValue == null) {
-        FieldValidationResult.Invalid(listOf("This field is required"))
-      } else {
-        FieldValidationResult.Valid
-      }
+  val validationResult = getValidationResult(showValidationErrors, currentValue, fieldDefinition)
 
   Column(modifier = modifier.fillMaxWidth().testTag("base_field_${fieldDefinition.id}")) {
     Row(
@@ -134,76 +134,160 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
           style = MaterialTheme.typography.labelLarge,
           modifier = Modifier.weight(1f).testTag("field_label_${fieldDefinition.id}"))
 
-      if (mode.canToggle) {
-        if (mode.isEditing) {
-          IconButton(
-              onClick = {
-                editingValue?.let { onValueChange(it) }
-                onSave()
-                onModeToggle()
-              },
-              modifier = Modifier.testTag("field_save_${fieldDefinition.id}")) {
-                Icon(
-                    imageVector = Icons.Filled.Check,
-                    contentDescription = "Save changes",
-                    tint = MaterialTheme.colorScheme.primary)
-              }
-          IconButton(
-              onClick = {
-                editingValue = originalValue
-                onCancel()
-                onModeToggle()
-              },
-              modifier = Modifier.testTag("field_cancel_${fieldDefinition.id}")) {
-                Icon(
-                    imageVector = Icons.Filled.Close,
-                    contentDescription = "Cancel changes",
-                    tint = MaterialTheme.colorScheme.error)
-              }
-        } else {
-          IconButton(
-              onClick = onModeToggle,
-              modifier = Modifier.testTag("field_toggle_${fieldDefinition.id}")) {
-                Icon(
-                    imageVector = Icons.Filled.Edit,
-                    contentDescription = "Switch to edit mode",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant)
-              }
-        }
-      }
+      FieldActionButtons(
+          mode = mode,
+          fieldDefinition = fieldDefinition,
+          editingValue = editingValue,
+          originalValue = originalValue,
+          onValueChange = onValueChange,
+          callbacks = callbacks,
+          onEditingValueChange = { editingValue = it })
     }
 
-    fieldDefinition.description?.let { description ->
-      Text(
-          text = description,
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant,
-          modifier =
-              Modifier.padding(top = 4.dp).testTag("field_description_${fieldDefinition.id}"))
-    }
-
+    FieldDescription(fieldDefinition)
     Spacer(modifier = Modifier.height(8.dp))
-
     renderer(currentValue, handleValueChange, mode.isEditing)
+    FieldHint(fieldType, mode, fieldDefinition)
+    ValidationErrors(validationResult, fieldDefinition)
+  }
+}
 
-    val hint = getConstraintHint(fieldType)
-    if (hint != null && mode.isEditing) {
-      Text(
-          text = hint,
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant,
-          modifier = Modifier.padding(top = 4.dp).testTag("field_hint_${fieldDefinition.id}"))
-    }
+@Composable
+private fun <V : FieldValue> FieldActionButtons(
+    mode: FieldInteractionMode,
+    fieldDefinition: FieldDefinition,
+    editingValue: V?,
+    originalValue: V?,
+    onValueChange: (V) -> Unit,
+    callbacks: FieldCallbacks,
+    onEditingValueChange: (V?) -> Unit
+) {
+  if (!mode.canToggle) return
 
-    if (validationResult is FieldValidationResult.Invalid) {
-      validationResult.errors.forEach { error ->
-        Text(
-            text = error,
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Red,
-            modifier = Modifier.padding(top = 4.dp).testTag("field_error_${fieldDefinition.id}"))
+  if (mode.isEditing) {
+    SaveButton(
+        fieldDefinition = fieldDefinition,
+        editingValue = editingValue,
+        onValueChange = onValueChange,
+        callbacks = callbacks)
+    CancelButton(
+        fieldDefinition = fieldDefinition,
+        originalValue = originalValue,
+        callbacks = callbacks,
+        onEditingValueChange = onEditingValueChange)
+  } else {
+    EditButton(fieldDefinition = fieldDefinition, callbacks = callbacks)
+  }
+}
+
+@Composable
+private fun <V : FieldValue> SaveButton(
+    fieldDefinition: FieldDefinition,
+    editingValue: V?,
+    onValueChange: (V) -> Unit,
+    callbacks: FieldCallbacks
+) {
+  IconButton(
+      onClick = {
+        editingValue?.let { onValueChange(it) }
+        callbacks.onSave()
+        callbacks.onModeToggle()
+      },
+      modifier = Modifier.testTag("field_save_${fieldDefinition.id}")) {
+        Icon(
+            imageVector = Icons.Filled.Check,
+            contentDescription = "Save changes",
+            tint = MaterialTheme.colorScheme.primary)
       }
+}
+
+@Composable
+private fun <V : FieldValue> CancelButton(
+    fieldDefinition: FieldDefinition,
+    originalValue: V?,
+    callbacks: FieldCallbacks,
+    onEditingValueChange: (V?) -> Unit
+) {
+  IconButton(
+      onClick = {
+        onEditingValueChange(originalValue)
+        callbacks.onCancel()
+        callbacks.onModeToggle()
+      },
+      modifier = Modifier.testTag("field_cancel_${fieldDefinition.id}")) {
+        Icon(
+            imageVector = Icons.Filled.Close,
+            contentDescription = "Cancel changes",
+            tint = MaterialTheme.colorScheme.error)
+      }
+}
+
+@Composable
+private fun EditButton(fieldDefinition: FieldDefinition, callbacks: FieldCallbacks) {
+  IconButton(
+      onClick = callbacks.onModeToggle,
+      modifier = Modifier.testTag("field_toggle_${fieldDefinition.id}")) {
+        Icon(
+            imageVector = Icons.Filled.Edit,
+            contentDescription = "Switch to edit mode",
+            tint = MaterialTheme.colorScheme.onSurfaceVariant)
+      }
+}
+
+@Composable
+private fun FieldDescription(fieldDefinition: FieldDefinition) {
+  fieldDefinition.description?.let { description ->
+    Text(
+        text = description,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(top = 4.dp).testTag("field_description_${fieldDefinition.id}"))
+  }
+}
+
+@Composable
+private fun <T : FieldType> FieldHint(
+    fieldType: T,
+    mode: FieldInteractionMode,
+    fieldDefinition: FieldDefinition
+) {
+  val hint = getConstraintHint(fieldType)
+  if (hint != null && mode.isEditing) {
+    Text(
+        text = hint,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(top = 4.dp).testTag("field_hint_${fieldDefinition.id}"))
+  }
+}
+
+@Composable
+private fun ValidationErrors(
+    validationResult: FieldValidationResult,
+    fieldDefinition: FieldDefinition
+) {
+  if (validationResult is FieldValidationResult.Invalid) {
+    validationResult.errors.forEach { error ->
+      Text(
+          text = error,
+          style = MaterialTheme.typography.bodySmall,
+          color = Color.Red,
+          modifier = Modifier.padding(top = 4.dp).testTag("field_error_${fieldDefinition.id}"))
     }
+  }
+}
+
+private fun <V : FieldValue> getValidationResult(
+    showValidationErrors: Boolean,
+    currentValue: V?,
+    fieldDefinition: FieldDefinition
+): FieldValidationResult {
+  return if (showValidationErrors && currentValue != null) {
+    FieldValidator.validate(currentValue, fieldDefinition)
+  } else if (showValidationErrors && fieldDefinition.required && currentValue == null) {
+    FieldValidationResult.Invalid(listOf("This field is required"))
+  } else {
+    FieldValidationResult.Valid
   }
 }
 
@@ -215,62 +299,72 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
  */
 internal fun getConstraintHint(fieldType: FieldType): String? {
   return when (fieldType) {
-    is FieldType.Text -> {
-      buildList {
-            fieldType.maxLength?.let { add("Max $it characters") }
-            fieldType.minLength?.let { add("Min $it characters") }
-            fieldType.pattern?.let { add("Pattern: $it") }
-          }
-          .joinToString(" • ")
-          .takeIf { it.isNotEmpty() }
-    }
-    is FieldType.Number -> {
-      buildList {
-            if (fieldType.min != null && fieldType.max != null) {
-              add("Range: ${fieldType.min} - ${fieldType.max}")
-            } else {
-              fieldType.min?.let { add("Min: $it") }
-              fieldType.max?.let { add("Max: $it") }
-            }
-            fieldType.unit?.let { add("Unit: $it") }
-          }
-          .joinToString(" • ")
-          .takeIf { it.isNotEmpty() }
-    }
-    is FieldType.Date -> {
-      buildList {
-            if (fieldType.minDate != null && fieldType.maxDate != null) {
-              add("Range: ${fieldType.minDate} - ${fieldType.maxDate}")
-            } else {
-              fieldType.minDate?.let { add("From: $it") }
-              fieldType.maxDate?.let { add("Until: $it") }
-            }
-            fieldType.format?.let { add("Format: $it") }
-            if (fieldType.includeTime) add("Includes time")
-          }
-          .joinToString(" • ")
-          .takeIf { it.isNotEmpty() }
-    }
-    is FieldType.SingleSelect -> {
-      val count = fieldType.options.size
-      buildString {
-        append("$count option${if (count != 1) "s" else ""}")
-        if (fieldType.allowCustom) append(" (custom values allowed)")
+    is FieldType.Text -> getTextFieldHint(fieldType)
+    is FieldType.Number -> getNumberFieldHint(fieldType)
+    is FieldType.Date -> getDateFieldHint(fieldType)
+    is FieldType.SingleSelect -> getSingleSelectFieldHint(fieldType)
+    is FieldType.MultiSelect -> getMultiSelectFieldHint(fieldType)
+  }
+}
+
+private fun getTextFieldHint(fieldType: FieldType.Text): String? {
+  return buildList {
+        fieldType.maxLength?.let { add("Max $it characters") }
+        fieldType.minLength?.let { add("Min $it characters") }
+        fieldType.pattern?.let { add("Pattern: $it") }
       }
-    }
-    is FieldType.MultiSelect -> {
-      buildList {
-            val count = fieldType.options.size
-            add("$count option${if (count != 1) "s" else ""}")
-            if (fieldType.minSelections != null && fieldType.maxSelections != null) {
-              add("Select ${fieldType.minSelections}-${fieldType.maxSelections}")
-            } else {
-              fieldType.minSelections?.let { add("Min: $it") }
-              fieldType.maxSelections?.let { add("Max: $it") }
-            }
-            if (fieldType.allowCustom) add("Custom allowed")
-          }
-          .joinToString(" • ")
-    }
+      .joinToString(" • ")
+      .takeIf { it.isNotEmpty() }
+}
+
+private fun getNumberFieldHint(fieldType: FieldType.Number): String? {
+  return buildList {
+        addRangeHint(fieldType.min, fieldType.max, "Range", "Min", "Max")
+        fieldType.unit?.let { add("Unit: $it") }
+      }
+      .joinToString(" • ")
+      .takeIf { it.isNotEmpty() }
+}
+
+private fun getDateFieldHint(fieldType: FieldType.Date): String? {
+  return buildList {
+        addRangeHint(fieldType.minDate, fieldType.maxDate, "Range", "From", "Until")
+        fieldType.format?.let { add("Format: $it") }
+        if (fieldType.includeTime) add("Includes time")
+      }
+      .joinToString(" • ")
+      .takeIf { it.isNotEmpty() }
+}
+
+private fun getSingleSelectFieldHint(fieldType: FieldType.SingleSelect): String {
+  val count = fieldType.options.size
+  return buildString {
+    append("$count option${if (count != 1) "s" else ""}")
+    if (fieldType.allowCustom) append(" (custom values allowed)")
+  }
+}
+
+private fun getMultiSelectFieldHint(fieldType: FieldType.MultiSelect): String {
+  return buildList {
+        val count = fieldType.options.size
+        add("$count option${if (count != 1) "s" else ""}")
+        addRangeHint(fieldType.minSelections, fieldType.maxSelections, "Select", "Min", "Max")
+        if (fieldType.allowCustom) add("Custom allowed")
+      }
+      .joinToString(" • ")
+}
+
+private fun <T> MutableList<String>.addRangeHint(
+    min: T?,
+    max: T?,
+    rangeLabel: String,
+    minLabel: String,
+    maxLabel: String
+) {
+  if (min != null && max != null) {
+    add("$rangeLabel: $min - $max")
+  } else {
+    min?.let { add("$minLabel: $it") }
+    max?.let { add("$maxLabel: $it") }
   }
 }
