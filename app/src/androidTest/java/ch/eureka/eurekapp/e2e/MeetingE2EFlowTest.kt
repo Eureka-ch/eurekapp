@@ -24,6 +24,7 @@ import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.utils.FakeJwtGenerator
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.google.firebase.auth.GoogleAuthProvider
+import java.time.LocalDate
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
@@ -38,9 +39,7 @@ import org.junit.runner.RunWith
 class MeetingE2EFlowTest {
 
     @get:Rule val composeTestRule = createComposeRule()
-
-    private val uiDevice: UiDevice =
-        UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+    private val uiDevice: UiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
     private val testProjectId = "e2e_test_project_${UUID.randomUUID()}"
     private val userEmail = "testuser.e2e@test.com"
@@ -49,11 +48,9 @@ class MeetingE2EFlowTest {
 
     private lateinit var userIdToken: String
     private lateinit var userId: String
-
     private lateinit var userRepository: UserRepository
     private lateinit var projectRepository: ProjectRepository
 
-    // Helper function as requested
     private fun findOkButton() = composeTestRule.onNodeWithText("OK")
 
     @Before
@@ -73,31 +70,27 @@ class MeetingE2EFlowTest {
             val authResult = FirebaseEmulator.auth.signInWithCredential(cred).await()
             userId = authResult.user!!.uid
 
-            userRepository
-                .saveUser(User(uid = userId, displayName = userName, email = userEmail))
-                .getOrThrow()
+            userRepository.saveUser(User(uid = userId, displayName = userName, email = userEmail)).getOrThrow()
 
-            projectRepository
-                .createProject(
-                    Project(
-                        projectId = testProjectId,
-                        name = "E2E Test Project",
-                        description = "Project for E2E testing",
-                        createdBy = userId,
-                        memberIds = listOf(userId)),
-                    creatorId = userId,
-                    creatorRole = ProjectRole.OWNER)
-                .getOrThrow()
+            projectRepository.createProject(
+                Project(
+                    projectId = testProjectId,
+                    name = "E2E Test Project",
+                    description = "Project for E2E testing",
+                    createdBy = userId,
+                    memberIds = listOf(userId)
+                ),
+                creatorId = userId,
+                creatorRole = ProjectRole.OWNER
+            ).getOrThrow()
         }
     }
 
     @After
     fun tearDown() {
         runBlocking { projectRepository.deleteProject(testProjectId).getOrNull() }
-
         FirebaseEmulator.clearFirestoreEmulator()
         FirebaseEmulator.clearAuthEmulator()
-
         uiDevice.executeShellCommand("svc wifi enable")
         uiDevice.executeShellCommand("svc data enable")
     }
@@ -105,99 +98,81 @@ class MeetingE2EFlowTest {
     @Test
     fun completeE2EFlow_createEditDeleteMeeting_succeeds() {
         composeTestRule.setContent { NavigationMenu() }
-
         composeTestRule.waitForIdle()
         Thread.sleep(2000)
 
-        composeTestRule
-            .onNodeWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON)
-            .performClick()
+        // Go to meetings tab
+        composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON).performClick()
         composeTestRule.waitForIdle()
-        Thread.sleep(1000)
+        Thread.sleep(1500)
 
         composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_SCREEN).assertIsDisplayed()
 
-        composeTestRule
-            .onNodeWithTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON)
-            .performClick()
+        // Open create meeting
+        composeTestRule.onNodeWithTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON).performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(2000)
 
-        composeTestRule
-            .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
-            .performTextInput(meetingTitle)
+        // Title input
+        composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE).performTextInput(meetingTitle)
         composeTestRule.waitForIdle()
         Thread.sleep(1000)
 
+        // Duration
         composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DURATION).performClick()
         composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("30 minutes").performClick()
+        findOkButton().performClick()
+        composeTestRule.waitForIdle()
         Thread.sleep(1000)
 
-        composeTestRule.onNodeWithText("30 minutes").performClick()
-
-        composeTestRule.waitForIdle()
-        Thread.sleep(2000)
-
-        // ---MODIFIED DATE SELECTION---
+        // Date selection (end of current month)
         composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE).performClick()
         composeTestRule.waitForIdle()
-        Thread.sleep(1000)
-
-        // Don't click a specific day, just click OK
-        findOkButton().assertIsDisplayed()
+        val endOfMonthDay = LocalDate.now().lengthOfMonth().toString()
+        composeTestRule.onNodeWithText(endOfMonthDay, useUnmergedTree = true).performClick()
         findOkButton().performClick()
-
         composeTestRule.waitForIdle()
-        Thread.sleep(2000)
-        // ---END OF MODIFICATION---
+        Thread.sleep(1500)
 
-        // ---MODIFIED TIME SELECTION (to use helper)---
+        // Time selection
         composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TIME).performClick()
         composeTestRule.waitForIdle()
-        Thread.sleep(1000)
-
-        findOkButton().assertIsDisplayed()
         findOkButton().performClick()
-
         composeTestRule.waitForIdle()
-        Thread.sleep(2000)
-        // ---END OF MODIFICATION---
+        Thread.sleep(1500)
 
+        // Format
         composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_FORMAT).performClick()
         composeTestRule.waitForIdle()
-        Thread.sleep(1000)
         composeTestRule.onNodeWithText("Virtual").performClick()
+        findOkButton().performClick()
         composeTestRule.waitForIdle()
-        Thread.sleep(2000)
+        Thread.sleep(1500)
 
-        composeTestRule
-            .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
-            .performClick()
+        // Create meeting
+        composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON).performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(3000)
 
+        // Verify it appears in the list
         composeTestRule.onNodeWithText(meetingTitle, useUnmergedTree = true).assertIsDisplayed()
         Thread.sleep(1000)
 
+        // Open details
         composeTestRule.onNodeWithText(meetingTitle, useUnmergedTree = true).performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(2000)
+        composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN).assertIsDisplayed()
 
-        composeTestRule
-            .onNodeWithTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN)
-            .assertIsDisplayed()
-        Thread.sleep(2000)
-
-        composeTestRule
-            .onNodeWithTag(MeetingDetailScreenTestTags.DELETE_BUTTON)
-            .performClick()
+        // Delete meeting
+        composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.DELETE_BUTTON).performClick()
         composeTestRule.waitForIdle()
-        Thread.sleep(1000)
-
         composeTestRule.onNodeWithText("Delete").performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(2000)
 
+        // Verify deletion
         composeTestRule.onNodeWithText(meetingTitle).assertDoesNotExist()
     }
 }
