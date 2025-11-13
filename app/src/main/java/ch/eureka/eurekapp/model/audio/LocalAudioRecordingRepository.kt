@@ -22,7 +22,7 @@ class LocalAudioRecordingRepository() : AudioRecordingRepository {
       recording = File(context.filesDir, fileName)
 
       audioRecorder =
-          MediaRecorder(context).apply {
+          MediaRecorder().apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
