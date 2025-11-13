@@ -36,7 +36,7 @@ class NumberFieldComponentTest {
       onValueChange: (FieldValue.NumberValue) -> Unit = {},
       mode: FieldInteractionMode = FieldInteractionMode.EditOnly,
       showValidationErrors: Boolean = false,
-      onModeToggle: () -> Unit = {}
+      callbacks: FieldCallbacks = FieldCallbacks()
   ) {
     composeTestRule.setContent {
       NumberFieldComponent(
@@ -45,7 +45,7 @@ class NumberFieldComponentTest {
           onValueChange = onValueChange,
           mode = mode,
           showValidationErrors = showValidationErrors,
-          onModeToggle = onModeToggle)
+          callbacks = callbacks)
     }
   }
 
@@ -142,7 +142,7 @@ class NumberFieldComponentTest {
     var toggleCalled = false
     setFieldContent(
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
-        onModeToggle = { toggleCalled = true })
+        callbacks = FieldCallbacks(onModeToggle = { toggleCalled = true }))
 
     composeTestRule.onNodeWithTag("field_toggle_test_number").performClick()
     assert(toggleCalled)
