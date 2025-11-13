@@ -279,4 +279,83 @@ class MultiSelectFieldComponentTest {
     composeTestRule.onNodeWithTag("multi_select_custom_add_test_multi_select").performClick()
     composeTestRule.onNodeWithTag("multi_select_custom_input_test_multi_select").assertIsDisplayed()
   }
+
+  @Test
+  fun multiSelectFieldComponent_customValueTrimsWhitespace() {
+    var capturedValue: FieldValue.MultiSelectValue? = null
+    setFieldContent(
+        fieldDef =
+            testFieldDefinition.copy(
+                type = FieldType.MultiSelect(options = testOptions, allowCustom = true)),
+        onValueChange = { capturedValue = it })
+
+    composeTestRule
+        .onNodeWithTag("multi_select_custom_input_test_multi_select")
+        .performTextInput("  Test Value  ")
+    composeTestRule.onNodeWithTag("multi_select_custom_add_test_multi_select").performClick()
+
+    assertNotNull(capturedValue)
+    assertTrue(capturedValue?.values?.contains("Test Value") == true)
+  }
+
+  @Test
+  fun multiSelectFieldComponent_customValuePreventsDuplicates() {
+    var capturedValue: FieldValue.MultiSelectValue? =
+        FieldValue.MultiSelectValue(listOf("Custom Value"))
+    setFieldContent(
+        fieldDef =
+            testFieldDefinition.copy(
+                type = FieldType.MultiSelect(options = testOptions, allowCustom = true)),
+        value = capturedValue,
+        onValueChange = { capturedValue = it })
+
+    composeTestRule
+        .onNodeWithTag("multi_select_custom_input_test_multi_select")
+        .performTextInput("Custom Value")
+    composeTestRule.onNodeWithTag("multi_select_custom_add_test_multi_select").performClick()
+
+    assertEquals(1, capturedValue?.values?.size)
+  }
+
+  @Test
+  fun multiSelectFieldComponent_canRemoveCustomValue() {
+    var capturedValue: FieldValue.MultiSelectValue? =
+        FieldValue.MultiSelectValue(listOf("option1", "CustomValue"))
+    setFieldContent(
+        fieldDef =
+            testFieldDefinition.copy(
+                type = FieldType.MultiSelect(options = testOptions, allowCustom = true)),
+        value = capturedValue,
+        onValueChange = { capturedValue = it })
+
+    composeTestRule.onNodeWithTag("multi_select_chip_CustomValue").performClick()
+
+    assertNotNull(capturedValue)
+    assertEquals(1, capturedValue?.values?.size)
+    assertTrue(capturedValue?.values?.contains("option1") == true)
+    assertTrue(capturedValue?.values?.contains("CustomValue") == false)
+  }
+
+  @Test
+  fun multiSelectFieldComponent_emptyCustomValueDoesNotAdd() {
+    var capturedValue: FieldValue.MultiSelectValue? = null
+    setFieldContent(
+        fieldDef =
+            testFieldDefinition.copy(
+                type = FieldType.MultiSelect(options = testOptions, allowCustom = true)),
+        onValueChange = { capturedValue = it })
+
+    composeTestRule
+        .onNodeWithTag("multi_select_custom_input_test_multi_select")
+        .performTextInput("   ")
+
+    assertEquals(null, capturedValue)
+  }
+
+  @Test
+  fun multiSelectFieldComponent_viewMode_emptyList_showsNoneText() {
+    setFieldContent(
+        value = FieldValue.MultiSelectValue(emptyList()), mode = FieldInteractionMode.ViewOnly)
+    composeTestRule.onNodeWithText("None").assertIsDisplayed()
+  }
 }

@@ -206,4 +206,42 @@ class NumberFieldComponentTest {
     setFieldContent(value = FieldValue.NumberValue(0.0), mode = FieldInteractionMode.ViewOnly)
     composeTestRule.onNodeWithText("0.00 kg").assertIsDisplayed()
   }
+
+  @Test
+  fun numberFieldComponent_viewMode_nullValue_showsEmptyString() {
+    setFieldContent(mode = FieldInteractionMode.ViewOnly)
+    composeTestRule.onNodeWithTag("number_field_value_test_number").assertIsDisplayed()
+  }
+
+  @Test
+  fun numberFieldComponent_nullDecimals_formatsAsZeroDecimals() {
+    setFieldContent(
+        fieldDef = testFieldDefinition.copy(type = FieldType.Number(decimals = null)),
+        value = FieldValue.NumberValue(42.567),
+        mode = FieldInteractionMode.ViewOnly)
+    composeTestRule.onNodeWithText("43").assertIsDisplayed()
+  }
+
+  @Test
+  fun numberFieldComponent_toggleableSave_callsOnSaveCallback() {
+    var saveCalled = false
+    setFieldContent(
+        value = FieldValue.NumberValue(42.0),
+        mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
+        callbacks = FieldCallbacks(onSave = { saveCalled = true }))
+
+    composeTestRule.onNodeWithTag("field_save_test_number").performClick()
+    assert(saveCalled)
+  }
+
+  @Test
+  fun numberFieldComponent_toggleableCancel_callsOnCancelCallback() {
+    var cancelCalled = false
+    setFieldContent(
+        mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
+        callbacks = FieldCallbacks(onCancel = { cancelCalled = true }))
+
+    composeTestRule.onNodeWithTag("field_cancel_test_number").performClick()
+    assert(cancelCalled)
+  }
 }

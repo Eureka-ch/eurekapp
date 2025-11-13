@@ -295,4 +295,48 @@ class SingleSelectFieldComponentTest {
     assertNotNull(currentValue)
     assertEquals("high", currentValue?.value)
   }
+
+  @Test
+  fun singleSelectFieldComponent_viewMode_nullValue_showsEmptyString() {
+    setFieldContent(mode = FieldInteractionMode.ViewOnly)
+    composeTestRule.onNodeWithTag("single_select_field_value_test_select").assertIsDisplayed()
+  }
+
+  @Test
+  fun singleSelectFieldComponent_toggleableSave_callsOnSaveCallback() {
+    var saveCalled = false
+    setFieldContent(
+        value = FieldValue.SingleSelectValue("low"),
+        mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
+        callbacks = FieldCallbacks(onSave = { saveCalled = true }))
+
+    composeTestRule.onNodeWithTag("field_save_test_select").performClick()
+    assert(saveCalled)
+  }
+
+  @Test
+  fun singleSelectFieldComponent_toggleableCancel_callsOnCancelCallback() {
+    var cancelCalled = false
+    setFieldContent(
+        mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
+        callbacks = FieldCallbacks(onCancel = { cancelCalled = true }))
+
+    composeTestRule.onNodeWithTag("field_cancel_test_select").performClick()
+    assert(cancelCalled)
+  }
+
+  @Test
+  fun singleSelectFieldComponent_menuDismissOnDismissRequest() {
+    setFieldContent()
+    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
+    composeTestRule.onNodeWithTag("single_select_field_menu_test_select").assertIsDisplayed()
+  }
+
+  @Test
+  fun singleSelectFieldComponent_viewMode_customValueNotInOptions_displaysValue() {
+    setFieldContent(
+        value = FieldValue.SingleSelectValue("unknown_option"),
+        mode = FieldInteractionMode.ViewOnly)
+    composeTestRule.onNodeWithText("unknown_option").assertIsDisplayed()
+  }
 }
