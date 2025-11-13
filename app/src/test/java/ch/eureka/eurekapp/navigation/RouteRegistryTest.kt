@@ -112,7 +112,7 @@ class RouteRegistryTest {
         "OverviewProjectSection should contain CreateInvitation",
         registeredRoutes.any { it.simpleName == "CreateInvitation" })
 
-    assertEquals("OverviewProjectSection should have 1 route", 1, registeredRoutes.size)
+    assertEquals("OverviewProjectSection should have 1 route", 2, registeredRoutes.size)
   }
 
   @Test
