@@ -21,10 +21,10 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 /** Action buttons for the Task screen "+ New Task" and "Auto-assign" buttons */
 @Composable
 fun TaskActionButtons(
+    modifier: Modifier = Modifier,
     onCreateTaskClick: () -> Unit = {},
     onAutoAssignClick: () -> Unit = {},
-    actionsEnabled: Boolean = true,
-    modifier: Modifier = Modifier
+    actionsEnabled: Boolean = true
 ) {
   Row(
       modifier = modifier.fillMaxWidth(),

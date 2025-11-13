@@ -147,7 +147,7 @@ fun ViewTaskScreen(
                   modifier =
                       Modifier.testTag(ViewTaskScreenTestTags.EDIT_TASK)
                           .alpha(if (isConnected) 1f else 0.6f),
-                  colors = EurekaStyles.PrimaryButtonColors()) {
+                  colors = EurekaStyles.primaryButtonColors()) {
                     Text("Edit Task")
                   }
 

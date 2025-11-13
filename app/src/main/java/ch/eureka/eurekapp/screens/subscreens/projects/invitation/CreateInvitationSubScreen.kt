@@ -134,7 +134,6 @@ fun CreateInvitationSubscreen(
                                           token = IdGenerator.generateUniqueToken(),
                                           projectId = projectId,
                                       )
-                                  createInvitationViewModel.viewModelScope.launch {
                                     createInvitationViewModel.createInvitation(
                                         invitationToCreate,
                                         onFailureCallback = { error ->
@@ -143,8 +142,9 @@ fun CreateInvitationSubscreen(
                                         onSuccessCallback = {
                                           createdInvitation.value = true
                                           createInvitationToken.value = invitationToCreate
+                                          onInvitationCreate()
                                         })
-                                  }
+
                                 }) {
                                   Text(
                                       "Create invitation",

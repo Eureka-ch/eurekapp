@@ -29,7 +29,7 @@ class AudioRecordingViewModel(
   private val _recordingUri: MutableStateFlow<Uri?> = MutableStateFlow(null)
   val recordingUri = _recordingUri.asStateFlow()
 
-  val isRecording: StateFlow<RECORDING_STATE> = recordingRepository.getRecordingStateFlow()
+  val isRecording: StateFlow<RecordingState> = recordingRepository.getRecordingStateFlow()
 
   fun startRecording(context: Context, fileName: String) {
     val createdRecordingUri = recordingRepository.createRecording(context, fileName)
@@ -40,15 +40,14 @@ class AudioRecordingViewModel(
   }
 
   fun resumeRecording() {
-    if (isRecording.value == RECORDING_STATE.PAUSED) {
-      if (recordingRepository.resumeRecording().isFailure) {
+    if (isRecording.value == RecordingState.PAUSED &&
+        recordingRepository.resumeRecording().isFailure) {
         return
-      }
     }
   }
 
   fun pauseRecording() {
-    if (isRecording.value == RECORDING_STATE.RUNNING) {
+    if (isRecording.value == RecordingState.RUNNING) {
       val result = recordingRepository.pauseRecording()
       if (result.isFailure) {
         return
@@ -57,7 +56,7 @@ class AudioRecordingViewModel(
   }
 
   fun stopRecording() {
-    if (isRecording.value == RECORDING_STATE.PAUSED) {
+    if (isRecording.value == RecordingState.PAUSED) {
       val result = recordingRepository.clearRecording()
       if (result.isFailure) {
         return
@@ -76,66 +75,68 @@ class AudioRecordingViewModel(
       onFailureUpload: (Throwable) -> Unit,
       onCompletion: () -> Unit = {}
   ) {
-    viewModelScope.launch {
       try {
-        saveRecordingToDatabase(projectId, meetingId, onSuccesfulUpload, onFailureUpload)
-      } finally {
-        onCompletion()
-      }
-    }
+          saveRecordingToDatabase(projectId, meetingId, onSuccesfulUpload,
+              onFailureUpload, onCompletion)
+      }finally { }
   }
 
-  suspend fun saveRecordingToDatabase(
+  fun saveRecordingToDatabase(
       projectId: String,
       meetingId: String,
       onSuccesfulUpload: (String) -> Unit,
-      onFailureUpload: (Throwable) -> Unit
+      onFailureUpload: (Throwable) -> Unit,
+      onCompletion: () -> Unit
   ) {
-    if (_recordingUri.value == null || isRecording.value != RECORDING_STATE.PAUSED) {
-      onFailureUpload(IllegalStateException("No paused recording available to upload"))
-      return
-    }
-
-    stopRecording()
-    val uploadResult =
-        fileStorageRepository.uploadFile(
-            StoragePaths.meetingTranscriptionAudioPath(
-                projectId, meetingId, "${_recordingUri.value!!.lastPathSegment}"),
-            _recordingUri.value!!)
-
-    uploadResult
-        .onFailure { error -> onFailureUpload(error) }
-        .onSuccess { firebaseUrl ->
-          val meetingResult = runCatching {
-            val meeting =
-                meetingRepository.getMeetingById(projectId, meetingId).first()
-                    ?: throw IllegalStateException("Meeting not found")
-
-            val updateResult = meetingRepository.updateMeeting(meeting.copy(audioUrl = firebaseUrl))
-            if (updateResult.isFailure) {
-              throw updateResult.exceptionOrNull()
-                  ?: RuntimeException("Failed to update meeting audio URL")
-            }
-            firebaseUrl
-          }
-
-          meetingResult
-              .onSuccess { url ->
-                deleteLocalRecording()
-                onSuccesfulUpload(url)
-              }
-              .onFailure { error -> onFailureUpload(error) }
+    viewModelScope.launch {
+        if (_recordingUri.value == null || isRecording.value != RecordingState.PAUSED) {
+            onFailureUpload(IllegalStateException("No paused recording available to upload"))
+            return@launch
         }
+
+        stopRecording()
+        val uploadResult =
+            fileStorageRepository.uploadFile(
+                StoragePaths.meetingTranscriptionAudioPath(
+                    projectId, meetingId, "${_recordingUri.value!!.lastPathSegment}"),
+                _recordingUri.value!!)
+
+        uploadResult
+            .onFailure { error -> onFailureUpload(error) }
+            .onSuccess { firebaseUrl ->
+                val meetingResult = runCatching {
+                    val meeting =
+                        meetingRepository.getMeetingById(projectId, meetingId).first()
+                            ?: throw IllegalStateException("Meeting not found")
+
+                    val updateResult = meetingRepository.updateMeeting(meeting.copy(audioUrl = firebaseUrl))
+                    if (updateResult.isFailure) {
+                        throw updateResult.exceptionOrNull()
+                            ?: RuntimeException("Failed to update meeting audio URL")
+                    }
+                    firebaseUrl
+                }
+
+                meetingResult
+                    .onSuccess { url ->
+                        deleteLocalRecording()
+                        onSuccesfulUpload(url)
+                    }
+                    .onFailure { error -> onFailureUpload(error) }
+
+                onCompletion()
+            }
+    }
   }
 
   override fun onCleared() {
     super.onCleared()
     // We need to clean up the recording if the view model is cleared
-    if (isRecording.value == RECORDING_STATE.RUNNING) {
+    if (isRecording.value == RecordingState.RUNNING) {
       pauseRecording()
       stopRecording()
       deleteLocalRecording()
-    } else if (isRecording.value == RECORDING_STATE.PAUSED) {
+    } else if (isRecording.value == RecordingState.PAUSED) {
       stopRecording()
     }
   }

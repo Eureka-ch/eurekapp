@@ -10,6 +10,7 @@ import android.content.Context
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.NoCredentialException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.authentication.AuthRepository
@@ -108,7 +109,11 @@ class SignInViewModel(
       context: Context,
       request: GetCredentialRequest,
       credentialManager: CredentialManager
-  ) = credentialManager.getCredential(context, request).credential
+  ) = try {
+      credentialManager.getCredential(context, request).credential
+  }catch (_: Exception){
+      null
+  }
 
   /**
    * Initiates the Google sign-in flow and updates the UI state on success or failure.
@@ -129,6 +134,9 @@ class SignInViewModel(
       try {
         // Launch Credential Manager UI
         val credential = getCredential(context, signInRequest, credentialManager)
+        if(credential == null){
+            throw NoCredentialException("No credentials")
+        }
 
         // Pass the credential to the repository
         repository.signInWithGoogle(credential).fold({ firebaseUser ->

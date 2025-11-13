@@ -13,7 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 /** Top header bar that appears on all screens */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EurekaTopBar(title: String = "EUREKA", modifier: Modifier = Modifier) {
+fun EurekaTopBar(modifier: Modifier = Modifier, title: String = "EUREKA") {
   TopAppBar(
       title = {
         Text(

@@ -206,7 +206,7 @@ fun NavigationMenu() {
               }
 
               // Ideas section
-              composable<Route.IdeasSection.Ideas> { IdeasScreen(navigationController) }
+              composable<Route.IdeasSection.Ideas> { IdeasScreen() }
 
               // Meetings section
               composable<Route.MeetingsSection.Meetings> {

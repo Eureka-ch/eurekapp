@@ -30,7 +30,7 @@ class AuthRepositoryFirebase(
 
   override suspend fun signInWithGoogle(credential: Credential): Result<FirebaseUser> {
     return try {
-      if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+      val result = if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
         val idToken = helper.extractIdTokenCredential(credential.data).idToken
         val firebaseCred = helper.toFirebaseCredential(idToken)
 
@@ -40,11 +40,12 @@ class AuthRepositoryFirebase(
                 ?: return Result.failure(
                     IllegalStateException("Login failed : Could not retrieve user information"))
 
-        return Result.success(user)
+        Result.success(user)
       } else {
-        return Result.failure(
+        Result.failure(
             IllegalStateException("Login failed: Credential is not of type Google ID"))
       }
+        result
     } catch (e: Exception) {
       Result.failure(
           IllegalStateException("Login failed: ${e.localizedMessage ?: "Unexpected error."}"))
@@ -64,11 +65,12 @@ class AuthRepositoryFirebase(
   }
 
   override fun getUserId(): Result<String?> {
-    if (auth.currentUser == null) {
-      return Result.failure(IllegalArgumentException("No user logged in!"))
+    val result = if (auth.currentUser == null) {
+      Result.failure(IllegalArgumentException("No user logged in!"))
     } else {
-      return Result.success(auth.currentUser?.uid)
+      Result.success(auth.currentUser?.uid)
     }
+    return result
   }
 
   override fun getCurrentUser(): FirebaseUser? = auth.currentUser

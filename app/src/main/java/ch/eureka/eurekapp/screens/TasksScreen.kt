@@ -310,7 +310,6 @@ fun getFilterTag(filter: TaskScreenFilter): String {
  * @param onTaskClick Callback when a task is clicked
  * @param onCreateTaskClick Callback when create task button is clicked
  * @param onAutoAssignClick Callback when auto-assign button is clicked
- * @param onNavigate Callback for navigation
  * @param modifier Modifier for the composable
  * @param viewModel ViewModel for task state management
  */
@@ -320,7 +319,6 @@ fun TasksScreen(
     onTaskClick: (String, String) -> Unit = { _, _ -> },
     onCreateTaskClick: () -> Unit = {},
     onAutoAssignClick: () -> Unit = {},
-    onNavigate: (String) -> Unit = {},
     viewModel: TaskScreenViewModel = viewModel()
 ) {
   val uiState by viewModel.uiState.collectAsState()
@@ -333,14 +331,6 @@ fun TasksScreen(
     viewModel.setFilter(filter)
   }
 
-  // Bottom navigation items
-  val navItems =
-      listOf(
-          NavItem("Tasks", null),
-          NavItem("Ideas", null),
-          NavItem("Home", null),
-          NavItem("Meetings", null),
-          NavItem("Profile", null))
 
   Scaffold(modifier = modifier.fillMaxSize().testTag(TasksScreenTestTags.TASKS_SCREEN_CONTENT)) {
       innerPadding ->

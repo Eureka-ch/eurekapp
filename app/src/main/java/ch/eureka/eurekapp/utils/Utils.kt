@@ -1,6 +1,7 @@
 package ch.eureka.eurekapp.utils
 
 import java.text.SimpleDateFormat
+import java.util.Locale
 
 object Utils {
   /**
@@ -12,7 +13,7 @@ object Utils {
     return stringToCheck.isEmpty() || stringToCheck.isBlank()
   }
 
-  private val dateFormatter = SimpleDateFormat("dd/MM/yyyy")
+  private val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.US)
 
   /**
    * checks if the date is parseable in the dd/MM/yyyy format

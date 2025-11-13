@@ -12,6 +12,6 @@ object IdeasScreenTestTags {
 }
 
 @Composable
-fun IdeasScreen(navigationController: NavHostController = rememberNavController()) {
+fun IdeasScreen() {
   Text("Ideas Screen", modifier = Modifier.testTag(IdeasScreenTestTags.IDEAS_SCREEN_TEXT))
 }

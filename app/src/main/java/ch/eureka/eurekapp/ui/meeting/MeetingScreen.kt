@@ -330,9 +330,8 @@ fun MeetingCard(
             MeetingStatus.SCHEDULED,
             MeetingStatus.IN_PROGRESS,
             MeetingStatus.COMPLETED -> {
-              if (meeting.datetime == null) {
-                throw IllegalStateException(
-                    "Datetime should be set if meeting is not open to votes.")
+              checkNotNull(meeting.datetime) {
+                  "Datetime should be set if meeting is not open to votes."
               }
               Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(

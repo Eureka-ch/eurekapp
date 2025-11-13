@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.model.chatbot
 
+import kotlinx.coroutines.CoroutineDispatcher
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
@@ -16,7 +17,8 @@ import org.json.JSONObject
  * @property apiUrl The URL of the chatbot API endpoint
  * @property apiKey The API key for authentication (if required)
  */
-class ChatbotApiDataSource(private val apiUrl: String, private val apiKey: String? = null) :
+class ChatbotApiDataSource(private val apiUrl: String, private val apiKey: String? = null,
+                           private val dispatcher: CoroutineDispatcher = Dispatchers.IO) :
     ChatbotDataSource {
 
   companion object {
@@ -28,7 +30,7 @@ class ChatbotApiDataSource(private val apiUrl: String, private val apiKey: Strin
   }
 
   override suspend fun sendMessage(systemPrompt: String, context: String): String {
-    return withContext(Dispatchers.IO) {
+    return withContext(dispatcher) {
       val connection = URL(apiUrl).openConnection() as HttpURLConnection
 
       try {
