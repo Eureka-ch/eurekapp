@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.HowToVote
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
@@ -731,16 +732,23 @@ private fun EditableDateTimeField(
 @Composable
 private fun EditableDurationField(config: EditableMeetingInfoCardConfig) {
   // Duration field
-  DurationInputField(
-      duration = config.editDuration,
-      label = "Duration",
-      placeholder = "Select duration",
-      durationOptions = listOf(15, 30, 45, 60, 90, 120),
-      tag = "EditMeetingDuration",
-      onDurationSelected = { duration ->
-        config.onTouchDuration()
-        config.onDurationChange(duration)
-      })
+
+  SingleChoiceInputField(
+      config =
+          SingleChoiceInputFieldConfig(
+              currentValue = config.editDuration,
+              displayValue = { d -> "$d minutes" },
+              label = "Duration",
+              placeholder = "Select duration",
+              icon = Icons.Default.HourglassTop,
+              iconDescription = "Select duration",
+              alertDialogTitle = "Select a duration",
+              options = listOf(5, 10, 15, 20, 30, 45, 60),
+              tag = "EditMeetingDuration",
+              onOptionSelected = { duration ->
+                config.onTouchDuration()
+                config.onDurationChange(duration)
+              }))
   if (config.editDuration <= 0 && config.hasTouchedDuration) {
     Text(
         text = "Duration must be greater than 0",

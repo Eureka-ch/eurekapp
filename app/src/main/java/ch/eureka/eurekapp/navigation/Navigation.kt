@@ -26,6 +26,7 @@ import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitatio
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
+import ch.eureka.eurekapp.ui.meeting.CreateDateTimeFormatProposalForMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailActionsConfig
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreen
@@ -91,6 +92,12 @@ sealed interface Route {
 
     @Serializable
     data class MeetingProposalVotes(val projectId: String, val meetingId: String) : MeetingsSection
+
+    @Serializable
+    data class CreateDateTimeFormatMeetingProposalForMeeting(
+        val projectId: String,
+        val meetingId: String
+    ) : MeetingsSection
 
     @Serializable
     data class MeetingDetail(val projectId: String, val meetingId: String) : MeetingsSection
@@ -274,6 +281,32 @@ fun NavigationMenu() {
                     projectId = meetingProposalVotesRoute.projectId,
                     meetingId = meetingProposalVotesRoute.meetingId,
                     onDone = { navigationController.navigate(Route.MeetingsSection.Meetings) },
+                    onCreateDateTimeFormatProposalForMeeting = {
+                      navigationController.navigate(
+                          Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting(
+                              projectId = meetingProposalVotesRoute.projectId,
+                              meetingId = meetingProposalVotesRoute.meetingId))
+                    },
+                )
+              }
+
+              composable<Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting> {
+                  backStackEntry ->
+                val createDateTimeFormatMeetingProposalForMeetingVotesRoute =
+                    backStackEntry.toRoute<
+                        Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting>()
+                CreateDateTimeFormatProposalForMeetingScreen(
+                    projectId = createDateTimeFormatMeetingProposalForMeetingVotesRoute.projectId,
+                    meetingId = createDateTimeFormatMeetingProposalForMeetingVotesRoute.meetingId,
+                    onDone = {
+                      navigationController.navigate(
+                          Route.MeetingsSection.MeetingProposalVotes(
+                              projectId =
+                                  createDateTimeFormatMeetingProposalForMeetingVotesRoute.projectId,
+                              meetingId =
+                                  createDateTimeFormatMeetingProposalForMeetingVotesRoute
+                                      .meetingId))
+                    },
                 )
               }
 
