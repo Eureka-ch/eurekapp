@@ -56,7 +56,9 @@ class MeetingScreenTest {
   private fun setContent() {
     val viewModel = MeetingViewModel(repositoryMock) { testUserId }
     composeTestRule.setContent {
-      MeetingScreen(projectId = "test_project", onCreateMeeting = {}, meetingViewModel = viewModel)
+      MeetingScreen(
+          meetingViewModel = viewModel,
+          config = MeetingScreenConfig(projectId = "test_project", onCreateMeeting = {}))
     }
   }
 
@@ -179,9 +181,6 @@ class MeetingScreenTest {
     composeTestRule
         .onNodeWithTag(MeetingScreenTestTags.DIRECTIONS_BUTTON, useUnmergedTree = true)
         .assertDoesNotExist()
-    composeTestRule
-        .onNodeWithTag(MeetingScreenTestTags.VIEW_SUMMARY_BUTTON, useUnmergedTree = true)
-        .assertDoesNotExist()
   }
 
   @Test
@@ -299,9 +298,6 @@ class MeetingScreenTest {
         .onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME, useUnmergedTree = true)
         .assertIsDisplayed()
     composeTestRule
-        .onNodeWithTag(MeetingScreenTestTags.VIEW_SUMMARY_BUTTON, useUnmergedTree = true)
-        .assertIsDisplayed()
-    composeTestRule
         .onNodeWithTag(MeetingScreenTestTags.VIEW_TRANSCRIPT_BUTTON, useUnmergedTree = true)
         .assertIsDisplayed()
 
@@ -326,9 +322,6 @@ class MeetingScreenTest {
         .assertIsDisplayed()
     composeTestRule
         .onNodeWithTag(MeetingScreenTestTags.MEETING_LOCATION, useUnmergedTree = true)
-        .assertIsDisplayed()
-    composeTestRule
-        .onNodeWithTag(MeetingScreenTestTags.VIEW_SUMMARY_BUTTON, useUnmergedTree = true)
         .assertIsDisplayed()
     composeTestRule
         .onNodeWithTag(MeetingScreenTestTags.VIEW_TRANSCRIPT_BUTTON, useUnmergedTree = true)

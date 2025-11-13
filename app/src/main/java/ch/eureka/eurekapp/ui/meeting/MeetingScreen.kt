@@ -74,8 +74,6 @@ object MeetingScreenTestTags {
   const val DIRECTIONS_BUTTON = "DirectionsButton"
   const val RECORD_BUTTON = "RecordButton"
   const val VOTE_FOR_MEETING_PROPOSAL_BUTTON = "VoteForMeetingProposalButton"
-
-  const val VIEW_SUMMARY_BUTTON = "SeeSummaryButton"
   const val VIEW_TRANSCRIPT_BUTTON = "SeeTranscriptButton"
   const val NO_UPCOMING_MEETINGS_MESSAGE = "NoUpcomingMeetingsMessageTest"
   const val NO_PAST_MEETINGS_MESSAGE = "NoPastMeetingsMessage"
@@ -84,23 +82,39 @@ object MeetingScreenTestTags {
 }
 
 /**
+ * Config for the main composable to draw the meetings screen.
+ *
+ * @property projectId The ID of the project to display the meetings from.
+ * @property onCreateMeeting Callback executed when the users creates a new meeting.
+ * @property onMeetingClick Callback when a meeting card is clicked, receives projectId and
+ *   meetingId.
+ * @property onVoteForMeetingProposalClick Callback when the "Vote for meeting proposals" button is
+ *   clicked.
+ * @property onNavigateToMeeting Callback called when user wants to navigate to meeting location.
+ * @property onViewTranscript Callback called when user wants to view the transcript of a meting.
+ * @property onRecord Callback executed when the user clicks on the record button.
+ */
+data class MeetingScreenConfig(
+    val projectId: String,
+    val onCreateMeeting: () -> Unit,
+    val onMeetingClick: (String, String) -> Unit = { _, _ -> },
+    val onVoteForMeetingProposalClick: (String, String) -> Unit = { _, _ -> },
+    val onNavigateToMeeting: (String, String) -> Unit = { _, _ -> },
+    val onViewTranscript: (String, String) -> Unit = { _, _ -> },
+    val onRecord: (String, String) -> Unit = { _, _ -> }
+)
+
+/**
  * Main composable to draw the meetings screen.
  *
  * @param meetingViewModel The view model associated to the meetings screen.
- * @param projectId The ID of the project to display the meetings from.
- * @param onMeetingClick Callback when a meeting card is clicked, receives projectId and meetingId.
- * @param onVoteForMeetingProposalClick Callback when the "Vote for meeting proposals" button is
- *   clicked.
+ * @param config Config for the composable.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MeetingScreen(
-    projectId: String,
-    onCreateMeeting: () -> Unit,
+    config: MeetingScreenConfig,
     meetingViewModel: MeetingViewModel = viewModel(),
-    onMeetingClick: (String, String) -> Unit = { _, _ -> },
-    onVoteForMeetingProposalClick: (String, String) -> Unit = { _, _ -> },
-    onNavigateToMeeting: (String, String) -> Unit = { _, _ -> }
 ) {
 
   val context = LocalContext.current
@@ -114,7 +128,7 @@ fun MeetingScreen(
     }
   }
 
-  LaunchedEffect(Unit) { meetingViewModel.loadMeetings(projectId) }
+  LaunchedEffect(Unit) { meetingViewModel.loadMeetings(config.projectId) }
 
   LaunchedEffect(meetingViewModel.userId) {
     if (meetingViewModel.userId == null) {
@@ -125,7 +139,7 @@ fun MeetingScreen(
   Scaffold(
       floatingActionButton = {
         FloatingActionButton(
-            onClick = { onCreateMeeting() },
+            onClick = { config.onCreateMeeting() },
             modifier = Modifier.testTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON)) {
               Icon(imageVector = Icons.Default.Add, contentDescription = "Create meeting")
             }
@@ -164,26 +178,26 @@ fun MeetingScreen(
                             modifier = Modifier.padding(padding),
                             meetings = uiState.upcomingMeetings,
                             tabName = MeetingTab.UPCOMING.name.lowercase(),
-                            projectId = projectId,
+                            projectId = config.projectId,
                             isCurrentUserId = { uid -> meetingViewModel.userId == uid },
-                            onMeetingClick = onMeetingClick,
-                            onVoteForMeetingProposalClick = onVoteForMeetingProposalClick,
-                            onNavigateToMeeting = onNavigateToMeeting,
+                            onMeetingClick = config.onMeetingClick,
+                            onVoteForMeetingProposalClick = config.onVoteForMeetingProposalClick,
+                            onNavigateToMeeting = config.onNavigateToMeeting,
                             onCloseVotes = { meeting ->
                               meetingViewModel.closeVotesForMeeting(meeting)
-                            }))
+                            },
+                            onViewTranscript = config.onViewTranscript,
+                            onRecord = config.onRecord))
                 MeetingTab.PAST ->
                     MeetingsList(
                         MeetingsListConfig(
                             modifier = Modifier.padding(padding),
                             meetings = uiState.pastMeetings,
                             tabName = MeetingTab.PAST.name.lowercase(),
-                            projectId = projectId,
+                            projectId = config.projectId,
                             isCurrentUserId = { uid -> meetingViewModel.userId == uid },
-                            onMeetingClick = onMeetingClick,
-                            onVoteForMeetingProposalClick = onVoteForMeetingProposalClick,
-                            onNavigateToMeeting = onNavigateToMeeting,
-                            onCloseVotes = { _ -> }))
+                            onMeetingClick = config.onMeetingClick,
+                        ))
               }
             }
       })
@@ -203,6 +217,8 @@ fun MeetingScreen(
  *   clicked.
  * @property onNavigateToMeeting Function executed when user navigates to location of meeting.
  * @property onCloseVotes Function executed when the user clicks on "close votes" button.
+ * @property onViewTranscript Function executed when user clicks on "meeting transcripts" button.
+ * @property onRecord Function executed when user clicks on "record" button.
  */
 data class MeetingsListConfig(
     val modifier: Modifier,
@@ -214,6 +230,8 @@ data class MeetingsListConfig(
     val onVoteForMeetingProposalClick: (String, String) -> Unit = { _, _ -> },
     val onNavigateToMeeting: (String, String) -> Unit = { _, _ -> },
     val onCloseVotes: (Meeting) -> Unit = { _ -> },
+    val onViewTranscript: (String, String) -> Unit = { _, _ -> },
+    val onRecord: (String, String) -> Unit = { _, _ -> },
 )
 
 /**
@@ -244,8 +262,10 @@ fun MeetingsList(config: MeetingsListConfig) {
                           config.onNavigateToMeeting(
                               config.projectId, config.meetings[index].meetingID)
                         },
-                        onCloseVotes = config.onCloseVotes),
-            )
+                        onCloseVotes = config.onCloseVotes,
+                        onViewTranscript = config.onViewTranscript,
+                        onRecord = config.onRecord,
+                    ))
           }
         }
   } else {
@@ -283,10 +303,10 @@ data class MeetingCardConfig(
     val onVoteForMeetingProposals: () -> Unit = {},
     val onVoteForFormat: () -> Unit = {},
     val onDirections: () -> Unit = {},
-    val onRecord: () -> Unit = {},
+    val onRecord: (String, String) -> Unit = { _, _ -> },
     val onViewSummary: () -> Unit = {},
-    val onViewTranscript: () -> Unit = {},
-    val onCloseVotes: (Meeting) -> Unit = { _ -> }
+    val onViewTranscript: (String, String) -> Unit = { _, _ -> },
+    val onCloseVotes: (Meeting) -> Unit = { _ -> },
 )
 
 /**
@@ -501,7 +521,7 @@ fun MeetingCard(
                         }
                         Spacer(modifier = Modifier.width(10.dp))
                         Button(
-                            onClick = config.onRecord,
+                            onClick = { config.onRecord(meeting.projectId, meeting.meetingID) },
                             modifier = Modifier.testTag(MeetingScreenTestTags.RECORD_BUTTON),
                         ) {
                           Text("Record")
@@ -521,15 +541,9 @@ fun MeetingCard(
                     }
                   }
                   MeetingStatus.COMPLETED -> {
-                    Button(
-                        onClick = config.onViewSummary,
-                        modifier = Modifier.testTag(MeetingScreenTestTags.VIEW_SUMMARY_BUTTON),
-                    ) {
-                      Text("View summary")
-                    }
                     Spacer(modifier = Modifier.width(10.dp))
                     Button(
-                        onClick = config.onViewTranscript,
+                        onClick = { config.onViewTranscript(meeting.projectId, meeting.meetingID) },
                         modifier = Modifier.testTag(MeetingScreenTestTags.VIEW_TRANSCRIPT_BUTTON),
                     ) {
                       Text("Transcript")
