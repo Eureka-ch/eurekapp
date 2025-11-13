@@ -34,9 +34,7 @@ class DateFieldComponentTest {
       onValueChange: (FieldValue.DateValue) -> Unit = {},
       mode: FieldInteractionMode = FieldInteractionMode.EditOnly,
       showValidationErrors: Boolean = false,
-      onModeToggle: () -> Unit = {},
-      onSave: () -> Unit = {},
-      onCancel: () -> Unit = {}
+      callbacks: FieldCallbacks = FieldCallbacks()
   ) {
     composeTestRule.setContent {
       DateFieldComponent(
@@ -45,9 +43,7 @@ class DateFieldComponentTest {
           onValueChange = onValueChange,
           mode = mode,
           showValidationErrors = showValidationErrors,
-          onModeToggle = onModeToggle,
-          onSave = onSave,
-          onCancel = onCancel)
+          callbacks = callbacks)
     }
   }
 
@@ -138,7 +134,7 @@ class DateFieldComponentTest {
     var toggleCalled = false
     setFieldContent(
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
-        onModeToggle = { toggleCalled = true })
+        callbacks = FieldCallbacks(onModeToggle = { toggleCalled = true }))
 
     composeTestRule.onNodeWithTag("field_toggle_test_date").performClick()
     assertTrue(toggleCalled)
@@ -231,7 +227,7 @@ class DateFieldComponentTest {
     setFieldContent(
         value = FieldValue.DateValue("2025-12-25T00:00:00Z"),
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
-        onSave = { saveCalled = true })
+        callbacks = FieldCallbacks(onSave = { saveCalled = true }))
 
     composeTestRule.onNodeWithTag("field_save_test_date").performClick()
     assertTrue(saveCalled)
@@ -242,7 +238,7 @@ class DateFieldComponentTest {
     var cancelCalled = false
     setFieldContent(
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
-        onCancel = { cancelCalled = true })
+        callbacks = FieldCallbacks(onCancel = { cancelCalled = true }))
 
     composeTestRule.onNodeWithTag("field_cancel_test_date").performClick()
     assertTrue(cancelCalled)

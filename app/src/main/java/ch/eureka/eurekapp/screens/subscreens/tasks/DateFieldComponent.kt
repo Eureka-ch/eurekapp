@@ -46,15 +46,13 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DateFieldComponent(
+    modifier: Modifier = Modifier,
     fieldDefinition: FieldDefinition,
     value: FieldValue.DateValue?,
     onValueChange: (FieldValue.DateValue) -> Unit,
     mode: FieldInteractionMode,
-    onModeToggle: () -> Unit = {},
-    onSave: () -> Unit = {},
-    onCancel: () -> Unit = {},
+    callbacks: FieldCallbacks = FieldCallbacks(),
     showValidationErrors: Boolean = false,
-    modifier: Modifier = Modifier
 ) {
   val fieldType = fieldDefinition.type as FieldType.Date
 
@@ -64,6 +62,7 @@ fun DateFieldComponent(
       value = value,
       onValueChange = onValueChange,
       mode = mode,
+      callbacks = callbacks,
       showValidationErrors = showValidationErrors,
       modifier = modifier) { currentValue, onChange, isEditing ->
         if (isEditing) {

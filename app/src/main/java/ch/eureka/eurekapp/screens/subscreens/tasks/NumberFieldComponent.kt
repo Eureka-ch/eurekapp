@@ -36,7 +36,7 @@ fun NumberFieldComponent(
     mode: FieldInteractionMode,
     showValidationErrors: Boolean = false,
     callbacks: FieldCallbacks = FieldCallbacks(),
-    ) {
+) {
   val fieldType = fieldDefinition.type as FieldType.Number
 
   BaseFieldComponent(
