@@ -33,6 +33,7 @@ import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingNavigationScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingProposalVoteScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
+import ch.eureka.eurekapp.ui.meeting.MeetingScreenConfig
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -211,26 +212,37 @@ fun NavigationMenu() {
               // Meetings section
               composable<Route.MeetingsSection.Meetings> {
                 MeetingScreen(
-                    projectId = testProjectId,
-                    onCreateMeeting = {
-                      navigationController.navigate(
-                          Route.MeetingsSection.CreateMeeting(testProjectId))
-                    },
-                    onMeetingClick = { projectId, meetingId ->
-                      navigationController.navigate(
-                          Route.MeetingsSection.MeetingDetail(
-                              projectId = projectId, meetingId = meetingId))
-                    },
-                    onVoteForMeetingProposalClick = { projectId, meetingId ->
-                      navigationController.navigate(
-                          Route.MeetingsSection.MeetingProposalVotes(
-                              projectId = projectId, meetingId = meetingId))
-                    },
-                    onNavigateToMeeting = { projectId, meetingId ->
-                      navigationController.navigate(
-                          Route.MeetingsSection.MeetingNavigation(
-                              projectId = projectId, meetingId = meetingId))
-                    })
+                    MeetingScreenConfig(
+                        projectId = testProjectId,
+                        onCreateMeeting = {
+                          navigationController.navigate(
+                              Route.MeetingsSection.CreateMeeting(testProjectId))
+                        },
+                        onMeetingClick = { projectId, meetingId ->
+                          navigationController.navigate(
+                              Route.MeetingsSection.MeetingDetail(
+                                  projectId = projectId, meetingId = meetingId))
+                        },
+                        onVoteForMeetingProposalClick = { projectId, meetingId ->
+                          navigationController.navigate(
+                              Route.MeetingsSection.MeetingProposalVotes(
+                                  projectId = projectId, meetingId = meetingId))
+                        },
+                        onNavigateToMeeting = { projectId, meetingId ->
+                          navigationController.navigate(
+                              Route.MeetingsSection.MeetingNavigation(
+                                  projectId = projectId, meetingId = meetingId))
+                        },
+                        onViewTranscript = { projectId, meetingId ->
+                          navigationController.navigate(
+                              Route.MeetingsSection.AudioTranscript(
+                                  projectId = projectId, meetingId = meetingId))
+                        },
+                        onRecord = { projectId, meetingId ->
+                          navigationController.navigate(
+                              Route.MeetingsSection.AudioRecording(
+                                  projectId = projectId, meetingId = meetingId))
+                        }))
               }
 
               composable<Route.MeetingsSection.MeetingDetail> { backStackEntry ->
@@ -257,6 +269,11 @@ fun NavigationMenu() {
                                   Route.MeetingsSection.MeetingNavigation(
                                       projectId = meetingDetailRoute.projectId,
                                       meetingId = meetingDetailRoute.meetingId))
+                            },
+                            onVoteForMeetingProposalClick = { projectId, meetingId ->
+                              navigationController.navigate(
+                                  Route.MeetingsSection.MeetingProposalVotes(
+                                      projectId = projectId, meetingId = meetingId))
                             }),
                 )
               }
