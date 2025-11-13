@@ -7,9 +7,11 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.Eurekapp
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.navigation.BottomBarNavigationTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
@@ -55,6 +57,9 @@ class TaskEndToEndTest : TestCase() {
   fun setup() {
     runBlocking {
       assumeTrue("Firebase Emulator must be running for tests", FirebaseEmulator.isRunning)
+
+      // Initialize ConnectivityObserverProvider for the test
+      ConnectivityObserverProvider.initialize(ApplicationProvider.getApplicationContext())
 
       // Clear emulators before test
       FirebaseEmulator.clearFirestoreEmulator()
