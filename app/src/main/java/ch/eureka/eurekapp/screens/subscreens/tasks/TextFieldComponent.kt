@@ -7,8 +7,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
@@ -19,43 +17,38 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 /**
  * Text field component for template fields.
  *
+ * @param modifier The modifier to apply to the component
  * @param fieldDefinition The field definition containing label, constraints, etc.
  * @param value The current field value (null if empty)
  * @param onValueChange Callback when the value changes
  * @param mode The interaction mode (EditOnly, ViewOnly, or Toggleable)
- * @param onModeToggle Callback when mode toggle button is clicked
- * @param onSave Optional callback when save button is clicked (Toggleable mode only)
- * @param onCancel Optional callback when cancel button is clicked (Toggleable mode only)
+ * @param callbacks Callbacks for field interaction events
  * @param showValidationErrors Whether to display validation errors
- * @param modifier The modifier to apply to the component
  */
 @Composable
 fun TextFieldComponent(
+    modifier: Modifier = Modifier,
     fieldDefinition: FieldDefinition,
     value: FieldValue.TextValue?,
     onValueChange: (FieldValue.TextValue) -> Unit,
     mode: FieldInteractionMode,
-    onModeToggle: () -> Unit = {},
-    onSave: () -> Unit = {},
-    onCancel: () -> Unit = {},
+    callbacks: FieldCallbacks = FieldCallbacks(),
     showValidationErrors: Boolean = false,
     showHeader: Boolean = true,
-    modifier: Modifier = Modifier
-) {
+    ) {
   val fieldType = fieldDefinition.type as FieldType.Text
 
   BaseFieldComponent(
+      modifier = modifier,
       fieldDefinition = fieldDefinition,
       fieldType = fieldType,
       value = value,
       onValueChange = onValueChange,
       mode = mode,
-      onModeToggle = onModeToggle,
-      onSave = onSave,
-      onCancel = onCancel,
+      callbacks = callbacks,
       showValidationErrors = showValidationErrors,
-      showHeader = showHeader,
-      modifier = modifier) { currentValue, onChange, isEditing ->
+      showHeader = showHeader
+      ) { currentValue, onChange, isEditing ->
         if (isEditing) {
           OutlinedTextField(
               value = currentValue?.value ?: "",
