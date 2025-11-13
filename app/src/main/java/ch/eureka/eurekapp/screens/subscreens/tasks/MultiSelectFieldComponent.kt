@@ -65,9 +65,6 @@ fun MultiSelectFieldComponent(
       value = value,
       onValueChange = onValueChange,
       mode = mode,
-      onModeToggle = onModeToggle,
-      onSave = onSave,
-      onCancel = onCancel,
       showValidationErrors = showValidationErrors,
       showHeader = showHeader,
       modifier = modifier) { currentValue, onChange, isEditing ->

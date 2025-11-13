@@ -33,31 +33,28 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
  */
 @Composable
 fun NumberFieldComponent(
+    modifier: Modifier = Modifier,
     fieldDefinition: FieldDefinition,
     value: FieldValue.NumberValue?,
     onValueChange: (FieldValue.NumberValue) -> Unit,
     mode: FieldInteractionMode,
-    onModeToggle: () -> Unit = {},
-    onSave: () -> Unit = {},
-    onCancel: () -> Unit = {},
     showValidationErrors: Boolean = false,
     showHeader: Boolean = true,
-    modifier: Modifier = Modifier
+    callbacks: FieldCallbacks = FieldCallbacks()
 ) {
   val fieldType = fieldDefinition.type as FieldType.Number
 
   BaseFieldComponent(
+      modifier = modifier,
       fieldDefinition = fieldDefinition,
       fieldType = fieldType,
       value = value,
       onValueChange = onValueChange,
       mode = mode,
-      onModeToggle = onModeToggle,
-      onSave = onSave,
-      onCancel = onCancel,
       showValidationErrors = showValidationErrors,
       showHeader = showHeader,
-      modifier = modifier) { currentValue, onChange, isEditing ->
+      callbacks = callbacks
+      ) { currentValue, onChange, isEditing ->
         if (isEditing) {
           OutlinedTextField(
               value = currentValue?.value?.toString() ?: "",

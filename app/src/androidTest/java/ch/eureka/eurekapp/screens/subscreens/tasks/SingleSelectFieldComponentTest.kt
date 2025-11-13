@@ -50,7 +50,7 @@ class SingleSelectFieldComponentTest {
           onValueChange = onValueChange,
           mode = mode,
           showValidationErrors = showValidationErrors,
-          onModeToggle = onModeToggle)
+          callbacks = FieldCallbacks(onModeToggle = onModeToggle))
     }
   }
 
