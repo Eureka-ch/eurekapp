@@ -80,6 +80,7 @@ object MeetingScreenTestTags {
   const val NO_UPCOMING_MEETINGS_MESSAGE = "NoUpcomingMeetingsMessageTest"
   const val NO_PAST_MEETINGS_MESSAGE = "NoPastMeetingsMessage"
   const val CREATE_MEETING_BUTTON = "CreateMeetingButton"
+  const val CLOSE_VOTES_BUTTON = "CloseVotesButton"
 }
 
 /**
@@ -114,6 +115,12 @@ fun MeetingScreen(
   }
 
   LaunchedEffect(Unit) { meetingViewModel.loadMeetings(projectId) }
+
+  LaunchedEffect(meetingViewModel.userId) {
+    if (meetingViewModel.userId == null) {
+      meetingViewModel.setErrorMsg("Not logged in")
+    }
+  }
 
   Scaffold(
       floatingActionButton = {
@@ -153,92 +160,124 @@ fun MeetingScreen(
               when (uiState.selectedTab) {
                 MeetingTab.UPCOMING ->
                     MeetingsList(
-                        modifier = Modifier.padding(padding),
-                        meetings = uiState.upcomingMeetings,
-                        tabName = MeetingTab.UPCOMING.name.lowercase(),
-                        projectId = projectId,
-                        onMeetingClick = onMeetingClick,
-                        onVoteForMeetingProposalClick = onVoteForMeetingProposalClick,
-                        onNavigateToMeeting = onNavigateToMeeting)
+                        MeetingsListConfig(
+                            modifier = Modifier.padding(padding),
+                            meetings = uiState.upcomingMeetings,
+                            tabName = MeetingTab.UPCOMING.name.lowercase(),
+                            projectId = projectId,
+                            isCurrentUserId = { uid -> meetingViewModel.userId == uid },
+                            onMeetingClick = onMeetingClick,
+                            onVoteForMeetingProposalClick = onVoteForMeetingProposalClick,
+                            onNavigateToMeeting = onNavigateToMeeting,
+                            onCloseVotes = { meeting ->
+                              meetingViewModel.closeVotesForMeeting(meeting)
+                            }))
                 MeetingTab.PAST ->
                     MeetingsList(
-                        modifier = Modifier.padding(padding),
-                        meetings = uiState.pastMeetings,
-                        tabName = MeetingTab.PAST.name.lowercase(),
-                        projectId = projectId,
-                        onMeetingClick = onMeetingClick,
-                        onVoteForMeetingProposalClick = onVoteForMeetingProposalClick,
-                        onNavigateToMeeting = onNavigateToMeeting)
+                        MeetingsListConfig(
+                            modifier = Modifier.padding(padding),
+                            meetings = uiState.pastMeetings,
+                            tabName = MeetingTab.PAST.name.lowercase(),
+                            projectId = projectId,
+                            isCurrentUserId = { uid -> meetingViewModel.userId == uid },
+                            onMeetingClick = onMeetingClick,
+                            onVoteForMeetingProposalClick = onVoteForMeetingProposalClick,
+                            onNavigateToMeeting = onNavigateToMeeting,
+                            onCloseVotes = { _ -> }))
               }
             }
       })
 }
 
 /**
+ * Config for component that displays the meetings.
+ *
+ * @property modifier Modifier used in the component.
+ * @property meetings Meetings list to display.
+ * @property tabName Name of the tab in which to display these meetings.
+ * @property projectId The ID of the project containing the meetings.
+ * @property isCurrentUserId Function taking as argument a user ID and return true if this is the Id
+ *   of the user that is currently logged in and false otherwise.
+ * @property onMeetingClick Callback when a meeting card is clicked.
+ * @property onVoteForMeetingProposalClick Callback when the "Vote for meeting proposals" button is
+ *   clicked.
+ * @property onNavigateToMeeting Function executed when user navigates to location of meeting.
+ * @property onCloseVotes Function executed when the user clicks on "close votes" button.
+ */
+data class MeetingsListConfig(
+    val modifier: Modifier,
+    val meetings: List<Meeting>,
+    val tabName: String,
+    val projectId: String = "",
+    val isCurrentUserId: (String) -> Boolean,
+    val onMeetingClick: (String, String) -> Unit = { _, _ -> },
+    val onVoteForMeetingProposalClick: (String, String) -> Unit = { _, _ -> },
+    val onNavigateToMeeting: (String, String) -> Unit = { _, _ -> },
+    val onCloseVotes: (Meeting) -> Unit = { _ -> },
+)
+
+/**
  * Component that displays the meetings.
  *
- * @param modifier Modifier used in the component.
- * @param meetings Meetings list to display.
- * @param tabName Name of the tab in which to display these meetings.
- * @param projectId The ID of the project containing the meetings.
- * @param onMeetingClick Callback when a meeting card is clicked.
- * @param onVoteForMeetingProposalClick Callback when the "Vote for meeting proposals" button is
- *   clicked.
+ * @param config Config of that composable.
  */
 @Composable
-fun MeetingsList(
-    modifier: Modifier,
-    meetings: List<Meeting>,
-    tabName: String,
-    projectId: String = "",
-    onMeetingClick: (String, String) -> Unit = { _, _ -> },
-    onVoteForMeetingProposalClick: (String, String) -> Unit = { _, _ -> },
-    onNavigateToMeeting: (String, String) -> Unit = { _, _ -> }
-) {
-  if (meetings.isNotEmpty()) {
+fun MeetingsList(config: MeetingsListConfig) {
+  if (config.meetings.isNotEmpty()) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = 8.dp),
-        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-          items(meetings.size) { index ->
+        modifier = config.modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+          items(config.meetings.size) { index ->
             MeetingCard(
-                meeting = meetings[index],
+                meeting = config.meetings[index],
                 config =
                     MeetingCardConfig(
-                        onClick = { onMeetingClick(projectId, meetings[index].meetingID) },
+                        isCurrentUserId = config.isCurrentUserId,
+                        onClick = {
+                          config.onMeetingClick(config.projectId, config.meetings[index].meetingID)
+                        },
                         onVoteForMeetingProposals = {
-                          onVoteForMeetingProposalClick(projectId, meetings[index].meetingID)
+                          config.onVoteForMeetingProposalClick(
+                              config.projectId, config.meetings[index].meetingID)
                         },
                         onDirections = {
-                          onNavigateToMeeting(projectId, meetings[index].meetingID)
-                        }),
+                          config.onNavigateToMeeting(
+                              config.projectId, config.meetings[index].meetingID)
+                        },
+                        onCloseVotes = config.onCloseVotes),
             )
           }
         }
   } else {
     Text(
         modifier =
-            modifier.testTag(
-                if (tabName == MeetingTab.UPCOMING.name.lowercase())
+            config.modifier.testTag(
+                if (config.tabName == MeetingTab.UPCOMING.name.lowercase())
                     MeetingScreenTestTags.NO_UPCOMING_MEETINGS_MESSAGE
                 else MeetingScreenTestTags.NO_PAST_MEETINGS_MESSAGE),
-        text = "You have no $tabName meetings yet.")
+        text = "You have no ${config.tabName} meetings yet.")
   }
 }
 
 /**
  * Data class representing all the actions that can be executed by buttons on a meeting card.
  *
- * @param onClick Function to execute when the card is clicked (for navigation to detail screen).
- * @param onJoinMeeting Function to execute when user clicks on button to join meeting.
- * @param onVoteForMeetingProposals Function to execute when user clicks on button to vote for
+ * @property isCurrentUserId Function taking as argument a user ID and return true if this is the Id
+ *   of the user that is currently logged in and false otherwise.
+ * @property onClick Function to execute when the card is clicked (for navigation to detail screen).
+ * @property onJoinMeeting Function to execute when user clicks on button to join meeting.
+ * @property onVoteForMeetingProposals Function to execute when user clicks on button to vote for
  *   meeting proposals.
- * @param onVoteForFormat Function to execute when user clicks on button to vote for meeting format
- * @param onDirections Function to execute when user clicks on button to navigate to a meeting.
- * @param onRecord Function to execute when user clicks on record button.
- * @param onViewSummary Function to execute whe user clicks on view summary button.
- * @param onViewTranscript Function to execute whe user clicks on view transcript button.
+ * @property onVoteForFormat Function to execute when user clicks on button to vote for meeting
+ *   format
+ * @property onDirections Function to execute when user clicks on button to navigate to a meeting.
+ * @property onRecord Function to execute when user clicks on record button.
+ * @property onViewSummary Function to execute whe user clicks on view summary button.
+ * @property onViewTranscript Function to execute whe user clicks on view transcript button.
+ * @property onCloseVotes Function executed when the user clicks on "close votes" button.
  */
 data class MeetingCardConfig(
+    val isCurrentUserId: (String) -> Boolean,
     val onClick: () -> Unit = {},
     val onJoinMeeting: () -> Unit = {},
     val onVoteForMeetingProposals: () -> Unit = {},
@@ -247,6 +286,7 @@ data class MeetingCardConfig(
     val onRecord: () -> Unit = {},
     val onViewSummary: () -> Unit = {},
     val onViewTranscript: () -> Unit = {},
+    val onCloseVotes: (Meeting) -> Unit = { _ -> }
 )
 
 /**
@@ -439,6 +479,14 @@ fun MeetingCard(
                                 MeetingScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON),
                     ) {
                       Text("Vote for meeting proposals")
+                    }
+                    if (config.isCurrentUserId(meeting.createdBy)) {
+                      Spacer(modifier = Modifier.width(10.dp))
+                      Button(
+                          onClick = { config.onCloseVotes(meeting) },
+                          modifier = Modifier.testTag(MeetingScreenTestTags.CLOSE_VOTES_BUTTON)) {
+                            Text("Close votes")
+                          }
                     }
                   }
                   MeetingStatus.SCHEDULED,
