@@ -257,6 +257,11 @@ fun NavigationMenu() {
                                   Route.MeetingsSection.MeetingNavigation(
                                       projectId = meetingDetailRoute.projectId,
                                       meetingId = meetingDetailRoute.meetingId))
+                            },
+                            onVoteForMeetingProposalClick = { projectId, meetingId ->
+                              navigationController.navigate(
+                                  Route.MeetingsSection.MeetingProposalVotes(
+                                      projectId = projectId, meetingId = meetingId))
                             }),
                 )
               }

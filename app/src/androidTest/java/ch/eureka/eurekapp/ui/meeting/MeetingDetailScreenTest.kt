@@ -1,5 +1,5 @@
 /*
- * Note: This file was co-authored by Claude Code.
+ * Note: This file was co-authored by Claude Code and Gemini
  */
 
 package ch.eureka.eurekapp.ui.meeting
@@ -783,5 +783,22 @@ class MeetingDetailScreenTest {
 
     composeTestRule.onNodeWithText("Participants (2)").assertIsDisplayed()
     composeTestRule.onNodeWithText("user2").assertIsDisplayed()
+  }
+
+  @Test
+  fun openToVotesMeetingShowsVoteForProposalButton() {
+    val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.OPEN_TO_VOTES }
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
+    setContent()
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.ACTION_BUTTONS_SECTION)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON)
+        .assertIsDisplayed()
   }
 }
