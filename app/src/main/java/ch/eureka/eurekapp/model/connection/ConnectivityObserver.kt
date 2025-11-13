@@ -35,6 +35,27 @@ open class ConnectivityObserver internal constructor(context: Context) {
                   override fun onUnavailable() {
                     trySend(false)
                   }
+
+                  override fun onLost(network: Network) {
+                    // Network is completely lost, check current state
+                    val currentNetwork = connectivityManager.activeNetwork
+                    val capabilities = connectivityManager.getNetworkCapabilities(currentNetwork)
+                    val isCurrentlyConnected =
+                        capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) ==
+                            true
+                    trySend(isCurrentlyConnected)
+                  }
+
+                  override fun onCapabilitiesChanged(
+                      network: Network,
+                      networkCapabilities: NetworkCapabilities
+                  ) {
+                    // Capabilities changed, re-evaluate internet access
+                    val hasInternet =
+                        networkCapabilities.hasCapability(
+                            NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                    trySend(hasInternet)
+                  }
                 }
 
             connectivityManager.registerDefaultNetworkCallback(callback)
