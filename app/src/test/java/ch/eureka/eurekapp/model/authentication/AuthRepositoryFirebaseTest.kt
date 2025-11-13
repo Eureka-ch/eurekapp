@@ -26,7 +26,7 @@ class AuthRepositoryFirebaseTest {
   private val repo = AuthRepositoryFirebase(mockAuth, mockHelper)
 
   @Test
-  fun `signInWithGoogle returns success when valid credential`() = runTest {
+  fun signInWithGoogleReturnsSuccessWhenValidCredential() = runTest {
     val mockCredential = mockk<CustomCredential>()
     val mockData = bundleOf("id_token" to "fakeToken")
     val mockFirebaseCred = mockk<AuthCredential>()
@@ -49,7 +49,7 @@ class AuthRepositoryFirebaseTest {
   }
 
   @Test
-  fun `signInWithGoogle fails when wrong credential type`() = runTest {
+  fun signInWithGoogleFailsWhenWrongCredentialType() = runTest {
     val wrongCredential = mockk<CustomCredential>()
     every { wrongCredential.type } returns "WRONG_TYPE"
     val result = repo.signInWithGoogle(wrongCredential)
@@ -57,7 +57,7 @@ class AuthRepositoryFirebaseTest {
   }
 
   @Test
-  fun `signInWithGoogle fails when user is null`() = runTest {
+  fun signInWithGoogleFailsWhenUserIsNull() = runTest {
     val mockCredential = mockk<CustomCredential>()
     val mockData = bundleOf("id_token" to "fakeToken")
     val mockFirebaseCred = mockk<AuthCredential>()
@@ -80,7 +80,7 @@ class AuthRepositoryFirebaseTest {
   }
 
   @Test
-  fun `signInWithGoogle handles exception`() = runTest {
+  fun signInWithGoogleHandlesException() = runTest {
     val credential = mockk<CustomCredential>()
     every { credential.type } returns TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
     every { credential.data } returns bundleOf()
@@ -92,14 +92,14 @@ class AuthRepositoryFirebaseTest {
   }
 
   @Test
-  fun `signOut returns success`() {
+  fun signOutReturnsSuccess() {
     every { mockAuth.signOut() } returns Unit
     val result = repo.signOut()
     assertTrue(result.isSuccess)
   }
 
   @Test
-  fun `signOut returns failure on exception`() {
+  fun signOutReturnsFailureOnException() {
     every { mockAuth.signOut() } throws RuntimeException("boom")
     val result = repo.signOut()
     assertTrue(result.isFailure)

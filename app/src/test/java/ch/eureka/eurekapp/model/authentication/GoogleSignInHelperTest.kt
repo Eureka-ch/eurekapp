@@ -32,7 +32,7 @@ class DefaultGoogleSignInHelperTest {
   }
 
   @Test
-  fun `extractIdTokenCredential delegates to GoogleIdTokenCredential createFrom`() {
+  fun extractIdTokenCredentialDelegatesToGoogleIdTokenCredentialCreateFrom() {
     val mockBundle = mockk<Bundle>()
     val expectedCredential = mockk<GoogleIdTokenCredential>()
 
@@ -44,7 +44,7 @@ class DefaultGoogleSignInHelperTest {
   }
 
   @Test
-  fun `toFirebaseCredential delegates to GoogleAuthProvider getCredential`() {
+  fun toFirebaseCredentialDelegatesToGoogleAuthProviderGetCredential() {
     val idToken = "fake-id-token"
     val expectedAuthCredential = mockk<AuthCredential>()
 

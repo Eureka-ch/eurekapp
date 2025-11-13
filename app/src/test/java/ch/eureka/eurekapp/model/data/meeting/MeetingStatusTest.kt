@@ -12,7 +12,7 @@ import org.junit.Test
 class MeetingStatusTest {
 
   @Test
-  fun `each status should have correct description`() {
+  fun eachStatusShouldHaveCorrectDescription() {
     assertEquals("Voting in progress", MeetingStatus.OPEN_TO_VOTES.description)
     assertEquals("Scheduled", MeetingStatus.SCHEDULED.description)
     assertEquals("In progress", MeetingStatus.IN_PROGRESS.description)
@@ -20,7 +20,7 @@ class MeetingStatusTest {
   }
 
   @Test
-  fun `values should contain all statuses`() {
+  fun valuesShouldContainAllStatuses() {
     val values = MeetingStatus.values()
     assertEquals(4, values.size)
     assertTrue(values.contains(MeetingStatus.OPEN_TO_VOTES))
@@ -30,7 +30,7 @@ class MeetingStatusTest {
   }
 
   @Test
-  fun `valueOf should return correct enum`() {
+  fun valueOfShouldReturnCorrectEnum() {
     assertEquals(MeetingStatus.OPEN_TO_VOTES, MeetingStatus.valueOf("OPEN_TO_VOTES"))
     assertEquals(MeetingStatus.SCHEDULED, MeetingStatus.valueOf("SCHEDULED"))
     assertEquals(MeetingStatus.IN_PROGRESS, MeetingStatus.valueOf("IN_PROGRESS"))
@@ -38,7 +38,7 @@ class MeetingStatusTest {
   }
 
   @Test
-  fun `valueOf should throw IllegalArgumentException for invalid name`() {
+  fun valueOfShouldThrowIllegalArgumentExceptionForInvalidName() {
     assertThrows(IllegalArgumentException::class.java) { MeetingStatus.valueOf("INVALID") }
   }
 }

@@ -7,37 +7,37 @@ import org.junit.Test
 class CTest {
 
   @Test
-  fun `C object exists`() {
+  fun cObjectExists() {
     assertNotNull(C)
   }
 
   @Test
-  fun `C Tag object exists`() {
+  fun cTagObjectExists() {
     assertNotNull(C.Tag)
   }
 
   @Test
-  fun `greeting tag has correct value`() {
+  fun greetingTagHasCorrectValue() {
     assertEquals("main_screen_greeting", C.Tag.greeting)
   }
 
   @Test
-  fun `greeting_robo tag has correct value`() {
+  fun greetingRoboTagHasCorrectValue() {
     assertEquals("second_screen_greeting", C.Tag.greeting_robo)
   }
 
   @Test
-  fun `main_screen_container tag has correct value`() {
+  fun mainScreenContainerTagHasCorrectValue() {
     assertEquals("main_screen_container", C.Tag.main_screen_container)
   }
 
   @Test
-  fun `second_screen_container tag has correct value`() {
+  fun secondScreenContainerTagHasCorrectValue() {
     assertEquals("second_screen_container", C.Tag.second_screen_container)
   }
 
   @Test
-  fun `all tags are unique`() {
+  fun allTagsAreUnique() {
     val tags =
         setOf(
             C.Tag.greeting,
@@ -48,45 +48,45 @@ class CTest {
   }
 
   @Test
-  fun `greeting tag is not empty`() {
+  fun greetingTagIsNotEmpty() {
     assertTrue(C.Tag.greeting.isNotEmpty())
   }
 
   @Test
-  fun `greeting_robo tag is not empty`() {
+  fun greetingRoboTagIsNotEmpty() {
     assertTrue(C.Tag.greeting_robo.isNotEmpty())
   }
 
   @Test
-  fun `main_screen_container tag is not empty`() {
+  fun mainScreenContainerTagIsNotEmpty() {
     assertTrue(C.Tag.main_screen_container.isNotEmpty())
   }
 
   @Test
-  fun `second_screen_container tag is not empty`() {
+  fun secondScreenContainerTagIsNotEmpty() {
     assertTrue(C.Tag.second_screen_container.isNotEmpty())
   }
 
   @Test
-  fun `greeting tags contain screen prefix`() {
+  fun greetingTagsContainScreenPrefix() {
     assertTrue(C.Tag.greeting.contains("screen"))
     assertTrue(C.Tag.greeting_robo.contains("screen"))
   }
 
   @Test
-  fun `container tags contain container suffix`() {
+  fun containerTagsContainContainerSuffix() {
     assertTrue(C.Tag.main_screen_container.contains("container"))
     assertTrue(C.Tag.second_screen_container.contains("container"))
   }
 
   @Test
-  fun `tags follow naming convention`() {
+  fun tagsFollowNamingConvention() {
     assertTrue(C.Tag.greeting.contains("_"))
     assertTrue(C.Tag.greeting_robo.contains("_"))
   }
 
   @Test
-  fun `C Tag constants are accessible`() {
+  fun cTagConstantsAreAccessible() {
     val greeting = C.Tag.greeting
     val greetingRobo = C.Tag.greeting_robo
     val mainContainer = C.Tag.main_screen_container
