@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,11 +20,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -58,6 +62,10 @@ object ProjectSelectionScreenTestTags {
   fun getNavigateButtonTestTagForButton(projectid: String): String {
     return "Navigate button test tag for $projectid"
   }
+
+    fun getInviteButtonTestTag(projectid: String): String {
+        return "Invite button test tag for $projectid"
+    }
 }
 
 /**
@@ -71,9 +79,9 @@ object ProjectSelectionScreenTestTags {
  */
 @Composable
 fun ProjectSelectionScreen(
-    onCreateProjectRequest: () -> Unit,
-    onInputTokenRequest: () -> Unit,
-    onProjectSelectRequest: (Project) -> Unit,
+    onCreateProjectRequest: () -> Unit = {},
+    onInputTokenRequest: () -> Unit = {},
+    onProjectSelectRequest: (Project) -> Unit = {},
     onGenerateInviteRequest: () -> Unit = {},
     projectSelectionScreenViewModel: ProjectSelectionScreenViewModel = viewModel()
 ) {
@@ -157,6 +165,34 @@ private fun CustomElevatedButton(
   }
 }
 
+
+/**
+ * Custom icon button composable used across the Project Selection Screen.
+ *
+ * @param onClick lambda triggered when the button is clicked.
+ * @param buttonColor background color of the button.
+ * @param testTag optional test tag for UI testing.
+ */
+@Composable
+private fun CustomIconButton(
+    onClick: () -> Unit,
+    buttonColor: Color = LightColorScheme.primary,
+    testTag: String
+) {
+    IconButton(
+        modifier = Modifier.padding(vertical = 10.dp, horizontal = 10.dp).testTag(testTag),
+        onClick = onClick,
+        colors = IconButtonDefaults.iconButtonColors(containerColor = buttonColor),
+    ) {
+        Icon(
+            modifier = Modifier.size(20.dp),
+            imageVector = Icons.Default.PersonAdd,
+            contentDescription = null,
+            tint = LightColorScheme.surface
+        )
+    }
+}
+
 /**
  * Composable representing a single project card. Displays project name, description, users, status,
  * and a navigate button.
@@ -225,12 +261,10 @@ private fun ProjectCard(
                             ProjectSelectionScreenTestTags.getNavigateButtonTestTagForButton(
                                 project.projectId))
                     if(currentUser?.uid.equals(project.createdBy)){
-                        CustomElevatedButton(
+                        CustomIconButton(
                             onClick = { onGenerateInviteRequest() },
-                            text = "Invite",
-                            typography = Typography.labelSmall,
                             testTag =
-                                ProjectSelectionScreenTestTags.getNavigateButtonTestTagForButton(
+                                ProjectSelectionScreenTestTags.getInviteButtonTestTag(
                                     project.projectId))
                     }
                   }
