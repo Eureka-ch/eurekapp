@@ -284,7 +284,7 @@ private fun <V : FieldValue> getValidationResult(
 ): FieldValidationResult {
   return if (showValidationErrors && currentValue != null) {
     FieldValidator.validate(currentValue, fieldDefinition)
-  } else if (showValidationErrors && fieldDefinition.required && currentValue == null) {
+  } else if (showValidationErrors && fieldDefinition.required) {
     FieldValidationResult.Invalid(listOf("This field is required"))
   } else {
     FieldValidationResult.Valid

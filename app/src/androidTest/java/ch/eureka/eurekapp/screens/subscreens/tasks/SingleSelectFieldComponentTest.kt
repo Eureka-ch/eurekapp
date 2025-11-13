@@ -41,7 +41,7 @@ class SingleSelectFieldComponentTest {
       onValueChange: (FieldValue.SingleSelectValue) -> Unit = {},
       mode: FieldInteractionMode = FieldInteractionMode.EditOnly,
       showValidationErrors: Boolean = false,
-      onModeToggle: () -> Unit = {}
+      callbacks: FieldCallbacks = FieldCallbacks()
   ) {
     composeTestRule.setContent {
       SingleSelectFieldComponent(
@@ -50,7 +50,7 @@ class SingleSelectFieldComponentTest {
           onValueChange = onValueChange,
           mode = mode,
           showValidationErrors = showValidationErrors,
-          onModeToggle = onModeToggle)
+          callbacks = callbacks)
     }
   }
 
@@ -171,7 +171,7 @@ class SingleSelectFieldComponentTest {
     var toggleCalled = false
     setFieldContent(
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
-        onModeToggle = { toggleCalled = true })
+        callbacks = FieldCallbacks(onModeToggle = { toggleCalled = true }))
 
     composeTestRule.onNodeWithTag("field_toggle_test_select").performClick()
     assert(toggleCalled)

@@ -37,25 +37,20 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
  * @param value The current field value (null if empty)
  * @param onValueChange Callback when the value changes
  * @param mode The interaction mode (EditOnly, ViewOnly, or Toggleable)
- * @param onModeToggle Callback when mode toggle button is clicked
- * @param onSave Optional callback when save button is clicked (Toggleable mode only)
- * @param onCancel Optional callback when cancel button is clicked (Toggleable mode only)
  * @param showValidationErrors Whether to display validation errors
  * @param modifier The modifier to apply to the component
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MultiSelectFieldComponent(
-  modifier: Modifier = Modifier,
-
+    modifier: Modifier = Modifier,
     fieldDefinition: FieldDefinition,
     value: FieldValue.MultiSelectValue?,
     onValueChange: (FieldValue.MultiSelectValue) -> Unit,
     mode: FieldInteractionMode,
     showValidationErrors: Boolean = false,
     callbacks: FieldCallbacks = FieldCallbacks(),
-
-  ) {
+) {
   val fieldType = fieldDefinition.type as FieldType.MultiSelect
 
   BaseFieldComponent(
@@ -66,8 +61,7 @@ fun MultiSelectFieldComponent(
       onValueChange = onValueChange,
       mode = mode,
       showValidationErrors = showValidationErrors,
-      callbacks = callbacks
-      ) { currentValue, onChange, isEditing ->
+      callbacks = callbacks) { currentValue, onChange, isEditing ->
         if (isEditing) {
           var localSelectedValues by remember {
             mutableStateOf(currentValue?.values?.toSet() ?: emptySet())

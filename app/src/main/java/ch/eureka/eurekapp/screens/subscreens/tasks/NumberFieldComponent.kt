@@ -8,8 +8,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
@@ -25,22 +23,20 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
  * @param value The current field value (null if empty)
  * @param onValueChange Callback when the value changes
  * @param mode The interaction mode (EditOnly, ViewOnly, or Toggleable)
- * @param onModeToggle Callback when mode toggle button is clicked
- * @param onSave Optional callback when save button is clicked (Toggleable mode only)
- * @param onCancel Optional callback when cancel button is clicked (Toggleable mode only)
  * @param showValidationErrors Whether to display validation errors
+ * @param callbacks callbacks to be applied
  * @param modifier The modifier to apply to the component
  */
 @Composable
 fun NumberFieldComponent(
+    modifier: Modifier = Modifier,
     fieldDefinition: FieldDefinition,
     value: FieldValue.NumberValue?,
     onValueChange: (FieldValue.NumberValue) -> Unit,
     mode: FieldInteractionMode,
-    callbacks: FieldCallbacks = FieldCallbacks(),
     showValidationErrors: Boolean = false,
-    modifier: Modifier = Modifier
-) {
+    callbacks: FieldCallbacks = FieldCallbacks(),
+    ) {
   val fieldType = fieldDefinition.type as FieldType.Number
 
   BaseFieldComponent(

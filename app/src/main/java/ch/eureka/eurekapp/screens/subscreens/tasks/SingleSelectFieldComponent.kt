@@ -52,9 +52,6 @@ private sealed interface SelectState {
  * @param value The current field value (null if empty)
  * @param onValueChange Callback when the value changes
  * @param mode The interaction mode (EditOnly, ViewOnly, or Toggleable)
- * @param onModeToggle Callback when mode toggle button is clicked
- * @param onSave Optional callback when save button is clicked (Toggleable mode only)
- * @param onCancel Optional callback when cancel button is clicked (Toggleable mode only)
  * @param showValidationErrors Whether to display validation errors
  * @param modifier The modifier to apply to the component
  */
@@ -66,9 +63,6 @@ fun SingleSelectFieldComponent(
     value: FieldValue.SingleSelectValue?,
     onValueChange: (FieldValue.SingleSelectValue) -> Unit,
     mode: FieldInteractionMode,
-    onModeToggle: () -> Unit = {},
-    onSave: () -> Unit = {},
-    onCancel: () -> Unit = {},
     showValidationErrors: Boolean = false,
     callbacks: FieldCallbacks = FieldCallbacks(),
 ) {
@@ -83,107 +77,103 @@ fun SingleSelectFieldComponent(
       mode = mode,
       callbacks = callbacks,
       showValidationErrors = showValidationErrors,
-      ) { currentValue, onChange, isEditing ->
-        if (isEditing) {
-          var expanded by remember { mutableStateOf(false) }
+  ) { currentValue, onChange, isEditing ->
+    if (isEditing) {
+      var expanded by remember { mutableStateOf(false) }
 
-          fun FieldValue.SingleSelectValue?.toSelectState(): SelectState =
-              when {
-                this == null -> SelectState.Empty
-                fieldType.options.any { it.value == this.value } ->
-                    SelectState.Predefined(this.value)
-                else -> SelectState.Custom(this.value)
-              }
+      fun FieldValue.SingleSelectValue?.toSelectState(): SelectState =
+          when {
+            this == null -> SelectState.Empty
+            fieldType.options.any { it.value == this.value } -> SelectState.Predefined(this.value)
+            else -> SelectState.Custom(this.value)
+          }
 
-          var selectState by remember(currentValue) { mutableStateOf(currentValue.toSelectState()) }
+      var selectState by remember(currentValue) { mutableStateOf(currentValue.toSelectState()) }
 
-          val displayValue =
-              when (val state = selectState) {
-                is SelectState.Empty -> ""
-                is SelectState.Predefined ->
-                    fieldType.options.find { it.value == state.value }?.label ?: ""
-                is SelectState.Custom -> state.text
-              }
+      val displayValue =
+          when (val state = selectState) {
+            is SelectState.Empty -> ""
+            is SelectState.Predefined ->
+                fieldType.options.find { it.value == state.value }?.label ?: ""
+            is SelectState.Custom -> state.text
+          }
 
-          ExposedDropdownMenuBox(
-              expanded = expanded,
-              onExpandedChange = { expanded = !expanded },
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .testTag("single_select_field_dropdown_${fieldDefinition.id}")) {
-                OutlinedTextField(
-                    value = displayValue,
-                    onValueChange = { newValue ->
-                      if (selectState is SelectState.Custom) {
-                        selectState = SelectState.Custom(newValue)
-                        onChange(FieldValue.SingleSelectValue(newValue))
-                      }
-                    },
-                    readOnly = selectState !is SelectState.Custom || !fieldType.allowCustom,
-                    label = {
-                      Text(
-                          if (selectState is SelectState.Custom) "Enter custom value"
-                          else "Select option")
-                    },
-                    trailingIcon = {
-                      ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                    },
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .menuAnchor()
-                            .testTag("single_select_field_input_${fieldDefinition.id}"),
-                    colors = EurekaStyles.TextFieldColors())
+      ExposedDropdownMenuBox(
+          expanded = expanded,
+          onExpandedChange = { expanded = !expanded },
+          modifier =
+              Modifier.fillMaxWidth()
+                  .testTag("single_select_field_dropdown_${fieldDefinition.id}")) {
+            OutlinedTextField(
+                value = displayValue,
+                onValueChange = { newValue ->
+                  if (selectState is SelectState.Custom) {
+                    selectState = SelectState.Custom(newValue)
+                    onChange(FieldValue.SingleSelectValue(newValue))
+                  }
+                },
+                readOnly = selectState !is SelectState.Custom || !fieldType.allowCustom,
+                label = {
+                  Text(
+                      if (selectState is SelectState.Custom) "Enter custom value"
+                      else "Select option")
+                },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .menuAnchor()
+                        .testTag("single_select_field_input_${fieldDefinition.id}"),
+                colors = EurekaStyles.TextFieldColors())
 
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier.testTag("single_select_field_menu_${fieldDefinition.id}")) {
-                      fieldType.options.forEach { option ->
-                        DropdownMenuItem(
-                            text = {
-                              Column {
-                                Text(
-                                    text = option.label, style = MaterialTheme.typography.bodyLarge)
-                                option.description?.let { desc ->
-                                  Text(
-                                      text = desc,
-                                      style = MaterialTheme.typography.bodySmall,
-                                      color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                }
-                              }
-                            },
-                            onClick = {
-                              selectState = SelectState.Predefined(option.value)
-                              onChange(FieldValue.SingleSelectValue(option.value))
-                              expanded = false
-                            },
-                            modifier = Modifier.testTag("single_select_option_${option.value}"))
-                      }
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.testTag("single_select_field_menu_${fieldDefinition.id}")) {
+                  fieldType.options.forEach { option ->
+                    DropdownMenuItem(
+                        text = {
+                          Column {
+                            Text(text = option.label, style = MaterialTheme.typography.bodyLarge)
+                            option.description?.let { desc ->
+                              Text(
+                                  text = desc,
+                                  style = MaterialTheme.typography.bodySmall,
+                                  color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                          }
+                        },
+                        onClick = {
+                          selectState = SelectState.Predefined(option.value)
+                          onChange(FieldValue.SingleSelectValue(option.value))
+                          expanded = false
+                        },
+                        modifier = Modifier.testTag("single_select_option_${option.value}"))
+                  }
 
-                      if (fieldType.allowCustom) {
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                        DropdownMenuItem(
-                            text = { Text("Custom value") },
-                            onClick = {
-                              selectState = SelectState.Custom("")
-                              expanded = false
-                            },
-                            modifier = Modifier.testTag("single_select_option_custom"))
-                      }
-                    }
-              }
-        } else {
-          val displayText =
-              currentValue?.value?.let { currentVal ->
-                fieldType.options.find { it.value == currentVal }?.label ?: currentVal
-              } ?: ""
+                  if (fieldType.allowCustom) {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    DropdownMenuItem(
+                        text = { Text("Custom value") },
+                        onClick = {
+                          selectState = SelectState.Custom("")
+                          expanded = false
+                        },
+                        modifier = Modifier.testTag("single_select_option_custom"))
+                  }
+                }
+          }
+    } else {
+      val displayText =
+          currentValue?.value?.let { currentVal ->
+            fieldType.options.find { it.value == currentVal }?.label ?: currentVal
+          } ?: ""
 
-          Text(
-              text = displayText,
-              style = MaterialTheme.typography.bodyLarge,
-              modifier = Modifier.testTag("single_select_field_value_${fieldDefinition.id}"))
-        }
-      }
+      Text(
+          text = displayText,
+          style = MaterialTheme.typography.bodyLarge,
+          modifier = Modifier.testTag("single_select_field_value_${fieldDefinition.id}"))
+    }
+  }
 }
 
 @Preview(showBackground = true)
