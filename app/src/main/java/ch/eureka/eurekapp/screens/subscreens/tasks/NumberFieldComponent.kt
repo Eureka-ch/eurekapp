@@ -37,9 +37,7 @@ fun NumberFieldComponent(
     value: FieldValue.NumberValue?,
     onValueChange: (FieldValue.NumberValue) -> Unit,
     mode: FieldInteractionMode,
-    onModeToggle: () -> Unit = {},
-    onSave: () -> Unit = {},
-    onCancel: () -> Unit = {},
+    callbacks: FieldCallbacks = FieldCallbacks(),
     showValidationErrors: Boolean = false,
     modifier: Modifier = Modifier
 ) {
@@ -51,9 +49,7 @@ fun NumberFieldComponent(
       value = value,
       onValueChange = onValueChange,
       mode = mode,
-      onModeToggle = onModeToggle,
-      onSave = onSave,
-      onCancel = onCancel,
+      callbacks = callbacks,
       showValidationErrors = showValidationErrors,
       modifier = modifier) { currentValue, onChange, isEditing ->
         if (isEditing) {

@@ -64,9 +64,6 @@ fun DateFieldComponent(
       value = value,
       onValueChange = onValueChange,
       mode = mode,
-      onModeToggle = onModeToggle,
-      onSave = onSave,
-      onCancel = onCancel,
       showValidationErrors = showValidationErrors,
       modifier = modifier) { currentValue, onChange, isEditing ->
         if (isEditing) {

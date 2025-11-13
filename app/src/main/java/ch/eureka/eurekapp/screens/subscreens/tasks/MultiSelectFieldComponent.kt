@@ -46,29 +46,28 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MultiSelectFieldComponent(
+  modifier: Modifier = Modifier,
+
     fieldDefinition: FieldDefinition,
     value: FieldValue.MultiSelectValue?,
     onValueChange: (FieldValue.MultiSelectValue) -> Unit,
     mode: FieldInteractionMode,
-    onModeToggle: () -> Unit = {},
-    onSave: () -> Unit = {},
-    onCancel: () -> Unit = {},
     showValidationErrors: Boolean = false,
-    modifier: Modifier = Modifier
-) {
+    callbacks: FieldCallbacks = FieldCallbacks(),
+
+  ) {
   val fieldType = fieldDefinition.type as FieldType.MultiSelect
 
   BaseFieldComponent(
+      modifier = modifier,
       fieldDefinition = fieldDefinition,
       fieldType = fieldType,
       value = value,
       onValueChange = onValueChange,
       mode = mode,
-      onModeToggle = onModeToggle,
-      onSave = onSave,
-      onCancel = onCancel,
       showValidationErrors = showValidationErrors,
-      modifier = modifier) { currentValue, onChange, isEditing ->
+      callbacks = callbacks
+      ) { currentValue, onChange, isEditing ->
         if (isEditing) {
           var localSelectedValues by remember {
             mutableStateOf(currentValue?.values?.toSet() ?: emptySet())

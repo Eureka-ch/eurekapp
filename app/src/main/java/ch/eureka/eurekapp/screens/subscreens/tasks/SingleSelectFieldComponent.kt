@@ -61,6 +61,7 @@ private sealed interface SelectState {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SingleSelectFieldComponent(
+    modifier: Modifier = Modifier,
     fieldDefinition: FieldDefinition,
     value: FieldValue.SingleSelectValue?,
     onValueChange: (FieldValue.SingleSelectValue) -> Unit,
@@ -69,21 +70,20 @@ fun SingleSelectFieldComponent(
     onSave: () -> Unit = {},
     onCancel: () -> Unit = {},
     showValidationErrors: Boolean = false,
-    modifier: Modifier = Modifier
+    callbacks: FieldCallbacks = FieldCallbacks(),
 ) {
   val fieldType = fieldDefinition.type as FieldType.SingleSelect
 
   BaseFieldComponent(
+      modifier = modifier,
       fieldDefinition = fieldDefinition,
       fieldType = fieldType,
       value = value,
       onValueChange = onValueChange,
       mode = mode,
-      onModeToggle = onModeToggle,
-      onSave = onSave,
-      onCancel = onCancel,
+      callbacks = callbacks,
       showValidationErrors = showValidationErrors,
-      modifier = modifier) { currentValue, onChange, isEditing ->
+      ) { currentValue, onChange, isEditing ->
         if (isEditing) {
           var expanded by remember { mutableStateOf(false) }
 
