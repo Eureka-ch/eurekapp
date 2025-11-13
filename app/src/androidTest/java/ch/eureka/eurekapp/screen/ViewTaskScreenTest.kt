@@ -552,6 +552,42 @@ open class ViewTaskScreenTest : TestCase() {
             .assertIsDisplayed()
       }
 
+  @Test
+  fun testBackButtonNavigatesBack() {
+    runBlocking {
+      val projectId = "project123"
+      val taskId = "task123"
+      setupTestProject(projectId)
+      setupTestTask(projectId, taskId)
+
+      val viewModel = ViewTaskViewModel(projectId, taskId, taskRepository)
+      lastViewVm = viewModel
+
+      composeTestRule.setContent {
+        val navController = rememberNavController()
+        FakeNavGraph(
+            navController = navController,
+            viewModel = viewModel,
+            projectId = projectId,
+            taskId = taskId)
+        navController.navigate(Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
+      }
+
+      composeTestRule.waitForIdle()
+
+      // Verify we're on ViewTaskScreen
+      composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.EDIT_TASK).assertIsDisplayed()
+
+      // Click the back button
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.BACK_BUTTON).performClick()
+
+      composeTestRule.waitForIdle()
+
+      // Verify navigation back to TasksScreen
+      composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
+    }
+  }
+
   @Composable
   private fun FullNavigationGraph(navController: NavHostController) {
     // Create a single, remembered ViewTaskViewModel instance so it is stable across navigation.
@@ -599,26 +635,22 @@ open class ViewTaskScreenTest : TestCase() {
     // Use the provided ViewModel if given, otherwise create a remembered instance so the VM is
     // stable.
     val vm = viewModel ?: remember { ViewTaskViewModel(projectId, taskId, taskRepository) }
-    NavHost(
-        navController,
-        startDestination = Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId)) {
-          composable<Route.TasksSection.ViewTask> {
-            ViewTaskScreen(
-                projectId = projectId,
-                taskId = taskId,
-                navigationController = navController,
-                viewTaskViewModel = vm)
-          }
-          composable<Route.TasksSection.EditTask> {
-            // Dummy edit screen for navigation test
-            Text(
-                "Edit Task Screen",
-                modifier = Modifier.testTag(EditTaskScreenTestTags.STATUS_BUTTON))
-          }
-          composable<Route.TasksSection.Tasks> {
-            Text("Tasks Screen", modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
-          }
-        }
+    NavHost(navController, startDestination = Route.TasksSection.Tasks) {
+      composable<Route.TasksSection.Tasks> {
+        Text("Tasks Screen", modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
+      }
+      composable<Route.TasksSection.ViewTask> {
+        ViewTaskScreen(
+            projectId = projectId,
+            taskId = taskId,
+            navigationController = navController,
+            viewTaskViewModel = vm)
+      }
+      composable<Route.TasksSection.EditTask> {
+        // Dummy edit screen for navigation test
+        Text("Edit Task Screen", modifier = Modifier.testTag(EditTaskScreenTestTags.STATUS_BUTTON))
+      }
+    }
   }
 
   class FakeFileRepository : FileStorageRepository {
