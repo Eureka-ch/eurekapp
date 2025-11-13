@@ -124,8 +124,9 @@ fun MultiSelectFieldComponent(
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                          if (customText.isNotBlank()) {
-                            val newSelectedValues = localSelectedValues + customText.trim()
+                          val trimmedValue = customText.trim()
+                          if (trimmedValue.isNotBlank() && trimmedValue !in localSelectedValues) {
+                            val newSelectedValues = localSelectedValues + trimmedValue
                             localSelectedValues = newSelectedValues
                             onChange(FieldValue.MultiSelectValue(newSelectedValues.toList()))
                             customText = ""
