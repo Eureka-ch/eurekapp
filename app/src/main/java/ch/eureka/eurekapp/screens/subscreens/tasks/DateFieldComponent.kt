@@ -59,6 +59,7 @@ fun DateFieldComponent(
     onSave: () -> Unit = {},
     onCancel: () -> Unit = {},
     showValidationErrors: Boolean = false,
+    showHeader: Boolean = true,
     modifier: Modifier = Modifier
 ) {
   val fieldType = fieldDefinition.type as FieldType.Date
@@ -73,6 +74,7 @@ fun DateFieldComponent(
       onSave = onSave,
       onCancel = onCancel,
       showValidationErrors = showValidationErrors,
+      showHeader = showHeader,
       modifier = modifier) { currentValue, onChange, isEditing ->
         if (isEditing) {
           var showDatePicker by remember { mutableStateOf(false) }

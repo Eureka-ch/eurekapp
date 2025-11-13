@@ -10,6 +10,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -61,47 +63,64 @@ fun CommonFieldConfiguration(
           modifier = Modifier.testTag("field_required_checkbox"))
       Text("Required")
     }
+  }
+}
 
-    Spacer(modifier = Modifier.height(16.dp))
+@Composable
+fun DefaultValueInput(
+    field: FieldDefinition,
+    onFieldUpdate: (FieldDefinition) -> Unit,
+    enabled: Boolean,
+    modifier: Modifier = Modifier
+) {
+  Column(modifier = modifier.fillMaxWidth()) {
+    Text("Default Value", style = MaterialTheme.typography.labelLarge)
+    Spacer(modifier = Modifier.height(4.dp))
 
-    Text("Default Value (optional)", style = MaterialTheme.typography.labelLarge)
-    Spacer(modifier = Modifier.height(8.dp))
+    val mode = if (enabled) FieldInteractionMode.EditOnly else FieldInteractionMode.ViewOnly
 
-    when (val type = field.type) {
+    when (field.type) {
       is FieldType.Text -> {
         TextFieldComponent(
             fieldDefinition = field,
             value = field.defaultValue as? FieldValue.TextValue,
             onValueChange = { onFieldUpdate(field.copy(defaultValue = it)) },
-            mode = FieldInteractionMode.EditOnly)
+            mode = mode,
+            showHeader = false)
       }
       is FieldType.Number -> {
         NumberFieldComponent(
             fieldDefinition = field,
             value = field.defaultValue as? FieldValue.NumberValue,
             onValueChange = { onFieldUpdate(field.copy(defaultValue = it)) },
-            mode = FieldInteractionMode.EditOnly)
+            mode = mode,
+            showHeader = false)
       }
       is FieldType.Date -> {
         DateFieldComponent(
             fieldDefinition = field,
             value = field.defaultValue as? FieldValue.DateValue,
             onValueChange = { onFieldUpdate(field.copy(defaultValue = it)) },
-            mode = FieldInteractionMode.EditOnly)
+            mode = mode,
+            showHeader = false)
       }
       is FieldType.SingleSelect -> {
         SingleSelectFieldComponent(
-            fieldDefinition = field,
+            fieldDefinition =
+                field.copy(type = (field.type as FieldType.SingleSelect).copy(allowCustom = false)),
             value = field.defaultValue as? FieldValue.SingleSelectValue,
             onValueChange = { onFieldUpdate(field.copy(defaultValue = it)) },
-            mode = FieldInteractionMode.EditOnly)
+            mode = mode,
+            showHeader = false)
       }
       is FieldType.MultiSelect -> {
         MultiSelectFieldComponent(
-            fieldDefinition = field,
+            fieldDefinition =
+                field.copy(type = (field.type as FieldType.MultiSelect).copy(allowCustom = false)),
             value = field.defaultValue as? FieldValue.MultiSelectValue,
             onValueChange = { onFieldUpdate(field.copy(defaultValue = it)) },
-            mode = FieldInteractionMode.EditOnly)
+            mode = mode,
+            showHeader = false)
       }
     }
   }

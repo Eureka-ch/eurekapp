@@ -61,6 +61,7 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
     onSave: () -> Unit = {},
     onCancel: () -> Unit = {},
     showValidationErrors: Boolean = false,
+    showHeader: Boolean = true,
     modifier: Modifier = Modifier,
     renderer: @Composable (value: V?, onValueChange: (V) -> Unit, isEditing: Boolean) -> Unit
 ) {
@@ -119,70 +120,72 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
       }
 
   Column(modifier = modifier.fillMaxWidth().testTag("base_field_${fieldDefinition.id}")) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-      Text(
-          text =
-              buildString {
-                append(fieldDefinition.label)
-                if (fieldDefinition.required) {
-                  append(" *")
-                }
-              },
-          style = MaterialTheme.typography.labelLarge,
-          modifier = Modifier.weight(1f).testTag("field_label_${fieldDefinition.id}"))
+    if (showHeader) {
+      Row(
+          modifier = Modifier.fillMaxWidth(),
+          verticalAlignment = Alignment.CenterVertically,
+      ) {
+        Text(
+            text =
+                buildString {
+                  append(fieldDefinition.label)
+                  if (fieldDefinition.required) {
+                    append(" *")
+                  }
+                },
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.weight(1f).testTag("field_label_${fieldDefinition.id}"))
 
-      if (mode.canToggle) {
-        if (mode.isEditing) {
-          IconButton(
-              onClick = {
-                editingValue?.let { onValueChange(it) }
-                onSave()
-                onModeToggle()
-              },
-              modifier = Modifier.testTag("field_save_${fieldDefinition.id}")) {
-                Icon(
-                    imageVector = Icons.Filled.Check,
-                    contentDescription = "Save changes",
-                    tint = MaterialTheme.colorScheme.primary)
-              }
-          IconButton(
-              onClick = {
-                editingValue = originalValue
-                onCancel()
-                onModeToggle()
-              },
-              modifier = Modifier.testTag("field_cancel_${fieldDefinition.id}")) {
-                Icon(
-                    imageVector = Icons.Filled.Close,
-                    contentDescription = "Cancel changes",
-                    tint = MaterialTheme.colorScheme.error)
-              }
-        } else {
-          IconButton(
-              onClick = onModeToggle,
-              modifier = Modifier.testTag("field_toggle_${fieldDefinition.id}")) {
-                Icon(
-                    imageVector = Icons.Filled.Edit,
-                    contentDescription = "Switch to edit mode",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant)
-              }
+        if (mode.canToggle) {
+          if (mode.isEditing) {
+            IconButton(
+                onClick = {
+                  editingValue?.let { onValueChange(it) }
+                  onSave()
+                  onModeToggle()
+                },
+                modifier = Modifier.testTag("field_save_${fieldDefinition.id}")) {
+                  Icon(
+                      imageVector = Icons.Filled.Check,
+                      contentDescription = "Save changes",
+                      tint = MaterialTheme.colorScheme.primary)
+                }
+            IconButton(
+                onClick = {
+                  editingValue = originalValue
+                  onCancel()
+                  onModeToggle()
+                },
+                modifier = Modifier.testTag("field_cancel_${fieldDefinition.id}")) {
+                  Icon(
+                      imageVector = Icons.Filled.Close,
+                      contentDescription = "Cancel changes",
+                      tint = MaterialTheme.colorScheme.error)
+                }
+          } else {
+            IconButton(
+                onClick = onModeToggle,
+                modifier = Modifier.testTag("field_toggle_${fieldDefinition.id}")) {
+                  Icon(
+                      imageVector = Icons.Filled.Edit,
+                      contentDescription = "Switch to edit mode",
+                      tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+          }
         }
       }
-    }
 
-    fieldDefinition.description?.let { description ->
-      Text(
-          text = description,
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant,
-          modifier =
-              Modifier.padding(top = 4.dp).testTag("field_description_${fieldDefinition.id}"))
-    }
+      fieldDefinition.description?.let { description ->
+        Text(
+            text = description,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier =
+                Modifier.padding(top = 4.dp).testTag("field_description_${fieldDefinition.id}"))
+      }
 
-    Spacer(modifier = Modifier.height(8.dp))
+      Spacer(modifier = Modifier.height(8.dp))
+    }
 
     renderer(currentValue, handleValueChange, mode.isEditing)
 

@@ -54,6 +54,7 @@ fun SingleSelectFieldComponent(
     onSave: () -> Unit = {},
     onCancel: () -> Unit = {},
     showValidationErrors: Boolean = false,
+    showHeader: Boolean = true,
     modifier: Modifier = Modifier
 ) {
   val fieldType = fieldDefinition.type as FieldType.SingleSelect
@@ -68,6 +69,7 @@ fun SingleSelectFieldComponent(
       onSave = onSave,
       onCancel = onCancel,
       showValidationErrors = showValidationErrors,
+      showHeader = showHeader,
       modifier = modifier) { currentValue, onChange, isEditing ->
         if (isEditing) {
           var expanded by remember { mutableStateOf(false) }
