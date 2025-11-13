@@ -58,6 +58,7 @@ import ch.eureka.eurekapp.ui.theme.Typography
 /** Object holding test tags for UI testing on ProjectSelectionScreen. */
 object ProjectSelectionScreenTestTags {
   const val CREATE_PROJECT_BUTTON = "create project button"
+  const val INPUT_TOKEN_BUTTON = "input token button"
 
   fun getNavigateButtonTestTagForButton(projectid: String): String {
     return "Navigate button test tag for $projectid"
@@ -82,7 +83,7 @@ fun ProjectSelectionScreen(
     onCreateProjectRequest: () -> Unit = {},
     onInputTokenRequest: () -> Unit = {},
     onProjectSelectRequest: (Project) -> Unit = {},
-    onGenerateInviteRequest: () -> Unit = {},
+    onGenerateInviteRequest: (String) -> Unit = {},
     projectSelectionScreenViewModel: ProjectSelectionScreenViewModel = viewModel()
 ) {
   val currentUser =
@@ -110,7 +111,7 @@ fun ProjectSelectionScreen(
                   text = "Input Project Token",
                   typography = Typography.titleLarge,
                   buttonColor = LightingBlue,
-                  testTag = ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON,
+                  testTag = ProjectSelectionScreenTestTags.INPUT_TOKEN_BUTTON,
               )
             }
         if (projectsList.value.isEmpty()) {
@@ -208,7 +209,7 @@ private fun ProjectCard(
     project: Project,
     projectSelectionScreenViewModel: ProjectSelectionScreenViewModel,
     onProjectSelectRequest: (Project) -> Unit,
-    onGenerateInviteRequest: () -> Unit,
+    onGenerateInviteRequest: (String) -> Unit,
     currentUser: User?
 ) {
   Card(
@@ -262,7 +263,7 @@ private fun ProjectCard(
                                 project.projectId))
                     if (currentUser?.uid.equals(project.createdBy)) {
                       CustomIconButton(
-                          onClick = { onGenerateInviteRequest() },
+                          onClick = { onGenerateInviteRequest(project.projectId) },
                           testTag =
                               ProjectSelectionScreenTestTags.getInviteButtonTestTag(
                                   project.projectId))

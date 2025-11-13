@@ -129,7 +129,7 @@ sealed interface Route {
         get() = OverviewProjectSection::class.sealedSubclasses.toSet()
     }
 
-    @Serializable data object CreateInvitation : OverviewProjectSection
+    @Serializable data class CreateInvitation(val projectId: String) : OverviewProjectSection
 
     @Serializable data object TokenEntry : OverviewProjectSection
   }
@@ -181,8 +181,9 @@ fun NavigationMenu() {
                     onInputTokenRequest = {
                       navigationController.navigate(Route.OverviewProjectSection.TokenEntry)
                     },
-                    onGenerateInviteRequest = {
-                      navigationController.navigate(Route.OverviewProjectSection.CreateInvitation)
+                    onGenerateInviteRequest = { projectId ->
+                      navigationController.navigate(
+                          Route.OverviewProjectSection.CreateInvitation(projectId = projectId))
                     })
               }
               composable<Route.OverviewProjectSection.TokenEntry> {
@@ -373,8 +374,11 @@ fun NavigationMenu() {
 
               composable<Route.ProjectSelectionSection.CreateProject> { CreateProjectScreen() }
 
-              composable<Route.OverviewProjectSection.CreateInvitation> {
-                CreateInvitationSubscreen(projectId = testProjectId, onInvitationCreate = {})
+              composable<Route.OverviewProjectSection.CreateInvitation> { backStackEntry ->
+                val createInvitationRoute =
+                    backStackEntry.toRoute<Route.OverviewProjectSection.CreateInvitation>()
+                CreateInvitationSubscreen(
+                    projectId = createInvitationRoute.projectId, onInvitationCreate = {})
               }
 
               composable<Route.Camera> { Camera(navigationController) }
