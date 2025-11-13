@@ -148,8 +148,7 @@ class ProjectSelectionScreenTest : TestCase() {
             if (project.projectId == "test-project-2") {
               project2HasBeenNavigatedTo = true
             }
-          }
-      )
+          })
     }
 
     composeRule.waitForIdle()

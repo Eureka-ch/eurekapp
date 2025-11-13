@@ -130,6 +130,7 @@ sealed interface Route {
     }
 
     @Serializable data object CreateInvitation : OverviewProjectSection
+
     @Serializable data object TokenEntry : OverviewProjectSection
   }
 
@@ -178,24 +179,15 @@ fun NavigationMenu() {
                           Route.OverviewProject(projectId = project.projectId))
                     },
                     onInputTokenRequest = {
-                        navigationController.navigate(
-                            Route.OverviewProjectSection.TokenEntry
-                        )
+                      navigationController.navigate(Route.OverviewProjectSection.TokenEntry)
                     },
                     onGenerateInviteRequest = {
-                        navigationController.navigate(Route.OverviewProjectSection.CreateInvitation)
-                    }
-
-                )
+                      navigationController.navigate(Route.OverviewProjectSection.CreateInvitation)
+                    })
               }
               composable<Route.OverviewProjectSection.TokenEntry> {
-                  TokenEntryScreen(
-                      onTokenValidated = {
-                          navigationController.navigate(
-                              Route.ProjectSelection
-                          )
-                      }
-                  )
+                TokenEntryScreen(
+                    onTokenValidated = { navigationController.navigate(Route.ProjectSelection) })
               }
               composable<Route.Profile> { ProfileScreen() }
               composable<Route.OverviewProject> { backStackEntry ->

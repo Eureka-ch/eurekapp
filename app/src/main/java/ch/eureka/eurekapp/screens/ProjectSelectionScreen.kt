@@ -63,9 +63,9 @@ object ProjectSelectionScreenTestTags {
     return "Navigate button test tag for $projectid"
   }
 
-    fun getInviteButtonTestTag(projectid: String): String {
-        return "Invite button test tag for $projectid"
-    }
+  fun getInviteButtonTestTag(projectid: String): String {
+    return "Invite button test tag for $projectid"
+  }
 }
 
 /**
@@ -85,12 +85,11 @@ fun ProjectSelectionScreen(
     onGenerateInviteRequest: () -> Unit = {},
     projectSelectionScreenViewModel: ProjectSelectionScreenViewModel = viewModel()
 ) {
-  val currentUser = remember { projectSelectionScreenViewModel.getCurrentUser() }
-      .collectAsState(null)
+  val currentUser =
+      remember { projectSelectionScreenViewModel.getCurrentUser() }.collectAsState(null)
 
   val projectsList =
-      remember { projectSelectionScreenViewModel.getProjectsForUser() }
-          .collectAsState(listOf())
+      remember { projectSelectionScreenViewModel.getProjectsForUser() }.collectAsState(listOf())
 
   Column(
       modifier = Modifier.fillMaxSize(),
@@ -99,8 +98,7 @@ fun ProjectSelectionScreen(
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-            ) {
+            verticalArrangement = Arrangement.Center) {
               CustomElevatedButton(
                   onClick = { onCreateProjectRequest() },
                   text = "+ Create Project",
@@ -130,8 +128,12 @@ fun ProjectSelectionScreen(
               modifier = Modifier.fillMaxSize(),
               horizontalAlignment = Alignment.CenterHorizontally) {
                 items(projectsList.value) { project ->
-                  ProjectCard(project, projectSelectionScreenViewModel, onProjectSelectRequest,
-                      onGenerateInviteRequest,currentUser.value)
+                  ProjectCard(
+                      project,
+                      projectSelectionScreenViewModel,
+                      onProjectSelectRequest,
+                      onGenerateInviteRequest,
+                      currentUser.value)
                 }
               }
         }
@@ -165,7 +167,6 @@ private fun CustomElevatedButton(
   }
 }
 
-
 /**
  * Custom icon button composable used across the Project Selection Screen.
  *
@@ -179,18 +180,17 @@ private fun CustomIconButton(
     buttonColor: Color = LightColorScheme.primary,
     testTag: String
 ) {
-    IconButton(
-        modifier = Modifier.padding(vertical = 10.dp, horizontal = 10.dp).testTag(testTag),
-        onClick = onClick,
-        colors = IconButtonDefaults.iconButtonColors(containerColor = buttonColor),
-    ) {
-        Icon(
-            modifier = Modifier.size(20.dp),
-            imageVector = Icons.Default.PersonAdd,
-            contentDescription = null,
-            tint = LightColorScheme.surface
-        )
-    }
+  IconButton(
+      modifier = Modifier.padding(vertical = 10.dp, horizontal = 10.dp).testTag(testTag),
+      onClick = onClick,
+      colors = IconButtonDefaults.iconButtonColors(containerColor = buttonColor),
+  ) {
+    Icon(
+        modifier = Modifier.size(20.dp),
+        imageVector = Icons.Default.PersonAdd,
+        contentDescription = null,
+        tint = LightColorScheme.surface)
+  }
 }
 
 /**
@@ -260,12 +260,12 @@ private fun ProjectCard(
                         testTag =
                             ProjectSelectionScreenTestTags.getNavigateButtonTestTagForButton(
                                 project.projectId))
-                    if(currentUser?.uid.equals(project.createdBy)){
-                        CustomIconButton(
-                            onClick = { onGenerateInviteRequest() },
-                            testTag =
-                                ProjectSelectionScreenTestTags.getInviteButtonTestTag(
-                                    project.projectId))
+                    if (currentUser?.uid.equals(project.createdBy)) {
+                      CustomIconButton(
+                          onClick = { onGenerateInviteRequest() },
+                          testTag =
+                              ProjectSelectionScreenTestTags.getInviteButtonTestTag(
+                                  project.projectId))
                     }
                   }
                 }

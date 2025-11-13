@@ -51,7 +51,7 @@ class ProjectSelectionScreenViewModel(
     }
   }
 
-    fun getCurrentUser(): Flow<User?>{
-        return usersRepository.getCurrentUser()
-    }
+  fun getCurrentUser(): Flow<User?> {
+    return usersRepository.getCurrentUser()
+  }
 }

@@ -27,11 +27,11 @@ class UIComponentsIntegrationTest {
         EurekaStatusTag(text = "Test Status", type = StatusType.INFO)
         EurekaTaskCard(title = "Test Task", isCompleted = false)
         EurekaFilterBar(
-          options = listOf("All", "Active"), selectedOption = "All", onOptionSelected = {})
+            options = listOf("All", "Active"), selectedOption = "All", onOptionSelected = {})
         EurekaBottomNav(
-          currentRoute = "Tasks",
-          onNavigate = {},
-          navItems = listOf(NavItem("Tasks", null), NavItem("Ideas", null)))
+            currentRoute = "Tasks",
+            onNavigate = {},
+            navItems = listOf(NavItem("Tasks", null), NavItem("Ideas", null)))
       }
     }
 
