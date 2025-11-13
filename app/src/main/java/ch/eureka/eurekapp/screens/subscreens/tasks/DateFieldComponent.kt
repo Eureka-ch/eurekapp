@@ -2,9 +2,7 @@ package ch.eureka.eurekapp.screens.subscreens.tasks
 
 /* Portions of this code were generated with the help of Claude Sonnet 4.5. */
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,12 +20,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.FieldValue
-import ch.eureka.eurekapp.utils.ExcludeFromJacocoGeneratedReport
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -184,75 +179,5 @@ private fun formatDateValue(dateValue: FieldValue.DateValue, fieldType: FieldTyp
     zonedDateTime.format(formatter)
   } catch (e: Exception) {
     dateValue.value
-  }
-}
-
-@ExcludeFromJacocoGeneratedReport
-@Preview(showBackground = true)
-@Composable
-private fun DateFieldComponentEditPreview() {
-  MaterialTheme {
-    var value by remember { mutableStateOf<FieldValue.DateValue?>(null) }
-    Column(modifier = Modifier.padding(16.dp)) {
-      DateFieldComponent(
-          fieldDefinition =
-              FieldDefinition(
-                  id = "due_date",
-                  label = "Due Date",
-                  type = FieldType.Date(includeTime = false, format = "yyyy-MM-dd"),
-                  required = true,
-                  description = "Select a due date for this task"),
-          value = value,
-          onValueChange = { value = it },
-          mode = FieldInteractionMode.EditOnly,
-          showValidationErrors = true)
-    }
-  }
-}
-
-@ExcludeFromJacocoGeneratedReport
-@Preview(showBackground = true)
-@Composable
-private fun DateFieldComponentViewPreview() {
-  MaterialTheme {
-    Column(modifier = Modifier.padding(16.dp)) {
-      DateFieldComponent(
-          fieldDefinition =
-              FieldDefinition(
-                  id = "due_date",
-                  label = "Due Date",
-                  type = FieldType.Date(includeTime = true, format = "MMM dd, yyyy HH:mm"),
-                  required = false),
-          value = FieldValue.DateValue("2025-12-31T23:59:59Z"),
-          onValueChange = {},
-          mode = FieldInteractionMode.ViewOnly)
-    }
-  }
-}
-
-@ExcludeFromJacocoGeneratedReport
-@Preview(showBackground = true)
-@Composable
-private fun DateFieldComponentToggleablePreview() {
-  MaterialTheme {
-    var value by remember {
-      mutableStateOf<FieldValue.DateValue?>(FieldValue.DateValue("2025-11-15T10:30:00Z"))
-    }
-    var mode by remember {
-      mutableStateOf<FieldInteractionMode>(FieldInteractionMode.Toggleable(false))
-    }
-    Column(modifier = Modifier.padding(16.dp)) {
-      DateFieldComponent(
-          fieldDefinition =
-              FieldDefinition(
-                  id = "due_date",
-                  label = "Due Date",
-                  type = FieldType.Date(includeTime = true, format = "yyyy-MM-dd HH:mm"),
-                  required = false),
-          value = value,
-          onValueChange = { value = it },
-          mode = mode,
-          onModeToggle = { mode = mode.toggleEditingState() })
-    }
   }
 }
