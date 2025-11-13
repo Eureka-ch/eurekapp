@@ -36,20 +36,59 @@ class SignInScreenTest {
       UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
   @Before
-  fun setup() {
+  fun setup() = runTest {
     assumeTrue("Firebase Emulator is not running", FirebaseEmulator.isRunning)
+
+    // Sign out any current user first
+    FirebaseEmulator.auth.signOut()
+
+    // Wait for sign out to complete
+    composeTestRule.waitUntil(timeoutMillis = 3000) { FirebaseEmulator.auth.currentUser == null }
+
+    // Disable Firestore network to clear all listeners
+    try {
+      FirebaseEmulator.firestore.disableNetwork().await()
+    } catch (e: Exception) {
+      // Network might already be disabled
+    }
+
+    // Clear the emulators
     FirebaseEmulator.clearFirestoreEmulator()
     FirebaseEmulator.clearAuthEmulator()
+
+    // Re-enable Firestore network
+    try {
+      FirebaseEmulator.firestore.enableNetwork().await()
+    } catch (e: Exception) {
+      // Ignore if already enabled
+    }
   }
 
   @After
-  fun tearDown() {
+  fun tearDown() = runTest {
+    // Sign out current user
+    FirebaseEmulator.auth.signOut()
+
+    // Disable network to clear listeners
+    try {
+      FirebaseEmulator.firestore.disableNetwork().await()
+    } catch (e: Exception) {
+      // Ignore errors
+    }
+
     // Reset emulators to avoid cross-test leakage
     FirebaseEmulator.clearFirestoreEmulator()
     FirebaseEmulator.clearAuthEmulator()
     // Re-enable network radios
     uiDevice.executeShellCommand("svc wifi enable")
     uiDevice.executeShellCommand("svc data enable")
+
+    // Re-enable network
+    try {
+      FirebaseEmulator.firestore.enableNetwork().await()
+    } catch (e: Exception) {
+      // Ignore errors
+    }
   }
 
   @Test

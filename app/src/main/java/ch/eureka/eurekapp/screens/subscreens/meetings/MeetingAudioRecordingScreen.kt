@@ -124,22 +124,27 @@ fun MeetingAudioRecordingScreen(
     }
   }
 
+  // Timer for recording - only runs when actively recording
   LaunchedEffect(recordingStatus.value) {
-    while (recordingStatus.value == RECORDING_STATE.RUNNING) {
-      delay(1000)
-      timeInSeconds += 1
+    if (recordingStatus.value == RECORDING_STATE.RUNNING) {
+      while (recordingStatus.value == RECORDING_STATE.RUNNING) {
+        delay(1000)
+        timeInSeconds += 1
+      }
     }
   }
 
+  // Auto-clear upload text after delay
   LaunchedEffect(uploadText) {
-    if (uploadText != "") {
+    if (uploadText.isNotEmpty()) {
       delay(5000)
       uploadText = ""
     }
   }
 
+  // Auto-clear error text after delay
   LaunchedEffect(errorText) {
-    if (errorText != "") {
+    if (errorText.isNotEmpty()) {
       delay(5000)
       errorText = ""
     }

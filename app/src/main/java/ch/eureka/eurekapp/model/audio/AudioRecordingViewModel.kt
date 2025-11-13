@@ -21,8 +21,7 @@ import kotlinx.coroutines.launch
 class AudioRecordingViewModel(
     val fileStorageRepository: FileStorageRepository =
         FirebaseFileStorageRepository(FirebaseStorage.getInstance(), FirebaseAuth.getInstance()),
-    val recordingRepository: LocalAudioRecordingRepository =
-        AudioRecordingRepositoryProvider.repository,
+    val recordingRepository: AudioRecordingRepository = AudioRecordingRepositoryProvider.repository,
     private val meetingRepository: MeetingRepository =
         FirestoreRepositoriesProvider.meetingRepository
 ) : ViewModel() {
