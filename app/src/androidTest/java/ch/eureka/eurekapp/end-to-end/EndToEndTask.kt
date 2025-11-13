@@ -119,6 +119,10 @@ class TaskEndToEndTest : TestCase() {
                       "Firebase Auth currentUser is null. " +
                       "Check that Firebase emulators are accessible from the Android emulator.")
 
+      // Wait for Firebase Auth token to propagate to Firestore
+      // This prevents PERMISSION_DENIED errors when the app tries to query Firestore
+      Thread.sleep(2000)
+
       // Create user profile in Firestore
       val userRef = FirebaseEmulator.firestore.collection("users").document(testUserId)
       val userProfile =
@@ -148,6 +152,10 @@ class TaskEndToEndTest : TestCase() {
               userId = testUserId, role = ch.eureka.eurekapp.model.data.project.ProjectRole.OWNER)
       val memberRef = projectRef.collection("members").document(testUserId)
       memberRef.set(member).await()
+
+      // Additional wait to ensure Firestore recognizes the auth state
+      // before the app starts querying for projects/tasks
+      Thread.sleep(1000)
     }
 
     // Wait for sign-in to complete and navigation to happen (increased timeout for CI)
