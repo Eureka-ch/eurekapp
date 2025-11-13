@@ -132,6 +132,7 @@ class MeetingViewModel(
 
     if (meeting.createdBy != userId) {
       setErrorMsg("Cannot close votes since you are not the creator of the meeting.")
+      return
     }
 
     val maxVoteCount = meeting.meetingProposals.maxOfOrNull { it.votes.size } ?: 0

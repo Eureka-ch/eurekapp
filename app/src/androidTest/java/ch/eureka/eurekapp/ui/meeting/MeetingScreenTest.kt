@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 
@@ -28,30 +29,35 @@ class MeetingScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
-  // A flexible mock repository that allows us to emit specific meeting data for each test.
   private val meetingsFlow = MutableStateFlow<List<Meeting>>(emptyList())
+  private var testUserId: String? = MeetingProvider.sampleMeetings.first().createdBy
+
   private val repositoryMock =
       object : FakeMeetingRepository() {
+        var updateMeetingCallCount = 0
+        var updatedMeeting: Meeting? = null
+
         override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> {
           return meetingsFlow
         }
+
+        override suspend fun updateMeeting(meeting: Meeting): Result<Unit> {
+          updateMeetingCallCount++
+          updatedMeeting = meeting
+          val updatedList =
+              meetingsFlow.value.filter { it.meetingID != meeting.meetingID } +
+                  meeting.copy(status = MeetingStatus.SCHEDULED, meetingProposals = emptyList())
+          meetingsFlow.value = updatedList
+          return Result.success(Unit)
+        }
       }
 
-  /**
-   * Helper function to set the content for the tests, injecting the ViewModel with the mock
-   * repository.
-   */
   private fun setContent() {
-    val viewModel = MeetingViewModel(repositoryMock)
+    val viewModel = MeetingViewModel(repositoryMock) { testUserId }
     composeTestRule.setContent {
-      // Assuming you have a Theme wrapper, otherwise, you can remove it.
-      // YourAppTheme {
       MeetingScreen(projectId = "test_project", onCreateMeeting = {}, meetingViewModel = viewModel)
-      // }
     }
   }
-
-  // --- General Screen and Tab Tests ---
 
   @Test
   fun screenLoadsAndDisplaysStaticContent() {
@@ -70,26 +76,24 @@ class MeetingScreenTest {
 
     composeTestRule.waitForIdle()
 
-    // Find an upcoming meeting's title
     val upcomingMeeting =
         MeetingProvider.sampleMeetings
             .sortedBy { m ->
               m.datetime
                   ?: m.meetingProposals
-                      .filter { dtv -> dtv.votes.isNotEmpty() } // UPDATED
+                      .filter { dtv -> dtv.votes.isNotEmpty() }
                       .minOfOrNull { e -> e.dateTime }
             }
             .reversed()
             .first { it.status != MeetingStatus.COMPLETED }
     composeTestRule.onNodeWithText(upcomingMeeting.title).assertIsDisplayed()
 
-    // Ensure a past meeting's title is not displayed
     val pastMeeting =
         MeetingProvider.sampleMeetings
             .sortedBy { m ->
               m.datetime
                   ?: m.meetingProposals
-                      .filter { dtv -> dtv.votes.isNotEmpty() } // UPDATED
+                      .filter { dtv -> dtv.votes.isNotEmpty() }
                       .minOfOrNull { e -> e.dateTime }
             }
             .reversed()
@@ -102,14 +106,11 @@ class MeetingScreenTest {
     meetingsFlow.value = MeetingProvider.sampleMeetings
     setContent()
 
-    // Switch to the PAST tab
     composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_TAB_PAST).performClick()
 
-    // Find a past meeting's title
     val pastMeeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.COMPLETED }
     composeTestRule.onNodeWithText(pastMeeting.title).assertIsDisplayed()
 
-    // Ensure an upcoming meeting's title is not displayed
     val upcomingMeeting =
         MeetingProvider.sampleMeetings.first { it.status != MeetingStatus.COMPLETED }
     composeTestRule.onNodeWithText(upcomingMeeting.title).assertDoesNotExist()
@@ -143,16 +144,12 @@ class MeetingScreenTest {
         .assertDoesNotExist()
   }
 
-  // --- Specific Meeting Card UI State Tests ---
-
   @Test
-  fun meetingCard_whenOpenToVotes_displaysCorrectElements() {
-    // Find a specific meeting that is open for votes
+  fun meetingCardWhenOpenToVotesDisplaysCorrectElements() {
     val votingMeeting = MeetingProvider.sampleMeetings.first { it.meetingID == "meet_vote_01" }
     meetingsFlow.value = listOf(votingMeeting)
     setContent()
 
-    // Assert voting-specific elements are visible
     composeTestRule
         .onNodeWithTag(MeetingScreenTestTags.MEETING_STATUS_TEXT, useUnmergedTree = true)
         .assertIsDisplayed()
@@ -172,7 +169,6 @@ class MeetingScreenTest {
             MeetingScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON, useUnmergedTree = true)
         .assertIsDisplayed()
 
-    // Assert other elements are NOT visible
     composeTestRule
         .onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME, useUnmergedTree = true)
         .assertDoesNotExist()
@@ -188,13 +184,12 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun meetingCard_whenScheduledAndVirtual_displaysCorrectElements() {
+  fun meetingCardWhenScheduledAndVirtualDisplaysCorrectElements() {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_scheduled_virtual_02" }
     meetingsFlow.value = listOf(meeting)
     setContent()
 
-    // Assert scheduled virtual elements are visible
     composeTestRule
         .onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME, useUnmergedTree = true)
         .assertIsDisplayed()
@@ -205,7 +200,6 @@ class MeetingScreenTest {
         .onNodeWithTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON, useUnmergedTree = true)
         .assertIsDisplayed()
 
-    // Assert other elements are NOT visible
     composeTestRule
         .onNodeWithTag(MeetingScreenTestTags.MEETING_LOCATION, useUnmergedTree = true)
         .assertDoesNotExist()
@@ -219,13 +213,12 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun meetingCard_whenScheduledAndInPerson_displaysCorrectElements() {
+  fun meetingCardWhenScheduledAndInPersonDisplaysCorrectElements() {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_scheduled_inperson_03" }
     meetingsFlow.value = listOf(meeting)
     setContent()
 
-    // Assert scheduled in-person elements are visible
     composeTestRule
         .onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME, useUnmergedTree = true)
         .assertIsDisplayed()
@@ -239,7 +232,6 @@ class MeetingScreenTest {
         .onNodeWithTag(MeetingScreenTestTags.RECORD_BUTTON, useUnmergedTree = true)
         .assertIsDisplayed()
 
-    // Assert other elements are NOT visible
     composeTestRule
         .onNodeWithTag(MeetingScreenTestTags.MEETING_LINK, useUnmergedTree = true)
         .assertDoesNotExist()
@@ -249,12 +241,11 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun meetingCard_whenInProgressAndVirtual_displaysCorrectElements() {
+  fun meetingCardWhenInProgressAndVirtualDisplaysCorrectElements() {
     val meeting = MeetingProvider.sampleMeetings.first { it.meetingID == "meet_inprogress_06" }
     meetingsFlow.value = listOf(meeting)
     setContent()
 
-    // Assert in-progress virtual elements are visible (same as scheduled)
     composeTestRule
         .onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME, useUnmergedTree = true)
         .assertIsDisplayed()
@@ -265,20 +256,18 @@ class MeetingScreenTest {
         .onNodeWithTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON, useUnmergedTree = true)
         .assertIsDisplayed()
 
-    // Assert other elements are NOT visible
     composeTestRule
         .onNodeWithTag(MeetingScreenTestTags.DIRECTIONS_BUTTON, useUnmergedTree = true)
         .assertDoesNotExist()
   }
 
   @Test
-  fun meetingCard_whenInProgressAndInPerson_displaysCorrectElements() {
+  fun meetingCardWhenInProgressAndInPersonDisplaysCorrectElements() {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_inprogress_inperson_15" }
     meetingsFlow.value = listOf(meeting)
     setContent()
 
-    // Assert in-progress in-person elements are visible (same as scheduled)
     composeTestRule
         .onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME, useUnmergedTree = true)
         .assertIsDisplayed()
@@ -292,22 +281,19 @@ class MeetingScreenTest {
         .onNodeWithTag(MeetingScreenTestTags.RECORD_BUTTON, useUnmergedTree = true)
         .assertIsDisplayed()
 
-    // Assert other elements are NOT visible
     composeTestRule
         .onNodeWithTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON, useUnmergedTree = true)
         .assertDoesNotExist()
   }
 
   @Test
-  fun meetingCard_whenCompletedAndVirtual_displaysCorrectElements() {
+  fun meetingCardWhenCompletedAndVirtualDisplaysCorrectElements() {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_completed_virtual_05" }
-    // We need to switch to the "PAST" tab to see completed meetings
     meetingsFlow.value = listOf(meeting)
     setContent()
     composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_TAB_PAST).performClick()
 
-    // Assert completed elements are visible
     composeTestRule
         .onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME, useUnmergedTree = true)
         .assertIsDisplayed()
@@ -318,7 +304,6 @@ class MeetingScreenTest {
         .onNodeWithTag(MeetingScreenTestTags.VIEW_TRANSCRIPT_BUTTON, useUnmergedTree = true)
         .assertIsDisplayed()
 
-    // Assert the link is hidden for completed virtual meetings, as per the code
     composeTestRule
         .onNodeWithTag(MeetingScreenTestTags.MEETING_LINK, useUnmergedTree = true)
         .assertDoesNotExist()
@@ -328,14 +313,13 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun meetingCard_whenCompletedAndInPerson_displaysCorrectElements() {
+  fun meetingCardWhenCompletedAndInPersonDisplaysCorrectElements() {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_completed_inperson_04" }
     meetingsFlow.value = listOf(meeting)
     setContent()
     composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_TAB_PAST).performClick()
 
-    // Assert completed elements are visible
     composeTestRule
         .onNodeWithTag(MeetingScreenTestTags.MEETING_DATETIME, useUnmergedTree = true)
         .assertIsDisplayed()
@@ -349,7 +333,6 @@ class MeetingScreenTest {
         .onNodeWithTag(MeetingScreenTestTags.VIEW_TRANSCRIPT_BUTTON, useUnmergedTree = true)
         .assertIsDisplayed()
 
-    // Assert other elements are NOT visible
     composeTestRule
         .onNodeWithTag(MeetingScreenTestTags.DIRECTIONS_BUTTON, useUnmergedTree = true)
         .assertDoesNotExist()
@@ -357,12 +340,59 @@ class MeetingScreenTest {
         .onNodeWithTag(MeetingScreenTestTags.RECORD_BUTTON, useUnmergedTree = true)
         .assertDoesNotExist()
   }
+
+  @Test
+  fun closeVotesButtonIsDisplayedForCreatorWhenMeetingIsOpenToVotes() {
+    val votingMeeting =
+        MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.OPEN_TO_VOTES }
+    testUserId = votingMeeting.createdBy
+    meetingsFlow.value = listOf(votingMeeting)
+    setContent()
+
+    composeTestRule.onNodeWithTag(MeetingScreenTestTags.CLOSE_VOTES_BUTTON).assertIsDisplayed()
+  }
+
+  @Test
+  fun closeVotesButtonIsNotDisplayedForNonCreator() {
+    val votingMeeting =
+        MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.OPEN_TO_VOTES }
+    testUserId = "some_other_user_id"
+    meetingsFlow.value = listOf(votingMeeting)
+    setContent()
+
+    composeTestRule.onNodeWithTag(MeetingScreenTestTags.CLOSE_VOTES_BUTTON).assertDoesNotExist()
+  }
+
+  @Test
+  fun closeVotesButtonIsNotDisplayedForScheduledMeetingEvenForCreator() {
+    val scheduledMeeting =
+        MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.SCHEDULED }
+    testUserId = scheduledMeeting.createdBy
+    meetingsFlow.value = listOf(scheduledMeeting)
+    setContent()
+
+    composeTestRule.onNodeWithTag(MeetingScreenTestTags.CLOSE_VOTES_BUTTON).assertDoesNotExist()
+  }
+
+  @Test
+  fun clickingCloseVotesButtonCallsViewModel() {
+    val votingMeeting = MeetingProvider.sampleMeetings.first { it.meetingID == "meet_vote_01" }
+    testUserId = votingMeeting.createdBy
+    meetingsFlow.value = listOf(votingMeeting)
+    setContent()
+
+    assertEquals(0, repositoryMock.updateMeetingCallCount)
+
+    composeTestRule.onNodeWithTag(MeetingScreenTestTags.CLOSE_VOTES_BUTTON).performClick()
+
+    composeTestRule.waitForIdle()
+
+    assertEquals(1, repositoryMock.updateMeetingCallCount)
+    assertEquals(MeetingStatus.SCHEDULED, repositoryMock.updatedMeeting?.status)
+    assertEquals(votingMeeting.meetingID, repositoryMock.updatedMeeting?.meetingID)
+  }
 }
 
-/**
- * A basic fake implementation of [MeetingRepository] for UI tests. We only need to override the
- * method used by the ViewModel.
- */
 open class FakeMeetingRepository : MeetingRepository {
   override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> = flowOf(emptyList())
 
