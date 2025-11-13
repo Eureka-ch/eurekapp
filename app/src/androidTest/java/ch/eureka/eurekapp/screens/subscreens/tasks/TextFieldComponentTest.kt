@@ -36,7 +36,7 @@ class TextFieldComponentTest {
       onValueChange: (FieldValue.TextValue) -> Unit = {},
       mode: FieldInteractionMode = FieldInteractionMode.EditOnly,
       showValidationErrors: Boolean = false,
-      onModeToggle: () -> Unit = {}
+      callbacks: FieldCallbacks = FieldCallbacks()
   ) {
     composeTestRule.setContent {
       TextFieldComponent(
@@ -45,7 +45,7 @@ class TextFieldComponentTest {
           onValueChange = onValueChange,
           mode = mode,
           showValidationErrors = showValidationErrors,
-          onModeToggle = onModeToggle)
+          callbacks = callbacks)
     }
   }
 
@@ -106,7 +106,7 @@ class TextFieldComponentTest {
     var toggleCalled = false
     setFieldContent(
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
-        onModeToggle = { toggleCalled = true })
+        callbacks = FieldCallbacks(onModeToggle = { toggleCalled = true }))
 
     composeTestRule.onNodeWithTag("field_toggle_test_text").performClick()
     assert(toggleCalled)
