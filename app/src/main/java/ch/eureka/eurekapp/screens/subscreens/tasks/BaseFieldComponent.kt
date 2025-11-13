@@ -348,7 +348,16 @@ private fun getMultiSelectFieldHint(fieldType: FieldType.MultiSelect): String {
   return buildList {
         val count = fieldType.options.size
         add("$count option${if (count != 1) "s" else ""}")
-        addRangeHint(fieldType.minSelections, fieldType.maxSelections, "Select", "Min", "Max")
+
+        val min = fieldType.minSelections
+        val max = fieldType.maxSelections
+        if (min != null && max != null) {
+          add("Select $min-$max")
+        } else {
+          min?.let { add("Min: $it") }
+          max?.let { add("Max: $it") }
+        }
+
         if (fieldType.allowCustom) add("Custom allowed")
       }
       .joinToString(" • ")
