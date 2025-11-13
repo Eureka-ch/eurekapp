@@ -116,7 +116,9 @@ class AudioRecordingViewModelTest {
 
     viewModel.startRecording(context, "test_recording")
     viewModel.pauseRecording()
-    runBlocking { viewModel.saveRecordingToDatabase("", "", { runned = true }, {}) }
+    runBlocking {
+      viewModel.saveRecordingToDatabase("", "", { runned = true }, {}, onCompletion = {})
+    }
     Thread.sleep(2000)
     assertTrue(runned)
   }
@@ -134,7 +136,9 @@ class AudioRecordingViewModelTest {
 
     viewModel.startRecording(context, "test_recording")
     viewModel.pauseRecording()
-    runBlocking { viewModel.saveRecordingToDatabase("", "", {}, { runned = true }) }
+    runBlocking {
+      viewModel.saveRecordingToDatabase("", "", {}, { runned = true }, onCompletion = {})
+    }
     Thread.sleep(2000)
     assertTrue(runned)
   }
