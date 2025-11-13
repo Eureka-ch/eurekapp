@@ -83,8 +83,8 @@ class TaskEndToEndTest : TestCase() {
 
     composeTestRule.setContent { Eurekapp(credentialManager = fakeCredentialManager) }
 
-    // Wait for sign-in screen to appear
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+    // Wait for sign-in screen to appear (increased timeout for CI environment)
+    composeTestRule.waitUntil(timeoutMillis = 10_000) {
       try {
         composeTestRule
             .onNodeWithTag(SignInScreenTestTags.SIGN_IN_WITH_GOOGLE_BUTTON)
@@ -97,14 +97,27 @@ class TaskEndToEndTest : TestCase() {
 
     composeTestRule.onNodeWithTag(SignInScreenTestTags.SIGN_IN_WITH_GOOGLE_BUTTON).performClick()
 
-    // Wait a moment for the sign-in to process
-    Thread.sleep(3000)
+    // Wait for authentication to complete by polling for the current user
+    // This is more reliable than a fixed sleep, especially in CI environments
+    var currentUser: String? = null
+    val authStartTime = System.currentTimeMillis()
+    val authTimeout = 10_000L // 10 seconds timeout for authentication
+
+    while (currentUser == null && (System.currentTimeMillis() - authStartTime) < authTimeout) {
+      runBlocking { currentUser = FirebaseEmulator.auth.currentUser?.uid }
+      if (currentUser == null) {
+        Thread.sleep(500) // Poll every 500ms
+      }
+    }
 
     // Get the signed-in user ID and create user profile + test project
     runBlocking {
       testUserId =
-          FirebaseEmulator.auth.currentUser?.uid
-              ?: throw IllegalStateException("User not signed in after clicking sign-in button")
+          currentUser
+              ?: throw IllegalStateException(
+                  "User not signed in after ${authTimeout}ms. " +
+                      "Firebase Auth currentUser is null. " +
+                      "Check that Firebase emulators are accessible from the Android emulator.")
 
       // Create user profile in Firestore
       val userRef = FirebaseEmulator.firestore.collection("users").document(testUserId)
@@ -137,8 +150,8 @@ class TaskEndToEndTest : TestCase() {
       memberRef.set(member).await()
     }
 
-    // Wait for sign-in to complete and navigation to happen
-    composeTestRule.waitUntil(timeoutMillis = 20_000) {
+    // Wait for sign-in to complete and navigation to happen (increased timeout for CI)
+    composeTestRule.waitUntil(timeoutMillis = 30_000) {
       try {
         // Check if we've navigated past sign-in by looking for bottom navigation
         composeTestRule
@@ -155,8 +168,8 @@ class TaskEndToEndTest : TestCase() {
 
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON).performClick()
 
-    // Wait for Tasks screen to load
-    composeTestRule.waitUntil(timeoutMillis = 10_000) {
+    // Wait for Tasks screen to load (increased timeout for CI)
+    composeTestRule.waitUntil(timeoutMillis = 15_000) {
       try {
         composeTestRule.onNodeWithTag(TasksScreenTestTags.CREATE_TASK_BUTTON).assertExists()
         true
@@ -167,8 +180,8 @@ class TaskEndToEndTest : TestCase() {
 
     composeTestRule.onNodeWithTag(TasksScreenTestTags.CREATE_TASK_BUTTON).performClick()
 
-    // Wait for Create Task screen to load
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+    // Wait for Create Task screen to load (increased timeout for CI)
+    composeTestRule.waitUntil(timeoutMillis = 10_000) {
       try {
         composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertExists()
         true
@@ -187,8 +200,9 @@ class TaskEndToEndTest : TestCase() {
 
     composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
 
-    // Wait for navigation back to Tasks screen and verify task was created
-    composeTestRule.waitUntil(timeoutMillis = 15_000) {
+    // Wait for navigation back to Tasks screen and verify task was created (increased timeout for
+    // CI)
+    composeTestRule.waitUntil(timeoutMillis = 20_000) {
       try {
         composeTestRule.onNodeWithText("End-to-End Test Task").assertExists()
         true
