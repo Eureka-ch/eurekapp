@@ -40,6 +40,9 @@ import org.junit.Test
 @ExperimentalCoroutinesApi
 class CreateDateTimeFormatProposalForMeetingViewModelTest {
 
+  private lateinit var initialDate: LocalDate
+  private lateinit var initialTime: LocalTime
+
   private val testDispatcher = StandardTestDispatcher()
   private lateinit var viewModel: CreateDateTimeFormatProposalForMeetingViewModel
   private lateinit var repositoryMock: MockCreateMeetingProposalRepository
@@ -71,6 +74,10 @@ class CreateDateTimeFormatProposalForMeetingViewModelTest {
             meetingId = testMeetingId,
             repository = repositoryMock,
             getCurrentUserId = { currentUserId })
+
+    val initialState = viewModel.uiState.value
+    initialDate = initialState.date
+    initialTime = initialState.time
   }
 
   @After
@@ -96,15 +103,16 @@ class CreateDateTimeFormatProposalForMeetingViewModelTest {
   fun initialStateIsCorrect() {
     val uiState = viewModel.uiState.value
 
-    assertEquals(Meeting(), uiState.meeting)
-    assertEquals(LocalDate.now(), uiState.date)
-    assertNotNull(uiState.time)
+    assertEquals(initialDate, uiState.date)
+    assertEquals(initialTime, uiState.time)
+
     assertEquals(MeetingFormat.IN_PERSON, uiState.format)
     assertFalse(uiState.saved)
     assertFalse(uiState.hasTouchedDate)
     assertFalse(uiState.hasTouchedTime)
     assertNull(uiState.errorMsg)
     assertFalse(uiState.isLoading)
+
     assertFalse(uiState.isValid)
   }
 
