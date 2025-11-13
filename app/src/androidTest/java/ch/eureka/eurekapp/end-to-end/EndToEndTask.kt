@@ -1,6 +1,5 @@
 package ch.eureka.eurekapp.end_to_end
 
-import android.Manifest
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -9,7 +8,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.Eurekapp
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.navigation.BottomBarNavigationTestTags
@@ -48,9 +46,6 @@ class TaskEndToEndTest : TestCase() {
 
   @get:Rule val composeTestRule = createComposeRule()
 
-  @get:Rule
-  var permissionRule: GrantPermissionRule? = GrantPermissionRule.grant(Manifest.permission.CAMERA)
-
   private var testUserId: String = ""
 
   @Before
@@ -70,6 +65,9 @@ class TaskEndToEndTest : TestCase() {
   @After
   fun tearDown() {
     runBlocking {
+      // Sign out the user to avoid polluting other tests
+      FirebaseEmulator.auth.signOut()
+
       // Clean up after test
       FirebaseEmulator.clearFirestoreEmulator()
       FirebaseEmulator.clearAuthEmulator()
