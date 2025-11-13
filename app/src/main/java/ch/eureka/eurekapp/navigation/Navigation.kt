@@ -180,6 +180,9 @@ fun NavigationMenu() {
                         navigationController.navigate(
                             Route.OverviewProjectSection.TokenEntry
                         )
+                    },
+                    onGenerateInviteRequest = {
+                        navigationController.navigate(Route.OverviewProjectSection.CreateInvitation)
                     }
 
                 )

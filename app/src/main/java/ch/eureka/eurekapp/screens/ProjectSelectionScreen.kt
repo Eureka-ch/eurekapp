@@ -42,6 +42,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectSelectionScreenViewModel
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
+import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.LightingBlue
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.SuccessGreen
@@ -66,25 +67,32 @@ object ProjectSelectionScreenTestTags {
  * @param onCreateProjectRequest lambda triggered when the create button is clicked.
  * @param onProjectSelectRequest lambda triggered when a project card's navigate button is clicked.
  * @param projectSelectionScreenViewModel optional ViewModel to fetch project data.
+ * @param onGenerateInviteRequest lambda triggered when the user wants to generate an invite
  */
 @Composable
 fun ProjectSelectionScreen(
     onCreateProjectRequest: () -> Unit,
     onInputTokenRequest: () -> Unit,
     onProjectSelectRequest: (Project) -> Unit,
+    onGenerateInviteRequest: () -> Unit = {},
     projectSelectionScreenViewModel: ProjectSelectionScreenViewModel = viewModel()
 ) {
+  val currentUser = remember { projectSelectionScreenViewModel.getCurrentUser() }
+      .collectAsState(null)
+
   val projectsList =
-      remember { projectSelectionScreenViewModel.getProjectsForUser() }.collectAsState(listOf())
+      remember { projectSelectionScreenViewModel.getProjectsForUser() }
+          .collectAsState(listOf())
 
   Column(
       modifier = Modifier.fillMaxSize(),
       horizontalAlignment = Alignment.CenterHorizontally,
       verticalArrangement = Arrangement.Center) {
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically) {
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+            ) {
               CustomElevatedButton(
                   onClick = { onCreateProjectRequest() },
                   text = "+ Create Project",
@@ -114,7 +122,8 @@ fun ProjectSelectionScreen(
               modifier = Modifier.fillMaxSize(),
               horizontalAlignment = Alignment.CenterHorizontally) {
                 items(projectsList.value) { project ->
-                  ProjectCard(project, projectSelectionScreenViewModel, onProjectSelectRequest)
+                  ProjectCard(project, projectSelectionScreenViewModel, onProjectSelectRequest,
+                      onGenerateInviteRequest,currentUser.value)
                 }
               }
         }
@@ -139,7 +148,7 @@ private fun CustomElevatedButton(
     testTag: String
 ) {
   ElevatedButton(
-      modifier = Modifier.padding(vertical = 10.dp).testTag(testTag),
+      modifier = Modifier.padding(vertical = 10.dp, horizontal = 10.dp).testTag(testTag),
       onClick = onClick,
       colors = ButtonDefaults.elevatedButtonColors(containerColor = buttonColor),
       elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
@@ -155,12 +164,16 @@ private fun CustomElevatedButton(
  * @param project the Project object to display.
  * @param projectSelectionScreenViewModel ViewModel used to fetch users for the project.
  * @param onProjectSelectRequest lambda triggered when the navigate button is clicked.
+ * @param onGenerateInviteRequest lambda triggered when the user requests to generate an invite
+ * @param currentUser the user who using the app
  */
 @Composable
 private fun ProjectCard(
     project: Project,
     projectSelectionScreenViewModel: ProjectSelectionScreenViewModel,
-    onProjectSelectRequest: (Project) -> Unit
+    onProjectSelectRequest: (Project) -> Unit,
+    onGenerateInviteRequest: () -> Unit,
+    currentUser: User?
 ) {
   Card(
       modifier = Modifier.fillMaxWidth(0.9f).height(220.dp).padding(vertical = 10.dp),
@@ -207,10 +220,19 @@ private fun ProjectCard(
                     CustomElevatedButton(
                         onClick = { onProjectSelectRequest(project) },
                         text = "Navigate",
-                        typography = Typography.titleSmall,
+                        typography = Typography.labelSmall,
                         testTag =
                             ProjectSelectionScreenTestTags.getNavigateButtonTestTagForButton(
                                 project.projectId))
+                    if(currentUser?.uid.equals(project.createdBy)){
+                        CustomElevatedButton(
+                            onClick = { onGenerateInviteRequest() },
+                            text = "Invite",
+                            typography = Typography.labelSmall,
+                            testTag =
+                                ProjectSelectionScreenTestTags.getNavigateButtonTestTagForButton(
+                                    project.projectId))
+                    }
                   }
                 }
                 Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
