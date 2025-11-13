@@ -30,7 +30,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
-import java.time.LocalDateTime
 
 /** Test tags for the create meeting proposal for datetime/format screen. */
 object CreateDateTimeFormatMeetingProposalScreenTestTags {
@@ -82,12 +81,7 @@ fun CreateDateTimeFormatProposalForMeetingScreen(
 
   Scaffold(
       content = { padding ->
-        /*
-        `padding` value is not symmetric here, it is zero on the left and on the right but non-zero
-        on the top and on the bottom. Thus it is more beautiful to only apply a constant padding of
-        `10` on the top, bottom, left and right.
-         */
-        Column(modifier = Modifier.fillMaxSize().padding(10.dp)) {
+        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(10.dp)) {
           Text(
               modifier =
                   Modifier.testTag(
@@ -144,9 +138,7 @@ fun CreateDateTimeFormatProposalForMeetingScreen(
 
           Spacer(Modifier.height(SPACING.dp))
 
-          if (uiState.hasTouchedDate &&
-              uiState.hasTouchedTime &&
-              LocalDateTime.of(uiState.date, uiState.time).isBefore(LocalDateTime.now())) {
+          if (uiState.hasTouchedDate && uiState.hasTouchedTime && !uiState.isValid) {
             Text(
                 text = "Meeting should be scheduled in the future.",
                 color = Color.Red,

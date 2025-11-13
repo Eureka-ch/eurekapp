@@ -28,11 +28,11 @@ import kotlinx.coroutines.launch
 /**
  * UI state of the screen to create meeting proposals.
  *
- * @property meeting The meeting to which the meeting datetime/format proposal is died to.
+ * @property meeting The meeting to which the meeting datetime/format proposal is tied to.
  * @property date The date of the meeting proposal to be created.
  * @property time The start time of the meeting proposal to be created.
  * @property format The format of the meeting proposal.
- * @property saved Marker set to true if the meeting datetime/format proposal waa successfully
+ * @property saved Marker set to true if the meeting datetime/format proposal was successfully
  *   saved, false otherwise.
  * @property hasTouchedDate Marker set to true if the user has already clicked on the date field,
  *   false otherwise.

@@ -381,6 +381,7 @@ fun TimeInputField(
 /**
  * Generic data class representing the config of a [SingleChoiceInputField] component.
  *
+ * @param T The type of the value being selected.
  * @property currentValue The current value to display in the text field.
  * @property displayValue Function to display any value of type [T].
  * @property label The label of the text field.
@@ -408,10 +409,11 @@ data class SingleChoiceInputFieldConfig<T>(
 /**
  * Composable to display a text field that when clicked opens a dialog with a radio button in it.
  *
+ * @param T The type of the value being selected.
  * @param config The config for that composable.
  */
 @Composable
-fun <U> SingleChoiceInputField(config: SingleChoiceInputFieldConfig<U>) {
+fun <T> SingleChoiceInputField(config: SingleChoiceInputFieldConfig<T>) {
 
   var showDialog by remember { mutableStateOf(false) }
   var tempSelectedOption by remember { mutableStateOf(config.options.first()) }
