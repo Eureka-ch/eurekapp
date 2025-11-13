@@ -65,10 +65,7 @@ class TaskEndToEndTest : TestCase() {
   @After
   fun tearDown() {
     runBlocking {
-      // Sign out the user to avoid polluting other tests
-      FirebaseEmulator.auth.signOut()
-
-      // Clean up after test
+      // Clean up after test (clearAuthEmulator will also clear signed-in users)
       FirebaseEmulator.clearFirestoreEmulator()
       FirebaseEmulator.clearAuthEmulator()
     }
