@@ -17,8 +17,8 @@ import androidx.compose.ui.text.font.FontWeight
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EurekaTopBar(
-    title: String = "EUREKA",
     modifier: Modifier = Modifier,
+    title: String = "EUREKA",
     navigationIcon: @Composable (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
 ) {

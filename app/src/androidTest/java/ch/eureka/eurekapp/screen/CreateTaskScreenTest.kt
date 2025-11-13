@@ -968,26 +968,28 @@ class CreateTaskScreenTests : TestCase() {
 
   @Test
   fun testBackButtonNavigatesBack() {
-    val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
-    lastCreateVm = viewModel
+    runBlocking {
+      val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+      lastCreateVm = viewModel
 
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      FakeNavGraph(navController = navController, viewModel = viewModel)
-      navController.navigate(Route.TasksSection.CreateTask)
+      composeTestRule.setContent {
+        val navController = rememberNavController()
+        FakeNavGraph(navController = navController, viewModel = viewModel)
+        navController.navigate(Route.TasksSection.CreateTask)
+      }
+
+      composeTestRule.waitForIdle()
+
+      // Verify we're on CreateTaskScreen
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
+
+      // Click the back button
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.BACK_BUTTON).performClick()
+
+      composeTestRule.waitForIdle()
+
+      // Verify navigation back to TasksScreen
+      composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
     }
-
-    composeTestRule.waitForIdle()
-
-    // Verify we're on CreateTaskScreen
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
-
-    // Click the back button
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.BACK_BUTTON).performClick()
-
-    composeTestRule.waitForIdle()
-
-    // Verify navigation back to TasksScreen
-    composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
   }
 }
