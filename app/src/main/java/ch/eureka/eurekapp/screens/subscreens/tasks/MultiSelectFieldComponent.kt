@@ -24,14 +24,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.FieldValue
-import ch.eureka.eurekapp.model.data.template.field.SelectOption
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
-import ch.eureka.eurekapp.utils.ExcludeFromJacocoGeneratedReport
 
 /**
  * Multi-select field component for template fields.
@@ -175,100 +172,4 @@ fun MultiSelectFieldComponent(
           }
         }
       }
-}
-
-@ExcludeFromJacocoGeneratedReport
-@Preview(showBackground = true)
-@Composable
-private fun MultiSelectFieldComponentEditPreview() {
-  MaterialTheme {
-    var value by remember { mutableStateOf<FieldValue.MultiSelectValue?>(null) }
-    Column(modifier = Modifier.padding(16.dp)) {
-      MultiSelectFieldComponent(
-          fieldDefinition =
-              FieldDefinition(
-                  id = "tags",
-                  label = "Tags",
-                  type =
-                      FieldType.MultiSelect(
-                          options =
-                              listOf(
-                                  SelectOption("urgent", "Urgent"),
-                                  SelectOption("bug", "Bug"),
-                                  SelectOption("feature", "Feature"),
-                                  SelectOption("documentation", "Documentation"),
-                                  SelectOption("testing", "Testing")),
-                          minSelections = 1,
-                          maxSelections = 3,
-                          allowCustom = false),
-                  required = true,
-                  description = "Select relevant tags for this task"),
-          value = value,
-          onValueChange = { value = it },
-          mode = FieldInteractionMode.EditOnly,
-          showValidationErrors = true)
-    }
-  }
-}
-
-@ExcludeFromJacocoGeneratedReport
-@Preview(showBackground = true)
-@Composable
-private fun MultiSelectFieldComponentViewPreview() {
-  MaterialTheme {
-    Column(modifier = Modifier.padding(16.dp)) {
-      MultiSelectFieldComponent(
-          fieldDefinition =
-              FieldDefinition(
-                  id = "tags",
-                  label = "Tags",
-                  type =
-                      FieldType.MultiSelect(
-                          options =
-                              listOf(
-                                  SelectOption("urgent", "Urgent"),
-                                  SelectOption("bug", "Bug"),
-                                  SelectOption("feature", "Feature")),
-                          allowCustom = false),
-                  required = false),
-          value = FieldValue.MultiSelectValue(listOf("urgent", "bug")),
-          onValueChange = {},
-          mode = FieldInteractionMode.ViewOnly)
-    }
-  }
-}
-
-@ExcludeFromJacocoGeneratedReport
-@Preview(showBackground = true)
-@Composable
-private fun MultiSelectFieldComponentToggleablePreview() {
-  MaterialTheme {
-    var value by remember {
-      mutableStateOf<FieldValue.MultiSelectValue?>(FieldValue.MultiSelectValue(listOf("feature")))
-    }
-    var mode by remember {
-      mutableStateOf<FieldInteractionMode>(FieldInteractionMode.Toggleable(false))
-    }
-    Column(modifier = Modifier.padding(16.dp)) {
-      MultiSelectFieldComponent(
-          fieldDefinition =
-              FieldDefinition(
-                  id = "tags",
-                  label = "Tags",
-                  type =
-                      FieldType.MultiSelect(
-                          options =
-                              listOf(
-                                  SelectOption("urgent", "Urgent"),
-                                  SelectOption("bug", "Bug"),
-                                  SelectOption("feature", "Feature")),
-                          allowCustom = true),
-                  required = false,
-                  description = "Add or remove tags"),
-          value = value,
-          onValueChange = { value = it },
-          mode = mode,
-          onModeToggle = { mode = mode.toggleEditingState() })
-    }
-  }
 }
