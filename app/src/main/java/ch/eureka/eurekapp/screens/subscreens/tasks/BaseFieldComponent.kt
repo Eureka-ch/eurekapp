@@ -33,6 +33,14 @@ import ch.eureka.eurekapp.model.data.template.field.FieldValue
 import ch.eureka.eurekapp.model.data.template.field.validation.FieldValidationResult
 import ch.eureka.eurekapp.model.data.template.field.validation.FieldValidator
 
+object BaseFieldTestTags {
+  fun toggle(fieldId: String) = "field_toggle_$fieldId"
+
+  fun save(fieldId: String) = "field_save_$fieldId"
+
+  fun cancel(fieldId: String) = "field_cancel_$fieldId"
+}
+
 /**
  * Callbacks for field interaction events.
  *
@@ -220,7 +228,7 @@ private fun <V : FieldValue> SaveButton(
         }
         callbacks.onModeToggle()
       },
-      modifier = Modifier.testTag(FieldComponentTestTags.save(fieldDefinition.id))) {
+      modifier = Modifier.testTag(BaseFieldTestTags.save(fieldDefinition.id))) {
         Icon(
             imageVector = Icons.Filled.Check,
             contentDescription = "Save changes",
@@ -241,7 +249,7 @@ private fun <V : FieldValue> CancelButton(
         callbacks.onCancel()
         callbacks.onModeToggle()
       },
-      modifier = Modifier.testTag(FieldComponentTestTags.cancel(fieldDefinition.id))) {
+      modifier = Modifier.testTag(BaseFieldTestTags.cancel(fieldDefinition.id))) {
         Icon(
             imageVector = Icons.Filled.Close,
             contentDescription = "Cancel changes",
@@ -253,7 +261,7 @@ private fun <V : FieldValue> CancelButton(
 private fun EditButton(fieldDefinition: FieldDefinition, callbacks: FieldCallbacks) {
   IconButton(
       onClick = callbacks.onModeToggle,
-      modifier = Modifier.testTag(FieldComponentTestTags.toggle(fieldDefinition.id))) {
+      modifier = Modifier.testTag(BaseFieldTestTags.toggle(fieldDefinition.id))) {
         Icon(
             imageVector = Icons.Filled.Edit,
             contentDescription = "Switch to edit mode",
@@ -316,7 +324,7 @@ private fun <V : FieldValue> getValidationResult(
 ): FieldValidationResult {
   return if (showValidationErrors && currentValue != null) {
     FieldValidator.validate(currentValue, fieldDefinition)
-  } else if (showValidationErrors && fieldDefinition.required && currentValue == null) {
+  } else if (showValidationErrors && fieldDefinition.required) {
     FieldValidationResult.Invalid(listOf("This field is required"))
   } else {
     FieldValidationResult.Valid
