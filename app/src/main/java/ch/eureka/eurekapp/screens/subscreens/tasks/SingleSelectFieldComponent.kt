@@ -38,6 +38,20 @@ import ch.eureka.eurekapp.model.data.template.field.SelectOption
 import ch.eureka.eurekapp.ui.designsystem.EurekaTheme
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
+object SingleSelectFieldTestTags {
+  fun dropdown(fieldId: String) = "single_select_field_dropdown_$fieldId"
+
+  fun input(fieldId: String) = "single_select_field_input_$fieldId"
+
+  fun menu(fieldId: String) = "single_select_field_menu_$fieldId"
+
+  fun option(optionValue: String) = "single_select_option_$optionValue"
+
+  const val CUSTOM_OPTION = "single_select_option_custom"
+
+  fun value(fieldId: String) = "single_select_field_value_$fieldId"
+}
+
 private sealed interface SelectState {
   data object Empty : SelectState
 
@@ -115,12 +129,11 @@ private fun SingleSelectEditMode(
       expanded = expanded,
       onExpandedChange = { onExpandedChange(!expanded) },
       modifier =
-          Modifier.fillMaxWidth().testTag("single_select_field_dropdown_${fieldDefinition.id}")) {
+          Modifier.fillMaxWidth().testTag(SingleSelectFieldTestTags.dropdown(fieldDefinition.id))) {
         OutlinedTextField(
             value = displayValue,
             onValueChange = { newValue ->
-              handleTextFieldValueChange(
-                  newValue, selectState, fieldType, onSelectStateChange, onChange)
+              handleTextFieldValueChange(newValue, selectState, onSelectStateChange, onChange)
             },
             readOnly = selectState !is SelectState.Custom || !fieldType.allowCustom,
             label = { Text(getTextFieldLabel(selectState)) },
@@ -128,13 +141,13 @@ private fun SingleSelectEditMode(
             modifier =
                 Modifier.fillMaxWidth()
                     .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                    .testTag("single_select_field_input_${fieldDefinition.id}"),
+                    .testTag(SingleSelectFieldTestTags.input(fieldDefinition.id)),
             colors = EurekaStyles.TextFieldColors())
 
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { onExpandedChange(false) },
-            modifier = Modifier.testTag("single_select_field_menu_${fieldDefinition.id}")) {
+            modifier = Modifier.testTag(SingleSelectFieldTestTags.menu(fieldDefinition.id))) {
               RenderOptionMenuItems(fieldType, onSelectStateChange, onChange) {
                 onExpandedChange(false)
               }
@@ -170,7 +183,7 @@ private fun RenderOptionMenuItems(
           onChange(FieldValue.SingleSelectValue(option.value))
           onDismiss()
         },
-        modifier = Modifier.testTag("single_select_option_${option.value}"))
+        modifier = Modifier.testTag(SingleSelectFieldTestTags.option(option.value)))
   }
 }
 
@@ -186,7 +199,7 @@ private fun RenderCustomMenuOption(
         onSelectStateChange(SelectState.Custom(""))
         onDismiss()
       },
-      modifier = Modifier.testTag("single_select_option_custom"))
+      modifier = Modifier.testTag(SingleSelectFieldTestTags.CUSTOM_OPTION))
 }
 
 @Composable
@@ -199,7 +212,7 @@ private fun SingleSelectViewMode(
   Text(
       text = displayText,
       style = MaterialTheme.typography.bodyLarge,
-      modifier = Modifier.testTag("single_select_field_value_${fieldDefinition.id}"))
+      modifier = Modifier.testTag(SingleSelectFieldTestTags.value(fieldDefinition.id)))
 }
 
 private fun toSelectState(
@@ -226,7 +239,6 @@ private fun getTextFieldLabel(selectState: SelectState): String =
 private fun handleTextFieldValueChange(
     newValue: String,
     selectState: SelectState,
-    fieldType: FieldType.SingleSelect,
     onSelectStateChange: (SelectState) -> Unit,
     onChange: (FieldValue.SingleSelectValue) -> Unit,
 ) {

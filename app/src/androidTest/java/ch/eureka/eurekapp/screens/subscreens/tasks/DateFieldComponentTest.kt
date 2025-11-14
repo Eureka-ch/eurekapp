@@ -50,7 +50,7 @@ class DateFieldComponentTest {
   @Test
   fun dateFieldComponent_editMode_showsPickerButton() {
     setFieldContent()
-    composeTestRule.onNodeWithTag("date_field_button_test_date").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(DateFieldTestTags.button("test_date")).assertIsDisplayed()
   }
 
   @Test
@@ -71,37 +71,37 @@ class DateFieldComponentTest {
   @Test
   fun dateFieldComponent_editMode_buttonOpensDatePickerDialog() {
     setFieldContent()
-    composeTestRule.onNodeWithTag("date_field_button_test_date").performClick()
-    composeTestRule.onNodeWithTag("date_picker_dialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(DateFieldTestTags.button("test_date")).performClick()
+    composeTestRule.onNodeWithTag(DateFieldTestTags.DATE_PICKER_DIALOG).assertIsDisplayed()
   }
 
   @Test
   fun dateFieldComponent_editMode_datePickerShowsCancelButton() {
     setFieldContent()
-    composeTestRule.onNodeWithTag("date_field_button_test_date").performClick()
+    composeTestRule.onNodeWithTag(DateFieldTestTags.button("test_date")).performClick()
     composeTestRule.onNodeWithText("Cancel").assertIsDisplayed()
   }
 
   @Test
   fun dateFieldComponent_editMode_datePickerShowsOKButton() {
     setFieldContent()
-    composeTestRule.onNodeWithTag("date_field_button_test_date").performClick()
+    composeTestRule.onNodeWithTag(DateFieldTestTags.button("test_date")).performClick()
     composeTestRule.onNodeWithText("OK").assertIsDisplayed()
   }
 
   @Test
   fun dateFieldComponent_editMode_cancelButtonClosesPicker() {
     setFieldContent()
-    composeTestRule.onNodeWithTag("date_field_button_test_date").performClick()
+    composeTestRule.onNodeWithTag(DateFieldTestTags.button("test_date")).performClick()
     composeTestRule.onNodeWithText("Cancel").performClick()
-    composeTestRule.onNodeWithTag("date_picker_dialog").assertDoesNotExist()
+    composeTestRule.onNodeWithTag(DateFieldTestTags.DATE_PICKER_DIALOG).assertDoesNotExist()
   }
 
   @Test
   fun dateFieldComponent_viewMode_showsFormattedDate() {
     setFieldContent(
         value = FieldValue.DateValue("2025-12-25T00:00:00Z"), mode = FieldInteractionMode.ViewOnly)
-    composeTestRule.onNodeWithTag("date_field_value_test_date").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(DateFieldTestTags.value("test_date")).assertIsDisplayed()
     composeTestRule.onNodeWithText("2025-12-25").assertIsDisplayed()
   }
 
@@ -109,7 +109,7 @@ class DateFieldComponentTest {
   fun dateFieldComponent_viewMode_doesNotShowPickerButton() {
     setFieldContent(
         value = FieldValue.DateValue("2025-12-25T00:00:00Z"), mode = FieldInteractionMode.ViewOnly)
-    composeTestRule.onNodeWithTag("date_field_button_test_date").assertDoesNotExist()
+    composeTestRule.onNodeWithTag(DateFieldTestTags.button("test_date")).assertDoesNotExist()
   }
 
   @Test
@@ -120,13 +120,13 @@ class DateFieldComponentTest {
                 type = FieldType.Date(includeTime = true, format = "yyyy-MM-dd HH:mm")),
         value = FieldValue.DateValue("2025-12-25T15:30:00Z"),
         mode = FieldInteractionMode.ViewOnly)
-    composeTestRule.onNodeWithTag("date_field_value_test_date").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(DateFieldTestTags.value("test_date")).assertIsDisplayed()
   }
 
   @Test
   fun dateFieldComponent_toggleableMode_showsToggleButton() {
     setFieldContent(mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false))
-    composeTestRule.onNodeWithTag("field_toggle_test_date").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.toggle("test_date")).assertIsDisplayed()
   }
 
   @Test
@@ -136,7 +136,7 @@ class DateFieldComponentTest {
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
         callbacks = FieldCallbacks(onModeToggle = { toggleCalled = true }))
 
-    composeTestRule.onNodeWithTag("field_toggle_test_date").performClick()
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.toggle("test_date")).performClick()
     assertTrue(toggleCalled)
   }
 
@@ -217,8 +217,8 @@ class DateFieldComponentTest {
   @Test
   fun dateFieldComponent_toggleableEditing_showsSaveAndCancelButtons() {
     setFieldContent(mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true))
-    composeTestRule.onNodeWithTag("field_save_test_date").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("field_cancel_test_date").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.save("test_date")).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.cancel("test_date")).assertIsDisplayed()
   }
 
   @Test
@@ -229,7 +229,7 @@ class DateFieldComponentTest {
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
         callbacks = FieldCallbacks(onSave = { saveCalled = true }))
 
-    composeTestRule.onNodeWithTag("field_save_test_date").performClick()
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.save("test_date")).performClick()
     assertTrue(saveCalled)
   }
 
@@ -240,7 +240,7 @@ class DateFieldComponentTest {
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
         callbacks = FieldCallbacks(onCancel = { cancelCalled = true }))
 
-    composeTestRule.onNodeWithTag("field_cancel_test_date").performClick()
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.cancel("test_date")).performClick()
     assertTrue(cancelCalled)
   }
 
@@ -257,7 +257,7 @@ class DateFieldComponentTest {
         fieldDef =
             testFieldDefinition.copy(
                 type = FieldType.Date(includeTime = true, format = "yyyy-MM-dd HH:mm")))
-    composeTestRule.onNodeWithTag("date_field_button_test_date").performClick()
-    composeTestRule.onNodeWithTag("date_picker_dialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(DateFieldTestTags.button("test_date")).performClick()
+    composeTestRule.onNodeWithTag(DateFieldTestTags.DATE_PICKER_DIALOG).assertIsDisplayed()
   }
 }

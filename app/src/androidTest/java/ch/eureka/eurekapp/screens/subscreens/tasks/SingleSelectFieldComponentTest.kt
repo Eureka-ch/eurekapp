@@ -57,32 +57,34 @@ class SingleSelectFieldComponentTest {
   @Test
   fun singleSelectFieldComponent_editMode_showsDropdown() {
     setFieldContent()
-    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(SingleSelectFieldTestTags.dropdown("test_select"))
+        .assertIsDisplayed()
   }
 
   @Test
   fun singleSelectFieldComponent_editMode_menuOpensOnClick() {
     setFieldContent()
-    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
-    composeTestRule.onNodeWithTag("single_select_field_menu_test_select").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.dropdown("test_select")).performClick()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.menu("test_select")).assertIsDisplayed()
   }
 
   @Test
   fun singleSelectFieldComponent_editMode_displaysAllOptions() {
     setFieldContent()
-    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
-    composeTestRule.onNodeWithTag("single_select_option_low").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("single_select_option_medium").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("single_select_option_high").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.dropdown("test_select")).performClick()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.option("low")).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.option("medium")).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.option("high")).assertIsDisplayed()
   }
 
   @Test
   fun singleSelectFieldComponent_editMode_displaysOptionDescriptions() {
     setFieldContent()
-    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
-    composeTestRule.onNodeWithTag("single_select_option_low").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("single_select_option_medium").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("single_select_option_high").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.dropdown("test_select")).performClick()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.option("low")).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.option("medium")).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.option("high")).assertIsDisplayed()
     composeTestRule.onNodeWithText("Low priority").assertIsDisplayed()
     composeTestRule.onNodeWithText("Medium priority").assertIsDisplayed()
     composeTestRule.onNodeWithText("High priority").assertIsDisplayed()
@@ -93,8 +95,8 @@ class SingleSelectFieldComponentTest {
     var capturedValue: FieldValue.SingleSelectValue? = null
     setFieldContent(onValueChange = { capturedValue = it })
 
-    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
-    composeTestRule.onNodeWithTag("single_select_option_high").performClick()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.dropdown("test_select")).performClick()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.option("high")).performClick()
 
     assertNotNull(capturedValue)
     assertEquals("high", capturedValue?.value)
@@ -110,7 +112,9 @@ class SingleSelectFieldComponentTest {
   fun singleSelectFieldComponent_viewMode_showsSelectedValue() {
     setFieldContent(
         value = FieldValue.SingleSelectValue("high"), mode = FieldInteractionMode.ViewOnly)
-    composeTestRule.onNodeWithTag("single_select_field_value_test_select").assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(SingleSelectFieldTestTags.value("test_select"))
+        .assertIsDisplayed()
     composeTestRule.onNodeWithText("High").assertIsDisplayed()
   }
 
@@ -118,7 +122,9 @@ class SingleSelectFieldComponentTest {
   fun singleSelectFieldComponent_viewMode_doesNotShowDropdown() {
     setFieldContent(
         value = FieldValue.SingleSelectValue("low"), mode = FieldInteractionMode.ViewOnly)
-    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(SingleSelectFieldTestTags.dropdown("test_select"))
+        .assertDoesNotExist()
   }
 
   @Test
@@ -136,12 +142,12 @@ class SingleSelectFieldComponentTest {
     var capturedValue: FieldValue.SingleSelectValue? = null
     setFieldContent(fieldDef = fieldWithCustom, onValueChange = { capturedValue = it })
 
-    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
-    composeTestRule.onNodeWithTag("single_select_option_custom").performClick()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.dropdown("test_select")).performClick()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.CUSTOM_OPTION).performClick()
     composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag("single_select_field_input_test_select").performClick()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.input("test_select")).performClick()
     composeTestRule
-        .onNodeWithTag("single_select_field_input_test_select")
+        .onNodeWithTag(SingleSelectFieldTestTags.input("test_select"))
         .performTextInput("custom")
 
     assertNotNull(capturedValue)
@@ -163,7 +169,7 @@ class SingleSelectFieldComponentTest {
   @Test
   fun singleSelectFieldComponent_toggleableMode_showsToggleButton() {
     setFieldContent(mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false))
-    composeTestRule.onNodeWithTag("field_toggle_test_select").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.toggle("test_select")).assertIsDisplayed()
   }
 
   @Test
@@ -173,7 +179,7 @@ class SingleSelectFieldComponentTest {
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
         callbacks = FieldCallbacks(onModeToggle = { toggleCalled = true }))
 
-    composeTestRule.onNodeWithTag("field_toggle_test_select").performClick()
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.toggle("test_select")).performClick()
     assert(toggleCalled)
   }
 
@@ -224,8 +230,8 @@ class SingleSelectFieldComponentTest {
         fieldDef =
             testFieldDefinition.copy(
                 type = FieldType.SingleSelect(options = testOptions, allowCustom = true)))
-    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
-    composeTestRule.onNodeWithTag("single_select_option_custom").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.dropdown("test_select")).performClick()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.CUSTOM_OPTION).assertIsDisplayed()
     composeTestRule.onNodeWithText("Custom value").assertIsDisplayed()
   }
 
@@ -235,8 +241,8 @@ class SingleSelectFieldComponentTest {
         fieldDef =
             testFieldDefinition.copy(
                 type = FieldType.SingleSelect(options = testOptions, allowCustom = false)))
-    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
-    composeTestRule.onNodeWithTag("single_select_option_custom").assertDoesNotExist()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.dropdown("test_select")).performClick()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.CUSTOM_OPTION).assertDoesNotExist()
   }
 
   @Test
@@ -245,8 +251,8 @@ class SingleSelectFieldComponentTest {
         fieldDef =
             testFieldDefinition.copy(
                 type = FieldType.SingleSelect(options = testOptions, allowCustom = true)))
-    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
-    composeTestRule.onNodeWithTag("single_select_option_custom").performClick()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.dropdown("test_select")).performClick()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.CUSTOM_OPTION).performClick()
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithText("Enter custom value").assertIsDisplayed()
   }
@@ -263,13 +269,13 @@ class SingleSelectFieldComponentTest {
         onValueChange = { capturedValue = it })
 
     composeTestRule.onNodeWithText("Low").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
-    composeTestRule.onNodeWithTag("single_select_option_custom").performClick()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.dropdown("test_select")).performClick()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.CUSTOM_OPTION).performClick()
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithText("Enter custom value").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("single_select_field_input_test_select").performClick()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.input("test_select")).performClick()
     composeTestRule
-        .onNodeWithTag("single_select_field_input_test_select")
+        .onNodeWithTag(SingleSelectFieldTestTags.input("test_select"))
         .performTextInput("my custom value")
 
     assertNotNull(capturedValue)
@@ -287,8 +293,8 @@ class SingleSelectFieldComponentTest {
         fieldDef = fieldWithCustom, value = currentValue, onValueChange = { currentValue = it })
 
     composeTestRule.onNodeWithText("custom text").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
-    composeTestRule.onNodeWithTag("single_select_option_high").performClick()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.dropdown("test_select")).performClick()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.option("high")).performClick()
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithText("High").assertIsDisplayed()
 
@@ -304,7 +310,7 @@ class SingleSelectFieldComponentTest {
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
         callbacks = FieldCallbacks(onSave = { saveCalled = true }))
 
-    composeTestRule.onNodeWithTag("field_save_test_select").performClick()
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.save("test_select")).performClick()
     assert(saveCalled)
   }
 
@@ -315,15 +321,15 @@ class SingleSelectFieldComponentTest {
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
         callbacks = FieldCallbacks(onCancel = { cancelCalled = true }))
 
-    composeTestRule.onNodeWithTag("field_cancel_test_select").performClick()
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.cancel("test_select")).performClick()
     assert(cancelCalled)
   }
 
   @Test
   fun singleSelectFieldComponent_menuDismissOnDismissRequest() {
     setFieldContent()
-    composeTestRule.onNodeWithTag("single_select_field_dropdown_test_select").performClick()
-    composeTestRule.onNodeWithTag("single_select_field_menu_test_select").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.dropdown("test_select")).performClick()
+    composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.menu("test_select")).assertIsDisplayed()
   }
 
   @Test

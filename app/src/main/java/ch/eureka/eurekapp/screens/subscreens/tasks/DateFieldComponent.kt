@@ -30,6 +30,16 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+object DateFieldTestTags {
+  fun button(fieldId: String) = "date_field_button_$fieldId"
+
+  const val DATE_PICKER_DIALOG = "date_picker_dialog"
+
+  const val TIME_PICKER_DIALOG = "time_picker_dialog"
+
+  fun value(fieldId: String) = "date_field_value_$fieldId"
+}
+
 /**
  * Date field component for template fields.
  *
@@ -71,7 +81,7 @@ fun DateFieldComponent(
           OutlinedButton(
               onClick = { showDatePicker = true },
               modifier =
-                  Modifier.fillMaxWidth().testTag("date_field_button_${fieldDefinition.id}")) {
+                  Modifier.fillMaxWidth().testTag(DateFieldTestTags.button(fieldDefinition.id))) {
                 Text(text = getDateButtonText(currentValue, fieldType))
               }
 
@@ -99,7 +109,7 @@ fun DateFieldComponent(
           Text(
               text = currentValue?.let { formatDateValue(it, fieldType) } ?: "",
               style = MaterialTheme.typography.bodyLarge,
-              modifier = Modifier.testTag("date_field_value_${fieldDefinition.id}"))
+              modifier = Modifier.testTag(DateFieldTestTags.value(fieldDefinition.id)))
         }
       }
 }
@@ -125,7 +135,7 @@ private fun DatePickerDialogContent(
             }
       },
       dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
-      modifier = Modifier.testTag("date_picker_dialog")) {
+      modifier = Modifier.testTag(DateFieldTestTags.DATE_PICKER_DIALOG)) {
         DatePicker(state = datePickerState)
       }
 }
@@ -145,7 +155,7 @@ private fun TimePickerDialogContent(
         }
       },
       dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
-      modifier = Modifier.testTag("time_picker_dialog")) {
+      modifier = Modifier.testTag(DateFieldTestTags.TIME_PICKER_DIALOG)) {
         TimePicker(state = timePickerState)
       }
 }

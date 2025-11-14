@@ -30,6 +30,18 @@ import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.FieldValue
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
+object MultiSelectFieldTestTags {
+  fun chips(fieldId: String) = "multi_select_field_chips_$fieldId"
+
+  fun chip(optionValue: String) = "multi_select_chip_$optionValue"
+
+  fun customInput(fieldId: String) = "multi_select_custom_input_$fieldId"
+
+  fun customAdd(fieldId: String) = "multi_select_custom_add_$fieldId"
+
+  fun value(fieldId: String) = "multi_select_field_value_$fieldId"
+}
+
 /**
  * Multi-select field component for template fields.
  *
@@ -99,7 +111,7 @@ private fun MultiSelectEditMode(
     onSelectionChange: (Set<String>) -> Unit,
     onCustomValueAdded: () -> Unit,
 ) {
-  Column(modifier = Modifier.testTag("multi_select_field_chips_${fieldDefinition.id}")) {
+  Column(modifier = Modifier.testTag(MultiSelectFieldTestTags.chips(fieldDefinition.id))) {
     FlowRow(modifier = Modifier.fillMaxWidth()) {
       RenderOptionChips(fieldType, localSelectedValues, onSelectionChange)
       if (fieldType.allowCustom) {
@@ -134,7 +146,8 @@ private fun RenderOptionChips(
           onSelectionChange(newSelectedValues)
         },
         label = { Text(option.label) },
-        modifier = Modifier.padding(end = 8.dp).testTag("multi_select_chip_${option.value}"))
+        modifier =
+            Modifier.padding(end = 8.dp).testTag(MultiSelectFieldTestTags.chip(option.value)))
   }
 }
 
@@ -154,7 +167,7 @@ private fun RenderCustomValueChips(
           onSelectionChange(newSelectedValues)
         },
         label = { Text(customValue) },
-        modifier = Modifier.padding(end = 8.dp).testTag("multi_select_chip_$customValue"))
+        modifier = Modifier.padding(end = 8.dp).testTag(MultiSelectFieldTestTags.chip(customValue)))
   }
 }
 
@@ -176,7 +189,8 @@ private fun CustomValueInput(
             label = { Text("Custom value") },
             singleLine = true,
             modifier =
-                Modifier.weight(1f).testTag("multi_select_custom_input_${fieldDefinition.id}"),
+                Modifier.weight(1f)
+                    .testTag(MultiSelectFieldTestTags.customInput(fieldDefinition.id)),
             colors = EurekaStyles.TextFieldColors())
         Spacer(modifier = Modifier.width(8.dp))
         Button(
@@ -185,7 +199,7 @@ private fun CustomValueInput(
               onCustomValueAdded()
             },
             enabled = customText.isNotBlank(),
-            modifier = Modifier.testTag("multi_select_custom_add_${fieldDefinition.id}")) {
+            modifier = Modifier.testTag(MultiSelectFieldTestTags.customAdd(fieldDefinition.id))) {
               Text("Add")
             }
       }
@@ -203,17 +217,18 @@ private fun MultiSelectViewMode(
         text = "None",
         style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.testTag("multi_select_field_value_${fieldDefinition.id}"))
+        modifier = Modifier.testTag(MultiSelectFieldTestTags.value(fieldDefinition.id)))
   } else {
     FlowRow(
         modifier =
-            Modifier.fillMaxWidth().testTag("multi_select_field_value_${fieldDefinition.id}")) {
+            Modifier.fillMaxWidth().testTag(MultiSelectFieldTestTags.value(fieldDefinition.id))) {
           selectedValues.forEach { value ->
             val displayText = getDisplayText(value, fieldType.options)
             AssistChip(
                 onClick = {},
                 label = { Text(displayText) },
-                modifier = Modifier.padding(end = 8.dp).testTag("multi_select_chip_${value}"))
+                modifier =
+                    Modifier.padding(end = 8.dp).testTag(MultiSelectFieldTestTags.chip(value)))
           }
         }
   }

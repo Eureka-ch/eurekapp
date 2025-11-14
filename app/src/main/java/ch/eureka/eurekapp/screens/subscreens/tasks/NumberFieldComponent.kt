@@ -16,6 +16,12 @@ import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.FieldValue
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
+object NumberFieldTestTags {
+  fun input(fieldId: String) = "number_field_input_$fieldId"
+
+  fun value(fieldId: String) = "number_field_value_$fieldId"
+}
+
 /**
  * Number field component for template fields.
  *
@@ -69,7 +75,7 @@ fun NumberFieldComponent(
               keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
               singleLine = true,
               modifier =
-                  Modifier.fillMaxWidth().testTag("number_field_input_${fieldDefinition.id}"),
+                  Modifier.fillMaxWidth().testTag(NumberFieldTestTags.input(fieldDefinition.id)),
               colors = EurekaStyles.TextFieldColors())
         } else {
           val formattedValue = formatNumberValue(currentValue, fieldType)
@@ -77,7 +83,7 @@ fun NumberFieldComponent(
           Text(
               text = formattedValue,
               style = MaterialTheme.typography.bodyLarge,
-              modifier = Modifier.testTag("number_field_value_${fieldDefinition.id}"))
+              modifier = Modifier.testTag(NumberFieldTestTags.value(fieldDefinition.id)))
         }
       }
 }
