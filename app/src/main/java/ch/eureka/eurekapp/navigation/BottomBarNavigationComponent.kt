@@ -133,7 +133,7 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
                   HomeIconButton(
                       modifier =
                           Modifier.testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
-                      onClick = { navigateToTab(Route.OverviewProject) })
+                      onClick = { navigateToTab(Route.ProjectSelection) })
                 }
               }
           CustomIconButtonComposable(

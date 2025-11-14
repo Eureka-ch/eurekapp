@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.screens.subscreens.projects.creation
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -406,7 +407,8 @@ private fun validateAndCreateProject(
           status = projectFormStatus.projectStatus)
   createProjectViewModel.createProject(
       projectToCreate = projectToAdd,
-      onSuccessCallback = { onProjectCreated() },
+      onSuccessCallback = {
+          onProjectCreated() },
       onFailureCallback = { failedToCreateProjectText.value = "Failed to create the project..." })
 }
 

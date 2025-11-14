@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.navigation
 
+import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -295,7 +296,10 @@ fun NavigationMenu() {
               // Project selection section
               composable<Route.ProjectSelectionSection.CreateProject> {
                 CreateProjectScreen(
-                    onProjectCreated = { navigationController.navigate(Route.ProjectSelection) })
+                    onProjectCreated = {
+                        Log.d("CREATEPROJECTSCREEN", "Hello")
+                        navigationController.navigate(Route.ProjectSelection)
+                    })
               }
               composable<Route.MeetingsSection.CreateMeeting> { backStackEntry ->
                 val createMeetingCreationRoute =
@@ -371,8 +375,6 @@ fun NavigationMenu() {
                     meetingId = audioTranscriptRoute.meetingId,
                     onNavigateBack = { navigationController.popBackStack() })
               }
-
-              composable<Route.ProjectSelectionSection.CreateProject> { CreateProjectScreen() }
 
               composable<Route.OverviewProjectSection.CreateInvitation> { backStackEntry ->
                 val createInvitationRoute =
