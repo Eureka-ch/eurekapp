@@ -1,10 +1,8 @@
 package ch.eureka.eurekapp.navigation
 
-import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.NavHost
@@ -13,7 +11,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.project.Project
-import ch.eureka.eurekapp.model.data.project.ProjectRole
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.IdeasScreen
@@ -154,13 +151,6 @@ fun NavigationMenu() {
           memberIds = listOf(auth.currentUser?.uid ?: "unknown"),
       )
 
-  LaunchedEffect(Unit) {
-    projectRepository.createProject(
-        project = testProject,
-        creatorRole = ProjectRole.OWNER,
-        creatorId = auth.currentUser?.uid ?: "unknown")
-  }
-
   Scaffold(
       containerColor = Color.White,
       bottomBar = { BottomBarNavigationComponent(navigationController = navigationController) }) {
@@ -205,7 +195,7 @@ fun NavigationMenu() {
                     },
                     onTaskClick = { taskId, projectId ->
                       navigationController.navigate(
-                          Route.TasksSection.ViewTask(projectId = testProjectId, taskId = taskId))
+                          Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
                     })
               }
               composable<Route.TasksSection.CreateTask> { CreateTaskScreen(navigationController) }
@@ -296,10 +286,7 @@ fun NavigationMenu() {
               // Project selection section
               composable<Route.ProjectSelectionSection.CreateProject> {
                 CreateProjectScreen(
-                    onProjectCreated = {
-                        Log.d("CREATEPROJECTSCREEN", "Hello")
-                        navigationController.navigate(Route.ProjectSelection)
-                    })
+                    onProjectCreated = { navigationController.navigate(Route.ProjectSelection) })
               }
               composable<Route.MeetingsSection.CreateMeeting> { backStackEntry ->
                 val createMeetingCreationRoute =
