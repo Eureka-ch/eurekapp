@@ -383,11 +383,28 @@ open class EditTaskScreenTest : TestCase() {
         lastEditVm = viewModel
         composeTestRule.setContent {
           val navController = rememberNavController()
-          FakeNavGraph(
-              projectId = projectId,
-              taskId = taskId,
-              navController = navController,
-              viewModel = viewModel)
+          NavHost(navController, startDestination = Route.TasksSection.Tasks) {
+            composable<Route.TasksSection.EditTask> {
+              EditTaskScreen(
+                  projectId = projectId,
+                  taskId = taskId,
+                  navigationController = navController,
+                  editTaskViewModel = viewModel)
+            }
+            composable<Route.TasksSection.ViewTask> {
+              // Simulate ViewTask screen that would be in the real back stack
+              Text("View Task Screen", modifier = Modifier.testTag("view_task_screen"))
+            }
+            composable<Route.TasksSection.Tasks> {
+              Text(
+                  "Tasks Screen",
+                  modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
+            }
+            composable<Route.Camera> { Camera(navigationController = navController) }
+          }
+          // Navigate through ViewTask to EditTask to simulate real navigation flow
+          navController.navigate(
+              Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
           navController.navigate(
               Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
         }

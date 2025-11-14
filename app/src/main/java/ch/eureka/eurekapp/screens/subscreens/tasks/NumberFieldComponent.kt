@@ -76,7 +76,7 @@ fun NumberFieldComponent(
               singleLine = true,
               modifier =
                   Modifier.fillMaxWidth().testTag(NumberFieldTestTags.input(fieldDefinition.id)),
-              colors = EurekaStyles.TextFieldColors())
+              colors = EurekaStyles.textFieldColors())
         } else {
           val formattedValue = formatNumberValue(currentValue, fieldType)
 
