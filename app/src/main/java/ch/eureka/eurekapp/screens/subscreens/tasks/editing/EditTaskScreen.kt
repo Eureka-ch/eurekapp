@@ -37,7 +37,6 @@ import ch.eureka.eurekapp.model.tasks.EditTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AttachmentsList
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
-import ch.eureka.eurekapp.screens.subscreens.tasks.ProjectSelectionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesSelectionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDescriptionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
@@ -131,11 +130,6 @@ fun EditTaskScreen(
               TaskReminderField(
                   value = editTaskState.reminderTime,
                   onValueChange = { editTaskViewModel.setReminderTime(it) })
-
-              ProjectSelectionField(
-                  projects = editTaskState.availableProjects,
-                  selectedProjectId = editTaskState.projectId,
-                  onProjectSelected = { projectId -> editTaskViewModel.setProjectId(projectId) })
 
               UserAssignmentField(
                   availableUsers = editTaskState.availableUsers,
