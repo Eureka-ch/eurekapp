@@ -142,7 +142,7 @@ private fun SingleSelectEditMode(
                 Modifier.fillMaxWidth()
                     .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                     .testTag(SingleSelectFieldTestTags.input(fieldDefinition.id)),
-            colors = EurekaStyles.TextFieldColors())
+            colors = EurekaStyles.textFieldColors())
 
         ExposedDropdownMenu(
             expanded = expanded,

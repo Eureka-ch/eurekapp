@@ -310,6 +310,7 @@ private fun HandleTaskDeleted(
   LaunchedEffect(taskDeleted) {
     if (taskDeleted) {
       navigationController.popBackStack()
+      navigationController.popBackStack() // Pop twice to skip viewTaskScreen
       editTaskViewModel.resetDeleteState()
     }
   }

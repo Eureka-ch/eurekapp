@@ -191,7 +191,7 @@ private fun CustomValueInput(
             modifier =
                 Modifier.weight(1f)
                     .testTag(MultiSelectFieldTestTags.customInput(fieldDefinition.id)),
-            colors = EurekaStyles.TextFieldColors())
+            colors = EurekaStyles.textFieldColors())
         Spacer(modifier = Modifier.width(8.dp))
         Button(
             onClick = {
