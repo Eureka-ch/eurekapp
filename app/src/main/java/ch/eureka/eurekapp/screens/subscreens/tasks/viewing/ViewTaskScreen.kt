@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,6 +18,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -25,17 +27,27 @@ import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.tasks.ViewTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AttachmentsList
+import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDescriptionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskTitleField
+import ch.eureka.eurekapp.ui.components.BackButton
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 object ViewTaskScreenTestTags {
   const val EDIT_TASK = "edit_task"
+  const val OFFLINE_MESSAGE = "offline_message"
+  const val ASSIGNED_USERS_SECTION = "assigned_users_section"
+  const val ASSIGNED_USER_ITEM = "assigned_user_item"
+
+  fun assignedUserItem(index: Int) = "${ASSIGNED_USER_ITEM}_$index"
 }
 
 /*
 Portions of this code were generated with the help of Grok.
+Note: This file was partially written by GPT-5 Codex
+Co-author : GPT-5
 */
 
 /**
@@ -55,6 +67,7 @@ fun ViewTaskScreen(
 ) {
   val viewTaskState by viewTaskViewModel.uiState.collectAsState()
   val errorMsg = viewTaskState.errorMsg
+  val isConnected = viewTaskState.isConnected
   val context = LocalContext.current
   val scrollState = rememberScrollState()
 
@@ -73,6 +86,15 @@ fun ViewTaskScreen(
   }
 
   Scaffold(
+      topBar = {
+        EurekaTopBar(
+            title = "View Task",
+            navigationIcon = {
+              BackButton(
+                  onClick = { navigationController.popBackStack() },
+                  modifier = Modifier.testTag(CommonTaskTestTags.BACK_BUTTON))
+            })
+      },
       content = { paddingValues ->
         Column(
             modifier =
@@ -105,11 +127,38 @@ fun ViewTaskScreen(
 
               Text(text = "Status: ${viewTaskState.status.name.replace("_", " ")}")
 
+              if (!isConnected) {
+                Text(
+                    text = "You are offline. Editing tasks is unavailable.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier =
+                        Modifier.padding(16.dp).testTag(ViewTaskScreenTestTags.OFFLINE_MESSAGE))
+              }
+
+              // Display assigned users
+              if (viewTaskState.assignedUsers.isNotEmpty()) {
+                Column(modifier = Modifier.testTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION)) {
+                  Text(
+                      text = "Assigned Users:",
+                      style = androidx.compose.material3.MaterialTheme.typography.titleMedium)
+                  viewTaskState.assignedUsers.forEachIndexed { index, user ->
+                    Text(
+                        text = "• ${user.displayName.ifBlank { user.email }}",
+                        style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.testTag(ViewTaskScreenTestTags.assignedUserItem(index)))
+                  }
+                }
+              }
+
               Button(
                   onClick = {
                     navigationController.navigate(Route.TasksSection.EditTask(projectId, taskId))
                   },
-                  modifier = Modifier.testTag(ViewTaskScreenTestTags.EDIT_TASK),
+                  enabled = isConnected,
+                  modifier =
+                      Modifier.testTag(ViewTaskScreenTestTags.EDIT_TASK)
+                          .alpha(if (isConnected) 1f else 0.6f),
                   colors = EurekaStyles.PrimaryButtonColors()) {
                     Text("Edit Task")
                   }
@@ -117,7 +166,8 @@ fun ViewTaskScreen(
               AttachmentsList(
                   attachments = viewTaskState.attachmentUrls + viewTaskState.attachmentUris,
                   onDelete = null, // Pass null to indicate read-only mode
-                  isReadOnly = true)
+                  isReadOnly = true,
+                  isConnected = isConnected)
             }
       })
 }

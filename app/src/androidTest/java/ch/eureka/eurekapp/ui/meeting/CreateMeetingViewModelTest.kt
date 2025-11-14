@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Gemini.*/
 package ch.eureka.eurekapp.ui.meeting
 
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
@@ -95,6 +96,7 @@ class CreateMeetingViewModelTest {
     assertEquals(LocalDate.now(), uiState.date)
     assertNotNull(uiState.time)
     assertEquals(0, uiState.duration)
+    assertEquals(MeetingFormat.IN_PERSON, uiState.format) // <-- Verifies default format
     assertFalse(uiState.meetingSaved)
     assertFalse(uiState.hasTouchedTitle)
     assertFalse(uiState.hasTouchedDate)
@@ -145,6 +147,13 @@ class CreateMeetingViewModelTest {
     val newDuration = 45
     viewModel.setDuration(newDuration)
     assertEquals(newDuration, viewModel.uiState.value.duration)
+  }
+
+  @Test
+  fun setFormatUpdatesFormat() {
+    val newFormat = MeetingFormat.VIRTUAL
+    viewModel.setFormat(newFormat)
+    assertEquals(newFormat, viewModel.uiState.value.format)
   }
 
   @Test
@@ -224,6 +233,7 @@ class CreateMeetingViewModelTest {
     val duration = 60
     val projectId = "project-success"
     val userId = "test-user-id"
+    val meetingFormat = MeetingFormat.IN_PERSON
 
     val expectedInstant = LocalDateTime.of(date, time).atZone(ZoneId.systemDefault()).toInstant()
 
@@ -231,6 +241,7 @@ class CreateMeetingViewModelTest {
     viewModel.setDate(date)
     viewModel.setTime(time)
     viewModel.setDuration(duration)
+    viewModel.setFormat(meetingFormat) // <-- Set non-default format
     assertTrue(viewModel.uiState.value.isValid)
 
     assertEquals(userId, currentUserId)
@@ -266,7 +277,7 @@ class CreateMeetingViewModelTest {
     val proposalVote = proposal.votes[0]
 
     assertEquals(userId, proposalVote.userId)
-    assertEquals(listOf(MeetingFormat.IN_PERSON), proposalVote.formatPreferences)
+    assertEquals(listOf(meetingFormat), proposalVote.formatPreferences)
   }
 
   @Test

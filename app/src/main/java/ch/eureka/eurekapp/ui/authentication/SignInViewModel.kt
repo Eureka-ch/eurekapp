@@ -1,6 +1,7 @@
 /*
 The following code comes from the solution of the part 3 of the SwEnt bootcamp made by the SwEnt team:
 https://github.com/swent-epfl/bootcamp-25-B3-Solution/blob/main/app/src/main/java/com/github/se/bootcamp/ui/authentication/SignInViewModel.kt
+Portions of this code were generated with the help of Grok.
 */
 
 package ch.eureka.eurekapp.ui.authentication
@@ -53,6 +54,14 @@ class SignInViewModel(
 
   private val _uiState = MutableStateFlow(AuthUIState())
   val uiState: StateFlow<AuthUIState> = _uiState
+
+  init {
+    // Check if user is already signed in for offline support
+    val currentUser = repository.getCurrentUser()
+    if (currentUser != null) {
+      _uiState.update { it.copy(user = currentUser, signedOut = false) }
+    }
+  }
 
   /** Clears the error message in the UI state. */
   fun clearErrorMsg() {

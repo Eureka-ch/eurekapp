@@ -16,9 +16,9 @@ object OverviewProjectsScreenTestTags {
  * *
  */
 @Composable
-fun OverviewProjectsScreen() {
+fun OverviewProjectScreen(projectId: String) {
   Text(
-      "Overview Projects Screen",
+      "Overview Projects Screen: $projectId",
       modifier = Modifier.testTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT))
   // Camera()
   Camera()

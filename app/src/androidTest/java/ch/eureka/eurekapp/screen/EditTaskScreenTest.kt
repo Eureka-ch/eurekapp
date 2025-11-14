@@ -30,6 +30,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
@@ -102,6 +103,7 @@ open class EditTaskScreenTest : TestCase() {
     }
 
     context = InstrumentationRegistry.getInstrumentation().targetContext
+    ConnectivityObserverProvider.initialize(context)
     clearTestPhotos()
   }
 
@@ -991,6 +993,42 @@ open class EditTaskScreenTest : TestCase() {
         // Verify deleteFile was called for the remote URL
         assert(fileRepository.deletedFiles.contains(remoteUrl))
       }
+
+  @Test
+  fun testBackButtonNavigatesBack() {
+    runBlocking {
+      val projectId = "project123"
+      val taskId = "task123"
+      setupTestProject(projectId)
+      setupTestTask(projectId, taskId)
+
+      val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+      lastEditVm = viewModel
+
+      composeTestRule.setContent {
+        val navController = rememberNavController()
+        FakeNavGraph(
+            navController = navController,
+            viewModel = viewModel,
+            projectId = projectId,
+            taskId = taskId)
+        navController.navigate(Route.TasksSection.EditTask(projectId = projectId, taskId = taskId))
+      }
+
+      composeTestRule.waitForIdle()
+
+      // Verify we're on EditTaskScreen
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
+
+      // Click the back button
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.BACK_BUTTON).performClick()
+
+      composeTestRule.waitForIdle()
+
+      // Verify navigation back to TasksScreen
+      composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
+    }
+  }
 }
 
 class TestableTaskScreenViewModel(

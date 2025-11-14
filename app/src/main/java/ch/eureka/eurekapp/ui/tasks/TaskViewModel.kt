@@ -2,6 +2,8 @@ package ch.eureka.eurekapp.ui.tasks
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ch.eureka.eurekapp.model.connection.ConnectivityObserver
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
@@ -31,7 +33,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Data class combining Task with its assigned Users Portions of this code were generated with the
- * help of IA.
+ * help of AI. Portions added by Jiří Gebauer partially generated with the help of Grok.
  */
 
 /** Internal data class for flow state management */
@@ -39,7 +41,8 @@ private data class TaskFlowState(
     val filter: TaskScreenFilter,
     val taskFlow: Flow<List<Task>>,
     val error: String?,
-    val projects: List<Project>
+    val projects: List<Project>,
+    val isConnected: Boolean
 )
 
 /** Internal data class for tasks state */
@@ -47,13 +50,24 @@ private data class TasksState(
     val filter: TaskScreenFilter,
     val tasks: List<Task>,
     val error: String?,
-    val projects: List<Project>
+    val projects: List<Project>,
+    val isConnected: Boolean
 )
 
 /** Internal data class for tasks with users state */
 private data class TasksWithUsersState(
     val filter: TaskScreenFilter,
     val tasksAndUsers: List<TaskAndUsers>,
+    val error: String?,
+    val projects: List<Project>,
+    val isConnected: Boolean
+)
+
+/** Internal data class for combined state */
+private data class CombinedState(
+    val userTasks: List<Task>,
+    val teamTasks: List<Task>,
+    val filter: TaskScreenFilter,
     val error: String?,
     val projects: List<Project>
 )
@@ -64,7 +78,8 @@ data class TaskScreenUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val selectedFilter: TaskScreenFilter = TaskScreenFilter.Mine,
-    val availableProjects: List<Project> = emptyList()
+    val availableProjects: List<Project> = emptyList(),
+    val isConnected: Boolean = true
 )
 
 /** Sealed class representing different task filtering options with their data */
@@ -127,7 +142,8 @@ open class TaskScreenViewModel(
     private val userRepository: UserRepository =
         FirestoreUserRepository(
             firestore = FirebaseFirestore.getInstance(), auth = FirebaseAuth.getInstance()),
-    private val currentUserId: String? = FirebaseAuth.getInstance().currentUser?.uid
+    private val currentUserId: String? = FirebaseAuth.getInstance().currentUser?.uid,
+    connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver
 ) : ViewModel() {
 
   private val _selectedFilter = MutableStateFlow<TaskScreenFilter>(TaskScreenFilter.Mine)
@@ -169,54 +185,68 @@ open class TaskScreenViewModel(
           }
           .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-  open val uiState: StateFlow<TaskScreenUiState> =
-      combine(userTasks, teamTasks, _selectedFilter, _error, availableProjects) {
-              userTasks,
-              teamTasks,
-              filter,
-              error,
-              projects ->
-            // Extract tasks based on filter
-            val allTasks = userTasks + teamTasks
-            val now = Timestamp.now()
+  /** Flow representing the current connectivity status (true if connected, false otherwise) */
+  private val _isConnected =
+      connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
-            val taskFlow =
-                when (filter) {
-                  is TaskScreenFilter.Mine -> flowOf(userTasks)
-                  is TaskScreenFilter.Team -> flowOf(teamTasks)
-                  is TaskScreenFilter.All -> flowOf(allTasks)
-                  is TaskScreenFilter.Today ->
-                      flowOf(
-                          allTasks.filter { task ->
-                            val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
-                            daysUntilDue == 0L
-                          })
-                  is TaskScreenFilter.Tomorrow ->
-                      flowOf(
-                          allTasks.filter { task ->
-                            val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
-                            daysUntilDue == 1L
-                          })
-                  is TaskScreenFilter.ThisWeek ->
-                      flowOf(
-                          allTasks.filter { task ->
-                            val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
-                            daysUntilDue in 0..7
-                          })
-                  is TaskScreenFilter.Overdue ->
-                      flowOf(
-                          allTasks.filter { task ->
-                            val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
-                            daysUntilDue < 0
-                          })
-                  is TaskScreenFilter.ByProject ->
-                      taskRepository.getTasksInProject(filter.projectId)
-                }
-            TaskFlowState(filter, taskFlow, error, projects)
-          }
+  open val uiState: StateFlow<TaskScreenUiState> =
+      combine(
+              combine(userTasks, teamTasks, _selectedFilter, _error, availableProjects) {
+                  userTasks,
+                  teamTasks,
+                  filter,
+                  error,
+                  projects ->
+                CombinedState(userTasks, teamTasks, filter, error, projects)
+              },
+              _isConnected) { combined, isConnected ->
+                // Extract tasks based on filter
+                val allTasks = combined.userTasks + combined.teamTasks
+                val now = Timestamp.now()
+
+                val taskFlow =
+                    when (combined.filter) {
+                      is TaskScreenFilter.Mine -> flowOf(combined.userTasks)
+                      is TaskScreenFilter.Team -> flowOf(combined.teamTasks)
+                      is TaskScreenFilter.All -> flowOf(allTasks)
+                      is TaskScreenFilter.Today ->
+                          flowOf(
+                              allTasks.filter { task ->
+                                val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
+                                daysUntilDue == 0L
+                              })
+                      is TaskScreenFilter.Tomorrow ->
+                          flowOf(
+                              allTasks.filter { task ->
+                                val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
+                                daysUntilDue == 1L
+                              })
+                      is TaskScreenFilter.ThisWeek ->
+                          flowOf(
+                              allTasks.filter { task ->
+                                val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
+                                daysUntilDue in 0..7
+                              })
+                      is TaskScreenFilter.Overdue ->
+                          flowOf(
+                              allTasks.filter { task ->
+                                val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
+                                daysUntilDue < 0
+                              })
+                      is TaskScreenFilter.ByProject ->
+                          taskRepository.getTasksInProject(combined.filter.projectId)
+                    }
+                TaskFlowState(
+                    combined.filter, taskFlow, combined.error, combined.projects, isConnected)
+              }
           .flatMapLatest { flowState ->
             flowState.taskFlow.map { tasks ->
-              TasksState(flowState.filter, tasks, flowState.error, flowState.projects)
+              TasksState(
+                  flowState.filter,
+                  tasks,
+                  flowState.error,
+                  flowState.projects,
+                  flowState.isConnected)
             }
           }
           .flatMapLatest { tasksState ->
@@ -227,7 +257,8 @@ open class TaskScreenViewModel(
                       tasksState.filter,
                       emptyList<TaskAndUsers>(),
                       tasksState.error,
-                      tasksState.projects))
+                      tasksState.projects,
+                      tasksState.isConnected))
             } else {
               combine(
                   tasksState.tasks.map { task ->
@@ -237,7 +268,8 @@ open class TaskScreenViewModel(
                         tasksState.filter,
                         tasksAndUsersArray.toList(),
                         tasksState.error,
-                        tasksState.projects)
+                        tasksState.projects,
+                        tasksState.isConnected)
                   }
             }
           }
@@ -247,7 +279,8 @@ open class TaskScreenViewModel(
                 selectedFilter = state.filter,
                 isLoading = false,
                 error = state.error,
-                availableProjects = state.projects)
+                availableProjects = state.projects,
+                isConnected = state.isConnected)
           }
           .stateIn(viewModelScope, SharingStarted.Eagerly, TaskScreenUiState(isLoading = true))
 
