@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.CloudUpload
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
@@ -48,7 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.audio.AudioRecordingViewModel
-import ch.eureka.eurekapp.model.audio.RECORDING_STATE
+import ch.eureka.eurekapp.model.audio.RecordingState
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
@@ -102,7 +101,7 @@ fun MeetingAudioRecordingScreen(
     }
   }
 
-  var timeInSeconds by remember { mutableStateOf<Long>(0L) }
+  var timeInSeconds by remember { mutableLongStateOf(0L) }
 
   var errorText by remember { mutableStateOf<String>("") }
   var uploadText by remember { mutableStateOf<String>("") }
@@ -116,7 +115,7 @@ fun MeetingAudioRecordingScreen(
   }
 
   LaunchedEffect(recordingStatus.value) {
-    while (recordingStatus.value == RECORDING_STATE.RUNNING) {
+    while (recordingStatus.value == RecordingState.RUNNING) {
       delay(1000)
       timeInSeconds += 1
     }
@@ -180,7 +179,7 @@ fun MeetingAudioRecordingScreen(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically) {
                           when (recordingStatus.value) {
-                            RECORDING_STATE.PAUSED -> {
+                            RecordingState.PAUSED -> {
                               StopButton(
                                   onClick = {
                                     audioRecordingViewModel.stopRecording()
@@ -209,7 +208,7 @@ fun MeetingAudioRecordingScreen(
                                   },
                                   testTag = MeetingAudioScreenTestTags.UPLOAD_TO_DATABASE_BUTTON)
                             }
-                            RECORDING_STATE.STOPPED -> {
+                            RecordingState.STOPPED -> {
                               PlayButton(
                                   onClick = {
                                     audioRecordingViewModel.startRecording(
@@ -219,7 +218,7 @@ fun MeetingAudioRecordingScreen(
                                   },
                                   testTag = MeetingAudioScreenTestTags.START_RECORDING_BUTTON)
                             }
-                            RECORDING_STATE.RUNNING -> {
+                            RecordingState.RUNNING -> {
                               PauseButton(
                                   onClick = { audioRecordingViewModel.pauseRecording() },
                                   testTag = MeetingAudioScreenTestTags.PAUSE_RECORDING_BUTTON)

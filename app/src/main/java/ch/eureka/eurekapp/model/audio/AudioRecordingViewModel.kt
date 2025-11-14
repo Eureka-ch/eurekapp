@@ -29,7 +29,7 @@ class AudioRecordingViewModel(
   private val _recordingUri: MutableStateFlow<Uri?> = MutableStateFlow(null)
   val recordingUri = _recordingUri.asStateFlow()
 
-  val isRecording: StateFlow<RECORDING_STATE> = recordingRepository.getRecordingStateFlow()
+  val isRecording: StateFlow<RecordingState> = recordingRepository.getRecordingStateFlow()
 
   fun startRecording(context: Context, fileName: String) {
     val createdRecordingUri = recordingRepository.createRecording(context, fileName)
@@ -40,15 +40,14 @@ class AudioRecordingViewModel(
   }
 
   fun resumeRecording() {
-    if (isRecording.value == RECORDING_STATE.PAUSED) {
-      if (recordingRepository.resumeRecording().isFailure) {
-        return
-      }
+    if (isRecording.value == RecordingState.PAUSED &&
+        recordingRepository.resumeRecording().isFailure) {
+      return
     }
   }
 
   fun pauseRecording() {
-    if (isRecording.value == RECORDING_STATE.RUNNING) {
+    if (isRecording.value == RecordingState.RUNNING) {
       val result = recordingRepository.pauseRecording()
       if (result.isFailure) {
         return
@@ -57,7 +56,7 @@ class AudioRecordingViewModel(
   }
 
   fun stopRecording() {
-    if (isRecording.value == RECORDING_STATE.PAUSED) {
+    if (isRecording.value == RecordingState.PAUSED) {
       val result = recordingRepository.clearRecording()
       if (result.isFailure) {
         return
@@ -91,7 +90,7 @@ class AudioRecordingViewModel(
       onSuccesfulUpload: (String) -> Unit,
       onFailureUpload: (Throwable) -> Unit
   ) {
-    if (_recordingUri.value == null || isRecording.value != RECORDING_STATE.PAUSED) {
+    if (_recordingUri.value == null || isRecording.value != RecordingState.PAUSED) {
       onFailureUpload(IllegalStateException("No paused recording available to upload"))
       return
     }
@@ -131,11 +130,11 @@ class AudioRecordingViewModel(
   override fun onCleared() {
     super.onCleared()
     // We need to clean up the recording if the view model is cleared
-    if (isRecording.value == RECORDING_STATE.RUNNING) {
+    if (isRecording.value == RecordingState.RUNNING) {
       pauseRecording()
       stopRecording()
       deleteLocalRecording()
-    } else if (isRecording.value == RECORDING_STATE.PAUSED) {
+    } else if (isRecording.value == RecordingState.PAUSED) {
       stopRecording()
     }
   }

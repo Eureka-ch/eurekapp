@@ -301,7 +301,7 @@ fun CreateProjectScreen(
                                   title = "Github URL (optional)",
                                   placeHolderText = "https://github.com/org/repo",
                                   textValue = githubUrl,
-                                  inputIsError = { input -> false },
+                                  inputIsError = { _ -> false },
                                   errorText = "",
                                   testTag = CreateProjectScreenTestTags.GITHUB_URL_TEST_TAG)
                             }
@@ -338,25 +338,24 @@ fun CreateProjectScreen(
                                     !projectDescriptionError.value &&
                                     !startDateError.value &&
                                     (Utils.stringIsEmptyOrBlank(endDate.value) ||
-                                        Utils.isDateParseableToStandardAppPattern(endDate.value))) {
-                                  if (currentUserId != null) {
-                                    val projectToAdd =
-                                        Project(
-                                            projectId = newId,
-                                            createdBy = currentUserId,
-                                            memberIds = listOf(currentUserId),
-                                            name = projectName.value,
-                                            description = projectDescription.value,
-                                            status = projectStatus.value)
-                                    createProjectViewModel.viewModelScope.launch {
-                                      createProjectViewModel.createProject(
-                                          projectToCreate = projectToAdd,
-                                          onSuccessCallback = { onProjectCreated() },
-                                          onFailureCallback = {
-                                            failedToCreateProjectText =
-                                                "Failed to create the project..."
-                                          })
-                                    }
+                                        Utils.isDateParseableToStandardAppPattern(endDate.value)) &&
+                                    currentUserId != null) {
+                                  val projectToAdd =
+                                      Project(
+                                          projectId = newId,
+                                          createdBy = currentUserId,
+                                          memberIds = listOf(currentUserId),
+                                          name = projectName.value,
+                                          description = projectDescription.value,
+                                          status = projectStatus.value)
+                                  createProjectViewModel.viewModelScope.launch {
+                                    createProjectViewModel.createProject(
+                                        projectToCreate = projectToAdd,
+                                        onSuccessCallback = { onProjectCreated() },
+                                        onFailureCallback = {
+                                          failedToCreateProjectText =
+                                              "Failed to create the project..."
+                                        })
                                   }
                                 }
                               },
@@ -576,7 +575,7 @@ fun ProjectStateSelectionMenu(projectStatus: MutableState<ProjectStatus>) {
             expanded = expanded,
             onDismissRequest = { expanded = false },
             properties = defaultPopupProperties) {
-              ProjectStatus.values().forEachIndexed { index, status ->
+              ProjectStatus.values().forEachIndexed { _, status ->
                 DropdownMenuItem(
                     modifier =
                         Modifier.testTag(

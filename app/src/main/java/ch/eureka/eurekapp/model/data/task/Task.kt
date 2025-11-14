@@ -2,7 +2,6 @@ package ch.eureka.eurekapp.model.data.task
 
 import com.google.firebase.Timestamp
 import java.time.temporal.ChronoUnit
-import kotlin.compareTo
 
 /**
  * Data class representing a task within a project.

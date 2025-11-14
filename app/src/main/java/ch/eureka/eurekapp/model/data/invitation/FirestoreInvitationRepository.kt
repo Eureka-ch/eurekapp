@@ -66,7 +66,7 @@ class FirestoreInvitationRepository(private val firestore: FirebaseFirestore) :
 
         firestore
             .runTransaction { transaction ->
-              val snapshot = transaction.get(invitationRef)
+              val snapshot = transaction[invitationRef]
 
               if (!snapshot.exists()) {
                 throw IllegalStateException("Invitation not found")

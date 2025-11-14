@@ -55,8 +55,7 @@ object CreateInvitationSubScreen {
 @Composable
 fun CreateInvitationSubscreen(
     projectId: String,
-    createInvitationViewModel: CreateInvitationViewModel = viewModel(),
-    onInvitationCreate: () -> Unit
+    createInvitationViewModel: CreateInvitationViewModel = viewModel()
 ) {
 
   val createInvitationToken = remember { mutableStateOf<Invitation?>(null) }
