@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.ui.components
 
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -22,6 +23,7 @@ class UIComponentsIntegrationTest {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         // Test que tous les composants principaux se rendent
+        EurekaTopBar(modifier = Modifier, title = "Test App")
         EurekaTopBar(title = "Test App")
         EurekaInfoCard(title = "Test Info", primaryValue = "42", secondaryValue = "Additional info")
         EurekaStatusTag(text = "Test Status", type = StatusType.INFO)
@@ -49,6 +51,7 @@ class UIComponentsIntegrationTest {
   fun componentsWorkInDarkTheme() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = true) {
+        EurekaTopBar(modifier = Modifier, title = "Dark Theme Test")
         EurekaTopBar(title = "Dark Theme Test")
         EurekaInfoCard(title = "Dark Info", primaryValue = "100")
         EurekaStatusTag(text = "Dark Status", type = StatusType.SUCCESS)

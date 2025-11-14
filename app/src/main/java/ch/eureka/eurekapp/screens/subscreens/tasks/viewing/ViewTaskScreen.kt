@@ -27,9 +27,12 @@ import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.tasks.ViewTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AttachmentsList
+import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDescriptionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskTitleField
+import ch.eureka.eurekapp.ui.components.BackButton
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 object ViewTaskScreenTestTags {
@@ -83,6 +86,15 @@ fun ViewTaskScreen(
   }
 
   Scaffold(
+      topBar = {
+        EurekaTopBar(
+            title = "View Task",
+            navigationIcon = {
+              BackButton(
+                  onClick = { navigationController.popBackStack() },
+                  modifier = Modifier.testTag(CommonTaskTestTags.BACK_BUTTON))
+            })
+      },
       content = { paddingValues ->
         Column(
             modifier =
