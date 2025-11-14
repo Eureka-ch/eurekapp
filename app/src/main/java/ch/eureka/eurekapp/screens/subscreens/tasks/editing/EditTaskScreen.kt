@@ -44,6 +44,8 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskReminderField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskTitleField
 import ch.eureka.eurekapp.screens.subscreens.tasks.UserAssignmentField
+import ch.eureka.eurekapp.ui.components.BackButton
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 object EditTaskScreenTestTags {
@@ -90,6 +92,15 @@ fun EditTaskScreen(
       isNavigatingToCamera, editTaskState.attachmentUris, editTaskViewModel, context)
 
   Scaffold(
+      topBar = {
+        EurekaTopBar(
+            title = "Edit Task",
+            navigationIcon = {
+              BackButton(
+                  onClick = { navigationController.popBackStack() },
+                  modifier = Modifier.testTag(CommonTaskTestTags.BACK_BUTTON))
+            })
+      },
       content = { paddingValues ->
         Column(
             modifier =
