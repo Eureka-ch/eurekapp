@@ -17,6 +17,17 @@ import ch.eureka.eurekapp.model.data.template.field.FieldValue
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 /**
+ * Test tags for text field components.
+ *
+ * Provides consistent test tag generation for text field-specific UI elements.
+ */
+object TextFieldComponentTestTags {
+  fun input(fieldId: String) = "text_field_input_$fieldId"
+
+  fun value(fieldId: String) = "text_field_value_$fieldId"
+}
+
+/**
  * Text field component for template fields.
  *
  * @param modifier The modifier to apply to the component
@@ -63,13 +74,15 @@ fun TextFieldComponent(
                     }
                   },
               singleLine = false,
-              modifier = Modifier.fillMaxWidth().testTag("text_field_input_${fieldDefinition.id}"),
+              modifier =
+                  Modifier.fillMaxWidth()
+                      .testTag(TextFieldComponentTestTags.input(fieldDefinition.id)),
               colors = EurekaStyles.TextFieldColors())
         } else {
           Text(
               text = currentValue?.value ?: "",
               style = MaterialTheme.typography.bodyLarge,
-              modifier = Modifier.testTag("text_field_value_${fieldDefinition.id}"))
+              modifier = Modifier.testTag(TextFieldComponentTestTags.value(fieldDefinition.id)))
         }
       }
 }
