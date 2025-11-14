@@ -10,6 +10,7 @@ import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
+import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.Participant
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -274,7 +275,7 @@ class MeetingDetailViewModel(
    *
    * @return Error message if validation fails, null if valid.
    */
-  private fun validateEditFields(): String? {
+  private fun validateEditFields(meetingStatus: MeetingStatus): String? {
     val editDateTime = _editDateTime.value
     val isDateTimeInPast =
         editDateTime?.let {
@@ -285,8 +286,12 @@ class MeetingDetailViewModel(
 
     return when {
       _editTitle.value.isBlank() -> "Title cannot be empty"
-      editDateTime == null -> "Date and time must be set"
-      isDateTimeInPast -> "Meeting should be scheduled in the future."
+      editDateTime == null ->
+          if (meetingStatus != MeetingStatus.OPEN_TO_VOTES) "Date and time must be set" else null
+      isDateTimeInPast ->
+          if (meetingStatus != MeetingStatus.OPEN_TO_VOTES)
+              "Meeting should be scheduled in the future."
+          else null
       _editDuration.value <= 0 -> "Duration must be greater than 0"
       else -> null
     }
@@ -298,7 +303,7 @@ class MeetingDetailViewModel(
    * @param currentMeeting The current meeting object to update.
    */
   fun saveMeetingChanges(currentMeeting: Meeting) {
-    val validationError = validateEditFields()
+    val validationError = validateEditFields(currentMeeting.status)
     if (validationError != null) {
       _errorMsg.value = validationError
       return

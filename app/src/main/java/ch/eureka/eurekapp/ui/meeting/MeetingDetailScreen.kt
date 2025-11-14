@@ -398,7 +398,6 @@ private fun MeetingDetailContent(
 
         item {
           if (editConfig.isEditMode) {
-            // ppbbbb
             EditableMeetingInfoCard(
                 config =
                     EditableMeetingInfoCardConfig(
