@@ -59,6 +59,13 @@ class TaskEndToEndTest : TestCase() {
       // Clear emulators before test
       FirebaseEmulator.clearFirestoreEmulator()
       FirebaseEmulator.clearAuthEmulator()
+
+      // Give Firebase emulators time to fully reset
+      Thread.sleep(500)
+
+      // Ensure no user is signed in at the start
+      FirebaseEmulator.auth.signOut()
+      Thread.sleep(500)
     }
   }
 
@@ -83,9 +90,17 @@ class TaskEndToEndTest : TestCase() {
 
     composeTestRule.setContent { Eurekapp(credentialManager = fakeCredentialManager) }
 
+    // Wait for compose to be idle to ensure all initialization is complete
+    composeTestRule.waitForIdle()
+
+    // Give additional time for Firebase initialization and ViewModel setup
+    Thread.sleep(1000)
+
     // Wait for sign-in screen to appear (increased timeout for CI environment)
     composeTestRule.waitUntil(timeoutMillis = 10_000) {
       try {
+        // Wait for idle state before each check
+        composeTestRule.waitForIdle()
         composeTestRule
             .onNodeWithTag(SignInScreenTestTags.SIGN_IN_WITH_GOOGLE_BUTTON)
             .assertExists()
