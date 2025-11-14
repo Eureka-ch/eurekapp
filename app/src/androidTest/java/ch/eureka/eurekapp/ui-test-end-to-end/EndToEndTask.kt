@@ -245,10 +245,12 @@ class TaskEndToEndTest : TestCase() {
 
     composeTestRule.onNodeWithText("End-to-End Test Task").assertIsDisplayed()
   }
+
   private val testUserName = "Test User"
   private val testUserEmail = "testuser@example.com"
   // Use the same project ID as NavigationMenu
   private val testProjectId = "test-project-id"
+
   @OptIn(ExperimentalTestApi::class)
   @Test
   fun completeE2EFlow_createVoteDeleteMeeting_succeeds() {
@@ -269,23 +271,23 @@ class TaskEndToEndTest : TestCase() {
       // Wait for bottom navigation to be ready
       composeTestRule.waitUntil(timeoutMillis = 10_000) {
         composeTestRule
-          .onAllNodesWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
+            .onAllNodesWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
       }
 
       composeTestRule
-        .onNodeWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON)
-        .performClick()
+          .onNodeWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON)
+          .performClick()
 
       composeTestRule.waitForIdle()
 
       // Wait for meetings screen to load
       composeTestRule.waitUntil(timeoutMillis = 10_000) {
         composeTestRule
-          .onAllNodesWithTag(MeetingScreenTestTags.MEETING_SCREEN)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
+            .onAllNodesWithTag(MeetingScreenTestTags.MEETING_SCREEN)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
       }
 
       // Step 1: Create Meeting - Title + duration only (no date/time) → OPEN_TO_VOTES status
@@ -300,14 +302,14 @@ class TaskEndToEndTest : TestCase() {
 
       // Title input
       composeTestRule
-        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
-        .performTextInput(meetingTitle)
+          .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
+          .performTextInput(meetingTitle)
       composeTestRule.waitForIdle()
 
       // Duration
       composeTestRule
-        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DURATION)
-        .performClick()
+          .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DURATION)
+          .performClick()
       composeTestRule.waitForIdle()
       composeTestRule.onNodeWithText("30 minutes").performClick()
       composeTestRule.onNodeWithText("OK").performClick()
@@ -335,17 +337,17 @@ class TaskEndToEndTest : TestCase() {
 
       // Create meeting
       composeTestRule
-        .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
-        .performClick()
+          .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
+          .performClick()
 
       composeTestRule.waitForIdle()
 
       // Step 2: Verify Listing - Wait to navigate back to meetings screen
       composeTestRule.waitUntil(timeoutMillis = 10_000) {
         composeTestRule
-          .onAllNodesWithTag(MeetingScreenTestTags.MEETING_SCREEN)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
+            .onAllNodesWithTag(MeetingScreenTestTags.MEETING_SCREEN)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
       }
 
       // Wait for meeting to appear in list
@@ -366,9 +368,9 @@ class TaskEndToEndTest : TestCase() {
       // Wait for meeting detail screen to load
       composeTestRule.waitUntil(timeoutMillis = 15_000) {
         composeTestRule
-          .onAllNodesWithTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
+            .onAllNodesWithTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
       }
 
       // Verify meeting status shows "Voting in progress"
@@ -391,14 +393,14 @@ class TaskEndToEndTest : TestCase() {
       // Confirm deletion in dialog
       composeTestRule.waitUntil(timeoutMillis = 5_000) {
         composeTestRule
-          .onAllNodesWithTag(MeetingDetailScreenTestTags.DELETE_CONFIRMATION_DIALOG)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
+            .onAllNodesWithTag(MeetingDetailScreenTestTags.DELETE_CONFIRMATION_DIALOG)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
       }
 
       composeTestRule
-        .onNodeWithTag(MeetingDetailScreenTestTags.CONFIRM_DELETE_BUTTON)
-        .performClick()
+          .onNodeWithTag(MeetingDetailScreenTestTags.CONFIRM_DELETE_BUTTON)
+          .performClick()
 
       composeTestRule.waitForIdle()
 
@@ -406,9 +408,9 @@ class TaskEndToEndTest : TestCase() {
       // Wait for navigation back to meetings list
       composeTestRule.waitUntil(timeoutMillis = 10_000) {
         composeTestRule
-          .onAllNodesWithTag(MeetingScreenTestTags.MEETING_SCREEN)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
+            .onAllNodesWithTag(MeetingScreenTestTags.MEETING_SCREEN)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
       }
 
       // Verify meeting no longer appears in the list
