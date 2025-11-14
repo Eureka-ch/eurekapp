@@ -220,15 +220,5 @@ class TaskEndToEndTest : TestCase() {
     }
 
     composeTestRule.onNodeWithText("End-to-End Test Task").assertIsDisplayed()
-
-    // Wait for Compose to be completely idle before signing out
-    // This ensures all background operations (ViewModels, flows, etc.) have completed
-    composeTestRule.waitForIdle()
-
-    // Give extra time for any remaining Firebase operations to complete
-    Thread.sleep(1000)
-
-    // Sign out to avoid polluting other tests that check auth state
-    runBlocking { FirebaseEmulator.auth.signOut() }
   }
 }
