@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.end_to_end
+package ch.eureka.eurekapp.test_end_to_end
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
