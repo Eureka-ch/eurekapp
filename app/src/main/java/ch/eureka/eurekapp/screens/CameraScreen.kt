@@ -76,7 +76,7 @@ fun CameraScreen(
         }
         OutlinedButton(
             onClick = { cameraViewModel.deletePhoto() },
-            colors = EurekaStyles.OutlinedButtonColors(),
+            colors = EurekaStyles.outlinedButtonColors(),
             modifier =
                 Modifier.align(Alignment.BottomStart).testTag(CameraScreenTestTags.DELETE_PHOTO)) {
               Text(text = "Delete photo")
@@ -88,7 +88,7 @@ fun CameraScreen(
                   ?.set("photoUri", cameraState.picture.toString())
               navigationController.popBackStack()
             },
-            colors = EurekaStyles.PrimaryButtonColors(),
+            colors = EurekaStyles.primaryButtonColors(),
             modifier =
                 Modifier.align(Alignment.BottomEnd).testTag(CameraScreenTestTags.SAVE_PHOTO)) {
               Text(text = "Save photo")
@@ -101,7 +101,7 @@ fun CameraScreen(
             }
         OutlinedButton(
             onClick = { cameraViewModel.takePhoto() },
-            colors = EurekaStyles.OutlinedButtonColors(),
+            colors = EurekaStyles.outlinedButtonColors(),
             modifier =
                 Modifier.align(Alignment.BottomCenter).testTag(CameraScreenTestTags.TAKE_PHOTO)) {
               Text(text = "Take photo")
@@ -124,7 +124,7 @@ fun CameraScreen(
                 modifier = Modifier.testTag(CameraScreenTestTags.NO_PERMISSION))
             Button(
                 onClick = { launcher.launch(Manifest.permission.CAMERA) },
-                colors = EurekaStyles.PrimaryButtonColors(),
+                colors = EurekaStyles.primaryButtonColors(),
                 modifier = Modifier.testTag(CameraScreenTestTags.GRANT_PERMISSION)) {
                   Text("Grant permission")
                 }

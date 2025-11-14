@@ -25,7 +25,7 @@ class UIComponentsIntegrationTest {
         // Test que tous les composants principaux se rendent
         EurekaTopBar(modifier = Modifier, title = "Test App")
         EurekaInfoCard(title = "Test Info", primaryValue = "42", secondaryValue = "Additional info")
-        EurekaStatusTag("Test Status", StatusType.INFO)
+        EurekaStatusTag(text = "Test Status", type = StatusType.INFO)
         EurekaTaskCard(title = "Test Task", isCompleted = false)
         EurekaFilterBar(
             options = listOf("All", "Active"), selectedOption = "All", onOptionSelected = {})
@@ -52,7 +52,7 @@ class UIComponentsIntegrationTest {
       EurekaTheme(darkTheme = true) {
         EurekaTopBar(modifier = Modifier, title = "Dark Theme Test")
         EurekaInfoCard(title = "Dark Info", primaryValue = "100")
-        EurekaStatusTag("Dark Status", StatusType.SUCCESS)
+        EurekaStatusTag(text = "Dark Status", type = StatusType.SUCCESS)
       }
     }
 
@@ -66,10 +66,10 @@ class UIComponentsIntegrationTest {
   fun statusTagRendersAllStatusTypes() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
-        EurekaStatusTag("Success", StatusType.SUCCESS)
-        EurekaStatusTag("Warning", StatusType.WARNING)
-        EurekaStatusTag("Error", StatusType.ERROR)
-        EurekaStatusTag("Info", StatusType.INFO)
+        EurekaStatusTag(text = "Success", type = StatusType.SUCCESS)
+        EurekaStatusTag(text = "Warning", type = StatusType.WARNING)
+        EurekaStatusTag(text = "Error", type = StatusType.ERROR)
+        EurekaStatusTag(text = "Info", type = StatusType.INFO)
       }
     }
 

@@ -184,7 +184,7 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.ui.auth)
-    implementation("com.google.firebase:firebase-functions")
+    implementation(libs.firebase.functions)
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.androidx.compose.ui)
 

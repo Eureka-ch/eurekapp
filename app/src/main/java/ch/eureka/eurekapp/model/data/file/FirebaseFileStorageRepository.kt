@@ -59,14 +59,10 @@ class FirebaseFileStorageRepository(
    */
   private fun extractStoragePathFromUrl(downloadUrl: String): String {
     val pathStart = downloadUrl.indexOf("/o/")
-    if (pathStart == -1) {
-      throw IllegalArgumentException("Invalid storage URL format: missing '/o/' path marker")
-    }
+    require(pathStart != -1) { "Invalid storage URL format: missing '/o/' path marker" }
 
     val pathEnd = downloadUrl.indexOf("?", pathStart)
-    if (pathEnd == -1) {
-      throw IllegalArgumentException("Invalid storage URL format: missing query parameters")
-    }
+    require(pathEnd != -1) { "Invalid storage URL format: missing query parameters" }
 
     val encodedPath = downloadUrl.substring(pathStart + 3, pathEnd)
     return java.net.URLDecoder.decode(encodedPath, "UTF-8")

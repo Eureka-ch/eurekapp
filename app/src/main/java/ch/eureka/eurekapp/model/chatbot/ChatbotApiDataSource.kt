@@ -5,6 +5,7 @@ import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -16,8 +17,11 @@ import org.json.JSONObject
  * @property apiUrl The URL of the chatbot API endpoint
  * @property apiKey The API key for authentication (if required)
  */
-class ChatbotApiDataSource(private val apiUrl: String, private val apiKey: String? = null) :
-    ChatbotDataSource {
+class ChatbotApiDataSource(
+    private val apiUrl: String,
+    private val apiKey: String? = null,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
+) : ChatbotDataSource {
 
   companion object {
     private const val TIMEOUT_MS = 60000
@@ -28,7 +32,7 @@ class ChatbotApiDataSource(private val apiUrl: String, private val apiKey: Strin
   }
 
   override suspend fun sendMessage(systemPrompt: String, context: String): String {
-    return withContext(Dispatchers.IO) {
+    return withContext(dispatcher) {
       val connection = URL(apiUrl).openConnection() as HttpURLConnection
 
       try {

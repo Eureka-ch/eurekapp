@@ -22,8 +22,11 @@ import org.junit.Rule
 import org.junit.Test
 
 val fakeProject1 =
-    Project().copy(projectId = "test-project-1", memberIds = listOf("user1", "user2"))
-val fakeProject2 = Project().copy(projectId = "test-project-2", memberIds = listOf("user1"))
+    Project()
+        .copy(
+            projectId = "test-project-1", memberIds = listOf("user1", "user2"), createdBy = "user1")
+val fakeProject2 =
+    Project().copy(projectId = "test-project-2", memberIds = listOf("user1"), createdBy = "user1")
 
 class ProjectSelectionScreenTest : TestCase() {
   @get:Rule val composeRule = createComposeRule()
@@ -92,7 +95,7 @@ class ProjectSelectionScreenTest : TestCase() {
     }
 
     override fun getCurrentUser(): Flow<User?> {
-      TODO("Not yet implemented")
+      return flowOf(User().copy(uid = "user1"))
     }
 
     override suspend fun saveUser(user: User): Result<Unit> {
@@ -125,6 +128,66 @@ class ProjectSelectionScreenTest : TestCase() {
 
     val users = fakeViewModel.getProjectUsersInformation("test-project-1").first()
     assertEquals(listOf(User().copy(uid = "user1"), User().copy(uid = "user2")), users)
+  }
+
+  @Test
+  fun getProjectUser() = runBlocking {
+    val fakeViewModel =
+        ProjectSelectionScreenViewModel(
+            projectsRepository = MockedProjectsRepository(),
+            usersRepository = MockedUserRepository())
+
+    val user = fakeViewModel.getCurrentUser()
+    assertEquals("user1", user.first()!!.uid)
+  }
+
+  @Test
+  fun attemptToInviteUser() = runBlocking {
+    val fakeViewModel =
+        ProjectSelectionScreenViewModel(
+            projectsRepository = MockedProjectsRepository(),
+            usersRepository = MockedUserRepository())
+
+    var invitedUser = false
+
+    composeRule.setContent {
+      ProjectSelectionScreen(
+          projectSelectionScreenViewModel = fakeViewModel,
+          onCreateProjectRequest = {},
+          onProjectSelectRequest = { project -> },
+          onGenerateInviteRequest = { invitedUser = true })
+    }
+
+    composeRule.waitForIdle()
+
+    composeRule
+        .onNodeWithTag(ProjectSelectionScreenTestTags.getInviteButtonTestTag("test-project-1"))
+        .performClick()
+    assertEquals(true, invitedUser)
+  }
+
+  @Test
+  fun attemptToEnterToken() = runBlocking {
+    val fakeViewModel =
+        ProjectSelectionScreenViewModel(
+            projectsRepository = MockedProjectsRepository(),
+            usersRepository = MockedUserRepository())
+
+    var inputToken = false
+
+    composeRule.setContent {
+      ProjectSelectionScreen(
+          projectSelectionScreenViewModel = fakeViewModel,
+          onCreateProjectRequest = {},
+          onProjectSelectRequest = { project -> },
+          onInputTokenRequest = { inputToken = true })
+    }
+
+    composeRule.waitForIdle()
+
+    composeRule.onNodeWithTag(ProjectSelectionScreenTestTags.INPUT_TOKEN_BUTTON).performClick()
+
+    assertEquals(true, inputToken)
   }
 
   @Test

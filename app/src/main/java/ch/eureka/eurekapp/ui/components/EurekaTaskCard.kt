@@ -53,8 +53,8 @@ fun EurekaTaskCard(
   Card(
       shape = RoundedCornerShape(16.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-      colors = EurekaStyles.TaskCardColors(),
-      border = EurekaStyles.TaskCardBorder(),
+      colors = EurekaStyles.taskCardColors(),
+      border = EurekaStyles.taskCardBorder(),
       modifier = modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick)) {
         Column(modifier = Modifier.padding(Spacing.lg)) { // Plus de padding
 
@@ -68,7 +68,7 @@ fun EurekaTaskCard(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
-                    color = EurekaStyles.TaskTitleColor(isCompleted),
+                    color = EurekaStyles.taskTitleColor(isCompleted),
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f))
 
@@ -109,7 +109,7 @@ fun EurekaTaskCard(
                       Text(
                           text = "⏰ $dueDate",
                           style = MaterialTheme.typography.bodySmall,
-                          color = EurekaStyles.TaskSecondaryTextColor())
+                          color = EurekaStyles.taskSecondaryTextColor())
                     }
                   }
 
@@ -121,7 +121,7 @@ fun EurekaTaskCard(
                       Text(
                           text = "👤 $assignee",
                           style = MaterialTheme.typography.bodySmall,
-                          color = EurekaStyles.TaskSecondaryTextColor())
+                          color = EurekaStyles.taskSecondaryTextColor())
                     }
                   }
                 }
@@ -157,7 +157,7 @@ fun EurekaTaskCard(
               modifier =
                   Modifier.fillMaxWidth()
                       .height(1.dp)
-                      .background(EurekaStyles.TaskSeparatorColor()))
+                      .background(EurekaStyles.taskSeparatorColor()))
 
           Spacer(modifier = Modifier.height(Spacing.sm))
 
@@ -169,14 +169,14 @@ fun EurekaTaskCard(
                   Text(
                       text = "Progression",
                       style = MaterialTheme.typography.bodySmall,
-                      color = EurekaStyles.TaskSecondaryTextColor(),
+                      color = EurekaStyles.taskSecondaryTextColor(),
                       modifier = Modifier.weight(1f))
 
                   LinearProgressIndicator(
                       progress = { if (isCompleted) 1.0f else progressValue }, // 100% si cochée
                       modifier = Modifier.width(60.dp).height(6.dp),
                       color = MaterialTheme.colorScheme.primary,
-                      trackColor = EurekaStyles.TaskSeparatorColor())
+                      trackColor = EurekaStyles.taskSeparatorColor())
 
                   Spacer(modifier = Modifier.width(Spacing.xs))
 
@@ -184,7 +184,7 @@ fun EurekaTaskCard(
                   Text(
                       text = if (isCompleted) "100%" else progressText,
                       style = MaterialTheme.typography.labelMedium,
-                      color = EurekaStyles.TaskSecondaryTextColor(),
+                      color = EurekaStyles.taskSecondaryTextColor(),
                       fontWeight = FontWeight.Bold)
                 }
           }

@@ -3,7 +3,6 @@ package ch.eureka.eurekapp.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.NavHost
@@ -12,7 +11,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.project.Project
-import ch.eureka.eurekapp.model.data.project.ProjectRole
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.IdeasScreen
@@ -26,6 +24,7 @@ import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitatio
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
+import ch.eureka.eurekapp.ui.authentication.TokenEntryScreen
 import ch.eureka.eurekapp.ui.meeting.CreateDateTimeFormatProposalForMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailActionsConfig
@@ -128,7 +127,9 @@ sealed interface Route {
         get() = OverviewProjectSection::class.sealedSubclasses.toSet()
     }
 
-    @Serializable data object CreateInvitation : OverviewProjectSection
+    @Serializable data class CreateInvitation(val projectId: String) : OverviewProjectSection
+
+    @Serializable data object TokenEntry : OverviewProjectSection
   }
 
   @Serializable data object Camera : Route
@@ -150,13 +151,6 @@ fun NavigationMenu() {
           memberIds = listOf(auth.currentUser?.uid ?: "unknown"),
       )
 
-  LaunchedEffect(Unit) {
-    projectRepository.createProject(
-        project = testProject,
-        creatorRole = ProjectRole.OWNER,
-        creatorId = auth.currentUser?.uid ?: "unknown")
-  }
-
   Scaffold(
       containerColor = Color.White,
       bottomBar = { BottomBarNavigationComponent(navigationController = navigationController) }) {
@@ -174,7 +168,18 @@ fun NavigationMenu() {
                     onProjectSelectRequest = { project ->
                       navigationController.navigate(
                           Route.OverviewProject(projectId = project.projectId))
+                    },
+                    onInputTokenRequest = {
+                      navigationController.navigate(Route.OverviewProjectSection.TokenEntry)
+                    },
+                    onGenerateInviteRequest = { projectId ->
+                      navigationController.navigate(
+                          Route.OverviewProjectSection.CreateInvitation(projectId = projectId))
                     })
+              }
+              composable<Route.OverviewProjectSection.TokenEntry> {
+                TokenEntryScreen(
+                    onTokenValidated = { navigationController.navigate(Route.ProjectSelection) })
               }
               composable<Route.Profile> { ProfileScreen() }
               composable<Route.OverviewProject> { backStackEntry ->
@@ -190,7 +195,7 @@ fun NavigationMenu() {
                     },
                     onTaskClick = { taskId, projectId ->
                       navigationController.navigate(
-                          Route.TasksSection.ViewTask(projectId = testProjectId, taskId = taskId))
+                          Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
                     })
               }
               composable<Route.TasksSection.CreateTask> { CreateTaskScreen(navigationController) }
@@ -207,7 +212,7 @@ fun NavigationMenu() {
               }
 
               // Ideas section
-              composable<Route.IdeasSection.Ideas> { IdeasScreen(navigationController) }
+              composable<Route.IdeasSection.Ideas> { IdeasScreen() }
 
               // Meetings section
               composable<Route.MeetingsSection.Meetings> {
@@ -358,10 +363,11 @@ fun NavigationMenu() {
                     onNavigateBack = { navigationController.popBackStack() })
               }
 
-              composable<Route.ProjectSelectionSection.CreateProject> { CreateProjectScreen() }
-
-              composable<Route.OverviewProjectSection.CreateInvitation> {
-                CreateInvitationSubscreen(projectId = testProjectId, onInvitationCreate = {})
+              composable<Route.OverviewProjectSection.CreateInvitation> { backStackEntry ->
+                val createInvitationRoute =
+                    backStackEntry.toRoute<Route.OverviewProjectSection.CreateInvitation>()
+                CreateInvitationSubscreen(
+                    projectId = createInvitationRoute.projectId, onInvitationCreate = {})
               }
 
               composable<Route.Camera> { Camera(navigationController) }

@@ -57,7 +57,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.project.CreateProjectViewModel
 import ch.eureka.eurekapp.model.data.project.Project
@@ -71,7 +70,18 @@ import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.ui.theme.Typography
 import ch.eureka.eurekapp.utils.Formatters
 import ch.eureka.eurekapp.utils.Utils
-import kotlinx.coroutines.launch
+
+private data class ProjectFormState(
+    val projectName: String,
+    val projectDescription: String,
+    val startDate: String,
+    val endDate: String,
+    val projectStatus: ProjectStatus,
+    val projectNameError: Boolean,
+    val projectDescriptionError: Boolean,
+    val startDateError: Boolean,
+    val endDateError: Boolean,
+)
 
 private val textTypography = Typography.bodyMedium
 private val titleTypography = Typography.titleSmall
@@ -160,7 +170,7 @@ fun CreateProjectScreen(
 
   val githubUrl = remember { mutableStateOf<String>("") }
 
-  var failedToCreateProjectText by remember { mutableStateOf<String>("") }
+  var failedToCreateProjectText = remember { mutableStateOf<String>("") }
 
   Column(
       modifier = Modifier.fillMaxSize().background(color = LightColorScheme.background),
@@ -295,17 +305,7 @@ fun CreateProjectScreen(
                               linkGithubRepository,
                               CreateProjectScreenTestTags.CHECKBOX_LINK_GITHUB_REPOSITORY)
 
-                          if (linkGithubRepository.value) {
-                            Row(modifier = Modifier) {
-                              CreateProjectTextField(
-                                  title = "Github URL (optional)",
-                                  placeHolderText = "https://github.com/org/repo",
-                                  textValue = githubUrl,
-                                  inputIsError = { input -> false },
-                                  errorText = "",
-                                  testTag = CreateProjectScreenTestTags.GITHUB_URL_TEST_TAG)
-                            }
-                          }
+                          GithubUrlField(linkGithubRepository.value, githubUrl)
                         }
 
                     Spacer(modifier = Modifier.weight(1f))
@@ -332,33 +332,23 @@ fun CreateProjectScreen(
                                     !Utils.stringIsEmptyOrBlank(endDate.value) &&
                                         !Utils.isDateParseableToStandardAppPattern(endDate.value)
 
-                                val newId = createProjectViewModel.getNewProjectId()
-                                val currentUserId = createProjectViewModel.getCurrentUser()
-                                if (!projectNameError.value &&
-                                    !projectDescriptionError.value &&
-                                    !startDateError.value &&
-                                    (Utils.stringIsEmptyOrBlank(endDate.value) ||
-                                        Utils.isDateParseableToStandardAppPattern(endDate.value))) {
-                                  if (currentUserId != null) {
-                                    val projectToAdd =
-                                        Project(
-                                            projectId = newId,
-                                            createdBy = currentUserId,
-                                            memberIds = listOf(currentUserId),
-                                            name = projectName.value,
-                                            description = projectDescription.value,
-                                            status = projectStatus.value)
-                                    createProjectViewModel.viewModelScope.launch {
-                                      createProjectViewModel.createProject(
-                                          projectToCreate = projectToAdd,
-                                          onSuccessCallback = { onProjectCreated() },
-                                          onFailureCallback = {
-                                            failedToCreateProjectText =
-                                                "Failed to create the project..."
-                                          })
-                                    }
-                                  }
-                                }
+                                val projectFormStatus =
+                                    ProjectFormState(
+                                        projectName = projectName.value,
+                                        projectDescription = projectDescription.value,
+                                        startDate = startDate.value,
+                                        endDate = endDate.value,
+                                        projectStatus = projectStatus.value,
+                                        projectNameError = projectNameError.value,
+                                        projectDescriptionError = projectDescriptionError.value,
+                                        startDateError = startDateError.value,
+                                        endDateError = endDateError.value)
+
+                                validateAndCreateProject(
+                                    projectFormStatus,
+                                    createProjectViewModel,
+                                    onProjectCreated,
+                                    failedToCreateProjectText)
                               },
                               colors =
                                   ButtonDefaults.filledTonalButtonColors(
@@ -370,12 +360,56 @@ fun CreateProjectScreen(
                                     style = Typography.titleSmall)
                               }
 
-                          Text(failedToCreateProjectText, color = LightColorScheme.error)
+                          Text(failedToCreateProjectText.value, color = LightColorScheme.error)
                         }
                   }
             }
       }
 }
+
+@Composable
+private fun GithubUrlField(isEnabled: Boolean, githubUrl: MutableState<String>) {
+  if (isEnabled) {
+    Row {
+      CreateProjectTextField(
+          title = "Github URL (optional)",
+          placeHolderText = "https://github.com/org/repo",
+          textValue = githubUrl,
+          inputIsError = { _ -> false },
+          errorText = "",
+          testTag = CreateProjectScreenTestTags.GITHUB_URL_TEST_TAG)
+    }
+  }
+}
+
+private fun validateAndCreateProject(
+    projectFormStatus: ProjectFormState,
+    createProjectViewModel: CreateProjectViewModel,
+    onProjectCreated: () -> Unit,
+    failedToCreateProjectText: MutableState<String>
+) {
+  val currentUserId = createProjectViewModel.getCurrentUser()
+  if (projectFormStatus.projectNameError) return
+  if (projectFormStatus.projectDescriptionError) return
+  if (projectFormStatus.startDateError) return
+  if (!Utils.stringIsEmptyOrBlank(projectFormStatus.endDate) &&
+      !Utils.isDateParseableToStandardAppPattern(projectFormStatus.endDate))
+      return
+  if (currentUserId == null) return
+  val projectToAdd =
+      Project(
+          projectId = createProjectViewModel.getNewProjectId(),
+          createdBy = currentUserId,
+          memberIds = listOf(currentUserId),
+          name = projectFormStatus.projectName,
+          description = projectFormStatus.projectDescription,
+          status = projectFormStatus.projectStatus)
+  createProjectViewModel.createProject(
+      projectToCreate = projectToAdd,
+      onSuccessCallback = { onProjectCreated() },
+      onFailureCallback = { failedToCreateProjectText.value = "Failed to create the project..." })
+}
+
 /**
  * A reusable text field component for project creation, supporting both regular text input and
  * optional date picker functionality.
@@ -542,7 +576,7 @@ private val dropDownMenuButtonBorderStroke = BorderStroke(width = 1.dp, color = 
  * - Properly handles expanding/collapsing the menu and dismissing it when clicking outside.
  */
 @Composable
-fun ProjectStateSelectionMenu(projectStatus: MutableState<ProjectStatus>) {
+private fun ProjectStateSelectionMenu(projectStatus: MutableState<ProjectStatus>) {
   Column(
       modifier =
           Modifier.fillMaxWidth()
@@ -576,7 +610,7 @@ fun ProjectStateSelectionMenu(projectStatus: MutableState<ProjectStatus>) {
             expanded = expanded,
             onDismissRequest = { expanded = false },
             properties = defaultPopupProperties) {
-              ProjectStatus.values().forEachIndexed { index, status ->
+              ProjectStatus.entries.forEach { status ->
                 DropdownMenuItem(
                     modifier =
                         Modifier.testTag(
@@ -612,7 +646,7 @@ private val checkBoxShape = RoundedCornerShape(3.dp)
  * - Styled with custom colors and padding consistent with the app's design system.
  */
 @Composable
-fun CheckboxOptionComponent(title: String, value: MutableState<Boolean>, testTag: String) {
+private fun CheckboxOptionComponent(title: String, value: MutableState<Boolean>, testTag: String) {
   Row(
       modifier =
           Modifier.padding(

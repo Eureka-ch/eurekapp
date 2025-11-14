@@ -6,7 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.audio.AudioRecordingViewModel
 import ch.eureka.eurekapp.model.audio.LocalAudioRecordingRepository
-import ch.eureka.eurekapp.model.audio.RECORDING_STATE
+import ch.eureka.eurekapp.model.audio.RecordingState
 import ch.eureka.eurekapp.ui.meeting.MeetingRepositoryMock
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
@@ -28,10 +28,10 @@ class AudioRecordingViewModelTest {
 
     viewModel.startRecording(context, "test_recording")
     Thread.sleep(2000)
-    assertTrue(viewModel.isRecording.value == RECORDING_STATE.RUNNING)
+    assertTrue(viewModel.isRecording.value == RecordingState.RUNNING)
     viewModel.startRecording(context, "test_recording")
     Thread.sleep(2000)
-    assertTrue(viewModel.isRecording.value == RECORDING_STATE.RUNNING)
+    assertTrue(viewModel.isRecording.value == RecordingState.RUNNING)
   }
 
   @Test
@@ -43,10 +43,10 @@ class AudioRecordingViewModelTest {
     viewModel.startRecording(context, "test_recording")
     viewModel.pauseRecording()
     Thread.sleep(2000)
-    assertTrue(viewModel.isRecording.value == RECORDING_STATE.PAUSED)
+    assertTrue(viewModel.isRecording.value == RecordingState.PAUSED)
     viewModel.pauseRecording()
     Thread.sleep(2000)
-    assertTrue(viewModel.isRecording.value == RECORDING_STATE.PAUSED)
+    assertTrue(viewModel.isRecording.value == RecordingState.PAUSED)
   }
 
   @Test
@@ -57,13 +57,13 @@ class AudioRecordingViewModelTest {
     viewModel.startRecording(context, "test_recording_5")
     viewModel.stopRecording()
     Thread.sleep(2000)
-    assertTrue(viewModel.isRecording.value == RECORDING_STATE.RUNNING)
+    assertTrue(viewModel.isRecording.value == RecordingState.RUNNING)
     viewModel.pauseRecording()
     Thread.sleep(2000)
-    assertTrue(viewModel.isRecording.value == RECORDING_STATE.PAUSED)
+    assertTrue(viewModel.isRecording.value == RecordingState.PAUSED)
     viewModel.stopRecording()
     Thread.sleep(2000)
-    assertTrue(viewModel.isRecording.value == RECORDING_STATE.STOPPED)
+    assertTrue(viewModel.isRecording.value == RecordingState.STOPPED)
   }
 
   @Test
@@ -74,13 +74,13 @@ class AudioRecordingViewModelTest {
     viewModel.startRecording(context, "test_recording")
     viewModel.resumeRecording()
     Thread.sleep(2000)
-    assertTrue(viewModel.isRecording.value == RECORDING_STATE.RUNNING)
+    assertTrue(viewModel.isRecording.value == RecordingState.RUNNING)
     viewModel.pauseRecording()
     Thread.sleep(2000)
-    assertTrue(viewModel.isRecording.value == RECORDING_STATE.PAUSED)
+    assertTrue(viewModel.isRecording.value == RecordingState.PAUSED)
     viewModel.resumeRecording()
     Thread.sleep(2000)
-    assertTrue(viewModel.isRecording.value == RECORDING_STATE.RUNNING)
+    assertTrue(viewModel.isRecording.value == RecordingState.RUNNING)
   }
 
   @Test
@@ -116,7 +116,9 @@ class AudioRecordingViewModelTest {
 
     viewModel.startRecording(context, "test_recording")
     viewModel.pauseRecording()
-    runBlocking { viewModel.saveRecordingToDatabase("", "", { runned = true }, {}) }
+    runBlocking {
+      viewModel.saveRecordingToDatabase("", "", { runned = true }, {}, onCompletion = {})
+    }
     Thread.sleep(2000)
     assertTrue(runned)
   }
@@ -134,7 +136,9 @@ class AudioRecordingViewModelTest {
 
     viewModel.startRecording(context, "test_recording")
     viewModel.pauseRecording()
-    runBlocking { viewModel.saveRecordingToDatabase("", "", {}, { runned = true }) }
+    runBlocking {
+      viewModel.saveRecordingToDatabase("", "", {}, { runned = true }, onCompletion = {})
+    }
     Thread.sleep(2000)
     assertTrue(runned)
   }

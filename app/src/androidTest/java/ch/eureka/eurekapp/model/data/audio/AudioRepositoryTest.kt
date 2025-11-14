@@ -6,7 +6,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.audio.LocalAudioRecordingRepository
-import ch.eureka.eurekapp.model.audio.RECORDING_STATE
+import ch.eureka.eurekapp.model.audio.RecordingState
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingRepositoryMock
@@ -41,7 +41,7 @@ class AudioRepositoryTest {
 
     val result = repo.createRecording(context, "mock_recording_2.mp4")
 
-    assertTrue(repo.getRecordingStateFlow().value == RECORDING_STATE.RUNNING)
+    assertTrue(repo.getRecordingStateFlow().value == RecordingState.RUNNING)
 
     repo.clearRecording()
     repo.deleteRecording()
@@ -56,13 +56,13 @@ class AudioRepositoryTest {
 
     val result = repo.createRecording(context, "mock_recording_2.mp4")
 
-    assertTrue(recordingState.value == RECORDING_STATE.RUNNING)
+    assertTrue(recordingState.value == RecordingState.RUNNING)
     Thread.sleep(1000)
     repo.pauseRecording()
-    assertTrue(recordingState.value == RECORDING_STATE.PAUSED)
+    assertTrue(recordingState.value == RecordingState.PAUSED)
     Thread.sleep(2000)
     repo.resumeRecording()
-    assertTrue(recordingState.value == RECORDING_STATE.RUNNING)
+    assertTrue(recordingState.value == RecordingState.RUNNING)
 
     repo.clearRecording()
     repo.deleteRecording()
@@ -77,7 +77,7 @@ class AudioRepositoryTest {
 
     repo.createRecording(context, "mock_recording_2.mp4")
 
-    assertTrue(recordingState.value == RECORDING_STATE.RUNNING)
+    assertTrue(recordingState.value == RecordingState.RUNNING)
 
     Thread.sleep(2000)
 
@@ -85,7 +85,7 @@ class AudioRepositoryTest {
     Thread.sleep(1000)
     repo.clearRecording()
 
-    assertTrue(recordingState.value == RECORDING_STATE.STOPPED)
+    assertTrue(recordingState.value == RecordingState.STOPPED)
 
     repo.deleteRecording()
   }

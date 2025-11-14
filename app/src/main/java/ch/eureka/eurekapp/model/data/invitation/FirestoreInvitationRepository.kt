@@ -66,19 +66,15 @@ class FirestoreInvitationRepository(private val firestore: FirebaseFirestore) :
 
         firestore
             .runTransaction { transaction ->
-              val snapshot = transaction.get(invitationRef)
+              val snapshot = transaction[invitationRef]
 
-              if (!snapshot.exists()) {
-                throw IllegalStateException("Invitation not found")
-              }
+              check(snapshot.exists()) { "Invitation not found" }
 
               val invitation =
                   snapshot.toObject(Invitation::class.java)
                       ?: throw IllegalStateException("Invitation not found")
 
-              if (invitation.isUsed) {
-                throw IllegalStateException("Invitation has already been used")
-              }
+              check(!(invitation.isUsed)) { "Invitation has already been used" }
 
               // mark as used -> update the object and write it back
               invitation.isUsed = true
@@ -86,7 +82,7 @@ class FirestoreInvitationRepository(private val firestore: FirebaseFirestore) :
               invitation.usedAt = Timestamp.now()
 
               // use set with the updated object to ensure all fields are properly written
-              transaction.set(invitationRef, invitation)
+              transaction[invitationRef] = invitation
             }
             .await()
       }

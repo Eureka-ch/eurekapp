@@ -50,4 +50,8 @@ class ProjectSelectionScreenViewModel(
       combine(usersFlow) { flow -> flow.filterNotNull().toList() }
     }
   }
+
+  fun getCurrentUser(): Flow<User?> {
+    return usersRepository.getCurrentUser()
+  }
 }
