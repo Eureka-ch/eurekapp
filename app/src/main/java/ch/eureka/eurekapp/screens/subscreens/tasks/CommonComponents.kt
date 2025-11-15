@@ -8,7 +8,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
@@ -30,10 +33,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.camera.PhotoViewer
+import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
+import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.utils.Formatters
 
 // Portions of this code were generated with the help of AI.
@@ -104,7 +110,12 @@ object CommonTaskTestTags {
   const val OFFLINE_MESSAGE = "offline_message"
 
   const val BACK_BUTTON = "back_button"
+
+  const val NOTE_INPUT_FIELD = "noteInputField"
+  const val SEND_BUTTON = "sendButton"
 }
+
+// Note: NoteInputField composable was removed. The input field is now inlined in SelfNotesScreen.
 
 @Composable
 fun TaskTitleField(
@@ -515,4 +526,56 @@ private fun DependencyPicker(
           color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
   }
+}
+
+/**
+ * Reusable input field for composing and sending messages.
+ *
+ * Displays a text field with a send button. The send button is disabled when the message is empty
+ * or when a message is currently being sent.
+ *
+ * @param message Current message text.
+ * @param onMessageChange Callback when the message text changes.
+ * @param onSend Callback when the send button is clicked or Enter is pressed.
+ * @param isSending Whether a message is currently being sent.
+ * @param placeholder Placeholder text for the input field.
+ * @param modifier Optional modifier.
+ */
+@Composable
+fun MessageInputField(
+    message: String,
+    onMessageChange: (String) -> Unit,
+    onSend: () -> Unit,
+    isSending: Boolean,
+    placeholder: String = "Write a message...",
+    modifier: Modifier = Modifier
+) {
+  Row(
+      modifier = modifier.fillMaxWidth().padding(Spacing.md),
+      verticalAlignment = Alignment.Bottom) {
+        OutlinedTextField(
+            value = message,
+            onValueChange = onMessageChange,
+            modifier = Modifier.weight(1f).testTag(CommonTaskTestTags.NOTE_INPUT_FIELD),
+            placeholder = { Text(placeholder) },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+            keyboardActions =
+                KeyboardActions(onSend = { if (message.isNotBlank() && !isSending) onSend() }),
+            maxLines = 4,
+            shape = MaterialTheme.shapes.medium,
+            colors = EurekaStyles.textFieldColors())
+
+        IconButton(
+            onClick = onSend,
+            enabled = message.isNotBlank() && !isSending,
+            modifier =
+                Modifier.padding(start = Spacing.sm).testTag(CommonTaskTestTags.SEND_BUTTON)) {
+              Icon(
+                  imageVector = Icons.AutoMirrored.Filled.Send,
+                  contentDescription = "Send",
+                  tint =
+                      if (message.isNotBlank() && !isSending) MaterialTheme.colorScheme.primary
+                      else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f))
+            }
+      }
 }

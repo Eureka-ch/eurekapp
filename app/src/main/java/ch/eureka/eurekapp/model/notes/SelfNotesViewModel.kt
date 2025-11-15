@@ -1,8 +1,6 @@
 package ch.eureka.eurekapp.model.notes
 
-import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
@@ -27,17 +25,15 @@ Co-author: GPT-5 Codex
  *
  * Manages the state of self-notes including loading notes from Firestore, composing new notes, and
  * sending them. Notes are stored per-user and displayed in a chat-like interface.
- *
  */
 class SelfNotesViewModel(
-    private val repository: SelfNotesRepository =
-        FirestoreRepositoriesProvider.selfNotesRepository,
+    private val repository: SelfNotesRepository = FirestoreRepositoriesProvider.selfNotesRepository,
     private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
   private val _uiState = MutableStateFlow(SelfNotesUiState())
-  val _uiState: StateFlow<SelfNotesUiState> = _uiState.asStateFlow()
+  val uiState: StateFlow<SelfNotesUiState> = _uiState.asStateFlow()
 
   init {
     loadNotes()
@@ -47,8 +43,7 @@ class SelfNotesViewModel(
   private fun loadNotes() {
     val userId = getCurrentUserId()
     if (userId == null) {
-      _uiState.value =
-          _uiState.value.copy(isLoading = false, errorMsg = "User not authenticated")
+      _uiState.value = _uiState.value.copy(isLoading = false, errorMsg = "User not authenticated")
       return
     }
 
@@ -74,12 +69,8 @@ class SelfNotesViewModel(
     _uiState.value = _uiState.value.copy(currentMessage = text)
   }
 
-  /**
-   * Sends the current message as a new note.
-   *
-   * @param context Android context for showing toast notifications.
-   */
-  fun sendNote(context: Context) {
+  /** Sends the current message as a new note. */
+  fun sendNote() {
     val currentMessage = _uiState.value.currentMessage.trim()
     if (currentMessage.isEmpty()) {
       return
@@ -87,7 +78,7 @@ class SelfNotesViewModel(
 
     val userId = getCurrentUserId()
     if (userId == null) {
-      Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
+      _uiState.value = _uiState.value.copy(errorMsg = "User not authenticated")
       return
     }
 
@@ -102,21 +93,18 @@ class SelfNotesViewModel(
               createdAt = Timestamp.now(),
               references = emptyList())
 
-      repository.createNote(userId, message).fold(
-          onSuccess = {
-            _uiState.value =
-                _uiState.value.copy(currentMessage = "", isSending = false, errorMsg = null)
-          },
-          onFailure = { error ->
-            Log.e("SelfNotesViewModel", "Error sending note", error)
-            _uiState.value =
-                _uiState.value.copy(
-                    isSending = false, errorMsg = "Failed to send note: ${error.message}")
-            // Show toast on main thread
-            viewModelScope.launch(Dispatchers.Main) {
-              Toast.makeText(context, "Failed to send note", Toast.LENGTH_SHORT).show()
-            }
-          })
+      repository
+          .createNote(userId, message)
+          .fold(
+              onSuccess = {
+                _uiState.value =
+                    _uiState.value.copy(currentMessage = "", isSending = false, errorMsg = null)
+              },
+              onFailure = { error ->
+                _uiState.value =
+                    _uiState.value.copy(
+                        isSending = false, errorMsg = "Failed to send note: ${error.message}")
+              })
     }
   }
 
