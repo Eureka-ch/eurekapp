@@ -213,8 +213,11 @@ class AutoAssignResultScreenTest {
           .isNotEmpty()
     }
 
-    // Click accept button
-    composeTestRule.onNodeWithText("Accept", substring = true).performClick()
+    // Click accept button - get all "Accept" buttons and select the first task's button (skip
+    // "Accept All")
+    val acceptButtons = composeTestRule.onAllNodesWithText("Accept", substring = true)
+    // Get the first task's "Accept" button (skip "Accept All" which is at index 0)
+    acceptButtons.get(1).performClick()
     composeTestRule.waitForIdle()
 
     // Button should change to "Accepted" or remain visible (safe against UI update timing)
