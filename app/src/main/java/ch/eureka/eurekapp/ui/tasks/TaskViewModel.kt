@@ -190,50 +190,6 @@ open class TaskScreenViewModel(
       connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
   open val uiState: StateFlow<TaskScreenUiState> =
-      combine(userTasks, teamTasks, _selectedFilter, _error, availableProjects) {
-              userTasks: List<Task>,
-              teamTasks: List<Task>,
-              filter: TaskScreenFilter,
-              error: String?,
-              projects: List<Project> ->
-            // Extract tasks based on filter
-            val allTasks = userTasks + teamTasks
-            val now = Timestamp.now()
-
-            val taskFlow =
-                when (filter) {
-                  is TaskScreenFilter.Mine -> flowOf(userTasks)
-                  is TaskScreenFilter.Team -> flowOf(teamTasks)
-                  is TaskScreenFilter.All -> flowOf(allTasks)
-                  is TaskScreenFilter.Today ->
-                      flowOf(
-                          allTasks.filter { task: Task ->
-                            val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
-                            daysUntilDue == 0L
-                          })
-                  is TaskScreenFilter.Tomorrow ->
-                      flowOf(
-                          allTasks.filter { task: Task ->
-                            val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
-                            daysUntilDue == 1L
-                          })
-                  is TaskScreenFilter.ThisWeek ->
-                      flowOf(
-                          allTasks.filter { task: Task ->
-                            val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
-                            daysUntilDue in 0..7
-                          })
-                  is TaskScreenFilter.Overdue ->
-                      flowOf(
-                          allTasks.filter { task: Task ->
-                            val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
-                            daysUntilDue < 0
-                          })
-                  is TaskScreenFilter.ByProject ->
-                      taskRepository.getTasksInProject(filter.projectId)
-                }
-            TaskFlowState(filter, taskFlow, error, projects)
-          }
       combine(
               combine(userTasks, teamTasks, _selectedFilter, _error, availableProjects) {
                   userTasks,
