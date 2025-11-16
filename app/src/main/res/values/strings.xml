@@ -5,6 +5,7 @@
 
     <!-- Meeting Navigation Screen -->
     <string name="meeting_location_title">Meeting Location</string>
+    <string name="meeting_location_navigate">Navigate</string>
     <string name="meeting_not_found">Meeting not found</string>
     <string name="loading_meeting_location">Loading meeting location…</string>
     <string name="navigate_back">Navigate back</string>

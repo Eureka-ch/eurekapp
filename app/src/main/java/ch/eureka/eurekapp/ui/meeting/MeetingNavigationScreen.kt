@@ -17,11 +17,19 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.DirectionsBike
+import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
+import androidx.compose.material.icons.filled.Directions
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.DirectionsTransit
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +39,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -46,6 +57,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+import androidx.core.net.toUri
 
 /**
  * Test tags for MeetingNavigationScreen composable.
@@ -62,6 +74,26 @@ object MeetingNavigationScreenTestTags {
 
 /** Default zoom level for the map when displaying meeting location. */
 private const val DEFAULT_MAP_ZOOM = 15f
+
+/**
+ * Transport modes for navigation with Google Maps parameters and estimated speeds.
+ *
+ * @property displayName Human-readable name
+ * @property googleMapsParam Google Maps URL parameter
+ * @property icon Material icon
+ * @property avgSpeedKmh Average speed in km/h for time estimation
+ */
+enum class TravelMode(
+    val displayName: String,
+    val googleMapsParam: String,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val avgSpeedKmh: Double
+) {
+  DRIVING("Drive", "driving", Icons.Default.DirectionsCar, 50.0),
+  TRANSIT("Transit", "transit", Icons.Default.DirectionsTransit, 30.0),
+  BICYCLING("Bike", "bicycling", Icons.AutoMirrored.Default.DirectionsBike, 15.0),
+  WALKING("Walk", "walking", Icons.AutoMirrored.Default.DirectionsWalk, 5.0)
+}
 
 /**
  * Main composable for the meeting location screen.
@@ -167,7 +199,9 @@ private fun MapContent(modifier: Modifier = Modifier, uiState: MeetingNavigation
 
     // Information Card
     InfoCard(
-        modifier = Modifier.fillMaxWidth().padding(16.dp), locationName = meeting.location.name)
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        locationName = meeting.location.name,
+        meetingLocation = meetingLocation)
   }
 }
 
@@ -199,24 +233,101 @@ private fun MapView(meetingLocation: LatLng, meetingName: String) {
  *
  * @param modifier Modifier to be applied to the card.
  * @param locationName The name of the meeting location.
+ * @param meetingLocation The coordinates of the meeting location.
  */
 @Composable
-private fun InfoCard(modifier: Modifier = Modifier, locationName: String) {
+private fun InfoCard(modifier: Modifier = Modifier, locationName: String, meetingLocation: LatLng) {
+  val context = androidx.compose.ui.platform.LocalContext.current
+  var selectedMode by remember { mutableStateOf(TravelMode.DRIVING) }
+  val distanceKm = 5.0 // Placeholder - in real app would calculate from user location
+
   Card(
       modifier = modifier.testTag(MeetingNavigationScreenTestTags.INFO_CARD),
       shape = RoundedCornerShape(16.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-          Icon(
-              imageVector = Icons.Default.Place,
-              contentDescription = "Location",
-              modifier = Modifier.size(24.dp),
-              tint = MaterialTheme.colorScheme.primary)
-          Spacer(modifier = Modifier.width(8.dp))
+        Column(modifier = Modifier.padding(16.dp)) {
+          // Location name
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Default.Place,
+                contentDescription = "Location",
+                modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.primary)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = locationName,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold)
+          }
+
+          Spacer(modifier = Modifier.height(16.dp))
+
+          // Transport mode selection
           Text(
-              text = locationName,
-              style = MaterialTheme.typography.titleMedium,
-              fontWeight = FontWeight.SemiBold)
+              text = "Select transport mode:",
+              style = MaterialTheme.typography.bodyMedium,
+              color = MaterialTheme.colorScheme.onSurfaceVariant)
+          Spacer(modifier = Modifier.height(8.dp))
+
+          Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TravelMode.values().forEach { mode ->
+                  val estimatedMinutes = ((distanceKm / mode.avgSpeedKmh) * 60).toInt()
+                  FilterChip(
+                      selected = selectedMode == mode,
+                      onClick = { selectedMode = mode },
+                      label = {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                          Text(text = mode.displayName, style = MaterialTheme.typography.labelSmall)
+                          Text(
+                              text = "${estimatedMinutes}min",
+                              style = MaterialTheme.typography.labelSmall,
+                              color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                      },
+                      leadingIcon = {
+                        Icon(
+                            imageVector = mode.icon,
+                            contentDescription = mode.displayName,
+                            modifier = Modifier.size(18.dp))
+                      },
+                      colors =
+                          FilterChipDefaults.filterChipColors(
+                              selectedContainerColor = MaterialTheme.colorScheme.primaryContainer))
+                }
+              }
+
+          Spacer(modifier = Modifier.height(12.dp))
+
+          // Navigate button
+          Button(
+              onClick = {
+                val gmmIntentUri =
+                    android.net.Uri.parse(
+                        "https://www.google.com/maps/dir/?api=1&destination=${meetingLocation.latitude},${meetingLocation.longitude}&travelmode=${selectedMode.googleMapsParam}")
+                val mapIntent =
+                    android.content.Intent(android.content.Intent.ACTION_VIEW, gmmIntentUri)
+                mapIntent.setPackage("com.google.android.apps.maps")
+                try {
+                  context.startActivity(mapIntent)
+                } catch (e: android.content.ActivityNotFoundException) {
+                  // Google Maps not installed, try generic geo intent
+                  val geoUri =
+                      "geo:0,0?q=${meetingLocation.latitude},${meetingLocation.longitude}($locationName)".toUri()
+                  val geoIntent = android.content.Intent(android.content.Intent.ACTION_VIEW, geoUri)
+                  context.startActivity(geoIntent)
+                }
+              },
+              modifier = Modifier.fillMaxWidth()) {
+                Icon(
+                    imageVector = Icons.Default.Directions,
+                    contentDescription = stringResource(R.string.meeting_location_navigate))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text =
+                        "${stringResource(R.string.meeting_location_navigate)} (${selectedMode.displayName})")
+              }
         }
       }
 }
