@@ -40,9 +40,9 @@ import com.google.firebase.auth.auth
 import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
 
-/* 
+/*
 Note :This file was partially written by ChatGPT (GPT-5) and Codex
-Co-author : GPT-5 
+Co-author : GPT-5
 */
 
 sealed interface Route {

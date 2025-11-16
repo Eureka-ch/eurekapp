@@ -6,13 +6,11 @@ import ch.eureka.eurekapp.model.data.chat.Message
 Co-author: GPT-5 Codex
 */
 
-
 /**
  * UI state for the Self Notes screen.
  *
  * Represents the current state of the self-notes interface including the list of notes, loading
  * state, errors, and the current message being composed.
- *
  *
  * @property notes List of notes (messages) ordered by creation time.
  * @property isLoading Whether notes are currently being loaded from Firestore.
