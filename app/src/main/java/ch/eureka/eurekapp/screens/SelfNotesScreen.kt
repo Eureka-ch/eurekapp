@@ -56,7 +56,7 @@ Co-author: GPT-5 Codex
  * @param modifier Optional modifier.
  */
 @Composable
-fun SelfNotesScreen(viewModel: SelfNotesViewModel = viewModel(), modifier: Modifier = Modifier) {
+fun SelfNotesScreen(modifier: Modifier = Modifier, viewModel: SelfNotesViewModel = viewModel()) {
   val uiState by viewModel.uiState.collectAsState()
   val snackbarHostState = remember { SnackbarHostState() }
   val listState = rememberLazyListState()

@@ -547,8 +547,8 @@ fun MessageInputField(
     onMessageChange: (String) -> Unit,
     onSend: () -> Unit,
     isSending: Boolean,
-    placeholder: String = "Write a message...",
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    placeholder: String = "Write a message..."
 ) {
   Row(
       modifier = modifier.fillMaxWidth().padding(Spacing.md),
