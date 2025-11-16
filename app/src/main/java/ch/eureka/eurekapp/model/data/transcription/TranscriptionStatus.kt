@@ -1,4 +1,5 @@
-package ch.eureka.eurekapp.model.data.transcription
+
+ackage ch.eureka.eurekapp.model.data.transcription
 
 /** Status of an audio transcription. */
 enum class TranscriptionStatus {

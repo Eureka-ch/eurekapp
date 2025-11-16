@@ -288,16 +288,8 @@ class AutoAssignResultScreenTest {
     }
     composeTestRule.onNodeWithText("Go Back", substring = true).performClick()
     composeTestRule.waitForIdle()
-    composeTestRule.waitUntil(timeoutMillis = 2000) {
-      composeTestRule
-          .onAllNodesWithText("No assignments to review", substring = true)
-          .fetchSemanticsNodes()
-          .isEmpty() ||
-          composeTestRule
-              .onAllNodesWithText("Tasks Screen", substring = true)
-              .fetchSemanticsNodes()
-              .isNotEmpty()
-    }
+    // Verify navigation back to TasksScreen (like other similar tests)
+    composeTestRule.onNodeWithText("Tasks Screen", substring = true).assertIsDisplayed()
   }
 
   @Test
@@ -313,16 +305,8 @@ class AutoAssignResultScreenTest {
     }
     composeTestRule.onNodeWithText("Go Back", substring = true).performClick()
     composeTestRule.waitForIdle()
-    composeTestRule.waitUntil(timeoutMillis = 2000) {
-      composeTestRule
-          .onAllNodesWithText("Error", substring = true)
-          .fetchSemanticsNodes()
-          .isEmpty() ||
-          composeTestRule
-              .onAllNodesWithText("Tasks Screen", substring = true)
-              .fetchSemanticsNodes()
-              .isNotEmpty()
-    }
+    // Verify navigation back to TasksScreen (like other similar tests)
+    composeTestRule.onNodeWithText("Tasks Screen", substring = true).assertIsDisplayed()
   }
 
   @Test
@@ -355,26 +339,15 @@ class AutoAssignResultScreenTest {
     }
     composeTestRule.onNodeWithText("Apply", substring = true).performClick()
     composeTestRule.waitForIdle()
+    // Wait for navigation after delay (LaunchedEffect has 1500ms delay)
     composeTestRule.waitUntil(timeoutMillis = 5000) {
       composeTestRule
-          .onAllNodesWithText("applied successfully", substring = true, ignoreCase = true)
+          .onAllNodesWithText("Tasks Screen", substring = true)
           .fetchSemanticsNodes()
-          .isNotEmpty() ||
-          composeTestRule
-              .onAllNodesWithText("Tasks Screen", substring = true)
-              .fetchSemanticsNodes()
-              .isNotEmpty()
+          .isNotEmpty()
     }
-    composeTestRule.waitUntil(timeoutMillis = 3000) {
-      composeTestRule
-          .onAllNodesWithText("Review Assignments", substring = true)
-          .fetchSemanticsNodes()
-          .isEmpty() ||
-          composeTestRule
-              .onAllNodesWithText("Tasks Screen", substring = true)
-              .fetchSemanticsNodes()
-              .isNotEmpty()
-    }
+    // Verify navigation back to TasksScreen
+    composeTestRule.onNodeWithText("Tasks Screen", substring = true).assertIsDisplayed()
   }
 
   @Test
