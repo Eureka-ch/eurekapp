@@ -11,20 +11,13 @@ import ch.eureka.eurekapp.model.data.user.FirestoreUserRepository
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.model.tasks.TaskAutoAssignmentService
-import ch.eureka.eurekapp.screens.TaskAndUsers
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 // portions of this code and documentation were generated with the help of AI.
@@ -80,9 +73,7 @@ class AutoAssignResultViewModel(
     loadAutoAssignResults()
   }
 
-  /**
-   * Loads auto-assignment results by running the algorithm and fetching user data.
-   */
+  /** Loads auto-assignment results by running the algorithm and fetching user data. */
   private fun loadAutoAssignResults() {
     viewModelScope.launch {
       _uiState.value = _uiState.value.copy(isLoading = true, error = null)
@@ -126,8 +117,7 @@ class AutoAssignResultViewModel(
         }
 
         // Run auto-assignment algorithm
-        val assignmentResult =
-            TaskAutoAssignmentService.assignTasks(allTasks, uniqueMembers)
+        val assignmentResult = TaskAutoAssignmentService.assignTasks(allTasks, uniqueMembers)
 
         if (assignmentResult.assignments.isEmpty()) {
           _uiState.value =
@@ -159,9 +149,7 @@ class AutoAssignResultViewModel(
             if (task != null && user != null) {
               proposedAssignments.add(
                   ProposedAssignment(
-                      task = task,
-                      proposedAssignee = user,
-                      projectId = taskProject.projectId))
+                      task = task, proposedAssignee = user, projectId = taskProject.projectId))
             }
           }
         }
@@ -172,7 +160,8 @@ class AutoAssignResultViewModel(
                 isLoading = false, proposedAssignments = proposedAssignments, error = null)
       } catch (e: Exception) {
         _uiState.value =
-            _uiState.value.copy(isLoading = false, error = "Failed to load assignments: ${e.message}")
+            _uiState.value.copy(
+                isLoading = false, error = "Failed to load assignments: ${e.message}")
       }
     }
   }
@@ -213,9 +202,7 @@ class AutoAssignResultViewModel(
     _uiState.value = _uiState.value.copy(proposedAssignments = updatedAssignments)
   }
 
-  /**
-   * Applies all accepted assignments.
-   */
+  /** Applies all accepted assignments. */
   fun applyAcceptedAssignments() {
     viewModelScope.launch {
       _uiState.value = _uiState.value.copy(isApplying = true, error = null)
@@ -226,8 +213,7 @@ class AutoAssignResultViewModel(
 
         if (acceptedAssignments.isEmpty()) {
           _uiState.value =
-              _uiState.value.copy(
-                  isApplying = false, error = "No assignments selected to apply")
+              _uiState.value.copy(isApplying = false, error = "No assignments selected to apply")
           return@launch
         }
 
@@ -263,9 +249,7 @@ class AutoAssignResultViewModel(
     }
   }
 
-  /**
-   * Accepts all proposed assignments.
-   */
+  /** Accepts all proposed assignments. */
   fun acceptAll() {
     val updatedAssignments =
         _proposedAssignments.value.map { it.copy(isAccepted = true, isRejected = false) }
@@ -273,9 +257,7 @@ class AutoAssignResultViewModel(
     _uiState.value = _uiState.value.copy(proposedAssignments = updatedAssignments)
   }
 
-  /**
-   * Rejects all proposed assignments.
-   */
+  /** Rejects all proposed assignments. */
   fun rejectAll() {
     val updatedAssignments =
         _proposedAssignments.value.map { it.copy(isAccepted = false, isRejected = true) }
@@ -283,4 +265,3 @@ class AutoAssignResultViewModel(
     _uiState.value = _uiState.value.copy(proposedAssignments = updatedAssignments)
   }
 }
-

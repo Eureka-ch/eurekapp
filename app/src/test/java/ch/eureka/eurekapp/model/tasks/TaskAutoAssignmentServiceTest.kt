@@ -4,11 +4,11 @@ import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.ProjectRole
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
-import com.google.firebase.Timestamp
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+
 // portions of this code and documentation were generated with the help of AI.
 /**
  * Unit tests for TaskAutoAssignmentService.
@@ -143,7 +143,8 @@ class TaskAutoAssignmentServiceTest {
     val tasks =
         listOf(
             Task(taskID = "todo", title = "TODO Task", status = TaskStatus.TODO),
-            Task(taskID = "inProgress", title = "In Progress Task", status = TaskStatus.IN_PROGRESS))
+            Task(
+                taskID = "inProgress", title = "In Progress Task", status = TaskStatus.IN_PROGRESS))
 
     val result = TaskAutoAssignmentService.assignTasks(tasks, members)
 
@@ -180,8 +181,7 @@ class TaskAutoAssignmentServiceTest {
     assertEquals(1, result.assignments.size)
     // Should assign to one of them (algorithm picks first with min workload)
     assertTrue(
-        result.assignments["unassigned"] == "user1" ||
-            result.assignments["unassigned"] == "user2")
+        result.assignments["unassigned"] == "user1" || result.assignments["unassigned"] == "user2")
   }
 
   @Test
@@ -328,4 +328,3 @@ class TaskAutoAssignmentServiceTest {
             result.assignments["unassigned2"] == "user2")
   }
 }
-

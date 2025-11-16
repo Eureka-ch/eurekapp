@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
+
 // portions of this code and documentation were generated with the help of AI.
 
 // Portions of this code were generated with the help of Grok.

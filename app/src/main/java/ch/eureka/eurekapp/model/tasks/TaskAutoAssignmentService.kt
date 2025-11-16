@@ -21,8 +21,7 @@ object TaskAutoAssignmentService {
    * Result of the auto-assignment operation.
    *
    * @property assignments Map of task IDs to assigned user IDs
-   * @property skippedTasks List of task IDs that couldn't be assigned (e.g., no available
-   *   members)
+   * @property skippedTasks List of task IDs that couldn't be assigned (e.g., no available members)
    */
   data class AssignmentResult(
       val assignments: Map<String, String>, // taskId -> userId
@@ -34,19 +33,16 @@ object TaskAutoAssignmentService {
    *
    * Algorithm:
    * 1. Calculate workload for each member (count of TODO/IN_PROGRESS tasks)
-   * 2. For each unassigned task:
-   *    a. If task has dependencies, try to assign to the same member as the parent task
-   *    b. If no dependency preference or parent not assigned, assign to least loaded member
+   * 2. For each unassigned task: a. If task has dependencies, try to assign to the same member as
+   *    the parent task b. If no dependency preference or parent not assigned, assign to least
+   *    loaded member
    * 3. Skip tasks that cannot be assigned (e.g., no members available)
    *
    * @param tasks All tasks in the projects (assigned and unassigned)
    * @param members List of project members available for assignment
    * @return AssignmentResult containing the assignments and any skipped tasks
    */
-  fun assignTasks(
-      tasks: List<Task>,
-      members: List<Member>
-  ): AssignmentResult {
+  fun assignTasks(tasks: List<Task>, members: List<Member>): AssignmentResult {
     if (members.isEmpty()) {
       return AssignmentResult(emptyMap(), tasks.map { it.taskID })
     }
@@ -71,11 +67,9 @@ object TaskAutoAssignmentService {
     // Build dependency graph: taskId -> list of dependent task IDs
     val dependencyGraph = buildDependencyGraph(tasks)
 
-    // Sort tasks by priority: tasks WITHOUT dependencies first (so parents are assigned before dependents)
-    val sortedTasks =
-        unassignedTasks.sortedBy { task ->
-          task.dependingOnTasks.isNotEmpty()
-        }
+    // Sort tasks by priority: tasks WITHOUT dependencies first (so parents are assigned before
+    // dependents)
+    val sortedTasks = unassignedTasks.sortedBy { task -> task.dependingOnTasks.isNotEmpty() }
 
     val skippedTasks = mutableListOf<String>()
 
@@ -169,7 +163,7 @@ object TaskAutoAssignmentService {
     // Strategy 1: If task has dependencies, try to assign to same member as parent
     if (task.dependingOnTasks.isNotEmpty()) {
       val parentTaskId = task.dependingOnTasks.first()
-      
+
       // Check if parent was already assigned in this run
       val parentAssigneeFromMap = taskToAssigneeMap[parentTaskId]
       if (parentAssigneeFromMap != null) {
@@ -178,7 +172,7 @@ object TaskAutoAssignmentService {
           return parentAssigneeFromMap
         }
       }
-      
+
       // Fallback: check if parent was already assigned before (in original task data)
       val parentTask = allTasks.find { it.taskID == parentTaskId }
       if (parentTask != null && parentTask.assignedUserIds.isNotEmpty()) {
@@ -206,4 +200,3 @@ object TaskAutoAssignmentService {
     return availableMembers.firstOrNull { (workloadMap[it] ?: 0) == minWorkload }
   }
 }
-

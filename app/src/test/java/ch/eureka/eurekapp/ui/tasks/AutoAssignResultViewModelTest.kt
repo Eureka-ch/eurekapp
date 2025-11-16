@@ -5,7 +5,6 @@ import ch.eureka.eurekapp.model.data.project.ProjectRole
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.user.User
-import com.google.firebase.Timestamp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -23,6 +22,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+
 // portions of this code and documentation were generated with the help of AI.
 @OptIn(ExperimentalCoroutinesApi::class)
 class AutoAssignResultViewModelTest {
@@ -37,8 +37,9 @@ class AutoAssignResultViewModelTest {
   private val testUser1 = User(uid = "user1", displayName = "Alice", email = "alice@test.com")
   private val testUser2 = User(uid = "user2", displayName = "Bob", email = "bob@test.com")
 
-  private val testProject1 = ch.eureka.eurekapp.model.data.project.Project(
-      projectId = "proj1", name = "Project 1", memberIds = listOf("user1", "user2"))
+  private val testProject1 =
+      ch.eureka.eurekapp.model.data.project.Project(
+          projectId = "proj1", name = "Project 1", memberIds = listOf("user1", "user2"))
 
   @Before
   fun setUp() {
@@ -59,7 +60,8 @@ class AutoAssignResultViewModelTest {
   @Test
   fun viewModel_initialState_isLoading() = runTest {
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
-    viewModel = AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+    viewModel =
+        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
     advanceUntilIdle()
 
     val uiState = viewModel.uiState.first()
@@ -69,7 +71,8 @@ class AutoAssignResultViewModelTest {
   @Test
   fun viewModel_withNoProjects_showsError() = runTest {
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
-    viewModel = AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+    viewModel =
+        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
     advanceUntilIdle()
 
     val uiState = viewModel.uiState.first()
@@ -83,7 +86,8 @@ class AutoAssignResultViewModelTest {
     mockProjectRepository.setCurrentUserProjects(flowOf(listOf(testProject1)))
     mockProjectRepository.setMembers("proj1", flowOf(emptyList()))
     mockTaskRepository.setProjectTasks("proj1", flowOf(emptyList()))
-    viewModel = AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+    viewModel =
+        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
     advanceUntilIdle()
 
     val uiState = viewModel.uiState.first()
@@ -103,7 +107,8 @@ class AutoAssignResultViewModelTest {
     mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(task1, task2)))
     mockUserRepository.setUser("user1", flowOf(testUser1))
 
-    viewModel = AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+    viewModel =
+        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
     advanceUntilIdle()
 
     val uiState = viewModel.uiState.first()
@@ -124,7 +129,8 @@ class AutoAssignResultViewModelTest {
     mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(task1)))
     mockUserRepository.setUser("user1", flowOf(testUser1))
 
-    viewModel = AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+    viewModel =
+        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
     advanceUntilIdle()
 
     val initialState = viewModel.uiState.first()
@@ -149,7 +155,8 @@ class AutoAssignResultViewModelTest {
     mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(task1)))
     mockUserRepository.setUser("user1", flowOf(testUser1))
 
-    viewModel = AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+    viewModel =
+        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
     advanceUntilIdle()
 
     val initialState = viewModel.uiState.first()
@@ -175,7 +182,8 @@ class AutoAssignResultViewModelTest {
     mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(task1, task2)))
     mockUserRepository.setUser("user1", flowOf(testUser1))
 
-    viewModel = AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+    viewModel =
+        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
     advanceUntilIdle()
 
     viewModel.acceptAll()
@@ -198,7 +206,8 @@ class AutoAssignResultViewModelTest {
     mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(task1, task2)))
     mockUserRepository.setUser("user1", flowOf(testUser1))
 
-    viewModel = AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+    viewModel =
+        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
     advanceUntilIdle()
 
     viewModel.rejectAll()
@@ -221,7 +230,8 @@ class AutoAssignResultViewModelTest {
     mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(task1, task2)))
     mockUserRepository.setUser("user1", flowOf(testUser1))
 
-    viewModel = AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+    viewModel =
+        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
     advanceUntilIdle()
 
     // Accept only first assignment
@@ -251,7 +261,8 @@ class AutoAssignResultViewModelTest {
     mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(task1)))
     mockUserRepository.setUser("user1", flowOf(testUser1))
 
-    viewModel = AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+    viewModel =
+        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
     advanceUntilIdle()
 
     // Reject the assignment
@@ -270,4 +281,3 @@ class AutoAssignResultViewModelTest {
     assertTrue(finalState.error?.contains("No assignments selected") == true)
   }
 }
-

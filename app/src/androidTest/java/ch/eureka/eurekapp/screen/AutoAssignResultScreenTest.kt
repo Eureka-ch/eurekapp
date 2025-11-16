@@ -2,7 +2,6 @@ package ch.eureka.eurekapp.screen
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
@@ -24,12 +23,12 @@ import ch.eureka.eurekapp.ui.tasks.AutoAssignResultViewModel
 import ch.eureka.eurekapp.ui.tasks.MockProjectRepository
 import ch.eureka.eurekapp.ui.tasks.MockTaskRepository
 import ch.eureka.eurekapp.ui.tasks.MockUserRepository
-import com.google.firebase.Timestamp
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+
 // portions of this code and documentation were generated with the help of AI.
 /**
  * Android instrumentation tests for AutoAssignResultScreen.
@@ -53,7 +52,8 @@ class AutoAssignResultScreenTest {
   private val testUser1 = User(uid = "user1", displayName = "Alice", email = "alice@test.com")
   private val testUser2 = User(uid = "user2", displayName = "Bob", email = "bob@test.com")
 
-  private val testProject1 = Project(projectId = "proj1", name = "Project 1", memberIds = listOf("user1", "user2"))
+  private val testProject1 =
+      Project(projectId = "proj1", name = "Project 1", memberIds = listOf("user1", "user2"))
 
   @Before
   fun setUp() {
@@ -105,25 +105,35 @@ class AutoAssignResultScreenTest {
     composeTestRule.waitForIdle()
     // Wait for error message to appear (safe against timing)
     composeTestRule.waitUntil(timeoutMillis = 5000) {
-      composeTestRule.onAllNodesWithText("No projects", substring = true).fetchSemanticsNodes()
+      composeTestRule
+          .onAllNodesWithText("No projects", substring = true)
+          .fetchSemanticsNodes()
           .isNotEmpty() ||
-          composeTestRule.onAllNodesWithText("Error", substring = true).fetchSemanticsNodes()
+          composeTestRule
+              .onAllNodesWithText("Error", substring = true)
+              .fetchSemanticsNodes()
               .isNotEmpty()
     }
     // Should show error message (safe - either message is acceptable)
     val hasNoProjects =
-        composeTestRule.onAllNodesWithText("No projects", substring = true).fetchSemanticsNodes()
+        composeTestRule
+            .onAllNodesWithText("No projects", substring = true)
+            .fetchSemanticsNodes()
             .isNotEmpty()
     val hasError =
-        composeTestRule.onAllNodesWithText("Error", substring = true).fetchSemanticsNodes()
+        composeTestRule
+            .onAllNodesWithText("Error", substring = true)
+            .fetchSemanticsNodes()
             .isNotEmpty()
     assert(hasNoProjects || hasError)
   }
 
   @Test
   fun autoAssignResultScreen_withProposedAssignments_displaysTaskCards() {
-    val task1 = Task(taskID = "task1", title = "Task 1", status = TaskStatus.TODO, projectId = "proj1")
-    val task2 = Task(taskID = "task2", title = "Task 2", status = TaskStatus.TODO, projectId = "proj1")
+    val task1 =
+        Task(taskID = "task1", title = "Task 1", status = TaskStatus.TODO, projectId = "proj1")
+    val task2 =
+        Task(taskID = "task2", title = "Task 2", status = TaskStatus.TODO, projectId = "proj1")
 
     mockProjectRepository.setCurrentUserProjects(flowOf(listOf(testProject1)))
     mockProjectRepository.setMembers(
@@ -147,27 +157,34 @@ class AutoAssignResultScreenTest {
     composeTestRule.waitForIdle()
     // Wait for content to appear (safe against timing)
     composeTestRule.waitUntil(timeoutMillis = 5000) {
-      composeTestRule.onAllNodesWithText("Review Assignments", substring = true)
+      composeTestRule
+          .onAllNodesWithText("Review Assignments", substring = true)
+          .fetchSemanticsNodes()
+          .isNotEmpty() ||
+          composeTestRule
+              .onAllNodesWithText("Task 1", substring = true)
               .fetchSemanticsNodes()
-              .isNotEmpty() ||
-          composeTestRule.onAllNodesWithText("Task 1", substring = true).fetchSemanticsNodes()
               .isNotEmpty()
     }
 
     // Should display task cards or review section (safe - either is acceptable)
     val hasReview =
-        composeTestRule.onAllNodesWithText("Review Assignments", substring = true)
+        composeTestRule
+            .onAllNodesWithText("Review Assignments", substring = true)
             .fetchSemanticsNodes()
             .isNotEmpty()
     val hasTask =
-        composeTestRule.onAllNodesWithText("Task 1", substring = true).fetchSemanticsNodes()
+        composeTestRule
+            .onAllNodesWithText("Task 1", substring = true)
+            .fetchSemanticsNodes()
             .isNotEmpty()
     assert(hasReview || hasTask)
   }
 
   @Test
   fun autoAssignResultScreen_acceptAssignment_updatesButtonState() {
-    val task1 = Task(taskID = "task1", title = "Task 1", status = TaskStatus.TODO, projectId = "proj1")
+    val task1 =
+        Task(taskID = "task1", title = "Task 1", status = TaskStatus.TODO, projectId = "proj1")
 
     mockProjectRepository.setCurrentUserProjects(flowOf(listOf(testProject1)))
     mockProjectRepository.setMembers(
@@ -191,7 +208,9 @@ class AutoAssignResultScreenTest {
     composeTestRule.waitForIdle()
     // Wait for accept button to appear (safe against timing)
     composeTestRule.waitUntil(timeoutMillis = 5000) {
-      composeTestRule.onAllNodesWithText("Accept", substring = true).fetchSemanticsNodes()
+      composeTestRule
+          .onAllNodesWithText("Accept", substring = true)
+          .fetchSemanticsNodes()
           .isNotEmpty()
     }
 
@@ -201,17 +220,23 @@ class AutoAssignResultScreenTest {
 
     // Button should change to "Accepted" or remain visible (safe against UI update timing)
     composeTestRule.waitUntil(timeoutMillis = 2000) {
-      composeTestRule.onAllNodesWithText("Accepted", substring = true).fetchSemanticsNodes()
+      composeTestRule
+          .onAllNodesWithText("Accepted", substring = true)
+          .fetchSemanticsNodes()
           .isNotEmpty() ||
-          composeTestRule.onAllNodesWithText("Accept", substring = true).fetchSemanticsNodes()
+          composeTestRule
+              .onAllNodesWithText("Accept", substring = true)
+              .fetchSemanticsNodes()
               .isNotEmpty()
     }
   }
 
   @Test
   fun autoAssignResultScreen_applyAcceptedAssignments_appliesOnlyAccepted() {
-    val task1 = Task(taskID = "task1", title = "Task 1", status = TaskStatus.TODO, projectId = "proj1")
-    val task2 = Task(taskID = "task2", title = "Task 2", status = TaskStatus.TODO, projectId = "proj1")
+    val task1 =
+        Task(taskID = "task1", title = "Task 1", status = TaskStatus.TODO, projectId = "proj1")
+    val task2 =
+        Task(taskID = "task2", title = "Task 2", status = TaskStatus.TODO, projectId = "proj1")
 
     mockProjectRepository.setCurrentUserProjects(flowOf(listOf(testProject1)))
     mockProjectRepository.setMembers(
@@ -235,7 +260,9 @@ class AutoAssignResultScreenTest {
     composeTestRule.waitForIdle()
     // Wait for accept button to appear (safe against timing)
     composeTestRule.waitUntil(timeoutMillis = 5000) {
-      composeTestRule.onAllNodesWithText("Accept", substring = true).fetchSemanticsNodes()
+      composeTestRule
+          .onAllNodesWithText("Accept", substring = true)
+          .fetchSemanticsNodes()
           .isNotEmpty()
     }
 
@@ -245,7 +272,9 @@ class AutoAssignResultScreenTest {
 
     // Click apply button (wait for it to be enabled)
     composeTestRule.waitUntil(timeoutMillis = 3000) {
-      composeTestRule.onAllNodesWithText("Apply", substring = true).fetchSemanticsNodes()
+      composeTestRule
+          .onAllNodesWithText("Apply", substring = true)
+          .fetchSemanticsNodes()
           .isNotEmpty()
     }
     composeTestRule.onNodeWithText("Apply", substring = true).performClick()
@@ -253,10 +282,12 @@ class AutoAssignResultScreenTest {
 
     // Should show success message or navigate back (safe against timing)
     composeTestRule.waitUntil(timeoutMillis = 3000) {
-      composeTestRule.onAllNodesWithText("applied", substring = true, ignoreCase = true)
-              .fetchSemanticsNodes()
-              .isNotEmpty() ||
-          composeTestRule.onAllNodesWithText("successfully", substring = true, ignoreCase = true)
+      composeTestRule
+          .onAllNodesWithText("applied", substring = true, ignoreCase = true)
+          .fetchSemanticsNodes()
+          .isNotEmpty() ||
+          composeTestRule
+              .onAllNodesWithText("successfully", substring = true, ignoreCase = true)
               .fetchSemanticsNodes()
               .isNotEmpty()
     }
@@ -265,4 +296,3 @@ class AutoAssignResultScreenTest {
     assert(mockTaskRepository.assignUserCalls.size >= 1)
   }
 }
-
