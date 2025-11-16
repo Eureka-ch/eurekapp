@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -171,11 +172,11 @@ open class TaskScreenViewModel(
 
   open val uiState: StateFlow<TaskScreenUiState> =
       combine(userTasks, teamTasks, _selectedFilter, _error, availableProjects) {
-              userTasks,
-              teamTasks,
-              filter,
-              error,
-              projects ->
+              userTasks: List<Task>,
+              teamTasks: List<Task>,
+              filter: TaskScreenFilter,
+              error: String?,
+              projects: List<Project> ->
             // Extract tasks based on filter
             val allTasks = userTasks + teamTasks
             val now = Timestamp.now()
@@ -187,25 +188,25 @@ open class TaskScreenViewModel(
                   is TaskScreenFilter.All -> flowOf(allTasks)
                   is TaskScreenFilter.Today ->
                       flowOf(
-                          allTasks.filter { task ->
+                          allTasks.filter { task: Task ->
                             val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
                             daysUntilDue == 0L
                           })
                   is TaskScreenFilter.Tomorrow ->
                       flowOf(
-                          allTasks.filter { task ->
+                          allTasks.filter { task: Task ->
                             val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
                             daysUntilDue == 1L
                           })
                   is TaskScreenFilter.ThisWeek ->
                       flowOf(
-                          allTasks.filter { task ->
+                          allTasks.filter { task: Task ->
                             val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
                             daysUntilDue in 0..7
                           })
                   is TaskScreenFilter.Overdue ->
                       flowOf(
-                          allTasks.filter { task ->
+                          allTasks.filter { task: Task ->
                             val daysUntilDue = getDaysUntilDue(task, now) ?: return@filter false
                             daysUntilDue < 0
                           })

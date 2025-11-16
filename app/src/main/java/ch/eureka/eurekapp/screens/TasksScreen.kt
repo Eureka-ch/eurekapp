@@ -37,7 +37,7 @@ import ch.eureka.eurekapp.ui.tasks.TaskScreenViewModel
 import ch.eureka.eurekapp.ui.tasks.components.TaskActionButtons
 import ch.eureka.eurekapp.ui.tasks.components.TaskSectionHeader
 import com.google.firebase.Timestamp
-
+// portions of this code and documentation were generated with the help of AI.
 /** Test tags used by UI tests. */
 object TasksScreenTestTags {
   const val TASKS_SCREEN_CONTENT = "tasksScreenContent"

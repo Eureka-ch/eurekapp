@@ -14,7 +14,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
-
+// portions of this code and documentation were generated with the help of AI.
 /** Action buttons for the Task screen "+ New Task" and "Auto-assign" buttons */
 @Composable
 fun TaskActionButtons(
@@ -42,7 +42,7 @@ fun TaskActionButtons(
         // "Auto-assign" button (filled)
         Button(
             onClick = onAutoAssignClick,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).testTag(TasksScreenTestTags.AUTO_ASSIGN_BUTTON),
             colors =
                 ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
