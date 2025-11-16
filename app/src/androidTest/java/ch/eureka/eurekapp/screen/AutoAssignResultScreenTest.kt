@@ -265,8 +265,12 @@ class AutoAssignResultScreenTest {
           .isNotEmpty()
     }
 
-    // Accept first task only
-    composeTestRule.onNodeWithText("Accept", substring = true).performClick()
+    // Accept first task only - get all "Accept" buttons
+    // The first one is "Accept All", so we get the second one (index 1) which is the first task's
+    // "Accept" button
+    val acceptButtons = composeTestRule.onAllNodesWithText("Accept", substring = true)
+    // Get the first task's "Accept" button (skip "Accept All" which is at index 0)
+    acceptButtons.get(1).performClick()
     composeTestRule.waitForIdle()
 
     // Click apply button (wait for it to be enabled)
