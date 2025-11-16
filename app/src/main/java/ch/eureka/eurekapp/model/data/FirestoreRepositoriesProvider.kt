@@ -8,11 +8,15 @@ import ch.eureka.eurekapp.model.data.meeting.FirestoreMeetingRepository
 import ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository
 import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
 import ch.eureka.eurekapp.model.data.template.FirestoreTaskTemplateRepository
+import ch.eureka.eurekapp.model.data.transcription.CloudFunctionSpeechToTextRepository
+import ch.eureka.eurekapp.model.data.transcription.SpeechToTextRepository
 import ch.eureka.eurekapp.model.data.user.FirestoreUserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.functions.FirebaseFunctions
 import com.google.firebase.storage.FirebaseStorage
 
+/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
 object FirestoreRepositoriesProvider {
   private val _taskRepository: FirestoreTaskRepository by lazy {
     FirestoreTaskRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
@@ -46,6 +50,13 @@ object FirestoreRepositoriesProvider {
     FirestoreUserRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
   }
 
+  private val _speechToTextRepository: SpeechToTextRepository by lazy {
+    CloudFunctionSpeechToTextRepository(
+        FirebaseFirestore.getInstance(),
+        FirebaseAuth.getInstance(),
+        FirebaseFunctions.getInstance())
+  }
+
   val taskRepository: FirestoreTaskRepository
     get() = _taskRepository
 
@@ -69,4 +80,7 @@ object FirestoreRepositoriesProvider {
 
   val userRepository: FirestoreUserRepository
     get() = _userRepository
+
+  val speechToTextRepository: SpeechToTextRepository
+    get() = _speechToTextRepository
 }

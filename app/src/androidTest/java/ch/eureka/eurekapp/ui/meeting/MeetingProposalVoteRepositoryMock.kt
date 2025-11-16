@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Gemini.*/
 package ch.eureka.eurekapp.ui.meeting
 
 import ch.eureka.eurekapp.model.data.meeting.Meeting
@@ -9,16 +10,16 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 
 /**
- * A specific mock repository for the [DateTimeVoteViewModelTest].
+ * A specific mock repository for the [MeetingProposalVoteViewModelTest].
  *
  * It extends [BaseMockMeetingRepository] and overrides only the methods used by
- * [DateTimeVoteViewModel]:
+ * [MeetingProposalVoteViewModel]:
  * - [getMeetingById]
  * - [updateMeeting]
  *
  * Note: this file was written with the help of Gemini
  */
-class DateTimeVoteRepositoryMock : BaseMockMeetingRepository() {
+class MeetingProposalVoteRepositoryMock : BaseMockMeetingRepository() {
 
   // --- State for getMeetingById ---
   private var meetingFlow: Flow<Meeting?> = flowOf(null)

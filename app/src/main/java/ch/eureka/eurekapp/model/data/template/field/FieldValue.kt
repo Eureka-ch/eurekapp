@@ -41,6 +41,7 @@ sealed interface FieldValue {
   @Serializable
   @SerialName("multi_select")
   data class MultiSelectValue(val values: List<String>) : FieldValue {
+
     override val typeKey: FieldTypeKey = FieldTypeKey.MULTI_SELECT
 
     init {

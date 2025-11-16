@@ -10,6 +10,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
@@ -24,6 +26,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+
+// Portions of this code were generated with the help of Grok.
 
 /**
  * Comprehensive UI interaction tests for TasksScreen
@@ -65,6 +69,9 @@ class TasksScreenTest {
 
   @Before
   fun setUp() {
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+    ConnectivityObserverProvider.initialize(context)
+
     mockTaskRepository = MockTaskRepository()
     mockProjectRepository = MockProjectRepository()
     mockUserRepository = MockUserRepository()

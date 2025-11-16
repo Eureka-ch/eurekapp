@@ -23,11 +23,11 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 /** Information card component used on dashboard and summary screens */
 @Composable
 fun EurekaInfoCard(
+    modifier: Modifier = Modifier,
     title: String,
     primaryValue: String,
     secondaryValue: String = "",
-    iconText: String = "",
-    modifier: Modifier = Modifier
+    iconText: String = ""
 ) {
   Card(
       shape = RoundedCornerShape(16.dp),

@@ -2,6 +2,8 @@ package ch.eureka.eurekapp.ui.authentication
 
 import ch.eureka.eurekapp.model.data.invitation.Invitation
 import ch.eureka.eurekapp.model.data.invitation.InvitationRepository
+import ch.eureka.eurekapp.model.data.project.ProjectRepository
+import ch.eureka.eurekapp.model.data.project.ProjectRole
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -31,6 +33,7 @@ class TokenEntryViewModelTest {
 
   private lateinit var viewModel: TokenEntryViewModel
   private lateinit var mockRepository: InvitationRepository
+  private lateinit var mockProjectRepository: ProjectRepository
   private lateinit var mockAuth: FirebaseAuth
   private lateinit var mockUser: FirebaseUser
   private val testDispatcher = StandardTestDispatcher()
@@ -40,6 +43,7 @@ class TokenEntryViewModelTest {
     Dispatchers.setMain(testDispatcher)
 
     mockRepository = mockk(relaxed = true)
+    mockProjectRepository = mockk(relaxed = true)
     mockAuth = mockk(relaxed = true)
     mockUser = mockk(relaxed = true)
 
@@ -47,8 +51,11 @@ class TokenEntryViewModelTest {
     every { mockAuth.currentUser } returns mockUser
     every { mockUser.displayName } returns "Test User"
     every { mockUser.uid } returns "test_user_123"
+    coEvery { mockProjectRepository.addMember(any(), any(), any()) } returns Result.success(Unit)
 
-    viewModel = TokenEntryViewModel(repository = mockRepository, auth = mockAuth)
+    viewModel =
+        TokenEntryViewModel(
+            repository = mockRepository, projectRepository = mockProjectRepository, auth = mockAuth)
   }
 
   @After
@@ -70,7 +77,9 @@ class TokenEntryViewModelTest {
   fun init_whenUserHasNoDisplayName_shouldUseGuestAsDefault() {
     every { mockUser.displayName } returns null
 
-    val viewModelNoName = TokenEntryViewModel(repository = mockRepository, auth = mockAuth)
+    val viewModelNoName =
+        TokenEntryViewModel(
+            repository = mockRepository, projectRepository = mockProjectRepository, auth = mockAuth)
 
     assertEquals("Guest", viewModelNoName.uiState.value.userName)
   }
@@ -79,7 +88,9 @@ class TokenEntryViewModelTest {
   fun init_whenUserHasEmptyDisplayName_shouldUseEmptyString() {
     every { mockUser.displayName } returns ""
 
-    val viewModelEmptyName = TokenEntryViewModel(repository = mockRepository, auth = mockAuth)
+    val viewModelEmptyName =
+        TokenEntryViewModel(
+            repository = mockRepository, projectRepository = mockProjectRepository, auth = mockAuth)
 
     assertEquals("", viewModelEmptyName.uiState.value.userName)
   }
@@ -88,7 +99,9 @@ class TokenEntryViewModelTest {
   fun init_whenNoUserSignedIn_shouldUseGuestAsDefault() {
     every { mockAuth.currentUser } returns null
 
-    val viewModelNoUser = TokenEntryViewModel(repository = mockRepository, auth = mockAuth)
+    val viewModelNoUser =
+        TokenEntryViewModel(
+            repository = mockRepository, projectRepository = mockProjectRepository, auth = mockAuth)
 
     assertEquals("Guest", viewModelNoUser.uiState.value.userName)
   }
@@ -309,6 +322,44 @@ class TokenEntryViewModelTest {
     assertTrue(viewModel.uiState.value.validationSuccess)
   }
 
+  @Test
+  fun validateToken_shouldAddUserToProjectAfterMarkingAsUsed() = runTest {
+    val validInvitation =
+        Invitation(token = "VALID-TOKEN", projectId = "project_123", isUsed = false)
+
+    viewModel.updateToken("VALID-TOKEN")
+    coEvery { mockRepository.getInvitationByToken("VALID-TOKEN") } returns flowOf(validInvitation)
+    coEvery { mockRepository.markInvitationAsUsed("VALID-TOKEN", "test_user_123") } returns
+        Result.success(Unit)
+    coEvery {
+      mockProjectRepository.addMember("project_123", "test_user_123", ProjectRole.MEMBER)
+    } returns Result.success(Unit)
+
+    viewModel.validateToken()
+    advanceUntilIdle()
+
+    coVerify { mockProjectRepository.addMember("project_123", "test_user_123", ProjectRole.MEMBER) }
+    assertTrue(viewModel.uiState.value.validationSuccess)
+  }
+
+  @Test
+  fun validateToken_shouldCallAddMemberWithCorrectProjectId() = runTest {
+    val validInvitation =
+        Invitation(token = "TOKEN-ABC", projectId = "different_project_456", isUsed = false)
+
+    viewModel.updateToken("TOKEN-ABC")
+    coEvery { mockRepository.getInvitationByToken("TOKEN-ABC") } returns flowOf(validInvitation)
+    coEvery { mockRepository.markInvitationAsUsed(any(), any()) } returns Result.success(Unit)
+    coEvery { mockProjectRepository.addMember(any(), any(), any()) } returns Result.success(Unit)
+
+    viewModel.validateToken()
+    advanceUntilIdle()
+
+    coVerify {
+      mockProjectRepository.addMember("different_project_456", "test_user_123", ProjectRole.MEMBER)
+    }
+  }
+
   // ========================================
   // Validation - Repository Failure Tests
   // ========================================
@@ -346,6 +397,47 @@ class TokenEntryViewModelTest {
 
     assertEquals(
         "Failed to validate token. Please try again.", viewModel.uiState.value.errorMessage)
+  }
+
+  @Test
+  fun validateToken_whenAddMemberFails_shouldSetError() = runTest {
+    val validInvitation =
+        Invitation(token = "VALID-TOKEN", projectId = "project_123", isUsed = false)
+
+    viewModel.updateToken("VALID-TOKEN")
+    coEvery { mockRepository.getInvitationByToken("VALID-TOKEN") } returns flowOf(validInvitation)
+    coEvery { mockRepository.markInvitationAsUsed("VALID-TOKEN", "test_user_123") } returns
+        Result.success(Unit)
+    coEvery {
+      mockProjectRepository.addMember("project_123", "test_user_123", ProjectRole.MEMBER)
+    } returns Result.failure(Exception("Failed to add member"))
+
+    viewModel.validateToken()
+    advanceUntilIdle()
+
+    assertEquals("Failed to add member", viewModel.uiState.value.errorMessage)
+    assertFalse(viewModel.uiState.value.isLoading)
+    assertFalse(viewModel.uiState.value.validationSuccess)
+  }
+
+  @Test
+  fun validateToken_whenAddMemberFailsWithNoMessage_shouldSetGenericError() = runTest {
+    val validInvitation =
+        Invitation(token = "VALID-TOKEN", projectId = "project_123", isUsed = false)
+
+    viewModel.updateToken("VALID-TOKEN")
+    coEvery { mockRepository.getInvitationByToken("VALID-TOKEN") } returns flowOf(validInvitation)
+    coEvery { mockRepository.markInvitationAsUsed("VALID-TOKEN", "test_user_123") } returns
+        Result.success(Unit)
+    coEvery { mockProjectRepository.addMember(any(), any(), any()) } returns
+        Result.failure(Exception())
+
+    viewModel.validateToken()
+    advanceUntilIdle()
+
+    assertEquals(
+        "Failed to add you to the project. Please try again.", viewModel.uiState.value.errorMessage)
+    assertFalse(viewModel.uiState.value.validationSuccess)
   }
 
   // ========================================
@@ -527,6 +619,7 @@ class TokenEntryViewModelTest {
     coEvery { mockRepository.getInvitationByToken("ORDER-TOKEN") } returns flowOf(validInvitation)
     coEvery { mockRepository.markInvitationAsUsed("ORDER-TOKEN", "test_user_123") } returns
         Result.success(Unit)
+    coEvery { mockProjectRepository.addMember(any(), any(), any()) } returns Result.success(Unit)
 
     viewModel.validateToken()
     advanceUntilIdle()
@@ -534,6 +627,7 @@ class TokenEntryViewModelTest {
     coVerifyOrder {
       mockRepository.getInvitationByToken("ORDER-TOKEN")
       mockRepository.markInvitationAsUsed("ORDER-TOKEN", "test_user_123")
+      mockProjectRepository.addMember("project_123", "test_user_123", ProjectRole.MEMBER)
     }
   }
 
@@ -547,6 +641,7 @@ class TokenEntryViewModelTest {
 
     coVerify(exactly = 1) { mockRepository.getInvitationByToken("NOT-FOUND-TOKEN") }
     coVerify(exactly = 0) { mockRepository.markInvitationAsUsed(any(), any()) }
+    coVerify(exactly = 0) { mockProjectRepository.addMember(any(), any(), any()) }
   }
 
   @Test
@@ -563,5 +658,6 @@ class TokenEntryViewModelTest {
 
     coVerify(exactly = 1) { mockRepository.getInvitationByToken("ALREADY-USED") }
     coVerify(exactly = 0) { mockRepository.markInvitationAsUsed(any(), any()) }
+    coVerify(exactly = 0) { mockProjectRepository.addMember(any(), any(), any()) }
   }
 }

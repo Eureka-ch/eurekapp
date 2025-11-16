@@ -1,6 +1,7 @@
 /*
 The following code comes from the solution of the part 3 of the SwEnt bootcamp made by the SwEnt team:
 https://github.com/swent-epfl/bootcamp-25-B3-Solution/blob/main/app/src/main/java/com/github/se/bootcamp/ui/authentication/SignInViewModel.kt
+Portions of this code were generated with the help of Grok.
 */
 
 package ch.eureka.eurekapp.ui.authentication
@@ -9,6 +10,7 @@ import android.content.Context
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.NoCredentialException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.authentication.AuthRepository
@@ -53,6 +55,14 @@ class SignInViewModel(
 
   private val _uiState = MutableStateFlow(AuthUIState())
   val uiState: StateFlow<AuthUIState> = _uiState
+
+  init {
+    // Check if user is already signed in for offline support
+    val currentUser = repository.getCurrentUser()
+    if (currentUser != null) {
+      _uiState.update { it.copy(user = currentUser, signedOut = false) }
+    }
+  }
 
   /** Clears the error message in the UI state. */
   fun clearErrorMsg() {
@@ -99,7 +109,12 @@ class SignInViewModel(
       context: Context,
       request: GetCredentialRequest,
       credentialManager: CredentialManager
-  ) = credentialManager.getCredential(context, request).credential
+  ) =
+      try {
+        credentialManager.getCredential(context, request).credential
+      } catch (_: Exception) {
+        null
+      }
 
   /**
    * Initiates the Google sign-in flow and updates the UI state on success or failure.
@@ -120,6 +135,9 @@ class SignInViewModel(
       try {
         // Launch Credential Manager UI
         val credential = getCredential(context, signInRequest, credentialManager)
+        if (credential == null) {
+          throw NoCredentialException("No credentials")
+        }
 
         // Pass the credential to the repository
         repository.signInWithGoogle(credential).fold({ firebaseUser ->

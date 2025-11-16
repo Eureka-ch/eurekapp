@@ -2,6 +2,7 @@ package ch.eureka.eurekapp.ui.authentication
 
 import ch.eureka.eurekapp.model.data.invitation.Invitation
 import ch.eureka.eurekapp.model.data.invitation.MockInvitationRepository
+import ch.eureka.eurekapp.ui.tasks.MockProjectRepository
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +28,7 @@ import org.junit.Test
 class TokenEntryViewModelIntegrationTest {
 
   private lateinit var mockRepository: MockInvitationRepository
+  private lateinit var mockProjectRepository: MockProjectRepository
   private lateinit var auth: FirebaseAuth
   private lateinit var viewModel: TokenEntryViewModel
   private val testDispatcher = StandardTestDispatcher()
@@ -57,13 +59,17 @@ class TokenEntryViewModelIntegrationTest {
     Thread.sleep(500)
 
     mockRepository = MockInvitationRepository()
-    viewModel = TokenEntryViewModel(repository = mockRepository, auth = auth)
+    mockProjectRepository = MockProjectRepository()
+    viewModel =
+        TokenEntryViewModel(
+            repository = mockRepository, projectRepository = mockProjectRepository, auth = auth)
   }
 
   @After
   fun tearDown() {
     Dispatchers.resetMain()
     mockRepository.reset()
+    mockProjectRepository.reset()
     FirebaseEmulator.clearAuthEmulator()
     FirebaseEmulator.clearFirestoreEmulator()
   }
@@ -181,8 +187,12 @@ class TokenEntryViewModelIntegrationTest {
     mockRepository.addInvitation(invitation)
 
     // Create two ViewModels simulating two users
-    val viewModel1 = TokenEntryViewModel(repository = mockRepository, auth = auth)
-    val viewModel2 = TokenEntryViewModel(repository = mockRepository, auth = auth)
+    val viewModel1 =
+        TokenEntryViewModel(
+            repository = mockRepository, projectRepository = mockProjectRepository, auth = auth)
+    val viewModel2 =
+        TokenEntryViewModel(
+            repository = mockRepository, projectRepository = mockProjectRepository, auth = auth)
 
     // Act: Both try to validate same token
     viewModel1.updateToken("RACE-TOKEN")

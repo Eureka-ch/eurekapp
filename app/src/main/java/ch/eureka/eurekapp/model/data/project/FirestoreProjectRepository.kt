@@ -122,7 +122,7 @@ class FirestoreProjectRepository(
 
           // Create member document
           val member = Member(userId = userId, role = role)
-          batch.set(projectRef.collection("members").document(userId), member)
+          batch[projectRef.collection("members").document(userId)] = member
         }
         .await()
   }

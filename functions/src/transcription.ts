@@ -10,10 +10,59 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import {SpeechClient} from '@google-cloud/speech';
 import * as path from 'path';
+import * as os from 'os';
+import * as fs from 'fs';
+import ffmpeg from 'fluent-ffmpeg';
+import ffmpegPath from 'ffmpeg-static';
+
+// Set ffmpeg path
+if (ffmpegPath) {
+  ffmpeg.setFfmpegPath(ffmpegPath);
+}
 
 const speechClient = new SpeechClient({
   keyFilename: path.join(__dirname, '../eureka-stt-service-account.json'),
 });
+
+/**
+ * Convert audio file to FLAC format using ffmpeg
+ */
+async function convertToFlac(inputBuffer: Buffer): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const tempDir = os.tmpdir();
+    const inputPath = path.join(tempDir, `input-${Date.now()}.mp4`);
+    const outputPath = path.join(tempDir, `output-${Date.now()}.flac`);
+
+    // Write input buffer to temp file
+    fs.writeFileSync(inputPath, inputBuffer);
+
+    ffmpeg(inputPath)
+      .toFormat('flac')
+      .audioFrequency(16000) // sample rate to 16kHz (required by Speech-to-Text)
+      .audioChannels(1)
+      .on('end', () => {
+        try {
+          const flacBuffer = fs.readFileSync(outputPath);
+          // Clean up temp files
+          fs.unlinkSync(inputPath);
+          fs.unlinkSync(outputPath);
+          resolve(flacBuffer);
+        } catch (error) {
+          reject(error);
+        }
+      })
+      .on('error', (error: Error) => {
+        try {
+          if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
+          if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+        reject(error);
+      })
+      .save(outputPath);
+  });
+}
 
 interface TranscribeAudioRequest {
   audioDownloadUrl: string;
@@ -69,20 +118,29 @@ export const transcribeAudio = functions.https.onCall(
       await transcriptionRef.set(pendingTranscription);
 
       // 4. Download audio content from the URL
+      functions.logger.info(`Downloading audio from: ${audioDownloadUrl}`);
       const audioResponse = await fetch(audioDownloadUrl);
       if (!audioResponse.ok) {
         throw new Error(`Failed to download audio: ${audioResponse.statusText}`);
       }
       const audioBuffer = await audioResponse.arrayBuffer();
-      const audioContent = Buffer.from(audioBuffer).toString('base64');
+      const mp4Buffer = Buffer.from(audioBuffer);
 
-      // 6. Configure Speech-to-Text request with audio content
+      // 5. Convert MP4 to FLAC format
+      functions.logger.info('Converting MP4 to FLAC...');
+      const flacBuffer = await convertToFlac(mp4Buffer);
+      const audioContent = flacBuffer.toString('base64');
+      functions.logger.info(`Conversion complete. FLAC size: ${flacBuffer.length} bytes`);
+
+      // 6. Configure Speech-to-Text request with FLAC audio
       const request = {
         config: {
           encoding: 'FLAC' as const,
+          sampleRateHertz: 16000,
           languageCode: languageCode,
           enableAutomaticPunctuation: true,
           model: 'default',
+          audioChannelCount: 1,
         },
         audio: {
           content: audioContent,

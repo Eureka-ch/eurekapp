@@ -10,8 +10,10 @@ import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.IdGenerator
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
+import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
+import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.utils.TaskDependencyCycleDetector
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineDispatcher
@@ -26,20 +28,47 @@ import kotlinx.coroutines.launch
 Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
 Portions of this code were generated with the help of Grok.
 Co-Authored-By: Claude <noreply@anthropic.com>
+Note: This file was partially written by GPT-5 Codex
+Co-author : GPT-5
 */
 
 /** ViewModel for the CreateTask screen. This ViewModel manages the state of input fields. */
 class CreateTaskViewModel(
     taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
     fileRepository: FileStorageRepository = FirestoreRepositoriesProvider.fileRepository,
+    projectRepository: ProjectRepository = FirestoreRepositoriesProvider.projectRepository,
+    userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository,
     getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) :
     ReadWriteTaskViewModel<CreateTaskState>(
-        taskRepository, fileRepository, getCurrentUserId, dispatcher) {
+        taskRepository,
+        fileRepository,
+        projectRepository,
+        userRepository,
+        getCurrentUserId,
+        dispatcher) {
 
   private val _uiState = MutableStateFlow(CreateTaskState())
   override val uiState: StateFlow<CreateTaskState> = _uiState.asStateFlow()
+
+  init {
+    // Initialize with current user as default assignee
+    getCurrentUserId()?.let { userId ->
+      updateState { copy(selectedAssignedUserIds = listOf(userId)) }
+    }
+    // Load available projects
+    loadAvailableProjects()
+  }
+
+  /** Loads available projects for the current user */
+  private fun loadAvailableProjects() {
+    viewModelScope.launch(dispatcher) {
+      projectRepository.getProjectsForCurrentUser().collect { projects ->
+        updateState { copy(availableProjects = projects) }
+      }
+    }
+  }
 
   // Placeholder used for dependency validation before the task is persisted.
   private val placeholderTaskId = IdGenerator.generateTaskId()
@@ -122,7 +151,7 @@ class CreateTaskViewModel(
                 projectId = projectIdToUse,
                 title = state.title,
                 description = state.description,
-                assignedUserIds = listOf(currentUser),
+                assignedUserIds = state.selectedAssignedUserIds.ifEmpty { listOf(currentUser) },
                 dueDate = timestamp,
                 reminderTime = reminderTimestamp,
                 attachmentUrls = photoUrls,
@@ -175,9 +204,15 @@ class CreateTaskViewModel(
     _uiState.value = _uiState.value.update()
   }
 
-  fun setReminderTime(reminderTime: String) {
-    updateState { copy(reminderTime = reminderTime) }
-  }
+  override fun CreateTaskState.copyWithReminderTime(reminderTime: String) =
+      copy(reminderTime = reminderTime)
+
+  override fun CreateTaskState.copyWithAvailableUsers(
+      users: List<ch.eureka.eurekapp.model.data.user.User>
+  ) = copy(availableUsers = users)
+
+  override fun CreateTaskState.copyWithSelectedAssignedUserIds(userIds: List<String>) =
+      copy(selectedAssignedUserIds = userIds)
 
   override fun addDependency(taskId: String) {
     val currentDependencies = uiState.value.dependingOnTasks

@@ -11,29 +11,33 @@ import kotlinx.coroutines.flow.flowOf
  * Configurable mock implementation of ProjectRepository for testing
  *
  * Allows tests to configure project data and flows
+ *
+ * Note: This file was partially written by GPT-5 Codex Co-author : GPT-5
  */
 class MockProjectRepository : ProjectRepository {
   private var currentUserProjects: Flow<List<Project>> = flowOf(emptyList())
-  private val projectMembers = mutableMapOf<String, Flow<List<Member>>>()
+  private val memberFlows = mutableMapOf<String, Flow<List<Member>>>()
 
   // Track method calls for verification
   val getProjectsForCurrentUserCalls = mutableListOf<Unit>()
+  val getMembersCalls = mutableListOf<String>()
 
   /** Configure projects returned by getProjectsForCurrentUser() */
   fun setCurrentUserProjects(flow: Flow<List<Project>>) {
     currentUserProjects = flow
   }
 
-  /** Configure members returned by getMembers() */
+  /** Configure members returned by getMembers() for a specific project */
   fun setMembers(projectId: String, flow: Flow<List<Member>>) {
-    projectMembers[projectId] = flow
+    memberFlows[projectId] = flow
   }
 
   /** Clear all configuration */
   fun reset() {
     currentUserProjects = flowOf(emptyList())
-    projectMembers.clear()
+    memberFlows.clear()
     getProjectsForCurrentUserCalls.clear()
+    getMembersCalls.clear()
   }
 
   override fun getProjectById(projectId: String): Flow<Project?> = flowOf(null)
@@ -54,7 +58,8 @@ class MockProjectRepository : ProjectRepository {
   override suspend fun deleteProject(projectId: String): Result<Unit> = Result.success(Unit)
 
   override fun getMembers(projectId: String): Flow<List<Member>> {
-    return projectMembers[projectId] ?: flowOf(emptyList())
+    getMembersCalls.add(projectId)
+    return memberFlows[projectId] ?: flowOf(emptyList())
   }
 
   override suspend fun addMember(

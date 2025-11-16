@@ -11,7 +11,7 @@ import androidx.compose.ui.text.font.FontWeight
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 @Composable
-fun TaskSectionHeader(title: String, taskCount: Int? = null, modifier: Modifier = Modifier) {
+fun TaskSectionHeader(modifier: Modifier = Modifier, title: String, taskCount: Int? = null) {
   Column(modifier = modifier.fillMaxWidth().padding(vertical = Spacing.sm)) {
     Text(
         text = title,

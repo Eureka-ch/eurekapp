@@ -5,7 +5,6 @@ import com.google.firebase.Timestamp
 import java.util.Date
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -14,13 +13,12 @@ import org.junit.Test
 /**
  * Test suite for Meeting model.
  *
- * Note: Some of these tests were co-authored by Claude Code and chatGPT. Updated by Gemini to
- * support List<DateTimeVote>.
+ * Note: Some of these tests were co-authored by Claude Code, chatGPT and Gemini.
  */
 class MeetingTest {
 
   @Test
-  fun meeting_defaultConstructor_createsEmptyMeeting() {
+  fun meetingDefaultConstructor() {
     val meeting = Meeting()
 
     assertEquals("", meeting.meetingID)
@@ -30,18 +28,19 @@ class MeetingTest {
     assertEquals(MeetingStatus.OPEN_TO_VOTES, meeting.status)
     assertEquals(30, meeting.duration)
     assertEquals(emptyList<String>(), meeting.attachmentUrls)
-    assertTrue(meeting.dateTimeVotes.isEmpty()) // This now checks an empty List
-    assertTrue(meeting.formatVotes.isEmpty())
-    assertNotNull(meeting.datetime) // Default is Timestamp.now()
+    assertTrue(meeting.meetingProposals.isEmpty())
+    assertNull(meeting.datetime)
     assertNull(meeting.format)
     assertNull(meeting.location)
     assertNull(meeting.link)
+    assertNull(meeting.audioUrl)
+    assertNull(meeting.transcriptId)
     assertEquals("", meeting.createdBy)
     assertTrue(meeting.participantIds.isEmpty())
   }
 
   @Test
-  fun meeting_withParameters_setsCorrectValues() {
+  fun meetingWithParameters() {
     val attachments = listOf("url1", "url2")
     val testTimestamp = Timestamp.now()
     val testDuration = 60
@@ -68,7 +67,7 @@ class MeetingTest {
   }
 
   @Test
-  fun meeting_withoutTaskId_setsNullTaskId() {
+  fun meetingWithoutTaskId() {
     val meeting =
         Meeting(
             meetingID = "mtg123",
@@ -80,7 +79,7 @@ class MeetingTest {
   }
 
   @Test
-  fun meeting_copy_createsNewInstance() {
+  fun meetingCopy() {
     val meeting =
         Meeting(
             meetingID = "mtg123",
@@ -98,7 +97,7 @@ class MeetingTest {
   }
 
   @Test
-  fun meeting_equals_comparesCorrectly() {
+  fun meetingEquals() {
     val fixedTimestamp = Timestamp(Date(0))
     val fixedDuration = 60
     val meeting1 =
@@ -134,7 +133,7 @@ class MeetingTest {
   }
 
   @Test
-  fun meeting_hashCode_isConsistent() {
+  fun meetingHashCode() {
     val fixedTimestamp = Timestamp(Date(0))
     val fixedDuration = 60
     val meeting1 =
@@ -160,7 +159,7 @@ class MeetingTest {
   }
 
   @Test
-  fun meeting_toString_containsAllFields() {
+  fun meetingToString() {
     val meeting =
         Meeting(
             meetingID = "mtg123",
@@ -174,6 +173,8 @@ class MeetingTest {
     assertTrue(meetingString.contains("prj123"))
     assertTrue(meetingString.contains("Sprint Planning"))
     assertTrue(meetingString.contains("duration=30"))
+    assertTrue(meetingString.contains("audioUrl=null"))
+    assertTrue(meetingString.contains("transcriptId=null"))
   }
 
   @Test
@@ -182,16 +183,13 @@ class MeetingTest {
     val location = Location(latitude = 46.0, longitude = 7.0)
     val duration = 90
 
-    // *** MODIFIED HERE ***
-    // Updated to match List<DateTimeVote>
     val timestamp2 = Timestamp(Date(0))
-    val dateVotes =
+    val vote1 = MeetingProposalVote(userId = "u1")
+    val vote2 = MeetingProposalVote(userId = "u2")
+    val proposals =
         listOf(
-            DateTimeVote(dateTime = timestamp, voters = listOf("u1", "u2")),
-            DateTimeVote(dateTime = timestamp2, voters = listOf("u3")))
-    // *** END MODIFICATION ***
-
-    val formatVotes = listOf(MeetingFormatVote("user1", MeetingFormat.VIRTUAL))
+            MeetingProposal(dateTime = timestamp, votes = listOf(vote1)),
+            MeetingProposal(dateTime = timestamp2, votes = listOf(vote2)))
 
     val meeting =
         Meeting(
@@ -205,11 +203,12 @@ class MeetingTest {
             format = MeetingFormat.IN_PERSON,
             link = "https://zoom.us/abc",
             attachmentUrls = listOf("url1", "url2"),
+            audioUrl = "https://audio.mp3",
+            transcriptId = "transcript-abc",
             createdBy = "user123",
             participantIds = listOf("u1", "u2"),
             duration = duration,
-            dateTimeVotes = dateVotes, // Assign new list
-            formatVotes = formatVotes)
+            meetingProposals = proposals)
 
     assertEquals("m123", meeting.meetingID)
     assertEquals("p456", meeting.projectId)
@@ -221,11 +220,12 @@ class MeetingTest {
     assertEquals(MeetingFormat.IN_PERSON, meeting.format)
     assertEquals("https://zoom.us/abc", meeting.link)
     assertEquals(listOf("url1", "url2"), meeting.attachmentUrls)
+    assertEquals("https://audio.mp3", meeting.audioUrl)
+    assertEquals("transcript-abc", meeting.transcriptId)
     assertEquals("user123", meeting.createdBy)
     assertEquals(listOf("u1", "u2"), meeting.participantIds)
     assertEquals(duration, meeting.duration)
-    assertEquals(dateVotes, meeting.dateTimeVotes) // Check new list
-    assertEquals(formatVotes, meeting.formatVotes)
+    assertEquals(proposals, meeting.meetingProposals)
   }
 
   @Test
@@ -249,25 +249,21 @@ class MeetingTest {
     assertTrue(str.contains("proj1"))
     assertTrue(str.contains("Kickoff"))
 
-    // Test all component functions for 100% data class coverage
-    assertEquals("id123", meeting.component1()) // meetingID
-    assertEquals("proj1", meeting.component2()) // projectId
-    assertNull(meeting.component3()) // taskId
-    assertEquals("Kickoff", meeting.component4()) // title
-    assertEquals(MeetingStatus.OPEN_TO_VOTES, meeting.component5()) // status
-    assertEquals(30, meeting.component6()) // duration
-
-    // *** MODIFIED HERE ***
-    assertEquals(emptyList<DateTimeVote>(), meeting.component7()) // dateTimeVotes
-    // *** END MODIFICATION ***
-
-    assertEquals(emptyList<MeetingFormatVote>(), meeting.component8()) // formatVotes
-    assertNotNull(meeting.component9()) // datetime
-    assertNull(meeting.component10()) // format
-    assertNull(meeting.component11()) // location
-    assertNull(meeting.component12()) // link
-    assertEquals(emptyList<String>(), meeting.component13()) // attachmentUrls
-    assertEquals("", meeting.component14()) // createdBy
-    assertEquals(emptyList<String>(), meeting.component15()) // participantIds
+    assertEquals("id123", meeting.component1())
+    assertEquals("proj1", meeting.component2())
+    assertNull(meeting.component3())
+    assertEquals("Kickoff", meeting.component4())
+    assertEquals(MeetingStatus.OPEN_TO_VOTES, meeting.component5())
+    assertEquals(30, meeting.component6())
+    assertEquals(emptyList<MeetingProposal>(), meeting.component7())
+    assertNull(meeting.component8())
+    assertNull(meeting.component9())
+    assertNull(meeting.component10())
+    assertNull(meeting.component11())
+    assertEquals(emptyList<String>(), meeting.component12())
+    assertNull(meeting.component13())
+    assertNull(meeting.component14())
+    assertEquals("", meeting.component15())
+    assertEquals(emptyList<String>(), meeting.component16())
   }
 }

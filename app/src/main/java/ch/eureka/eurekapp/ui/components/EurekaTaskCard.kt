@@ -20,10 +20,9 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -31,13 +30,14 @@ import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
-/**
- * Task card component used on tasks and project screens Portions of this code were generated with
- * the help of IA.
- */
+// Portions of this code were generated with the help of AI.
+// Portions added by Jiří Gebauer partially generated with the help of Grok.
+
+/** Task card component used on tasks and project screens */
 @Composable
 fun EurekaTaskCard(
     title: String,
+    modifier: Modifier = Modifier,
     dueDate: String = "",
     dueDateTag: String? = null,
     assignee: String = "",
@@ -47,14 +47,14 @@ fun EurekaTaskCard(
     isCompleted: Boolean = false,
     onToggleComplete: () -> Unit = {},
     onClick: () -> Unit = {},
-    modifier: Modifier = Modifier
+    canToggleCompletion: Boolean = true
 ) {
   // No local state - use controlled state from parent
   Card(
       shape = RoundedCornerShape(16.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-      colors = EurekaStyles.TaskCardColors(),
-      border = EurekaStyles.TaskCardBorder(),
+      colors = EurekaStyles.taskCardColors(),
+      border = EurekaStyles.taskCardBorder(),
       modifier = modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick)) {
         Column(modifier = Modifier.padding(Spacing.lg)) { // Plus de padding
 
@@ -68,27 +68,31 @@ fun EurekaTaskCard(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
-                    color = EurekaStyles.TaskTitleColor(isCompleted),
+                    color = EurekaStyles.taskTitleColor(isCompleted),
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f))
 
                 // Checkbox aligned to the right
-                Box(modifier = Modifier.clickable { onToggleComplete() }) {
-                  if (isCompleted) {
-                    Text(
-                        text = "✓",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.tertiary)
-                  } else {
-                    Checkbox(
-                        checked = false,
-                        onCheckedChange = { onToggleComplete() },
-                        colors =
-                            CheckboxDefaults.colors(
-                                checkedColor = MaterialTheme.colorScheme.primary),
-                        modifier = Modifier.testTag("checkbox"))
-                  }
-                }
+                Box(
+                    modifier =
+                        Modifier.clickable(enabled = canToggleCompletion) { onToggleComplete() }
+                            .alpha(if (canToggleCompletion) 1f else 0.6f)) {
+                      if (isCompleted) {
+                        Text(
+                            text = "✓",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.tertiary)
+                      } else {
+                        Checkbox(
+                            checked = false,
+                            onCheckedChange = { onToggleComplete() },
+                            enabled = canToggleCompletion,
+                            colors =
+                                CheckboxDefaults.colors(
+                                    checkedColor = MaterialTheme.colorScheme.primary),
+                            modifier = Modifier.testTag("checkbox"))
+                      }
+                    }
 
                 // Pas de pourcentage en haut
               }
@@ -105,7 +109,7 @@ fun EurekaTaskCard(
                       Text(
                           text = "⏰ $dueDate",
                           style = MaterialTheme.typography.bodySmall,
-                          color = EurekaStyles.TaskSecondaryTextColor())
+                          color = EurekaStyles.taskSecondaryTextColor())
                     }
                   }
 
@@ -117,7 +121,7 @@ fun EurekaTaskCard(
                       Text(
                           text = "👤 $assignee",
                           style = MaterialTheme.typography.bodySmall,
-                          color = EurekaStyles.TaskSecondaryTextColor())
+                          color = EurekaStyles.taskSecondaryTextColor())
                     }
                   }
                 }
@@ -153,7 +157,7 @@ fun EurekaTaskCard(
               modifier =
                   Modifier.fillMaxWidth()
                       .height(1.dp)
-                      .background(EurekaStyles.TaskSeparatorColor()))
+                      .background(EurekaStyles.taskSeparatorColor()))
 
           Spacer(modifier = Modifier.height(Spacing.sm))
 
@@ -165,14 +169,14 @@ fun EurekaTaskCard(
                   Text(
                       text = "Progression",
                       style = MaterialTheme.typography.bodySmall,
-                      color = EurekaStyles.TaskSecondaryTextColor(),
+                      color = EurekaStyles.taskSecondaryTextColor(),
                       modifier = Modifier.weight(1f))
 
                   LinearProgressIndicator(
                       progress = { if (isCompleted) 1.0f else progressValue }, // 100% si cochée
                       modifier = Modifier.width(60.dp).height(6.dp),
                       color = MaterialTheme.colorScheme.primary,
-                      trackColor = EurekaStyles.TaskSeparatorColor())
+                      trackColor = EurekaStyles.taskSeparatorColor())
 
                   Spacer(modifier = Modifier.width(Spacing.xs))
 
@@ -180,7 +184,7 @@ fun EurekaTaskCard(
                   Text(
                       text = if (isCompleted) "100%" else progressText,
                       style = MaterialTheme.typography.labelMedium,
-                      color = EurekaStyles.TaskSecondaryTextColor(),
+                      color = EurekaStyles.taskSecondaryTextColor(),
                       fontWeight = FontWeight.Bold)
                 }
           }

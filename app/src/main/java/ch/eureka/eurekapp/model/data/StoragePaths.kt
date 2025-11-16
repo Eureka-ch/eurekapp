@@ -1,5 +1,6 @@
 /*
  * Portions of this file were co-authored by Claude Code (Anthropic AI assistant).
+ * Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5
  */
 package ch.eureka.eurekapp.model.data
 
@@ -14,8 +15,10 @@ package ch.eureka.eurekapp.model.data
  * - profilePhotos/{userId}.{ext} - User profile photos (public read, owner write only)
  * - users/{userId}/{filename} - User personal files
  * - projects/{projectId}/{filename} - Project-level files
- * - projects/{projectId}/tasks/{taskId}/{filename} - Task attachments
- * - projects/{projectId}/meetings/{meetingId}/{filename} - Meeting attachments
+ * - projects/{projectId}/tasks/{taskId}/attachments/{filename} - Task attachments
+ * - projects/{projectId}/meetings/{meetingId}/attachments/{filename} - Meeting attachments
+ * - projects/{projectId}/meetings/{meetingId}/transcriptions/{filename} - Meeting audio
+ *   transcriptions
  */
 object StoragePaths {
   private const val PROFILE_PHOTOS = "profilePhotos"
@@ -23,6 +26,8 @@ object StoragePaths {
   private const val PROJECTS = "projects"
   private const val TASKS = "tasks"
   private const val MEETINGS = "meetings"
+  private const val ATTACHMENTS = "attachments"
+  private const val TRANSCRIPTIONS = "transcriptions"
 
   /**
    * Generate storage path for user profile photo.
@@ -60,10 +65,10 @@ object StoragePaths {
    * @param projectId The project ID
    * @param taskId The task ID
    * @param filename The filename to store
-   * @return Storage path: projects/{projectId}/tasks/{taskId}/{filename}
+   * @return Storage path: projects/{projectId}/tasks/{taskId}/attachments/{filename}
    */
   fun taskAttachmentPath(projectId: String, taskId: String, filename: String) =
-      "$PROJECTS/$projectId/$TASKS/$taskId/$filename"
+      "$PROJECTS/$projectId/$TASKS/$taskId/$ATTACHMENTS/$filename"
 
   /**
    * Generate storage path for meeting attachment files.
@@ -71,8 +76,19 @@ object StoragePaths {
    * @param projectId The project ID
    * @param meetingId The meeting ID
    * @param filename The filename to store
-   * @return Storage path: projects/{projectId}/meetings/{meetingId}/{filename}
+   * @return Storage path: projects/{projectId}/meetings/{meetingId}/attachments/{filename}
    */
   fun meetingAttachmentPath(projectId: String, meetingId: String, filename: String) =
-      "$PROJECTS/$projectId/$MEETINGS/$meetingId/$filename"
+      "$PROJECTS/$projectId/$MEETINGS/$meetingId/$ATTACHMENTS/$filename"
+
+  /**
+   * Generate storage path for meeting transcription audio files.
+   *
+   * @param projectId The project ID
+   * @param meetingId The meeting ID
+   * @param filename The filename to store
+   * @return Storage path: projects/{projectId}/meetings/{meetingId}/transcriptions/{filename}
+   */
+  fun meetingTranscriptionAudioPath(projectId: String, meetingId: String, filename: String) =
+      "$PROJECTS/$projectId/$MEETINGS/$meetingId/$TRANSCRIPTIONS/$filename"
 }

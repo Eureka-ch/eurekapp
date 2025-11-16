@@ -4,6 +4,7 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import ch.eureka.eurekapp.model.data.invitation.Invitation
 import ch.eureka.eurekapp.model.data.invitation.MockInvitationRepository
+import ch.eureka.eurekapp.ui.tasks.MockProjectRepository
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import org.junit.After
 import org.junit.Before
@@ -24,6 +25,7 @@ class TokenEntryScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   private lateinit var mockRepository: MockInvitationRepository
+  private lateinit var mockProjectRepository: MockProjectRepository
   private lateinit var viewModel: TokenEntryViewModel
   private var navigationCallbackInvoked = false
 
@@ -59,7 +61,10 @@ class TokenEntryScreenTest {
 
     // Setup mock repository and ViewModel
     mockRepository = MockInvitationRepository()
-    viewModel = TokenEntryViewModel(repository = mockRepository, auth = auth)
+    mockProjectRepository = MockProjectRepository()
+    viewModel =
+        TokenEntryViewModel(
+            repository = mockRepository, projectRepository = mockProjectRepository, auth = auth)
 
     navigationCallbackInvoked = false
   }
@@ -67,6 +72,7 @@ class TokenEntryScreenTest {
   @After
   fun tearDown() {
     mockRepository.reset()
+    mockProjectRepository.reset()
     FirebaseEmulator.clearAuthEmulator()
     FirebaseEmulator.clearFirestoreEmulator()
   }

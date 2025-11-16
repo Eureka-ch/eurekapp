@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks.creation
 
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,23 +40,13 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDescriptionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskReminderField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskTitleField
+import ch.eureka.eurekapp.screens.subscreens.tasks.UserAssignmentField
+import ch.eureka.eurekapp.ui.components.BackButton
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 const val CREATE_SCREEN_PHOTO_BUTTON_SIZE = 0.3f
 
-/*
-Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
-Co-Authored-By: Claude <noreply@anthropic.com>
-Portions of this code were generated with the help of Grok.
-*/
-
-/**
- * A composable screen for creating a new task.
- *
- * @param navigationController The NavHostController for handling navigation actions.
- * @param createTaskViewModel The CreateTaskViewModel instance responsible for managing task
- *   creation state.
- */
 @Composable
 fun CreateTaskScreen(
     navigationController: NavHostController = rememberNavController(),
@@ -75,49 +66,28 @@ fun CreateTaskScreen(
   val photoUri by
       savedStateHandle?.getStateFlow("photoUri", "")?.collectAsState()
           ?: remember { mutableStateOf("") }
-
   val context = LocalContext.current
   val scrollState = rememberScrollState()
   var isNavigatingToCamera by remember { mutableStateOf(false) }
 
-  LaunchedEffect(errorMsg) {
-    if (errorMsg != null) {
-      Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
-      createTaskViewModel.clearErrorMsg()
-    }
-  }
+  HandleErrorToast(errorMsg, createTaskViewModel, context)
+  HandlePhotoUri(photoUri, createTaskViewModel)
+  HandleProjectId(projectId, createTaskViewModel)
+  HandleTaskSaved(createTaskState.taskSaved, navigationController, createTaskViewModel)
 
-  LaunchedEffect(photoUri) {
-    if (photoUri.isNotEmpty()) {
-      createTaskViewModel.addAttachment(photoUri.toUri())
-    }
-  }
-
-  LaunchedEffect(projectId) {
-    if (projectId.isNotEmpty()) {
-      createTaskViewModel.loadAvailableTasks(projectId)
-    }
-  }
-
-  LaunchedEffect(createTaskState.taskSaved) {
-    if (createTaskState.taskSaved) {
-      navigationController.popBackStack()
-      createTaskViewModel.resetSaveState()
-    }
-  }
-
-  DisposableEffect(Unit) {
-    onDispose {
-      // Clean up photos when navigating away if task wasn't saved
-      if (!isNavigatingToCamera) {
-        createTaskState.attachmentUris.forEach { uri ->
-          createTaskViewModel.deletePhoto(context, uri)
-        }
-      }
-    }
-  }
+  HandlePhotoCleanupDisposableEffect(
+      isNavigatingToCamera, createTaskState.attachmentUris, createTaskViewModel, context)
 
   Scaffold(
+      topBar = {
+        EurekaTopBar(
+            title = "Create Task",
+            navigationIcon = {
+              BackButton(
+                  onClick = { navigationController.popBackStack() },
+                  modifier = Modifier.testTag(CommonTaskTestTags.BACK_BUTTON))
+            })
+      },
       content = { paddingValues ->
         Column(
             modifier =
@@ -154,6 +124,12 @@ fun CreateTaskScreen(
                   selectedProjectId = projectId,
                   onProjectSelected = { projectId -> createTaskViewModel.setProjectId(projectId) })
 
+              UserAssignmentField(
+                  availableUsers = createTaskState.availableUsers,
+                  selectedUserIds = createTaskState.selectedAssignedUserIds,
+                  onUserToggled = { userId -> createTaskViewModel.toggleUserAssignment(userId) },
+                  enabled = projectId.isNotEmpty())
+
               if (projectId.isNotEmpty()) {
                 TaskDependenciesSelectionField(
                     availableTasks = availableTasks,
@@ -172,7 +148,7 @@ fun CreateTaskScreen(
                       isNavigatingToCamera = true
                       navigationController.navigate(Route.Camera)
                     },
-                    colors = EurekaStyles.OutlinedButtonColors(),
+                    colors = EurekaStyles.outlinedButtonColors(),
                     modifier =
                         Modifier.fillMaxWidth(CREATE_SCREEN_PHOTO_BUTTON_SIZE)
                             .testTag(CommonTaskTestTags.ADD_PHOTO)) {
@@ -183,7 +159,7 @@ fun CreateTaskScreen(
                     onClick = { createTaskViewModel.addTask(context) },
                     enabled = inputValid && !createTaskState.isSaving,
                     modifier = Modifier.fillMaxWidth().testTag(CommonTaskTestTags.SAVE_TASK),
-                    colors = EurekaStyles.PrimaryButtonColors()) {
+                    colors = EurekaStyles.primaryButtonColors()) {
                       Text(if (createTaskState.isSaving) "Saving..." else "Save")
                     }
               }
@@ -198,4 +174,67 @@ fun CreateTaskScreen(
                   })
             }
       })
+}
+
+@Composable
+private fun HandleErrorToast(
+    errorMsg: String?,
+    createTaskViewModel: CreateTaskViewModel,
+    context: android.content.Context
+) {
+  LaunchedEffect(errorMsg) {
+    if (errorMsg != null) {
+      Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
+      createTaskViewModel.clearErrorMsg()
+    }
+  }
+}
+
+@Composable
+private fun HandlePhotoUri(photoUri: String, createTaskViewModel: CreateTaskViewModel) {
+  LaunchedEffect(photoUri) {
+    if (photoUri.isNotEmpty()) {
+      createTaskViewModel.addAttachment(photoUri.toUri())
+    }
+  }
+}
+
+@Composable
+private fun HandleProjectId(projectId: String, createTaskViewModel: CreateTaskViewModel) {
+  LaunchedEffect(projectId) {
+    if (projectId.isNotEmpty()) {
+      createTaskViewModel.loadAvailableTasks(projectId)
+      createTaskViewModel.loadProjectMembers(projectId)
+    }
+  }
+}
+
+@Composable
+private fun HandleTaskSaved(
+    taskSaved: Boolean,
+    navigationController: NavHostController,
+    createTaskViewModel: CreateTaskViewModel
+) {
+  LaunchedEffect(taskSaved) {
+    if (taskSaved) {
+      navigationController.popBackStack()
+      createTaskViewModel.resetSaveState()
+    }
+  }
+}
+
+@Composable
+private fun HandlePhotoCleanupDisposableEffect(
+    isNavigatingToCamera: Boolean,
+    attachmentUris: List<Uri>,
+    createTaskViewModel: CreateTaskViewModel,
+    context: android.content.Context
+) {
+  DisposableEffect(Unit) {
+    onDispose {
+      if (!isNavigatingToCamera) {
+        attachmentUris.forEach { uri -> createTaskViewModel.deletePhoto(context, uri) }
+      }
+    }
+  }
 }

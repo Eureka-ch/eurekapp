@@ -36,7 +36,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.IdGenerator
 import ch.eureka.eurekapp.model.data.invitation.CreateInvitationViewModel
@@ -45,7 +44,6 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.GrayTextColor2
 import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.ui.theme.Typography
-import kotlinx.coroutines.launch
 
 object CreateInvitationSubScreen {
   const val CREATE_INVITATION_BUTTON = "create invitation button"
@@ -134,17 +132,16 @@ fun CreateInvitationSubscreen(
                                           token = IdGenerator.generateUniqueToken(),
                                           projectId = projectId,
                                       )
-                                  createInvitationViewModel.viewModelScope.launch {
-                                    createInvitationViewModel.createInvitation(
-                                        invitationToCreate,
-                                        onFailureCallback = { error ->
-                                          errorText.value = error.message.toString()
-                                        },
-                                        onSuccessCallback = {
-                                          createdInvitation.value = true
-                                          createInvitationToken.value = invitationToCreate
-                                        })
-                                  }
+                                  createInvitationViewModel.createInvitation(
+                                      invitationToCreate,
+                                      onFailureCallback = { error ->
+                                        errorText.value = error.message.toString()
+                                      },
+                                      onSuccessCallback = {
+                                        createdInvitation.value = true
+                                        createInvitationToken.value = invitationToCreate
+                                        onInvitationCreate()
+                                      })
                                 }) {
                                   Text(
                                       "Create invitation",

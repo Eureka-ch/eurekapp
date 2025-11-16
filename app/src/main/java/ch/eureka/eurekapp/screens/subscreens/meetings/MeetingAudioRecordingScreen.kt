@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.screens.subscreens.meetings
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -20,7 +21,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.CloudUpload
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -46,17 +47,18 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.audio.AudioRecordingViewModel
-import ch.eureka.eurekapp.model.audio.RECORDING_STATE
+import ch.eureka.eurekapp.model.audio.RecordingState
+import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.meeting.Meeting
+import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
 import ch.eureka.eurekapp.ui.theme.DarkColorScheme
 import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.ui.theme.Typography
 import ch.eureka.eurekapp.utils.Formatters
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 object MeetingAudioScreenTestTags {
   const val START_RECORDING_BUTTON = "start recording button"
@@ -66,13 +68,15 @@ object MeetingAudioScreenTestTags {
   const val GENERATE_AI_TRANSCRIPT_BUTTON = "generate ai transcript button"
 }
 
+/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
 @Composable
 fun MeetingAudioRecordingScreen(
     context: Context = LocalContext.current,
     projectId: String,
     meetingId: String,
     audioRecordingViewModel: AudioRecordingViewModel = viewModel(),
-    onGenerateAITranscript: (String) -> Unit = {}
+    meetingRepository: MeetingRepository = FirestoreRepositoriesProvider.meetingRepository,
+    onNavigateToTranscript: (String, String) -> Unit = { _, _ -> }
 ) {
 
   var microphonePermissionIsGranted by remember {
@@ -89,28 +93,24 @@ fun MeetingAudioRecordingScreen(
 
   val recordingStatus = audioRecordingViewModel.isRecording.collectAsState()
 
+  val meetingState =
+      meetingRepository.getMeetingById(projectId, meetingId).collectAsState(initial = null)
+
   var canShowAITranscriptButton by remember { mutableStateOf(false) }
 
-  LaunchedEffect(Unit) {
-    if (!microphonePermissionIsGranted) {
-      launcher.launch(Manifest.permission.RECORD_AUDIO)
-    }
-  }
+  HandleMicrophonePermission(microphonePermissionIsGranted, launcher)
 
-  var timeInSeconds by remember { mutableStateOf<Long>(0L) }
+  var timeInSeconds by remember { mutableLongStateOf(0L) }
 
   var errorText by remember { mutableStateOf<String>("") }
   var uploadText by remember { mutableStateOf<String>("") }
   var canPressUploadButton by remember { mutableStateOf<Boolean>(true) }
 
-  var firebaseDownloadURI by remember { mutableStateOf<String?>(null) }
+  // If a transcript already exists for this meeting, show the View Transcript button
+  HandleExistingTranscript(
+      meetingState.value, onTranscriptFound = { canShowAITranscriptButton = true })
 
-  LaunchedEffect(recordingStatus.value) {
-    while (recordingStatus.value == RECORDING_STATE.RUNNING) {
-      delay(1000)
-      timeInSeconds += 1
-    }
-  }
+  TrackRecordingTime(recordingStatus.value) { timeInSeconds++ }
 
   LaunchedEffect(uploadText) {
     if (uploadText != "") {
@@ -170,7 +170,7 @@ fun MeetingAudioRecordingScreen(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically) {
                           when (recordingStatus.value) {
-                            RECORDING_STATE.PAUSED -> {
+                            RecordingState.PAUSED -> {
                               StopButton(
                                   onClick = {
                                     audioRecordingViewModel.stopRecording()
@@ -184,27 +184,22 @@ fun MeetingAudioRecordingScreen(
                               SaveButton(
                                   enabled = canPressUploadButton,
                                   onClick = {
-                                    audioRecordingViewModel.viewModelScope.launch {
-                                      canPressUploadButton = false
-                                      audioRecordingViewModel.saveRecordingToDatabase(
-                                          projectId,
-                                          meetingId,
-                                          onSuccesfulUpload = { firebaseURL ->
-                                            uploadText = "Uploaded successfully!"
-                                            canShowAITranscriptButton = true
-                                            firebaseDownloadURI = firebaseURL
-                                          },
-                                          onFailureUpload = { exception ->
-                                            errorText =
-                                                if (exception.message != null)
-                                                    exception.message.toString()
-                                                else ""
-                                          })
-                                    }
+                                    canPressUploadButton = false
+                                    audioRecordingViewModel.uploadRecordingToDatabase(
+                                        projectId,
+                                        meetingId,
+                                        onSuccesfulUpload = {
+                                          uploadText = "Uploaded successfully!"
+                                          canShowAITranscriptButton = true
+                                        },
+                                        onFailureUpload = { exception ->
+                                          errorText = exception.message?.toString() ?: ""
+                                        },
+                                        onCompletion = { canPressUploadButton = true })
                                   },
                                   testTag = MeetingAudioScreenTestTags.UPLOAD_TO_DATABASE_BUTTON)
                             }
-                            RECORDING_STATE.STOPPED -> {
+                            RecordingState.STOPPED -> {
                               PlayButton(
                                   onClick = {
                                     audioRecordingViewModel.startRecording(
@@ -214,7 +209,7 @@ fun MeetingAudioRecordingScreen(
                                   },
                                   testTag = MeetingAudioScreenTestTags.START_RECORDING_BUTTON)
                             }
-                            RECORDING_STATE.RUNNING -> {
+                            RecordingState.RUNNING -> {
                               PauseButton(
                                   onClick = { audioRecordingViewModel.pauseRecording() },
                                   testTag = MeetingAudioScreenTestTags.PAUSE_RECORDING_BUTTON)
@@ -248,13 +243,13 @@ fun MeetingAudioRecordingScreen(
                           horizontalArrangement = Arrangement.Center,
                           verticalAlignment = Alignment.CenterVertically) {
                             ElevatedButton(
-                                modifier = Modifier.size(width = 250.dp, height = 50.dp),
-                                onClick = { onGenerateAITranscript(firebaseDownloadURI!!) }) {
-                                  Row() {
-                                    Text(
-                                        "\uD83E\uDDE0 Generate AI Transcript",
-                                        style = Typography.titleMedium)
-                                  }
+                                modifier =
+                                    Modifier.size(width = 250.dp, height = 50.dp)
+                                        .testTag(
+                                            MeetingAudioScreenTestTags
+                                                .GENERATE_AI_TRANSCRIPT_BUTTON),
+                                onClick = { onNavigateToTranscript(projectId, meetingId) }) {
+                                  Row() { Text("View Transcript", style = Typography.titleMedium) }
                                 }
                           }
                     }
@@ -323,4 +318,31 @@ fun SaveButton(onClick: () -> Unit, enabled: Boolean, testTag: String) {
       enabled = enabled,
       iconVector = Icons.Outlined.CloudUpload,
       testTag = testTag)
+}
+
+@Composable
+private fun HandleMicrophonePermission(
+    permissionGranted: Boolean,
+    launcher: ManagedActivityResultLauncher<String, Boolean>
+) {
+  LaunchedEffect(permissionGranted) {
+    if (!permissionGranted) launcher.launch(Manifest.permission.RECORD_AUDIO)
+  }
+}
+
+@Composable
+private fun TrackRecordingTime(recordingState: RecordingState, onTick: () -> Unit) {
+  LaunchedEffect(recordingState) {
+    while (recordingState == RecordingState.RUNNING) {
+      delay(1000)
+      onTick()
+    }
+  }
+}
+
+@Composable
+private fun HandleExistingTranscript(meeting: Meeting?, onTranscriptFound: () -> Unit) {
+  LaunchedEffect(meeting?.transcriptId) {
+    if (meeting?.transcriptId?.isNotBlank() == true) onTranscriptFound()
+  }
 }

@@ -1,4 +1,4 @@
-/* Portions of this code were written with the help of Gemini and chatGPT */
+/* Portions of this code were written with the help of Claude Code */
 package ch.eureka.eurekapp.ui.meeting
 
 import android.widget.Toast
@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.HowToVote
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
@@ -57,9 +58,11 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
@@ -76,12 +79,14 @@ import java.time.ZoneId
  *
  * Provides semantic identifiers for UI testing with Compose UI Test framework. Each constant
  * represents a unique testTag applied to composables in MeetingDetailScreen, enabling reliable and
- * maintainable UI test assertions.
+ * maintainable UI test assertions. Note :This file was partially written by ChatGPT (GPT-5)
+ * Co-author : GPT-5
  */
 object MeetingDetailScreenTestTags {
   const val MEETING_DETAIL_SCREEN = "MeetingDetailScreen"
   const val LOADING_INDICATOR = "LoadingIndicator"
   const val ERROR_MESSAGE = "ErrorMessage"
+  const val ERROR_MSG = "ErrorMsg"
   const val MEETING_TITLE = "MeetingDetailTitle"
   const val MEETING_STATUS = "MeetingDetailStatus"
   const val MEETING_DATETIME = "MeetingDetailDateTime"
@@ -103,8 +108,7 @@ object MeetingDetailScreenTestTags {
   const val DELETE_CONFIRMATION_DIALOG = "DeleteConfirmationDialog"
   const val CONFIRM_DELETE_BUTTON = "ConfirmDeleteButton"
   const val CANCEL_DELETE_BUTTON = "CancelDeleteButton"
-  const val VOTE_TIME_BUTTON = "VoteForTimeButton"
-  const val VOTE_FORMAT_BUTTON = "VoteForFormatButton"
+  const val VOTE_FOR_MEETING_PROPOSAL_BUTTON = "VoteForMeetingProposal"
   const val EDIT_BUTTON = "EditButton"
   const val SAVE_BUTTON = "SaveButton"
   const val CANCEL_EDIT_BUTTON = "CancelEditButton"
@@ -116,16 +120,20 @@ object MeetingDetailScreenTestTags {
  *
  * @param onNavigateBack Callback to navigate back to the previous screen.
  * @param onJoinMeeting Callback when user clicks join meeting button.
- * @param onRecordMeeting Callback when user clicks record button.
- * @param onViewTranscript Callback when user clicks view transcript button.
+ * @param onVoteForMeetingProposalClick Callback when the "Vote for meeting proposals" button is
+ *   clicked.
+ * @param onRecordMeeting Callback when user clicks record button, receives projectId and meetingId.
+ * @param onViewTranscript Callback when user clicks view transcript button, receives projectId and
+ *   meetingId.
+ * @param onNavigateToMeeting Callback when user clicks navigate to meeting button.
  */
 data class MeetingDetailActionsConfig(
     val onNavigateBack: () -> Unit = {},
     val onJoinMeeting: (String) -> Unit = {},
-    val onRecordMeeting: () -> Unit = {},
-    val onViewTranscript: () -> Unit = {},
-    val onVoteForTime: () -> Unit = {},
-    val onVoteForFormat: () -> Unit = {},
+    val onRecordMeeting: (String, String) -> Unit = { _, _ -> },
+    val onViewTranscript: (String, String) -> Unit = { _, _ -> },
+    val onVoteForMeetingProposalClick: (String, String) -> Unit = { _, _ -> },
+    val onNavigateToMeeting: () -> Unit = {},
 )
 
 /**
@@ -218,8 +226,9 @@ fun MeetingDetailScreen(
                         onRecordMeeting = actionsConfig.onRecordMeeting,
                         onViewTranscript = actionsConfig.onViewTranscript,
                         onDeleteMeeting = { showDeleteDialog = true },
-                        onVoteForTime = actionsConfig.onVoteForTime,
-                        onVoteForFormat = actionsConfig.onVoteForFormat,
+                        onVoteForMeetingProposals = {
+                          actionsConfig.onVoteForMeetingProposalClick(projectId, meetingId)
+                        },
                         onEditMeeting = { viewModel.toggleEditMode(meeting) },
                         onSaveMeeting = { viewModel.saveMeetingChanges(meeting) },
                         onCancelEdit = { viewModel.toggleEditMode(null) },
@@ -228,7 +237,8 @@ fun MeetingDetailScreen(
                         onUpdateDuration = viewModel::updateEditDuration,
                         onTouchTitle = viewModel::touchTitle,
                         onTouchDateTime = viewModel::touchDateTime,
-                        onTouchDuration = viewModel::touchDuration))
+                        onTouchDuration = viewModel::touchDuration,
+                        onNavigateToMeeting = actionsConfig.onNavigateToMeeting))
           } ?: ErrorScreen(message = uiState.errorMsg ?: "Meeting not found")
         }
       })
@@ -284,25 +294,26 @@ private fun ErrorScreen(message: String) {
  *
  * @param onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
  *   link.
- * @param onRecordMeeting Callback invoked when user clicks record meeting button.
- * @param onViewTranscript Callback invoked when user clicks view transcript button.
+ * @param onRecordMeeting Callback invoked when user clicks record meeting button, receives
+ *   projectId and meetingId.
+ * @param onViewTranscript Callback invoked when user clicks view transcript button, receives
+ *   projectId and meetingId.
  * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
- * @param onVoteForTime Callback invoked when user votes for time button.
- * @param onVoteForFormat Callback invoked when user votes for format button.
+ * @param onVoteForMeetingProposals Callback invoked when user votes for meeting proposals.
  * @param onEditMeeting Callback invoked when user clicks edit meeting button.
  * @param onSaveMeeting Callback invoked when user saves meeting changes.
  * @param onCancelEdit Callback invoked when user cancels edit mode.
  * @param onUpdateTitle Callback invoked when edit title changes.
  * @param onUpdateDateTime Callback invoked when edit date/time changes.
  * @param onUpdateDuration Callback invoked when edit duration changes.
+ * @param onNavigateToMeeting Callback invoked when user clicks navigate to meeting button.
  */
 data class MeetingDetailContentActionsConfig(
     val onJoinMeeting: (String) -> Unit,
-    val onRecordMeeting: () -> Unit,
-    val onViewTranscript: () -> Unit,
+    val onRecordMeeting: (String, String) -> Unit,
+    val onViewTranscript: (String, String) -> Unit,
     val onDeleteMeeting: () -> Unit,
-    val onVoteForTime: () -> Unit,
-    val onVoteForFormat: () -> Unit,
+    val onVoteForMeetingProposals: () -> Unit,
     val onEditMeeting: () -> Unit,
     val onSaveMeeting: () -> Unit,
     val onCancelEdit: () -> Unit,
@@ -312,6 +323,7 @@ data class MeetingDetailContentActionsConfig(
     val onTouchTitle: () -> Unit,
     val onTouchDateTime: () -> Unit,
     val onTouchDuration: () -> Unit,
+    val onNavigateToMeeting: () -> Unit,
 )
 
 /**
@@ -337,22 +349,25 @@ data class EditConfig(
 /**
  * Configuration for action button callbacks.
  *
- * @param onJoinMeeting Callback invoked when user clicks join meeting button.
- * @param onRecordMeeting Callback invoked when user clicks record meeting button.
- * @param onViewTranscript Callback invoked when user clicks view transcript button.
+ * @param onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
+ *   link.
+ * @param onRecordMeeting Callback invoked when user clicks record meeting button, receives
+ *   projectId and meetingId.
+ * @param onViewTranscript Callback invoked when user clicks view transcript button, receives
+ *   projectId and meetingId.
  * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
- * @param onVoteForTime Callback invoked when user votes for time button.
- * @param onVoteForFormat Callback invoked when user votes for format button.
+ * @param onVoteForMeetingProposals Callback invoked when user votes for meeting proposals.
  * @param onEditMeeting Callback invoked when user clicks edit meeting button.
+ * @param onNavigateToMeeting Callback invoked when user clicks navigate to meeting button.
  */
 data class ActionButtonsConfig(
     val onJoinMeeting: (String) -> Unit,
-    val onRecordMeeting: () -> Unit,
-    val onViewTranscript: () -> Unit,
+    val onRecordMeeting: (String, String) -> Unit,
+    val onViewTranscript: (String, String) -> Unit,
     val onDeleteMeeting: () -> Unit,
-    val onVoteForTime: () -> Unit,
-    val onVoteForFormat: () -> Unit,
+    val onVoteForMeetingProposals: () -> Unit,
     val onEditMeeting: () -> Unit,
+    val onNavigateToMeeting: () -> Unit,
 )
 
 /**
@@ -421,9 +436,9 @@ private fun MeetingDetailContent(
                         onRecordMeeting = actionsConfig.onRecordMeeting,
                         onViewTranscript = actionsConfig.onViewTranscript,
                         onDeleteMeeting = actionsConfig.onDeleteMeeting,
-                        onVoteForTime = actionsConfig.onVoteForTime,
-                        onVoteForFormat = actionsConfig.onVoteForFormat,
+                        onVoteForMeetingProposals = actionsConfig.onVoteForMeetingProposals,
                         onEditMeeting = actionsConfig.onEditMeeting,
+                        onNavigateToMeeting = actionsConfig.onNavigateToMeeting,
                     ),
             )
           }
@@ -486,43 +501,60 @@ private fun MeetingInformationCard(meeting: Meeting) {
 
               HorizontalDivider()
 
-              if (meeting.datetime != null) {
-                InfoRow(
-                    icon = Icons.Default.Schedule,
-                    label = "Date & Time",
-                    value = Formatters.formatDateTime(meeting.datetime.toDate()),
-                    testTag = MeetingDetailScreenTestTags.MEETING_DATETIME)
-              }
-
-              meeting.format?.let { format ->
-                InfoRow(
-                    icon =
-                        when (format) {
-                          MeetingFormat.VIRTUAL -> Icons.Default.VideoCall
-                          MeetingFormat.IN_PERSON -> Icons.Default.Place
-                        },
-                    label = "Format",
-                    value = format.description,
-                    testTag = MeetingDetailScreenTestTags.MEETING_FORMAT)
-              }
-
-              if (meeting.format == MeetingFormat.IN_PERSON && meeting.location != null) {
-                InfoRow(
-                    icon = Icons.Default.Place,
-                    label = "Location",
-                    value = meeting.location.name,
-                    testTag = MeetingDetailScreenTestTags.MEETING_LOCATION)
-              }
-
-              if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
-                InfoRow(
-                    icon = Icons.Default.VideoCall,
-                    label = "Meeting Link",
-                    value = meeting.link,
-                    testTag = MeetingDetailScreenTestTags.MEETING_LINK)
-              }
+              MeetingDateTimeInfo(meeting)
+              MeetingFormatInfo(meeting)
+              MeetingLocationInfo(meeting)
+              MeetingLinkInfo(meeting)
             }
       }
+}
+
+@Composable
+private fun MeetingDateTimeInfo(meeting: Meeting) {
+  if (meeting.datetime != null && meeting.status != MeetingStatus.IN_PROGRESS) {
+    InfoRow(
+        icon = Icons.Default.Schedule,
+        label = "Date & Time",
+        value = Formatters.formatDateTime(meeting.datetime.toDate()),
+        testTag = MeetingDetailScreenTestTags.MEETING_DATETIME)
+  }
+}
+
+@Composable
+private fun MeetingFormatInfo(meeting: Meeting) {
+  meeting.format?.let { format ->
+    InfoRow(
+        icon =
+            when (format) {
+              MeetingFormat.VIRTUAL -> Icons.Default.VideoCall
+              MeetingFormat.IN_PERSON -> Icons.Default.Place
+            },
+        label = "Format",
+        value = format.description,
+        testTag = MeetingDetailScreenTestTags.MEETING_FORMAT)
+  }
+}
+
+@Composable
+private fun MeetingLocationInfo(meeting: Meeting) {
+  if (meeting.format == MeetingFormat.IN_PERSON && meeting.location != null) {
+    InfoRow(
+        icon = Icons.Default.Place,
+        label = "Location",
+        value = meeting.location.name,
+        testTag = MeetingDetailScreenTestTags.MEETING_LOCATION)
+  }
+}
+
+@Composable
+private fun MeetingLinkInfo(meeting: Meeting) {
+  if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
+    InfoRow(
+        icon = Icons.Default.VideoCall,
+        label = "Meeting Link",
+        value = meeting.link,
+        testTag = MeetingDetailScreenTestTags.MEETING_LINK)
+  }
 }
 
 /**
@@ -628,7 +660,8 @@ private fun EditableTitleField(config: EditableMeetingInfoCardConfig) {
     Text(
         text = "Title cannot be empty",
         color = Color.Red,
-        style = MaterialTheme.typography.bodySmall)
+        style = MaterialTheme.typography.bodySmall,
+        modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MSG))
   }
 }
 
@@ -675,7 +708,18 @@ private fun EditableDateTimeField(
       Text(
           text = "Date and time must be set",
           color = Color.Red,
-          style = MaterialTheme.typography.bodySmall)
+          style = MaterialTheme.typography.bodySmall,
+          modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MSG))
+    }
+
+    if (config.editDateTime != null &&
+        config.hasTouchedDateTime &&
+        java.time.LocalDateTime.of(editDate, editTime).isBefore(java.time.LocalDateTime.now())) {
+      Text(
+          text = "Meeting should be scheduled in the future.",
+          color = Color.Red,
+          style = MaterialTheme.typography.bodySmall,
+          modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MSG))
     }
   }
 }
@@ -684,21 +728,29 @@ private fun EditableDateTimeField(
 @Composable
 private fun EditableDurationField(config: EditableMeetingInfoCardConfig) {
   // Duration field
-  DurationInputField(
-      duration = config.editDuration,
-      label = "Duration",
-      placeholder = "Select duration",
-      durationOptions = listOf(15, 30, 45, 60, 90, 120),
-      tag = "EditMeetingDuration",
-      onDurationSelected = { duration ->
-        config.onTouchDuration()
-        config.onDurationChange(duration)
-      })
+
+  SingleChoiceInputField(
+      config =
+          SingleChoiceInputFieldConfig(
+              currentValue = config.editDuration,
+              displayValue = { d -> "$d minutes" },
+              label = "Duration",
+              placeholder = "Select duration",
+              icon = Icons.Default.HourglassTop,
+              iconDescription = "Select duration",
+              alertDialogTitle = "Select a duration",
+              options = listOf(5, 10, 15, 20, 30, 45, 60),
+              tag = "EditMeetingDuration",
+              onOptionSelected = { duration ->
+                config.onTouchDuration()
+                config.onDurationChange(duration)
+              }))
   if (config.editDuration <= 0 && config.hasTouchedDuration) {
     Text(
         text = "Duration must be greater than 0",
         color = Color.Red,
-        style = MaterialTheme.typography.bodySmall)
+        style = MaterialTheme.typography.bodySmall,
+        modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MSG))
   }
 }
 
@@ -908,8 +960,18 @@ private fun ActionButtonsSection(
                     Text("Join Meeting")
                   }
             }
+            if (meeting.format == MeetingFormat.IN_PERSON && meeting.location != null) {
+              Button(
+                  onClick = actionsConfig.onNavigateToMeeting, modifier = Modifier.fillMaxWidth()) {
+                    Icon(
+                        imageVector = Icons.Default.Place,
+                        contentDescription = stringResource(R.string.location_icon))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("View Location")
+                  }
+            }
             OutlinedButton(
-                onClick = actionsConfig.onRecordMeeting,
+                onClick = { actionsConfig.onRecordMeeting(meeting.projectId, meeting.meetingID) },
                 modifier =
                     Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.RECORD_BUTTON)) {
                   Text("Start Recording")
@@ -917,7 +979,7 @@ private fun ActionButtonsSection(
           }
           MeetingStatus.COMPLETED -> {
             Button(
-                onClick = actionsConfig.onViewTranscript,
+                onClick = { actionsConfig.onViewTranscript(meeting.projectId, meeting.meetingID) },
                 modifier =
                     Modifier.fillMaxWidth()
                         .testTag(MeetingDetailScreenTestTags.VIEW_TRANSCRIPT_BUTTON)) {
@@ -927,24 +989,17 @@ private fun ActionButtonsSection(
                 }
           }
           MeetingStatus.OPEN_TO_VOTES -> {
-            Button(
-                onClick = actionsConfig.onVoteForTime,
-                modifier =
-                    Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.VOTE_TIME_BUTTON)) {
-                  Icon(imageVector = Icons.Default.HowToVote, contentDescription = "Vote for time")
-                  Spacer(modifier = Modifier.width(8.dp))
-                  Text("Vote for time")
-                }
 
             Button(
-                onClick = actionsConfig.onVoteForFormat,
+                onClick = actionsConfig.onVoteForMeetingProposals,
                 modifier =
                     Modifier.fillMaxWidth()
-                        .testTag(MeetingDetailScreenTestTags.VOTE_FORMAT_BUTTON)) {
+                        .testTag(MeetingDetailScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON)) {
                   Icon(
-                      imageVector = Icons.Default.HowToVote, contentDescription = "Vote for format")
+                      imageVector = Icons.Default.HowToVote,
+                      contentDescription = "Vote for meeting proposal")
                   Spacer(modifier = Modifier.width(8.dp))
-                  Text("Vote for format")
+                  Text("Vote for meeting proposals")
                 }
           }
         }

@@ -3,7 +3,6 @@ package ch.eureka.eurekapp.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.NavHost
@@ -12,36 +11,41 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.project.Project
-import ch.eureka.eurekapp.model.data.project.ProjectRole
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.IdeasScreen
-import ch.eureka.eurekapp.screens.OverviewProjectsScreen
+import ch.eureka.eurekapp.screens.OverviewProjectScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
 import ch.eureka.eurekapp.screens.TasksScreen
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScreen
+import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingTranscriptViewScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.creation.CreateProjectScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitationSubscreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.AutoAssignResultScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
+import ch.eureka.eurekapp.ui.authentication.TokenEntryScreen
+import ch.eureka.eurekapp.ui.meeting.CreateDateTimeFormatProposalForMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
-import ch.eureka.eurekapp.ui.meeting.DateTimeVoteScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailActionsConfig
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreen
+import ch.eureka.eurekapp.ui.meeting.MeetingNavigationScreen
+import ch.eureka.eurekapp.ui.meeting.MeetingProposalVoteScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
+import ch.eureka.eurekapp.ui.meeting.MeetingScreenConfig
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
 
+/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
 sealed interface Route {
   // Main screens
   @Serializable data object ProjectSelection : Route
 
-  @Serializable data object OverviewProject : Route
+  @Serializable data class OverviewProject(val projectId: String) : Route
 
   @Serializable data object Profile : Route
 
@@ -88,13 +92,25 @@ sealed interface Route {
     @Serializable data class CreateMeeting(val projectId: String) : MeetingsSection
 
     @Serializable
-    data class DateTimeVotes(val projectId: String, val meetingId: String) : MeetingsSection
+    data class MeetingProposalVotes(val projectId: String, val meetingId: String) : MeetingsSection
+
+    @Serializable
+    data class CreateDateTimeFormatMeetingProposalForMeeting(
+        val projectId: String,
+        val meetingId: String
+    ) : MeetingsSection
 
     @Serializable
     data class MeetingDetail(val projectId: String, val meetingId: String) : MeetingsSection
 
     @Serializable
+    data class AudioRecording(val projectId: String, val meetingId: String) : MeetingsSection
+
+    @Serializable
     data class AudioTranscript(val projectId: String, val meetingId: String) : MeetingsSection
+
+    @Serializable
+    data class MeetingNavigation(val projectId: String, val meetingId: String) : MeetingsSection
   }
 
   sealed interface ProjectSelectionSection : Route {
@@ -112,7 +128,9 @@ sealed interface Route {
         get() = OverviewProjectSection::class.sealedSubclasses.toSet()
     }
 
-    @Serializable data object CreateInvitation : OverviewProjectSection
+    @Serializable data class CreateInvitation(val projectId: String) : OverviewProjectSection
+
+    @Serializable data object TokenEntry : OverviewProjectSection
   }
 
   @Serializable data object Camera : Route
@@ -134,13 +152,6 @@ fun NavigationMenu() {
           memberIds = listOf(auth.currentUser?.uid ?: "unknown"),
       )
 
-  LaunchedEffect(Unit) {
-    projectRepository.createProject(
-        project = testProject,
-        creatorRole = ProjectRole.OWNER,
-        creatorId = auth.currentUser?.uid ?: "unknown")
-  }
-
   Scaffold(
       containerColor = Color.White,
       bottomBar = { BottomBarNavigationComponent(navigationController = navigationController) }) {
@@ -150,9 +161,32 @@ fun NavigationMenu() {
             navController = navigationController,
             startDestination = Route.ProjectSelection) {
               // Main screens
-              composable<Route.ProjectSelection> { ProjectSelectionScreen(navigationController) }
+              composable<Route.ProjectSelection> {
+                ProjectSelectionScreen(
+                    onCreateProjectRequest = {
+                      navigationController.navigate(Route.ProjectSelectionSection.CreateProject)
+                    },
+                    onProjectSelectRequest = { project ->
+                      navigationController.navigate(
+                          Route.OverviewProject(projectId = project.projectId))
+                    },
+                    onInputTokenRequest = {
+                      navigationController.navigate(Route.OverviewProjectSection.TokenEntry)
+                    },
+                    onGenerateInviteRequest = { projectId ->
+                      navigationController.navigate(
+                          Route.OverviewProjectSection.CreateInvitation(projectId = projectId))
+                    })
+              }
+              composable<Route.OverviewProjectSection.TokenEntry> {
+                TokenEntryScreen(
+                    onTokenValidated = { navigationController.navigate(Route.ProjectSelection) })
+              }
               composable<Route.Profile> { ProfileScreen() }
-              composable<Route.OverviewProject> { OverviewProjectsScreen() }
+              composable<Route.OverviewProject> { backStackEntry ->
+                val overviewProjectScreenRoute = backStackEntry.toRoute<Route.OverviewProject>()
+                OverviewProjectScreen(projectId = overviewProjectScreenRoute.projectId)
+              }
 
               // Tasks section
               composable<Route.TasksSection.Tasks> {
@@ -165,7 +199,7 @@ fun NavigationMenu() {
                     },
                     onTaskClick = { taskId, projectId ->
                       navigationController.navigate(
-                          Route.TasksSection.ViewTask(projectId = testProjectId, taskId = taskId))
+                          Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
                     })
               }
               composable<Route.TasksSection.CreateTask> { CreateTaskScreen(navigationController) }
@@ -185,26 +219,42 @@ fun NavigationMenu() {
               }
 
               // Ideas section
-              composable<Route.IdeasSection.Ideas> { IdeasScreen(navigationController) }
+              composable<Route.IdeasSection.Ideas> { IdeasScreen() }
 
               // Meetings section
               composable<Route.MeetingsSection.Meetings> {
                 MeetingScreen(
-                    projectId = testProjectId,
-                    onCreateMeeting = {
-                      navigationController.navigate(
-                          Route.MeetingsSection.CreateMeeting(testProjectId))
-                    },
-                    onMeetingClick = { projectId, meetingId ->
-                      navigationController.navigate(
-                          Route.MeetingsSection.MeetingDetail(
-                              projectId = projectId, meetingId = meetingId))
-                    },
-                    onVoteForDateTimeClick = { projectId, meetingId ->
-                      navigationController.navigate(
-                          Route.MeetingsSection.DateTimeVotes(
-                              projectId = projectId, meetingId = meetingId))
-                    })
+                    MeetingScreenConfig(
+                        projectId = testProjectId,
+                        onCreateMeeting = {
+                          navigationController.navigate(
+                              Route.MeetingsSection.CreateMeeting(testProjectId))
+                        },
+                        onMeetingClick = { projectId, meetingId ->
+                          navigationController.navigate(
+                              Route.MeetingsSection.MeetingDetail(
+                                  projectId = projectId, meetingId = meetingId))
+                        },
+                        onVoteForMeetingProposalClick = { projectId, meetingId ->
+                          navigationController.navigate(
+                              Route.MeetingsSection.MeetingProposalVotes(
+                                  projectId = projectId, meetingId = meetingId))
+                        },
+                        onNavigateToMeeting = { projectId, meetingId ->
+                          navigationController.navigate(
+                              Route.MeetingsSection.MeetingNavigation(
+                                  projectId = projectId, meetingId = meetingId))
+                        },
+                        onViewTranscript = { projectId, meetingId ->
+                          navigationController.navigate(
+                              Route.MeetingsSection.AudioTranscript(
+                                  projectId = projectId, meetingId = meetingId))
+                        },
+                        onRecord = { projectId, meetingId ->
+                          navigationController.navigate(
+                              Route.MeetingsSection.AudioRecording(
+                                  projectId = projectId, meetingId = meetingId))
+                        }))
               }
 
               composable<Route.MeetingsSection.MeetingDetail> { backStackEntry ->
@@ -215,10 +265,36 @@ fun NavigationMenu() {
                     meetingId = meetingDetailRoute.meetingId,
                     actionsConfig =
                         MeetingDetailActionsConfig(
-                            onNavigateBack = { navigationController.popBackStack() }),
+                            onNavigateBack = { navigationController.popBackStack() },
+                            onRecordMeeting = { projectId, meetingId ->
+                              navigationController.navigate(
+                                  Route.MeetingsSection.AudioRecording(
+                                      projectId = projectId, meetingId = meetingId))
+                            },
+                            onViewTranscript = { projectId, meetingId ->
+                              navigationController.navigate(
+                                  Route.MeetingsSection.AudioTranscript(
+                                      projectId = projectId, meetingId = meetingId))
+                            },
+                            onNavigateToMeeting = {
+                              navigationController.navigate(
+                                  Route.MeetingsSection.MeetingNavigation(
+                                      projectId = meetingDetailRoute.projectId,
+                                      meetingId = meetingDetailRoute.meetingId))
+                            },
+                            onVoteForMeetingProposalClick = { projectId, meetingId ->
+                              navigationController.navigate(
+                                  Route.MeetingsSection.MeetingProposalVotes(
+                                      projectId = projectId, meetingId = meetingId))
+                            }),
                 )
               }
 
+              // Project selection section
+              composable<Route.ProjectSelectionSection.CreateProject> {
+                CreateProjectScreen(
+                    onProjectCreated = { navigationController.navigate(Route.ProjectSelection) })
+              }
               composable<Route.MeetingsSection.CreateMeeting> { backStackEntry ->
                 val createMeetingCreationRoute =
                     backStackEntry.toRoute<Route.MeetingsSection.CreateMeeting>()
@@ -227,24 +303,78 @@ fun NavigationMenu() {
                     { navigationController.navigate(Route.MeetingsSection.Meetings) })
               }
 
-              composable<Route.MeetingsSection.DateTimeVotes> { backStackEntry ->
-                val dateTimeVotesRoute =
-                    backStackEntry.toRoute<Route.MeetingsSection.DateTimeVotes>()
-                DateTimeVoteScreen(
-                    projectId = dateTimeVotesRoute.projectId,
-                    meetingId = dateTimeVotesRoute.meetingId,
+              composable<Route.MeetingsSection.MeetingProposalVotes> { backStackEntry ->
+                val meetingProposalVotesRoute =
+                    backStackEntry.toRoute<Route.MeetingsSection.MeetingProposalVotes>()
+                MeetingProposalVoteScreen(
+                    projectId = meetingProposalVotesRoute.projectId,
+                    meetingId = meetingProposalVotesRoute.meetingId,
                     onDone = { navigationController.navigate(Route.MeetingsSection.Meetings) },
+                    onCreateDateTimeFormatProposalForMeeting = {
+                      navigationController.navigate(
+                          Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting(
+                              projectId = meetingProposalVotesRoute.projectId,
+                              meetingId = meetingProposalVotesRoute.meetingId))
+                    },
                 )
               }
 
-              composable<Route.MeetingsSection.AudioTranscript> {
-                MeetingAudioRecordingScreen(projectId = testProjectId, meetingId = "1234")
+              composable<Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting> {
+                  backStackEntry ->
+                val createDateTimeFormatMeetingProposalForMeetingVotesRoute =
+                    backStackEntry.toRoute<
+                        Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting>()
+                CreateDateTimeFormatProposalForMeetingScreen(
+                    projectId = createDateTimeFormatMeetingProposalForMeetingVotesRoute.projectId,
+                    meetingId = createDateTimeFormatMeetingProposalForMeetingVotesRoute.meetingId,
+                    onDone = {
+                      navigationController.navigate(
+                          Route.MeetingsSection.MeetingProposalVotes(
+                              projectId =
+                                  createDateTimeFormatMeetingProposalForMeetingVotesRoute.projectId,
+                              meetingId =
+                                  createDateTimeFormatMeetingProposalForMeetingVotesRoute
+                                      .meetingId))
+                    },
+                )
               }
 
-              composable<Route.ProjectSelectionSection.CreateProject> { CreateProjectScreen() }
+              composable<Route.MeetingsSection.MeetingNavigation> { backStackEntry ->
+                val meetingNavigationRoute =
+                    backStackEntry.toRoute<Route.MeetingsSection.MeetingNavigation>()
+                MeetingNavigationScreen(
+                    projectId = meetingNavigationRoute.projectId,
+                    meetingId = meetingNavigationRoute.meetingId,
+                    onNavigateBack = { navigationController.popBackStack() })
+              }
 
-              composable<Route.OverviewProjectSection.CreateInvitation> {
-                CreateInvitationSubscreen(projectId = testProjectId, onInvitationCreate = {})
+              composable<Route.MeetingsSection.AudioRecording> { backStackEntry ->
+                val audioRecordingRoute =
+                    backStackEntry.toRoute<Route.MeetingsSection.AudioRecording>()
+                MeetingAudioRecordingScreen(
+                    projectId = audioRecordingRoute.projectId,
+                    meetingId = audioRecordingRoute.meetingId,
+                    onNavigateToTranscript = { projectId, meetingId ->
+                      navigationController.navigate(
+                          Route.MeetingsSection.AudioTranscript(
+                              projectId = projectId, meetingId = meetingId))
+                    })
+              }
+
+              composable<Route.MeetingsSection.AudioTranscript> { backStackEntry ->
+                val audioTranscriptRoute =
+                    backStackEntry.toRoute<Route.MeetingsSection.AudioTranscript>()
+                MeetingTranscriptViewScreen(
+                    projectId = audioTranscriptRoute.projectId,
+                    meetingId = audioTranscriptRoute.meetingId,
+                    onNavigateBack = { navigationController.popBackStack() })
+              }
+
+              composable<Route.OverviewProjectSection.CreateInvitation> { backStackEntry ->
+                val createInvitationRoute =
+                    backStackEntry.toRoute<Route.OverviewProjectSection.CreateInvitation>()
+                CreateInvitationSubscreen(
+                    projectId = createInvitationRoute.projectId, onInvitationCreate = {})
               }
 
               composable<Route.Camera> { Camera(navigationController) }

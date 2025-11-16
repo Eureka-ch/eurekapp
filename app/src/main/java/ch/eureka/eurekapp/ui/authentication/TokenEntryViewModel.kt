@@ -4,6 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.invitation.InvitationRepository
 import ch.eureka.eurekapp.model.data.invitation.InvitationRepositoryProvider
+import ch.eureka.eurekapp.model.data.project.ProjectRepository
+import ch.eureka.eurekapp.model.data.project.ProjectRepositoryProvider
+import ch.eureka.eurekapp.model.data.project.ProjectRole
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,10 +37,12 @@ data class TokenEntryUIState(
  * Handles token validation and marking invitations as used after successful authentication.
  *
  * @property repository The invitation repository for validation operations.
+ * @property projectRepository The project repository for adding users to projects.
  * @property auth Firebase Auth instance to get the current user.
  */
 class TokenEntryViewModel(
     private val repository: InvitationRepository = InvitationRepositoryProvider.repository,
+    private val projectRepository: ProjectRepository = ProjectRepositoryProvider.repository,
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 ) : ViewModel() {
 
@@ -77,6 +82,7 @@ class TokenEntryViewModel(
    * 2. Fetches invitation from repository
    * 3. Validates invitation exists and is not already used
    * 4. Marks invitation as used with current user ID
+   * 5. Adds the user to the project as a MEMBER
    */
   fun validateToken() {
     val currentToken = _uiState.value.token
@@ -120,7 +126,26 @@ class TokenEntryViewModel(
 
         result.fold(
             onSuccess = {
-              _uiState.update { it.copy(isLoading = false, validationSuccess = true) }
+              // Add user to the project
+              viewModelScope.launch {
+                val addMemberResult =
+                    projectRepository.addMember(
+                        invitation.projectId, currentUser.uid, ProjectRole.MEMBER)
+
+                addMemberResult.fold(
+                    onSuccess = {
+                      _uiState.update { it.copy(isLoading = false, validationSuccess = true) }
+                    },
+                    onFailure = { error ->
+                      _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage =
+                                error.message
+                                    ?: "Failed to add you to the project. Please try again.")
+                      }
+                    })
+              }
             },
             onFailure = { error ->
               _uiState.update {
