@@ -65,19 +65,35 @@ class AutoAssignResultScreenTest {
   }
 
   private fun setContentWithNav(includeTasksScreen: Boolean = false) {
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      NavHost(navController, startDestination = Route.TasksSection.AutoTaskAssignment) {
-        composable<Route.TasksSection.AutoTaskAssignment> {
-          AutoAssignResultScreen(
-              navigationController = navController,
-              viewModel =
-                  AutoAssignResultViewModel(
-                      mockTaskRepository, mockProjectRepository, mockUserRepository))
-        }
-        if (includeTasksScreen) {
+    if (includeTasksScreen) {
+      // For navigation tests: start from Tasks and navigate to AutoTaskAssignment
+      composeTestRule.setContent {
+        val navController = rememberNavController()
+        NavHost(navController, startDestination = Route.TasksSection.Tasks) {
           composable<Route.TasksSection.Tasks> {
             Text("Tasks Screen", modifier = Modifier.testTag("tasks_screen"))
+          }
+          composable<Route.TasksSection.AutoTaskAssignment> {
+            AutoAssignResultScreen(
+                navigationController = navController,
+                viewModel =
+                    AutoAssignResultViewModel(
+                        mockTaskRepository, mockProjectRepository, mockUserRepository))
+          }
+        }
+        navController.navigate(Route.TasksSection.AutoTaskAssignment)
+      }
+    } else {
+      // For regular tests: start directly on AutoTaskAssignment
+      composeTestRule.setContent {
+        val navController = rememberNavController()
+        NavHost(navController, startDestination = Route.TasksSection.AutoTaskAssignment) {
+          composable<Route.TasksSection.AutoTaskAssignment> {
+            AutoAssignResultScreen(
+                navigationController = navController,
+                viewModel =
+                    AutoAssignResultViewModel(
+                        mockTaskRepository, mockProjectRepository, mockUserRepository))
           }
         }
       }
