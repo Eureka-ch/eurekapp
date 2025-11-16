@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 // portions of this code and documentation were generated with the help of AI.
@@ -79,9 +78,7 @@ class AutoAssignResultViewModel(
       _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
       try {
-        // Get all projects for current user
         val projects = projectRepository.getProjectsForCurrentUser().first()
-
         if (projects.isEmpty()) {
           _uiState.value =
               _uiState.value.copy(
@@ -89,25 +86,8 @@ class AutoAssignResultViewModel(
           return@launch
         }
 
-        // Collect all tasks from all projects
-        val allTasks = mutableListOf<Task>()
-        val projectTasksMap = mutableMapOf<String, List<Task>>()
-
-        for (project in projects) {
-          val tasks = taskRepository.getTasksInProject(project.projectId).first()
-          allTasks.addAll(tasks)
-          projectTasksMap[project.projectId] = tasks
-        }
-
-        // Collect all members from all projects
-        val allMembers = mutableListOf<ch.eureka.eurekapp.model.data.project.Member>()
-        for (project in projects) {
-          val members = projectRepository.getMembers(project.projectId).first()
-          allMembers.addAll(members)
-        }
-
-        // Remove duplicate members
-        val uniqueMembers = allMembers.distinctBy { it.userId }
+        val (allTasks, projectTasksMap) = collectTasksFromProjects(projects)
+        val uniqueMembers = collectUniqueMembers(projects)
 
         if (uniqueMembers.isEmpty()) {
           _uiState.value =
@@ -116,7 +96,6 @@ class AutoAssignResultViewModel(
           return@launch
         }
 
-        // Run auto-assignment algorithm
         val assignmentResult = TaskAutoAssignmentService.assignTasks(allTasks, uniqueMembers)
 
         if (assignmentResult.assignments.isEmpty()) {
@@ -132,27 +111,9 @@ class AutoAssignResultViewModel(
           return@launch
         }
 
-        // Fetch user data for proposed assignees
-        val proposedAssignments = mutableListOf<ProposedAssignment>()
-
-        for ((taskId, userId) in assignmentResult.assignments) {
-          // Find the project for this task
-          val taskProject =
-              projects.find { project ->
-                projectTasksMap[project.projectId]?.any { it.taskID == taskId } == true
-              }
-
-          if (taskProject != null) {
-            val task = allTasks.find { it.taskID == taskId }
-            val user = userRepository.getUserById(userId).first()
-
-            if (task != null && user != null) {
-              proposedAssignments.add(
-                  ProposedAssignment(
-                      task = task, proposedAssignee = user, projectId = taskProject.projectId))
-            }
-          }
-        }
+        val proposedAssignments =
+            createProposedAssignments(
+                assignmentResult.assignments, projects, projectTasksMap, allTasks)
 
         _proposedAssignments.value = proposedAssignments
         _uiState.value =
@@ -164,6 +125,61 @@ class AutoAssignResultViewModel(
                 isLoading = false, error = "Failed to load assignments: ${e.message}")
       }
     }
+  }
+
+  private suspend fun collectTasksFromProjects(
+      projects: List<ch.eureka.eurekapp.model.data.project.Project>
+  ): Pair<List<Task>, Map<String, List<Task>>> {
+    val allTasks = mutableListOf<Task>()
+    val projectTasksMap = mutableMapOf<String, List<Task>>()
+
+    for (project in projects) {
+      val tasks = taskRepository.getTasksInProject(project.projectId).first()
+      allTasks.addAll(tasks)
+      projectTasksMap[project.projectId] = tasks
+    }
+
+    return Pair(allTasks, projectTasksMap)
+  }
+
+  private suspend fun collectUniqueMembers(
+      projects: List<ch.eureka.eurekapp.model.data.project.Project>
+  ): List<ch.eureka.eurekapp.model.data.project.Member> {
+    val allMembers = mutableListOf<ch.eureka.eurekapp.model.data.project.Member>()
+    for (project in projects) {
+      val members = projectRepository.getMembers(project.projectId).first()
+      allMembers.addAll(members)
+    }
+    return allMembers.distinctBy { it.userId }
+  }
+
+  private suspend fun createProposedAssignments(
+      assignments: Map<String, String>,
+      projects: List<ch.eureka.eurekapp.model.data.project.Project>,
+      projectTasksMap: Map<String, List<Task>>,
+      allTasks: List<Task>
+  ): List<ProposedAssignment> {
+    val proposedAssignments = mutableListOf<ProposedAssignment>()
+
+    for ((taskId, userId) in assignments) {
+      val taskProject =
+          projects.find { project ->
+            projectTasksMap[project.projectId]?.any { it.taskID == taskId } == true
+          }
+
+      if (taskProject != null) {
+        val task = allTasks.find { it.taskID == taskId }
+        val user = userRepository.getUserById(userId).first()
+
+        if (task != null && user != null) {
+          proposedAssignments.add(
+              ProposedAssignment(
+                  task = task, proposedAssignee = user, projectId = taskProject.projectId))
+        }
+      }
+    }
+
+    return proposedAssignments
   }
 
   /**

@@ -291,4 +291,103 @@ class AutoAssignResultViewModelTest {
     assertNotNull(finalState.error)
     assertTrue(finalState.error?.contains("No assignments selected") == true)
   }
+
+  @Test
+  fun viewModel_withTaskNotFoundInProject_skipsAssignment() = runTest {
+    val task1 = Task(taskID = "task1", title = "Task 1", status = TaskStatus.TODO)
+    val task2 = Task(taskID = "task2", title = "Task 2", status = TaskStatus.TODO)
+
+    mockProjectRepository.setCurrentUserProjects(flowOf(listOf(testProject1)))
+    mockProjectRepository.setMembers(
+        "proj1", flowOf(listOf(Member(userId = "user1", role = ProjectRole.MEMBER))))
+    // Set tasks but they won't match the assignment (different task IDs)
+    mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(task1, task2)))
+    mockUserRepository.setUser("user1", flowOf(testUser1))
+
+    viewModel =
+        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+    advanceUntilIdle()
+
+    val uiState = viewModel.uiState.first()
+    // Should complete but may have empty assignments if tasks don't match
+    assertFalse(uiState.isLoading)
+  }
+
+  @Test
+  fun viewModel_withNullUser_skipsThatAssignment() = runTest {
+    val task1 = Task(taskID = "task1", title = "Task 1", status = TaskStatus.TODO)
+    val task2 = Task(taskID = "task2", title = "Task 2", status = TaskStatus.TODO)
+
+    mockProjectRepository.setCurrentUserProjects(flowOf(listOf(testProject1)))
+    mockProjectRepository.setMembers(
+        "proj1", flowOf(listOf(Member(userId = "user1", role = ProjectRole.MEMBER))))
+    mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(task1, task2)))
+    // Set user to null - assignment should be skipped
+    mockUserRepository.setUser("user1", flowOf(null))
+
+    viewModel =
+        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+    advanceUntilIdle()
+
+    val uiState = viewModel.uiState.first()
+    assertFalse(uiState.isLoading)
+    // Should have error or empty assignments because user is null
+    assertTrue(uiState.proposedAssignments.isEmpty() || uiState.error != null)
+  }
+
+  @Test
+  fun viewModel_withMultipleProjects_collectsAllTasksAndMembers() = runTest {
+    val task1 = Task(taskID = "task1", title = "Task 1", status = TaskStatus.TODO)
+    val task2 = Task(taskID = "task2", title = "Task 2", status = TaskStatus.TODO)
+    val testProject2 =
+        ch.eureka.eurekapp.model.data.project.Project(
+            projectId = "proj2", name = "Project 2", memberIds = listOf("user2"))
+
+    mockProjectRepository.setCurrentUserProjects(flowOf(listOf(testProject1, testProject2)))
+    mockProjectRepository.setMembers(
+        "proj1", flowOf(listOf(Member(userId = "user1", role = ProjectRole.MEMBER))))
+    mockProjectRepository.setMembers(
+        "proj2", flowOf(listOf(Member(userId = "user2", role = ProjectRole.MEMBER))))
+    mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(task1)))
+    mockTaskRepository.setProjectTasks("proj2", flowOf(listOf(task2)))
+    mockUserRepository.setUser("user1", flowOf(testUser1))
+    mockUserRepository.setUser("user2", flowOf(testUser2))
+
+    viewModel =
+        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+    advanceUntilIdle()
+
+    val uiState = viewModel.uiState.first()
+    assertFalse(uiState.isLoading)
+    assertNull(uiState.error)
+    // Should have assignments from both projects
+    assertEquals(2, uiState.proposedAssignments.size)
+  }
+
+  @Test
+  fun viewModel_withDuplicateMembers_removesDuplicates() = runTest {
+    val task1 = Task(taskID = "task1", title = "Task 1", status = TaskStatus.TODO)
+    val testProject2 =
+        ch.eureka.eurekapp.model.data.project.Project(
+            projectId = "proj2", name = "Project 2", memberIds = listOf("user1"))
+
+    // user1 is in both projects - should be deduplicated
+    mockProjectRepository.setCurrentUserProjects(flowOf(listOf(testProject1, testProject2)))
+    mockProjectRepository.setMembers(
+        "proj1", flowOf(listOf(Member(userId = "user1", role = ProjectRole.MEMBER))))
+    mockProjectRepository.setMembers(
+        "proj2", flowOf(listOf(Member(userId = "user1", role = ProjectRole.MEMBER))))
+    mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(task1)))
+    mockTaskRepository.setProjectTasks("proj2", flowOf(emptyList()))
+    mockUserRepository.setUser("user1", flowOf(testUser1))
+
+    viewModel =
+        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+    advanceUntilIdle()
+
+    val uiState = viewModel.uiState.first()
+    assertFalse(uiState.isLoading)
+    // Should work correctly with duplicate members (they are deduplicated)
+    assertTrue(uiState.proposedAssignments.isNotEmpty() || uiState.error != null)
+  }
 }

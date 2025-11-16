@@ -4,6 +4,7 @@ import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 
+// Part of this code and documentation were generated with the help of AI.
 /**
  * Service for automatically assigning tasks to team members.
  *
@@ -64,9 +65,6 @@ object TaskAutoAssignmentService {
     // Create a map of task ID to assigned user ID for quick lookup
     val taskToAssigneeMap = mutableMapOf<String, String>()
 
-    // Build dependency graph: taskId -> list of dependent task IDs
-    val dependencyGraph = buildDependencyGraph(tasks)
-
     // Sort tasks by priority: tasks WITHOUT dependencies first (so parents are assigned before
     // dependents)
     val sortedTasks = unassignedTasks.sortedBy { task -> task.dependingOnTasks.isNotEmpty() }
@@ -74,8 +72,7 @@ object TaskAutoAssignmentService {
     val skippedTasks = mutableListOf<String>()
 
     for (task in sortedTasks) {
-      val assignedUserId =
-          selectAssignee(task, tasks, dependencyGraph, workloadMap, members, taskToAssigneeMap)
+      val assignedUserId = selectAssignee(task, tasks, workloadMap, members, taskToAssigneeMap)
 
       if (assignedUserId != null) {
         taskToAssigneeMap[task.taskID] = assignedUserId
@@ -120,24 +117,6 @@ object TaskAutoAssignmentService {
   }
 
   /**
-   * Builds a dependency graph mapping each task to its dependent tasks.
-   *
-   * @param tasks All tasks in the project
-   * @return Map of taskId to list of task IDs that depend on it
-   */
-  private fun buildDependencyGraph(tasks: List<Task>): Map<String, List<String>> {
-    val graph = mutableMapOf<String, MutableList<String>>()
-
-    tasks.forEach { task ->
-      task.dependingOnTasks.forEach { parentTaskId ->
-        graph.getOrPut(parentTaskId) { mutableListOf() }.add(task.taskID)
-      }
-    }
-
-    return graph
-  }
-
-  /**
    * Selects the best assignee for a task using the hybrid algorithm.
    *
    * Priority:
@@ -146,7 +125,6 @@ object TaskAutoAssignmentService {
    *
    * @param task The task to assign
    * @param allTasks All tasks in the project (for looking up parent tasks)
-   * @param dependencyGraph Dependency graph for finding parent tasks
    * @param workloadMap Current workload for each member
    * @param members Available members for assignment
    * @param taskToAssigneeMap Map of already assigned tasks (to check parent assignments)
@@ -155,7 +133,6 @@ object TaskAutoAssignmentService {
   private fun selectAssignee(
       task: Task,
       allTasks: List<Task>,
-      dependencyGraph: Map<String, List<String>>,
       workloadMap: Map<String, Int>,
       members: List<Member>,
       taskToAssigneeMap: Map<String, String>
@@ -166,21 +143,16 @@ object TaskAutoAssignmentService {
 
       // Check if parent was already assigned in this run
       val parentAssigneeFromMap = taskToAssigneeMap[parentTaskId]
-      if (parentAssigneeFromMap != null) {
-        // Verify the parent assignee is still a valid member
-        if (members.any { it.userId == parentAssigneeFromMap }) {
-          return parentAssigneeFromMap
-        }
+      if (parentAssigneeFromMap != null && members.any { it.userId == parentAssigneeFromMap }) {
+        return parentAssigneeFromMap
       }
 
       // Fallback: check if parent was already assigned before (in original task data)
       val parentTask = allTasks.find { it.taskID == parentTaskId }
-      if (parentTask != null && parentTask.assignedUserIds.isNotEmpty()) {
-        val parentAssignee = parentTask.assignedUserIds.first()
-        // Verify the parent assignee is still a valid member
-        if (members.any { it.userId == parentAssignee }) {
-          return parentAssignee
-        }
+      if (parentTask != null &&
+          parentTask.assignedUserIds.isNotEmpty() &&
+          members.any { it.userId == parentTask.assignedUserIds.first() }) {
+        return parentTask.assignedUserIds.first()
       }
     }
 

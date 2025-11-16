@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -69,157 +69,164 @@ fun AutoAssignResultScreen(
             title = { Text("Auto-Assign Results", fontWeight = FontWeight.Bold) },
             navigationIcon = {
               IconButton(onClick = { navigationController.popBackStack() }) {
-                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
               }
             })
       }) { paddingValues ->
         Column(
             modifier =
                 Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = Spacing.md)) {
-              if (uiState.isLoading) {
-                // Loading state
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                  Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator()
-                    Spacer(modifier = Modifier.height(Spacing.md))
+              when {
+                uiState.isLoading -> LoadingState()
+                uiState.error != null -> ErrorState(uiState.error, navigationController)
+                uiState.proposedAssignments.isEmpty() -> EmptyState(navigationController)
+                else -> {
+                  // Success state - show proposed assignments
+                  val acceptedCount = uiState.proposedAssignments.count { it.isAccepted }
+                  val totalCount = uiState.proposedAssignments.size
+
+                  // Header with summary and actions
+                  Column(modifier = Modifier.padding(vertical = Spacing.md)) {
                     Text(
-                        text = "Calculating assignments...",
+                        text = "Review Assignments",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(Spacing.xs))
+                    Text(
+                        text = "$acceptedCount of $totalCount assignments selected",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
-                  }
-                }
-              } else if (uiState.error != null) {
-                // Error state
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                  Column(
-                      horizontalAlignment = Alignment.CenterHorizontally,
-                      modifier = Modifier.padding(Spacing.lg)) {
-                        Text(
-                            text = "Error",
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = MaterialTheme.colorScheme.error)
-                        Spacer(modifier = Modifier.height(Spacing.md))
-                        Text(
-                            text = uiState.error ?: "Unknown error",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(modifier = Modifier.height(Spacing.lg))
-                        OutlinedButton(onClick = { navigationController.popBackStack() }) {
-                          Text("Go Back")
-                        }
-                      }
-                }
-              } else if (uiState.proposedAssignments.isEmpty()) {
-                // Empty state
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                  Column(
-                      horizontalAlignment = Alignment.CenterHorizontally,
-                      modifier = Modifier.padding(Spacing.lg)) {
-                        Text(
-                            text = "No assignments to review",
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(modifier = Modifier.height(Spacing.md))
-                        Text(
-                            text = "All tasks are already assigned or no unassigned tasks found.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(modifier = Modifier.height(Spacing.lg))
-                        OutlinedButton(onClick = { navigationController.popBackStack() }) {
-                          Text("Go Back")
-                        }
-                      }
-                }
-              } else {
-                // Success state - show proposed assignments
-                val acceptedCount = uiState.proposedAssignments.count { it.isAccepted }
-                val totalCount = uiState.proposedAssignments.size
 
-                // Header with summary and actions
-                Column(modifier = Modifier.padding(vertical = Spacing.md)) {
-                  Text(
-                      text = "Review Assignments",
-                      style = MaterialTheme.typography.headlineMedium,
-                      fontWeight = FontWeight.Bold)
-                  Spacer(modifier = Modifier.height(Spacing.xs))
-                  Text(
-                      text = "$acceptedCount of $totalCount assignments selected",
-                      style = MaterialTheme.typography.bodyMedium,
-                      color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.height(Spacing.md))
+
+                    // Action buttons
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                          OutlinedButton(
+                              onClick = { viewModel.acceptAll() }, modifier = Modifier.weight(1f)) {
+                                Text("Accept All")
+                              }
+                          OutlinedButton(
+                              onClick = { viewModel.rejectAll() }, modifier = Modifier.weight(1f)) {
+                                Text("Reject All")
+                              }
+                        }
+                  }
 
                   Spacer(modifier = Modifier.height(Spacing.md))
 
-                  // Action buttons
-                  Row(
-                      modifier = Modifier.fillMaxWidth(),
-                      horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                        OutlinedButton(
-                            onClick = { viewModel.acceptAll() }, modifier = Modifier.weight(1f)) {
-                              Text("Accept All")
-                            }
-                        OutlinedButton(
-                            onClick = { viewModel.rejectAll() }, modifier = Modifier.weight(1f)) {
-                              Text("Reject All")
-                            }
+                  // List of proposed assignments
+                  LazyColumn(
+                      verticalArrangement = Arrangement.spacedBy(Spacing.md),
+                      modifier = Modifier.weight(1f)) {
+                        items(uiState.proposedAssignments, key = { it.task.taskID }) { assignment ->
+                          ProposedAssignmentCard(
+                              assignment = assignment,
+                              onAccept = { viewModel.acceptAssignment(assignment) },
+                              onReject = { viewModel.rejectAssignment(assignment) })
+                        }
                       }
-                }
 
-                Spacer(modifier = Modifier.height(Spacing.md))
-
-                // List of proposed assignments
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(Spacing.md),
-                    modifier = Modifier.weight(1f)) {
-                      items(uiState.proposedAssignments, key = { it.task.taskID }) { assignment ->
-                        ProposedAssignmentCard(
-                            assignment = assignment,
-                            onAccept = { viewModel.acceptAssignment(assignment) },
-                            onReject = { viewModel.rejectAssignment(assignment) })
+                  // Apply button
+                  Spacer(modifier = Modifier.height(Spacing.md))
+                  Button(
+                      onClick = { viewModel.applyAcceptedAssignments() },
+                      enabled = !uiState.isApplying && acceptedCount > 0,
+                      modifier = Modifier.fillMaxWidth().padding(bottom = Spacing.md)) {
+                        if (uiState.isApplying) {
+                          CircularProgressIndicator(
+                              modifier = Modifier.size(16.dp),
+                              color = MaterialTheme.colorScheme.onPrimary)
+                          Spacer(modifier = Modifier.width(Spacing.sm))
+                          Text("Applying...")
+                        } else {
+                          Text("Apply Selected Assignments ($acceptedCount)")
+                        }
                       }
+
+                  // Show result message if applied
+                  if (uiState.appliedCount > 0) {
+                    LaunchedEffect(uiState.appliedCount) {
+                      // Navigate back after a short delay
+                      delay(1500)
+                      navigationController.popBackStack()
                     }
-
-                // Apply button
-                Spacer(modifier = Modifier.height(Spacing.md))
-                Button(
-                    onClick = { viewModel.applyAcceptedAssignments() },
-                    enabled = !uiState.isApplying && acceptedCount > 0,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = Spacing.md)) {
-                      if (uiState.isApplying) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(16.dp),
-                            color = MaterialTheme.colorScheme.onPrimary)
-                        Spacer(modifier = Modifier.width(Spacing.sm))
-                        Text("Applying...")
-                      } else {
-                        Text("Apply Selected Assignments ($acceptedCount)")
-                      }
-                    }
-
-                // Show result message if applied
-                if (uiState.appliedCount > 0) {
-                  LaunchedEffect(uiState.appliedCount) {
-                    // Navigate back after a short delay
-                    delay(1500)
-                    navigationController.popBackStack()
+                    Text(
+                        text = "✓ ${uiState.appliedCount} assignments applied successfully!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = Spacing.md))
                   }
-                  Text(
-                      text = "✓ ${uiState.appliedCount} assignments applied successfully!",
-                      style = MaterialTheme.typography.bodyMedium,
-                      color = MaterialTheme.colorScheme.primary,
-                      modifier = Modifier.padding(bottom = Spacing.md))
-                }
 
-                // Show error if any
-                uiState.error?.let { error ->
-                  Text(
-                      text = "Error: $error",
-                      style = MaterialTheme.typography.bodyMedium,
-                      color = MaterialTheme.colorScheme.error,
-                      modifier = Modifier.padding(bottom = Spacing.md))
+                  // Show error if any
+                  uiState.error?.let { error ->
+                    Text(
+                        text = "Error: $error",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(bottom = Spacing.md))
+                  }
                 }
               }
             }
       }
+}
+
+@Composable
+private fun LoadingState() {
+  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+      CircularProgressIndicator()
+      Spacer(modifier = Modifier.height(Spacing.md))
+      Text(
+          text = "Calculating assignments...",
+          style = MaterialTheme.typography.bodyMedium,
+          color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+  }
+}
+
+@Composable
+private fun ErrorState(error: String?, navigationController: NavHostController) {
+  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(Spacing.lg)) {
+          Text(
+              text = "Error",
+              style = MaterialTheme.typography.headlineSmall,
+              color = MaterialTheme.colorScheme.error)
+          Spacer(modifier = Modifier.height(Spacing.md))
+          Text(
+              text = error ?: "Unknown error",
+              style = MaterialTheme.typography.bodyMedium,
+              color = MaterialTheme.colorScheme.onSurfaceVariant)
+          Spacer(modifier = Modifier.height(Spacing.lg))
+          OutlinedButton(onClick = { navigationController.popBackStack() }) { Text("Go Back") }
+        }
+  }
+}
+
+@Composable
+private fun EmptyState(navigationController: NavHostController) {
+  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(Spacing.lg)) {
+          Text(
+              text = "No assignments to review",
+              style = MaterialTheme.typography.headlineSmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant)
+          Spacer(modifier = Modifier.height(Spacing.md))
+          Text(
+              text = "All tasks are already assigned or no unassigned tasks found.",
+              style = MaterialTheme.typography.bodyMedium,
+              color = MaterialTheme.colorScheme.onSurfaceVariant)
+          Spacer(modifier = Modifier.height(Spacing.lg))
+          OutlinedButton(onClick = { navigationController.popBackStack() }) { Text("Go Back") }
+        }
+  }
 }
 
 /** Card displaying a proposed assignment with accept/reject buttons. */

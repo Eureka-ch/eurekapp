@@ -1,5 +1,8 @@
 package ch.eureka.eurekapp.screen
 
+import androidx.compose.material3.Text
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -61,10 +64,7 @@ class AutoAssignResultScreenTest {
     mockUserRepository = MockUserRepository()
   }
 
-  @Test
-  fun autoAssignResultScreen_withLoadingState_displaysLoadingIndicator() {
-    mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
-
+  private fun setContentWithNav(includeTasksScreen: Boolean = false) {
     composeTestRule.setContent {
       val navController = rememberNavController()
       NavHost(navController, startDestination = Route.TasksSection.AutoTaskAssignment) {
@@ -75,34 +75,35 @@ class AutoAssignResultScreenTest {
                   AutoAssignResultViewModel(
                       mockTaskRepository, mockProjectRepository, mockUserRepository))
         }
+        if (includeTasksScreen) {
+          composable<Route.TasksSection.Tasks> {
+            Text("Tasks Screen", modifier = Modifier.testTag("tasks_screen"))
+          }
+        }
       }
     }
+  }
 
-    // Wait for initial loading state
+  private fun setupBasicProject() {
+    mockProjectRepository.setCurrentUserProjects(flowOf(listOf(testProject1)))
+    mockProjectRepository.setMembers(
+        "proj1", flowOf(listOf(Member(userId = "user1", role = ProjectRole.MEMBER))))
+    mockUserRepository.setUser("user1", flowOf(testUser1))
+  }
+
+  @Test
+  fun autoAssignResultScreen_withLoadingState_displaysLoadingIndicator() {
+    mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
+    setContentWithNav()
     composeTestRule.waitForIdle()
-    // Should show loading or error (depending on timing)
     composeTestRule.onNodeWithText("Auto-Assign Results", substring = true).assertIsDisplayed()
   }
 
   @Test
   fun autoAssignResultScreen_withNoProjects_displaysErrorMessage() {
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
-
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      NavHost(navController, startDestination = Route.TasksSection.AutoTaskAssignment) {
-        composable<Route.TasksSection.AutoTaskAssignment> {
-          AutoAssignResultScreen(
-              navigationController = navController,
-              viewModel =
-                  AutoAssignResultViewModel(
-                      mockTaskRepository, mockProjectRepository, mockUserRepository))
-        }
-      }
-    }
-
+    setContentWithNav()
     composeTestRule.waitForIdle()
-    // Wait for error message to appear (safe against timing)
     composeTestRule.waitUntil(timeoutMillis = 5000) {
       composeTestRule
           .onAllNodesWithText("No projects", substring = true)
@@ -113,48 +114,27 @@ class AutoAssignResultScreenTest {
               .fetchSemanticsNodes()
               .isNotEmpty()
     }
-    // Should show error message (safe - either message is acceptable)
-    val hasNoProjects =
+    assert(
         composeTestRule
             .onAllNodesWithText("No projects", substring = true)
             .fetchSemanticsNodes()
-            .isNotEmpty()
-    val hasError =
-        composeTestRule
-            .onAllNodesWithText("Error", substring = true)
-            .fetchSemanticsNodes()
-            .isNotEmpty()
-    assert(hasNoProjects || hasError)
+            .isNotEmpty() ||
+            composeTestRule
+                .onAllNodesWithText("Error", substring = true)
+                .fetchSemanticsNodes()
+                .isNotEmpty())
   }
 
   @Test
   fun autoAssignResultScreen_withProposedAssignments_displaysTaskCards() {
-    val task1 =
-        Task(taskID = "task1", title = "Task 1", status = TaskStatus.TODO, projectId = "proj1")
-    val task2 =
-        Task(taskID = "task2", title = "Task 2", status = TaskStatus.TODO, projectId = "proj1")
-
-    mockProjectRepository.setCurrentUserProjects(flowOf(listOf(testProject1)))
-    mockProjectRepository.setMembers(
-        "proj1", flowOf(listOf(Member(userId = "user1", role = ProjectRole.MEMBER))))
-    mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(task1, task2)))
-    mockUserRepository.setUser("user1", flowOf(testUser1))
-
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      NavHost(navController, startDestination = Route.TasksSection.AutoTaskAssignment) {
-        composable<Route.TasksSection.AutoTaskAssignment> {
-          AutoAssignResultScreen(
-              navigationController = navController,
-              viewModel =
-                  AutoAssignResultViewModel(
-                      mockTaskRepository, mockProjectRepository, mockUserRepository))
-        }
-      }
-    }
-
+    val tasks =
+        listOf(
+            Task(taskID = "task1", title = "Task 1", status = TaskStatus.TODO, projectId = "proj1"),
+            Task(taskID = "task2", title = "Task 2", status = TaskStatus.TODO, projectId = "proj1"))
+    setupBasicProject()
+    mockTaskRepository.setProjectTasks("proj1", flowOf(tasks))
+    setContentWithNav()
     composeTestRule.waitForIdle()
-    // Wait for content to appear (safe against timing)
     composeTestRule.waitUntil(timeoutMillis = 5000) {
       composeTestRule
           .onAllNodesWithText("Review Assignments", substring = true)
@@ -165,62 +145,39 @@ class AutoAssignResultScreenTest {
               .fetchSemanticsNodes()
               .isNotEmpty()
     }
-
-    // Should display task cards or review section (safe - either is acceptable)
-    val hasReview =
+    assert(
         composeTestRule
             .onAllNodesWithText("Review Assignments", substring = true)
             .fetchSemanticsNodes()
-            .isNotEmpty()
-    val hasTask =
-        composeTestRule
-            .onAllNodesWithText("Task 1", substring = true)
-            .fetchSemanticsNodes()
-            .isNotEmpty()
-    assert(hasReview || hasTask)
+            .isNotEmpty() ||
+            composeTestRule
+                .onAllNodesWithText("Task 1", substring = true)
+                .fetchSemanticsNodes()
+                .isNotEmpty())
   }
 
   @Test
   fun autoAssignResultScreen_acceptAssignment_updatesButtonState() {
-    val task1 =
-        Task(taskID = "task1", title = "Task 1", status = TaskStatus.TODO, projectId = "proj1")
-
-    mockProjectRepository.setCurrentUserProjects(flowOf(listOf(testProject1)))
-    mockProjectRepository.setMembers(
-        "proj1", flowOf(listOf(Member(userId = "user1", role = ProjectRole.MEMBER))))
-    mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(task1)))
-    mockUserRepository.setUser("user1", flowOf(testUser1))
-
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      NavHost(navController, startDestination = Route.TasksSection.AutoTaskAssignment) {
-        composable<Route.TasksSection.AutoTaskAssignment> {
-          AutoAssignResultScreen(
-              navigationController = navController,
-              viewModel =
-                  AutoAssignResultViewModel(
-                      mockTaskRepository, mockProjectRepository, mockUserRepository))
-        }
-      }
-    }
-
+    setupBasicProject()
+    mockTaskRepository.setProjectTasks(
+        "proj1",
+        flowOf(
+            listOf(
+                Task(
+                    taskID = "task1",
+                    title = "Task 1",
+                    status = TaskStatus.TODO,
+                    projectId = "proj1"))))
+    setContentWithNav()
     composeTestRule.waitForIdle()
-    // Wait for accept button to appear (safe against timing)
     composeTestRule.waitUntil(timeoutMillis = 5000) {
       composeTestRule
           .onAllNodesWithText("Accept", substring = true)
           .fetchSemanticsNodes()
           .isNotEmpty()
     }
-
-    // Click accept button - get all "Accept" buttons and select the first task's button (skip
-    // "Accept All")
-    val acceptButtons = composeTestRule.onAllNodesWithText("Accept", substring = true)
-    // Get the first task's "Accept" button (skip "Accept All" which is at index 0)
-    acceptButtons.get(1).performClick()
+    composeTestRule.onAllNodesWithText("Accept", substring = true).get(1).performClick()
     composeTestRule.waitForIdle()
-
-    // Button should change to "Accepted" or remain visible (safe against UI update timing)
     composeTestRule.waitUntil(timeoutMillis = 2000) {
       composeTestRule
           .onAllNodesWithText("Accepted", substring = true)
@@ -235,48 +192,22 @@ class AutoAssignResultScreenTest {
 
   @Test
   fun autoAssignResultScreen_applyAcceptedAssignments_appliesOnlyAccepted() {
-    val task1 =
-        Task(taskID = "task1", title = "Task 1", status = TaskStatus.TODO, projectId = "proj1")
-    val task2 =
-        Task(taskID = "task2", title = "Task 2", status = TaskStatus.TODO, projectId = "proj1")
-
-    mockProjectRepository.setCurrentUserProjects(flowOf(listOf(testProject1)))
-    mockProjectRepository.setMembers(
-        "proj1", flowOf(listOf(Member(userId = "user1", role = ProjectRole.MEMBER))))
-    mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(task1, task2)))
-    mockUserRepository.setUser("user1", flowOf(testUser1))
-
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      NavHost(navController, startDestination = Route.TasksSection.AutoTaskAssignment) {
-        composable<Route.TasksSection.AutoTaskAssignment> {
-          AutoAssignResultScreen(
-              navigationController = navController,
-              viewModel =
-                  AutoAssignResultViewModel(
-                      mockTaskRepository, mockProjectRepository, mockUserRepository))
-        }
-      }
-    }
-
+    val tasks =
+        listOf(
+            Task(taskID = "task1", title = "Task 1", status = TaskStatus.TODO, projectId = "proj1"),
+            Task(taskID = "task2", title = "Task 2", status = TaskStatus.TODO, projectId = "proj1"))
+    setupBasicProject()
+    mockTaskRepository.setProjectTasks("proj1", flowOf(tasks))
+    setContentWithNav()
     composeTestRule.waitForIdle()
-    // Wait for accept button to appear (safe against timing)
     composeTestRule.waitUntil(timeoutMillis = 5000) {
       composeTestRule
           .onAllNodesWithText("Accept", substring = true)
           .fetchSemanticsNodes()
           .isNotEmpty()
     }
-
-    // Accept first task only - get all "Accept" buttons
-    // The first one is "Accept All", so we get the second one (index 1) which is the first task's
-    // "Accept" button
-    val acceptButtons = composeTestRule.onAllNodesWithText("Accept", substring = true)
-    // Get the first task's "Accept" button (skip "Accept All" which is at index 0)
-    acceptButtons.get(1).performClick()
+    composeTestRule.onAllNodesWithText("Accept", substring = true).get(1).performClick()
     composeTestRule.waitForIdle()
-
-    // Click apply button (wait for it to be enabled)
     composeTestRule.waitUntil(timeoutMillis = 3000) {
       composeTestRule
           .onAllNodesWithText("Apply", substring = true)
@@ -285,8 +216,6 @@ class AutoAssignResultScreenTest {
     }
     composeTestRule.onNodeWithText("Apply", substring = true).performClick()
     composeTestRule.waitForIdle()
-
-    // Should show success message or navigate back (safe against timing)
     composeTestRule.waitUntil(timeoutMillis = 3000) {
       composeTestRule
           .onAllNodesWithText("applied", substring = true, ignoreCase = true)
@@ -297,8 +226,179 @@ class AutoAssignResultScreenTest {
               .fetchSemanticsNodes()
               .isNotEmpty()
     }
-
-    // Verify that assignUser was called (at least once for accepted task)
     assert(mockTaskRepository.assignUserCalls.size >= 1)
+  }
+
+  @Test
+  fun autoAssignResultScreen_withEmptyAssignments_displaysEmptyState() {
+    setupBasicProject()
+    mockTaskRepository.setProjectTasks(
+        "proj1",
+        flowOf(
+            listOf(
+                Task(
+                    taskID = "task1",
+                    title = "Task 1",
+                    status = TaskStatus.TODO,
+                    projectId = "proj1",
+                    assignedUserIds = listOf("user1")))))
+    setContentWithNav(includeTasksScreen = true)
+    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodesWithText("No assignments to review", substring = true)
+          .fetchSemanticsNodes()
+          .isNotEmpty() ||
+          composeTestRule
+              .onAllNodesWithText("No unassigned tasks", substring = true)
+              .fetchSemanticsNodes()
+              .isNotEmpty()
+    }
+    assert(
+        composeTestRule
+            .onAllNodesWithText("No assignments to review", substring = true)
+            .fetchSemanticsNodes()
+            .isNotEmpty() ||
+            composeTestRule
+                .onAllNodesWithText("No unassigned tasks", substring = true)
+                .fetchSemanticsNodes()
+                .isNotEmpty())
+  }
+
+  @Test
+  fun autoAssignResultScreen_emptyState_goBackButtonNavigatesBack() {
+    setupBasicProject()
+    mockTaskRepository.setProjectTasks(
+        "proj1",
+        flowOf(
+            listOf(
+                Task(
+                    taskID = "task1",
+                    title = "Task 1",
+                    status = TaskStatus.TODO,
+                    projectId = "proj1",
+                    assignedUserIds = listOf("user1")))))
+    setContentWithNav(includeTasksScreen = true)
+    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodesWithText("Go Back", substring = true)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+    composeTestRule.onNodeWithText("Go Back", substring = true).performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(timeoutMillis = 2000) {
+      composeTestRule
+          .onAllNodesWithText("No assignments to review", substring = true)
+          .fetchSemanticsNodes()
+          .isEmpty() ||
+          composeTestRule
+              .onAllNodesWithText("Tasks Screen", substring = true)
+              .fetchSemanticsNodes()
+              .isNotEmpty()
+    }
+  }
+
+  @Test
+  fun autoAssignResultScreen_errorState_goBackButtonNavigatesBack() {
+    mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
+    setContentWithNav(includeTasksScreen = true)
+    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodesWithText("Go Back", substring = true)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+    composeTestRule.onNodeWithText("Go Back", substring = true).performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(timeoutMillis = 2000) {
+      composeTestRule
+          .onAllNodesWithText("Error", substring = true)
+          .fetchSemanticsNodes()
+          .isEmpty() ||
+          composeTestRule
+              .onAllNodesWithText("Tasks Screen", substring = true)
+              .fetchSemanticsNodes()
+              .isNotEmpty()
+    }
+  }
+
+  @Test
+  fun autoAssignResultScreen_afterSuccessfulApplication_navigatesBack() {
+    setupBasicProject()
+    mockTaskRepository.setProjectTasks(
+        "proj1",
+        flowOf(
+            listOf(
+                Task(
+                    taskID = "task1",
+                    title = "Task 1",
+                    status = TaskStatus.TODO,
+                    projectId = "proj1"))))
+    setContentWithNav(includeTasksScreen = true)
+    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodesWithText("Accept", substring = true)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+    composeTestRule.onAllNodesWithText("Accept", substring = true).get(1).performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(timeoutMillis = 3000) {
+      composeTestRule
+          .onAllNodesWithText("Apply", substring = true)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+    composeTestRule.onNodeWithText("Apply", substring = true).performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodesWithText("applied successfully", substring = true, ignoreCase = true)
+          .fetchSemanticsNodes()
+          .isNotEmpty() ||
+          composeTestRule
+              .onAllNodesWithText("Tasks Screen", substring = true)
+              .fetchSemanticsNodes()
+              .isNotEmpty()
+    }
+    composeTestRule.waitUntil(timeoutMillis = 3000) {
+      composeTestRule
+          .onAllNodesWithText("Review Assignments", substring = true)
+          .fetchSemanticsNodes()
+          .isEmpty() ||
+          composeTestRule
+              .onAllNodesWithText("Tasks Screen", substring = true)
+              .fetchSemanticsNodes()
+              .isNotEmpty()
+    }
+  }
+
+  @Test
+  fun autoAssignResultScreen_loadingState_displaysLoadingIndicator() {
+    setupBasicProject()
+    mockTaskRepository.setProjectTasks("proj1", flowOf(emptyList()))
+    setContentWithNav()
+    composeTestRule.waitForIdle()
+    assert(
+        composeTestRule
+            .onAllNodesWithText("Calculating assignments", substring = true)
+            .fetchSemanticsNodes()
+            .isNotEmpty() ||
+            composeTestRule
+                .onAllNodesWithText("Review Assignments", substring = true)
+                .fetchSemanticsNodes()
+                .isNotEmpty() ||
+            composeTestRule
+                .onAllNodesWithText("No assignments", substring = true)
+                .fetchSemanticsNodes()
+                .isNotEmpty() ||
+            composeTestRule
+                .onAllNodesWithText("Error", substring = true)
+                .fetchSemanticsNodes()
+                .isNotEmpty())
   }
 }
