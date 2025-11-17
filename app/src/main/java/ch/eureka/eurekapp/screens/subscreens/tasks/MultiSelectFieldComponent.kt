@@ -50,6 +50,7 @@ object MultiSelectFieldTestTags {
  * @param onValueChange Callback when the value changes
  * @param mode The interaction mode (EditOnly, ViewOnly, or Toggleable)
  * @param showValidationErrors Whether to display validation errors
+ * @param showHeader Whether to show the header (label, description, action buttons)
  * @param modifier The modifier to apply to the component
  */
 @OptIn(ExperimentalLayoutApi::class)
@@ -62,6 +63,7 @@ fun MultiSelectFieldComponent(
     mode: FieldInteractionMode,
     showValidationErrors: Boolean = false,
     callbacks: FieldCallbacks = FieldCallbacks(),
+    showHeader: Boolean = true
 ) {
   val fieldType = fieldDefinition.type as FieldType.MultiSelect
 
@@ -73,6 +75,7 @@ fun MultiSelectFieldComponent(
       onValueChange = onValueChange,
       mode = mode,
       showValidationErrors = showValidationErrors,
+      showHeader = showHeader,
       callbacks = callbacks) { currentValue, onChange, isEditing ->
         if (isEditing) {
           var localSelectedValues by remember {

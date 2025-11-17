@@ -18,7 +18,7 @@ sealed interface FieldValue {
 
   @Serializable
   @SerialName("number")
-  data class NumberValue(val value: Double) : FieldValue {
+  data class NumberValue(val value: Double?) : FieldValue {
     override val typeKey: FieldTypeKey = FieldTypeKey.NUMBER
   }
 

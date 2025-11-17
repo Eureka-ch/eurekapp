@@ -1,5 +1,7 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization
 
+/* Portions of this code were generated with the help of Claude Sonnet 4.5. */
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -43,13 +45,14 @@ fun SelectOptionsEditor(
                 onValueChange = { newLabel ->
                   val updated = options.toMutableList()
                   val sanitizedValue = sanitizeLabelToValue(newLabel)
-                  updated[index] = option.copy(label = newLabel, value = sanitizedValue)
+                  val uniqueValue = ensureUniqueValue(sanitizedValue, index, options)
+                  updated[index] = option.copy(label = newLabel, value = uniqueValue)
                   onOptionsChange(updated)
                 },
                 label = { Text("Label") },
                 enabled = enabled,
                 modifier = Modifier.weight(1f).testTag("option_label_${option.value}"),
-                colors = EurekaStyles.TextFieldColors())
+                colors = EurekaStyles.textFieldColors())
 
             Spacer(modifier = Modifier.width(8.dp))
 
@@ -80,5 +83,20 @@ fun SelectOptionsEditor(
 }
 
 private fun sanitizeLabelToValue(label: String): String {
-  return label.lowercase().replace(Regex("[^a-z0-9]+"), "_").trim('_').ifBlank { "option" }
+  return label.lowercase().replace(Regex("[^\\p{L}\\p{N}]+"), "_").trim('_').ifBlank { "option" }
+}
+
+private fun ensureUniqueValue(
+    newValue: String,
+    currentIndex: Int,
+    allOptions: List<SelectOption>
+): String {
+  var uniqueValue = newValue
+  var counter = 1
+  while (allOptions
+      .filterIndexed { index, _ -> index != currentIndex }
+      .any { it.value == uniqueValue }) {
+    uniqueValue = "${newValue}_${counter++}"
+  }
+  return uniqueValue
 }

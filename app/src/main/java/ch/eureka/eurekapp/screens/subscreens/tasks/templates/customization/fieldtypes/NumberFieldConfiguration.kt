@@ -1,10 +1,13 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fieldtypes
 
+/* Portions of this code were generated with the help of Claude Sonnet 4.5. */
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,7 +35,7 @@ fun NumberFieldConfiguration(
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         modifier = Modifier.fillMaxWidth().testTag("number_min"),
-        colors = EurekaStyles.TextFieldColors())
+        colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
 
@@ -43,7 +46,7 @@ fun NumberFieldConfiguration(
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         modifier = Modifier.fillMaxWidth().testTag("number_max"),
-        colors = EurekaStyles.TextFieldColors())
+        colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
 
@@ -54,7 +57,7 @@ fun NumberFieldConfiguration(
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         modifier = Modifier.fillMaxWidth().testTag("number_step"),
-        colors = EurekaStyles.TextFieldColors())
+        colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
 
@@ -65,7 +68,7 @@ fun NumberFieldConfiguration(
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier.fillMaxWidth().testTag("number_decimals"),
-        colors = EurekaStyles.TextFieldColors())
+        colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
 
@@ -75,6 +78,16 @@ fun NumberFieldConfiguration(
         label = { Text("Unit (e.g., kg, m/s)") },
         enabled = enabled,
         modifier = Modifier.fillMaxWidth().testTag("number_unit"),
-        colors = EurekaStyles.TextFieldColors())
+        colors = EurekaStyles.textFieldColors())
+
+    val min = fieldType.min
+    val max = fieldType.max
+    if (min != null && max != null && min > max) {
+      Spacer(modifier = Modifier.height(4.dp))
+      Text(
+          text = "Minimum value must be less than or equal to maximum value",
+          color = MaterialTheme.colorScheme.error,
+          style = MaterialTheme.typography.bodySmall)
+    }
   }
 }

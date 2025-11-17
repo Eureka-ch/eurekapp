@@ -1,10 +1,13 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fieldtypes
 
+/* Portions of this code were generated with the help of Claude Sonnet 4.5. */
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,7 +35,7 @@ fun TextFieldConfiguration(
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier.fillMaxWidth().testTag("text_max_length"),
-        colors = EurekaStyles.TextFieldColors())
+        colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
 
@@ -43,7 +46,7 @@ fun TextFieldConfiguration(
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier.fillMaxWidth().testTag("text_min_length"),
-        colors = EurekaStyles.TextFieldColors())
+        colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
 
@@ -53,6 +56,16 @@ fun TextFieldConfiguration(
         label = { Text("Placeholder") },
         enabled = enabled,
         modifier = Modifier.fillMaxWidth().testTag("text_placeholder"),
-        colors = EurekaStyles.TextFieldColors())
+        colors = EurekaStyles.textFieldColors())
+
+    val minLength = fieldType.minLength
+    val maxLength = fieldType.maxLength
+    if (minLength != null && maxLength != null && minLength > maxLength) {
+      Spacer(modifier = Modifier.height(4.dp))
+      Text(
+          text = "Minimum length must be less than or equal to maximum length",
+          color = MaterialTheme.colorScheme.error,
+          style = MaterialTheme.typography.bodySmall)
+    }
   }
 }

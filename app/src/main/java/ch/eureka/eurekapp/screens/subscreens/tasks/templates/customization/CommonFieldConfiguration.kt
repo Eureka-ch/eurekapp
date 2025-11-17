@@ -41,7 +41,7 @@ fun CommonFieldConfiguration(
         label = { Text("Label *") },
         enabled = enabled,
         modifier = Modifier.fillMaxWidth().testTag("field_label_input"),
-        colors = EurekaStyles.TextFieldColors())
+        colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
 
@@ -51,7 +51,7 @@ fun CommonFieldConfiguration(
         label = { Text("Description") },
         enabled = enabled,
         modifier = Modifier.fillMaxWidth().testTag("field_description_input"),
-        colors = EurekaStyles.TextFieldColors())
+        colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
 

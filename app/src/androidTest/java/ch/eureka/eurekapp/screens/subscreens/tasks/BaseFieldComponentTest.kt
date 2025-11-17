@@ -545,4 +545,105 @@ class BaseFieldComponentTest {
     // NOW value should be committed
     assertEquals(editedValue, committedValue)
   }
+
+  @Test
+  fun baseFieldComponent_whenShowHeaderTrue_displaysHeader() {
+    composeTestRule.setContent {
+      BaseFieldComponent(
+          fieldDefinition = testFieldDefinition,
+          fieldType = FieldType.Text(),
+          value = null,
+          onValueChange = {},
+          mode = FieldInteractionMode.EditOnly,
+          showHeader = true) { _, _, _ ->
+            Text("Test Content")
+          }
+    }
+
+    // Label should be displayed
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.label("test_field")).assertIsDisplayed()
+    // Description should be displayed
+    composeTestRule
+        .onNodeWithTag(FieldComponentTestTags.description("test_field"))
+        .assertIsDisplayed()
+  }
+
+  @Test
+  fun baseFieldComponent_whenShowHeaderFalse_hidesHeader() {
+    composeTestRule.setContent {
+      BaseFieldComponent(
+          fieldDefinition = testFieldDefinition,
+          fieldType = FieldType.Text(),
+          value = null,
+          onValueChange = {},
+          mode = FieldInteractionMode.EditOnly,
+          showHeader = false) { _, _, _ ->
+            Text("Test Content")
+          }
+    }
+
+    // Label should NOT be displayed
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.label("test_field")).assertDoesNotExist()
+    // Description should NOT be displayed
+    composeTestRule
+        .onNodeWithTag(FieldComponentTestTags.description("test_field"))
+        .assertDoesNotExist()
+  }
+
+  @Test
+  fun baseFieldComponent_whenShowHeaderFalse_stillRendersContent() {
+    composeTestRule.setContent {
+      BaseFieldComponent(
+          fieldDefinition = testFieldDefinition,
+          fieldType = FieldType.Text(),
+          value = null,
+          onValueChange = {},
+          mode = FieldInteractionMode.EditOnly,
+          showHeader = false) { _, _, _ ->
+            Text("Test Content")
+          }
+    }
+
+    // Content should still be displayed
+    composeTestRule.onNodeWithText("Test Content").assertIsDisplayed()
+  }
+
+  @Test
+  fun baseFieldComponent_whenShowHeaderFalse_hidesActionButtons() {
+    composeTestRule.setContent {
+      BaseFieldComponent(
+          fieldDefinition = testFieldDefinition,
+          fieldType = FieldType.Text(),
+          value = null,
+          onValueChange = {},
+          mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
+          showHeader = false) { _, _, _ ->
+            Text("Test Content")
+          }
+    }
+
+    // Toggle button should NOT be displayed
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.toggle("test_field")).assertDoesNotExist()
+  }
+
+  @Test
+  fun baseFieldComponent_whenShowHeaderFalse_rendererStillReceivesCorrectEditingState() {
+    var receivedIsEditing = false
+
+    composeTestRule.setContent {
+      BaseFieldComponent(
+          fieldDefinition = testFieldDefinition,
+          fieldType = FieldType.Text(),
+          value = null,
+          onValueChange = {},
+          mode = FieldInteractionMode.EditOnly,
+          showHeader = false) { _, _, isEditing ->
+            receivedIsEditing = isEditing
+            Text("Test Content")
+          }
+    }
+
+    // Renderer should still receive correct editing state
+    assertTrue(receivedIsEditing)
+  }
 }

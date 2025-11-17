@@ -103,15 +103,15 @@ class FieldTypeConfigurationsTest {
   }
 
   @Test
-  fun singleSelectFieldConfiguration_displaysOptionsEditor() {
+  fun singleSelectFieldConfiguration_displaysAllowCustomCheckbox() {
     val options = listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2"))
     composeTestRule.setContent {
       SingleSelectFieldConfiguration(
           fieldType = FieldType.SingleSelect(options), onUpdate = {}, enabled = true)
     }
 
-    composeTestRule.onNodeWithText("Options (minimum 2)").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("option_value_opt1").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Allow Custom Values").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("single_select_allow_custom").assertIsDisplayed()
   }
 
   @Test
@@ -138,7 +138,7 @@ class FieldTypeConfigurationsTest {
           fieldType = FieldType.MultiSelect(options), onUpdate = {}, enabled = true)
     }
 
-    composeTestRule.onNodeWithText("Options (minimum 2)").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Allow Custom Values").assertIsDisplayed()
     composeTestRule.onNodeWithTag("multi_select_min").assertIsDisplayed()
     composeTestRule.onNodeWithTag("multi_select_max").assertIsDisplayed()
     composeTestRule.onNodeWithTag("multi_select_allow_custom").assertIsDisplayed()

@@ -1,5 +1,7 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fieldtypes
 
+/* Portions of this code were generated with the help of Claude Sonnet 4.5. */
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -7,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +38,7 @@ fun MultiSelectFieldConfiguration(
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier.fillMaxWidth().testTag("multi_select_min"),
-        colors = EurekaStyles.TextFieldColors())
+        colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
 
@@ -46,7 +49,7 @@ fun MultiSelectFieldConfiguration(
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier.fillMaxWidth().testTag("multi_select_max"),
-        colors = EurekaStyles.TextFieldColors())
+        colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
 
@@ -57,6 +60,16 @@ fun MultiSelectFieldConfiguration(
           enabled = enabled,
           modifier = Modifier.testTag("multi_select_allow_custom"))
       Text("Allow Custom Values")
+    }
+
+    val minSelections = fieldType.minSelections
+    val maxSelections = fieldType.maxSelections
+    if (minSelections != null && maxSelections != null && minSelections > maxSelections) {
+      Spacer(modifier = Modifier.height(4.dp))
+      Text(
+          text = "Minimum selections must be less than or equal to maximum selections",
+          color = MaterialTheme.colorScheme.error,
+          style = MaterialTheme.typography.bodySmall)
     }
   }
 }

@@ -29,10 +29,10 @@ class SelectOptionsEditorTest {
       SelectOptionsEditor(options = testOptions, onOptionsChange = {}, enabled = true)
     }
 
-    composeTestRule.onNodeWithTag("option_value_opt1").assertIsDisplayed()
     composeTestRule.onNodeWithTag("option_label_opt1").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("option_value_opt2").assertIsDisplayed()
     composeTestRule.onNodeWithTag("option_label_opt2").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("option_delete_opt1").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("option_delete_opt2").assertIsDisplayed()
   }
 
   @Test
@@ -70,19 +70,7 @@ class SelectOptionsEditorTest {
   }
 
   @Test
-  fun selectOptionsEditor_valueInput_updatesOption() {
-    var updatedOptions = testOptions
-    composeTestRule.setContent {
-      SelectOptionsEditor(
-          options = updatedOptions, onOptionsChange = { updatedOptions = it }, enabled = true)
-    }
-
-    composeTestRule.onNodeWithTag("option_value_opt1").performTextInput("x")
-    assertEquals("xopt1", updatedOptions[0].value)
-  }
-
-  @Test
-  fun selectOptionsEditor_labelInput_updatesOption() {
+  fun selectOptionsEditor_labelInput_updatesValue() {
     var updatedOptions = testOptions
     composeTestRule.setContent {
       SelectOptionsEditor(
@@ -90,7 +78,23 @@ class SelectOptionsEditorTest {
     }
 
     composeTestRule.onNodeWithTag("option_label_opt1").performTextInput("X")
+    // Label becomes "XOption 1", which sanitizes to "xoption_1"
     assertEquals("XOption 1", updatedOptions[0].label)
+    assertEquals("xoption_1", updatedOptions[0].value)
+  }
+
+  @Test
+  fun selectOptionsEditor_labelInput_sanitizesSpecialCharacters() {
+    var updatedOptions = testOptions
+    composeTestRule.setContent {
+      SelectOptionsEditor(
+          options = updatedOptions, onOptionsChange = { updatedOptions = it }, enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag("option_label_opt2").performTextInput(" - Special!")
+    // Label becomes " - Special!Option 2" (text is appended), which sanitizes to "special_option_2"
+    assertEquals(" - Special!Option 2", updatedOptions[1].label)
+    assertEquals("special_option_2", updatedOptions[1].value)
   }
 
   @Test
@@ -99,8 +103,8 @@ class SelectOptionsEditorTest {
       SelectOptionsEditor(options = testOptions, onOptionsChange = {}, enabled = false)
     }
 
-    composeTestRule.onNodeWithTag("option_value_opt1").assertIsNotEnabled()
     composeTestRule.onNodeWithTag("option_label_opt1").assertIsNotEnabled()
+    composeTestRule.onNodeWithTag("option_label_opt2").assertIsNotEnabled()
     composeTestRule.onNodeWithTag("add_option_button").assertIsNotEnabled()
   }
 }

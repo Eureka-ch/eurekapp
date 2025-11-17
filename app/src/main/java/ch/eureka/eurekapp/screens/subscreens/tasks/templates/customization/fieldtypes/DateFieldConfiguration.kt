@@ -1,11 +1,14 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fieldtypes
 
+/* Portions of this code were generated with the help of Claude Sonnet 4.5. */
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,6 +20,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun DateFieldConfiguration(
@@ -32,7 +36,7 @@ fun DateFieldConfiguration(
         label = { Text("Min Date (YYYY-MM-DD)") },
         enabled = enabled,
         modifier = Modifier.fillMaxWidth().testTag("date_min"),
-        colors = EurekaStyles.TextFieldColors())
+        colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
 
@@ -42,7 +46,7 @@ fun DateFieldConfiguration(
         label = { Text("Max Date (YYYY-MM-DD)") },
         enabled = enabled,
         modifier = Modifier.fillMaxWidth().testTag("date_max"),
-        colors = EurekaStyles.TextFieldColors())
+        colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
 
@@ -63,6 +67,24 @@ fun DateFieldConfiguration(
         label = { Text("Format") },
         enabled = enabled,
         modifier = Modifier.fillMaxWidth().testTag("date_format"),
-        colors = EurekaStyles.TextFieldColors())
+        colors = EurekaStyles.textFieldColors())
+
+    val formatString = fieldType.format
+    if (formatString != null && formatString.isNotBlank()) {
+      val isValidFormat =
+          try {
+            DateTimeFormatter.ofPattern(formatString)
+            true
+          } catch (e: IllegalArgumentException) {
+            false
+          }
+      if (!isValidFormat) {
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "Invalid date format pattern",
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall)
+      }
+    }
   }
 }
