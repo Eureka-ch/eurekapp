@@ -21,6 +21,8 @@ import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AutoAssignResultScreen
+import ch.eureka.eurekapp.screens.subscreens.tasks.EmptyState
+import ch.eureka.eurekapp.screens.subscreens.tasks.LoadingState
 import ch.eureka.eurekapp.ui.tasks.AutoAssignResultViewModel
 import ch.eureka.eurekapp.ui.tasks.MockProjectRepository
 import ch.eureka.eurekapp.ui.tasks.MockTaskRepository
@@ -389,5 +391,23 @@ class AutoAssignResultScreenTest {
                 .onAllNodesWithText("Error", substring = true)
                 .fetchSemanticsNodes()
                 .isNotEmpty())
+  }
+
+  @Test
+  fun loadingStateComposable_displaysProgressAndMessage() {
+    composeTestRule.setContent { LoadingState() }
+    composeTestRule
+        .onNodeWithText("Calculating assignments...", substring = false)
+        .assertIsDisplayed()
+  }
+
+  @Test
+  fun emptyStateComposable_showsMessageAndButton() {
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      EmptyState(navigationController = navController)
+    }
+    composeTestRule.onNodeWithText("No assignments to review").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Go Back").assertIsDisplayed()
   }
 }

@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks
 
+import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -173,8 +174,13 @@ fun AutoAssignResultScreen(
       }
 }
 
+/**
+ * Exposed for instrumentation tests to verify loading UI state, otherwise kept private to the
+ * screen.
+ */
+@VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 @Composable
-private fun LoadingState() {
+internal fun LoadingState() {
   Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
       CircularProgressIndicator()
@@ -208,8 +214,12 @@ private fun ErrorState(error: String?, navigationController: NavHostController) 
   }
 }
 
+/**
+ * Exposed for instrumentation tests to verify empty UI state, otherwise kept private to the screen.
+ */
+@VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 @Composable
-private fun EmptyState(navigationController: NavHostController) {
+internal fun EmptyState(navigationController: NavHostController) {
   Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,

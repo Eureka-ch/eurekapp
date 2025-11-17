@@ -10,13 +10,11 @@ import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.user.FirestoreUserRepository
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
-import ch.eureka.eurekapp.model.tasks.TaskAutoAssignmentService
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 // portions of this code and documentation were generated with the help of AI.
@@ -60,7 +58,9 @@ class AutoAssignResultViewModel(
             firestore = FirebaseFirestore.getInstance(), auth = FirebaseAuth.getInstance()),
     private val userRepository: UserRepository =
         FirestoreUserRepository(
-            firestore = FirebaseFirestore.getInstance(), auth = FirebaseAuth.getInstance())
+            firestore = FirebaseFirestore.getInstance(), auth = FirebaseAuth.getInstance()),
+    private val autoAssignResultLoader: AutoAssignResultLoader =
+        AutoAssignResultLoader(taskRepository, projectRepository, userRepository)
 ) : ViewModel() {
 
   private val _uiState = MutableStateFlow(AutoAssignResultUiState(isLoading = true))
@@ -77,109 +77,41 @@ class AutoAssignResultViewModel(
     viewModelScope.launch {
       _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
-      try {
-        val projects = projectRepository.getProjectsForCurrentUser().first()
-        if (projects.isEmpty()) {
+      when (val result = autoAssignResultLoader.load()) {
+        is AutoAssignResultLoader.Result.Success -> {
+          _proposedAssignments.value = result.proposedAssignments
+          _uiState.value =
+              _uiState.value.copy(
+                  isLoading = false, proposedAssignments = result.proposedAssignments, error = null)
+        }
+        is AutoAssignResultLoader.Result.Error.NoProjects -> {
           _uiState.value =
               _uiState.value.copy(
                   isLoading = false, error = "No projects available for auto-assignment")
-          return@launch
         }
-
-        val (allTasks, projectTasksMap) = collectTasksFromProjects(projects)
-        val uniqueMembers = collectUniqueMembers(projects)
-
-        if (uniqueMembers.isEmpty()) {
+        is AutoAssignResultLoader.Result.Error.NoMembers -> {
           _uiState.value =
               _uiState.value.copy(
                   isLoading = false, error = "No team members available for assignment")
-          return@launch
         }
-
-        val assignmentResult = TaskAutoAssignmentService.assignTasks(allTasks, uniqueMembers)
-
-        if (assignmentResult.assignments.isEmpty()) {
+        is AutoAssignResultLoader.Result.Error.NoAssignableTasks -> {
+          val skipped = result.skippedTasks
+          val message =
+              if (skipped > 0) {
+                "No tasks could be assigned. $skipped tasks skipped."
+              } else {
+                "No unassigned tasks found."
+              }
+          _uiState.value = _uiState.value.copy(isLoading = false, error = message)
+        }
+        is AutoAssignResultLoader.Result.Error.Generic -> {
           _uiState.value =
               _uiState.value.copy(
                   isLoading = false,
-                  error =
-                      if (assignmentResult.skippedTasks.isNotEmpty()) {
-                        "No tasks could be assigned. ${assignmentResult.skippedTasks.size} tasks skipped."
-                      } else {
-                        "No unassigned tasks found."
-                      })
-          return@launch
-        }
-
-        val proposedAssignments =
-            createProposedAssignments(
-                assignmentResult.assignments, projects, projectTasksMap, allTasks)
-
-        _proposedAssignments.value = proposedAssignments
-        _uiState.value =
-            _uiState.value.copy(
-                isLoading = false, proposedAssignments = proposedAssignments, error = null)
-      } catch (e: Exception) {
-        _uiState.value =
-            _uiState.value.copy(
-                isLoading = false, error = "Failed to load assignments: ${e.message}")
-      }
-    }
-  }
-
-  private suspend fun collectTasksFromProjects(
-      projects: List<ch.eureka.eurekapp.model.data.project.Project>
-  ): Pair<List<Task>, Map<String, List<Task>>> {
-    val allTasks = mutableListOf<Task>()
-    val projectTasksMap = mutableMapOf<String, List<Task>>()
-
-    for (project in projects) {
-      val tasks = taskRepository.getTasksInProject(project.projectId).first()
-      allTasks.addAll(tasks)
-      projectTasksMap[project.projectId] = tasks
-    }
-
-    return Pair(allTasks, projectTasksMap)
-  }
-
-  private suspend fun collectUniqueMembers(
-      projects: List<ch.eureka.eurekapp.model.data.project.Project>
-  ): List<ch.eureka.eurekapp.model.data.project.Member> {
-    val allMembers = mutableListOf<ch.eureka.eurekapp.model.data.project.Member>()
-    for (project in projects) {
-      val members = projectRepository.getMembers(project.projectId).first()
-      allMembers.addAll(members)
-    }
-    return allMembers.distinctBy { it.userId }
-  }
-
-  private suspend fun createProposedAssignments(
-      assignments: Map<String, String>,
-      projects: List<ch.eureka.eurekapp.model.data.project.Project>,
-      projectTasksMap: Map<String, List<Task>>,
-      allTasks: List<Task>
-  ): List<ProposedAssignment> {
-    val proposedAssignments = mutableListOf<ProposedAssignment>()
-
-    for ((taskId, userId) in assignments) {
-      val taskProject =
-          projects.find { project ->
-            projectTasksMap[project.projectId]?.any { it.taskID == taskId } == true
-          }
-
-      if (taskProject != null) {
-        val task = allTasks.find { it.taskID == taskId }
-        val user = userRepository.getUserById(userId).first()
-
-        if (task != null && user != null) {
-          proposedAssignments.add(
-              ProposedAssignment(
-                  task = task, proposedAssignee = user, projectId = taskProject.projectId))
+                  error = "Failed to load assignments: ${result.throwable.message}")
         }
       }
     }
-
-    return proposedAssignments
   }
 
   /**

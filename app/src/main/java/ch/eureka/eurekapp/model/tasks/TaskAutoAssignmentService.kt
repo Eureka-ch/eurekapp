@@ -33,7 +33,7 @@ object TaskAutoAssignmentService {
    * Automatically assigns unassigned tasks to team members using a hybrid algorithm.
    *
    * Algorithm:
-   * 1. Calculate workload for each member (count of TODO/IN_PROGRESS tasks)
+   * 1. Calculate workload for each member
    * 2. For each unassigned task: a. If task has dependencies, try to assign to the same member as
    *    the parent task b. If no dependency preference or parent not assigned, assign to least
    *    loaded member
@@ -48,7 +48,7 @@ object TaskAutoAssignmentService {
       return AssignmentResult(emptyMap(), tasks.map { it.taskID })
     }
 
-    // Filter to only unassigned tasks (TODO or IN_PROGRESS status)
+    // Filter to only unassigned tasks
     val unassignedTasks =
         tasks.filter { task ->
           task.assignedUserIds.isEmpty() &&
@@ -89,7 +89,7 @@ object TaskAutoAssignmentService {
   /**
    * Calculates the current workload for each member.
    *
-   * Workload is defined as the count of tasks with TODO or IN_PROGRESS status assigned to the
+   * Workload is defined as the count of tasks with "TODO_" or "IN_PROGRESS" status assigned to the
    * member.
    *
    * @param tasks All tasks in the project
@@ -102,7 +102,7 @@ object TaskAutoAssignmentService {
     // Initialize all members with 0 workload
     members.forEach { member -> workloadMap[member.userId] = 0 }
 
-    // Count active tasks (TODO or IN_PROGRESS) for each member
+    // Count active tasks for each member
     tasks
         .filter { it.status == TaskStatus.TODO || it.status == TaskStatus.IN_PROGRESS }
         .forEach { task ->
