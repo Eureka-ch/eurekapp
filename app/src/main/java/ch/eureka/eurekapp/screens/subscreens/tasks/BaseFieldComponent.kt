@@ -90,6 +90,7 @@ object FieldComponentTestTags {
  * @param mode The interaction mode (EditOnly, ViewOnly, or Toggleable)
  * @param callbacks Callbacks for field interaction events
  * @param showValidationErrors Whether to display validation errors
+ * @param showHeader Whether to show the header (label, description, action buttons)
  * @param renderer Lambda that renders the field-specific UI
  */
 @Composable
@@ -102,6 +103,7 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
     mode: FieldInteractionMode,
     callbacks: FieldCallbacks = FieldCallbacks(),
     showValidationErrors: Boolean = false,
+    showHeader: Boolean = true,
     renderer: @Composable (value: V?, onValueChange: (V) -> Unit, isEditing: Boolean) -> Unit
 ) {
   var editingValue by
@@ -151,34 +153,36 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
 
   Column(
       modifier = modifier.fillMaxWidth().testTag(FieldComponentTestTags.base(fieldDefinition.id))) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-          Text(
-              text =
-                  buildString {
-                    append(fieldDefinition.label)
-                    if (fieldDefinition.required) {
-                      append(" *")
-                    }
-                  },
-              style = MaterialTheme.typography.labelLarge,
-              modifier =
-                  Modifier.weight(1f).testTag(FieldComponentTestTags.label(fieldDefinition.id)))
+        if (showHeader) {
+          Row(
+              modifier = Modifier.fillMaxWidth(),
+              verticalAlignment = Alignment.CenterVertically,
+          ) {
+            Text(
+                text =
+                    buildString {
+                      append(fieldDefinition.label)
+                      if (fieldDefinition.required) {
+                        append(" *")
+                      }
+                    },
+                style = MaterialTheme.typography.labelLarge,
+                modifier =
+                    Modifier.weight(1f).testTag(FieldComponentTestTags.label(fieldDefinition.id)))
 
-          FieldActionButtons(
-              mode = mode,
-              fieldDefinition = fieldDefinition,
-              editingValue = editingValue,
-              originalValue = originalValue,
-              onValueChange = onValueChange,
-              callbacks = callbacks,
-              onEditingValueChange = { editingValue = it })
+            FieldActionButtons(
+                mode = mode,
+                fieldDefinition = fieldDefinition,
+                editingValue = editingValue,
+                originalValue = originalValue,
+                onValueChange = onValueChange,
+                callbacks = callbacks,
+                onEditingValueChange = { editingValue = it })
+          }
+
+          FieldDescription(fieldDefinition)
+          Spacer(modifier = Modifier.height(8.dp))
         }
-
-        FieldDescription(fieldDefinition)
-        Spacer(modifier = Modifier.height(8.dp))
         renderer(currentValue, handleValueChange, mode.isEditing)
         FieldHint(fieldType, mode, fieldDefinition)
         ValidationErrors(validationResult, fieldDefinition)
