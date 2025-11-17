@@ -5,6 +5,8 @@ import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.file.FirebaseFileStorageRepository
 import ch.eureka.eurekapp.model.data.invitation.FirestoreInvitationRepository
 import ch.eureka.eurekapp.model.data.meeting.FirestoreMeetingRepository
+import ch.eureka.eurekapp.model.data.note.FirestoreSelfNotesRepository
+import ch.eureka.eurekapp.model.data.note.SelfNotesRepository
 import ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository
 import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
 import ch.eureka.eurekapp.model.data.template.FirestoreTaskTemplateRepository
@@ -57,6 +59,10 @@ object FirestoreRepositoriesProvider {
         FirebaseFunctions.getInstance())
   }
 
+  private val _selfNotesRepository: SelfNotesRepository by lazy {
+    FirestoreSelfNotesRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
+  }
+
   val taskRepository: FirestoreTaskRepository
     get() = _taskRepository
 
@@ -83,4 +89,7 @@ object FirestoreRepositoriesProvider {
 
   val speechToTextRepository: SpeechToTextRepository
     get() = _speechToTextRepository
+
+  val selfNotesRepository: SelfNotesRepository
+    get() = _selfNotesRepository
 }

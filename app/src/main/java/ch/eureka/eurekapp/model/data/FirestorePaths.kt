@@ -1,5 +1,10 @@
 package ch.eureka.eurekapp.model.data
 
+/*
+Note: This file was partially written by GPT-5 Codex
+Co-author : GPT-5
+*/
+
 /**
  * Object containing constants and helper functions for Firestore document paths.
  *
@@ -36,6 +41,9 @@ object FirestorePaths {
 
   /** Transcriptions subcollection name */
   const val TRANSCRIPTIONS = "transcriptions"
+
+  /** Self notes subcollection name */
+  const val SELF_NOTES = "selfNotes"
 
   fun userPath(userId: String) = "$USERS/$userId"
 
@@ -84,4 +92,8 @@ object FirestorePaths {
 
   fun transcriptionPath(projectId: String, meetingId: String, transcriptionId: String) =
       "${transcriptionsPath(projectId, meetingId)}/$transcriptionId"
+
+  fun selfNotesPath(userId: String) = "${userPath(userId)}/$SELF_NOTES"
+
+  fun selfNotePath(userId: String, noteId: String) = "${selfNotesPath(userId)}/$noteId"
 }

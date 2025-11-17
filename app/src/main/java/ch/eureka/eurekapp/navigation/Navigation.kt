@@ -16,6 +16,7 @@ import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.IdeasScreen
 import ch.eureka.eurekapp.screens.OverviewProjectScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
+import ch.eureka.eurekapp.screens.SelfNotesScreen
 import ch.eureka.eurekapp.screens.TasksScreen
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScreen
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingTranscriptViewScreen
@@ -39,7 +40,11 @@ import com.google.firebase.auth.auth
 import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
 
-/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
+/*
+Note :This file was partially written by ChatGPT (GPT-5) and Codex
+Co-author : GPT-5
+*/
+
 sealed interface Route {
   // Main screens
   @Serializable data object ProjectSelection : Route
@@ -47,6 +52,8 @@ sealed interface Route {
   @Serializable data class OverviewProject(val projectId: String) : Route
 
   @Serializable data object Profile : Route
+
+  @Serializable data object SelfNotes : Route
 
   sealed interface TasksSection : Route {
     companion object {
@@ -182,6 +189,7 @@ fun NavigationMenu() {
                     onTokenValidated = { navigationController.navigate(Route.ProjectSelection) })
               }
               composable<Route.Profile> { ProfileScreen() }
+              composable<Route.SelfNotes> { SelfNotesScreen() }
               composable<Route.OverviewProject> { backStackEntry ->
                 val overviewProjectScreenRoute = backStackEntry.toRoute<Route.OverviewProject>()
                 OverviewProjectScreen(projectId = overviewProjectScreenRoute.projectId)

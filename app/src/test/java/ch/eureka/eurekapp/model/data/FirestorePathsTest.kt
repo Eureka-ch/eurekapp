@@ -8,6 +8,11 @@ import org.junit.Test
  *
  * Note: Some of these tests were co-authored by Claude Code.
  */
+
+/*
+Co-author: GPT-5 Codex
+*/
+
 class FirestorePathsTest {
 
   @Test
@@ -20,6 +25,7 @@ class FirestorePathsTest {
     TestCase.assertEquals("taskTemplates", FirestorePaths.TASK_TEMPLATES)
     TestCase.assertEquals("tasks", FirestorePaths.TASKS)
     TestCase.assertEquals("transcriptions", FirestorePaths.TRANSCRIPTIONS)
+    TestCase.assertEquals("selfNotes", FirestorePaths.SELF_NOTES)
   }
 
   @Test
@@ -161,5 +167,20 @@ class FirestorePathsTest {
     val expected = "projects/project123/meetings/meeting456/transcriptions/transcription789"
     TestCase.assertEquals(
         expected, FirestorePaths.transcriptionPath(projectId, meetingId, transcriptionId))
+  }
+
+  @Test
+  fun selfNotesPath_shouldReturnCorrectPath() {
+    val userId = "user123"
+    val expected = "users/user123/selfNotes"
+    TestCase.assertEquals(expected, FirestorePaths.selfNotesPath(userId))
+  }
+
+  @Test
+  fun selfNotePath_shouldReturnCorrectPath() {
+    val userId = "user123"
+    val noteId = "note456"
+    val expected = "users/user123/selfNotes/note456"
+    TestCase.assertEquals(expected, FirestorePaths.selfNotePath(userId, noteId))
   }
 }
