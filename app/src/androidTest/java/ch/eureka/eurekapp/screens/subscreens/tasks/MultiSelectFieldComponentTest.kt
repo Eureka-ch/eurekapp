@@ -382,4 +382,167 @@ class MultiSelectFieldComponentTest {
         value = FieldValue.MultiSelectValue(emptyList()), mode = FieldInteractionMode.ViewOnly)
     composeTestRule.onNodeWithText("None").assertIsDisplayed()
   }
+
+  @Test
+  fun multiSelectFieldComponent_minSelectionsValidation_showsError() {
+    setFieldContent(
+        fieldDef =
+            testFieldDefinition.copy(
+                type = FieldType.MultiSelect(options = testOptions, minSelections = 2)),
+        value = FieldValue.MultiSelectValue(listOf("opt1")),
+        showValidationErrors = true)
+    composeTestRule.onNodeWithText("Must select at least 2 option(s)").assertIsDisplayed()
+  }
+
+  @Test
+  fun multiSelectFieldComponent_minSelectionsValidation_noErrorWhenMet() {
+    setFieldContent(
+        fieldDef =
+            testFieldDefinition.copy(
+                type = FieldType.MultiSelect(options = testOptions, minSelections = 2)),
+        value = FieldValue.MultiSelectValue(listOf("opt1", "opt2")),
+        showValidationErrors = true)
+    composeTestRule.onNodeWithText("Must select at least 2 option(s)").assertDoesNotExist()
+  }
+
+  @Test
+  fun multiSelectFieldComponent_maxSelectionsValidation_showsError() {
+    setFieldContent(
+        fieldDef =
+            testFieldDefinition.copy(
+                type = FieldType.MultiSelect(options = testOptions, maxSelections = 1)),
+        value = FieldValue.MultiSelectValue(listOf("opt1", "opt2")),
+        showValidationErrors = true)
+    composeTestRule.onNodeWithText("Must select at most 1 option(s)").assertIsDisplayed()
+  }
+
+  @Test
+  fun multiSelectFieldComponent_maxSelectionsValidation_noErrorWhenMet() {
+    setFieldContent(
+        fieldDef =
+            testFieldDefinition.copy(
+                type = FieldType.MultiSelect(options = testOptions, maxSelections = 2)),
+        value = FieldValue.MultiSelectValue(listOf("opt1", "opt2")),
+        showValidationErrors = true)
+    composeTestRule.onNodeWithText("Must select at most 2 option(s)").assertDoesNotExist()
+  }
+
+  @Test
+  fun multiSelectFieldComponent_toggleableSave_callsOnSaveCallback() {
+    var saveCalled = false
+    setFieldContent(
+        value = FieldValue.MultiSelectValue(listOf("opt1")),
+        mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
+        callbacks = FieldCallbacks(onSave = { saveCalled = true }))
+
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.save("test_multi_select")).performClick()
+    assertTrue(saveCalled)
+  }
+
+  @Test
+  fun multiSelectFieldComponent_toggleableCancel_callsOnCancelCallback() {
+    var cancelCalled = false
+    setFieldContent(
+        mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
+        callbacks = FieldCallbacks(onCancel = { cancelCalled = true }))
+
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.cancel("test_multi_select")).performClick()
+    assertTrue(cancelCalled)
+  }
+
+  @Test
+  fun multiSelectFieldComponent_toggleableEditing_showsSaveAndCancelButtons() {
+    setFieldContent(mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true))
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.save("test_multi_select")).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.cancel("test_multi_select")).assertIsDisplayed()
+  }
+
+  @Test
+  fun multiSelectFieldComponent_showHeaderFalse_hidesHeader() {
+    composeTestRule.setContent {
+      MultiSelectFieldComponent(
+          fieldDefinition = testFieldDefinition,
+          value = null,
+          onValueChange = {},
+          mode = FieldInteractionMode.EditOnly,
+          showHeader = false)
+    }
+
+    composeTestRule.onNodeWithText("Test Multi Select").assertDoesNotExist()
+  }
+
+  @Test
+  fun multiSelectFieldComponent_showHeaderTrue_showsHeader() {
+    composeTestRule.setContent {
+      MultiSelectFieldComponent(
+          fieldDefinition = testFieldDefinition,
+          value = null,
+          onValueChange = {},
+          mode = FieldInteractionMode.EditOnly,
+          showHeader = true)
+    }
+
+    composeTestRule.onNodeWithText("Test Multi Select").assertIsDisplayed()
+  }
+
+  @Test
+  fun multiSelectFieldComponent_showHeaderFalse_stillRendersChips() {
+    composeTestRule.setContent {
+      MultiSelectFieldComponent(
+          fieldDefinition = testFieldDefinition,
+          value = null,
+          onValueChange = {},
+          mode = FieldInteractionMode.EditOnly,
+          showHeader = false)
+    }
+
+    composeTestRule.onNodeWithTag(MultiSelectFieldTestTags.chip("option1")).assertIsDisplayed()
+  }
+
+  @Test
+  fun multiSelectFieldComponent_requiredValidation_emptyList_showsError() {
+    setFieldContent(
+        fieldDef = testFieldDefinition.copy(required = true),
+        value = FieldValue.MultiSelectValue(emptyList()),
+        showValidationErrors = true)
+    composeTestRule.onNodeWithText("This field is required").assertIsDisplayed()
+  }
+
+  @Test
+  fun multiSelectFieldComponent_requiredValidation_withValues_noError() {
+    setFieldContent(
+        fieldDef = testFieldDefinition.copy(required = true),
+        value = FieldValue.MultiSelectValue(listOf("opt1")),
+        showValidationErrors = true)
+    composeTestRule.onNodeWithText("This field is required").assertDoesNotExist()
+  }
+
+  @Test
+  fun multiSelectFieldComponent_constraintHints_showsMinMaxSelections() {
+    setFieldContent(
+        fieldDef =
+            testFieldDefinition.copy(
+                type =
+                    FieldType.MultiSelect(
+                        options = testOptions, minSelections = 1, maxSelections = 3)))
+    composeTestRule.onNodeWithText("Select 1-3 options").assertIsDisplayed()
+  }
+
+  @Test
+  fun multiSelectFieldComponent_constraintHints_minOnly_showsMinSelections() {
+    setFieldContent(
+        fieldDef =
+            testFieldDefinition.copy(
+                type = FieldType.MultiSelect(options = testOptions, minSelections = 2)))
+    composeTestRule.onNodeWithText("Select at least 2").assertIsDisplayed()
+  }
+
+  @Test
+  fun multiSelectFieldComponent_constraintHints_maxOnly_showsMaxSelections() {
+    setFieldContent(
+        fieldDef =
+            testFieldDefinition.copy(
+                type = FieldType.MultiSelect(options = testOptions, maxSelections = 3)))
+    composeTestRule.onNodeWithText("Select at most 3").assertIsDisplayed()
+  }
 }

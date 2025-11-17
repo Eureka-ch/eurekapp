@@ -270,4 +270,46 @@ class FieldValidatorTest {
     val errors = (result as FieldValidationResult.Invalid).errors
     assertTrue(errors.size >= 2)
   }
+
+  @Test
+  fun `null NumberValue is valid regardless of required status`() {
+    // FieldValidator doesn't check required fields - that's done at the UI layer
+    val requiredFieldDef = FieldDefinition("number", "Number", FieldType.Number(), required = true)
+    val optionalFieldDef = FieldDefinition("number", "Number", FieldType.Number(), required = false)
+    val value = FieldValue.NumberValue(null)
+
+    val requiredResult = FieldValidator.validate(value, requiredFieldDef)
+    val optionalResult = FieldValidator.validate(value, optionalFieldDef)
+
+    // Both should be valid - FieldValidator only checks type-specific constraints
+    assertTrue(requiredResult is FieldValidationResult.Valid)
+    assertTrue(optionalResult is FieldValidationResult.Valid)
+  }
+
+  @Test
+  fun `null NumberValue vs zero are distinct in validation`() {
+    val fieldDef = FieldDefinition("number", "Number", FieldType.Number(min = 1.0))
+
+    val nullValue = FieldValue.NumberValue(null)
+    val zeroValue = FieldValue.NumberValue(0.0)
+
+    val nullResult = FieldValidator.validate(nullValue, fieldDef)
+    val zeroResult = FieldValidator.validate(zeroValue, fieldDef)
+
+    // Null is valid (no value to validate against min constraint)
+    assertTrue(nullResult is FieldValidationResult.Valid)
+
+    // Zero is invalid (less than min of 1.0)
+    assertTrue(zeroResult is FieldValidationResult.Invalid)
+  }
+
+  @Test
+  fun `null NumberValue ignores min and max constraints`() {
+    val fieldDef = FieldDefinition("number", "Number", FieldType.Number(min = 10.0, max = 100.0))
+    val value = FieldValue.NumberValue(null)
+
+    val result = FieldValidator.validate(value, fieldDef)
+    // Null value bypasses constraint checks
+    assertTrue(result is FieldValidationResult.Valid)
+  }
 }
