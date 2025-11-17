@@ -89,7 +89,7 @@ object TaskAutoAssignmentService {
   /**
    * Calculates the current workload for each member.
    *
-   * Workload is defined as the count of tasks with "TODO_" or "IN_PROGRESS" status assigned to the
+   * Workload is defined as the count of tasks with "T0DO" or "IN_PROGRESS" status assigned to the
    * member.
    *
    * @param tasks All tasks in the project

@@ -47,7 +47,6 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.tasks.AutoAssignResultViewModel
 import ch.eureka.eurekapp.ui.tasks.ProposedAssignment
 import com.google.firebase.Timestamp
-import kotlinx.coroutines.delay
 
 // Part of this code and documentation were generated with the help of AI.
 /**
@@ -150,7 +149,7 @@ fun AutoAssignResultScreen(
                   if (uiState.appliedCount > 0) {
                     LaunchedEffect(uiState.appliedCount) {
                       // Navigate back after a short delay
-                      delay(1500)
+
                       navigationController.popBackStack()
                     }
                     Text(
