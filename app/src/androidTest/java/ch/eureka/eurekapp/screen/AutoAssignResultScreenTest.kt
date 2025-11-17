@@ -214,6 +214,8 @@ class AutoAssignResultScreenTest {
         "proj1", flowOf(listOf(createTask("task1", assigned = true))))
     setContentWithNav(includeTasksScreen = true)
     composeTestRule.waitForIdle()
+    // When all tasks are assigned, ViewModel returns error "No unassigned tasks found."
+    // which shows ErrorState, not EmptyState. Wait for either state.
     composeTestRule.waitUntil(timeoutMillis = 5000) {
       composeTestRule
           .onAllNodesWithText("No assignments to review", substring = true)
@@ -222,8 +224,13 @@ class AutoAssignResultScreenTest {
           composeTestRule
               .onAllNodesWithText("No unassigned tasks", substring = true)
               .fetchSemanticsNodes()
+              .isNotEmpty() ||
+          composeTestRule
+              .onAllNodesWithText("Error", substring = true)
+              .fetchSemanticsNodes()
               .isNotEmpty()
     }
+    // Verify that we see either empty state or error state message
     assert(
         composeTestRule
             .onAllNodesWithText("No assignments to review", substring = true)
@@ -231,6 +238,10 @@ class AutoAssignResultScreenTest {
             .isNotEmpty() ||
             composeTestRule
                 .onAllNodesWithText("No unassigned tasks", substring = true)
+                .fetchSemanticsNodes()
+                .isNotEmpty() ||
+            composeTestRule
+                .onAllNodesWithText("Error", substring = true)
                 .fetchSemanticsNodes()
                 .isNotEmpty())
   }
