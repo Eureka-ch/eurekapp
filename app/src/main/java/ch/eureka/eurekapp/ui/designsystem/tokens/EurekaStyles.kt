@@ -14,18 +14,18 @@ import androidx.compose.ui.unit.dp
 object EurekaStyles {
 
   @Composable
-  fun PrimaryButtonColors() =
+  fun primaryButtonColors() =
       ButtonDefaults.buttonColors(
           containerColor = MaterialTheme.colorScheme.primary, contentColor = Color.White)
 
   @Composable
-  fun OutlinedButtonColors() =
+  fun outlinedButtonColors() =
       ButtonDefaults.outlinedButtonColors(
           contentColor = MaterialTheme.colorScheme.onSurface,
           containerColor = MaterialTheme.colorScheme.surface)
 
   @Composable
-  fun TextFieldColors() =
+  fun textFieldColors() =
       OutlinedTextFieldDefaults.colors(
           focusedBorderColor = MaterialTheme.colorScheme.primary,
           unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
@@ -37,36 +37,36 @@ object EurekaStyles {
 
   // Additional styles matching Figma
   @Composable
-  fun HighPriorityTagColors() =
+  fun highPriorityTagColors() =
       CardDefaults.cardColors(
           containerColor = MaterialTheme.colorScheme.errorContainer,
           contentColor = MaterialTheme.colorScheme.onErrorContainer)
 
   @Composable
-  fun NormalTagColors() =
+  fun normalTagColors() =
       CardDefaults.cardColors(
           containerColor = MaterialTheme.colorScheme.surfaceVariant,
           contentColor = MaterialTheme.colorScheme.onSurfaceVariant)
 
   @Composable
-  fun OutlinedButtonBorder() =
+  fun outlinedButtonBorder() =
       BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
 
   // Card styles using Eureka colors directly
   @Composable
-  fun TaskCardColors() =
+  fun taskCardColors() =
       CardDefaults.cardColors(
           containerColor = EColors.LightSurface, // Pure white from Eureka
           contentColor = EColors.LightOnSurface)
 
-  @Composable fun TaskCardBorder() = BorderStroke(width = 1.dp, color = EColors.LightOutlineVariant)
+  @Composable fun taskCardBorder() = BorderStroke(width = 1.dp, color = EColors.LightOutlineVariant)
 
   // Text colors using Eureka colors directly
   @Composable
-  fun TaskTitleColor(isCompleted: Boolean) =
+  fun taskTitleColor(isCompleted: Boolean) =
       if (isCompleted) EColors.LightOnSurfaceVariant else EColors.LightOnSurface
 
-  @Composable fun TaskSecondaryTextColor() = EColors.LightOnSurfaceVariant
+  @Composable fun taskSecondaryTextColor() = EColors.LightOnSurfaceVariant
 
-  @Composable fun TaskSeparatorColor() = EColors.LightOutlineVariant
+  @Composable fun taskSeparatorColor() = EColors.LightOutlineVariant
 }

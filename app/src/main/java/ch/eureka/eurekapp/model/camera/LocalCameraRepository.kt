@@ -30,7 +30,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 class LocalCameraRepository(
     private val context: Context,
     private val lifecycleOwner: LifecycleOwner,
-    private val locale: Locale = Locale("fr", "CH"),
+    private val locale: Locale = Locale.Builder().setLanguage("fr").setRegion("CH").build(),
     private val photoLocation: String = "Pictures/EurekApp",
     private val cameraSelection: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 ) : CameraRepository {

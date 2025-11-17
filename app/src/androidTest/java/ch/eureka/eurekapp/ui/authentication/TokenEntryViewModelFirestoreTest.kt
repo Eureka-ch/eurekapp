@@ -2,6 +2,7 @@ package ch.eureka.eurekapp.ui.authentication
 
 import ch.eureka.eurekapp.model.data.invitation.FirestoreInvitationRepository
 import ch.eureka.eurekapp.model.data.invitation.Invitation
+import ch.eureka.eurekapp.ui.tasks.MockProjectRepository
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -22,6 +23,7 @@ import org.junit.Test
 class TokenEntryViewModelFirestoreTest {
 
   private lateinit var repository: FirestoreInvitationRepository
+  private lateinit var mockProjectRepository: MockProjectRepository
   private lateinit var viewModel: TokenEntryViewModel
   private lateinit var testUserId: String
 
@@ -43,12 +45,18 @@ class TokenEntryViewModelFirestoreTest {
 
     // Create real repository
     repository = FirestoreInvitationRepository(firestore = FirebaseEmulator.firestore)
+    mockProjectRepository = MockProjectRepository()
 
-    viewModel = TokenEntryViewModel(repository = repository, auth = FirebaseEmulator.auth)
+    viewModel =
+        TokenEntryViewModel(
+            repository = repository,
+            projectRepository = mockProjectRepository,
+            auth = FirebaseEmulator.auth)
   }
 
   @After
   fun tearDown() {
+    mockProjectRepository.reset()
     FirebaseEmulator.clearFirestoreEmulator()
     FirebaseEmulator.clearAuthEmulator()
   }
@@ -187,7 +195,11 @@ class TokenEntryViewModelFirestoreTest {
     assertTrue(viewModel.uiState.value.validationSuccess)
 
     // Create new ViewModel for second validation (simulating different session)
-    val viewModel2 = TokenEntryViewModel(repository = repository, auth = FirebaseEmulator.auth)
+    val viewModel2 =
+        TokenEntryViewModel(
+            repository = repository,
+            projectRepository = mockProjectRepository,
+            auth = FirebaseEmulator.auth)
 
     // Act: Validate second token
     viewModel2.updateToken("TOKEN-2")

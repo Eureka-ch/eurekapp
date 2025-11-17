@@ -33,6 +33,14 @@ import ch.eureka.eurekapp.model.data.template.field.FieldValue
 import ch.eureka.eurekapp.model.data.template.field.validation.FieldValidationResult
 import ch.eureka.eurekapp.model.data.template.field.validation.FieldValidator
 
+object BaseFieldTestTags {
+  fun toggle(fieldId: String) = "field_toggle_$fieldId"
+
+  fun save(fieldId: String) = "field_save_$fieldId"
+
+  fun cancel(fieldId: String) = "field_cancel_$fieldId"
+}
+
 /**
  * Callbacks for field interaction events.
  *
@@ -45,6 +53,29 @@ data class FieldCallbacks(
     val onSave: () -> Unit = {},
     val onCancel: () -> Unit = {}
 )
+
+/**
+ * Test tags for field components.
+ *
+ * Provides consistent test tag generation for all field-related UI elements.
+ */
+object FieldComponentTestTags {
+  fun base(fieldId: String) = "base_field_$fieldId"
+
+  fun label(fieldId: String) = "field_label_$fieldId"
+
+  fun save(fieldId: String) = "field_save_$fieldId"
+
+  fun cancel(fieldId: String) = "field_cancel_$fieldId"
+
+  fun toggle(fieldId: String) = "field_toggle_$fieldId"
+
+  fun description(fieldId: String) = "field_description_$fieldId"
+
+  fun hint(fieldId: String) = "field_hint_$fieldId"
+
+  fun error(fieldId: String) = "field_error_$fieldId"
+}
 
 /**
  * Generic base component for all template field types.
@@ -71,7 +102,6 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
     mode: FieldInteractionMode,
     callbacks: FieldCallbacks = FieldCallbacks(),
     showValidationErrors: Boolean = false,
-    showHeader: Boolean = true,
     renderer: @Composable (value: V?, onValueChange: (V) -> Unit, isEditing: Boolean) -> Unit
 ) {
   var editingValue by
@@ -119,40 +149,40 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
 
   val validationResult = getValidationResult(showValidationErrors, currentValue, fieldDefinition)
 
-  Column(modifier = modifier.fillMaxWidth().testTag("base_field_${fieldDefinition.id}")) {
-    if (showHeader) {
-      Row(
-          modifier = Modifier.fillMaxWidth(),
-          verticalAlignment = Alignment.CenterVertically,
-      ) {
-        Text(
-          text =
-            buildString {
-              append(fieldDefinition.label)
-              if (fieldDefinition.required) {
-                append(" *")
-              }
-            },
-          style = MaterialTheme.typography.labelLarge,
-          modifier = Modifier.weight(1f).testTag("field_label_${fieldDefinition.id}")
-        )
-      }
-      FieldActionButtons(
-          mode = mode,
-          fieldDefinition = fieldDefinition,
-          editingValue = editingValue,
-          originalValue = originalValue,
-          onValueChange = onValueChange,
-          callbacks = callbacks,
-          onEditingValueChange = { editingValue = it })
-    }
+  Column(
+      modifier = modifier.fillMaxWidth().testTag(FieldComponentTestTags.base(fieldDefinition.id))) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+          Text(
+              text =
+                  buildString {
+                    append(fieldDefinition.label)
+                    if (fieldDefinition.required) {
+                      append(" *")
+                    }
+                  },
+              style = MaterialTheme.typography.labelLarge,
+              modifier =
+                  Modifier.weight(1f).testTag(FieldComponentTestTags.label(fieldDefinition.id)))
 
-    FieldDescription(fieldDefinition)
-    Spacer(modifier = Modifier.height(8.dp))
-    renderer(currentValue, handleValueChange, mode.isEditing)
-    FieldHint(fieldType, mode, fieldDefinition)
-    ValidationErrors(validationResult, fieldDefinition)
-  }
+          FieldActionButtons(
+              mode = mode,
+              fieldDefinition = fieldDefinition,
+              editingValue = editingValue,
+              originalValue = originalValue,
+              onValueChange = onValueChange,
+              callbacks = callbacks,
+              onEditingValueChange = { editingValue = it })
+        }
+
+        FieldDescription(fieldDefinition)
+        Spacer(modifier = Modifier.height(8.dp))
+        renderer(currentValue, handleValueChange, mode.isEditing)
+        FieldHint(fieldType, mode, fieldDefinition)
+        ValidationErrors(validationResult, fieldDefinition)
+      }
 }
 
 @Composable
@@ -192,11 +222,13 @@ private fun <V : FieldValue> SaveButton(
 ) {
   IconButton(
       onClick = {
-        editingValue?.let { onValueChange(it) }
-        callbacks.onSave()
+        if (editingValue != null) {
+          onValueChange(editingValue)
+          callbacks.onSave()
+        }
         callbacks.onModeToggle()
       },
-      modifier = Modifier.testTag("field_save_${fieldDefinition.id}")) {
+      modifier = Modifier.testTag(BaseFieldTestTags.save(fieldDefinition.id))) {
         Icon(
             imageVector = Icons.Filled.Check,
             contentDescription = "Save changes",
@@ -217,7 +249,7 @@ private fun <V : FieldValue> CancelButton(
         callbacks.onCancel()
         callbacks.onModeToggle()
       },
-      modifier = Modifier.testTag("field_cancel_${fieldDefinition.id}")) {
+      modifier = Modifier.testTag(BaseFieldTestTags.cancel(fieldDefinition.id))) {
         Icon(
             imageVector = Icons.Filled.Close,
             contentDescription = "Cancel changes",
@@ -229,7 +261,7 @@ private fun <V : FieldValue> CancelButton(
 private fun EditButton(fieldDefinition: FieldDefinition, callbacks: FieldCallbacks) {
   IconButton(
       onClick = callbacks.onModeToggle,
-      modifier = Modifier.testTag("field_toggle_${fieldDefinition.id}")) {
+      modifier = Modifier.testTag(BaseFieldTestTags.toggle(fieldDefinition.id))) {
         Icon(
             imageVector = Icons.Filled.Edit,
             contentDescription = "Switch to edit mode",
@@ -244,7 +276,9 @@ private fun FieldDescription(fieldDefinition: FieldDefinition) {
         text = description,
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(top = 4.dp).testTag("field_description_${fieldDefinition.id}"))
+        modifier =
+            Modifier.padding(top = 4.dp)
+                .testTag(FieldComponentTestTags.description(fieldDefinition.id)))
   }
 }
 
@@ -260,7 +294,8 @@ private fun <T : FieldType> FieldHint(
         text = hint,
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(top = 4.dp).testTag("field_hint_${fieldDefinition.id}"))
+        modifier =
+            Modifier.padding(top = 4.dp).testTag(FieldComponentTestTags.hint(fieldDefinition.id)))
   }
 }
 
@@ -275,7 +310,9 @@ private fun ValidationErrors(
           text = error,
           style = MaterialTheme.typography.bodySmall,
           color = Color.Red,
-          modifier = Modifier.padding(top = 4.dp).testTag("field_error_${fieldDefinition.id}"))
+          modifier =
+              Modifier.padding(top = 4.dp)
+                  .testTag(FieldComponentTestTags.error(fieldDefinition.id)))
     }
   }
 }
@@ -351,7 +388,16 @@ private fun getMultiSelectFieldHint(fieldType: FieldType.MultiSelect): String {
   return buildList {
         val count = fieldType.options.size
         add("$count option${if (count != 1) "s" else ""}")
-        addRangeHint(fieldType.minSelections, fieldType.maxSelections, "Select", "Min", "Max")
+
+        val min = fieldType.minSelections
+        val max = fieldType.maxSelections
+        if (min != null && max != null) {
+          add("Select $min-$max")
+        } else {
+          min?.let { add("Min: $it") }
+          max?.let { add("Max: $it") }
+        }
+
         if (fieldType.allowCustom) add("Custom allowed")
       }
       .joinToString(" • ")

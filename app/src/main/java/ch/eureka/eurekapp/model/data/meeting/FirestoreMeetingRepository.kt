@@ -198,7 +198,7 @@ class FirestoreMeetingRepository(
 
           // Create participant document
           val participant = Participant(userId = userId, role = role)
-          batch.set(meetingRef.collection("participants").document(userId), participant)
+          batch[meetingRef.collection("participants").document(userId)] = participant
         }
         .await()
   }

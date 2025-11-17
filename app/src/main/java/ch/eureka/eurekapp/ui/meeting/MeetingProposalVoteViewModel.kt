@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.meeting.FirestoreMeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.Meeting
+import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingProposal
 import ch.eureka.eurekapp.model.data.meeting.MeetingProposalVote
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
@@ -90,7 +91,6 @@ class MeetingProposalVoteViewModel(
     }
 
     if (userId == null) {
-      setErrorMsg("Not logged in")
       return
     }
 
@@ -109,11 +109,9 @@ class MeetingProposalVoteViewModel(
    * Retract vote for a given meeting proposal.
    *
    * @param meetingProposal The meeting proposal to retract the vote for.
-   * @param meetingProposalVote The vote for that meeting proposal to retract.
    */
   fun retractVoteForMeetingProposal(
       meetingProposal: MeetingProposal,
-      meetingProposalVote: MeetingProposalVote
   ) {
     val index = uiState.value.meetingProposals.indexOf(meetingProposal)
 
@@ -123,18 +121,116 @@ class MeetingProposalVoteViewModel(
     }
 
     if (userId == null) {
-      setErrorMsg("Not logged in")
       return
     }
 
-    val newVotes = _uiState.value.meetingProposals[index].votes.toMutableList()
-
-    if (!newVotes.map { it.userId }.contains(userId)) {
+    if (!_uiState.value.meetingProposals[index].votes.any { it.userId == userId }) {
       setErrorMsg("Cannot retract vote since you did not vote in the first place")
       return
     }
 
-    newVotes.remove(meetingProposalVote)
+    val newVotes = _uiState.value.meetingProposals[index].votes.filter { it.userId != userId }
+
+    val newMeetingProposals =
+        _uiState.value.meetingProposals
+            .toMutableList()
+            .apply { this[index] = this[index].copy(votes = newVotes) }
+            .toList()
+    _uiState.update { it.copy(meetingProposals = newMeetingProposals) }
+  }
+
+  /**
+   * Checks if the current user has voted for the given [meetingProposal] for the given [format].
+   *
+   * @param meetingProposal The meeting proposal on which to check if the current user has voted for
+   *   the given [format].
+   * @param format The given format on which to check if the current user has voted for.
+   * @return True if the user has voted for it and false otherwise.
+   */
+  fun hasVotedForFormat(meetingProposal: MeetingProposal, format: MeetingFormat): Boolean {
+    if (userId == null) {
+      return false
+    }
+
+    return meetingProposal.votes.any { it.userId == userId && format in it.formatPreferences }
+  }
+
+  /**
+   * Add a vote for a format for a meeting proposal where the user have already voted for.
+   *
+   * @param meetingProposal The meeting proposal on which to add the format vote for.
+   * @param format The format of the vote to add.
+   */
+  fun addFormatVoteForAlreadyVotedMeetingProposal(
+      meetingProposal: MeetingProposal,
+      format: MeetingFormat
+  ) {
+    val index = uiState.value.meetingProposals.indexOf(meetingProposal)
+
+    if (index < 0) {
+      setErrorMsg("Meeting proposal to vote for does not exists.")
+      return
+    }
+
+    if (userId == null) {
+      return
+    }
+
+    if (hasVotedForFormat(_uiState.value.meetingProposals[index], format)) {
+      setErrorMsg("Cannot add vote since you already vote in the first place")
+      return
+    }
+
+    val newVotes = _uiState.value.meetingProposals[index].votes.toMutableList()
+    val result =
+        newVotes.withIndex().find { (_, e) ->
+          e.userId == userId
+        }!! // here we can put "!!" because it will never be null thanks to above check
+    val newFormatVote = result.value.formatPreferences.toMutableList()
+    newFormatVote.add(format)
+    newVotes[result.index] = result.value.copy(formatPreferences = newFormatVote.toList())
+
+    val newMeetingProposals =
+        _uiState.value.meetingProposals
+            .toMutableList()
+            .apply { this[index] = this[index].copy(votes = newVotes.toList()) }
+            .toList()
+    _uiState.update { it.copy(meetingProposals = newMeetingProposals) }
+  }
+
+  /**
+   * Retract a vote for a given format for a meeting proposal where the user have already voted for.
+   *
+   * @param meetingProposal The meeting proposal on which to retract the format vote.
+   * @param format The format of the vote to retract.
+   */
+  fun retractFormatVoteForAlreadyVotedMeetingProposal(
+      meetingProposal: MeetingProposal,
+      format: MeetingFormat
+  ) {
+    val index = uiState.value.meetingProposals.indexOf(meetingProposal)
+
+    if (index < 0) {
+      setErrorMsg("Meeting proposal to retract vote for does not exists.")
+      return
+    }
+
+    if (userId == null) {
+      return
+    }
+
+    if (!hasVotedForFormat(_uiState.value.meetingProposals[index], format)) {
+      setErrorMsg("Cannot retract vote since you did not vote in the first place")
+      return
+    }
+
+    val newVotes = _uiState.value.meetingProposals[index].votes.toMutableList()
+    val result =
+        newVotes.withIndex().find { (_, e) ->
+          e.userId == userId
+        }!! // here we can put "!!" because it will never be null thanks to above check
+    val newFormatVote = result.value.formatPreferences.filter { it != format }
+    newVotes[result.index] = result.value.copy(formatPreferences = newFormatVote)
 
     val newMeetingProposals =
         _uiState.value.meetingProposals

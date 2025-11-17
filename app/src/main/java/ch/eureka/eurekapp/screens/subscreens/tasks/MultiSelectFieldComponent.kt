@@ -30,6 +30,18 @@ import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.FieldValue
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
+object MultiSelectFieldTestTags {
+  fun chips(fieldId: String) = "multi_select_field_chips_$fieldId"
+
+  fun chip(optionValue: String) = "multi_select_chip_$optionValue"
+
+  fun customInput(fieldId: String) = "multi_select_custom_input_$fieldId"
+
+  fun customAdd(fieldId: String) = "multi_select_custom_add_$fieldId"
+
+  fun value(fieldId: String) = "multi_select_field_value_$fieldId"
+}
+
 /**
  * Multi-select field component for template fields.
  *
@@ -37,138 +49,221 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
  * @param value The current field value (null if empty)
  * @param onValueChange Callback when the value changes
  * @param mode The interaction mode (EditOnly, ViewOnly, or Toggleable)
- * @param onModeToggle Callback when mode toggle button is clicked
- * @param onSave Optional callback when save button is clicked (Toggleable mode only)
- * @param onCancel Optional callback when cancel button is clicked (Toggleable mode only)
  * @param showValidationErrors Whether to display validation errors
  * @param modifier The modifier to apply to the component
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MultiSelectFieldComponent(
+    modifier: Modifier = Modifier,
     fieldDefinition: FieldDefinition,
     value: FieldValue.MultiSelectValue?,
     onValueChange: (FieldValue.MultiSelectValue) -> Unit,
     mode: FieldInteractionMode,
-    onModeToggle: () -> Unit = {},
-    onSave: () -> Unit = {},
-    onCancel: () -> Unit = {},
     showValidationErrors: Boolean = false,
-    showHeader: Boolean = true,
-    modifier: Modifier = Modifier
+    callbacks: FieldCallbacks = FieldCallbacks(),
 ) {
   val fieldType = fieldDefinition.type as FieldType.MultiSelect
 
   BaseFieldComponent(
+      modifier = modifier,
       fieldDefinition = fieldDefinition,
       fieldType = fieldType,
       value = value,
       onValueChange = onValueChange,
       mode = mode,
       showValidationErrors = showValidationErrors,
-      showHeader = showHeader,
-      modifier = modifier) { currentValue, onChange, isEditing ->
+      callbacks = callbacks) { currentValue, onChange, isEditing ->
         if (isEditing) {
           var localSelectedValues by remember {
             mutableStateOf(currentValue?.values?.toSet() ?: emptySet())
           }
           var customText by remember { mutableStateOf("") }
 
-          Column(modifier = Modifier.testTag("multi_select_field_chips_${fieldDefinition.id}")) {
-            FlowRow(modifier = Modifier.fillMaxWidth()) {
-              fieldType.options.forEach { option ->
-                FilterChip(
-                    selected = option.value in localSelectedValues,
-                    onClick = {
-                      val newSelectedValues =
-                          if (option.value in localSelectedValues) {
-                            localSelectedValues - option.value
-                          } else {
-                            localSelectedValues + option.value
-                          }
-                      localSelectedValues = newSelectedValues
-                      onChange(FieldValue.MultiSelectValue(newSelectedValues.toList()))
-                    },
-                    label = { Text(option.label) },
-                    modifier =
-                        Modifier.padding(end = 8.dp).testTag("multi_select_chip_${option.value}"))
-              }
-
-              if (fieldType.allowCustom) {
-                val customValues =
-                    localSelectedValues.filter { value ->
-                      fieldType.options.none { it.value == value }
-                    }
-                customValues.forEach { customValue ->
-                  FilterChip(
-                      selected = true,
-                      onClick = {
-                        val newSelectedValues = localSelectedValues - customValue
-                        localSelectedValues = newSelectedValues
-                        onChange(FieldValue.MultiSelectValue(newSelectedValues.toList()))
-                      },
-                      label = { Text(customValue) },
-                      modifier =
-                          Modifier.padding(end = 8.dp).testTag("multi_select_chip_$customValue"))
-                }
-              }
-            }
-
-            if (fieldType.allowCustom) {
-              Row(
-                  modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                  verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedTextField(
-                        value = customText,
-                        onValueChange = { customText = it },
-                        label = { Text("Custom value") },
-                        singleLine = true,
-                        modifier =
-                            Modifier.weight(1f)
-                                .testTag("multi_select_custom_input_${fieldDefinition.id}"),
-                        colors = EurekaStyles.TextFieldColors())
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(
-                        onClick = {
-                          if (customText.isNotBlank()) {
-                            val newSelectedValues = localSelectedValues + customText.trim()
-                            localSelectedValues = newSelectedValues
-                            onChange(FieldValue.MultiSelectValue(newSelectedValues.toList()))
-                            customText = ""
-                          }
-                        },
-                        enabled = customText.isNotBlank(),
-                        modifier =
-                            Modifier.testTag("multi_select_custom_add_${fieldDefinition.id}")) {
-                          Text("Add")
-                        }
-                  }
-            }
-          }
+          MultiSelectEditMode(
+              fieldDefinition = fieldDefinition,
+              fieldType = fieldType,
+              localSelectedValues = localSelectedValues,
+              customText = customText,
+              onCustomTextChange = { customText = it },
+              onSelectionChange = { newValues ->
+                localSelectedValues = newValues
+                onChange(FieldValue.MultiSelectValue(newValues.toList()))
+              },
+              onCustomValueAdded = { customText = "" })
         } else {
-          val selectedValues = currentValue?.values ?: emptyList()
-
-          if (selectedValues.isEmpty()) {
-            Text(
-                text = "None",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.testTag("multi_select_field_value_${fieldDefinition.id}"))
-          } else {
-            FlowRow(
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .testTag("multi_select_field_value_${fieldDefinition.id}")) {
-                  selectedValues.forEach { value ->
-                    val displayText = fieldType.options.find { it.value == value }?.label ?: value
-                    AssistChip(
-                        onClick = {},
-                        label = { Text(displayText) },
-                        modifier =
-                            Modifier.padding(end = 8.dp).testTag("multi_select_chip_${value}"))
-                  }
-                }
-          }
+          MultiSelectViewMode(
+              fieldDefinition = fieldDefinition,
+              fieldType = fieldType,
+              selectedValues = currentValue?.values ?: emptyList())
         }
       }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun MultiSelectEditMode(
+    fieldDefinition: FieldDefinition,
+    fieldType: FieldType.MultiSelect,
+    localSelectedValues: Set<String>,
+    customText: String,
+    onCustomTextChange: (String) -> Unit,
+    onSelectionChange: (Set<String>) -> Unit,
+    onCustomValueAdded: () -> Unit,
+) {
+  Column(modifier = Modifier.testTag(MultiSelectFieldTestTags.chips(fieldDefinition.id))) {
+    FlowRow(modifier = Modifier.fillMaxWidth()) {
+      RenderOptionChips(fieldType, localSelectedValues, onSelectionChange)
+      if (fieldType.allowCustom) {
+        RenderCustomValueChips(fieldType, localSelectedValues, onSelectionChange)
+      }
+    }
+
+    if (fieldType.allowCustom) {
+      CustomValueInput(
+          fieldDefinition = fieldDefinition,
+          customText = customText,
+          onCustomTextChange = onCustomTextChange,
+          localSelectedValues = localSelectedValues,
+          onSelectionChange = onSelectionChange,
+          onCustomValueAdded = onCustomValueAdded)
+    }
+  }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun RenderOptionChips(
+    fieldType: FieldType.MultiSelect,
+    localSelectedValues: Set<String>,
+    onSelectionChange: (Set<String>) -> Unit,
+) {
+  fieldType.options.forEach { option ->
+    FilterChip(
+        selected = option.value in localSelectedValues,
+        onClick = {
+          val newSelectedValues = toggleSelection(localSelectedValues, option.value)
+          onSelectionChange(newSelectedValues)
+        },
+        label = { Text(option.label) },
+        modifier =
+            Modifier.padding(end = 8.dp).testTag(MultiSelectFieldTestTags.chip(option.value)))
+  }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun RenderCustomValueChips(
+    fieldType: FieldType.MultiSelect,
+    localSelectedValues: Set<String>,
+    onSelectionChange: (Set<String>) -> Unit,
+) {
+  val customValues = getCustomValues(localSelectedValues, fieldType.options)
+  customValues.forEach { customValue ->
+    FilterChip(
+        selected = true,
+        onClick = {
+          val newSelectedValues = localSelectedValues - customValue
+          onSelectionChange(newSelectedValues)
+        },
+        label = { Text(customValue) },
+        modifier = Modifier.padding(end = 8.dp).testTag(MultiSelectFieldTestTags.chip(customValue)))
+  }
+}
+
+@Composable
+private fun CustomValueInput(
+    fieldDefinition: FieldDefinition,
+    customText: String,
+    onCustomTextChange: (String) -> Unit,
+    localSelectedValues: Set<String>,
+    onSelectionChange: (Set<String>) -> Unit,
+    onCustomValueAdded: () -> Unit,
+) {
+  Row(
+      modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+      verticalAlignment = Alignment.CenterVertically) {
+        OutlinedTextField(
+            value = customText,
+            onValueChange = onCustomTextChange,
+            label = { Text("Custom value") },
+            singleLine = true,
+            modifier =
+                Modifier.weight(1f)
+                    .testTag(MultiSelectFieldTestTags.customInput(fieldDefinition.id)),
+            colors = EurekaStyles.textFieldColors())
+        Spacer(modifier = Modifier.width(8.dp))
+        Button(
+            onClick = {
+              handleCustomValueAdd(customText, localSelectedValues, onSelectionChange)
+              onCustomValueAdded()
+            },
+            enabled = customText.isNotBlank(),
+            modifier = Modifier.testTag(MultiSelectFieldTestTags.customAdd(fieldDefinition.id))) {
+              Text("Add")
+            }
+      }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun MultiSelectViewMode(
+    fieldDefinition: FieldDefinition,
+    fieldType: FieldType.MultiSelect,
+    selectedValues: List<String>,
+) {
+  if (selectedValues.isEmpty()) {
+    Text(
+        text = "None",
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.testTag(MultiSelectFieldTestTags.value(fieldDefinition.id)))
+  } else {
+    FlowRow(
+        modifier =
+            Modifier.fillMaxWidth().testTag(MultiSelectFieldTestTags.value(fieldDefinition.id))) {
+          selectedValues.forEach { value ->
+            val displayText = getDisplayText(value, fieldType.options)
+            AssistChip(
+                onClick = {},
+                label = { Text(displayText) },
+                modifier =
+                    Modifier.padding(end = 8.dp).testTag(MultiSelectFieldTestTags.chip(value)))
+          }
+        }
+  }
+}
+
+private fun toggleSelection(selectedValues: Set<String>, value: String): Set<String> {
+  return if (value in selectedValues) {
+    selectedValues - value
+  } else {
+    selectedValues + value
+  }
+}
+
+private fun getCustomValues(
+    selectedValues: Set<String>,
+    options: List<ch.eureka.eurekapp.model.data.template.field.SelectOption>
+): List<String> {
+  return selectedValues.filter { value -> options.none { it.value == value } }
+}
+
+private fun handleCustomValueAdd(
+    customText: String,
+    localSelectedValues: Set<String>,
+    onSelectionChange: (Set<String>) -> Unit,
+) {
+  val trimmedValue = customText.trim()
+  if (trimmedValue.isNotBlank() && trimmedValue !in localSelectedValues) {
+    val newSelectedValues = localSelectedValues + trimmedValue
+    onSelectionChange(newSelectedValues)
+  }
+}
+
+private fun getDisplayText(
+    value: String,
+    options: List<ch.eureka.eurekapp.model.data.template.field.SelectOption>
+): String {
+  return options.find { it.value == value }?.label ?: value
 }

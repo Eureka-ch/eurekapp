@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Gemini.*/
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -11,6 +12,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
@@ -37,11 +39,9 @@ class CreateMeetingScreenTest {
   private lateinit var viewModel: CreateMeetingViewModel
   private lateinit var repositoryMock: MockCreateMeetingRepository
 
-  // To track if the onDone callback is invoked
   private var onDoneCalled = false
   private val testProjectId = "project-123"
 
-  // Helpers for future/past dates
   private val futureDate: LocalDate = LocalDate.now().plusDays(1)
   private val pastDate: LocalDate = LocalDate.now().minusDays(1)
 
@@ -76,7 +76,6 @@ class CreateMeetingScreenTest {
         .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_SCREEN_DESCRIPTION)
         .assertIsDisplayed()
 
-    // Find fields by their icons/tags
     composeTestRule
         .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
         .assertIsDisplayed()
@@ -89,10 +88,12 @@ class CreateMeetingScreenTest {
     composeTestRule
         .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DURATION)
         .assertIsDisplayed()
+    composeTestRule.onNodeWithText("Duration").assertTextEquals("Duration", "0 minutes")
 
-    // Check that neither error message is displayed by their tag
+    composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_FORMAT).assertIsDisplayed()
+    composeTestRule.onNodeWithText("Format").assertTextEquals("Format", "In person")
+
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.ERROR_MSG).assertDoesNotExist()
-    // Check by text as well for robustness
     composeTestRule.onNodeWithText("Title cannot be empty").assertDoesNotExist()
     composeTestRule
         .onNodeWithText("Meeting should be scheduled in the future.")
@@ -114,11 +115,8 @@ class CreateMeetingScreenTest {
 
   @Test
   fun titleInput_whenTouchedAndBlank_showsError() {
-    // Click title
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE).performClick()
-    // Click date icon to remove focus from title
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE).performClick()
-    // *** ADDED: Close the dialog that opens ***
     findCancelButton().performClick()
 
     composeTestRule.onNodeWithText("Title cannot be empty").assertIsDisplayed()
@@ -142,11 +140,9 @@ class CreateMeetingScreenTest {
 
     composeTestRule.runOnIdle {
       viewModel.setDuration(15)
-      // *** ADDED: Set a future date for the state to be valid ***
       viewModel.setDate(futureDate)
     }
 
-    // Button is enabled because state is valid
     composeTestRule
         .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
         .assertIsEnabled()
@@ -169,9 +165,9 @@ class CreateMeetingScreenTest {
         .performTextInput("My Successful Meeting")
     composeTestRule.runOnIdle {
       viewModel.setDuration(15)
-      // *** ADDED: Set a future date for the state to be valid ***
       viewModel.setDate(futureDate)
       viewModel.setTime(LocalTime.of(9, 30))
+      viewModel.setFormat(MeetingFormat.VIRTUAL)
     }
 
     composeTestRule
@@ -185,6 +181,15 @@ class CreateMeetingScreenTest {
     assertNotNull(repositoryMock.lastMeetingCreated)
     assertEquals("My Successful Meeting", repositoryMock.lastMeetingCreated?.title)
     assertEquals(testProjectId, repositoryMock.lastMeetingCreated?.projectId)
+    assertEquals(
+        MeetingFormat.VIRTUAL,
+        repositoryMock.lastMeetingCreated
+            ?.meetingProposals
+            ?.first()
+            ?.votes
+            ?.first()
+            ?.formatPreferences
+            ?.first())
   }
 
   @Test
@@ -196,7 +201,6 @@ class CreateMeetingScreenTest {
         .performTextInput("My Failed Meeting")
     composeTestRule.runOnIdle {
       viewModel.setDuration(30)
-      // *** ADDED: Set a future date for the state to be valid ***
       viewModel.setDate(futureDate)
       viewModel.setTime(LocalTime.of(10, 0))
     }
@@ -214,7 +218,6 @@ class CreateMeetingScreenTest {
 
   @Test
   fun dateInputField_opensDialog_andCancels() {
-    // Clicks the icon via testTag
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE).performClick()
     composeTestRule.waitForIdle()
     findOkButton().assertIsDisplayed()
@@ -225,7 +228,6 @@ class CreateMeetingScreenTest {
   @Test
   fun dateInputField_opensDialogWithIcon_andConfirms() {
     val initialDate = viewModel.uiState.value.date
-    // Clicks the icon via contentDescription
     composeTestRule.onNodeWithContentDescription("Select date").performClick()
     findOkButton().assertIsDisplayed()
     findOkButton().performClick()
@@ -235,7 +237,6 @@ class CreateMeetingScreenTest {
 
   @Test
   fun timeInputField_opensDialog_andCancels() {
-    // Clicks the icon via testTag
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TIME).performClick()
     composeTestRule.onNodeWithText("Select time").assertIsDisplayed()
     findCancelButton().performClick()
@@ -245,7 +246,6 @@ class CreateMeetingScreenTest {
   @Test
   fun timeInputField_opensDialogWithIcon_andConfirms() {
     val initialTimeTruncated = viewModel.uiState.value.time.truncatedTo(ChronoUnit.MINUTES)
-    // Clicks the icon via testTag
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TIME).performClick()
     composeTestRule.onNodeWithText("Select time").assertIsDisplayed()
     findOkButton().performClick()
@@ -258,13 +258,12 @@ class CreateMeetingScreenTest {
   fun durationInputField_opensDialog_andCancels() {
     val initialDuration = viewModel.uiState.value.duration
     assertEquals(0, initialDuration)
-    // Clicks the icon via testTag
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DURATION).performClick()
-    composeTestRule.onNodeWithText("Select Duration").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Select a duration").assertIsDisplayed()
     findOkButton().assertIsDisplayed()
     composeTestRule.onNodeWithText("30 minutes").performClick()
     findCancelButton().performClick()
-    composeTestRule.onNodeWithText("Select Duration").assertDoesNotExist()
+    composeTestRule.onNodeWithText("Select a duration").assertDoesNotExist()
     assertEquals(initialDuration, viewModel.uiState.value.duration)
   }
 
@@ -272,17 +271,57 @@ class CreateMeetingScreenTest {
   fun durationInputField_opensDialogWithIcon_selectsOption_andConfirms() {
     val initialDuration = viewModel.uiState.value.duration
     assertEquals(0, initialDuration)
-    // Clicks the icon via contentDescription
     composeTestRule.onNodeWithContentDescription("Select duration").performClick()
-    composeTestRule.onNodeWithText("Select Duration").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Select a duration").assertIsDisplayed()
     composeTestRule.onNodeWithText("45 minutes").performClick()
     findOkButton().performClick()
-    composeTestRule.onNodeWithText("Select Duration").assertDoesNotExist()
+    composeTestRule.onNodeWithText("Select a duration").assertDoesNotExist()
     val newDuration = viewModel.uiState.value.duration
     assertNotEquals(initialDuration, newDuration)
     assertEquals(45, newDuration)
-    // Finds the text field by its label and checks its value
     composeTestRule.onNodeWithText("Duration").assertTextEquals("Duration", "45 minutes")
+  }
+
+  @Test
+  fun formatInputField_opensDialog_andCancels() {
+    val initialFormat = viewModel.uiState.value.format
+    assertEquals(MeetingFormat.IN_PERSON, initialFormat)
+
+    composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_FORMAT).performClick()
+
+    composeTestRule.onNodeWithText("Select a format").assertIsDisplayed()
+    findOkButton().assertIsDisplayed()
+
+    composeTestRule.onNodeWithText("Virtual").performClick()
+
+    findCancelButton().performClick()
+
+    composeTestRule.onNodeWithText("Select a format").assertDoesNotExist()
+
+    assertEquals(initialFormat, viewModel.uiState.value.format)
+    composeTestRule.onNodeWithText("Format").assertTextEquals("Format", "In person")
+  }
+
+  @Test
+  fun formatInputField_opensDialogWithIcon_selectsOption_andConfirms() {
+    val initialFormat = viewModel.uiState.value.format
+    assertEquals(MeetingFormat.IN_PERSON, initialFormat)
+
+    composeTestRule.onNodeWithContentDescription("Select format").performClick()
+
+    composeTestRule.onNodeWithText("Select a format").assertIsDisplayed()
+
+    composeTestRule.onNodeWithText("Virtual").performClick()
+
+    findOkButton().performClick()
+
+    composeTestRule.onNodeWithText("Select a format").assertDoesNotExist()
+
+    val newFormat = viewModel.uiState.value.format
+    assertNotEquals(initialFormat, newFormat)
+    assertEquals(MeetingFormat.VIRTUAL, newFormat)
+
+    composeTestRule.onNodeWithText("Format").assertTextEquals("Format", "Virtual")
   }
 
   @Test
@@ -303,74 +342,56 @@ class CreateMeetingScreenTest {
     composeTestRule.onNodeWithText("30 minutes").performClick()
     findOkButton().performClick()
 
-    // *** UPDATED: Button is still disabled, must set future date ***
     composeTestRule
         .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
         .assertIsNotEnabled()
 
-    // Set a future date
     composeTestRule.runOnIdle { viewModel.setDate(futureDate) }
 
-    // Button is now enabled
     composeTestRule
         .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
         .assertIsEnabled()
   }
 
-  // --- NEW TESTS FOR TOUCH HANDLERS AND PAST TIME ERROR ---
-
   @Test
   fun dateInput_iconClick_triggersTouchDate() {
     assertFalse(viewModel.uiState.value.hasTouchedDate)
-    // Click the date icon using its testTag
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE).performClick()
     composeTestRule.waitForIdle()
-    // Check that the viewmodel state was updated
     assertTrue(viewModel.uiState.value.hasTouchedDate)
-    // Close the dialog
     findCancelButton().performClick()
   }
 
   @Test
   fun timeInput_iconClick_triggersTouchTime() {
     assertFalse(viewModel.uiState.value.hasTouchedTime)
-    // Click the time icon using its testTag
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TIME).performClick()
     composeTestRule.waitForIdle()
-    // Check that the viewmodel state was updated
     assertTrue(viewModel.uiState.value.hasTouchedTime)
-    // Close the dialog
     findCancelButton().performClick()
   }
 
   @Test
   fun pastTimeError_appears_whenDateAndTimeTouchedAndInPast() {
     val errorText = "Meeting should be scheduled in the future."
-    // Error does not exist initially
     composeTestRule.onNodeWithText(errorText).assertDoesNotExist()
 
-    // 1. Set a past date
     composeTestRule.runOnIdle { viewModel.setDate(pastDate) }
 
-    // 2. "Touch" the date field (by clicking its icon)
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE).performClick()
-    findCancelButton().performClick() // Close dialog
+    findCancelButton().performClick()
 
-    // Error still does not exist (time not touched)
     composeTestRule.onNodeWithText(errorText).assertDoesNotExist()
 
-    // 3. "Touch" the time field (by clicking its icon)
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TIME).performClick()
-    findCancelButton().performClick() // Close dialog
+    findCancelButton().performClick()
 
-    // 4. NOW the error should appear
     composeTestRule.onNodeWithText(errorText).assertIsDisplayed()
   }
 
   @Test
   fun pastTimeError_disappears_whenFutureDateIsSelected() {
     val errorText = "Meeting should be scheduled in the future."
-    // 1. First, make the error appear
     composeTestRule.runOnIdle { viewModel.setDate(pastDate) }
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE).performClick()
     findCancelButton().performClick()
@@ -378,10 +399,8 @@ class CreateMeetingScreenTest {
     findCancelButton().performClick()
     composeTestRule.onNodeWithText(errorText).assertIsDisplayed()
 
-    // 2. Now, fix the date by selecting a future one
     composeTestRule.runOnIdle { viewModel.setDate(futureDate) }
 
-    // 3. The error should disappear
     composeTestRule.onNodeWithText(errorText).assertDoesNotExist()
   }
 }

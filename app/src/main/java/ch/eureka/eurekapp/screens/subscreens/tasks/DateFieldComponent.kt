@@ -30,6 +30,16 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+object DateFieldTestTags {
+  fun button(fieldId: String) = "date_field_button_$fieldId"
+
+  const val DATE_PICKER_DIALOG = "date_picker_dialog"
+
+  const val TIME_PICKER_DIALOG = "time_picker_dialog"
+
+  fun value(fieldId: String) = "date_field_value_$fieldId"
+}
+
 /**
  * Date field component for template fields.
  *
@@ -37,25 +47,20 @@ import java.time.format.DateTimeFormatter
  * @param value The current field value (null if empty)
  * @param onValueChange Callback when the value changes
  * @param mode The interaction mode (EditOnly, ViewOnly, or Toggleable)
- * @param onModeToggle Callback when mode toggle button is clicked
- * @param onSave Optional callback when save button is clicked (Toggleable mode only)
- * @param onCancel Optional callback when cancel button is clicked (Toggleable mode only)
  * @param showValidationErrors Whether to display validation errors
  * @param modifier The modifier to apply to the component
+ * @param callbacks the callbacks to be used by the parent
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DateFieldComponent(
+    modifier: Modifier = Modifier,
     fieldDefinition: FieldDefinition,
     value: FieldValue.DateValue?,
     onValueChange: (FieldValue.DateValue) -> Unit,
     mode: FieldInteractionMode,
-    onModeToggle: () -> Unit = {},
-    onSave: () -> Unit = {},
-    onCancel: () -> Unit = {},
+    callbacks: FieldCallbacks = FieldCallbacks(),
     showValidationErrors: Boolean = false,
-    showHeader: Boolean = true,
-    modifier: Modifier = Modifier
 ) {
   val fieldType = fieldDefinition.type as FieldType.Date
 
@@ -65,100 +70,130 @@ fun DateFieldComponent(
       value = value,
       onValueChange = onValueChange,
       mode = mode,
+      callbacks = callbacks,
       showValidationErrors = showValidationErrors,
-      showHeader = showHeader,
       modifier = modifier) { currentValue, onChange, isEditing ->
         if (isEditing) {
           var showDatePicker by remember { mutableStateOf(false) }
           var showTimePicker by remember { mutableStateOf(false) }
           var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
-          var selectedTime by remember { mutableStateOf<LocalTime?>(null) }
 
           OutlinedButton(
               onClick = { showDatePicker = true },
               modifier =
-                  Modifier.fillMaxWidth().testTag("date_field_button_${fieldDefinition.id}")) {
-                Text(
-                    text =
-                        currentValue?.let { formatDateValue(it, fieldType) }
-                            ?: "Select Date${if (fieldType.includeTime) " & Time" else ""}")
+                  Modifier.fillMaxWidth().testTag(DateFieldTestTags.button(fieldDefinition.id))) {
+                Text(text = getDateButtonText(currentValue, fieldType))
               }
 
           if (showDatePicker) {
-            val datePickerState = rememberDatePickerState()
-            DatePickerDialog(
-                onDismissRequest = { showDatePicker = false },
-                confirmButton = {
-                  TextButton(
-                      onClick = {
-                        datePickerState.selectedDateMillis?.let { millis ->
-                          val date =
-                              Instant.ofEpochMilli(millis)
-                                  .atZone(ZoneId.systemDefault())
-                                  .toLocalDate()
-                          selectedDate = date
-
-                          if (fieldType.includeTime) {
-                            showDatePicker = false
-                            showTimePicker = true
-                          } else {
-                            val isoString = date.atStartOfDay(ZoneId.systemDefault()).toString()
-                            onChange(FieldValue.DateValue(isoString))
-                            showDatePicker = false
-                          }
-                        }
-                      }) {
-                        Text("OK")
+            DatePickerDialogContent(
+                onDismiss = { showDatePicker = false },
+                onDateSelected = { date ->
+                  selectedDate = date
+                  handleDateSelection(
+                      date, fieldType, onChange, onShowTimePicker = { showTimePicker = true }) {
+                        showDatePicker = false
                       }
-                },
-                dismissButton = {
-                  TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
-                },
-                modifier = Modifier.testTag("date_picker_dialog")) {
-                  DatePicker(state = datePickerState)
-                }
+                })
           }
 
           if (showTimePicker && selectedDate != null) {
-            val timePickerState = rememberTimePickerState()
-            DatePickerDialog(
-                onDismissRequest = { showTimePicker = false },
-                confirmButton = {
-                  TextButton(
-                      onClick = {
-                        val time = LocalTime.of(timePickerState.hour, timePickerState.minute)
-                        selectedTime = time
-                        val dateTime = LocalDateTime.of(selectedDate!!, time)
-                        val isoString = dateTime.atZone(ZoneId.systemDefault()).toString()
-                        onChange(FieldValue.DateValue(isoString))
-                        showTimePicker = false
-                      }) {
-                        Text("OK")
-                      }
-                },
-                dismissButton = {
-                  TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
-                },
-                modifier = Modifier.testTag("time_picker_dialog")) {
-                  TimePicker(state = timePickerState)
-                }
+            TimePickerDialogContent(
+                onDismiss = { showTimePicker = false },
+                onTimeSelected = { hour, minute ->
+                  handleTimeSelection(selectedDate!!, hour, minute, onChange)
+                  showTimePicker = false
+                })
           }
         } else {
           Text(
               text = currentValue?.let { formatDateValue(it, fieldType) } ?: "",
               style = MaterialTheme.typography.bodyLarge,
-              modifier = Modifier.testTag("date_field_value_${fieldDefinition.id}"))
+              modifier = Modifier.testTag(DateFieldTestTags.value(fieldDefinition.id)))
         }
       }
 }
 
-/**
- * Formats a date value according to the field type constraints.
- *
- * @param dateValue The date value to format
- * @param fieldType The field type containing format constraints
- * @return Formatted date string
- */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DatePickerDialogContent(
+    onDismiss: () -> Unit,
+    onDateSelected: (LocalDate) -> Unit,
+) {
+  val datePickerState = rememberDatePickerState()
+  DatePickerDialog(
+      onDismissRequest = onDismiss,
+      confirmButton = {
+        TextButton(
+            onClick = {
+              datePickerState.selectedDateMillis?.let { millis ->
+                val date = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
+                onDateSelected(date)
+              }
+            }) {
+              Text("OK")
+            }
+      },
+      dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+      modifier = Modifier.testTag(DateFieldTestTags.DATE_PICKER_DIALOG)) {
+        DatePicker(state = datePickerState)
+      }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TimePickerDialogContent(
+    onDismiss: () -> Unit,
+    onTimeSelected: (Int, Int) -> Unit,
+) {
+  val timePickerState = rememberTimePickerState()
+  DatePickerDialog(
+      onDismissRequest = onDismiss,
+      confirmButton = {
+        TextButton(onClick = { onTimeSelected(timePickerState.hour, timePickerState.minute) }) {
+          Text("OK")
+        }
+      },
+      dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+      modifier = Modifier.testTag(DateFieldTestTags.TIME_PICKER_DIALOG)) {
+        TimePicker(state = timePickerState)
+      }
+}
+
+private fun getDateButtonText(value: FieldValue.DateValue?, fieldType: FieldType.Date): String {
+  return value?.let { formatDateValue(it, fieldType) }
+      ?: "Select Date${if (fieldType.includeTime) " & Time" else ""}"
+}
+
+private fun handleDateSelection(
+    date: LocalDate,
+    fieldType: FieldType.Date,
+    onChange: (FieldValue.DateValue) -> Unit,
+    onShowTimePicker: () -> Unit,
+    onHideDatePicker: () -> Unit,
+) {
+  if (fieldType.includeTime) {
+    onHideDatePicker()
+    onShowTimePicker()
+  } else {
+    val isoString = date.atStartOfDay(ZoneId.systemDefault()).toString()
+    onChange(FieldValue.DateValue(isoString))
+    onHideDatePicker()
+  }
+}
+
+private fun handleTimeSelection(
+    date: LocalDate,
+    hour: Int,
+    minute: Int,
+    onChange: (FieldValue.DateValue) -> Unit,
+) {
+  val time = LocalTime.of(hour, minute)
+  val dateTime = LocalDateTime.of(date, time)
+  val isoString = dateTime.atZone(ZoneId.systemDefault()).toString()
+  onChange(FieldValue.DateValue(isoString))
+}
+
 private fun formatDateValue(dateValue: FieldValue.DateValue, fieldType: FieldType.Date): String {
   return try {
     val instant = Instant.parse(dateValue.value)
@@ -174,7 +209,7 @@ private fun formatDateValue(dateValue: FieldValue.DateValue, fieldType: FieldTyp
         }
 
     zonedDateTime.format(formatter)
-  } catch (e: Exception) {
+  } catch (_: Exception) {
     dateValue.value
   }
 }

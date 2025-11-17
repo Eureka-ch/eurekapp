@@ -1,6 +1,7 @@
 /*
 The following code comes from the solution of the part 3 of the SwEnt bootcamp made by the SwEnt team:
 https://github.com/swent-epfl/bootcamp-25-B3-Solution/blob/main/app/src/main/java/com/github/se/bootcamp/model/authentication/AuthRepositoryFirebase.kt
+Portions of this code were generated with the help of Grok.
 */
 
 package ch.eureka.eurekapp.model.authentication
@@ -29,21 +30,24 @@ class AuthRepositoryFirebase(
 
   override suspend fun signInWithGoogle(credential: Credential): Result<FirebaseUser> {
     return try {
-      if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-        val idToken = helper.extractIdTokenCredential(credential.data).idToken
-        val firebaseCred = helper.toFirebaseCredential(idToken)
+      val result =
+          if (credential is CustomCredential &&
+              credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+            val idToken = helper.extractIdTokenCredential(credential.data).idToken
+            val firebaseCred = helper.toFirebaseCredential(idToken)
 
-        // Sign in with Firebase
-        val user =
-            auth.signInWithCredential(firebaseCred).await().user
-                ?: return Result.failure(
-                    IllegalStateException("Login failed : Could not retrieve user information"))
+            // Sign in with Firebase
+            val user =
+                auth.signInWithCredential(firebaseCred).await().user
+                    ?: return Result.failure(
+                        IllegalStateException("Login failed : Could not retrieve user information"))
 
-        return Result.success(user)
-      } else {
-        return Result.failure(
-            IllegalStateException("Login failed: Credential is not of type Google ID"))
-      }
+            Result.success(user)
+          } else {
+            Result.failure(
+                IllegalStateException("Login failed: Credential is not of type Google ID"))
+          }
+      result
     } catch (e: Exception) {
       Result.failure(
           IllegalStateException("Login failed: ${e.localizedMessage ?: "Unexpected error."}"))
@@ -63,10 +67,14 @@ class AuthRepositoryFirebase(
   }
 
   override fun getUserId(): Result<String?> {
-    if (auth.currentUser == null) {
-      return Result.failure(IllegalArgumentException("No user logged in!"))
-    } else {
-      return Result.success(auth.currentUser?.uid)
-    }
+    val result =
+        if (auth.currentUser == null) {
+          Result.failure(IllegalArgumentException("No user logged in!"))
+        } else {
+          Result.success(auth.currentUser?.uid)
+        }
+    return result
   }
+
+  override fun getCurrentUser(): FirebaseUser? = auth.currentUser
 }

@@ -1,5 +1,7 @@
+/* Portions of this file were written with the help of Gemini.*/
 package ch.eureka.eurekapp.ui.meeting
 
+import ch.eureka.eurekapp.model.data.map.Location
 import ch.eureka.eurekapp.model.data.meeting.*
 import com.google.firebase.Timestamp
 import java.util.*
@@ -29,11 +31,37 @@ class MeetingViewModelTest {
   private lateinit var viewModel: MeetingViewModel
   private lateinit var repositoryMock: MeetingRepositoryMockViewmodel
 
+  private val testCreatorId = "test-creator-id"
+  private var currentUserId: String? = testCreatorId
+
+  private val date1 = Timestamp(Date(1000L))
+  private val date2 = Timestamp(Date(2000L))
+  private val testLocation = Location(name = "Test Office")
+
+  private val voteInPerson = MeetingProposalVote("u1", listOf(MeetingFormat.IN_PERSON))
+  private val voteVirtual = MeetingProposalVote("u2", listOf(MeetingFormat.VIRTUAL))
+  private val voteInPerson2 = MeetingProposalVote("u3", listOf(MeetingFormat.IN_PERSON))
+  private val voteVirtual2 = MeetingProposalVote("u4", listOf(MeetingFormat.VIRTUAL))
+  private val voteNoFormat = MeetingProposalVote("u5", emptyList())
+
   @Before
   fun setup() {
     Dispatchers.setMain(testDispatcher)
     repositoryMock = MeetingRepositoryMockViewmodel()
-    viewModel = MeetingViewModel(repositoryMock)
+    viewModel = MeetingViewModel(repositoryMock) { currentUserId }
+  }
+
+  private fun createDummyMeeting(
+      createdBy: String = testCreatorId,
+      proposals: List<MeetingProposal> = emptyList(),
+      location: Location? = testLocation
+  ): Meeting {
+    return Meeting(
+        meetingID = "m1",
+        projectId = "p1",
+        createdBy = createdBy,
+        meetingProposals = proposals,
+        location = location)
   }
 
   @After
@@ -103,7 +131,6 @@ class MeetingViewModelTest {
             status = MeetingStatus.SCHEDULED,
             datetime = Timestamp(Date(baseTime + 1000000)))
 
-    // --- UPDATED to use new MeetingProposalVote structure ---
     val dummyVote = MeetingProposalVote(userId = "u1")
     val meetingWithTime =
         Meeting(
@@ -181,13 +208,160 @@ class MeetingViewModelTest {
 
   @Test
   fun clearErrorMsgSetsErrorMsgToNull() = runTest {
-    repositoryMock.shouldThrowError = true
-    viewModel.loadMeetings("any_project_id")
-    testDispatcher.scheduler.advanceUntilIdle()
+    viewModel.setErrorMsg("Test Error")
     assertNotNull(viewModel.uiState.value.errorMsg)
 
     viewModel.clearErrorMsg()
     assertNull(viewModel.uiState.value.errorMsg)
+  }
+
+  @Test
+  fun closeVotesForMeetingWhenUserIsNotCreatorAndNoVotes() = runTest {
+    currentUserId = "not-the-creator"
+    val meeting = createDummyMeeting(proposals = emptyList())
+    viewModel.closeVotesForMeeting(meeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertEquals(0, repositoryMock.updateMeetingCallCount)
+    assertEquals("No votes have been cast for any proposal.", viewModel.uiState.value.errorMsg)
+  }
+
+  @Test
+  fun closeVotesForMeetingWhenNoVotesCast() = runTest {
+    val meeting = createDummyMeeting(proposals = emptyList())
+    viewModel.closeVotesForMeeting(meeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertEquals(0, repositoryMock.updateMeetingCallCount)
+    assertEquals("No votes have been cast for any proposal.", viewModel.uiState.value.errorMsg)
+  }
+
+  @Test
+  fun closeVotesForMeetingWhenWinningProposalHasNoFormatVotes() = runTest {
+    val proposals = listOf(MeetingProposal(date1, listOf(voteNoFormat)))
+    val meeting = createDummyMeeting(proposals = proposals)
+    viewModel.closeVotesForMeeting(meeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertEquals(0, repositoryMock.updateMeetingCallCount)
+    assertEquals(
+        "Could not determine a winning format from the votes", viewModel.uiState.value.errorMsg)
+  }
+
+  @Test
+  fun closeVotesForMeetingWhenWinnerIsInPersonButNoLocation() = runTest {
+    val proposals = listOf(MeetingProposal(date1, listOf(voteInPerson)))
+    val meeting = createDummyMeeting(proposals = proposals, location = null)
+    viewModel.closeVotesForMeeting(meeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertEquals(0, repositoryMock.updateMeetingCallCount)
+    assertEquals(
+        "Cannot close votes, in-person meeting has no location.", viewModel.uiState.value.errorMsg)
+  }
+
+  @Test
+  fun closeVotesForMeetingSuccessVirtual() = runTest {
+    val proposals = listOf(MeetingProposal(date1, listOf(voteVirtual)))
+    val meeting = createDummyMeeting(proposals = proposals, location = null)
+    viewModel.closeVotesForMeeting(meeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertNull(viewModel.uiState.value.errorMsg)
+    assertEquals(1, repositoryMock.updateMeetingCallCount)
+    assertEquals(1, repositoryMock.loadMeetingsCallCount)
+
+    val updatedMeeting = repositoryMock.updatedMeeting
+    assertNotNull(updatedMeeting)
+    assertEquals(MeetingStatus.SCHEDULED, updatedMeeting!!.status)
+    assertEquals(MeetingFormat.VIRTUAL, updatedMeeting.format)
+    assertEquals(date1, updatedMeeting.datetime)
+    assertNotNull(updatedMeeting.link)
+    assertTrue(updatedMeeting.meetingProposals.isEmpty())
+  }
+
+  @Test
+  fun closeVotesForMeetingSuccessInPerson() = runTest {
+    val proposals = listOf(MeetingProposal(date1, listOf(voteInPerson)))
+    val meeting = createDummyMeeting(proposals = proposals)
+    viewModel.closeVotesForMeeting(meeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertNull(viewModel.uiState.value.errorMsg)
+    assertEquals(1, repositoryMock.updateMeetingCallCount)
+    assertEquals(1, repositoryMock.loadMeetingsCallCount)
+
+    val updatedMeeting = repositoryMock.updatedMeeting
+    assertNotNull(updatedMeeting)
+    assertEquals(MeetingStatus.SCHEDULED, updatedMeeting!!.status)
+    assertEquals(MeetingFormat.IN_PERSON, updatedMeeting.format)
+    assertEquals(date1, updatedMeeting.datetime)
+    assertNull(updatedMeeting.link)
+    assertTrue(updatedMeeting.meetingProposals.isEmpty())
+  }
+
+  @Test
+  fun closeVotesForMeetingSuccessPicksProposalWithMostVotes() = runTest {
+    val p1 = MeetingProposal(date1, listOf(voteInPerson))
+    val p2 = MeetingProposal(date2, listOf(voteVirtual, voteVirtual2))
+    val meeting = createDummyMeeting(proposals = listOf(p1, p2))
+    viewModel.closeVotesForMeeting(meeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertNull(viewModel.uiState.value.errorMsg)
+    assertEquals(1, repositoryMock.updateMeetingCallCount)
+
+    val updatedMeeting = repositoryMock.updatedMeeting
+    assertNotNull(updatedMeeting)
+    assertEquals(date2, updatedMeeting!!.datetime)
+    assertEquals(MeetingFormat.VIRTUAL, updatedMeeting.format)
+  }
+
+  @Test
+  fun closeVotesForMeetingSuccessUsesFormatVoteAsDatetimeTieBreaker() = runTest {
+    val p1 = MeetingProposal(date1, listOf(voteInPerson, voteVirtual))
+    val p2 = MeetingProposal(date2, listOf(voteInPerson, voteInPerson2))
+    val meeting = createDummyMeeting(proposals = listOf(p1, p2))
+    viewModel.closeVotesForMeeting(meeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertNull(viewModel.uiState.value.errorMsg)
+    assertEquals(1, repositoryMock.updateMeetingCallCount)
+
+    val updatedMeeting = repositoryMock.updatedMeeting
+    assertNotNull(updatedMeeting)
+    assertEquals(date2, updatedMeeting!!.datetime)
+    assertEquals(MeetingFormat.IN_PERSON, updatedMeeting.format)
+  }
+
+  @Test
+  fun closeVotesForMeetingSuccessPicksFirstOnCompleteTie() = runTest {
+    val p1 = MeetingProposal(date1, listOf(voteInPerson, voteInPerson2))
+    val p2 = MeetingProposal(date2, listOf(voteVirtual, voteVirtual2))
+    val meeting = createDummyMeeting(proposals = listOf(p1, p2))
+    viewModel.closeVotesForMeeting(meeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertNull(viewModel.uiState.value.errorMsg)
+    assertEquals(1, repositoryMock.updateMeetingCallCount)
+
+    val updatedMeeting = repositoryMock.updatedMeeting
+    assertNotNull(updatedMeeting)
+    assertEquals(date1, updatedMeeting!!.datetime)
+    assertEquals(MeetingFormat.IN_PERSON, updatedMeeting.format)
+  }
+
+  @Test
+  fun closeVotesForMeetingWhenRepositoryUpdateFails() = runTest {
+    repositoryMock.updateShouldFail = true
+    val proposals = listOf(MeetingProposal(date1, listOf(voteInPerson)))
+    val meeting = createDummyMeeting(proposals = proposals)
+    viewModel.closeVotesForMeeting(meeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertEquals("Meeting votes could not be closed.", viewModel.uiState.value.errorMsg)
+    assertEquals(1, repositoryMock.updateMeetingCallCount)
+    assertEquals(0, repositoryMock.loadMeetingsCallCount)
   }
 }
 
@@ -195,12 +369,30 @@ class MeetingRepositoryMockViewmodel : MeetingRepository {
   var meetingsToReturn: List<Meeting> = emptyList()
   var shouldThrowError = false
   var errorMessage = "An error occurred"
+  var updateShouldFail = false
+
+  var updatedMeeting: Meeting? = null
+  var updateMeetingCallCount = 0
+  var loadMeetingsCallCount = 0
 
   override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> {
+    if (projectId.isNotEmpty()) {
+      loadMeetingsCallCount++
+    }
     return if (shouldThrowError) {
       flow { throw Exception(errorMessage) }
     } else {
       flowOf(meetingsToReturn)
+    }
+  }
+
+  override suspend fun updateMeeting(meeting: Meeting): Result<Unit> {
+    updateMeetingCallCount++
+    updatedMeeting = meeting
+    return if (updateShouldFail) {
+      Result.failure(Exception("Update failed"))
+    } else {
+      Result.success(Unit)
     }
   }
 
@@ -219,8 +411,6 @@ class MeetingRepositoryMockViewmodel : MeetingRepository {
       creatorId: String,
       creatorRole: MeetingRole
   ): Result<String> = runCatching { "url" }
-
-  override suspend fun updateMeeting(meeting: Meeting): Result<Unit> = runCatching {}
 
   override suspend fun deleteMeeting(projectId: String, meetingId: String): Result<Unit> =
       runCatching {}

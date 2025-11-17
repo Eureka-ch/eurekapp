@@ -36,7 +36,7 @@ class TextFieldComponentTest {
       onValueChange: (FieldValue.TextValue) -> Unit = {},
       mode: FieldInteractionMode = FieldInteractionMode.EditOnly,
       showValidationErrors: Boolean = false,
-      onModeToggle: () -> Unit = {}
+      callbacks: FieldCallbacks = FieldCallbacks()
   ) {
     composeTestRule.setContent {
       TextFieldComponent(
@@ -45,14 +45,14 @@ class TextFieldComponentTest {
           onValueChange = onValueChange,
           mode = mode,
           showValidationErrors = showValidationErrors,
-          onModeToggle = onModeToggle)
+          callbacks = callbacks)
     }
   }
 
   @Test
   fun textFieldComponent_editMode_showsInputField() {
     setFieldContent()
-    composeTestRule.onNodeWithTag("text_field_input_test_text").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(TextFieldComponentTestTags.input("test_text")).assertIsDisplayed()
   }
 
   @Test
@@ -60,7 +60,9 @@ class TextFieldComponentTest {
     var capturedValue: FieldValue.TextValue? = null
     setFieldContent(onValueChange = { capturedValue = it })
 
-    composeTestRule.onNodeWithTag("text_field_input_test_text").performTextInput("Hello")
+    composeTestRule
+        .onNodeWithTag(TextFieldComponentTestTags.input("test_text"))
+        .performTextInput("Hello")
 
     assertNotNull(capturedValue)
     assertEquals("Hello", capturedValue?.value)
@@ -84,7 +86,7 @@ class TextFieldComponentTest {
   fun textFieldComponent_viewMode_showsValueText() {
     setFieldContent(
         value = FieldValue.TextValue("Sample Text"), mode = FieldInteractionMode.ViewOnly)
-    composeTestRule.onNodeWithTag("text_field_value_test_text").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(TextFieldComponentTestTags.value("test_text")).assertIsDisplayed()
     composeTestRule.onNodeWithText("Sample Text").assertIsDisplayed()
   }
 
@@ -92,13 +94,15 @@ class TextFieldComponentTest {
   fun textFieldComponent_viewMode_doesNotShowInputField() {
     setFieldContent(
         value = FieldValue.TextValue("Sample Text"), mode = FieldInteractionMode.ViewOnly)
-    composeTestRule.onNodeWithTag("text_field_input_test_text").assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(TextFieldComponentTestTags.input("test_text"))
+        .assertDoesNotExist()
   }
 
   @Test
   fun textFieldComponent_toggleableMode_showsToggleButton() {
     setFieldContent(mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false))
-    composeTestRule.onNodeWithTag("field_toggle_test_text").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.toggle("test_text")).assertIsDisplayed()
   }
 
   @Test
@@ -106,9 +110,9 @@ class TextFieldComponentTest {
     var toggleCalled = false
     setFieldContent(
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
-        onModeToggle = { toggleCalled = true })
+        callbacks = FieldCallbacks(onModeToggle = { toggleCalled = true }))
 
-    composeTestRule.onNodeWithTag("field_toggle_test_text").performClick()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.toggle("test_text")).performClick()
     assert(toggleCalled)
   }
 

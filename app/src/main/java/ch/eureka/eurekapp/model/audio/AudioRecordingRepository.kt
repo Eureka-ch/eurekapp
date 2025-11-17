@@ -73,5 +73,5 @@ interface AudioRecordingRepository {
    *
    * @return the recording state of the recorder as an observable flow
    */
-  fun getRecordingStateFlow(): StateFlow<RECORDING_STATE>
+  fun getRecordingStateFlow(): StateFlow<RecordingState>
 }

@@ -1,9 +1,11 @@
 package ch.eureka.eurekapp.model.data.project
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.authentication.AuthRepository
 import ch.eureka.eurekapp.model.authentication.AuthRepositoryProvider
 import ch.eureka.eurekapp.model.data.IdGenerator
+import kotlinx.coroutines.launch
 
 /**
  * The viewModel responsible for handling project creation in the app
@@ -16,15 +18,17 @@ class CreateProjectViewModel(
     private val authenticationRepository: AuthRepository = AuthRepositoryProvider.repository
 ) : ViewModel() {
 
-  suspend fun createProject(
+  fun createProject(
       projectToCreate: Project,
       onSuccessCallback: () -> Unit,
       onFailureCallback: () -> Unit
   ) {
-    if (projectsRepository.createProject(projectToCreate, projectToCreate.createdBy).isSuccess) {
-      onSuccessCallback()
-    } else {
-      onFailureCallback()
+    viewModelScope.launch {
+      if (projectsRepository.createProject(projectToCreate, projectToCreate.createdBy).isSuccess) {
+        onSuccessCallback()
+      } else {
+        onFailureCallback()
+      }
     }
   }
 

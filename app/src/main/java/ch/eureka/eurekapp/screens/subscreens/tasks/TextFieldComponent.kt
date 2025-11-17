@@ -7,12 +7,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.FieldValue
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
+
+/**
+ * Test tags for text field components.
+ *
+ * Provides consistent test tag generation for text field-specific UI elements.
+ */
+object TextFieldComponentTestTags {
+  fun input(fieldId: String) = "text_field_input_$fieldId"
+
+  fun value(fieldId: String) = "text_field_value_$fieldId"
+}
 
 /**
  * Text field component for template fields.
@@ -33,9 +46,8 @@ fun TextFieldComponent(
     onValueChange: (FieldValue.TextValue) -> Unit,
     mode: FieldInteractionMode,
     callbacks: FieldCallbacks = FieldCallbacks(),
-    showValidationErrors: Boolean = false,
-    showHeader: Boolean = true,
-    ) {
+    showValidationErrors: Boolean = false
+) {
   val fieldType = fieldDefinition.type as FieldType.Text
 
   BaseFieldComponent(
@@ -46,9 +58,7 @@ fun TextFieldComponent(
       onValueChange = onValueChange,
       mode = mode,
       callbacks = callbacks,
-      showValidationErrors = showValidationErrors,
-      showHeader = showHeader
-      ) { currentValue, onChange, isEditing ->
+      showValidationErrors = showValidationErrors) { currentValue, onChange, isEditing ->
         if (isEditing) {
           OutlinedTextField(
               value = currentValue?.value ?: "",
@@ -64,13 +74,15 @@ fun TextFieldComponent(
                     }
                   },
               singleLine = false,
-              modifier = Modifier.fillMaxWidth().testTag("text_field_input_${fieldDefinition.id}"),
-              colors = EurekaStyles.TextFieldColors())
+              modifier =
+                  Modifier.fillMaxWidth()
+                      .testTag(TextFieldComponentTestTags.input(fieldDefinition.id)),
+              colors = EurekaStyles.textFieldColors())
         } else {
           Text(
               text = currentValue?.value ?: "",
               style = MaterialTheme.typography.bodyLarge,
-              modifier = Modifier.testTag("text_field_value_${fieldDefinition.id}"))
+              modifier = Modifier.testTag(TextFieldComponentTestTags.value(fieldDefinition.id)))
         }
       }
 }

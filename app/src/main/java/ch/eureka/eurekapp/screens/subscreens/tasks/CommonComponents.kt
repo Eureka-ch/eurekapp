@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,11 +32,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.project.Project
+import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.camera.PhotoViewer
 import ch.eureka.eurekapp.utils.Formatters
 
 // Portions of this code were generated with the help of AI.
+// Portions added by Jiří Gebauer partially generated with the help of Grok.
 
+/*
+Note: This file was partially written by GPT-5 Codex
+Co-author : GPT-5
+*/
 /**
  * Helper function to determine if an error should be shown for a field.
  *
@@ -84,11 +92,18 @@ object CommonTaskTestTags {
   const val PROJECT_NAME = "project_name"
   const val PROJECT_SELECTION_ERROR = "project_selection_error"
   const val NO_PROJECTS_AVAILABLE = "no_projects_available"
+  const val USER_ASSIGNMENT_TITLE = "user_assignment_title"
+  const val USER_ASSIGNMENT_MENU = "user_assignment_menu"
+  const val USER_CHECKBOX = "user_checkbox"
+  const val NO_USERS_AVAILABLE = "no_users_available"
   const val TASK_DEPENDENCIES_FIELD = "task_dependencies_field"
   const val TASK_DEPENDENCY_ITEM = "task_dependency_item"
   const val REMOVE_DEPENDENCY = "remove_dependency"
   const val ADD_DEPENDENCY_BUTTON = "add_dependency_button"
   const val DEPENDENCY_CYCLE_ERROR = "dependency_cycle_error"
+  const val OFFLINE_MESSAGE = "offline_message"
+
+  const val BACK_BUTTON = "back_button"
 }
 
 @Composable
@@ -224,19 +239,26 @@ fun AttachmentsList(
     attachments: List<Any>,
     modifier: Modifier = Modifier,
     onDelete: ((Int) -> Unit)? = null,
-    isReadOnly: Boolean = false
+    isReadOnly: Boolean = false,
+    isConnected: Boolean = true
 ) {
   attachments.forEachIndexed { index, file ->
     Row(modifier = modifier) {
-      Text("Photo ${index + 1}")
-      if (!isReadOnly && onDelete != null) {
-        IconButton(
-            onClick = { onDelete(index) },
-            modifier = Modifier.testTag(CommonTaskTestTags.DELETE_PHOTO)) {
-              Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
-            }
+      if (!isConnected) {
+        Text(
+            "Photo ${index + 1}: Attachment available, but cannot be visualized offline.",
+            modifier = Modifier.testTag(CommonTaskTestTags.OFFLINE_MESSAGE))
+      } else {
+        Text("Photo ${index + 1}")
+        if (!isReadOnly && onDelete != null) {
+          IconButton(
+              onClick = { onDelete(index) },
+              modifier = Modifier.testTag(CommonTaskTestTags.DELETE_PHOTO)) {
+                Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
+              }
+        }
+        PhotoViewer(file, modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.PHOTO))
       }
-      PhotoViewer(file, modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.PHOTO))
     }
   }
 }
@@ -263,16 +285,14 @@ fun ProjectSelectionField(
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           modifier = Modifier.testTag(CommonTaskTestTags.NO_PROJECTS_AVAILABLE))
     } else {
-      Box(modifier = Modifier.fillMaxWidth()) {
+      Box(modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }) {
         OutlinedTextField(
             value = selectedProjectName,
             onValueChange = {},
             readOnly = true,
             placeholder = { Text("No project selected yet") },
-            modifier =
-                Modifier.fillMaxWidth()
-                    .clickable { expanded = !expanded }
-                    .testTag(CommonTaskTestTags.PROJECT_SELECTION_TITLE))
+            modifier = Modifier.fillMaxWidth().testTag(CommonTaskTestTags.PROJECT_SELECTION_TITLE),
+            enabled = false)
 
         DropdownMenu(
             expanded = expanded,
@@ -304,6 +324,78 @@ fun ProjectSelectionField(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UserAssignmentField(
+    availableUsers: List<User>,
+    selectedUserIds: List<String>,
+    onUserToggled: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
+) {
+  var expanded by remember { mutableStateOf(false) }
+  val selectedCount = selectedUserIds.size
+  val displayText =
+      when {
+        selectedCount == 0 -> "No users assigned"
+        selectedCount == 1 -> {
+          val user = availableUsers.firstOrNull { it.uid == selectedUserIds.first() }
+          user?.displayName?.ifBlank { user.email } ?: "1 user assigned"
+        }
+        else -> "$selectedCount users assigned"
+      }
+
+  Column(modifier = modifier) {
+    Text(text = "Assign Users", style = MaterialTheme.typography.titleMedium)
+
+    if (availableUsers.isEmpty()) {
+      Text(
+          text = "No users available in this project",
+          style = MaterialTheme.typography.bodyMedium,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+          modifier = Modifier.testTag(CommonTaskTestTags.NO_USERS_AVAILABLE))
+    } else {
+      Box(
+          modifier =
+              Modifier.fillMaxWidth().clickable(enabled = enabled) { expanded = !expanded }) {
+            OutlinedTextField(
+                value = displayText,
+                onValueChange = {},
+                readOnly = true,
+                placeholder = { Text("Select users to assign") },
+                modifier =
+                    Modifier.fillMaxWidth().testTag(CommonTaskTestTags.USER_ASSIGNMENT_TITLE),
+                enabled = false)
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.testTag(CommonTaskTestTags.USER_ASSIGNMENT_MENU)) {
+                  availableUsers.forEach { user ->
+                    DropdownMenuItem(
+                        text = {
+                          Row(
+                              modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                              horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text(
+                                    text = user.displayName.ifBlank { user.email },
+                                    style = MaterialTheme.typography.bodyMedium)
+                                Checkbox(
+                                    checked = selectedUserIds.contains(user.uid),
+                                    onCheckedChange = null,
+                                    modifier =
+                                        Modifier.testTag(
+                                            "${CommonTaskTestTags.USER_CHECKBOX}_${user.uid}"))
+                              }
+                        },
+                        onClick = { onUserToggled(user.uid) },
+                        modifier = Modifier.testTag("user_item_${user.uid}"))
+                  }
+                }
+          }
+    }
+  }
+}
+
 @Composable
 fun TaskDependenciesSelectionField(
     availableTasks: List<ch.eureka.eurekapp.model.data.task.Task>,

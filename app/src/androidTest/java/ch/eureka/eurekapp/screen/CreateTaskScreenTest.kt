@@ -23,6 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
@@ -55,6 +56,7 @@ import org.junit.Rule
 import org.junit.Test
 
 // Portions of this code were generated with the help of AI.
+// Portions added by Jiří Gebauer were generated with the help of Grok.
 class CreateTaskScreenTests : TestCase() {
 
   @get:Rule val composeTestRule = createComposeRule()
@@ -83,6 +85,7 @@ class CreateTaskScreenTests : TestCase() {
     }
 
     context = InstrumentationRegistry.getInstrumentation().targetContext
+    ConnectivityObserverProvider.initialize(context)
     clearTestPhotos()
   }
 
@@ -960,6 +963,33 @@ class CreateTaskScreenTests : TestCase() {
       val createdTask = tasks.find { it.title == "Main Task" }
       assertNotNull(createdTask)
       assertTrue(createdTask!!.dependingOnTasks.contains(taskId1))
+    }
+  }
+
+  @Test
+  fun testBackButtonNavigatesBack() {
+    runBlocking {
+      val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+      lastCreateVm = viewModel
+
+      composeTestRule.setContent {
+        val navController = rememberNavController()
+        FakeNavGraph(navController = navController, viewModel = viewModel)
+        navController.navigate(Route.TasksSection.CreateTask)
+      }
+
+      composeTestRule.waitForIdle()
+
+      // Verify we're on CreateTaskScreen
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
+
+      // Click the back button
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.BACK_BUTTON).performClick()
+
+      composeTestRule.waitForIdle()
+
+      // Verify navigation back to TasksScreen
+      composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
     }
   }
 }

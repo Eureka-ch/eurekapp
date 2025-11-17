@@ -1,5 +1,7 @@
 package ch.eureka.eurekapp.screen.createprojectscreen
 
+// Portions of this code were generated with the help of Grok.
+
 import androidx.compose.foundation.ScrollState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
@@ -91,6 +93,10 @@ class CreateProjectScreenTest : TestCase() {
 
     override fun getUserId(): Result<String?> {
       return Result.success("ilias-id")
+    }
+
+    override fun getCurrentUser(): FirebaseUser? {
+      return null
     }
   }
 

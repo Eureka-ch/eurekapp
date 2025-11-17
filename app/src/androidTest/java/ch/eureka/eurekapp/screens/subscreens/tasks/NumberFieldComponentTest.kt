@@ -45,14 +45,14 @@ class NumberFieldComponentTest {
           onValueChange = onValueChange,
           mode = mode,
           showValidationErrors = showValidationErrors,
-        callbacks = callbacks)
+          callbacks = callbacks)
     }
   }
 
   @Test
   fun numberFieldComponent_editMode_showsInputField() {
     setFieldContent()
-    composeTestRule.onNodeWithTag("number_field_input_test_number").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(NumberFieldTestTags.input("test_number")).assertIsDisplayed()
   }
 
   @Test
@@ -60,7 +60,7 @@ class NumberFieldComponentTest {
     var capturedValue: FieldValue.NumberValue? = null
     setFieldContent(onValueChange = { capturedValue = it })
 
-    composeTestRule.onNodeWithTag("number_field_input_test_number").performTextInput("42.5")
+    composeTestRule.onNodeWithTag(NumberFieldTestTags.input("test_number")).performTextInput("42.5")
 
     assertNotNull(capturedValue)
     assertEquals(42.5, capturedValue?.value ?: 0.0, 0.001)
@@ -71,7 +71,9 @@ class NumberFieldComponentTest {
     var capturedValue: FieldValue.NumberValue? = null
     setFieldContent(onValueChange = { capturedValue = it })
 
-    composeTestRule.onNodeWithTag("number_field_input_test_number").performTextInput("-15.3")
+    composeTestRule
+        .onNodeWithTag(NumberFieldTestTags.input("test_number"))
+        .performTextInput("-15.3")
 
     assertNotNull(capturedValue)
     assertEquals(-15.3, capturedValue?.value ?: 0.0, 0.001)
@@ -82,7 +84,7 @@ class NumberFieldComponentTest {
     var capturedValue: FieldValue.NumberValue? = null
     setFieldContent(onValueChange = { capturedValue = it })
 
-    composeTestRule.onNodeWithTag("number_field_input_test_number").performTextInput("25")
+    composeTestRule.onNodeWithTag(NumberFieldTestTags.input("test_number")).performTextInput("25")
 
     assertNotNull(capturedValue)
     assertEquals(25.0, capturedValue?.value ?: 0.0, 0.001)
@@ -97,7 +99,7 @@ class NumberFieldComponentTest {
   @Test
   fun numberFieldComponent_viewMode_showsFormattedValue() {
     setFieldContent(value = FieldValue.NumberValue(42.567), mode = FieldInteractionMode.ViewOnly)
-    composeTestRule.onNodeWithTag("number_field_value_test_number").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(NumberFieldTestTags.value("test_number")).assertIsDisplayed()
     composeTestRule.onNodeWithText("42.57 kg").assertIsDisplayed()
   }
 
@@ -128,13 +130,13 @@ class NumberFieldComponentTest {
   @Test
   fun numberFieldComponent_viewMode_doesNotShowInputField() {
     setFieldContent(value = FieldValue.NumberValue(42.5), mode = FieldInteractionMode.ViewOnly)
-    composeTestRule.onNodeWithTag("number_field_input_test_number").assertDoesNotExist()
+    composeTestRule.onNodeWithTag(NumberFieldTestTags.input("test_number")).assertDoesNotExist()
   }
 
   @Test
   fun numberFieldComponent_toggleableMode_showsToggleButton() {
     setFieldContent(mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false))
-    composeTestRule.onNodeWithTag("field_toggle_test_number").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.toggle("test_number")).assertIsDisplayed()
   }
 
   @Test
@@ -142,9 +144,9 @@ class NumberFieldComponentTest {
     var toggleCalled = false
     setFieldContent(
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
-        callbacks = FieldCallbacks( onModeToggle = { toggleCalled = true }))
+        callbacks = FieldCallbacks(onModeToggle = { toggleCalled = true }))
 
-    composeTestRule.onNodeWithTag("field_toggle_test_number").performClick()
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.toggle("test_number")).performClick()
     assert(toggleCalled)
   }
 
@@ -205,5 +207,37 @@ class NumberFieldComponentTest {
   fun numberFieldComponent_withZeroValue_displaysZero() {
     setFieldContent(value = FieldValue.NumberValue(0.0), mode = FieldInteractionMode.ViewOnly)
     composeTestRule.onNodeWithText("0.00 kg").assertIsDisplayed()
+  }
+
+  @Test
+  fun numberFieldComponent_nullDecimals_formatsAsZeroDecimals() {
+    setFieldContent(
+        fieldDef = testFieldDefinition.copy(type = FieldType.Number(decimals = null)),
+        value = FieldValue.NumberValue(42.567),
+        mode = FieldInteractionMode.ViewOnly)
+    composeTestRule.onNodeWithText("43").assertIsDisplayed()
+  }
+
+  @Test
+  fun numberFieldComponent_toggleableSave_callsOnSaveCallback() {
+    var saveCalled = false
+    setFieldContent(
+        value = FieldValue.NumberValue(42.0),
+        mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
+        callbacks = FieldCallbacks(onSave = { saveCalled = true }))
+
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.save("test_number")).performClick()
+    assert(saveCalled)
+  }
+
+  @Test
+  fun numberFieldComponent_toggleableCancel_callsOnCancelCallback() {
+    var cancelCalled = false
+    setFieldContent(
+        mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
+        callbacks = FieldCallbacks(onCancel = { cancelCalled = true }))
+
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.cancel("test_number")).performClick()
+    assert(cancelCalled)
   }
 }

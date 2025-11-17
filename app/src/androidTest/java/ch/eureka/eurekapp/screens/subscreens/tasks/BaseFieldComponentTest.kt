@@ -45,7 +45,7 @@ class BaseFieldComponentTest {
           }
     }
 
-    composeTestRule.onNodeWithTag("field_label_test_field").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.label("test_field")).assertIsDisplayed()
     composeTestRule.onNodeWithText("Test Field").assertIsDisplayed()
   }
 
@@ -80,7 +80,9 @@ class BaseFieldComponentTest {
           }
     }
 
-    composeTestRule.onNodeWithTag("field_description_test_field").assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(FieldComponentTestTags.description("test_field"))
+        .assertIsDisplayed()
     composeTestRule.onNodeWithText("Test description").assertIsDisplayed()
   }
 
@@ -115,7 +117,7 @@ class BaseFieldComponentTest {
           }
     }
 
-    composeTestRule.onNodeWithTag("field_toggle_test_field").assertDoesNotExist()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.toggle("test_field")).assertDoesNotExist()
   }
 
   @Test
@@ -131,7 +133,7 @@ class BaseFieldComponentTest {
           }
     }
 
-    composeTestRule.onNodeWithTag("field_toggle_test_field").assertDoesNotExist()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.toggle("test_field")).assertDoesNotExist()
   }
 
   @Test
@@ -147,7 +149,7 @@ class BaseFieldComponentTest {
           }
     }
 
-    composeTestRule.onNodeWithTag("field_toggle_test_field").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.toggle("test_field")).assertIsDisplayed()
   }
 
   @Test
@@ -161,12 +163,12 @@ class BaseFieldComponentTest {
           value = null,
           onValueChange = {},
           mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
-          onModeToggle = { toggleCalled = true }) { _, _, _ ->
+          callbacks = FieldCallbacks(onModeToggle = { toggleCalled = true })) { _, _, _ ->
             Text("Test Content")
           }
     }
 
-    composeTestRule.onNodeWithTag("field_toggle_test_field").performClick()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.toggle("test_field")).performClick()
 
     assertTrue(toggleCalled)
   }
@@ -263,7 +265,7 @@ class BaseFieldComponentTest {
           }
     }
 
-    composeTestRule.onNodeWithTag("field_error_test_field").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.error("test_field")).assertIsDisplayed()
     composeTestRule.onNodeWithText("This field is required").assertIsDisplayed()
   }
 
@@ -284,7 +286,7 @@ class BaseFieldComponentTest {
           }
     }
 
-    composeTestRule.onNodeWithTag("field_error_test_field").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.error("test_field")).assertIsDisplayed()
     composeTestRule.onNodeWithText("Text exceeds maxLength of 5 characters").assertIsDisplayed()
   }
 
@@ -304,7 +306,7 @@ class BaseFieldComponentTest {
           }
     }
 
-    composeTestRule.onNodeWithTag("field_error_test_field").assertDoesNotExist()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.error("test_field")).assertDoesNotExist()
   }
 
   @Test
@@ -322,7 +324,7 @@ class BaseFieldComponentTest {
           }
     }
 
-    composeTestRule.onNodeWithTag("field_hint_test_field").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.hint("test_field")).assertIsDisplayed()
     composeTestRule.onNodeWithText("Max 100 characters • Min 10 characters").assertIsDisplayed()
   }
 
@@ -341,7 +343,7 @@ class BaseFieldComponentTest {
           }
     }
 
-    composeTestRule.onNodeWithTag("field_hint_test_field").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.hint("test_field")).assertIsDisplayed()
     composeTestRule.onNodeWithText("Range: 0.0 - 100.0 • Unit: kg").assertIsDisplayed()
   }
 
@@ -399,9 +401,9 @@ class BaseFieldComponentTest {
           }
     }
 
-    composeTestRule.onNodeWithTag("field_save_test_field").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("field_cancel_test_field").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("field_toggle_test_field").assertDoesNotExist()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.save("test_field")).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.cancel("test_field")).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.toggle("test_field")).assertDoesNotExist()
   }
 
   @Test
@@ -417,9 +419,9 @@ class BaseFieldComponentTest {
           }
     }
 
-    composeTestRule.onNodeWithTag("field_toggle_test_field").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("field_save_test_field").assertDoesNotExist()
-    composeTestRule.onNodeWithTag("field_cancel_test_field").assertDoesNotExist()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.toggle("test_field")).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.save("test_field")).assertDoesNotExist()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.cancel("test_field")).assertDoesNotExist()
   }
 
   @Test
@@ -436,15 +438,20 @@ class BaseFieldComponentTest {
           value = null,
           onValueChange = { committedValue = it },
           mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
-          onModeToggle = { toggleCalled = true },
-          onSave = { saveCalled = true }) { _, onValueChange, _ ->
+          callbacks =
+              FieldCallbacks(
+                  onModeToggle = { toggleCalled = true }, onSave = { saveCalled = true })) {
+              _,
+              onValueChange,
+              _ ->
             // Simulate user editing
-            onValueChange(editedValue)
+            androidx.compose.runtime.SideEffect { onValueChange(editedValue) }
             Text("Test Content")
           }
     }
 
-    composeTestRule.onNodeWithTag("field_save_test_field").performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.save("test_field")).performClick()
 
     assertEquals(editedValue, committedValue)
     assertTrue(saveCalled)
@@ -464,8 +471,12 @@ class BaseFieldComponentTest {
           value = committedValue,
           onValueChange = { committedValue = it },
           mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
-          onModeToggle = { toggleCalled = true },
-          onCancel = { cancelCalled = true }) { _, onValueChange, _ ->
+          callbacks =
+              FieldCallbacks(
+                  onModeToggle = { toggleCalled = true }, onCancel = { cancelCalled = true })) {
+              _,
+              onValueChange,
+              _ ->
             // Simulate user editing
             onValueChange(FieldValue.TextValue("Edited"))
             Text("Test Content")
@@ -474,7 +485,7 @@ class BaseFieldComponentTest {
 
     val originalValue = committedValue
 
-    composeTestRule.onNodeWithTag("field_cancel_test_field").performClick()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.cancel("test_field")).performClick()
 
     // Value should remain unchanged
     assertEquals(originalValue, committedValue)
@@ -518,16 +529,18 @@ class BaseFieldComponentTest {
           mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true)) { _, onValueChange, _
             ->
             // Simulate user typing
-            onValueChange(editedValue)
+            androidx.compose.runtime.SideEffect { onValueChange(editedValue) }
             Text("Test Content")
           }
     }
+
+    composeTestRule.waitForIdle()
 
     // Value should NOT be committed yet
     assertEquals(null, committedValue)
 
     // Click save
-    composeTestRule.onNodeWithTag("field_save_test_field").performClick()
+    composeTestRule.onNodeWithTag(FieldComponentTestTags.save("test_field")).performClick()
 
     // NOW value should be committed
     assertEquals(editedValue, committedValue)

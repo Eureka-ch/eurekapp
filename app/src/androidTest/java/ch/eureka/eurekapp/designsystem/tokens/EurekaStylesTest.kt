@@ -22,7 +22,7 @@ class EurekaStylesTest {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.material3.Button(
-            onClick = {}, colors = EurekaStyles.PrimaryButtonColors()) {
+            onClick = {}, colors = EurekaStyles.primaryButtonColors()) {
               androidx.compose.material3.Text("Primary Button")
             }
       }
@@ -37,7 +37,7 @@ class EurekaStylesTest {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.material3.OutlinedButton(
-            onClick = {}, colors = EurekaStyles.OutlinedButtonColors()) {
+            onClick = {}, colors = EurekaStyles.outlinedButtonColors()) {
               androidx.compose.material3.Text("Outlined Button")
             }
       }
@@ -52,7 +52,7 @@ class EurekaStylesTest {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.material3.OutlinedTextField(
-            value = "Test Text", onValueChange = {}, colors = EurekaStyles.TextFieldColors())
+            value = "Test Text", onValueChange = {}, colors = EurekaStyles.textFieldColors())
       }
     }
 
@@ -64,7 +64,7 @@ class EurekaStylesTest {
   fun eurekaStylesHighPriorityTagColorsWork() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
-        androidx.compose.material3.Card(colors = EurekaStyles.HighPriorityTagColors()) {
+        androidx.compose.material3.Card(colors = EurekaStyles.highPriorityTagColors()) {
           androidx.compose.material3.Text("High Priority")
         }
       }
@@ -78,7 +78,7 @@ class EurekaStylesTest {
   fun eurekaStylesNormalTagColorsWork() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
-        androidx.compose.material3.Card(colors = EurekaStyles.NormalTagColors()) {
+        androidx.compose.material3.Card(colors = EurekaStyles.normalTagColors()) {
           androidx.compose.material3.Text("Normal Tag")
         }
       }
@@ -93,7 +93,7 @@ class EurekaStylesTest {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.material3.OutlinedButton(
-            onClick = {}, border = EurekaStyles.OutlinedButtonBorder()) {
+            onClick = {}, border = EurekaStyles.outlinedButtonBorder()) {
               androidx.compose.material3.Text("Bordered Button")
             }
       }
@@ -122,7 +122,7 @@ class EurekaStylesTest {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = true) {
         androidx.compose.material3.Button(
-            onClick = {}, colors = EurekaStyles.PrimaryButtonColors()) {
+            onClick = {}, colors = EurekaStyles.primaryButtonColors()) {
               androidx.compose.material3.Text("Dark Mode Button")
             }
       }
@@ -181,14 +181,14 @@ class EurekaStylesTest {
       EurekaTheme(darkTheme = false) {
         androidx.compose.foundation.layout.Column {
           androidx.compose.material3.Button(
-              onClick = {}, colors = EurekaStyles.PrimaryButtonColors()) {
+              onClick = {}, colors = EurekaStyles.primaryButtonColors()) {
                 androidx.compose.material3.Text("Primary")
               }
 
           androidx.compose.material3.OutlinedButton(
               onClick = {},
-              colors = EurekaStyles.OutlinedButtonColors(),
-              border = EurekaStyles.OutlinedButtonBorder()) {
+              colors = EurekaStyles.outlinedButtonColors(),
+              border = EurekaStyles.outlinedButtonBorder()) {
                 androidx.compose.material3.Text("Outlined")
               }
         }

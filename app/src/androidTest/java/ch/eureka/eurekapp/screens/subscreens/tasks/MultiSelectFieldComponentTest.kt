@@ -39,7 +39,7 @@ class MultiSelectFieldComponentTest {
       onValueChange: (FieldValue.MultiSelectValue) -> Unit = {},
       mode: FieldInteractionMode = FieldInteractionMode.EditOnly,
       showValidationErrors: Boolean = false,
-      onModeToggle: () -> Unit = {}
+      callbacks: FieldCallbacks = FieldCallbacks()
   ) {
     composeTestRule.setContent {
       MultiSelectFieldComponent(
@@ -48,14 +48,16 @@ class MultiSelectFieldComponentTest {
           onValueChange = onValueChange,
           mode = mode,
           showValidationErrors = showValidationErrors,
-          onModeToggle = onModeToggle)
+          callbacks = callbacks)
     }
   }
 
   @Test
   fun multiSelectFieldComponent_editMode_showsChipOptions() {
     setFieldContent()
-    composeTestRule.onNodeWithTag("multi_select_field_chips_test_multi_select").assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MultiSelectFieldTestTags.chips("test_multi_select"))
+        .assertIsDisplayed()
     composeTestRule.onNodeWithText("Option 1").assertIsDisplayed()
     composeTestRule.onNodeWithText("Option 2").assertIsDisplayed()
     composeTestRule.onNodeWithText("Option 3").assertIsDisplayed()
@@ -66,7 +68,7 @@ class MultiSelectFieldComponentTest {
     var capturedValue: FieldValue.MultiSelectValue? = null
     setFieldContent(onValueChange = { capturedValue = it })
 
-    composeTestRule.onNodeWithTag("multi_select_chip_option1").performClick()
+    composeTestRule.onNodeWithTag(MultiSelectFieldTestTags.chip("option1")).performClick()
 
     assertNotNull(capturedValue)
     assertEquals(1, capturedValue?.values?.size)
@@ -78,8 +80,8 @@ class MultiSelectFieldComponentTest {
     var capturedValue: FieldValue.MultiSelectValue? = null
     setFieldContent(onValueChange = { capturedValue = it })
 
-    composeTestRule.onNodeWithTag("multi_select_chip_option1").performClick()
-    composeTestRule.onNodeWithTag("multi_select_chip_option2").performClick()
+    composeTestRule.onNodeWithTag(MultiSelectFieldTestTags.chip("option1")).performClick()
+    composeTestRule.onNodeWithTag(MultiSelectFieldTestTags.chip("option2")).performClick()
 
     assertNotNull(capturedValue)
     assertEquals(2, capturedValue?.values?.size)
@@ -93,7 +95,7 @@ class MultiSelectFieldComponentTest {
         FieldValue.MultiSelectValue(listOf("option1", "option2"))
     setFieldContent(value = capturedValue, onValueChange = { capturedValue = it })
 
-    composeTestRule.onNodeWithTag("multi_select_chip_option1").performClick()
+    composeTestRule.onNodeWithTag(MultiSelectFieldTestTags.chip("option1")).performClick()
 
     assertNotNull(capturedValue)
     assertEquals(1, capturedValue?.values?.size)
@@ -106,9 +108,11 @@ class MultiSelectFieldComponentTest {
     setFieldContent(
         value = FieldValue.MultiSelectValue(listOf("option1", "option2")),
         mode = FieldInteractionMode.ViewOnly)
-    composeTestRule.onNodeWithTag("multi_select_field_value_test_multi_select").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("multi_select_chip_option1").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("multi_select_chip_option2").assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MultiSelectFieldTestTags.value("test_multi_select"))
+        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MultiSelectFieldTestTags.chip("option1")).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MultiSelectFieldTestTags.chip("option2")).assertIsDisplayed()
   }
 
   @Test
@@ -119,14 +123,16 @@ class MultiSelectFieldComponentTest {
         onValueChange = { valueChanged = true },
         mode = FieldInteractionMode.ViewOnly)
 
-    composeTestRule.onNodeWithTag("multi_select_chip_option1").performClick()
+    composeTestRule.onNodeWithTag(MultiSelectFieldTestTags.chip("option1")).performClick()
     assertTrue(!valueChanged)
   }
 
   @Test
   fun multiSelectFieldComponent_viewMode_emptySelections_showsEmptyText() {
     setFieldContent(mode = FieldInteractionMode.ViewOnly)
-    composeTestRule.onNodeWithTag("multi_select_field_value_test_multi_select").assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MultiSelectFieldTestTags.value("test_multi_select"))
+        .assertIsDisplayed()
   }
 
   @Test
@@ -134,7 +140,9 @@ class MultiSelectFieldComponentTest {
     setFieldContent(
         value = FieldValue.MultiSelectValue(listOf("option1")),
         mode = FieldInteractionMode.ViewOnly)
-    composeTestRule.onNodeWithTag("multi_select_field_chips_test_multi_select").assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(MultiSelectFieldTestTags.chips("test_multi_select"))
+        .assertDoesNotExist()
   }
 
   @Test
@@ -143,8 +151,12 @@ class MultiSelectFieldComponentTest {
         fieldDef =
             testFieldDefinition.copy(
                 type = FieldType.MultiSelect(options = testOptions, allowCustom = true)))
-    composeTestRule.onNodeWithTag("multi_select_custom_input_test_multi_select").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("multi_select_custom_add_test_multi_select").assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MultiSelectFieldTestTags.customInput("test_multi_select"))
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MultiSelectFieldTestTags.customAdd("test_multi_select"))
+        .assertIsDisplayed()
   }
 
   @Test
@@ -156,9 +168,11 @@ class MultiSelectFieldComponentTest {
     setFieldContent(fieldDef = fieldWithCustom, onValueChange = { capturedValue = it })
 
     composeTestRule
-        .onNodeWithTag("multi_select_custom_input_test_multi_select")
+        .onNodeWithTag(MultiSelectFieldTestTags.customInput("test_multi_select"))
         .performTextInput("Custom Value")
-    composeTestRule.onNodeWithTag("multi_select_custom_add_test_multi_select").performClick()
+    composeTestRule
+        .onNodeWithTag(MultiSelectFieldTestTags.customAdd("test_multi_select"))
+        .performClick()
 
     assertNotNull(capturedValue)
     assertEquals(1, capturedValue?.values?.size)
@@ -172,9 +186,11 @@ class MultiSelectFieldComponentTest {
             testFieldDefinition.copy(
                 type = FieldType.MultiSelect(options = testOptions, allowCustom = false)))
     composeTestRule
-        .onNodeWithTag("multi_select_custom_input_test_multi_select")
+        .onNodeWithTag(MultiSelectFieldTestTags.customInput("test_multi_select"))
         .assertDoesNotExist()
-    composeTestRule.onNodeWithTag("multi_select_custom_add_test_multi_select").assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(MultiSelectFieldTestTags.customAdd("test_multi_select"))
+        .assertDoesNotExist()
   }
 
   @Test
@@ -188,7 +204,7 @@ class MultiSelectFieldComponentTest {
     var toggleCalled = false
     setFieldContent(
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
-        onModeToggle = { toggleCalled = true })
+        callbacks = FieldCallbacks(onModeToggle = { toggleCalled = true }))
 
     composeTestRule.onNodeWithTag("field_toggle_test_multi_select").performClick()
     assertTrue(toggleCalled)
@@ -242,8 +258,8 @@ class MultiSelectFieldComponentTest {
                 type = FieldType.MultiSelect(options = testOptions, allowCustom = true)),
         value = FieldValue.MultiSelectValue(listOf("option1", "Custom Value")),
         mode = FieldInteractionMode.ViewOnly)
-    composeTestRule.onNodeWithTag("multi_select_chip_option1").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("multi_select_chip_Custom Value").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MultiSelectFieldTestTags.chip("option1")).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MultiSelectFieldTestTags.chip("Custom Value")).assertIsDisplayed()
     composeTestRule.onNodeWithText("Option 1").assertIsDisplayed()
     composeTestRule.onNodeWithText("Custom Value").assertIsDisplayed()
   }
@@ -274,9 +290,96 @@ class MultiSelectFieldComponentTest {
             testFieldDefinition.copy(
                 type = FieldType.MultiSelect(options = testOptions, allowCustom = true)))
     composeTestRule
-        .onNodeWithTag("multi_select_custom_input_test_multi_select")
+        .onNodeWithTag(MultiSelectFieldTestTags.customInput("test_multi_select"))
         .performTextInput("Test")
-    composeTestRule.onNodeWithTag("multi_select_custom_add_test_multi_select").performClick()
-    composeTestRule.onNodeWithTag("multi_select_custom_input_test_multi_select").assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MultiSelectFieldTestTags.customAdd("test_multi_select"))
+        .performClick()
+    composeTestRule
+        .onNodeWithTag(MultiSelectFieldTestTags.customInput("test_multi_select"))
+        .assertIsDisplayed()
+  }
+
+  @Test
+  fun multiSelectFieldComponent_customValueTrimsWhitespace() {
+    var capturedValue: FieldValue.MultiSelectValue? = null
+    setFieldContent(
+        fieldDef =
+            testFieldDefinition.copy(
+                type = FieldType.MultiSelect(options = testOptions, allowCustom = true)),
+        onValueChange = { capturedValue = it })
+
+    composeTestRule
+        .onNodeWithTag(MultiSelectFieldTestTags.customInput("test_multi_select"))
+        .performTextInput("  Test Value  ")
+    composeTestRule
+        .onNodeWithTag(MultiSelectFieldTestTags.customAdd("test_multi_select"))
+        .performClick()
+
+    assertNotNull(capturedValue)
+    assertTrue(capturedValue?.values?.contains("Test Value") == true)
+  }
+
+  @Test
+  fun multiSelectFieldComponent_customValuePreventsDuplicates() {
+    var capturedValue: FieldValue.MultiSelectValue? =
+        FieldValue.MultiSelectValue(listOf("Custom Value"))
+    setFieldContent(
+        fieldDef =
+            testFieldDefinition.copy(
+                type = FieldType.MultiSelect(options = testOptions, allowCustom = true)),
+        value = capturedValue,
+        onValueChange = { capturedValue = it })
+
+    composeTestRule
+        .onNodeWithTag(MultiSelectFieldTestTags.customInput("test_multi_select"))
+        .performTextInput("Custom Value")
+    composeTestRule
+        .onNodeWithTag(MultiSelectFieldTestTags.customAdd("test_multi_select"))
+        .performClick()
+
+    assertEquals(1, capturedValue?.values?.size)
+  }
+
+  @Test
+  fun multiSelectFieldComponent_canRemoveCustomValue() {
+    var capturedValue: FieldValue.MultiSelectValue? =
+        FieldValue.MultiSelectValue(listOf("option1", "CustomValue"))
+    setFieldContent(
+        fieldDef =
+            testFieldDefinition.copy(
+                type = FieldType.MultiSelect(options = testOptions, allowCustom = true)),
+        value = capturedValue,
+        onValueChange = { capturedValue = it })
+
+    composeTestRule.onNodeWithTag(MultiSelectFieldTestTags.chip("CustomValue")).performClick()
+
+    assertNotNull(capturedValue)
+    assertEquals(1, capturedValue?.values?.size)
+    assertTrue(capturedValue?.values?.contains("option1") == true)
+    assertTrue(capturedValue?.values?.contains("CustomValue") == false)
+  }
+
+  @Test
+  fun multiSelectFieldComponent_emptyCustomValueDoesNotAdd() {
+    var capturedValue: FieldValue.MultiSelectValue? = null
+    setFieldContent(
+        fieldDef =
+            testFieldDefinition.copy(
+                type = FieldType.MultiSelect(options = testOptions, allowCustom = true)),
+        onValueChange = { capturedValue = it })
+
+    composeTestRule
+        .onNodeWithTag(MultiSelectFieldTestTags.customInput("test_multi_select"))
+        .performTextInput("   ")
+
+    assertEquals(null, capturedValue)
+  }
+
+  @Test
+  fun multiSelectFieldComponent_viewMode_emptyList_showsNoneText() {
+    setFieldContent(
+        value = FieldValue.MultiSelectValue(emptyList()), mode = FieldInteractionMode.ViewOnly)
+    composeTestRule.onNodeWithText("None").assertIsDisplayed()
   }
 }
