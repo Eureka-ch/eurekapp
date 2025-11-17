@@ -60,11 +60,14 @@ object FieldValidator {
       type: FieldType.Number,
       errors: MutableList<String>
   ) {
-    type.min?.takeIf { value.value < it }?.let { errors.add("Number is less than minimum of $it") }
+    val numValue = value.value
+    if (numValue == null) {
+      return
+    }
 
-    type.max
-        ?.takeIf { value.value > it }
-        ?.let { errors.add("Number is greater than maximum of $it") }
+    type.min?.takeIf { numValue < it }?.let { errors.add("Number is less than minimum of $it") }
+
+    type.max?.takeIf { numValue > it }?.let { errors.add("Number is greater than maximum of $it") }
   }
 
   private fun validateDate(
