@@ -35,19 +35,25 @@ class FieldValueTest {
   @Test
   fun `NumberValue stores value correctly`() {
     val numberValue = FieldValue.NumberValue(123.456)
-    assertEquals(123.456, numberValue.value, 0.0)
+    assertEquals(123.456, numberValue.value)
   }
 
   @Test
   fun `NumberValue accepts negative values`() {
     val numberValue = FieldValue.NumberValue(-10.5)
-    assertEquals(-10.5, numberValue.value, 0.0)
+    assertEquals(-10.5, numberValue.value)
   }
 
   @Test
   fun `NumberValue accepts zero`() {
     val numberValue = FieldValue.NumberValue(0.0)
-    assertEquals(0.0, numberValue.value, 0.0)
+    assertEquals(0.0, numberValue.value)
+  }
+
+  @Test
+  fun `NumberValue accepts null`() {
+    val numberValue = FieldValue.NumberValue(null)
+    assertEquals(null, numberValue.value)
   }
 
   @Test
