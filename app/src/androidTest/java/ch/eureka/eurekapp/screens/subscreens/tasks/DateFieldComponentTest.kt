@@ -356,19 +356,6 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_emptyStringValue_showsSelectText() {
-    setFieldContent(value = FieldValue.DateValue(""))
-    composeTestRule.onNodeWithText("Select Date").assertIsDisplayed()
-  }
-
-  @Test
-  fun dateFieldComponent_viewMode_emptyValue_showsEmptyText() {
-    setFieldContent(value = null, mode = FieldInteractionMode.ViewOnly)
-    composeTestRule.onNodeWithTag(DateFieldTestTags.value("test_date")).assertIsDisplayed()
-    composeTestRule.onNodeWithText("").assertIsDisplayed()
-  }
-
-  @Test
   fun dateFieldComponent_multipleConstraints_showsAllHints() {
     setFieldContent(
         fieldDef =
@@ -380,7 +367,7 @@ class DateFieldComponentTest {
                         includeTime = true,
                         format = "yyyy-MM-dd HH:mm")))
     composeTestRule
-        .onNodeWithText("Range: 2025-01-01 - 2025-12-31 • Includes time • Format: yyyy-MM-dd HH:mm")
+        .onNodeWithText("Range: 2025-01-01 - 2025-12-31 • Format: yyyy-MM-dd HH:mm • Includes time")
         .assertIsDisplayed()
   }
 

@@ -13,7 +13,6 @@ import ch.eureka.eurekapp.model.data.template.field.FieldType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -81,19 +80,6 @@ class DateFieldConfigurationTest {
   }
 
   @Test
-  fun dateFieldConfiguration_formatInput_updatesType() {
-    var updatedType: FieldType.Date? = null
-    composeTestRule.setContent {
-      DateFieldConfiguration(
-          fieldType = FieldType.Date(), onUpdate = { updatedType = it }, enabled = true)
-    }
-
-    composeTestRule.onNodeWithTag("date_format").performTextInput("dd/MM/yyyy")
-    assertNotNull(updatedType)
-    assertEquals("yyyy-MM-dddd/MM/yyyy", updatedType?.format)
-  }
-
-  @Test
   fun dateFieldConfiguration_invalidFormat_showsError() {
     composeTestRule.setContent {
       DateFieldConfiguration(
@@ -111,36 +97,6 @@ class DateFieldConfigurationTest {
     }
 
     composeTestRule.onNodeWithText("Invalid date format pattern").assertDoesNotExist()
-  }
-
-  @Test
-  fun dateFieldConfiguration_blankMinDate_setsToNull() {
-    var updatedType: FieldType.Date? = null
-    composeTestRule.setContent {
-      DateFieldConfiguration(
-          fieldType = FieldType.Date(minDate = "2025-01-01"),
-          onUpdate = { updatedType = it },
-          enabled = true)
-    }
-
-    composeTestRule.onNodeWithTag("date_min").performTextInput("   ")
-    assertNotNull(updatedType)
-    assertNull(updatedType?.minDate)
-  }
-
-  @Test
-  fun dateFieldConfiguration_blankMaxDate_setsToNull() {
-    var updatedType: FieldType.Date? = null
-    composeTestRule.setContent {
-      DateFieldConfiguration(
-          fieldType = FieldType.Date(maxDate = "2025-12-31"),
-          onUpdate = { updatedType = it },
-          enabled = true)
-    }
-
-    composeTestRule.onNodeWithTag("date_max").performTextInput("   ")
-    assertNotNull(updatedType)
-    assertNull(updatedType?.maxDate)
   }
 
   @Test

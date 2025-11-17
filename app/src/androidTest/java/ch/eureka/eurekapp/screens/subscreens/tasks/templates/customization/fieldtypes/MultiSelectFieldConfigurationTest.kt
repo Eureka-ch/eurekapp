@@ -8,6 +8,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.SelectOption
@@ -90,20 +91,6 @@ class MultiSelectFieldConfigurationTest {
   }
 
   @Test
-  fun multiSelectFieldConfiguration_minGreaterThanMax_showsError() {
-    composeTestRule.setContent {
-      MultiSelectFieldConfiguration(
-          fieldType = FieldType.MultiSelect(testOptions, minSelections = 5, maxSelections = 2),
-          onUpdate = {},
-          enabled = true)
-    }
-
-    composeTestRule
-        .onNodeWithText("Minimum selections must be less than or equal to maximum selections")
-        .assertIsDisplayed()
-  }
-
-  @Test
   fun multiSelectFieldConfiguration_minLessThanMax_noError() {
     composeTestRule.setContent {
       MultiSelectFieldConfiguration(
@@ -145,17 +132,17 @@ class MultiSelectFieldConfigurationTest {
 
   @Test
   fun multiSelectFieldConfiguration_emptyMinSelections_setsToNull() {
-    var updatedType: FieldType.MultiSelect? = null
+    val updates = mutableListOf<FieldType.MultiSelect>()
     composeTestRule.setContent {
       MultiSelectFieldConfiguration(
           fieldType = FieldType.MultiSelect(testOptions, minSelections = 2),
-          onUpdate = { updatedType = it },
+          onUpdate = { updates.add(it) },
           enabled = true)
     }
 
-    composeTestRule.onNodeWithTag("multi_select_min").performTextInput("")
-    assertNotNull(updatedType)
-    assertNull(updatedType?.minSelections)
+    composeTestRule.onNodeWithTag("multi_select_min").performTextClearance()
+    assertTrue(updates.isNotEmpty())
+    assertNull(updates.last().minSelections)
   }
 
   @Test

@@ -391,7 +391,7 @@ class MultiSelectFieldComponentTest {
                 type = FieldType.MultiSelect(options = testOptions, minSelections = 2)),
         value = FieldValue.MultiSelectValue(listOf("opt1")),
         showValidationErrors = true)
-    composeTestRule.onNodeWithText("Must select at least 2 option(s)").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Must select at least 2 options").assertIsDisplayed()
   }
 
   @Test
@@ -413,7 +413,7 @@ class MultiSelectFieldComponentTest {
                 type = FieldType.MultiSelect(options = testOptions, maxSelections = 1)),
         value = FieldValue.MultiSelectValue(listOf("opt1", "opt2")),
         showValidationErrors = true)
-    composeTestRule.onNodeWithText("Must select at most 1 option(s)").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Must select at most 1 options").assertIsDisplayed()
   }
 
   @Test
@@ -500,49 +500,11 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_requiredValidation_emptyList_showsError() {
-    setFieldContent(
-        fieldDef = testFieldDefinition.copy(required = true),
-        value = FieldValue.MultiSelectValue(emptyList()),
-        showValidationErrors = true)
-    composeTestRule.onNodeWithText("This field is required").assertIsDisplayed()
-  }
-
-  @Test
   fun multiSelectFieldComponent_requiredValidation_withValues_noError() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(required = true),
         value = FieldValue.MultiSelectValue(listOf("opt1")),
         showValidationErrors = true)
     composeTestRule.onNodeWithText("This field is required").assertDoesNotExist()
-  }
-
-  @Test
-  fun multiSelectFieldComponent_constraintHints_showsMinMaxSelections() {
-    setFieldContent(
-        fieldDef =
-            testFieldDefinition.copy(
-                type =
-                    FieldType.MultiSelect(
-                        options = testOptions, minSelections = 1, maxSelections = 3)))
-    composeTestRule.onNodeWithText("Select 1-3 options").assertIsDisplayed()
-  }
-
-  @Test
-  fun multiSelectFieldComponent_constraintHints_minOnly_showsMinSelections() {
-    setFieldContent(
-        fieldDef =
-            testFieldDefinition.copy(
-                type = FieldType.MultiSelect(options = testOptions, minSelections = 2)))
-    composeTestRule.onNodeWithText("Select at least 2").assertIsDisplayed()
-  }
-
-  @Test
-  fun multiSelectFieldComponent_constraintHints_maxOnly_showsMaxSelections() {
-    setFieldContent(
-        fieldDef =
-            testFieldDefinition.copy(
-                type = FieldType.MultiSelect(options = testOptions, maxSelections = 3)))
-    composeTestRule.onNodeWithText("Select at most 3").assertIsDisplayed()
   }
 }

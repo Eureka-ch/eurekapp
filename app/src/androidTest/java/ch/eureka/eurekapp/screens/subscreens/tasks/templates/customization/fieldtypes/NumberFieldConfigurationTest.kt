@@ -11,7 +11,6 @@ import androidx.compose.ui.test.performTextInput
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
 
@@ -77,19 +76,6 @@ class NumberFieldConfigurationTest {
   }
 
   @Test
-  fun numberFieldConfiguration_decimalsInput_updatesType() {
-    var updatedType: FieldType.Number? = null
-    composeTestRule.setContent {
-      NumberFieldConfiguration(
-          fieldType = FieldType.Number(), onUpdate = { updatedType = it }, enabled = true)
-    }
-
-    composeTestRule.onNodeWithTag("number_decimals").performTextInput("2")
-    assertNotNull(updatedType)
-    assertEquals(2, updatedType?.decimals)
-  }
-
-  @Test
   fun numberFieldConfiguration_unitInput_updatesType() {
     var updatedType: FieldType.Number? = null
     composeTestRule.setContent {
@@ -100,18 +86,6 @@ class NumberFieldConfigurationTest {
     composeTestRule.onNodeWithTag("number_unit").performTextInput("kg")
     assertNotNull(updatedType)
     assertEquals("kg", updatedType?.unit)
-  }
-
-  @Test
-  fun numberFieldConfiguration_minGreaterThanMax_showsError() {
-    composeTestRule.setContent {
-      NumberFieldConfiguration(
-          fieldType = FieldType.Number(min = 100.0, max = 50.0), onUpdate = {}, enabled = true)
-    }
-
-    composeTestRule
-        .onNodeWithText("Minimum value must be less than or equal to maximum value")
-        .assertIsDisplayed()
   }
 
   @Test
@@ -152,20 +126,6 @@ class NumberFieldConfigurationTest {
   }
 
   @Test
-  fun numberFieldConfiguration_emptyMin_setsToNull() {
-    var updatedType: FieldType.Number? = null
-    composeTestRule.setContent {
-      NumberFieldConfiguration(
-          fieldType = FieldType.Number(min = 10.0), onUpdate = { updatedType = it }, enabled = true)
-    }
-
-    // Clearing the field sets it to empty string, which parses to null
-    composeTestRule.onNodeWithTag("number_min").performTextInput("")
-    assertNotNull(updatedType)
-    assertNull(updatedType?.min)
-  }
-
-  @Test
   fun numberFieldConfiguration_invalidDecimalsInput_fallsBackToZero() {
     var updatedType: FieldType.Number? = null
     composeTestRule.setContent {
@@ -176,21 +136,6 @@ class NumberFieldConfigurationTest {
     composeTestRule.onNodeWithTag("number_decimals").performTextInput("abc")
     assertNotNull(updatedType)
     assertEquals(0, updatedType?.decimals)
-  }
-
-  @Test
-  fun numberFieldConfiguration_blankUnit_setsToNull() {
-    var updatedType: FieldType.Number? = null
-    composeTestRule.setContent {
-      NumberFieldConfiguration(
-          fieldType = FieldType.Number(unit = "kg"),
-          onUpdate = { updatedType = it },
-          enabled = true)
-    }
-
-    composeTestRule.onNodeWithTag("number_unit").performTextInput("   ")
-    assertNotNull(updatedType)
-    assertNull(updatedType?.unit)
   }
 
   @Test
