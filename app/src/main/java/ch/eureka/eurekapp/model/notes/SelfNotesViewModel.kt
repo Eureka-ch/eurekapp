@@ -8,12 +8,15 @@ import ch.eureka.eurekapp.model.data.IdGenerator
 import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.note.SelfNotesRepository
 import com.google.firebase.Timestamp
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /*
@@ -25,40 +28,51 @@ Co-author: GPT-5 Codex
  *
  * Manages the state of self-notes including loading notes from Firestore, composing new notes, and
  * sending them. Notes are stored per-user and displayed in a chat-like interface.
+ *
+ * Uses Flow-based state derivation with stateIn for reactive UI updates.
  */
 class SelfNotesViewModel(
     private val repository: SelfNotesRepository = FirestoreRepositoriesProvider.selfNotesRepository,
-    private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
-  private val _uiState = MutableStateFlow(SelfNotesUiState())
-  val uiState: StateFlow<SelfNotesUiState> = _uiState.asStateFlow()
+  private val _currentMessage = MutableStateFlow("")
+  private val _isSending = MutableStateFlow(false)
+  private val _errorMsg = MutableStateFlow<String?>(null)
 
-  init {
-    loadNotes()
-  }
-
-  /** Loads notes for the current user from Firestore. */
-  private fun loadNotes() {
-    val userId = getCurrentUserId()
-    if (userId == null) {
-      _uiState.value = _uiState.value.copy(isLoading = false, errorMsg = "User not authenticated")
-      return
-    }
-
-    viewModelScope.launch(dispatcher) {
-      try {
-        repository.getNotesForUser(userId).collect { notes ->
-          _uiState.value = _uiState.value.copy(notes = notes, isLoading = false, errorMsg = null)
-        }
-      } catch (e: Exception) {
-        Log.e("SelfNotesViewModel", "Error loading notes", e)
-        _uiState.value =
-            _uiState.value.copy(isLoading = false, errorMsg = "Failed to load notes: ${e.message}")
-      }
-    }
-  }
+  val uiState: StateFlow<SelfNotesUiState> =
+      combine(
+              repository
+                  .getNotes()
+                  .map { notes -> NotesLoadState.Success(notes) as NotesLoadState }
+                  .catch { e ->
+                    Log.e("SelfNotesViewModel", "Error loading notes", e)
+                    emit(NotesLoadState.Error("Failed to load notes: ${e.message}"))
+                  },
+              _currentMessage,
+              _isSending,
+              _errorMsg) { notesState, currentMessage, isSending, errorMsg ->
+                when (notesState) {
+                  is NotesLoadState.Success ->
+                      SelfNotesUiState(
+                          notes = notesState.notes,
+                          isLoading = false,
+                          errorMsg = errorMsg,
+                          currentMessage = currentMessage,
+                          isSending = isSending)
+                  is NotesLoadState.Error ->
+                      SelfNotesUiState(
+                          notes = emptyList(),
+                          isLoading = false,
+                          errorMsg = errorMsg ?: notesState.message,
+                          currentMessage = currentMessage,
+                          isSending = isSending)
+                }
+              }
+          .stateIn(
+              scope = viewModelScope,
+              started = SharingStarted.WhileSubscribed(5000),
+              initialValue = SelfNotesUiState(isLoading = true))
 
   /**
    * Updates the current message being composed.
@@ -66,50 +80,51 @@ class SelfNotesViewModel(
    * @param text The new message text.
    */
   fun updateMessage(text: String) {
-    _uiState.value = _uiState.value.copy(currentMessage = text)
+    _currentMessage.value = text
   }
 
   /** Sends the current message as a new note. */
   fun sendNote() {
-    val currentMessage = _uiState.value.currentMessage.trim()
+    val currentMessage = _currentMessage.value.trim()
     if (currentMessage.isEmpty()) {
       return
     }
 
-    val userId = getCurrentUserId()
-    if (userId == null) {
-      _uiState.value = _uiState.value.copy(errorMsg = "User not authenticated")
-      return
-    }
-
-    _uiState.value = _uiState.value.copy(isSending = true)
+    _isSending.value = true
 
     viewModelScope.launch(dispatcher) {
       val message =
           Message(
               messageID = IdGenerator.generateMessageId(),
               text = currentMessage,
-              senderId = userId,
+              senderId = "", // Will be set by the repository based on authenticated user
               createdAt = Timestamp.now(),
               references = emptyList())
 
       repository
-          .createNote(userId, message)
+          .createNote(message)
           .fold(
               onSuccess = {
-                _uiState.value =
-                    _uiState.value.copy(currentMessage = "", isSending = false, errorMsg = null)
+                _currentMessage.value = ""
+                _isSending.value = false
+                _errorMsg.value = null
               },
               onFailure = { error ->
-                _uiState.value =
-                    _uiState.value.copy(
-                        isSending = false, errorMsg = "Failed to send note: ${error.message}")
+                _isSending.value = false
+                _errorMsg.value = "Failed to send note: ${error.message}"
               })
     }
   }
 
   /** Clears the current error message. */
   fun clearError() {
-    _uiState.value = _uiState.value.copy(errorMsg = null)
+    _errorMsg.value = null
   }
+}
+
+/** Sealed class representing the loading state of notes. */
+private sealed class NotesLoadState {
+  data class Success(val notes: List<Message>) : NotesLoadState()
+
+  data class Error(val message: String) : NotesLoadState()
 }

@@ -20,7 +20,7 @@ Co-author: GPT-5 Codex
  */
 data class SelfNotesUiState(
     val notes: List<Message> = emptyList(),
-    val isLoading: Boolean = true,
+    val isLoading: Boolean = false,
     val errorMsg: String? = null,
     val currentMessage: String = "",
     val isSending: Boolean = false

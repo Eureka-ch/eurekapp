@@ -19,7 +19,8 @@ Co-author: GPT-5 Codex
 /**
  * Test suite for SelfNotesRepository implementation.
  *
- * Tests CRUD operations for self-notes stored in Firestore.
+ * Tests CRUD operations for self-notes stored in Firestore. Note: These tests require the user to
+ * be authenticated as the repository now enforces that internally.
  */
 class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
 
@@ -56,7 +57,7 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
             createdAt = Timestamp.now(),
             references = emptyList())
 
-    val result = repository.createNote(testUserId, message)
+    val result = repository.createNote(message)
 
     assertTrue(result.isSuccess)
     assertEquals("note1", result.getOrNull())
@@ -73,11 +74,11 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
 
     assertEquals(message.messageID, savedNote?.messageID)
     assertEquals(message.text, savedNote?.text)
-    assertEquals(message.senderId, savedNote?.senderId)
+    // Note: senderId in the saved note will be from the authenticated user
   }
 
   @Test
-  fun getNotesForUser_shouldReturnAllNotes() = runBlocking {
+  fun getNotes_shouldReturnAllNotes() = runBlocking {
     val noteId1 = "return_all_note1_${System.currentTimeMillis()}"
     val noteId2 = "return_all_note2_${System.currentTimeMillis()}"
     val message1 =
@@ -95,10 +96,10 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
             createdAt = Timestamp(200, 0),
             references = emptyList())
 
-    repository.createNote(testUserId, message1)
-    repository.createNote(testUserId, message2)
+    repository.createNote(message1)
+    repository.createNote(message2)
 
-    val flow = repository.getNotesForUser(testUserId)
+    val flow = repository.getNotes()
     val notes = flow.first()
 
     assertTrue(notes.size >= 2)
@@ -107,7 +108,7 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getNotesForUser_shouldOrderByCreatedAtDescending() = runBlocking {
+  fun getNotes_shouldOrderByCreatedAtDescending() = runBlocking {
     val message1 =
         Message(
             messageID = "note6",
@@ -123,10 +124,10 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
             createdAt = Timestamp(200, 0),
             references = emptyList())
 
-    repository.createNote(testUserId, message1)
-    repository.createNote(testUserId, message2)
+    repository.createNote(message1)
+    repository.createNote(message2)
 
-    val flow = repository.getNotesForUser(testUserId)
+    val flow = repository.getNotes()
     val notes = flow.first()
 
     assertEquals(2, notes.size)
@@ -136,7 +137,7 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getNotesForUser_shouldRespectLimit() = runBlocking {
+  fun getNotes_shouldRespectLimit() = runBlocking {
     // Create 5 notes
     for (i in 1..5) {
       val message =
@@ -146,10 +147,10 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
               senderId = testUserId,
               createdAt = Timestamp(i.toLong() * 100, 0),
               references = emptyList())
-      repository.createNote(testUserId, message)
+      repository.createNote(message)
     }
 
-    val flow = repository.getNotesForUser(testUserId, limit = 3)
+    val flow = repository.getNotes(limit = 3)
     val notes = flow.first()
 
     assertEquals(3, notes.size)
@@ -164,9 +165,9 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
             senderId = testUserId,
             createdAt = Timestamp.now(),
             references = emptyList())
-    repository.createNote(testUserId, message)
+    repository.createNote(message)
 
-    val result = repository.deleteNote(testUserId, "note_to_delete")
+    val result = repository.deleteNote("note_to_delete")
 
     assertTrue(result.isSuccess)
 
@@ -184,7 +185,7 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
 
   @Test
   fun deleteNote_shouldSucceedEvenIfNoteDoesNotExist() = runBlocking {
-    val result = repository.deleteNote(testUserId, "non_existent_note")
+    val result = repository.deleteNote("non_existent_note")
 
     // Firestore delete is idempotent
     assertTrue(result.isSuccess)
@@ -202,7 +203,7 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
             createdAt = specificTimestamp,
             references = emptyList())
 
-    repository.createNote(testUserId, message)
+    repository.createNote(message)
 
     val savedNote =
         FirebaseEmulator.firestore

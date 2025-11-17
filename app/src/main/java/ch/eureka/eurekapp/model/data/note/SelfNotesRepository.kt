@@ -12,32 +12,35 @@ Co-author : GPT-5
  *
  * Self-notes are personal notes that users write to themselves, stored in Firestore. This
  * repository reuses the [Message] data model from the chat feature to represent individual notes.
+ *
+ * Security: All operations use the currently authenticated user's ID internally to prevent
+ * unauthorized access to other users' notes.
  */
 interface SelfNotesRepository {
   /**
-   * Gets all notes for a specific user with real-time updates.
+   * Gets all notes for the current authenticated user with real-time updates.
    *
-   * @param userId The ID of the user whose notes to retrieve.
    * @param limit Maximum number of notes to retrieve (default: 100).
    * @return Flow emitting list of notes ordered by creation time (newest first).
+   * @throws IllegalStateException if no user is authenticated.
    */
-  fun getNotesForUser(userId: String, limit: Int = 100): Flow<List<Message>>
+  fun getNotes(limit: Int = 100): Flow<List<Message>>
 
   /**
-   * Creates a new note for the user.
+   * Creates a new note for the current authenticated user.
    *
-   * @param userId The ID of the user creating the note.
    * @param message The message object representing the note.
    * @return Result containing the created note ID on success, or error on failure.
+   * @throws IllegalStateException if no user is authenticated.
    */
-  suspend fun createNote(userId: String, message: Message): Result<String>
+  suspend fun createNote(message: Message): Result<String>
 
   /**
-   * Deletes a note for the user.
+   * Deletes a note for the current authenticated user.
    *
-   * @param userId The ID of the user who owns the note.
    * @param noteId The ID of the note to delete.
    * @return Result indicating success or failure.
+   * @throws IllegalStateException if no user is authenticated.
    */
-  suspend fun deleteNote(userId: String, noteId: String): Result<Unit>
+  suspend fun deleteNote(noteId: String): Result<Unit>
 }

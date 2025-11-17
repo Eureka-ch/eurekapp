@@ -6,6 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import ch.eureka.eurekapp.ui.components.MessageInputField
+import ch.eureka.eurekapp.ui.components.MessageInputFieldTestTags
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -39,7 +41,7 @@ class MessageInputFieldTest {
       MessageInputField(message = "", onMessageChange = {}, onSend = {}, isSending = false)
     }
 
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.SEND_BUTTON).assertIsNotEnabled()
+    composeTestRule.onNodeWithTag(MessageInputFieldTestTags.SEND_BUTTON).assertIsNotEnabled()
   }
 
   @Test
@@ -48,7 +50,7 @@ class MessageInputFieldTest {
       MessageInputField(message = "Hello", onMessageChange = {}, onSend = {}, isSending = false)
     }
 
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.SEND_BUTTON).assertIsEnabled()
+    composeTestRule.onNodeWithTag(MessageInputFieldTestTags.SEND_BUTTON).assertIsEnabled()
   }
 
   @Test
@@ -59,7 +61,7 @@ class MessageInputFieldTest {
       MessageInputField(
           message = "", onMessageChange = { changedText = it }, onSend = {}, isSending = false)
     }
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.NOTE_INPUT_FIELD).performTextInput("Hello")
+    composeTestRule.onNodeWithTag(MessageInputFieldTestTags.INPUT_FIELD).performTextInput("Hello")
 
     assert(changedText == "Hello")
   }
@@ -75,7 +77,7 @@ class MessageInputFieldTest {
           onSend = { sendCalled = true },
           isSending = false)
     }
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.SEND_BUTTON).performClick()
+    composeTestRule.onNodeWithTag(MessageInputFieldTestTags.SEND_BUTTON).performClick()
 
     assert(sendCalled)
   }
@@ -93,14 +95,14 @@ class MessageInputFieldTest {
           isSending = false)
     }
 
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.SEND_BUTTON).assertIsNotEnabled()
+    composeTestRule.onNodeWithTag(MessageInputFieldTestTags.SEND_BUTTON).assertIsNotEnabled()
 
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.NOTE_INPUT_FIELD).performTextInput("Test")
+    composeTestRule.onNodeWithTag(MessageInputFieldTestTags.INPUT_FIELD).performTextInput("Test")
     composeTestRule.waitForIdle()
 
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.SEND_BUTTON).assertIsEnabled()
+    composeTestRule.onNodeWithTag(MessageInputFieldTestTags.SEND_BUTTON).assertIsEnabled()
 
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.SEND_BUTTON).performClick()
+    composeTestRule.onNodeWithTag(MessageInputFieldTestTags.SEND_BUTTON).performClick()
 
     assert(sendCalled)
   }

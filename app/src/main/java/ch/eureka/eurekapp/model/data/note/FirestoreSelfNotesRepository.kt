@@ -19,18 +19,25 @@ Co-author : GPT-5
  *
  * Stores user's self-notes in the path: `users/{userId}/selfNotes/{noteId}` Each note is
  * represented as a [Message] object where the `senderId` equals the `userId`.
+ *
+ * Security: All operations use the currently authenticated user's ID internally to prevent
+ * unauthorized access to other users' notes.
  */
 class FirestoreSelfNotesRepository(
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth
 ) : SelfNotesRepository {
 
-  override fun getNotesForUser(userId: String, limit: Int): Flow<List<Message>> = callbackFlow {
+  private fun getCurrentUserId(): String {
+    return auth.currentUser?.uid
+        ?: throw IllegalStateException("User must be authenticated to access notes")
+  }
+
+  override fun getNotes(limit: Int): Flow<List<Message>> = callbackFlow {
+    val userId = getCurrentUserId()
     val listener =
         firestore
-            .collection(FirestorePaths.USERS)
-            .document(userId)
-            .collection(FirestorePaths.SELF_NOTES)
+            .collection(FirestorePaths.selfNotesPath(userId))
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .limit(limit.toLong())
             .addSnapshotListener { snapshot, error ->
@@ -46,24 +53,14 @@ class FirestoreSelfNotesRepository(
     awaitClose { listener.remove() }
   }
 
-  override suspend fun createNote(userId: String, message: Message): Result<String> = runCatching {
-    firestore
-        .collection(FirestorePaths.USERS)
-        .document(userId)
-        .collection(FirestorePaths.SELF_NOTES)
-        .document(message.messageID)
-        .set(message)
-        .await()
+  override suspend fun createNote(message: Message): Result<String> = runCatching {
+    val userId = getCurrentUserId()
+    firestore.document(FirestorePaths.selfNotePath(userId, message.messageID)).set(message).await()
     message.messageID
   }
 
-  override suspend fun deleteNote(userId: String, noteId: String): Result<Unit> = runCatching {
-    firestore
-        .collection(FirestorePaths.USERS)
-        .document(userId)
-        .collection(FirestorePaths.SELF_NOTES)
-        .document(noteId)
-        .delete()
-        .await()
+  override suspend fun deleteNote(noteId: String): Result<Unit> = runCatching {
+    val userId = getCurrentUserId()
+    firestore.document(FirestorePaths.selfNotePath(userId, noteId)).delete().await()
   }
 }

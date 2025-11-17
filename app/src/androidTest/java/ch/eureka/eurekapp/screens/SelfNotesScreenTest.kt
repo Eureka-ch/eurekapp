@@ -4,8 +4,8 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import ch.eureka.eurekapp.model.data.chat.Message
-import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
-import ch.eureka.eurekapp.screens.subscreens.tasks.MessageInputField
+import ch.eureka.eurekapp.ui.components.MessageInputField
+import ch.eureka.eurekapp.ui.components.MessageInputFieldTestTags
 import ch.eureka.eurekapp.ui.notes.SelfNoteMessageBubble
 import com.google.firebase.Timestamp
 import org.junit.Rule
@@ -43,8 +43,8 @@ class SelfNotesScreenTest {
     }
 
     composeTestRule.onNodeWithText("Write a note to yourself...").assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.NOTE_INPUT_FIELD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.SEND_BUTTON).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MessageInputFieldTestTags.INPUT_FIELD).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MessageInputFieldTestTags.SEND_BUTTON).assertIsDisplayed()
   }
 
   @Test
@@ -65,7 +65,7 @@ class SelfNotesScreenTest {
           placeholder = "Write a note to yourself...")
     }
 
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.SEND_BUTTON).assertIsNotEnabled()
+    composeTestRule.onNodeWithTag(MessageInputFieldTestTags.SEND_BUTTON).assertIsNotEnabled()
   }
 
   @Test
@@ -79,6 +79,6 @@ class SelfNotesScreenTest {
           placeholder = "Write a note to yourself...")
     }
 
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.SEND_BUTTON).assertIsEnabled()
+    composeTestRule.onNodeWithTag(MessageInputFieldTestTags.SEND_BUTTON).assertIsEnabled()
   }
 }
