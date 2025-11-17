@@ -190,7 +190,12 @@ class AutoAssignResultScreenTest {
     }
     composeTestRule.onAllNodesWithText("Accept", substring = true).get(1).performClick()
     composeTestRule.waitForIdle()
-    composeTestRule.waitUntilExactlyOneExists(hasText("Apply"), timeoutMillis = 3000)
+    composeTestRule.waitUntil(timeoutMillis = 3000) {
+      composeTestRule
+          .onAllNodesWithText("Apply", substring = true)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
     composeTestRule.onNodeWithText("Apply", substring = true).performClick()
     composeTestRule.waitForIdle()
     // Wait for either success message or verify assignment was called
