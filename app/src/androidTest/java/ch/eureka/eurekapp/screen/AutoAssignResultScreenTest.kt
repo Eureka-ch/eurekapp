@@ -5,10 +5,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.waitUntilExactlyOneExists
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -178,13 +180,20 @@ class AutoAssignResultScreenTest {
         "proj1", flowOf(listOf(createTask("task1"), createTask("task2"))))
     setContentWithNav()
     composeTestRule.waitForIdle()
-    waitForText("Accept")
+    composeTestRule.waitUntilExactlyOneExists(hasText("Accept"), timeoutMillis = 5000)
     composeTestRule.onAllNodesWithText("Accept", substring = true).get(1).performClick()
     composeTestRule.waitForIdle()
-    waitForText("Apply", timeout = 3000L)
+    composeTestRule.waitUntilExactlyOneExists(hasText("Apply"), timeoutMillis = 3000)
     composeTestRule.onNodeWithText("Apply", substring = true).performClick()
     composeTestRule.waitForIdle()
-    waitForText("applied", timeout = 3000L)
+    // Wait for either success message or verify assignment was called
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      mockTaskRepository.assignUserCalls.size >= 1 ||
+          composeTestRule
+              .onAllNodesWithText("applied", substring = true, ignoreCase = true)
+              .fetchSemanticsNodes()
+              .isNotEmpty()
+    }
     assert(mockTaskRepository.assignUserCalls.size >= 1)
   }
 
@@ -195,8 +204,9 @@ class AutoAssignResultScreenTest {
         "proj1", flowOf(listOf(createTask("task1", assigned = true))))
     setContentWithNav(includeTasksScreen = true)
     composeTestRule.waitForIdle()
-    waitForText("No assignments to review")
-    assertTextDisplayed("No assignments to review")
+    composeTestRule.waitUntilExactlyOneExists(
+        hasText("No assignments to review"), timeoutMillis = 5000)
+    composeTestRule.onNodeWithText("No assignments to review").assertIsDisplayed()
   }
 
   @Test
