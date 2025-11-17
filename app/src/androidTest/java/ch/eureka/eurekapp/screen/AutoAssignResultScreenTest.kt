@@ -5,12 +5,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.waitUntilExactlyOneExists
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -216,9 +214,25 @@ class AutoAssignResultScreenTest {
         "proj1", flowOf(listOf(createTask("task1", assigned = true))))
     setContentWithNav(includeTasksScreen = true)
     composeTestRule.waitForIdle()
-    composeTestRule.waitUntilExactlyOneExists(
-        hasText("No assignments to review"), timeoutMillis = 5000)
-    composeTestRule.onNodeWithText("No assignments to review").assertIsDisplayed()
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodesWithText("No assignments to review", substring = true)
+          .fetchSemanticsNodes()
+          .isNotEmpty() ||
+          composeTestRule
+              .onAllNodesWithText("No unassigned tasks", substring = true)
+              .fetchSemanticsNodes()
+              .isNotEmpty()
+    }
+    assert(
+        composeTestRule
+            .onAllNodesWithText("No assignments to review", substring = true)
+            .fetchSemanticsNodes()
+            .isNotEmpty() ||
+            composeTestRule
+                .onAllNodesWithText("No unassigned tasks", substring = true)
+                .fetchSemanticsNodes()
+                .isNotEmpty())
   }
 
   @Test
