@@ -180,7 +180,14 @@ class AutoAssignResultScreenTest {
         "proj1", flowOf(listOf(createTask("task1"), createTask("task2"))))
     setContentWithNav()
     composeTestRule.waitForIdle()
-    composeTestRule.waitUntilExactlyOneExists(hasText("Accept"), timeoutMillis = 5000)
+    // Wait for at least one "Accept" button (there are multiple: Accept All + individual Accept
+    // buttons)
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodesWithText("Accept", substring = true)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
     composeTestRule.onAllNodesWithText("Accept", substring = true).get(1).performClick()
     composeTestRule.waitForIdle()
     composeTestRule.waitUntilExactlyOneExists(hasText("Apply"), timeoutMillis = 3000)
