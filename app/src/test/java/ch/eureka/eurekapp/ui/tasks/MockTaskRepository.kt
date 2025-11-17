@@ -26,6 +26,9 @@ class MockTaskRepository : TaskRepository {
   val createTaskCalls = mutableListOf<Task>()
   val getTasksForCurrentUserCalls = mutableListOf<Unit>()
   val getTasksInProjectCalls = mutableListOf<String>()
+  val assignUserCalls = mutableListOf<Triple<String, String, String>>() // projectId, taskId, userId
+  var assignUserCallCount: Int = 0
+    get() = assignUserCalls.size
 
   /** Add a task that can be retrieved by getTaskById */
   fun addTask(task: Task) {
@@ -63,6 +66,7 @@ class MockTaskRepository : TaskRepository {
     createTaskCalls.clear()
     getTasksForCurrentUserCalls.clear()
     getTasksInProjectCalls.clear()
+    assignUserCalls.clear()
   }
 
   override fun getTaskById(projectId: String, taskId: String): Flow<Task?> {
@@ -100,8 +104,10 @@ class MockTaskRepository : TaskRepository {
   override suspend fun deleteTask(projectId: String, taskId: String): Result<Unit> =
       Result.success(Unit)
 
-  override suspend fun assignUser(projectId: String, taskId: String, userId: String): Result<Unit> =
-      Result.success(Unit)
+  override suspend fun assignUser(projectId: String, taskId: String, userId: String): Result<Unit> {
+    assignUserCalls.add(Triple(projectId, taskId, userId))
+    return Result.success(Unit)
+  }
 
   override suspend fun unassignUser(
       projectId: String,

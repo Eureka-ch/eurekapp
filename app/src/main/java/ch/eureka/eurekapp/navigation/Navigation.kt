@@ -22,6 +22,7 @@ import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScree
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingTranscriptViewScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.creation.CreateProjectScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitationSubscreen
+import ch.eureka.eurekapp.screens.subscreens.tasks.AutoAssignResultScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
@@ -201,12 +202,18 @@ fun NavigationMenu() {
                     onCreateTaskClick = {
                       navigationController.navigate(Route.TasksSection.CreateTask)
                     },
+                    onAutoAssignClick = {
+                      navigationController.navigate(Route.TasksSection.AutoTaskAssignment)
+                    },
                     onTaskClick = { taskId, projectId ->
                       navigationController.navigate(
                           Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
                     })
               }
               composable<Route.TasksSection.CreateTask> { CreateTaskScreen(navigationController) }
+              composable<Route.TasksSection.AutoTaskAssignment> {
+                AutoAssignResultScreen(navigationController)
+              }
 
               composable<Route.TasksSection.EditTask> { backStackEntry ->
                 val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.EditTask>()
