@@ -288,9 +288,24 @@ tasks.register("jacocoTestReport", JacocoReport::class) {
     sourceDirectories.setFrom(files(mainSrc))
     classDirectories.setFrom(files(debugTree))
     executionData.setFrom(fileTree(project.layout.buildDirectory.get()) {
-        include("outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
-        include("outputs/code_coverage/debugAndroidTest/connected/*/coverage.ec")
+        include("outputs/unit_test_code_coverage/**/*.exec")
+        include("outputs/code_coverage/**/*.ec")
     })
+
+    doFirst {
+        val coverageFiles = fileTree(project.layout.buildDirectory.get()) {
+            include("outputs/unit_test_code_coverage/**/*.exec")
+            include("outputs/code_coverage/**/*.ec")
+        }
+        logger.quiet("╔════════════════════════════════════════════════════════════════╗")
+        logger.quiet("║  JaCoCo Coverage Report Generation                            ║")
+        logger.quiet("╠════════════════════════════════════════════════════════════════╣")
+        logger.quiet("║  Found ${coverageFiles.files.size} coverage file(s):                              ║")
+        coverageFiles.files.forEach { file ->
+            logger.quiet("║  - ${file.relativeTo(project.layout.buildDirectory.get().asFile).path}")
+        }
+        logger.quiet("╚════════════════════════════════════════════════════════════════╝")
+    }
 
     doLast {
         val reportFile = reports.xml.outputLocation.asFile.get()
