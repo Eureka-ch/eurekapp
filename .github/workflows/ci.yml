@@ -456,15 +456,28 @@ jobs:
           echo "Reorganizing coverage files from shards..."
           mkdir -p app/build/outputs/code_coverage
           for shard in 0 1 2 3 4 5 6 7; do
-            if [ -d "downloaded-artifacts/shard-$shard/app/build/outputs/code_coverage" ]; then
-              echo "Moving shard-$shard coverage files..."
-              mkdir -p "app/build/outputs/code_coverage/shard-$shard"
-              cp -r "downloaded-artifacts/shard-$shard/app/build/outputs/code_coverage/"* "app/build/outputs/code_coverage/shard-$shard/"
+            echo ""
+            echo "=== Processing shard-$shard ==="
+            if [ -d "downloaded-artifacts/shard-$shard" ]; then
+              echo "Contents of downloaded-artifacts/shard-$shard:"
+              find "downloaded-artifacts/shard-$shard" -name "*.ec" -type f
+
+              if [ -d "downloaded-artifacts/shard-$shard/app/build/outputs/code_coverage" ]; then
+                echo "Moving shard-$shard coverage files..."
+                mkdir -p "app/build/outputs/code_coverage/shard-$shard"
+                cp -rv "downloaded-artifacts/shard-$shard/app/build/outputs/code_coverage/"* "app/build/outputs/code_coverage/shard-$shard/"
+              else
+                echo "Warning: No coverage files found for shard-$shard at expected path"
+              fi
             else
-              echo "Warning: No coverage files found for shard-$shard"
+              echo "Warning: downloaded-artifacts/shard-$shard directory does not exist"
             fi
           done
+          echo ""
           echo "Coverage reorganization complete"
+          echo ""
+          echo "Final structure of app/build/outputs/code_coverage:"
+          ls -R app/build/outputs/code_coverage/ || echo "Directory not found"
 
       - name: Verify downloaded artifacts
         run: |
@@ -486,7 +499,21 @@ jobs:
           ls -la app/build/reports/lint-results-debug.xml 2>/dev/null || echo "Lint report not found"
 
       - name: Generate Coverage Report
-        run: ./gradlew jacocoTestReport
+        run: |
+          echo "About to generate Jacoco report..."
+          echo "Coverage files that Jacoco should find:"
+          echo "Pattern: app/build/outputs/unit_test_code_coverage/**/*.exec"
+          find app/build/outputs/unit_test_code_coverage -name "*.exec" -type f 2>/dev/null || echo "No .exec files"
+          echo ""
+          echo "Pattern: app/build/outputs/code_coverage/**/*.ec"
+          find app/build/outputs/code_coverage -name "*.ec" -type f 2>/dev/null || echo "No .ec files"
+          echo ""
+          echo "Generating report..."
+          ./gradlew jacocoTestReport --info 2>&1 | tee jacoco-output.log
+          echo ""
+          echo "Jacoco report generation complete"
+          echo "Checking if report was generated:"
+          ls -la app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml || echo "Report XML not found"
 
       - name: Upload Coverage Report
         if: always()
