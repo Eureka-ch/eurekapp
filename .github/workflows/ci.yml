@@ -407,58 +407,67 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-0
-          path: app/build/outputs/
+          path: app/build/outputs/shard-0/
 
       - name: Download instrumented test results (Shard 1)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-1
-          path: app/build/outputs/
+          path: app/build/outputs/shard-1/
 
       - name: Download instrumented test results (Shard 2)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-2
-          path: app/build/outputs/
+          path: app/build/outputs/shard-2/
 
       - name: Download instrumented test results (Shard 3)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-3
-          path: app/build/outputs/
+          path: app/build/outputs/shard-3/
 
       - name: Download instrumented test results (Shard 4)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-4
-          path: app/build/outputs/
+          path: app/build/outputs/shard-4/
 
       - name: Download instrumented test results (Shard 5)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-5
-          path: app/build/outputs/
+          path: app/build/outputs/shard-5/
 
       - name: Download instrumented test results (Shard 6)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-6
-          path: app/build/outputs/
+          path: app/build/outputs/shard-6/
 
       - name: Download instrumented test results (Shard 7)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-7
-          path: app/build/outputs/
+          path: app/build/outputs/shard-7/
 
       - name: Verify downloaded artifacts
         run: |
           echo "Checking for downloaded artifacts..."
-          echo "Coverage files:"
-          find app/build -name "*.exec" -o -name "*.ec" || echo "No coverage files found"
-          echo "Compiled classes:"
+          echo ""
+          echo "=== Coverage Files ==="
+          echo "Unit test coverage (.exec):"
+          find app/build -name "*.exec" -type f || echo "No .exec files found"
+          echo ""
+          echo "Instrumented test coverage (.ec):"
+          find app/build -name "*.ec" -type f || echo "No .ec files found"
+          echo ""
+          echo "Total coverage files: $(find app/build -name "*.exec" -o -name "*.ec" | wc -l)"
+          echo ""
+          echo "=== Compiled Classes ==="
           find app/build/tmp/kotlin-classes/debug -type f | head -5 || echo "No compiled classes found"
-          echo "Lint report:"
+          echo ""
+          echo "=== Lint Report ==="
           ls -la app/build/reports/lint-results-debug.xml 2>/dev/null || echo "Lint report not found"
 
       - name: Generate Coverage Report
