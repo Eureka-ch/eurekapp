@@ -2,6 +2,7 @@ package ch.eureka.eurekapp.ui.meeting
 
 import android.content.Context
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -15,8 +16,11 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -32,13 +36,29 @@ class MeetingScreenOfflineTest {
 
   private lateinit var mockConnectivityObserver: MockConnectivityObserver
   private lateinit var viewModel: MeetingViewModel
+  private lateinit var mockRepository: MeetingRepositoryMock
   private val testProjectId = "testProject123"
+  private val testUserId = "testUser123"
 
   @Before
   fun setUp() {
+    // Sign in a test user
+    runBlocking {
+      try {
+        FirebaseAuth.getInstance().signInAnonymously().await()
+      } catch (e: Exception) {
+        // Ignore if already signed in
+      }
+    }
+
     mockConnectivityObserver =
         MockConnectivityObserver(InstrumentationRegistry.getInstrumentation().targetContext)
-    viewModel = MeetingViewModel(connectivityObserver = mockConnectivityObserver)
+    mockRepository = MeetingRepositoryMock()
+    viewModel =
+        MeetingViewModel(
+            repository = mockRepository,
+            getCurrentUserId = { testUserId },
+            connectivityObserver = mockConnectivityObserver)
   }
 
   @After
@@ -109,7 +129,7 @@ class MeetingScreenOfflineTest {
             datetime = Timestamp.now(),
             createdBy = "user1")
 
-    viewModel.setTestMeetings(listOf(meeting))
+    mockRepository.setMeetings(listOf(meeting))
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -187,36 +207,29 @@ class MeetingScreenOfflineTest {
             title = "Open Vote Meeting",
             status = MeetingStatus.OPEN_TO_VOTES,
             duration = 60,
-            createdBy = "user1")
+            createdBy = testUserId)
 
-    viewModel.setTestMeetings(listOf(meeting))
-    viewModel.setUserId("user1")
+    mockRepository.setMeetings(listOf(meeting))
     mockConnectivityObserver.setConnected(false)
-
-    var voteClicked = false
 
     composeTestRule.setContent {
       MeetingScreen(
           config =
               MeetingScreenConfig(
-                  projectId = testProjectId,
-                  onCreateMeeting = {},
-                  onMeetingClick = { _, _ -> },
-                  onVoteForMeetingProposalClick = { _, _ -> voteClicked = true }),
+                  projectId = testProjectId, onCreateMeeting = {}, onMeetingClick = { _, _ -> }),
           meetingViewModel = viewModel)
     }
 
     composeTestRule.waitForIdle()
 
-    // Try to click vote button
+    // Verify meeting is displayed
+    composeTestRule.onNodeWithText("Open Vote Meeting").assertIsDisplayed()
+
+    // Verify vote button is displayed but disabled when offline
     composeTestRule
         .onNodeWithTag(MeetingScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON)
-        .performClick()
-
-    composeTestRule.waitForIdle()
-
-    // Verify callback was not triggered
-    assert(!voteClicked) { "Vote should not be triggered when offline" }
+        .assertIsDisplayed()
+        .assertIsNotEnabled()
   }
 
   @Test
@@ -233,7 +246,7 @@ class MeetingScreenOfflineTest {
             datetime = Timestamp.now(),
             createdBy = "user1")
 
-    viewModel.setTestMeetings(listOf(meeting))
+    mockRepository.setMeetings(listOf(meeting))
     mockConnectivityObserver.setConnected(false)
 
     var navigatedMeetingId: String? = null
@@ -253,8 +266,6 @@ class MeetingScreenOfflineTest {
     }
 
     composeTestRule.waitForIdle()
-
-    Thread.sleep(1000)
 
     // Click on the meeting card
     composeTestRule.onNodeWithText("Navigable Meeting").performClick()
