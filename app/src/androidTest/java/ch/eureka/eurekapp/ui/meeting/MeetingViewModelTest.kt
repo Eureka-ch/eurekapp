@@ -1,6 +1,8 @@
-/* Portions of this file were written with the help of Gemini.*/
+/* Portions of this file were written with the help of Gemini and Grok.*/
 package ch.eureka.eurekapp.ui.meeting
 
+import androidx.test.platform.app.InstrumentationRegistry
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.map.Location
 import ch.eureka.eurekapp.model.data.meeting.*
 import com.google.firebase.Timestamp
@@ -22,7 +24,7 @@ import org.junit.Test
 /**
  * Test suite for MeetingViewModel
  *
- * Note : some tests where generated with Gemini and chatGPT
+ * Note : some tests where generated with Gemini, chatGPT, and Grok
  */
 @ExperimentalCoroutinesApi
 class MeetingViewModelTest {
@@ -47,8 +49,10 @@ class MeetingViewModelTest {
   @Before
   fun setup() {
     Dispatchers.setMain(testDispatcher)
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+    ConnectivityObserverProvider.initialize(context)
     repositoryMock = MeetingRepositoryMockViewmodel()
-    viewModel = MeetingViewModel(repositoryMock) { currentUserId }
+    viewModel = MeetingViewModel(repositoryMock, { currentUserId })
   }
 
   private fun createDummyMeeting(

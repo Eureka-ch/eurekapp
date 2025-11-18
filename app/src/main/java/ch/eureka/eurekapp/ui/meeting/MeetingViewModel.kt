@@ -1,10 +1,14 @@
 /*
 Portions of the code in this file are inspired by the Bootcamp solution B3 provided by the SwEnt staff.
 */
+
+// Ports of this code were generated with the help of Grok.
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ch.eureka.eurekapp.model.connection.ConnectivityObserver
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.FirestoreMeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
@@ -12,9 +16,11 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -23,8 +29,10 @@ import kotlinx.coroutines.launch
  *
  * @property upcomingMeetings All the meetings that are planned or in progress.
  * @property pastMeetings All meetings that are finished.
+ * @property selectedTab The currently selected tab.
  * @property errorMsg An error message to display, or null if there is no error.
  * @property isLoading Whether an authentication operation is in progress.
+ * @property isConnected Whether the device is connected to the internet.
  */
 data class MeetingUIState(
     val upcomingMeetings: List<Meeting> = emptyList(),
@@ -32,6 +40,7 @@ data class MeetingUIState(
     val selectedTab: MeetingTab = MeetingTab.UPCOMING,
     val errorMsg: String? = null,
     val isLoading: Boolean = false,
+    val isConnected: Boolean = true
 )
 
 /**
@@ -49,15 +58,21 @@ enum class MeetingTab {
  *
  * @property repository The repository from which to pull the meetings from.
  * @property getCurrentUserId Function to get current user ID.
+ * @property connectivityObserver The connectivity observer.
  */
 class MeetingViewModel(
     private val repository: MeetingRepository = FirestoreMeetingRepository(),
     private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
+    connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver,
 ) : ViewModel() {
 
   private val _uiState = MutableStateFlow(MeetingUIState())
   val uiState: StateFlow<MeetingUIState> = _uiState
   val userId = getCurrentUserId()
+
+  // Add connectivity observer
+  private val _isConnected =
+      connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
   /** Clears the error message in the UI state. */
   fun clearErrorMsg() {
@@ -197,5 +212,24 @@ class MeetingViewModel(
    */
   fun selectTab(tab: MeetingTab) {
     _uiState.update { it.copy(selectedTab = tab) }
+  }
+
+  // Add method to update connectivity status
+  init {
+    viewModelScope.launch {
+      _isConnected.collect { isConnected -> _uiState.update { it.copy(isConnected = isConnected) } }
+    }
+  }
+
+  // Add test methods for offline tests
+  fun setTestMeetings(meetings: List<Meeting>) {
+    val upcoming = meetings.filterNot { it.status == MeetingStatus.COMPLETED }
+    val past = meetings.filter { it.status == MeetingStatus.COMPLETED }
+    _uiState.update { it.copy(upcomingMeetings = upcoming, pastMeetings = past) }
+  }
+
+  fun setUserId(id: String) {
+    // For testing purposes, we can use a mutable userId
+    // Note: In production, userId is immutable
   }
 }

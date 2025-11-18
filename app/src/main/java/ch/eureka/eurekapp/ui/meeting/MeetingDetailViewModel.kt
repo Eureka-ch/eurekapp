@@ -1,11 +1,14 @@
 /*
 Note: This file was co-authored by Claude Code.
+Note: This file was co-authored by Grok.
 Portions of the code in this file are inspired by the Bootcamp solution B3 provided by the SwEnt staff.
 */
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ch.eureka.eurekapp.model.connection.ConnectivityObserver
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
@@ -35,6 +38,7 @@ import kotlinx.coroutines.launch
  * @property editDuration The duration being edited.
  * @property updateSuccess Whether the meeting was successfully updated.
  * @property isSaving Whether a save operation is in progress.
+ * @property isConnected Whether the device is connected to the internet.
  */
 data class MeetingDetailUIState(
     val meeting: Meeting? = null,
@@ -51,6 +55,7 @@ data class MeetingDetailUIState(
     val hasTouchedTitle: Boolean = false,
     val hasTouchedDateTime: Boolean = false,
     val hasTouchedDuration: Boolean = false,
+    val isConnected: Boolean = true
 )
 
 /**
@@ -62,11 +67,13 @@ data class MeetingDetailUIState(
  * @property projectId The ID of the project containing the meeting.
  * @property meetingId The ID of the meeting to display.
  * @property repository The repository for meeting data operations.
+ * @property connectivityObserver The connectivity observer.
  */
 class MeetingDetailViewModel(
     private val projectId: String,
     private val meetingId: String,
     private val repository: MeetingRepository = FirestoreRepositoriesProvider.meetingRepository,
+    connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver,
 ) : ViewModel() {
 
   private val _deleteSuccess = MutableStateFlow(false)
@@ -80,6 +87,13 @@ class MeetingDetailViewModel(
   private val _hasTouchedTitle = MutableStateFlow(false)
   private val _hasTouchedDateTime = MutableStateFlow(false)
   private val _hasTouchedDuration = MutableStateFlow(false)
+
+  // Add connectivity observer
+  private val _isConnected =
+      connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
+  // Add test meeting for offline tests
+  private val _testMeeting = MutableStateFlow<Meeting?>(null)
 
   /**
    * Validates that all required fields of a meeting are valid.
@@ -101,64 +115,6 @@ class MeetingDetailViewModel(
     }
   }
 
-  /**
-   * UI state combining meeting data, participants, and operation states.
-   *
-   * Follows the project's Flow pattern: declarative state initialization in init block using
-   * stateIn() with WhileSubscribed strategy for automatic lifecycle management.
-   *
-   * Validates all meeting fields before displaying - if any required field is invalid, shows an
-   * error message instead of displaying potentially corrupted data.
-   */
-  val uiState: StateFlow<MeetingDetailUIState> =
-      combine(
-              repository.getMeetingById(projectId, meetingId),
-              repository.getParticipants(projectId, meetingId),
-              combine(_deleteSuccess, _errorMsg, _isEditMode, _editTitle, _editDateTime) {
-                  deleteSuccess,
-                  errorMsg,
-                  isEditMode,
-                  editTitle,
-                  editDateTime ->
-                EditState(deleteSuccess, errorMsg, isEditMode, editTitle, editDateTime)
-              },
-              combine(_editDuration, _updateSuccess, _isSaving) { duration, success, saving ->
-                SaveState(duration, success, saving)
-              },
-              combine(_hasTouchedTitle, _hasTouchedDateTime, _hasTouchedDuration) {
-                  title,
-                  dateTime,
-                  duration ->
-                TouchState(title, dateTime, duration)
-              }) { meeting, participants, editState, saveState, touchState ->
-                val validationError = validateMeeting(meeting)
-                MeetingDetailUIState(
-                    meeting = if (validationError == null) meeting else null,
-                    participants = participants,
-                    isLoading = false,
-                    errorMsg = editState.errorMsg ?: validationError,
-                    deleteSuccess = editState.deleteSuccess,
-                    isEditMode = editState.isEditMode,
-                    editTitle = editState.editTitle,
-                    editDateTime = editState.editDateTime,
-                    editDuration = saveState.editDuration,
-                    updateSuccess = saveState.updateSuccess,
-                    isSaving = saveState.isSaving,
-                    hasTouchedTitle = touchState.hasTouchedTitle,
-                    hasTouchedDateTime = touchState.hasTouchedDateTime,
-                    hasTouchedDuration = touchState.hasTouchedDuration)
-              }
-          .onStart { emit(MeetingDetailUIState(isLoading = true)) }
-          .catch { e ->
-            emit(
-                MeetingDetailUIState(
-                    isLoading = false, errorMsg = e.message ?: "Failed to load meeting details"))
-          }
-          .stateIn(
-              scope = viewModelScope,
-              started = SharingStarted.WhileSubscribed(5000),
-              initialValue = MeetingDetailUIState(isLoading = true))
-
   private data class EditState(
       val deleteSuccess: Boolean,
       val errorMsg: String?,
@@ -178,6 +134,80 @@ class MeetingDetailViewModel(
       val hasTouchedDateTime: Boolean,
       val hasTouchedDuration: Boolean
   )
+
+  private data class CombinedState(
+      val meeting: Meeting?,
+      val participants: List<Participant>,
+      val editState: EditState,
+      val saveState: SaveState,
+      val touchState: TouchState
+  )
+
+  /**
+   * UI state combining meeting data, participants, and operation states.
+   *
+   * Follows the project's Flow pattern: declarative state initialization in init block using
+   * stateIn() with WhileSubscribed strategy for automatic lifecycle management.
+   *
+   * Validates all meeting fields before displaying - if any required field is invalid, shows an
+   * error message instead of displaying potentially corrupted data.
+   */
+  val uiState: StateFlow<MeetingDetailUIState> =
+      combine(
+              combine(
+                  _testMeeting.combine(repository.getMeetingById(projectId, meetingId)) { test, real
+                    ->
+                    test ?: real
+                  },
+                  repository.getParticipants(projectId, meetingId),
+                  combine(_deleteSuccess, _errorMsg, _isEditMode, _editTitle, _editDateTime) {
+                      deleteSuccess,
+                      errorMsg,
+                      isEditMode,
+                      editTitle,
+                      editDateTime ->
+                    EditState(deleteSuccess, errorMsg, isEditMode, editTitle, editDateTime)
+                  },
+                  combine(_editDuration, _updateSuccess, _isSaving) { duration, success, saving ->
+                    SaveState(duration, success, saving)
+                  },
+                  combine(_hasTouchedTitle, _hasTouchedDateTime, _hasTouchedDuration) {
+                      title,
+                      dateTime,
+                      duration ->
+                    TouchState(title, dateTime, duration)
+                  }) { meeting, participants, editState, saveState, touchState ->
+                    CombinedState(meeting, participants, editState, saveState, touchState)
+                  },
+              _isConnected) { combined, isConnected ->
+                val validationError = validateMeeting(combined.meeting)
+                MeetingDetailUIState(
+                    meeting = if (validationError == null) combined.meeting else null,
+                    participants = combined.participants,
+                    isLoading = false,
+                    errorMsg = combined.editState.errorMsg ?: validationError,
+                    deleteSuccess = combined.editState.deleteSuccess,
+                    isEditMode = combined.editState.isEditMode,
+                    editTitle = combined.editState.editTitle,
+                    editDateTime = combined.editState.editDateTime,
+                    editDuration = combined.saveState.editDuration,
+                    updateSuccess = combined.saveState.updateSuccess,
+                    isSaving = combined.saveState.isSaving,
+                    hasTouchedTitle = combined.touchState.hasTouchedTitle,
+                    hasTouchedDateTime = combined.touchState.hasTouchedDateTime,
+                    hasTouchedDuration = combined.touchState.hasTouchedDuration,
+                    isConnected = isConnected)
+              }
+          .onStart { emit(MeetingDetailUIState(isLoading = true)) }
+          .catch { e ->
+            emit(
+                MeetingDetailUIState(
+                    isLoading = false, errorMsg = e.message ?: "Failed to load meeting details"))
+          }
+          .stateIn(
+              scope = viewModelScope,
+              started = SharingStarted.WhileSubscribed(5000),
+              initialValue = MeetingDetailUIState(isLoading = true))
 
   /** Clears the error message in the UI state. */
   fun clearErrorMsg() {
@@ -330,5 +360,10 @@ class MeetingDetailViewModel(
   /** Clear the update success flag. */
   fun clearUpdateSuccess() {
     _updateSuccess.value = false
+  }
+
+  // Add test method for offline tests
+  fun setTestMeeting(meeting: Meeting) {
+    _testMeeting.value = meeting
   }
 }

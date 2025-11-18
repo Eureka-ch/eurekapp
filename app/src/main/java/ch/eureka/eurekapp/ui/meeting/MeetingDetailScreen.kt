@@ -54,6 +54,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -79,8 +80,8 @@ import java.time.ZoneId
  *
  * Provides semantic identifiers for UI testing with Compose UI Test framework. Each constant
  * represents a unique testTag applied to composables in MeetingDetailScreen, enabling reliable and
- * maintainable UI test assertions. Note :This file was partially written by ChatGPT (GPT-5)
- * Co-author : GPT-5
+ * maintainable UI test assertions. Note :This file was partially written by ChatGPT (GPT-5) and
+ * Grok Co-author : GPT-5 Co-author : Grok
  */
 object MeetingDetailScreenTestTags {
   const val MEETING_DETAIL_SCREEN = "MeetingDetailScreen"
@@ -112,6 +113,8 @@ object MeetingDetailScreenTestTags {
   const val EDIT_BUTTON = "EditButton"
   const val SAVE_BUTTON = "SaveButton"
   const val CANCEL_EDIT_BUTTON = "CancelEditButton"
+  const val OFFLINE_MESSAGE = "offlineMessage"
+  const val CONTENT_COLUMN = "ContentColumn"
 }
 
 /**
@@ -238,7 +241,8 @@ fun MeetingDetailScreen(
                         onTouchTitle = viewModel::touchTitle,
                         onTouchDateTime = viewModel::touchDateTime,
                         onTouchDuration = viewModel::touchDuration,
-                        onNavigateToMeeting = actionsConfig.onNavigateToMeeting))
+                        onNavigateToMeeting = actionsConfig.onNavigateToMeeting),
+                isConnected = uiState.isConnected)
           } ?: ErrorScreen(message = uiState.errorMsg ?: "Meeting not found")
         }
       })
@@ -378,6 +382,7 @@ data class ActionButtonsConfig(
  * @param editConfig Configuration for edit mode state.
  * @param actionsConfig Actions that can be executed by buttons in the detail content.
  * @param modifier Modifier to be applied to the root composable.
+ * @param isConnected Whether the device is connected to the internet.
  */
 @Composable
 private fun MeetingDetailContent(
@@ -386,9 +391,11 @@ private fun MeetingDetailContent(
     editConfig: EditConfig,
     actionsConfig: MeetingDetailContentActionsConfig,
     modifier: Modifier = Modifier,
+    isConnected: Boolean = true,
 ) {
   LazyColumn(
-      modifier = Modifier.fillMaxSize().then(modifier),
+      modifier =
+          Modifier.fillMaxSize().then(modifier).testTag(MeetingDetailScreenTestTags.CONTENT_COLUMN),
       contentPadding = PaddingValues(16.dp),
       verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item { MeetingHeader(meeting = meeting) }
@@ -426,7 +433,8 @@ private fun MeetingDetailContent(
             EditModeButtons(
                 onSave = actionsConfig.onSaveMeeting,
                 onCancel = actionsConfig.onCancelEdit,
-                isSaving = editConfig.isSaving)
+                isSaving = editConfig.isSaving,
+                isConnected = isConnected)
           } else {
             ActionButtonsSection(
                 meeting = meeting,
@@ -440,11 +448,24 @@ private fun MeetingDetailContent(
                         onEditMeeting = actionsConfig.onEditMeeting,
                         onNavigateToMeeting = actionsConfig.onNavigateToMeeting,
                     ),
+                isConnected = isConnected,
             )
           }
         }
 
         item { Spacer(modifier = Modifier.height(16.dp)) }
+
+        item {
+          if (!isConnected) {
+            Text(
+                text =
+                    "You are offline. Editing meetings is unavailable to prevent sync conflicts.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
+                modifier =
+                    Modifier.padding(16.dp).testTag(MeetingDetailScreenTestTags.OFFLINE_MESSAGE))
+          }
+        }
       }
 }
 
@@ -930,12 +951,15 @@ private fun AttachmentItem(attachmentUrl: String) {
  *
  * @param meeting The meeting for which to display action buttons.
  * @param actionsConfig Configuration for action button callbacks.
+ * @param isConnected Whether the device is connected to the internet.
  */
 @Composable
 private fun ActionButtonsSection(
     meeting: Meeting,
     actionsConfig: ActionButtonsConfig,
+    isConnected: Boolean = true,
 ) {
+  val context = LocalContext.current
   Column(
       modifier =
           Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.ACTION_BUTTONS_SECTION),
@@ -951,10 +975,22 @@ private fun ActionButtonsSection(
           MeetingStatus.IN_PROGRESS -> {
             if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
               Button(
-                  onClick = { actionsConfig.onJoinMeeting(meeting.link) },
+                  onClick = {
+                    if (isConnected) {
+                      actionsConfig.onJoinMeeting(meeting.link)
+                    } else {
+                      Toast.makeText(
+                              context,
+                              "Joining meeting is unavailable offline.",
+                              Toast.LENGTH_SHORT)
+                          .show()
+                    }
+                  },
+                  enabled = isConnected,
                   modifier =
                       Modifier.fillMaxWidth()
-                          .testTag(MeetingDetailScreenTestTags.JOIN_MEETING_BUTTON)) {
+                          .testTag(MeetingDetailScreenTestTags.JOIN_MEETING_BUTTON)
+                          .alpha(if (isConnected) 1f else 0.6f)) {
                     Icon(imageVector = Icons.Default.VideoCall, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Join Meeting")
@@ -962,7 +998,17 @@ private fun ActionButtonsSection(
             }
             if (meeting.format == MeetingFormat.IN_PERSON && meeting.location != null) {
               Button(
-                  onClick = actionsConfig.onNavigateToMeeting, modifier = Modifier.fillMaxWidth()) {
+                  onClick = {
+                    if (isConnected) {
+                      actionsConfig.onNavigateToMeeting()
+                    } else {
+                      Toast.makeText(
+                              context, "Navigation is unavailable offline.", Toast.LENGTH_SHORT)
+                          .show()
+                    }
+                  },
+                  enabled = isConnected,
+                  modifier = Modifier.fillMaxWidth().alpha(if (isConnected) 1f else 0.6f)) {
                     Icon(
                         imageVector = Icons.Default.Place,
                         contentDescription = stringResource(R.string.location_icon))
@@ -971,18 +1017,40 @@ private fun ActionButtonsSection(
                   }
             }
             OutlinedButton(
-                onClick = { actionsConfig.onRecordMeeting(meeting.projectId, meeting.meetingID) },
+                onClick = {
+                  if (isConnected) {
+                    actionsConfig.onRecordMeeting(meeting.projectId, meeting.meetingID)
+                  } else {
+                    Toast.makeText(context, "Recording is unavailable offline.", Toast.LENGTH_SHORT)
+                        .show()
+                  }
+                },
+                enabled = isConnected,
                 modifier =
-                    Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.RECORD_BUTTON)) {
+                    Modifier.fillMaxWidth()
+                        .testTag(MeetingDetailScreenTestTags.RECORD_BUTTON)
+                        .alpha(if (isConnected) 1f else 0.6f)) {
                   Text("Start Recording")
                 }
           }
           MeetingStatus.COMPLETED -> {
             Button(
-                onClick = { actionsConfig.onViewTranscript(meeting.projectId, meeting.meetingID) },
+                onClick = {
+                  if (isConnected) {
+                    actionsConfig.onViewTranscript(meeting.projectId, meeting.meetingID)
+                  } else {
+                    Toast.makeText(
+                            context,
+                            "Viewing transcript is unavailable offline.",
+                            Toast.LENGTH_SHORT)
+                        .show()
+                  }
+                },
+                enabled = isConnected,
                 modifier =
                     Modifier.fillMaxWidth()
-                        .testTag(MeetingDetailScreenTestTags.VIEW_TRANSCRIPT_BUTTON)) {
+                        .testTag(MeetingDetailScreenTestTags.VIEW_TRANSCRIPT_BUTTON)
+                        .alpha(if (isConnected) 1f else 0.6f)) {
                   Icon(imageVector = Icons.Default.Description, contentDescription = null)
                   Spacer(modifier = Modifier.width(8.dp))
                   Text("View Transcript")
@@ -991,10 +1059,22 @@ private fun ActionButtonsSection(
           MeetingStatus.OPEN_TO_VOTES -> {
 
             Button(
-                onClick = actionsConfig.onVoteForMeetingProposals,
+                onClick = {
+                  if (isConnected) {
+                    actionsConfig.onVoteForMeetingProposals()
+                  } else {
+                    Toast.makeText(
+                            context,
+                            "Voting is unavailable offline to prevent sync conflicts.",
+                            Toast.LENGTH_SHORT)
+                        .show()
+                  }
+                },
+                enabled = isConnected,
                 modifier =
                     Modifier.fillMaxWidth()
-                        .testTag(MeetingDetailScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON)) {
+                        .testTag(MeetingDetailScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON)
+                        .alpha(if (isConnected) 1f else 0.6f)) {
                   Icon(
                       imageVector = Icons.Default.HowToVote,
                       contentDescription = "Vote for meeting proposal")
@@ -1006,14 +1086,40 @@ private fun ActionButtonsSection(
 
         // Edit button
         OutlinedButton(
-            onClick = actionsConfig.onEditMeeting,
-            modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.EDIT_BUTTON)) {
+            onClick = {
+              if (isConnected) {
+                actionsConfig.onEditMeeting()
+              } else {
+                Toast.makeText(
+                        context,
+                        "Meeting editing is unavailable offline to prevent sync conflicts.",
+                        Toast.LENGTH_SHORT)
+                    .show()
+              }
+            },
+            enabled = isConnected,
+            modifier =
+                Modifier.fillMaxWidth()
+                    .testTag(MeetingDetailScreenTestTags.EDIT_BUTTON)
+                    .alpha(if (isConnected) 1f else 0.6f)) {
               Text("Edit Meeting")
             }
 
         OutlinedButton(
-            onClick = actionsConfig.onDeleteMeeting,
-            modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.DELETE_BUTTON),
+            onClick = {
+              if (isConnected) {
+                actionsConfig.onDeleteMeeting()
+              } else {
+                Toast.makeText(
+                        context, "Deleting meeting is unavailable offline.", Toast.LENGTH_SHORT)
+                    .show()
+              }
+            },
+            enabled = isConnected,
+            modifier =
+                Modifier.fillMaxWidth()
+                    .testTag(MeetingDetailScreenTestTags.DELETE_BUTTON)
+                    .alpha(if (isConnected) 1f else 0.6f),
             colors =
                 ButtonDefaults.outlinedButtonColors(
                     contentColor = MaterialTheme.colorScheme.error)) {
@@ -1030,9 +1136,16 @@ private fun ActionButtonsSection(
  * @param onSave Callback invoked when user clicks save button.
  * @param onCancel Callback invoked when user clicks cancel button.
  * @param isSaving Whether a save operation is in progress.
+ * @param isConnected Whether the device is connected.
  */
 @Composable
-private fun EditModeButtons(onSave: () -> Unit, onCancel: () -> Unit, isSaving: Boolean) {
+private fun EditModeButtons(
+    onSave: () -> Unit,
+    onCancel: () -> Unit,
+    isSaving: Boolean,
+    isConnected: Boolean
+) {
+  val context = LocalContext.current
   Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
     Text(
         text = "Edit Mode",
@@ -1040,9 +1153,19 @@ private fun EditModeButtons(onSave: () -> Unit, onCancel: () -> Unit, isSaving: 
         fontWeight = FontWeight.SemiBold)
 
     Button(
-        onClick = onSave,
+        onClick = {
+          if (isConnected) {
+            onSave()
+          } else {
+            Toast.makeText(
+                    context,
+                    "Saving changes is unavailable offline to prevent sync conflicts.",
+                    Toast.LENGTH_SHORT)
+                .show()
+          }
+        },
         modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.SAVE_BUTTON),
-        enabled = !isSaving) {
+        enabled = !isSaving && isConnected) {
           if (isSaving) {
             CircularProgressIndicator(
                 modifier = Modifier.size(20.dp), color = MaterialTheme.colorScheme.onPrimary)

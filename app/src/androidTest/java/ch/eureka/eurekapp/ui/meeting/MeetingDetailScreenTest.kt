@@ -1,5 +1,5 @@
 /*
- * Note: This file was co-authored by Claude Code and Gemini
+ * Note: This file was co-authored by Claude Code, Gemini, and Grok
  */
 
 package ch.eureka.eurekapp.ui.meeting
@@ -11,6 +11,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.test.platform.app.InstrumentationRegistry
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
@@ -21,6 +23,7 @@ import java.util.Date
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -44,6 +47,12 @@ class MeetingDetailScreenTest {
   private val participantsFlow = MutableStateFlow<List<Participant>>(emptyList())
   private var deleteResult = Result.success(Unit)
   private lateinit var viewModel: MeetingDetailViewModel
+
+  @Before
+  fun setUp() {
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+    ConnectivityObserverProvider.initialize(context)
+  }
 
   private val repositoryMock =
       object : MeetingRepositoryMock() {
