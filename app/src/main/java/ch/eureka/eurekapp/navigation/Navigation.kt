@@ -217,7 +217,7 @@ fun NavigationMenu() {
               // Meetings section
               composable<Route.MeetingsSection.Meetings> {
                 MeetingScreen(
-                    MeetingScreenConfig(
+                    config = MeetingScreenConfig(
                         projectId = testProjectId,
                         onCreateMeeting = {
                           navigationController.navigate(
