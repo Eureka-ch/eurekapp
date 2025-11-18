@@ -292,21 +292,6 @@ tasks.register("jacocoTestReport", JacocoReport::class) {
         include("outputs/code_coverage/**/*.ec")
     })
 
-    doFirst {
-        val coverageFiles = fileTree(project.layout.buildDirectory.get()) {
-            include("outputs/unit_test_code_coverage/**/*.exec")
-            include("outputs/code_coverage/**/*.ec")
-        }
-        logger.quiet("╔════════════════════════════════════════════════════════════════╗")
-        logger.quiet("║  JaCoCo Coverage Report Generation                            ║")
-        logger.quiet("╠════════════════════════════════════════════════════════════════╣")
-        logger.quiet("║  Found ${coverageFiles.files.size} coverage file(s):                              ║")
-        coverageFiles.files.forEach { file ->
-            logger.quiet("║  - ${file.relativeTo(project.layout.buildDirectory.get().asFile).path}")
-        }
-        logger.quiet("╚════════════════════════════════════════════════════════════════╝")
-    }
-
     doLast {
         val reportFile = reports.xml.outputLocation.asFile.get()
         val newContent = reportFile.readText().replace("<line[^>]+nr=\"65535\"[^>]*>".toRegex(), "")
