@@ -163,4 +163,44 @@ class NumberFieldConfigurationTest {
     assertNotNull(updatedType)
     assertEquals(0, updatedType?.decimals)
   }
+
+  @Test
+  fun numberFieldConfiguration_withInitialMin_displays() {
+    composeTestRule.setContent {
+      NumberFieldConfiguration(
+          fieldType = FieldType.Number(min = 5.0), onUpdate = {}, enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag("number_min").assertIsDisplayed()
+  }
+
+  @Test
+  fun numberFieldConfiguration_withInitialMax_displays() {
+    composeTestRule.setContent {
+      NumberFieldConfiguration(
+          fieldType = FieldType.Number(max = 100.0), onUpdate = {}, enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag("number_max").assertIsDisplayed()
+  }
+
+  @Test
+  fun numberFieldConfiguration_withInitialStep_displays() {
+    composeTestRule.setContent {
+      NumberFieldConfiguration(
+          fieldType = FieldType.Number(step = 0.1), onUpdate = {}, enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag("number_step").assertIsDisplayed()
+  }
+
+  @Test
+  fun numberFieldConfiguration_withInitialUnit_displays() {
+    composeTestRule.setContent {
+      NumberFieldConfiguration(
+          fieldType = FieldType.Number(unit = "meters"), onUpdate = {}, enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag("number_unit").assertIsDisplayed()
+  }
 }

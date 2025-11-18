@@ -125,4 +125,47 @@ class DateFieldConfigurationTest {
     assertNotNull(updatedType)
     assertFalse(updatedType?.includeTime == true)
   }
+
+  @Test
+  fun dateFieldConfiguration_withInitialMinDate_displays() {
+    composeTestRule.setContent {
+      DateFieldConfiguration(
+          fieldType = FieldType.Date(minDate = "2025-01-01"), onUpdate = {}, enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag("date_min").assertIsDisplayed()
+  }
+
+  @Test
+  fun dateFieldConfiguration_withInitialMaxDate_displays() {
+    composeTestRule.setContent {
+      DateFieldConfiguration(
+          fieldType = FieldType.Date(maxDate = "2025-12-31"), onUpdate = {}, enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag("date_max").assertIsDisplayed()
+  }
+
+  @Test
+  fun dateFieldConfiguration_withBothMinAndMaxDates_displays() {
+    composeTestRule.setContent {
+      DateFieldConfiguration(
+          fieldType = FieldType.Date(minDate = "2025-01-01", maxDate = "2025-12-31"),
+          onUpdate = {},
+          enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag("date_min").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("date_max").assertIsDisplayed()
+  }
+
+  @Test
+  fun dateFieldConfiguration_customFormat_displays() {
+    composeTestRule.setContent {
+      DateFieldConfiguration(
+          fieldType = FieldType.Date(format = "MM/dd/yyyy"), onUpdate = {}, enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag("date_format").assertIsDisplayed()
+  }
 }

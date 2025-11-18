@@ -159,4 +159,70 @@ class MultiSelectFieldConfigurationTest {
     assertNotNull(updatedType)
     assertFalse(updatedType?.allowCustom == true)
   }
+
+  @Test
+  fun multiSelectFieldConfiguration_emptyMaxSelections_setsToNull() {
+    val updates = mutableListOf<FieldType.MultiSelect>()
+    composeTestRule.setContent {
+      MultiSelectFieldConfiguration(
+          fieldType = FieldType.MultiSelect(testOptions, maxSelections = 3),
+          onUpdate = { updates.add(it) },
+          enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag("multi_select_max").performTextClearance()
+    assertTrue(updates.isNotEmpty())
+    assertNull(updates.last().maxSelections)
+  }
+
+  @Test
+  fun multiSelectFieldConfiguration_withInitialMinSelections_displays() {
+    composeTestRule.setContent {
+      MultiSelectFieldConfiguration(
+          fieldType = FieldType.MultiSelect(testOptions, minSelections = 1),
+          onUpdate = {},
+          enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag("multi_select_min").assertIsDisplayed()
+  }
+
+  @Test
+  fun multiSelectFieldConfiguration_withInitialMaxSelections_displays() {
+    composeTestRule.setContent {
+      MultiSelectFieldConfiguration(
+          fieldType = FieldType.MultiSelect(testOptions, maxSelections = 3),
+          onUpdate = {},
+          enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag("multi_select_max").assertIsDisplayed()
+  }
+
+  @Test
+  fun multiSelectFieldConfiguration_preservesOptions_afterUpdate() {
+    var updatedType: FieldType.MultiSelect? = null
+    composeTestRule.setContent {
+      MultiSelectFieldConfiguration(
+          fieldType = FieldType.MultiSelect(testOptions),
+          onUpdate = { updatedType = it },
+          enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag("multi_select_min").performTextInput("1")
+    assertNotNull(updatedType)
+    assertEquals(testOptions, updatedType?.options)
+  }
+
+  @Test
+  fun multiSelectFieldConfiguration_withEmptyOptions_displays() {
+    composeTestRule.setContent {
+      MultiSelectFieldConfiguration(
+          fieldType = FieldType.MultiSelect(emptyList()), onUpdate = {}, enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag("multi_select_min").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("multi_select_max").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("multi_select_allow_custom").assertIsDisplayed()
+  }
 }
