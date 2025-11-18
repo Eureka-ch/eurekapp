@@ -78,7 +78,6 @@ jobs:
         uses: ./.github/actions/decode-secrets
         env:
           GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
-          LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
         with:
           level: build
 
@@ -114,7 +113,6 @@ jobs:
         uses: ./.github/actions/decode-secrets
         env:
           GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
-          LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
           FIRESTORE_RULES: ${{ secrets.FIRESTORE_RULES }}
           STORAGE_RULES: ${{ secrets.STORAGE_RULES }}
           GOOGLE_CLOUD_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
@@ -257,7 +255,6 @@ jobs:
         uses: ./.github/actions/decode-secrets
         env:
           GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
-          LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
           FIRESTORE_RULES: ${{ secrets.FIRESTORE_RULES }}
           STORAGE_RULES: ${{ secrets.STORAGE_RULES }}
           GOOGLE_CLOUD_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_CREDENTIALS }}
@@ -389,12 +386,6 @@ jobs:
             echo "$GOOGLE_CLOUD_CREDENTIALS" | base64 --decode > ./functions/eureka-stt-service-account.json
           else
             echo "::warning::GOOGLE_CLOUD_CREDENTIALS secret is not set. Speech-to-Text transcription tests will fail."
-          fi
-
-          if [ -n "$LOCAL_PROPERTIES" ]; then
-            echo "$LOCAL_PROPERTIES" | base64 --decode > ./local.properties
-          else
-            echo "::warning::LOCAL_PROPERTIES secret is not set. local.properties will not be created. Should be present after B3"
           fi
 
       - name: Grant execute permission for gradlew
