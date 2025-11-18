@@ -407,49 +407,64 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-0
-          path: app/build/outputs/shard-0/
+          path: downloaded-artifacts/shard-0/
 
       - name: Download instrumented test results (Shard 1)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-1
-          path: app/build/outputs/shard-1/
+          path: downloaded-artifacts/shard-1/
 
       - name: Download instrumented test results (Shard 2)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-2
-          path: app/build/outputs/shard-2/
+          path: downloaded-artifacts/shard-2/
 
       - name: Download instrumented test results (Shard 3)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-3
-          path: app/build/outputs/shard-3/
+          path: downloaded-artifacts/shard-3/
 
       - name: Download instrumented test results (Shard 4)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-4
-          path: app/build/outputs/shard-4/
+          path: downloaded-artifacts/shard-4/
 
       - name: Download instrumented test results (Shard 5)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-5
-          path: app/build/outputs/shard-5/
+          path: downloaded-artifacts/shard-5/
 
       - name: Download instrumented test results (Shard 6)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-6
-          path: app/build/outputs/shard-6/
+          path: downloaded-artifacts/shard-6/
 
       - name: Download instrumented test results (Shard 7)
         uses: actions/download-artifact@v4
         with:
           name: instrumented-test-results-shard-7
-          path: app/build/outputs/shard-7/
+          path: downloaded-artifacts/shard-7/
+
+      - name: Reorganize coverage files from shards
+        run: |
+          echo "Reorganizing coverage files from shards..."
+          mkdir -p app/build/outputs/code_coverage
+          for shard in 0 1 2 3 4 5 6 7; do
+            if [ -d "downloaded-artifacts/shard-$shard/app/build/outputs/code_coverage" ]; then
+              echo "Moving shard-$shard coverage files..."
+              mkdir -p "app/build/outputs/code_coverage/shard-$shard"
+              cp -r "downloaded-artifacts/shard-$shard/app/build/outputs/code_coverage/"* "app/build/outputs/code_coverage/shard-$shard/"
+            else
+              echo "Warning: No coverage files found for shard-$shard"
+            fi
+          done
+          echo "Coverage reorganization complete"
 
       - name: Verify downloaded artifacts
         run: |
