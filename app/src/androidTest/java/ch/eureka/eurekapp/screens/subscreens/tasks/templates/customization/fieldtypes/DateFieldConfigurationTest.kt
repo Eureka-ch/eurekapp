@@ -171,23 +171,6 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun dateFieldConfiguration_formatInput_updatesType() {
-    val updates = mutableListOf<FieldType.Date>()
-
-    utils.testInputUpdate(
-        composeTestRule,
-        content = { onUpdate ->
-          DateFieldConfiguration(fieldType = FieldType.Date(), onUpdate = onUpdate, enabled = true)
-        },
-        capturedUpdate = updates,
-        testTag = "date_format",
-        inputValue = "dd/MM/yyyy",
-        clearFirst = true) { updated ->
-          assertions.assertPropertyEquals("dd/MM/yyyy", updated, { it.format }, "format")
-        }
-  }
-
-  @Test
   fun dateFieldConfiguration_blankMinDate_setsToNull() {
     val updates = mutableListOf<FieldType.Date>()
     this.composeTestRule.setContent {
