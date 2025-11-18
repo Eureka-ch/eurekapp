@@ -3,18 +3,16 @@ package ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization
 /* Portions of this code were generated with the help of Claude Sonnet 4.5. */
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.SelectOption
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
-import org.junit.Rule
+import ch.eureka.eurekapp.screens.subscreens.tasks.DateFieldTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.MultiSelectFieldTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.NumberFieldTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.SingleSelectFieldTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.TextFieldComponentTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.utils.BaseFieldConfigurationTest
 import org.junit.Test
 
 /**
@@ -22,9 +20,7 @@ import org.junit.Test
  *
  * Portions of this code were generated with the help of Claude Sonnet 4.5.
  */
-class CommonFieldConfigurationTest {
-
-  @get:Rule val composeTestRule = createComposeRule()
+class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
 
   private val testFieldDefinition =
       FieldDefinition(
@@ -36,131 +32,145 @@ class CommonFieldConfigurationTest {
 
   @Test
   fun commonFieldConfiguration_displaysAllFields() {
-    composeTestRule.setContent {
-      CommonFieldConfiguration(field = testFieldDefinition, onFieldUpdate = {}, enabled = true)
-    }
-
-    composeTestRule.onNodeWithTag("field_label_input").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("field_description_input").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("field_required_checkbox").assertIsDisplayed()
+    utils.testDisplaysAllFields(
+        composeTestRule,
+        content = {
+          CommonFieldConfiguration(field = testFieldDefinition, onFieldUpdate = {}, enabled = true)
+        },
+        "field_label_input",
+        "field_description_input",
+        "field_required_checkbox")
   }
 
   @Test
   fun commonFieldConfiguration_requiredCheckbox_togglesField() {
-    var updatedField: FieldDefinition? = null
-    composeTestRule.setContent {
-      CommonFieldConfiguration(
-          field = testFieldDefinition.copy(required = false),
-          onFieldUpdate = { updatedField = it },
-          enabled = true)
-    }
+    val updates = mutableListOf<FieldDefinition>()
 
-    composeTestRule.onNodeWithTag("field_required_checkbox").performClick()
-    assertNotNull(updatedField)
-    assertTrue(updatedField?.required == true)
+    utils.testCheckboxToggle(
+        composeTestRule,
+        content = { onUpdate ->
+          CommonFieldConfiguration(
+              field = testFieldDefinition.copy(required = false),
+              onFieldUpdate = onUpdate,
+              enabled = true)
+        },
+        capturedUpdate = updates,
+        checkboxTag = "field_required_checkbox") { updated ->
+          assertions.assertBooleanTrue(updated, { it.required }, "required should be true")
+        }
   }
 
   @Test
   fun commonFieldConfiguration_requiredCheckbox_unchecksCorrectly() {
-    var updatedField: FieldDefinition? = null
-    composeTestRule.setContent {
-      CommonFieldConfiguration(
-          field = testFieldDefinition.copy(required = true),
-          onFieldUpdate = { updatedField = it },
-          enabled = true)
-    }
+    val updates = mutableListOf<FieldDefinition>()
 
-    composeTestRule.onNodeWithTag("field_required_checkbox").performClick()
-    assertNotNull(updatedField)
-    assertFalse(updatedField?.required == true)
+    utils.testCheckboxToggle(
+        composeTestRule,
+        content = { onUpdate ->
+          CommonFieldConfiguration(
+              field = testFieldDefinition.copy(required = true),
+              onFieldUpdate = onUpdate,
+              enabled = true)
+        },
+        capturedUpdate = updates,
+        checkboxTag = "field_required_checkbox") { updated ->
+          assertions.assertBooleanFalse(updated, { it.required }, "required should be false")
+        }
   }
 
   @Test
   fun commonFieldConfiguration_disabled_allFieldsDisabled() {
-    composeTestRule.setContent {
-      CommonFieldConfiguration(field = testFieldDefinition, onFieldUpdate = {}, enabled = false)
-    }
-
-    composeTestRule.onNodeWithTag("field_label_input").assertIsNotEnabled()
-    composeTestRule.onNodeWithTag("field_description_input").assertIsNotEnabled()
-    composeTestRule.onNodeWithTag("field_required_checkbox").assertIsNotEnabled()
+    utils.testDisabledState(
+        composeTestRule,
+        content = {
+          CommonFieldConfiguration(field = testFieldDefinition, onFieldUpdate = {}, enabled = false)
+        },
+        "field_label_input",
+        "field_description_input",
+        "field_required_checkbox")
   }
 
   @Test
   fun commonFieldConfiguration_nullDescription_showsEmpty() {
-    composeTestRule.setContent {
-      CommonFieldConfiguration(
-          field = testFieldDefinition.copy(description = null), onFieldUpdate = {}, enabled = true)
-    }
-
-    composeTestRule.onNodeWithTag("field_description_input").assertIsDisplayed()
+    utils.testDisplaysAllFields(
+        composeTestRule,
+        content = {
+          CommonFieldConfiguration(
+              field = testFieldDefinition.copy(description = null),
+              onFieldUpdate = {},
+              enabled = true)
+        },
+        "field_description_input")
   }
 
   @Test
   fun defaultValueInput_textField_displays() {
-    composeTestRule.setContent {
+    this.composeTestRule.setContent {
       DefaultValueInput(
           field = testFieldDefinition.copy(type = FieldType.Text()),
           onFieldUpdate = {},
           enabled = true)
     }
 
-    composeTestRule.onNodeWithText("Default Value").assertIsDisplayed()
+    utils.assertNodesDisplayed(
+        composeTestRule, TextFieldComponentTestTags.input(testFieldDefinition.id))
   }
 
   @Test
   fun defaultValueInput_numberField_displays() {
-    composeTestRule.setContent {
+    this.composeTestRule.setContent {
       DefaultValueInput(
           field = testFieldDefinition.copy(type = FieldType.Number()),
           onFieldUpdate = {},
           enabled = true)
     }
 
-    composeTestRule.onNodeWithText("Default Value").assertIsDisplayed()
+    utils.assertNodesDisplayed(composeTestRule, NumberFieldTestTags.input(testFieldDefinition.id))
   }
 
   @Test
   fun defaultValueInput_dateField_displays() {
-    composeTestRule.setContent {
+    this.composeTestRule.setContent {
       DefaultValueInput(
           field = testFieldDefinition.copy(type = FieldType.Date()),
           onFieldUpdate = {},
           enabled = true)
     }
 
-    composeTestRule.onNodeWithText("Default Value").assertIsDisplayed()
+    utils.assertNodesDisplayed(composeTestRule, DateFieldTestTags.button(testFieldDefinition.id))
   }
 
   @Test
   fun defaultValueInput_singleSelectField_displays() {
     val options = listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2"))
-    composeTestRule.setContent {
+    this.composeTestRule.setContent {
       DefaultValueInput(
           field = testFieldDefinition.copy(type = FieldType.SingleSelect(options)),
           onFieldUpdate = {},
           enabled = true)
     }
 
-    composeTestRule.onNodeWithText("Default Value").assertIsDisplayed()
+    utils.assertNodesDisplayed(
+        composeTestRule, SingleSelectFieldTestTags.dropdown(testFieldDefinition.id))
   }
 
   @Test
   fun defaultValueInput_multiSelectField_displays() {
     val options = listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2"))
-    composeTestRule.setContent {
+    this.composeTestRule.setContent {
       DefaultValueInput(
           field = testFieldDefinition.copy(type = FieldType.MultiSelect(options)),
           onFieldUpdate = {},
           enabled = true)
     }
 
-    composeTestRule.onNodeWithText("Default Value").assertIsDisplayed()
+    utils.assertNodesDisplayed(
+        composeTestRule, MultiSelectFieldTestTags.chips(testFieldDefinition.id))
   }
 
   @Test
   fun defaultValueInput_disabled_showsViewMode() {
-    composeTestRule.setContent {
+    this.composeTestRule.setContent {
       DefaultValueInput(
           field = testFieldDefinition.copy(type = FieldType.Text()),
           onFieldUpdate = {},
@@ -172,13 +182,14 @@ class CommonFieldConfigurationTest {
 
   @Test
   fun defaultValueInput_textField_withoutDefault_displays() {
-    composeTestRule.setContent {
+    this.composeTestRule.setContent {
       DefaultValueInput(
           field = testFieldDefinition.copy(type = FieldType.Text(), defaultValue = null),
           onFieldUpdate = {},
           enabled = true)
     }
 
-    composeTestRule.onNodeWithText("Default Value").assertIsDisplayed()
+    utils.assertNodesDisplayed(
+        composeTestRule, TextFieldComponentTestTags.input(testFieldDefinition.id))
   }
 }

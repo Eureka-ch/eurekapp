@@ -2,21 +2,11 @@ package ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fiel
 
 /* Portions of this code were generated with the help of Claude Sonnet 4.5. */
 
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
-import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import ch.eureka.eurekapp.model.data.template.field.FieldType
-import ch.eureka.eurekapp.model.data.template.field.SelectOption
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
-import org.junit.Rule
+import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.utils.BaseFieldConfigurationTest
 import org.junit.Test
 
 /**
@@ -24,67 +14,71 @@ import org.junit.Test
  *
  * Portions of this code were generated with the help of Claude Sonnet 4.5.
  */
-class SingleSelectFieldConfigurationTest {
+class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
 
-  @get:Rule val composeTestRule = createComposeRule()
-
-  private val testOptions =
-      listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2"))
+  private val testOptions = utils.createTestOptions()
 
   @Test
   fun singleSelectFieldConfiguration_displaysAllFields() {
-    composeTestRule.setContent {
-      SingleSelectFieldConfiguration(
-          fieldType = FieldType.SingleSelect(testOptions), onUpdate = {}, enabled = true)
-    }
-
-    composeTestRule.onNodeWithTag("single_select_allow_custom").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Allow Custom Values").assertIsDisplayed()
+    utils.testDisplaysAllFields(
+        composeTestRule,
+        content = {
+          SingleSelectFieldConfiguration(
+              fieldType = FieldType.SingleSelect(testOptions), onUpdate = {}, enabled = true)
+        },
+        "single_select_allow_custom")
   }
 
   @Test
   fun singleSelectFieldConfiguration_allowCustomCheckbox_togglesToTrue() {
-    var updatedType: FieldType.SingleSelect? = null
-    composeTestRule.setContent {
-      SingleSelectFieldConfiguration(
-          fieldType = FieldType.SingleSelect(testOptions, allowCustom = false),
-          onUpdate = { updatedType = it },
-          enabled = true)
-    }
+    val updates = mutableListOf<FieldType.SingleSelect>()
 
-    composeTestRule.onNodeWithTag("single_select_allow_custom").performClick()
-    assertNotNull(updatedType)
-    assertTrue(updatedType?.allowCustom == true)
+    utils.testCheckboxToggle(
+        composeTestRule,
+        content = { onUpdate ->
+          SingleSelectFieldConfiguration(
+              fieldType = FieldType.SingleSelect(testOptions, allowCustom = false),
+              onUpdate = onUpdate,
+              enabled = true)
+        },
+        capturedUpdate = updates,
+        checkboxTag = "single_select_allow_custom") { updated ->
+          assertions.assertBooleanTrue(updated, { it.allowCustom }, "allowCustom should be true")
+        }
   }
 
   @Test
   fun singleSelectFieldConfiguration_allowCustomCheckbox_togglesToFalse() {
-    var updatedType: FieldType.SingleSelect? = null
-    composeTestRule.setContent {
-      SingleSelectFieldConfiguration(
-          fieldType = FieldType.SingleSelect(testOptions, allowCustom = true),
-          onUpdate = { updatedType = it },
-          enabled = true)
-    }
+    val updates = mutableListOf<FieldType.SingleSelect>()
 
-    composeTestRule.onNodeWithTag("single_select_allow_custom").performClick()
-    assertNotNull(updatedType)
-    assertFalse(updatedType?.allowCustom == true)
+    utils.testCheckboxToggle(
+        composeTestRule,
+        content = { onUpdate ->
+          SingleSelectFieldConfiguration(
+              fieldType = FieldType.SingleSelect(testOptions, allowCustom = true),
+              onUpdate = onUpdate,
+              enabled = true)
+        },
+        capturedUpdate = updates,
+        checkboxTag = "single_select_allow_custom") { updated ->
+          assertions.assertBooleanFalse(updated, { it.allowCustom }, "allowCustom should be false")
+        }
   }
 
   @Test
   fun singleSelectFieldConfiguration_disabled_checkboxDisabled() {
-    composeTestRule.setContent {
-      SingleSelectFieldConfiguration(
-          fieldType = FieldType.SingleSelect(testOptions), onUpdate = {}, enabled = false)
-    }
-
-    composeTestRule.onNodeWithTag("single_select_allow_custom").assertIsNotEnabled()
+    utils.testDisabledState(
+        composeTestRule,
+        content = {
+          SingleSelectFieldConfiguration(
+              fieldType = FieldType.SingleSelect(testOptions), onUpdate = {}, enabled = false)
+        },
+        "single_select_allow_custom")
   }
 
   @Test
   fun singleSelectFieldConfiguration_allowCustomTrue_checkboxChecked() {
-    composeTestRule.setContent {
+    this.composeTestRule.setContent {
       SingleSelectFieldConfiguration(
           fieldType = FieldType.SingleSelect(testOptions, allowCustom = true),
           onUpdate = {},
@@ -96,7 +90,7 @@ class SingleSelectFieldConfigurationTest {
 
   @Test
   fun singleSelectFieldConfiguration_allowCustomFalse_checkboxUnchecked() {
-    composeTestRule.setContent {
+    this.composeTestRule.setContent {
       SingleSelectFieldConfiguration(
           fieldType = FieldType.SingleSelect(testOptions, allowCustom = false),
           onUpdate = {},
@@ -108,27 +102,31 @@ class SingleSelectFieldConfigurationTest {
 
   @Test
   fun singleSelectFieldConfiguration_withManyOptions_displays() {
-    val manyOptions = (1..10).map { SelectOption("opt$it", "Option $it") }
-    composeTestRule.setContent {
-      SingleSelectFieldConfiguration(
-          fieldType = FieldType.SingleSelect(manyOptions), onUpdate = {}, enabled = true)
-    }
-
-    composeTestRule.onNodeWithTag("single_select_allow_custom").assertIsDisplayed()
+    val manyOptions = utils.createTestOptions(10)
+    utils.testDisplaysAllFields(
+        composeTestRule,
+        content = {
+          SingleSelectFieldConfiguration(
+              fieldType = FieldType.SingleSelect(manyOptions), onUpdate = {}, enabled = true)
+        },
+        "single_select_allow_custom")
   }
 
   @Test
   fun singleSelectFieldConfiguration_preservesOptions_afterToggle() {
-    var updatedType: FieldType.SingleSelect? = null
-    composeTestRule.setContent {
-      SingleSelectFieldConfiguration(
-          fieldType = FieldType.SingleSelect(testOptions, allowCustom = false),
-          onUpdate = { updatedType = it },
-          enabled = true)
-    }
+    val updates = mutableListOf<FieldType.SingleSelect>()
 
-    composeTestRule.onNodeWithTag("single_select_allow_custom").performClick()
-    assertNotNull(updatedType)
-    assertEquals(testOptions, updatedType?.options)
+    utils.testCheckboxToggle(
+        composeTestRule,
+        content = { onUpdate ->
+          SingleSelectFieldConfiguration(
+              fieldType = FieldType.SingleSelect(testOptions, allowCustom = false),
+              onUpdate = onUpdate,
+              enabled = true)
+        },
+        capturedUpdate = updates,
+        checkboxTag = "single_select_allow_custom") { updated ->
+          assertions.assertListPreserved(testOptions, updated, { it.options }, "options")
+        }
   }
 }
