@@ -32,7 +32,7 @@ fun DateFieldConfiguration(
   Column(modifier = modifier.fillMaxWidth()) {
     OutlinedTextField(
         value = fieldType.minDate ?: "",
-        onValueChange = { onUpdate(fieldType.copy(minDate = it.ifBlank { null })) },
+        onValueChange = { onUpdate(fieldType.copy(minDate = it.trim().ifBlank { null })) },
         label = { Text("Min Date (YYYY-MM-DD)") },
         enabled = enabled,
         modifier = Modifier.fillMaxWidth().testTag("date_min"),
@@ -42,7 +42,7 @@ fun DateFieldConfiguration(
 
     OutlinedTextField(
         value = fieldType.maxDate ?: "",
-        onValueChange = { onUpdate(fieldType.copy(maxDate = it.ifBlank { null })) },
+        onValueChange = { onUpdate(fieldType.copy(maxDate = it.trim().ifBlank { null })) },
         label = { Text("Max Date (YYYY-MM-DD)") },
         enabled = enabled,
         modifier = Modifier.fillMaxWidth().testTag("date_max"),
@@ -63,7 +63,7 @@ fun DateFieldConfiguration(
 
     OutlinedTextField(
         value = fieldType.format ?: "yyyy-MM-dd",
-        onValueChange = { onUpdate(fieldType.copy(format = it.ifBlank { null })) },
+        onValueChange = { onUpdate(fieldType.copy(format = it.trim().ifBlank { null })) },
         label = { Text("Format") },
         enabled = enabled,
         modifier = Modifier.fillMaxWidth().testTag("date_format"),

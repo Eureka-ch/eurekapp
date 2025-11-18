@@ -30,7 +30,13 @@ fun NumberFieldConfiguration(
   Column(modifier = modifier.fillMaxWidth()) {
     OutlinedTextField(
         value = fieldType.min?.toString() ?: "",
-        onValueChange = { onUpdate(fieldType.copy(min = it.toDoubleOrNull())) },
+        onValueChange = {
+          try {
+            onUpdate(fieldType.copy(min = it.trim().toDoubleOrNull()))
+          } catch (e: IllegalArgumentException) {
+            // Invalid state, don't update
+          }
+        },
         label = { Text("Min") },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -41,7 +47,13 @@ fun NumberFieldConfiguration(
 
     OutlinedTextField(
         value = fieldType.max?.toString() ?: "",
-        onValueChange = { onUpdate(fieldType.copy(max = it.toDoubleOrNull())) },
+        onValueChange = {
+          try {
+            onUpdate(fieldType.copy(max = it.toDoubleOrNull()))
+          } catch (e: IllegalArgumentException) {
+            // Invalid state, don't update
+          }
+        },
         label = { Text("Max") },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -62,8 +74,8 @@ fun NumberFieldConfiguration(
     Spacer(modifier = Modifier.height(8.dp))
 
     OutlinedTextField(
-        value = fieldType.decimals.toString(),
-        onValueChange = { onUpdate(fieldType.copy(decimals = it.toIntOrNull() ?: 0)) },
+        value = fieldType.decimals?.toString() ?: "",
+        onValueChange = { onUpdate(fieldType.copy(decimals = it.trim().toIntOrNull() ?: 0)) },
         label = { Text("Decimals") },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -74,7 +86,7 @@ fun NumberFieldConfiguration(
 
     OutlinedTextField(
         value = fieldType.unit ?: "",
-        onValueChange = { onUpdate(fieldType.copy(unit = it.ifBlank { null })) },
+        onValueChange = { onUpdate(fieldType.copy(unit = it.trim().ifBlank { null })) },
         label = { Text("Unit (e.g., kg, m/s)") },
         enabled = enabled,
         modifier = Modifier.fillMaxWidth().testTag("number_unit"),

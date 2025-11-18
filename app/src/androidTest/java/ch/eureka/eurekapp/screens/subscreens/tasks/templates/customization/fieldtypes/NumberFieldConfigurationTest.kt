@@ -2,16 +2,8 @@ package ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fiel
 
 /* Portions of this code were generated with the help of Claude Sonnet 4.5. */
 
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performTextInput
 import ch.eureka.eurekapp.model.data.template.field.FieldType
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Rule
+import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.utils.BaseFieldConfigurationTest
 import org.junit.Test
 
 /**
@@ -19,188 +11,259 @@ import org.junit.Test
  *
  * Portions of this code were generated with the help of Claude Sonnet 4.5.
  */
-class NumberFieldConfigurationTest {
-
-  @get:Rule val composeTestRule = createComposeRule()
+class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
 
   @Test
   fun numberFieldConfiguration_displaysAllFields() {
-    composeTestRule.setContent {
-      NumberFieldConfiguration(fieldType = FieldType.Number(), onUpdate = {}, enabled = true)
-    }
-
-    composeTestRule.onNodeWithTag("number_min").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("number_max").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("number_step").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("number_decimals").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("number_unit").assertIsDisplayed()
+    utils.testDisplaysAllFields(
+        composeTestRule,
+        content = {
+          NumberFieldConfiguration(fieldType = FieldType.Number(), onUpdate = {}, enabled = true)
+        },
+        "number_min",
+        "number_max",
+        "number_step",
+        "number_decimals",
+        "number_unit")
   }
 
   @Test
   fun numberFieldConfiguration_minInput_updatesType() {
-    var updatedType: FieldType.Number? = null
-    composeTestRule.setContent {
-      NumberFieldConfiguration(
-          fieldType = FieldType.Number(), onUpdate = { updatedType = it }, enabled = true)
-    }
+    val updates = mutableListOf<FieldType.Number>()
 
-    composeTestRule.onNodeWithTag("number_min").performTextInput("10.5")
-    assertNotNull(updatedType)
-    assertEquals(10.5, updatedType?.min)
+    utils.testInputUpdate(
+        composeTestRule,
+        content = { onUpdate ->
+          NumberFieldConfiguration(
+              fieldType = FieldType.Number(), onUpdate = onUpdate, enabled = true)
+        },
+        capturedUpdate = updates,
+        testTag = "number_min",
+        inputValue = "10.5") { updated ->
+          assertions.assertPropertyEquals(10.5, updated, { it.min }, "min")
+        }
   }
 
   @Test
   fun numberFieldConfiguration_maxInput_updatesType() {
-    var updatedType: FieldType.Number? = null
-    composeTestRule.setContent {
-      NumberFieldConfiguration(
-          fieldType = FieldType.Number(), onUpdate = { updatedType = it }, enabled = true)
-    }
+    val updates = mutableListOf<FieldType.Number>()
 
-    composeTestRule.onNodeWithTag("number_max").performTextInput("100.0")
-    assertNotNull(updatedType)
-    assertEquals(100.0, updatedType?.max)
+    utils.testInputUpdate(
+        composeTestRule,
+        content = { onUpdate ->
+          NumberFieldConfiguration(
+              fieldType = FieldType.Number(), onUpdate = onUpdate, enabled = true)
+        },
+        capturedUpdate = updates,
+        testTag = "number_max",
+        inputValue = "100.0") { updated ->
+          assertions.assertPropertyEquals(100.0, updated, { it.max }, "max")
+        }
   }
 
   @Test
   fun numberFieldConfiguration_stepInput_updatesType() {
-    var updatedType: FieldType.Number? = null
-    composeTestRule.setContent {
-      NumberFieldConfiguration(
-          fieldType = FieldType.Number(), onUpdate = { updatedType = it }, enabled = true)
-    }
+    val updates = mutableListOf<FieldType.Number>()
 
-    composeTestRule.onNodeWithTag("number_step").performTextInput("0.5")
-    assertNotNull(updatedType)
-    assertEquals(0.5, updatedType?.step)
+    utils.testInputUpdate(
+        composeTestRule,
+        content = { onUpdate ->
+          NumberFieldConfiguration(
+              fieldType = FieldType.Number(), onUpdate = onUpdate, enabled = true)
+        },
+        capturedUpdate = updates,
+        testTag = "number_step",
+        inputValue = "0.5") { updated ->
+          assertions.assertPropertyEquals(0.5, updated, { it.step }, "step")
+        }
   }
 
   @Test
   fun numberFieldConfiguration_unitInput_updatesType() {
-    var updatedType: FieldType.Number? = null
-    composeTestRule.setContent {
-      NumberFieldConfiguration(
-          fieldType = FieldType.Number(), onUpdate = { updatedType = it }, enabled = true)
-    }
+    val updates = mutableListOf<FieldType.Number>()
 
-    composeTestRule.onNodeWithTag("number_unit").performTextInput("kg")
-    assertNotNull(updatedType)
-    assertEquals("kg", updatedType?.unit)
+    utils.testInputUpdate(
+        composeTestRule,
+        content = { onUpdate ->
+          NumberFieldConfiguration(
+              fieldType = FieldType.Number(), onUpdate = onUpdate, enabled = true)
+        },
+        capturedUpdate = updates,
+        testTag = "number_unit",
+        inputValue = "kg") { updated ->
+          assertions.assertPropertyEquals("kg", updated, { it.unit }, "unit")
+        }
   }
 
   @Test
   fun numberFieldConfiguration_minLessThanMax_noError() {
-    composeTestRule.setContent {
+    this.composeTestRule.setContent {
       NumberFieldConfiguration(
           fieldType = FieldType.Number(min = 10.0, max = 100.0), onUpdate = {}, enabled = true)
     }
 
-    composeTestRule
-        .onNodeWithText("Minimum value must be less than or equal to maximum value")
-        .assertDoesNotExist()
+    utils.assertNoError(
+        composeTestRule, "Minimum value must be less than or equal to maximum value")
   }
 
   @Test
   fun numberFieldConfiguration_minEqualToMax_noError() {
-    composeTestRule.setContent {
+    this.composeTestRule.setContent {
       NumberFieldConfiguration(
           fieldType = FieldType.Number(min = 50.0, max = 50.0), onUpdate = {}, enabled = true)
     }
 
-    composeTestRule
-        .onNodeWithText("Minimum value must be less than or equal to maximum value")
-        .assertDoesNotExist()
+    utils.assertNoError(
+        composeTestRule, "Minimum value must be less than or equal to maximum value")
   }
 
   @Test
   fun numberFieldConfiguration_negativeMin_accepted() {
-    var updatedType: FieldType.Number? = null
-    composeTestRule.setContent {
-      NumberFieldConfiguration(
-          fieldType = FieldType.Number(), onUpdate = { updatedType = it }, enabled = true)
-    }
+    val updates = mutableListOf<FieldType.Number>()
 
-    composeTestRule.onNodeWithTag("number_min").performTextInput("-25.5")
-    assertNotNull(updatedType)
-    assertEquals(-25.5, updatedType?.min)
+    utils.testInputUpdate(
+        composeTestRule,
+        content = { onUpdate ->
+          NumberFieldConfiguration(
+              fieldType = FieldType.Number(), onUpdate = onUpdate, enabled = true)
+        },
+        capturedUpdate = updates,
+        testTag = "number_min",
+        inputValue = "-25.5") { updated ->
+          assertions.assertPropertyEquals(-25.5, updated, { it.min }, "min")
+        }
   }
 
   @Test
   fun numberFieldConfiguration_invalidDecimalsInput_fallsBackToZero() {
-    var updatedType: FieldType.Number? = null
-    composeTestRule.setContent {
-      NumberFieldConfiguration(
-          fieldType = FieldType.Number(), onUpdate = { updatedType = it }, enabled = true)
-    }
+    val updates = mutableListOf<FieldType.Number>()
 
-    composeTestRule.onNodeWithTag("number_decimals").performTextInput("abc")
-    assertNotNull(updatedType)
-    assertEquals(0, updatedType?.decimals)
+    utils.testInputUpdate(
+        composeTestRule,
+        content = { onUpdate ->
+          NumberFieldConfiguration(
+              fieldType = FieldType.Number(), onUpdate = onUpdate, enabled = true)
+        },
+        capturedUpdate = updates,
+        testTag = "number_decimals",
+        inputValue = "abc") { updated ->
+          assertions.assertPropertyEquals(0, updated, { it.decimals }, "decimals")
+        }
   }
 
   @Test
   fun numberFieldConfiguration_disabled_allFieldsDisabled() {
-    composeTestRule.setContent {
-      NumberFieldConfiguration(fieldType = FieldType.Number(), onUpdate = {}, enabled = false)
-    }
-
-    composeTestRule.onNodeWithTag("number_min").assertIsNotEnabled()
-    composeTestRule.onNodeWithTag("number_max").assertIsNotEnabled()
-    composeTestRule.onNodeWithTag("number_step").assertIsNotEnabled()
-    composeTestRule.onNodeWithTag("number_decimals").assertIsNotEnabled()
-    composeTestRule.onNodeWithTag("number_unit").assertIsNotEnabled()
+    utils.testDisabledState(
+        composeTestRule,
+        content = {
+          NumberFieldConfiguration(fieldType = FieldType.Number(), onUpdate = {}, enabled = false)
+        },
+        "number_min",
+        "number_max",
+        "number_step",
+        "number_decimals",
+        "number_unit")
   }
 
   @Test
   fun numberFieldConfiguration_zeroDecimals_accepted() {
-    var updatedType: FieldType.Number? = null
-    composeTestRule.setContent {
-      NumberFieldConfiguration(
-          fieldType = FieldType.Number(), onUpdate = { updatedType = it }, enabled = true)
-    }
+    val updates = mutableListOf<FieldType.Number>()
 
-    composeTestRule.onNodeWithTag("number_decimals").performTextInput("0")
-    assertNotNull(updatedType)
-    assertEquals(0, updatedType?.decimals)
+    utils.testInputUpdate(
+        composeTestRule,
+        content = { onUpdate ->
+          NumberFieldConfiguration(
+              fieldType = FieldType.Number(), onUpdate = onUpdate, enabled = true)
+        },
+        capturedUpdate = updates,
+        testTag = "number_decimals",
+        inputValue = "0") { updated ->
+          assertions.assertPropertyEquals(0, updated, { it.decimals }, "decimals")
+        }
   }
 
   @Test
   fun numberFieldConfiguration_withInitialMin_displays() {
-    composeTestRule.setContent {
-      NumberFieldConfiguration(
-          fieldType = FieldType.Number(min = 5.0), onUpdate = {}, enabled = true)
-    }
-
-    composeTestRule.onNodeWithTag("number_min").assertIsDisplayed()
+    utils.testDisplaysAllFields(
+        composeTestRule,
+        content = {
+          NumberFieldConfiguration(
+              fieldType = FieldType.Number(min = 5.0), onUpdate = {}, enabled = true)
+        },
+        "number_min")
   }
 
   @Test
   fun numberFieldConfiguration_withInitialMax_displays() {
-    composeTestRule.setContent {
-      NumberFieldConfiguration(
-          fieldType = FieldType.Number(max = 100.0), onUpdate = {}, enabled = true)
-    }
-
-    composeTestRule.onNodeWithTag("number_max").assertIsDisplayed()
+    utils.testDisplaysAllFields(
+        composeTestRule,
+        content = {
+          NumberFieldConfiguration(
+              fieldType = FieldType.Number(max = 100.0), onUpdate = {}, enabled = true)
+        },
+        "number_max")
   }
 
   @Test
   fun numberFieldConfiguration_withInitialStep_displays() {
-    composeTestRule.setContent {
-      NumberFieldConfiguration(
-          fieldType = FieldType.Number(step = 0.1), onUpdate = {}, enabled = true)
-    }
-
-    composeTestRule.onNodeWithTag("number_step").assertIsDisplayed()
+    utils.testDisplaysAllFields(
+        composeTestRule,
+        content = {
+          NumberFieldConfiguration(
+              fieldType = FieldType.Number(step = 0.1), onUpdate = {}, enabled = true)
+        },
+        "number_step")
   }
 
   @Test
   fun numberFieldConfiguration_withInitialUnit_displays() {
-    composeTestRule.setContent {
+    utils.testDisplaysAllFields(
+        composeTestRule,
+        content = {
+          NumberFieldConfiguration(
+              fieldType = FieldType.Number(unit = "meters"), onUpdate = {}, enabled = true)
+        },
+        "number_unit")
+  }
+
+  @Test
+  fun numberFieldConfiguration_decimalsInput_updatesType() {
+    val updates = mutableListOf<FieldType.Number>()
+
+    utils.testInputUpdate(
+        composeTestRule,
+        content = { onUpdate ->
+          NumberFieldConfiguration(
+              fieldType = FieldType.Number(), onUpdate = onUpdate, enabled = true)
+        },
+        capturedUpdate = updates,
+        testTag = "number_decimals",
+        inputValue = "2") { updated ->
+          assertions.assertPropertyEquals(2, updated, { it.decimals }, "decimals")
+        }
+  }
+
+  @Test
+  fun numberFieldConfiguration_blankUnit_setsToNull() {
+    val updates = mutableListOf<FieldType.Number>()
+    this.composeTestRule.setContent {
       NumberFieldConfiguration(
-          fieldType = FieldType.Number(unit = "meters"), onUpdate = {}, enabled = true)
+          fieldType = FieldType.Number(unit = "kg"), onUpdate = { updates.add(it) }, enabled = true)
     }
 
-    composeTestRule.onNodeWithTag("number_unit").assertIsDisplayed()
+    utils.clearText(composeTestRule, "number_unit")
+    assertions.assertPropertyNull(updates.lastOrNull(), { it.unit }, "unit")
+  }
+
+  @Test
+  fun numberFieldConfiguration_emptyMin_setsToNull() {
+    val updates = mutableListOf<FieldType.Number>()
+    this.composeTestRule.setContent {
+      NumberFieldConfiguration(
+          fieldType = FieldType.Number(min = 10.0), onUpdate = { updates.add(it) }, enabled = true)
+    }
+
+    utils.clearText(composeTestRule, "number_min")
+    assertions.assertPropertyNull(updates.lastOrNull(), { it.min }, "min")
   }
 }

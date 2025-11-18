@@ -30,7 +30,13 @@ fun TextFieldConfiguration(
   Column(modifier = modifier.fillMaxWidth()) {
     OutlinedTextField(
         value = fieldType.maxLength?.toString() ?: "",
-        onValueChange = { onUpdate(fieldType.copy(maxLength = it.toIntOrNull())) },
+        onValueChange = {
+          try {
+            onUpdate(fieldType.copy(maxLength = it.toIntOrNull()))
+          } catch (e: IllegalArgumentException) {
+            // Invalid state, don't update
+          }
+        },
         label = { Text("Max Length") },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -41,7 +47,13 @@ fun TextFieldConfiguration(
 
     OutlinedTextField(
         value = fieldType.minLength?.toString() ?: "",
-        onValueChange = { onUpdate(fieldType.copy(minLength = it.toIntOrNull())) },
+        onValueChange = {
+          try {
+            onUpdate(fieldType.copy(minLength = it.toIntOrNull()))
+          } catch (e: IllegalArgumentException) {
+            // Invalid state, don't update
+          }
+        },
         label = { Text("Min Length") },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

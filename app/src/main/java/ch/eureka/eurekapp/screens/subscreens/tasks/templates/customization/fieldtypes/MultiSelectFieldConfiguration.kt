@@ -33,7 +33,13 @@ fun MultiSelectFieldConfiguration(
   Column(modifier = modifier.fillMaxWidth()) {
     OutlinedTextField(
         value = fieldType.minSelections?.toString() ?: "",
-        onValueChange = { onUpdate(fieldType.copy(minSelections = it.toIntOrNull())) },
+        onValueChange = {
+          try {
+            onUpdate(fieldType.copy(minSelections = it.trim().toIntOrNull()))
+          } catch (e: IllegalArgumentException) {
+            // Invalid state, don't update
+          }
+        },
         label = { Text("Min Selections") },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -44,7 +50,13 @@ fun MultiSelectFieldConfiguration(
 
     OutlinedTextField(
         value = fieldType.maxSelections?.toString() ?: "",
-        onValueChange = { onUpdate(fieldType.copy(maxSelections = it.toIntOrNull())) },
+        onValueChange = {
+          try {
+            onUpdate(fieldType.copy(maxSelections = it.trim().toIntOrNull()))
+          } catch (e: IllegalArgumentException) {
+            // Invalid state, don't update
+          }
+        },
         label = { Text("Max Selections") },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
