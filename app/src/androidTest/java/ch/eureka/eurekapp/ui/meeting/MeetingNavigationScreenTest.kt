@@ -73,7 +73,8 @@ class MeetingNavigationScreenTest {
   private fun setContent(meeting: Meeting?, onNavigateBack: () -> Unit = {}) {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns flowOf(meeting)
 
-    val viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
+    val viewModel =
+        MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
     composeTestRule.setContent {
       MeetingNavigationScreen(
@@ -104,13 +105,12 @@ class MeetingNavigationScreenTest {
           kotlinx.coroutines.delay(5000)
         }
 
-    val viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
+    val viewModel =
+        MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
     composeTestRule.setContent {
       MeetingNavigationScreen(
-          projectId = testProjectId,
-          meetingId = testMeetingId,
-          viewModel = viewModel)
+          projectId = testProjectId, meetingId = testMeetingId, viewModel = viewModel)
     }
 
     composeTestRule
@@ -199,13 +199,12 @@ class MeetingNavigationScreenTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         kotlinx.coroutines.flow.flow { throw Exception(customErrorMessage) }
 
-    val viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
+    val viewModel =
+        MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
     composeTestRule.setContent {
       MeetingNavigationScreen(
-          projectId = testProjectId,
-          meetingId = testMeetingId,
-          viewModel = viewModel)
+          projectId = testProjectId, meetingId = testMeetingId, viewModel = viewModel)
     }
 
     composeTestRule.waitForIdle()
@@ -247,13 +246,12 @@ class MeetingNavigationScreenTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         kotlinx.coroutines.flow.flow { kotlinx.coroutines.delay(5000) }
 
-    val viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
+    val viewModel =
+        MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
     composeTestRule.setContent {
       MeetingNavigationScreen(
-          projectId = testProjectId,
-          meetingId = testMeetingId,
-          viewModel = viewModel)
+          projectId = testProjectId, meetingId = testMeetingId, viewModel = viewModel)
     }
 
     // Verify loading indicator is displayed
@@ -280,7 +278,8 @@ class MeetingNavigationScreenTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeeting)
 
-    val viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
+    val viewModel =
+        MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
     composeTestRule.waitForIdle()
 
@@ -295,7 +294,8 @@ class MeetingNavigationScreenTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeetingNoLocation)
 
-    val viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
+    val viewModel =
+        MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
     composeTestRule.waitForIdle()
 

@@ -7,6 +7,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +19,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -86,9 +86,7 @@ object MeetingNavigationScreenTestTags {
 /** Default zoom level for the map when displaying meeting location. */
 private const val DEFAULT_MAP_ZOOM = 15f
 
-/**
- * Available travel modes for route calculation.
- */
+/** Available travel modes for route calculation. */
 enum class TravelMode(val displayName: String, val apiValue: String) {
   DRIVING("Drive", "driving"),
   TRANSIT("Transit", "transit"),
@@ -107,11 +105,7 @@ enum class TravelMode(val displayName: String, val apiValue: String) {
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MeetingNavigationScreen(
-    projectId: String,
-    meetingId: String,
-    onNavigateBack: () -> Unit = {}
-) {
+fun MeetingNavigationScreen(projectId: String, meetingId: String, onNavigateBack: () -> Unit = {}) {
   val context = LocalContext.current
 
   // Get API key from manifest
@@ -254,9 +248,7 @@ private fun MapContent(
   val meetingLocation = meeting.location?.let { LatLng(it.latitude, it.longitude) } ?: return
 
   // Try to get user location once
-  LaunchedEffect(Unit) {
-    viewModel.fetchUserLocation(context)
-  }
+  LaunchedEffect(Unit) { viewModel.fetchUserLocation(context) }
 
   Column(modifier = Modifier.fillMaxSize().then(modifier)) {
     // Google Map
@@ -323,9 +315,7 @@ private fun MapView(
 
         // User location marker
         userLocation?.let {
-          Marker(
-              state = rememberMarkerState(position = it),
-              title = "Your Location")
+          Marker(state = rememberMarkerState(position = it), title = "Your Location")
         }
 
         // Draw route polyline if available
@@ -380,20 +370,19 @@ private fun InfoCard(
   val context = LocalContext.current
   var hasLocationPermission by remember {
     mutableStateOf(
-        ContextCompat.checkSelfPermission(
-            context, Manifest.permission.ACCESS_FINE_LOCATION) ==
+        ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
             PackageManager.PERMISSION_GRANTED)
   }
 
   // Permission launcher
   val permissionLauncher =
-      rememberLauncherForActivityResult(
-          contract = ActivityResultContracts.RequestPermission()) { isGranted ->
-            hasLocationPermission = isGranted
-            if (isGranted) {
-              viewModel.fetchUserLocation(context)
-            }
-          }
+      rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
+          isGranted ->
+        hasLocationPermission = isGranted
+        if (isGranted) {
+          viewModel.fetchUserLocation(context)
+        }
+      }
 
   Card(
       modifier = modifier.testTag(MeetingNavigationScreenTestTags.INFO_CARD),
@@ -553,42 +542,46 @@ private fun DirectionsPanel(
           // Steps list
           if (route.legs.isNotEmpty()) {
             val steps = route.legs[0].steps
-            Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)) {
-              steps.forEachIndexed { index, step ->
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.Top) {
-                      // Step number
-                      Text(
-                          text = "${index + 1}.",
-                          style = MaterialTheme.typography.bodyMedium,
-                          fontWeight = FontWeight.Bold,
-                          modifier = Modifier.width(30.dp))
+            Column(
+                modifier =
+                    Modifier.fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp)) {
+                  steps.forEachIndexed { index, step ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.Top) {
+                          // Step number
+                          Text(
+                              text = "${index + 1}.",
+                              style = MaterialTheme.typography.bodyMedium,
+                              fontWeight = FontWeight.Bold,
+                              modifier = Modifier.width(30.dp))
 
-                      Spacer(modifier = Modifier.width(8.dp))
+                          Spacer(modifier = Modifier.width(8.dp))
 
-                      // Step instruction and distance
-                      Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text =
-                                ch.eureka.eurekapp.services.navigation.DirectionsUtils.stripHtmlTags(
-                                    step.htmlInstructions),
-                            style = MaterialTheme.typography.bodyMedium)
-                        Text(
-                            text = step.distance.text,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.secondary)
-                      }
+                          // Step instruction and distance
+                          Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text =
+                                    ch.eureka.eurekapp.services.navigation.DirectionsUtils
+                                        .stripHtmlTags(step.htmlInstructions),
+                                style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                text = step.distance.text,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.secondary)
+                          }
+                        }
+
+                    if (index < steps.size - 1) {
+                      Spacer(modifier = Modifier.height(4.dp))
                     }
+                  }
 
-                if (index < steps.size - 1) {
-                  Spacer(modifier = Modifier.height(4.dp))
+                  // Add bottom padding for last item
+                  Spacer(modifier = Modifier.height(16.dp))
                 }
-              }
-
-              // Add bottom padding for last item
-              Spacer(modifier = Modifier.height(16.dp))
-            }
           }
         }
       }

@@ -14,16 +14,16 @@ import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
 
 /**
  * Data class to represent the UI state of the meeting location screen.
@@ -66,7 +66,8 @@ class MeetingNavigationViewModel(
   internal val _uiState = MutableStateFlow(MeetingNavigationUIState(isLoading = true))
   val uiState: StateFlow<MeetingNavigationUIState> = _uiState.asStateFlow()
 
-  private val directionsService = ch.eureka.eurekapp.services.navigation.DirectionsApiServiceFactory.create()
+  private val directionsService =
+      ch.eureka.eurekapp.services.navigation.DirectionsApiServiceFactory.create()
 
   init {
     loadMeeting()
@@ -114,8 +115,8 @@ class MeetingNavigationViewModel(
    * @param context Android context for location services.
    */
   fun fetchUserLocation(context: Context) {
-    if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-        != PackageManager.PERMISSION_GRANTED) {
+    if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) !=
+        PackageManager.PERMISSION_GRANTED) {
       return
     }
 
@@ -125,9 +126,8 @@ class MeetingNavigationViewModel(
         val location = fusedLocationClient.lastLocation.await()
 
         if (location != null) {
-          _uiState.value = _uiState.value.copy(
-              userLocation = LatLng(location.latitude, location.longitude)
-          )
+          _uiState.value =
+              _uiState.value.copy(userLocation = LatLng(location.latitude, location.longitude))
         }
       } catch (e: Exception) {
         // Silently fail - user location is optional
@@ -145,68 +145,60 @@ class MeetingNavigationViewModel(
     val meetingLoc = getMeetingLocation()
 
     if (userLoc == null) {
-      _uiState.value = _uiState.value.copy(
-          routeErrorMsg = "User location not available"
-      )
+      _uiState.value = _uiState.value.copy(routeErrorMsg = "User location not available")
       return
     }
 
     if (meetingLoc == null) {
-      _uiState.value = _uiState.value.copy(
-          routeErrorMsg = "Meeting location not available"
-      )
+      _uiState.value = _uiState.value.copy(routeErrorMsg = "Meeting location not available")
       return
     }
 
     viewModelScope.launch {
       try {
-        _uiState.value = _uiState.value.copy(
-            isLoadingRoute = true,
-            routeErrorMsg = null
-        )
+        _uiState.value = _uiState.value.copy(isLoadingRoute = true, routeErrorMsg = null)
 
-        val origin = ch.eureka.eurekapp.services.navigation.DirectionsUtils.formatLocation(userLoc.latitude, userLoc.longitude)
-        val destination = ch.eureka.eurekapp.services.navigation.DirectionsUtils.formatLocation(meetingLoc.latitude, meetingLoc.longitude)
-        val mode = ch.eureka.eurekapp.services.navigation.DirectionsUtils.formatTravelMode(travelMode)
+        val origin =
+            ch.eureka.eurekapp.services.navigation.DirectionsUtils.formatLocation(
+                userLoc.latitude, userLoc.longitude)
+        val destination =
+            ch.eureka.eurekapp.services.navigation.DirectionsUtils.formatLocation(
+                meetingLoc.latitude, meetingLoc.longitude)
+        val mode =
+            ch.eureka.eurekapp.services.navigation.DirectionsUtils.formatTravelMode(travelMode)
 
-        val response = directionsService.getDirections(
-            origin = origin,
-            destination = destination,
-            mode = mode,
-            apiKey = apiKey
-        )
+        val response =
+            directionsService.getDirections(
+                origin = origin, destination = destination, mode = mode, apiKey = apiKey)
 
         if (response.status == "OK" && response.routes.isNotEmpty()) {
-          _uiState.value = _uiState.value.copy(
-              route = response.routes[0],
-              isLoadingRoute = false,
-              routeErrorMsg = null
-          )
+          _uiState.value =
+              _uiState.value.copy(
+                  route = response.routes[0], isLoadingRoute = false, routeErrorMsg = null)
         } else {
-          _uiState.value = _uiState.value.copy(
-              isLoadingRoute = false,
-              routeErrorMsg = response.errorMessage ?: "No route found"
-          )
+          _uiState.value =
+              _uiState.value.copy(
+                  isLoadingRoute = false, routeErrorMsg = response.errorMessage ?: "No route found")
         }
       } catch (e: Exception) {
-        _uiState.value = _uiState.value.copy(
-            isLoadingRoute = false,
-            routeErrorMsg = "Error fetching directions: ${e.message}"
-        )
+        _uiState.value =
+            _uiState.value.copy(
+                isLoadingRoute = false, routeErrorMsg = "Error fetching directions: ${e.message}")
       }
     }
   }
 
-  /**
-   * Calculate straight-line distance between two points in kilometers.
-   */
+  /** Calculate straight-line distance between two points in kilometers. */
   fun calculateDistance(from: LatLng, to: LatLng): Double {
     val earthRadius = 6371.0 // km
     val dLat = Math.toRadians(to.latitude - from.latitude)
     val dLon = Math.toRadians(to.longitude - from.longitude)
-    val a = sin(dLat / 2) * sin(dLat / 2) +
-            cos(Math.toRadians(from.latitude)) * cos(Math.toRadians(to.latitude)) *
-            sin(dLon / 2) * sin(dLon / 2)
+    val a =
+        sin(dLat / 2) * sin(dLat / 2) +
+            cos(Math.toRadians(from.latitude)) *
+                cos(Math.toRadians(to.latitude)) *
+                sin(dLon / 2) *
+                sin(dLon / 2)
     val c = 2 * atan2(sqrt(a), sqrt(1 - a))
     return earthRadius * c
   }
