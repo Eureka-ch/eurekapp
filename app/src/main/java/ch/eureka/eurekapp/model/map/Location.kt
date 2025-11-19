@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.model.data.map
+package ch.eureka.eurekapp.model.map
 
 /**
  * Data class representing a location.

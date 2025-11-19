@@ -3,11 +3,11 @@ Note: This file was co-authored by Claude Code.
 */
 package ch.eureka.eurekapp.ui.meeting
 
-import ch.eureka.eurekapp.model.data.map.Location
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
+import ch.eureka.eurekapp.model.map.Location
 import com.google.firebase.Timestamp
 import io.mockk.every
 import io.mockk.mockk
