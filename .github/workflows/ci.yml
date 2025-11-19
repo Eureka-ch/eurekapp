@@ -429,7 +429,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: instrumented-test-results-shard-*
-          path: .
+          path: app/build/outputs/
           merge-multiple: true
 
       - name: Debug downloaded artifact structure
