@@ -6,6 +6,7 @@ package ch.eureka.eurekapp.ui.meeting
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import androidx.annotation.VisibleForTesting
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,10 +15,6 @@ import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -55,19 +52,29 @@ data class MeetingNavigationUIState(
  * @property meetingId The ID of the meeting to display.
  * @property apiKey Google Maps API key for directions.
  * @property repository The repository for meeting data operations.
+ * @property directionsService The service for fetching directions (injectable for testing).
  */
 class MeetingNavigationViewModel(
     private val projectId: String,
     private val meetingId: String,
     private val apiKey: String,
-    private val repository: MeetingRepository = FirestoreRepositoriesProvider.meetingRepository
+    private val repository: MeetingRepository = FirestoreRepositoriesProvider.meetingRepository,
+    private val directionsService: ch.eureka.eurekapp.services.navigation.DirectionsApiService =
+        ch.eureka.eurekapp.services.navigation.DirectionsApiServiceFactory.create()
 ) : ViewModel() {
 
-  internal val _uiState = MutableStateFlow(MeetingNavigationUIState(isLoading = true))
+  private val _uiState = MutableStateFlow(MeetingNavigationUIState(isLoading = true))
   val uiState: StateFlow<MeetingNavigationUIState> = _uiState.asStateFlow()
 
-  private val directionsService =
-      ch.eureka.eurekapp.services.navigation.DirectionsApiServiceFactory.create()
+  /**
+   * Update UI state for testing purposes only.
+   *
+   * @param newState The new state to set
+   */
+  @VisibleForTesting
+  internal fun setStateForTesting(newState: MeetingNavigationUIState) {
+    _uiState.value = newState
+  }
 
   init {
     loadMeeting()
@@ -117,6 +124,9 @@ class MeetingNavigationViewModel(
   fun fetchUserLocation(context: Context) {
     if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) !=
         PackageManager.PERMISSION_GRANTED) {
+      _uiState.value =
+          _uiState.value.copy(
+              routeErrorMsg = "Location permission required for navigation features")
       return
     }
 
@@ -129,7 +139,7 @@ class MeetingNavigationViewModel(
           _uiState.value =
               _uiState.value.copy(userLocation = LatLng(location.latitude, location.longitude))
         }
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         // Silently fail - user location is optional
       }
     }
@@ -138,9 +148,9 @@ class MeetingNavigationViewModel(
   /**
    * Fetches directions from user's location to the meeting.
    *
-   * @param travelMode The travel mode (driving, walking, bicycling, transit).
+   * @param travelMode The travel mode enum value.
    */
-  fun fetchDirections(travelMode: String = "driving") {
+  fun fetchDirections(travelMode: TravelMode = TravelMode.DRIVING) {
     val userLoc = _uiState.value.userLocation
     val meetingLoc = getMeetingLocation()
 
@@ -164,8 +174,7 @@ class MeetingNavigationViewModel(
         val destination =
             ch.eureka.eurekapp.services.navigation.DirectionsUtils.formatLocation(
                 meetingLoc.latitude, meetingLoc.longitude)
-        val mode =
-            ch.eureka.eurekapp.services.navigation.DirectionsUtils.formatTravelMode(travelMode)
+        val mode = travelMode.apiValue
 
         val response =
             directionsService.getDirections(
@@ -186,20 +195,5 @@ class MeetingNavigationViewModel(
                 isLoadingRoute = false, routeErrorMsg = "Error fetching directions: ${e.message}")
       }
     }
-  }
-
-  /** Calculate straight-line distance between two points in kilometers. */
-  fun calculateDistance(from: LatLng, to: LatLng): Double {
-    val earthRadius = 6371.0 // km
-    val dLat = Math.toRadians(to.latitude - from.latitude)
-    val dLon = Math.toRadians(to.longitude - from.longitude)
-    val a =
-        sin(dLat / 2) * sin(dLat / 2) +
-            cos(Math.toRadians(from.latitude)) *
-                cos(Math.toRadians(to.latitude)) *
-                sin(dLon / 2) *
-                sin(dLon / 2)
-    val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-    return earthRadius * c
   }
 }
