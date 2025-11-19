@@ -99,11 +99,7 @@ data class Step(
  * @property text Human-readable formatted value (e.g., "5.2 km", "12 mins")
  * @property value Numeric value in base units (meters for distance, seconds for duration)
  */
-@Serializable
-data class TextValue(
-    val text: String,
-    val value: Int
-)
+@Serializable data class TextValue(val text: String, val value: Int)
 
 /**
  * Geographic location as latitude/longitude.
@@ -122,10 +118,7 @@ data class LocationData(
  *
  * @property points Google-encoded polyline string representing the path
  */
-@Serializable
-data class PolylineData(
-    val points: String
-)
+@Serializable data class PolylineData(val points: String)
 
 /** Retrofit service interface for Google Directions API. */
 interface DirectionsApiService {

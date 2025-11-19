@@ -103,8 +103,8 @@ enum class TravelMode(val displayName: String, val apiValue: String) {
  * Main composable for the meeting location screen.
  *
  * We use composable overloading here because having API key generated here keeps the things
- * compartmentalized. Also this pattern enables reusability and testability as recommended
- * by the Android Jetpack Compose documentation.
+ * compartmentalized. Also this pattern enables reusability and testability as recommended by the
+ * Android Jetpack Compose documentation.
  *
  * Displays a Google Map with the meeting location marker and navigation features.
  *
