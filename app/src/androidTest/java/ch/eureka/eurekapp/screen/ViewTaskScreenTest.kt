@@ -23,7 +23,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.test.platform.app.InstrumentationRegistry
-import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
@@ -44,11 +43,13 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreenTestTags
 import ch.eureka.eurekapp.ui.tasks.TaskScreenViewModel
 import ch.eureka.eurekapp.utils.FirebaseEmulator
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import com.google.firebase.storage.StorageMetadata
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
@@ -72,13 +73,14 @@ open class ViewTaskScreenTest : TestCase() {
   private lateinit var context: android.content.Context
   private var lastViewVm: ViewTaskViewModel? = null
   private var lastTaskScreenVm: TaskScreenViewModel? = null
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
 
   companion object {
     @BeforeClass
     @JvmStatic
     fun setUpClass() {
-      val context = InstrumentationRegistry.getInstrumentation().targetContext
-      ConnectivityObserverProvider.initialize(context)
+      // Removed ConnectivityObserverProvider initialization - using MockConnectivityObserver
+      // instead
     }
   }
 
@@ -98,6 +100,10 @@ open class ViewTaskScreenTest : TestCase() {
       if (FirebaseEmulator.auth.currentUser == null) {
         throw IllegalStateException("Auth state not properly established after sign-in")
       }
+
+      context = InstrumentationRegistry.getInstrumentation().targetContext
+      mockConnectivityObserver = MockConnectivityObserver(context)
+      mockConnectivityObserver.setConnected(true)
     }
   }
 
@@ -186,7 +192,9 @@ open class ViewTaskScreenTest : TestCase() {
     setupTestProject(projectId)
     taskSetup?.invoke()
 
-    val viewModel = ViewTaskViewModel(projectId, taskId, taskRepository)
+    val viewModel =
+        ViewTaskViewModel(
+            projectId, taskId, taskRepository, Dispatchers.IO, mockConnectivityObserver)
     lastViewVm = viewModel
     composeTestRule.setContent {
       val navController = rememberNavController()
@@ -577,7 +585,9 @@ open class ViewTaskScreenTest : TestCase() {
       setupTestProject(projectId)
       setupTestTask(projectId, taskId)
 
-      val viewModel = ViewTaskViewModel(projectId, taskId, taskRepository)
+      val viewModel =
+          ViewTaskViewModel(
+              projectId, taskId, taskRepository, Dispatchers.IO, mockConnectivityObserver)
       lastViewVm = viewModel
 
       composeTestRule.setContent {
@@ -607,11 +617,10 @@ open class ViewTaskScreenTest : TestCase() {
 
   @Composable
   private fun FullNavigationGraph(navController: NavHostController) {
-    // Create a single, remembered ViewTaskViewModel instance so it is stable across navigation.
-    // This ensures the ViewModel keeps collecting updates (and ViewTaskScreen reloads data)
-    // when navigating to EditTaskScreen and back.
-    val sharedViewModel = remember { ViewTaskViewModel("project123", "task123", taskRepository) }
-    // Also remember TaskScreenViewModel to prevent orphaned listeners
+    val sharedViewModel = remember {
+      ViewTaskViewModel(
+          "project123", "task123", taskRepository, Dispatchers.IO, mockConnectivityObserver)
+    }
     val sharedTaskScreenViewModel = remember { TaskScreenViewModel() }
 
     NavHost(navController, startDestination = Route.TasksSection.Tasks) {
@@ -649,9 +658,12 @@ open class ViewTaskScreenTest : TestCase() {
       navController: NavHostController,
       viewModel: ViewTaskViewModel? = null
   ) {
-    // Use the provided ViewModel if given, otherwise create a remembered instance so the VM is
-    // stable.
-    val vm = viewModel ?: remember { ViewTaskViewModel(projectId, taskId, taskRepository) }
+    val vm =
+        viewModel
+            ?: remember {
+              ViewTaskViewModel(
+                  projectId, taskId, taskRepository, Dispatchers.IO, mockConnectivityObserver)
+            }
     NavHost(navController, startDestination = Route.TasksSection.Tasks) {
       composable<Route.TasksSection.Tasks> {
         Text("Tasks Screen", modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))

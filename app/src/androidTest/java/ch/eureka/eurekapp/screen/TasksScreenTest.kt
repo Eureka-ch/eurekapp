@@ -11,7 +11,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
@@ -19,11 +18,11 @@ import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.screens.TasksScreen
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.getFilterTag
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
-import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -45,6 +44,7 @@ class TasksScreenTest {
   private lateinit var mockTaskRepository: MockTaskRepository
   private lateinit var mockProjectRepository: MockProjectRepository
   private lateinit var mockUserRepository: MockUserRepository
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
 
   private val testUser1 = User(uid = "user1", displayName = "Alice Smith", email = "alice@test.com")
   private val testUser2 = User(uid = "user2", displayName = "Bob Jones", email = "bob@test.com")
@@ -68,20 +68,14 @@ class TasksScreenTest {
 
   private val twoWeeksAway = Timestamp(java.util.Date(now + 15 * 24 * 60 * 60 * 1000))
 
-  companion object {
-    @BeforeClass
-    @JvmStatic
-    fun setUpClass() {
-      val context = InstrumentationRegistry.getInstrumentation().targetContext
-      ConnectivityObserverProvider.initialize(context)
-    }
-  }
-
   @Before
   fun setUp() {
     mockTaskRepository = MockTaskRepository()
     mockProjectRepository = MockProjectRepository()
     mockUserRepository = MockUserRepository()
+    mockConnectivityObserver =
+        MockConnectivityObserver(InstrumentationRegistry.getInstrumentation().targetContext)
+    mockConnectivityObserver.setConnected(true)
   }
 
   @Test
@@ -93,7 +87,11 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"))
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver))
     }
 
     // Note: The ViewModel's init block sets isLoading to false immediately after loading
@@ -111,7 +109,11 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"))
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver))
     }
 
     // Note: Testing error state would require a way to inject error into the ViewModel
@@ -128,7 +130,11 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"))
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver))
     }
 
     composeTestRule.waitUntilExactlyOneExists(hasText("No tasks found"), timeoutMillis = 3000)
@@ -155,7 +161,11 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"))
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver))
     }
 
     composeTestRule.waitUntilExactlyOneExists(hasText("Implement Login Feature"), 3000)
@@ -195,7 +205,11 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"))
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver))
     }
 
     composeTestRule.waitUntilExactlyOneExists(hasText("Task 1"), 3000)
@@ -242,7 +256,11 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"))
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver))
     }
 
     composeTestRule.waitUntilExactlyOneExists(hasText("TODO Task"), 3000)
@@ -295,7 +313,11 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"))
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver))
     }
 
     composeTestRule.waitUntilExactlyOneExists(hasText("Current Tasks"), 3000)
@@ -359,7 +381,11 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"))
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver))
     }
     composeTestRule.waitForIdle()
 
@@ -406,7 +432,11 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"))
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver))
     }
 
     composeTestRule.waitUntilExactlyOneExists(hasText("Critical Priority"), 3000)
@@ -437,7 +467,11 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"))
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver))
     }
 
     composeTestRule.waitUntilExactlyOneExists(hasText("My Task"), 3000)
@@ -457,7 +491,11 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"))
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver))
     }
 
     composeTestRule.waitUntilExactlyOneExists(hasText("No tasks found"), 3000)
@@ -494,7 +532,11 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"))
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver))
     }
 
     composeTestRule.waitUntilExactlyOneExists(hasText("Task 1"), 3000)
@@ -529,7 +571,11 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"))
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver))
     }
 
     composeTestRule.waitUntilExactlyOneExists(hasText("Original"), 3000)
@@ -575,7 +621,11 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"))
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver))
     }
 
     composeTestRule.waitUntilExactlyOneExists(hasText("Due Tomorrow"), 3000)
@@ -609,7 +659,11 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"))
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver))
     }
 
     composeTestRule.waitUntilExactlyOneExists(hasText("Test Task"), 3000)
@@ -644,7 +698,11 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"),
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver),
           onCreateTaskClick = { createTaskClicked = true })
     }
 
@@ -665,7 +723,11 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"),
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver),
           onAutoAssignClick = { autoAssignClicked = true })
     }
 
@@ -687,7 +749,11 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"),
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver),
           onCreateTaskClick = { createTaskClicked = true },
           onAutoAssignClick = { autoAssignClicked = true })
     }
@@ -715,7 +781,11 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository, mockProjectRepository, mockUserRepository, "user1"))
+                  mockTaskRepository,
+                  mockProjectRepository,
+                  mockUserRepository,
+                  "user1",
+                  mockConnectivityObserver))
     }
 
     composeTestRule.waitUntilExactlyOneExists(hasText("No tasks found"), 3000)

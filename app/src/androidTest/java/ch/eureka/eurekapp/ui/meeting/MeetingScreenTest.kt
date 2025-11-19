@@ -7,19 +7,19 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
-import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import kotlin.collections.filter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
-import org.junit.BeforeClass
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -35,6 +35,7 @@ class MeetingScreenTest {
 
   private val meetingsFlow = MutableStateFlow<List<Meeting>>(emptyList())
   private var testUserId: String? = MeetingProvider.sampleMeetings.first().createdBy
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
 
   private val repositoryMock =
       object : FakeMeetingRepository() {
@@ -56,17 +57,15 @@ class MeetingScreenTest {
         }
       }
 
-  companion object {
-    @BeforeClass
-    @JvmStatic
-    fun setUpClass() {
-      val context = InstrumentationRegistry.getInstrumentation().targetContext
-      ConnectivityObserverProvider.initialize(context)
-    }
+  @Before
+  fun setUp() {
+    mockConnectivityObserver =
+        MockConnectivityObserver(InstrumentationRegistry.getInstrumentation().targetContext)
+    mockConnectivityObserver.setConnected(true)
   }
 
   private fun setContent() {
-    val viewModel = MeetingViewModel(repositoryMock, { testUserId })
+    val viewModel = MeetingViewModel(repositoryMock, { testUserId }, mockConnectivityObserver)
     composeTestRule.setContent {
       MeetingScreen(
           meetingViewModel = viewModel,

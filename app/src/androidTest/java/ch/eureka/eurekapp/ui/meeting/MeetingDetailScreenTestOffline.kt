@@ -1,6 +1,5 @@
 package ch.eureka.eurekapp.ui.meeting
 
-import android.content.Context
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -10,15 +9,13 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.data.map.Location
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.utils.FirebaseEmulator
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -422,14 +419,5 @@ class MeetingDetailScreenTestOffline {
         .onNodeWithTag(MeetingDetailScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON)
         .assertIsDisplayed()
         .assertIsNotEnabled()
-  }
-
-  class MockConnectivityObserver(context: Context) : ConnectivityObserver(context) {
-    private val _isConnected = MutableStateFlow(true)
-    override val isConnected: Flow<Boolean> = _isConnected
-
-    fun setConnected(connected: Boolean) {
-      _isConnected.value = connected
-    }
   }
 }

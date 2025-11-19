@@ -12,18 +12,18 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.platform.app.InstrumentationRegistry
-import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import java.util.Date
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
-import org.junit.BeforeClass
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -47,14 +47,13 @@ class MeetingDetailScreenTest {
   private val participantsFlow = MutableStateFlow<List<Participant>>(emptyList())
   private var deleteResult = Result.success(Unit)
   private lateinit var viewModel: MeetingDetailViewModel
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
 
-  companion object {
-    @BeforeClass
-    @JvmStatic
-    fun setUpClass() {
-      val context = InstrumentationRegistry.getInstrumentation().targetContext
-      ConnectivityObserverProvider.initialize(context)
-    }
+  @Before
+  fun setUp() {
+    mockConnectivityObserver =
+        MockConnectivityObserver(InstrumentationRegistry.getInstrumentation().targetContext)
+    mockConnectivityObserver.setConnected(true)
   }
 
   private val repositoryMock =
@@ -81,7 +80,9 @@ class MeetingDetailScreenTest {
       onRecordMeeting: (String, String) -> Unit = { _, _ -> },
       onViewTranscript: (String, String) -> Unit = { _, _ -> }
   ) {
-    viewModel = MeetingDetailViewModel("test_project", "test_meeting", repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(
+            "test_project", "test_meeting", repositoryMock, mockConnectivityObserver)
     composeTestRule.setContent {
       MeetingDetailScreen(
           projectId = "test_project",
@@ -112,7 +113,9 @@ class MeetingDetailScreenTest {
           }
         }
 
-    val viewModel = MeetingDetailViewModel("test_project", "test_meeting", neverEmittingRepository)
+    val viewModel =
+        MeetingDetailViewModel(
+            "test_project", "test_meeting", neverEmittingRepository, mockConnectivityObserver)
     composeTestRule.setContent {
       MeetingDetailScreen(
           projectId = "test_project", meetingId = "test_meeting", viewModel = viewModel)
