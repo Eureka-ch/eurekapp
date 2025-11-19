@@ -54,6 +54,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 
@@ -72,6 +73,15 @@ open class ViewTaskScreenTest : TestCase() {
   private var lastViewVm: ViewTaskViewModel? = null
   private var lastTaskScreenVm: TaskScreenViewModel? = null
 
+  companion object {
+    @BeforeClass
+    @JvmStatic
+    fun setUpClass() {
+      val context = InstrumentationRegistry.getInstrumentation().targetContext
+      ConnectivityObserverProvider.initialize(context)
+    }
+  }
+
   @Before
   fun setup() {
     runBlocking {
@@ -88,9 +98,6 @@ open class ViewTaskScreenTest : TestCase() {
       if (FirebaseEmulator.auth.currentUser == null) {
         throw IllegalStateException("Auth state not properly established after sign-in")
       }
-
-      context = InstrumentationRegistry.getInstrumentation().targetContext
-      ConnectivityObserverProvider.initialize(context)
     }
   }
 

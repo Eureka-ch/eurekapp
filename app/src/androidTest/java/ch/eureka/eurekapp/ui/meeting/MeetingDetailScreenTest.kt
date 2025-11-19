@@ -23,7 +23,7 @@ import java.util.Date
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
-import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 
@@ -48,10 +48,13 @@ class MeetingDetailScreenTest {
   private var deleteResult = Result.success(Unit)
   private lateinit var viewModel: MeetingDetailViewModel
 
-  @Before
-  fun setUp() {
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
-    ConnectivityObserverProvider.initialize(context)
+  companion object {
+    @BeforeClass
+    @JvmStatic
+    fun setUpClass() {
+      val context = InstrumentationRegistry.getInstrumentation().targetContext
+      ConnectivityObserverProvider.initialize(context)
+    }
   }
 
   private val repositoryMock =

@@ -23,6 +23,7 @@ import com.google.firebase.Timestamp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -67,11 +68,17 @@ class TasksScreenTest {
 
   private val twoWeeksAway = Timestamp(java.util.Date(now + 15 * 24 * 60 * 60 * 1000))
 
+  companion object {
+    @BeforeClass
+    @JvmStatic
+    fun setUpClass() {
+      val context = InstrumentationRegistry.getInstrumentation().targetContext
+      ConnectivityObserverProvider.initialize(context)
+    }
+  }
+
   @Before
   fun setUp() {
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
-    ConnectivityObserverProvider.initialize(context)
-
     mockTaskRepository = MockTaskRepository()
     mockProjectRepository = MockProjectRepository()
     mockUserRepository = MockUserRepository()

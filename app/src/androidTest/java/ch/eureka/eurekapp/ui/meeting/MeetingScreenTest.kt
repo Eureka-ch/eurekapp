@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
-import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 
@@ -56,10 +56,13 @@ class MeetingScreenTest {
         }
       }
 
-  @Before
-  fun setUp() {
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
-    ConnectivityObserverProvider.initialize(context)
+  companion object {
+    @BeforeClass
+    @JvmStatic
+    fun setUpClass() {
+      val context = InstrumentationRegistry.getInstrumentation().targetContext
+      ConnectivityObserverProvider.initialize(context)
+    }
   }
 
   private fun setContent() {
