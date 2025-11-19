@@ -235,6 +235,8 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.robolectric)
     testImplementation(kotlin("test"))
+    testImplementation(libs.json)
+    testImplementation(libs.kotlinx.coroutines.test)
 
     // Testing - Android
     globalTestImplementation(libs.androidx.junit)
