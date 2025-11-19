@@ -19,9 +19,9 @@ class NominatimLocationRepository(val client: OkHttpClient) : LocationRepository
   override suspend fun search(query: String): List<Location> {
     val request =
         Request.Builder()
-            .url("https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=5")
+            .url("https://nominatim.openstreetmap.org/search?q=${query}&format=json")
             .header("Accept", "application/json")
-            .header("User-Agent", "Eurekapp")
+            .header("User-Agent", "Test")
             .build()
 
     val response = client.newCall(request).awaitResponse()
