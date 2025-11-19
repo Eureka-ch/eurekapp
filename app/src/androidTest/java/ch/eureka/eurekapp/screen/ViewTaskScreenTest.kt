@@ -215,6 +215,16 @@ open class ViewTaskScreenTest : TestCase() {
         composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).assertIsDisplayed()
         composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.EDIT_TASK).assertIsDisplayed()
 
+        // Wait for data to load from Firestore
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          try {
+            composeTestRule.onNodeWithText("Loaded Task").assertExists()
+            true
+          } catch (e: AssertionError) {
+            false
+          }
+        }
+
         composeTestRule.onNodeWithText("Loaded Task").assertIsDisplayed()
         composeTestRule.onNodeWithText("Loaded Desc").assertIsDisplayed()
         composeTestRule.onNodeWithText("20/12/2024").assertIsDisplayed()

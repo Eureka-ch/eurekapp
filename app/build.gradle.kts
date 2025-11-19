@@ -280,17 +280,27 @@ tasks.register("jacocoTestReport", JacocoReport::class) {
         "android/**/*.*",
     )
 
-    val debugTree = fileTree("${project.layout.buildDirectory.get()}/tmp/kotlin-classes/debug") {
-        exclude(fileFilter)
-    }
+    // Use lazy providers for configuration cache compatibility
+    val buildDir = layout.buildDirectory
 
-    val mainSrc = "${project.layout.projectDirectory}/src/main/java"
-    sourceDirectories.setFrom(files(mainSrc))
-    classDirectories.setFrom(files(debugTree))
-    executionData.setFrom(fileTree(project.layout.buildDirectory.get()) {
-        include("outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
-        include("outputs/code_coverage/debugAndroidTest/connected/*/coverage.ec")
-    })
+    sourceDirectories.setFrom(files("${layout.projectDirectory}/src/main/java"))
+
+    classDirectories.setFrom(
+        buildDir.map { dir ->
+            fileTree(dir.dir("tmp/kotlin-classes/debug")) {
+                exclude(fileFilter)
+            }
+        }
+    )
+
+    executionData.setFrom(
+        buildDir.map { dir ->
+            fileTree(dir) {
+                include("outputs/unit_test_code_coverage/**/*.exec")
+                include("outputs/code_coverage/**/*.ec")
+            }
+        }
+    )
 
     doLast {
         val reportFile = reports.xml.outputLocation.asFile.get()
