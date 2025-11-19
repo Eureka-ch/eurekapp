@@ -17,7 +17,13 @@ import retrofit2.http.Query
 
 /** Data models for Google Directions API responses. */
 
-/** Top-level response from Directions API. */
+/**
+ * Top-level response from Directions API.
+ *
+ * @property routes List of possible routes from origin to destination
+ * @property status Response status code (OK, ZERO_RESULTS, etc.)
+ * @property errorMessage Human-readable error message if status is not OK
+ */
 @Serializable
 data class DirectionsResponse(
     val routes: List<Route> = emptyList(),
@@ -25,7 +31,14 @@ data class DirectionsResponse(
     @SerialName("error_message") val errorMessage: String? = null
 )
 
-/** A single route from origin to destination. */
+/**
+ * A single route from origin to destination.
+ *
+ * @property legs Route segments, typically one per waypoint
+ * @property overviewPolyline Encoded polyline for the entire route
+ * @property summary Short description of the route
+ * @property warnings Advisory notices about the route
+ */
 @Serializable
 data class Route(
     val legs: List<Leg> = emptyList(),
@@ -34,7 +47,17 @@ data class Route(
     val warnings: List<String> = emptyList()
 )
 
-/** A leg of the route (typically one per waypoint). */
+/**
+ * A leg of the route (typically one per waypoint).
+ *
+ * @property distance Total distance for this leg
+ * @property duration Estimated travel time for this leg
+ * @property startAddress Human-readable starting address
+ * @property endAddress Human-readable ending address
+ * @property startLocation Geographic coordinates of start point
+ * @property endLocation Geographic coordinates of end point
+ * @property steps Turn-by-turn navigation steps
+ */
 @Serializable
 data class Leg(
     val distance: TextValue,
@@ -46,7 +69,18 @@ data class Leg(
     val steps: List<Step> = emptyList()
 )
 
-/** A single step in the navigation with instructions. */
+/**
+ * A single step in the navigation with instructions.
+ *
+ * @property distance Distance covered in this step
+ * @property duration Time required for this step
+ * @property startLocation Geographic coordinates where step begins
+ * @property endLocation Geographic coordinates where step ends
+ * @property htmlInstructions Navigation instruction with HTML formatting
+ * @property polyline Encoded polyline for this step's path
+ * @property travelMode Mode of travel (DRIVING, WALKING, etc.)
+ * @property maneuver Optional maneuver type (turn-left, turn-right, etc.)
+ */
 @Serializable
 data class Step(
     val distance: TextValue,
@@ -59,24 +93,38 @@ data class Step(
     val maneuver: String? = null
 )
 
-/** Distance or duration with text and numeric value. */
+/**
+ * Distance or duration with text and numeric value.
+ *
+ * @property text Human-readable formatted value (e.g., "5.2 km", "12 mins")
+ * @property value Numeric value in base units (meters for distance, seconds for duration)
+ */
 @Serializable
 data class TextValue(
     val text: String,
-    val value: Int // meters for distance, seconds for duration
+    val value: Int
 )
 
-/** Geographic location as latitude/longitude. */
+/**
+ * Geographic location as latitude/longitude.
+ *
+ * @property latitude Latitude in degrees (-90 to 90)
+ * @property longitude Longitude in degrees (-180 to 180)
+ */
 @Serializable
 data class LocationData(
     @SerialName("lat") val latitude: Double,
     @SerialName("lng") val longitude: Double
 )
 
-/** Encoded polyline data for route visualization. */
+/**
+ * Encoded polyline data for route visualization.
+ *
+ * @property points Google-encoded polyline string representing the path
+ */
 @Serializable
 data class PolylineData(
-    val points: String // Encoded polyline string
+    val points: String
 )
 
 /** Retrofit service interface for Google Directions API. */
@@ -101,16 +149,23 @@ interface DirectionsApiService {
 
 /** Factory for creating DirectionsApiService instances. */
 object DirectionsApiServiceFactory {
+  /** Base URL for Google Maps Directions API. */
   private const val BASE_URL = "https://maps.googleapis.com/"
 
+  /** JSON configuration for parsing API responses with lenient handling. */
   private val json = Json {
-    ignoreUnknownKeys = true // Ignore fields we don't need
-    coerceInputValues = true // Handle nulls gracefully
+    ignoreUnknownKeys = true
+    coerceInputValues = true
   }
 
   /**
-   * Custom DNS implementation using Google's public DNS servers. Fallback for emulators with broken
-   * DNS resolution.
+   * Custom DNS implementation with hardcoded fallback IPs.
+   *
+   * **EMULATOR-ONLY WORKAROUND**: This DNS resolver exists solely to work around broken DNS
+   * resolution in Android emulators. It attempts system DNS first, then falls back to hardcoded
+   * Google Maps API IP addresses when DNS lookup fails.
+   *
+   * On real devices, system DNS works correctly and the fallback is never used.
    */
   private val googleDns =
       object : Dns {
@@ -118,7 +173,7 @@ object DirectionsApiServiceFactory {
           return try {
             // Try system DNS first
             Dns.SYSTEM.lookup(hostname)
-          } catch (e: Exception) {
+          } catch (_: Exception) {
             // Fallback: Use known IP addresses for maps.googleapis.com
             when (hostname) {
               "maps.googleapis.com" -> {
@@ -143,10 +198,9 @@ object DirectionsApiServiceFactory {
   /**
    * Create a DirectionsApiService instance.
    *
-   * @param apiKey Google Maps API key (optional, can be passed per request)
-   * @return Configured DirectionsApiService
+   * @return Configured DirectionsApiService with custom DNS fallback
    */
-  fun create(apiKey: String? = null): DirectionsApiService {
+  fun create(): DirectionsApiService {
     val client = OkHttpClient.Builder().dns(googleDns).build()
 
     val retrofit =
