@@ -120,6 +120,13 @@ class MeetingDetailScreenTestOffline {
 
     composeTestRule.waitForIdle()
 
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodesWithTag(MeetingDetailScreenTestTags.LOADING_INDICATOR)
+          .fetchSemanticsNodes()
+          .isEmpty()
+    }
+
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_STATUS).assertIsDisplayed()
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_FORMAT).assertIsDisplayed()
   }

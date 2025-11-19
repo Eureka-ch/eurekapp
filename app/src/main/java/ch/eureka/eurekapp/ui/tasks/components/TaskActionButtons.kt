@@ -1,6 +1,5 @@
 package ch.eureka.eurekapp.ui.tasks.components
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,7 +11,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
@@ -30,23 +28,12 @@ fun TaskActionButtons(
     onAutoAssignClick: () -> Unit = {},
     actionsEnabled: Boolean = true
 ) {
-  val context = LocalContext.current
   Row(
       modifier = modifier.fillMaxWidth(),
       horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         // "+ New Task" button (outlined)
         OutlinedButton(
-            onClick = {
-              if (actionsEnabled) {
-                onCreateTaskClick()
-              } else {
-                Toast.makeText(
-                        context,
-                        "Task creation is unavailable offline to prevent sync conflicts.",
-                        Toast.LENGTH_SHORT)
-                    .show()
-              }
-            },
+            onClick = { if (actionsEnabled) onCreateTaskClick() },
             enabled = actionsEnabled,
             modifier =
                 Modifier.weight(1f)
@@ -64,17 +51,7 @@ fun TaskActionButtons(
 
         // "Auto-assign" button (filled)
         Button(
-            onClick = {
-              if (actionsEnabled) {
-                onAutoAssignClick()
-              } else {
-                Toast.makeText(
-                        context,
-                        "Auto-assigning tasks is unavailable offline to prevent sync conflicts.",
-                        Toast.LENGTH_SHORT)
-                    .show()
-              }
-            },
+            onClick = { if (actionsEnabled) onAutoAssignClick() },
             enabled = actionsEnabled,
             modifier = Modifier.weight(1f).alpha(if (actionsEnabled) 1f else 0.6f),
             colors =

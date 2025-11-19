@@ -959,7 +959,6 @@ private fun ActionButtonsSection(
     actionsConfig: ActionButtonsConfig,
     isConnected: Boolean = true,
 ) {
-  val context = LocalContext.current
   Column(
       modifier =
           Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.ACTION_BUTTONS_SECTION),
@@ -978,12 +977,6 @@ private fun ActionButtonsSection(
                   onClick = {
                     if (isConnected) {
                       actionsConfig.onJoinMeeting(meeting.link)
-                    } else {
-                      Toast.makeText(
-                              context,
-                              "Joining meeting is unavailable offline.",
-                              Toast.LENGTH_SHORT)
-                          .show()
                     }
                   },
                   enabled = isConnected,
@@ -1001,10 +994,6 @@ private fun ActionButtonsSection(
                   onClick = {
                     if (isConnected) {
                       actionsConfig.onNavigateToMeeting()
-                    } else {
-                      Toast.makeText(
-                              context, "Navigation is unavailable offline.", Toast.LENGTH_SHORT)
-                          .show()
                     }
                   },
                   enabled = isConnected,
@@ -1020,9 +1009,6 @@ private fun ActionButtonsSection(
                 onClick = {
                   if (isConnected) {
                     actionsConfig.onRecordMeeting(meeting.projectId, meeting.meetingID)
-                  } else {
-                    Toast.makeText(context, "Recording is unavailable offline.", Toast.LENGTH_SHORT)
-                        .show()
                   }
                 },
                 enabled = isConnected,
@@ -1038,12 +1024,6 @@ private fun ActionButtonsSection(
                 onClick = {
                   if (isConnected) {
                     actionsConfig.onViewTranscript(meeting.projectId, meeting.meetingID)
-                  } else {
-                    Toast.makeText(
-                            context,
-                            "Viewing transcript is unavailable offline.",
-                            Toast.LENGTH_SHORT)
-                        .show()
                   }
                 },
                 enabled = isConnected,
@@ -1062,12 +1042,6 @@ private fun ActionButtonsSection(
                 onClick = {
                   if (isConnected) {
                     actionsConfig.onVoteForMeetingProposals()
-                  } else {
-                    Toast.makeText(
-                            context,
-                            "Voting is unavailable offline to prevent sync conflicts.",
-                            Toast.LENGTH_SHORT)
-                        .show()
                   }
                 },
                 enabled = isConnected,
@@ -1089,12 +1063,6 @@ private fun ActionButtonsSection(
             onClick = {
               if (isConnected) {
                 actionsConfig.onEditMeeting()
-              } else {
-                Toast.makeText(
-                        context,
-                        "Meeting editing is unavailable offline to prevent sync conflicts.",
-                        Toast.LENGTH_SHORT)
-                    .show()
               }
             },
             enabled = isConnected,
@@ -1109,10 +1077,6 @@ private fun ActionButtonsSection(
             onClick = {
               if (isConnected) {
                 actionsConfig.onDeleteMeeting()
-              } else {
-                Toast.makeText(
-                        context, "Deleting meeting is unavailable offline.", Toast.LENGTH_SHORT)
-                    .show()
               }
             },
             enabled = isConnected,
@@ -1145,7 +1109,6 @@ private fun EditModeButtons(
     isSaving: Boolean,
     isConnected: Boolean
 ) {
-  val context = LocalContext.current
   Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
     Text(
         text = "Edit Mode",
@@ -1156,12 +1119,6 @@ private fun EditModeButtons(
         onClick = {
           if (isConnected) {
             onSave()
-          } else {
-            Toast.makeText(
-                    context,
-                    "Saving changes is unavailable offline to prevent sync conflicts.",
-                    Toast.LENGTH_SHORT)
-                .show()
           }
         },
         modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.SAVE_BUTTON),

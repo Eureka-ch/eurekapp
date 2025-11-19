@@ -144,12 +144,6 @@ fun MeetingScreen(
             onClick = {
               if (uiState.isConnected) {
                 config.onCreateMeeting()
-              } else {
-                Toast.makeText(
-                        context,
-                        "Meeting creation is unavailable offline to prevent sync conflicts.",
-                        Toast.LENGTH_SHORT)
-                    .show()
               }
             },
             modifier = Modifier.testTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON),

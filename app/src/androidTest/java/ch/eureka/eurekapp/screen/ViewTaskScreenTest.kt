@@ -55,7 +55,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
 import org.junit.Before
-import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 
@@ -74,15 +73,6 @@ open class ViewTaskScreenTest : TestCase() {
   private var lastViewVm: ViewTaskViewModel? = null
   private var lastTaskScreenVm: TaskScreenViewModel? = null
   private lateinit var mockConnectivityObserver: MockConnectivityObserver
-
-  companion object {
-    @BeforeClass
-    @JvmStatic
-    fun setUpClass() {
-      // Removed ConnectivityObserverProvider initialization - using MockConnectivityObserver
-      // instead
-    }
-  }
 
   @Before
   fun setup() {
@@ -512,6 +502,18 @@ open class ViewTaskScreenTest : TestCase() {
           setupTestTask(projectId, taskId, assignedUserIds = listOf(userId1))
         }
 
+        // Wait for assigned users to be loaded and displayed
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          try {
+            composeTestRule
+                .onNodeWithTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION)
+                .assertExists()
+            true
+          } catch (e: AssertionError) {
+            false
+          }
+        }
+
         // Verify assigned users section is displayed
         composeTestRule
             .onNodeWithTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION)
@@ -553,6 +555,18 @@ open class ViewTaskScreenTest : TestCase() {
 
         setupViewTaskTest(projectId, taskId) {
           setupTestTask(projectId, taskId, assignedUserIds = listOf(userId1, userId2, userId3))
+        }
+
+        // Wait for assigned users to be loaded and displayed
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          try {
+            composeTestRule
+                .onNodeWithTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION)
+                .assertExists()
+            true
+          } catch (e: AssertionError) {
+            false
+          }
         }
 
         // Verify assigned users section is displayed
