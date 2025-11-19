@@ -1,6 +1,7 @@
 //This documentation was generated with the help of ChatGPT-5 by OpenAI.
 package ch.eureka.eurekapp.model.calendar
 
+import android.content.ContentProviderOperation
 import android.content.ContentResolver
 import android.content.ContentValues
 import android.database.Cursor
@@ -9,6 +10,7 @@ import android.provider.CalendarContract
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import kotlinx.coroutines.flow.first
+import java.util.Calendar
 import java.util.TimeZone
 
 /**
@@ -93,32 +95,40 @@ class LocalGoogleCalendarRepository(
         contentResolver: ContentResolver,
         eventData: CalendarEventData
     ): Result<Unit> = runCatching {
+        val operations = ArrayList<ContentProviderOperation>()
+
         val googleCalendarID = getGoogleCalendarID(contentResolver)
 
         val eventToContentValues = eventToContentValues(googleCalendarID, eventData)
 
-        val uri: Uri? = contentResolver.insert(CalendarContract.Events.CONTENT_URI,
-            eventToContentValues)
-        check(uri != null)
-
-        val eventID = uri.lastPathSegment?.toLong()
-        check(eventID != null)
+        operations.add(
+            ContentProviderOperation.newInsert(CalendarContract.Events.CONTENT_URI)
+                .withValues(eventToContentValues)
+                .build()
+        )
 
         //Add the attendees of the event
         for(attendee: CalendarAttendee in eventData.attendees){
-            val attendeeToContentValues = attendeeToContentValues(eventID, attendee)
-            val uri: Uri? = contentResolver.insert(CalendarContract.Attendees.CONTENT_URI,
-                attendeeToContentValues)
-            check(uri != null)
+            operations.add(
+                ContentProviderOperation
+                    .newInsert(CalendarContract.Attendees.CONTENT_URI)
+                    .withValueBackReference(CalendarContract.Attendees.EVENT_ID, 0)
+                    .withValues(attendeeToContentValues(0L, attendee))
+                    .build()
+                )
         }
 
         //Add the reminders of the event
         for(reminder: CalendarReminder in eventData.reminders){
-            val reminderToContentValues = reminderToContentValue(eventID, reminder)
-            val uri: Uri? = contentResolver.insert(CalendarContract.Reminders.CONTENT_URI,
-                reminderToContentValues)
-            check(uri != null)
+            operations.add(
+                ContentProviderOperation
+                .newInsert(CalendarContract.Reminders.CONTENT_URI)
+                .withValueBackReference(CalendarContract.Attendees.EVENT_ID, 0)
+                .withValues(reminderToContentValue(0L, reminder))
+                .build()
+            )
         }
+        contentResolver.applyBatch(CalendarContract.AUTHORITY, operations)
     }
 
     override suspend fun getCalendarEvent(contentResolver: ContentResolver, uniqueEventId: String):
