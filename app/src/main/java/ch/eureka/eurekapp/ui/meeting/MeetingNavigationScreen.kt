@@ -86,7 +86,12 @@ object MeetingNavigationScreenTestTags {
 /** Default zoom level for the map when displaying meeting location. */
 private const val DEFAULT_MAP_ZOOM = 15f
 
-/** Available travel modes for route calculation. */
+/**
+ * Available travel modes for route calculation.
+ *
+ * @property displayName Human-readable name shown in the UI
+ * @property apiValue Value sent to the Google Directions API
+ */
 enum class TravelMode(val displayName: String, val apiValue: String) {
   DRIVING("Drive", "driving"),
   TRANSIT("Transit", "transit"),
@@ -96,6 +101,10 @@ enum class TravelMode(val displayName: String, val apiValue: String) {
 
 /**
  * Main composable for the meeting location screen.
+ *
+ * We use composable overloading here because having API key generated here keeps the things
+ * compartmentalized. Also this pattern enables reusability and testability as recommended
+ * by the Android Jetpack Compose documentation.
  *
  * Displays a Google Map with the meeting location marker and navigation features.
  *
@@ -279,7 +288,7 @@ private fun MapContent(
         routeErrorMsg = uiState.routeErrorMsg,
         selectedTravelMode = selectedTravelMode,
         onTravelModeChange = onTravelModeChange,
-        onFetchDirections = { viewModel.fetchDirections(selectedTravelMode.apiValue) },
+        onFetchDirections = { viewModel.fetchDirections(selectedTravelMode) },
         onShowDirections = { onShowDirectionsChange(true) },
         viewModel = viewModel)
   }
