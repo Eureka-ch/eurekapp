@@ -23,11 +23,14 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.HourglassTop
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -59,12 +62,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
+import ch.eureka.eurekapp.model.map.Location
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.FlowPreview
 
 /** Test tags for the create meeting screen. */
 object CreateMeetingScreenTestTags {
@@ -77,6 +82,9 @@ object CreateMeetingScreenTestTags {
   const val INPUT_MEETING_DURATION = "InputMeetingDuration"
   const val INPUT_FORMAT = "InputFormat"
   const val CREATE_MEETING_BUTTON = "CreateMeetingButton"
+  const val INPUT_MEETING_LOCATION = "InputMeetingLocation"
+  const val LOCATION_SUGGESTION = "LocationSuggestion"
+  const val PICK_LOCATION = "PickLocation"
 }
 
 /** Spacing between each component or subcomponent on the screen. */
@@ -90,6 +98,7 @@ const val SPACING = 8
  *   database.
  * @param createMeetingViewModel View model associated with create meeting screen.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateMeetingScreen(
     projectId: String,
@@ -208,6 +217,17 @@ fun CreateMeetingScreen(
                       options = listOf(MeetingFormat.IN_PERSON, MeetingFormat.VIRTUAL),
                       tag = CreateMeetingScreenTestTags.INPUT_FORMAT,
                       onOptionSelected = { createMeetingViewModel.setFormat(it) }))
+
+          if (uiState.format == MeetingFormat.IN_PERSON) {
+            Spacer(Modifier.height(SPACING.dp))
+
+            LocationInputField(
+                locationQuery = uiState.locationQuery,
+                locationSuggestions = uiState.locationSuggestions,
+                selectLocationQuery = { createMeetingViewModel.setLocationQuery(it) },
+                selectLocation = { createMeetingViewModel.setLocation(it) },
+                onPickLocationOnMap = {})
+          }
 
           Spacer(Modifier.height(SPACING.dp))
 
@@ -467,4 +487,84 @@ fun <T> SingleChoiceInputField(config: SingleChoiceInputFieldConfig<T>) {
         },
         dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } })
   }
+}
+
+/**
+ * Composable to display the location input text field where the user can either enter a location
+ * and the location is searched by name or choose to pick the location directly by marking it on the
+ * map.
+ *
+ * @param locationQuery The location inputted/selected byt the user in the text field.
+ * @param locationSuggestions Suggestions for the [locationQuery]
+ * @param selectLocationQuery Function executed when the user select a location query (select
+ *   location name).
+ * @param selectLocation Function executed when the user select the corresponding location.
+ * @param onPickLocationOnMap Function executed when the users clicks on hte button to pick the
+ *   location on the map.
+ */
+@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
+@Composable
+fun LocationInputField(
+    locationQuery: String,
+    locationSuggestions: List<Location>,
+    selectLocationQuery: (String) -> Unit,
+    selectLocation: (Location) -> Unit,
+    onPickLocationOnMap: () -> Unit,
+) {
+
+  var showDropdown by remember { mutableStateOf(false) }
+
+  ExposedDropdownMenuBox(
+      expanded = showDropdown && locationSuggestions.isNotEmpty(),
+      onExpandedChange = { showDropdown = it }) {
+        OutlinedTextField(
+            value = locationQuery,
+            onValueChange = {
+              selectLocationQuery(it)
+              showDropdown = true
+            },
+            label = { Text("Location") },
+            placeholder = { Text("Enter an Address or Location") },
+            trailingIcon = {
+              IconButton(
+                  onClick = onPickLocationOnMap,
+                  modifier = Modifier.testTag(CreateMeetingScreenTestTags.PICK_LOCATION)) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = "Pick location")
+                  }
+            },
+            modifier =
+                Modifier.menuAnchor()
+                    .fillMaxWidth()
+                    .testTag(CreateMeetingScreenTestTags.INPUT_MEETING_LOCATION),
+            singleLine = true)
+
+        ExposedDropdownMenu(
+            expanded = showDropdown && locationSuggestions.isNotEmpty(),
+            onDismissRequest = { showDropdown = false }) {
+              locationSuggestions.take(3).forEach { location ->
+                DropdownMenuItem(
+                    text = {
+                      Text(
+                          text =
+                              location.name.take(30) + if (location.name.length > 30) "..." else "",
+                          maxLines = 1)
+                    },
+                    onClick = {
+                      selectLocationQuery(location.name)
+                      selectLocation(location)
+                      showDropdown = false
+                    },
+                    modifier =
+                        Modifier.padding(8.dp)
+                            .testTag(CreateMeetingScreenTestTags.LOCATION_SUGGESTION))
+              }
+
+              if (locationSuggestions.size > 3) {
+                DropdownMenuItem(
+                    text = { Text("More...") }, onClick = {}, modifier = Modifier.padding(8.dp))
+              }
+            }
+      }
 }

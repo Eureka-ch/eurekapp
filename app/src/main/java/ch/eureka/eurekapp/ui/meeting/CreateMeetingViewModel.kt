@@ -1,11 +1,13 @@
 /*
-Portions of the code in this file are inspired by the Bootcamp solution B3 provided by the SwEnt staff.
+Portions of the code in this file are copy-pasted from the Bootcamp solution B3 provided by the SwEnt staff.
 Portions of the code in this file were written with the help of chatGPT.
  */
 package ch.eureka.eurekapp.ui.meeting
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ch.eureka.eurekapp.HttpClientProvider
 import ch.eureka.eurekapp.model.data.IdGenerator
 import ch.eureka.eurekapp.model.data.meeting.FirestoreMeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.Meeting
@@ -15,6 +17,9 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingProposalVote
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
+import ch.eureka.eurekapp.model.map.Location
+import ch.eureka.eurekapp.model.map.LocationRepository
+import ch.eureka.eurekapp.model.map.NominatimLocationRepository
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import java.time.LocalDate
@@ -34,6 +39,9 @@ import kotlinx.coroutines.launch
  * @param time The start time of the the meeting to be created.
  * @param duration The duration of the meeting.
  * @param format The format of the meeting.
+ * @param selectedLocation The potential selected location for the meeting.
+ * @param locationQuery The location name currently queried.
+ * @param locationSuggestions The location suggestions for [locationQuery].
  * @param meetingSaved Marker set to true if the meeting waa successfully saved, false otherwise.
  * @param hasTouchedTitle Marker set to true if the user has already clicked on the title field,
  *   false otherwise.
@@ -49,6 +57,9 @@ data class CreateMeetingUIState(
     val time: LocalTime = LocalTime.now(),
     val duration: Int = 0,
     val format: MeetingFormat = MeetingFormat.IN_PERSON,
+    val selectedLocation: Location? = null,
+    val locationQuery: String = "",
+    val locationSuggestions: List<Location> = emptyList(),
     val meetingSaved: Boolean = false,
     val hasTouchedTitle: Boolean = false,
     val hasTouchedDate: Boolean = false,
@@ -60,7 +71,8 @@ data class CreateMeetingUIState(
     get() =
         title.isNotBlank() &&
             duration >= 5 &&
-            LocalDateTime.of(date, time).isAfter(LocalDateTime.now())
+            LocalDateTime.of(date, time).isAfter(LocalDateTime.now()) &&
+            (format == MeetingFormat.VIRTUAL || selectedLocation != null)
 }
 
 /**
@@ -71,6 +83,8 @@ data class CreateMeetingUIState(
  */
 class CreateMeetingViewModel(
     private val repository: MeetingRepository = FirestoreMeetingRepository(),
+    private val locationRepository: LocationRepository =
+        NominatimLocationRepository(HttpClientProvider.client),
     private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
 ) : ViewModel() {
 
@@ -136,6 +150,39 @@ class CreateMeetingViewModel(
     _uiState.update { it.copy(format = format) }
   }
 
+  /**
+   * Set the location of the meeting to be created.
+   *
+   * @param location The location of the meeting to be created.
+   */
+  fun setLocation(location: Location) {
+    _uiState.update { it.copy(selectedLocation = location) }
+  }
+
+  /**
+   * Search for suggestions for location suggestions for the given [query] and populates the
+   * suggestions and sets the location query.
+   *
+   * @param query The location name query.
+   */
+  fun setLocationQuery(query: String) {
+    _uiState.update { it.copy(locationQuery = query) }
+
+    if (query.isNotEmpty()) {
+      viewModelScope.launch {
+        try {
+          val results = locationRepository.search(query)
+          _uiState.value = _uiState.value.copy(locationSuggestions = results)
+        } catch (e: Exception) {
+          Log.e("AddToDoViewModel", "Error fetching location suggestions", e)
+          _uiState.value = _uiState.value.copy(locationSuggestions = emptyList())
+        }
+      }
+    } else {
+      _uiState.value = _uiState.value.copy(locationSuggestions = emptyList())
+    }
+  }
+
   /** Mark the the meeting proposal as saved in the database. */
   fun setMeetingSaved() {
     _uiState.update { it.copy(meetingSaved = true) }
@@ -186,6 +233,7 @@ class CreateMeetingViewModel(
             title = uiState.value.title,
             status = MeetingStatus.OPEN_TO_VOTES,
             duration = uiState.value.duration,
+            location = uiState.value.selectedLocation,
             meetingProposals =
                 listOf(
                     MeetingProposal(
