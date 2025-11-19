@@ -334,14 +334,23 @@ jobs:
       - name: Rename coverage file for shard
         if: always()
         run: |
+          echo "=== Shard ${{ matrix.shard }}: Renaming coverage file ==="
+          echo "Looking for coverage files in app/build/outputs/code_coverage..."
+          find app/build/outputs/code_coverage -type f -name "*.ec" || echo "No .ec files found"
+          echo ""
+
           # Find and rename the coverage.ec file to include shard number
           COVERAGE_FILE=$(find app/build/outputs/code_coverage -name "coverage.ec" -type f | head -1)
           if [ -n "$COVERAGE_FILE" ]; then
+            echo "Found coverage file: $COVERAGE_FILE"
             COVERAGE_DIR=$(dirname "$COVERAGE_FILE")
-            mv "$COVERAGE_FILE" "$COVERAGE_DIR/coverage-shard-${{ matrix.shard }}.ec"
-            echo "Renamed coverage file to coverage-shard-${{ matrix.shard }}.ec"
+            mv -v "$COVERAGE_FILE" "$COVERAGE_DIR/coverage-shard-${{ matrix.shard }}.ec"
+            echo "✓ Renamed coverage file to coverage-shard-${{ matrix.shard }}.ec"
+            ls -lh "$COVERAGE_DIR/coverage-shard-${{ matrix.shard }}.ec"
           else
-            echo "Warning: No coverage.ec file found for shard ${{ matrix.shard }}"
+            echo "✗ Warning: No coverage.ec file found for shard ${{ matrix.shard }}"
+            echo "Contents of app/build/outputs/:"
+            ls -R app/build/outputs/ || echo "Directory does not exist"
           fi
 
       - name: Upload instrumented test results and coverage
@@ -422,6 +431,18 @@ jobs:
           pattern: instrumented-test-results-shard-*
           path: .
           merge-multiple: true
+
+      - name: Debug downloaded artifact structure
+        run: |
+          echo "=== Debugging Artifact Download ==="
+          echo "Checking workspace root for any downloaded files:"
+          find . -name "coverage-shard-*.ec" -o -name "coverage.ec" | head -20
+          echo ""
+          echo "Checking entire build directory:"
+          find . -name "*.ec" -type f | head -20
+          echo ""
+          echo "Directory structure of workspace:"
+          ls -R | head -100
 
       - name: Verify downloaded artifacts
         run: |
