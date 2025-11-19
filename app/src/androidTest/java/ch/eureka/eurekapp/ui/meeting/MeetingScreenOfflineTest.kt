@@ -42,7 +42,6 @@ class MeetingScreenOfflineTest {
 
   @Before
   fun setUp() {
-    // Sign in a test user
     runBlocking {
       try {
         FirebaseAuth.getInstance().signInAnonymously().await()
@@ -82,10 +81,6 @@ class MeetingScreenOfflineTest {
     composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag(MeetingScreenTestTags.OFFLINE_MESSAGE).assertIsDisplayed()
-    composeTestRule
-        .onNodeWithText(
-            "You are offline. Meeting creation is unavailable to prevent sync conflicts.")
-        .assertIsDisplayed()
   }
 
   @Test

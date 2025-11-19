@@ -123,7 +123,6 @@ class MeetingDetailScreenTestOffline {
 
     composeTestRule.waitForIdle()
 
-    // Verify meeting details are still visible
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_STATUS).assertIsDisplayed()
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_FORMAT).assertIsDisplayed()
   }

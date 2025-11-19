@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.ui.components
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -49,6 +51,7 @@ fun EurekaTaskCard(
     onClick: () -> Unit = {},
     canToggleCompletion: Boolean = true
 ) {
+  val context = LocalContext.current
   // No local state - use controlled state from parent
   Card(
       shape = RoundedCornerShape(16.dp),
@@ -75,7 +78,17 @@ fun EurekaTaskCard(
                 // Checkbox aligned to the right
                 Box(
                     modifier =
-                        Modifier.clickable(enabled = canToggleCompletion) { onToggleComplete() }
+                        Modifier.clickable {
+                              if (canToggleCompletion) {
+                                onToggleComplete()
+                              } else {
+                                Toast.makeText(
+                                        context,
+                                        "Completing tasks is unavailable offline.",
+                                        Toast.LENGTH_SHORT)
+                                    .show()
+                              }
+                            }
                             .alpha(if (canToggleCompletion) 1f else 0.6f)) {
                       if (isCompleted) {
                         Text(

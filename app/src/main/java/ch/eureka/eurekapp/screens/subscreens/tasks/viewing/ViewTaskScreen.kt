@@ -153,7 +153,15 @@ fun ViewTaskScreen(
 
               Button(
                   onClick = {
-                    navigationController.navigate(Route.TasksSection.EditTask(projectId, taskId))
+                    if (isConnected) {
+                      navigationController.navigate(Route.TasksSection.EditTask(projectId, taskId))
+                    } else {
+                      Toast.makeText(
+                              context,
+                              "Editing tasks is unavailable offline to prevent sync conflicts.",
+                              Toast.LENGTH_SHORT)
+                          .show()
+                    }
                   },
                   enabled = isConnected,
                   modifier =
