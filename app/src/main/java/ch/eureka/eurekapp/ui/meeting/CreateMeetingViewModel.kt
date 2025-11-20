@@ -26,8 +26,15 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -81,6 +88,7 @@ data class CreateMeetingUIState(
  * @param repository The repository to upload the meeting to.
  * @param getCurrentUserId Function to get current user ID.
  */
+@OptIn(FlowPreview::class)
 class CreateMeetingViewModel(
     private val repository: MeetingRepository = FirestoreMeetingRepository(),
     private val locationRepository: LocationRepository =
@@ -90,6 +98,28 @@ class CreateMeetingViewModel(
 
   private val _uiState = MutableStateFlow(CreateMeetingUIState())
   val uiState: StateFlow<CreateMeetingUIState> = _uiState
+
+  private val searchIntent =
+      MutableSharedFlow<String>(
+          replay = 0, extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
+  init {
+    viewModelScope.launch {
+      searchIntent
+          .debounce(300L)
+          .filter { it.length >= 2 }
+          .distinctUntilChanged()
+          .collectLatest { query ->
+            try {
+              val results = locationRepository.search(query)
+              _uiState.update { it.copy(locationSuggestions = results) }
+            } catch (e: Exception) {
+              Log.e("CreateMeetingViewModel", "Error fetching suggestions", e)
+              _uiState.update { it.copy(locationSuggestions = emptyList()) }
+            }
+          }
+    }
+  }
 
   /** Clears the error message in the UI state. */
   fun clearErrorMsg() {
@@ -168,18 +198,10 @@ class CreateMeetingViewModel(
   fun setLocationQuery(query: String) {
     _uiState.update { it.copy(locationQuery = query) }
 
-    if (query.isNotEmpty()) {
-      viewModelScope.launch {
-        try {
-          val results = locationRepository.search(query)
-          _uiState.value = _uiState.value.copy(locationSuggestions = results)
-        } catch (e: Exception) {
-          Log.e("AddToDoViewModel", "Error fetching location suggestions", e)
-          _uiState.value = _uiState.value.copy(locationSuggestions = emptyList())
-        }
-      }
+    if (query.isEmpty()) {
+      _uiState.update { it.copy(locationSuggestions = emptyList()) }
     } else {
-      _uiState.value = _uiState.value.copy(locationSuggestions = emptyList())
+      searchIntent.tryEmit(query)
     }
   }
 

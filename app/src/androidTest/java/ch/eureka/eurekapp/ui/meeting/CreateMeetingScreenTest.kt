@@ -448,7 +448,12 @@ class CreateMeetingScreenTest {
         .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LOCATION)
         .performTextInput("EPFL")
 
-    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodesWithTag(CreateMeetingScreenTestTags.LOCATION_SUGGESTION)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
 
     composeTestRule
         .onAllNodesWithTag(CreateMeetingScreenTestTags.LOCATION_SUGGESTION)
@@ -483,7 +488,12 @@ class CreateMeetingScreenTest {
         .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LOCATION)
         .performTextInput("Loc")
 
-    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodesWithTag(CreateMeetingScreenTestTags.LOCATION_SUGGESTION)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
 
     composeTestRule.onNodeWithText("More...").assertIsDisplayed()
 

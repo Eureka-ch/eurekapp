@@ -1,11 +1,14 @@
 /* Portions of this file were written with the help of Gemini.*/
 package ch.eureka.eurekapp.ui.meeting
 
+import android.util.Log
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.model.map.LocationRepository
+import io.mockk.every
+import io.mockk.mockkStatic
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -50,19 +53,22 @@ class CreateMeetingViewModelTest {
     repositoryMock = MockCreateMeetingRepository()
     locationRepositoryMock = MockLocationRepository()
 
+    mockkStatic(Log::class)
+    every { Log.e(any(), any(), any()) } returns 0
+
     viewModel =
         CreateMeetingViewModel(
             repository = repositoryMock,
             locationRepository = locationRepositoryMock,
             getCurrentUserId = { currentUserId })
+
+    testDispatcher.scheduler.advanceUntilIdle()
   }
 
   @After
   fun tearDown() {
     Dispatchers.resetMain()
   }
-
-  // --- ORIGINAL TESTS ---
 
   @Test
   fun uiStateIsValidLogicIsCorrect() {
@@ -387,7 +393,8 @@ class CreateMeetingViewModelTest {
 
     assertEquals(query, viewModel.uiState.value.locationQuery)
 
-    testDispatcher.scheduler.advanceUntilIdle()
+    testDispatcher.scheduler.advanceTimeBy(400L)
+    testDispatcher.scheduler.runCurrent()
 
     assertEquals(expectedSuggestions, viewModel.uiState.value.locationSuggestions)
   }
@@ -395,11 +402,16 @@ class CreateMeetingViewModelTest {
   @Test
   fun setLocationQueryWithEmptyStringClearsSuggestions() = runTest {
     locationRepositoryMock.searchResults = listOf(Location(0.0, 0.0, "Old"))
+
     viewModel.setLocationQuery("Old")
-    testDispatcher.scheduler.advanceUntilIdle()
+    testDispatcher.scheduler.advanceTimeBy(400L)
+    testDispatcher.scheduler.runCurrent()
+
     assertFalse(viewModel.uiState.value.locationSuggestions.isEmpty())
 
     viewModel.setLocationQuery("")
+
+    testDispatcher.scheduler.runCurrent()
 
     assertEquals("", viewModel.uiState.value.locationQuery)
     assertTrue(
@@ -413,7 +425,8 @@ class CreateMeetingViewModelTest {
 
     viewModel.setLocationQuery("Error City")
 
-    testDispatcher.scheduler.advanceUntilIdle()
+    testDispatcher.scheduler.advanceTimeBy(400L)
+    testDispatcher.scheduler.runCurrent()
 
     assertTrue(viewModel.uiState.value.locationSuggestions.isEmpty())
   }
