@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.template.field.FieldType
+import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.SelectOptionsEditor
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 @Composable
@@ -31,6 +32,13 @@ fun MultiSelectFieldConfiguration(
     modifier: Modifier = Modifier
 ) {
   Column(modifier = modifier.fillMaxWidth()) {
+    SelectOptionsEditor(
+        options = fieldType.options,
+        onOptionsChange = { onUpdate(fieldType.copy(options = it)) },
+        enabled = enabled)
+
+    Spacer(modifier = Modifier.height(16.dp))
+
     OutlinedTextField(
         value = fieldType.minSelections?.toString() ?: "",
         onValueChange = {
