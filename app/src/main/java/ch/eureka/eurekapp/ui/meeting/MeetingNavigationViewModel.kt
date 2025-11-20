@@ -139,8 +139,10 @@ class MeetingNavigationViewModel(
           _uiState.value =
               _uiState.value.copy(userLocation = LatLng(location.latitude, location.longitude))
         }
-      } catch (_: Exception) {
-        // Silently fail - user location is optional
+      } catch (e: Exception) {
+        _uiState.value =
+            _uiState.value.copy(
+                routeErrorMsg = "Unable to get your location. Please ensure location services are enabled.")
       }
     }
   }
