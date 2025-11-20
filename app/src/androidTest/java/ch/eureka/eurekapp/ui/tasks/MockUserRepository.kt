@@ -28,6 +28,11 @@ class MockUserRepository : UserRepository {
     userFlows[userId] = flow
   }
 
+  /** Configure a user to return for a user ID (simplified) */
+  fun setUser(userId: String, flow: Flow<User?>) {
+    userFlows[userId] = flow
+  }
+
   /** Configure an error to throw for a specific user ID */
   fun setError(userId: String, error: Exception) {
     errors[userId] = error

@@ -38,6 +38,8 @@ import ch.eureka.eurekapp.ui.tasks.components.TaskActionButtons
 import ch.eureka.eurekapp.ui.tasks.components.TaskSectionHeader
 import com.google.firebase.Timestamp
 
+// portions of this code and documentation were generated with the help of AI.
+
 // Portions of this code were generated with the help of AI.
 // Portions added by Jiří Gebauer partially generated with the help of Grok.
 

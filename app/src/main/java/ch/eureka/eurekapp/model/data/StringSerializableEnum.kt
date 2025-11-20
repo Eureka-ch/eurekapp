@@ -1,5 +1,4 @@
 package ch.eureka.eurekapp.model.data
-
 /**
  * Interface for enums that can be serialized to/from strings.
  *

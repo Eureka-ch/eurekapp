@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flowOf
  */
 class MockProjectRepository : ProjectRepository {
   private var currentUserProjects: Flow<List<Project>> = flowOf(emptyList())
+  private val projectMembers = mutableMapOf<String, Flow<List<Member>>>()
 
   // Track method calls for verification
   val getProjectsForCurrentUserCalls = mutableListOf<Unit>()
@@ -23,9 +24,15 @@ class MockProjectRepository : ProjectRepository {
     currentUserProjects = flow
   }
 
+  /** Configure members returned by getMembers() */
+  fun setMembers(projectId: String, flow: Flow<List<Member>>) {
+    projectMembers[projectId] = flow
+  }
+
   /** Clear all configuration */
   fun reset() {
     currentUserProjects = flowOf(emptyList())
+    projectMembers.clear()
     getProjectsForCurrentUserCalls.clear()
   }
 
@@ -46,7 +53,9 @@ class MockProjectRepository : ProjectRepository {
 
   override suspend fun deleteProject(projectId: String): Result<Unit> = Result.success(Unit)
 
-  override fun getMembers(projectId: String): Flow<List<Member>> = flowOf(emptyList())
+  override fun getMembers(projectId: String): Flow<List<Member>> {
+    return projectMembers[projectId] ?: flowOf(emptyList())
+  }
 
   override suspend fun addMember(
       projectId: String,

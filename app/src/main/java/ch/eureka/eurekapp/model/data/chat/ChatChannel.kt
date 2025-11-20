@@ -1,5 +1,4 @@
 package ch.eureka.eurekapp.model.data.chat
-
 /**
  * Data class representing a chat channel within a project.
  *
