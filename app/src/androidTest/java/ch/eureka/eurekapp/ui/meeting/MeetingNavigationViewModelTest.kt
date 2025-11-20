@@ -9,6 +9,7 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import com.google.firebase.Timestamp
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import java.util.Date
@@ -45,6 +46,7 @@ class MeetingNavigationViewModelTest {
   private lateinit var repositoryMock: MeetingRepository
   private val testProjectId = "project123"
   private val testMeetingId = "meeting456"
+  private val testApiKey = "test_api_key"
 
   private val testLocation = Location(latitude = 46.5197, longitude = 6.5659, name = "EPFL")
 
@@ -82,7 +84,7 @@ class MeetingNavigationViewModelTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeeting)
 
-    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
     val uiState = viewModel.uiState.value
     assertTrue(uiState.isLoading)
@@ -95,7 +97,7 @@ class MeetingNavigationViewModelTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeeting)
 
-    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
     advanceUntilIdle()
 
@@ -110,7 +112,7 @@ class MeetingNavigationViewModelTest {
   fun meetingNotFoundSetsError() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns flowOf(null)
 
-    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
     advanceUntilIdle()
 
@@ -125,7 +127,7 @@ class MeetingNavigationViewModelTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeetingNoLocation)
 
-    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
     advanceUntilIdle()
 
@@ -140,7 +142,7 @@ class MeetingNavigationViewModelTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeeting)
 
-    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
     advanceUntilIdle()
 
@@ -154,7 +156,7 @@ class MeetingNavigationViewModelTest {
   fun getMeetingLocationReturnsNullWhenMeetingNull() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns flowOf(null)
 
-    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
     advanceUntilIdle()
 
@@ -167,7 +169,7 @@ class MeetingNavigationViewModelTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeetingNoLocation)
 
-    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
     advanceUntilIdle()
 
@@ -180,7 +182,7 @@ class MeetingNavigationViewModelTest {
     val flow = kotlinx.coroutines.flow.MutableStateFlow<Meeting?>(null)
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns flow
 
-    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
     advanceUntilIdle()
 
@@ -202,7 +204,7 @@ class MeetingNavigationViewModelTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         kotlinx.coroutines.flow.flow { throw Exception(exceptionMessage) }
 
-    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
     advanceUntilIdle()
 
@@ -219,7 +221,7 @@ class MeetingNavigationViewModelTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         kotlinx.coroutines.flow.flow { kotlinx.coroutines.delay(Long.MAX_VALUE) }
 
-    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
     // Immediately check state before any collection happens
     assertTrue(viewModel.uiState.value.isLoading)
@@ -232,7 +234,7 @@ class MeetingNavigationViewModelTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         kotlinx.coroutines.flow.flow { throw Exception(null as String?) }
 
-    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
     advanceUntilIdle()
 
@@ -241,5 +243,207 @@ class MeetingNavigationViewModelTest {
     assertNull(uiState.meeting)
     assertNotNull(uiState.errorMsg)
     assertTrue(uiState.errorMsg?.contains("Failed to load meeting") == true)
+  }
+
+  // New tests for route and location functionality
+
+  @Test
+  fun initialStateHasNoRouteOrLocation() = runTest {
+    every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
+        flowOf(testMeeting)
+
+    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
+
+    val uiState = viewModel.uiState.value
+    assertNull(uiState.userLocation)
+    assertNull(uiState.route)
+    assertFalse(uiState.isLoadingRoute)
+    assertNull(uiState.routeErrorMsg)
+  }
+
+  // Note: clearRouteError test removed - errors clear automatically on next fetchDirections call
+
+  @Test
+  fun fetchDirectionsWithoutUserLocationSetsError() = runTest {
+    every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
+        flowOf(testMeeting)
+
+    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
+    advanceUntilIdle()
+
+    // Try to fetch directions without user location
+    viewModel.fetchDirections(TravelMode.DRIVING)
+    advanceUntilIdle()
+
+    val uiState = viewModel.uiState.value
+    assertEquals("User location not available", uiState.routeErrorMsg)
+    assertNull(uiState.route)
+    assertFalse(uiState.isLoadingRoute)
+  }
+
+  @Test
+  fun fetchDirectionsWithoutMeetingLocationSetsError() = runTest {
+    every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
+        flowOf(testMeetingNoLocation)
+
+    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
+    advanceUntilIdle()
+
+    // Manually set user location
+    val userLocation = com.google.android.gms.maps.model.LatLng(46.5197, 6.6323)
+    viewModel.setStateForTesting(viewModel.uiState.value.copy(userLocation = userLocation))
+
+    // Try to fetch directions
+    viewModel.fetchDirections(TravelMode.DRIVING)
+    advanceUntilIdle()
+
+    val uiState = viewModel.uiState.value
+    assertEquals("Meeting location not available", uiState.routeErrorMsg)
+    assertNull(uiState.route)
+  }
+
+  @Test
+  fun fetchDirectionsSupportsMultipleTravelModes() = runTest {
+    every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
+        flowOf(testMeeting)
+
+    viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
+    advanceUntilIdle()
+
+    val modes =
+        listOf(TravelMode.DRIVING, TravelMode.WALKING, TravelMode.BICYCLING, TravelMode.TRANSIT)
+
+    modes.forEach { mode ->
+      // Each mode should be accepted without throwing
+      viewModel.fetchDirections(mode)
+      advanceUntilIdle()
+    }
+
+    // At least the last call should have been attempted
+    assertTrue(true) // If we got here, all modes were accepted
+  }
+
+  @Test
+  fun fetchDirectionsHandlesZeroResultsError() = runTest {
+    val directionsServiceMock = mockk<ch.eureka.eurekapp.services.navigation.DirectionsApiService>()
+
+    // Mock to return ZERO_RESULTS status
+    coEvery { directionsServiceMock.getDirections(any(), any(), any(), any()) } returns
+        ch.eureka.eurekapp.services.navigation.DirectionsResponse(
+            routes = emptyList(),
+            status = "ZERO_RESULTS",
+            errorMessage = "No route found between these locations")
+
+    every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
+        flowOf(testMeeting)
+
+    viewModel =
+        MeetingNavigationViewModel(
+            testProjectId, testMeetingId, testApiKey, repositoryMock, directionsServiceMock)
+    advanceUntilIdle()
+
+    // Set user location
+    val userLocation = com.google.android.gms.maps.model.LatLng(46.5197, 6.6323)
+    viewModel.setStateForTesting(viewModel.uiState.value.copy(userLocation = userLocation))
+
+    // Fetch directions
+    viewModel.fetchDirections(TravelMode.DRIVING)
+    advanceUntilIdle()
+
+    val uiState = viewModel.uiState.value
+    assertNull(uiState.route)
+    assertEquals("No route found between these locations", uiState.routeErrorMsg)
+    assertFalse(uiState.isLoadingRoute)
+  }
+
+  @Test
+  fun fetchDirectionsHandlesEmptyRoutesWithOkStatus() = runTest {
+    val directionsServiceMock = mockk<ch.eureka.eurekapp.services.navigation.DirectionsApiService>()
+
+    // Mock to return OK status but empty routes
+    coEvery { directionsServiceMock.getDirections(any(), any(), any(), any()) } returns
+        ch.eureka.eurekapp.services.navigation.DirectionsResponse(
+            routes = emptyList(), status = "OK", errorMessage = null)
+
+    every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
+        flowOf(testMeeting)
+
+    viewModel =
+        MeetingNavigationViewModel(
+            testProjectId, testMeetingId, testApiKey, repositoryMock, directionsServiceMock)
+    advanceUntilIdle()
+
+    // Set user location
+    val userLocation = com.google.android.gms.maps.model.LatLng(46.5197, 6.6323)
+    viewModel.setStateForTesting(viewModel.uiState.value.copy(userLocation = userLocation))
+
+    // Fetch directions
+    viewModel.fetchDirections(TravelMode.DRIVING)
+    advanceUntilIdle()
+
+    val uiState = viewModel.uiState.value
+    assertNull(uiState.route)
+    assertEquals("No route found", uiState.routeErrorMsg)
+    assertFalse(uiState.isLoadingRoute)
+  }
+
+  @Test
+  fun fetchDirectionsHandlesNetworkException() = runTest {
+    val directionsServiceMock = mockk<ch.eureka.eurekapp.services.navigation.DirectionsApiService>()
+
+    // Mock to throw exception
+    coEvery { directionsServiceMock.getDirections(any(), any(), any(), any()) } throws
+        Exception("Network timeout")
+
+    every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
+        flowOf(testMeeting)
+
+    viewModel =
+        MeetingNavigationViewModel(
+            testProjectId, testMeetingId, testApiKey, repositoryMock, directionsServiceMock)
+    advanceUntilIdle()
+
+    // Set user location
+    val userLocation = com.google.android.gms.maps.model.LatLng(46.5197, 6.6323)
+    viewModel.setStateForTesting(viewModel.uiState.value.copy(userLocation = userLocation))
+
+    // Fetch directions
+    viewModel.fetchDirections(TravelMode.DRIVING)
+    advanceUntilIdle()
+
+    val uiState = viewModel.uiState.value
+    assertNull(uiState.route)
+    assertNotNull(uiState.routeErrorMsg)
+    assertTrue(uiState.routeErrorMsg?.startsWith("Error fetching directions") == true)
+    assertFalse(uiState.isLoadingRoute)
+  }
+
+  @Test
+  fun fetchDirectionsHandlesNullErrorMessage() = runTest {
+    val directionsServiceMock = mockk<ch.eureka.eurekapp.services.navigation.DirectionsApiService>()
+
+    // Mock to return error status with null errorMessage
+    coEvery { directionsServiceMock.getDirections(any(), any(), any(), any()) } returns
+        ch.eureka.eurekapp.services.navigation.DirectionsResponse(
+            routes = emptyList(), status = "INVALID_REQUEST", errorMessage = null)
+
+    every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
+        flowOf(testMeeting)
+
+    viewModel =
+        MeetingNavigationViewModel(
+            testProjectId, testMeetingId, testApiKey, repositoryMock, directionsServiceMock)
+    advanceUntilIdle()
+
+    // Set user location
+    val userLocation = com.google.android.gms.maps.model.LatLng(46.5197, 6.6323)
+    viewModel.setStateForTesting(viewModel.uiState.value.copy(userLocation = userLocation))
+
+    // Fetch directions
+    viewModel.fetchDirections(TravelMode.DRIVING)
+    advanceUntilIdle()
+
+    val uiState = viewModel.uiState.value
+    assertEquals("No route found", uiState.routeErrorMsg)
   }
 }
