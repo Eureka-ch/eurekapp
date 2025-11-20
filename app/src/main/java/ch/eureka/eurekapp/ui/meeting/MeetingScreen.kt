@@ -2,7 +2,12 @@
 
 package ch.eureka.eurekapp.ui.meeting
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +26,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.HowToVote
 import androidx.compose.material.icons.filled.Place
@@ -40,6 +46,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,11 +56,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.model.calendar.MeetingCalendarViewModel
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
+import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.utils.Formatters
 
 object MeetingScreenTestTags {
@@ -79,6 +91,10 @@ object MeetingScreenTestTags {
   const val NO_PAST_MEETINGS_MESSAGE = "NoPastMeetingsMessage"
   const val CREATE_MEETING_BUTTON = "CreateMeetingButton"
   const val CLOSE_VOTES_BUTTON = "CloseVotesButton"
+
+  fun getCalendarButtonTestTagForScheduledMeeting(meetingId: String): String {
+    return "calendar_test_tag_button_$meetingId"
+  }
 }
 
 /**
@@ -115,9 +131,42 @@ data class MeetingScreenConfig(
 fun MeetingScreen(
     config: MeetingScreenConfig,
     meetingViewModel: MeetingViewModel = viewModel(),
+    calendarViewModel: MeetingCalendarViewModel = viewModel()
 ) {
-
   val context = LocalContext.current
+
+  var hasCalendarReadPermission by remember {
+    mutableStateOf(
+        ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) ==
+            PackageManager.PERMISSION_GRANTED)
+  }
+  var hasCalendarWritePermission by remember {
+    mutableStateOf(
+        ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) ==
+            PackageManager.PERMISSION_GRANTED)
+  }
+
+  val launcherCalendarReadPermission =
+      rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
+          isGranted ->
+        hasCalendarReadPermission = isGranted
+      }
+
+  val launcherCalendarWritePermission =
+      rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
+          isGranted ->
+        hasCalendarWritePermission = isGranted
+      }
+
+  LaunchedEffect(Unit) {
+    if (!hasCalendarReadPermission) {
+      launcherCalendarReadPermission.launch(Manifest.permission.READ_CALENDAR)
+    }
+    if (!hasCalendarWritePermission) {
+      launcherCalendarWritePermission.launch(Manifest.permission.WRITE_CALENDAR)
+    }
+  }
+
   val uiState by meetingViewModel.uiState.collectAsState()
 
   // Show error message if there is any
@@ -187,7 +236,8 @@ fun MeetingScreen(
                               meetingViewModel.closeVotesForMeeting(meeting)
                             },
                             onViewTranscript = config.onViewTranscript,
-                            onRecord = config.onRecord))
+                            onRecord = config.onRecord),
+                        calendarViewModel = calendarViewModel)
                 MeetingTab.PAST ->
                     MeetingsList(
                         MeetingsListConfig(
@@ -197,7 +247,8 @@ fun MeetingScreen(
                             projectId = config.projectId,
                             isCurrentUserId = { uid -> meetingViewModel.userId == uid },
                             onMeetingClick = config.onMeetingClick,
-                        ))
+                        ),
+                        calendarViewModel = calendarViewModel)
               }
             }
       })
@@ -238,34 +289,70 @@ data class MeetingsListConfig(
  * Component that displays the meetings.
  *
  * @param config Config of that composable.
+ * @param calendarViewModel calendarViewModel for keeping state of added meetings to calendar
+ * @param context the local context to use
  */
 @Composable
-fun MeetingsList(config: MeetingsListConfig) {
+fun MeetingsList(
+    config: MeetingsListConfig,
+    calendarViewModel: MeetingCalendarViewModel = viewModel(),
+    context: Context = LocalContext.current
+) {
+  val registeredMeetings = remember { calendarViewModel.registeredMeetings }.collectAsState()
+
   if (config.meetings.isNotEmpty()) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = 8.dp),
         modifier = config.modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
           items(config.meetings.size) { index ->
+            val meeting = config.meetings[index]
             MeetingCard(
-                meeting = config.meetings[index],
+                meeting = meeting,
                 config =
                     MeetingCardConfig(
                         isCurrentUserId = config.isCurrentUserId,
-                        onClick = {
-                          config.onMeetingClick(config.projectId, config.meetings[index].meetingID)
-                        },
+                        onClick = { config.onMeetingClick(config.projectId, meeting.meetingID) },
                         onVoteForMeetingProposals = {
-                          config.onVoteForMeetingProposalClick(
-                              config.projectId, config.meetings[index].meetingID)
+                          config.onVoteForMeetingProposalClick(config.projectId, meeting.meetingID)
                         },
                         onDirections = {
-                          config.onNavigateToMeeting(
-                              config.projectId, config.meetings[index].meetingID)
+                          config.onNavigateToMeeting(config.projectId, meeting.meetingID)
                         },
                         onCloseVotes = config.onCloseVotes,
                         onViewTranscript = config.onViewTranscript,
                         onRecord = config.onRecord,
-                    ))
+                        onAddMeetingToCalendar = { meeting ->
+                          calendarViewModel.addMeetingToCalendar(
+                              context.contentResolver,
+                              meeting,
+                              onSuccess = {
+                                Toast.makeText(
+                                        context,
+                                        "Successfully saved the event to the calendar!",
+                                        Toast.LENGTH_SHORT)
+                                    .show()
+                              },
+                              onFailure = {
+                                Toast.makeText(
+                                        context,
+                                        "There was a problem saving the event to the calendar!",
+                                        Toast.LENGTH_SHORT)
+                                    .show()
+                              })
+                        },
+                        isMeetingAddedToCalendar =
+                            registeredMeetings.value.getOrElse(
+                                meeting.meetingID,
+                                {
+                                  // Run the function that will update the map
+                                  if (meeting.status == MeetingStatus.SCHEDULED) {
+                                    calendarViewModel.checkIsMeetingRegisteredInCalendar(
+                                        context.contentResolver, meeting)
+                                  } else {
+                                    true
+                                  }
+                                  false
+                                })))
           }
         }
   } else {
@@ -284,6 +371,8 @@ fun MeetingsList(config: MeetingsListConfig) {
  *
  * @property isCurrentUserId Function taking as argument a user ID and return true if this is the Id
  *   of the user that is currently logged in and false otherwise.
+ * @property isMeetingAddedToCalendar the state that keeps track if the meeting is added to calendar
+ *   or not
  * @property onClick Function to execute when the card is clicked (for navigation to detail screen).
  * @property onJoinMeeting Function to execute when user clicks on button to join meeting.
  * @property onVoteForMeetingProposals Function to execute when user clicks on button to vote for
@@ -295,9 +384,11 @@ fun MeetingsList(config: MeetingsListConfig) {
  * @property onViewSummary Function to execute whe user clicks on view summary button.
  * @property onViewTranscript Function to execute whe user clicks on view transcript button.
  * @property onCloseVotes Function executed when the user clicks on "close votes" button.
+ * @property onAddMeetingToCalendar Function executed when the user clicks "add to calendar" button
  */
 data class MeetingCardConfig(
     val isCurrentUserId: (String) -> Boolean,
+    val isMeetingAddedToCalendar: Boolean = false,
     val onClick: () -> Unit = {},
     val onJoinMeeting: () -> Unit = {},
     val onVoteForMeetingProposals: () -> Unit = {},
@@ -307,6 +398,7 @@ data class MeetingCardConfig(
     val onViewSummary: () -> Unit = {},
     val onViewTranscript: (String, String) -> Unit = { _, _ -> },
     val onCloseVotes: (Meeting) -> Unit = { _ -> },
+    val onAddMeetingToCalendar: (Meeting) -> Unit = { _ -> }
 )
 
 /**
@@ -524,6 +616,22 @@ fun MeetingCard(
                             modifier = Modifier.testTag(MeetingScreenTestTags.RECORD_BUTTON),
                         ) {
                           Text("Record")
+                        }
+                        if (!config.isMeetingAddedToCalendar) {
+                          Spacer(modifier = Modifier.width(10.dp))
+                          Button(
+                              modifier =
+                                  Modifier.testTag(
+                                      MeetingScreenTestTags
+                                          .getCalendarButtonTestTagForScheduledMeeting(
+                                              meeting.meetingID)),
+                              onClick = { config.onAddMeetingToCalendar(meeting) },
+                          ) {
+                            Icon(
+                                imageVector = Icons.Default.CalendarToday,
+                                null,
+                                tint = LightColorScheme.surface)
+                          }
                         }
                       }
                       MeetingFormat.VIRTUAL -> {
