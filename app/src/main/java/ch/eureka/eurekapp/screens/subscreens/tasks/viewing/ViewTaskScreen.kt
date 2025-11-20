@@ -9,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,6 +38,7 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 object ViewTaskScreenTestTags {
   const val EDIT_TASK = "edit_task"
+  const val VIEW_DEPENDENCIES = "view_dependencies"
   const val OFFLINE_MESSAGE = "offline_message"
   const val ASSIGNED_USERS_SECTION = "assigned_users_section"
   const val ASSIGNED_USER_ITEM = "assigned_user_item"
@@ -150,6 +152,15 @@ fun ViewTaskScreen(
                   }
                 }
               }
+
+              OutlinedButton(
+                  onClick = {
+                    navigationController.navigate(
+                        Route.TasksSection.TaskDependence(projectId, taskId))
+                  },
+                  modifier = Modifier.testTag(ViewTaskScreenTestTags.VIEW_DEPENDENCIES)) {
+                    Text("View Dependencies")
+                  }
 
               Button(
                   onClick = {
