@@ -27,6 +27,12 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.SingleSelectFieldComponent
 import ch.eureka.eurekapp.screens.subscreens.tasks.TextFieldComponent
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
+object CommonFieldConfigurationTestTags {
+  const val LABEL_INPUT = "field_label_input"
+  const val DESCRIPTION_INPUT = "field_description_input"
+  const val REQUIRED_CHECKBOX = "field_required_checkbox"
+}
+
 @Composable
 fun CommonFieldConfiguration(
     field: FieldDefinition,
@@ -40,7 +46,7 @@ fun CommonFieldConfiguration(
         onValueChange = { onFieldUpdate(field.copy(label = it)) },
         label = { Text("Label *") },
         enabled = enabled,
-        modifier = Modifier.fillMaxWidth().testTag("field_label_input"),
+        modifier = Modifier.fillMaxWidth().testTag(CommonFieldConfigurationTestTags.LABEL_INPUT),
         colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
@@ -50,7 +56,8 @@ fun CommonFieldConfiguration(
         onValueChange = { onFieldUpdate(field.copy(description = it.ifBlank { null })) },
         label = { Text("Description") },
         enabled = enabled,
-        modifier = Modifier.fillMaxWidth().testTag("field_description_input"),
+        modifier =
+            Modifier.fillMaxWidth().testTag(CommonFieldConfigurationTestTags.DESCRIPTION_INPUT),
         colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
@@ -60,7 +67,7 @@ fun CommonFieldConfiguration(
           checked = field.required,
           onCheckedChange = { onFieldUpdate(field.copy(required = it)) },
           enabled = enabled,
-          modifier = Modifier.testTag("field_required_checkbox"))
+          modifier = Modifier.testTag(CommonFieldConfigurationTestTags.REQUIRED_CHECKBOX))
       Text("Required")
     }
   }

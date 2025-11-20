@@ -25,6 +25,14 @@ import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.template.field.SelectOption
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
+object SelectOptionsEditorTestTags {
+  fun optionLabel(value: String) = "option_label_$value"
+
+  fun optionDelete(value: String) = "option_delete_$value"
+
+  const val ADD_OPTION_BUTTON = "add_option_button"
+}
+
 @Composable
 fun SelectOptionsEditor(
     options: List<SelectOption>,
@@ -51,7 +59,9 @@ fun SelectOptionsEditor(
                 },
                 label = { Text("Label") },
                 enabled = enabled,
-                modifier = Modifier.weight(1f).testTag("option_label_${option.value}"),
+                modifier =
+                    Modifier.weight(1f)
+                        .testTag(SelectOptionsEditorTestTags.optionLabel(option.value)),
                 colors = EurekaStyles.textFieldColors())
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -63,7 +73,8 @@ fun SelectOptionsEditor(
                   onOptionsChange(updated)
                 },
                 enabled = enabled && options.size > 2,
-                modifier = Modifier.testTag("option_delete_${option.value}")) {
+                modifier =
+                    Modifier.testTag(SelectOptionsEditorTestTags.optionDelete(option.value))) {
                   Icon(Icons.Default.Delete, "Delete option")
                 }
           }
@@ -76,7 +87,7 @@ fun SelectOptionsEditor(
           onOptionsChange(options + SelectOption(sanitizeLabelToValue(label), label, null))
         },
         enabled = enabled,
-        modifier = Modifier.testTag("add_option_button")) {
+        modifier = Modifier.testTag(SelectOptionsEditorTestTags.ADD_OPTION_BUTTON)) {
           Text("Add Option")
         }
   }

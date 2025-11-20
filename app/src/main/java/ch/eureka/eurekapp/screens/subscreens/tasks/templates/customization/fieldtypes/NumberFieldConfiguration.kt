@@ -20,6 +20,14 @@ import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
+object NumberFieldConfigurationTestTags {
+  const val MIN = "number_min"
+  const val MAX = "number_max"
+  const val STEP = "number_step"
+  const val DECIMALS = "number_decimals"
+  const val UNIT = "number_unit"
+}
+
 @Composable
 fun NumberFieldConfiguration(
     fieldType: FieldType.Number,
@@ -40,7 +48,7 @@ fun NumberFieldConfiguration(
         label = { Text("Min") },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-        modifier = Modifier.fillMaxWidth().testTag("number_min"),
+        modifier = Modifier.fillMaxWidth().testTag(NumberFieldConfigurationTestTags.MIN),
         colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
@@ -57,7 +65,7 @@ fun NumberFieldConfiguration(
         label = { Text("Max") },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-        modifier = Modifier.fillMaxWidth().testTag("number_max"),
+        modifier = Modifier.fillMaxWidth().testTag(NumberFieldConfigurationTestTags.MAX),
         colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
@@ -68,7 +76,7 @@ fun NumberFieldConfiguration(
         label = { Text("Step") },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-        modifier = Modifier.fillMaxWidth().testTag("number_step"),
+        modifier = Modifier.fillMaxWidth().testTag(NumberFieldConfigurationTestTags.STEP),
         colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
@@ -79,7 +87,7 @@ fun NumberFieldConfiguration(
         label = { Text("Decimals") },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        modifier = Modifier.fillMaxWidth().testTag("number_decimals"),
+        modifier = Modifier.fillMaxWidth().testTag(NumberFieldConfigurationTestTags.DECIMALS),
         colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
@@ -89,7 +97,7 @@ fun NumberFieldConfiguration(
         onValueChange = { onUpdate(fieldType.copy(unit = it.trim().ifBlank { null })) },
         label = { Text("Unit (e.g., kg, m/s)") },
         enabled = enabled,
-        modifier = Modifier.fillMaxWidth().testTag("number_unit"),
+        modifier = Modifier.fillMaxWidth().testTag(NumberFieldConfigurationTestTags.UNIT),
         colors = EurekaStyles.textFieldColors())
 
     val min = fieldType.min

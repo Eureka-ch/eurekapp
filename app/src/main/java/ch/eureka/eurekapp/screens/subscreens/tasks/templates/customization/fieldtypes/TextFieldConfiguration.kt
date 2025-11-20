@@ -20,6 +20,12 @@ import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
+object TextFieldConfigurationTestTags {
+  const val MAX_LENGTH = "text_max_length"
+  const val MIN_LENGTH = "text_min_length"
+  const val PLACEHOLDER = "text_placeholder"
+}
+
 @Composable
 fun TextFieldConfiguration(
     fieldType: FieldType.Text,
@@ -40,7 +46,7 @@ fun TextFieldConfiguration(
         label = { Text("Max Length") },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        modifier = Modifier.fillMaxWidth().testTag("text_max_length"),
+        modifier = Modifier.fillMaxWidth().testTag(TextFieldConfigurationTestTags.MAX_LENGTH),
         colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
@@ -57,7 +63,7 @@ fun TextFieldConfiguration(
         label = { Text("Min Length") },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        modifier = Modifier.fillMaxWidth().testTag("text_min_length"),
+        modifier = Modifier.fillMaxWidth().testTag(TextFieldConfigurationTestTags.MIN_LENGTH),
         colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
@@ -67,7 +73,7 @@ fun TextFieldConfiguration(
         onValueChange = { onUpdate(fieldType.copy(placeholder = it.ifBlank { null })) },
         label = { Text("Placeholder") },
         enabled = enabled,
-        modifier = Modifier.fillMaxWidth().testTag("text_placeholder"),
+        modifier = Modifier.fillMaxWidth().testTag(TextFieldConfigurationTestTags.PLACEHOLDER),
         colors = EurekaStyles.textFieldColors())
 
     val minLength = fieldType.minLength

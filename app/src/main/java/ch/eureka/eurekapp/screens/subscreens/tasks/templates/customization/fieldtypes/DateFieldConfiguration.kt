@@ -22,6 +22,13 @@ import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import java.time.format.DateTimeFormatter
 
+object DateFieldConfigurationTestTags {
+  const val MIN = "date_min"
+  const val MAX = "date_max"
+  const val INCLUDE_TIME = "date_include_time"
+  const val FORMAT = "date_format"
+}
+
 @Composable
 fun DateFieldConfiguration(
     fieldType: FieldType.Date,
@@ -35,7 +42,7 @@ fun DateFieldConfiguration(
         onValueChange = { onUpdate(fieldType.copy(minDate = it.trim().ifBlank { null })) },
         label = { Text("Min Date (YYYY-MM-DD)") },
         enabled = enabled,
-        modifier = Modifier.fillMaxWidth().testTag("date_min"),
+        modifier = Modifier.fillMaxWidth().testTag(DateFieldConfigurationTestTags.MIN),
         colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
@@ -45,7 +52,7 @@ fun DateFieldConfiguration(
         onValueChange = { onUpdate(fieldType.copy(maxDate = it.trim().ifBlank { null })) },
         label = { Text("Max Date (YYYY-MM-DD)") },
         enabled = enabled,
-        modifier = Modifier.fillMaxWidth().testTag("date_max"),
+        modifier = Modifier.fillMaxWidth().testTag(DateFieldConfigurationTestTags.MAX),
         colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
@@ -55,7 +62,7 @@ fun DateFieldConfiguration(
           checked = fieldType.includeTime,
           onCheckedChange = { onUpdate(fieldType.copy(includeTime = it)) },
           enabled = enabled,
-          modifier = Modifier.testTag("date_include_time"))
+          modifier = Modifier.testTag(DateFieldConfigurationTestTags.INCLUDE_TIME))
       Text("Include Time")
     }
 
@@ -66,7 +73,7 @@ fun DateFieldConfiguration(
         onValueChange = { onUpdate(fieldType.copy(format = it.trim().ifBlank { null })) },
         label = { Text("Format") },
         enabled = enabled,
-        modifier = Modifier.fillMaxWidth().testTag("date_format"),
+        modifier = Modifier.fillMaxWidth().testTag(DateFieldConfigurationTestTags.FORMAT),
         colors = EurekaStyles.textFieldColors())
 
     val formatString = fieldType.format

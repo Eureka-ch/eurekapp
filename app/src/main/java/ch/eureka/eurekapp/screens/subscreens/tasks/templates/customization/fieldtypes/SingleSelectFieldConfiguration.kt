@@ -17,6 +17,10 @@ import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.SelectOptionsEditor
 
+object SingleSelectFieldConfigurationTestTags {
+  const val ALLOW_CUSTOM = "single_select_allow_custom"
+}
+
 @Composable
 fun SingleSelectFieldConfiguration(
     fieldType: FieldType.SingleSelect,
@@ -37,7 +41,7 @@ fun SingleSelectFieldConfiguration(
           checked = fieldType.allowCustom,
           onCheckedChange = { onUpdate(fieldType.copy(allowCustom = it)) },
           enabled = enabled,
-          modifier = Modifier.testTag("single_select_allow_custom"))
+          modifier = Modifier.testTag(SingleSelectFieldConfigurationTestTags.ALLOW_CUSTOM))
       Text("Allow Custom Values")
     }
   }

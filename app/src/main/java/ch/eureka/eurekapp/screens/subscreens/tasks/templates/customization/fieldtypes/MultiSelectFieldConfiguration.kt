@@ -24,6 +24,12 @@ import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.SelectOptionsEditor
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
+object MultiSelectFieldConfigurationTestTags {
+  const val MIN = "multi_select_min"
+  const val MAX = "multi_select_max"
+  const val ALLOW_CUSTOM = "multi_select_allow_custom"
+}
+
 @Composable
 fun MultiSelectFieldConfiguration(
     fieldType: FieldType.MultiSelect,
@@ -51,7 +57,7 @@ fun MultiSelectFieldConfiguration(
         label = { Text("Min Selections") },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        modifier = Modifier.fillMaxWidth().testTag("multi_select_min"),
+        modifier = Modifier.fillMaxWidth().testTag(MultiSelectFieldConfigurationTestTags.MIN),
         colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
@@ -68,7 +74,7 @@ fun MultiSelectFieldConfiguration(
         label = { Text("Max Selections") },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        modifier = Modifier.fillMaxWidth().testTag("multi_select_max"),
+        modifier = Modifier.fillMaxWidth().testTag(MultiSelectFieldConfigurationTestTags.MAX),
         colors = EurekaStyles.textFieldColors())
 
     Spacer(modifier = Modifier.height(8.dp))
@@ -78,7 +84,7 @@ fun MultiSelectFieldConfiguration(
           checked = fieldType.allowCustom,
           onCheckedChange = { onUpdate(fieldType.copy(allowCustom = it)) },
           enabled = enabled,
-          modifier = Modifier.testTag("multi_select_allow_custom"))
+          modifier = Modifier.testTag(MultiSelectFieldConfigurationTestTags.ALLOW_CUSTOM))
       Text("Allow Custom Values")
     }
 
