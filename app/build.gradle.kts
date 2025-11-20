@@ -224,6 +224,8 @@ dependencies {
 
     // Networking
     implementation(libs.okhttp)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.serialization.converter)
 
     // Google Maps
     implementation(libs.maps.compose)
@@ -234,6 +236,7 @@ dependencies {
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.mockk)
+    testImplementation(libs.mockwebserver)
     testImplementation(libs.robolectric)
     testImplementation(kotlin("test"))
     testImplementation(libs.json)
