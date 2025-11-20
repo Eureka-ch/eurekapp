@@ -115,8 +115,7 @@ fun DefaultValueInput(
       }
       is FieldType.MultiSelect -> {
         MultiSelectFieldComponent(
-            fieldDefinition =
-                field.copy(type = (field.type as FieldType.MultiSelect).copy(allowCustom = false)),
+            fieldDefinition = field.copy(type = field.type.copy(allowCustom = false)),
             value = field.defaultValue as? FieldValue.MultiSelectValue,
             onValueChange = { onFieldUpdate(field.copy(defaultValue = it)) },
             mode = mode,

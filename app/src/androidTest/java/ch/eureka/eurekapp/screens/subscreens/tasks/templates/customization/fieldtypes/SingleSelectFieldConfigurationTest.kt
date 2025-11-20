@@ -19,7 +19,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   private val testOptions = utils.createTestOptions()
 
   @Test
-  fun singleSelectFieldConfiguration_displaysAllFields() {
+  fun singleSelectFieldConfigurationDisplaysAllFields() {
     utils.testDisplaysAllFields(
         composeTestRule,
         content = {
@@ -30,7 +30,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun singleSelectFieldConfiguration_allowCustomCheckbox_togglesToTrue() {
+  fun singleSelectFieldConfigurationAllowCustomCheckboxTogglesToTrue() {
     val updates = mutableListOf<FieldType.SingleSelect>()
 
     utils.testCheckboxToggle(
@@ -48,7 +48,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun singleSelectFieldConfiguration_allowCustomCheckbox_togglesToFalse() {
+  fun singleSelectFieldConfigurationAllowCustomCheckboxTogglesToFalse() {
     val updates = mutableListOf<FieldType.SingleSelect>()
 
     utils.testCheckboxToggle(
@@ -66,7 +66,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun singleSelectFieldConfiguration_disabled_checkboxDisabled() {
+  fun singleSelectFieldConfigurationDisabledCheckboxDisabled() {
     utils.testDisabledState(
         composeTestRule,
         content = {
@@ -77,7 +77,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun singleSelectFieldConfiguration_allowCustomTrue_checkboxChecked() {
+  fun singleSelectFieldConfigurationAllowCustomTrueCheckboxChecked() {
     this.composeTestRule.setContent {
       SingleSelectFieldConfiguration(
           fieldType = FieldType.SingleSelect(testOptions, allowCustom = true),
@@ -89,7 +89,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun singleSelectFieldConfiguration_allowCustomFalse_checkboxUnchecked() {
+  fun singleSelectFieldConfigurationAllowCustomFalseCheckboxUnchecked() {
     this.composeTestRule.setContent {
       SingleSelectFieldConfiguration(
           fieldType = FieldType.SingleSelect(testOptions, allowCustom = false),
@@ -101,7 +101,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun singleSelectFieldConfiguration_withManyOptions_displays() {
+  fun singleSelectFieldConfigurationWithManyOptionsDisplays() {
     val manyOptions = utils.createTestOptions(10)
     utils.testDisplaysAllFields(
         composeTestRule,
@@ -113,7 +113,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun singleSelectFieldConfiguration_preservesOptions_afterToggle() {
+  fun singleSelectFieldConfigurationPreservesOptionsAfterToggle() {
     val updates = mutableListOf<FieldType.SingleSelect>()
 
     utils.testCheckboxToggle(

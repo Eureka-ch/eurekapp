@@ -50,13 +50,13 @@ class TextFieldComponentTest {
   }
 
   @Test
-  fun textFieldComponent_editMode_showsInputField() {
+  fun textFieldComponent_editModeShowsInputField() {
     setFieldContent()
     composeTestRule.onNodeWithTag(TextFieldComponentTestTags.input("test_text")).assertIsDisplayed()
   }
 
   @Test
-  fun textFieldComponent_editMode_allowsTextInput() {
+  fun textFieldComponent_editModeAllowsTextInput() {
     var capturedValue: FieldValue.TextValue? = null
     setFieldContent(onValueChange = { capturedValue = it })
 
@@ -69,13 +69,13 @@ class TextFieldComponentTest {
   }
 
   @Test
-  fun textFieldComponent_editMode_displaysPlaceholder() {
+  fun textFieldComponent_editModeDisplaysPlaceholder() {
     setFieldContent()
     composeTestRule.onNodeWithText("Enter text").assertIsDisplayed()
   }
 
   @Test
-  fun textFieldComponent_editMode_showsCharacterCount_whenMaxLengthSet() {
+  fun textFieldComponent_editModeShowsCharacterCountWhenMaxLengthSet() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(type = FieldType.Text(maxLength = 100)),
         value = FieldValue.TextValue("Test"))
@@ -83,7 +83,7 @@ class TextFieldComponentTest {
   }
 
   @Test
-  fun textFieldComponent_viewMode_showsValueText() {
+  fun textFieldComponent_viewModeShowsValueText() {
     setFieldContent(
         value = FieldValue.TextValue("Sample Text"), mode = FieldInteractionMode.ViewOnly)
     composeTestRule.onNodeWithTag(TextFieldComponentTestTags.value("test_text")).assertIsDisplayed()
@@ -91,7 +91,7 @@ class TextFieldComponentTest {
   }
 
   @Test
-  fun textFieldComponent_viewMode_doesNotShowInputField() {
+  fun textFieldComponent_viewModeDoesNotShowInputField() {
     setFieldContent(
         value = FieldValue.TextValue("Sample Text"), mode = FieldInteractionMode.ViewOnly)
     composeTestRule
@@ -100,13 +100,13 @@ class TextFieldComponentTest {
   }
 
   @Test
-  fun textFieldComponent_toggleableMode_showsToggleButton() {
+  fun textFieldComponent_toggleableModeShowsToggleButton() {
     setFieldContent(mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false))
     composeTestRule.onNodeWithTag(FieldComponentTestTags.toggle("test_text")).assertIsDisplayed()
   }
 
   @Test
-  fun textFieldComponent_toggleableMode_callsOnModeToggle() {
+  fun textFieldComponent_toggleableModeCallsOnModeToggle() {
     var toggleCalled = false
     setFieldContent(
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
@@ -117,33 +117,33 @@ class TextFieldComponentTest {
   }
 
   @Test
-  fun textFieldComponent_requiredField_showsAsterisk() {
+  fun textFieldComponent_requiredFieldShowsAsterisk() {
     setFieldContent(fieldDef = testFieldDefinition.copy(required = true))
     composeTestRule.onNodeWithText("Test Text Field *").assertIsDisplayed()
   }
 
   @Test
-  fun textFieldComponent_withDescription_showsDescription() {
+  fun textFieldComponent_withDescriptionShowsDescription() {
     setFieldContent(fieldDef = testFieldDefinition.copy(description = "Enter your text here"))
     composeTestRule.onNodeWithText("Enter your text here").assertIsDisplayed()
   }
 
   @Test
-  fun textFieldComponent_withConstraints_showsHints() {
+  fun textFieldComponent_withConstraintsShowsHints() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(type = FieldType.Text(maxLength = 100, minLength = 10)))
     composeTestRule.onNodeWithText("Max 100 characters • Min 10 characters").assertIsDisplayed()
   }
 
   @Test
-  fun textFieldComponent_whenValidationEnabled_showsErrors() {
+  fun textFieldComponent_whenValidationEnabledShowsErrors() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(required = true), showValidationErrors = true)
     composeTestRule.onNodeWithText("This field is required").assertIsDisplayed()
   }
 
   @Test
-  fun textFieldComponent_whenValidationDisabled_doesNotShowErrors() {
+  fun textFieldComponent_whenValidationDisabledDoesNotShowErrors() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(required = true), showValidationErrors = false)
     composeTestRule.onNodeWithText("This field is required").assertDoesNotExist()

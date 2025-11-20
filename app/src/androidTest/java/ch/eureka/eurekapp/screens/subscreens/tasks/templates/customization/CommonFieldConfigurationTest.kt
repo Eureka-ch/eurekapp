@@ -43,7 +43,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun commonFieldConfiguration_requiredCheckbox_togglesField() {
+  fun commonFieldConfiguration_requiredCheckboxTogglesField() {
     val updates = mutableListOf<FieldDefinition>()
 
     utils.testCheckboxToggle(
@@ -61,7 +61,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun commonFieldConfiguration_requiredCheckbox_unchecksCorrectly() {
+  fun commonFieldConfiguration_requiredCheckboxUnchecksCorrectly() {
     val updates = mutableListOf<FieldDefinition>()
 
     utils.testCheckboxToggle(
@@ -79,7 +79,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun commonFieldConfiguration_disabled_allFieldsDisabled() {
+  fun commonFieldConfiguration_disabledAllFieldsDisabled() {
     utils.testDisabledState(
         composeTestRule,
         content = {
@@ -91,7 +91,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun commonFieldConfiguration_nullDescription_showsEmpty() {
+  fun commonFieldConfiguration_nullDescriptionShowsEmpty() {
     utils.testDisplaysAllFields(
         composeTestRule,
         content = {
@@ -104,7 +104,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun defaultValueInput_textField_displays() {
+  fun defaultValueInput_textFieldDisplays() {
     this.composeTestRule.setContent {
       DefaultValueInput(
           field = testFieldDefinition.copy(type = FieldType.Text()),
@@ -117,7 +117,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun defaultValueInput_numberField_displays() {
+  fun defaultValueInput_numberFieldDisplays() {
     this.composeTestRule.setContent {
       DefaultValueInput(
           field = testFieldDefinition.copy(type = FieldType.Number()),
@@ -129,7 +129,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun defaultValueInput_dateField_displays() {
+  fun defaultValueInput_dateFieldDisplays() {
     this.composeTestRule.setContent {
       DefaultValueInput(
           field = testFieldDefinition.copy(type = FieldType.Date()),
@@ -141,7 +141,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun defaultValueInput_singleSelectField_displays() {
+  fun defaultValueInput_singleSelectFieldDisplays() {
     val options = listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2"))
     this.composeTestRule.setContent {
       DefaultValueInput(
@@ -155,7 +155,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun defaultValueInput_multiSelectField_displays() {
+  fun defaultValueInput_multiSelectFieldDisplays() {
     val options = listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2"))
     this.composeTestRule.setContent {
       DefaultValueInput(
@@ -169,7 +169,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun defaultValueInput_disabled_showsViewMode() {
+  fun defaultValueInput_disabledShowsViewMode() {
     this.composeTestRule.setContent {
       DefaultValueInput(
           field = testFieldDefinition.copy(type = FieldType.Text()),
@@ -181,7 +181,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun defaultValueInput_textField_withoutDefault_displays() {
+  fun defaultValueInput_textFieldWithoutDefaultDisplays() {
     this.composeTestRule.setContent {
       DefaultValueInput(
           field = testFieldDefinition.copy(type = FieldType.Text(), defaultValue = null),

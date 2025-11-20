@@ -36,7 +36,7 @@ class SelectOptionsEditorTest {
   }
 
   @Test
-  fun selectOptionsEditor_addButton_addsOption() {
+  fun selectOptionsEditor_addButtonAddsOption() {
     var updatedOptions = testOptions
     composeTestRule.setContent {
       SelectOptionsEditor(
@@ -48,7 +48,7 @@ class SelectOptionsEditorTest {
   }
 
   @Test
-  fun selectOptionsEditor_deleteButton_removesOption() {
+  fun selectOptionsEditor_deleteButtonRemovesOption() {
     val threeOptions = testOptions + SelectOption("opt3", "Option 3")
     var updatedOptions = threeOptions
     composeTestRule.setContent {
@@ -61,7 +61,7 @@ class SelectOptionsEditorTest {
   }
 
   @Test
-  fun selectOptionsEditor_deleteButton_disabledWhenTwoOptions() {
+  fun selectOptionsEditor_deleteButtonDisabledWhenTwoOptions() {
     composeTestRule.setContent {
       SelectOptionsEditor(options = testOptions, onOptionsChange = {}, enabled = true)
     }
@@ -70,7 +70,7 @@ class SelectOptionsEditorTest {
   }
 
   @Test
-  fun selectOptionsEditor_labelInput_updatesValue() {
+  fun selectOptionsEditor_labelInputUpdatesValue() {
     var updatedOptions = testOptions
     composeTestRule.setContent {
       SelectOptionsEditor(
@@ -84,7 +84,7 @@ class SelectOptionsEditorTest {
   }
 
   @Test
-  fun selectOptionsEditor_labelInput_sanitizesSpecialCharacters() {
+  fun selectOptionsEditor_labelInputSanitizesSpecialCharacters() {
     var updatedOptions = testOptions
     composeTestRule.setContent {
       SelectOptionsEditor(
@@ -98,7 +98,7 @@ class SelectOptionsEditorTest {
   }
 
   @Test
-  fun selectOptionsEditor_disabled_disablesAllInputs() {
+  fun selectOptionsEditor_disabledDisablesAllInputs() {
     composeTestRule.setContent {
       SelectOptionsEditor(options = testOptions, onOptionsChange = {}, enabled = false)
     }

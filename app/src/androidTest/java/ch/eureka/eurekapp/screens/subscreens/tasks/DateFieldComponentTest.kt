@@ -48,19 +48,19 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_editMode_showsPickerButton() {
+  fun dateFieldComponent_editModeShowsPickerButton() {
     setFieldContent()
     composeTestRule.onNodeWithTag(DateFieldTestTags.button("test_date")).assertIsDisplayed()
   }
 
   @Test
-  fun dateFieldComponent_editMode_buttonShowsSelectDateText_whenNoValue() {
+  fun dateFieldComponent_editModeButtonShowsSelectDateTextWhenNoValue() {
     setFieldContent()
     composeTestRule.onNodeWithText("Select Date").assertIsDisplayed()
   }
 
   @Test
-  fun dateFieldComponent_editMode_buttonShowsSelectDateAndTimeText_whenIncludeTime() {
+  fun dateFieldComponent_editModeButtonShowsSelectDateAndTimeTextWhenIncludeTime() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -69,28 +69,28 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_editMode_buttonOpensDatePickerDialog() {
+  fun dateFieldComponent_editModeButtonOpensDatePickerDialog() {
     setFieldContent()
     composeTestRule.onNodeWithTag(DateFieldTestTags.button("test_date")).performClick()
     composeTestRule.onNodeWithTag(DateFieldTestTags.DATE_PICKER_DIALOG).assertIsDisplayed()
   }
 
   @Test
-  fun dateFieldComponent_editMode_datePickerShowsCancelButton() {
+  fun dateFieldComponent_editModeDatePickerShowsCancelButton() {
     setFieldContent()
     composeTestRule.onNodeWithTag(DateFieldTestTags.button("test_date")).performClick()
     composeTestRule.onNodeWithText("Cancel").assertIsDisplayed()
   }
 
   @Test
-  fun dateFieldComponent_editMode_datePickerShowsOKButton() {
+  fun dateFieldComponent_editModeDatePickerShowsOKButton() {
     setFieldContent()
     composeTestRule.onNodeWithTag(DateFieldTestTags.button("test_date")).performClick()
     composeTestRule.onNodeWithText("OK").assertIsDisplayed()
   }
 
   @Test
-  fun dateFieldComponent_editMode_cancelButtonClosesPicker() {
+  fun dateFieldComponent_editModeCancelButtonClosesPicker() {
     setFieldContent()
     composeTestRule.onNodeWithTag(DateFieldTestTags.button("test_date")).performClick()
     composeTestRule.onNodeWithText("Cancel").performClick()
@@ -98,7 +98,7 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_viewMode_showsFormattedDate() {
+  fun dateFieldComponent_viewModeShowsFormattedDate() {
     setFieldContent(
         value = FieldValue.DateValue("2025-12-25T00:00:00Z"), mode = FieldInteractionMode.ViewOnly)
     composeTestRule.onNodeWithTag(DateFieldTestTags.value("test_date")).assertIsDisplayed()
@@ -106,14 +106,14 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_viewMode_doesNotShowPickerButton() {
+  fun dateFieldComponent_viewModeDoesNotShowPickerButton() {
     setFieldContent(
         value = FieldValue.DateValue("2025-12-25T00:00:00Z"), mode = FieldInteractionMode.ViewOnly)
     composeTestRule.onNodeWithTag(DateFieldTestTags.button("test_date")).assertDoesNotExist()
   }
 
   @Test
-  fun dateFieldComponent_withIncludeTime_showsTimeInView() {
+  fun dateFieldComponent_withIncludeTimeShowsTimeInView() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -124,13 +124,13 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_toggleableMode_showsToggleButton() {
+  fun dateFieldComponent_toggleableModeShowsToggleButton() {
     setFieldContent(mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false))
     composeTestRule.onNodeWithTag(BaseFieldTestTags.toggle("test_date")).assertIsDisplayed()
   }
 
   @Test
-  fun dateFieldComponent_toggleableMode_callsOnModeToggle() {
+  fun dateFieldComponent_toggleableModeCallsOnModeToggle() {
     var toggleCalled = false
     setFieldContent(
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
@@ -141,19 +141,19 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_requiredField_showsAsterisk() {
+  fun dateFieldComponent_requiredFieldShowsAsterisk() {
     setFieldContent(fieldDef = testFieldDefinition.copy(required = true))
     composeTestRule.onNodeWithText("Test Date Field *").assertIsDisplayed()
   }
 
   @Test
-  fun dateFieldComponent_withDescription_showsDescription() {
+  fun dateFieldComponent_withDescriptionShowsDescription() {
     setFieldContent(fieldDef = testFieldDefinition.copy(description = "Select your preferred date"))
     composeTestRule.onNodeWithText("Select your preferred date").assertIsDisplayed()
   }
 
   @Test
-  fun dateFieldComponent_withConstraints_showsHints() {
+  fun dateFieldComponent_withConstraintsShowsHints() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -166,21 +166,21 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_whenValidationEnabled_showsErrors() {
+  fun dateFieldComponent_whenValidationEnabledShowsErrors() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(required = true), showValidationErrors = true)
     composeTestRule.onNodeWithText("This field is required").assertIsDisplayed()
   }
 
   @Test
-  fun dateFieldComponent_whenValidationDisabled_doesNotShowErrors() {
+  fun dateFieldComponent_whenValidationDisabledDoesNotShowErrors() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(required = true), showValidationErrors = false)
     composeTestRule.onNodeWithText("This field is required").assertDoesNotExist()
   }
 
   @Test
-  fun dateFieldComponent_customFormat_formatsCorrectly() {
+  fun dateFieldComponent_customFormatFormatsCorrectly() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(type = FieldType.Date(format = "dd/MM/yyyy")),
         value = FieldValue.DateValue("2025-12-25T00:00:00Z"),
@@ -189,40 +189,40 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_withMinDateConstraint_showsMinDateHint() {
+  fun dateFieldComponent_withMinDateConstraintShowsMinDateHint() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(type = FieldType.Date(minDate = "2025-01-01")))
     composeTestRule.onNodeWithText("From: 2025-01-01").assertIsDisplayed()
   }
 
   @Test
-  fun dateFieldComponent_withMaxDateConstraint_showsMaxDateHint() {
+  fun dateFieldComponent_withMaxDateConstraintShowsMaxDateHint() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(type = FieldType.Date(maxDate = "2025-12-31")))
     composeTestRule.onNodeWithText("Until: 2025-12-31").assertIsDisplayed()
   }
 
   @Test
-  fun dateFieldComponent_withIncludeTime_showsIncludesTimeHint() {
+  fun dateFieldComponent_withIncludeTimeShowsIncludesTimeHint() {
     setFieldContent(fieldDef = testFieldDefinition.copy(type = FieldType.Date(includeTime = true)))
     composeTestRule.onNodeWithText("Includes time").assertIsDisplayed()
   }
 
   @Test
-  fun dateFieldComponent_editMode_buttonShowsFormattedValue_whenValueExists() {
+  fun dateFieldComponent_editModeButtonShowsFormattedValueWhenValueExists() {
     setFieldContent(value = FieldValue.DateValue("2025-12-25T00:00:00Z"))
     composeTestRule.onNodeWithText("2025-12-25").assertIsDisplayed()
   }
 
   @Test
-  fun dateFieldComponent_toggleableEditing_showsSaveAndCancelButtons() {
+  fun dateFieldComponent_toggleableEditingShowsSaveAndCancelButtons() {
     setFieldContent(mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true))
     composeTestRule.onNodeWithTag(BaseFieldTestTags.save("test_date")).assertIsDisplayed()
     composeTestRule.onNodeWithTag(BaseFieldTestTags.cancel("test_date")).assertIsDisplayed()
   }
 
   @Test
-  fun dateFieldComponent_toggleableSave_callsOnSaveCallback() {
+  fun dateFieldComponent_toggleableSaveCallsOnSaveCallback() {
     var saveCalled = false
     setFieldContent(
         value = FieldValue.DateValue("2025-12-25T00:00:00Z"),
@@ -234,7 +234,7 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_toggleableCancel_callsOnCancelCallback() {
+  fun dateFieldComponent_toggleableCancelCallsOnCancelCallback() {
     var cancelCalled = false
     setFieldContent(
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
@@ -245,14 +245,14 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_invalidDateValue_displaysOriginalValue() {
+  fun dateFieldComponent_invalidDateValueDisplaysOriginalValue() {
     setFieldContent(
         value = FieldValue.DateValue("invalid-date-string"), mode = FieldInteractionMode.ViewOnly)
     composeTestRule.onNodeWithText("invalid-date-string").assertIsDisplayed()
   }
 
   @Test
-  fun dateFieldComponent_timePickerCancel_closesDialog() {
+  fun dateFieldComponent_timePickerCancelClosesDialog() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -262,7 +262,7 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_showHeaderFalse_hidesHeader() {
+  fun dateFieldComponent_showHeaderFalseHidesHeader() {
     composeTestRule.setContent {
       DateFieldComponent(
           fieldDefinition = testFieldDefinition,
@@ -276,7 +276,7 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_showHeaderTrue_showsHeader() {
+  fun dateFieldComponent_showHeaderTrueShowsHeader() {
     composeTestRule.setContent {
       DateFieldComponent(
           fieldDefinition = testFieldDefinition,
@@ -290,7 +290,7 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_showHeaderFalse_stillRendersPickerButton() {
+  fun dateFieldComponent_showHeaderFalseStillRendersPickerButton() {
     composeTestRule.setContent {
       DateFieldComponent(
           fieldDefinition = testFieldDefinition,
@@ -304,7 +304,7 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_emptyValueToValue_callsOnValueChange() {
+  fun dateFieldComponent_emptyValueToValueCallsOnValueChange() {
     var changedValue: FieldValue.DateValue? = null
     setFieldContent(value = null, onValueChange = { changedValue = it })
 
@@ -314,20 +314,20 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_nullValue_showsSelectText() {
+  fun dateFieldComponent_nullValueShowsSelectText() {
     setFieldContent(value = null)
     composeTestRule.onNodeWithText("Select Date").assertIsDisplayed()
     composeTestRule.onNodeWithTag(DateFieldTestTags.value("test_date")).assertDoesNotExist()
   }
 
   @Test
-  fun dateFieldComponent_withValue_showsFormattedValue() {
+  fun dateFieldComponent_withValueShowsFormattedValue() {
     setFieldContent(value = FieldValue.DateValue("2025-12-25T00:00:00Z"))
     composeTestRule.onNodeWithText("2025-12-25").assertIsDisplayed()
   }
 
   @Test
-  fun dateFieldComponent_customFormat_MMddyyyy_formatsCorrectly() {
+  fun dateFieldComponent_customFormatMMddyyyyFormatsCorrectly() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(type = FieldType.Date(format = "MM/dd/yyyy")),
         value = FieldValue.DateValue("2025-12-25T00:00:00Z"),
@@ -336,7 +336,7 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_customFormat_ddMMyyyy_formatsCorrectly() {
+  fun dateFieldComponent_customFormatDdMMyyyyFormatsCorrectly() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(type = FieldType.Date(format = "dd-MM-yyyy")),
         value = FieldValue.DateValue("2025-12-25T00:00:00Z"),
@@ -345,7 +345,7 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_withTimeFormat_displaysTime() {
+  fun dateFieldComponent_withTimeFormatDisplaysTime() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -356,7 +356,7 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_multipleConstraints_showsAllHints() {
+  fun dateFieldComponent_multipleConstraintsShowsAllHints() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -372,7 +372,7 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_formatWithTime_showsTimeInButton() {
+  fun dateFieldComponent_formatWithTimeShowsTimeInButton() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -383,7 +383,7 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_requiredAndEmpty_showsValidationError() {
+  fun dateFieldComponent_requiredAndEmptyShowsValidationError() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(required = true),
         value = null,
@@ -392,7 +392,7 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_requiredWithValue_noValidationError() {
+  fun dateFieldComponent_requiredWithValueNoValidationError() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(required = true),
         value = FieldValue.DateValue("2025-12-25T00:00:00Z"),
@@ -401,7 +401,7 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_optionalAndEmpty_noValidationError() {
+  fun dateFieldComponent_optionalAndEmptyNoValidationError() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(required = false),
         value = null,
@@ -410,14 +410,14 @@ class DateFieldComponentTest {
   }
 
   @Test
-  fun dateFieldComponent_minDateOnly_showsFromHint() {
+  fun dateFieldComponent_minDateOnlyShowsFromHint() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(type = FieldType.Date(minDate = "2025-06-01")))
     composeTestRule.onNodeWithText("From: 2025-06-01").assertIsDisplayed()
   }
 
   @Test
-  fun dateFieldComponent_maxDateOnly_showsUntilHint() {
+  fun dateFieldComponent_maxDateOnlyShowsUntilHint() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(type = FieldType.Date(maxDate = "2025-06-30")))
     composeTestRule.onNodeWithText("Until: 2025-06-30").assertIsDisplayed()

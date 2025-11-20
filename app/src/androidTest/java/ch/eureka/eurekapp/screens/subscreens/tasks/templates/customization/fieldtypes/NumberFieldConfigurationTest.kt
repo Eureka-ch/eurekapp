@@ -28,7 +28,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfiguration_minInput_updatesType() {
+  fun numberFieldConfiguration_minInputUpdatesType() {
     val updates = mutableListOf<FieldType.Number>()
 
     utils.testInputUpdate(
@@ -45,7 +45,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfiguration_maxInput_updatesType() {
+  fun numberFieldConfiguration_maxInputUpdatesType() {
     val updates = mutableListOf<FieldType.Number>()
 
     utils.testInputUpdate(
@@ -62,7 +62,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfiguration_stepInput_updatesType() {
+  fun numberFieldConfiguration_stepInputUpdatesType() {
     val updates = mutableListOf<FieldType.Number>()
 
     utils.testInputUpdate(
@@ -79,7 +79,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfiguration_unitInput_updatesType() {
+  fun numberFieldConfiguration_unitInputUpdatesType() {
     val updates = mutableListOf<FieldType.Number>()
 
     utils.testInputUpdate(
@@ -96,7 +96,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfiguration_minLessThanMax_noError() {
+  fun numberFieldConfiguration_minLessThanMaxNoError() {
     this.composeTestRule.setContent {
       NumberFieldConfiguration(
           fieldType = FieldType.Number(min = 10.0, max = 100.0), onUpdate = {}, enabled = true)
@@ -107,7 +107,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfiguration_minEqualToMax_noError() {
+  fun numberFieldConfiguration_minEqualToMaxNoError() {
     this.composeTestRule.setContent {
       NumberFieldConfiguration(
           fieldType = FieldType.Number(min = 50.0, max = 50.0), onUpdate = {}, enabled = true)
@@ -118,7 +118,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfiguration_negativeMin_accepted() {
+  fun numberFieldConfiguration_negativeMinAccepted() {
     val updates = mutableListOf<FieldType.Number>()
 
     utils.testInputUpdate(
@@ -135,7 +135,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfiguration_invalidDecimalsInput_fallsBackToZero() {
+  fun numberFieldConfiguration_invalidDecimalsInputFallsBackToZero() {
     val updates = mutableListOf<FieldType.Number>()
 
     utils.testInputUpdate(
@@ -152,7 +152,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfiguration_disabled_allFieldsDisabled() {
+  fun numberFieldConfiguration_disabledAllFieldsDisabled() {
     utils.testDisabledState(
         composeTestRule,
         content = {
@@ -166,7 +166,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfiguration_zeroDecimals_accepted() {
+  fun numberFieldConfiguration_zeroDecimalsAccepted() {
     val updates = mutableListOf<FieldType.Number>()
 
     utils.testInputUpdate(
@@ -183,7 +183,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfiguration_withInitialMin_displays() {
+  fun numberFieldConfiguration_withInitialMinDisplays() {
     utils.testDisplaysAllFields(
         composeTestRule,
         content = {
@@ -194,7 +194,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfiguration_withInitialMax_displays() {
+  fun numberFieldConfiguration_withInitialMaxDisplays() {
     utils.testDisplaysAllFields(
         composeTestRule,
         content = {
@@ -205,7 +205,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfiguration_withInitialStep_displays() {
+  fun numberFieldConfiguration_withInitialStepDisplays() {
     utils.testDisplaysAllFields(
         composeTestRule,
         content = {
@@ -216,7 +216,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfiguration_withInitialUnit_displays() {
+  fun numberFieldConfigurationWithInitialUnitDisplays() {
     utils.testDisplaysAllFields(
         composeTestRule,
         content = {
@@ -227,7 +227,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfiguration_decimalsInput_updatesType() {
+  fun numberFieldConfigurationDecimalsInputUpdatesType() {
     val updates = mutableListOf<FieldType.Number>()
 
     utils.testInputUpdate(
@@ -244,7 +244,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfiguration_blankUnit_setsToNull() {
+  fun numberFieldConfigurationBlankUnitSetsToNull() {
     val updates = mutableListOf<FieldType.Number>()
     this.composeTestRule.setContent {
       NumberFieldConfiguration(
@@ -256,7 +256,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfiguration_emptyMin_setsToNull() {
+  fun numberFieldConfigurationEmptyMinSetsToNull() {
     val updates = mutableListOf<FieldType.Number>()
     this.composeTestRule.setContent {
       NumberFieldConfiguration(

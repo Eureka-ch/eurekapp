@@ -39,7 +39,7 @@ class FieldTypeConfigurationsTest {
   }
 
   @Test
-  fun textFieldConfiguration_maxLengthInput_updatesType() {
+  fun textFieldConfiguration_maxLengthInputUpdatesType() {
     var updatedType: FieldType.Text? = null
     composeTestRule.setContent {
       TextFieldConfiguration(
@@ -65,7 +65,7 @@ class FieldTypeConfigurationsTest {
   }
 
   @Test
-  fun numberFieldConfiguration_minInput_updatesType() {
+  fun numberFieldConfiguration_minInputUpdatesType() {
     var updatedType: FieldType.Number? = null
     composeTestRule.setContent {
       NumberFieldConfiguration(
@@ -88,7 +88,7 @@ class FieldTypeConfigurationsTest {
   }
 
   @Test
-  fun dateFieldConfiguration_includeTimeCheckbox_updatesType() {
+  fun dateFieldConfiguration_includeTimeCheckboxUpdatesType() {
     var updatedType: FieldType.Date? = null
     composeTestRule.setContent {
       DateFieldConfiguration(
@@ -115,7 +115,7 @@ class FieldTypeConfigurationsTest {
   }
 
   @Test
-  fun singleSelectFieldConfiguration_allowCustomCheckbox_updatesType() {
+  fun singleSelectFieldConfiguration_allowCustomCheckboxUpdatesType() {
     val options = listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2"))
     var updatedType: FieldType.SingleSelect? = null
     composeTestRule.setContent {
@@ -145,7 +145,7 @@ class FieldTypeConfigurationsTest {
   }
 
   @Test
-  fun multiSelectFieldConfiguration_minSelectionsInput_updatesType() {
+  fun multiSelectFieldConfiguration_minSelectionsInputUpdatesType() {
     val options = listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2"))
     var updatedType: FieldType.MultiSelect? = null
     composeTestRule.setContent {

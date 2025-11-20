@@ -51,13 +51,13 @@ class NumberFieldComponentTest {
   }
 
   @Test
-  fun numberFieldComponent_editMode_showsInputField() {
+  fun numberFieldComponent_editModeShowsInputField() {
     setFieldContent()
     composeTestRule.onNodeWithTag(NumberFieldTestTags.input("test_number")).assertIsDisplayed()
   }
 
   @Test
-  fun numberFieldComponent_editMode_allowsNumericInput() {
+  fun numberFieldComponent_editModeAllowsNumericInput() {
     var capturedValue: FieldValue.NumberValue? = null
     setFieldContent(onValueChange = { capturedValue = it })
 
@@ -68,7 +68,7 @@ class NumberFieldComponentTest {
   }
 
   @Test
-  fun numberFieldComponent_editMode_allowsNegativeNumbers() {
+  fun numberFieldComponent_editModeAllowsNegativeNumbers() {
     var capturedValue: FieldValue.NumberValue? = null
     setFieldContent(onValueChange = { capturedValue = it })
 
@@ -81,7 +81,7 @@ class NumberFieldComponentTest {
   }
 
   @Test
-  fun numberFieldComponent_editMode_allowsIntegerInput() {
+  fun numberFieldComponent_editModeAllowsIntegerInput() {
     var capturedValue: FieldValue.NumberValue? = null
     setFieldContent(onValueChange = { capturedValue = it })
 
@@ -92,20 +92,20 @@ class NumberFieldComponentTest {
   }
 
   @Test
-  fun numberFieldComponent_editMode_displaysUnitSuffix() {
+  fun numberFieldComponent_editModeDisplaysUnitSuffix() {
     setFieldContent()
     composeTestRule.onNodeWithText("kg").assertIsDisplayed()
   }
 
   @Test
-  fun numberFieldComponent_viewMode_showsFormattedValue() {
+  fun numberFieldComponent_viewModeShowsFormattedValue() {
     setFieldContent(value = FieldValue.NumberValue(42.567), mode = FieldInteractionMode.ViewOnly)
     composeTestRule.onNodeWithTag(NumberFieldTestTags.value("test_number")).assertIsDisplayed()
     composeTestRule.onNodeWithText("42.57 kg").assertIsDisplayed()
   }
 
   @Test
-  fun numberFieldComponent_viewMode_formatsWithCorrectDecimals() {
+  fun numberFieldComponent_viewModeFormatsWithCorrectDecimals() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(type = FieldType.Number(decimals = 1, unit = "m")),
         value = FieldValue.NumberValue(3.14159),
@@ -114,7 +114,7 @@ class NumberFieldComponentTest {
   }
 
   @Test
-  fun numberFieldComponent_viewMode_formatsWithoutDecimals() {
+  fun numberFieldComponent_viewModeFormatsWithoutDecimals() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(type = FieldType.Number(decimals = 0)),
         value = FieldValue.NumberValue(42.789),
@@ -123,25 +123,25 @@ class NumberFieldComponentTest {
   }
 
   @Test
-  fun numberFieldComponent_viewMode_displaysUnitSuffix() {
+  fun numberFieldComponent_viewModeDisplaysUnitSuffix() {
     setFieldContent(value = FieldValue.NumberValue(50.0), mode = FieldInteractionMode.ViewOnly)
     composeTestRule.onNodeWithText("50.00 kg").assertIsDisplayed()
   }
 
   @Test
-  fun numberFieldComponent_viewMode_doesNotShowInputField() {
+  fun numberFieldComponent_viewModeDoesNotShowInputField() {
     setFieldContent(value = FieldValue.NumberValue(42.5), mode = FieldInteractionMode.ViewOnly)
     composeTestRule.onNodeWithTag(NumberFieldTestTags.input("test_number")).assertDoesNotExist()
   }
 
   @Test
-  fun numberFieldComponent_toggleableMode_showsToggleButton() {
+  fun numberFieldComponent_toggleableModeShowsToggleButton() {
     setFieldContent(mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false))
     composeTestRule.onNodeWithTag(BaseFieldTestTags.toggle("test_number")).assertIsDisplayed()
   }
 
   @Test
-  fun numberFieldComponent_toggleableMode_callsOnModeToggle() {
+  fun numberFieldComponent_toggleableModeCallsOnModeToggle() {
     var toggleCalled = false
     setFieldContent(
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
@@ -152,51 +152,51 @@ class NumberFieldComponentTest {
   }
 
   @Test
-  fun numberFieldComponent_requiredField_showsAsterisk() {
+  fun numberFieldComponent_requiredFieldShowsAsterisk() {
     setFieldContent(fieldDef = testFieldDefinition.copy(required = true))
     composeTestRule.onNodeWithText("Test Number Field *").assertIsDisplayed()
   }
 
   @Test
-  fun numberFieldComponent_withDescription_showsDescription() {
+  fun numberFieldComponent_withDescriptionShowsDescription() {
     setFieldContent(fieldDef = testFieldDefinition.copy(description = "Enter a numeric value"))
     composeTestRule.onNodeWithText("Enter a numeric value").assertIsDisplayed()
   }
 
   @Test
-  fun numberFieldComponent_withConstraints_showsHints() {
+  fun numberFieldComponent_withConstraintsShowsHints() {
     setFieldContent()
     composeTestRule.onNodeWithText("Range: 0.0 - 100.0 • Unit: kg").assertIsDisplayed()
   }
 
   @Test
-  fun numberFieldComponent_withMinOnly_showsMinHint() {
+  fun numberFieldComponent_withMinOnlyShowsMinHint() {
     setFieldContent(fieldDef = testFieldDefinition.copy(type = FieldType.Number(min = 5.0)))
     composeTestRule.onNodeWithText("Min: 5.0").assertIsDisplayed()
   }
 
   @Test
-  fun numberFieldComponent_withMaxOnly_showsMaxHint() {
+  fun numberFieldComponent_withMaxOnlyShowsMaxHint() {
     setFieldContent(fieldDef = testFieldDefinition.copy(type = FieldType.Number(max = 100.0)))
     composeTestRule.onNodeWithText("Max: 100.0").assertIsDisplayed()
   }
 
   @Test
-  fun numberFieldComponent_whenValidationEnabled_showsErrors() {
+  fun numberFieldComponent_whenValidationEnabledShowsErrors() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(required = true), showValidationErrors = true)
     composeTestRule.onNodeWithText("This field is required").assertIsDisplayed()
   }
 
   @Test
-  fun numberFieldComponent_whenValidationDisabled_doesNotShowErrors() {
+  fun numberFieldComponent_whenValidationDisabledDoesNotShowErrors() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(required = true), showValidationErrors = false)
     composeTestRule.onNodeWithText("This field is required").assertDoesNotExist()
   }
 
   @Test
-  fun numberFieldComponent_withoutUnit_displaysValueWithoutUnit() {
+  fun numberFieldComponent_withoutUnitDisplaysValueWithoutUnit() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(type = FieldType.Number(decimals = 2)),
         value = FieldValue.NumberValue(42.5),
@@ -205,13 +205,13 @@ class NumberFieldComponentTest {
   }
 
   @Test
-  fun numberFieldComponent_withZeroValue_displaysZero() {
+  fun numberFieldComponent_withZeroValueDisplaysZero() {
     setFieldContent(value = FieldValue.NumberValue(0.0), mode = FieldInteractionMode.ViewOnly)
     composeTestRule.onNodeWithText("0.00 kg").assertIsDisplayed()
   }
 
   @Test
-  fun numberFieldComponent_nullDecimals_formatsAsZeroDecimals() {
+  fun numberFieldComponent_nullDecimalsFormatsAsZeroDecimals() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(type = FieldType.Number(decimals = null)),
         value = FieldValue.NumberValue(42.567),
@@ -220,7 +220,7 @@ class NumberFieldComponentTest {
   }
 
   @Test
-  fun numberFieldComponent_toggleableSave_callsOnSaveCallback() {
+  fun numberFieldComponent_toggleableSaveCallsOnSaveCallback() {
     var saveCalled = false
     setFieldContent(
         value = FieldValue.NumberValue(42.0),
@@ -232,7 +232,7 @@ class NumberFieldComponentTest {
   }
 
   @Test
-  fun numberFieldComponent_toggleableCancel_callsOnCancelCallback() {
+  fun numberFieldComponent_toggleableCancelCallsOnCancelCallback() {
     var cancelCalled = false
     setFieldContent(
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
@@ -243,7 +243,7 @@ class NumberFieldComponentTest {
   }
 
   @Test
-  fun numberFieldComponent_editMode_clearingInputSetsNullValue() {
+  fun numberFieldComponent_editModeClearingInputSetsNullValue() {
     var capturedValue: FieldValue.NumberValue? = null
     setFieldContent(value = FieldValue.NumberValue(42.0), onValueChange = { capturedValue = it })
 

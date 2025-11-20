@@ -53,7 +53,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_editMode_showsChipOptions() {
+  fun multiSelectFieldComponent_editModeShowsChipOptions() {
     setFieldContent()
     composeTestRule
         .onNodeWithTag(MultiSelectFieldTestTags.chips("test_multi_select"))
@@ -64,7 +64,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_editMode_clickingChipTogglesSelection() {
+  fun multiSelectFieldComponent_editModeClickingChipTogglesSelection() {
     var capturedValue: FieldValue.MultiSelectValue? = null
     setFieldContent(onValueChange = { capturedValue = it })
 
@@ -76,7 +76,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_editMode_multipleSelectionsWork() {
+  fun multiSelectFieldComponent_editModeMultipleSelectionsWork() {
     var capturedValue: FieldValue.MultiSelectValue? = null
     setFieldContent(onValueChange = { capturedValue = it })
 
@@ -90,7 +90,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_editMode_clickingSelectedChipDeselectsIt() {
+  fun multiSelectFieldComponent_editModeClickingSelectedChipDeselectsIt() {
     var capturedValue: FieldValue.MultiSelectValue? =
         FieldValue.MultiSelectValue(listOf("option1", "option2"))
     setFieldContent(value = capturedValue, onValueChange = { capturedValue = it })
@@ -104,7 +104,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_viewMode_showsSelectedValuesAsChips() {
+  fun multiSelectFieldComponent_viewModeShowsSelectedValuesAsChips() {
     setFieldContent(
         value = FieldValue.MultiSelectValue(listOf("option1", "option2")),
         mode = FieldInteractionMode.ViewOnly)
@@ -116,7 +116,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_viewMode_chipsAreNonInteractive() {
+  fun multiSelectFieldComponent_viewModeChipsAreNonInteractive() {
     var valueChanged = false
     setFieldContent(
         value = FieldValue.MultiSelectValue(listOf("option1")),
@@ -128,7 +128,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_viewMode_emptySelections_showsEmptyText() {
+  fun multiSelectFieldComponent_viewModeEmptySelectionsShowsEmptyText() {
     setFieldContent(mode = FieldInteractionMode.ViewOnly)
     composeTestRule
         .onNodeWithTag(MultiSelectFieldTestTags.value("test_multi_select"))
@@ -136,7 +136,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_viewMode_doesNotShowEditChips() {
+  fun multiSelectFieldComponent_viewModeDoesNotShowEditChips() {
     setFieldContent(
         value = FieldValue.MultiSelectValue(listOf("option1")),
         mode = FieldInteractionMode.ViewOnly)
@@ -146,7 +146,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_allowCustomTrue_showsCustomInput() {
+  fun multiSelectFieldComponent_allowCustomTrueShowsCustomInput() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -160,7 +160,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_allowCustomTrue_canAddCustomValue() {
+  fun multiSelectFieldComponent_allowCustomTrueCanAddCustomValue() {
     val fieldWithCustom =
         testFieldDefinition.copy(
             type = FieldType.MultiSelect(options = testOptions, allowCustom = true))
@@ -180,7 +180,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_allowCustomFalse_doesNotShowCustomInput() {
+  fun multiSelectFieldComponent_allowCustomFalseDoesNotShowCustomInput() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -194,13 +194,13 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_toggleableMode_showsToggleButton() {
+  fun multiSelectFieldComponent_toggleableModeShowsToggleButton() {
     setFieldContent(mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false))
     composeTestRule.onNodeWithTag("field_toggle_test_multi_select").assertIsDisplayed()
   }
 
   @Test
-  fun multiSelectFieldComponent_toggleableMode_callsOnModeToggle() {
+  fun multiSelectFieldComponent_toggleableModeCallsOnModeToggle() {
     var toggleCalled = false
     setFieldContent(
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
@@ -211,19 +211,19 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_requiredField_showsAsterisk() {
+  fun multiSelectFieldComponent_requiredFieldShowsAsterisk() {
     setFieldContent(fieldDef = testFieldDefinition.copy(required = true))
     composeTestRule.onNodeWithText("Test Multi Select *").assertIsDisplayed()
   }
 
   @Test
-  fun multiSelectFieldComponent_withDescription_showsDescription() {
+  fun multiSelectFieldComponent_withDescriptionShowsDescription() {
     setFieldContent(fieldDef = testFieldDefinition.copy(description = "Select one or more options"))
     composeTestRule.onNodeWithText("Select one or more options").assertIsDisplayed()
   }
 
   @Test
-  fun multiSelectFieldComponent_withConstraints_showsHints() {
+  fun multiSelectFieldComponent_withConstraintsShowsHints() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -237,21 +237,21 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_whenValidationEnabled_showsErrors() {
+  fun multiSelectFieldComponent_whenValidationEnabledShowsErrors() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(required = true), showValidationErrors = true)
     composeTestRule.onNodeWithText("This field is required").assertIsDisplayed()
   }
 
   @Test
-  fun multiSelectFieldComponent_whenValidationDisabled_doesNotShowErrors() {
+  fun multiSelectFieldComponent_whenValidationDisabledDoesNotShowErrors() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(required = true), showValidationErrors = false)
     composeTestRule.onNodeWithText("This field is required").assertDoesNotExist()
   }
 
   @Test
-  fun multiSelectFieldComponent_customValue_displayedInViewMode() {
+  fun multiSelectFieldComponent_customValueDisplayedInViewMode() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -265,7 +265,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_minMaxConstraints_hintShowsRange() {
+  fun multiSelectFieldComponent_minMaxConstraintsHintShowsRange() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -377,14 +377,14 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_viewMode_emptyList_showsNoneText() {
+  fun multiSelectFieldComponent_viewModeEmptyListShowsNoneText() {
     setFieldContent(
         value = FieldValue.MultiSelectValue(emptyList()), mode = FieldInteractionMode.ViewOnly)
     composeTestRule.onNodeWithText("None").assertIsDisplayed()
   }
 
   @Test
-  fun multiSelectFieldComponent_minSelectionsValidation_showsError() {
+  fun multiSelectFieldComponent_minSelectionsValidationShowsError() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -395,7 +395,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_minSelectionsValidation_noErrorWhenMet() {
+  fun multiSelectFieldComponent_minSelectionsValidationNoErrorWhenMet() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -406,7 +406,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_maxSelectionsValidation_showsError() {
+  fun multiSelectFieldComponent_maxSelectionsValidationShowsError() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -417,7 +417,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_maxSelectionsValidation_noErrorWhenMet() {
+  fun multiSelectFieldComponent_maxSelectionsValidationNoErrorWhenMet() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -428,7 +428,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_toggleableSave_callsOnSaveCallback() {
+  fun multiSelectFieldComponent_toggleableSaveCallsOnSaveCallback() {
     var saveCalled = false
     setFieldContent(
         value = FieldValue.MultiSelectValue(listOf("opt1")),
@@ -440,7 +440,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_toggleableCancel_callsOnCancelCallback() {
+  fun multiSelectFieldComponent_toggleableCancelCallsOnCancelCallback() {
     var cancelCalled = false
     setFieldContent(
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
@@ -451,14 +451,14 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_toggleableEditing_showsSaveAndCancelButtons() {
+  fun multiSelectFieldComponent_toggleableEditingShowsSaveAndCancelButtons() {
     setFieldContent(mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true))
     composeTestRule.onNodeWithTag(BaseFieldTestTags.save("test_multi_select")).assertIsDisplayed()
     composeTestRule.onNodeWithTag(BaseFieldTestTags.cancel("test_multi_select")).assertIsDisplayed()
   }
 
   @Test
-  fun multiSelectFieldComponent_showHeaderFalse_hidesHeader() {
+  fun multiSelectFieldComponent_showHeaderFalseHidesHeader() {
     composeTestRule.setContent {
       MultiSelectFieldComponent(
           fieldDefinition = testFieldDefinition,
@@ -472,7 +472,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_showHeaderTrue_showsHeader() {
+  fun multiSelectFieldComponent_showHeaderTrueShowsHeader() {
     composeTestRule.setContent {
       MultiSelectFieldComponent(
           fieldDefinition = testFieldDefinition,
@@ -486,7 +486,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_showHeaderFalse_stillRendersChips() {
+  fun multiSelectFieldComponent_showHeaderFalseStillRendersChips() {
     composeTestRule.setContent {
       MultiSelectFieldComponent(
           fieldDefinition = testFieldDefinition,
@@ -500,7 +500,7 @@ class MultiSelectFieldComponentTest {
   }
 
   @Test
-  fun multiSelectFieldComponent_requiredValidation_withValues_noError() {
+  fun multiSelectFieldComponent_requiredValidationWithValuesNoError() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(required = true),
         value = FieldValue.MultiSelectValue(listOf("opt1")),

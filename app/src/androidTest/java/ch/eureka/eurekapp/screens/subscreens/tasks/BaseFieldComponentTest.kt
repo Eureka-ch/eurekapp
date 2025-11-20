@@ -50,7 +50,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_whenRequired_displaysAsterisk() {
+  fun baseFieldComponent_whenRequiredDisplaysAsterisk() {
     val requiredField = testFieldDefinition.copy(required = true)
 
     composeTestRule.setContent {
@@ -87,7 +87,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_whenDescriptionNull_doesNotDisplayDescription() {
+  fun baseFieldComponent_whenDescriptionNullDoesNotDisplayDescription() {
     val fieldWithoutDescription = testFieldDefinition.copy(description = null)
 
     composeTestRule.setContent {
@@ -105,7 +105,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_whenEditOnly_doesNotShowToggleButton() {
+  fun baseFieldComponent_whenEditOnlyDoesNotShowToggleButton() {
     composeTestRule.setContent {
       BaseFieldComponent(
           fieldDefinition = testFieldDefinition,
@@ -121,7 +121,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_whenViewOnly_doesNotShowToggleButton() {
+  fun baseFieldComponent_whenViewOnlyDoesNotShowToggleButton() {
     composeTestRule.setContent {
       BaseFieldComponent(
           fieldDefinition = testFieldDefinition,
@@ -137,7 +137,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_whenToggleable_showsToggleButton() {
+  fun baseFieldComponent_whenToggleableShowsToggleButton() {
     composeTestRule.setContent {
       BaseFieldComponent(
           fieldDefinition = testFieldDefinition,
@@ -153,7 +153,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_whenToggleableAndToggleClicked_callsOnModeToggle() {
+  fun baseFieldComponent_whenToggleableAndToggleClickedCallsOnModeToggle() {
     var toggleCalled = false
 
     composeTestRule.setContent {
@@ -174,7 +174,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_rendererReceivesCorrectEditingState_whenEditOnly() {
+  fun baseFieldComponent_rendererReceivesCorrectEditingStateWhenEditOnly() {
     var receivedIsEditing = false
 
     composeTestRule.setContent {
@@ -193,7 +193,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_rendererReceivesCorrectEditingState_whenViewOnly() {
+  fun baseFieldComponent_rendererReceivesCorrectEditingStateWhenViewOnly() {
     var receivedIsEditing = true
 
     composeTestRule.setContent {
@@ -212,7 +212,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_rendererReceivesCorrectEditingState_whenToggleableEditing() {
+  fun baseFieldComponent_rendererReceivesCorrectEditingStateWhenToggleableEditing() {
     var receivedIsEditing = false
 
     composeTestRule.setContent {
@@ -231,7 +231,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_rendererReceivesCorrectEditingState_whenToggleableViewing() {
+  fun baseFieldComponent_rendererReceivesCorrectEditingStateWhenToggleableViewing() {
     var receivedIsEditing = true
 
     composeTestRule.setContent {
@@ -250,7 +250,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_whenRequiredAndNullValue_showsValidationError() {
+  fun baseFieldComponent_whenRequiredAndNullValueShowsValidationError() {
     val requiredField = testFieldDefinition.copy(required = true)
 
     composeTestRule.setContent {
@@ -270,7 +270,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_whenInvalidValue_showsValidationError() {
+  fun baseFieldComponent_whenInvalidValueShowsValidationError() {
     val textFieldWithMaxLength = FieldType.Text(maxLength = 5)
     val invalidValue = FieldValue.TextValue("Too long text")
 
@@ -291,7 +291,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_whenValidationErrorsHidden_doesNotShowErrors() {
+  fun baseFieldComponent_whenValidationErrorsHiddenDoesNotShowErrors() {
     val requiredField = testFieldDefinition.copy(required = true)
 
     composeTestRule.setContent {
@@ -389,7 +389,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_toggleableEditing_showsSaveAndCancelButtons() {
+  fun baseFieldComponent_toggleableEditingShowsSaveAndCancelButtons() {
     composeTestRule.setContent {
       BaseFieldComponent(
           fieldDefinition = testFieldDefinition,
@@ -407,7 +407,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_toggleableViewing_showsEditButton() {
+  fun baseFieldComponent_toggleableViewingShowsEditButton() {
     composeTestRule.setContent {
       BaseFieldComponent(
           fieldDefinition = testFieldDefinition,
@@ -425,7 +425,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_saveButton_commitsValueAndCallsCallbacks() {
+  fun baseFieldComponent_saveButtonCommitsValueAndCallsCallbacks() {
     var committedValue: FieldValue.TextValue? = null
     var saveCalled = false
     var toggleCalled = false
@@ -459,7 +459,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_cancelButton_discardsChangesAndCallsCallbacks() {
+  fun baseFieldComponent_cancelButtonDiscardsChangesAndCallsCallbacks() {
     var committedValue: FieldValue.TextValue? = FieldValue.TextValue("Original")
     var cancelCalled = false
     var toggleCalled = false
@@ -494,7 +494,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_editOnlyMode_callsOnValueChangeImmediately() {
+  fun baseFieldComponent_editOnlyModeCallsOnValueChangeImmediately() {
     var receivedValue: FieldValue.TextValue? = null
     val newValue = FieldValue.TextValue("Immediate")
 
@@ -516,7 +516,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_toggleableMode_buffersChangesUntilSave() {
+  fun baseFieldComponent_toggleableModeBuffersChangesUntilSave() {
     var committedValue: FieldValue.TextValue? = null
     val editedValue = FieldValue.TextValue("Buffered")
 
@@ -547,7 +547,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_whenShowHeaderTrue_displaysHeader() {
+  fun baseFieldComponent_whenShowHeaderTrueDisplaysHeader() {
     composeTestRule.setContent {
       BaseFieldComponent(
           fieldDefinition = testFieldDefinition,
@@ -569,7 +569,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_whenShowHeaderFalse_hidesHeader() {
+  fun baseFieldComponent_whenShowHeaderFalseHidesHeader() {
     composeTestRule.setContent {
       BaseFieldComponent(
           fieldDefinition = testFieldDefinition,
@@ -591,7 +591,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_whenShowHeaderFalse_stillRendersContent() {
+  fun baseFieldComponent_whenShowHeaderFalseStillRendersContent() {
     composeTestRule.setContent {
       BaseFieldComponent(
           fieldDefinition = testFieldDefinition,
@@ -609,7 +609,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_whenShowHeaderFalse_hidesActionButtons() {
+  fun baseFieldComponent_whenShowHeaderFalseHidesActionButtons() {
     composeTestRule.setContent {
       BaseFieldComponent(
           fieldDefinition = testFieldDefinition,
@@ -627,7 +627,7 @@ class BaseFieldComponentTest {
   }
 
   @Test
-  fun baseFieldComponent_whenShowHeaderFalse_rendererStillReceivesCorrectEditingState() {
+  fun baseFieldComponent_whenShowHeaderFalseRendererStillReceivesCorrectEditingState() {
     var receivedIsEditing = false
 
     composeTestRule.setContent {

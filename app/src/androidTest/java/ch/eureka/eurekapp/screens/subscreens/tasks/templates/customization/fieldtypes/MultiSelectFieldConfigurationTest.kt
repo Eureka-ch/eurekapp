@@ -29,7 +29,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun multiSelectFieldConfiguration_minSelectionsInput_updatesType() {
+  fun multiSelectFieldConfiguration_minSelectionsInputUpdatesType() {
     val updates = mutableListOf<FieldType.MultiSelect>()
 
     utils.testInputUpdate(
@@ -46,7 +46,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun multiSelectFieldConfiguration_maxSelectionsInput_updatesType() {
+  fun multiSelectFieldConfiguration_maxSelectionsInputUpdatesType() {
     val updates = mutableListOf<FieldType.MultiSelect>()
 
     utils.testInputUpdate(
@@ -63,7 +63,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun multiSelectFieldConfiguration_allowCustomCheckbox_updatesType() {
+  fun multiSelectFieldConfiguration_allowCustomCheckboxUpdatesType() {
     val updates = mutableListOf<FieldType.MultiSelect>()
 
     utils.testCheckboxToggle(
@@ -81,7 +81,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun multiSelectFieldConfiguration_minLessThanMax_noError() {
+  fun multiSelectFieldConfiguration_minLessThanMaxNoError() {
     this.composeTestRule.setContent {
       MultiSelectFieldConfiguration(
           fieldType = FieldType.MultiSelect(testOptions, minSelections = 1, maxSelections = 3),
@@ -94,7 +94,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun multiSelectFieldConfiguration_minEqualToMax_noError() {
+  fun multiSelectFieldConfiguration_minEqualToMaxNoError() {
     this.composeTestRule.setContent {
       MultiSelectFieldConfiguration(
           fieldType = FieldType.MultiSelect(testOptions, minSelections = 2, maxSelections = 2),
@@ -107,7 +107,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun multiSelectFieldConfiguration_disabled_allFieldsDisabled() {
+  fun multiSelectFieldConfiguration_disabledAllFieldsDisabled() {
     utils.testDisabledState(
         composeTestRule,
         content = {
@@ -120,7 +120,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun multiSelectFieldConfiguration_emptyMinSelections_setsToNull() {
+  fun multiSelectFieldConfiguration_emptyMinSelectionsSetsToNull() {
     val updates = mutableListOf<FieldType.MultiSelect>()
     this.composeTestRule.setContent {
       MultiSelectFieldConfiguration(
@@ -134,7 +134,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun multiSelectFieldConfiguration_allowCustomUnchecked_updatesType() {
+  fun multiSelectFieldConfiguration_allowCustomUncheckedUpdatesType() {
     val updates = mutableListOf<FieldType.MultiSelect>()
 
     utils.testCheckboxToggle(
@@ -152,7 +152,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun multiSelectFieldConfiguration_emptyMaxSelections_setsToNull() {
+  fun multiSelectFieldConfiguration_emptyMaxSelectionsSetsToNull() {
     val updates = mutableListOf<FieldType.MultiSelect>()
     this.composeTestRule.setContent {
       MultiSelectFieldConfiguration(
@@ -166,7 +166,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun multiSelectFieldConfiguration_withInitialMinSelections_displays() {
+  fun multiSelectFieldConfiguration_withInitialMinSelectionsDisplays() {
     utils.testDisplaysAllFields(
         composeTestRule,
         content = {
@@ -179,7 +179,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun multiSelectFieldConfiguration_withInitialMaxSelections_displays() {
+  fun multiSelectFieldConfiguration_withInitialMaxSelectionsDisplays() {
     utils.testDisplaysAllFields(
         composeTestRule,
         content = {
@@ -192,7 +192,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun multiSelectFieldConfiguration_preservesOptions_afterUpdate() {
+  fun multiSelectFieldConfiguration_preservesOptionsAfterUpdate() {
     val updates = mutableListOf<FieldType.MultiSelect>()
 
     utils.testInputUpdate(

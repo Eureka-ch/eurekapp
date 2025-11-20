@@ -27,7 +27,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun dateFieldConfiguration_minDateInput_updatesType() {
+  fun dateFieldConfiguration_minDateInputUpdatesType() {
     val updates = mutableListOf<FieldType.Date>()
 
     utils.testInputUpdate(
@@ -43,7 +43,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun dateFieldConfiguration_maxDateInput_updatesType() {
+  fun dateFieldConfiguration_maxDateInputUpdatesType() {
     val updates = mutableListOf<FieldType.Date>()
 
     utils.testInputUpdate(
@@ -59,7 +59,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun dateFieldConfiguration_includeTimeCheckbox_updatesType() {
+  fun dateFieldConfiguration_includeTimeCheckboxUpdatesType() {
     val updates = mutableListOf<FieldType.Date>()
 
     utils.testCheckboxToggle(
@@ -75,7 +75,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun dateFieldConfiguration_invalidFormat_showsError() {
+  fun dateFieldConfiguration_invalidFormatShowsError() {
     this.composeTestRule.setContent {
       DateFieldConfiguration(
           fieldType = FieldType.Date(format = "invalid-format"), onUpdate = {}, enabled = true)
@@ -85,7 +85,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun dateFieldConfiguration_validFormat_noError() {
+  fun dateFieldConfiguration_validFormatNoError() {
     this.composeTestRule.setContent {
       DateFieldConfiguration(
           fieldType = FieldType.Date(format = "yyyy-MM-dd"), onUpdate = {}, enabled = true)
@@ -95,7 +95,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun dateFieldConfiguration_disabled_allFieldsDisabled() {
+  fun dateFieldConfiguration_disabledAllFieldsDisabled() {
     utils.testDisabledState(
         composeTestRule,
         content = {
@@ -108,7 +108,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun dateFieldConfiguration_includeTimeUnchecked_updatesType() {
+  fun dateFieldConfiguration_includeTimeUncheckedUpdatesType() {
     val updates = mutableListOf<FieldType.Date>()
 
     utils.testCheckboxToggle(
@@ -124,7 +124,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun dateFieldConfiguration_withInitialMinDate_displays() {
+  fun dateFieldConfiguration_withInitialMinDateDisplays() {
     utils.testDisplaysAllFields(
         composeTestRule,
         content = {
@@ -135,7 +135,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun dateFieldConfiguration_withInitialMaxDate_displays() {
+  fun dateFieldConfiguration_withInitialMaxDateDisplays() {
     utils.testDisplaysAllFields(
         composeTestRule,
         content = {
@@ -146,7 +146,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun dateFieldConfiguration_withBothMinAndMaxDates_displays() {
+  fun dateFieldConfiguration_withBothMinAndMaxDatesDisplays() {
     utils.testDisplaysAllFields(
         composeTestRule,
         content = {
@@ -160,7 +160,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun dateFieldConfiguration_customFormat_displays() {
+  fun dateFieldConfiguration_customFormatDisplays() {
     utils.testDisplaysAllFields(
         composeTestRule,
         content = {
@@ -171,7 +171,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun dateFieldConfiguration_blankMinDate_setsToNull() {
+  fun dateFieldConfiguration_blankMinDateSetsToNull() {
     val updates = mutableListOf<FieldType.Date>()
     this.composeTestRule.setContent {
       DateFieldConfiguration(
@@ -185,7 +185,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun dateFieldConfiguration_blankMaxDate_setsToNull() {
+  fun dateFieldConfiguration_blankMaxDateSetsToNull() {
     val updates = mutableListOf<FieldType.Date>()
     this.composeTestRule.setContent {
       DateFieldConfiguration(
