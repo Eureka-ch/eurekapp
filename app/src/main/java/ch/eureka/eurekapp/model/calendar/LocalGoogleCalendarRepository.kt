@@ -289,7 +289,7 @@ class LocalGoogleCalendarRepository(
             selectionArgs,
             null)
     checkNotNull(cur)
-    var googleCalendarID: Int? = null
+    var googleCalendarID: Int?
     check(cur.moveToFirst())
     val calID = cur.getInt(CompanionLocalGoogleCalendarRepository.PROJECTION_ID_INDEX)
     googleCalendarID = calID
