@@ -29,10 +29,18 @@ class SelectOptionsEditorTest {
       SelectOptionsEditor(options = testOptions, onOptionsChange = {}, enabled = true)
     }
 
-    composeTestRule.onNodeWithTag("option_label_opt1").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("option_label_opt2").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("option_delete_opt1").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("option_delete_opt2").assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(SelectOptionsEditorTestTags.optionLabel("opt1"))
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(SelectOptionsEditorTestTags.optionLabel("opt2"))
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(SelectOptionsEditorTestTags.optionDelete("opt1"))
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(SelectOptionsEditorTestTags.optionDelete("opt2"))
+        .assertIsDisplayed()
   }
 
   @Test
@@ -43,7 +51,7 @@ class SelectOptionsEditorTest {
           options = updatedOptions, onOptionsChange = { updatedOptions = it }, enabled = true)
     }
 
-    composeTestRule.onNodeWithTag("add_option_button").performClick()
+    composeTestRule.onNodeWithTag(SelectOptionsEditorTestTags.ADD_OPTION_BUTTON).performClick()
     assertEquals(3, updatedOptions.size)
   }
 
@@ -56,7 +64,7 @@ class SelectOptionsEditorTest {
           options = updatedOptions, onOptionsChange = { updatedOptions = it }, enabled = true)
     }
 
-    composeTestRule.onNodeWithTag("option_delete_opt1").performClick()
+    composeTestRule.onNodeWithTag(SelectOptionsEditorTestTags.optionDelete("opt1")).performClick()
     assertEquals(2, updatedOptions.size)
   }
 
@@ -66,7 +74,9 @@ class SelectOptionsEditorTest {
       SelectOptionsEditor(options = testOptions, onOptionsChange = {}, enabled = true)
     }
 
-    composeTestRule.onNodeWithTag("option_delete_opt1").assertIsNotEnabled()
+    composeTestRule
+        .onNodeWithTag(SelectOptionsEditorTestTags.optionDelete("opt1"))
+        .assertIsNotEnabled()
   }
 
   @Test
@@ -77,7 +87,9 @@ class SelectOptionsEditorTest {
           options = updatedOptions, onOptionsChange = { updatedOptions = it }, enabled = true)
     }
 
-    composeTestRule.onNodeWithTag("option_label_opt1").performTextInput("X")
+    composeTestRule
+        .onNodeWithTag(SelectOptionsEditorTestTags.optionLabel("opt1"))
+        .performTextInput("X")
     // Label becomes "XOption 1", which sanitizes to "xoption_1"
     assertEquals("XOption 1", updatedOptions[0].label)
     assertEquals("xoption_1", updatedOptions[0].value)
@@ -91,7 +103,9 @@ class SelectOptionsEditorTest {
           options = updatedOptions, onOptionsChange = { updatedOptions = it }, enabled = true)
     }
 
-    composeTestRule.onNodeWithTag("option_label_opt2").performTextInput(" - Special!")
+    composeTestRule
+        .onNodeWithTag(SelectOptionsEditorTestTags.optionLabel("opt2"))
+        .performTextInput(" - Special!")
     // Label becomes " - Special!Option 2" (text is appended), which sanitizes to "special_option_2"
     assertEquals(" - Special!Option 2", updatedOptions[1].label)
     assertEquals("special_option_2", updatedOptions[1].value)
@@ -103,8 +117,14 @@ class SelectOptionsEditorTest {
       SelectOptionsEditor(options = testOptions, onOptionsChange = {}, enabled = false)
     }
 
-    composeTestRule.onNodeWithTag("option_label_opt1").assertIsNotEnabled()
-    composeTestRule.onNodeWithTag("option_label_opt2").assertIsNotEnabled()
-    composeTestRule.onNodeWithTag("add_option_button").assertIsNotEnabled()
+    composeTestRule
+        .onNodeWithTag(SelectOptionsEditorTestTags.optionLabel("opt1"))
+        .assertIsNotEnabled()
+    composeTestRule
+        .onNodeWithTag(SelectOptionsEditorTestTags.optionLabel("opt2"))
+        .assertIsNotEnabled()
+    composeTestRule
+        .onNodeWithTag(SelectOptionsEditorTestTags.ADD_OPTION_BUTTON)
+        .assertIsNotEnabled()
   }
 }

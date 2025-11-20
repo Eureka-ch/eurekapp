@@ -9,10 +9,15 @@ import androidx.compose.ui.test.performTextInput
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.SelectOption
 import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fieldtypes.DateFieldConfiguration
+import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fieldtypes.DateFieldConfigurationTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fieldtypes.MultiSelectFieldConfiguration
+import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fieldtypes.MultiSelectFieldConfigurationTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fieldtypes.NumberFieldConfiguration
+import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fieldtypes.NumberFieldConfigurationTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fieldtypes.SingleSelectFieldConfiguration
+import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fieldtypes.SingleSelectFieldConfigurationTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fieldtypes.TextFieldConfiguration
+import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fieldtypes.TextFieldConfigurationTestTags
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Rule
@@ -33,9 +38,9 @@ class FieldTypeConfigurationsTest {
       TextFieldConfiguration(fieldType = FieldType.Text(), onUpdate = {}, enabled = true)
     }
 
-    composeTestRule.onNodeWithTag("text_max_length").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("text_min_length").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("text_placeholder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(TextFieldConfigurationTestTags.MAX_LENGTH).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(TextFieldConfigurationTestTags.MIN_LENGTH).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(TextFieldConfigurationTestTags.PLACEHOLDER).assertIsDisplayed()
   }
 
   @Test
@@ -46,7 +51,7 @@ class FieldTypeConfigurationsTest {
           fieldType = FieldType.Text(), onUpdate = { updatedType = it }, enabled = true)
     }
 
-    composeTestRule.onNodeWithTag("text_max_length").performTextInput("100")
+    composeTestRule.onNodeWithTag(TextFieldConfigurationTestTags.MAX_LENGTH).performTextInput("100")
     assertNotNull(updatedType)
     assertEquals(100, updatedType?.maxLength)
   }
@@ -57,11 +62,11 @@ class FieldTypeConfigurationsTest {
       NumberFieldConfiguration(fieldType = FieldType.Number(), onUpdate = {}, enabled = true)
     }
 
-    composeTestRule.onNodeWithTag("number_min").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("number_max").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("number_step").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("number_decimals").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("number_unit").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(NumberFieldConfigurationTestTags.MIN).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(NumberFieldConfigurationTestTags.MAX).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(NumberFieldConfigurationTestTags.STEP).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(NumberFieldConfigurationTestTags.DECIMALS).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(NumberFieldConfigurationTestTags.UNIT).assertIsDisplayed()
   }
 
   @Test
@@ -72,7 +77,7 @@ class FieldTypeConfigurationsTest {
           fieldType = FieldType.Number(), onUpdate = { updatedType = it }, enabled = true)
     }
 
-    composeTestRule.onNodeWithTag("number_min").performTextInput("10")
+    composeTestRule.onNodeWithTag(NumberFieldConfigurationTestTags.MIN).performTextInput("10")
     assertNotNull(updatedType)
     assertEquals(10.0, updatedType!!.min!!, 0.01)
   }
@@ -83,8 +88,8 @@ class FieldTypeConfigurationsTest {
       DateFieldConfiguration(fieldType = FieldType.Date(), onUpdate = {}, enabled = true)
     }
 
-    composeTestRule.onNodeWithTag("date_include_time").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("date_format").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(DateFieldConfigurationTestTags.INCLUDE_TIME).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(DateFieldConfigurationTestTags.FORMAT).assertIsDisplayed()
   }
 
   @Test
@@ -97,7 +102,7 @@ class FieldTypeConfigurationsTest {
           enabled = true)
     }
 
-    composeTestRule.onNodeWithTag("date_include_time").performClick()
+    composeTestRule.onNodeWithTag(DateFieldConfigurationTestTags.INCLUDE_TIME).performClick()
     assertNotNull(updatedType)
     assertEquals(true, updatedType?.includeTime)
   }
@@ -111,7 +116,9 @@ class FieldTypeConfigurationsTest {
     }
 
     composeTestRule.onNodeWithText("Allow Custom Values").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("single_select_allow_custom").assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(SingleSelectFieldConfigurationTestTags.ALLOW_CUSTOM)
+        .assertIsDisplayed()
   }
 
   @Test
@@ -125,7 +132,9 @@ class FieldTypeConfigurationsTest {
           enabled = true)
     }
 
-    composeTestRule.onNodeWithTag("single_select_allow_custom").performClick()
+    composeTestRule
+        .onNodeWithTag(SingleSelectFieldConfigurationTestTags.ALLOW_CUSTOM)
+        .performClick()
     assertNotNull(updatedType)
     assertEquals(true, updatedType?.allowCustom)
   }
@@ -139,9 +148,11 @@ class FieldTypeConfigurationsTest {
     }
 
     composeTestRule.onNodeWithText("Allow Custom Values").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("multi_select_min").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("multi_select_max").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("multi_select_allow_custom").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MultiSelectFieldConfigurationTestTags.MIN).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MultiSelectFieldConfigurationTestTags.MAX).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MultiSelectFieldConfigurationTestTags.ALLOW_CUSTOM)
+        .assertIsDisplayed()
   }
 
   @Test
@@ -155,7 +166,7 @@ class FieldTypeConfigurationsTest {
           enabled = true)
     }
 
-    composeTestRule.onNodeWithTag("multi_select_min").performTextInput("2")
+    composeTestRule.onNodeWithTag(MultiSelectFieldConfigurationTestTags.MIN).performTextInput("2")
     assertNotNull(updatedType)
     assertEquals(2, updatedType?.minSelections)
   }

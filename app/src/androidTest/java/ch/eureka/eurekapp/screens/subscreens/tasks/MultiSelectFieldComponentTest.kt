@@ -196,7 +196,7 @@ class MultiSelectFieldComponentTest {
   @Test
   fun multiSelectFieldComponent_toggleableModeShowsToggleButton() {
     setFieldContent(mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false))
-    composeTestRule.onNodeWithTag("field_toggle_test_multi_select").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.toggle("test_multi_select")).assertIsDisplayed()
   }
 
   @Test
@@ -206,7 +206,7 @@ class MultiSelectFieldComponentTest {
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
         callbacks = FieldCallbacks(onModeToggle = { toggleCalled = true }))
 
-    composeTestRule.onNodeWithTag("field_toggle_test_multi_select").performClick()
+    composeTestRule.onNodeWithTag(BaseFieldTestTags.toggle("test_multi_select")).performClick()
     assertTrue(toggleCalled)
   }
 

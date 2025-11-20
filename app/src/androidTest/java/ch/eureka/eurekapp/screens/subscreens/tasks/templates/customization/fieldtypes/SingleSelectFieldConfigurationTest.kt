@@ -85,7 +85,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
           enabled = true)
     }
 
-    composeTestRule.onNodeWithTag("single_select_allow_custom").assertIsOn()
+    composeTestRule.onNodeWithTag(SingleSelectFieldConfigurationTestTags.ALLOW_CUSTOM).assertIsOn()
   }
 
   @Test
@@ -97,7 +97,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
           enabled = true)
     }
 
-    composeTestRule.onNodeWithTag("single_select_allow_custom").assertIsOff()
+    composeTestRule.onNodeWithTag(SingleSelectFieldConfigurationTestTags.ALLOW_CUSTOM).assertIsOff()
   }
 
   @Test

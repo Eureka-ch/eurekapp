@@ -101,7 +101,9 @@ class BaseFieldComponentTest {
           }
     }
 
-    composeTestRule.onNodeWithTag("field_description_test_field").assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(FieldComponentTestTags.description("test_field"))
+        .assertDoesNotExist()
   }
 
   @Test
