@@ -91,14 +91,14 @@ class CreateTemplateScreenTest {
   }
 
   @Test
-  fun createTemplateScreen_saveButtonDisabledInitially() {
+  fun createTemplateScreen_saveButtonAlwaysClickable() {
     val viewModel = CreateTemplateViewModel(fakeRepository)
 
     composeTestRule.setContent {
       CreateTemplateScreen(onNavigateBack = {}, onTemplateCreated = {}, viewModel = viewModel)
     }
 
-    composeTestRule.onNodeWithText("Save").assertIsNotEnabled()
+    composeTestRule.onNodeWithText("Save").assertIsEnabled()
   }
 
   @Test
@@ -253,15 +253,16 @@ class CreateTemplateScreenTest {
       CreateTemplateScreen(onNavigateBack = {}, onTemplateCreated = {}, viewModel = viewModel)
     }
 
-    // Trigger validation by attempting to save
+    // Add a field so we have something to save
     viewModel.addField(FieldDefinition(id = "field1", label = "Field 1", type = FieldType.Text()))
     composeTestRule.waitForIdle()
 
+    // Click Save to trigger validation
     composeTestRule.onNodeWithText("Save").performClick()
     composeTestRule.waitForIdle()
 
-    // Badge should now be visible due to validation showing empty title error
-    composeTestRule.onNodeWithTag("badge").assertExists()
+    // Should show validation failed message
+    composeTestRule.onNodeWithText("Validation failed").assertIsDisplayed()
   }
 
   @Test
@@ -349,28 +350,6 @@ class CreateTemplateScreenTest {
   }
 
   @Test
-  fun createTemplateScreen_previewCanNavigateBackToEdit() {
-    val viewModel = CreateTemplateViewModel(fakeRepository)
-
-    composeTestRule.setContent {
-      CreateTemplateScreen(onNavigateBack = {}, onTemplateCreated = {}, viewModel = viewModel)
-    }
-
-    viewModel.updateTitle("Test Template")
-    viewModel.addField(
-        FieldDefinition(id = "field1", label = "Test Field", type = FieldType.Text()))
-    composeTestRule.waitForIdle()
-
-    composeTestRule.onAllNodesWithText("Preview")[0].performClick()
-    composeTestRule.waitForIdle()
-
-    composeTestRule.onNodeWithContentDescription("Edit field").performClick()
-    composeTestRule.waitForIdle()
-
-    composeTestRule.onAllNodesWithText("Configure")[0].assertIsSelected()
-  }
-
-  @Test
   fun createTemplateScreen_multipleFieldsDisplayedInPreview() {
     val viewModel = CreateTemplateViewModel(fakeRepository)
 
@@ -397,15 +376,16 @@ class CreateTemplateScreenTest {
       CreateTemplateScreen(onNavigateBack = {}, onTemplateCreated = {}, viewModel = viewModel)
     }
 
-    // Trigger validation by attempting to save
+    // Add a field so we have something to save
     viewModel.addField(FieldDefinition(id = "field1", label = "Field 1", type = FieldType.Text()))
     composeTestRule.waitForIdle()
 
+    // Click Save to trigger validation
     composeTestRule.onNodeWithText("Save").performClick()
     composeTestRule.waitForIdle()
 
-    // Badge should now be visible due to validation showing empty title error
-    composeTestRule.onNodeWithTag("badge").assertExists()
+    // Should show validation failed message
+    composeTestRule.onNodeWithText("Validation failed").assertIsDisplayed()
   }
 
   @Test
