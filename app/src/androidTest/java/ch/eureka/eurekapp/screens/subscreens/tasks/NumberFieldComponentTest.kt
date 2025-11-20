@@ -6,6 +6,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.FieldValue
@@ -239,5 +240,18 @@ class NumberFieldComponentTest {
 
     composeTestRule.onNodeWithTag(BaseFieldTestTags.cancel("test_number")).performClick()
     assert(cancelCalled)
+  }
+
+  @Test
+  fun numberFieldComponent_editMode_clearingInputSetsNullValue() {
+    var capturedValue: FieldValue.NumberValue? = null
+    setFieldContent(value = FieldValue.NumberValue(42.0), onValueChange = { capturedValue = it })
+
+    composeTestRule
+        .onNodeWithTag(NumberFieldTestTags.input("test_number"))
+        .performTextReplacement("")
+
+    assertNotNull(capturedValue)
+    assertEquals(null, capturedValue?.value)
   }
 }
