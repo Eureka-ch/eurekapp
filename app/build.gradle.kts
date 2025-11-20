@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.gms)
     alias(libs.plugins.sonar)
     id("jacoco")
+    id("kotlin-parcelize")
 }
 
 android {
@@ -238,6 +239,8 @@ dependencies {
     testImplementation(libs.mockwebserver)
     testImplementation(libs.robolectric)
     testImplementation(kotlin("test"))
+    testImplementation(libs.json)
+    testImplementation(libs.kotlinx.coroutines.test)
 
     // Testing - Android
     globalTestImplementation(libs.androidx.junit)

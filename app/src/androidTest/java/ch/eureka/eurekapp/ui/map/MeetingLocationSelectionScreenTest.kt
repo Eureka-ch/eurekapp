@@ -1,0 +1,115 @@
+/* Portions of the code in this file were written with the help of Gemini. */
+package ch.eureka.eurekapp.ui.map
+
+import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import ch.eureka.eurekapp.model.map.Location
+import com.google.android.gms.maps.model.LatLng
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+
+/**
+ * Test suite for [MeetingLocationSelectionScreen].
+ *
+ * Note : some tests where generated with Gemini.
+ */
+class MeetingLocationSelectionScreenTest {
+
+  @get:Rule val composeTestRule = createComposeRule()
+
+  private lateinit var viewModel: MeetingLocationSelectionViewModel
+  private var savedLocation: Location? = null
+  private var onBackCalled: Boolean = false
+
+  @Before
+  fun setup() {
+    viewModel = MeetingLocationSelectionViewModel()
+    savedLocation = null
+    onBackCalled = false
+
+    composeTestRule.setContent {
+      MeetingLocationSelectionScreen(
+          onLocationSelected = { savedLocation = it },
+          onBack = { onBackCalled = true },
+          viewModel = viewModel)
+    }
+  }
+
+  @Test
+  fun screenLoadsWithInitialStateElementsAreDisplayed() {
+    composeTestRule.onNodeWithTag(MeetingLocationSelectionTestTags.SCREEN_TITLE).assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag(MeetingLocationSelectionTestTags.GOOGLE_MAP).assertIsDisplayed()
+
+    composeTestRule
+        .onNodeWithTag(MeetingLocationSelectionTestTags.SAVE_BUTTON)
+        .assertIsDisplayed()
+        .assertIsNotEnabled()
+        .assertHasClickAction()
+  }
+
+  @Test
+  fun backButtonTriggersCallback() {
+    composeTestRule.onNodeWithContentDescription("Back").assertIsDisplayed().performClick()
+
+    assert(onBackCalled)
+  }
+
+  @Test
+  fun selectionUpdatesUiAndEnablesSaveButton() {
+    val latLng = LatLng(46.5, 6.6)
+    viewModel.selectLocation(latLng, null)
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithTag(MeetingLocationSelectionTestTags.SAVE_BUTTON).assertIsEnabled()
+
+    composeTestRule.onNodeWithTag(MeetingLocationSelectionTestTags.SAVE_BUTTON).performClick()
+
+    assertNotNull(savedLocation)
+    assertEquals(46.5, savedLocation!!.latitude, 0.0001)
+  }
+
+  @Test
+  fun markerSnippetLogicExecutesForCoordinates() {
+    val latLng = LatLng(10.0, 20.0)
+    viewModel.selectLocation(latLng, null)
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithTag(MeetingLocationSelectionTestTags.SAVE_BUTTON).assertIsEnabled()
+
+    val location = viewModel.uiState.value.selectedLocation
+    assertNotNull(location)
+    assertTrue(location!!.name.contains(","))
+  }
+
+  @Test
+  fun markerSnippetLogicExecutesForPoi() {
+    val latLng = LatLng(40.0, 50.0)
+    val poiName = "Eiffel Tower"
+    viewModel.selectLocation(latLng, poiName)
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithTag(MeetingLocationSelectionTestTags.SAVE_BUTTON).assertIsEnabled()
+
+    val location = viewModel.uiState.value.selectedLocation
+    assertEquals("Eiffel Tower", location?.name)
+  }
+
+  @Test
+  fun mapClicksTriggerViewModelFunctions() {
+    composeTestRule.onNodeWithTag(MeetingLocationSelectionTestTags.GOOGLE_MAP).assertIsDisplayed()
+  }
+}

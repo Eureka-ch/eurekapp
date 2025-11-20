@@ -23,11 +23,15 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.HourglassTop
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -59,12 +63,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
+import ch.eureka.eurekapp.model.map.Location
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.FlowPreview
 
 /** Test tags for the create meeting screen. */
 object CreateMeetingScreenTestTags {
@@ -77,10 +83,45 @@ object CreateMeetingScreenTestTags {
   const val INPUT_MEETING_DURATION = "InputMeetingDuration"
   const val INPUT_FORMAT = "InputFormat"
   const val CREATE_MEETING_BUTTON = "CreateMeetingButton"
+  const val INPUT_MEETING_LOCATION = "InputMeetingLocation"
+  const val LOCATION_SUGGESTION = "LocationSuggestion"
+  const val PICK_LOCATION = "PickLocation"
 }
 
 /** Spacing between each component or subcomponent on the screen. */
 const val SPACING = 8
+
+/**
+ * Data class holding all the action callbacks for the Create Meeting screen. This reduces the
+ * number of parameters passed to the content composable.
+ *
+ * @property onTitleChange Callback when the title text changes.
+ * @property onTitleTouch Callback when the title field is focused/touched.
+ * @property onDateSelected Callback when a date is selected.
+ * @property onDateTouched Callback when the date field is clicked.
+ * @property onTimeSelected Callback when a time is selected.
+ * @property onTimeTouched Callback when the time field is clicked.
+ * @property onDurationSelected Callback when a duration is selected.
+ * @property onFormatSelected Callback when a meeting format is selected.
+ * @property onLocationQueryChange Callback when the location search query changes.
+ * @property onLocationSelected Callback when a specific location is selected from suggestions.
+ * @property onPickLocationOnMap Callback when the user clicks the map icon to pick a location.
+ * @property onSave Callback when the save button is clicked.
+ */
+data class CreateMeetingActions(
+    val onTitleChange: (String) -> Unit,
+    val onTitleTouch: () -> Unit,
+    val onDateSelected: (LocalDate) -> Unit,
+    val onDateTouched: () -> Unit,
+    val onTimeSelected: (LocalTime) -> Unit,
+    val onTimeTouched: () -> Unit,
+    val onDurationSelected: (Int) -> Unit,
+    val onFormatSelected: (MeetingFormat) -> Unit,
+    val onLocationQueryChange: (String) -> Unit,
+    val onLocationSelected: (Location) -> Unit,
+    val onPickLocationOnMap: () -> Unit,
+    val onSave: () -> Unit
+)
 
 /**
  * Composable that displays the create meeting proposal screen.
@@ -88,15 +129,17 @@ const val SPACING = 8
  * @param projectId The ID of the project on which to create meetings for.
  * @param onDone Function called when meeting proposal was correctly created and saved on the
  *   database.
+ * @param onPickLocationOnMap Function called when the user wants to select a location on the map.
  * @param createMeetingViewModel View model associated with create meeting screen.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateMeetingScreen(
     projectId: String,
     onDone: () -> Unit,
+    onPickLocationOnMap: () -> Unit = {},
     createMeetingViewModel: CreateMeetingViewModel = viewModel()
 ) {
-
   val context = LocalContext.current
   val uiState by createMeetingViewModel.uiState.collectAsState()
 
@@ -113,123 +156,240 @@ fun CreateMeetingScreen(
     }
   }
 
+  val actions =
+      CreateMeetingActions(
+          onTitleChange = createMeetingViewModel::setTitle,
+          onTitleTouch = createMeetingViewModel::touchTitle,
+          onDateSelected = createMeetingViewModel::setDate,
+          onDateTouched = createMeetingViewModel::touchDate,
+          onTimeSelected = createMeetingViewModel::setTime,
+          onTimeTouched = createMeetingViewModel::touchTime,
+          onDurationSelected = createMeetingViewModel::setDuration,
+          onFormatSelected = createMeetingViewModel::setFormat,
+          onLocationQueryChange = createMeetingViewModel::setLocationQuery,
+          onLocationSelected = createMeetingViewModel::setLocation,
+          onPickLocationOnMap = onPickLocationOnMap,
+          onSave = { createMeetingViewModel.createMeeting(projectId) })
+
   Scaffold(
       content = { padding ->
-        /*
-        `padding` value is not symmetric here, it is zero on the left and on the right but non-zero
-        on the top and on the bottom. Thus it is more beautiful to only apply a constant padding of
-        `10` on the top, bottom, left and right.
-         */
-        Column(modifier = Modifier.fillMaxSize().padding(10.dp)) {
-          Text(
-              modifier = Modifier.testTag(CreateMeetingScreenTestTags.CREATE_MEETING_SCREEN_TITLE),
-              text = "Create Meeting",
-              style = MaterialTheme.typography.headlineSmall,
-              fontWeight = FontWeight.Bold)
-          Spacer(modifier = Modifier.height(SPACING.dp))
-          Text(
-              modifier =
-                  Modifier.testTag(CreateMeetingScreenTestTags.CREATE_MEETING_SCREEN_DESCRIPTION),
-              text = "Create a team meeting proposal",
-              style = MaterialTheme.typography.bodyMedium,
-              color = Color.Gray)
-
-          Spacer(Modifier.height((2 * SPACING).dp))
-
-          OutlinedTextField(
-              value = uiState.title,
-              onValueChange = { createMeetingViewModel.setTitle(it) },
-              label = { Text("Title") },
-              placeholder = { Text("Title of the meeting") },
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .testTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
-                      .onFocusChanged { focusState ->
-                        if (focusState.isFocused) {
-                          createMeetingViewModel.touchTitle()
-                        }
-                      })
-          if (uiState.title.isBlank() && uiState.hasTouchedTitle) {
-            Text(
-                text = "Title cannot be empty",
-                color = Color.Red,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.testTag(CreateMeetingScreenTestTags.ERROR_MSG))
-          }
-
-          Spacer(Modifier.height(SPACING.dp))
-
-          DateInputField(
-              selectedDate = uiState.date,
-              label = "Date",
-              placeHolder = "Select date",
-              tag = CreateMeetingScreenTestTags.INPUT_MEETING_DATE,
-              onDateSelected = { createMeetingViewModel.setDate(it) },
-              onDateTouched = { createMeetingViewModel.touchDate() })
-
-          Spacer(Modifier.height(SPACING.dp))
-
-          TimeInputField(
-              selectedTime = uiState.time,
-              label = "Time",
-              placeHolder = "Select time",
-              tag = CreateMeetingScreenTestTags.INPUT_MEETING_TIME,
-              onTimeSelected = { createMeetingViewModel.setTime(it) },
-              onTimeTouched = { createMeetingViewModel.touchTime() })
-
-          Spacer(Modifier.height(SPACING.dp))
-
-          SingleChoiceInputField(
-              config =
-                  SingleChoiceInputFieldConfig(
-                      currentValue = uiState.duration,
-                      displayValue = { d -> "$d minutes" },
-                      label = "Duration",
-                      placeholder = "Select duration",
-                      icon = Icons.Default.HourglassTop,
-                      iconDescription = "Select duration",
-                      alertDialogTitle = "Select a duration",
-                      options = listOf(5, 10, 15, 20, 30, 45, 60),
-                      tag = CreateMeetingScreenTestTags.INPUT_MEETING_DURATION,
-                      onOptionSelected = { createMeetingViewModel.setDuration(it) }))
-
-          Spacer(Modifier.height(SPACING.dp))
-
-          SingleChoiceInputField(
-              config =
-                  SingleChoiceInputFieldConfig(
-                      currentValue = uiState.format,
-                      displayValue = { f -> f.description },
-                      label = "Format",
-                      placeholder = "Select format",
-                      icon = Icons.Default.Description,
-                      iconDescription = "Select format",
-                      alertDialogTitle = "Select a format",
-                      options = listOf(MeetingFormat.IN_PERSON, MeetingFormat.VIRTUAL),
-                      tag = CreateMeetingScreenTestTags.INPUT_FORMAT,
-                      onOptionSelected = { createMeetingViewModel.setFormat(it) }))
-
-          Spacer(Modifier.height(SPACING.dp))
-
-          if (uiState.hasTouchedDate &&
-              uiState.hasTouchedTime &&
-              LocalDateTime.of(uiState.date, uiState.time).isBefore(LocalDateTime.now())) {
-            Text(
-                text = "Meeting should be scheduled in the future.",
-                color = Color.Red,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.testTag(CreateMeetingScreenTestTags.ERROR_MSG))
-          }
-          Button(
-              onClick = { createMeetingViewModel.createMeeting(projectId) },
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .testTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON),
-              enabled = uiState.isValid) {
-                Text("Save")
-              }
-        }
+        CreateMeetingContent(
+            modifier = Modifier.padding(padding), uiState = uiState, actions = actions)
       })
+}
+
+/**
+ * Pure UI Composable that defines the layout of the screen. It relies on [CreateMeetingUIState] for
+ * data and [CreateMeetingActions] for events.
+ *
+ * @param modifier The modifier to apply to this layout.
+ * @param uiState The current state of the UI.
+ * @param actions The collection of callbacks for user interactions.
+ */
+@Composable
+fun CreateMeetingContent(
+    modifier: Modifier = Modifier,
+    uiState: CreateMeetingUIState,
+    actions: CreateMeetingActions
+) {
+  Column(modifier = modifier.fillMaxSize().padding(10.dp)) {
+    CreateMeetingHeader()
+
+    Spacer(Modifier.height((2 * SPACING).dp))
+
+    TitleInputSection(
+        title = uiState.title,
+        hasTouchedTitle = uiState.hasTouchedTitle,
+        onTitleChange = actions.onTitleChange,
+        onTitleTouch = actions.onTitleTouch)
+
+    Spacer(Modifier.height(SPACING.dp))
+
+    DateInputField(
+        selectedDate = uiState.date,
+        label = "Date",
+        placeHolder = "Select date",
+        tag = CreateMeetingScreenTestTags.INPUT_MEETING_DATE,
+        onDateSelected = actions.onDateSelected,
+        onDateTouched = actions.onDateTouched)
+
+    Spacer(Modifier.height(SPACING.dp))
+
+    TimeInputField(
+        selectedTime = uiState.time,
+        label = "Time",
+        placeHolder = "Select time",
+        tag = CreateMeetingScreenTestTags.INPUT_MEETING_TIME,
+        onTimeSelected = actions.onTimeSelected,
+        onTimeTouched = actions.onTimeTouched)
+
+    Spacer(Modifier.height(SPACING.dp))
+
+    SingleChoiceInputField(
+        config =
+            SingleChoiceInputFieldConfig(
+                currentValue = uiState.duration,
+                displayValue = { d -> "$d minutes" },
+                label = "Duration",
+                placeholder = "Select duration",
+                icon = Icons.Default.HourglassTop,
+                iconDescription = "Select duration",
+                alertDialogTitle = "Select a duration",
+                options = listOf(5, 10, 15, 20, 30, 45, 60),
+                tag = CreateMeetingScreenTestTags.INPUT_MEETING_DURATION,
+                onOptionSelected = actions.onDurationSelected))
+
+    Spacer(Modifier.height(SPACING.dp))
+
+    SingleChoiceInputField(
+        config =
+            SingleChoiceInputFieldConfig(
+                currentValue = uiState.format,
+                displayValue = { f -> f.description },
+                label = "Format",
+                placeholder = "Select format",
+                icon = Icons.Default.Description,
+                iconDescription = "Select format",
+                alertDialogTitle = "Select a format",
+                options = listOf(MeetingFormat.IN_PERSON, MeetingFormat.VIRTUAL),
+                tag = CreateMeetingScreenTestTags.INPUT_FORMAT,
+                onOptionSelected = actions.onFormatSelected))
+
+    LocationInputSection(
+        format = uiState.format,
+        locationQuery = uiState.locationQuery,
+        locationSuggestions = uiState.locationSuggestions,
+        onLocationQueryChange = actions.onLocationQueryChange,
+        onLocationSelected = actions.onLocationSelected,
+        onPickLocationOnMap = actions.onPickLocationOnMap)
+
+    Spacer(Modifier.height(SPACING.dp))
+
+    TimeValidationMessage(
+        date = uiState.date,
+        time = uiState.time,
+        hasTouchedDate = uiState.hasTouchedDate,
+        hasTouchedTime = uiState.hasTouchedTime)
+
+    Button(
+        onClick = actions.onSave,
+        modifier =
+            Modifier.fillMaxWidth().testTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON),
+        enabled = uiState.isValid) {
+          Text("Save")
+        }
+  }
+}
+
+/** Composable for the Header of the Create Meeting screen (Title and Description). */
+@Composable
+fun CreateMeetingHeader() {
+  Text(
+      modifier = Modifier.testTag(CreateMeetingScreenTestTags.CREATE_MEETING_SCREEN_TITLE),
+      text = "Create Meeting",
+      style = MaterialTheme.typography.headlineSmall,
+      fontWeight = FontWeight.Bold)
+  Spacer(modifier = Modifier.height(SPACING.dp))
+  Text(
+      modifier = Modifier.testTag(CreateMeetingScreenTestTags.CREATE_MEETING_SCREEN_DESCRIPTION),
+      text = "Create a team meeting proposal",
+      style = MaterialTheme.typography.bodyMedium,
+      color = Color.Gray)
+}
+
+/**
+ * Composable for the Meeting Title input field. Handles displaying the error message if the title
+ * is invalid.
+ *
+ * @param title The current title value.
+ * @param hasTouchedTitle Whether the user has interacted with this field.
+ * @param onTitleChange Callback when the title text changes.
+ * @param onTitleTouch Callback when the field gains focus.
+ */
+@Composable
+fun TitleInputSection(
+    title: String,
+    hasTouchedTitle: Boolean,
+    onTitleChange: (String) -> Unit,
+    onTitleTouch: () -> Unit
+) {
+  OutlinedTextField(
+      value = title,
+      onValueChange = onTitleChange,
+      label = { Text("Title") },
+      placeholder = { Text("Title of the meeting") },
+      modifier =
+          Modifier.fillMaxWidth()
+              .testTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
+              .onFocusChanged { focusState ->
+                if (focusState.isFocused) {
+                  onTitleTouch()
+                }
+              })
+  if (title.isBlank() && hasTouchedTitle) {
+    Text(
+        text = "Title cannot be empty",
+        color = Color.Red,
+        style = MaterialTheme.typography.bodySmall,
+        modifier = Modifier.testTag(CreateMeetingScreenTestTags.ERROR_MSG))
+  }
+}
+
+/**
+ * Composable that conditionally displays the location input field if the format is IN_PERSON.
+ *
+ * @param format The currently selected meeting format.
+ * @param locationQuery The current text in the search bar.
+ * @param locationSuggestions List of autocomplete suggestions.
+ * @param onLocationQueryChange Callback when search text changes.
+ * @param onLocationSelected Callback when a location is selected from the list.
+ * @param onPickLocationOnMap Callback when the map icon is clicked.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LocationInputSection(
+    format: MeetingFormat,
+    locationQuery: String,
+    locationSuggestions: List<Location>,
+    onLocationQueryChange: (String) -> Unit,
+    onLocationSelected: (Location) -> Unit,
+    onPickLocationOnMap: () -> Unit
+) {
+  if (format == MeetingFormat.IN_PERSON) {
+    Spacer(Modifier.height(SPACING.dp))
+    LocationInputField(
+        locationQuery = locationQuery,
+        locationSuggestions = locationSuggestions,
+        selectLocationQuery = onLocationQueryChange,
+        selectLocation = onLocationSelected,
+        onPickLocationOnMap = onPickLocationOnMap)
+  }
+}
+
+/**
+ * Composable that displays a validation error message if the selected time is in the past.
+ *
+ * @param date The selected date.
+ * @param time The selected time.
+ * @param hasTouchedDate Whether the date field has been touched.
+ * @param hasTouchedTime Whether the time field has been touched.
+ */
+@Composable
+fun TimeValidationMessage(
+    date: LocalDate,
+    time: LocalTime,
+    hasTouchedDate: Boolean,
+    hasTouchedTime: Boolean
+) {
+  if (hasTouchedDate &&
+      hasTouchedTime &&
+      LocalDateTime.of(date, time).isBefore(LocalDateTime.now())) {
+    Text(
+        text = "Meeting should be scheduled in the future.",
+        color = Color.Red,
+        style = MaterialTheme.typography.bodySmall,
+        modifier = Modifier.testTag(CreateMeetingScreenTestTags.ERROR_MSG))
+  }
 }
 
 /**
@@ -467,4 +627,84 @@ fun <T> SingleChoiceInputField(config: SingleChoiceInputFieldConfig<T>) {
         },
         dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } })
   }
+}
+
+/**
+ * Composable to display the location input text field where the user can either enter a location
+ * and the location is searched by name or choose to pick the location directly by marking it on the
+ * map.
+ *
+ * @param locationQuery The location inputted/selected byt the user in the text field.
+ * @param locationSuggestions Suggestions for the [locationQuery]
+ * @param selectLocationQuery Function executed when the user select a location query (select
+ *   location name).
+ * @param selectLocation Function executed when the user select the corresponding location.
+ * @param onPickLocationOnMap Function executed when the users clicks on hte button to pick the
+ *   location on the map.
+ */
+@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
+@Composable
+fun LocationInputField(
+    locationQuery: String,
+    locationSuggestions: List<Location>,
+    selectLocationQuery: (String) -> Unit,
+    selectLocation: (Location) -> Unit,
+    onPickLocationOnMap: () -> Unit,
+) {
+
+  var showDropdown by remember { mutableStateOf(false) }
+
+  ExposedDropdownMenuBox(
+      expanded = showDropdown && locationSuggestions.isNotEmpty(),
+      onExpandedChange = { showDropdown = it }) {
+        OutlinedTextField(
+            value = locationQuery,
+            onValueChange = {
+              selectLocationQuery(it)
+              showDropdown = true
+            },
+            label = { Text("Location") },
+            placeholder = { Text("Enter an Address or Location") },
+            trailingIcon = {
+              IconButton(
+                  onClick = onPickLocationOnMap,
+                  modifier = Modifier.testTag(CreateMeetingScreenTestTags.PICK_LOCATION)) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = "Pick location")
+                  }
+            },
+            modifier =
+                Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable)
+                    .fillMaxWidth()
+                    .testTag(CreateMeetingScreenTestTags.INPUT_MEETING_LOCATION),
+            singleLine = true)
+
+        ExposedDropdownMenu(
+            expanded = showDropdown && locationSuggestions.isNotEmpty(),
+            onDismissRequest = { showDropdown = false }) {
+              locationSuggestions.take(3).forEach { location ->
+                DropdownMenuItem(
+                    text = {
+                      Text(
+                          text =
+                              location.name.take(30) + if (location.name.length > 30) "..." else "",
+                          maxLines = 1)
+                    },
+                    onClick = {
+                      selectLocationQuery(location.name)
+                      selectLocation(location)
+                      showDropdown = false
+                    },
+                    modifier =
+                        Modifier.padding(8.dp)
+                            .testTag(CreateMeetingScreenTestTags.LOCATION_SUGGESTION))
+              }
+
+              if (locationSuggestions.size > 3) {
+                DropdownMenuItem(
+                    text = { Text("More...") }, onClick = {}, modifier = Modifier.padding(8.dp))
+              }
+            }
+      }
 }

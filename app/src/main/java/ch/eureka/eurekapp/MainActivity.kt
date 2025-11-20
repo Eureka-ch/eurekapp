@@ -1,3 +1,6 @@
+/*
+Portions of the code in this file are copy-pasted from the Bootcamp provided by the SwEnt staff.
+ */
 package ch.eureka.eurekapp
 
 import android.content.Context
@@ -26,6 +29,18 @@ import ch.eureka.eurekapp.resources.C
 import ch.eureka.eurekapp.ui.authentication.SignInScreen
 import ch.eureka.eurekapp.ui.theme.EurekappTheme
 import com.google.firebase.auth.FirebaseAuth
+import okhttp3.OkHttpClient
+
+/**
+ * Provide an OkHttpClient client for network requests.
+ *
+ * Property `client` is mutable for testing purposes.
+ *
+ * @property client the Http client.
+ */
+object HttpClientProvider {
+  var client: OkHttpClient = OkHttpClient()
+}
 
 class MainActivity : ComponentActivity() {
   private lateinit var auth: FirebaseAuth
