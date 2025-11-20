@@ -143,12 +143,7 @@ class MeetingViewModel(
    */
   fun closeVotesForMeeting(meeting: Meeting, isConnected: Boolean = true) {
     if (isConnected) {
-      if (userId == null) {
-        return
-      }
-
-      if (meeting.createdBy != userId) {
-        setErrorMsg("Cannot close votes since you are not the creator of the meeting.")
+      if (!canCloseVotes(meeting)) {
         return
       }
 
@@ -206,6 +201,19 @@ class MeetingViewModel(
             .onSuccess { loadMeetings(meeting.projectId) }
       }
     }
+  }
+
+  private fun canCloseVotes(meeting: Meeting): Boolean {
+    if (userId == null) {
+      return false
+    }
+
+    if (meeting.createdBy != userId) {
+      setErrorMsg("Cannot close votes since you are not the creator of the meeting.")
+      return false
+    }
+
+    return true
   }
 
   /**

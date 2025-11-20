@@ -75,7 +75,7 @@ class MeetingScreenTest {
     composeTestRule.setContent {
       MeetingScreen(
           meetingViewModel = viewModel,
-          config = MeetingScreenConfig(projectId = "test_project", onCreateMeeting = {}))
+          config = MeetingScreenConfig(projectId = "test_project", onCreateMeeting = { _ -> }))
     }
   }
 

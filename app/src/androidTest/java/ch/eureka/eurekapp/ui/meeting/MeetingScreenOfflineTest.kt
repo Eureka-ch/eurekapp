@@ -9,10 +9,11 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import ch.eureka.eurekapp.model.data.map.Location
+import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
+import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
@@ -30,6 +31,11 @@ import org.junit.runner.RunWith
 class MeetingScreenOfflineTest {
 
   @get:Rule val composeTestRule = createComposeRule()
+
+  @get:Rule
+  val permissionRule: GrantPermissionRule =
+      GrantPermissionRule.grant(
+          android.Manifest.permission.READ_CALENDAR, android.Manifest.permission.WRITE_CALENDAR)
 
   private lateinit var mockConnectivityObserver: MockConnectivityObserver
   private lateinit var viewModel: MeetingViewModel
@@ -71,7 +77,9 @@ class MeetingScreenOfflineTest {
       MeetingScreen(
           config =
               MeetingScreenConfig(
-                  projectId = testProjectId, onCreateMeeting = {}, onMeetingClick = { _, _ -> }),
+                  projectId = testProjectId,
+                  onCreateMeeting = { _ -> },
+                  onMeetingClick = { _, _ -> }),
           meetingViewModel = viewModel)
     }
 
@@ -91,7 +99,11 @@ class MeetingScreenOfflineTest {
           config =
               MeetingScreenConfig(
                   projectId = testProjectId,
-                  onCreateMeeting = { createMeetingClicked = true },
+                  onCreateMeeting = { isConnected ->
+                    if (isConnected) {
+                      createMeetingClicked = true
+                    }
+                  },
                   onMeetingClick = { _, _ -> }),
           meetingViewModel = viewModel)
     }
@@ -128,7 +140,9 @@ class MeetingScreenOfflineTest {
       MeetingScreen(
           config =
               MeetingScreenConfig(
-                  projectId = testProjectId, onCreateMeeting = {}, onMeetingClick = { _, _ -> }),
+                  projectId = testProjectId,
+                  onCreateMeeting = { _ -> },
+                  onMeetingClick = { _, _ -> }),
           meetingViewModel = viewModel)
     }
 
@@ -146,7 +160,9 @@ class MeetingScreenOfflineTest {
       MeetingScreen(
           config =
               MeetingScreenConfig(
-                  projectId = testProjectId, onCreateMeeting = {}, onMeetingClick = { _, _ -> }),
+                  projectId = testProjectId,
+                  onCreateMeeting = { _ -> },
+                  onMeetingClick = { _, _ -> }),
           meetingViewModel = viewModel)
     }
 
@@ -172,7 +188,9 @@ class MeetingScreenOfflineTest {
       MeetingScreen(
           config =
               MeetingScreenConfig(
-                  projectId = testProjectId, onCreateMeeting = {}, onMeetingClick = { _, _ -> }),
+                  projectId = testProjectId,
+                  onCreateMeeting = { _ -> },
+                  onMeetingClick = { _, _ -> }),
           meetingViewModel = viewModel)
     }
 
@@ -208,7 +226,9 @@ class MeetingScreenOfflineTest {
       MeetingScreen(
           config =
               MeetingScreenConfig(
-                  projectId = testProjectId, onCreateMeeting = {}, onMeetingClick = { _, _ -> }),
+                  projectId = testProjectId,
+                  onCreateMeeting = { _ -> },
+                  onMeetingClick = { _, _ -> }),
           meetingViewModel = viewModel)
     }
 
@@ -249,7 +269,7 @@ class MeetingScreenOfflineTest {
           config =
               MeetingScreenConfig(
                   projectId = testProjectId,
-                  onCreateMeeting = {},
+                  onCreateMeeting = { _ -> },
                   onMeetingClick = { projectId, meetingId ->
                     navigatedProjectId = projectId
                     navigatedMeetingId = meetingId

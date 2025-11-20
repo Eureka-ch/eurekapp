@@ -237,9 +237,11 @@ fun NavigationMenu() {
                     config =
                         MeetingScreenConfig(
                             projectId = testProjectId,
-                            onCreateMeeting = {
-                              navigationController.navigate(
-                                  Route.MeetingsSection.CreateMeeting(testProjectId))
+                            onCreateMeeting = { isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.CreateMeeting(testProjectId))
+                              }
                             },
                             onMeetingClick = { projectId, meetingId ->
                               navigationController.navigate(
@@ -247,28 +249,28 @@ fun NavigationMenu() {
                                       projectId = projectId, meetingId = meetingId))
                             },
                             onVoteForMeetingProposalClick = { projectId, meetingId, isConnected ->
-                              if (isConnected) {
+                              navigateIfConditionSatisfied(isConnected) {
                                 navigationController.navigate(
                                     Route.MeetingsSection.MeetingProposalVotes(
                                         projectId = projectId, meetingId = meetingId))
                               }
                             },
                             onNavigateToMeeting = { projectId, meetingId, isConnected ->
-                              if (isConnected) {
+                              navigateIfConditionSatisfied(isConnected) {
                                 navigationController.navigate(
                                     Route.MeetingsSection.MeetingNavigation(
                                         projectId = projectId, meetingId = meetingId))
                               }
                             },
                             onViewTranscript = { projectId, meetingId, isConnected ->
-                              if (isConnected) {
+                              navigateIfConditionSatisfied(isConnected) {
                                 navigationController.navigate(
                                     Route.MeetingsSection.AudioTranscript(
                                         projectId = projectId, meetingId = meetingId))
                               }
                             },
                             onRecord = { projectId, meetingId, isConnected ->
-                              if (isConnected) {
+                              navigateIfConditionSatisfied(isConnected) {
                                 navigationController.navigate(
                                     Route.MeetingsSection.AudioRecording(
                                         projectId = projectId, meetingId = meetingId))
@@ -286,21 +288,21 @@ fun NavigationMenu() {
                         MeetingDetailActionsConfig(
                             onNavigateBack = { navigationController.popBackStack() },
                             onRecordMeeting = { projectId, meetingId, isConnected ->
-                              if (isConnected) {
+                              navigateIfConditionSatisfied(isConnected) {
                                 navigationController.navigate(
                                     Route.MeetingsSection.AudioRecording(
                                         projectId = projectId, meetingId = meetingId))
                               }
                             },
                             onViewTranscript = { projectId, meetingId, isConnected ->
-                              if (isConnected) {
+                              navigateIfConditionSatisfied(isConnected) {
                                 navigationController.navigate(
                                     Route.MeetingsSection.AudioTranscript(
                                         projectId = projectId, meetingId = meetingId))
                               }
                             },
                             onNavigateToMeeting = { isConnected ->
-                              if (isConnected) {
+                              navigateIfConditionSatisfied(isConnected) {
                                 navigationController.navigate(
                                     Route.MeetingsSection.MeetingNavigation(
                                         projectId = meetingDetailRoute.projectId,
@@ -308,7 +310,7 @@ fun NavigationMenu() {
                               }
                             },
                             onVoteForMeetingProposalClick = { projectId, meetingId, isConnected ->
-                              if (isConnected) {
+                              navigateIfConditionSatisfied(isConnected) {
                                 navigationController.navigate(
                                     Route.MeetingsSection.MeetingProposalVotes(
                                         projectId = projectId, meetingId = meetingId))
@@ -436,4 +438,10 @@ fun NavigationMenu() {
               composable<Route.Camera> { Camera(navigationController) }
             }
       }
+}
+
+private inline fun navigateIfConditionSatisfied(condition: Boolean, navigate: () -> Unit) {
+  if (condition) {
+    navigate()
+  }
 }

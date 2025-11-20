@@ -6,7 +6,6 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.rule.GrantPermissionRule
-import ch.eureka.eurekapp.model.data.map.Location
 import ch.eureka.eurekapp.model.data.meeting.FirestoreMeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
@@ -17,11 +16,13 @@ import ch.eureka.eurekapp.model.data.meeting.Participant
 import ch.eureka.eurekapp.model.data.user.FirestoreUserRepository
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
+import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenConfig
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingViewModel
 import ch.eureka.eurekapp.ui.meeting.calendar.MeetingCalendarViewModelTest
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import io.mockk.every
 import io.mockk.mockk
@@ -121,6 +122,8 @@ class MeetingScreenWithCalendarButtonTest {
     val context: Context = ApplicationProvider.getApplicationContext()
     val contentResolver: ContentResolver = context.contentResolver
 
+    val mockConnectivityObserver = MockConnectivityObserver(context)
+
     val mockedMeetingRepository: FirestoreMeetingRepository = mockk<FirestoreMeetingRepository>()
     every { mockedMeetingRepository.getParticipants(any(), any()) } returns
         flowOf(listOf(Participant(), Participant()))
@@ -135,11 +138,14 @@ class MeetingScreenWithCalendarButtonTest {
             usersRepository = mockedUsersRepository)
 
     val meetingViewModel =
-        MeetingViewModel(repository = MockedMeetingRepository(), getCurrentUserId = { "testUser" })
+        MeetingViewModel(
+            repository = MockedMeetingRepository(),
+            getCurrentUserId = { "testUser" },
+            connectivityObserver = mockConnectivityObserver)
 
     composeRule.setContent {
       MeetingScreen(
-          config = MeetingScreenConfig(projectId = "test-project-id", onCreateMeeting = {}),
+          config = MeetingScreenConfig(projectId = "test-project-id", onCreateMeeting = { _ -> }),
           calendarViewModel = calendarViewModel,
           meetingViewModel = meetingViewModel,
       )

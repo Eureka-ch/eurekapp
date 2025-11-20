@@ -114,7 +114,7 @@ object MeetingScreenTestTags {
  */
 data class MeetingScreenConfig(
     val projectId: String,
-    val onCreateMeeting: () -> Unit,
+    val onCreateMeeting: (Boolean) -> Unit,
     val onMeetingClick: (String, String) -> Unit = { _, _ -> },
     val onVoteForMeetingProposalClick: (String, String, Boolean) -> Unit = { _, _, _ -> },
     val onNavigateToMeeting: (String, String, Boolean) -> Unit = { _, _, _ -> },
@@ -190,11 +190,7 @@ fun MeetingScreen(
   Scaffold(
       floatingActionButton = {
         FloatingActionButton(
-            onClick = {
-              if (uiState.isConnected) {
-                config.onCreateMeeting()
-              }
-            },
+            onClick = { config.onCreateMeeting(uiState.isConnected) },
             modifier = Modifier.testTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON),
             containerColor =
                 if (uiState.isConnected) MaterialTheme.colorScheme.primary
@@ -267,8 +263,7 @@ fun MeetingScreen(
                             projectId = config.projectId,
                             isCurrentUserId = { uid -> meetingViewModel.userId == uid },
                             onMeetingClick = config.onMeetingClick,
-                            isConnected = uiState.isConnected
-                        ),
+                            isConnected = uiState.isConnected),
                         calendarViewModel = calendarViewModel)
               }
             }
@@ -334,9 +329,7 @@ fun MeetingsList(
                 config =
                     MeetingCardConfig(
                         isCurrentUserId = config.isCurrentUserId,
-                        onClick = {
-                          config.onMeetingClick(config.projectId, meeting.meetingID)
-                        },
+                        onClick = { config.onMeetingClick(config.projectId, meeting.meetingID) },
                         onVoteForMeetingProposals = { isConnected ->
                           config.onVoteForMeetingProposalClick(
                               config.projectId, meeting.meetingID, isConnected)
