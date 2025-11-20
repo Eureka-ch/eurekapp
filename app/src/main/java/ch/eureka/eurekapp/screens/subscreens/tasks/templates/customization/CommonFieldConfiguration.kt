@@ -113,8 +113,7 @@ fun DefaultValueInput(
       }
       is FieldType.SingleSelect -> {
         SingleSelectFieldComponent(
-            fieldDefinition =
-                field.copy(type = field.type.copy(allowCustom = false)),
+            fieldDefinition = field.copy(type = field.type.copy(allowCustom = false)),
             value = field.defaultValue as? FieldValue.SingleSelectValue,
             onValueChange = { onFieldUpdate(field.copy(defaultValue = it)) },
             mode = mode,
