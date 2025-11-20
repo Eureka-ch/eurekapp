@@ -1,4 +1,4 @@
-/* Portions of this code were written with the help of Claude Code */
+// Portions of this code were generated with the help of Grok, ChatGPT, and Claude.
 package ch.eureka.eurekapp.ui.meeting
 
 import android.widget.Toast
@@ -76,12 +76,17 @@ import java.time.LocalTime
 import java.time.ZoneId
 
 /**
+ * Helper function to get alpha value based on connection status. Returns 1f if connected, 0.6f if
+ * offline.
+ */
+private fun getAlpha(isConnected: Boolean): Float = if (isConnected) 1f else 0.6f
+
+/**
  * Test tags for MeetingDetailScreen composable.
  *
  * Provides semantic identifiers for UI testing with Compose UI Test framework. Each constant
  * represents a unique testTag applied to composables in MeetingDetailScreen, enabling reliable and
- * maintainable UI test assertions. Note :This file was partially written by ChatGPT (GPT-5) and
- * Grok Co-author : GPT-5 Co-author : Grok
+ * maintainable UI test assertions.
  */
 object MeetingDetailScreenTestTags {
   const val MEETING_DETAIL_SCREEN = "MeetingDetailScreen"
@@ -132,11 +137,11 @@ object MeetingDetailScreenTestTags {
  */
 data class MeetingDetailActionsConfig(
     val onNavigateBack: () -> Unit = {},
-    val onJoinMeeting: (String) -> Unit = {},
-    val onRecordMeeting: (String, String) -> Unit = { _, _ -> },
-    val onViewTranscript: (String, String) -> Unit = { _, _ -> },
-    val onVoteForMeetingProposalClick: (String, String) -> Unit = { _, _ -> },
-    val onNavigateToMeeting: () -> Unit = {},
+    val onJoinMeeting: (String, Boolean) -> Unit = { _, _ -> },
+    val onRecordMeeting: (String, String, Boolean) -> Unit = { _, _, _ -> },
+    val onViewTranscript: (String, String, Boolean) -> Unit = { _, _, _ -> },
+    val onVoteForMeetingProposalClick: (String, String, Boolean) -> Unit = { _, _, _ -> },
+    val onNavigateToMeeting: (Boolean) -> Unit = {},
 )
 
 /**
@@ -229,11 +234,16 @@ fun MeetingDetailScreen(
                         onRecordMeeting = actionsConfig.onRecordMeeting,
                         onViewTranscript = actionsConfig.onViewTranscript,
                         onDeleteMeeting = { showDeleteDialog = true },
-                        onVoteForMeetingProposals = {
-                          actionsConfig.onVoteForMeetingProposalClick(projectId, meetingId)
+                        onVoteForMeetingProposals = { isConnected ->
+                          actionsConfig.onVoteForMeetingProposalClick(
+                              projectId, meetingId, isConnected)
                         },
-                        onEditMeeting = { viewModel.toggleEditMode(meeting) },
-                        onSaveMeeting = { viewModel.saveMeetingChanges(meeting) },
+                        onEditMeeting = { isConnected ->
+                          viewModel.toggleEditMode(meeting, isConnected)
+                        },
+                        onSaveMeeting = { isConnected ->
+                          viewModel.saveMeetingChanges(meeting, isConnected)
+                        },
                         onCancelEdit = { viewModel.toggleEditMode(null) },
                         onUpdateTitle = viewModel::updateEditTitle,
                         onUpdateDateTime = viewModel::updateEditDateTime,
@@ -251,7 +261,7 @@ fun MeetingDetailScreen(
     DeleteConfirmationDialog(
         onConfirm = {
           showDeleteDialog = false
-          viewModel.deleteMeeting(projectId, meetingId)
+          viewModel.deleteMeeting(projectId, meetingId, uiState.isConnected)
         },
         onDismiss = { showDeleteDialog = false })
   }
@@ -305,7 +315,8 @@ private fun ErrorScreen(message: String) {
  * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
  * @param onVoteForMeetingProposals Callback invoked when user votes for meeting proposals.
  * @param onEditMeeting Callback invoked when user clicks edit meeting button.
- * @param onSaveMeeting Callback invoked when user saves meeting changes.
+ * @param onSaveMeeting Callback invoked when user saves meeting changes, receives connectivity
+ *   status.
  * @param onCancelEdit Callback invoked when user cancels edit mode.
  * @param onUpdateTitle Callback invoked when edit title changes.
  * @param onUpdateDateTime Callback invoked when edit date/time changes.
@@ -313,13 +324,13 @@ private fun ErrorScreen(message: String) {
  * @param onNavigateToMeeting Callback invoked when user clicks navigate to meeting button.
  */
 data class MeetingDetailContentActionsConfig(
-    val onJoinMeeting: (String) -> Unit,
-    val onRecordMeeting: (String, String) -> Unit,
-    val onViewTranscript: (String, String) -> Unit,
+    val onJoinMeeting: (String, Boolean) -> Unit,
+    val onRecordMeeting: (String, String, Boolean) -> Unit,
+    val onViewTranscript: (String, String, Boolean) -> Unit,
     val onDeleteMeeting: () -> Unit,
-    val onVoteForMeetingProposals: () -> Unit,
-    val onEditMeeting: () -> Unit,
-    val onSaveMeeting: () -> Unit,
+    val onVoteForMeetingProposals: (Boolean) -> Unit,
+    val onEditMeeting: (Boolean) -> Unit,
+    val onSaveMeeting: (Boolean) -> Unit,
     val onCancelEdit: () -> Unit,
     val onUpdateTitle: (String) -> Unit,
     val onUpdateDateTime: (Timestamp) -> Unit,
@@ -327,7 +338,7 @@ data class MeetingDetailContentActionsConfig(
     val onTouchTitle: () -> Unit,
     val onTouchDateTime: () -> Unit,
     val onTouchDuration: () -> Unit,
-    val onNavigateToMeeting: () -> Unit,
+    val onNavigateToMeeting: (Boolean) -> Unit,
 )
 
 /**
@@ -365,13 +376,13 @@ data class EditConfig(
  * @param onNavigateToMeeting Callback invoked when user clicks navigate to meeting button.
  */
 data class ActionButtonsConfig(
-    val onJoinMeeting: (String) -> Unit,
-    val onRecordMeeting: (String, String) -> Unit,
-    val onViewTranscript: (String, String) -> Unit,
+    val onJoinMeeting: (String, Boolean) -> Unit,
+    val onRecordMeeting: (String, String, Boolean) -> Unit,
+    val onViewTranscript: (String, String, Boolean) -> Unit,
     val onDeleteMeeting: () -> Unit,
-    val onVoteForMeetingProposals: () -> Unit,
-    val onEditMeeting: () -> Unit,
-    val onNavigateToMeeting: () -> Unit,
+    val onVoteForMeetingProposals: (Boolean) -> Unit,
+    val onEditMeeting: (Boolean) -> Unit,
+    val onNavigateToMeeting: (Boolean) -> Unit,
 )
 
 /**
@@ -455,8 +466,8 @@ private fun MeetingDetailContent(
 
         item { Spacer(modifier = Modifier.height(16.dp)) }
 
-        item {
-          if (!isConnected) {
+        if (!isConnected) {
+          item {
             Text(
                 text =
                     "You are offline. Editing meetings is unavailable to prevent sync conflicts.",
@@ -974,16 +985,12 @@ private fun ActionButtonsSection(
           MeetingStatus.IN_PROGRESS -> {
             if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
               Button(
-                  onClick = {
-                    if (isConnected) {
-                      actionsConfig.onJoinMeeting(meeting.link)
-                    }
-                  },
+                  onClick = { actionsConfig.onJoinMeeting(meeting.link, isConnected) },
                   enabled = isConnected,
                   modifier =
                       Modifier.fillMaxWidth()
                           .testTag(MeetingDetailScreenTestTags.JOIN_MEETING_BUTTON)
-                          .alpha(if (isConnected) 1f else 0.6f)) {
+                          .alpha(getAlpha(isConnected))) {
                     Icon(imageVector = Icons.Default.VideoCall, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Join Meeting")
@@ -991,13 +998,9 @@ private fun ActionButtonsSection(
             }
             if (meeting.format == MeetingFormat.IN_PERSON && meeting.location != null) {
               Button(
-                  onClick = {
-                    if (isConnected) {
-                      actionsConfig.onNavigateToMeeting()
-                    }
-                  },
+                  onClick = { actionsConfig.onNavigateToMeeting(isConnected) },
                   enabled = isConnected,
-                  modifier = Modifier.fillMaxWidth().alpha(if (isConnected) 1f else 0.6f)) {
+                  modifier = Modifier.fillMaxWidth().alpha(getAlpha(isConnected))) {
                     Icon(
                         imageVector = Icons.Default.Place,
                         contentDescription = stringResource(R.string.location_icon))
@@ -1007,30 +1010,26 @@ private fun ActionButtonsSection(
             }
             OutlinedButton(
                 onClick = {
-                  if (isConnected) {
-                    actionsConfig.onRecordMeeting(meeting.projectId, meeting.meetingID)
-                  }
+                  actionsConfig.onRecordMeeting(meeting.projectId, meeting.meetingID, isConnected)
                 },
                 enabled = isConnected,
                 modifier =
                     Modifier.fillMaxWidth()
                         .testTag(MeetingDetailScreenTestTags.RECORD_BUTTON)
-                        .alpha(if (isConnected) 1f else 0.6f)) {
+                        .alpha(getAlpha(isConnected))) {
                   Text("Start Recording")
                 }
           }
           MeetingStatus.COMPLETED -> {
             Button(
                 onClick = {
-                  if (isConnected) {
-                    actionsConfig.onViewTranscript(meeting.projectId, meeting.meetingID)
-                  }
+                  actionsConfig.onViewTranscript(meeting.projectId, meeting.meetingID, isConnected)
                 },
                 enabled = isConnected,
                 modifier =
                     Modifier.fillMaxWidth()
                         .testTag(MeetingDetailScreenTestTags.VIEW_TRANSCRIPT_BUTTON)
-                        .alpha(if (isConnected) 1f else 0.6f)) {
+                        .alpha(getAlpha(isConnected))) {
                   Icon(imageVector = Icons.Default.Description, contentDescription = null)
                   Spacer(modifier = Modifier.width(8.dp))
                   Text("View Transcript")
@@ -1039,16 +1038,12 @@ private fun ActionButtonsSection(
           MeetingStatus.OPEN_TO_VOTES -> {
 
             Button(
-                onClick = {
-                  if (isConnected) {
-                    actionsConfig.onVoteForMeetingProposals()
-                  }
-                },
+                onClick = { actionsConfig.onVoteForMeetingProposals(isConnected) },
                 enabled = isConnected,
                 modifier =
                     Modifier.fillMaxWidth()
                         .testTag(MeetingDetailScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON)
-                        .alpha(if (isConnected) 1f else 0.6f)) {
+                        .alpha(getAlpha(isConnected))) {
                   Icon(
                       imageVector = Icons.Default.HowToVote,
                       contentDescription = "Vote for meeting proposal")
@@ -1060,30 +1055,22 @@ private fun ActionButtonsSection(
 
         // Edit button
         OutlinedButton(
-            onClick = {
-              if (isConnected) {
-                actionsConfig.onEditMeeting()
-              }
-            },
+            onClick = { actionsConfig.onEditMeeting(isConnected) },
             enabled = isConnected,
             modifier =
                 Modifier.fillMaxWidth()
                     .testTag(MeetingDetailScreenTestTags.EDIT_BUTTON)
-                    .alpha(if (isConnected) 1f else 0.6f)) {
+                    .alpha(getAlpha(isConnected))) {
               Text("Edit Meeting")
             }
 
         OutlinedButton(
-            onClick = {
-              if (isConnected) {
-                actionsConfig.onDeleteMeeting()
-              }
-            },
+            onClick = { actionsConfig.onDeleteMeeting() },
             enabled = isConnected,
             modifier =
                 Modifier.fillMaxWidth()
                     .testTag(MeetingDetailScreenTestTags.DELETE_BUTTON)
-                    .alpha(if (isConnected) 1f else 0.6f),
+                    .alpha(getAlpha(isConnected)),
             colors =
                 ButtonDefaults.outlinedButtonColors(
                     contentColor = MaterialTheme.colorScheme.error)) {
@@ -1097,14 +1084,14 @@ private fun ActionButtonsSection(
 /**
  * Edit mode buttons (Save and Cancel).
  *
- * @param onSave Callback invoked when user clicks save button.
+ * @param onSave Callback invoked when user clicks save button, receives connectivity status.
  * @param onCancel Callback invoked when user clicks cancel button.
  * @param isSaving Whether a save operation is in progress.
  * @param isConnected Whether the device is connected.
  */
 @Composable
 private fun EditModeButtons(
-    onSave: () -> Unit,
+    onSave: (Boolean) -> Unit,
     onCancel: () -> Unit,
     isSaving: Boolean,
     isConnected: Boolean
@@ -1116,11 +1103,7 @@ private fun EditModeButtons(
         fontWeight = FontWeight.SemiBold)
 
     Button(
-        onClick = {
-          if (isConnected) {
-            onSave()
-          }
-        },
+        onClick = { onSave(isConnected) },
         modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.SAVE_BUTTON),
         enabled = !isSaving && isConnected) {
           if (isSaving) {

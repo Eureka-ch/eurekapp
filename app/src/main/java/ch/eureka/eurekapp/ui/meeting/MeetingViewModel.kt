@@ -63,7 +63,8 @@ enum class MeetingTab {
 class MeetingViewModel(
     private val repository: MeetingRepository = FirestoreMeetingRepository(),
     private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
-    connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver,
+    private val connectivityObserver: ConnectivityObserver =
+        ConnectivityObserverProvider.connectivityObserver,
 ) : ViewModel() {
 
   private val _uiState = MutableStateFlow(MeetingUIState())
@@ -138,70 +139,72 @@ class MeetingViewModel(
    * Closes the votes for a given meeting.
    *
    * @param meeting The meeting to close the votes for.
+   * @param isConnected Whether the device is connected to the internet.
    */
-  fun closeVotesForMeeting(meeting: Meeting) {
+  fun closeVotesForMeeting(meeting: Meeting, isConnected: Boolean = true) {
+    if (isConnected) {
+      if (userId == null) {
+        return
+      }
 
-    if (userId == null) {
-      return
-    }
+      if (meeting.createdBy != userId) {
+        setErrorMsg("Cannot close votes since you are not the creator of the meeting.")
+        return
+      }
 
-    if (meeting.createdBy != userId) {
-      setErrorMsg("Cannot close votes since you are not the creator of the meeting.")
-      return
-    }
+      val maxVoteCount = meeting.meetingProposals.maxOfOrNull { it.votes.size } ?: 0
 
-    val maxVoteCount = meeting.meetingProposals.maxOfOrNull { it.votes.size } ?: 0
+      if (maxVoteCount == 0) {
+        setErrorMsg("No votes have been cast for any proposal.")
+        return
+      }
 
-    if (maxVoteCount == 0) {
-      setErrorMsg("No votes have been cast for any proposal.")
-      return
-    }
+      val mostPopularProposals = meeting.meetingProposals.filter { it.votes.size == maxVoteCount }
 
-    val mostPopularProposals = meeting.meetingProposals.filter { it.votes.size == maxVoteCount }
+      val winningProposal =
+          mostPopularProposals.maxByOrNull { proposal ->
+            val formatCounts =
+                proposal.votes.flatMap { it.formatPreferences }.groupingBy { it }.eachCount()
 
-    val winningProposal =
-        mostPopularProposals.maxByOrNull { proposal ->
-          val formatCounts =
-              proposal.votes.flatMap { it.formatPreferences }.groupingBy { it }.eachCount()
+            formatCounts.values.maxOrNull() ?: 0
+          }
 
-          formatCounts.values.maxOrNull() ?: 0
-        }
+      if (winningProposal == null) {
+        setErrorMsg("Could not determine a winning proposal")
+        return
+      }
 
-    if (winningProposal == null) {
-      setErrorMsg("Could not determine a winning proposal")
-      return
-    }
+      val finalFormatCounts =
+          winningProposal.votes.flatMap { it.formatPreferences }.groupingBy { it }.eachCount()
 
-    val finalFormatCounts =
-        winningProposal.votes.flatMap { it.formatPreferences }.groupingBy { it }.eachCount()
+      val winningFormat = finalFormatCounts.maxByOrNull { it.value }?.key
 
-    val winningFormat = finalFormatCounts.maxByOrNull { it.value }?.key
+      if (winningFormat == null) {
+        setErrorMsg("Could not determine a winning format from the votes")
+        return
+      }
 
-    if (winningFormat == null) {
-      setErrorMsg("Could not determine a winning format from the votes")
-      return
-    }
+      if (winningFormat == MeetingFormat.IN_PERSON && meeting.location == null) {
+        setErrorMsg("Cannot close votes, in-person meeting has no location.")
+        return
+      }
 
-    if (winningFormat == MeetingFormat.IN_PERSON && meeting.location == null) {
-      setErrorMsg("Cannot close votes, in-person meeting has no location.")
-      return
-    }
+      val updatedMeeting =
+          meeting.copy(
+              status = MeetingStatus.SCHEDULED,
+              datetime = winningProposal.dateTime,
+              format = winningFormat,
+              link =
+                  if (winningFormat == MeetingFormat.VIRTUAL) "https://meet.google.com/1234"
+                  else null, // change later
+              meetingProposals = emptyList())
 
-    val updatedMeeting =
-        meeting.copy(
-            status = MeetingStatus.SCHEDULED,
-            datetime = winningProposal.dateTime,
-            format = winningFormat,
-            link =
-                if (winningFormat == MeetingFormat.VIRTUAL) "https://meet.google.com/1234"
-                else null, // change later
-            meetingProposals = emptyList())
-
-    viewModelScope.launch {
-      repository
-          .updateMeeting(meeting = updatedMeeting)
-          .onFailure { setErrorMsg("Meeting votes could not be closed.") }
-          .onSuccess { loadMeetings(meeting.projectId) }
+      viewModelScope.launch {
+        repository
+            .updateMeeting(meeting = updatedMeeting)
+            .onFailure { setErrorMsg("Meeting votes could not be closed.") }
+            .onSuccess { loadMeetings(meeting.projectId) }
+      }
     }
   }
 
@@ -219,17 +222,5 @@ class MeetingViewModel(
     viewModelScope.launch {
       _isConnected.collect { isConnected -> _uiState.update { it.copy(isConnected = isConnected) } }
     }
-  }
-
-  // Add test methods for offline tests
-  fun setTestMeetings(meetings: List<Meeting>) {
-    val upcoming = meetings.filterNot { it.status == MeetingStatus.COMPLETED }
-    val past = meetings.filter { it.status == MeetingStatus.COMPLETED }
-    _uiState.update { it.copy(upcomingMeetings = upcoming, pastMeetings = past) }
-  }
-
-  fun setUserId(id: String) {
-    // For testing purposes, we can use a mutable userId
-    // Note: In production, userId is immutable
   }
 }

@@ -76,9 +76,9 @@ class MeetingDetailScreenTest {
 
   private fun setContent(
       onNavigateBack: () -> Unit = {},
-      onJoinMeeting: (String) -> Unit = {},
-      onRecordMeeting: (String, String) -> Unit = { _, _ -> },
-      onViewTranscript: (String, String) -> Unit = { _, _ -> }
+      onJoinMeeting: (String, Boolean) -> Unit = { _, _ -> },
+      onRecordMeeting: (String, String, Boolean) -> Unit = { _, _, _ -> },
+      onViewTranscript: (String, String, Boolean) -> Unit = { _, _, _ -> }
   ) {
     viewModel =
         MeetingDetailViewModel(
@@ -358,7 +358,7 @@ class MeetingDetailScreenTest {
     participantsFlow.value = emptyList()
 
     var joinedLink: String? = null
-    setContent(onJoinMeeting = { link -> joinedLink = link })
+    setContent(onJoinMeeting = { link, isConnected -> if (isConnected) joinedLink = link })
 
     composeTestRule.waitForIdle()
 
@@ -376,7 +376,7 @@ class MeetingDetailScreenTest {
     participantsFlow.value = emptyList()
 
     var recordCalled = false
-    setContent(onRecordMeeting = { _, _ -> recordCalled = true })
+    setContent(onRecordMeeting = { _, _, isConnected -> if (isConnected) recordCalled = true })
 
     composeTestRule.waitForIdle()
 
@@ -392,7 +392,7 @@ class MeetingDetailScreenTest {
     participantsFlow.value = emptyList()
 
     var transcriptCalled = false
-    setContent(onViewTranscript = { _, _ -> transcriptCalled = true })
+    setContent(onViewTranscript = { _, _, isConnected -> if (isConnected) transcriptCalled = true })
 
     composeTestRule.waitForIdle()
 

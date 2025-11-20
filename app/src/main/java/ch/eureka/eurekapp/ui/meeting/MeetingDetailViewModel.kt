@@ -73,7 +73,8 @@ class MeetingDetailViewModel(
     private val projectId: String,
     private val meetingId: String,
     private val repository: MeetingRepository = FirestoreRepositoriesProvider.meetingRepository,
-    connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver,
+    private val connectivityObserver: ConnectivityObserver =
+        ConnectivityObserverProvider.connectivityObserver,
 ) : ViewModel() {
 
   private val _deleteSuccess = MutableStateFlow(false)
@@ -91,9 +92,6 @@ class MeetingDetailViewModel(
   // Add connectivity observer
   private val _isConnected =
       connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
-
-  // Add test meeting for offline tests
-  private val _testMeeting = MutableStateFlow<Meeting?>(null)
 
   /**
    * Validates that all required fields of a meeting are valid.
@@ -115,6 +113,15 @@ class MeetingDetailViewModel(
     }
   }
 
+  /**
+   * Internal data class representing the edit state of the meeting.
+   *
+   * @property deleteSuccess Whether the meeting was successfully deleted.
+   * @property errorMsg An error message to display, or null if there is no error.
+   * @property isEditMode Whether the screen is in edit mode.
+   * @property editTitle The title being edited.
+   * @property editDateTime The date/time being edited.
+   */
   private data class EditState(
       val deleteSuccess: Boolean,
       val errorMsg: String?,
@@ -123,18 +130,41 @@ class MeetingDetailViewModel(
       val editDateTime: Timestamp?
   )
 
+  /**
+   * Internal data class representing the save state of the meeting.
+   *
+   * @property editDuration The duration being edited.
+   * @property updateSuccess Whether the meeting was successfully updated.
+   * @property isSaving Whether a save operation is in progress.
+   */
   private data class SaveState(
       val editDuration: Int,
       val updateSuccess: Boolean,
       val isSaving: Boolean
   )
 
+  /**
+   * Internal data class representing the touch state of edit fields.
+   *
+   * @property hasTouchedTitle Whether the title field has been touched.
+   * @property hasTouchedDateTime Whether the date/time field has been touched.
+   * @property hasTouchedDuration Whether the duration field has been touched.
+   */
   private data class TouchState(
       val hasTouchedTitle: Boolean,
       val hasTouchedDateTime: Boolean,
       val hasTouchedDuration: Boolean
   )
 
+  /**
+   * Internal data class representing the combined state for UI flow.
+   *
+   * @property meeting The detailed meeting information.
+   * @property participants List of participants in the meeting.
+   * @property editState The edit state.
+   * @property saveState The save state.
+   * @property touchState The touch state.
+   */
   private data class CombinedState(
       val meeting: Meeting?,
       val participants: List<Participant>,
@@ -155,10 +185,7 @@ class MeetingDetailViewModel(
   val uiState: StateFlow<MeetingDetailUIState> =
       combine(
               combine(
-                  _testMeeting.combine(repository.getMeetingById(projectId, meetingId)) { test, real
-                    ->
-                    test ?: real
-                  },
+                  repository.getMeetingById(projectId, meetingId),
                   repository.getParticipants(projectId, meetingId),
                   combine(_deleteSuccess, _errorMsg, _isEditMode, _editTitle, _editDateTime) {
                       deleteSuccess,
@@ -219,13 +246,16 @@ class MeetingDetailViewModel(
    *
    * @param projectId The ID of the project containing the meeting.
    * @param meetingId The ID of the meeting to delete.
+   * @param isConnected Whether the device is connected to the internet.
    */
-  fun deleteMeeting(projectId: String, meetingId: String) {
-    viewModelScope.launch {
-      repository
-          .deleteMeeting(projectId, meetingId)
-          .onSuccess { _deleteSuccess.value = true }
-          .onFailure { e -> _errorMsg.value = e.message ?: "Failed to delete meeting" }
+  fun deleteMeeting(projectId: String, meetingId: String, isConnected: Boolean = true) {
+    if (isConnected) {
+      viewModelScope.launch {
+        repository
+            .deleteMeeting(projectId, meetingId)
+            .onSuccess { _deleteSuccess.value = true }
+            .onFailure { e -> _errorMsg.value = e.message ?: "Failed to delete meeting" }
+      }
     }
   }
 
@@ -233,26 +263,29 @@ class MeetingDetailViewModel(
    * Toggle edit mode and initialize edit fields with current meeting data.
    *
    * @param meeting The current meeting to edit, or null to exit edit mode.
+   * @param isConnected Whether the device is connected to the internet.
    */
-  fun toggleEditMode(meeting: Meeting?) {
-    if (_isEditMode.value) {
-      // Exiting edit mode - reset fields
-      _isEditMode.value = false
-      _editTitle.value = ""
-      _editDateTime.value = null
-      _editDuration.value = 30
-      _errorMsg.value = null
-      _hasTouchedTitle.value = false
-      _hasTouchedDateTime.value = false
-      _hasTouchedDuration.value = false
-    } else {
-      // Entering edit mode - populate fields with current values
-      meeting?.let {
-        _editTitle.value = it.title
-        _editDateTime.value = it.datetime
-        _editDuration.value = it.duration
-        _isEditMode.value = true
+  fun toggleEditMode(meeting: Meeting?, isConnected: Boolean = true) {
+    if (isConnected) {
+      if (_isEditMode.value) {
+        // Exiting edit mode - reset fields
+        _isEditMode.value = false
+        _editTitle.value = ""
+        _editDateTime.value = null
+        _editDuration.value = 30
         _errorMsg.value = null
+        _hasTouchedTitle.value = false
+        _hasTouchedDateTime.value = false
+        _hasTouchedDuration.value = false
+      } else {
+        // Entering edit mode - populate fields with current values
+        meeting?.let {
+          _editTitle.value = it.title
+          _editDateTime.value = it.datetime
+          _editDuration.value = it.duration
+          _isEditMode.value = true
+          _errorMsg.value = null
+        }
       }
     }
   }
@@ -326,44 +359,42 @@ class MeetingDetailViewModel(
    * Save the edited meeting changes to the repository.
    *
    * @param currentMeeting The current meeting object to update.
+   * @param isConnected Whether the device is connected to the internet.
    */
-  fun saveMeetingChanges(currentMeeting: Meeting) {
-    val validationError = validateEditFields()
-    if (validationError != null) {
-      _errorMsg.value = validationError
-      return
-    }
+  fun saveMeetingChanges(currentMeeting: Meeting, isConnected: Boolean) {
+    if (isConnected) {
+      val validationError = validateEditFields()
+      if (validationError != null) {
+        _errorMsg.value = validationError
+        return
+      }
 
-    _isSaving.value = true
-    viewModelScope.launch {
-      val updatedMeeting =
-          currentMeeting.copy(
-              title = _editTitle.value,
-              datetime = _editDateTime.value,
-              duration = _editDuration.value)
+      _isSaving.value = true
+      viewModelScope.launch {
+        val updatedMeeting =
+            currentMeeting.copy(
+                title = _editTitle.value,
+                datetime = _editDateTime.value,
+                duration = _editDuration.value)
 
-      repository
-          .updateMeeting(updatedMeeting)
-          .onSuccess {
-            _updateSuccess.value = true
-            _isEditMode.value = false
-            _isSaving.value = false
-            _errorMsg.value = null
-          }
-          .onFailure { e ->
-            _errorMsg.value = e.message ?: "Failed to update meeting"
-            _isSaving.value = false
-          }
+        repository
+            .updateMeeting(updatedMeeting)
+            .onSuccess {
+              _updateSuccess.value = true
+              _isEditMode.value = false
+              _isSaving.value = false
+              _errorMsg.value = null
+            }
+            .onFailure { e ->
+              _errorMsg.value = e.message ?: "Failed to update meeting"
+              _isSaving.value = false
+            }
+      }
     }
   }
 
   /** Clear the update success flag. */
   fun clearUpdateSuccess() {
     _updateSuccess.value = false
-  }
-
-  // Add test method for offline tests
-  fun setTestMeeting(meeting: Meeting) {
-    _testMeeting.value = meeting
   }
 }

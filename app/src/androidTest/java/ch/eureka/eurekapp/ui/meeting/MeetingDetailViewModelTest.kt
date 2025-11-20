@@ -1,5 +1,5 @@
 /*
- * Note: This file was co-authored by Claude Code.
+ * Note: This file was co-authored by Claude Code and Grok.
  */
 
 package ch.eureka.eurekapp.ui.meeting
@@ -33,7 +33,7 @@ import org.junit.Test
  * - Delete meeting functionality (success and failure)
  * - Error message clearing
  *
- * Note: This file was co-authored by Claude Code.
+ * Note: This file was co-authored by Claude Code and Grok.
  */
 @ExperimentalCoroutinesApi
 class MeetingDetailViewModelTest {
@@ -238,7 +238,7 @@ class MeetingDetailViewModelTest {
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.deleteMeeting(testProjectId, testMeetingId)
+    viewModel.deleteMeeting(testProjectId, testMeetingId, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
     val uiState = viewModel.uiState.value
@@ -254,7 +254,7 @@ class MeetingDetailViewModelTest {
 
     viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
-    viewModel.deleteMeeting(testProjectId, testMeetingId)
+    viewModel.deleteMeeting(testProjectId, testMeetingId, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
     val uiState = viewModel.uiState.value
@@ -270,7 +270,7 @@ class MeetingDetailViewModelTest {
 
     viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
-    viewModel.deleteMeeting(testProjectId, testMeetingId)
+    viewModel.deleteMeeting(testProjectId, testMeetingId, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
     val finalState = viewModel.uiState.value
@@ -289,7 +289,7 @@ class MeetingDetailViewModelTest {
 
     val errorMessage = "Delete failed"
     repositoryMock.deleteResult = Result.failure(Exception(errorMessage))
-    viewModel.deleteMeeting(testProjectId, testMeetingId)
+    viewModel.deleteMeeting(testProjectId, testMeetingId, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
     assertNotNull(viewModel.uiState.value.errorMsg)
@@ -312,7 +312,7 @@ class MeetingDetailViewModelTest {
 
     val errorMessage = "Delete operation failed"
     repositoryMock.deleteResult = Result.failure(Exception(errorMessage))
-    viewModel.deleteMeeting(testProjectId, testMeetingId)
+    viewModel.deleteMeeting(testProjectId, testMeetingId, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
     val stateBeforeClear = viewModel.uiState.value
@@ -338,7 +338,7 @@ class MeetingDetailViewModelTest {
     testDispatcher.scheduler.advanceUntilIdle()
 
     repositoryMock.deleteResult = Result.success(Unit)
-    viewModel.deleteMeeting(testProjectId, testMeetingId)
+    viewModel.deleteMeeting(testProjectId, testMeetingId, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
     assertTrue(viewModel.uiState.value.deleteSuccess)
@@ -360,7 +360,7 @@ class MeetingDetailViewModelTest {
 
     assertFalse(viewModel.uiState.value.isEditMode)
 
-    viewModel.toggleEditMode(testMeeting)
+    viewModel.toggleEditMode(testMeeting, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
     val uiState = viewModel.uiState.value
@@ -379,11 +379,11 @@ class MeetingDetailViewModelTest {
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.toggleEditMode(testMeeting)
+    viewModel.toggleEditMode(testMeeting, true)
     testDispatcher.scheduler.advanceUntilIdle()
     assertTrue(viewModel.uiState.value.isEditMode)
 
-    viewModel.toggleEditMode(null)
+    viewModel.toggleEditMode(null, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
     val uiState = viewModel.uiState.value
@@ -402,7 +402,7 @@ class MeetingDetailViewModelTest {
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.toggleEditMode(testMeeting)
+    viewModel.toggleEditMode(testMeeting, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
     val newTitle = "Updated Meeting Title"
@@ -421,7 +421,7 @@ class MeetingDetailViewModelTest {
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.toggleEditMode(testMeeting)
+    viewModel.toggleEditMode(testMeeting, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
     val newDateTime = Timestamp(Date(System.currentTimeMillis() + 86400000))
@@ -440,7 +440,7 @@ class MeetingDetailViewModelTest {
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.toggleEditMode(testMeeting)
+    viewModel.toggleEditMode(testMeeting, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
     val newDuration = 60
@@ -460,14 +460,14 @@ class MeetingDetailViewModelTest {
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.toggleEditMode(testMeeting)
+    viewModel.toggleEditMode(testMeeting, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
     viewModel.updateEditTitle("Updated Title")
     viewModel.updateEditDuration(60)
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.saveMeetingChanges(testMeeting)
+    viewModel.saveMeetingChanges(testMeeting, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
     val uiState = viewModel.uiState.value
@@ -488,11 +488,11 @@ class MeetingDetailViewModelTest {
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.toggleEditMode(testMeeting)
+    viewModel.toggleEditMode(testMeeting, true)
     viewModel.updateEditTitle("Updated Title")
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.saveMeetingChanges(testMeeting)
+    viewModel.saveMeetingChanges(testMeeting, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
     val uiState = viewModel.uiState.value
@@ -511,11 +511,11 @@ class MeetingDetailViewModelTest {
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.toggleEditMode(testMeeting)
+    viewModel.toggleEditMode(testMeeting, true)
     viewModel.updateEditTitle("")
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.saveMeetingChanges(testMeeting)
+    viewModel.saveMeetingChanges(testMeeting, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
     val uiState = viewModel.uiState.value
@@ -532,11 +532,11 @@ class MeetingDetailViewModelTest {
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.toggleEditMode(testMeeting)
+    viewModel.toggleEditMode(testMeeting, true)
     viewModel.updateEditDateTime(null)
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.saveMeetingChanges(testMeeting)
+    viewModel.saveMeetingChanges(testMeeting, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
     val uiState = viewModel.uiState.value
@@ -553,11 +553,11 @@ class MeetingDetailViewModelTest {
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.toggleEditMode(testMeeting)
+    viewModel.toggleEditMode(testMeeting, true)
     viewModel.updateEditDuration(0)
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.saveMeetingChanges(testMeeting)
+    viewModel.saveMeetingChanges(testMeeting, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
     val uiState = viewModel.uiState.value
@@ -574,12 +574,12 @@ class MeetingDetailViewModelTest {
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.toggleEditMode(testMeeting)
+    viewModel.toggleEditMode(testMeeting, true)
     val yesterday = Timestamp(Date(System.currentTimeMillis() - 86400000))
     viewModel.updateEditDateTime(yesterday)
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.saveMeetingChanges(testMeeting)
+    viewModel.saveMeetingChanges(testMeeting, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
     val uiState = viewModel.uiState.value
@@ -597,8 +597,8 @@ class MeetingDetailViewModelTest {
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
-    viewModel.toggleEditMode(testMeeting)
-    viewModel.saveMeetingChanges(testMeeting)
+    viewModel.toggleEditMode(testMeeting, true)
+    viewModel.saveMeetingChanges(testMeeting, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
     assertTrue(viewModel.uiState.value.updateSuccess)

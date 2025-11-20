@@ -1,3 +1,4 @@
+// Portions of this code were generated with the help of Grok.
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -24,8 +25,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-// Portions of this code were generated with the help of Grok.
-
+/** Tests for MeetingScreen behavior when offline. */
 @RunWith(AndroidJUnit4::class)
 class MeetingScreenOfflineTest {
 

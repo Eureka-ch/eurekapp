@@ -1,3 +1,4 @@
+// Portions of this code were generated with the help of Grok.
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -13,19 +14,20 @@ import ch.eureka.eurekapp.model.data.map.Location
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
+import ch.eureka.eurekapp.model.data.meeting.Participant
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-// Portions of this code were generated with the help of Grok.
-
+/** Tests for MeetingDetailScreen behavior when the device is offline. */
 @RunWith(AndroidJUnit4::class)
-class MeetingDetailScreenTestOffline {
+class MeetingDetailScreenOfflineTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -34,13 +36,33 @@ class MeetingDetailScreenTestOffline {
   private val testProjectId = "testProject123"
   private val testMeetingId = "testMeeting123"
 
+  private val meetingFlow = MutableStateFlow<Meeting?>(null)
+  private val participantsFlow = MutableStateFlow<List<Participant>>(emptyList())
+
+  private val repositoryMock =
+      object : MeetingRepositoryMock() {
+        override fun getMeetingById(
+            projectId: String,
+            meetingId: String
+        ): kotlinx.coroutines.flow.Flow<Meeting?> {
+          return meetingFlow
+        }
+
+        override fun getParticipants(
+            projectId: String,
+            meetingId: String
+        ): kotlinx.coroutines.flow.Flow<List<Participant>> {
+          return participantsFlow
+        }
+      }
+
   @Before
   fun setUp() {
     mockConnectivityObserver =
         MockConnectivityObserver(InstrumentationRegistry.getInstrumentation().targetContext)
     viewModel =
         MeetingDetailViewModel(
-            testProjectId, testMeetingId, connectivityObserver = mockConnectivityObserver)
+            testProjectId, testMeetingId, repositoryMock, mockConnectivityObserver)
   }
 
   @After
@@ -63,7 +85,8 @@ class MeetingDetailScreenTestOffline {
             datetime = Timestamp.now(),
             createdBy = "user1")
 
-    viewModel.setTestMeeting(meeting)
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -107,7 +130,8 @@ class MeetingDetailScreenTestOffline {
             datetime = Timestamp.now(),
             createdBy = "user1")
 
-    viewModel.setTestMeeting(meeting)
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -145,7 +169,8 @@ class MeetingDetailScreenTestOffline {
             datetime = Timestamp.now(),
             createdBy = "user1")
 
-    viewModel.setTestMeeting(meeting)
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -186,7 +211,8 @@ class MeetingDetailScreenTestOffline {
             datetime = Timestamp.now(),
             createdBy = "user1")
 
-    viewModel.setTestMeeting(meeting)
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -227,7 +253,8 @@ class MeetingDetailScreenTestOffline {
             datetime = Timestamp.now(),
             createdBy = "user1")
 
-    viewModel.setTestMeeting(meeting)
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -268,7 +295,8 @@ class MeetingDetailScreenTestOffline {
             datetime = Timestamp.now(),
             createdBy = "user1")
 
-    viewModel.setTestMeeting(meeting)
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -310,7 +338,8 @@ class MeetingDetailScreenTestOffline {
             createdBy = "user1",
             transcriptId = "testTranscriptId")
 
-    viewModel.setTestMeeting(meeting)
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -351,7 +380,8 @@ class MeetingDetailScreenTestOffline {
             datetime = Timestamp.now(),
             createdBy = "user1")
 
-    viewModel.setTestMeeting(meeting)
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
     mockConnectivityObserver.setConnected(true)
 
     composeTestRule.setContent {
@@ -401,7 +431,8 @@ class MeetingDetailScreenTestOffline {
             duration = 60,
             createdBy = "user1")
 
-    viewModel.setTestMeeting(meeting)
+    meetingFlow.value = meeting
+    participantsFlow.value = emptyList()
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
