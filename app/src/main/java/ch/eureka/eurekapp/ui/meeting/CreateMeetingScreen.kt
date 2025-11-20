@@ -30,6 +30,7 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -103,6 +104,7 @@ const val SPACING = 8
 fun CreateMeetingScreen(
     projectId: String,
     onDone: () -> Unit,
+    onPickLocationOnMap: () -> Unit = {},
     createMeetingViewModel: CreateMeetingViewModel = viewModel()
 ) {
 
@@ -226,7 +228,7 @@ fun CreateMeetingScreen(
                 locationSuggestions = uiState.locationSuggestions,
                 selectLocationQuery = { createMeetingViewModel.setLocationQuery(it) },
                 selectLocation = { createMeetingViewModel.setLocation(it) },
-                onPickLocationOnMap = {})
+                onPickLocationOnMap = onPickLocationOnMap)
           }
 
           Spacer(Modifier.height(SPACING.dp))
@@ -535,7 +537,7 @@ fun LocationInputField(
                   }
             },
             modifier =
-                Modifier.menuAnchor()
+                Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable)
                     .fillMaxWidth()
                     .testTag(CreateMeetingScreenTestTags.INPUT_MEETING_LOCATION),
             singleLine = true)
