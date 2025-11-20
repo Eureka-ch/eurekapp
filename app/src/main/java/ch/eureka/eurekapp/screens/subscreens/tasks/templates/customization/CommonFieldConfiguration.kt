@@ -43,7 +43,13 @@ fun CommonFieldConfiguration(
   Column(modifier = modifier.fillMaxWidth()) {
     OutlinedTextField(
         value = field.label,
-        onValueChange = { onFieldUpdate(field.copy(label = it)) },
+        onValueChange = {
+          try {
+            onFieldUpdate(field.copy(label = it))
+          } catch (e: IllegalArgumentException) {
+            // Don't update if label would be invalid (blank)
+          }
+        },
         label = { Text("Label *") },
         enabled = enabled,
         modifier = Modifier.fillMaxWidth().testTag(CommonFieldConfigurationTestTags.LABEL_INPUT),
