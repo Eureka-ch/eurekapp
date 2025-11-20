@@ -19,8 +19,10 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -153,5 +155,11 @@ class MeetingCalendarViewModelTest {
     testDispatcher.scheduler.advanceUntilIdle()
 
     assertTrue(failure)
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @After
+  fun tearDown() {
+    Dispatchers.resetMain()
   }
 }
