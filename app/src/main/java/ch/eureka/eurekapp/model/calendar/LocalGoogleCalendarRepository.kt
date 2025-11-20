@@ -7,6 +7,7 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.net.Uri
 import android.provider.CalendarContract
+import android.util.Log
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import kotlinx.coroutines.flow.first

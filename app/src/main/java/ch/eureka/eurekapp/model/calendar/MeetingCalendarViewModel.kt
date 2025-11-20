@@ -20,8 +20,6 @@ import kotlinx.coroutines.runBlocking
 
 class MeetingCalendarViewModel(
     private val calendarRepository: CalendarRepository = CalendarRepositoryProvider.repository,
-    private val projectsRepository: ProjectRepository = FirestoreRepositoriesProvider
-        .projectRepository,
     private val meetingsRepository: MeetingRepository = FirestoreRepositoriesProvider
         .meetingRepository,
     private val usersRepository: UserRepository = FirestoreRepositoriesProvider.userRepository

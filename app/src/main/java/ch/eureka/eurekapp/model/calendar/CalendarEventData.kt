@@ -10,7 +10,6 @@ data class CalendarEventData(
     val location: String? = null,
     val startTimeMillis: Long = 0L,
     val endTimeMillis: Long = 1L,
-    val allDay: Boolean = false,
     val attendees: List<CalendarAttendee> = emptyList(),
     val reminders: List<CalendarReminder> = listOf(
         CalendarReminder(minutesBefore = 1440),

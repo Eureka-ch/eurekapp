@@ -38,8 +38,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -93,6 +91,10 @@ object MeetingScreenTestTags {
   const val NO_PAST_MEETINGS_MESSAGE = "NoPastMeetingsMessage"
   const val CREATE_MEETING_BUTTON = "CreateMeetingButton"
   const val CLOSE_VOTES_BUTTON = "CloseVotesButton"
+
+    fun getCalendarButtonTestTagForScheduledMeeting(meetingId: String): String{
+        return "calendar_test_tag_button_$meetingId"
+    }
 }
 
 /**
@@ -621,6 +623,9 @@ fun MeetingCard(
                         if(!config.isMeetingAddedToCalendar){
                             Spacer(modifier = Modifier.width(10.dp))
                             Button(
+                                modifier = Modifier.testTag(MeetingScreenTestTags
+                                    .getCalendarButtonTestTagForScheduledMeeting(
+                                        meeting.meetingID)),
                                 onClick = {config.onAddMeetingToCalendar(meeting)},
                             ){
                                 Icon(imageVector = Icons.Default.CalendarToday,
