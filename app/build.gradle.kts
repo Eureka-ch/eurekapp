@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.gms)
     alias(libs.plugins.sonar)
     id("jacoco")
+    id("kotlin-parcelize")
 }
 
 android {

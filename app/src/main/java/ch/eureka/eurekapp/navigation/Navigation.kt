@@ -1,3 +1,4 @@
+/* Portions of the code in this file were written with the help of Gemini and chatGPT (GPT-5). */
 package ch.eureka.eurekapp.navigation
 
 import androidx.compose.foundation.layout.padding
@@ -5,6 +6,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -12,6 +14,7 @@ import androidx.navigation.toRoute
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
+import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.IdeasScreen
 import ch.eureka.eurekapp.screens.OverviewProjectScreen
@@ -27,8 +30,10 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
 import ch.eureka.eurekapp.ui.authentication.TokenEntryScreen
+import ch.eureka.eurekapp.ui.map.MeetingLocationSelectionScreen
 import ch.eureka.eurekapp.ui.meeting.CreateDateTimeFormatProposalForMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
+import ch.eureka.eurekapp.ui.meeting.CreateMeetingViewModel
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailActionsConfig
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingNavigationScreen
@@ -118,6 +123,8 @@ sealed interface Route {
 
     @Serializable
     data class MeetingNavigation(val projectId: String, val meetingId: String) : MeetingsSection
+
+    @Serializable data object MeetingLocationSelection : MeetingsSection
   }
 
   sealed interface ProjectSelectionSection : Route {
@@ -303,12 +310,41 @@ fun NavigationMenu() {
                 CreateProjectScreen(
                     onProjectCreated = { navigationController.navigate(Route.ProjectSelection) })
               }
+
               composable<Route.MeetingsSection.CreateMeeting> { backStackEntry ->
-                val createMeetingCreationRoute =
+                val createMeetingRoute =
                     backStackEntry.toRoute<Route.MeetingsSection.CreateMeeting>()
+
+                val viewModel = viewModel<CreateMeetingViewModel>()
+
+                val selectedLocation =
+                    backStackEntry.savedStateHandle.get<Location>("selected_location")
+
+                if (selectedLocation != null) {
+                  viewModel.setLocation(selectedLocation)
+                  viewModel.setLocationQuery(selectedLocation.name)
+                  backStackEntry.savedStateHandle.remove<Location>("selected_location")
+                }
+
                 CreateMeetingScreen(
-                    createMeetingCreationRoute.projectId,
-                    { navigationController.navigate(Route.MeetingsSection.Meetings) })
+                    projectId = createMeetingRoute.projectId,
+                    onDone = { navigationController.navigate(Route.MeetingsSection.Meetings) },
+                    createMeetingViewModel = viewModel,
+                    onPickLocationOnMap = {
+                      navigationController.navigate(Route.MeetingsSection.MeetingLocationSelection)
+                    })
+              }
+
+              composable<Route.MeetingsSection.MeetingLocationSelection> {
+                MeetingLocationSelectionScreen(
+                    onLocationSelected = { location ->
+                      navigationController.previousBackStackEntry
+                          ?.savedStateHandle
+                          ?.set("selected_location", location)
+
+                      navigationController.popBackStack()
+                    },
+                    onBack = { navigationController.popBackStack() })
               }
 
               composable<Route.MeetingsSection.MeetingProposalVotes> { backStackEntry ->
