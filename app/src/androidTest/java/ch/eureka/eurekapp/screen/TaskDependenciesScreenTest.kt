@@ -100,26 +100,28 @@ open class TaskDependenciesScreenTest : TestCase() {
   }
 
   @Test
-  fun testBackButtonIsDisplayed() = runBlocking {
-    val viewModel =
-        TaskDependenciesViewModel(
-            tasksRepository = tasksRepository,
-            usersRepository = usersRepository,
-            projectsRepository = projectRepository)
+  fun testBackButtonIsDisplayed() {
+    runBlocking {
+      val viewModel =
+          TaskDependenciesViewModel(
+              tasksRepository = tasksRepository,
+              usersRepository = usersRepository,
+              projectsRepository = projectRepository)
 
-    composeTestRule.setContent {
-      val navController = rememberNavController()
-      TaskDependenciesScreen(
-          projectId = "test-project-id",
-          taskId = "task1",
-          navigationController = navController,
-          taskDependenciesViewModel = viewModel)
+      composeTestRule.setContent {
+        val navController = rememberNavController()
+        TaskDependenciesScreen(
+            projectId = "test-project-id",
+            taskId = "task1",
+            navigationController = navController,
+            taskDependenciesViewModel = viewModel)
+      }
+
+      composeTestRule.waitForIdle()
+
+      // Verify back button is displayed
+      composeTestRule.onNodeWithTag("back_button_dependencies").assertIsDisplayed()
     }
-
-    composeTestRule.waitForIdle()
-
-    // Verify back button is displayed
-    composeTestRule.onNodeWithTag("back_button_dependencies").assertIsDisplayed()
   }
 
   @After
