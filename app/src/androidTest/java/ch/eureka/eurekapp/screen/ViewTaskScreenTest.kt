@@ -482,7 +482,9 @@ open class ViewTaskScreenTest : TestCase() {
         // Wait for assigned users to load from Firestore
         composeTestRule.waitUntil(timeoutMillis = 5000) {
           try {
-            composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION).assertExists()
+            composeTestRule
+                .onNodeWithTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION)
+                .assertExists()
             true
           } catch (e: AssertionError) {
             false
@@ -526,7 +528,9 @@ open class ViewTaskScreenTest : TestCase() {
         // Wait for assigned users to load from Firestore
         composeTestRule.waitUntil(timeoutMillis = 5000) {
           try {
-            composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION).assertExists()
+            composeTestRule
+                .onNodeWithTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION)
+                .assertExists()
             true
           } catch (e: AssertionError) {
             false
@@ -579,7 +583,9 @@ open class ViewTaskScreenTest : TestCase() {
         // Wait for assigned users to load from Firestore
         composeTestRule.waitUntil(timeoutMillis = 5000) {
           try {
-            composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION).assertExists()
+            composeTestRule
+                .onNodeWithTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION)
+                .assertExists()
             true
           } catch (e: AssertionError) {
             false
