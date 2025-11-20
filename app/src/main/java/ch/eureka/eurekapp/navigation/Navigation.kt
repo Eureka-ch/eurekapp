@@ -217,37 +217,38 @@ fun NavigationMenu() {
               // Meetings section
               composable<Route.MeetingsSection.Meetings> {
                 MeetingScreen(
-                    config = MeetingScreenConfig(
-                        projectId = testProjectId,
-                        onCreateMeeting = {
-                          navigationController.navigate(
-                              Route.MeetingsSection.CreateMeeting(testProjectId))
-                        },
-                        onMeetingClick = { projectId, meetingId ->
-                          navigationController.navigate(
-                              Route.MeetingsSection.MeetingDetail(
-                                  projectId = projectId, meetingId = meetingId))
-                        },
-                        onVoteForMeetingProposalClick = { projectId, meetingId ->
-                          navigationController.navigate(
-                              Route.MeetingsSection.MeetingProposalVotes(
-                                  projectId = projectId, meetingId = meetingId))
-                        },
-                        onNavigateToMeeting = { projectId, meetingId ->
-                          navigationController.navigate(
-                              Route.MeetingsSection.MeetingNavigation(
-                                  projectId = projectId, meetingId = meetingId))
-                        },
-                        onViewTranscript = { projectId, meetingId ->
-                          navigationController.navigate(
-                              Route.MeetingsSection.AudioTranscript(
-                                  projectId = projectId, meetingId = meetingId))
-                        },
-                        onRecord = { projectId, meetingId ->
-                          navigationController.navigate(
-                              Route.MeetingsSection.AudioRecording(
-                                  projectId = projectId, meetingId = meetingId))
-                        }))
+                    config =
+                        MeetingScreenConfig(
+                            projectId = testProjectId,
+                            onCreateMeeting = {
+                              navigationController.navigate(
+                                  Route.MeetingsSection.CreateMeeting(testProjectId))
+                            },
+                            onMeetingClick = { projectId, meetingId ->
+                              navigationController.navigate(
+                                  Route.MeetingsSection.MeetingDetail(
+                                      projectId = projectId, meetingId = meetingId))
+                            },
+                            onVoteForMeetingProposalClick = { projectId, meetingId ->
+                              navigationController.navigate(
+                                  Route.MeetingsSection.MeetingProposalVotes(
+                                      projectId = projectId, meetingId = meetingId))
+                            },
+                            onNavigateToMeeting = { projectId, meetingId ->
+                              navigationController.navigate(
+                                  Route.MeetingsSection.MeetingNavigation(
+                                      projectId = projectId, meetingId = meetingId))
+                            },
+                            onViewTranscript = { projectId, meetingId ->
+                              navigationController.navigate(
+                                  Route.MeetingsSection.AudioTranscript(
+                                      projectId = projectId, meetingId = meetingId))
+                            },
+                            onRecord = { projectId, meetingId ->
+                              navigationController.navigate(
+                                  Route.MeetingsSection.AudioRecording(
+                                      projectId = projectId, meetingId = meetingId))
+                            }))
               }
 
               composable<Route.MeetingsSection.MeetingDetail> { backStackEntry ->

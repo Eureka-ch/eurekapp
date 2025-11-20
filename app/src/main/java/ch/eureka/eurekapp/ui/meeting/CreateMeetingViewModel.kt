@@ -190,16 +190,14 @@ class CreateMeetingViewModel(
                 listOf(
                     MeetingProposal(
                         Timestamp(timeInstant),
-                        listOf(MeetingProposalVote(creatorId,
-                            listOf(uiState.value.format))))),
+                        listOf(MeetingProposalVote(creatorId, listOf(uiState.value.format))))),
             createdBy = creatorId)
 
     viewModelScope.launch {
       repository
           .createMeeting(meeting = meeting, creatorId = creatorId, creatorRole = MeetingRole.HOST)
           .onFailure { setErrorMsg("Meeting could not be created.") }
-          .onSuccess {
-              setMeetingSaved() }
+          .onSuccess { setMeetingSaved() }
     }
   }
 }

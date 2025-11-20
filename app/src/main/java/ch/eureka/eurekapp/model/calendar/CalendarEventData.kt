@@ -1,7 +1,7 @@
-
-//Portions of this code were generated with the help of ChatGPT-5 by OpenAI.
+// Portions of this code were generated with the help of ChatGPT-5 by OpenAI.
 
 package ch.eureka.eurekapp.model.calendar
+
 import android.provider.CalendarContract
 
 data class CalendarEventData(
@@ -11,10 +11,8 @@ data class CalendarEventData(
     val startTimeMillis: Long = 0L,
     val endTimeMillis: Long = 1L,
     val attendees: List<CalendarAttendee> = emptyList(),
-    val reminders: List<CalendarReminder> = listOf(
-        CalendarReminder(minutesBefore = 1440),
-        CalendarReminder(minutesBefore = 10)
-    ),
+    val reminders: List<CalendarReminder> =
+        listOf(CalendarReminder(minutesBefore = 1440), CalendarReminder(minutesBefore = 10)),
     val availability: Int = CalendarContract.Events.AVAILABILITY_BUSY,
     val eventUid: String = ""
 )

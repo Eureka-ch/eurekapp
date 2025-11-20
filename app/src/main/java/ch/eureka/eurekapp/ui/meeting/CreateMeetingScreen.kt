@@ -58,7 +58,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import ch.eureka.eurekapp.model.calendar.MeetingCalendarViewModel
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import java.time.Instant
 import java.time.LocalDate

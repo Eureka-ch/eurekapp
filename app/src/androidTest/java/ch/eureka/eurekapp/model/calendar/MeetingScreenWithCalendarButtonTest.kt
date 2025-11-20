@@ -30,151 +30,129 @@ import kotlinx.coroutines.flow.flowOf
 import org.junit.Rule
 import org.junit.Test
 
-private val scheduledMeeting = Meeting(
-    meetingID = "testId",
-    status = MeetingStatus.SCHEDULED,
-    datetime = Timestamp.now(),
-    format = MeetingFormat.IN_PERSON,
-    location = Location()
-)
-
-class MeetingScreenWithCalendarButtonTest {
-    val scheduledMeeting = Meeting(
+private val scheduledMeeting =
+    Meeting(
         meetingID = "testId",
         status = MeetingStatus.SCHEDULED,
-        datetime = Timestamp.now()
-    )
+        datetime = Timestamp.now(),
+        format = MeetingFormat.IN_PERSON,
+        location = Location())
 
-    class MockedMeetingRepository(): MeetingRepository{
-        override fun getMeetingById(
-            projectId: String,
-            meetingId: String
-        ): Flow<Meeting?> {
-            TODO("Not yet implemented")
-        }
+class MeetingScreenWithCalendarButtonTest {
+  val scheduledMeeting =
+      Meeting(meetingID = "testId", status = MeetingStatus.SCHEDULED, datetime = Timestamp.now())
 
-        override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> {
-            return flowOf(listOf(scheduledMeeting))
-        }
-
-        override fun getMeetingsForTask(
-            projectId: String,
-            taskId: String
-        ): Flow<List<Meeting>> {
-            TODO("Not yet implemented")
-        }
-
-        override fun getMeetingsForCurrentUser(
-            projectId: String,
-            skipCache: Boolean
-        ): Flow<List<Meeting>> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun createMeeting(
-            meeting: Meeting,
-            creatorId: String,
-            creatorRole: MeetingRole
-        ): Result<String> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun updateMeeting(meeting: Meeting): Result<Unit> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun deleteMeeting(
-            projectId: String,
-            meetingId: String
-        ): Result<Unit> {
-            TODO("Not yet implemented")
-        }
-
-        override fun getParticipants(
-            projectId: String,
-            meetingId: String
-        ): Flow<List<Participant>> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun addParticipant(
-            projectId: String,
-            meetingId: String,
-            userId: String,
-            role: MeetingRole
-        ): Result<Unit> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun removeParticipant(
-            projectId: String,
-            meetingId: String,
-            userId: String
-        ): Result<Unit> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun updateParticipantRole(
-            projectId: String,
-            meetingId: String,
-            userId: String,
-            role: MeetingRole
-        ): Result<Unit> {
-            TODO("Not yet implemented")
-        }
-
+  class MockedMeetingRepository() : MeetingRepository {
+    override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> {
+      TODO("Not yet implemented")
     }
 
-    @get:Rule
-    val permissionRule: GrantPermissionRule = GrantPermissionRule.grant(
-        android.Manifest.permission.READ_CALENDAR,
-        android.Manifest.permission.WRITE_CALENDAR
-    )
+    override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> {
+      return flowOf(listOf(scheduledMeeting))
+    }
 
-    private var userRepository = mockk<UserRepository>()
+    override fun getMeetingsForTask(projectId: String, taskId: String): Flow<List<Meeting>> {
+      TODO("Not yet implemented")
+    }
 
-    @get:Rule
-    val composeRule = createComposeRule()
-    @Test
-    fun checkCalendarButtonAppearsAndIsClickableForScheduledMeeting(){
-        val context: Context = ApplicationProvider.getApplicationContext()
-        val contentResolver: ContentResolver = context.contentResolver
+    override fun getMeetingsForCurrentUser(
+        projectId: String,
+        skipCache: Boolean
+    ): Flow<List<Meeting>> {
+      TODO("Not yet implemented")
+    }
 
-        val mockedMeetingRepository: FirestoreMeetingRepository = mockk<FirestoreMeetingRepository>()
-        every { mockedMeetingRepository.getParticipants(any(), any()) } returns
-                flowOf(listOf(Participant(), Participant()))
+    override suspend fun createMeeting(
+        meeting: Meeting,
+        creatorId: String,
+        creatorRole: MeetingRole
+    ): Result<String> {
+      TODO("Not yet implemented")
+    }
 
-        val mockedUsersRepository: FirestoreUserRepository = mockk<FirestoreUserRepository>()
-        every {mockedUsersRepository.getUserById(any())} returns flowOf(User())
+    override suspend fun updateMeeting(meeting: Meeting): Result<Unit> {
+      TODO("Not yet implemented")
+    }
 
-        val calendarViewModel = MeetingCalendarViewModel(
+    override suspend fun deleteMeeting(projectId: String, meetingId: String): Result<Unit> {
+      TODO("Not yet implemented")
+    }
+
+    override fun getParticipants(projectId: String, meetingId: String): Flow<List<Participant>> {
+      TODO("Not yet implemented")
+    }
+
+    override suspend fun addParticipant(
+        projectId: String,
+        meetingId: String,
+        userId: String,
+        role: MeetingRole
+    ): Result<Unit> {
+      TODO("Not yet implemented")
+    }
+
+    override suspend fun removeParticipant(
+        projectId: String,
+        meetingId: String,
+        userId: String
+    ): Result<Unit> {
+      TODO("Not yet implemented")
+    }
+
+    override suspend fun updateParticipantRole(
+        projectId: String,
+        meetingId: String,
+        userId: String,
+        role: MeetingRole
+    ): Result<Unit> {
+      TODO("Not yet implemented")
+    }
+  }
+
+  @get:Rule
+  val permissionRule: GrantPermissionRule =
+      GrantPermissionRule.grant(
+          android.Manifest.permission.READ_CALENDAR, android.Manifest.permission.WRITE_CALENDAR)
+
+  private var userRepository = mockk<UserRepository>()
+
+  @get:Rule val composeRule = createComposeRule()
+
+  @Test
+  fun checkCalendarButtonAppearsAndIsClickableForScheduledMeeting() {
+    val context: Context = ApplicationProvider.getApplicationContext()
+    val contentResolver: ContentResolver = context.contentResolver
+
+    val mockedMeetingRepository: FirestoreMeetingRepository = mockk<FirestoreMeetingRepository>()
+    every { mockedMeetingRepository.getParticipants(any(), any()) } returns
+        flowOf(listOf(Participant(), Participant()))
+
+    val mockedUsersRepository: FirestoreUserRepository = mockk<FirestoreUserRepository>()
+    every { mockedUsersRepository.getUserById(any()) } returns flowOf(User())
+
+    val calendarViewModel =
+        MeetingCalendarViewModel(
             calendarRepository = MeetingCalendarViewModelTest.MockedCalendarRepository(),
             meetingsRepository = mockedMeetingRepository,
-            usersRepository = mockedUsersRepository
-        )
+            usersRepository = mockedUsersRepository)
 
-        val meetingViewModel = MeetingViewModel(
-            repository = MockedMeetingRepository(),
-            getCurrentUserId = {"testUser"}
-        )
+    val meetingViewModel =
+        MeetingViewModel(repository = MockedMeetingRepository(), getCurrentUserId = { "testUser" })
 
-
-        composeRule.setContent {
-            MeetingScreen(
-                config = MeetingScreenConfig(
-                    projectId = "test-project-id",
-                    onCreateMeeting = {}
-                ),
-                calendarViewModel = calendarViewModel,
-                meetingViewModel = meetingViewModel,
-            )
-        }
-
-        composeRule.waitForIdle()
-
-
-        composeRule.onNodeWithTag(MeetingScreenTestTags
-            .getCalendarButtonTestTagForScheduledMeeting(scheduledMeeting.meetingID))
-            .assertExists()
+    composeRule.setContent {
+      MeetingScreen(
+          config = MeetingScreenConfig(projectId = "test-project-id", onCreateMeeting = {}),
+          calendarViewModel = calendarViewModel,
+          meetingViewModel = meetingViewModel,
+      )
     }
+
+    composeRule.waitForIdle()
+
+    composeRule
+        .onNodeWithTag(
+            MeetingScreenTestTags.getCalendarButtonTestTagForScheduledMeeting(
+                scheduledMeeting.meetingID))
+        .assertExists()
+  }
 }

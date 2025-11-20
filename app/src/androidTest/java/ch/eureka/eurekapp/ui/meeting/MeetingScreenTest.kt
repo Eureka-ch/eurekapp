@@ -1,23 +1,17 @@
 /* Portions of this file were written with the help of Gemini.*/
 package ch.eureka.eurekapp.ui.meeting
 
-import android.content.ContentResolver
-import android.content.Context
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.rule.GrantPermissionRule
-import ch.eureka.eurekapp.model.calendar.MeetingCalendarViewModel
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.Participant
-import io.mockk.every
-import io.mockk.mockk
 import kotlin.collections.filter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,10 +30,9 @@ import org.junit.Test
 class MeetingScreenTest {
 
   @get:Rule
-  val permissionRule: GrantPermissionRule = GrantPermissionRule.grant(
-      android.Manifest.permission.READ_CALENDAR,
-      android.Manifest.permission.WRITE_CALENDAR
-  )
+  val permissionRule: GrantPermissionRule =
+      GrantPermissionRule.grant(
+          android.Manifest.permission.READ_CALENDAR, android.Manifest.permission.WRITE_CALENDAR)
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -398,7 +391,6 @@ class MeetingScreenTest {
     assertEquals(MeetingStatus.SCHEDULED, repositoryMock.updatedMeeting?.status)
     assertEquals(votingMeeting.meetingID, repositoryMock.updatedMeeting?.meetingID)
   }
-
 }
 
 open class FakeMeetingRepository : MeetingRepository {

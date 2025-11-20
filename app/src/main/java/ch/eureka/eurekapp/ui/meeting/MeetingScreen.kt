@@ -92,9 +92,9 @@ object MeetingScreenTestTags {
   const val CREATE_MEETING_BUTTON = "CreateMeetingButton"
   const val CLOSE_VOTES_BUTTON = "CloseVotesButton"
 
-    fun getCalendarButtonTestTagForScheduledMeeting(meetingId: String): String{
-        return "calendar_test_tag_button_$meetingId"
-    }
+  fun getCalendarButtonTestTagForScheduledMeeting(meetingId: String): String {
+    return "calendar_test_tag_button_$meetingId"
+  }
 }
 
 /**
@@ -135,39 +135,37 @@ fun MeetingScreen(
     calendarViewModel: MeetingCalendarViewModel = viewModel()
 ) {
 
-    var hasCalendarReadPermission by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(context,
-                Manifest.permission.READ_CALENDAR) ==
-                    PackageManager.PERMISSION_GRANTED)
-    }
-    var hasCalendarWritePermission by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(context,
-                Manifest.permission.WRITE_CALENDAR) ==
-                    PackageManager.PERMISSION_GRANTED)
-    }
+  var hasCalendarReadPermission by remember {
+    mutableStateOf(
+        ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) ==
+            PackageManager.PERMISSION_GRANTED)
+  }
+  var hasCalendarWritePermission by remember {
+    mutableStateOf(
+        ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) ==
+            PackageManager.PERMISSION_GRANTED)
+  }
 
-    val launcherCalendarReadPermission =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
-                isGranted ->
-            hasCalendarReadPermission = isGranted
-        }
+  val launcherCalendarReadPermission =
+      rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
+          isGranted ->
+        hasCalendarReadPermission = isGranted
+      }
 
-    val launcherCalendarWritePermission =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
-                isGranted ->
-            hasCalendarWritePermission = isGranted
-        }
+  val launcherCalendarWritePermission =
+      rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
+          isGranted ->
+        hasCalendarWritePermission = isGranted
+      }
 
-    LaunchedEffect(Unit) {
-        if(!hasCalendarReadPermission){
-            launcherCalendarReadPermission.launch(Manifest.permission.READ_CALENDAR)
-        }
-        if(!hasCalendarWritePermission){
-            launcherCalendarWritePermission.launch(Manifest.permission.WRITE_CALENDAR)
-        }
+  LaunchedEffect(Unit) {
+    if (!hasCalendarReadPermission) {
+      launcherCalendarReadPermission.launch(Manifest.permission.READ_CALENDAR)
     }
+    if (!hasCalendarWritePermission) {
+      launcherCalendarWritePermission.launch(Manifest.permission.WRITE_CALENDAR)
+    }
+  }
 
   val context = LocalContext.current
   val uiState by meetingViewModel.uiState.collectAsState()
@@ -240,8 +238,7 @@ fun MeetingScreen(
                             },
                             onViewTranscript = config.onViewTranscript,
                             onRecord = config.onRecord),
-                        calendarViewModel = calendarViewModel
-                    )
+                        calendarViewModel = calendarViewModel)
                 MeetingTab.PAST ->
                     MeetingsList(
                         MeetingsListConfig(
@@ -252,8 +249,7 @@ fun MeetingScreen(
                             isCurrentUserId = { uid -> meetingViewModel.userId == uid },
                             onMeetingClick = config.onMeetingClick,
                         ),
-                        calendarViewModel = calendarViewModel
-                    )
+                        calendarViewModel = calendarViewModel)
               }
             }
       })
@@ -298,10 +294,12 @@ data class MeetingsListConfig(
  * @param context the local context to use
  */
 @Composable
-fun MeetingsList(config: MeetingsListConfig,
-                 calendarViewModel: MeetingCalendarViewModel = viewModel(),
-                 context: Context = LocalContext.current) {
-  val registeredMeetings = remember {calendarViewModel.registeredMeetings}.collectAsState()
+fun MeetingsList(
+    config: MeetingsListConfig,
+    calendarViewModel: MeetingCalendarViewModel = viewModel(),
+    context: Context = LocalContext.current
+) {
+  val registeredMeetings = remember { calendarViewModel.registeredMeetings }.collectAsState()
 
   if (config.meetings.isNotEmpty()) {
     LazyColumn(
@@ -314,48 +312,48 @@ fun MeetingsList(config: MeetingsListConfig,
                 config =
                     MeetingCardConfig(
                         isCurrentUserId = config.isCurrentUserId,
-                        onClick = {
-                          config.onMeetingClick(config.projectId, meeting.meetingID)
-                        },
+                        onClick = { config.onMeetingClick(config.projectId, meeting.meetingID) },
                         onVoteForMeetingProposals = {
-                          config.onVoteForMeetingProposalClick(
-                              config.projectId, meeting.meetingID)
+                          config.onVoteForMeetingProposalClick(config.projectId, meeting.meetingID)
                         },
                         onDirections = {
-                          config.onNavigateToMeeting(
-                              config.projectId, meeting.meetingID)
+                          config.onNavigateToMeeting(config.projectId, meeting.meetingID)
                         },
                         onCloseVotes = config.onCloseVotes,
                         onViewTranscript = config.onViewTranscript,
                         onRecord = config.onRecord,
                         onAddMeetingToCalendar = { meeting ->
-                            calendarViewModel.addMeetingToCalendar(
-                                context.contentResolver,
-                                meeting,
-                                onSuccess = {
-                                Toast.makeText(context,
-                                "Successfully saved the event to the calendar!",
-                                Toast.LENGTH_SHORT).show()
-                            }, onFailure = {
-                                    Toast.makeText(context,
-                                    "There was a problem saving the event to the calendar!",
-                                    Toast.LENGTH_SHORT).show()
-                            })
+                          calendarViewModel.addMeetingToCalendar(
+                              context.contentResolver,
+                              meeting,
+                              onSuccess = {
+                                Toast.makeText(
+                                        context,
+                                        "Successfully saved the event to the calendar!",
+                                        Toast.LENGTH_SHORT)
+                                    .show()
+                              },
+                              onFailure = {
+                                Toast.makeText(
+                                        context,
+                                        "There was a problem saving the event to the calendar!",
+                                        Toast.LENGTH_SHORT)
+                                    .show()
+                              })
                         },
-                        isMeetingAddedToCalendar = registeredMeetings.value.getOrElse(
-                            meeting.meetingID, {
-                                //Run the function that will update the map
-                                if(meeting.status == MeetingStatus.SCHEDULED){
-                                    calendarViewModel
-                                        .checkIsMeetingRegisteredInCalendar(
-                                            context.contentResolver,
-                                            meeting)
-                                }else{
+                        isMeetingAddedToCalendar =
+                            registeredMeetings.value.getOrElse(
+                                meeting.meetingID,
+                                {
+                                  // Run the function that will update the map
+                                  if (meeting.status == MeetingStatus.SCHEDULED) {
+                                    calendarViewModel.checkIsMeetingRegisteredInCalendar(
+                                        context.contentResolver, meeting)
+                                  } else {
                                     true
-                                }
-                                false
-                            })
-                    ))
+                                  }
+                                  false
+                                })))
           }
         }
   } else {
@@ -374,8 +372,8 @@ fun MeetingsList(config: MeetingsListConfig,
  *
  * @property isCurrentUserId Function taking as argument a user ID and return true if this is the Id
  *   of the user that is currently logged in and false otherwise.
- * @property isMeetingAddedToCalendar the state that keeps track if the meeting is added to
- * calendar or not
+ * @property isMeetingAddedToCalendar the state that keeps track if the meeting is added to calendar
+ *   or not
  * @property onClick Function to execute when the card is clicked (for navigation to detail screen).
  * @property onJoinMeeting Function to execute when user clicks on button to join meeting.
  * @property onVoteForMeetingProposals Function to execute when user clicks on button to vote for
@@ -620,17 +618,21 @@ fun MeetingCard(
                         ) {
                           Text("Record")
                         }
-                        if(!config.isMeetingAddedToCalendar){
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Button(
-                                modifier = Modifier.testTag(MeetingScreenTestTags
-                                    .getCalendarButtonTestTagForScheduledMeeting(
-                                        meeting.meetingID)),
-                                onClick = {config.onAddMeetingToCalendar(meeting)},
-                            ){
-                                Icon(imageVector = Icons.Default.CalendarToday,
-                                    null, tint = LightColorScheme.surface)
-                            }
+                        if (!config.isMeetingAddedToCalendar) {
+                          Spacer(modifier = Modifier.width(10.dp))
+                          Button(
+                              modifier =
+                                  Modifier.testTag(
+                                      MeetingScreenTestTags
+                                          .getCalendarButtonTestTagForScheduledMeeting(
+                                              meeting.meetingID)),
+                              onClick = { config.onAddMeetingToCalendar(meeting) },
+                          ) {
+                            Icon(
+                                imageVector = Icons.Default.CalendarToday,
+                                null,
+                                tint = LightColorScheme.surface)
+                          }
                         }
                       }
                       MeetingFormat.VIRTUAL -> {
