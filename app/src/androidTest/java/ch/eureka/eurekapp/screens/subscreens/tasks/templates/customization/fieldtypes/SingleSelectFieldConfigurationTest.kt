@@ -26,7 +26,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
           SingleSelectFieldConfiguration(
               fieldType = FieldType.SingleSelect(testOptions), onUpdate = {}, enabled = true)
         },
-        "single_select_allow_custom")
+        SingleSelectFieldConfigurationTestTags.ALLOW_CUSTOM)
   }
 
   @Test
@@ -42,7 +42,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
               enabled = true)
         },
         capturedUpdate = updates,
-        checkboxTag = "single_select_allow_custom") { updated ->
+        checkboxTag = SingleSelectFieldConfigurationTestTags.ALLOW_CUSTOM) { updated ->
           assertions.assertBooleanTrue(updated, { it.allowCustom }, "allowCustom should be true")
         }
   }
@@ -60,7 +60,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
               enabled = true)
         },
         capturedUpdate = updates,
-        checkboxTag = "single_select_allow_custom") { updated ->
+        checkboxTag = SingleSelectFieldConfigurationTestTags.ALLOW_CUSTOM) { updated ->
           assertions.assertBooleanFalse(updated, { it.allowCustom }, "allowCustom should be false")
         }
   }
@@ -73,7 +73,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
           SingleSelectFieldConfiguration(
               fieldType = FieldType.SingleSelect(testOptions), onUpdate = {}, enabled = false)
         },
-        "single_select_allow_custom")
+        SingleSelectFieldConfigurationTestTags.ALLOW_CUSTOM)
   }
 
   @Test
@@ -109,7 +109,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
           SingleSelectFieldConfiguration(
               fieldType = FieldType.SingleSelect(manyOptions), onUpdate = {}, enabled = true)
         },
-        "single_select_allow_custom")
+        SingleSelectFieldConfigurationTestTags.ALLOW_CUSTOM)
   }
 
   @Test
@@ -125,7 +125,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
               enabled = true)
         },
         capturedUpdate = updates,
-        checkboxTag = "single_select_allow_custom") { updated ->
+        checkboxTag = SingleSelectFieldConfigurationTestTags.ALLOW_CUSTOM) { updated ->
           assertions.assertListPreserved(testOptions, updated, { it.options }, "options")
         }
   }
