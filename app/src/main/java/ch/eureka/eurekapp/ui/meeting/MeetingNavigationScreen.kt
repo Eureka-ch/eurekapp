@@ -24,10 +24,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.DirectionsBike
+import androidx.compose.material.icons.automirrored.filled.DirectionsBike
+import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.DirectionsTransit
-import androidx.compose.material.icons.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -100,6 +100,36 @@ enum class TravelMode(val displayName: String, val apiValue: String) {
 }
 
 /**
+ * Route state data for navigation.
+ *
+ * @property userLocation User's current location.
+ * @property route The calculated route from user to meeting location.
+ * @property isLoadingRoute Whether route is currently being fetched.
+ * @property routeErrorMsg Error message if route fetch failed.
+ * @property selectedTravelMode Currently selected travel mode.
+ */
+data class RouteState(
+    val userLocation: LatLng? = null,
+    val route: ch.eureka.eurekapp.services.navigation.Route? = null,
+    val isLoadingRoute: Boolean = false,
+    val routeErrorMsg: String? = null,
+    val selectedTravelMode: TravelMode = TravelMode.DRIVING
+)
+
+/**
+ * Action callbacks for route navigation.
+ *
+ * @property onTravelModeChange Callback when travel mode changes.
+ * @property onFetchDirections Callback to fetch directions.
+ * @property onShowDirections Callback to show turn-by-turn directions.
+ */
+data class RouteActions(
+    val onTravelModeChange: (TravelMode) -> Unit = {},
+    val onFetchDirections: () -> Unit = {},
+    val onShowDirections: () -> Unit = {}
+)
+
+/**
  * Main composable for the meeting location screen.
  *
  * We use composable overloading here because having API key generated here keeps the things
@@ -129,26 +159,18 @@ fun MeetingNavigationScreen(projectId: String, meetingId: String, onNavigateBack
     MeetingNavigationViewModel(projectId, meetingId, apiKey)
   }
 
-  MeetingNavigationScreen(
-      projectId = projectId,
-      meetingId = meetingId,
-      viewModel = viewModel,
-      onNavigateBack = onNavigateBack)
+  MeetingNavigationScreen(viewModel = viewModel, onNavigateBack = onNavigateBack)
 }
 
 /**
  * Overload for testing - accepts a ViewModel parameter.
  *
- * @param projectId The ID of the project containing the meeting.
- * @param meetingId The ID of the meeting whose location to display.
  * @param viewModel The ViewModel managing the screen state.
  * @param onNavigateBack Callback to navigate back to the previous screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MeetingNavigationScreen(
-    projectId: String,
-    meetingId: String,
     viewModel: MeetingNavigationViewModel,
     onNavigateBack: () -> Unit = {}
 ) {
@@ -281,15 +303,18 @@ private fun MapContent(
     InfoCard(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
         locationName = meeting.location.name,
-        meetingLocation = meetingLocation,
-        userLocation = uiState.userLocation,
-        route = uiState.route,
-        isLoadingRoute = uiState.isLoadingRoute,
-        routeErrorMsg = uiState.routeErrorMsg,
-        selectedTravelMode = selectedTravelMode,
-        onTravelModeChange = onTravelModeChange,
-        onFetchDirections = { viewModel.fetchDirections(selectedTravelMode) },
-        onShowDirections = { onShowDirectionsChange(true) },
+        routeState =
+            RouteState(
+                userLocation = uiState.userLocation,
+                route = uiState.route,
+                isLoadingRoute = uiState.isLoadingRoute,
+                routeErrorMsg = uiState.routeErrorMsg,
+                selectedTravelMode = selectedTravelMode),
+        routeActions =
+            RouteActions(
+                onTravelModeChange = onTravelModeChange,
+                onFetchDirections = { viewModel.fetchDirections(selectedTravelMode) },
+                onShowDirections = { onShowDirectionsChange(true) }),
         viewModel = viewModel)
   }
 }
@@ -350,30 +375,17 @@ private fun MapView(
  *
  * @param modifier Modifier to be applied to the card.
  * @param locationName The name of the meeting location.
- * @param meetingLocation The coordinates of the meeting location.
- * @param userLocation The user's current location, or null if not available.
- * @param route The route data from Google Directions API, or null if not loaded.
- * @param isLoadingRoute Whether a route is currently being loaded.
- * @param routeErrorMsg Error message from route fetching, or null if no error.
- * @param selectedTravelMode The currently selected travel mode.
- * @param onTravelModeChange Callback when travel mode changes.
- * @param onFetchDirections Callback to fetch directions for selected mode.
- * @param onShowDirections Callback to show the directions panel.
+ * @param routeState Route-related state (user location, route, loading status, errors, travel
+ *   mode).
+ * @param routeActions Callbacks for route-related actions.
  * @param viewModel The ViewModel for distance calculations.
  */
 @Composable
 private fun InfoCard(
     modifier: Modifier = Modifier,
     locationName: String,
-    meetingLocation: LatLng,
-    userLocation: LatLng? = null,
-    route: ch.eureka.eurekapp.services.navigation.Route? = null,
-    isLoadingRoute: Boolean = false,
-    routeErrorMsg: String? = null,
-    selectedTravelMode: TravelMode = TravelMode.DRIVING,
-    onTravelModeChange: (TravelMode) -> Unit = {},
-    onFetchDirections: () -> Unit = {},
-    onShowDirections: () -> Unit = {},
+    routeState: RouteState,
+    routeActions: RouteActions,
     viewModel: MeetingNavigationViewModel
 ) {
   val context = LocalContext.current
@@ -383,7 +395,6 @@ private fun InfoCard(
             PackageManager.PERMISSION_GRANTED)
   }
 
-  // Permission launcher
   val permissionLauncher =
       rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
           isGranted ->
@@ -398,120 +409,197 @@ private fun InfoCard(
       shape = RoundedCornerShape(16.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {
         Column(modifier = Modifier.padding(16.dp)) {
-          // Location name
-          Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = Icons.Default.Place,
-                contentDescription = "Location",
-                modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.primary)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = locationName,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold)
-          }
+          LocationHeader(locationName = locationName)
 
-          if (!hasLocationPermission || userLocation == null) {
-            // Show message and button to enable location
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = "Enable location to see route",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.secondary)
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Show button based on permission status
-            if (!hasLocationPermission) {
-              // Need permission - show Enable Location button
-              Button(
-                  onClick = { permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
-                  modifier = Modifier.fillMaxWidth()) {
-                    Text("Enable Location")
-                  }
-            } else {
-              // Have permission but no location yet - show Get Location button
-              Button(
-                  onClick = { viewModel.fetchUserLocation(context) },
-                  modifier = Modifier.fillMaxWidth()) {
-                    Text("Get My Location")
-                  }
-            }
+          if (!hasLocationPermission || routeState.userLocation == null) {
+            LocationPermissionSection(
+                hasLocationPermission = hasLocationPermission,
+                onRequestPermission = {
+                  permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                },
+                onGetLocation = { viewModel.fetchUserLocation(context) })
           } else {
-            // Transport mode selection
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Select transport mode:",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Medium)
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                  TravelMode.values().forEach { mode ->
-                    FilterChip(
-                        selected = selectedTravelMode == mode,
-                        onClick = { onTravelModeChange(mode) },
-                        label = { Text(mode.displayName) },
-                        leadingIcon = {
-                          Icon(
-                              imageVector =
-                                  when (mode) {
-                                    TravelMode.DRIVING -> Icons.Default.DirectionsCar
-                                    TravelMode.TRANSIT -> Icons.Default.DirectionsTransit
-                                    TravelMode.BICYCLING -> Icons.Default.DirectionsBike
-                                    TravelMode.WALKING -> Icons.Default.DirectionsWalk
-                                  },
-                              contentDescription = mode.displayName)
-                        })
-                  }
-                }
-
-            // Get Directions button
-            Spacer(modifier = Modifier.height(12.dp))
-            Button(
-                onClick = onFetchDirections,
-                enabled = !isLoadingRoute,
-                modifier = Modifier.fillMaxWidth()) {
-                  if (isLoadingRoute) {
-                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Loading...")
-                  } else {
-                    Text("Get Directions")
-                  }
-                }
-
-            // Show route information if available
-            if (route != null && route.legs.isNotEmpty()) {
-              val leg = route.legs[0]
-              Spacer(modifier = Modifier.height(12.dp))
-              Text(
-                  text = "${leg.distance.text} • ${leg.duration.text}",
-                  style = MaterialTheme.typography.bodyLarge,
-                  color = MaterialTheme.colorScheme.primary,
-                  fontWeight = FontWeight.Medium)
-
-              // Show Directions button
-              Spacer(modifier = Modifier.height(8.dp))
-              Button(onClick = onShowDirections, modifier = Modifier.fillMaxWidth()) {
-                Text("Show Directions")
-              }
-            }
-
-            // Show error if any
-            routeErrorMsg?.let { error ->
-              Spacer(modifier = Modifier.height(12.dp))
-              Text(
-                  text = error,
-                  style = MaterialTheme.typography.bodySmall,
-                  color = MaterialTheme.colorScheme.error)
-            }
+            NavigationControlsSection(routeState = routeState, routeActions = routeActions)
           }
         }
       }
+}
+
+/**
+ * Displays the location name with icon.
+ *
+ * @param locationName The name of the location.
+ */
+@Composable
+private fun LocationHeader(locationName: String) {
+  Row(verticalAlignment = Alignment.CenterVertically) {
+    Icon(
+        imageVector = Icons.Filled.Place,
+        contentDescription = "Location",
+        modifier = Modifier.size(24.dp),
+        tint = MaterialTheme.colorScheme.primary)
+    Spacer(modifier = Modifier.width(8.dp))
+    Text(
+        text = locationName,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.SemiBold)
+  }
+}
+
+/**
+ * Displays location permission request UI.
+ *
+ * @param hasLocationPermission Whether location permission is granted.
+ * @param onRequestPermission Callback to request permission.
+ * @param onGetLocation Callback to fetch user location.
+ */
+@Composable
+private fun LocationPermissionSection(
+    hasLocationPermission: Boolean,
+    onRequestPermission: () -> Unit,
+    onGetLocation: () -> Unit
+) {
+  Spacer(modifier = Modifier.height(12.dp))
+  Text(
+      text = "Enable location to see route",
+      style = MaterialTheme.typography.bodyMedium,
+      color = MaterialTheme.colorScheme.secondary)
+
+  Spacer(modifier = Modifier.height(12.dp))
+
+  if (!hasLocationPermission) {
+    Button(onClick = onRequestPermission, modifier = Modifier.fillMaxWidth()) {
+      Text("Enable Location")
+    }
+  } else {
+    Button(onClick = onGetLocation, modifier = Modifier.fillMaxWidth()) { Text("Get My Location") }
+  }
+}
+
+/**
+ * Displays navigation controls including travel mode selector, directions button, and route info.
+ *
+ * @param routeState Route-related state.
+ * @param routeActions Callbacks for route-related actions.
+ */
+@Composable
+private fun NavigationControlsSection(routeState: RouteState, routeActions: RouteActions) {
+  TravelModeSelector(
+      selectedMode = routeState.selectedTravelMode, onModeChange = routeActions.onTravelModeChange)
+
+  DirectionsButton(
+      isLoading = routeState.isLoadingRoute, onFetchDirections = routeActions.onFetchDirections)
+
+  RouteInfoDisplay(route = routeState.route, onShowDirections = routeActions.onShowDirections)
+
+  RouteErrorDisplay(errorMessage = routeState.routeErrorMsg)
+}
+
+/**
+ * Displays travel mode selection chips.
+ *
+ * @param selectedMode Currently selected travel mode.
+ * @param onModeChange Callback when mode changes.
+ */
+@Composable
+private fun TravelModeSelector(selectedMode: TravelMode, onModeChange: (TravelMode) -> Unit) {
+  Spacer(modifier = Modifier.height(16.dp))
+  Text(
+      text = "Select transport mode:",
+      style = MaterialTheme.typography.labelMedium,
+      fontWeight = FontWeight.Medium)
+
+  Spacer(modifier = Modifier.height(8.dp))
+  Row(
+      modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+      horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        TravelMode.entries.forEach { mode ->
+          FilterChip(
+              selected = selectedMode == mode,
+              onClick = { onModeChange(mode) },
+              label = { Text(mode.displayName) },
+              leadingIcon = {
+                Icon(imageVector = getTravelModeIcon(mode), contentDescription = mode.displayName)
+              })
+        }
+      }
+}
+
+/**
+ * Returns the icon for a travel mode.
+ *
+ * @param mode The travel mode.
+ * @return The icon vector.
+ */
+private fun getTravelModeIcon(mode: TravelMode) =
+    when (mode) {
+      TravelMode.DRIVING -> Icons.Filled.DirectionsCar
+      TravelMode.TRANSIT -> Icons.Filled.DirectionsTransit
+      TravelMode.BICYCLING -> Icons.AutoMirrored.Filled.DirectionsBike
+      TravelMode.WALKING -> Icons.AutoMirrored.Filled.DirectionsWalk
+    }
+
+/**
+ * Displays the Get Directions button with loading state.
+ *
+ * @param isLoading Whether directions are being fetched.
+ * @param onFetchDirections Callback to fetch directions.
+ */
+@Composable
+private fun DirectionsButton(isLoading: Boolean, onFetchDirections: () -> Unit) {
+  Spacer(modifier = Modifier.height(12.dp))
+  Button(onClick = onFetchDirections, enabled = !isLoading, modifier = Modifier.fillMaxWidth()) {
+    if (isLoading) {
+      CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+      Spacer(modifier = Modifier.width(8.dp))
+      Text("Loading...")
+    } else {
+      Text("Get Directions")
+    }
+  }
+}
+
+/**
+ * Displays route information and Show Directions button.
+ *
+ * @param route The calculated route.
+ * @param onShowDirections Callback to show turn-by-turn directions.
+ */
+@Composable
+private fun RouteInfoDisplay(
+    route: ch.eureka.eurekapp.services.navigation.Route?,
+    onShowDirections: () -> Unit
+) {
+  if (route != null && route.legs.isNotEmpty()) {
+    val leg = route.legs[0]
+    Spacer(modifier = Modifier.height(12.dp))
+    Text(
+        text = "${leg.distance.text} • ${leg.duration.text}",
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.primary,
+        fontWeight = FontWeight.Medium)
+
+    Spacer(modifier = Modifier.height(8.dp))
+    Button(onClick = onShowDirections, modifier = Modifier.fillMaxWidth()) {
+      Text("Show Directions")
+    }
+  }
+}
+
+/**
+ * Displays route error message if present.
+ *
+ * @param errorMessage The error message to display.
+ */
+@Composable
+private fun RouteErrorDisplay(errorMessage: String?) {
+  errorMessage?.let { error ->
+    Spacer(modifier = Modifier.height(12.dp))
+    Text(
+        text = error,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.error)
+  }
 }
 
 /**

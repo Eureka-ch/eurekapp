@@ -84,11 +84,7 @@ class MeetingNavigationScreenTest {
         MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
     composeTestRule.setContent {
-      MeetingNavigationScreen(
-          projectId = testProjectId,
-          meetingId = testMeetingId,
-          viewModel = viewModel,
-          onNavigateBack = onNavigateBack)
+      MeetingNavigationScreen(viewModel = viewModel, onNavigateBack = onNavigateBack)
     }
   }
 
@@ -115,10 +111,7 @@ class MeetingNavigationScreenTest {
     val viewModel =
         MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
-    composeTestRule.setContent {
-      MeetingNavigationScreen(
-          projectId = testProjectId, meetingId = testMeetingId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { MeetingNavigationScreen(viewModel = viewModel) }
 
     composeTestRule
         .onNodeWithTag(MeetingNavigationScreenTestTags.LOADING_INDICATOR)
@@ -209,10 +202,7 @@ class MeetingNavigationScreenTest {
     val viewModel =
         MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
-    composeTestRule.setContent {
-      MeetingNavigationScreen(
-          projectId = testProjectId, meetingId = testMeetingId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { MeetingNavigationScreen(viewModel = viewModel) }
 
     composeTestRule.waitForIdle()
 
@@ -256,10 +246,7 @@ class MeetingNavigationScreenTest {
     val viewModel =
         MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
 
-    composeTestRule.setContent {
-      MeetingNavigationScreen(
-          projectId = testProjectId, meetingId = testMeetingId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { MeetingNavigationScreen(viewModel = viewModel) }
 
     // Verify loading indicator is displayed
     composeTestRule
@@ -329,10 +316,7 @@ class MeetingNavigationScreenTest {
     val userLocation = com.google.android.gms.maps.model.LatLng(46.5197, 6.6323)
     viewModel.setStateForTesting(viewModel.uiState.value.copy(userLocation = userLocation))
 
-    composeTestRule.setContent {
-      MeetingNavigationScreen(
-          projectId = testProjectId, meetingId = testMeetingId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { MeetingNavigationScreen(viewModel = viewModel) }
 
     composeTestRule.waitForIdle()
 
@@ -356,10 +340,7 @@ class MeetingNavigationScreenTest {
     val userLocation = com.google.android.gms.maps.model.LatLng(46.5197, 6.6323)
     viewModel.setStateForTesting(viewModel.uiState.value.copy(userLocation = userLocation))
 
-    composeTestRule.setContent {
-      MeetingNavigationScreen(
-          projectId = testProjectId, meetingId = testMeetingId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { MeetingNavigationScreen(viewModel = viewModel) }
 
     composeTestRule.waitForIdle()
 
@@ -380,10 +361,7 @@ class MeetingNavigationScreenTest {
     viewModel.setStateForTesting(
         viewModel.uiState.value.copy(userLocation = userLocation, isLoadingRoute = true))
 
-    composeTestRule.setContent {
-      MeetingNavigationScreen(
-          projectId = testProjectId, meetingId = testMeetingId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { MeetingNavigationScreen(viewModel = viewModel) }
 
     composeTestRule.waitForIdle()
 
@@ -429,10 +407,7 @@ class MeetingNavigationScreenTest {
     viewModel.setStateForTesting(
         viewModel.uiState.value.copy(userLocation = userLocation, route = mockRoute))
 
-    composeTestRule.setContent {
-      MeetingNavigationScreen(
-          projectId = testProjectId, meetingId = testMeetingId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { MeetingNavigationScreen(viewModel = viewModel) }
 
     composeTestRule.waitForIdle()
 
@@ -454,10 +429,7 @@ class MeetingNavigationScreenTest {
     viewModel.setStateForTesting(
         viewModel.uiState.value.copy(userLocation = userLocation, routeErrorMsg = "No route found"))
 
-    composeTestRule.setContent {
-      MeetingNavigationScreen(
-          projectId = testProjectId, meetingId = testMeetingId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { MeetingNavigationScreen(viewModel = viewModel) }
 
     composeTestRule.waitForIdle()
 
@@ -542,10 +514,7 @@ class MeetingNavigationScreenTest {
     viewModel.setStateForTesting(
         viewModel.uiState.value.copy(userLocation = userLocation, route = mockRoute))
 
-    composeTestRule.setContent {
-      MeetingNavigationScreen(
-          projectId = testProjectId, meetingId = testMeetingId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { MeetingNavigationScreen(viewModel = viewModel) }
 
     composeTestRule.waitForIdle()
 
@@ -572,10 +541,7 @@ class MeetingNavigationScreenTest {
     val userLocation = com.google.android.gms.maps.model.LatLng(46.5197, 6.6323)
     viewModel.setStateForTesting(viewModel.uiState.value.copy(userLocation = userLocation))
 
-    composeTestRule.setContent {
-      MeetingNavigationScreen(
-          projectId = testProjectId, meetingId = testMeetingId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { MeetingNavigationScreen(viewModel = viewModel) }
 
     composeTestRule.waitForIdle()
 
