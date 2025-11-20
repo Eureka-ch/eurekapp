@@ -145,6 +145,9 @@ object DirectionsApiServiceFactory {
   /** Base URL for Google Maps Directions API. */
   private const val BASE_URL = "https://maps.googleapis.com/"
 
+  /** Hostname for Google Maps API used in DNS fallback. */
+  private const val MAPS_HOSTNAME = "maps.googleapis.com"
+
   /** JSON configuration for parsing API responses with lenient handling. */
   private val json = Json {
     ignoreUnknownKeys = true
@@ -169,14 +172,14 @@ object DirectionsApiServiceFactory {
           } catch (_: Exception) {
             // Fallback: Use known IP addresses for maps.googleapis.com
             when (hostname) {
-              "maps.googleapis.com" -> {
+              MAPS_HOSTNAME -> {
                 // Google Maps API IP addresses (multiple for redundancy)
                 listOf(
                     InetAddress.getByAddress(
-                        "maps.googleapis.com",
+                        MAPS_HOSTNAME,
                         byteArrayOf(142.toByte(), 250.toByte(), 185.toByte(), 3.toByte())),
                     InetAddress.getByAddress(
-                        "maps.googleapis.com",
+                        MAPS_HOSTNAME,
                         byteArrayOf(142.toByte(), 250.toByte(), 185.toByte(), 35.toByte())))
               }
               else -> {
