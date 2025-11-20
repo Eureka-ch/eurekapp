@@ -54,6 +54,7 @@ class NominatimLocationRepositoryTest {
 
     mockkStatic(Log::class)
     every { Log.e(any(), any()) } returns 0
+    every { Log.e(any(), any(), any()) } returns 0 // For the exception logging
   }
 
   @After
@@ -202,5 +203,86 @@ class NominatimLocationRepositoryTest {
     job.cancel()
 
     verify { mockCall.cancel() }
+  }
+
+  @Test
+  fun `search returns empty list on malformed JSON`() = runTest {
+    val badJson = "<html><body>Error 500</body></html>"
+
+    every { mockResponse.isSuccessful } returns true
+    every { mockResponse.body } returns mockResponseBody
+    every { mockResponseBody.string() } returns badJson
+    every { mockResponse.close() } returns Unit
+
+    val slot = slot<Callback>()
+    every { mockCall.enqueue(capture(slot)) } answers
+        {
+          slot.captured.onResponse(mockCall, mockResponse)
+        }
+
+    val result = repository.search("Bad JSON")
+
+    assertTrue(result.isEmpty())
+    verify { Log.e("NominatimLocationRepository", "Error parsing JSON", any()) }
+  }
+
+  @Test
+  fun `search returns empty list when JSON is not an array`() = runTest {
+    val errorJson = """ { "error": "Rate limit exceeded" } """
+
+    every { mockResponse.isSuccessful } returns true
+    every { mockResponse.body } returns mockResponseBody
+    every { mockResponseBody.string() } returns errorJson
+    every { mockResponse.close() } returns Unit
+
+    val slot = slot<Callback>()
+    every { mockCall.enqueue(capture(slot)) } answers
+        {
+          slot.captured.onResponse(mockCall, mockResponse)
+        }
+
+    val result = repository.search("Error Object")
+
+    assertTrue(result.isEmpty())
+    verify { Log.e("NominatimLocationRepository", "Error parsing JSON", any()) }
+  }
+
+  @Test
+  fun `search skips items with missing fields`() = runTest {
+    val jsonResponse =
+        """
+            [
+                {
+                    "name": "Valid Place",
+                    "lat": "10.0",
+                    "lon": "10.0"
+                },
+                {
+                    "lat": "20.0",
+                    "lon": "20.0"
+                },
+                {
+                    "name": "Missing Lat",
+                    "lon": "30.0"
+                }
+            ]
+        """
+            .trimIndent()
+
+    every { mockResponse.isSuccessful } returns true
+    every { mockResponse.body } returns mockResponseBody
+    every { mockResponseBody.string() } returns jsonResponse
+    every { mockResponse.close() } returns Unit
+
+    val slot = slot<Callback>()
+    every { mockCall.enqueue(capture(slot)) } answers
+        {
+          slot.captured.onResponse(mockCall, mockResponse)
+        }
+
+    val result = repository.search("Partial")
+
+    assertEquals(1, result.size)
+    assertEquals("Valid Place", result[0].name)
   }
 }
