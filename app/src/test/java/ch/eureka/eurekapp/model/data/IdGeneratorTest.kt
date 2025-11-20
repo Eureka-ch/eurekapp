@@ -1,3 +1,4 @@
+// Portions of this code were generated with the help of Claude Sonnet 4.5 in Claude Code
 package ch.eureka.eurekapp.model.data
 
 import junit.framework.TestCase
@@ -99,5 +100,48 @@ class IdGeneratorTest {
     val messageId1 = IdGenerator.generateMessageId()
     val messageId2 = IdGenerator.generateMessageId()
     TestCase.assertFalse(messageId1 == messageId2)
+  }
+
+  @Test
+  fun generateFieldId_shouldSanitizeLabel() {
+    val fieldId = IdGenerator.generateFieldId("My Field Label!")
+    TestCase.assertTrue(fieldId.startsWith("my_field_label_"))
+  }
+
+  @Test
+  fun generateFieldId_shouldBeUnique() {
+    val fieldId1 = IdGenerator.generateFieldId("Test Field")
+    val fieldId2 = IdGenerator.generateFieldId("Test Field")
+    TestCase.assertFalse(fieldId1 == fieldId2)
+  }
+
+  @Test
+  fun generateFieldId_shouldHandleEmptyLabel() {
+    val fieldId = IdGenerator.generateFieldId("")
+    TestCase.assertTrue(fieldId.startsWith("field_"))
+    TestCase.assertTrue(fieldId.length > 6)
+  }
+
+  @Test
+  fun generateFieldId_shouldHandleSpecialCharacters() {
+    val fieldId = IdGenerator.generateFieldId("@#$%^&*()")
+    TestCase.assertTrue(fieldId.startsWith("field_"))
+  }
+
+  @Test
+  fun generateFieldId_shouldTruncateLongLabels() {
+    val longLabel = "a".repeat(50)
+    val fieldId = IdGenerator.generateFieldId(longLabel)
+    val sanitizedPart = fieldId.substringBefore("_")
+    TestCase.assertTrue(sanitizedPart.length <= 20)
+  }
+
+  @Test
+  fun generateFieldId_shouldAppendUuidSuffix() {
+    val fieldId = IdGenerator.generateFieldId("test")
+    val parts = fieldId.split("_")
+    TestCase.assertEquals(2, parts.size)
+    TestCase.assertEquals("test", parts[0])
+    TestCase.assertEquals(8, parts[1].length)
   }
 }
