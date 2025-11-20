@@ -69,11 +69,7 @@ class NominatimLocationRepository(val client: OkHttpClient) : LocationRepository
           }
         })
 
-    continuation.invokeOnCancellation {
-      try {
-        cancel()
-      } catch (_: Throwable) {}
-    }
+    continuation.invokeOnCancellation { cancel() }
   }
 
   private fun parseJsonResponse(jsonStr: String): List<Location> {

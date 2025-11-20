@@ -317,8 +317,8 @@ fun NavigationMenu() {
 
                 val viewModel = viewModel<CreateMeetingViewModel>()
 
-                val selectedLocation =
-                    backStackEntry.savedStateHandle.get<Location>("selected_location")
+                val selectedLocation: Location? =
+                    backStackEntry.savedStateHandle["selected_location"]
 
                 if (selectedLocation != null) {
                   viewModel.setLocation(selectedLocation)
