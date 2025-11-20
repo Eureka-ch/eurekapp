@@ -224,6 +224,9 @@ dependencies {
     // Networking
     implementation(libs.okhttp)
 
+    // Reorderable (Drag & Drop)
+    implementation(libs.reorderable)
+
     // Google Maps
     implementation(libs.maps.compose)
     implementation(libs.play.services.location)
