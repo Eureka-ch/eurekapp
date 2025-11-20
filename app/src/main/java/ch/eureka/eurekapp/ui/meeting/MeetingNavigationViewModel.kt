@@ -142,7 +142,8 @@ class MeetingNavigationViewModel(
       } catch (e: Exception) {
         _uiState.value =
             _uiState.value.copy(
-                routeErrorMsg = "Unable to get your location. Please ensure location services are enabled.")
+                routeErrorMsg =
+                    "Unable to get your location. Please ensure location services are enabled.")
       }
     }
   }
