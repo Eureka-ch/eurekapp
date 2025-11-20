@@ -37,6 +37,7 @@ object TextFieldComponentTestTags {
  * @param mode The interaction mode (EditOnly, ViewOnly, or Toggleable)
  * @param callbacks Callbacks for field interaction events
  * @param showValidationErrors Whether to display validation errors
+ * @param showHeader Whether to show the header (label, description, action buttons)
  */
 @Composable
 fun TextFieldComponent(
@@ -46,7 +47,8 @@ fun TextFieldComponent(
     onValueChange: (FieldValue.TextValue) -> Unit,
     mode: FieldInteractionMode,
     callbacks: FieldCallbacks = FieldCallbacks(),
-    showValidationErrors: Boolean = false
+    showValidationErrors: Boolean = false,
+    showHeader: Boolean = true
 ) {
   val fieldType = fieldDefinition.type as FieldType.Text
 
@@ -58,7 +60,8 @@ fun TextFieldComponent(
       onValueChange = onValueChange,
       mode = mode,
       callbacks = callbacks,
-      showValidationErrors = showValidationErrors) { currentValue, onChange, isEditing ->
+      showValidationErrors = showValidationErrors,
+      showHeader = showHeader) { currentValue, onChange, isEditing ->
         if (isEditing) {
           OutlinedTextField(
               value = currentValue?.value ?: "",

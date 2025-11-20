@@ -68,6 +68,7 @@ private sealed interface SelectState {
  * @param onValueChange Callback when the value changes
  * @param mode The interaction mode (EditOnly, ViewOnly, or Toggleable)
  * @param showValidationErrors Whether to display validation errors
+ * @param showHeader Whether to show the header (label, description, action buttons)
  * @param modifier The modifier to apply to the component
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,6 +81,7 @@ fun SingleSelectFieldComponent(
     mode: FieldInteractionMode,
     showValidationErrors: Boolean = false,
     callbacks: FieldCallbacks = FieldCallbacks(),
+    showHeader: Boolean = true
 ) {
   val fieldType = fieldDefinition.type as FieldType.SingleSelect
 
@@ -92,24 +94,24 @@ fun SingleSelectFieldComponent(
       mode = mode,
       callbacks = callbacks,
       showValidationErrors = showValidationErrors,
-  ) { currentValue, onChange, isEditing ->
-    if (isEditing) {
-      var expanded by remember { mutableStateOf(false) }
-      var selectState by
-          remember(currentValue) { mutableStateOf(toSelectState(currentValue, fieldType)) }
+      showHeader = showHeader) { currentValue, onChange, isEditing ->
+        if (isEditing) {
+          var expanded by remember { mutableStateOf(false) }
+          var selectState by
+              remember(currentValue) { mutableStateOf(toSelectState(currentValue, fieldType)) }
 
-      SingleSelectEditMode(
-          fieldDefinition = fieldDefinition,
-          fieldType = fieldType,
-          selectState = selectState,
-          expanded = expanded,
-          onExpandedChange = { expanded = it },
-          onSelectStateChange = { selectState = it },
-          onChange = onChange)
-    } else {
-      SingleSelectViewMode(fieldDefinition, fieldType, currentValue)
-    }
-  }
+          SingleSelectEditMode(
+              fieldDefinition = fieldDefinition,
+              fieldType = fieldType,
+              selectState = selectState,
+              expanded = expanded,
+              onExpandedChange = { expanded = it },
+              onSelectStateChange = { selectState = it },
+              onChange = onChange)
+        } else {
+          SingleSelectViewMode(fieldDefinition, fieldType, currentValue)
+        }
+      }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -150,7 +150,7 @@ object FirestoreConverters {
 
     when (fieldValue) {
       is FieldValue.TextValue -> put("value", fieldValue.value)
-      is FieldValue.NumberValue -> put("value", fieldValue.value)
+      is FieldValue.NumberValue -> fieldValue.value?.let { put("value", it) }
       is FieldValue.DateValue -> put("value", fieldValue.value)
       is FieldValue.SingleSelectValue -> put("value", fieldValue.value)
       is FieldValue.MultiSelectValue -> put("values", fieldValue.values)
@@ -162,7 +162,7 @@ object FirestoreConverters {
 
     return when (typeKey) {
       FieldTypeKey.TEXT -> FieldValue.TextValue(map["value"] as String)
-      FieldTypeKey.NUMBER -> FieldValue.NumberValue(map["value"] as Double)
+      FieldTypeKey.NUMBER -> FieldValue.NumberValue(map["value"] as? Double)
       FieldTypeKey.DATE -> FieldValue.DateValue(map["value"] as String)
       FieldTypeKey.SINGLE_SELECT -> FieldValue.SingleSelectValue(map["value"] as String)
       FieldTypeKey.MULTI_SELECT -> {

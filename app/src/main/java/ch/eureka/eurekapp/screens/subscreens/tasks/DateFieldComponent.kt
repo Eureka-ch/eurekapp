@@ -48,6 +48,7 @@ object DateFieldTestTags {
  * @param onValueChange Callback when the value changes
  * @param mode The interaction mode (EditOnly, ViewOnly, or Toggleable)
  * @param showValidationErrors Whether to display validation errors
+ * @param showHeader Whether to show the header (label, description, action buttons)
  * @param modifier The modifier to apply to the component
  * @param callbacks the callbacks to be used by the parent
  */
@@ -61,6 +62,7 @@ fun DateFieldComponent(
     mode: FieldInteractionMode,
     callbacks: FieldCallbacks = FieldCallbacks(),
     showValidationErrors: Boolean = false,
+    showHeader: Boolean = true
 ) {
   val fieldType = fieldDefinition.type as FieldType.Date
 
@@ -72,6 +74,7 @@ fun DateFieldComponent(
       mode = mode,
       callbacks = callbacks,
       showValidationErrors = showValidationErrors,
+      showHeader = showHeader,
       modifier = modifier) { currentValue, onChange, isEditing ->
         if (isEditing) {
           var showDatePicker by remember { mutableStateOf(false) }
