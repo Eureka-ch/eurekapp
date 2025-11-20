@@ -5,6 +5,7 @@ import ch.eureka.eurekapp.model.data.user.UserRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
+// portions of this code and documentation were generated with the help of AI.
 /**
  * Configurable mock implementation of UserRepository for testing
  *
@@ -25,6 +26,11 @@ class MockUserRepository : UserRepository {
 
   /** Configure a specific flow to return for a user ID */
   fun setUserFlow(userId: String, flow: Flow<User?>) {
+    userFlows[userId] = flow
+  }
+
+  /** Configure a user to return for a user ID (simplified) */
+  fun setUser(userId: String, flow: Flow<User?>) {
     userFlows[userId] = flow
   }
 

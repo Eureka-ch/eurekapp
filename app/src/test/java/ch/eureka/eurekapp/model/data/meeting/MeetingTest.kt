@@ -1,6 +1,6 @@
 package ch.eureka.eurekapp.model.data.meeting
 
-import ch.eureka.eurekapp.model.data.map.Location
+import ch.eureka.eurekapp.model.map.Location
 import com.google.firebase.Timestamp
 import java.util.Date
 import org.junit.Assert.assertEquals

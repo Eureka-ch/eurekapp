@@ -1,3 +1,4 @@
+/* Portions of the code in this file were written with the help of Gemini and chatGPT (GPT-5). */
 package ch.eureka.eurekapp.navigation
 
 import androidx.compose.foundation.layout.padding
@@ -5,6 +6,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -12,21 +14,26 @@ import androidx.navigation.toRoute
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
+import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.IdeasScreen
 import ch.eureka.eurekapp.screens.OverviewProjectScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
+import ch.eureka.eurekapp.screens.SelfNotesScreen
 import ch.eureka.eurekapp.screens.TasksScreen
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScreen
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingTranscriptViewScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.creation.CreateProjectScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitationSubscreen
+import ch.eureka.eurekapp.screens.subscreens.tasks.AutoAssignResultScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
 import ch.eureka.eurekapp.ui.authentication.TokenEntryScreen
+import ch.eureka.eurekapp.ui.map.MeetingLocationSelectionScreen
 import ch.eureka.eurekapp.ui.meeting.CreateDateTimeFormatProposalForMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
+import ch.eureka.eurekapp.ui.meeting.CreateMeetingViewModel
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailActionsConfig
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingNavigationScreen
@@ -39,7 +46,11 @@ import com.google.firebase.auth.auth
 import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
 
-/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
+/*
+Note :This file was partially written by ChatGPT (GPT-5) and Codex
+Co-author : GPT-5
+*/
+
 sealed interface Route {
   // Main screens
   @Serializable data object ProjectSelection : Route
@@ -47,6 +58,8 @@ sealed interface Route {
   @Serializable data class OverviewProject(val projectId: String) : Route
 
   @Serializable data object Profile : Route
+
+  @Serializable data object SelfNotes : Route
 
   sealed interface TasksSection : Route {
     companion object {
@@ -110,6 +123,8 @@ sealed interface Route {
 
     @Serializable
     data class MeetingNavigation(val projectId: String, val meetingId: String) : MeetingsSection
+
+    @Serializable data object MeetingLocationSelection : MeetingsSection
   }
 
   sealed interface ProjectSelectionSection : Route {
@@ -182,6 +197,7 @@ fun NavigationMenu() {
                     onTokenValidated = { navigationController.navigate(Route.ProjectSelection) })
               }
               composable<Route.Profile> { ProfileScreen() }
+              composable<Route.SelfNotes> { SelfNotesScreen() }
               composable<Route.OverviewProject> { backStackEntry ->
                 val overviewProjectScreenRoute = backStackEntry.toRoute<Route.OverviewProject>()
                 OverviewProjectScreen(projectId = overviewProjectScreenRoute.projectId)
@@ -193,12 +209,18 @@ fun NavigationMenu() {
                     onCreateTaskClick = {
                       navigationController.navigate(Route.TasksSection.CreateTask)
                     },
+                    onAutoAssignClick = {
+                      navigationController.navigate(Route.TasksSection.AutoTaskAssignment)
+                    },
                     onTaskClick = { taskId, projectId ->
                       navigationController.navigate(
                           Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
                     })
               }
               composable<Route.TasksSection.CreateTask> { CreateTaskScreen(navigationController) }
+              composable<Route.TasksSection.AutoTaskAssignment> {
+                AutoAssignResultScreen(navigationController)
+              }
 
               composable<Route.TasksSection.EditTask> { backStackEntry ->
                 val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.EditTask>()
@@ -217,37 +239,38 @@ fun NavigationMenu() {
               // Meetings section
               composable<Route.MeetingsSection.Meetings> {
                 MeetingScreen(
-                    MeetingScreenConfig(
-                        projectId = testProjectId,
-                        onCreateMeeting = {
-                          navigationController.navigate(
-                              Route.MeetingsSection.CreateMeeting(testProjectId))
-                        },
-                        onMeetingClick = { projectId, meetingId ->
-                          navigationController.navigate(
-                              Route.MeetingsSection.MeetingDetail(
-                                  projectId = projectId, meetingId = meetingId))
-                        },
-                        onVoteForMeetingProposalClick = { projectId, meetingId ->
-                          navigationController.navigate(
-                              Route.MeetingsSection.MeetingProposalVotes(
-                                  projectId = projectId, meetingId = meetingId))
-                        },
-                        onNavigateToMeeting = { projectId, meetingId ->
-                          navigationController.navigate(
-                              Route.MeetingsSection.MeetingNavigation(
-                                  projectId = projectId, meetingId = meetingId))
-                        },
-                        onViewTranscript = { projectId, meetingId ->
-                          navigationController.navigate(
-                              Route.MeetingsSection.AudioTranscript(
-                                  projectId = projectId, meetingId = meetingId))
-                        },
-                        onRecord = { projectId, meetingId ->
-                          navigationController.navigate(
-                              Route.MeetingsSection.AudioRecording(
-                                  projectId = projectId, meetingId = meetingId))
-                        }))
+                    config =
+                        MeetingScreenConfig(
+                            projectId = testProjectId,
+                            onCreateMeeting = {
+                              navigationController.navigate(
+                                  Route.MeetingsSection.CreateMeeting(testProjectId))
+                            },
+                            onMeetingClick = { projectId, meetingId ->
+                              navigationController.navigate(
+                                  Route.MeetingsSection.MeetingDetail(
+                                      projectId = projectId, meetingId = meetingId))
+                            },
+                            onVoteForMeetingProposalClick = { projectId, meetingId ->
+                              navigationController.navigate(
+                                  Route.MeetingsSection.MeetingProposalVotes(
+                                      projectId = projectId, meetingId = meetingId))
+                            },
+                            onNavigateToMeeting = { projectId, meetingId ->
+                              navigationController.navigate(
+                                  Route.MeetingsSection.MeetingNavigation(
+                                      projectId = projectId, meetingId = meetingId))
+                            },
+                            onViewTranscript = { projectId, meetingId ->
+                              navigationController.navigate(
+                                  Route.MeetingsSection.AudioTranscript(
+                                      projectId = projectId, meetingId = meetingId))
+                            },
+                            onRecord = { projectId, meetingId ->
+                              navigationController.navigate(
+                                  Route.MeetingsSection.AudioRecording(
+                                      projectId = projectId, meetingId = meetingId))
+                            }))
               }
 
               composable<Route.MeetingsSection.MeetingDetail> { backStackEntry ->
@@ -288,12 +311,41 @@ fun NavigationMenu() {
                 CreateProjectScreen(
                     onProjectCreated = { navigationController.navigate(Route.ProjectSelection) })
               }
+
               composable<Route.MeetingsSection.CreateMeeting> { backStackEntry ->
-                val createMeetingCreationRoute =
+                val createMeetingRoute =
                     backStackEntry.toRoute<Route.MeetingsSection.CreateMeeting>()
+
+                val viewModel = viewModel<CreateMeetingViewModel>()
+
+                val selectedLocation: Location? =
+                    backStackEntry.savedStateHandle["selected_location"]
+
+                if (selectedLocation != null) {
+                  viewModel.setLocation(selectedLocation)
+                  viewModel.setLocationQuery(selectedLocation.name)
+                  backStackEntry.savedStateHandle.remove<Location>("selected_location")
+                }
+
                 CreateMeetingScreen(
-                    createMeetingCreationRoute.projectId,
-                    { navigationController.navigate(Route.MeetingsSection.Meetings) })
+                    projectId = createMeetingRoute.projectId,
+                    onDone = { navigationController.navigate(Route.MeetingsSection.Meetings) },
+                    createMeetingViewModel = viewModel,
+                    onPickLocationOnMap = {
+                      navigationController.navigate(Route.MeetingsSection.MeetingLocationSelection)
+                    })
+              }
+
+              composable<Route.MeetingsSection.MeetingLocationSelection> {
+                MeetingLocationSelectionScreen(
+                    onLocationSelected = { location ->
+                      navigationController.previousBackStackEntry
+                          ?.savedStateHandle
+                          ?.set("selected_location", location)
+
+                      navigationController.popBackStack()
+                    },
+                    onBack = { navigationController.popBackStack() })
               }
 
               composable<Route.MeetingsSection.MeetingProposalVotes> { backStackEntry ->

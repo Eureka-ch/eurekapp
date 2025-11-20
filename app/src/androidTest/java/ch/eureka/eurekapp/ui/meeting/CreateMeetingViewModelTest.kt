@@ -1,9 +1,14 @@
 /* Portions of this file were written with the help of Gemini.*/
 package ch.eureka.eurekapp.ui.meeting
 
+import android.util.Log
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
+import ch.eureka.eurekapp.model.map.Location
+import ch.eureka.eurekapp.model.map.LocationRepository
+import io.mockk.every
+import io.mockk.mockkStatic
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -35,6 +40,7 @@ class CreateMeetingViewModelTest {
   private val testDispatcher = StandardTestDispatcher()
   private lateinit var viewModel: CreateMeetingViewModel
   private lateinit var repositoryMock: MockCreateMeetingRepository
+  private lateinit var locationRepositoryMock: MockLocationRepository
 
   private var currentUserId: String? = "test-user-id"
 
@@ -45,8 +51,18 @@ class CreateMeetingViewModelTest {
   fun setup() {
     Dispatchers.setMain(testDispatcher)
     repositoryMock = MockCreateMeetingRepository()
+    locationRepositoryMock = MockLocationRepository()
+
+    mockkStatic(Log::class)
+    every { Log.e(any(), any(), any()) } returns 0
+
     viewModel =
-        CreateMeetingViewModel(repository = repositoryMock, getCurrentUserId = { currentUserId })
+        CreateMeetingViewModel(
+            repository = repositoryMock,
+            locationRepository = locationRepositoryMock,
+            getCurrentUserId = { currentUserId })
+
+    testDispatcher.scheduler.advanceUntilIdle()
   }
 
   @After
@@ -62,6 +78,9 @@ class CreateMeetingViewModelTest {
             duration = 10,
             date = futureDateTime.toLocalDate(),
             time = futureDateTime.toLocalTime())
+
+    state = state.copy(format = MeetingFormat.VIRTUAL)
+
     assertTrue(state.isValid)
 
     state = state.copy(title = "")
@@ -96,13 +115,16 @@ class CreateMeetingViewModelTest {
     assertEquals(LocalDate.now(), uiState.date)
     assertNotNull(uiState.time)
     assertEquals(0, uiState.duration)
-    assertEquals(MeetingFormat.IN_PERSON, uiState.format) // <-- Verifies default format
+    assertEquals(MeetingFormat.IN_PERSON, uiState.format)
     assertFalse(uiState.meetingSaved)
     assertFalse(uiState.hasTouchedTitle)
     assertFalse(uiState.hasTouchedDate)
     assertFalse(uiState.hasTouchedTime)
     assertNull(uiState.errorMsg)
     assertFalse(uiState.isValid)
+    assertEquals("", uiState.locationQuery)
+    assertTrue(uiState.locationSuggestions.isEmpty())
+    assertNull(uiState.selectedLocation)
   }
 
   @Test
@@ -214,6 +236,7 @@ class CreateMeetingViewModelTest {
     viewModel.setDuration(30)
     viewModel.setDate(futureDateTime.toLocalDate())
     viewModel.setTime(futureDateTime.toLocalTime())
+    viewModel.setFormat(MeetingFormat.VIRTUAL)
     assertTrue(viewModel.uiState.value.isValid)
 
     currentUserId = null
@@ -234,6 +257,7 @@ class CreateMeetingViewModelTest {
     val projectId = "project-success"
     val userId = "test-user-id"
     val meetingFormat = MeetingFormat.IN_PERSON
+    val location = Location(1.0, 1.0, "Loc")
 
     val expectedInstant = LocalDateTime.of(date, time).atZone(ZoneId.systemDefault()).toInstant()
 
@@ -241,7 +265,9 @@ class CreateMeetingViewModelTest {
     viewModel.setDate(date)
     viewModel.setTime(time)
     viewModel.setDuration(duration)
-    viewModel.setFormat(meetingFormat) // <-- Set non-default format
+    viewModel.setFormat(meetingFormat)
+    viewModel.setLocation(location)
+
     assertTrue(viewModel.uiState.value.isValid)
 
     assertEquals(userId, currentUserId)
@@ -267,6 +293,7 @@ class CreateMeetingViewModelTest {
     assertEquals(userId, createdMeeting.createdBy)
     assertNotNull(createdMeeting.meetingID)
     assertFalse(createdMeeting.meetingID.isBlank())
+    assertEquals(location, createdMeeting.location)
 
     assertEquals(1, createdMeeting.meetingProposals.size)
     val proposal = createdMeeting.meetingProposals[0]
@@ -286,6 +313,8 @@ class CreateMeetingViewModelTest {
     viewModel.setDuration(15)
     viewModel.setDate(futureDateTime.toLocalDate())
     viewModel.setTime(futureDateTime.toLocalTime())
+    viewModel.setFormat(MeetingFormat.VIRTUAL)
+
     assertTrue(viewModel.uiState.value.isValid)
 
     assertEquals("test-user-id", currentUserId)
@@ -315,5 +344,125 @@ class CreateMeetingViewModelTest {
     assertEquals("Copied", copiedState.title)
     assertEquals(10, copiedState.duration)
     assertTrue(copiedState.hasTouchedDate)
+  }
+
+  @Test
+  fun setLocationUpdatesSelectedLocation() {
+    val location = Location(46.5197, 6.6323, "Lausanne")
+    viewModel.setLocation(location)
+    assertEquals(location, viewModel.uiState.value.selectedLocation)
+  }
+
+  @Test
+  fun uiStateIsValidWithInPersonFormatRequiresLocation() {
+    viewModel.setTitle("Meeting")
+    viewModel.setDuration(30)
+    viewModel.setDate(futureDateTime.toLocalDate())
+    viewModel.setTime(futureDateTime.toLocalTime())
+    viewModel.setFormat(MeetingFormat.IN_PERSON)
+
+    assertNull(viewModel.uiState.value.selectedLocation)
+    assertFalse(
+        "In-Person meeting should be invalid without a location", viewModel.uiState.value.isValid)
+
+    viewModel.setLocation(Location(0.0, 0.0, "Test"))
+    assertTrue("In-Person meeting should be valid with a location", viewModel.uiState.value.isValid)
+  }
+
+  @Test
+  fun uiStateIsValidWithVirtualFormatDoesNotRequireLocation() {
+    viewModel.setTitle("Meeting")
+    viewModel.setDuration(30)
+    viewModel.setDate(futureDateTime.toLocalDate())
+    viewModel.setTime(futureDateTime.toLocalTime())
+    viewModel.setFormat(MeetingFormat.VIRTUAL)
+
+    viewModel.setLocationQuery("")
+
+    assertTrue(
+        "Virtual meeting should be valid without a location", viewModel.uiState.value.isValid)
+  }
+
+  @Test
+  fun setLocationQueryUpdatesQueryAndFetchesSuggestions() = runTest {
+    val query = "Geneva"
+    val expectedSuggestions = listOf(Location(46.2, 6.1, "Geneva"))
+    locationRepositoryMock.searchResults = expectedSuggestions
+
+    viewModel.setLocationQuery(query)
+
+    assertEquals(query, viewModel.uiState.value.locationQuery)
+
+    testDispatcher.scheduler.advanceTimeBy(400L)
+    testDispatcher.scheduler.runCurrent()
+
+    assertEquals(expectedSuggestions, viewModel.uiState.value.locationSuggestions)
+  }
+
+  @Test
+  fun setLocationQueryWithEmptyStringClearsSuggestions() = runTest {
+    locationRepositoryMock.searchResults = listOf(Location(0.0, 0.0, "Old"))
+
+    viewModel.setLocationQuery("Old")
+    testDispatcher.scheduler.advanceTimeBy(400L)
+    testDispatcher.scheduler.runCurrent()
+
+    assertFalse(viewModel.uiState.value.locationSuggestions.isEmpty())
+
+    viewModel.setLocationQuery("")
+
+    testDispatcher.scheduler.runCurrent()
+
+    assertEquals("", viewModel.uiState.value.locationQuery)
+    assertTrue(
+        "Suggestions should be empty when query is empty",
+        viewModel.uiState.value.locationSuggestions.isEmpty())
+  }
+
+  @Test
+  fun setLocationQueryHandlesRepositoryException() = runTest {
+    locationRepositoryMock.shouldThrow = true
+
+    viewModel.setLocationQuery("Error City")
+
+    testDispatcher.scheduler.advanceTimeBy(400L)
+    testDispatcher.scheduler.runCurrent()
+
+    assertTrue(viewModel.uiState.value.locationSuggestions.isEmpty())
+  }
+
+  @Test
+  fun createMeetingPassesLocationToRepository() = runTest {
+    val location = Location(40.7, -74.0, "New York")
+
+    viewModel.setTitle("Location Meeting")
+    viewModel.setDuration(60)
+    viewModel.setDate(futureDateTime.toLocalDate())
+    viewModel.setTime(futureDateTime.toLocalTime())
+    viewModel.setFormat(MeetingFormat.IN_PERSON)
+    viewModel.setLocation(location)
+    repositoryMock.shouldSucceed = true
+
+    viewModel.createMeeting("proj-loc")
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertTrue(viewModel.uiState.value.meetingSaved)
+
+    val createdMeeting = repositoryMock.lastMeetingCreated
+    assertNotNull(createdMeeting)
+    assertEquals(location, createdMeeting?.location)
+  }
+}
+
+/** Mock implementation of LocationRepository for testing. */
+class MockLocationRepository : LocationRepository {
+  var searchResults: List<Location> = emptyList()
+  var shouldThrow: Boolean = false
+
+  override suspend fun search(query: String): List<Location> {
+    if (shouldThrow) {
+      throw Exception("Mock location error")
+    }
+    return searchResults
   }
 }

@@ -46,6 +46,10 @@ import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+/*
+Co-author: GPT-5 Codex
+*/
+
 /** Test tags for the Profile screen UI elements. */
 object ProfileScreenTestTags {
   const val PROFILE_SCREEN = "ProfileScreen"
@@ -191,21 +195,23 @@ fun ProfileScreen(
                     }
               }
 
-          Button(
-              onClick = { firebaseAuth.signOut() },
-              modifier =
-                  Modifier.align(Alignment.BottomCenter)
-                      .fillMaxWidth()
-                      .padding(16.dp)
-                      .testTag(ProfileScreenTestTags.SIGN_OUT_BUTTON),
-              colors =
-                  ButtonDefaults.buttonColors(
-                      containerColor = MaterialTheme.colorScheme.error,
-                      contentColor = MaterialTheme.colorScheme.onError)) {
-                Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null)
-                Spacer(modifier = Modifier.size(8.dp))
-                Text("Sign Out")
-              }
+          if (!uiState.isEditing) {
+            Button(
+                onClick = { firebaseAuth.signOut() },
+                modifier =
+                    Modifier.align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .testTag(ProfileScreenTestTags.SIGN_OUT_BUTTON),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError)) {
+                  Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null)
+                  Spacer(modifier = Modifier.size(8.dp))
+                  Text("Sign Out")
+                }
+          }
         }
   }
 }

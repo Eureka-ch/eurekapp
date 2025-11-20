@@ -6,8 +6,10 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.screens.IdeasScreenTestTags
+import ch.eureka.eurekapp.screens.SelfNotesScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.ui.profile.ProfileScreenTestTags
@@ -21,7 +23,15 @@ import org.junit.Test
 
 // Portions of this code were generated with the help of Grok.
 
+/*
+Co-author: GPT-5 Codex
+*/
+
 class NavigationMenuTest : TestCase() {
+  @get:Rule
+  val permissionRule: GrantPermissionRule =
+      GrantPermissionRule.grant(
+          android.Manifest.permission.READ_CALENDAR, android.Manifest.permission.WRITE_CALENDAR)
   @get:Rule val composeTestRule = createComposeRule()
 
   @Before
@@ -68,6 +78,9 @@ class NavigationMenuTest : TestCase() {
     composeTestRule
         .onNodeWithTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON)
         .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(BottomBarNavigationTestTags.NOTES_SCREEN_BUTTON)
+        .assertIsDisplayed()
   }
 
   @Test
@@ -85,5 +98,8 @@ class NavigationMenuTest : TestCase() {
 
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON).performClick()
     composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_SCREEN).assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.NOTES_SCREEN_BUTTON).performClick()
+    composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.SCREEN).assertIsDisplayed()
   }
 }

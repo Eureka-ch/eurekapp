@@ -4,8 +4,11 @@ package ch.eureka.eurekapp.ui.meeting
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -13,6 +16,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
+import ch.eureka.eurekapp.model.map.Location
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
@@ -38,6 +42,7 @@ class CreateMeetingScreenTest {
 
   private lateinit var viewModel: CreateMeetingViewModel
   private lateinit var repositoryMock: MockCreateMeetingRepository
+  private lateinit var locationRepositoryMock: MockLocationRepository
 
   private var onDoneCalled = false
   private val testProjectId = "project-123"
@@ -52,8 +57,13 @@ class CreateMeetingScreenTest {
     onDoneCalled = false
 
     repositoryMock = MockCreateMeetingRepository()
+    locationRepositoryMock = MockLocationRepository()
+
     viewModel =
-        CreateMeetingViewModel(repository = repositoryMock, getCurrentUserId = { "test-user-id" })
+        CreateMeetingViewModel(
+            repository = repositoryMock,
+            locationRepository = locationRepositoryMock,
+            getCurrentUserId = { "test-user-id" })
 
     composeTestRule.setContent {
       CreateMeetingScreen(
@@ -141,6 +151,7 @@ class CreateMeetingScreenTest {
     composeTestRule.runOnIdle {
       viewModel.setDuration(15)
       viewModel.setDate(futureDate)
+      viewModel.setFormat(MeetingFormat.VIRTUAL)
     }
 
     composeTestRule
@@ -203,6 +214,7 @@ class CreateMeetingScreenTest {
       viewModel.setDuration(30)
       viewModel.setDate(futureDate)
       viewModel.setTime(LocalTime.of(10, 0))
+      viewModel.setFormat(MeetingFormat.VIRTUAL)
     }
 
     composeTestRule
@@ -346,7 +358,10 @@ class CreateMeetingScreenTest {
         .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
         .assertIsNotEnabled()
 
-    composeTestRule.runOnIdle { viewModel.setDate(futureDate) }
+    composeTestRule.runOnIdle {
+      viewModel.setDate(futureDate)
+      viewModel.setFormat(MeetingFormat.VIRTUAL)
+    }
 
     composeTestRule
         .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
@@ -402,5 +417,101 @@ class CreateMeetingScreenTest {
     composeTestRule.runOnIdle { viewModel.setDate(futureDate) }
 
     composeTestRule.onNodeWithText(errorText).assertDoesNotExist()
+  }
+
+  @Test
+  fun locationInput_isDisplayed_onlyWhenFormatIsInPerson() {
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LOCATION)
+        .assertIsDisplayed()
+
+    composeTestRule.runOnIdle { viewModel.setFormat(MeetingFormat.VIRTUAL) }
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LOCATION)
+        .assertDoesNotExist()
+
+    composeTestRule.runOnIdle { viewModel.setFormat(MeetingFormat.IN_PERSON) }
+    composeTestRule.waitForIdle()
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LOCATION)
+        .assertIsDisplayed()
+  }
+
+  @Test
+  fun locationInput_showsSuggestions_andUpdatesOnSelect() {
+    val expectedLocation = Location(46.5, 6.6, "EPFL Lausanne")
+    locationRepositoryMock.searchResults = listOf(expectedLocation)
+
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LOCATION)
+        .performTextInput("EPFL")
+
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodesWithTag(CreateMeetingScreenTestTags.LOCATION_SUGGESTION)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+
+    composeTestRule
+        .onAllNodesWithTag(CreateMeetingScreenTestTags.LOCATION_SUGGESTION)
+        .onFirst()
+        .assertIsDisplayed()
+        .assertTextEquals("EPFL Lausanne")
+
+    composeTestRule
+        .onAllNodesWithTag(CreateMeetingScreenTestTags.LOCATION_SUGGESTION)
+        .onFirst()
+        .performClick()
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LOCATION)
+        .assertTextContains("EPFL Lausanne")
+
+    assertEquals(expectedLocation, viewModel.uiState.value.selectedLocation)
+  }
+
+  @Test
+  fun locationInput_showsMoreOption_whenManySuggestions() {
+    locationRepositoryMock.searchResults =
+        listOf(
+            Location(0.0, 0.0, "Loc1"),
+            Location(0.0, 0.0, "Loc2"),
+            Location(0.0, 0.0, "Loc3"),
+            Location(0.0, 0.0, "Loc4"))
+
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LOCATION)
+        .performTextInput("Loc")
+
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodesWithTag(CreateMeetingScreenTestTags.LOCATION_SUGGESTION)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+
+    composeTestRule.onNodeWithText("More...").assertIsDisplayed()
+
+    val suggestionCount =
+        composeTestRule
+            .onAllNodesWithTag(CreateMeetingScreenTestTags.LOCATION_SUGGESTION)
+            .fetchSemanticsNodes()
+            .size
+
+    assertEquals(3, suggestionCount)
+  }
+
+  @Test
+  fun locationInput_mapIcon_isClickable() {
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.PICK_LOCATION)
+        .assertIsDisplayed()
+        .assertIsEnabled()
+        .performClick()
   }
 }

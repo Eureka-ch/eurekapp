@@ -1,12 +1,12 @@
 /* Portions of this file were written with the help of Gemini.*/
 package ch.eureka.eurekapp.ui.meeting
 
-import ch.eureka.eurekapp.model.data.map.Location
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingProposal
 import ch.eureka.eurekapp.model.data.meeting.MeetingProposalVote
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
+import ch.eureka.eurekapp.model.map.Location
 import com.google.firebase.Timestamp
 import java.util.Calendar
 

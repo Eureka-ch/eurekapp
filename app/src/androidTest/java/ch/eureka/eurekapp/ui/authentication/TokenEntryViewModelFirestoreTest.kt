@@ -282,7 +282,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act: Input with whitespace
     viewModel.updateToken("  TRIM-TOKEN  ")
     viewModel.validateToken()
-    delay(500) // Allow Firestore operations to complete
+    delay(1500) // Allow Firestore operations to complete
 
     // Assert: Successfully found and validated (token is trimmed in updateToken)
     assertTrue(viewModel.uiState.value.validationSuccess)

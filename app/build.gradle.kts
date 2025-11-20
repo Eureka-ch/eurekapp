@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.gms)
     alias(libs.plugins.sonar)
     id("jacoco")
+    id("kotlin-parcelize")
 }
 
 android {
@@ -223,6 +224,8 @@ dependencies {
 
     // Networking
     implementation(libs.okhttp)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.serialization.converter)
 
     // Reorderable (Drag & Drop)
     implementation(libs.reorderable)
@@ -236,8 +239,11 @@ dependencies {
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.mockk)
+    testImplementation(libs.mockwebserver)
     testImplementation(libs.robolectric)
     testImplementation(kotlin("test"))
+    testImplementation(libs.json)
+    testImplementation(libs.kotlinx.coroutines.test)
 
     // Testing - Android
     globalTestImplementation(libs.androidx.junit)
@@ -283,17 +289,27 @@ tasks.register("jacocoTestReport", JacocoReport::class) {
         "android/**/*.*",
     )
 
-    val debugTree = fileTree("${project.layout.buildDirectory.get()}/tmp/kotlin-classes/debug") {
-        exclude(fileFilter)
-    }
+    // Use lazy providers for configuration cache compatibility
+    val buildDir = layout.buildDirectory
 
-    val mainSrc = "${project.layout.projectDirectory}/src/main/java"
-    sourceDirectories.setFrom(files(mainSrc))
-    classDirectories.setFrom(files(debugTree))
-    executionData.setFrom(fileTree(project.layout.buildDirectory.get()) {
-        include("outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
-        include("outputs/code_coverage/debugAndroidTest/connected/*/coverage.ec")
-    })
+    sourceDirectories.setFrom(files("${layout.projectDirectory}/src/main/java"))
+
+    classDirectories.setFrom(
+        buildDir.map { dir ->
+            fileTree(dir.dir("tmp/kotlin-classes/debug")) {
+                exclude(fileFilter)
+            }
+        }
+    )
+
+    executionData.setFrom(
+        buildDir.map { dir ->
+            fileTree(dir) {
+                include("outputs/unit_test_code_coverage/**/*.exec")
+                include("outputs/code_coverage/**/*.ec")
+            }
+        }
+    )
 
     doLast {
         val reportFile = reports.xml.outputLocation.asFile.get()
