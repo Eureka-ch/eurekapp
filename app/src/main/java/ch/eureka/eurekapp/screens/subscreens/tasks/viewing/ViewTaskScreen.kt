@@ -153,7 +153,9 @@ fun ViewTaskScreen(
 
               Button(
                   onClick = {
-                    navigationController.navigate(Route.TasksSection.EditTask(projectId, taskId))
+                    if (isConnected) {
+                      navigationController.navigate(Route.TasksSection.EditTask(projectId, taskId))
+                    }
                   },
                   enabled = isConnected,
                   modifier =

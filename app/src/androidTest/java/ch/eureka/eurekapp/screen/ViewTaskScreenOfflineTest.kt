@@ -1,6 +1,5 @@
 package ch.eureka.eurekapp.screen
 
-import android.content.Context
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -8,7 +7,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
-import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRole
@@ -22,11 +20,10 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Locale
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
@@ -297,15 +294,6 @@ class ViewTaskScreenOfflineTest {
 
       // Verify offline message appears
       composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.OFFLINE_MESSAGE).assertIsDisplayed()
-    }
-  }
-
-  class MockConnectivityObserver(context: Context) : ConnectivityObserver(context) {
-    private val _isConnected = MutableStateFlow(true)
-    override val isConnected: Flow<Boolean> = _isConnected
-
-    fun setConnected(connected: Boolean) {
-      _isConnected.value = connected
     }
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Note: This file was co-authored by Claude Code and Gemini
+ * Note: This file was co-authored by Claude Code, Gemini, and Grok
  */
 
 package ch.eureka.eurekapp.ui.meeting
@@ -11,16 +11,19 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.test.platform.app.InstrumentationRegistry
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import java.util.Date
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -44,6 +47,14 @@ class MeetingDetailScreenTest {
   private val participantsFlow = MutableStateFlow<List<Participant>>(emptyList())
   private var deleteResult = Result.success(Unit)
   private lateinit var viewModel: MeetingDetailViewModel
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
+
+  @Before
+  fun setUp() {
+    mockConnectivityObserver =
+        MockConnectivityObserver(InstrumentationRegistry.getInstrumentation().targetContext)
+    mockConnectivityObserver.setConnected(true)
+  }
 
   private val repositoryMock =
       object : MeetingRepositoryMock() {
@@ -65,11 +76,13 @@ class MeetingDetailScreenTest {
 
   private fun setContent(
       onNavigateBack: () -> Unit = {},
-      onJoinMeeting: (String) -> Unit = {},
-      onRecordMeeting: (String, String) -> Unit = { _, _ -> },
-      onViewTranscript: (String, String) -> Unit = { _, _ -> }
+      onJoinMeeting: (String, Boolean) -> Unit = { _, _ -> },
+      onRecordMeeting: (String, String, Boolean) -> Unit = { _, _, _ -> },
+      onViewTranscript: (String, String, Boolean) -> Unit = { _, _, _ -> }
   ) {
-    viewModel = MeetingDetailViewModel("test_project", "test_meeting", repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(
+            "test_project", "test_meeting", repositoryMock, mockConnectivityObserver)
     composeTestRule.setContent {
       MeetingDetailScreen(
           projectId = "test_project",
@@ -100,7 +113,9 @@ class MeetingDetailScreenTest {
           }
         }
 
-    val viewModel = MeetingDetailViewModel("test_project", "test_meeting", neverEmittingRepository)
+    val viewModel =
+        MeetingDetailViewModel(
+            "test_project", "test_meeting", neverEmittingRepository, mockConnectivityObserver)
     composeTestRule.setContent {
       MeetingDetailScreen(
           projectId = "test_project", meetingId = "test_meeting", viewModel = viewModel)
@@ -343,7 +358,7 @@ class MeetingDetailScreenTest {
     participantsFlow.value = emptyList()
 
     var joinedLink: String? = null
-    setContent(onJoinMeeting = { link -> joinedLink = link })
+    setContent(onJoinMeeting = { link, isConnected -> if (isConnected) joinedLink = link })
 
     composeTestRule.waitForIdle()
 
@@ -361,7 +376,7 @@ class MeetingDetailScreenTest {
     participantsFlow.value = emptyList()
 
     var recordCalled = false
-    setContent(onRecordMeeting = { _, _ -> recordCalled = true })
+    setContent(onRecordMeeting = { _, _, isConnected -> if (isConnected) recordCalled = true })
 
     composeTestRule.waitForIdle()
 
@@ -377,7 +392,7 @@ class MeetingDetailScreenTest {
     participantsFlow.value = emptyList()
 
     var transcriptCalled = false
-    setContent(onViewTranscript = { _, _ -> transcriptCalled = true })
+    setContent(onViewTranscript = { _, _, isConnected -> if (isConnected) transcriptCalled = true })
 
     composeTestRule.waitForIdle()
 

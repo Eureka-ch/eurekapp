@@ -1,4 +1,4 @@
-/* Portions of the code in this file were written with the help of Gemini and chatGPT (GPT-5). */
+// This code was partially written by GPT-5, and Grok
 package ch.eureka.eurekapp.navigation
 
 import androidx.compose.foundation.layout.padding
@@ -45,11 +45,6 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
-
-/*
-Note :This file was partially written by ChatGPT (GPT-5) and Codex
-Co-author : GPT-5
-*/
 
 sealed interface Route {
   // Main screens
@@ -242,34 +237,44 @@ fun NavigationMenu() {
                     config =
                         MeetingScreenConfig(
                             projectId = testProjectId,
-                            onCreateMeeting = {
-                              navigationController.navigate(
-                                  Route.MeetingsSection.CreateMeeting(testProjectId))
+                            onCreateMeeting = { isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.CreateMeeting(testProjectId))
+                              }
                             },
                             onMeetingClick = { projectId, meetingId ->
                               navigationController.navigate(
                                   Route.MeetingsSection.MeetingDetail(
                                       projectId = projectId, meetingId = meetingId))
                             },
-                            onVoteForMeetingProposalClick = { projectId, meetingId ->
-                              navigationController.navigate(
-                                  Route.MeetingsSection.MeetingProposalVotes(
-                                      projectId = projectId, meetingId = meetingId))
+                            onVoteForMeetingProposalClick = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.MeetingProposalVotes(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
                             },
-                            onNavigateToMeeting = { projectId, meetingId ->
-                              navigationController.navigate(
-                                  Route.MeetingsSection.MeetingNavigation(
-                                      projectId = projectId, meetingId = meetingId))
+                            onNavigateToMeeting = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.MeetingNavigation(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
                             },
-                            onViewTranscript = { projectId, meetingId ->
-                              navigationController.navigate(
-                                  Route.MeetingsSection.AudioTranscript(
-                                      projectId = projectId, meetingId = meetingId))
+                            onViewTranscript = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.AudioTranscript(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
                             },
-                            onRecord = { projectId, meetingId ->
-                              navigationController.navigate(
-                                  Route.MeetingsSection.AudioRecording(
-                                      projectId = projectId, meetingId = meetingId))
+                            onRecord = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.AudioRecording(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
                             }))
               }
 
@@ -282,26 +287,34 @@ fun NavigationMenu() {
                     actionsConfig =
                         MeetingDetailActionsConfig(
                             onNavigateBack = { navigationController.popBackStack() },
-                            onRecordMeeting = { projectId, meetingId ->
-                              navigationController.navigate(
-                                  Route.MeetingsSection.AudioRecording(
-                                      projectId = projectId, meetingId = meetingId))
+                            onRecordMeeting = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.AudioRecording(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
                             },
-                            onViewTranscript = { projectId, meetingId ->
-                              navigationController.navigate(
-                                  Route.MeetingsSection.AudioTranscript(
-                                      projectId = projectId, meetingId = meetingId))
+                            onViewTranscript = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.AudioTranscript(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
                             },
-                            onNavigateToMeeting = {
-                              navigationController.navigate(
-                                  Route.MeetingsSection.MeetingNavigation(
-                                      projectId = meetingDetailRoute.projectId,
-                                      meetingId = meetingDetailRoute.meetingId))
+                            onNavigateToMeeting = { isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.MeetingNavigation(
+                                        projectId = meetingDetailRoute.projectId,
+                                        meetingId = meetingDetailRoute.meetingId))
+                              }
                             },
-                            onVoteForMeetingProposalClick = { projectId, meetingId ->
-                              navigationController.navigate(
-                                  Route.MeetingsSection.MeetingProposalVotes(
-                                      projectId = projectId, meetingId = meetingId))
+                            onVoteForMeetingProposalClick = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.MeetingProposalVotes(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
                             }),
                 )
               }
@@ -425,4 +438,10 @@ fun NavigationMenu() {
               composable<Route.Camera> { Camera(navigationController) }
             }
       }
+}
+
+private inline fun navigateIfConditionSatisfied(condition: Boolean, navigate: () -> Unit) {
+  if (condition) {
+    navigate()
+  }
 }

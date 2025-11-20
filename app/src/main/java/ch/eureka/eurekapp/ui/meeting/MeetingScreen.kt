@@ -1,4 +1,4 @@
-/* Portions of this code were written with the help of Claude Code.*/
+/* Portions of this code were written with the help of Claude Code and Grok.*/
 
 package ch.eureka.eurekapp.ui.meeting
 
@@ -63,6 +63,7 @@ import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
+import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.utils.Formatters
 
@@ -91,6 +92,7 @@ object MeetingScreenTestTags {
   const val NO_PAST_MEETINGS_MESSAGE = "NoPastMeetingsMessage"
   const val CREATE_MEETING_BUTTON = "CreateMeetingButton"
   const val CLOSE_VOTES_BUTTON = "CloseVotesButton"
+  const val OFFLINE_MESSAGE = "offlineMessage"
 
   fun getCalendarButtonTestTagForScheduledMeeting(meetingId: String): String {
     return "calendar_test_tag_button_$meetingId"
@@ -112,12 +114,12 @@ object MeetingScreenTestTags {
  */
 data class MeetingScreenConfig(
     val projectId: String,
-    val onCreateMeeting: () -> Unit,
+    val onCreateMeeting: (Boolean) -> Unit,
     val onMeetingClick: (String, String) -> Unit = { _, _ -> },
-    val onVoteForMeetingProposalClick: (String, String) -> Unit = { _, _ -> },
-    val onNavigateToMeeting: (String, String) -> Unit = { _, _ -> },
-    val onViewTranscript: (String, String) -> Unit = { _, _ -> },
-    val onRecord: (String, String) -> Unit = { _, _ -> }
+    val onVoteForMeetingProposalClick: (String, String, Boolean) -> Unit = { _, _, _ -> },
+    val onNavigateToMeeting: (String, String, Boolean) -> Unit = { _, _, _ -> },
+    val onViewTranscript: (String, String, Boolean) -> Unit = { _, _, _ -> },
+    val onRecord: (String, String, Boolean) -> Unit = { _, _, _ -> }
 )
 
 /**
@@ -188,8 +190,11 @@ fun MeetingScreen(
   Scaffold(
       floatingActionButton = {
         FloatingActionButton(
-            onClick = { config.onCreateMeeting() },
-            modifier = Modifier.testTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON)) {
+            onClick = { config.onCreateMeeting(uiState.isConnected) },
+            modifier = Modifier.testTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON),
+            containerColor =
+                if (uiState.isConnected) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.surfaceVariant) {
               Icon(imageVector = Icons.Default.Add, contentDescription = "Create meeting")
             }
       },
@@ -213,6 +218,16 @@ fun MeetingScreen(
 
               Spacer(Modifier.height(16.dp))
 
+              if (!uiState.isConnected) {
+                Text(
+                    text =
+                        "You are offline. Meeting creation is unavailable to prevent sync conflicts.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier =
+                        Modifier.padding(Spacing.md).testTag(MeetingScreenTestTags.OFFLINE_MESSAGE))
+              }
+
               RoundedTabRow(
                   tabs = MeetingTab.entries.toTypedArray(),
                   selectedTab = uiState.selectedTab,
@@ -232,11 +247,12 @@ fun MeetingScreen(
                             onMeetingClick = config.onMeetingClick,
                             onVoteForMeetingProposalClick = config.onVoteForMeetingProposalClick,
                             onNavigateToMeeting = config.onNavigateToMeeting,
-                            onCloseVotes = { meeting ->
-                              meetingViewModel.closeVotesForMeeting(meeting)
+                            onCloseVotes = { meeting, isConnected ->
+                              meetingViewModel.closeVotesForMeeting(meeting, isConnected)
                             },
                             onViewTranscript = config.onViewTranscript,
-                            onRecord = config.onRecord),
+                            onRecord = config.onRecord,
+                            isConnected = uiState.isConnected),
                         calendarViewModel = calendarViewModel)
                 MeetingTab.PAST ->
                     MeetingsList(
@@ -247,7 +263,7 @@ fun MeetingScreen(
                             projectId = config.projectId,
                             isCurrentUserId = { uid -> meetingViewModel.userId == uid },
                             onMeetingClick = config.onMeetingClick,
-                        ),
+                            isConnected = uiState.isConnected),
                         calendarViewModel = calendarViewModel)
               }
             }
@@ -270,6 +286,7 @@ fun MeetingScreen(
  * @property onCloseVotes Function executed when the user clicks on "close votes" button.
  * @property onViewTranscript Function executed when user clicks on "meeting transcripts" button.
  * @property onRecord Function executed when user clicks on "record" button.
+ * @property isConnected Boolean indicating if the device is connected to the internet.
  */
 data class MeetingsListConfig(
     val modifier: Modifier,
@@ -278,11 +295,12 @@ data class MeetingsListConfig(
     val projectId: String = "",
     val isCurrentUserId: (String) -> Boolean,
     val onMeetingClick: (String, String) -> Unit = { _, _ -> },
-    val onVoteForMeetingProposalClick: (String, String) -> Unit = { _, _ -> },
-    val onNavigateToMeeting: (String, String) -> Unit = { _, _ -> },
-    val onCloseVotes: (Meeting) -> Unit = { _ -> },
-    val onViewTranscript: (String, String) -> Unit = { _, _ -> },
-    val onRecord: (String, String) -> Unit = { _, _ -> },
+    val onVoteForMeetingProposalClick: (String, String, Boolean) -> Unit = { _, _, _ -> },
+    val onNavigateToMeeting: (String, String, Boolean) -> Unit = { _, _, _ -> },
+    val onCloseVotes: (Meeting, Boolean) -> Unit = { _, _ -> },
+    val onViewTranscript: (String, String, Boolean) -> Unit = { _, _, _ -> },
+    val onRecord: (String, String, Boolean) -> Unit = { _, _, _ -> },
+    val isConnected: Boolean,
 )
 
 /**
@@ -312,15 +330,23 @@ fun MeetingsList(
                     MeetingCardConfig(
                         isCurrentUserId = config.isCurrentUserId,
                         onClick = { config.onMeetingClick(config.projectId, meeting.meetingID) },
-                        onVoteForMeetingProposals = {
-                          config.onVoteForMeetingProposalClick(config.projectId, meeting.meetingID)
+                        onVoteForMeetingProposals = { isConnected ->
+                          config.onVoteForMeetingProposalClick(
+                              config.projectId, meeting.meetingID, isConnected)
                         },
-                        onDirections = {
-                          config.onNavigateToMeeting(config.projectId, meeting.meetingID)
+                        onDirections = { isConnected ->
+                          config.onNavigateToMeeting(
+                              config.projectId, meeting.meetingID, isConnected)
                         },
-                        onCloseVotes = config.onCloseVotes,
-                        onViewTranscript = config.onViewTranscript,
-                        onRecord = config.onRecord,
+                        onCloseVotes = { meeting, isConnected ->
+                          config.onCloseVotes(meeting, isConnected)
+                        },
+                        onViewTranscript = { projectId, meetingId, isConnected ->
+                          config.onViewTranscript(projectId, meetingId, isConnected)
+                        },
+                        onRecord = { projectId, meetingId, isConnected ->
+                          config.onRecord(projectId, meetingId, isConnected)
+                        },
                         onAddMeetingToCalendar = { meeting ->
                           calendarViewModel.addMeetingToCalendar(
                               context.contentResolver,
@@ -344,7 +370,6 @@ fun MeetingsList(
                             registeredMeetings.value.getOrElse(
                                 meeting.meetingID,
                                 {
-                                  // Run the function that will update the map
                                   if (meeting.status == MeetingStatus.SCHEDULED) {
                                     calendarViewModel.checkIsMeetingRegisteredInCalendar(
                                         context.contentResolver, meeting)
@@ -352,7 +377,9 @@ fun MeetingsList(
                                     true
                                   }
                                   false
-                                })))
+                                }),
+                        isConnected = config.isConnected,
+                    ))
           }
         }
   } else {
@@ -381,23 +408,25 @@ fun MeetingsList(
  *   format
  * @property onDirections Function to execute when user clicks on button to navigate to a meeting.
  * @property onRecord Function to execute when user clicks on record button.
- * @property onViewSummary Function to execute whe user clicks on view summary button.
- * @property onViewTranscript Function to execute whe user clicks on view transcript button.
+ * @property onViewSummary Function executed when user clicks on view summary button.
+ * @property onViewTranscript Function executed when user clicks on view transcript button.
  * @property onCloseVotes Function executed when the user clicks on "close votes" button.
+ * @property isConnected Boolean indicating if the device is connected to the internet.
  * @property onAddMeetingToCalendar Function executed when the user clicks "add to calendar" button
  */
 data class MeetingCardConfig(
     val isCurrentUserId: (String) -> Boolean,
     val isMeetingAddedToCalendar: Boolean = false,
     val onClick: () -> Unit = {},
-    val onJoinMeeting: () -> Unit = {},
-    val onVoteForMeetingProposals: () -> Unit = {},
+    val onJoinMeeting: (Boolean) -> Unit = {},
+    val onVoteForMeetingProposals: (Boolean) -> Unit = {},
     val onVoteForFormat: () -> Unit = {},
-    val onDirections: () -> Unit = {},
-    val onRecord: (String, String) -> Unit = { _, _ -> },
+    val onDirections: (Boolean) -> Unit = {},
+    val onRecord: (String, String, Boolean) -> Unit = { _, _, _ -> },
     val onViewSummary: () -> Unit = {},
-    val onViewTranscript: (String, String) -> Unit = { _, _ -> },
-    val onCloseVotes: (Meeting) -> Unit = { _ -> },
+    val onViewTranscript: (String, String, Boolean) -> Unit = { _, _, _ -> },
+    val onCloseVotes: (Meeting, Boolean) -> Unit = { _, _ -> },
+    val isConnected: Boolean,
     val onAddMeetingToCalendar: (Meeting) -> Unit = { _ -> }
 )
 
@@ -584,18 +613,20 @@ fun MeetingCard(
                 when (meeting.status) {
                   MeetingStatus.OPEN_TO_VOTES -> {
                     Button(
-                        onClick = config.onVoteForMeetingProposals,
+                        onClick = { config.onVoteForMeetingProposals(config.isConnected) },
                         modifier =
                             Modifier.testTag(
                                 MeetingScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON),
+                        enabled = config.isConnected,
                     ) {
                       Text("Vote for meeting proposals")
                     }
                     if (config.isCurrentUserId(meeting.createdBy)) {
                       Spacer(modifier = Modifier.width(10.dp))
                       Button(
-                          onClick = { config.onCloseVotes(meeting) },
-                          modifier = Modifier.testTag(MeetingScreenTestTags.CLOSE_VOTES_BUTTON)) {
+                          onClick = { config.onCloseVotes(meeting, config.isConnected) },
+                          modifier = Modifier.testTag(MeetingScreenTestTags.CLOSE_VOTES_BUTTON),
+                          enabled = config.isConnected) {
                             Text("Close votes")
                           }
                     }
@@ -605,15 +636,20 @@ fun MeetingCard(
                     when (meeting.format) {
                       MeetingFormat.IN_PERSON -> {
                         Button(
-                            onClick = config.onDirections,
+                            onClick = { config.onDirections(config.isConnected) },
                             modifier = Modifier.testTag(MeetingScreenTestTags.DIRECTIONS_BUTTON),
+                            enabled = config.isConnected,
                         ) {
                           Text("Directions")
                         }
                         Spacer(modifier = Modifier.width(10.dp))
                         Button(
-                            onClick = { config.onRecord(meeting.projectId, meeting.meetingID) },
+                            onClick = {
+                              config.onRecord(
+                                  meeting.projectId, meeting.meetingID, config.isConnected)
+                            },
                             modifier = Modifier.testTag(MeetingScreenTestTags.RECORD_BUTTON),
+                            enabled = config.isConnected,
                         ) {
                           Text("Record")
                         }
@@ -636,8 +672,9 @@ fun MeetingCard(
                       }
                       MeetingFormat.VIRTUAL -> {
                         Button(
-                            onClick = config.onJoinMeeting,
+                            onClick = { config.onJoinMeeting(config.isConnected) },
                             modifier = Modifier.testTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON),
+                            enabled = config.isConnected,
                         ) {
                           Text("Join meeting")
                         }
@@ -650,7 +687,10 @@ fun MeetingCard(
                   MeetingStatus.COMPLETED -> {
                     Spacer(modifier = Modifier.width(10.dp))
                     Button(
-                        onClick = { config.onViewTranscript(meeting.projectId, meeting.meetingID) },
+                        onClick = {
+                          config.onViewTranscript(
+                              meeting.projectId, meeting.meetingID, config.isConnected)
+                        },
                         modifier = Modifier.testTag(MeetingScreenTestTags.VIEW_TRANSCRIPT_BUTTON),
                     ) {
                       Text("Transcript")
