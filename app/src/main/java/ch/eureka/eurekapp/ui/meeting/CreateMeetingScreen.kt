@@ -89,7 +89,6 @@ const val SPACING = 8
  * @param onDone Function called when meeting proposal was correctly created and saved on the
  *   database.
  * @param createMeetingViewModel View model associated with create meeting screen.
- * @param meetingCalendarViewModel View model associated with meeting user calendar management
  */
 @Composable
 fun CreateMeetingScreen(

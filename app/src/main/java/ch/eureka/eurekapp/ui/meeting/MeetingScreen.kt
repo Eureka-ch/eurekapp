@@ -129,11 +129,11 @@ data class MeetingScreenConfig(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MeetingScreen(
-    context: Context = LocalContext.current,
     config: MeetingScreenConfig,
     meetingViewModel: MeetingViewModel = viewModel(),
     calendarViewModel: MeetingCalendarViewModel = viewModel()
 ) {
+  val context = LocalContext.current
 
   var hasCalendarReadPermission by remember {
     mutableStateOf(
@@ -167,7 +167,6 @@ fun MeetingScreen(
     }
   }
 
-  val context = LocalContext.current
   val uiState by meetingViewModel.uiState.collectAsState()
 
   // Show error message if there is any

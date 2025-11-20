@@ -8,12 +8,14 @@ import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
+import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
 class MeetingCalendarViewModel(
@@ -72,7 +74,11 @@ class MeetingCalendarViewModel(
                   participants.map { participant ->
                     usersRepository.getUserById(participant.userId)
                   }
-              combine(usersFlow) { users -> users.toList() }
+              if (usersFlow.isEmpty()) {
+                flowOf(listOf<User?>())
+              } else {
+                combine(usersFlow) { users -> users.toList() }
+              }
             }
             .first()
             .filterNotNull()

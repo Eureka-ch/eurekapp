@@ -39,8 +39,6 @@ private val scheduledMeeting =
         location = Location())
 
 class MeetingScreenWithCalendarButtonTest {
-  val scheduledMeeting =
-      Meeting(meetingID = "testId", status = MeetingStatus.SCHEDULED, datetime = Timestamp.now())
 
   class MockedMeetingRepository() : MeetingRepository {
     override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> {

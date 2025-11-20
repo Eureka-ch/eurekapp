@@ -12,6 +12,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.Eurekapp
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.navigation.BottomBarNavigationTestTags
@@ -52,6 +53,10 @@ Co-author: GPT-5 Codex
  */
 @RunWith(AndroidJUnit4::class)
 class TaskEndToEndTest : TestCase() {
+  @get:Rule
+  val permissionRule: GrantPermissionRule =
+      GrantPermissionRule.grant(
+          android.Manifest.permission.READ_CALENDAR, android.Manifest.permission.WRITE_CALENDAR)
 
   @get:Rule val composeTestRule = createComposeRule()
 

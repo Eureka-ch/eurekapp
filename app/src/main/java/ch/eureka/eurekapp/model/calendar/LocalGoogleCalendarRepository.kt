@@ -158,7 +158,7 @@ class LocalGoogleCalendarRepository(
 
     check(eventCursor != null)
 
-    eventCursor.moveToFirst()
+    check(eventCursor.moveToFirst())
 
     val dateStart = eventCursor.getLong(CompanionLocalGoogleCalendarRepository.IDX_DTSTART)
     val dateEnd = eventCursor.getLong(CompanionLocalGoogleCalendarRepository.IDX_DTEND)
@@ -226,6 +226,7 @@ class LocalGoogleCalendarRepository(
               status = attendeeStatus)
       attendees += attendee
     }
+    attendeesCursor.close()
     return attendees.toList()
   }
 
@@ -262,6 +263,7 @@ class LocalGoogleCalendarRepository(
 
       reminders += reminder
     }
+    remindersCursor.close()
     return reminders.toList()
   }
 
@@ -288,7 +290,7 @@ class LocalGoogleCalendarRepository(
             null)
     check(cur != null)
     var googleCalendarID: Int? = null
-    cur.moveToFirst()
+    check(cur.moveToFirst())
     val calID = cur.getInt(CompanionLocalGoogleCalendarRepository.PROJECTION_ID_INDEX)
     googleCalendarID = calID
     cur.close()
