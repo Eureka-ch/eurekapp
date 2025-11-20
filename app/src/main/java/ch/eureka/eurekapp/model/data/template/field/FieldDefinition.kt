@@ -16,7 +16,6 @@ data class FieldDefinition(
 ) {
   init {
     require(id.isNotBlank()) { "id must not be blank" }
-    require(label.isNotBlank()) { "label must not be blank" }
     if (defaultValue != null) {
       require(defaultValue.typeKey == type.typeKey) { "defaultValue type must match field type" }
     }
