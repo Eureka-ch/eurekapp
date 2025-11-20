@@ -36,10 +36,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.tasks.TaskDependenciesViewModel
+import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.DarkBackground
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.GrayTextColor2
@@ -71,12 +74,14 @@ object TaskDependenciesScreenTestTags {
  *
  * @param projectId ID of the current project.
  * @param taskId ID of the root task being visualized.
+ * @param navigationController NavHostController for navigation actions.
  * @param taskDependenciesViewModel ViewModel used to retrieve task and user data.
  */
 @Composable
 fun TaskDependenciesScreen(
     projectId: String,
     taskId: String,
+    navigationController: NavHostController = rememberNavController(),
     taskDependenciesViewModel: TaskDependenciesViewModel = viewModel()
 ) {
   val projectUsers =
@@ -89,6 +94,11 @@ fun TaskDependenciesScreen(
   Column(
       modifier = Modifier.padding(vertical = 2.dp, horizontal = 10.dp),
       horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            horizontalArrangement = Arrangement.Start) {
+              BackButton(onClick = { navigationController.popBackStack() })
+            }
         ScreenTitle()
         /*
         Filter section
