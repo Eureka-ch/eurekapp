@@ -479,6 +479,16 @@ open class ViewTaskScreenTest : TestCase() {
           setupTestTask(projectId, taskId, assignedUserIds = listOf(userId1, userId2))
         }
 
+        // Wait for assigned users to load from Firestore
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          try {
+            composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION).assertExists()
+            true
+          } catch (e: AssertionError) {
+            false
+          }
+        }
+
         // Verify assigned users section is displayed
         composeTestRule
             .onNodeWithTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION)
@@ -511,6 +521,16 @@ open class ViewTaskScreenTest : TestCase() {
 
         setupViewTaskTest(projectId, taskId) {
           setupTestTask(projectId, taskId, assignedUserIds = listOf(userId1))
+        }
+
+        // Wait for assigned users to load from Firestore
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          try {
+            composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION).assertExists()
+            true
+          } catch (e: AssertionError) {
+            false
+          }
         }
 
         // Verify assigned users section is displayed
@@ -554,6 +574,16 @@ open class ViewTaskScreenTest : TestCase() {
 
         setupViewTaskTest(projectId, taskId) {
           setupTestTask(projectId, taskId, assignedUserIds = listOf(userId1, userId2, userId3))
+        }
+
+        // Wait for assigned users to load from Firestore
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          try {
+            composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION).assertExists()
+            true
+          } catch (e: AssertionError) {
+            false
+          }
         }
 
         // Verify assigned users section is displayed
