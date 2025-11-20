@@ -253,9 +253,14 @@ class CreateTemplateScreenTest {
       CreateTemplateScreen(onNavigateBack = {}, onTemplateCreated = {}, viewModel = viewModel)
     }
 
+    // Trigger validation by attempting to save
+    viewModel.addField(FieldDefinition(id = "field1", label = "Field 1", type = FieldType.Text()))
     composeTestRule.waitForIdle()
 
-    // Badge should already be visible due to empty title validation in ViewModel init
+    composeTestRule.onNodeWithText("Save").performClick()
+    composeTestRule.waitForIdle()
+
+    // Badge should now be visible due to validation showing empty title error
     composeTestRule.onNodeWithTag("badge").assertExists()
   }
 
@@ -352,7 +357,8 @@ class CreateTemplateScreenTest {
     }
 
     viewModel.updateTitle("Test Template")
-    viewModel.addField(FieldDefinition(id = "field1", label = "", type = FieldType.Text()))
+    viewModel.addField(
+        FieldDefinition(id = "field1", label = "Test Field", type = FieldType.Text()))
     composeTestRule.waitForIdle()
 
     composeTestRule.onAllNodesWithText("Preview")[0].performClick()
@@ -391,9 +397,14 @@ class CreateTemplateScreenTest {
       CreateTemplateScreen(onNavigateBack = {}, onTemplateCreated = {}, viewModel = viewModel)
     }
 
+    // Trigger validation by attempting to save
+    viewModel.addField(FieldDefinition(id = "field1", label = "Field 1", type = FieldType.Text()))
     composeTestRule.waitForIdle()
 
-    // Badge should already be visible due to empty title validation in ViewModel init
+    composeTestRule.onNodeWithText("Save").performClick()
+    composeTestRule.waitForIdle()
+
+    // Badge should now be visible due to validation showing empty title error
     composeTestRule.onNodeWithTag("badge").assertExists()
   }
 

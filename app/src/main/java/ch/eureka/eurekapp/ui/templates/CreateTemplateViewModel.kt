@@ -25,10 +25,7 @@ class CreateTemplateViewModel(
     initialProjectId: String? = null
 ) : ViewModel() {
 
-  private val _state =
-      MutableStateFlow(
-          TemplateEditorState(
-              projectId = initialProjectId, titleError = TemplateValidation.validateTitle("")))
+  private val _state = MutableStateFlow(TemplateEditorState(projectId = initialProjectId))
   val state: StateFlow<TemplateEditorState> = _state.asStateFlow()
 
   /** Updates template title and validates. */
