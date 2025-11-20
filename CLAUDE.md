@@ -1,2 +1,0 @@
-- dont use --tests for isolating android tests, use -Pandroid.testInstrumentationRunnerArguments.class
-- always use camelCase for test naming in this project
