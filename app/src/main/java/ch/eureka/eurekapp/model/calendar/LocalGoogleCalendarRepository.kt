@@ -156,7 +156,7 @@ class LocalGoogleCalendarRepository(
             eventSelectionArgs,
             null)
 
-    check(eventCursor != null)
+    checkNotNull(eventCursor)
 
     check(eventCursor.moveToFirst())
 
@@ -203,7 +203,7 @@ class LocalGoogleCalendarRepository(
             attendeeSelectionArgs,
             null)
 
-    check(attendeesCursor != null)
+    checkNotNull(attendeesCursor)
     val attendees: MutableList<CalendarAttendee> = mutableListOf()
     while (attendeesCursor.moveToNext()) {
       val attendeeName =
@@ -251,7 +251,7 @@ class LocalGoogleCalendarRepository(
             CompanionLocalGoogleCalendarRepository.remindersSelection,
             remindersSelectionArgs,
             null)
-    check(remindersCursor != null)
+    checkNotNull(remindersCursor)
     val reminders: MutableList<CalendarReminder> = mutableListOf()
     while (remindersCursor.moveToNext()) {
       val minutesBefore =
@@ -275,7 +275,7 @@ class LocalGoogleCalendarRepository(
    */
   private suspend fun getGoogleCalendarID(contentResolver: ContentResolver): Int {
     val user = usersRepository.getCurrentUser().first()
-    check(user != null)
+    checkNotNull(user)
     val selectionQuery =
         "((${CalendarContract.Calendars.ACCOUNT_TYPE} = ?) AND (${
             CalendarContract.Calendars.OWNER_ACCOUNT} = ?))"
@@ -288,8 +288,8 @@ class LocalGoogleCalendarRepository(
             selectionQuery,
             selectionArgs,
             null)
-    check(cur != null)
-    var googleCalendarID: Int? = null
+    checkNotNull(cur)
+    var googleCalendarID: Int?
     check(cur.moveToFirst())
     val calID = cur.getInt(CompanionLocalGoogleCalendarRepository.PROJECTION_ID_INDEX)
     googleCalendarID = calID
@@ -308,7 +308,6 @@ class LocalGoogleCalendarRepository(
       googleCalendarID: Int,
       eventData: CalendarEventData
   ): ContentValues {
-    // TODO discuss if we should implement timezones in meetings
     val systemTimeZone = TimeZone.getDefault().id
     return ContentValues().apply {
       put(CalendarContract.Events.DTSTART, eventData.startTimeMillis)
