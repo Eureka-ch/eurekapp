@@ -36,9 +36,7 @@ Co-author: GPT-5 Codex
 Co-author: Claude 4.5 Sonnet
 */
 
-/**
- * Test tags for the ConversationCard component.
- */
+/** Test tags for the ConversationCard component. */
 object ConversationCardTestTags {
   const val CONVERSATION_CARD = "ConversationCard"
   const val MEMBER_NAME = "ConversationMemberName"

@@ -37,7 +37,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
@@ -46,9 +45,7 @@ Co-author: GPT-5 Codex
 Co-author: Claude 4.5 Sonnet
 */
 
-/**
- * Test tags for the ConversationListScreen component.
- */
+/** Test tags for the ConversationListScreen component. */
 object ConversationListScreenTestTags {
   const val SCREEN = "ConversationListScreen"
   const val TITLE = "ConversationListTitle"
@@ -67,7 +64,8 @@ object ConversationListScreenTestTags {
  * and the project it belongs to. A FAB allows creating new conversations.
  *
  * @param onCreateConversation Callback invoked when the user wants to create a new conversation.
- * @param onConversationClick Callback invoked when a conversation is clicked, receives conversation ID.
+ * @param onConversationClick Callback invoked when a conversation is clicked, receives conversation
+ *   ID.
  * @param viewModel The ViewModel managing the conversation list state.
  */
 @Composable
@@ -98,17 +96,11 @@ fun ConversationListScreen(
             containerColor =
                 if (uiState.isConnected) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.surfaceVariant) {
-              Icon(
-                  imageVector = Icons.Default.Add,
-                  contentDescription = "Create conversation")
+              Icon(imageVector = Icons.Default.Add, contentDescription = "Create conversation")
             }
       }) { padding ->
         Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(horizontal = Spacing.md)) {
+            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = Spacing.md)) {
               // Screen title
               Spacer(modifier = Modifier.height(Spacing.md))
               Text(
@@ -135,8 +127,7 @@ fun ConversationListScreen(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error,
                     modifier =
-                        Modifier
-                            .padding(bottom = Spacing.md)
+                        Modifier.padding(bottom = Spacing.md)
                             .testTag(ConversationListScreenTestTags.OFFLINE_MESSAGE))
               }
 
@@ -145,43 +136,38 @@ fun ConversationListScreen(
               when {
                 uiState.isLoading -> {
                   // Loading state: centered spinner while fetching conversations
-                  Box(
-                      modifier = Modifier.fillMaxSize(),
-                      contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(
-                            modifier =
-                                Modifier.testTag(ConversationListScreenTestTags.LOADING_INDICATOR))
-                      }
+                  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(
+                        modifier =
+                            Modifier.testTag(ConversationListScreenTestTags.LOADING_INDICATOR))
+                  }
                 }
                 uiState.conversations.isEmpty() -> {
                   // Empty state: encourage user to create their first conversation
-                  Box(
-                      modifier = Modifier.fillMaxSize(),
-                      contentAlignment = Alignment.Center) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center) {
-                              Text(
-                                  text = "No conversations yet",
-                                  style = MaterialTheme.typography.titleMedium,
-                                  color = Color.Gray,
-                                  modifier =
-                                      Modifier.testTag(ConversationListScreenTestTags.EMPTY_STATE))
-                              Spacer(modifier = Modifier.height(Spacing.xs))
-                              Text(
-                                  text = "Tap + to start a conversation",
-                                  style = MaterialTheme.typography.bodyMedium,
-                                  color = Color.Gray)
-                            }
-                      }
+                  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center) {
+                          Text(
+                              text = "No conversations yet",
+                              style = MaterialTheme.typography.titleMedium,
+                              color = Color.Gray,
+                              modifier =
+                                  Modifier.testTag(ConversationListScreenTestTags.EMPTY_STATE))
+                          Spacer(modifier = Modifier.height(Spacing.xs))
+                          Text(
+                              text = "Tap + to start a conversation",
+                              style = MaterialTheme.typography.bodyMedium,
+                              color = Color.Gray)
+                        }
+                  }
                 }
                 else -> {
                   // Success state: display scrollable list of conversation cards
                   // Uses LazyColumn for efficient rendering of potentially large lists
                   LazyColumn(
                       modifier =
-                          Modifier
-                              .fillMaxWidth()
+                          Modifier.fillMaxWidth()
                               .testTag(ConversationListScreenTestTags.CONVERSATION_LIST),
                       contentPadding = PaddingValues(vertical = Spacing.sm),
                       verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {

@@ -72,7 +72,8 @@ class ConversationListViewModel(
     private val conversationRepository: ConversationRepository =
         FirestoreRepositoriesProvider.conversationRepository,
     private val userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository,
-    private val projectRepository: ProjectRepository = FirestoreRepositoriesProvider.projectRepository,
+    private val projectRepository: ProjectRepository =
+        FirestoreRepositoriesProvider.projectRepository,
     private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver
 ) : ViewModel() {
@@ -121,9 +122,8 @@ class ConversationListViewModel(
           }
           .collect { conversations ->
             // Transform raw conversations into display-ready data
-            val displayDataList = conversations.map { conversation ->
-              resolveConversationDisplayData(conversation)
-            }
+            val displayDataList =
+                conversations.map { conversation -> resolveConversationDisplayData(conversation) }
             // Update UI with resolved conversations
             _uiState.update {
               it.copy(isLoading = false, conversations = displayDataList, errorMsg = null)
@@ -150,25 +150,28 @@ class ConversationListViewModel(
     val otherUserId = conversation.memberIds.firstOrNull { it != currentUserId } ?: ""
 
     // Try to get user from cache first, otherwise fetch from Firestore and cache it
-    val otherUser = userCache[otherUserId] ?: run {
-      val user = userRepository.getUserById(otherUserId).first()
-      user?.let { userCache[otherUserId] = it }
-      user
-    }
+    val otherUser =
+        userCache[otherUserId]
+            ?: run {
+              val user = userRepository.getUserById(otherUserId).first()
+              user?.let { userCache[otherUserId] = it }
+              user
+            }
 
     // Try to get project from cache first, otherwise fetch from Firestore and cache it
-    val project = projectCache[conversation.projectId] ?: run {
-      val proj = projectRepository.getProjectById(conversation.projectId).first()
-      proj?.let { projectCache[conversation.projectId] = it }
-      proj
-    }
+    val project =
+        projectCache[conversation.projectId]
+            ?: run {
+              val proj = projectRepository.getProjectById(conversation.projectId).first()
+              proj?.let { projectCache[conversation.projectId] = it }
+              proj
+            }
 
     // Return display data with fallback values for missing data
     return ConversationDisplayData(
         conversation = conversation,
         otherMemberName = otherUser?.displayName ?: "Unknown User",
-        projectName = project?.name ?: "Unknown Project"
-    )
+        projectName = project?.name ?: "Unknown Project")
   }
 
   /** Clear the error message. */

@@ -116,7 +116,9 @@ class FirestoreConversationRepository(
       runCatching {
         val docRef =
             if (conversation.conversationId.isNotEmpty()) {
-              firestore.collection(FirestorePaths.CONVERSATIONS).document(conversation.conversationId)
+              firestore
+                  .collection(FirestorePaths.CONVERSATIONS)
+                  .document(conversation.conversationId)
             } else {
               firestore.collection(FirestorePaths.CONVERSATIONS).document()
             }

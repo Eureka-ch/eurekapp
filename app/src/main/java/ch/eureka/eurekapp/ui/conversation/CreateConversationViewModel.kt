@@ -80,7 +80,8 @@ data class MemberDisplayData(val member: Member, val user: User)
 class CreateConversationViewModel(
     private val conversationRepository: ConversationRepository =
         FirestoreRepositoriesProvider.conversationRepository,
-    private val projectRepository: ProjectRepository = FirestoreRepositoriesProvider.projectRepository,
+    private val projectRepository: ProjectRepository =
+        FirestoreRepositoriesProvider.projectRepository,
     private val userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository,
     private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver
@@ -111,8 +112,10 @@ class CreateConversationViewModel(
     viewModelScope.launch {
       _uiState.update { it.copy(isLoadingProjects = true) }
       try {
-        val projects = projectRepository.getProjectsForCurrentUser().first()
-        _uiState.update { it.copy(isLoadingProjects = false, projects = projects) }
+        // Use skipCache = false to ensure we get cached data quickly if available
+        projectRepository.getProjectsForCurrentUser(skipCache = false).collect { projects ->
+          _uiState.update { it.copy(isLoadingProjects = false, projects = projects) }
+        }
       } catch (e: Exception) {
         _uiState.update { it.copy(isLoadingProjects = false, errorMsg = e.message) }
       }
@@ -157,11 +160,12 @@ class CreateConversationViewModel(
         val otherMembers = members.filter { it.userId != currentUserId }
 
         // Resolve user data (display name, photo) for each member
-        val memberDisplayDataList = otherMembers.mapNotNull { member ->
-          val user = userRepository.getUserById(member.userId).first()
-          // Only include members whose user data could be resolved
-          user?.let { MemberDisplayData(member = member, user = it) }
-        }
+        val memberDisplayDataList =
+            otherMembers.mapNotNull { member ->
+              val user = userRepository.getUserById(member.userId).first()
+              // Only include members whose user data could be resolved
+              user?.let { MemberDisplayData(member = member, user = it) }
+            }
 
         _uiState.update { it.copy(isLoadingMembers = false, members = memberDisplayDataList) }
       } catch (e: Exception) {
@@ -201,11 +205,11 @@ class CreateConversationViewModel(
 
       // Check if a conversation already exists between these two users in this project
       // This prevents duplicate conversations
-      val existingConversation = conversationRepository.findExistingConversation(
-          projectId = selectedProject.projectId,
-          userId1 = currentUserId,
-          userId2 = selectedMember.user.uid
-      )
+      val existingConversation =
+          conversationRepository.findExistingConversation(
+              projectId = selectedProject.projectId,
+              userId1 = currentUserId,
+              userId2 = selectedMember.user.uid)
 
       if (existingConversation != null) {
         // Conversation already exists - show error and don't create a duplicate
@@ -216,22 +220,21 @@ class CreateConversationViewModel(
       }
 
       // Build the new conversation object with both participants
-      val conversation = Conversation(
-          projectId = selectedProject.projectId,
-          memberIds = listOf(currentUserId, selectedMember.user.uid),
-          createdBy = currentUserId,
-          createdAt = Timestamp.now()
-      )
+      val conversation =
+          Conversation(
+              projectId = selectedProject.projectId,
+              memberIds = listOf(currentUserId, selectedMember.user.uid),
+              createdBy = currentUserId,
+              createdAt = Timestamp.now())
 
       // Save to Firestore and handle result
-      conversationRepository.createConversation(conversation)
+      conversationRepository
+          .createConversation(conversation)
           .onSuccess {
             // Signal success to UI for navigation
             _uiState.update { it.copy(isCreating = false, conversationCreated = true) }
           }
-          .onFailure { e ->
-            _uiState.update { it.copy(isCreating = false, errorMsg = e.message) }
-          }
+          .onFailure { e -> _uiState.update { it.copy(isCreating = false, errorMsg = e.message) } }
     }
   }
 
