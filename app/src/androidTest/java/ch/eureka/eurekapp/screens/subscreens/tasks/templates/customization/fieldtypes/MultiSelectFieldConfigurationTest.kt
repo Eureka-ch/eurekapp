@@ -23,9 +23,9 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
           MultiSelectFieldConfiguration(
               fieldType = FieldType.MultiSelect(testOptions), onUpdate = {}, enabled = true)
         },
-        "multi_select_min",
-        "multi_select_max",
-        "multi_select_allow_custom")
+        MultiSelectFieldConfigurationTestTags.MIN,
+        MultiSelectFieldConfigurationTestTags.MAX,
+        MultiSelectFieldConfigurationTestTags.ALLOW_CUSTOM)
   }
 
   @Test
@@ -39,7 +39,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
               fieldType = FieldType.MultiSelect(testOptions), onUpdate = onUpdate, enabled = true)
         },
         capturedUpdate = updates,
-        testTag = "multi_select_min",
+        testTag = MultiSelectFieldConfigurationTestTags.MIN,
         inputValue = "2") { updated ->
           assertions.assertPropertyEquals(2, updated, { it.minSelections }, "minSelections")
         }
@@ -56,7 +56,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
               fieldType = FieldType.MultiSelect(testOptions), onUpdate = onUpdate, enabled = true)
         },
         capturedUpdate = updates,
-        testTag = "multi_select_max",
+        testTag = MultiSelectFieldConfigurationTestTags.MAX,
         inputValue = "3") { updated ->
           assertions.assertPropertyEquals(3, updated, { it.maxSelections }, "maxSelections")
         }
@@ -75,7 +75,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
               enabled = true)
         },
         capturedUpdate = updates,
-        checkboxTag = "multi_select_allow_custom") { updated ->
+        checkboxTag = MultiSelectFieldConfigurationTestTags.ALLOW_CUSTOM) { updated ->
           assertions.assertBooleanTrue(updated, { it.allowCustom }, "allowCustom should be true")
         }
   }
@@ -114,9 +114,9 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
           MultiSelectFieldConfiguration(
               fieldType = FieldType.MultiSelect(testOptions), onUpdate = {}, enabled = false)
         },
-        "multi_select_min",
-        "multi_select_max",
-        "multi_select_allow_custom")
+        MultiSelectFieldConfigurationTestTags.MIN,
+        MultiSelectFieldConfigurationTestTags.MAX,
+        MultiSelectFieldConfigurationTestTags.ALLOW_CUSTOM)
   }
 
   @Test
@@ -129,7 +129,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
           enabled = true)
     }
 
-    utils.clearText(composeTestRule, "multi_select_min")
+    utils.clearText(composeTestRule, MultiSelectFieldConfigurationTestTags.MIN)
     assertions.assertPropertyNull(updates.lastOrNull(), { it.minSelections }, "minSelections")
   }
 
@@ -146,7 +146,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
               enabled = true)
         },
         capturedUpdate = updates,
-        checkboxTag = "multi_select_allow_custom") { updated ->
+        checkboxTag = MultiSelectFieldConfigurationTestTags.ALLOW_CUSTOM) { updated ->
           assertions.assertBooleanFalse(updated, { it.allowCustom }, "allowCustom should be false")
         }
   }
@@ -161,7 +161,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
           enabled = true)
     }
 
-    utils.clearText(composeTestRule, "multi_select_max")
+    utils.clearText(composeTestRule, MultiSelectFieldConfigurationTestTags.MAX)
     assertions.assertPropertyNull(updates.lastOrNull(), { it.maxSelections }, "maxSelections")
   }
 
@@ -175,7 +175,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
               onUpdate = {},
               enabled = true)
         },
-        "multi_select_min")
+        MultiSelectFieldConfigurationTestTags.MIN)
   }
 
   @Test
@@ -188,7 +188,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
               onUpdate = {},
               enabled = true)
         },
-        "multi_select_max")
+        MultiSelectFieldConfigurationTestTags.MAX)
   }
 
   @Test
@@ -202,7 +202,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
               fieldType = FieldType.MultiSelect(testOptions), onUpdate = onUpdate, enabled = true)
         },
         capturedUpdate = updates,
-        testTag = "multi_select_min",
+        testTag = MultiSelectFieldConfigurationTestTags.MIN,
         inputValue = "1") { updated ->
           assertions.assertListPreserved(testOptions, updated, { it.options }, "options")
         }

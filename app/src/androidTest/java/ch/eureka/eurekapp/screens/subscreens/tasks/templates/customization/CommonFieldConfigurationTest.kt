@@ -37,9 +37,9 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
         content = {
           CommonFieldConfiguration(field = testFieldDefinition, onFieldUpdate = {}, enabled = true)
         },
-        "field_label_input",
-        "field_description_input",
-        "field_required_checkbox")
+        CommonFieldConfigurationTestTags.LABEL_INPUT,
+        CommonFieldConfigurationTestTags.DESCRIPTION_INPUT,
+        CommonFieldConfigurationTestTags.REQUIRED_CHECKBOX)
   }
 
   @Test
@@ -55,7 +55,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
               enabled = true)
         },
         capturedUpdate = updates,
-        checkboxTag = "field_required_checkbox") { updated ->
+        checkboxTag = CommonFieldConfigurationTestTags.REQUIRED_CHECKBOX) { updated ->
           assertions.assertBooleanTrue(updated, { it.required }, "required should be true")
         }
   }
@@ -73,7 +73,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
               enabled = true)
         },
         capturedUpdate = updates,
-        checkboxTag = "field_required_checkbox") { updated ->
+        checkboxTag = CommonFieldConfigurationTestTags.REQUIRED_CHECKBOX) { updated ->
           assertions.assertBooleanFalse(updated, { it.required }, "required should be false")
         }
   }
@@ -85,9 +85,9 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
         content = {
           CommonFieldConfiguration(field = testFieldDefinition, onFieldUpdate = {}, enabled = false)
         },
-        "field_label_input",
-        "field_description_input",
-        "field_required_checkbox")
+        CommonFieldConfigurationTestTags.LABEL_INPUT,
+        CommonFieldConfigurationTestTags.DESCRIPTION_INPUT,
+        CommonFieldConfigurationTestTags.REQUIRED_CHECKBOX)
   }
 
   @Test
@@ -100,7 +100,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
               onFieldUpdate = {},
               enabled = true)
         },
-        "field_description_input")
+        CommonFieldConfigurationTestTags.DESCRIPTION_INPUT)
   }
 
   @Test

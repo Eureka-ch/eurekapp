@@ -20,10 +20,10 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
         content = {
           DateFieldConfiguration(fieldType = FieldType.Date(), onUpdate = {}, enabled = true)
         },
-        "date_min",
-        "date_max",
-        "date_include_time",
-        "date_format")
+        DateFieldConfigurationTestTags.MIN,
+        DateFieldConfigurationTestTags.MAX,
+        DateFieldConfigurationTestTags.INCLUDE_TIME,
+        DateFieldConfigurationTestTags.FORMAT)
   }
 
   @Test
@@ -36,7 +36,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
           DateFieldConfiguration(fieldType = FieldType.Date(), onUpdate = onUpdate, enabled = true)
         },
         capturedUpdate = updates,
-        testTag = "date_min",
+        testTag = DateFieldConfigurationTestTags.MIN,
         inputValue = "2025-01-01") { updated ->
           assertions.assertPropertyEquals("2025-01-01", updated, { it.minDate }, "minDate")
         }
@@ -52,7 +52,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
           DateFieldConfiguration(fieldType = FieldType.Date(), onUpdate = onUpdate, enabled = true)
         },
         capturedUpdate = updates,
-        testTag = "date_max",
+        testTag = DateFieldConfigurationTestTags.MAX,
         inputValue = "2025-12-31") { updated ->
           assertions.assertPropertyEquals("2025-12-31", updated, { it.maxDate }, "maxDate")
         }
@@ -69,7 +69,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
               fieldType = FieldType.Date(includeTime = false), onUpdate = onUpdate, enabled = true)
         },
         capturedUpdate = updates,
-        checkboxTag = "date_include_time") { updated ->
+        checkboxTag = DateFieldConfigurationTestTags.INCLUDE_TIME) { updated ->
           assertions.assertBooleanTrue(updated, { it.includeTime }, "includeTime should be true")
         }
   }
@@ -101,10 +101,10 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
         content = {
           DateFieldConfiguration(fieldType = FieldType.Date(), onUpdate = {}, enabled = false)
         },
-        "date_min",
-        "date_max",
-        "date_include_time",
-        "date_format")
+        DateFieldConfigurationTestTags.MIN,
+        DateFieldConfigurationTestTags.MAX,
+        DateFieldConfigurationTestTags.INCLUDE_TIME,
+        DateFieldConfigurationTestTags.FORMAT)
   }
 
   @Test
@@ -118,7 +118,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
               fieldType = FieldType.Date(includeTime = true), onUpdate = onUpdate, enabled = true)
         },
         capturedUpdate = updates,
-        checkboxTag = "date_include_time") { updated ->
+        checkboxTag = DateFieldConfigurationTestTags.INCLUDE_TIME) { updated ->
           assertions.assertBooleanFalse(updated, { it.includeTime }, "includeTime should be false")
         }
   }
@@ -131,7 +131,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
           DateFieldConfiguration(
               fieldType = FieldType.Date(minDate = "2025-01-01"), onUpdate = {}, enabled = true)
         },
-        "date_min")
+        DateFieldConfigurationTestTags.MIN)
   }
 
   @Test
@@ -142,7 +142,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
           DateFieldConfiguration(
               fieldType = FieldType.Date(maxDate = "2025-12-31"), onUpdate = {}, enabled = true)
         },
-        "date_max")
+        DateFieldConfigurationTestTags.MAX)
   }
 
   @Test
@@ -156,7 +156,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
               enabled = true)
         },
         "date_min",
-        "date_max")
+        DateFieldConfigurationTestTags.MAX)
   }
 
   @Test
@@ -167,7 +167,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
           DateFieldConfiguration(
               fieldType = FieldType.Date(format = "MM/dd/yyyy"), onUpdate = {}, enabled = true)
         },
-        "date_format")
+        DateFieldConfigurationTestTags.FORMAT)
   }
 
   @Test
@@ -180,7 +180,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
           enabled = true)
     }
 
-    utils.clearText(composeTestRule, "date_min")
+    utils.clearText(composeTestRule, DateFieldConfigurationTestTags.MIN)
     assertions.assertPropertyNull(updates.lastOrNull(), { it.minDate }, "minDate")
   }
 
@@ -194,7 +194,7 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
           enabled = true)
     }
 
-    utils.clearText(composeTestRule, "date_max")
+    utils.clearText(composeTestRule, DateFieldConfigurationTestTags.MAX)
     assertions.assertPropertyNull(updates.lastOrNull(), { it.maxDate }, "maxDate")
   }
 }

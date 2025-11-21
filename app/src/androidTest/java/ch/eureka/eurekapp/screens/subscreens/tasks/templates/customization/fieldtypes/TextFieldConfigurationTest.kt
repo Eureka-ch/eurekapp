@@ -14,9 +14,9 @@ class TextFieldConfigurationTest : BaseFieldConfigurationTest() {
         content = {
           TextFieldConfiguration(fieldType = FieldType.Text(), onUpdate = {}, enabled = true)
         },
-        "text_max_length",
-        "text_min_length",
-        "text_placeholder")
+        TextFieldConfigurationTestTags.MAX_LENGTH,
+        TextFieldConfigurationTestTags.MIN_LENGTH,
+        TextFieldConfigurationTestTags.PLACEHOLDER)
   }
 
   @Test
@@ -29,7 +29,7 @@ class TextFieldConfigurationTest : BaseFieldConfigurationTest() {
           TextFieldConfiguration(fieldType = FieldType.Text(), onUpdate = onUpdate, enabled = true)
         },
         capturedUpdate = updates,
-        testTag = "text_max_length",
+        testTag = TextFieldConfigurationTestTags.MAX_LENGTH,
         inputValue = "100") { updated ->
           assertions.assertPropertyEquals(100, updated, { it.maxLength }, "maxLength")
         }
@@ -45,7 +45,7 @@ class TextFieldConfigurationTest : BaseFieldConfigurationTest() {
           TextFieldConfiguration(fieldType = FieldType.Text(), onUpdate = onUpdate, enabled = true)
         },
         capturedUpdate = updates,
-        testTag = "text_min_length",
+        testTag = TextFieldConfigurationTestTags.MIN_LENGTH,
         inputValue = "5") { updated ->
           assertions.assertPropertyEquals(5, updated, { it.minLength }, "minLength")
         }
@@ -61,7 +61,7 @@ class TextFieldConfigurationTest : BaseFieldConfigurationTest() {
           TextFieldConfiguration(fieldType = FieldType.Text(), onUpdate = onUpdate, enabled = true)
         },
         capturedUpdate = updates,
-        testTag = "text_placeholder",
+        testTag = TextFieldConfigurationTestTags.PLACEHOLDER,
         inputValue = "Enter text") { updated ->
           assertions.assertPropertyEquals("Enter text", updated, { it.placeholder }, "placeholder")
         }
@@ -96,9 +96,9 @@ class TextFieldConfigurationTest : BaseFieldConfigurationTest() {
         content = {
           TextFieldConfiguration(fieldType = FieldType.Text(), onUpdate = {}, enabled = false)
         },
-        "text_max_length",
-        "text_min_length",
-        "text_placeholder")
+        TextFieldConfigurationTestTags.MAX_LENGTH,
+        TextFieldConfigurationTestTags.MIN_LENGTH,
+        TextFieldConfigurationTestTags.PLACEHOLDER)
   }
 
   @Test
@@ -108,7 +108,7 @@ class TextFieldConfigurationTest : BaseFieldConfigurationTest() {
           fieldType = FieldType.Text(placeholder = "Type here"), onUpdate = {}, enabled = true)
     }
 
-    utils.assertNodesDisplayed(composeTestRule, "text_placeholder")
+    utils.assertNodesDisplayed(composeTestRule, TextFieldConfigurationTestTags.PLACEHOLDER)
   }
 
   @Test
@@ -118,7 +118,7 @@ class TextFieldConfigurationTest : BaseFieldConfigurationTest() {
           fieldType = FieldType.Text(maxLength = 50), onUpdate = {}, enabled = true)
     }
 
-    utils.assertNodesDisplayed(composeTestRule, "text_max_length")
+    utils.assertNodesDisplayed(composeTestRule, TextFieldConfigurationTestTags.MAX_LENGTH)
   }
 
   @Test
@@ -128,6 +128,6 @@ class TextFieldConfigurationTest : BaseFieldConfigurationTest() {
           fieldType = FieldType.Text(minLength = 3), onUpdate = {}, enabled = true)
     }
 
-    utils.assertNodesDisplayed(composeTestRule, "text_min_length")
+    utils.assertNodesDisplayed(composeTestRule, TextFieldConfigurationTestTags.MIN_LENGTH)
   }
 }

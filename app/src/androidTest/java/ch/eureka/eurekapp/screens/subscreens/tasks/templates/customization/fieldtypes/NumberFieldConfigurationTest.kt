@@ -20,11 +20,11 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
         content = {
           NumberFieldConfiguration(fieldType = FieldType.Number(), onUpdate = {}, enabled = true)
         },
-        "number_min",
-        "number_max",
-        "number_step",
-        "number_decimals",
-        "number_unit")
+        NumberFieldConfigurationTestTags.MIN,
+        NumberFieldConfigurationTestTags.MAX,
+        NumberFieldConfigurationTestTags.STEP,
+        NumberFieldConfigurationTestTags.DECIMALS,
+        NumberFieldConfigurationTestTags.UNIT)
   }
 
   @Test
@@ -38,7 +38,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
               fieldType = FieldType.Number(), onUpdate = onUpdate, enabled = true)
         },
         capturedUpdate = updates,
-        testTag = "number_min",
+        testTag = NumberFieldConfigurationTestTags.MIN,
         inputValue = "10.5") { updated ->
           assertions.assertPropertyEquals(10.5, updated, { it.min }, "min")
         }
@@ -55,7 +55,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
               fieldType = FieldType.Number(), onUpdate = onUpdate, enabled = true)
         },
         capturedUpdate = updates,
-        testTag = "number_max",
+        testTag = NumberFieldConfigurationTestTags.MAX,
         inputValue = "100.0") { updated ->
           assertions.assertPropertyEquals(100.0, updated, { it.max }, "max")
         }
@@ -72,7 +72,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
               fieldType = FieldType.Number(), onUpdate = onUpdate, enabled = true)
         },
         capturedUpdate = updates,
-        testTag = "number_step",
+        testTag = NumberFieldConfigurationTestTags.STEP,
         inputValue = "0.5") { updated ->
           assertions.assertPropertyEquals(0.5, updated, { it.step }, "step")
         }
@@ -89,7 +89,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
               fieldType = FieldType.Number(), onUpdate = onUpdate, enabled = true)
         },
         capturedUpdate = updates,
-        testTag = "number_unit",
+        testTag = NumberFieldConfigurationTestTags.UNIT,
         inputValue = "kg") { updated ->
           assertions.assertPropertyEquals("kg", updated, { it.unit }, "unit")
         }
@@ -128,7 +128,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
               fieldType = FieldType.Number(), onUpdate = onUpdate, enabled = true)
         },
         capturedUpdate = updates,
-        testTag = "number_min",
+        testTag = NumberFieldConfigurationTestTags.MIN,
         inputValue = "-25.5") { updated ->
           assertions.assertPropertyEquals(-25.5, updated, { it.min }, "min")
         }
@@ -145,7 +145,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
               fieldType = FieldType.Number(), onUpdate = onUpdate, enabled = true)
         },
         capturedUpdate = updates,
-        testTag = "number_decimals",
+        testTag = NumberFieldConfigurationTestTags.DECIMALS,
         inputValue = "abc") { updated ->
           assertions.assertPropertyEquals(0, updated, { it.decimals }, "decimals")
         }
@@ -158,11 +158,11 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
         content = {
           NumberFieldConfiguration(fieldType = FieldType.Number(), onUpdate = {}, enabled = false)
         },
-        "number_min",
-        "number_max",
-        "number_step",
-        "number_decimals",
-        "number_unit")
+        NumberFieldConfigurationTestTags.MIN,
+        NumberFieldConfigurationTestTags.MAX,
+        NumberFieldConfigurationTestTags.STEP,
+        NumberFieldConfigurationTestTags.DECIMALS,
+        NumberFieldConfigurationTestTags.UNIT)
   }
 
   @Test
@@ -176,7 +176,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
               fieldType = FieldType.Number(), onUpdate = onUpdate, enabled = true)
         },
         capturedUpdate = updates,
-        testTag = "number_decimals",
+        testTag = NumberFieldConfigurationTestTags.DECIMALS,
         inputValue = "0") { updated ->
           assertions.assertPropertyEquals(0, updated, { it.decimals }, "decimals")
         }
@@ -190,7 +190,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
           NumberFieldConfiguration(
               fieldType = FieldType.Number(min = 5.0), onUpdate = {}, enabled = true)
         },
-        "number_min")
+        NumberFieldConfigurationTestTags.MIN)
   }
 
   @Test
@@ -201,7 +201,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
           NumberFieldConfiguration(
               fieldType = FieldType.Number(max = 100.0), onUpdate = {}, enabled = true)
         },
-        "number_max")
+        NumberFieldConfigurationTestTags.MAX)
   }
 
   @Test
@@ -212,7 +212,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
           NumberFieldConfiguration(
               fieldType = FieldType.Number(step = 0.1), onUpdate = {}, enabled = true)
         },
-        "number_step")
+        NumberFieldConfigurationTestTags.STEP)
   }
 
   @Test
@@ -223,7 +223,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
           NumberFieldConfiguration(
               fieldType = FieldType.Number(unit = "meters"), onUpdate = {}, enabled = true)
         },
-        "number_unit")
+        NumberFieldConfigurationTestTags.UNIT)
   }
 
   @Test
@@ -237,7 +237,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
               fieldType = FieldType.Number(), onUpdate = onUpdate, enabled = true)
         },
         capturedUpdate = updates,
-        testTag = "number_decimals",
+        testTag = NumberFieldConfigurationTestTags.DECIMALS,
         inputValue = "2") { updated ->
           assertions.assertPropertyEquals(2, updated, { it.decimals }, "decimals")
         }
@@ -251,7 +251,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
           fieldType = FieldType.Number(unit = "kg"), onUpdate = { updates.add(it) }, enabled = true)
     }
 
-    utils.clearText(composeTestRule, "number_unit")
+    utils.clearText(composeTestRule, NumberFieldConfigurationTestTags.UNIT)
     assertions.assertPropertyNull(updates.lastOrNull(), { it.unit }, "unit")
   }
 
@@ -263,7 +263,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
           fieldType = FieldType.Number(min = 10.0), onUpdate = { updates.add(it) }, enabled = true)
     }
 
-    utils.clearText(composeTestRule, "number_min")
+    utils.clearText(composeTestRule, NumberFieldConfigurationTestTags.MIN)
     assertions.assertPropertyNull(updates.lastOrNull(), { it.min }, "min")
   }
 }
