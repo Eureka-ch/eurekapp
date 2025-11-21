@@ -16,15 +16,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AssignmentTurnedIn
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Chat
-import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.outlined.AssignmentTurnedIn
+import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -147,7 +145,8 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
           // Conversations tab - between Tasks and Ideas (left of Home)
           CustomIconButtonComposable(
               modifier =
-                  Modifier.weight(1f).testTag(BottomBarNavigationTestTags.CONVERSATIONS_SCREEN_BUTTON),
+                  Modifier.weight(1f)
+                      .testTag(BottomBarNavigationTestTags.CONVERSATIONS_SCREEN_BUTTON),
               "Chats",
               onClick = { navigateToTab(Route.ConversationsSection.Conversations) },
               iconVector = Icons.Outlined.Chat,

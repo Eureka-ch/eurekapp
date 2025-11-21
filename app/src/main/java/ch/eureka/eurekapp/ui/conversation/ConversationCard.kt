@@ -7,7 +7,9 @@
 
 package ch.eureka.eurekapp.ui.conversation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
@@ -26,10 +29,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
+import coil.compose.AsyncImage
 
 /*
 Co-author: GPT-5 Codex
@@ -71,12 +77,28 @@ fun ConversationCard(
         Row(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically) {
-              // Avatar/icon representing the other user in the conversation
-              Icon(
-                  imageVector = Icons.Default.Person,
-                  contentDescription = "Member icon",
-                  modifier = Modifier.size(40.dp),
-                  tint = MaterialTheme.colorScheme.primary)
+              // Avatar: show Google profile photo if available, otherwise show default icon
+              if (displayData.otherMemberPhotoUrl.isNotEmpty()) {
+                AsyncImage(
+                    model = displayData.otherMemberPhotoUrl,
+                    contentDescription = "Profile picture of ${displayData.otherMemberName}",
+                    modifier = Modifier.size(48.dp).clip(CircleShape),
+                    contentScale = ContentScale.Crop)
+              } else {
+                // Fallback: default person icon in a circular background
+                Box(
+                    modifier =
+                        Modifier.size(48.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center) {
+                      Icon(
+                          imageVector = Icons.Default.Person,
+                          contentDescription = "Member icon",
+                          modifier = Modifier.size(28.dp),
+                          tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                    }
+              }
 
               Spacer(modifier = Modifier.width(12.dp))
 
