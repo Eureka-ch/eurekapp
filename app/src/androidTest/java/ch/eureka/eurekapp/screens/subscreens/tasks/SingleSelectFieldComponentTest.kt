@@ -55,7 +55,7 @@ class SingleSelectFieldComponentTest {
   }
 
   @Test
-  fun singleSelectFieldComponent_editMode_showsDropdown() {
+  fun singleSelectFieldComponent_editModeShowsDropdown() {
     setFieldContent()
     composeTestRule
         .onNodeWithTag(SingleSelectFieldTestTags.dropdown("test_select"))
@@ -63,14 +63,14 @@ class SingleSelectFieldComponentTest {
   }
 
   @Test
-  fun singleSelectFieldComponent_editMode_menuOpensOnClick() {
+  fun singleSelectFieldComponent_editModeMenuOpensOnClick() {
     setFieldContent()
     composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.dropdown("test_select")).performClick()
     composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.menu("test_select")).assertIsDisplayed()
   }
 
   @Test
-  fun singleSelectFieldComponent_editMode_displaysAllOptions() {
+  fun singleSelectFieldComponent_editModeDisplaysAllOptions() {
     setFieldContent()
     composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.dropdown("test_select")).performClick()
     composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.option("low")).assertIsDisplayed()
@@ -79,7 +79,7 @@ class SingleSelectFieldComponentTest {
   }
 
   @Test
-  fun singleSelectFieldComponent_editMode_displaysOptionDescriptions() {
+  fun singleSelectFieldComponent_editModeDisplaysOptionDescriptions() {
     setFieldContent()
     composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.dropdown("test_select")).performClick()
     composeTestRule.onNodeWithTag(SingleSelectFieldTestTags.option("low")).assertIsDisplayed()
@@ -91,7 +91,7 @@ class SingleSelectFieldComponentTest {
   }
 
   @Test
-  fun singleSelectFieldComponent_editMode_selectingOptionUpdatesValue() {
+  fun singleSelectFieldComponent_editModeSelectingOptionUpdatesValue() {
     var capturedValue: FieldValue.SingleSelectValue? = null
     setFieldContent(onValueChange = { capturedValue = it })
 
@@ -103,13 +103,13 @@ class SingleSelectFieldComponentTest {
   }
 
   @Test
-  fun singleSelectFieldComponent_editMode_selectedValueDisplaysInTextField() {
+  fun singleSelectFieldComponent_editModeSelectedValueDisplaysInTextField() {
     setFieldContent(value = FieldValue.SingleSelectValue("medium"))
     composeTestRule.onNodeWithText("Medium").assertIsDisplayed()
   }
 
   @Test
-  fun singleSelectFieldComponent_viewMode_showsSelectedValue() {
+  fun singleSelectFieldComponent_viewModeShowsSelectedValue() {
     setFieldContent(
         value = FieldValue.SingleSelectValue("high"), mode = FieldInteractionMode.ViewOnly)
     composeTestRule
@@ -119,7 +119,7 @@ class SingleSelectFieldComponentTest {
   }
 
   @Test
-  fun singleSelectFieldComponent_viewMode_doesNotShowDropdown() {
+  fun singleSelectFieldComponent_viewModeDoesNotShowDropdown() {
     setFieldContent(
         value = FieldValue.SingleSelectValue("low"), mode = FieldInteractionMode.ViewOnly)
     composeTestRule
@@ -128,14 +128,14 @@ class SingleSelectFieldComponentTest {
   }
 
   @Test
-  fun singleSelectFieldComponent_viewMode_displaysOptionLabel() {
+  fun singleSelectFieldComponent_viewModeDisplaysOptionLabel() {
     setFieldContent(
         value = FieldValue.SingleSelectValue("medium"), mode = FieldInteractionMode.ViewOnly)
     composeTestRule.onNodeWithText("Medium").assertIsDisplayed()
   }
 
   @Test
-  fun singleSelectFieldComponent_allowCustomTrue_allowsCustomInput() {
+  fun singleSelectFieldComponent_allowCustomTrueAllowsCustomInput() {
     val fieldWithCustom =
         testFieldDefinition.copy(
             type = FieldType.SingleSelect(options = testOptions, allowCustom = true))
@@ -155,7 +155,7 @@ class SingleSelectFieldComponentTest {
   }
 
   @Test
-  fun singleSelectFieldComponent_allowCustomTrue_displaysCustomValue() {
+  fun singleSelectFieldComponent_allowCustomTrueDisplaysCustomValue() {
     val fieldWithCustom =
         testFieldDefinition.copy(
             type = FieldType.SingleSelect(options = testOptions, allowCustom = true))
@@ -167,13 +167,13 @@ class SingleSelectFieldComponentTest {
   }
 
   @Test
-  fun singleSelectFieldComponent_toggleableMode_showsToggleButton() {
+  fun singleSelectFieldComponent_toggleableModeShowsToggleButton() {
     setFieldContent(mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false))
     composeTestRule.onNodeWithTag(BaseFieldTestTags.toggle("test_select")).assertIsDisplayed()
   }
 
   @Test
-  fun singleSelectFieldComponent_toggleableMode_callsOnModeToggle() {
+  fun singleSelectFieldComponent_toggleableModeCallsOnModeToggle() {
     var toggleCalled = false
     setFieldContent(
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false),
@@ -184,25 +184,25 @@ class SingleSelectFieldComponentTest {
   }
 
   @Test
-  fun singleSelectFieldComponent_requiredField_showsAsterisk() {
+  fun singleSelectFieldComponent_requiredFieldShowsAsterisk() {
     setFieldContent(fieldDef = testFieldDefinition.copy(required = true))
     composeTestRule.onNodeWithText("Test Single Select *").assertIsDisplayed()
   }
 
   @Test
-  fun singleSelectFieldComponent_withDescription_showsDescription() {
+  fun singleSelectFieldComponent_withDescriptionShowsDescription() {
     setFieldContent(fieldDef = testFieldDefinition.copy(description = "Choose a priority level"))
     composeTestRule.onNodeWithText("Choose a priority level").assertIsDisplayed()
   }
 
   @Test
-  fun singleSelectFieldComponent_editMode_showsConstraintHint() {
+  fun singleSelectFieldComponent_editModeShowsConstraintHint() {
     setFieldContent()
     composeTestRule.onNodeWithText("3 options").assertIsDisplayed()
   }
 
   @Test
-  fun singleSelectFieldComponent_allowCustomTrue_showsConstraintHint() {
+  fun singleSelectFieldComponent_allowCustomTrueShowsConstraintHint() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -211,21 +211,21 @@ class SingleSelectFieldComponentTest {
   }
 
   @Test
-  fun singleSelectFieldComponent_whenValidationEnabled_showsErrors() {
+  fun singleSelectFieldComponent_whenValidationEnabledShowsErrors() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(required = true), showValidationErrors = true)
     composeTestRule.onNodeWithText("This field is required").assertIsDisplayed()
   }
 
   @Test
-  fun singleSelectFieldComponent_whenValidationDisabled_doesNotShowErrors() {
+  fun singleSelectFieldComponent_whenValidationDisabledDoesNotShowErrors() {
     setFieldContent(
         fieldDef = testFieldDefinition.copy(required = true), showValidationErrors = false)
     composeTestRule.onNodeWithText("This field is required").assertDoesNotExist()
   }
 
   @Test
-  fun singleSelectFieldComponent_allowCustomTrue_showsCustomValueOption() {
+  fun singleSelectFieldComponent_allowCustomTrueShowsCustomValueOption() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -236,7 +236,7 @@ class SingleSelectFieldComponentTest {
   }
 
   @Test
-  fun singleSelectFieldComponent_allowCustomFalse_doesNotShowCustomValueOption() {
+  fun singleSelectFieldComponent_allowCustomFalseDoesNotShowCustomValueOption() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -246,7 +246,7 @@ class SingleSelectFieldComponentTest {
   }
 
   @Test
-  fun singleSelectFieldComponent_customMode_showsPlaceholder() {
+  fun singleSelectFieldComponent_customModeShowsPlaceholder() {
     setFieldContent(
         fieldDef =
             testFieldDefinition.copy(
@@ -303,7 +303,7 @@ class SingleSelectFieldComponentTest {
   }
 
   @Test
-  fun singleSelectFieldComponent_toggleableSave_callsOnSaveCallback() {
+  fun singleSelectFieldComponent_toggleableSaveCallsOnSaveCallback() {
     var saveCalled = false
     setFieldContent(
         value = FieldValue.SingleSelectValue("low"),
@@ -315,7 +315,7 @@ class SingleSelectFieldComponentTest {
   }
 
   @Test
-  fun singleSelectFieldComponent_toggleableCancel_callsOnCancelCallback() {
+  fun singleSelectFieldComponent_toggleableCancelCallsOnCancelCallback() {
     var cancelCalled = false
     setFieldContent(
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
@@ -333,7 +333,7 @@ class SingleSelectFieldComponentTest {
   }
 
   @Test
-  fun singleSelectFieldComponent_viewMode_customValueNotInOptions_displaysValue() {
+  fun singleSelectFieldComponent_viewModeCustomValueNotInOptionsDisplaysValue() {
     setFieldContent(
         value = FieldValue.SingleSelectValue("unknown_option"),
         mode = FieldInteractionMode.ViewOnly)

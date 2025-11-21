@@ -31,6 +31,7 @@ object NumberFieldTestTags {
  * @param mode The interaction mode (EditOnly, ViewOnly, or Toggleable)
  * @param showValidationErrors Whether to display validation errors
  * @param callbacks callbacks to be applied
+ * @param showHeader Whether to show the header (label, description, action buttons)
  * @param modifier The modifier to apply to the component
  */
 @Composable
@@ -40,8 +41,9 @@ fun NumberFieldComponent(
     value: FieldValue.NumberValue?,
     onValueChange: (FieldValue.NumberValue) -> Unit,
     mode: FieldInteractionMode,
-    showValidationErrors: Boolean = false,
     callbacks: FieldCallbacks = FieldCallbacks(),
+    showValidationErrors: Boolean = false,
+    showHeader: Boolean = true
 ) {
   val fieldType = fieldDefinition.type as FieldType.Number
 
@@ -53,6 +55,7 @@ fun NumberFieldComponent(
       mode = mode,
       callbacks = callbacks,
       showValidationErrors = showValidationErrors,
+      showHeader = showHeader,
       modifier = modifier) { currentValue, onChange, isEditing ->
         if (isEditing) {
           OutlinedTextField(
@@ -60,6 +63,7 @@ fun NumberFieldComponent(
               onValueChange = { newText ->
                 val trimmedText = newText.trim()
                 if (trimmedText.isEmpty()) {
+                  onChange(FieldValue.NumberValue(null))
                   return@OutlinedTextField
                 }
                 if (trimmedText.matches(Regex("^-?\\d*\\.?\\d*$"))) {
@@ -89,9 +93,9 @@ fun NumberFieldComponent(
 }
 
 private fun formatNumberValue(value: FieldValue.NumberValue?, fieldType: FieldType.Number): String {
-  return value?.let {
+  return value?.value?.let { numValue ->
     val decimals = fieldType.decimals ?: 0
-    val formatted = "%.${decimals}f".format(it.value)
+    val formatted = "%.${decimals}f".format(numValue)
     if (fieldType.unit != null) {
       "$formatted ${fieldType.unit}"
     } else {
