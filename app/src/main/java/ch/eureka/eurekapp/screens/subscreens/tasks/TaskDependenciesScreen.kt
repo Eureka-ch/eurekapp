@@ -97,7 +97,9 @@ fun TaskDependenciesScreen(
         Row(
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
             horizontalArrangement = Arrangement.Start) {
-              BackButton(onClick = { navigationController.popBackStack() })
+              BackButton(
+                  onClick = { navigationController.popBackStack() },
+                  modifier = Modifier.testTag("back_button_dependencies"))
             }
         ScreenTitle()
         /*
