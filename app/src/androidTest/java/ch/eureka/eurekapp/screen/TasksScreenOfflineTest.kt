@@ -1,6 +1,5 @@
 package ch.eureka.eurekapp.screen
 
-import android.content.Context
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
@@ -10,7 +9,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.user.User
@@ -21,8 +19,7 @@ import ch.eureka.eurekapp.ui.tasks.MockTaskRepository
 import ch.eureka.eurekapp.ui.tasks.MockUserRepository
 import ch.eureka.eurekapp.ui.tasks.TaskScreenViewModel
 import ch.eureka.eurekapp.utils.FirebaseEmulator
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import kotlinx.coroutines.flow.flowOf
 import org.junit.After
 import org.junit.Before
@@ -263,14 +260,5 @@ class TasksScreenOfflineTest {
     // Assert that navigation callback was triggered with correct IDs
     assert(navigatedTaskId == "task1") { "Task ID should be captured on click" }
     assert(navigatedProjectId == "proj1") { "Project ID should be captured on click" }
-  }
-
-  class MockConnectivityObserver(context: Context) : ConnectivityObserver(context) {
-    private val _isConnected = MutableStateFlow(true)
-    override val isConnected: Flow<Boolean> = _isConnected
-
-    fun setConnected(connected: Boolean) {
-      _isConnected.value = connected
-    }
   }
 }

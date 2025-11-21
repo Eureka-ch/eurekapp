@@ -75,7 +75,11 @@ fun EurekaTaskCard(
                 // Checkbox aligned to the right
                 Box(
                     modifier =
-                        Modifier.clickable(enabled = canToggleCompletion) { onToggleComplete() }
+                        Modifier.clickable {
+                              if (canToggleCompletion) {
+                                onToggleComplete()
+                              }
+                            }
                             .alpha(if (canToggleCompletion) 1f else 0.6f)) {
                       if (isCompleted) {
                         Text(

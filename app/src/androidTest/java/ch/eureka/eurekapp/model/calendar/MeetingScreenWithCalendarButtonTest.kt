@@ -22,6 +22,7 @@ import ch.eureka.eurekapp.ui.meeting.MeetingScreenConfig
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingViewModel
 import ch.eureka.eurekapp.ui.meeting.calendar.MeetingCalendarViewModelTest
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import io.mockk.every
 import io.mockk.mockk
@@ -121,6 +122,8 @@ class MeetingScreenWithCalendarButtonTest {
     val context: Context = ApplicationProvider.getApplicationContext()
     val contentResolver: ContentResolver = context.contentResolver
 
+    val mockConnectivityObserver = MockConnectivityObserver(context)
+
     val mockedMeetingRepository: FirestoreMeetingRepository = mockk<FirestoreMeetingRepository>()
     every { mockedMeetingRepository.getParticipants(any(), any()) } returns
         flowOf(listOf(Participant(), Participant()))
@@ -135,11 +138,14 @@ class MeetingScreenWithCalendarButtonTest {
             usersRepository = mockedUsersRepository)
 
     val meetingViewModel =
-        MeetingViewModel(repository = MockedMeetingRepository(), getCurrentUserId = { "testUser" })
+        MeetingViewModel(
+            repository = MockedMeetingRepository(),
+            getCurrentUserId = { "testUser" },
+            connectivityObserver = mockConnectivityObserver)
 
     composeRule.setContent {
       MeetingScreen(
-          config = MeetingScreenConfig(projectId = "test-project-id", onCreateMeeting = {}),
+          config = MeetingScreenConfig(projectId = "test-project-id", onCreateMeeting = { _ -> }),
           calendarViewModel = calendarViewModel,
           meetingViewModel = meetingViewModel,
       )
