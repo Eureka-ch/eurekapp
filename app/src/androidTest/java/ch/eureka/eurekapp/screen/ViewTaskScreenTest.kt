@@ -384,6 +384,16 @@ open class ViewTaskScreenTest : TestCase() {
         // Verify we're on TasksScreen
         composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
 
+        // Wait for task card to load from Firestore
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          try {
+            composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).assertExists()
+            true
+          } catch (e: AssertionError) {
+            false
+          }
+        }
+
         // Click on the task card
         composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).performClick()
 
