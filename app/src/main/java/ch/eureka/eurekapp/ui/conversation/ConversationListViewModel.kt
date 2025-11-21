@@ -47,11 +47,13 @@ data class ConversationListState(
  *
  * @property conversation The underlying conversation data.
  * @property otherMemberName Display name of the other member in the conversation.
+ * @property otherMemberPhotoUrl Photo URL of the other member (from Google profile).
  * @property projectName Name of the project this conversation belongs to.
  */
 data class ConversationDisplayData(
     val conversation: Conversation,
     val otherMemberName: String,
+    val otherMemberPhotoUrl: String,
     val projectName: String
 )
 
@@ -171,6 +173,7 @@ class ConversationListViewModel(
     return ConversationDisplayData(
         conversation = conversation,
         otherMemberName = otherUser?.displayName ?: "Unknown User",
+        otherMemberPhotoUrl = otherUser?.photoUrl ?: "",
         projectName = project?.name ?: "Unknown Project")
   }
 
