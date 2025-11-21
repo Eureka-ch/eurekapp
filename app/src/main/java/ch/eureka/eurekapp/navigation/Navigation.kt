@@ -30,6 +30,8 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
 import ch.eureka.eurekapp.ui.authentication.TokenEntryScreen
+import ch.eureka.eurekapp.ui.conversation.ConversationListScreen
+import ch.eureka.eurekapp.ui.conversation.CreateConversationScreen
 import ch.eureka.eurekapp.ui.map.MeetingLocationSelectionScreen
 import ch.eureka.eurekapp.ui.meeting.CreateDateTimeFormatProposalForMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
@@ -73,6 +75,18 @@ sealed interface Route {
     @Serializable data object AutoTaskAssignment : TasksSection
 
     @Serializable data object TaskDependence : TasksSection
+  }
+
+  // Conversations section - 1-on-1 chats between project members
+  sealed interface ConversationsSection : Route {
+    companion object {
+      val routes: Set<KClass<out ConversationsSection>>
+        get() = ConversationsSection::class.sealedSubclasses.toSet()
+    }
+
+    @Serializable data object Conversations : ConversationsSection
+
+    @Serializable data object CreateConversation : ConversationsSection
   }
 
   sealed interface IdeasSection : Route {
@@ -226,6 +240,24 @@ fun NavigationMenu() {
                 val taskDetailRoute = backStackEntry.toRoute<Route.TasksSection.ViewTask>()
                 ViewTaskScreen(
                     taskDetailRoute.projectId, taskDetailRoute.taskId, navigationController)
+              }
+
+              // Conversations section
+              composable<Route.ConversationsSection.Conversations> {
+                ConversationListScreen(
+                    onCreateConversation = {
+                      navigationController.navigate(Route.ConversationsSection.CreateConversation)
+                    },
+                    onConversationClick = { conversationId ->
+                      // Future: navigate to chat screen
+                    })
+              }
+              composable<Route.ConversationsSection.CreateConversation> {
+                CreateConversationScreen(
+                    onConversationCreated = {
+                      navigationController.navigate(Route.ConversationsSection.Conversations)
+                    },
+                    onNavigateBack = { navigationController.popBackStack() })
               }
 
               // Ideas section

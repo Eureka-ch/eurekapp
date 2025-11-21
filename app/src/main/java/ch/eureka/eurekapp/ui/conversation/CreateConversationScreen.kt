@@ -49,9 +49,7 @@ Co-author: GPT-5 Codex
 Co-author: Claude 4.5 Sonnet
 */
 
-/**
- * Test tags for the CreateConversationScreen component.
- */
+/** Test tags for the CreateConversationScreen component. */
 object CreateConversationScreenTestTags {
   const val SCREEN = "CreateConversationScreen"
   const val TITLE = "CreateConversationTitle"
@@ -112,11 +110,7 @@ fun CreateConversationScreen(
 
   Scaffold(modifier = Modifier.testTag(CreateConversationScreenTestTags.SCREEN)) { padding ->
     Column(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = Spacing.md),
+        modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = Spacing.md),
         verticalArrangement = Arrangement.Top) {
           // Screen title
           Spacer(modifier = Modifier.height(Spacing.md))
@@ -157,16 +151,13 @@ fun CreateConversationScreen(
                     trailingIcon = {
                       if (uiState.isLoadingProjects) {
                         CircularProgressIndicator(
-                            modifier = Modifier.padding(end = 8.dp),
-                            strokeWidth = 2.dp)
+                            modifier = Modifier.padding(end = 8.dp), strokeWidth = 2.dp)
                       } else {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = projectDropdownExpanded)
                       }
                     },
                     modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(MenuAnchorType.PrimaryNotEditable))
+                        Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable))
 
                 // Project dropdown menu items
                 ExposedDropdownMenu(
@@ -180,7 +171,8 @@ fun CreateConversationScreen(
                               projectDropdownExpanded = false
                             },
                             modifier =
-                                Modifier.testTag(CreateConversationScreenTestTags.PROJECT_DROPDOWN_ITEM))
+                                Modifier.testTag(
+                                    CreateConversationScreenTestTags.PROJECT_DROPDOWN_ITEM))
                       }
                     }
               }
@@ -224,12 +216,11 @@ fun CreateConversationScreen(
                         readOnly = true,
                         placeholder = { Text("Select a member") },
                         trailingIcon = {
-                          ExposedDropdownMenuDefaults.TrailingIcon(expanded = memberDropdownExpanded)
+                          ExposedDropdownMenuDefaults.TrailingIcon(
+                              expanded = memberDropdownExpanded)
                         },
                         modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .menuAnchor(MenuAnchorType.PrimaryNotEditable))
+                            Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable))
 
                     // Member dropdown menu items
                     ExposedDropdownMenu(
@@ -268,14 +259,11 @@ fun CreateConversationScreen(
               onClick = { viewModel.createConversation() },
               enabled = canCreate,
               modifier =
-                  Modifier
-                      .fillMaxWidth()
-                      .testTag(CreateConversationScreenTestTags.CREATE_BUTTON)) {
+                  Modifier.fillMaxWidth().testTag(CreateConversationScreenTestTags.CREATE_BUTTON)) {
                 if (uiState.isCreating) {
                   // Show loading indicator while creating
                   CircularProgressIndicator(
-                      color = MaterialTheme.colorScheme.onPrimary,
-                      strokeWidth = 2.dp)
+                      color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
                 } else {
                   Text("Create Conversation")
                 }
