@@ -11,6 +11,7 @@ import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.screens.IdeasScreenTestTags
 import ch.eureka.eurekapp.screens.SelfNotesScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
+import ch.eureka.eurekapp.ui.conversation.ConversationListScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.ui.profile.ProfileScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
@@ -79,6 +80,9 @@ class NavigationMenuTest : TestCase() {
         .onNodeWithTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON)
         .assertIsDisplayed()
     composeTestRule
+        .onNodeWithTag(BottomBarNavigationTestTags.CONVERSATIONS_SCREEN_BUTTON)
+        .assertIsDisplayed()
+    composeTestRule
         .onNodeWithTag(BottomBarNavigationTestTags.NOTES_SCREEN_BUTTON)
         .assertIsDisplayed()
   }
@@ -101,5 +105,10 @@ class NavigationMenuTest : TestCase() {
 
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.NOTES_SCREEN_BUTTON).performClick()
     composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.SCREEN).assertIsDisplayed()
+
+    composeTestRule
+        .onNodeWithTag(BottomBarNavigationTestTags.CONVERSATIONS_SCREEN_BUTTON)
+        .performClick()
+    composeTestRule.onNodeWithTag(ConversationListScreenTestTags.TITLE).assertIsDisplayed()
   }
 }
