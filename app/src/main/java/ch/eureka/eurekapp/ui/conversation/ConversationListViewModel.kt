@@ -70,7 +70,7 @@ data class ConversationDisplayData(
  * @property getCurrentUserId Function to get the current authenticated user's ID.
  * @property connectivityObserver Observer for network connectivity status.
  */
-class ConversationListViewModel(
+open class ConversationListViewModel(
     private val conversationRepository: ConversationRepository =
         FirestoreRepositoriesProvider.conversationRepository,
     private val userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository,
@@ -84,7 +84,7 @@ class ConversationListViewModel(
   private val _uiState = MutableStateFlow(ConversationListState())
 
   // Public read-only state exposed to the UI layer
-  val uiState: StateFlow<ConversationListState> = _uiState
+  open val uiState: StateFlow<ConversationListState> = _uiState
 
   // Network connectivity state, starts optimistically as connected
   private val _isConnected =
