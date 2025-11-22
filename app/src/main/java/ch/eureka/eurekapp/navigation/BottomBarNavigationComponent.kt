@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AssignmentTurnedIn
 import androidx.compose.material.icons.filled.CalendarToday
@@ -52,6 +54,7 @@ Co-author: GPT-5 Codex
 
 object BottomBarNavigationTestTags {
   const val TASKS_SCREEN_BUTTON = "TasksScreenButton"
+  const val CONVERSATIONS_SCREEN_BUTTON = "ConversationsScreenButton"
   const val IDEAS_SCREEN_BUTTON = "IdeasScreenButton"
   const val OVERVIEW_SCREEN_BUTTON = "OverviewScreenButton"
   const val MEETINGS_SCREEN_BUTTON = "MeetingsScreenButton"
@@ -76,6 +79,16 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
       remember(currentDestination) {
         derivedStateOf {
           Route.TasksSection.routes.any { routeClass ->
+            currentDestination?.hierarchy?.any { it.hasRoute(routeClass) } == true
+          }
+        }
+      }
+
+  // Check if conversations section is currently active
+  val isConversationsScreenPressed by
+      remember(currentDestination) {
+        derivedStateOf {
+          Route.ConversationsSection.routes.any { routeClass ->
             currentDestination?.hierarchy?.any { it.hasRoute(routeClass) } == true
           }
         }
@@ -131,6 +144,16 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
               iconVector = Icons.Outlined.AssignmentTurnedIn,
               pressedIconVector = Icons.Filled.AssignmentTurnedIn,
               isPressed = isTasksPressed)
+          // Conversations tab - between Tasks and Ideas (left of Home)
+          CustomIconButtonComposable(
+              modifier =
+                  Modifier.weight(1f)
+                      .testTag(BottomBarNavigationTestTags.CONVERSATIONS_SCREEN_BUTTON),
+              "Chats",
+              onClick = { navigateToTab(Route.ConversationsSection.Conversations) },
+              iconVector = Icons.AutoMirrored.Outlined.Chat,
+              pressedIconVector = Icons.AutoMirrored.Filled.Chat,
+              isPressed = isConversationsScreenPressed)
           CustomIconButtonComposable(
               modifier =
                   Modifier.weight(1f).testTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON),
