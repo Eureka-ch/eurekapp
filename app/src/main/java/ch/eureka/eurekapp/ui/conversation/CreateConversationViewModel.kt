@@ -77,7 +77,7 @@ data class MemberDisplayData(val member: Member, val user: User)
  * @property getCurrentUserId Function to get the current authenticated user's ID.
  * @property connectivityObserver Observer for network connectivity status.
  */
-class CreateConversationViewModel(
+open class CreateConversationViewModel(
     private val conversationRepository: ConversationRepository =
         FirestoreRepositoriesProvider.conversationRepository,
     private val projectRepository: ProjectRepository =
@@ -88,7 +88,7 @@ class CreateConversationViewModel(
 ) : ViewModel() {
 
   private val _uiState = MutableStateFlow(CreateConversationState())
-  val uiState: StateFlow<CreateConversationState> = _uiState
+  open val uiState: StateFlow<CreateConversationState> = _uiState
 
   private val _isConnected =
       connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
