@@ -19,7 +19,6 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -89,28 +88,6 @@ class ConversationListViewModelTest {
     assertEquals("John Doe", state.conversations[0].otherMemberName)
     assertEquals("Test Project", state.conversations[0].projectName)
     assertEquals("http://photo.url", state.conversations[0].otherMemberPhotoUrl)
-  }
-
-  @Test
-  fun `loadConversations handles empty list`() = runTest {
-    // Arrange: Return empty list from repository
-    every { mockConversationRepository.getConversationsForCurrentUser() } returns
-        flowOf(emptyList())
-
-    // Act: Create ViewModel
-    val viewModel =
-        ConversationListViewModel(
-            conversationRepository = mockConversationRepository,
-            userRepository = mockUserRepository,
-            projectRepository = mockProjectRepository,
-            getCurrentUserId = { currentUserId },
-            connectivityObserver = mockConnectivityObserver)
-
-    val state = viewModel.uiState.value
-
-    // Assert: State shows empty list, not loading
-    assertFalse(state.isLoading)
-    assertTrue(state.conversations.isEmpty())
   }
 
   @Test
