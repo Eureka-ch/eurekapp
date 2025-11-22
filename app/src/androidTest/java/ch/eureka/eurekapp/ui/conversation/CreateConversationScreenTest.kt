@@ -43,8 +43,7 @@ class CreateConversationScreenTest {
   fun createConversationScreen_displaysTitle() {
     // Arrange: Set up screen with default state
     composeTestRule.setContent {
-      CreateConversationScreen(
-          onConversationCreated = {}, onNavigateBack = {}, viewModel = createMockViewModel())
+      CreateConversationScreen(onConversationCreated = {}, viewModel = createMockViewModel())
     }
 
     // Assert: Screen title is displayed
@@ -58,8 +57,7 @@ class CreateConversationScreenTest {
     val state = CreateConversationState(projects = listOf(Project(projectId = "p1", name = "Proj")))
 
     composeTestRule.setContent {
-      CreateConversationScreen(
-          onConversationCreated = {}, onNavigateBack = {}, viewModel = createMockViewModel(state))
+      CreateConversationScreen(onConversationCreated = {}, viewModel = createMockViewModel(state))
     }
 
     // Assert: Project dropdown is visible for selection
@@ -72,8 +70,7 @@ class CreateConversationScreenTest {
   fun createConversationScreen_memberDropdownHidden_whenNoProjectSelected() {
     // Arrange: No project selected yet
     composeTestRule.setContent {
-      CreateConversationScreen(
-          onConversationCreated = {}, onNavigateBack = {}, viewModel = createMockViewModel())
+      CreateConversationScreen(onConversationCreated = {}, viewModel = createMockViewModel())
     }
 
     // Assert: Member dropdown should not appear until project is selected
@@ -91,8 +88,7 @@ class CreateConversationScreenTest {
     val state = CreateConversationState(selectedProject = project, members = members)
 
     composeTestRule.setContent {
-      CreateConversationScreen(
-          onConversationCreated = {}, onNavigateBack = {}, viewModel = createMockViewModel(state))
+      CreateConversationScreen(onConversationCreated = {}, viewModel = createMockViewModel(state))
     }
 
     // Assert: Member dropdown appears after project selection
@@ -105,8 +101,7 @@ class CreateConversationScreenTest {
   fun createConversationScreen_createButtonDisabled_whenNoSelection() {
     // Arrange: Neither project nor member selected
     composeTestRule.setContent {
-      CreateConversationScreen(
-          onConversationCreated = {}, onNavigateBack = {}, viewModel = createMockViewModel())
+      CreateConversationScreen(onConversationCreated = {}, viewModel = createMockViewModel())
     }
 
     // Assert: Create button should be disabled until both are selected
@@ -128,8 +123,7 @@ class CreateConversationScreenTest {
             isConnected = true)
 
     composeTestRule.setContent {
-      CreateConversationScreen(
-          onConversationCreated = {}, onNavigateBack = {}, viewModel = createMockViewModel(state))
+      CreateConversationScreen(onConversationCreated = {}, viewModel = createMockViewModel(state))
     }
 
     // Assert: Create button is enabled when ready
@@ -145,8 +139,7 @@ class CreateConversationScreenTest {
             selectedProject = project, members = emptyList(), isLoadingMembers = false)
 
     composeTestRule.setContent {
-      CreateConversationScreen(
-          onConversationCreated = {}, onNavigateBack = {}, viewModel = createMockViewModel(state))
+      CreateConversationScreen(onConversationCreated = {}, viewModel = createMockViewModel(state))
     }
 
     // Assert: User sees message explaining no members available
