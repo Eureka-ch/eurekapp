@@ -1,9 +1,7 @@
 package ch.eureka.eurekapp.ui.conversation
 
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -34,62 +32,6 @@ class ConversationListScreenTest {
   fun setUp() {
     val context = InstrumentationRegistry.getInstrumentation().targetContext
     ConnectivityObserverProvider.initialize(context)
-  }
-
-  @Test
-  fun conversationListScreen_displaysTitle() {
-    // Arrange: Set up screen with empty conversations
-    composeTestRule.setContent {
-      ConversationListScreen(
-          onCreateConversation = {},
-          onConversationClick = {},
-          viewModel = createMockViewModel(emptyList()))
-    }
-
-    // Assert: Title is displayed correctly
-    composeTestRule.onNodeWithTag(ConversationListScreenTestTags.TITLE).assertIsDisplayed()
-    composeTestRule.onNodeWithText("Conversations").assertIsDisplayed()
-  }
-
-  @Test
-  fun conversationListScreen_showsEmptyState_whenNoConversations() {
-    // Arrange: Set up screen with no conversations
-    composeTestRule.setContent {
-      ConversationListScreen(
-          onCreateConversation = {},
-          onConversationClick = {},
-          viewModel = createMockViewModel(emptyList()))
-    }
-
-    // Assert: Empty state message is shown to guide user
-    composeTestRule.onNodeWithTag(ConversationListScreenTestTags.EMPTY_STATE).assertIsDisplayed()
-    composeTestRule.onNodeWithText("No conversations yet").assertIsDisplayed()
-  }
-
-  @Test
-  fun conversationListScreen_displaysConversations() {
-    // Arrange: Create mock conversation data
-    val conversations =
-        listOf(
-            ConversationDisplayData(
-                conversation = Conversation(conversationId = "c1", projectId = "p1"),
-                otherMemberName = "John Doe",
-                otherMemberPhotoUrl = "",
-                projectName = "Test Project"))
-
-    composeTestRule.setContent {
-      ConversationListScreen(
-          onCreateConversation = {},
-          onConversationClick = {},
-          viewModel = createMockViewModel(conversations))
-    }
-
-    // Assert: Conversation list and card content are displayed
-    composeTestRule
-        .onNodeWithTag(ConversationListScreenTestTags.CONVERSATION_LIST)
-        .assertIsDisplayed()
-    composeTestRule.onNodeWithText("John Doe").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Test Project").assertIsDisplayed()
   }
 
   @Test

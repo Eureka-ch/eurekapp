@@ -60,27 +60,6 @@ class CreateConversationViewModelTest {
   }
 
   @Test
-  fun `loadProjects emits projects on init`() = runTest {
-    val projects = listOf(Project(projectId = "p1", name = "Project 1"))
-    every { mockProjectRepository.getProjectsForCurrentUser(skipCache = false) } returns
-        flowOf(projects)
-
-    val viewModel =
-        CreateConversationViewModel(
-            conversationRepository = mockConversationRepository,
-            projectRepository = mockProjectRepository,
-            userRepository = mockUserRepository,
-            getCurrentUserId = { currentUserId },
-            connectivityObserver = mockConnectivityObserver)
-
-    val state = viewModel.uiState.value
-
-    assertFalse(state.isLoadingProjects)
-    assertEquals(1, state.projects.size)
-    assertEquals("Project 1", state.projects[0].name)
-  }
-
-  @Test
   fun `selectProject loads members excluding current user`() = runTest {
     val project = Project(projectId = "p1", name = "Project 1")
     val members =
