@@ -67,14 +67,10 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
     // Arrange: Create two conversations where current user is a member
     val conv1 =
         Conversation(
-            projectId = "project1",
-            memberIds = listOf(testUserId, "user2"),
-            createdBy = testUserId)
+            projectId = "project1", memberIds = listOf(testUserId, "user2"), createdBy = testUserId)
     val conv2 =
         Conversation(
-            projectId = "project2",
-            memberIds = listOf(testUserId, "user3"),
-            createdBy = testUserId)
+            projectId = "project2", memberIds = listOf(testUserId, "user3"), createdBy = testUserId)
 
     repository.createConversation(conv1)
     repository.createConversation(conv2)
