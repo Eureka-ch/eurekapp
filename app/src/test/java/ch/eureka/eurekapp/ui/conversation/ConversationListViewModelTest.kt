@@ -94,7 +94,8 @@ class ConversationListViewModelTest {
   @Test
   fun `loadConversations handles empty list`() = runTest {
     // Arrange: Return empty list from repository
-    every { mockConversationRepository.getConversationsForCurrentUser() } returns flowOf(emptyList())
+    every { mockConversationRepository.getConversationsForCurrentUser() } returns
+        flowOf(emptyList())
 
     // Act: Create ViewModel
     val viewModel =
@@ -146,7 +147,8 @@ class ConversationListViewModelTest {
   @Test
   fun `connectivity state updates UI state`() = runTest {
     // Arrange: Connectivity observer reports offline
-    every { mockConversationRepository.getConversationsForCurrentUser() } returns flowOf(emptyList())
+    every { mockConversationRepository.getConversationsForCurrentUser() } returns
+        flowOf(emptyList())
     every { mockConnectivityObserver.isConnected } returns flowOf(false)
 
     // Act: Create ViewModel

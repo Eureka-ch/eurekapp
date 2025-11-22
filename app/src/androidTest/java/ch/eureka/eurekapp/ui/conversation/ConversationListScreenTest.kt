@@ -85,7 +85,9 @@ class ConversationListScreenTest {
     }
 
     // Assert: Conversation list and card content are displayed
-    composeTestRule.onNodeWithTag(ConversationListScreenTestTags.CONVERSATION_LIST).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(ConversationListScreenTestTags.CONVERSATION_LIST)
+        .assertIsDisplayed()
     composeTestRule.onNodeWithText("John Doe").assertIsDisplayed()
     composeTestRule.onNodeWithText("Test Project").assertIsDisplayed()
   }

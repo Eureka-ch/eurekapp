@@ -6,7 +6,6 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
@@ -45,9 +44,7 @@ class CreateConversationScreenTest {
     // Arrange: Set up screen with default state
     composeTestRule.setContent {
       CreateConversationScreen(
-          onConversationCreated = {},
-          onNavigateBack = {},
-          viewModel = createMockViewModel())
+          onConversationCreated = {}, onNavigateBack = {}, viewModel = createMockViewModel())
     }
 
     // Assert: Screen title is displayed
@@ -62,13 +59,13 @@ class CreateConversationScreenTest {
 
     composeTestRule.setContent {
       CreateConversationScreen(
-          onConversationCreated = {},
-          onNavigateBack = {},
-          viewModel = createMockViewModel(state))
+          onConversationCreated = {}, onNavigateBack = {}, viewModel = createMockViewModel(state))
     }
 
     // Assert: Project dropdown is visible for selection
-    composeTestRule.onNodeWithTag(CreateConversationScreenTestTags.PROJECT_DROPDOWN).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(CreateConversationScreenTestTags.PROJECT_DROPDOWN)
+        .assertIsDisplayed()
   }
 
   @Test
@@ -76,13 +73,13 @@ class CreateConversationScreenTest {
     // Arrange: No project selected yet
     composeTestRule.setContent {
       CreateConversationScreen(
-          onConversationCreated = {},
-          onNavigateBack = {},
-          viewModel = createMockViewModel())
+          onConversationCreated = {}, onNavigateBack = {}, viewModel = createMockViewModel())
     }
 
     // Assert: Member dropdown should not appear until project is selected
-    composeTestRule.onNodeWithTag(CreateConversationScreenTestTags.MEMBER_DROPDOWN).assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(CreateConversationScreenTestTags.MEMBER_DROPDOWN)
+        .assertDoesNotExist()
   }
 
   @Test
@@ -95,13 +92,13 @@ class CreateConversationScreenTest {
 
     composeTestRule.setContent {
       CreateConversationScreen(
-          onConversationCreated = {},
-          onNavigateBack = {},
-          viewModel = createMockViewModel(state))
+          onConversationCreated = {}, onNavigateBack = {}, viewModel = createMockViewModel(state))
     }
 
     // Assert: Member dropdown appears after project selection
-    composeTestRule.onNodeWithTag(CreateConversationScreenTestTags.MEMBER_DROPDOWN).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(CreateConversationScreenTestTags.MEMBER_DROPDOWN)
+        .assertIsDisplayed()
   }
 
   @Test
@@ -109,13 +106,13 @@ class CreateConversationScreenTest {
     // Arrange: Neither project nor member selected
     composeTestRule.setContent {
       CreateConversationScreen(
-          onConversationCreated = {},
-          onNavigateBack = {},
-          viewModel = createMockViewModel())
+          onConversationCreated = {}, onNavigateBack = {}, viewModel = createMockViewModel())
     }
 
     // Assert: Create button should be disabled until both are selected
-    composeTestRule.onNodeWithTag(CreateConversationScreenTestTags.CREATE_BUTTON).assertIsNotEnabled()
+    composeTestRule
+        .onNodeWithTag(CreateConversationScreenTestTags.CREATE_BUTTON)
+        .assertIsNotEnabled()
   }
 
   @Test
@@ -132,9 +129,7 @@ class CreateConversationScreenTest {
 
     composeTestRule.setContent {
       CreateConversationScreen(
-          onConversationCreated = {},
-          onNavigateBack = {},
-          viewModel = createMockViewModel(state))
+          onConversationCreated = {}, onNavigateBack = {}, viewModel = createMockViewModel(state))
     }
 
     // Assert: Create button is enabled when ready
@@ -146,17 +141,18 @@ class CreateConversationScreenTest {
     // Arrange: Project selected but no other members in project
     val project = Project(projectId = "p1", name = "Test Project")
     val state =
-        CreateConversationState(selectedProject = project, members = emptyList(), isLoadingMembers = false)
+        CreateConversationState(
+            selectedProject = project, members = emptyList(), isLoadingMembers = false)
 
     composeTestRule.setContent {
       CreateConversationScreen(
-          onConversationCreated = {},
-          onNavigateBack = {},
-          viewModel = createMockViewModel(state))
+          onConversationCreated = {}, onNavigateBack = {}, viewModel = createMockViewModel(state))
     }
 
     // Assert: User sees message explaining no members available
-    composeTestRule.onNodeWithTag(CreateConversationScreenTestTags.NO_MEMBERS_MESSAGE).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(CreateConversationScreenTestTags.NO_MEMBERS_MESSAGE)
+        .assertIsDisplayed()
   }
 
   /** Helper to create a mock ViewModel with predefined state */
