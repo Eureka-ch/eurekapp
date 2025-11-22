@@ -13,15 +13,15 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AssignmentTurnedIn
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.AssignmentTurnedIn
-import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Lightbulb
@@ -151,8 +151,8 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
                       .testTag(BottomBarNavigationTestTags.CONVERSATIONS_SCREEN_BUTTON),
               "Chats",
               onClick = { navigateToTab(Route.ConversationsSection.Conversations) },
-              iconVector = Icons.Outlined.Chat,
-              pressedIconVector = Icons.Filled.Chat,
+              iconVector = Icons.AutoMirrored.Outlined.Chat,
+              pressedIconVector = Icons.AutoMirrored.Filled.Chat,
               isPressed = isConversationsScreenPressed)
           CustomIconButtonComposable(
               modifier =

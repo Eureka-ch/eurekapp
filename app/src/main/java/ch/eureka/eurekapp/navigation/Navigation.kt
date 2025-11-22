@@ -248,7 +248,7 @@ fun NavigationMenu() {
                     onCreateConversation = {
                       navigationController.navigate(Route.ConversationsSection.CreateConversation)
                     },
-                    onConversationClick = { conversationId ->
+                    onConversationClick = { _ ->
                       // Future: navigate to chat screen
                     })
               }
@@ -256,8 +256,7 @@ fun NavigationMenu() {
                 CreateConversationScreen(
                     onConversationCreated = {
                       navigationController.navigate(Route.ConversationsSection.Conversations)
-                    },
-                    onNavigateBack = { navigationController.popBackStack() })
+                    })
               }
 
               // Ideas section

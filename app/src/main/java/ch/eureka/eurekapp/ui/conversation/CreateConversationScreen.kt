@@ -23,7 +23,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -73,14 +72,12 @@ object CreateConversationScreenTestTags {
  * prevented by checking if one already exists.
  *
  * @param onConversationCreated Callback invoked when a conversation is successfully created.
- * @param onNavigateBack Callback invoked when the user wants to go back.
  * @param viewModel The ViewModel managing the create conversation state.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateConversationScreen(
     onConversationCreated: () -> Unit,
-    onNavigateBack: () -> Unit = {},
     viewModel: CreateConversationViewModel = viewModel()
 ) {
   val context = LocalContext.current
@@ -112,164 +109,38 @@ fun CreateConversationScreen(
     Column(
         modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = Spacing.md),
         verticalArrangement = Arrangement.Top) {
-          // Screen title
           Spacer(modifier = Modifier.height(Spacing.md))
-          Text(
-              text = "New Conversation",
-              style = MaterialTheme.typography.headlineSmall,
-              fontWeight = FontWeight.Bold,
-              modifier = Modifier.testTag(CreateConversationScreenTestTags.TITLE))
 
-          Spacer(modifier = Modifier.height(Spacing.xs))
-
-          // Screen description
-          Text(
-              text = "Select a project and a member to start chatting",
-              style = MaterialTheme.typography.bodyMedium,
-              color = Color.Gray)
+          ScreenHeader()
 
           Spacer(modifier = Modifier.height(Spacing.lg))
 
-          // Step 1: Project selection dropdown
-          // User must first select which project context the conversation belongs to
-          Text(
-              text = "Project",
-              style = MaterialTheme.typography.labelLarge,
-              fontWeight = FontWeight.Medium)
-          Spacer(modifier = Modifier.height(Spacing.xs))
-
-          // ExposedDropdownMenuBox provides Material 3 dropdown menu behavior
-          ExposedDropdownMenuBox(
-              expanded = projectDropdownExpanded,
+          ProjectDropdown(
+              uiState = uiState,
+              projectDropdownExpanded = projectDropdownExpanded,
               onExpandedChange = { projectDropdownExpanded = it },
-              modifier = Modifier.testTag(CreateConversationScreenTestTags.PROJECT_DROPDOWN)) {
-                OutlinedTextField(
-                    value = uiState.selectedProject?.name ?: "",
-                    onValueChange = {},
-                    readOnly = true,
-                    placeholder = { Text("Select a project") },
-                    trailingIcon = {
-                      if (uiState.isLoadingProjects) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.padding(end = 8.dp), strokeWidth = 2.dp)
-                      } else {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = projectDropdownExpanded)
-                      }
-                    },
-                    modifier =
-                        Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable))
-
-                // Project dropdown menu items
-                ExposedDropdownMenu(
-                    expanded = projectDropdownExpanded,
-                    onDismissRequest = { projectDropdownExpanded = false }) {
-                      uiState.projects.forEach { project ->
-                        DropdownMenuItem(
-                            text = { Text(project.name) },
-                            onClick = {
-                              viewModel.selectProject(project)
-                              projectDropdownExpanded = false
-                            },
-                            modifier =
-                                Modifier.testTag(
-                                    CreateConversationScreenTestTags.PROJECT_DROPDOWN_ITEM))
-                      }
-                    }
-              }
+              onProjectSelect = { project ->
+                viewModel.selectProject(project)
+                projectDropdownExpanded = false
+              })
 
           Spacer(modifier = Modifier.height(Spacing.md))
 
-          // Step 2: Member selection dropdown
-          // Only rendered after a project is selected - members are loaded dynamically
           if (uiState.selectedProject != null) {
-            Text(
-                text = "Member",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Medium)
-            Spacer(modifier = Modifier.height(Spacing.xs))
-
-            if (uiState.isLoadingMembers) {
-              // Show loading indicator while members are being fetched
-              Box(
-                  modifier = Modifier.fillMaxWidth().height(56.dp),
-                  contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(
-                        modifier =
-                            Modifier.testTag(CreateConversationScreenTestTags.LOADING_INDICATOR))
-                  }
-            } else if (uiState.members.isEmpty()) {
-              // Show message when no other members in project
-              Text(
-                  text = "No other members in this project",
-                  style = MaterialTheme.typography.bodyMedium,
-                  color = MaterialTheme.colorScheme.error,
-                  modifier = Modifier.testTag(CreateConversationScreenTestTags.NO_MEMBERS_MESSAGE))
-            } else {
-              // Member dropdown
-              ExposedDropdownMenuBox(
-                  expanded = memberDropdownExpanded,
-                  onExpandedChange = { memberDropdownExpanded = it },
-                  modifier = Modifier.testTag(CreateConversationScreenTestTags.MEMBER_DROPDOWN)) {
-                    OutlinedTextField(
-                        value = uiState.selectedMember?.user?.displayName ?: "",
-                        onValueChange = {},
-                        readOnly = true,
-                        placeholder = { Text("Select a member") },
-                        trailingIcon = {
-                          ExposedDropdownMenuDefaults.TrailingIcon(
-                              expanded = memberDropdownExpanded)
-                        },
-                        modifier =
-                            Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable))
-
-                    // Member dropdown menu items
-                    ExposedDropdownMenu(
-                        expanded = memberDropdownExpanded,
-                        onDismissRequest = { memberDropdownExpanded = false }) {
-                          uiState.members.forEach { memberData ->
-                            DropdownMenuItem(
-                                text = { Text(memberData.user.displayName) },
-                                onClick = {
-                                  viewModel.selectMember(memberData)
-                                  memberDropdownExpanded = false
-                                },
-                                modifier =
-                                    Modifier.testTag(
-                                        CreateConversationScreenTestTags.MEMBER_DROPDOWN_ITEM))
-                          }
-                        }
-                  }
-            }
+            MemberSelection(
+                uiState = uiState,
+                memberDropdownExpanded = memberDropdownExpanded,
+                onExpandedChange = { memberDropdownExpanded = it },
+                onMemberSelect = { member ->
+                  viewModel.selectMember(member)
+                  memberDropdownExpanded = false
+                })
           }
 
           Spacer(modifier = Modifier.height(Spacing.lg))
 
-          // Create button - enabled only when all conditions are met:
-          // 1. Project is selected
-          // 2. Member is selected
-          // 3. Not currently creating (prevents double-tap)
-          // 4. Device is online
-          val canCreate =
-              uiState.selectedProject != null &&
-                  uiState.selectedMember != null &&
-                  !uiState.isCreating &&
-                  uiState.isConnected
+          CreateButton(uiState = uiState, onClick = { viewModel.createConversation() })
 
-          Button(
-              onClick = { viewModel.createConversation() },
-              enabled = canCreate,
-              modifier =
-                  Modifier.fillMaxWidth().testTag(CreateConversationScreenTestTags.CREATE_BUTTON)) {
-                if (uiState.isCreating) {
-                  // Show loading indicator while creating
-                  CircularProgressIndicator(
-                      color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
-                } else {
-                  Text("Create Conversation")
-                }
-              }
-
-          // Offline warning
           if (!uiState.isConnected) {
             Spacer(modifier = Modifier.height(Spacing.sm))
             Text(
@@ -279,4 +150,137 @@ fun CreateConversationScreen(
           }
         }
   }
+}
+
+@Composable
+private fun ScreenHeader() {
+  Text(
+      text = "New Conversation",
+      style = MaterialTheme.typography.headlineSmall,
+      fontWeight = FontWeight.Bold,
+      modifier = Modifier.testTag(CreateConversationScreenTestTags.TITLE))
+  Spacer(modifier = Modifier.height(Spacing.xs))
+  Text(
+      text = "Select a project and a member to start chatting",
+      style = MaterialTheme.typography.bodyMedium,
+      color = Color.Gray)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ProjectDropdown(
+    uiState: CreateConversationState,
+    projectDropdownExpanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    onProjectSelect: (ch.eureka.eurekapp.model.data.project.Project) -> Unit
+) {
+  Text(
+      text = "Project", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Medium)
+  Spacer(modifier = Modifier.height(Spacing.xs))
+
+  ExposedDropdownMenuBox(
+      expanded = projectDropdownExpanded,
+      onExpandedChange = onExpandedChange,
+      modifier = Modifier.testTag(CreateConversationScreenTestTags.PROJECT_DROPDOWN)) {
+        OutlinedTextField(
+            value = uiState.selectedProject?.name ?: "",
+            onValueChange = {},
+            readOnly = true,
+            placeholder = { Text("Select a project") },
+            trailingIcon = {
+              if (uiState.isLoadingProjects) {
+                CircularProgressIndicator(
+                    modifier = Modifier.padding(end = 8.dp), strokeWidth = 2.dp)
+              } else {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = projectDropdownExpanded)
+              }
+            },
+            modifier = Modifier.fillMaxWidth().menuAnchor())
+
+        ExposedDropdownMenu(
+            expanded = projectDropdownExpanded, onDismissRequest = { onExpandedChange(false) }) {
+              uiState.projects.forEach { project ->
+                DropdownMenuItem(
+                    text = { Text(project.name) },
+                    onClick = { onProjectSelect(project) },
+                    modifier =
+                        Modifier.testTag(CreateConversationScreenTestTags.PROJECT_DROPDOWN_ITEM))
+              }
+            }
+      }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MemberSelection(
+    uiState: CreateConversationState,
+    memberDropdownExpanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    onMemberSelect: (MemberDisplayData) -> Unit
+) {
+  Text(text = "Member", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Medium)
+  Spacer(modifier = Modifier.height(Spacing.xs))
+
+  when {
+    uiState.isLoadingMembers -> {
+      Box(modifier = Modifier.fillMaxWidth().height(56.dp), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator(
+            modifier = Modifier.testTag(CreateConversationScreenTestTags.LOADING_INDICATOR))
+      }
+    }
+    uiState.members.isEmpty() -> {
+      Text(
+          text = "No other members in this project",
+          style = MaterialTheme.typography.bodyMedium,
+          color = MaterialTheme.colorScheme.error,
+          modifier = Modifier.testTag(CreateConversationScreenTestTags.NO_MEMBERS_MESSAGE))
+    }
+    else -> {
+      ExposedDropdownMenuBox(
+          expanded = memberDropdownExpanded,
+          onExpandedChange = onExpandedChange,
+          modifier = Modifier.testTag(CreateConversationScreenTestTags.MEMBER_DROPDOWN)) {
+            OutlinedTextField(
+                value = uiState.selectedMember?.user?.displayName ?: "",
+                onValueChange = {},
+                readOnly = true,
+                placeholder = { Text("Select a member") },
+                trailingIcon = {
+                  ExposedDropdownMenuDefaults.TrailingIcon(expanded = memberDropdownExpanded)
+                },
+                modifier = Modifier.fillMaxWidth().menuAnchor())
+
+            ExposedDropdownMenu(
+                expanded = memberDropdownExpanded, onDismissRequest = { onExpandedChange(false) }) {
+                  uiState.members.forEach { memberData ->
+                    DropdownMenuItem(
+                        text = { Text(memberData.user.displayName) },
+                        onClick = { onMemberSelect(memberData) },
+                        modifier =
+                            Modifier.testTag(CreateConversationScreenTestTags.MEMBER_DROPDOWN_ITEM))
+                  }
+                }
+          }
+    }
+  }
+}
+
+@Composable
+private fun CreateButton(uiState: CreateConversationState, onClick: () -> Unit) {
+  val canCreate =
+      uiState.selectedProject != null &&
+          uiState.selectedMember != null &&
+          !uiState.isCreating &&
+          uiState.isConnected
+
+  Button(
+      onClick = onClick,
+      enabled = canCreate,
+      modifier = Modifier.fillMaxWidth().testTag(CreateConversationScreenTestTags.CREATE_BUTTON)) {
+        if (uiState.isCreating) {
+          CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
+        } else {
+          Text("Create Conversation")
+        }
+      }
 }
