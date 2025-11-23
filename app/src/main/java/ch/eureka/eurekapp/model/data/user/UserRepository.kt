@@ -14,4 +14,7 @@ interface UserRepository {
 
   /** Update last active timestamp for user */
   suspend fun updateLastActive(userId: String): Result<Unit>
+
+  /**Update fcmToken for user*/
+  suspend fun updateFcmToken(userId: String, fcmToken: String): Result<Unit>
 }

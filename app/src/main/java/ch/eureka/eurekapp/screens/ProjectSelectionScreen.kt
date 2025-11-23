@@ -3,6 +3,12 @@
  */
 package ch.eureka.eurekapp.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,17 +37,23 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectSelectionScreenViewModel
@@ -86,11 +98,43 @@ fun ProjectSelectionScreen(
     onGenerateInviteRequest: (String) -> Unit = {},
     projectSelectionScreenViewModel: ProjectSelectionScreenViewModel = viewModel()
 ) {
+    val context = LocalContext.current
+    var hasNotificationsPermission by remember {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+            mutableStateOf(
+                ContextCompat.checkSelfPermission(context, Manifest.permission.
+                POST_NOTIFICATIONS) ==
+                        PackageManager.PERMISSION_GRANTED
+            )
+        }else{
+            mutableStateOf(true)
+        }
+    }
+
   val currentUser =
       remember { projectSelectionScreenViewModel.getCurrentUser() }.collectAsState(null)
 
   val projectsList =
       remember { projectSelectionScreenViewModel.getProjectsForUser() }.collectAsState(listOf())
+
+    val launcher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
+                isGranted ->
+            hasNotificationsPermission = isGranted
+            if(isGranted){
+                Toast.makeText(context, "Notifications permission granted!",
+                    Toast.LENGTH_SHORT).show()
+            }else{
+                Toast.makeText(context, "You will not be able to receive notifications!",
+                    Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    LaunchedEffect(Unit) {
+        if(!hasNotificationsPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+            launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
   Column(
       modifier = Modifier.fillMaxSize(),

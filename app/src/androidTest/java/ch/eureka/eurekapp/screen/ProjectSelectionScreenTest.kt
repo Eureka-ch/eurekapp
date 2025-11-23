@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.screen
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
@@ -31,7 +32,12 @@ val fakeProject2 =
 class ProjectSelectionScreenTest : TestCase() {
   @get:Rule val composeRule = createComposeRule()
 
-  private class MockedProjectsRepository : ProjectRepository {
+  @get:Rule
+  val notificationPermissionRule: GrantPermissionRule =
+      GrantPermissionRule.grant(android.Manifest.permission.POST_NOTIFICATIONS)
+
+
+    private class MockedProjectsRepository : ProjectRepository {
     override fun getProjectById(projectId: String): Flow<Project?> {
       if (projectId == fakeProject1.projectId) {
         return flowOf(fakeProject1)
