@@ -17,6 +17,8 @@ import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.FilesManagementScreen
+import ch.eureka.eurekapp.screens.HomeOverviewActions
+import ch.eureka.eurekapp.screens.HomeOverviewScreen
 import ch.eureka.eurekapp.screens.IdeasScreen
 import ch.eureka.eurekapp.screens.OverviewProjectScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
@@ -53,6 +55,8 @@ import kotlinx.serialization.Serializable
 sealed interface Route {
   // Main screens
   @Serializable data object ProjectSelection : Route
+
+  @Serializable data object HomeOverview : Route
 
   @Serializable data class OverviewProject(val projectId: String) : Route
 
@@ -182,10 +186,16 @@ fun NavigationMenu() {
       containerColor = Color.White,
       bottomBar = { BottomBarNavigationComponent(navigationController = navigationController) }) {
           innerPadding ->
-        NavHost(
-            modifier = Modifier.padding(innerPadding),
-            navController = navigationController,
-            startDestination = Route.ProjectSelection) {
+      NavHost(
+          modifier = Modifier.padding(innerPadding),
+          navController = navigationController,
+          startDestination = Route.HomeOverview) {
+              composable<Route.HomeOverview> {
+                HomeOverviewScreen(
+                    onOpenProjects = { navigationController.navigate(Route.ProjectSelection) },
+                    onOpenTasks = { navigationController.navigate(Route.TasksSection.Tasks) },
+                    onOpenMeetings = { navigationController.navigate(Route.MeetingsSection.Meetings) })
+              }
               // Main screens
               composable<Route.ProjectSelection> {
                 ProjectSelectionScreen(

@@ -67,6 +67,13 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
   val navBackStackEntry by navigationController.currentBackStackEntryAsState()
   val currentDestination = navBackStackEntry?.destination
 
+  val isHomeScreenPressed by
+      remember(currentDestination) {
+        derivedStateOf {
+          currentDestination?.hierarchy?.any { it.hasRoute(Route.HomeOverview::class) } == true
+        }
+      }
+
   fun navigateToTab(route: Any) {
     navigationController.navigate(route) {
       popUpTo(navigationController.graph.startDestinationId) { saveState = true }
@@ -170,7 +177,8 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
                   HomeIconButton(
                       modifier =
                           Modifier.testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
-                      onClick = { navigateToTab(Route.ProjectSelection) })
+                      isPressed = isHomeScreenPressed,
+                      onClick = { navigateToTab(Route.HomeOverview) })
                 }
               }
           CustomIconButtonComposable(
@@ -224,10 +232,18 @@ fun CustomIconButtonComposable(
 }
 
 @Composable
-fun HomeIconButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun HomeIconButton(modifier: Modifier = Modifier, isPressed: Boolean, onClick: () -> Unit) {
   IconButton(
-      modifier = modifier.padding(0.dp).background(EColors.light.primary, shape = CircleShape),
+      modifier =
+          modifier
+              .padding(0.dp)
+              .background(
+                  if (isPressed) EColors.light.primary else EColors.light.onSurfaceVariant,
+                  shape = CircleShape),
       onClick = onClick) {
-        Icon(Icons.Outlined.Home, contentDescription = null, tint = Color.White)
+        Icon(
+            Icons.Outlined.Home,
+            contentDescription = null,
+            tint = if (isPressed) Color.White else EColors.light.surface)
       }
 }
