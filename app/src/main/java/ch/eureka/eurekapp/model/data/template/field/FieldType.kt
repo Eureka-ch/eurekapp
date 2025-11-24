@@ -14,8 +14,29 @@ enum class FieldTypeKey {
   MULTI_SELECT
 }
 
+object FieldTypeErrorMessages {
+  const val MAX_LENGTH_POSITIVE = "maxLength must be positive"
+  const val MIN_LENGTH_NON_NEGATIVE = "minLength must be non-negative"
+  const val MAX_LENGTH_GTE_MIN_LENGTH = "maxLength must be >= minLength"
+
+  const val MAX_GTE_MIN = "max must be >= min"
+  const val STEP_POSITIVE = "step must be positive"
+  const val DECIMALS_NON_NEGATIVE = "decimals must be non-negative"
+
+  const val OPTIONS_NOT_EMPTY = "options must not be empty"
+  const val OPTION_VALUES_UNIQUE = "option values must be unique"
+
+  const val MIN_SELECTIONS_NON_NEGATIVE = "minSelections must be non-negative"
+  const val MAX_SELECTIONS_POSITIVE = "maxSelections must be positive"
+  const val MAX_SELECTIONS_GTE_MIN_SELECTIONS = "maxSelections must be >= minSelections"
+
+  const val VALUE_NOT_BLANK = "value must not be blank"
+  const val LABEL_NOT_BLANK = "label must not be blank"
+}
+
 @Serializable
 sealed interface FieldType {
+
   val typeKey: FieldTypeKey
 
   /**
@@ -36,22 +57,26 @@ sealed interface FieldType {
     override val typeKey: FieldTypeKey = FieldTypeKey.TEXT
 
     init {
-      require(maxLength == null || maxLength > 0) { "maxLength must be positive" }
-      require(minLength == null || minLength >= 0) { "minLength must be non-negative" }
+      require(maxLength == null || maxLength > 0) { FieldTypeErrorMessages.MAX_LENGTH_POSITIVE }
+      require(minLength == null || minLength >= 0) {
+        FieldTypeErrorMessages.MIN_LENGTH_NON_NEGATIVE
+      }
       require(maxLength == null || minLength == null || maxLength >= minLength) {
-        "maxLength must be >= minLength"
+        FieldTypeErrorMessages.MAX_LENGTH_GTE_MIN_LENGTH
       }
     }
 
     override fun validateConfiguration(): Result<Unit> {
       if (maxLength != null && maxLength <= 0) {
-        return Result.failure(IllegalArgumentException("maxLength must be positive"))
+        return Result.failure(IllegalArgumentException(FieldTypeErrorMessages.MAX_LENGTH_POSITIVE))
       }
       if (minLength != null && minLength < 0) {
-        return Result.failure(IllegalArgumentException("minLength must be non-negative"))
+        return Result.failure(
+            IllegalArgumentException(FieldTypeErrorMessages.MIN_LENGTH_NON_NEGATIVE))
       }
       if (maxLength != null && minLength != null && maxLength < minLength) {
-        return Result.failure(IllegalArgumentException("maxLength must be >= minLength"))
+        return Result.failure(
+            IllegalArgumentException(FieldTypeErrorMessages.MAX_LENGTH_GTE_MIN_LENGTH))
       }
       return Result.success(Unit)
     }
@@ -69,20 +94,21 @@ sealed interface FieldType {
     override val typeKey: FieldTypeKey = FieldTypeKey.NUMBER
 
     init {
-      require(min == null || max == null || max >= min) { "max must be >= min" }
-      require(step == null || step > 0) { "step must be positive" }
-      require(decimals == null || decimals >= 0) { "decimals must be non-negative" }
+      require(min == null || max == null || max >= min) { FieldTypeErrorMessages.MAX_GTE_MIN }
+      require(step == null || step > 0) { FieldTypeErrorMessages.STEP_POSITIVE }
+      require(decimals == null || decimals >= 0) { FieldTypeErrorMessages.DECIMALS_NON_NEGATIVE }
     }
 
     override fun validateConfiguration(): Result<Unit> {
       if (min != null && max != null && max < min) {
-        return Result.failure(IllegalArgumentException("max must be >= min"))
+        return Result.failure(IllegalArgumentException(FieldTypeErrorMessages.MAX_GTE_MIN))
       }
       if (step != null && step <= 0) {
-        return Result.failure(IllegalArgumentException("step must be positive"))
+        return Result.failure(IllegalArgumentException(FieldTypeErrorMessages.STEP_POSITIVE))
       }
       if (decimals != null && decimals < 0) {
-        return Result.failure(IllegalArgumentException("decimals must be non-negative"))
+        return Result.failure(
+            IllegalArgumentException(FieldTypeErrorMessages.DECIMALS_NON_NEGATIVE))
       }
       return Result.success(Unit)
     }
@@ -110,18 +136,18 @@ sealed interface FieldType {
     override val typeKey: FieldTypeKey = FieldTypeKey.SINGLE_SELECT
 
     init {
-      require(options.isNotEmpty()) { "options must not be empty" }
+      require(options.isNotEmpty()) { FieldTypeErrorMessages.OPTIONS_NOT_EMPTY }
       require(options.map { it.value }.distinct().size == options.size) {
-        "option values must be unique"
+        FieldTypeErrorMessages.OPTION_VALUES_UNIQUE
       }
     }
 
     override fun validateConfiguration(): Result<Unit> {
       if (options.isEmpty()) {
-        return Result.failure(IllegalArgumentException("options must not be empty"))
+        return Result.failure(IllegalArgumentException(FieldTypeErrorMessages.OPTIONS_NOT_EMPTY))
       }
       if (options.map { it.value }.distinct().size != options.size) {
-        return Result.failure(IllegalArgumentException("option values must be unique"))
+        return Result.failure(IllegalArgumentException(FieldTypeErrorMessages.OPTION_VALUES_UNIQUE))
       }
       return Result.success(Unit)
     }
@@ -138,32 +164,39 @@ sealed interface FieldType {
     override val typeKey: FieldTypeKey = FieldTypeKey.MULTI_SELECT
 
     init {
-      require(options.isNotEmpty()) { "options must not be empty" }
+      require(options.isNotEmpty()) { FieldTypeErrorMessages.OPTIONS_NOT_EMPTY }
       require(options.map { it.value }.distinct().size == options.size) {
-        "option values must be unique"
+        FieldTypeErrorMessages.OPTION_VALUES_UNIQUE
       }
-      require(minSelections == null || minSelections >= 0) { "minSelections must be non-negative" }
-      require(maxSelections == null || maxSelections > 0) { "maxSelections must be positive" }
+      require(minSelections == null || minSelections >= 0) {
+        FieldTypeErrorMessages.MIN_SELECTIONS_NON_NEGATIVE
+      }
+      require(maxSelections == null || maxSelections > 0) {
+        FieldTypeErrorMessages.MAX_SELECTIONS_POSITIVE
+      }
       require(minSelections == null || maxSelections == null || maxSelections >= minSelections) {
-        "maxSelections must be >= minSelections"
+        FieldTypeErrorMessages.MAX_SELECTIONS_GTE_MIN_SELECTIONS
       }
     }
 
     override fun validateConfiguration(): Result<Unit> {
       if (options.isEmpty()) {
-        return Result.failure(IllegalArgumentException("options must not be empty"))
+        return Result.failure(IllegalArgumentException(FieldTypeErrorMessages.OPTIONS_NOT_EMPTY))
       }
       if (options.map { it.value }.distinct().size != options.size) {
-        return Result.failure(IllegalArgumentException("option values must be unique"))
+        return Result.failure(IllegalArgumentException(FieldTypeErrorMessages.OPTION_VALUES_UNIQUE))
       }
       if (minSelections != null && minSelections < 0) {
-        return Result.failure(IllegalArgumentException("minSelections must be non-negative"))
+        return Result.failure(
+            IllegalArgumentException(FieldTypeErrorMessages.MIN_SELECTIONS_NON_NEGATIVE))
       }
       if (maxSelections != null && maxSelections <= 0) {
-        return Result.failure(IllegalArgumentException("maxSelections must be positive"))
+        return Result.failure(
+            IllegalArgumentException(FieldTypeErrorMessages.MAX_SELECTIONS_POSITIVE))
       }
       if (minSelections != null && maxSelections != null && maxSelections < minSelections) {
-        return Result.failure(IllegalArgumentException("maxSelections must be >= minSelections"))
+        return Result.failure(
+            IllegalArgumentException(FieldTypeErrorMessages.MAX_SELECTIONS_GTE_MIN_SELECTIONS))
       }
       return Result.success(Unit)
     }
@@ -173,7 +206,7 @@ sealed interface FieldType {
 @Serializable
 data class SelectOption(val value: String, val label: String, val description: String? = null) {
   init {
-    require(value.isNotBlank()) { "value must not be blank" }
-    require(label.isNotBlank()) { "label must not be blank" }
+    require(value.isNotBlank()) { FieldTypeErrorMessages.VALUE_NOT_BLANK }
+    require(label.isNotBlank()) { FieldTypeErrorMessages.LABEL_NOT_BLANK }
   }
 }
