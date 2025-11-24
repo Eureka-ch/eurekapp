@@ -13,58 +13,58 @@ import org.junit.Test
 class TemplateValidationTest {
 
   @Test
-  fun validateTitleReturnsSuccessForValidTitle() {
+  fun validateTitle_returnsSuccessForValidTitle() {
     assertTrue(TemplateValidation.validateTitle("Valid Title").isSuccess)
   }
 
   @Test
-  fun validateTitleReturnsErrorForBlankTitle() {
+  fun validateTitle_returnsErrorForBlankTitle() {
     val result = TemplateValidation.validateTitle("")
     assertTrue(result.isFailure)
     assertEquals("Title is required", result.exceptionOrNull()?.message)
   }
 
   @Test
-  fun validateTitleReturnsErrorForWhitespaceOnlyTitle() {
+  fun validateTitle_returnsErrorForWhitespaceOnlyTitle() {
     val result = TemplateValidation.validateTitle("   ")
     assertTrue(result.isFailure)
     assertEquals("Title is required", result.exceptionOrNull()?.message)
   }
 
   @Test
-  fun validateFieldsReturnsSuccessForNonEmptyList() {
+  fun validateFields_returnsSuccessForNonEmptyList() {
     val fields = listOf(FieldDefinition(id = "field1", label = "Label", type = FieldType.Text()))
     assertTrue(TemplateValidation.validateFields(fields).isSuccess)
   }
 
   @Test
-  fun validateFieldsReturnsErrorForEmptyList() {
+  fun validateFields_returnsErrorForEmptyList() {
     val result = TemplateValidation.validateFields(emptyList())
     assertTrue(result.isFailure)
     assertEquals("At least one field is required", result.exceptionOrNull()?.message)
   }
 
   @Test
-  fun validateFieldLabelReturnsSuccessForValidLabel() {
+  fun validateFieldLabel_returnsSuccessForValidLabel() {
     assertTrue(TemplateValidation.validateFieldLabel("Valid Label").isSuccess)
   }
 
   @Test
-  fun validateFieldLabelReturnsErrorForBlankLabel() {
+  fun validateFieldLabel_returnsErrorForBlankLabel() {
     val result = TemplateValidation.validateFieldLabel("")
     assertTrue(result.isFailure)
     assertEquals("Field label is required", result.exceptionOrNull()?.message)
   }
 
   @Test
-  fun validateFieldLabelReturnsErrorForWhitespaceOnlyLabel() {
+  fun validateFieldLabel_returnsErrorForWhitespaceOnlyLabel() {
     val result = TemplateValidation.validateFieldLabel("   ")
     assertTrue(result.isFailure)
     assertEquals("Field label is required", result.exceptionOrNull()?.message)
   }
 
   @Test
-  fun validateFieldDefinitionReturnsSuccessForValidTextField() {
+  fun validateFieldDefinition_returnsSuccessForValidTextField() {
     val field =
         FieldDefinition(
             id = "text1",
@@ -74,7 +74,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsErrorForInvalidTextFieldMinMaxLength() {
+  fun validateFieldDefinition_returnsErrorForInvalidTextFieldMinMaxLength() {
     try {
       FieldDefinition(
           id = "text1", label = "Text Field", type = FieldType.Text(minLength = 10, maxLength = 5))
@@ -85,7 +85,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsSuccessForValidNumberField() {
+  fun validateFieldDefinition_returnsSuccessForValidNumberField() {
     val field =
         FieldDefinition(
             id = "number1",
@@ -95,7 +95,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsErrorForInvalidNumberFieldMinMax() {
+  fun validateFieldDefinition_returnsErrorForInvalidNumberFieldMinMax() {
     try {
       FieldDefinition(
           id = "number1", label = "Number Field", type = FieldType.Number(min = 100.0, max = 0.0))
@@ -106,7 +106,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsErrorForNegativeDecimals() {
+  fun validateFieldDefinition_returnsErrorForNegativeDecimals() {
     try {
       FieldDefinition(
           id = "number1", label = "Number Field", type = FieldType.Number(decimals = -1))
@@ -117,13 +117,13 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsSuccessForValidDateField() {
+  fun validateFieldDefinition_returnsSuccessForValidDateField() {
     val field = FieldDefinition(id = "date1", label = "Date Field", type = FieldType.Date())
     assertTrue(TemplateValidation.validateFieldDefinition(field).isSuccess)
   }
 
   @Test
-  fun validateFieldDefinitionReturnsSuccessForValidSingleSelectField() {
+  fun validateFieldDefinition_returnsSuccessForValidSingleSelectField() {
     val field =
         FieldDefinition(
             id = "select1",
@@ -136,7 +136,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsSuccessForValidMultiSelectField() {
+  fun validateFieldDefinition_returnsSuccessForValidMultiSelectField() {
     val field =
         FieldDefinition(
             id = "multiselect1",
@@ -151,7 +151,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsErrorForInvalidMultiSelectMinMax() {
+  fun validateFieldDefinition_returnsErrorForInvalidMultiSelectMinMax() {
     try {
       FieldDefinition(
           id = "multiselect1",
@@ -169,7 +169,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsErrorForBlankFieldLabel() {
+  fun validateFieldDefinition_returnsErrorForBlankFieldLabel() {
     try {
       FieldDefinition(id = "field1", label = "", type = FieldType.Text())
       org.junit.Assert.fail("Expected IllegalArgumentException")
@@ -179,7 +179,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsSuccessForTextFieldWithValidDefaultValue() {
+  fun validateFieldDefinition_returnsSuccessForTextFieldWithValidDefaultValue() {
     val field =
         FieldDefinition(
             id = "text1",
@@ -190,7 +190,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsErrorForTextFieldWithInvalidDefaultValue() {
+  fun validateFieldDefinition_returnsErrorForTextFieldWithInvalidDefaultValue() {
     val field =
         FieldDefinition(
             id = "text1",
@@ -205,7 +205,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsSuccessForNumberFieldWithValidDefaultValue() {
+  fun validateFieldDefinition_returnsSuccessForNumberFieldWithValidDefaultValue() {
     val field =
         FieldDefinition(
             id = "number1",
@@ -216,7 +216,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsErrorForNumberFieldWithInvalidDefaultValue() {
+  fun validateFieldDefinition_returnsErrorForNumberFieldWithInvalidDefaultValue() {
     val field =
         FieldDefinition(
             id = "number1",
@@ -231,7 +231,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsSuccessForDateFieldWithValidDefaultValue() {
+  fun validateFieldDefinition_returnsSuccessForDateFieldWithValidDefaultValue() {
     val field =
         FieldDefinition(
             id = "date1",
@@ -242,7 +242,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsErrorForDateFieldWithInvalidDefaultValue() {
+  fun validateFieldDefinition_returnsErrorForDateFieldWithInvalidDefaultValue() {
     val field =
         FieldDefinition(
             id = "date1",
@@ -257,7 +257,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsSuccessForSingleSelectFieldWithValidDefaultValue() {
+  fun validateFieldDefinition_returnsSuccessForSingleSelectFieldWithValidDefaultValue() {
     val field =
         FieldDefinition(
             id = "select1",
@@ -271,7 +271,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsErrorForSingleSelectFieldWithInvalidDefaultValue() {
+  fun validateFieldDefinition_returnsErrorForSingleSelectFieldWithInvalidDefaultValue() {
     val field =
         FieldDefinition(
             id = "select1",
@@ -289,7 +289,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsSuccessForMultiSelectFieldWithValidDefaultValue() {
+  fun validateFieldDefinition_returnsSuccessForMultiSelectFieldWithValidDefaultValue() {
     val field =
         FieldDefinition(
             id = "multiselect1",
@@ -308,7 +308,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsErrorForMultiSelectFieldWithInvalidDefaultValueTooFew() {
+  fun validateFieldDefinition_returnsErrorForMultiSelectFieldWithInvalidDefaultValueTooFew() {
     val field =
         FieldDefinition(
             id = "multiselect1",
@@ -330,7 +330,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsErrorForMultiSelectFieldWithInvalidDefaultValueTooMany() {
+  fun validateFieldDefinition_returnsErrorForMultiSelectFieldWithInvalidDefaultValueTooMany() {
     val field =
         FieldDefinition(
             id = "multiselect1",
@@ -352,7 +352,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsErrorForMultiSelectFieldWithInvalidDefaultValueNotInOptions() {
+  fun validateFieldDefinition_returnsErrorForMultiSelectFieldWithInvalidDefaultValueNotInOptions() {
     val field =
         FieldDefinition(
             id = "multiselect1",
@@ -370,7 +370,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsSuccessForTextFieldWithNullDefaultValue() {
+  fun validateFieldDefinition_returnsSuccessForTextFieldWithNullDefaultValue() {
     val field =
         FieldDefinition(
             id = "text1",
@@ -381,7 +381,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsSuccessForNumberFieldWithZeroDecimals() {
+  fun validateFieldDefinition_returnsSuccessForNumberFieldWithZeroDecimals() {
     val field =
         FieldDefinition(
             id = "number1", label = "Number Field", type = FieldType.Number(decimals = 0))
@@ -389,7 +389,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsSuccessWhenMinLengthEqualsMaxLength() {
+  fun validateFieldDefinition_returnsSuccessWhenMinLengthEqualsMaxLength() {
     val field =
         FieldDefinition(
             id = "text1", label = "Text Field", type = FieldType.Text(minLength = 5, maxLength = 5))
@@ -397,7 +397,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsSuccessWhenMinEqualsMax() {
+  fun validateFieldDefinition_returnsSuccessWhenMinEqualsMax() {
     val field =
         FieldDefinition(
             id = "number1", label = "Number Field", type = FieldType.Number(min = 50.0, max = 50.0))
@@ -405,7 +405,7 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsSuccessWhenMinSelectionsEqualsMaxSelections() {
+  fun validateFieldDefinition_returnsSuccessWhenMinSelectionsEqualsMaxSelections() {
     val field =
         FieldDefinition(
             id = "multiselect1",
