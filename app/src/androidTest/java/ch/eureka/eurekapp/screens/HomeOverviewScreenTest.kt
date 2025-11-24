@@ -39,12 +39,19 @@ class HomeOverviewScreenTest {
 
     composeTestRule.setContent { HomeOverviewLayout(uiState = uiState) }
 
+    // Verify greeting
     composeTestRule.onNodeWithText("Hello Alex").assertIsDisplayed()
-    // Verify sections are displayed (text appears in summary card and section header)
-    // Check that at least one occurrence exists (summary cards may not always render immediately)
-    composeTestRule.onNodeWithText("Upcoming tasks").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Next meetings").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Recent projects").assertIsDisplayed()
+
+    // Verify sections are displayed by checking unique action buttons
+    // (text appears twice in summary cards and headers, so we test unique elements instead)
+    composeTestRule.onNodeWithText("View all").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Open meetings").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Browse projects").assertIsDisplayed()
+
+    // Verify content items are displayed
+    composeTestRule.onNodeWithText("Task A").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Meeting A").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Project A").assertIsDisplayed()
   }
 
   @Test

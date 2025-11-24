@@ -254,12 +254,19 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
       // Verify greeting displays user name
       composeTestRule.onNodeWithText("Hello Eureka User").assertIsDisplayed()
 
-      // Verify sections are displayed
-      // Note: Summary cards may not be visible if data is still loading, so we check for at least 1
-      // occurrence
-      composeTestRule.onNodeWithText("Upcoming tasks").assertIsDisplayed()
-      composeTestRule.onNodeWithText("Next meetings").assertIsDisplayed()
-      composeTestRule.onNodeWithText("Recent projects").assertIsDisplayed()
+      // Verify sections are displayed by checking unique action buttons
+      // (text appears twice in summary cards and headers, so we test unique elements instead)
+      composeTestRule.waitUntil(timeoutMillis = 5000) {
+        try {
+          composeTestRule.onNodeWithText("View all").assertExists()
+          true
+        } catch (e: AssertionError) {
+          false
+        }
+      }
+      composeTestRule.onNodeWithText("View all").assertIsDisplayed()
+      composeTestRule.onNodeWithText("Open meetings").assertIsDisplayed()
+      composeTestRule.onNodeWithText("Browse projects").assertIsDisplayed()
 
       // Verify tasks are displayed (limited to 3)
       composeTestRule.waitUntil(timeoutMillis = 5000) {
