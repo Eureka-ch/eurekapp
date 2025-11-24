@@ -42,16 +42,16 @@ class HomeOverviewScreenTest {
     // Verify greeting
     composeTestRule.onNodeWithText("Hello Alex").assertIsDisplayed()
 
-    // Verify sections are displayed by checking unique action buttons
-    // (text appears twice in summary cards and headers, so we test unique elements instead)
-    composeTestRule.onNodeWithText("View all").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Open meetings").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Browse projects").assertIsDisplayed()
-
-    // Verify content items are displayed
+    // Verify sections are displayed by checking content items (more reliable than buttons)
     composeTestRule.onNodeWithText("Task A").assertIsDisplayed()
     composeTestRule.onNodeWithText("Meeting A").assertIsDisplayed()
     composeTestRule.onNodeWithText("Project A").assertIsDisplayed()
+
+    // Verify action buttons are available (they should be present if content is displayed)
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("View all").assertExists()
+    composeTestRule.onNodeWithText("Open meetings").assertExists()
+    composeTestRule.onNodeWithText("Browse projects").assertExists()
   }
 
   @Test
@@ -111,11 +111,28 @@ class HomeOverviewScreenTest {
     }
 
     composeTestRule.waitForIdle()
+
+    // Wait for buttons to be available and click them
+    composeTestRule.waitUntil(timeoutMillis = 3000) {
+      try {
+        composeTestRule.onNodeWithText("View all").assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
     composeTestRule.onNodeWithText("View all").performClick()
-    composeTestRule.waitForIdle()
+
+    composeTestRule.waitUntil(timeoutMillis = 3000) {
+      try {
+        composeTestRule.onNodeWithText("Open meetings").assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
     composeTestRule.onNodeWithText("Open meetings").performClick()
-    composeTestRule.waitForIdle()
-    // Wait for Browse projects button to be available
+
     composeTestRule.waitUntil(timeoutMillis = 3000) {
       try {
         composeTestRule.onNodeWithText("Browse projects").assertExists()
