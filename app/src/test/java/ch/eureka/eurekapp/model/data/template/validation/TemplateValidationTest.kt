@@ -7,60 +7,70 @@ import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.FieldValue
 import ch.eureka.eurekapp.model.data.template.field.SelectOption
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TemplateValidationTest {
 
   @Test
-  fun validateTitleReturnsNullForValidTitle() {
-    assertNull(TemplateValidation.validateTitle("Valid Title"))
+  fun validateTitleReturnsSuccessForValidTitle() {
+    assertTrue(TemplateValidation.validateTitle("Valid Title").isSuccess)
   }
 
   @Test
   fun validateTitleReturnsErrorForBlankTitle() {
-    assertEquals("Title is required", TemplateValidation.validateTitle(""))
+    val result = TemplateValidation.validateTitle("")
+    assertTrue(result.isFailure)
+    assertEquals("Title is required", result.exceptionOrNull()?.message)
   }
 
   @Test
   fun validateTitleReturnsErrorForWhitespaceOnlyTitle() {
-    assertEquals("Title is required", TemplateValidation.validateTitle("   "))
+    val result = TemplateValidation.validateTitle("   ")
+    assertTrue(result.isFailure)
+    assertEquals("Title is required", result.exceptionOrNull()?.message)
   }
 
   @Test
-  fun validateFieldsReturnsNullForNonEmptyList() {
+  fun validateFieldsReturnsSuccessForNonEmptyList() {
     val fields = listOf(FieldDefinition(id = "field1", label = "Label", type = FieldType.Text()))
-    assertNull(TemplateValidation.validateFields(fields))
+    assertTrue(TemplateValidation.validateFields(fields).isSuccess)
   }
 
   @Test
   fun validateFieldsReturnsErrorForEmptyList() {
-    assertEquals("At least one field is required", TemplateValidation.validateFields(emptyList()))
+    val result = TemplateValidation.validateFields(emptyList())
+    assertTrue(result.isFailure)
+    assertEquals("At least one field is required", result.exceptionOrNull()?.message)
   }
 
   @Test
-  fun validateFieldLabelReturnsNullForValidLabel() {
-    assertNull(TemplateValidation.validateFieldLabel("Valid Label"))
+  fun validateFieldLabelReturnsSuccessForValidLabel() {
+    assertTrue(TemplateValidation.validateFieldLabel("Valid Label").isSuccess)
   }
 
   @Test
   fun validateFieldLabelReturnsErrorForBlankLabel() {
-    assertEquals("Field label is required", TemplateValidation.validateFieldLabel(""))
+    val result = TemplateValidation.validateFieldLabel("")
+    assertTrue(result.isFailure)
+    assertEquals("Field label is required", result.exceptionOrNull()?.message)
   }
 
   @Test
   fun validateFieldLabelReturnsErrorForWhitespaceOnlyLabel() {
-    assertEquals("Field label is required", TemplateValidation.validateFieldLabel("   "))
+    val result = TemplateValidation.validateFieldLabel("   ")
+    assertTrue(result.isFailure)
+    assertEquals("Field label is required", result.exceptionOrNull()?.message)
   }
 
   @Test
-  fun validateFieldDefinitionReturnsNullForValidTextField() {
+  fun validateFieldDefinitionReturnsSuccessForValidTextField() {
     val field =
         FieldDefinition(
             id = "text1",
             label = "Text Field",
             type = FieldType.Text(minLength = 5, maxLength = 10))
-    assertNull(TemplateValidation.validateFieldDefinition(field))
+    assertTrue(TemplateValidation.validateFieldDefinition(field).isSuccess)
   }
 
   @Test
@@ -75,13 +85,13 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsNullForValidNumberField() {
+  fun validateFieldDefinitionReturnsSuccessForValidNumberField() {
     val field =
         FieldDefinition(
             id = "number1",
             label = "Number Field",
             type = FieldType.Number(min = 0.0, max = 100.0, decimals = 2))
-    assertNull(TemplateValidation.validateFieldDefinition(field))
+    assertTrue(TemplateValidation.validateFieldDefinition(field).isSuccess)
   }
 
   @Test
@@ -107,13 +117,13 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsNullForValidDateField() {
+  fun validateFieldDefinitionReturnsSuccessForValidDateField() {
     val field = FieldDefinition(id = "date1", label = "Date Field", type = FieldType.Date())
-    assertNull(TemplateValidation.validateFieldDefinition(field))
+    assertTrue(TemplateValidation.validateFieldDefinition(field).isSuccess)
   }
 
   @Test
-  fun validateFieldDefinitionReturnsNullForValidSingleSelectField() {
+  fun validateFieldDefinitionReturnsSuccessForValidSingleSelectField() {
     val field =
         FieldDefinition(
             id = "select1",
@@ -122,11 +132,11 @@ class TemplateValidationTest {
                 FieldType.SingleSelect(
                     options =
                         listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2"))))
-    assertNull(TemplateValidation.validateFieldDefinition(field))
+    assertTrue(TemplateValidation.validateFieldDefinition(field).isSuccess)
   }
 
   @Test
-  fun validateFieldDefinitionReturnsNullForValidMultiSelectField() {
+  fun validateFieldDefinitionReturnsSuccessForValidMultiSelectField() {
     val field =
         FieldDefinition(
             id = "multiselect1",
@@ -137,7 +147,7 @@ class TemplateValidationTest {
                         listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2")),
                     minSelections = 1,
                     maxSelections = 2))
-    assertNull(TemplateValidation.validateFieldDefinition(field))
+    assertTrue(TemplateValidation.validateFieldDefinition(field).isSuccess)
   }
 
   @Test
@@ -169,14 +179,14 @@ class TemplateValidationTest {
   }
 
   @Test
-  fun validateFieldDefinitionReturnsNullForTextFieldWithValidDefaultValue() {
+  fun validateFieldDefinitionReturnsSuccessForTextFieldWithValidDefaultValue() {
     val field =
         FieldDefinition(
             id = "text1",
             label = "Text Field",
             type = FieldType.Text(minLength = 3, maxLength = 10),
             defaultValue = FieldValue.TextValue("hello"))
-    assertNull(TemplateValidation.validateFieldDefinition(field))
+    assertTrue(TemplateValidation.validateFieldDefinition(field).isSuccess)
   }
 
   @Test
@@ -188,18 +198,21 @@ class TemplateValidationTest {
             type = FieldType.Text(minLength = 10, maxLength = 20),
             defaultValue = FieldValue.TextValue("short"))
     val result = TemplateValidation.validateFieldDefinition(field)
-    assertEquals("Invalid default value: Text is shorter than minLength of 10 characters", result)
+    assertTrue(result.isFailure)
+    assertEquals(
+        "Invalid default value: Text is shorter than minLength of 10 characters",
+        result.exceptionOrNull()?.message)
   }
 
   @Test
-  fun validateFieldDefinitionReturnsNullForNumberFieldWithValidDefaultValue() {
+  fun validateFieldDefinitionReturnsSuccessForNumberFieldWithValidDefaultValue() {
     val field =
         FieldDefinition(
             id = "number1",
             label = "Number Field",
             type = FieldType.Number(min = 0.0, max = 100.0),
             defaultValue = FieldValue.NumberValue(50.0))
-    assertNull(TemplateValidation.validateFieldDefinition(field))
+    assertTrue(TemplateValidation.validateFieldDefinition(field).isSuccess)
   }
 
   @Test
@@ -211,18 +224,21 @@ class TemplateValidationTest {
             type = FieldType.Number(min = 0.0, max = 100.0),
             defaultValue = FieldValue.NumberValue(150.0))
     val result = TemplateValidation.validateFieldDefinition(field)
-    assertEquals("Invalid default value: Number is greater than maximum of 100.0", result)
+    assertTrue(result.isFailure)
+    assertEquals(
+        "Invalid default value: Number is greater than maximum of 100.0",
+        result.exceptionOrNull()?.message)
   }
 
   @Test
-  fun validateFieldDefinitionReturnsNullForDateFieldWithValidDefaultValue() {
+  fun validateFieldDefinitionReturnsSuccessForDateFieldWithValidDefaultValue() {
     val field =
         FieldDefinition(
             id = "date1",
             label = "Date Field",
             type = FieldType.Date(minDate = "2020-01-01", maxDate = "2030-12-31"),
             defaultValue = FieldValue.DateValue("2025-06-15"))
-    assertNull(TemplateValidation.validateFieldDefinition(field))
+    assertTrue(TemplateValidation.validateFieldDefinition(field).isSuccess)
   }
 
   @Test
@@ -234,11 +250,14 @@ class TemplateValidationTest {
             type = FieldType.Date(minDate = "2020-01-01", maxDate = "2030-12-31"),
             defaultValue = FieldValue.DateValue("2035-01-01"))
     val result = TemplateValidation.validateFieldDefinition(field)
-    assertEquals("Invalid default value: Date is after maximum date of 2030-12-31", result)
+    assertTrue(result.isFailure)
+    assertEquals(
+        "Invalid default value: Date is after maximum date of 2030-12-31",
+        result.exceptionOrNull()?.message)
   }
 
   @Test
-  fun validateFieldDefinitionReturnsNullForSingleSelectFieldWithValidDefaultValue() {
+  fun validateFieldDefinitionReturnsSuccessForSingleSelectFieldWithValidDefaultValue() {
     val field =
         FieldDefinition(
             id = "select1",
@@ -248,7 +267,7 @@ class TemplateValidationTest {
                     options =
                         listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2"))),
             defaultValue = FieldValue.SingleSelectValue("opt1"))
-    assertNull(TemplateValidation.validateFieldDefinition(field))
+    assertTrue(TemplateValidation.validateFieldDefinition(field).isSuccess)
   }
 
   @Test
@@ -263,12 +282,14 @@ class TemplateValidationTest {
                         listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2"))),
             defaultValue = FieldValue.SingleSelectValue("opt3"))
     val result = TemplateValidation.validateFieldDefinition(field)
+    assertTrue(result.isFailure)
     assertEquals(
-        "Invalid default value: Value 'opt3' is not in allowed options: [opt1, opt2]", result)
+        "Invalid default value: Value 'opt3' is not in allowed options: [opt1, opt2]",
+        result.exceptionOrNull()?.message)
   }
 
   @Test
-  fun validateFieldDefinitionReturnsNullForMultiSelectFieldWithValidDefaultValue() {
+  fun validateFieldDefinitionReturnsSuccessForMultiSelectFieldWithValidDefaultValue() {
     val field =
         FieldDefinition(
             id = "multiselect1",
@@ -283,7 +304,7 @@ class TemplateValidationTest {
                     minSelections = 1,
                     maxSelections = 3),
             defaultValue = FieldValue.MultiSelectValue(listOf("opt1", "opt2")))
-    assertNull(TemplateValidation.validateFieldDefinition(field))
+    assertTrue(TemplateValidation.validateFieldDefinition(field).isSuccess)
   }
 
   @Test
@@ -303,7 +324,9 @@ class TemplateValidationTest {
                     maxSelections = 3),
             defaultValue = FieldValue.MultiSelectValue(listOf("opt1")))
     val result = TemplateValidation.validateFieldDefinition(field)
-    assertEquals("Invalid default value: Must select at least 2 options", result)
+    assertTrue(result.isFailure)
+    assertEquals(
+        "Invalid default value: Must select at least 2 options", result.exceptionOrNull()?.message)
   }
 
   @Test
@@ -323,7 +346,9 @@ class TemplateValidationTest {
                     maxSelections = 2),
             defaultValue = FieldValue.MultiSelectValue(listOf("opt1", "opt2", "opt3")))
     val result = TemplateValidation.validateFieldDefinition(field)
-    assertEquals("Invalid default value: Must select at most 2 options", result)
+    assertTrue(result.isFailure)
+    assertEquals(
+        "Invalid default value: Must select at most 2 options", result.exceptionOrNull()?.message)
   }
 
   @Test
@@ -338,47 +363,49 @@ class TemplateValidationTest {
                         listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2"))),
             defaultValue = FieldValue.MultiSelectValue(listOf("opt1", "opt3")))
     val result = TemplateValidation.validateFieldDefinition(field)
+    assertTrue(result.isFailure)
     assertEquals(
-        "Invalid default value: Values [opt3] are not in allowed options: [opt1, opt2]", result)
+        "Invalid default value: Values [opt3] are not in allowed options: [opt1, opt2]",
+        result.exceptionOrNull()?.message)
   }
 
   @Test
-  fun validateFieldDefinitionReturnsNullForTextFieldWithNullDefaultValue() {
+  fun validateFieldDefinitionReturnsSuccessForTextFieldWithNullDefaultValue() {
     val field =
         FieldDefinition(
             id = "text1",
             label = "Text Field",
             type = FieldType.Text(minLength = 5, maxLength = 10),
             defaultValue = null)
-    assertNull(TemplateValidation.validateFieldDefinition(field))
+    assertTrue(TemplateValidation.validateFieldDefinition(field).isSuccess)
   }
 
   @Test
-  fun validateFieldDefinitionReturnsNullForNumberFieldWithZeroDecimals() {
+  fun validateFieldDefinitionReturnsSuccessForNumberFieldWithZeroDecimals() {
     val field =
         FieldDefinition(
             id = "number1", label = "Number Field", type = FieldType.Number(decimals = 0))
-    assertNull(TemplateValidation.validateFieldDefinition(field))
+    assertTrue(TemplateValidation.validateFieldDefinition(field).isSuccess)
   }
 
   @Test
-  fun validateFieldDefinitionReturnsNullWhenMinLengthEqualsMaxLength() {
+  fun validateFieldDefinitionReturnsSuccessWhenMinLengthEqualsMaxLength() {
     val field =
         FieldDefinition(
             id = "text1", label = "Text Field", type = FieldType.Text(minLength = 5, maxLength = 5))
-    assertNull(TemplateValidation.validateFieldDefinition(field))
+    assertTrue(TemplateValidation.validateFieldDefinition(field).isSuccess)
   }
 
   @Test
-  fun validateFieldDefinitionReturnsNullWhenMinEqualsMax() {
+  fun validateFieldDefinitionReturnsSuccessWhenMinEqualsMax() {
     val field =
         FieldDefinition(
             id = "number1", label = "Number Field", type = FieldType.Number(min = 50.0, max = 50.0))
-    assertNull(TemplateValidation.validateFieldDefinition(field))
+    assertTrue(TemplateValidation.validateFieldDefinition(field).isSuccess)
   }
 
   @Test
-  fun validateFieldDefinitionReturnsNullWhenMinSelectionsEqualsMaxSelections() {
+  fun validateFieldDefinitionReturnsSuccessWhenMinSelectionsEqualsMaxSelections() {
     val field =
         FieldDefinition(
             id = "multiselect1",
@@ -389,6 +416,6 @@ class TemplateValidationTest {
                         listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2")),
                     minSelections = 2,
                     maxSelections = 2))
-    assertNull(TemplateValidation.validateFieldDefinition(field))
+    assertTrue(TemplateValidation.validateFieldDefinition(field).isSuccess)
   }
 }

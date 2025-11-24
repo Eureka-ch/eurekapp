@@ -18,6 +18,13 @@ enum class FieldTypeKey {
 sealed interface FieldType {
   val typeKey: FieldTypeKey
 
+  /**
+   * Validates the field type configuration without throwing exceptions.
+   *
+   * @return Result.success if valid, Result.failure with error message if invalid
+   */
+  fun validateConfiguration(): Result<Unit>
+
   @Serializable
   @SerialName("text")
   data class Text(
@@ -34,6 +41,19 @@ sealed interface FieldType {
       require(maxLength == null || minLength == null || maxLength >= minLength) {
         "maxLength must be >= minLength"
       }
+    }
+
+    override fun validateConfiguration(): Result<Unit> {
+      if (maxLength != null && maxLength <= 0) {
+        return Result.failure(IllegalArgumentException("maxLength must be positive"))
+      }
+      if (minLength != null && minLength < 0) {
+        return Result.failure(IllegalArgumentException("minLength must be non-negative"))
+      }
+      if (maxLength != null && minLength != null && maxLength < minLength) {
+        return Result.failure(IllegalArgumentException("maxLength must be >= minLength"))
+      }
+      return Result.success(Unit)
     }
   }
 
@@ -53,6 +73,19 @@ sealed interface FieldType {
       require(step == null || step > 0) { "step must be positive" }
       require(decimals == null || decimals >= 0) { "decimals must be non-negative" }
     }
+
+    override fun validateConfiguration(): Result<Unit> {
+      if (min != null && max != null && max < min) {
+        return Result.failure(IllegalArgumentException("max must be >= min"))
+      }
+      if (step != null && step <= 0) {
+        return Result.failure(IllegalArgumentException("step must be positive"))
+      }
+      if (decimals != null && decimals < 0) {
+        return Result.failure(IllegalArgumentException("decimals must be non-negative"))
+      }
+      return Result.success(Unit)
+    }
   }
 
   @Serializable
@@ -64,6 +97,10 @@ sealed interface FieldType {
       val format: String? = null
   ) : FieldType {
     override val typeKey: FieldTypeKey = FieldTypeKey.DATE
+
+    override fun validateConfiguration(): Result<Unit> {
+      return Result.success(Unit)
+    }
   }
 
   @Serializable
@@ -77,6 +114,16 @@ sealed interface FieldType {
       require(options.map { it.value }.distinct().size == options.size) {
         "option values must be unique"
       }
+    }
+
+    override fun validateConfiguration(): Result<Unit> {
+      if (options.isEmpty()) {
+        return Result.failure(IllegalArgumentException("options must not be empty"))
+      }
+      if (options.map { it.value }.distinct().size != options.size) {
+        return Result.failure(IllegalArgumentException("option values must be unique"))
+      }
+      return Result.success(Unit)
     }
   }
 
@@ -100,6 +147,25 @@ sealed interface FieldType {
       require(minSelections == null || maxSelections == null || maxSelections >= minSelections) {
         "maxSelections must be >= minSelections"
       }
+    }
+
+    override fun validateConfiguration(): Result<Unit> {
+      if (options.isEmpty()) {
+        return Result.failure(IllegalArgumentException("options must not be empty"))
+      }
+      if (options.map { it.value }.distinct().size != options.size) {
+        return Result.failure(IllegalArgumentException("option values must be unique"))
+      }
+      if (minSelections != null && minSelections < 0) {
+        return Result.failure(IllegalArgumentException("minSelections must be non-negative"))
+      }
+      if (maxSelections != null && maxSelections <= 0) {
+        return Result.failure(IllegalArgumentException("maxSelections must be positive"))
+      }
+      if (minSelections != null && maxSelections != null && maxSelections < minSelections) {
+        return Result.failure(IllegalArgumentException("maxSelections must be >= minSelections"))
+      }
+      return Result.success(Unit)
     }
   }
 }
