@@ -27,10 +27,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.viewmodel.compose.viewModel
-import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.data.task.determinePriority
+import ch.eureka.eurekapp.model.data.task.getDaysUntilDue
+import ch.eureka.eurekapp.model.data.task.getDueDateTag
 import ch.eureka.eurekapp.ui.components.EurekaInfoCard
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
@@ -40,11 +42,6 @@ import ch.eureka.eurekapp.ui.home.HomeOverviewViewModel
 import ch.eureka.eurekapp.ui.meeting.MeetingCard
 import ch.eureka.eurekapp.ui.meeting.MeetingCardConfig
 import ch.eureka.eurekapp.ui.tasks.components.TaskSectionHeader
-import ch.eureka.eurekapp.screens.ProjectStatusDisplay
-import ch.eureka.eurekapp.screens.InformationContainer
-import ch.eureka.eurekapp.model.data.task.determinePriority
-import ch.eureka.eurekapp.model.data.task.getDaysUntilDue
-import ch.eureka.eurekapp.model.data.task.getDueDateTag
 import com.google.firebase.Timestamp
 
 // Part of this code and documentation were generated with the help of AI (ChatGPT 5.1).
@@ -81,9 +78,7 @@ fun HomeOverviewScreen(
       onProjectSelected = onProjectSelected)
 }
 
-/**
- * Visible-for-testing layout that renders the actual home overview content based on [uiState].
- */
+/** Visible-for-testing layout that renders the actual home overview content based on [uiState]. */
 @Composable
 internal fun HomeOverviewLayout(
     modifier: Modifier = Modifier,
@@ -106,7 +101,11 @@ internal fun HomeOverviewLayout(
   }
 
   LazyColumn(
-      modifier = modifier.fillMaxSize().padding(horizontal = Spacing.lg, vertical = Spacing.md).testTag(HomeOverviewTestTags.SCREEN),
+      modifier =
+          modifier
+              .fillMaxSize()
+              .padding(horizontal = Spacing.lg, vertical = Spacing.md)
+              .testTag(HomeOverviewTestTags.SCREEN),
       verticalArrangement = Arrangement.spacedBy(Spacing.lg)) {
         item {
           GreetingHeader(uiState.currentUserName, uiState.isConnected, uiState.error)
@@ -129,7 +128,8 @@ internal fun HomeOverviewLayout(
           item { EmptyState(text = "No tasks assigned yet. Create one to get started.") }
         } else {
           items(uiState.upcomingTasks.take(HOME_ITEMS_LIMIT)) { task ->
-            TaskPreviewCard(task = task, onTaskClick = { onTaskSelected(task.projectId, task.taskID) })
+            TaskPreviewCard(
+                task = task, onTaskClick = { onTaskSelected(task.projectId, task.taskID) })
           }
         }
 
@@ -165,7 +165,8 @@ internal fun HomeOverviewLayout(
           item { EmptyState(text = "No projects yet. Create a project to organize your work.") }
         } else {
           items(uiState.recentProjects.take(HOME_ITEMS_LIMIT)) { project ->
-            ProjectSummaryCard(project = project, onClick = { onProjectSelected(project.projectId) })
+            ProjectSummaryCard(
+                project = project, onClick = { onProjectSelected(project.projectId) })
           }
         }
       }
@@ -205,7 +206,10 @@ private fun SummaryCardsRow(tasksCount: Int, meetingsCount: Int, projectsCount: 
         secondaryValue = "Assigned to you",
         iconText = "✓")
     EurekaInfoCard(
-        title = "Next meetings", primaryValue = "$meetingsCount", secondaryValue = "Scheduled", iconText = "🗓")
+        title = "Next meetings",
+        primaryValue = "$meetingsCount",
+        secondaryValue = "Scheduled",
+        iconText = "🗓")
     EurekaInfoCard(
         title = "Recent projects",
         primaryValue = "$projectsCount",
@@ -215,7 +219,12 @@ private fun SummaryCardsRow(tasksCount: Int, meetingsCount: Int, projectsCount: 
 }
 
 @Composable
-private fun HomeSectionHeader(title: String, count: Int, actionLabel: String, onActionClick: () -> Unit) {
+private fun HomeSectionHeader(
+    title: String,
+    count: Int,
+    actionLabel: String,
+    onActionClick: () -> Unit
+) {
   Row(
       modifier = Modifier.fillMaxWidth(),
       horizontalArrangement = Arrangement.SpaceBetween,
@@ -241,16 +250,18 @@ private fun TaskPreviewCard(task: Task, onTaskClick: () -> Unit) {
   val dueDate = daysUntilDue?.let { formatDueDate(it) } ?: "No due date"
   val dueDateTag = getDueDateTag(task, now)
   val priority = determinePriority(task, now)
-  val progressValue = when (task.status) {
-    TaskStatus.COMPLETED -> 1f
-    TaskStatus.IN_PROGRESS -> 0.5f
-    else -> 0f
-  }
-  val progressText = when (task.status) {
-    TaskStatus.COMPLETED -> "100%"
-    TaskStatus.IN_PROGRESS -> "50%"
-    else -> "0%"
-  }
+  val progressValue =
+      when (task.status) {
+        TaskStatus.COMPLETED -> 1f
+        TaskStatus.IN_PROGRESS -> 0.5f
+        else -> 0f
+      }
+  val progressText =
+      when (task.status) {
+        TaskStatus.COMPLETED -> "100%"
+        TaskStatus.IN_PROGRESS -> "50%"
+        else -> "0%"
+      }
 
   EurekaTaskCard(
       title = task.title.ifEmpty { "Untitled task" },
@@ -298,4 +309,3 @@ private fun ProjectSummaryCard(project: Project, onClick: () -> Unit) {
         }
       }
 }
-

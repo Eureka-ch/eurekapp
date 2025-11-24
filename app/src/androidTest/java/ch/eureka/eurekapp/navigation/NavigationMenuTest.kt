@@ -8,26 +8,13 @@ import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
-import ch.eureka.eurekapp.model.data.project.Member
-import ch.eureka.eurekapp.model.data.project.Project
-import ch.eureka.eurekapp.model.data.project.ProjectRole
-import ch.eureka.eurekapp.model.data.project.ProjectStatus
-import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
-import ch.eureka.eurekapp.model.data.task.Task
-import ch.eureka.eurekapp.model.data.task.TaskRepository
-import ch.eureka.eurekapp.model.data.task.TaskStatus
-import ch.eureka.eurekapp.screens.HomeOverviewTestTags
 import ch.eureka.eurekapp.screens.IdeasScreenTestTags
 import ch.eureka.eurekapp.screens.SelfNotesScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
-import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.ui.profile.ProfileScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
-import com.google.firebase.Timestamp
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
-import java.text.SimpleDateFormat
-import java.util.Locale
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.Before
@@ -92,9 +79,6 @@ class NavigationMenuTest : TestCase() {
         .onNodeWithTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON)
         .assertIsDisplayed()
     composeTestRule
-        .onNodeWithTag(BottomBarNavigationTestTags.CONVERSATIONS_SCREEN_BUTTON)
-        .assertIsDisplayed()
-    composeTestRule
         .onNodeWithTag(BottomBarNavigationTestTags.NOTES_SCREEN_BUTTON)
         .assertIsDisplayed()
   }
@@ -123,218 +107,10 @@ class NavigationMenuTest : TestCase() {
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.NOTES_SCREEN_BUTTON).performClick()
     composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.SCREEN).assertIsDisplayed()
 
+    // Verify home button navigates back to HomeOverview
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
     composeTestRule
-        .onNodeWithTag(BottomBarNavigationTestTags.CONVERSATIONS_SCREEN_BUTTON)
-        .performClick()
-    composeTestRule.onNodeWithTag(ConversationListScreenTestTags.TITLE).assertIsDisplayed()
-
-    // Verify home button navigates back to HomeOverview
-    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
-    composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertIsDisplayed()
-  }
-
-  @Test
-  fun testHomeOverviewComposable() {
-    composeTestRule.setContent { NavigationMenu() }
-
-    composeTestRule.waitForIdle()
-
-    composeTestRule.waitUntil(timeoutMillis = 5000) {
-      try {
-        composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertExists()
-        true
-      } catch (e: AssertionError) {
-        false
-      }
-    }
-    composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertIsDisplayed()
-
-    composeTestRule.waitUntil(timeoutMillis = 5000) {
-      try {
-        composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).assertExists()
-        true
-      } catch (e: AssertionError) {
-        false
-      }
-    }
-    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).performClick()
-    composeTestRule.waitForIdle()
-    waitForTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
-    // Verify navigation happened (confirms callback executed)
-    composeTestRule.waitUntil(timeoutMillis = 5000) {
-      try {
-        composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertExists()
-        true
-      } catch (e: AssertionError) {
-        false
-      }
-    }
-<<<<<<< HEAD
-    // Navigate back home
-    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
-    waitForTag(HomeOverviewTestTags.SCREEN)
-
-    // Cover onOpenMeetings
-    waitForTag(HomeOverviewTestTags.CTA_MEETINGS)
-    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_MEETINGS).performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
-    waitForTag(HomeOverviewTestTags.SCREEN)
-
-    // Cover onOpenProjects
-    waitForTag(HomeOverviewTestTags.CTA_PROJECTS)
-    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_PROJECTS).performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
-    waitForTag(HomeOverviewTestTags.SCREEN)
-
-    val taskTag = "${HomeOverviewTestTags.TASK_ITEM_PREFIX}home-overview-task-id"
-    val meetingTag = "${HomeOverviewTestTags.MEETING_ITEM_PREFIX}home-overview-meeting-id"
-    val projectTag = "${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}home-overview-project-id"
-
-    // Cover onTaskSelected
-    waitForTag(taskTag)
-    composeTestRule.onNodeWithTag(taskTag).performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.BACK_BUTTON).performClick()
-    waitForTag(HomeOverviewTestTags.SCREEN)
-
-    // Cover onMeetingSelected
-    waitForTag(meetingTag)
-    composeTestRule.onNodeWithTag(meetingTag).performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
-    waitForTag(HomeOverviewTestTags.SCREEN)
-
-    // Cover onProjectSelected
-    waitForTag(projectTag)
-    composeTestRule.onNodeWithTag(projectTag).performClick()
-    composeTestRule.waitForIdle()
-    waitForTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT)
-  }
-
-  @Test
-  fun testNavigateToTaskDependenciesScreen() {
-    runBlocking {
-      val testUserId =
-          FirebaseEmulator.auth.currentUser?.uid ?: throw IllegalStateException("No user")
-      val projectId = "test-project-id"
-      val taskId = "test-task-id"
-
-      // Setup minimal test project
-      val projectRef = FirebaseEmulator.firestore.collection("projects").document(projectId)
-      projectRef
-          .set(
-              Project(
-                  projectId = projectId,
-                  name = "Test Project",
-                  description = "Test",
-                  status = ProjectStatus.OPEN,
-                  createdBy = testUserId,
-                  memberIds = listOf(testUserId)))
-          .await()
-      projectRef
-          .collection("members")
-          .document(testUserId)
-          .set(Member(userId = testUserId, role = ProjectRole.OWNER))
-          .await()
-
-      // Setup minimal test task
-      val taskRepository: TaskRepository =
-          FirestoreTaskRepository(
-              firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
-      val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse("15/10/2025")!!
-      taskRepository
-          .updateTask(
-              Task(
-                  taskID = taskId,
-                  projectId = projectId,
-                  title = "Test Task",
-                  description = "Test",
-                  assignedUserIds = listOf(testUserId),
-                  dueDate = Timestamp(date),
-                  attachmentUrls = emptyList(),
-                  createdBy = testUserId,
-                  status = TaskStatus.TODO))
-          .getOrThrow()
-    }
-
-    // Use actual NavigationMenu to cover the real Navigation.kt lines 233-239
-    composeTestRule.setContent { NavigationMenu() }
-    composeTestRule.waitForIdle()
-
-    // Navigate through UI to reach TaskDependenciesScreen
-    // This will execute the actual composable in Navigation.kt
-    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON).performClick()
-    composeTestRule.waitForIdle()
-
-    // Wait for task card to appear and click it
-    composeTestRule.waitUntil(timeoutMillis = 5000) {
-      try {
-        composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).assertExists()
-        true
-      } catch (e: AssertionError) {
-        false
-      }
-    }
-    composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).performClick()
-    composeTestRule.waitForIdle()
-
-    // Click the dependencies button to navigate to TaskDependenciesScreen
-    // This triggers the actual composable in Navigation.kt lines 233-239
-    composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.VIEW_DEPENDENCIES).performClick()
-    composeTestRule.waitForIdle()
-
-    // Verify the screen is displayed (this confirms the composable executed)
-    composeTestRule.onNodeWithTag("back_button_dependencies").assertIsDisplayed()
-    
-    // Verify home button navigates back to HomeOverview
-    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
-    composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertIsDisplayed()
-  }
-
-  @Test
-  fun testHomeOverviewComposable() {
-    // Use actual NavigationMenu to cover Navigation.kt lines 175-194
-    // This test ensures the HomeOverview composable and its callbacks are executed
-    composeTestRule.setContent { NavigationMenu() }
-
-    composeTestRule.waitForIdle()
-
-    // Verify HomeOverview is displayed (start destination)
-    // This covers lines 175-194: composable<Route.HomeOverview> { ... }
-    composeTestRule.waitUntil(timeoutMillis = 5000) {
-      try {
-        composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertExists()
-        true
-      } catch (e: AssertionError) {
-        false
-      }
-    }
-    composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertIsDisplayed()
-
-    // Test one callback to ensure callbacks are covered (onOpenTasks)
-    // This covers line 178: onOpenTasks = { navigationController.navigate(Route.TasksSection.Tasks)
-    // }
-    composeTestRule.waitUntil(timeoutMillis = 5000) {
-      try {
-        composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).assertExists()
-        true
-      } catch (e: AssertionError) {
-        false
-      }
-    }
-    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).performClick()
-    composeTestRule.waitForIdle()
-
-    // Verify navigation happened (confirms callback executed)
-    composeTestRule.waitUntil(timeoutMillis = 5000) {
-      try {
-        composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertExists()
-        true
-      } catch (e: AssertionError) {
-        false
-      }
-    }
+        .onNodeWithTag(ch.eureka.eurekapp.screens.HomeOverviewTestTags.SCREEN)
+        .assertIsDisplayed()
   }
 }

@@ -186,15 +186,17 @@ fun NavigationMenu() {
       containerColor = Color.White,
       bottomBar = { BottomBarNavigationComponent(navigationController = navigationController) }) {
           innerPadding ->
-      NavHost(
-          modifier = Modifier.padding(innerPadding),
-          navController = navigationController,
-          startDestination = Route.HomeOverview) {
+        NavHost(
+            modifier = Modifier.padding(innerPadding),
+            navController = navigationController,
+            startDestination = Route.HomeOverview) {
               composable<Route.HomeOverview> {
                 HomeOverviewScreen(
                     onOpenProjects = { navigationController.navigate(Route.ProjectSelection) },
                     onOpenTasks = { navigationController.navigate(Route.TasksSection.Tasks) },
-                    onOpenMeetings = { navigationController.navigate(Route.MeetingsSection.Meetings) },
+                    onOpenMeetings = {
+                      navigationController.navigate(Route.MeetingsSection.Meetings)
+                    },
                     onTaskSelected = { projectId, taskId ->
                       navigationController.navigate(
                           Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))

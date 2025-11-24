@@ -39,8 +39,10 @@ data class HomeOverviewUiState(
 
 class HomeOverviewViewModel(
     private val taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
-    private val projectRepository: ProjectRepository = FirestoreRepositoriesProvider.projectRepository,
-    private val meetingRepository: MeetingRepository = FirestoreRepositoriesProvider.meetingRepository,
+    private val projectRepository: ProjectRepository =
+        FirestoreRepositoriesProvider.projectRepository,
+    private val meetingRepository: MeetingRepository =
+        FirestoreRepositoriesProvider.meetingRepository,
     private val userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository,
     connectivityFlow: Flow<Boolean> = ConnectivityObserverProvider.connectivityObserver.isConnected,
 ) : ViewModel() {
@@ -93,8 +95,8 @@ class HomeOverviewViewModel(
                           emit(emptyList())
                         }
                   }) { meetingsArrays ->
-                meetingsArrays.flatMap { it.toList() }
-              }
+                    meetingsArrays.flatMap { it.toList() }
+                  }
               .map { meetings ->
                 meetings
                     .filter { it.status != MeetingStatus.COMPLETED }
@@ -113,12 +115,12 @@ class HomeOverviewViewModel(
       connectivityFlow.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
   val uiState: StateFlow<HomeOverviewUiState> =
-      combine(
-              currentUserName,
-              upcomingTasks,
-              upcomingMeetings,
-              recentProjects,
-              connectivity) { name, tasks, meetings, projects, isConnected ->
+      combine(currentUserName, upcomingTasks, upcomingMeetings, recentProjects, connectivity) {
+              name,
+              tasks,
+              meetings,
+              projects,
+              isConnected ->
             HomeOverviewUiState(
                 currentUserName = name,
                 upcomingTasks = tasks,
@@ -141,4 +143,3 @@ private fun Timestamp?.toEpochMillisOrMax(): Long {
 private fun Timestamp?.toEpochMillisOrMin(): Long {
   return this?.toDate()?.time ?: Long.MIN_VALUE
 }
-

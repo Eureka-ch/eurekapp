@@ -12,13 +12,13 @@ import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
-import ch.eureka.eurekapp.screens.HomeOverviewTestTags
 import ch.eureka.eurekapp.ui.home.HomeOverviewUiState
 import com.google.firebase.Timestamp
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+
 // Part of this code and documentation were generated with the help of AI (ChatGPT 5.1).
 @RunWith(AndroidJUnit4::class)
 class HomeOverviewScreenTest {
@@ -28,12 +28,13 @@ class HomeOverviewScreenTest {
   @Test
   fun displaysGreetingAndSections() {
     val uiState =
-        sampleState().copy(
-            currentUserName = "Alex",
-            upcomingTasks = listOf(createTask("Task A")),
-            upcomingMeetings = listOf(createMeeting("Meeting A")),
-            recentProjects = listOf(createProject("Project A")),
-            isLoading = false)
+        sampleState()
+            .copy(
+                currentUserName = "Alex",
+                upcomingTasks = listOf(createTask("Task A")),
+                upcomingMeetings = listOf(createMeeting("Meeting A")),
+                recentProjects = listOf(createProject("Project A")),
+                isLoading = false)
 
     composeTestRule.setContent { HomeOverviewLayout(uiState = uiState) }
 
@@ -49,11 +50,12 @@ class HomeOverviewScreenTest {
     val meetings = (1..4).map { createMeeting("Meeting $it") }
     val projects = (1..4).map { createProject("Project $it") }
     val uiState =
-        sampleState().copy(
-            upcomingTasks = tasks,
-            upcomingMeetings = meetings,
-            recentProjects = projects,
-            isLoading = false)
+        sampleState()
+            .copy(
+                upcomingTasks = tasks,
+                upcomingMeetings = meetings,
+                recentProjects = projects,
+                isLoading = false)
 
     composeTestRule.setContent { HomeOverviewLayout(uiState = uiState) }
 
@@ -87,11 +89,12 @@ class HomeOverviewScreenTest {
     composeTestRule.setContent {
       HomeOverviewLayout(
           uiState =
-              sampleState().copy(
-                  upcomingTasks = listOf(createTask("Task CTA")),
-                  upcomingMeetings = listOf(createMeeting("Meeting CTA")),
-                  recentProjects = listOf(createProject("Project CTA")),
-                  isLoading = false),
+              sampleState()
+                  .copy(
+                      upcomingTasks = listOf(createTask("Task CTA")),
+                      upcomingMeetings = listOf(createMeeting("Meeting CTA")),
+                      recentProjects = listOf(createProject("Project CTA")),
+                      isLoading = false),
           onOpenTasks = { tasksClicked = true },
           onOpenMeetings = { meetingsClicked = true },
           onOpenProjects = { projectsClicked = true })
@@ -108,7 +111,9 @@ class HomeOverviewScreenTest {
 
   @Test
   fun showsLoadingState() {
-    composeTestRule.setContent { HomeOverviewLayout(uiState = HomeOverviewUiState(isLoading = true)) }
+    composeTestRule.setContent {
+      HomeOverviewLayout(uiState = HomeOverviewUiState(isLoading = true))
+    }
 
     composeTestRule.onNodeWithTag(HomeOverviewTestTags.LOADING_INDICATOR).assertIsDisplayed()
   }
@@ -142,4 +147,3 @@ class HomeOverviewScreenTest {
   private fun createProject(name: String) =
       Project(projectId = name, name = name, status = ProjectStatus.OPEN)
 }
-

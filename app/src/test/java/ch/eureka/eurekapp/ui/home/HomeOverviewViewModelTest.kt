@@ -26,7 +26,8 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-// portions of this code and documentation were generated with the help of AI (ChatGPT 5.1). 
+
+// portions of this code and documentation were generated with the help of AI (ChatGPT 5.1).
 /**
  * Tests for [HomeOverviewViewModel] verifying that it aggregates data from repositories correctly.
  */
@@ -87,8 +88,10 @@ class HomeOverviewViewModelTest {
               status = MeetingStatus.SCHEDULED,
               datetime = timestamp(now + index * DAY))
         }
-    meetingRepository.setMeetingsForProject(projectA.projectId, flowOf(meetings.filter { it.projectId == projectA.projectId }))
-    meetingRepository.setMeetingsForProject(projectB.projectId, flowOf(meetings.filter { it.projectId == projectB.projectId }))
+    meetingRepository.setMeetingsForProject(
+        projectA.projectId, flowOf(meetings.filter { it.projectId == projectA.projectId }))
+    meetingRepository.setMeetingsForProject(
+        projectB.projectId, flowOf(meetings.filter { it.projectId == projectB.projectId }))
 
     projectRepository.setCurrentUserProjects(flowOf(listOf(projectA, projectB)))
     userRepository.setCurrentUser(flowOf(User(uid = "user-1", displayName = "Eureka User")))
@@ -142,4 +145,3 @@ class HomeOverviewViewModelTest {
     private const val DAY = 24 * 60 * 60 * 1000L
   }
 }
-

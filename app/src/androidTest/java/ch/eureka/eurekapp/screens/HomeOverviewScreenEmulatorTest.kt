@@ -12,12 +12,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
-import ch.eureka.eurekapp.model.data.meeting.FirestoreMeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
-import ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository
 import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRole
@@ -27,15 +25,11 @@ import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.navigation.Route
-import ch.eureka.eurekapp.screens.TasksScreenTestTags
-import ch.eureka.eurekapp.screens.HomeOverviewTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
@@ -48,8 +42,8 @@ import org.junit.Test
 /**
  * Emulator-based integration tests for HomeOverviewScreen.
  *
- * These tests verify that the HomeOverview screen correctly displays real data from Firebase Emulator
- * and handles navigation properly.
+ * These tests verify that the HomeOverview screen correctly displays real data from Firebase
+ * Emulator and handles navigation properly.
  */
 class HomeOverviewScreenEmulatorTest : TestCase() {
 
@@ -192,14 +186,20 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
 
     // Create tasks with different due dates
     val tomorrow = Timestamp(java.util.Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000))
-    val dayAfterTomorrow = Timestamp(java.util.Date(System.currentTimeMillis() + 2 * 24 * 60 * 60 * 1000))
+    val dayAfterTomorrow =
+        Timestamp(java.util.Date(System.currentTimeMillis() + 2 * 24 * 60 * 60 * 1000))
     setupTestTask(projectId1, "task-1", "Upcoming Task 1", dueDate = tomorrow)
     setupTestTask(projectId1, "task-2", "Upcoming Task 2", dueDate = dayAfterTomorrow)
-    setupTestTask(projectId1, "task-3", "Upcoming Task 3", dueDate = Timestamp(java.util.Date(System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000)))
+    setupTestTask(
+        projectId1,
+        "task-3",
+        "Upcoming Task 3",
+        dueDate = Timestamp(java.util.Date(System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000)))
 
     // Create meetings
     val meetingTime1 = Timestamp(java.util.Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000))
-    val meetingTime2 = Timestamp(java.util.Date(System.currentTimeMillis() + 2 * 24 * 60 * 60 * 1000))
+    val meetingTime2 =
+        Timestamp(java.util.Date(System.currentTimeMillis() + 2 * 24 * 60 * 60 * 1000))
     setupTestMeeting(projectId1, "meeting-1", "Upcoming Meeting 1", datetime = meetingTime1)
     setupTestMeeting(projectId2, "meeting-2", "Upcoming Meeting 2", datetime = meetingTime2)
 
@@ -215,18 +215,15 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
         }
         composable<Route.ProjectSelection> {
           androidx.compose.material3.Text(
-              "Project Selection",
-              modifier = Modifier.testTag("projectSelectionScreen"))
+              "Project Selection", modifier = Modifier.testTag("projectSelectionScreen"))
         }
         composable<Route.TasksSection.Tasks> {
           androidx.compose.material3.Text(
-              "Tasks Screen",
-              modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
+              "Tasks Screen", modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
         }
         composable<Route.MeetingsSection.Meetings> {
           androidx.compose.material3.Text(
-              "Meetings Screen",
-              modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN))
+              "Meetings Screen", modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN))
         }
       }
     }
@@ -322,18 +319,15 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
         }
         composable<Route.ProjectSelection> {
           androidx.compose.material3.Text(
-              "Project Selection",
-              modifier = Modifier.testTag("projectSelectionScreen"))
+              "Project Selection", modifier = Modifier.testTag("projectSelectionScreen"))
         }
         composable<Route.TasksSection.Tasks> {
           androidx.compose.material3.Text(
-              "Tasks Screen",
-              modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
+              "Tasks Screen", modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
         }
         composable<Route.MeetingsSection.Meetings> {
           androidx.compose.material3.Text(
-              "Meetings Screen",
-              modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN))
+              "Meetings Screen", modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN))
         }
       }
     }
@@ -385,18 +379,15 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
         }
         composable<Route.ProjectSelection> {
           androidx.compose.material3.Text(
-              "Project Selection",
-              modifier = Modifier.testTag("projectSelectionScreen"))
+              "Project Selection", modifier = Modifier.testTag("projectSelectionScreen"))
         }
         composable<Route.TasksSection.Tasks> {
           androidx.compose.material3.Text(
-              "Tasks Screen",
-              modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
+              "Tasks Screen", modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
         }
         composable<Route.MeetingsSection.Meetings> {
           androidx.compose.material3.Text(
-              "Meetings Screen",
-              modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN))
+              "Meetings Screen", modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN))
         }
       }
     }
@@ -414,7 +405,8 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
       }
     }
     composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_SCREEN).assertIsDisplayed()
-    org.junit.Assert.assertTrue("Meetings navigation callback should be triggered", meetingsNavigated)
+    org.junit.Assert.assertTrue(
+        "Meetings navigation callback should be triggered", meetingsNavigated)
 
     // Navigate back to home again
     composeTestRule.setContent {
@@ -437,18 +429,15 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
         }
         composable<Route.ProjectSelection> {
           androidx.compose.material3.Text(
-              "Project Selection",
-              modifier = Modifier.testTag("projectSelectionScreen"))
+              "Project Selection", modifier = Modifier.testTag("projectSelectionScreen"))
         }
         composable<Route.TasksSection.Tasks> {
           androidx.compose.material3.Text(
-              "Tasks Screen",
-              modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
+              "Tasks Screen", modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
         }
         composable<Route.MeetingsSection.Meetings> {
           androidx.compose.material3.Text(
-              "Meetings Screen",
-              modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN))
+              "Meetings Screen", modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN))
         }
       }
     }
@@ -466,7 +455,7 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
       }
     }
     composeTestRule.onNodeWithTag("projectSelectionScreen").assertIsDisplayed()
-    org.junit.Assert.assertTrue("Projects navigation callback should be triggered", projectsNavigated)
+    org.junit.Assert.assertTrue(
+        "Projects navigation callback should be triggered", projectsNavigated)
   }
 }
-

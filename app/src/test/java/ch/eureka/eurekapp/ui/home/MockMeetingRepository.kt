@@ -6,7 +6,8 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.Participant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-// portions of this code and documentation were generated with the help of AI (ChatGPT 5.1). 
+
+// portions of this code and documentation were generated with the help of AI (ChatGPT 5.1).
 /**
  * Simple configurable implementation of [MeetingRepository] for unit tests.
  *
@@ -51,10 +52,8 @@ class MockMeetingRepository : MeetingRepository {
   override suspend fun deleteMeeting(projectId: String, meetingId: String): Result<Unit> =
       Result.success(Unit)
 
-  override fun getParticipants(
-      projectId: String,
-      meetingId: String
-  ): Flow<List<Participant>> = flowOf(emptyList())
+  override fun getParticipants(projectId: String, meetingId: String): Flow<List<Participant>> =
+      flowOf(emptyList())
 
   override suspend fun addParticipant(
       projectId: String,
@@ -76,4 +75,3 @@ class MockMeetingRepository : MeetingRepository {
       role: MeetingRole
   ): Result<Unit> = Result.success(Unit)
 }
-
