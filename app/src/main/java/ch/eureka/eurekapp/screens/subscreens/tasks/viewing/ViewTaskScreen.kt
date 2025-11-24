@@ -170,6 +170,24 @@ fun ViewTaskScreen(
                   onDelete = null, // Pass null to indicate read-only mode
                   isReadOnly = true,
                   isConnected = isConnected)
+
+              // Add download buttons for remote attachments
+              if (viewTaskState.attachmentUrls.isNotEmpty() && isConnected) {
+                Text(
+                    text = "Download Attachments:",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(top = 16.dp)
+                )
+                viewTaskState.attachmentUrls.forEach { url ->
+                  val fileName = url.substringAfterLast("/")
+                  Button(
+                      onClick = { viewTaskViewModel.downloadFile(url, fileName, context) },
+                      modifier = Modifier.padding(vertical = 4.dp)
+                  ) {
+                    Text("Download $fileName")
+                  }
+                }
+              }
             }
       })
 }

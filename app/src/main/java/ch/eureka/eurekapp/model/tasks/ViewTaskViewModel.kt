@@ -1,11 +1,13 @@
 package ch.eureka.eurekapp.model.tasks
 
+import android.content.Context
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.user.UserRepository
+import ch.eureka.eurekapp.model.downloads.DownloadService
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,6 +18,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 // Portions of this code were generated with the help of Grok.
 /*
@@ -38,6 +41,13 @@ class ViewTaskViewModel(
 
   private val _isConnected =
       connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
+  fun downloadFile(url: String, fileName: String, context: Context) {
+    val downloadService = DownloadService(context)
+    viewModelScope.launch {
+      downloadService.downloadFile(url, fileName)
+    }
+  }
 
   override val uiState: StateFlow<ViewTaskState> =
       combine(
