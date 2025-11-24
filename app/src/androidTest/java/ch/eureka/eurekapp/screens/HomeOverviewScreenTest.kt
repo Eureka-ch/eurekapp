@@ -7,6 +7,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import ch.eureka.eurekapp.model.data.meeting.Meeting
+import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
@@ -142,7 +143,9 @@ class HomeOverviewScreenTest {
           projectId = "project-1",
           title = title,
           status = MeetingStatus.SCHEDULED,
-          datetime = Timestamp.now())
+          datetime = Timestamp.now(),
+          format = MeetingFormat.VIRTUAL,
+          link = "https://meet.google.com/test")
 
   private fun createProject(name: String) =
       Project(projectId = name, name = name, status = ProjectStatus.OPEN)
