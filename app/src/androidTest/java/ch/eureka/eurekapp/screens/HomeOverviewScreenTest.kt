@@ -1,7 +1,9 @@
 package ch.eureka.eurekapp.screens
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -40,9 +42,11 @@ class HomeOverviewScreenTest {
     composeTestRule.setContent { HomeOverviewLayout(uiState = uiState) }
 
     composeTestRule.onNodeWithText("Hello Alex").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Upcoming tasks").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Next meetings").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Recent projects").assertIsDisplayed()
+    // "Upcoming tasks" appears twice (in summary card and section header), so use
+    // onAllNodesWithText
+    composeTestRule.onAllNodesWithText("Upcoming tasks").assertCountEquals(2)
+    composeTestRule.onAllNodesWithText("Next meetings").assertCountEquals(2)
+    composeTestRule.onAllNodesWithText("Recent projects").assertCountEquals(2)
   }
 
   @Test

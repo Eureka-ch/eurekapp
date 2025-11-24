@@ -2,11 +2,14 @@ package ch.eureka.eurekapp.screens
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -253,10 +256,10 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
       // Verify greeting displays user name
       composeTestRule.onNodeWithText("Hello Eureka User").assertIsDisplayed()
 
-      // Verify sections are displayed
-      composeTestRule.onNodeWithText("Upcoming tasks").assertIsDisplayed()
-      composeTestRule.onNodeWithText("Next meetings").assertIsDisplayed()
-      composeTestRule.onNodeWithText("Recent projects").assertIsDisplayed()
+      // Verify sections are displayed (text appears twice: in summary card and section header)
+      composeTestRule.onAllNodesWithText("Upcoming tasks").assertCountEquals(2)
+      composeTestRule.onAllNodesWithText("Next meetings").assertCountEquals(2)
+      composeTestRule.onAllNodesWithText("Recent projects").assertCountEquals(2)
 
       // Verify tasks are displayed (limited to 3)
       composeTestRule.waitUntil(timeoutMillis = 5000) {
@@ -309,9 +312,10 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
       var meetingsNavigated = false
       var projectsNavigated = false
 
-      // Compose the screen with navigation
+      // Compose the screen with navigation (single setContent call)
+      lateinit var navController: NavHostController
       composeTestRule.setContent {
-        val navController = rememberNavController()
+        navController = rememberNavController()
         NavHost(navController, startDestination = Route.HomeOverview) {
           composable<Route.HomeOverview> {
             HomeOverviewScreen(
@@ -370,41 +374,17 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
       composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
       org.junit.Assert.assertTrue("Tasks navigation callback should be triggered", tasksNavigated)
 
-      // Navigate back to home
-      composeTestRule.setContent {
-        val navController = rememberNavController()
-        NavHost(navController, startDestination = Route.HomeOverview) {
-          composable<Route.HomeOverview> {
-            HomeOverviewScreen(
-                onOpenProjects = {
-                  navController.navigate(Route.ProjectSelection)
-                  projectsNavigated = true
-                },
-                onOpenTasks = {
-                  navController.navigate(Route.TasksSection.Tasks)
-                  tasksNavigated = true
-                },
-                onOpenMeetings = {
-                  navController.navigate(Route.MeetingsSection.Meetings)
-                  meetingsNavigated = true
-                })
-          }
-          composable<Route.ProjectSelection> {
-            androidx.compose.material3.Text(
-                "Project Selection", modifier = Modifier.testTag("projectSelectionScreen"))
-          }
-          composable<Route.TasksSection.Tasks> {
-            androidx.compose.material3.Text(
-                "Tasks Screen", modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
-          }
-          composable<Route.MeetingsSection.Meetings> {
-            androidx.compose.material3.Text(
-                "Meetings Screen",
-                modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN))
-          }
+      // Navigate back to home using popBackStack
+      navController.popBackStack()
+      composeTestRule.waitForIdle()
+      composeTestRule.waitUntil(timeoutMillis = 3000) {
+        try {
+          composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertExists()
+          true
+        } catch (e: AssertionError) {
+          false
         }
       }
-      composeTestRule.waitForIdle()
 
       // Test navigation to Meetings screen
       composeTestRule.onNodeWithText("Open meetings").performClick()
@@ -422,40 +402,16 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
           "Meetings navigation callback should be triggered", meetingsNavigated)
 
       // Navigate back to home again
-      composeTestRule.setContent {
-        val navController = rememberNavController()
-        NavHost(navController, startDestination = Route.HomeOverview) {
-          composable<Route.HomeOverview> {
-            HomeOverviewScreen(
-                onOpenProjects = {
-                  navController.navigate(Route.ProjectSelection)
-                  projectsNavigated = true
-                },
-                onOpenTasks = {
-                  navController.navigate(Route.TasksSection.Tasks)
-                  tasksNavigated = true
-                },
-                onOpenMeetings = {
-                  navController.navigate(Route.MeetingsSection.Meetings)
-                  meetingsNavigated = true
-                })
-          }
-          composable<Route.ProjectSelection> {
-            androidx.compose.material3.Text(
-                "Project Selection", modifier = Modifier.testTag("projectSelectionScreen"))
-          }
-          composable<Route.TasksSection.Tasks> {
-            androidx.compose.material3.Text(
-                "Tasks Screen", modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
-          }
-          composable<Route.MeetingsSection.Meetings> {
-            androidx.compose.material3.Text(
-                "Meetings Screen",
-                modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN))
-          }
+      navController.popBackStack()
+      composeTestRule.waitForIdle()
+      composeTestRule.waitUntil(timeoutMillis = 3000) {
+        try {
+          composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertExists()
+          true
+        } catch (e: AssertionError) {
+          false
         }
       }
-      composeTestRule.waitForIdle()
 
       // Test navigation to Projects screen
       composeTestRule.onNodeWithText("Browse projects").performClick()
