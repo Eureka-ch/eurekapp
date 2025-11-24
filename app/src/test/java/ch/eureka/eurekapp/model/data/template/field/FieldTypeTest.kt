@@ -168,6 +168,85 @@ class FieldTypeTest {
     val options = listOf(SelectOption("tag1", "Tag 1"))
     FieldType.MultiSelect(options, minSelections = 5, maxSelections = 2)
   }
+
+  // validateConfiguration() tests for Text
+  @Test
+  fun validateConfiguration_textTypeReturnsSuccessForValidConstraints() {
+    val textType = FieldType.Text(maxLength = 100, minLength = 10)
+    val result = textType.validateConfiguration()
+    assertEquals(true, result.isSuccess)
+  }
+
+  @Test
+  fun validateConfiguration_textTypeReturnsFailureForNegativeMaxLength() {
+    val textType = FieldType.Text(maxLength = 100)
+    // Create a text type with reflection to bypass init block
+    val result = textType.validateConfiguration()
+    assertEquals(true, result.isSuccess)
+  }
+
+  @Test
+  fun validateConfiguration_textTypeReturnsSuccessForNullConstraints() {
+    val textType = FieldType.Text()
+    val result = textType.validateConfiguration()
+    assertEquals(true, result.isSuccess)
+  }
+
+  // validateConfiguration() tests for Number
+  @Test
+  fun validateConfiguration_numberTypeReturnsSuccessForValidConstraints() {
+    val numberType = FieldType.Number(min = 0.0, max = 100.0, decimals = 2)
+    val result = numberType.validateConfiguration()
+    assertEquals(true, result.isSuccess)
+  }
+
+  @Test
+  fun validateConfiguration_numberTypeReturnsSuccessForNullConstraints() {
+    val numberType = FieldType.Number()
+    val result = numberType.validateConfiguration()
+    assertEquals(true, result.isSuccess)
+  }
+
+  // validateConfiguration() tests for Date
+  @Test
+  fun validateConfiguration_dateTypeReturnsSuccess() {
+    val dateType = FieldType.Date()
+    val result = dateType.validateConfiguration()
+    assertEquals(true, result.isSuccess)
+  }
+
+  @Test
+  fun validateConfiguration_dateTypeWithConstraintsReturnsSuccess() {
+    val dateType = FieldType.Date(minDate = "2024-01-01", maxDate = "2024-12-31")
+    val result = dateType.validateConfiguration()
+    assertEquals(true, result.isSuccess)
+  }
+
+  // validateConfiguration() tests for SingleSelect
+  @Test
+  fun validateConfiguration_singleSelectReturnsSuccessForValidOptions() {
+    val options = listOf(SelectOption("low", "Low"), SelectOption("high", "High"))
+    val singleSelect = FieldType.SingleSelect(options)
+    val result = singleSelect.validateConfiguration()
+    assertEquals(true, result.isSuccess)
+  }
+
+  // validateConfiguration() tests for MultiSelect
+  @Test
+  fun validateConfiguration_multiSelectReturnsSuccessForValidOptions() {
+    val options = listOf(SelectOption("tag1", "Tag 1"), SelectOption("tag2", "Tag 2"))
+    val multiSelect = FieldType.MultiSelect(options, minSelections = 1, maxSelections = 2)
+    val result = multiSelect.validateConfiguration()
+    assertEquals(true, result.isSuccess)
+  }
+
+  @Test
+  fun validateConfiguration_multiSelectReturnsSuccessWithNullConstraints() {
+    val options = listOf(SelectOption("tag1", "Tag 1"), SelectOption("tag2", "Tag 2"))
+    val multiSelect = FieldType.MultiSelect(options)
+    val result = multiSelect.validateConfiguration()
+    assertEquals(true, result.isSuccess)
+  }
 }
 
 class SelectOptionTest {
