@@ -25,6 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.project.Project
@@ -34,6 +35,7 @@ import ch.eureka.eurekapp.ui.components.EurekaInfoCard
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.home.HOME_ITEMS_LIMIT
+import ch.eureka.eurekapp.ui.home.HomeOverviewUiState
 import ch.eureka.eurekapp.ui.home.HomeOverviewViewModel
 import ch.eureka.eurekapp.ui.meeting.MeetingCard
 import ch.eureka.eurekapp.ui.meeting.MeetingCardConfig
@@ -46,6 +48,11 @@ import ch.eureka.eurekapp.model.data.task.getDueDateTag
 import com.google.firebase.Timestamp
 
 // Part of this code and documentation were generated with the help of AI (ChatGPT 5.1).
+object HomeOverviewTestTags {
+  const val SCREEN = "homeOverviewScreen"
+  const val LOADING_INDICATOR = "homeOverviewLoading"
+}
+
 /**
  * Home overview entry screen.
  *
@@ -63,19 +70,43 @@ fun HomeOverviewScreen(
     homeOverviewViewModel: HomeOverviewViewModel = viewModel(),
 ) {
   val uiState by homeOverviewViewModel.uiState.collectAsState()
+  HomeOverviewLayout(
+      modifier = modifier,
+      uiState = uiState,
+      onOpenProjects = onOpenProjects,
+      onOpenTasks = onOpenTasks,
+      onOpenMeetings = onOpenMeetings,
+      onTaskSelected = onTaskSelected,
+      onMeetingSelected = onMeetingSelected,
+      onProjectSelected = onProjectSelected)
+}
 
+/**
+ * Visible-for-testing layout that renders the actual home overview content based on [uiState].
+ */
+@Composable
+internal fun HomeOverviewLayout(
+    modifier: Modifier = Modifier,
+    uiState: HomeOverviewUiState,
+    onOpenProjects: () -> Unit = {},
+    onOpenTasks: () -> Unit = {},
+    onOpenMeetings: () -> Unit = {},
+    onTaskSelected: (projectId: String, taskId: String) -> Unit = { _, _ -> },
+    onMeetingSelected: (projectId: String, meetingId: String) -> Unit = { _, _ -> },
+    onProjectSelected: (projectId: String) -> Unit = {}
+) {
   if (uiState.isLoading) {
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-      CircularProgressIndicator()
+      CircularProgressIndicator(modifier = Modifier.testTag(HomeOverviewTestTags.LOADING_INDICATOR))
     }
     return
   }
 
   LazyColumn(
-      modifier = modifier.fillMaxSize().padding(horizontal = Spacing.lg, vertical = Spacing.md),
+      modifier = modifier.fillMaxSize().padding(horizontal = Spacing.lg, vertical = Spacing.md).testTag(HomeOverviewTestTags.SCREEN),
       verticalArrangement = Arrangement.spacedBy(Spacing.lg)) {
         item {
           GreetingHeader(uiState.currentUserName, uiState.isConnected, uiState.error)

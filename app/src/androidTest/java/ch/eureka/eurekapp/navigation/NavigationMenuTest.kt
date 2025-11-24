@@ -16,11 +16,11 @@ import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.screens.HomeOverviewTestTags
 import ch.eureka.eurekapp.screens.IdeasScreenTestTags
 import ch.eureka.eurekapp.screens.SelfNotesScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreenTestTags
-import ch.eureka.eurekapp.ui.conversation.ConversationListScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.ui.profile.ProfileScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
@@ -103,6 +103,11 @@ class NavigationMenuTest : TestCase() {
   fun testAllPages() {
     composeTestRule.setContent { NavigationMenu() }
 
+    // Verify HomeOverview is the start destination
+    composeTestRule
+        .onNodeWithTag(ch.eureka.eurekapp.screens.HomeOverviewTestTags.SCREEN)
+        .assertIsDisplayed()
+
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON).performClick()
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.PROFILE_SCREEN).assertIsDisplayed()
 
@@ -122,6 +127,90 @@ class NavigationMenuTest : TestCase() {
         .onNodeWithTag(BottomBarNavigationTestTags.CONVERSATIONS_SCREEN_BUTTON)
         .performClick()
     composeTestRule.onNodeWithTag(ConversationListScreenTestTags.TITLE).assertIsDisplayed()
+
+    // Verify home button navigates back to HomeOverview
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertIsDisplayed()
+  }
+
+  @Test
+  fun testHomeOverviewComposable() {
+    composeTestRule.setContent { NavigationMenu() }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      try {
+        composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertIsDisplayed()
+
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      try {
+        composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).performClick()
+    composeTestRule.waitForIdle()
+    waitForTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
+    // Verify navigation happened (confirms callback executed)
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      try {
+        composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
+<<<<<<< HEAD
+    // Navigate back home
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
+    waitForTag(HomeOverviewTestTags.SCREEN)
+
+    // Cover onOpenMeetings
+    waitForTag(HomeOverviewTestTags.CTA_MEETINGS)
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_MEETINGS).performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
+    waitForTag(HomeOverviewTestTags.SCREEN)
+
+    // Cover onOpenProjects
+    waitForTag(HomeOverviewTestTags.CTA_PROJECTS)
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_PROJECTS).performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
+    waitForTag(HomeOverviewTestTags.SCREEN)
+
+    val taskTag = "${HomeOverviewTestTags.TASK_ITEM_PREFIX}home-overview-task-id"
+    val meetingTag = "${HomeOverviewTestTags.MEETING_ITEM_PREFIX}home-overview-meeting-id"
+    val projectTag = "${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}home-overview-project-id"
+
+    // Cover onTaskSelected
+    waitForTag(taskTag)
+    composeTestRule.onNodeWithTag(taskTag).performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.BACK_BUTTON).performClick()
+    waitForTag(HomeOverviewTestTags.SCREEN)
+
+    // Cover onMeetingSelected
+    waitForTag(meetingTag)
+    composeTestRule.onNodeWithTag(meetingTag).performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
+    waitForTag(HomeOverviewTestTags.SCREEN)
+
+    // Cover onProjectSelected
+    waitForTag(projectTag)
+    composeTestRule.onNodeWithTag(projectTag).performClick()
+    composeTestRule.waitForIdle()
+    waitForTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT)
   }
 
   @Test
@@ -198,5 +287,54 @@ class NavigationMenuTest : TestCase() {
 
     // Verify the screen is displayed (this confirms the composable executed)
     composeTestRule.onNodeWithTag("back_button_dependencies").assertIsDisplayed()
+    
+    // Verify home button navigates back to HomeOverview
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertIsDisplayed()
+  }
+
+  @Test
+  fun testHomeOverviewComposable() {
+    // Use actual NavigationMenu to cover Navigation.kt lines 175-194
+    // This test ensures the HomeOverview composable and its callbacks are executed
+    composeTestRule.setContent { NavigationMenu() }
+
+    composeTestRule.waitForIdle()
+
+    // Verify HomeOverview is displayed (start destination)
+    // This covers lines 175-194: composable<Route.HomeOverview> { ... }
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      try {
+        composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertIsDisplayed()
+
+    // Test one callback to ensure callbacks are covered (onOpenTasks)
+    // This covers line 178: onOpenTasks = { navigationController.navigate(Route.TasksSection.Tasks)
+    // }
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      try {
+        composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).performClick()
+    composeTestRule.waitForIdle()
+
+    // Verify navigation happened (confirms callback executed)
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      try {
+        composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
   }
 }
