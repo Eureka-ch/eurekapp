@@ -118,21 +118,14 @@ class HomeOverviewViewModel(
               upcomingTasks,
               upcomingMeetings,
               recentProjects,
-              connectivity,
-              _error) {
-              name,
-              tasks,
-              meetings,
-              projects,
-              isConnected,
-              error ->
+              connectivity) { name, tasks, meetings, projects, isConnected ->
             HomeOverviewUiState(
                 currentUserName = name,
                 upcomingTasks = tasks,
                 upcomingMeetings = meetings,
                 recentProjects = projects,
                 isConnected = isConnected,
-                error = error,
+                error = _error.value,
                 isLoading = false)
           }
           .stateIn(

@@ -1,11 +1,12 @@
 package ch.eureka.eurekapp.screens
 
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.waitUntil
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -27,7 +28,7 @@ import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
-import ch.eureka.eurekapp.ui.home.HomeOverviewTestTags
+import ch.eureka.eurekapp.screens.HomeOverviewTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import ch.eureka.eurekapp.utils.MockConnectivityObserver
@@ -164,7 +165,6 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
             meetingID = meetingId,
             projectId = projectId,
             title = title,
-            description = "Test meeting description",
             status = status,
             datetime = datetime,
             format = MeetingFormat.VIRTUAL,
@@ -216,17 +216,17 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
         composable<Route.ProjectSelection> {
           androidx.compose.material3.Text(
               "Project Selection",
-              modifier = androidx.compose.ui.Modifier.testTag("projectSelectionScreen"))
+              modifier = Modifier.testTag("projectSelectionScreen"))
         }
         composable<Route.TasksSection.Tasks> {
           androidx.compose.material3.Text(
               "Tasks Screen",
-              modifier = androidx.compose.ui.Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
+              modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
         }
         composable<Route.MeetingsSection.Meetings> {
           androidx.compose.material3.Text(
               "Meetings Screen",
-              modifier = androidx.compose.ui.Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN))
+              modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN))
         }
       }
     }
@@ -323,17 +323,17 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
         composable<Route.ProjectSelection> {
           androidx.compose.material3.Text(
               "Project Selection",
-              modifier = androidx.compose.ui.Modifier.testTag("projectSelectionScreen"))
+              modifier = Modifier.testTag("projectSelectionScreen"))
         }
         composable<Route.TasksSection.Tasks> {
           androidx.compose.material3.Text(
               "Tasks Screen",
-              modifier = androidx.compose.ui.Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
+              modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
         }
         composable<Route.MeetingsSection.Meetings> {
           androidx.compose.material3.Text(
               "Meetings Screen",
-              modifier = androidx.compose.ui.Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN))
+              modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN))
         }
       }
     }
@@ -386,17 +386,17 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
         composable<Route.ProjectSelection> {
           androidx.compose.material3.Text(
               "Project Selection",
-              modifier = androidx.compose.ui.Modifier.testTag("projectSelectionScreen"))
+              modifier = Modifier.testTag("projectSelectionScreen"))
         }
         composable<Route.TasksSection.Tasks> {
           androidx.compose.material3.Text(
               "Tasks Screen",
-              modifier = androidx.compose.ui.Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
+              modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
         }
         composable<Route.MeetingsSection.Meetings> {
           androidx.compose.material3.Text(
               "Meetings Screen",
-              modifier = androidx.compose.ui.Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN))
+              modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN))
         }
       }
     }
@@ -438,17 +438,17 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
         composable<Route.ProjectSelection> {
           androidx.compose.material3.Text(
               "Project Selection",
-              modifier = androidx.compose.ui.Modifier.testTag("projectSelectionScreen"))
+              modifier = Modifier.testTag("projectSelectionScreen"))
         }
         composable<Route.TasksSection.Tasks> {
           androidx.compose.material3.Text(
               "Tasks Screen",
-              modifier = androidx.compose.ui.Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
+              modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
         }
         composable<Route.MeetingsSection.Meetings> {
           androidx.compose.material3.Text(
               "Meetings Screen",
-              modifier = androidx.compose.ui.Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN))
+              modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN))
         }
       }
     }
