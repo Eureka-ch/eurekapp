@@ -306,7 +306,7 @@ private fun ProjectCard(
  * @param iconColor color of the icon.
  */
 @Composable
-private fun InformationContainer(text: String, iconVector: ImageVector, iconColor: Color) {
+fun InformationContainer(text: String, iconVector: ImageVector, iconColor: Color) {
   Row(
       modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
       horizontalArrangement = Arrangement.Center,
@@ -338,7 +338,7 @@ private val colorMap =
  * @param projectStatus the status of the project.
  */
 @Composable
-private fun ProjectStatusDisplay(projectStatus: ProjectStatus) {
+fun ProjectStatusDisplay(projectStatus: ProjectStatus) {
   Surface(
       color = colorMap.getOrDefault(projectStatus, LightColorScheme.onSurfaceVariant),
       modifier = Modifier.height(30.dp).width(130.dp),
