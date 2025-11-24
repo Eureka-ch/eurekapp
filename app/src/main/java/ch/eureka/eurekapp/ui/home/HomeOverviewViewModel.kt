@@ -42,6 +42,7 @@ class HomeOverviewViewModel(
     private val projectRepository: ProjectRepository = FirestoreRepositoriesProvider.projectRepository,
     private val meetingRepository: MeetingRepository = FirestoreRepositoriesProvider.meetingRepository,
     private val userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository,
+    connectivityFlow: Flow<Boolean> = ConnectivityObserverProvider.connectivityObserver.isConnected,
 ) : ViewModel() {
 
   private val _error = MutableStateFlow<String?>(null)
@@ -109,8 +110,7 @@ class HomeOverviewViewModel(
       }
 
   private val connectivity: StateFlow<Boolean> =
-      ConnectivityObserverProvider.connectivityObserver.isConnected
-          .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+      connectivityFlow.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
   val uiState: StateFlow<HomeOverviewUiState> =
       combine(
