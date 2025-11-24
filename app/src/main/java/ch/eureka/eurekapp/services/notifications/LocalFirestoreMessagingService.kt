@@ -30,6 +30,7 @@ class LocalFirestoreMessagingService: FirebaseMessagingService(){
     private val usersRepository = FirestoreRepositoriesProvider.userRepository
     private val meetingsRepository = FirestoreRepositoriesProvider.meetingRepository
     private val chatRepository = FirestoreRepositoriesProvider.chatRepository
+
     override fun onNewToken(token: String) {
         super.onNewToken(token)
     }
