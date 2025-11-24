@@ -194,7 +194,19 @@ fun NavigationMenu() {
                 HomeOverviewScreen(
                     onOpenProjects = { navigationController.navigate(Route.ProjectSelection) },
                     onOpenTasks = { navigationController.navigate(Route.TasksSection.Tasks) },
-                    onOpenMeetings = { navigationController.navigate(Route.MeetingsSection.Meetings) })
+                    onOpenMeetings = { navigationController.navigate(Route.MeetingsSection.Meetings) },
+                    onTaskSelected = { projectId, taskId ->
+                      navigationController.navigate(
+                          Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
+                    },
+                    onMeetingSelected = { projectId, meetingId ->
+                      navigationController.navigate(
+                          Route.MeetingsSection.MeetingDetail(
+                              projectId = projectId, meetingId = meetingId))
+                    },
+                    onProjectSelected = { projectId ->
+                      navigationController.navigate(Route.OverviewProject(projectId = projectId))
+                    })
               }
               // Main screens
               composable<Route.ProjectSelection> {
