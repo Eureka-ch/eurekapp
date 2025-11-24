@@ -1,7 +1,5 @@
 // Portions of this code were generated with the help of Claude Sonnet 4.5 in Claude Code
-/*
-Co-Authored-By: Claude <noreply@anthropic.com>
-*/
+
 package ch.eureka.eurekapp.model.data.template
 
 import ch.eureka.eurekapp.model.data.IdGenerator
