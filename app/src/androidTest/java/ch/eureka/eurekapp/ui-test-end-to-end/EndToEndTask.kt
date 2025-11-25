@@ -440,7 +440,14 @@ class TaskEndToEndTest : TestCase() {
 
     if (!exactMatchSelected) {
       // Fallback: pick the day number directly (stable across locales).
-      val dayNodes = composeTestRule.onAllNodesWithText(dayOfMonthFallback)
+      // Wait for date picker to be fully loaded before searching for day number
+      composeTestRule.waitUntil(timeoutMillis = 5000) {
+        composeTestRule
+            .onAllNodesWithText(dayOfMonthFallback, substring = true)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
+      val dayNodes = composeTestRule.onAllNodesWithText(dayOfMonthFallback, substring = true)
       if (dayNodes.fetchSemanticsNodes().isEmpty()) {
         throw AssertionError(
             "Fallback day $dayOfMonthFallback not found in date picker for label $dateLabel")
