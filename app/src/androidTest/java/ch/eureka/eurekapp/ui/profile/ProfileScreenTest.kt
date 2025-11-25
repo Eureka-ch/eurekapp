@@ -1,3 +1,8 @@
+/*
+Note: This file was co-authored by Claude Code.
+Note: This file was co-authored by Grok.
+Portions of the code in this file are inspired by the Bootcamp solution B3 provided by the SwEnt staff.
+*/
 package ch.eureka.eurekapp.ui.profile
 
 import androidx.compose.ui.test.*
@@ -538,5 +543,63 @@ class ProfileScreenTest {
     // Then
     composeTestRule.onNodeWithText(maxText).assertExists()
     composeTestRule.onNodeWithText("50/50").assertExists()
+  }
+
+  @Test
+  fun profileScreen_activityFeedButton_alwaysPassesGlobalActivities() {
+    // Given
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    var navigatedProjectId: String? = null
+
+    composeTestRule.setContent {
+      ProfileScreen(
+          viewModel = viewModel,
+          firebaseAuth = firebaseAuth,
+          onNavigateToActivityFeed = { projectId -> navigatedProjectId = projectId }
+      )
+    }
+
+    // When - Click the activity feed button
+    composeTestRule.onNodeWithText("🔔 View Activity Feed").performClick()
+    composeTestRule.waitForIdle()
+
+    // Then - Should always pass "global-activities"
+    assert(navigatedProjectId == "global-activities") {
+      "Expected 'global-activities' but got '$navigatedProjectId'"
+    }
+  }
+
+  @Test
+  fun profileScreen_activityFeedButton_displaysWhenCallbackProvided() {
+    // Given
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+
+    composeTestRule.setContent {
+      ProfileScreen(
+          viewModel = viewModel,
+          firebaseAuth = firebaseAuth,
+          onNavigateToActivityFeed = { }
+      )
+    }
+
+    // Then - Button should be displayed
+    composeTestRule.onNodeWithText("🔔 View Activity Feed").assertIsDisplayed()
+  }
+
+  @Test
+  fun profileScreen_activityFeedButton_hiddenWhenCallbackNotProvided() {
+    // Given
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+
+    composeTestRule.setContent {
+      ProfileScreen(
+          viewModel = viewModel,
+          firebaseAuth = firebaseAuth,
+          onNavigateToActivityFeed = null
+      )
+    }
+
+    // Then - Button should not be displayed
+    composeTestRule.onNodeWithText("🔔 View Activity Feed").assertDoesNotExist()
   }
 }
