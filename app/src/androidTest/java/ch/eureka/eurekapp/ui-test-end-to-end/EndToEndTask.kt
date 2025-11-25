@@ -320,48 +320,11 @@ class TaskEndToEndTest : TestCase() {
       composeTestRule.onNodeWithText("OK").performClick()
       composeTestRule.waitForIdle()
 
-      // Date selection: For E2E testing, we need a valid future date.
-      // The date picker defaults to today, but validation requires a future date.
-      // Open picker, wait for it to load, then accept (picker may default to a future date or
-      // today).
+      // Date selection (end of current month)
       composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE).performClick()
       composeTestRule.waitForIdle()
-
-      // Wait for date picker dialog to appear (OK button visible)
-      val pickerOpened =
-          runCatching {
-                composeTestRule.waitUntil(timeoutMillis = 5000) {
-                  try {
-                    composeTestRule.onNodeWithText("OK").assertExists()
-                    true
-                  } catch (e: AssertionError) {
-                    false
-                  }
-                }
-                composeTestRule.onNodeWithText("OK").performClick()
-                true
-              }
-              .getOrElse { false }
-
-      // If picker didn't open, the date field might be invalid. Try clicking again or skip.
-      // For E2E, we'll continue and let validation handle it - the test will fail if date is
-      // invalid.
-      if (!pickerOpened) {
-        // Retry once
-        composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE).performClick()
-        composeTestRule.waitForIdle()
-        runCatching {
-          composeTestRule.waitUntil(timeoutMillis = 3000) {
-            try {
-              composeTestRule.onNodeWithText("OK").assertExists()
-              true
-            } catch (e: AssertionError) {
-              false
-            }
-          }
-          composeTestRule.onNodeWithText("OK").performClick()
-        }
-      }
+      composeTestRule.onNodeWithText("Tuesday, November 24, 2026").performClick()
+      composeTestRule.onNodeWithText("OK").performClick()
       composeTestRule.waitForIdle()
 
       // Time selection
@@ -392,8 +355,8 @@ class TaskEndToEndTest : TestCase() {
             .isNotEmpty()
       }
 
-      // Wait for meeting to appear in list (Firestore may take time to sync)
-      composeTestRule.waitUntilExactlyOneExists(hasText(meetingTitle), timeoutMillis = 30_000)
+      // Wait for meeting to appear in list
+      composeTestRule.waitUntilExactlyOneExists(hasText(meetingTitle), timeoutMillis = 15_000)
 
       // Verify meeting is displayed in the list
       composeTestRule.onNodeWithText(meetingTitle).assertIsDisplayed()
