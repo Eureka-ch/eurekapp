@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.widget.Toast
+import ch.eureka.eurekapp.model.downloads.DownloadedFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -17,6 +18,7 @@ import java.io.FileOutputStream
 class DownloadService(private val context: Context) {
 
     private val client = OkHttpClient()
+    private val database = AppDatabase.getDatabase(context)
 
     suspend fun downloadFile(url: String, fileName: String) {
         withContext(Dispatchers.IO) {
@@ -24,6 +26,7 @@ class DownloadService(private val context: Context) {
                 val request = Request.Builder().url(url).build()
                 val response = client.newCall(request).execute()
                 if (response.isSuccessful) {
+                    var localPath = ""
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         // Use MediaStore for API 29+
                         val contentValues = ContentValues().apply {
@@ -34,6 +37,7 @@ class DownloadService(private val context: Context) {
                         val resolver = context.contentResolver
                         val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
                         uri?.let {
+                            localPath = it.toString()
                             resolver.openOutputStream(it)?.use { outputStream ->
                                 response.body?.byteStream()?.copyTo(outputStream)
                             }
@@ -45,14 +49,18 @@ class DownloadService(private val context: Context) {
                         // Fallback for API < 29
                         val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                         val file = File(downloadsDir, fileName)
+                        localPath = file.absolutePath
                         response.body?.byteStream()?.use { input ->
                             FileOutputStream(file).use { output ->
                                 input.copyTo(output)
                             }
                         }
                     }
+                    // Insert into Room database
+                    val downloadedFile = DownloadedFile(url = url, fileName = fileName, localPath = localPath)
+                    database.downloadedFileDao().insert(downloadedFile)
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "Downloaded: $fileName", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Download completed", Toast.LENGTH_SHORT).show()
                     }
                 } else {
                     withContext(Dispatchers.Main) {
@@ -61,7 +69,7 @@ class DownloadService(private val context: Context) {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Download failed", Toast.LENGTH_SHORT).show()
                 }
             }
         }

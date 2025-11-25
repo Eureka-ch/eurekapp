@@ -184,7 +184,7 @@ fun ViewTaskScreen(
                       onClick = { viewTaskViewModel.downloadFile(url, fileName, context) },
                       modifier = Modifier.padding(vertical = 4.dp)
                   ) {
-                    Text("Download $fileName")
+                    Text("Download")
                   }
                 }
               }
