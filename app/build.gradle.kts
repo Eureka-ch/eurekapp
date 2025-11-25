@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.sonar)
     id("jacoco")
     id("kotlin-parcelize")
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -211,6 +212,17 @@ dependencies {
     implementation(libs.credentials)
     implementation(libs.credentials.play.services.auth)
     implementation(libs.googleid)
+
+    // Room Database
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
+    // DataStore Preferences
+    implementation(libs.androidx.datastore.preferences)
+
+    // Testing Room
+    testImplementation(libs.androidx.room.testing)
 
     // Camera
     implementation(libs.androidx.camera.core)
