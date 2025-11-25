@@ -320,12 +320,9 @@ class TaskEndToEndTest : TestCase() {
       composeTestRule.onNodeWithText("OK").performClick()
       composeTestRule.waitForIdle()
 
-      // Date selection (end of current month)
-      composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE).performClick()
-      composeTestRule.waitForIdle()
-      composeTestRule.onNodeWithText("Tuesday, November 25, 2025").performClick()
-      composeTestRule.onNodeWithText("OK").performClick()
-      composeTestRule.waitForIdle()
+      // Date selection (end of current month). Some emulator locales render long-form dates
+      // differently, so we attempt the exact string and fall back to the day number when needed.
+      selectMeetingDate("Tuesday, November 25, 2025", dayOfMonthFallback = "25")
 
       // Time selection
       composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TIME).performClick()
@@ -422,5 +419,34 @@ class TaskEndToEndTest : TestCase() {
       composeTestRule.waitForIdle()
       composeTestRule.onNodeWithText(meetingTitle).assertDoesNotExist()
     }
+  }
+
+  /**
+   * Selects a meeting date by trying the exact [dateLabel] first and falling back to a day-of-month
+   * match if the locale renders the long label differently on the CI emulator.
+   */
+  private fun selectMeetingDate(dateLabel: String, dayOfMonthFallback: String) {
+    composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE).performClick()
+    composeTestRule.waitForIdle()
+
+    val exactMatchSelected =
+        runCatching {
+              composeTestRule.onNodeWithText(dateLabel).performClick()
+              true
+            }
+            .getOrElse { false }
+
+    if (!exactMatchSelected) {
+      // Fallback: pick the day number directly (stable across locales).
+      val dayNodes = composeTestRule.onAllNodesWithText(dayOfMonthFallback)
+      if (dayNodes.fetchSemanticsNodes().isEmpty()) {
+        throw AssertionError(
+            "Fallback day $dayOfMonthFallback not found in date picker for label $dateLabel")
+      }
+      dayNodes[0].performClick()
+    }
+
+    composeTestRule.onNodeWithText("OK").performClick()
+    composeTestRule.waitForIdle()
   }
 }
