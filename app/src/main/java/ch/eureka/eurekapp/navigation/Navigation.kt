@@ -36,6 +36,7 @@ import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingViewModel
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailActionsConfig
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreen
+import ch.eureka.eurekapp.ui.activity.ActivityFeedScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingNavigationScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingProposalVoteScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
@@ -55,6 +56,8 @@ sealed interface Route {
   @Serializable data object Profile : Route
 
   @Serializable data object SelfNotes : Route
+
+  @Serializable data class ActivityFeed(val projectId: String) : Route
 
   sealed interface TasksSection : Route {
     companion object {
@@ -191,8 +194,25 @@ fun NavigationMenu() {
                 TokenEntryScreen(
                     onTokenValidated = { navigationController.navigate(Route.ProjectSelection) })
               }
-              composable<Route.Profile> { ProfileScreen() }
+              composable<Route.Profile> {
+                ProfileScreen(
+                    onNavigateToActivityFeed = { projectId ->
+                      navigationController.navigate(Route.ActivityFeed(projectId = projectId))
+                    }
+                )
+              }
               composable<Route.SelfNotes> { SelfNotesScreen() }
+              composable<Route.ActivityFeed> { backStackEntry ->
+                val activityFeedRoute = backStackEntry.toRoute<Route.ActivityFeed>()
+                ActivityFeedScreen(
+                    projectId = activityFeedRoute.projectId,
+                    onActivityClick = { entityId ->
+                      // Navigate to entity detail screen based on entity type
+                      // For now, just go back
+                      navigationController.popBackStack()
+                    },
+                    onNavigateBack = { navigationController.popBackStack() })
+              }
               composable<Route.OverviewProject> { backStackEntry ->
                 val overviewProjectScreenRoute = backStackEntry.toRoute<Route.OverviewProject>()
                 OverviewProjectScreen(projectId = overviewProjectScreenRoute.projectId)
