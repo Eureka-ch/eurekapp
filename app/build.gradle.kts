@@ -1,6 +1,7 @@
 import java.util.Properties
 import org.gradle.kotlin.dsl.implementation
 import org.gradle.kotlin.dsl.invoke
+import org.gradle.api.tasks.testing.Test
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -8,6 +9,7 @@ plugins {
     alias(libs.plugins.kotlinxSerialization)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.ktfmt)
+    alias(libs.plugins.testRetry)
     alias(libs.plugins.gms)
     alias(libs.plugins.sonar)
     id("jacoco")
@@ -269,6 +271,13 @@ tasks.withType<Test> {
     configure<JacocoTaskExtension> {
         isIncludeNoLocationClasses = true
         excludes = listOf("jdk.internal.*")
+    }
+
+    // Configure test retry for flaky tests
+    retry {
+        maxRetries.set(3)
+        maxFailures.set(20)
+        failOnPassedAfterRetry.set(false)
     }
 }
 

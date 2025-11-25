@@ -7,6 +7,7 @@ kotlin = "2.2.20"
 kotlinxSerialization = "1.6.3"
 composeCompiler = "2.2.20"
 ktfmt = "0.17.0"
+testRetry = "1.5.10"
 gms = "4.4.2"
 runtimeLivedata = "1.9.3"
 sonar = "4.4.1.3373"
@@ -140,5 +141,6 @@ jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "k
 kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "composeCompiler" }
 ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt" }
+testRetry = { id = "org.gradle.test-retry", version.ref = "testRetry" }
 gms = { id = "com.google.gms.google-services", version.ref = "gms" }
 sonar = { id = "org.sonarqube", version.ref = "sonar" }
