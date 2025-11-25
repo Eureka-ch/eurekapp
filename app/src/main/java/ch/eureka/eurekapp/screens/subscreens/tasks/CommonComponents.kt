@@ -244,7 +244,7 @@ fun AttachmentsList(
 ) {
   attachments.forEachIndexed { index, file ->
     Row(modifier = modifier) {
-      if (!isConnected) {
+      if (file is String && !isConnected) {
         Text(
             "Photo ${index + 1}: Attachment available, but cannot be visualized offline.",
             modifier = Modifier.testTag(CommonTaskTestTags.OFFLINE_MESSAGE))

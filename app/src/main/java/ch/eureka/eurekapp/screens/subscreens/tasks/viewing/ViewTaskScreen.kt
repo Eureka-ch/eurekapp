@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import ch.eureka.eurekapp.model.downloads.AppDatabase
 import ch.eureka.eurekapp.model.tasks.ViewTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AttachmentsList
@@ -63,7 +64,16 @@ fun ViewTaskScreen(
     projectId: String,
     taskId: String,
     navigationController: NavHostController = rememberNavController(),
-    viewTaskViewModel: ViewTaskViewModel = remember { ViewTaskViewModel(projectId, taskId) },
+    viewTaskViewModel: ViewTaskViewModel = run {
+      val context = LocalContext.current
+      remember {
+        ViewTaskViewModel(
+            projectId,
+            taskId,
+            AppDatabase.getDatabase(context).downloadedFileDao()
+        )
+      }
+    },
 ) {
   val viewTaskState by viewTaskViewModel.uiState.collectAsState()
   val errorMsg = viewTaskState.errorMsg
@@ -165,27 +175,34 @@ fun ViewTaskScreen(
                     Text("Edit Task")
                   }
 
+              val effectiveAttachments = if (isConnected) {
+                viewTaskState.attachmentUrls + viewTaskState.attachmentUris
+              } else {
+                viewTaskState.offlineAttachments + viewTaskState.attachmentUris
+              }
+
               AttachmentsList(
-                  attachments = viewTaskState.attachmentUrls + viewTaskState.attachmentUris,
+                  attachments = effectiveAttachments,
                   onDelete = null, // Pass null to indicate read-only mode
                   isReadOnly = true,
                   isConnected = isConnected)
 
               // Add download buttons for remote attachments
-              if (viewTaskState.attachmentUrls.isNotEmpty() && isConnected) {
+              if (viewTaskState.urlsToDownload.isNotEmpty() && isConnected) {
                 Text(
                     text = "Download Attachments:",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(top = 16.dp)
                 )
-                viewTaskState.attachmentUrls.forEach { url ->
-                  val fileName = url.substringAfterLast("/")
-                  Button(
-                      onClick = { viewTaskViewModel.downloadFile(url, fileName, context) },
-                      modifier = Modifier.padding(vertical = 4.dp)
-                  ) {
-                    Text("Download")
-                  }
+                Button(
+                    onClick = { 
+                      viewTaskState.urlsToDownload.forEach { url -> 
+                        viewTaskViewModel.downloadFile(url, url.substringAfterLast("/"), context) 
+                      } 
+                    },
+                    modifier = Modifier.padding(vertical = 4.dp)
+                ) {
+                  Text("Download All Attachments")
                 }
               }
             }

@@ -1,6 +1,9 @@
 package ch.eureka.eurekapp.model.tasks
 
 import android.content.Context
+import android.net.Uri
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
@@ -8,6 +11,9 @@ import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.model.downloads.DownloadService
+import ch.eureka.eurekapp.model.downloads.DownloadedFile
+import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
+import java.io.File
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
@@ -33,19 +39,32 @@ Co-author : GPT-5
 class ViewTaskViewModel(
     projectId: String,
     taskId: String,
+    private val downloadedFileDao: DownloadedFileDao,
     taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
-    dispatcher: CoroutineDispatcher = Dispatchers.IO,
     connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver,
-    private val userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository
+    private val userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository,
+    dispatcher: CoroutineDispatcher = Dispatchers.Main
 ) : ReadTaskViewModel<ViewTaskState>(taskRepository, dispatcher) {
 
   private val _isConnected =
       connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
+  private val _downloadedFiles = downloadedFileDao.getAll()
+      .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
   fun downloadFile(url: String, fileName: String, context: Context) {
     val downloadService = DownloadService(context)
     viewModelScope.launch {
-      downloadService.downloadFile(url, fileName)
+      val uri = downloadService.downloadFile(url, fileName)
+      if (uri != null) {
+        downloadedFileDao.insert(
+            DownloadedFile(
+                url = url,
+                localPath = uri.toString(),
+                fileName = fileName
+            )
+        )
+      }
     }
   }
 
@@ -68,7 +87,8 @@ class ViewTaskViewModel(
                               status = task.status,
                               isLoading = false,
                               errorMsg = null,
-                              assignedUsers = emptyList())
+                              assignedUsers = emptyList(),
+                              offlineAttachments = emptyList())
 
                       if (task.assignedUserIds.isEmpty()) {
                         flowOf(baseState)
@@ -91,8 +111,24 @@ class ViewTaskViewModel(
                             isLoading = false,
                             errorMsg = "Failed to load Task: ${exception.message}"))
                   },
-              _isConnected) { taskState, isConnected ->
-                taskState.copy(isConnected = isConnected)
+              _isConnected,
+              _downloadedFiles) { taskState, isConnected, downloadedFiles ->
+                val urlToUriMap: Map<String, Uri> = downloadedFiles.associate { file ->
+                  file.url to file.localPath.toUri()
+                }
+
+                val offlineAttachments = if (!isConnected) {
+                  taskState.attachmentUrls.mapNotNull { url -> urlToUriMap[url] }
+                } else {
+                  emptyList()
+                }
+
+                val downloadedUrls = downloadedFiles.map { it.url }.toSet()
+                val urlsToDownload = taskState.attachmentUrls.filter { it !in downloadedUrls }
+                taskState.copy(
+                    isConnected = isConnected,
+                    offlineAttachments = offlineAttachments,
+                    urlsToDownload = urlsToDownload)
               }
           .stateIn(
               scope = viewModelScope,

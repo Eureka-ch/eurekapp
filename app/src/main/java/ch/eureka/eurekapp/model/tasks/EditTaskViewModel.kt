@@ -146,7 +146,8 @@ class EditTaskViewModel(
         }
 
         clearErrorMsg()
-        updateState { copy(isSaving = false, taskSaved = true) }
+        // Clear attachmentUris since they were successfully uploaded
+        updateState { copy(isSaving = false, taskSaved = true, attachmentUris = emptyList()) }
       }
     }
   }

@@ -40,11 +40,17 @@ abstract class ReadTaskViewModel<T : TaskStateRead>(
   fun deletePhotosOnDispose(context: Context, photoUris: List<Uri>) {
     viewModelScope.launch(dispatcher) {
       photoUris.forEach { uri ->
-        when (uri.scheme) {
-          "content",
-          "file" -> {
-            context.contentResolver.delete(uri, null, null)
+        try {
+          when (uri.scheme) {
+            "content",
+            "file" -> {
+              context.contentResolver.delete(uri, null, null)
+            }
           }
+        } catch (_: Exception) {
+          // Ignore errors during cleanup
+          // This is a best-effort cleanup
+          // File may not exist or may be inaccessible
         }
       }
     }

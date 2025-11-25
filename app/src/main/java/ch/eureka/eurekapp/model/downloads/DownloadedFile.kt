@@ -6,9 +6,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "downloaded_files")
 data class DownloadedFile(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val url: String,
-    val fileName: String,
+    @PrimaryKey val url: String,
     val localPath: String,
-    val downloadDate: Long = System.currentTimeMillis()
+    val fileName: String
 )

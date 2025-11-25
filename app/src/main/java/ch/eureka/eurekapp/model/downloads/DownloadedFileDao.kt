@@ -4,6 +4,7 @@ package ch.eureka.eurekapp.model.downloads
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface DownloadedFileDao {
@@ -14,6 +15,5 @@ interface DownloadedFileDao {
     suspend fun getByUrl(url: String): DownloadedFile?
 
     @Query("SELECT * FROM downloaded_files")
-    suspend fun getAll(): List<DownloadedFile>
+    fun getAll(): Flow<List<DownloadedFile>>
 }
-
