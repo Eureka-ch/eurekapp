@@ -10,7 +10,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import com.google.android.gms.location.LocationServices
@@ -58,7 +58,7 @@ class MeetingNavigationViewModel(
     private val projectId: String,
     private val meetingId: String,
     private val apiKey: String,
-    private val repository: MeetingRepository = FirestoreRepositoriesProvider.meetingRepository,
+    private val repository: MeetingRepository = RepositoriesProvider.meetingRepository,
     private val directionsService: ch.eureka.eurekapp.services.navigation.DirectionsApiService =
         ch.eureka.eurekapp.services.navigation.DirectionsApiServiceFactory.create()
 ) : ViewModel() {

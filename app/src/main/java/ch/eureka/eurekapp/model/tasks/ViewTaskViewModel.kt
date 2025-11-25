@@ -3,7 +3,7 @@ package ch.eureka.eurekapp.model.tasks
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -30,10 +30,10 @@ Co-author : GPT-5
 class ViewTaskViewModel(
     projectId: String,
     taskId: String,
-    taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
+    taskRepository: TaskRepository = RepositoriesProvider.taskRepository,
     dispatcher: CoroutineDispatcher = Dispatchers.IO,
     connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver,
-    private val userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository
+    private val userRepository: UserRepository = RepositoriesProvider.userRepository
 ) : ReadTaskViewModel<ViewTaskState>(taskRepository, dispatcher) {
 
   private val _isConnected =

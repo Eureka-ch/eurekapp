@@ -7,7 +7,7 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.net.Uri
 import android.provider.CalendarContract
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import java.util.TimeZone
 import kotlinx.coroutines.flow.first
@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.first
  * @property usersRepository Repository used to retrieve user data.
  */
 class LocalGoogleCalendarRepository(
-    private val usersRepository: UserRepository = FirestoreRepositoriesProvider.userRepository
+    private val usersRepository: UserRepository = RepositoriesProvider.userRepository
 ) : CalendarRepository {
 
   private object CompanionLocalGoogleCalendarRepository {

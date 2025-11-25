@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.file.FirebaseFileStorageRepository
@@ -23,8 +23,7 @@ class AudioRecordingViewModel(
         FirebaseFileStorageRepository(FirebaseStorage.getInstance(), FirebaseAuth.getInstance()),
     val recordingRepository: LocalAudioRecordingRepository =
         AudioRecordingRepositoryProvider.repository,
-    private val meetingRepository: MeetingRepository =
-        FirestoreRepositoriesProvider.meetingRepository
+    private val meetingRepository: MeetingRepository = RepositoriesProvider.meetingRepository
 ) : ViewModel() {
   private val _recordingUri: MutableStateFlow<Uri?> = MutableStateFlow(null)
   val recordingUri = _recordingUri.asStateFlow()

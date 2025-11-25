@@ -47,7 +47,7 @@ class FirestoreRepositoriesProviderTest {
   }
 
   private fun resetLazyRepositories() {
-    val providerClass = FirestoreRepositoriesProvider::class.java
+    val providerClass = RepositoriesProvider::class.java
     val lazyFields =
         listOf(
             "_taskRepository",
@@ -63,7 +63,7 @@ class FirestoreRepositoriesProviderTest {
       try {
         val field = providerClass.getDeclaredField(fieldName)
         field.isAccessible = true
-        val lazyDelegate = field.get(FirestoreRepositoriesProvider)
+        val lazyDelegate = field.get(RepositoriesProvider)
         if (lazyDelegate is Lazy<*>) {
           val valueField = lazyDelegate.javaClass.getDeclaredField("_value")
           valueField.isAccessible = true
@@ -77,163 +77,155 @@ class FirestoreRepositoriesProviderTest {
 
   @Test
   fun taskRepository_shouldNotBeNull() {
-    assertNotNull(
-        "Task repository should not be null", FirestoreRepositoriesProvider.taskRepository)
+    assertNotNull("Task repository should not be null", RepositoriesProvider.taskRepository)
   }
 
   @Test
   fun taskRepository_shouldBeInstanceOfFirestoreTaskRepository() {
     assertTrue(
         "Task repository should be instance of FirestoreTaskRepository",
-        FirestoreRepositoriesProvider.taskRepository is FirestoreTaskRepository)
+        RepositoriesProvider.taskRepository is FirestoreTaskRepository)
   }
 
   @Test
   fun projectRepository_shouldNotBeNull() {
-    assertNotNull(
-        "Project repository should not be null", FirestoreRepositoriesProvider.projectRepository)
+    assertNotNull("Project repository should not be null", RepositoriesProvider.projectRepository)
   }
 
   @Test
   fun projectRepository_shouldBeInstanceOfFirestoreProjectRepository() {
     assertTrue(
         "Project repository should be instance of FirestoreProjectRepository",
-        FirestoreRepositoriesProvider.projectRepository is FirestoreProjectRepository)
+        RepositoriesProvider.projectRepository is FirestoreProjectRepository)
   }
 
   @Test
   fun fileRepository_shouldNotBeNull() {
-    assertNotNull(
-        "File repository should not be null", FirestoreRepositoriesProvider.fileRepository)
+    assertNotNull("File repository should not be null", RepositoriesProvider.fileRepository)
   }
 
   @Test
   fun fileRepository_shouldBeInstanceOfFirebaseFileStorageRepository() {
     assertTrue(
         "File repository should be instance of FirebaseFileStorageRepository",
-        FirestoreRepositoriesProvider.fileRepository is FirebaseFileStorageRepository)
+        RepositoriesProvider.fileRepository is FirebaseFileStorageRepository)
   }
 
   @Test
   fun chatRepository_shouldNotBeNull() {
-    assertNotNull(
-        "Chat repository should not be null", FirestoreRepositoriesProvider.chatRepository)
+    assertNotNull("Chat repository should not be null", RepositoriesProvider.chatRepository)
   }
 
   @Test
   fun chatRepository_shouldBeInstanceOfFirestoreChatRepository() {
     assertTrue(
         "Chat repository should be instance of FirestoreChatRepository",
-        FirestoreRepositoriesProvider.chatRepository is FirestoreChatRepository)
+        RepositoriesProvider.chatRepository is FirestoreChatRepository)
   }
 
   @Test
   fun invitationRepository_shouldNotBeNull() {
     assertNotNull(
-        "Invitation repository should not be null",
-        FirestoreRepositoriesProvider.invitationRepository)
+        "Invitation repository should not be null", RepositoriesProvider.invitationRepository)
   }
 
   @Test
   fun invitationRepository_shouldBeInstanceOfFirestoreInvitationRepository() {
     assertTrue(
         "Invitation repository should be instance of FirestoreInvitationRepository",
-        FirestoreRepositoriesProvider.invitationRepository is FirestoreInvitationRepository)
+        RepositoriesProvider.invitationRepository is FirestoreInvitationRepository)
   }
 
   @Test
   fun meetingRepository_shouldNotBeNull() {
-    assertNotNull(
-        "Meeting repository should not be null", FirestoreRepositoriesProvider.meetingRepository)
+    assertNotNull("Meeting repository should not be null", RepositoriesProvider.meetingRepository)
   }
 
   @Test
   fun meetingRepository_shouldBeInstanceOfFirestoreMeetingRepository() {
     assertTrue(
         "Meeting repository should be instance of FirestoreMeetingRepository",
-        FirestoreRepositoriesProvider.meetingRepository is FirestoreMeetingRepository)
+        RepositoriesProvider.meetingRepository is FirestoreMeetingRepository)
   }
 
   @Test
   fun taskTemplateRepository_shouldNotBeNull() {
     assertNotNull(
-        "Task template repository should not be null",
-        FirestoreRepositoriesProvider.taskTemplateRepository)
+        "Task template repository should not be null", RepositoriesProvider.taskTemplateRepository)
   }
 
   @Test
   fun taskTemplateRepository_shouldBeInstanceOfFirestoreTaskTemplateRepository() {
     assertTrue(
         "Task template repository should be instance of FirestoreTaskTemplateRepository",
-        FirestoreRepositoriesProvider.taskTemplateRepository is FirestoreTaskTemplateRepository)
+        RepositoriesProvider.taskTemplateRepository is FirestoreTaskTemplateRepository)
   }
 
   @Test
   fun userRepository_shouldNotBeNull() {
-    assertNotNull(
-        "User repository should not be null", FirestoreRepositoriesProvider.userRepository)
+    assertNotNull("User repository should not be null", RepositoriesProvider.userRepository)
   }
 
   @Test
   fun userRepository_shouldBeInstanceOfFirestoreUserRepository() {
     assertTrue(
         "User repository should be instance of FirestoreUserRepository",
-        FirestoreRepositoriesProvider.userRepository is FirestoreUserRepository)
+        RepositoriesProvider.userRepository is FirestoreUserRepository)
   }
 
   @Test
   fun repositoryInstances_shouldBeSingleton() {
-    val firstTaskRepo = FirestoreRepositoriesProvider.taskRepository
-    val secondTaskRepo = FirestoreRepositoriesProvider.taskRepository
+    val firstTaskRepo = RepositoriesProvider.taskRepository
+    val secondTaskRepo = RepositoriesProvider.taskRepository
     assertSame(
         "Multiple accesses should return same task repository instance",
         firstTaskRepo,
         secondTaskRepo)
 
-    val firstProjectRepo = FirestoreRepositoriesProvider.projectRepository
-    val secondProjectRepo = FirestoreRepositoriesProvider.projectRepository
+    val firstProjectRepo = RepositoriesProvider.projectRepository
+    val secondProjectRepo = RepositoriesProvider.projectRepository
     assertSame(
         "Multiple accesses should return same project repository instance",
         firstProjectRepo,
         secondProjectRepo)
 
-    val firstFileRepo = FirestoreRepositoriesProvider.fileRepository
-    val secondFileRepo = FirestoreRepositoriesProvider.fileRepository
+    val firstFileRepo = RepositoriesProvider.fileRepository
+    val secondFileRepo = RepositoriesProvider.fileRepository
     assertSame(
         "Multiple accesses should return same file repository instance",
         firstFileRepo,
         secondFileRepo)
 
-    val firstChatRepo = FirestoreRepositoriesProvider.chatRepository
-    val secondChatRepo = FirestoreRepositoriesProvider.chatRepository
+    val firstChatRepo = RepositoriesProvider.chatRepository
+    val secondChatRepo = RepositoriesProvider.chatRepository
     assertSame(
         "Multiple accesses should return same chat repository instance",
         firstChatRepo,
         secondChatRepo)
 
-    val firstInvitationRepo = FirestoreRepositoriesProvider.invitationRepository
-    val secondInvitationRepo = FirestoreRepositoriesProvider.invitationRepository
+    val firstInvitationRepo = RepositoriesProvider.invitationRepository
+    val secondInvitationRepo = RepositoriesProvider.invitationRepository
     assertSame(
         "Multiple accesses should return same invitation repository instance",
         firstInvitationRepo,
         secondInvitationRepo)
 
-    val firstMeetingRepo = FirestoreRepositoriesProvider.meetingRepository
-    val secondMeetingRepo = FirestoreRepositoriesProvider.meetingRepository
+    val firstMeetingRepo = RepositoriesProvider.meetingRepository
+    val secondMeetingRepo = RepositoriesProvider.meetingRepository
     assertSame(
         "Multiple accesses should return same meeting repository instance",
         firstMeetingRepo,
         secondMeetingRepo)
 
-    val firstTemplateRepo = FirestoreRepositoriesProvider.taskTemplateRepository
-    val secondTemplateRepo = FirestoreRepositoriesProvider.taskTemplateRepository
+    val firstTemplateRepo = RepositoriesProvider.taskTemplateRepository
+    val secondTemplateRepo = RepositoriesProvider.taskTemplateRepository
     assertSame(
         "Multiple accesses should return same task template repository instance",
         firstTemplateRepo,
         secondTemplateRepo)
 
-    val firstUserRepo = FirestoreRepositoriesProvider.userRepository
-    val secondUserRepo = FirestoreRepositoriesProvider.userRepository
+    val firstUserRepo = RepositoriesProvider.userRepository
+    val secondUserRepo = RepositoriesProvider.userRepository
     assertSame(
         "Multiple accesses should return same user repository instance",
         firstUserRepo,

@@ -11,7 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.map.Location
@@ -19,7 +19,6 @@ import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.IdeasScreen
 import ch.eureka.eurekapp.screens.OverviewProjectScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
-import ch.eureka.eurekapp.screens.SelfNotesScreen
 import ch.eureka.eurekapp.screens.TasksScreen
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScreen
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingTranscriptViewScreen
@@ -40,6 +39,7 @@ import ch.eureka.eurekapp.ui.meeting.MeetingNavigationScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingProposalVoteScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenConfig
+import ch.eureka.eurekapp.ui.notes.SelfNotesScreen
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -148,7 +148,7 @@ sealed interface Route {
 @Composable
 fun NavigationMenu() {
   val navigationController = rememberNavController()
-  val projectRepository = FirestoreRepositoriesProvider.projectRepository
+  val projectRepository = RepositoriesProvider.projectRepository
   val auth = Firebase.auth
   val testProjectId = "test-project-id"
   val testProject =

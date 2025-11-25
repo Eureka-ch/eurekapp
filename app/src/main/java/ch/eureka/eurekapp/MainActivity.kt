@@ -24,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.credentials.CredentialManager
 import ch.eureka.eurekapp.model.authentication.AuthRepository
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.navigation.NavigationMenu
 import ch.eureka.eurekapp.resources.C
 import ch.eureka.eurekapp.ui.authentication.SignInScreen
@@ -48,6 +49,7 @@ class MainActivity : ComponentActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    RepositoriesProvider.initialize(this)
     ConnectivityObserverProvider.initialize(this)
     setContent {
       EurekappTheme {

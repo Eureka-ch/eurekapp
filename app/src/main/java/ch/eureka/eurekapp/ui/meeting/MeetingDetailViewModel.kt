@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
@@ -72,7 +72,7 @@ data class MeetingDetailUIState(
 class MeetingDetailViewModel(
     private val projectId: String,
     private val meetingId: String,
-    private val repository: MeetingRepository = FirestoreRepositoriesProvider.meetingRepository,
+    private val repository: MeetingRepository = RepositoriesProvider.meetingRepository,
     private val connectivityObserver: ConnectivityObserver =
         ConnectivityObserverProvider.connectivityObserver,
 ) : ViewModel() {

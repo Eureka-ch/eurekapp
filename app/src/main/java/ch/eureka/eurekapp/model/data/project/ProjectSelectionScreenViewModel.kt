@@ -4,7 +4,7 @@
 package ch.eureka.eurekapp.model.data.project
 
 import androidx.lifecycle.ViewModel
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import kotlinx.coroutines.flow.Flow
@@ -17,14 +17,13 @@ import kotlinx.coroutines.flow.flatMapLatest
  * user and user details for each project.
  *
  * @param projectsRepository Repository to fetch projects (default:
- *   FirestoreRepositoriesProvider.projectRepository)
+ *   RepositoriesProvider.projectRepository)
  * @param usersRepository Repository to fetch user information (default:
- *   FirestoreRepositoriesProvider.userRepository)
+ *   RepositoriesProvider.userRepository)
  */
 class ProjectSelectionScreenViewModel(
-    private val projectsRepository: ProjectRepository =
-        FirestoreRepositoriesProvider.projectRepository,
-    private val usersRepository: UserRepository = FirestoreRepositoriesProvider.userRepository
+    private val projectsRepository: ProjectRepository = RepositoriesProvider.projectRepository,
+    private val usersRepository: UserRepository = RepositoriesProvider.userRepository
 ) : ViewModel() {
 
   /**
