@@ -9,9 +9,10 @@ package ch.eureka.eurekapp.model.notifications
  * Each notification type has a [displayString] that can be shown in the notification.
  *
  * @property displayString A user-friendly name for the notification type.
+ * @property backendTypeString The type given to this notification by the backend message
  */
-enum class NotificationType(val displayString: String) {
-    GENERAL_NOTIFICATION("General"),
-    MEETING_NOTIFICATION("Meetings"),
-    MESSAGE_NOTIFICATION("Message")
+enum class NotificationType(val displayString: String, val backendTypeString: String) {
+    GENERAL_NOTIFICATION("General", "general"),
+    MEETING_NOTIFICATION("Meetings", "meeting"),
+    MESSAGE_NOTIFICATION("Message", "message")
 }

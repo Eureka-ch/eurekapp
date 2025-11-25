@@ -12,6 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,6 +27,7 @@ import ch.eureka.eurekapp.model.authentication.AuthRepository
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.navigation.NavigationMenu
 import ch.eureka.eurekapp.resources.C
+import ch.eureka.eurekapp.services.notifications.LocalFirestoreMessagingServiceCompanion
 import ch.eureka.eurekapp.ui.authentication.SignInScreen
 import ch.eureka.eurekapp.ui.theme.EurekappTheme
 import com.google.firebase.auth.FirebaseAuth
@@ -51,11 +53,21 @@ class MainActivity : ComponentActivity() {
     ConnectivityObserverProvider.initialize(this)
     setContent {
       EurekappTheme {
+        val notificationType = intent.getStringExtra(LocalFirestoreMessagingServiceCompanion
+            .intentNotificationTypeString)
+        val notificationId = intent.getStringExtra(LocalFirestoreMessagingServiceCompanion
+            .intentNotificationIdString)
+        val notificationProjectId = intent.getStringExtra(LocalFirestoreMessagingServiceCompanion
+            .intentNotificationProjectId)
         // A surface container using the 'background' color from the theme
         Surface(
             modifier = Modifier.fillMaxSize().semantics { testTag = C.Tag.main_screen_container },
             color = MaterialTheme.colorScheme.background) {
-              Eurekapp()
+              Eurekapp(
+                notificationType = notificationType,
+                notificationId = notificationId,
+                notificationProjectId = notificationProjectId
+              )
             }
       }
     }
@@ -66,13 +78,20 @@ class MainActivity : ComponentActivity() {
 fun Eurekapp(
     context: Context = LocalContext.current,
     credentialManager: CredentialManager = CredentialManager.create(context),
+    notificationType: String? = null,
+    notificationId: String? = null,
+    notificationProjectId: String? = null
 ) {
 
   var signedIn by remember { mutableStateOf(false) }
   if (!signedIn) {
     SignInScreen(credentialManager = credentialManager, onSignedIn = { signedIn = true })
   } else {
-    NavigationMenu()
+    NavigationMenu(
+      notificationType = notificationType,
+      notificationId = notificationId,
+      notificationProjectId = notificationProjectId
+    )
   }
 }
 

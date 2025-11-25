@@ -8,7 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
-import androidx.compose.ui.text.toUpperCase
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -16,15 +16,14 @@ import ch.eureka.eurekapp.MainActivity
 import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.notifications.NotificationType
-import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import java.util.Locale
+
+object LocalFirestoreMessagingServiceCompanion {
+    const val intentNotificationTypeString = "notification_type"
+    const val intentNotificationIdString = "notification_id"
+    const val intentNotificationProjectId = "notification_project_id"
+}
 
 class LocalFirestoreMessagingService: FirebaseMessagingService(){
     private val usersRepository = FirestoreRepositoriesProvider.userRepository
@@ -43,14 +42,17 @@ class LocalFirestoreMessagingService: FirebaseMessagingService(){
         val title = message.data["title"] ?: "notification"
         val body = message.data["body"] ?: ""
         val payloadId = message.data["id"]
+        val projectId = message.data["projectId"]
+        
+        
 
-        showNotification(title, body, type, payloadId)
+        showNotification(title, body, type, payloadId, projectId)
     }
 
-    private fun showNotification(title: String, body: String, type: String, id: String?){
+    private fun showNotification(title: String, body: String, type: String, id: String?, projectId: String?){
         val channelId = when(type){
-            "meeting" -> NotificationType.MEETING_NOTIFICATION.displayString
-            "message" -> NotificationType.MESSAGE_NOTIFICATION.displayString
+            NotificationType.MEETING_NOTIFICATION.backendTypeString -> NotificationType.MEETING_NOTIFICATION.displayString
+            NotificationType.MESSAGE_NOTIFICATION.backendTypeString -> NotificationType.MESSAGE_NOTIFICATION.displayString
             else -> NotificationType.GENERAL_NOTIFICATION.displayString
         }
 
@@ -58,8 +60,9 @@ class LocalFirestoreMessagingService: FirebaseMessagingService(){
 
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            putExtra("notification_type", type)
-            putExtra("notification_id", id)
+            putExtra(LocalFirestoreMessagingServiceCompanion.intentNotificationTypeString, type)
+            putExtra(LocalFirestoreMessagingServiceCompanion.intentNotificationIdString, id)
+            putExtra(LocalFirestoreMessagingServiceCompanion.intentNotificationProjectId, projectId)
         }
 
         val pendingIntent = PendingIntent.getActivity(

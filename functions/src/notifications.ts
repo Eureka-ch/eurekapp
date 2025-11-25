@@ -1,3 +1,4 @@
+//The following code was generated using the help of Claude Sonnet 4.5
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 
@@ -69,18 +70,16 @@ export const sendOnScheduleMeetingUpdate =
                     }
 
                     functions.logger.info(`Found ${fcmTokens.length} FCM tokens`);
-                    functions.logger.info("Project ID:", admin.app().options.projectId);
                     functions.logger.info("First token length:", fcmTokens[0]?.length);
-                    functions.logger.info("First token preview:", fcmTokens[0]?.substring(0, 30) + "...");
                     functions.logger.info("Meeting ID:", meeting.meetingID);
                     functions.logger.info("Meeting Title:", meeting.title);
 
-                    // Use send() method (simplest V1 API method - one token at a time)
+                    // Use send() method (V1 API - one token at a time)
                     functions.logger.info("Attempting to send notifications with send()...");
-                    
+
                     let successCount = 0;
                     let failureCount = 0;
-                    
+
                     for (const token of fcmTokens) {
                         try {
                             const messageId = await admin.messaging().send({
@@ -89,7 +88,8 @@ export const sendOnScheduleMeetingUpdate =
                                     title: "Meeting Updated",
                                     body: `Your meeting: ${meeting.title} has been scheduled!`,
                                     type: "meeting",
-                                    id: meeting.meetingID || ""
+                                    id: meeting.meetingID || "",
+                                    projectId: meeting.projectId || ""
                                 }
                             });
                             successCount++;
@@ -100,7 +100,7 @@ export const sendOnScheduleMeetingUpdate =
                             functions.logger.error("Error code:", error.code);
                         }
                     }
-                    
+
                     functions.logger.info(`Total: ${successCount} success, ${failureCount} failed`);
                 }
             } catch (error) {
@@ -123,34 +123,46 @@ export const sendMeetingReminder =
                 .where("datetime", ">", now)
                 .get();
 
-            const tasks = meetingsDocs.docs.map(async (doc) => {
+            functions.logger.info(`Found ${meetingsDocs.docs.length} upcoming meetings`);
+
+            let totalSuccess = 0;
+            let totalFailure = 0;
+
+            for (const doc of meetingsDocs.docs) {
                 const meeting = doc.data();
-                
+
                 if (!meeting.participantIds || meeting.participantIds.length === 0) {
-                    return;
+                    continue;
                 }
 
                 const participantTokens = await getMemberIdsFcmToken(meeting.participantIds);
 
                 if (!participantTokens || participantTokens.length === 0) {
-                    return;
+                    continue;
                 }
 
-                const payload = {
-                    tokens: participantTokens,
-                    data: {
-                        title: "Meeting Reminder",
-                        body: `You have the meeting ${meeting.title} in 10 minutes!`,
-                        type: "meeting",
-                        id: meeting.meetingID || "",
-                    },
-                };
+                // Use send() method for each token
+                for (const token of participantTokens) {
+                    try {
+                        await admin.messaging().send({
+                            token: token,
+                            data: {
+                                title: "Meeting Reminder",
+                                body: `You have the meeting ${meeting.title} in 10 minutes!`,
+                                type: "meeting",
+                                id: meeting.meetingID || "",
+                                projectId: meeting.projectId || ""
+                            }
+                        });
+                        totalSuccess++;
+                    } catch (error: any) {
+                        totalFailure++;
+                        functions.logger.error(`Failed to send reminder: ${error.message}`);
+                    }
+                }
+            }
 
-                return admin.messaging().sendEachForMulticast(payload);
-            });
-
-            await Promise.all(tasks);
-            functions.logger.info(`Processed ${tasks.length} meeting reminders`);
+            functions.logger.info(`Reminders sent: ${totalSuccess} success, ${totalFailure} failed`);
         } catch (error) {
             functions.logger.error('Error in sendMeetingReminder:', error);
         }
@@ -194,7 +206,7 @@ export const sendNewMessageNotification =
                     .collection("users")
                     .doc(senderId)
                     .get();
-                    
+
                 const senderName = senderDoc.data()?.displayName ?? "Unknown user";
 
                 const fcmTokens = await getMemberIdsFcmToken(recipients);
@@ -204,18 +216,29 @@ export const sendNewMessageNotification =
                     return;
                 }
 
-                const payload = {
-                    tokens: fcmTokens,
-                    data: {
-                        title: `Chat ${projectData.name}`,
-                        body: `${senderName}: ${text}`,
-                        type: "message",
-                        id: messageId,
-                    },
-                };
+                // Use send() method for each token
+                let successCount = 0;
+                let failureCount = 0;
 
-                const response = await admin.messaging().sendEachForMulticast(payload);
-                functions.logger.info(`Message sent: ${response.successCount} success, ${response.failureCount} failed`);
+                for (const token of fcmTokens) {
+                    try {
+                        await admin.messaging().send({
+                            token: token,
+                            data: {
+                                title: `Chat ${projectData.name}`,
+                                body: `${senderName}: ${text}`,
+                                type: "message",
+                                id: messageId,
+                            }
+                        });
+                        successCount++;
+                    } catch (error: any) {
+                        failureCount++;
+                        functions.logger.error(`Failed to send message notification: ${error.message}`);
+                    }
+                }
+
+                functions.logger.info(`Message notifications: ${successCount} success, ${failureCount} failed`);
             } catch (error) {
                 functions.logger.error('Error in sendNewMessageNotification:', error);
             }

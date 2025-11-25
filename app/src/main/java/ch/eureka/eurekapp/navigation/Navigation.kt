@@ -1,9 +1,11 @@
 // This code was partially written by GPT-5, and Grok
 package ch.eureka.eurekapp.navigation
 
+import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -15,6 +17,7 @@ import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.map.Location
+import ch.eureka.eurekapp.model.notifications.NotificationType
 import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.IdeasScreen
 import ch.eureka.eurekapp.screens.OverviewProjectScreen
@@ -146,7 +149,11 @@ sealed interface Route {
 }
 
 @Composable
-fun NavigationMenu() {
+fun NavigationMenu(
+    notificationType: String? = null,
+    notificationId: String? = null,
+    notificationProjectId: String? = null
+) {
   val navigationController = rememberNavController()
   val projectRepository = FirestoreRepositoriesProvider.projectRepository
   val auth = Firebase.auth
@@ -160,6 +167,31 @@ fun NavigationMenu() {
           createdBy = auth.currentUser?.uid ?: "unknown",
           memberIds = listOf(auth.currentUser?.uid ?: "unknown"),
       )
+
+    //Handle the case where the app has been started by a notification
+  LaunchedEffect(
+        notificationType, notificationId, notificationProjectId
+    ) {
+        if(notificationType != null){
+            when(notificationType){
+                NotificationType.MEETING_NOTIFICATION.backendTypeString -> {
+                    Log.d("Notification handling", notificationType)
+                    Log.d("Notification handling", notificationProjectId.toString())
+                    Log.d("Notification handling", notificationId.toString())
+                    if(notificationId != null && notificationProjectId != null){
+                        navigationController.navigate(Route.MeetingsSection.MeetingDetail(
+                            projectId = notificationProjectId, meetingId = notificationId))
+                    }
+                }
+                NotificationType.MESSAGE_NOTIFICATION.backendTypeString -> {
+                    //TODO fill this when we make the chat screen
+                }
+                else -> {
+                    //Do nothing
+                }
+            }
+        }
+    }
 
   Scaffold(
       containerColor = Color.White,
