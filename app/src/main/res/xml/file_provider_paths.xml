@@ -3,4 +3,3 @@
     <cache-path name="cached_files" path="downloads/" />
     <files-path name="files" path="/" />
 </paths>
-

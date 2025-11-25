@@ -23,6 +23,6 @@ data class ViewTaskState(
     val isLoading: Boolean = false,
     val isConnected: Boolean = true,
     val assignedUsers: List<User> = emptyList(),
-    val offlineAttachments: List<Uri> = emptyList(),
-    val urlsToDownload: List<String> = emptyList()
+    val urlsToDownload: List<String> = emptyList(),
+    val effectiveAttachments: List<Any> = emptyList()
 ) : TaskStateRead

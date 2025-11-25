@@ -175,14 +175,8 @@ fun ViewTaskScreen(
                     Text("Edit Task")
                   }
 
-              val effectiveAttachments = if (isConnected) {
-                viewTaskState.attachmentUrls + viewTaskState.attachmentUris
-              } else {
-                viewTaskState.offlineAttachments + viewTaskState.attachmentUris
-              }
-
               AttachmentsList(
-                  attachments = effectiveAttachments,
+                  attachments = viewTaskState.effectiveAttachments,
                   onDelete = null, // Pass null to indicate read-only mode
                   isReadOnly = true,
                   isConnected = isConnected)

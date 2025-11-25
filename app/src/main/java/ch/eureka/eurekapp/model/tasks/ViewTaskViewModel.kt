@@ -87,8 +87,7 @@ class ViewTaskViewModel(
                               status = task.status,
                               isLoading = false,
                               errorMsg = null,
-                              assignedUsers = emptyList(),
-                              offlineAttachments = emptyList())
+                              assignedUsers = emptyList())
 
                       if (task.assignedUserIds.isEmpty()) {
                         flowOf(baseState)
@@ -125,10 +124,17 @@ class ViewTaskViewModel(
 
                 val downloadedUrls = downloadedFiles.map { it.url }.toSet()
                 val urlsToDownload = taskState.attachmentUrls.filter { it !in downloadedUrls }
+
+                val effectiveAttachments = if (isConnected) {
+                  taskState.attachmentUrls + taskState.attachmentUris
+                } else {
+                  offlineAttachments + taskState.attachmentUris + urlsToDownload
+                }
+
                 taskState.copy(
                     isConnected = isConnected,
-                    offlineAttachments = offlineAttachments,
-                    urlsToDownload = urlsToDownload)
+                    urlsToDownload = urlsToDownload,
+                    effectiveAttachments = effectiveAttachments)
               }
           .stateIn(
               scope = viewModelScope,
