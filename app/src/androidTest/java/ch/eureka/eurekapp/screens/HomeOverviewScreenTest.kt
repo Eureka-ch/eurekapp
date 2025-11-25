@@ -39,6 +39,8 @@ class HomeOverviewScreenTest {
 
     composeTestRule.setContent { HomeOverviewLayout(uiState = uiState) }
 
+    composeTestRule.waitForIdle()
+
     // Verify greeting
     composeTestRule.onNodeWithText("Hello Alex").assertIsDisplayed()
 
@@ -47,11 +49,10 @@ class HomeOverviewScreenTest {
     composeTestRule.onNodeWithText("Meeting A").assertIsDisplayed()
     composeTestRule.onNodeWithText("Project A").assertIsDisplayed()
 
-    // Verify action buttons are available (they should be present if content is displayed)
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithText("View all").assertExists()
-    composeTestRule.onNodeWithText("Open meetings").assertExists()
-    composeTestRule.onNodeWithText("Browse projects").assertExists()
+    // Verify action buttons are displayed (static content, should be available after waitForIdle)
+    composeTestRule.onNodeWithText("View all").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Open meetings").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Browse projects").assertIsDisplayed()
   }
 
   @Test
@@ -112,36 +113,13 @@ class HomeOverviewScreenTest {
 
     composeTestRule.waitForIdle()
 
-    // Wait for buttons to be available and click them
-    composeTestRule.waitUntil(timeoutMillis = 3000) {
-      try {
-        composeTestRule.onNodeWithText("View all").assertExists()
-        true
-      } catch (e: AssertionError) {
-        false
-      }
-    }
-    composeTestRule.onNodeWithText("View all").performClick()
-
-    composeTestRule.waitUntil(timeoutMillis = 3000) {
-      try {
-        composeTestRule.onNodeWithText("Open meetings").assertExists()
-        true
-      } catch (e: AssertionError) {
-        false
-      }
-    }
-    composeTestRule.onNodeWithText("Open meetings").performClick()
-
-    composeTestRule.waitUntil(timeoutMillis = 3000) {
-      try {
-        composeTestRule.onNodeWithText("Browse projects").assertExists()
-        true
-      } catch (e: AssertionError) {
-        false
-      }
-    }
-    composeTestRule.onNodeWithText("Browse projects").performClick()
+    // Buttons should be available immediately after waitForIdle for static content
+    // Following pattern from TasksScreenTest and MeetingScreenTest
+    composeTestRule.onNodeWithText("View all").assertIsDisplayed().performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("Open meetings").assertIsDisplayed().performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("Browse projects").assertIsDisplayed().performClick()
 
     assertTrue(tasksClicked)
     assertTrue(meetingsClicked)

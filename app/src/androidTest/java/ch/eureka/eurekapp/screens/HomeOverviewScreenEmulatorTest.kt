@@ -255,7 +255,7 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
       composeTestRule.onNodeWithText("Hello Eureka User").assertIsDisplayed()
 
       // Verify sections are displayed by checking content items (more reliable than buttons)
-      // Wait for tasks to be displayed
+      // Wait for tasks to be displayed first
       composeTestRule.waitUntil(timeoutMillis = 5000) {
         try {
           composeTestRule.onNodeWithText("Upcoming Task 1").assertExists()
@@ -265,6 +265,16 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
         }
       }
       composeTestRule.onNodeWithText("Upcoming Task 1").assertIsDisplayed()
+
+      // Wait for meetings to be displayed before checking buttons
+      composeTestRule.waitUntil(timeoutMillis = 5000) {
+        try {
+          composeTestRule.onNodeWithText("Upcoming Meeting 1").assertExists()
+          true
+        } catch (e: AssertionError) {
+          false
+        }
+      }
 
       // Verify action buttons exist (they should be present if content is displayed)
       composeTestRule.onNodeWithText("View all").assertExists()
