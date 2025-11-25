@@ -243,6 +243,9 @@ dependencies {
     implementation(libs.maps.compose)
     implementation(libs.play.services.location)
 
+    // Work
+    implementation(libs.androidx.work.runtime.ktx)
+
     // Testing - Unit
     testImplementation(libs.junit)
     testImplementation(libs.mockito.core)
