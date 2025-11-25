@@ -5,8 +5,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -424,10 +422,10 @@ class TaskEndToEndTest : TestCase() {
   }
 
   /**
-   * Selects a meeting date by trying the exact [dateLabel] first and falling back to accepting
-   * the default date if the locale renders the long label differently on the CI emulator.
-   * This is more robust than trying to find specific day numbers which may not be visible
-   * depending on the date picker's current view (month/year selector).
+   * Selects a meeting date by trying the exact [dateLabel] first and falling back to accepting the
+   * default date if the locale renders the long label differently on the CI emulator. This is more
+   * robust than trying to find specific day numbers which may not be visible depending on the date
+   * picker's current view (month/year selector).
    */
   private fun selectMeetingDate(dateLabel: String, dayOfMonthFallback: String) {
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE).performClick()
