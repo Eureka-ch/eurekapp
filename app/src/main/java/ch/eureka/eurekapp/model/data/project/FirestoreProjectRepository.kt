@@ -1,6 +1,12 @@
+/*
+ * This file was co-authored by Claude Code.
+ */
 package ch.eureka.eurekapp.model.data.project
 
 import ch.eureka.eurekapp.model.data.FirestorePaths
+import ch.eureka.eurekapp.model.data.activity.ActivityLogger
+import ch.eureka.eurekapp.model.data.activity.ActivityType
+import ch.eureka.eurekapp.model.data.activity.EntityType
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -79,15 +85,42 @@ class FirestoreProjectRepository(
     val memberRef = projectRef.collection("members").document(creatorId)
     memberRef.set(member).await()
 
+    // Log activity to global feed so everyone sees project creation
+    ActivityLogger.logCreated(
+        projectId = "global-activities",
+        entityType = EntityType.PROJECT,
+        entityId = project.projectId,
+        userId = creatorId,
+        title = project.name)
+
     project.projectId
   }
 
   override suspend fun updateProject(project: Project): Result<Unit> = runCatching {
     firestore.collection(FirestorePaths.PROJECTS).document(project.projectId).set(project).await()
+
+    // Log activity to global feed after successful update
+    auth.currentUser?.uid?.let { userId ->
+      ActivityLogger.logUpdated(
+          projectId = "global-activities",
+          entityType = EntityType.PROJECT,
+          entityId = project.projectId,
+          userId = userId,
+          title = project.name)
+    }
   }
 
   override suspend fun deleteProject(projectId: String): Result<Unit> = runCatching {
     firestore.collection(FirestorePaths.PROJECTS).document(projectId).delete().await()
+
+    // Log activity to global feed after successful deletion
+    auth.currentUser?.uid?.let { userId ->
+      ActivityLogger.logDeleted(
+          projectId = "global-activities",
+          entityType = EntityType.PROJECT,
+          entityId = projectId,
+          userId = userId)
+    }
   }
 
   override fun getMembers(projectId: String): Flow<List<Member>> = callbackFlow {
@@ -125,6 +158,22 @@ class FirestoreProjectRepository(
           batch[projectRef.collection("members").document(userId)] = member
         }
         .await()
+
+    // Log activity to global feed after successful member addition
+    val currentUserId = auth.currentUser?.uid
+    println("FirestoreProjectRepository.addMember: currentUserId=$currentUserId, newMemberUserId=$userId, projectId=$projectId")
+    if (currentUserId != null) {
+      println("FirestoreProjectRepository.addMember: Calling ActivityLogger to log JOINED activity")
+      ActivityLogger.logActivity(
+          projectId = "global-activities",
+          activityType = ActivityType.JOINED,
+          entityType = EntityType.MEMBER,
+          entityId = userId,
+          userId = currentUserId,
+          metadata = mapOf("role" to role.name))
+    } else {
+      println("FirestoreProjectRepository.addMember: ERROR - currentUserId is null, cannot log activity!")
+    }
   }
 
   override suspend fun removeMember(projectId: String, userId: String): Result<Unit> = runCatching {
@@ -139,6 +188,16 @@ class FirestoreProjectRepository(
           batch.delete(projectRef.collection("members").document(userId))
         }
         .await()
+
+    // Log activity to global feed after successful member removal
+    auth.currentUser?.uid?.let { currentUserId ->
+      ActivityLogger.logActivity(
+          projectId = "global-activities",
+          activityType = ActivityType.LEFT,
+          entityType = EntityType.MEMBER,
+          entityId = userId,
+          userId = currentUserId)
+    }
   }
 
   override suspend fun updateMemberRole(

@@ -45,6 +45,9 @@ object FirestorePaths {
   /** Self notes subcollection name */
   const val SELF_NOTES = "selfNotes"
 
+  /** Activities subcollection name */
+  const val ACTIVITIES = "activities"
+
   fun userPath(userId: String) = "$USERS/$userId"
 
   fun projectPath(projectId: String) = "$PROJECTS/$projectId"
@@ -96,4 +99,9 @@ object FirestorePaths {
   fun selfNotesPath(userId: String) = "${userPath(userId)}/$SELF_NOTES"
 
   fun selfNotePath(userId: String, noteId: String) = "${selfNotesPath(userId)}/$noteId"
+
+  fun activitiesPath(projectId: String) = "${projectPath(projectId)}/$ACTIVITIES"
+
+  fun activityPath(projectId: String, activityId: String) =
+      "${activitiesPath(projectId)}/$activityId"
 }
