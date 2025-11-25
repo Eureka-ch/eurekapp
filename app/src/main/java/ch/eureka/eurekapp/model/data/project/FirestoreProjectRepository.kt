@@ -161,18 +161,22 @@ class FirestoreProjectRepository(
 
     // Log activity to global feed after successful member addition
     val currentUserId = auth.currentUser?.uid
-    println("FirestoreProjectRepository.addMember: currentUserId=$currentUserId, newMemberUserId=$userId, projectId=$projectId")
     if (currentUserId != null) {
-      println("FirestoreProjectRepository.addMember: Calling ActivityLogger to log JOINED activity")
+      // Fetch project name for better activity display
+      val project = projectRef.get().await().toObject(Project::class.java)
+      val projectName = project?.name ?: "Unknown Project"
+
       ActivityLogger.logActivity(
           projectId = "global-activities",
           activityType = ActivityType.JOINED,
           entityType = EntityType.MEMBER,
           entityId = userId,
           userId = currentUserId,
-          metadata = mapOf("role" to role.name))
-    } else {
-      println("FirestoreProjectRepository.addMember: ERROR - currentUserId is null, cannot log activity!")
+          metadata = mapOf(
+              "role" to role.name,
+              "title" to projectName,
+              "projectId" to projectId
+          ))
     }
   }
 

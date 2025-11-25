@@ -27,7 +27,6 @@ object ActivityLogger {
   ) {
     scope.launch {
       try {
-        println("ActivityLogger: Logging activity - projectId=$projectId, type=$activityType, entityType=$entityType, entityId=$entityId, userId=$userId, metadata=$metadata")
         val activity = Activity(
             projectId = projectId,
             activityType = activityType,
@@ -37,15 +36,9 @@ object ActivityLogger {
             timestamp = Timestamp.now(),
             metadata = metadata
         )
-        val result = activityRepository.createActivity(activity)
-        if (result.isSuccess) {
-          println("ActivityLogger: Successfully created activity ${result.getOrNull()}")
-        } else {
-          println("ActivityLogger: Failed to create activity - ${result.exceptionOrNull()?.message}")
-        }
+        activityRepository.createActivity(activity)
       } catch (e: Exception) {
-        println("ActivityLogger: Exception caught - ${e.message}")
-        e.printStackTrace()
+        // Silent failure - activity logging should not block operations
       }
     }
   }

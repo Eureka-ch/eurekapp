@@ -22,8 +22,10 @@ import androidx.compose.material.icons.filled.Article
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Message
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -179,6 +181,8 @@ private fun getIconAndColor(activityType: ActivityType, entityType: EntityType):
     ActivityType.UPDATED -> Icons.Default.Edit to Color(0xFFFF9800)
     ActivityType.DELETED -> Icons.Default.Delete to Color(0xFFF44336)
     ActivityType.UPLOADED -> Icons.Default.Upload to Color(0xFF2196F3)
+    ActivityType.JOINED -> Icons.Default.PersonAdd to Color(0xFF4CAF50)
+    ActivityType.LEFT -> Icons.Default.ExitToApp to Color(0xFFFF9800)
     else -> Icons.Default.Article to EColors.light.onSurfaceVariant
   }
 }

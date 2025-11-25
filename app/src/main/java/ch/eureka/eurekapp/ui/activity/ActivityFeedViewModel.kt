@@ -89,8 +89,12 @@ class ActivityFeedViewModel(
     viewModelScope.launch {
       repository
           .getActivitiesInProject(projectId, limit = 100) // Fetch more to have enough after filtering
-          .onStart { _uiState.update { it.copy(isLoading = true) } }
-          .catch { e -> _uiState.update { it.copy(isLoading = false, errorMsg = e.message) } }
+          .onStart {
+            _uiState.update { it.copy(isLoading = true) }
+          }
+          .catch { e ->
+            _uiState.update { it.copy(isLoading = false, errorMsg = e.message) }
+          }
           .collect { activities ->
             // Filter by entity type in app code
             val filtered = activities.filter { activity ->

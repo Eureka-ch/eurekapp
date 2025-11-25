@@ -57,6 +57,9 @@ fun ActivityFeedScreen(
 ) {
   val uiState by viewModel.uiState.collectAsState()
 
+  // Always use "global-activities" collection for cross-project visibility
+  val globalProjectId = "global-activities"
+
   // Set mode but don't load activities until user selects filter
   LaunchedEffect(projectId) {
     viewModel.setCompactMode(false) // Full mode, not compact
@@ -85,9 +88,9 @@ fun ActivityFeedScreen(
                 selected = uiState.filterEntityType == EntityType.PROJECT,
                 onClick = {
                   if (uiState.filterEntityType == EntityType.PROJECT) {
-                    viewModel.clearFilters(projectId)
+                    viewModel.clearFilters(globalProjectId)
                   } else {
-                    viewModel.loadActivitiesByEntityType(projectId, EntityType.PROJECT)
+                    viewModel.loadActivitiesByEntityType(globalProjectId, EntityType.PROJECT)
                   }
                 },
                 label = { Text("Projects") },
@@ -98,9 +101,9 @@ fun ActivityFeedScreen(
                 selected = uiState.filterEntityType == EntityType.MEETING,
                 onClick = {
                   if (uiState.filterEntityType == EntityType.MEETING) {
-                    viewModel.clearFilters(projectId)
+                    viewModel.clearFilters(globalProjectId)
                   } else {
-                    viewModel.loadActivitiesByEntityType(projectId, EntityType.MEETING)
+                    viewModel.loadActivitiesByEntityType(globalProjectId, EntityType.MEETING)
                   }
                 },
                 label = { Text("Meetings") },
@@ -195,7 +198,7 @@ fun ActivityFeedScreen(
                         ActivityCard(
                             activity = activity,
                             onClick = { onActivityClick(activity.entityId) },
-                            onDelete = { viewModel.deleteActivity(projectId, activity.activityId) },
+                            onDelete = { viewModel.deleteActivity(globalProjectId, activity.activityId) },
                             modifier = Modifier.padding(horizontal = Spacing.md))
                       }
                     }

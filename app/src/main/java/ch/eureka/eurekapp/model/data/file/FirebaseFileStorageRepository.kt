@@ -65,7 +65,7 @@ class FirebaseFileStorageRepository(
     val fileName = extractFileNameFromPath(storagePath)
     if (currentUserId != null && projectId != null) {
       ActivityLogger.logDeleted(
-          projectId = projectId,
+          projectId = "global-activities",
           entityType = EntityType.FILE,
           entityId = downloadUrl,
           userId = currentUserId,
