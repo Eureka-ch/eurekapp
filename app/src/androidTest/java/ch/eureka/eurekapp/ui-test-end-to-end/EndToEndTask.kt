@@ -322,9 +322,8 @@ class TaskEndToEndTest : TestCase() {
       composeTestRule.onNodeWithText("OK").performClick()
       composeTestRule.waitForIdle()
 
-      // Date selection: Click on a future day in the calendar
-      // The DatePicker opens on the current month. We need to select a day that's in the future.
-      // We'll try to click on day "25" or later in the current month to ensure it's future.
+      // Date selection: Click on tomorrow's date to ensure it's always in the future
+      // Calculate tomorrow's day number and click on it in the calendar grid
       composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE).performClick()
       composeTestRule.waitForIdle()
 
@@ -338,34 +337,17 @@ class TaskEndToEndTest : TestCase() {
         }
       }
 
-      // Try to click on day "25" or later (which should be in the future for most of the month)
-      // If "25" doesn't exist (e.g., month has only 28-30 days), try "30" or "31"
-      val futureDaySelected =
-          runCatching {
-                composeTestRule.onAllNodesWithText("25", substring = true).onFirst().performClick()
-                true
-              }
-              .getOrElse {
-                runCatching {
-                      composeTestRule
-                          .onAllNodesWithText("30", substring = true)
-                          .onFirst()
-                          .performClick()
-                      true
-                    }
-                    .getOrElse {
-                      runCatching {
-                            composeTestRule
-                                .onAllNodesWithText("31", substring = true)
-                                .onFirst()
-                                .performClick()
-                            true
-                          }
-                          .getOrElse { false }
-                    }
-              }
+      // Get tomorrow's day of month
+      val tomorrow =
+          java.util.Calendar.getInstance().apply { add(java.util.Calendar.DAY_OF_MONTH, 1) }
+      val tomorrowDay = tomorrow.get(java.util.Calendar.DAY_OF_MONTH).toString()
 
-      // If no future day found, accept default (may fail validation if it's today)
+      // Click on tomorrow's day in the calendar grid
+      // This ensures we always select a date in the future
+      runCatching {
+        composeTestRule.onAllNodesWithText(tomorrowDay, substring = true).onFirst().performClick()
+      }
+
       composeTestRule.onNodeWithText("OK").performClick()
       composeTestRule.waitForIdle()
 
