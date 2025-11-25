@@ -1,10 +1,12 @@
 package ch.eureka.eurekapp.screens
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
@@ -44,15 +46,27 @@ class HomeOverviewScreenTest {
     // Verify greeting
     composeTestRule.onNodeWithText("Hello Alex").assertIsDisplayed()
 
-    // Verify sections are displayed by checking content items (more reliable than buttons)
-    composeTestRule.onNodeWithText("Task A").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Meeting A").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Project A").assertIsDisplayed()
+    // Scroll to make sure items are visible and verify via test tags
+    val list = composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN)
+    list.performScrollToNode(hasTestTag("${HomeOverviewTestTags.TASK_ITEM_PREFIX}Task A"))
+    composeTestRule
+        .onNodeWithTag("${HomeOverviewTestTags.TASK_ITEM_PREFIX}Task A")
+        .assertIsDisplayed()
+
+    list.performScrollToNode(hasTestTag("${HomeOverviewTestTags.MEETING_ITEM_PREFIX}Meeting A"))
+    composeTestRule
+        .onNodeWithTag("${HomeOverviewTestTags.MEETING_ITEM_PREFIX}Meeting A")
+        .assertIsDisplayed()
+
+    list.performScrollToNode(hasTestTag("${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}Project A"))
+    composeTestRule
+        .onNodeWithTag("${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}Project A")
+        .assertIsDisplayed()
 
     // Verify action buttons are displayed (static content, should be available after waitForIdle)
-    composeTestRule.onNodeWithText("View all").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Open meetings").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Browse projects").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_MEETINGS).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_PROJECTS).assertIsDisplayed()
   }
 
   @Test
@@ -114,12 +128,11 @@ class HomeOverviewScreenTest {
     composeTestRule.waitForIdle()
 
     // Buttons should be available immediately after waitForIdle for static content
-    // Following pattern from TasksScreenTest and MeetingScreenTest
-    composeTestRule.onNodeWithText("View all").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).performClick()
     composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithText("Open meetings").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_MEETINGS).performClick()
     composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithText("Browse projects").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_PROJECTS).performClick()
 
     assertTrue(tasksClicked)
     assertTrue(meetingsClicked)

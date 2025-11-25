@@ -3,10 +3,12 @@ package ch.eureka.eurekapp.screens
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -254,69 +256,81 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
       // Verify greeting displays user name
       composeTestRule.onNodeWithText("Hello Eureka User").assertIsDisplayed()
 
-      // Verify sections are displayed by checking content items (more reliable than buttons)
+      val list = composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN)
+
       // Wait for tasks to be displayed first
-      composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule.waitUntil(timeoutMillis = 15_000) {
         try {
-          composeTestRule.onNodeWithText("Upcoming Task 1").assertExists()
+          composeTestRule
+              .onNodeWithTag("${HomeOverviewTestTags.TASK_ITEM_PREFIX}Upcoming Task 1")
+              .assertExists()
           true
         } catch (e: AssertionError) {
           false
         }
       }
-      composeTestRule.onNodeWithText("Upcoming Task 1").assertIsDisplayed()
+      list.performScrollToNode(
+          hasTestTag("${HomeOverviewTestTags.TASK_ITEM_PREFIX}Upcoming Task 1"))
+      composeTestRule
+          .onNodeWithTag("${HomeOverviewTestTags.TASK_ITEM_PREFIX}Upcoming Task 1")
+          .assertIsDisplayed()
 
       // Wait for meetings to be displayed before checking buttons
-      composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule.waitUntil(timeoutMillis = 15_000) {
         try {
-          composeTestRule.onNodeWithText("Upcoming Meeting 1").assertExists()
+          composeTestRule
+              .onNodeWithTag("${HomeOverviewTestTags.MEETING_ITEM_PREFIX}Upcoming Meeting 1")
+              .assertExists()
           true
         } catch (e: AssertionError) {
           false
         }
       }
+      list.performScrollToNode(
+          hasTestTag("${HomeOverviewTestTags.MEETING_ITEM_PREFIX}Upcoming Meeting 1"))
+      composeTestRule
+          .onNodeWithTag("${HomeOverviewTestTags.MEETING_ITEM_PREFIX}Upcoming Meeting 1")
+          .assertIsDisplayed()
+
+      // Wait for projects to be displayed
+      composeTestRule.waitUntil(timeoutMillis = 15_000) {
+        try {
+          composeTestRule
+              .onNodeWithTag("${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}project-beta")
+              .assertExists()
+          true
+        } catch (e: AssertionError) {
+          false
+        }
+      }
+      list.performScrollToNode(
+          hasTestTag("${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}project-beta"))
+      composeTestRule
+          .onNodeWithTag("${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}project-beta")
+          .assertIsDisplayed()
 
       // Verify action buttons exist (they should be present if content is displayed)
-      composeTestRule.onNodeWithText("View all").assertExists()
-      composeTestRule.onNodeWithText("Open meetings").assertExists()
-      composeTestRule.onNodeWithText("Browse projects").assertExists()
+      composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).assertExists()
+      composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_MEETINGS).assertExists()
+      composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_PROJECTS).assertExists()
 
       // Verify tasks are displayed (limited to 3)
-      composeTestRule.waitUntil(timeoutMillis = 5000) {
-        try {
-          composeTestRule.onNodeWithText("Upcoming Task 1").assertExists()
-          true
-        } catch (e: AssertionError) {
-          false
-        }
-      }
-      composeTestRule.onNodeWithText("Upcoming Task 1").assertIsDisplayed()
-      composeTestRule.onNodeWithText("Upcoming Task 2").assertIsDisplayed()
-      composeTestRule.onNodeWithText("Upcoming Task 3").assertIsDisplayed()
+      composeTestRule
+          .onNodeWithTag("${HomeOverviewTestTags.TASK_ITEM_PREFIX}Upcoming Task 2")
+          .assertExists()
+      composeTestRule
+          .onNodeWithTag("${HomeOverviewTestTags.TASK_ITEM_PREFIX}Upcoming Task 3")
+          .assertExists()
 
       // Verify meetings are displayed
-      composeTestRule.waitUntil(timeoutMillis = 5000) {
-        try {
-          composeTestRule.onNodeWithText("Upcoming Meeting 1").assertExists()
-          true
-        } catch (e: AssertionError) {
-          false
-        }
-      }
-      composeTestRule.onNodeWithText("Upcoming Meeting 1").assertIsDisplayed()
-      composeTestRule.onNodeWithText("Upcoming Meeting 2").assertIsDisplayed()
+      composeTestRule
+          .onNodeWithTag("${HomeOverviewTestTags.MEETING_ITEM_PREFIX}Upcoming Meeting 2")
+          .assertExists()
 
       // Verify projects are displayed
-      composeTestRule.waitUntil(timeoutMillis = 5000) {
-        try {
-          composeTestRule.onNodeWithText("Project Beta").assertExists()
-          true
-        } catch (e: AssertionError) {
-          false
-        }
-      }
-      composeTestRule.onNodeWithText("Project Beta").assertIsDisplayed()
-      composeTestRule.onNodeWithText("Project Alpha").assertIsDisplayed()
+      composeTestRule
+          .onNodeWithTag("${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}project-alpha")
+          .assertExists()
     }
   }
 

@@ -48,6 +48,12 @@ import com.google.firebase.Timestamp
 object HomeOverviewTestTags {
   const val SCREEN = "homeOverviewScreen"
   const val LOADING_INDICATOR = "homeOverviewLoading"
+  const val CTA_TASKS = "homeOverviewCtaTasks"
+  const val CTA_MEETINGS = "homeOverviewCtaMeetings"
+  const val CTA_PROJECTS = "homeOverviewCtaProjects"
+  const val TASK_ITEM_PREFIX = "homeOverviewTask_"
+  const val MEETING_ITEM_PREFIX = "homeOverviewMeeting_"
+  const val PROJECT_ITEM_PREFIX = "homeOverviewProject_"
 }
 
 /**
@@ -122,14 +128,20 @@ internal fun HomeOverviewLayout(
               title = "Upcoming tasks",
               count = uiState.upcomingTasks.size,
               actionLabel = "View all",
+              actionTestTag = HomeOverviewTestTags.CTA_TASKS,
               onActionClick = onOpenTasks)
         }
         if (uiState.upcomingTasks.isEmpty()) {
           item { EmptyState(text = "No tasks assigned yet. Create one to get started.") }
         } else {
           items(uiState.upcomingTasks.take(HOME_ITEMS_LIMIT)) { task ->
-            TaskPreviewCard(
-                task = task, onTaskClick = { onTaskSelected(task.projectId, task.taskID) })
+            Box(
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .testTag("${HomeOverviewTestTags.TASK_ITEM_PREFIX}${task.taskID}")) {
+                  TaskPreviewCard(
+                      task = task, onTaskClick = { onTaskSelected(task.projectId, task.taskID) })
+                }
           }
         }
 
@@ -138,19 +150,26 @@ internal fun HomeOverviewLayout(
               title = "Next meetings",
               count = uiState.upcomingMeetings.size,
               actionLabel = "Open meetings",
+              actionTestTag = HomeOverviewTestTags.CTA_MEETINGS,
               onActionClick = onOpenMeetings)
         }
         if (uiState.upcomingMeetings.isEmpty()) {
           item { EmptyState(text = "No upcoming meetings. Schedule one to keep your team synced.") }
         } else {
           items(uiState.upcomingMeetings.take(HOME_ITEMS_LIMIT)) { meeting ->
-            MeetingCard(
-                meeting = meeting,
-                config =
-                    MeetingCardConfig(
-                        isCurrentUserId = { false },
-                        onClick = { onMeetingSelected(meeting.projectId, meeting.meetingID) },
-                        isConnected = uiState.isConnected))
+            Box(
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .testTag(
+                            "${HomeOverviewTestTags.MEETING_ITEM_PREFIX}${meeting.meetingID}")) {
+                  MeetingCard(
+                      meeting = meeting,
+                      config =
+                          MeetingCardConfig(
+                              isCurrentUserId = { false },
+                              onClick = { onMeetingSelected(meeting.projectId, meeting.meetingID) },
+                              isConnected = uiState.isConnected))
+                }
           }
         }
 
@@ -159,6 +178,7 @@ internal fun HomeOverviewLayout(
               title = "Recent projects",
               count = uiState.recentProjects.size,
               actionLabel = "Browse projects",
+              actionTestTag = HomeOverviewTestTags.CTA_PROJECTS,
               onActionClick = onOpenProjects)
         }
         if (uiState.recentProjects.isEmpty()) {
@@ -166,7 +186,12 @@ internal fun HomeOverviewLayout(
         } else {
           items(uiState.recentProjects.take(HOME_ITEMS_LIMIT)) { project ->
             ProjectSummaryCard(
-                project = project, onClick = { onProjectSelected(project.projectId) })
+                project = project,
+                onClick = { onProjectSelected(project.projectId) },
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .padding(vertical = Spacing.xs)
+                        .testTag("${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}${project.projectId}"))
           }
         }
       }
@@ -223,6 +248,7 @@ private fun HomeSectionHeader(
     title: String,
     count: Int,
     actionLabel: String,
+    actionTestTag: String?,
     onActionClick: () -> Unit
 ) {
   Row(
@@ -230,7 +256,8 @@ private fun HomeSectionHeader(
       horizontalArrangement = Arrangement.SpaceBetween,
       verticalAlignment = Alignment.CenterVertically) {
         TaskSectionHeader(modifier = Modifier.weight(1f), title = title, taskCount = count)
-        TextButton(onClick = onActionClick) { Text(actionLabel) }
+        val buttonModifier = actionTestTag?.let { Modifier.testTag(it) } ?: Modifier
+        TextButton(onClick = onActionClick, modifier = buttonModifier) { Text(actionLabel) }
       }
 }
 
@@ -278,9 +305,13 @@ private fun TaskPreviewCard(task: Task, onTaskClick: () -> Unit) {
 }
 
 @Composable
-private fun ProjectSummaryCard(project: Project, onClick: () -> Unit) {
+private fun ProjectSummaryCard(
+    project: Project,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
   Card(
-      modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.xs),
+      modifier = modifier,
       shape = CardDefaults.shape,
       colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
         Column(modifier = Modifier.padding(Spacing.md)) {

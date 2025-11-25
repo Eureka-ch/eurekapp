@@ -320,6 +320,13 @@ class TaskEndToEndTest : TestCase() {
       composeTestRule.onNodeWithText("OK").performClick()
       composeTestRule.waitForIdle()
 
+      // Date selection (end of current month)
+      composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE).performClick()
+      composeTestRule.waitForIdle()
+      // Accept default selected date to avoid locale-dependent text lookups
+      composeTestRule.onNodeWithText("OK").performClick()
+      composeTestRule.waitForIdle()
+
       // Time selection
       composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TIME).performClick()
       composeTestRule.waitForIdle()
