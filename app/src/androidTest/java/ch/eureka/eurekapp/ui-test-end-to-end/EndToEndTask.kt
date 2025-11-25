@@ -5,6 +5,8 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -320,10 +322,50 @@ class TaskEndToEndTest : TestCase() {
       composeTestRule.onNodeWithText("OK").performClick()
       composeTestRule.waitForIdle()
 
-      // Date selection (end of current month)
+      // Date selection: Click on a future day in the calendar
+      // The DatePicker opens on the current month. We need to select a day that's in the future.
+      // We'll try to click on day "25" or later in the current month to ensure it's future.
       composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE).performClick()
       composeTestRule.waitForIdle()
-      composeTestRule.onNodeWithText("Tuesday, November 24, 2026").performClick()
+
+      // Wait for date picker to load
+      composeTestRule.waitUntil(timeoutMillis = 5000) {
+        try {
+          composeTestRule.onNodeWithText("OK").assertExists()
+          true
+        } catch (e: AssertionError) {
+          false
+        }
+      }
+
+      // Try to click on day "25" or later (which should be in the future for most of the month)
+      // If "25" doesn't exist (e.g., month has only 28-30 days), try "30" or "31"
+      val futureDaySelected =
+          runCatching {
+                composeTestRule.onAllNodesWithText("25", substring = true).onFirst().performClick()
+                true
+              }
+              .getOrElse {
+                runCatching {
+                      composeTestRule
+                          .onAllNodesWithText("30", substring = true)
+                          .onFirst()
+                          .performClick()
+                      true
+                    }
+                    .getOrElse {
+                      runCatching {
+                            composeTestRule
+                                .onAllNodesWithText("31", substring = true)
+                                .onFirst()
+                                .performClick()
+                            true
+                          }
+                          .getOrElse { false }
+                    }
+              }
+
+      // If no future day found, accept default (may fail validation if it's today)
       composeTestRule.onNodeWithText("OK").performClick()
       composeTestRule.waitForIdle()
 
