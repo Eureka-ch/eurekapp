@@ -23,11 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.viewmodel.compose.viewModel
-import ch.eureka.eurekapp.model.notes.SelfNotesViewModel
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.MessageInputField
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.notes.SelfNoteMessageBubble
+import ch.eureka.eurekapp.ui.notes.SelfNotesViewModel
 
 /** Test tags for the Self Notes Screen. */
 object SelfNotesScreenTestTags {

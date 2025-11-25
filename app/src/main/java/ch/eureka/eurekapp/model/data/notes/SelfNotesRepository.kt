@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.model.data.note
+package ch.eureka.eurekapp.model.data.notes
 
 import ch.eureka.eurekapp.model.data.chat.Message
 import kotlinx.coroutines.flow.Flow

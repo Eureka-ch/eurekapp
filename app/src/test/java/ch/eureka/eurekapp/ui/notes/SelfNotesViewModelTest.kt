@@ -1,24 +1,28 @@
-package ch.eureka.eurekapp.model.notes
+/* Portions of this code were written with the help of GPT-5 Codex. */
+package ch.eureka.eurekapp.ui.notes
 
 import ch.eureka.eurekapp.model.data.chat.Message
-import ch.eureka.eurekapp.model.data.note.SelfNotesRepository
+import ch.eureka.eurekapp.model.data.notes.SelfNotesRepository
 import com.google.firebase.Timestamp
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.unmockkAll
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.*
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import org.junit.After
-import org.junit.Assert.*
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-
-/*
-Co-author: GPT-5 Codex
-*/
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SelfNotesViewModelTest {
@@ -33,7 +37,7 @@ class SelfNotesViewModelTest {
           messageID = "msg-1",
           text = "Test note",
           senderId = testUserId,
-          createdAt = Timestamp.now(),
+          createdAt = Timestamp.Companion.now(),
           references = emptyList())
 
   private val testMessages =
@@ -43,7 +47,7 @@ class SelfNotesViewModelTest {
               messageID = "msg-2",
               text = "Another note",
               senderId = testUserId,
-              createdAt = Timestamp.now(),
+              createdAt = Timestamp.Companion.now(),
               references = emptyList()))
 
   @Before
@@ -69,9 +73,9 @@ class SelfNotesViewModelTest {
     testDispatcher.scheduler.advanceUntilIdle()
 
     val state = viewModel.uiState.value
-    assertEquals(testMessages, state.notes)
-    assertFalse(state.isLoading)
-    assertNull(state.errorMsg)
+    Assert.assertEquals(testMessages, state.notes)
+    Assert.assertFalse(state.isLoading)
+    Assert.assertNull(state.errorMsg)
 
     job.cancel()
   }
@@ -86,9 +90,9 @@ class SelfNotesViewModelTest {
     testDispatcher.scheduler.advanceUntilIdle()
 
     val state = viewModel.uiState.value
-    assertFalse(state.isLoading)
-    assertNotNull(state.errorMsg)
-    assertTrue(state.errorMsg!!.contains("Failed to load notes"))
+    Assert.assertFalse(state.isLoading)
+    Assert.assertNotNull(state.errorMsg)
+    Assert.assertTrue(state.errorMsg!!.contains("Failed to load notes"))
 
     job.cancel()
   }
@@ -104,9 +108,9 @@ class SelfNotesViewModelTest {
     testDispatcher.scheduler.advanceUntilIdle()
 
     val state = viewModel.uiState.value
-    assertFalse(state.isLoading)
-    assertNotNull(state.errorMsg)
-    assertTrue(state.errorMsg!!.contains("User must be authenticated"))
+    Assert.assertFalse(state.isLoading)
+    Assert.assertNotNull(state.errorMsg)
+    Assert.assertTrue(state.errorMsg!!.contains("User must be authenticated"))
 
     job.cancel()
   }
@@ -123,7 +127,7 @@ class SelfNotesViewModelTest {
     viewModel.updateMessage(specialText)
     testDispatcher.scheduler.advanceUntilIdle()
 
-    assertEquals(specialText, viewModel.uiState.value.currentMessage)
+    Assert.assertEquals(specialText, viewModel.uiState.value.currentMessage)
 
     job.cancel()
   }
@@ -144,9 +148,9 @@ class SelfNotesViewModelTest {
     testDispatcher.scheduler.advanceUntilIdle()
 
     val state = viewModel.uiState.value
-    assertEquals("", state.currentMessage)
-    assertFalse(state.isSending)
-    assertNull(state.errorMsg)
+    Assert.assertEquals("", state.currentMessage)
+    Assert.assertFalse(state.isSending)
+    Assert.assertNull(state.errorMsg)
     coVerify { repository.createNote(match { it.text == "Test note to send" }) }
 
     job.cancel()
@@ -188,10 +192,10 @@ class SelfNotesViewModelTest {
     testDispatcher.scheduler.advanceUntilIdle()
 
     val state = viewModel.uiState.value
-    assertFalse(state.isSending)
-    assertNotNull(state.errorMsg)
-    assertTrue(state.errorMsg!!.contains("Failed to send note"))
-    assertEquals("Test message", state.currentMessage)
+    Assert.assertFalse(state.isSending)
+    Assert.assertNotNull(state.errorMsg)
+    Assert.assertTrue(state.errorMsg!!.contains("Failed to send note"))
+    Assert.assertEquals("Test message", state.currentMessage)
 
     job.cancel()
   }
@@ -215,10 +219,10 @@ class SelfNotesViewModelTest {
     viewModel.sendNote()
     testDispatcher.scheduler.advanceTimeBy(50)
 
-    assertTrue(viewModel.uiState.value.isSending)
+    Assert.assertTrue(viewModel.uiState.value.isSending)
 
     testDispatcher.scheduler.advanceUntilIdle()
-    assertFalse(viewModel.uiState.value.isSending)
+    Assert.assertFalse(viewModel.uiState.value.isSending)
 
     job.cancel()
   }
@@ -237,12 +241,12 @@ class SelfNotesViewModelTest {
     testDispatcher.scheduler.advanceUntilIdle()
     viewModel.sendNote()
     testDispatcher.scheduler.advanceUntilIdle()
-    assertNotNull(viewModel.uiState.value.errorMsg)
+    Assert.assertNotNull(viewModel.uiState.value.errorMsg)
 
     viewModel.clearError()
     testDispatcher.scheduler.advanceUntilIdle()
 
-    assertNull(viewModel.uiState.value.errorMsg)
+    Assert.assertNull(viewModel.uiState.value.errorMsg)
 
     job.cancel()
   }
@@ -257,7 +261,7 @@ class SelfNotesViewModelTest {
     val job = launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
-    assertEquals(updatedMessages, viewModel.uiState.value.notes)
+    Assert.assertEquals(updatedMessages, viewModel.uiState.value.notes)
 
     job.cancel()
   }
@@ -282,7 +286,7 @@ class SelfNotesViewModelTest {
     testDispatcher.scheduler.advanceUntilIdle()
 
     coVerify(exactly = 2) { repository.createNote(any()) }
-    assertEquals("", viewModel.uiState.value.currentMessage)
+    Assert.assertEquals("", viewModel.uiState.value.currentMessage)
 
     job.cancel()
   }

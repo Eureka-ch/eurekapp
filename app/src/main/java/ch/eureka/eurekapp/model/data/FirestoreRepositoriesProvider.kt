@@ -5,8 +5,8 @@ import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.file.FirebaseFileStorageRepository
 import ch.eureka.eurekapp.model.data.invitation.FirestoreInvitationRepository
 import ch.eureka.eurekapp.model.data.meeting.FirestoreMeetingRepository
-import ch.eureka.eurekapp.model.data.note.FirestoreSelfNotesRepository
-import ch.eureka.eurekapp.model.data.note.SelfNotesRepository
+import ch.eureka.eurekapp.model.data.notes.FirestoreSelfNotesRepository
+import ch.eureka.eurekapp.model.data.notes.SelfNotesRepository
 import ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository
 import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
 import ch.eureka.eurekapp.model.data.template.FirestoreTaskTemplateRepository

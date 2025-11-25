@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.model.notes
+package ch.eureka.eurekapp.ui.notes
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.IdGenerator
 import ch.eureka.eurekapp.model.data.chat.Message
-import ch.eureka.eurekapp.model.data.note.SelfNotesRepository
+import ch.eureka.eurekapp.model.data.notes.SelfNotesRepository
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -40,7 +40,7 @@ class SelfNotesViewModel(
   private val _isSending = MutableStateFlow(false)
   private val _errorMsg = MutableStateFlow<String?>(null)
 
-  val uiState: StateFlow<SelfNotesUiState> =
+  val uiState: StateFlow<SelfNotesUIState> =
       combine(
               repository
                   .getNotes()
@@ -54,14 +54,14 @@ class SelfNotesViewModel(
               _errorMsg) { notesState, currentMessage, isSending, errorMsg ->
                 when (notesState) {
                   is NotesLoadState.Success ->
-                      SelfNotesUiState(
+                      SelfNotesUIState(
                           notes = notesState.notes,
                           isLoading = false,
                           errorMsg = errorMsg,
                           currentMessage = currentMessage,
                           isSending = isSending)
                   is NotesLoadState.Error ->
-                      SelfNotesUiState(
+                      SelfNotesUIState(
                           notes = emptyList(),
                           isLoading = false,
                           errorMsg = errorMsg ?: notesState.message,
@@ -72,7 +72,7 @@ class SelfNotesViewModel(
           .stateIn(
               scope = viewModelScope,
               started = SharingStarted.WhileSubscribed(5000),
-              initialValue = SelfNotesUiState(isLoading = true))
+              initialValue = SelfNotesUIState(isLoading = true))
 
   /**
    * Updates the current message being composed.

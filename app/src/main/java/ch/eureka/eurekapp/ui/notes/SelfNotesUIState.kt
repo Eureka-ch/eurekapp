@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.model.notes
+package ch.eureka.eurekapp.ui.notes
 
 import ch.eureka.eurekapp.model.data.chat.Message
 
@@ -18,7 +18,7 @@ Co-author: GPT-5 Codex
  * @property currentMessage The text of the message currently being composed.
  * @property isSending Whether a note is currently being sent to Firestore.
  */
-data class SelfNotesUiState(
+data class SelfNotesUIState(
     val notes: List<Message> = emptyList(),
     val isLoading: Boolean = false,
     val errorMsg: String? = null,
