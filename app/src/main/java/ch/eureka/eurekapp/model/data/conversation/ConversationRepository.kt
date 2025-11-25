@@ -9,8 +9,7 @@ Co-author: GPT-5 Codex
 /**
  * Repository interface for conversation operations.
  *
- * Provides methods for creating, fetching, and managing 1-on-1 conversations between project
- * members.
+ * Provides methods for creating, fetching, and managing conversations between project members.
  */
 interface ConversationRepository {
   /** Get all conversations for the current user with real-time updates */
@@ -22,12 +21,8 @@ interface ConversationRepository {
   /** Get a specific conversation by ID */
   fun getConversationById(conversationId: String): Flow<Conversation?>
 
-  /** Check if a conversation already exists between two users in a project */
-  suspend fun findExistingConversation(
-      projectId: String,
-      userId1: String,
-      userId2: String
-  ): Conversation?
+  /** Check if a conversation already exists between users in a project */
+  suspend fun findExistingConversation(projectId: String, vararg userIds: String): Conversation?
 
   /** Create a new conversation */
   suspend fun createConversation(conversation: Conversation): Result<String>

@@ -12,7 +12,8 @@ import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -30,7 +31,7 @@ Co-author: Claude 4.5 Sonnet
 @OptIn(ExperimentalCoroutinesApi::class)
 class ConversationListViewModelTest {
 
-  private val testDispatcher = UnconfinedTestDispatcher()
+  private val testDispatcher = StandardTestDispatcher()
 
   private lateinit var mockConversationRepository: ConversationRepository
   private lateinit var mockUserRepository: UserRepository
@@ -80,6 +81,9 @@ class ConversationListViewModelTest {
             getCurrentUserId = { currentUserId },
             connectivityObserver = mockConnectivityObserver)
 
+    // Wait for all coroutines to complete
+    advanceUntilIdle()
+
     val state = viewModel.uiState.value
 
     // Assert: Verify display data is correctly resolved
@@ -114,6 +118,9 @@ class ConversationListViewModelTest {
             getCurrentUserId = { currentUserId },
             connectivityObserver = mockConnectivityObserver)
 
+    // Wait for all coroutines to complete
+    advanceUntilIdle()
+
     val state = viewModel.uiState.value
 
     // Assert: Fallback values are used for unknown user
@@ -136,6 +143,9 @@ class ConversationListViewModelTest {
             projectRepository = mockProjectRepository,
             getCurrentUserId = { currentUserId },
             connectivityObserver = mockConnectivityObserver)
+
+    // Wait for all coroutines to complete
+    advanceUntilIdle()
 
     // Assert: UI state reflects offline status
     assertFalse(viewModel.uiState.value.isConnected)

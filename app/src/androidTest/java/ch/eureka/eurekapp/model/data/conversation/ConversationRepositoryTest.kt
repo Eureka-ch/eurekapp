@@ -94,9 +94,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
     repository.createConversation(conversation)
 
     // Act: Try to find existing conversation between same users in same project
-    val existing =
-        repository.findExistingConversation(
-            projectId = "project1", userId1 = testUserId, userId2 = "otherUser")
+    val existing = repository.findExistingConversation("project1", testUserId, "otherUser")
 
     // Assert: Should find the existing conversation (prevents duplicates)
     assertNotNull(existing)
@@ -106,9 +104,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   @Test
   fun findExistingConversation_shouldReturnNullWhenNotExists() = runBlocking {
     // Act: Try to find a conversation that doesn't exist
-    val existing =
-        repository.findExistingConversation(
-            projectId = "project1", userId1 = testUserId, userId2 = "nonExistentUser")
+    val existing = repository.findExistingConversation("project1", testUserId, "nonExistentUser")
 
     // Assert: Should return null when no conversation exists
     assertNull(existing)

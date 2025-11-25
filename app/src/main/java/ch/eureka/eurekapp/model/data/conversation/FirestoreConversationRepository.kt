@@ -94,22 +94,22 @@ class FirestoreConversationRepository(
 
   override suspend fun findExistingConversation(
       projectId: String,
-      userId1: String,
-      userId2: String
+      vararg userIds: String
   ): Conversation? {
-    // Query for conversations in this project containing userId1
+    if (userIds.isEmpty()) return null
+
     val snapshot =
         firestore
             .collection(FirestorePaths.CONVERSATIONS)
             .whereEqualTo("projectId", projectId)
-            .whereArrayContains("memberIds", userId1)
+            .whereArrayContains("memberIds", userIds[0])
             .get()
             .await()
 
-    // Filter locally to find one that also contains userId2
+    val userIdSet = userIds.toSet()
     return snapshot.documents
         .mapNotNull { it.toObject(Conversation::class.java) }
-        .find { it.memberIds.contains(userId2) && it.memberIds.size == 2 }
+        .find { it.memberIds.toSet() == userIdSet }
   }
 
   override suspend fun createConversation(conversation: Conversation): Result<String> =

@@ -7,19 +7,17 @@ import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.model.data.conversation.Conversation
 import ch.eureka.eurekapp.model.data.conversation.ConversationRepository
-import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
-import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /*
@@ -61,8 +59,7 @@ data class ConversationDisplayData(
  * ViewModel for the conversation list screen.
  *
  * Loads all conversations for the current user and resolves member names and project names for
- * display. Uses caching to minimize redundant Firestore queries when resolving user and project
- * data.
+ * display.
  *
  * @property conversationRepository Repository for conversation data operations.
  * @property userRepository Repository for user data lookups.
@@ -80,28 +77,42 @@ open class ConversationListViewModel(
     connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver
 ) : ViewModel() {
 
-  // Internal mutable state for the UI
-  private val _uiState = MutableStateFlow(ConversationListState())
+  private val _conversationsState =
+      MutableStateFlow<ConversationsDataState>(ConversationsDataState.Loading)
 
-  // Public read-only state exposed to the UI layer
-  open val uiState: StateFlow<ConversationListState> = _uiState
-
-  // Network connectivity state, starts optimistically as connected
   private val _isConnected =
       connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
-  // Cache for resolved users and projects to avoid redundant Firestore queries.
-  // This improves performance when displaying multiple conversations with overlapping members.
-  private val userCache = mutableMapOf<String, User>()
-  private val projectCache = mutableMapOf<String, Project>()
+  open val uiState: StateFlow<ConversationListState> =
+      combine(_conversationsState, _isConnected) { conversationsState, isConnected ->
+            when (conversationsState) {
+              is ConversationsDataState.Loading ->
+                  ConversationListState(isLoading = true, isConnected = isConnected)
+              is ConversationsDataState.Success ->
+                  ConversationListState(
+                      conversations = conversationsState.conversations,
+                      isLoading = false,
+                      isConnected = isConnected)
+              is ConversationsDataState.Error ->
+                  ConversationListState(
+                      isLoading = false,
+                      errorMsg = conversationsState.message,
+                      isConnected = isConnected)
+            }
+          }
+          .stateIn(viewModelScope, SharingStarted.Eagerly, ConversationListState())
 
   init {
-    // Observe connectivity changes and update UI state accordingly
-    viewModelScope.launch {
-      _isConnected.collect { isConnected -> _uiState.update { it.copy(isConnected = isConnected) } }
-    }
-    // Load conversations on ViewModel creation
     loadConversations()
+  }
+
+  /** Internal sealed class to represent the conversations data state */
+  private sealed class ConversationsDataState {
+    object Loading : ConversationsDataState()
+
+    data class Success(val conversations: List<ConversationDisplayData>) : ConversationsDataState()
+
+    data class Error(val message: String) : ConversationsDataState()
   }
 
   /**
@@ -114,22 +125,14 @@ open class ConversationListViewModel(
     viewModelScope.launch {
       conversationRepository
           .getConversationsForCurrentUser()
-          .onStart {
-            // Show loading indicator while fetching
-            _uiState.update { it.copy(isLoading = true) }
-          }
+          .onStart { _conversationsState.value = ConversationsDataState.Loading }
           .catch { e ->
-            // Handle errors gracefully and display to user
-            _uiState.update { it.copy(isLoading = false, errorMsg = e.message) }
+            _conversationsState.value = ConversationsDataState.Error(e.message ?: "Unknown error")
           }
           .collect { conversations ->
-            // Transform raw conversations into display-ready data
             val displayDataList =
                 conversations.map { conversation -> resolveConversationDisplayData(conversation) }
-            // Update UI with resolved conversations
-            _uiState.update {
-              it.copy(isLoading = false, conversations = displayDataList, errorMsg = null)
-            }
+            _conversationsState.value = ConversationsDataState.Success(displayDataList)
           }
     }
   }
@@ -137,8 +140,9 @@ open class ConversationListViewModel(
   /**
    * Resolve display data for a conversation by fetching user and project information.
    *
-   * Uses caching to avoid redundant lookups. The other member (not the current user) is identified
-   * and their display name is fetched from the user repository.
+   * The other member (not the current user) is identified and their display name is fetched from
+   * the user repository. Firestore's built-in caching handles performance optimization for repeated
+   * queries.
    *
    * @param conversation The conversation to resolve display data for.
    * @return Display data containing the other member's name and project name.
@@ -147,29 +151,10 @@ open class ConversationListViewModel(
       conversation: Conversation
   ): ConversationDisplayData {
     val currentUserId = getCurrentUserId() ?: ""
-
-    // Find the other participant in the conversation (not the current user)
     val otherUserId = conversation.memberIds.firstOrNull { it != currentUserId } ?: ""
+    val otherUser = userRepository.getUserById(otherUserId).first()
+    val project = projectRepository.getProjectById(conversation.projectId).first()
 
-    // Try to get user from cache first, otherwise fetch from Firestore and cache it
-    val otherUser =
-        userCache[otherUserId]
-            ?: run {
-              val user = userRepository.getUserById(otherUserId).first()
-              user?.let { userCache[otherUserId] = it }
-              user
-            }
-
-    // Try to get project from cache first, otherwise fetch from Firestore and cache it
-    val project =
-        projectCache[conversation.projectId]
-            ?: run {
-              val proj = projectRepository.getProjectById(conversation.projectId).first()
-              proj?.let { projectCache[conversation.projectId] = it }
-              proj
-            }
-
-    // Return display data with fallback values for missing data
     return ConversationDisplayData(
         conversation = conversation,
         otherMemberName = otherUser?.displayName ?: "Unknown User",
@@ -177,8 +162,8 @@ open class ConversationListViewModel(
         projectName = project?.name ?: "Unknown Project")
   }
 
-  /** Clear the error message. */
+  /** Clear the error message by reloading conversations. */
   fun clearErrorMsg() {
-    _uiState.update { it.copy(errorMsg = null) }
+    loadConversations()
   }
 }

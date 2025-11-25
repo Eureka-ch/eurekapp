@@ -94,11 +94,9 @@ open class CreateConversationViewModel(
       connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
   init {
-    // Observe connectivity changes and update UI state accordingly
     viewModelScope.launch {
       _isConnected.collect { isConnected -> _uiState.update { it.copy(isConnected = isConnected) } }
     }
-    // Load available projects on ViewModel creation
     loadProjects()
   }
 
@@ -112,7 +110,6 @@ open class CreateConversationViewModel(
     viewModelScope.launch {
       _uiState.update { it.copy(isLoadingProjects = true) }
       try {
-        // Use skipCache = false to ensure we get cached data quickly if available
         projectRepository.getProjectsForCurrentUser(skipCache = false).collect { projects ->
           _uiState.update { it.copy(isLoadingProjects = false, projects = projects) }
         }
@@ -131,11 +128,9 @@ open class CreateConversationViewModel(
    * @param project The project to select.
    */
   fun selectProject(project: Project) {
-    // Reset member selection and list when project changes
     _uiState.update {
       it.copy(selectedProject = project, selectedMember = null, members = emptyList())
     }
-    // Fetch members for the newly selected project
     loadMembersForProject(project.projectId)
   }
 
@@ -152,18 +147,11 @@ open class CreateConversationViewModel(
       _uiState.update { it.copy(isLoadingMembers = true) }
       try {
         val currentUserId = getCurrentUserId() ?: ""
-
-        // Fetch all members from the project's members subcollection
         val members = projectRepository.getMembers(projectId).first()
-
-        // Filter out the current user - they can't create a conversation with themselves
         val otherMembers = members.filter { it.userId != currentUserId }
-
-        // Resolve user data (display name, photo) for each member
         val memberDisplayDataList =
             otherMembers.mapNotNull { member ->
               val user = userRepository.getUserById(member.userId).first()
-              // Only include members whose user data could be resolved
               user?.let { MemberDisplayData(member = member, user = it) }
             }
 
@@ -194,8 +182,6 @@ open class CreateConversationViewModel(
    */
   fun createConversation() {
     val state = _uiState.value
-
-    // Validate required selections - return early if any are missing
     val selectedProject = state.selectedProject ?: return
     val selectedMember = state.selectedMember ?: return
     val currentUserId = getCurrentUserId() ?: return
@@ -203,23 +189,17 @@ open class CreateConversationViewModel(
     viewModelScope.launch {
       _uiState.update { it.copy(isCreating = true) }
 
-      // Check if a conversation already exists between these two users in this project
-      // This prevents duplicate conversations
       val existingConversation =
           conversationRepository.findExistingConversation(
-              projectId = selectedProject.projectId,
-              userId1 = currentUserId,
-              userId2 = selectedMember.user.uid)
+              selectedProject.projectId, currentUserId, selectedMember.user.uid)
 
       if (existingConversation != null) {
-        // Conversation already exists - show error and don't create a duplicate
         _uiState.update {
           it.copy(isCreating = false, errorMsg = "Conversation already exists with this member")
         }
         return@launch
       }
 
-      // Build the new conversation object with both participants
       val conversation =
           Conversation(
               projectId = selectedProject.projectId,
@@ -227,13 +207,9 @@ open class CreateConversationViewModel(
               createdBy = currentUserId,
               createdAt = Timestamp.now())
 
-      // Save to Firestore and handle result
       conversationRepository
           .createConversation(conversation)
-          .onSuccess {
-            // Signal success to UI for navigation
-            _uiState.update { it.copy(isCreating = false, conversationCreated = true) }
-          }
+          .onSuccess { _uiState.update { it.copy(isCreating = false, conversationCreated = true) } }
           .onFailure { e -> _uiState.update { it.copy(isCreating = false, errorMsg = e.message) } }
     }
   }
