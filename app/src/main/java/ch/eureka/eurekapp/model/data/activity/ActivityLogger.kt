@@ -27,15 +27,15 @@ object ActivityLogger {
   ) {
     scope.launch {
       try {
-        val activity = Activity(
-            projectId = projectId,
-            activityType = activityType,
-            entityType = entityType,
-            entityId = entityId,
-            userId = userId,
-            timestamp = Timestamp.now(),
-            metadata = metadata
-        )
+        val activity =
+            Activity(
+                projectId = projectId,
+                activityType = activityType,
+                entityType = entityType,
+                entityId = entityId,
+                userId = userId,
+                timestamp = Timestamp.now(),
+                metadata = metadata)
         activityRepository.createActivity(activity)
       } catch (e: Exception) {
         // Silent failure - activity logging should not block operations
@@ -58,17 +58,38 @@ object ActivityLogger {
     logActivity(projectId, type, entityType, entityId, userId, metadata)
   }
 
-  fun logCreated(projectId: String, entityType: EntityType, entityId: String, userId: String, title: String? = null) =
-      log(ActivityType.CREATED, projectId, entityType, entityId, userId, title)
+  fun logCreated(
+      projectId: String,
+      entityType: EntityType,
+      entityId: String,
+      userId: String,
+      title: String? = null
+  ) = log(ActivityType.CREATED, projectId, entityType, entityId, userId, title)
 
-  fun logUpdated(projectId: String, entityType: EntityType, entityId: String, userId: String, title: String? = null) =
-      log(ActivityType.UPDATED, projectId, entityType, entityId, userId, title)
+  fun logUpdated(
+      projectId: String,
+      entityType: EntityType,
+      entityId: String,
+      userId: String,
+      title: String? = null
+  ) = log(ActivityType.UPDATED, projectId, entityType, entityId, userId, title)
 
-  fun logDeleted(projectId: String, entityType: EntityType, entityId: String, userId: String, title: String? = null) =
-      log(ActivityType.DELETED, projectId, entityType, entityId, userId, title)
+  fun logDeleted(
+      projectId: String,
+      entityType: EntityType,
+      entityId: String,
+      userId: String,
+      title: String? = null
+  ) = log(ActivityType.DELETED, projectId, entityType, entityId, userId, title)
 
   fun logFileUploaded(projectId: String, fileId: String, userId: String, fileName: String) =
-      logActivity(projectId, ActivityType.UPLOADED, EntityType.FILE, fileId, userId, mapOf("fileName" to fileName))
+      logActivity(
+          projectId,
+          ActivityType.UPLOADED,
+          EntityType.FILE,
+          fileId,
+          userId,
+          mapOf("fileName" to fileName))
 
   fun logStatusChanged(
       projectId: String,
@@ -77,6 +98,12 @@ object ActivityLogger {
       userId: String,
       oldStatus: String,
       newStatus: String
-  ) = logActivity(projectId, ActivityType.STATUS_CHANGED, entityType, entityId, userId,
-        mapOf("oldStatus" to oldStatus, "newStatus" to newStatus))
+  ) =
+      logActivity(
+          projectId,
+          ActivityType.STATUS_CHANGED,
+          entityType,
+          entityId,
+          userId,
+          mapOf("oldStatus" to oldStatus, "newStatus" to newStatus))
 }

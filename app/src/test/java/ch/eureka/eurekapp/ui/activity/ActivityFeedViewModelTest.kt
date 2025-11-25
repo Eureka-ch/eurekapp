@@ -11,6 +11,8 @@ import com.google.android.gms.tasks.Tasks
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import io.mockk.*
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -18,8 +20,6 @@ import kotlinx.coroutines.test.*
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ActivityFeedViewModelTest {
@@ -58,11 +58,11 @@ class ActivityFeedViewModelTest {
 
   @Test
   fun `PROJECT filter includes both PROJECT and MEMBER activities`() = runTest {
-    val activities = listOf(
-        createActivity("1", EntityType.PROJECT),
-        createActivity("2", EntityType.MEMBER),
-        createActivity("3", EntityType.MEETING)
-    )
+    val activities =
+        listOf(
+            createActivity("1", EntityType.PROJECT),
+            createActivity("2", EntityType.MEMBER),
+            createActivity("3", EntityType.MEETING))
     coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(activities)
 
     viewModel.loadActivitiesByEntityType(projectId, EntityType.PROJECT)
@@ -70,15 +70,16 @@ class ActivityFeedViewModelTest {
 
     val state = viewModel.uiState.value
     assertEquals(2, state.activities.size) // Only PROJECT + MEMBER
-    assertTrue(state.activities.all { it.entityType == EntityType.PROJECT || it.entityType == EntityType.MEMBER })
+    assertTrue(
+        state.activities.all {
+          it.entityType == EntityType.PROJECT || it.entityType == EntityType.MEMBER
+        })
   }
 
   @Test
   fun `MEETING filter includes only MEETING activities`() = runTest {
-    val activities = listOf(
-        createActivity("1", EntityType.PROJECT),
-        createActivity("2", EntityType.MEETING)
-    )
+    val activities =
+        listOf(createActivity("1", EntityType.PROJECT), createActivity("2", EntityType.MEETING))
     coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(activities)
 
     viewModel.loadActivitiesByEntityType(projectId, EntityType.MEETING)
@@ -91,9 +92,11 @@ class ActivityFeedViewModelTest {
 
   @Test
   fun `deleteActivity removes activity and rolls back on failure`() = runTest {
-    val activities = listOf(createActivity("1", EntityType.PROJECT), createActivity("2", EntityType.MEETING))
+    val activities =
+        listOf(createActivity("1", EntityType.PROJECT), createActivity("2", EntityType.MEETING))
     coEvery { repository.getActivitiesInProject(projectId, 20) } returns flowOf(activities)
-    coEvery { repository.deleteActivity(projectId, "1") } returns Result.failure(Exception("Failed"))
+    coEvery { repository.deleteActivity(projectId, "1") } returns
+        Result.failure(Exception("Failed"))
 
     viewModel.loadActivities(projectId)
     advanceUntilIdle()
@@ -149,7 +152,8 @@ class ActivityFeedViewModelTest {
   fun `refresh maintains active filters`() = runTest {
     val activities = listOf(createActivity("1", EntityType.PROJECT))
     coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(activities)
-    coEvery { repository.getActivitiesByActivityType(projectId, ActivityType.CREATED, 20) } returns flowOf(activities)
+    coEvery { repository.getActivitiesByActivityType(projectId, ActivityType.CREATED, 20) } returns
+        flowOf(activities)
 
     viewModel.loadActivitiesByEntityType(projectId, EntityType.PROJECT)
     advanceUntilIdle()
@@ -176,7 +180,8 @@ class ActivityFeedViewModelTest {
 
   @Test
   fun `deleteActivity succeeds and removes activity from list`() = runTest {
-    val activities = listOf(createActivity("1", EntityType.PROJECT), createActivity("2", EntityType.PROJECT))
+    val activities =
+        listOf(createActivity("1", EntityType.PROJECT), createActivity("2", EntityType.PROJECT))
     coEvery { repository.getActivitiesInProject(projectId, 20) } returns flowOf(activities)
     coEvery { repository.deleteActivity(projectId, "1") } returns Result.success(Unit)
 
@@ -236,14 +241,14 @@ class ActivityFeedViewModelTest {
     assertEquals(10, state.activities.size)
   }
 
-  private fun createActivity(id: String, entityType: EntityType) = Activity(
-      activityId = id,
-      projectId = projectId,
-      activityType = ActivityType.CREATED,
-      entityType = entityType,
-      entityId = "entity-$id",
-      userId = "user-1",
-      timestamp = Timestamp.now(),
-      metadata = emptyMap()
-  )
+  private fun createActivity(id: String, entityType: EntityType) =
+      Activity(
+          activityId = id,
+          projectId = projectId,
+          activityType = ActivityType.CREATED,
+          entityType = entityType,
+          entityId = "entity-$id",
+          userId = "user-1",
+          timestamp = Timestamp.now(),
+          metadata = emptyMap())
 }

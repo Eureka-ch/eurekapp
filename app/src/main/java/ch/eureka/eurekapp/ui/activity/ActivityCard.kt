@@ -9,12 +9,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -93,44 +90,46 @@ fun ActivityCard(
                   modifier = Modifier.align(Alignment.Top))
 
               // Activity content
-              Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                // Activity description
-                Text(
-                    text = getActivityDescription(activity),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis)
+              Column(
+                  modifier = Modifier.weight(1f),
+                  verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    // Activity description
+                    Text(
+                        text = getActivityDescription(activity),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis)
 
-                // Metadata (entity title if available)
-                activity.metadata["title"]?.let { title ->
-                  Text(
-                      text = title.toString(),
-                      style = MaterialTheme.typography.bodySmall,
-                      color = MaterialTheme.colorScheme.onSurfaceVariant,
-                      maxLines = 1,
-                      overflow = TextOverflow.Ellipsis)
-                }
+                    // Metadata (entity title if available)
+                    activity.metadata["title"]?.let { title ->
+                      Text(
+                          text = title.toString(),
+                          style = MaterialTheme.typography.bodySmall,
+                          color = MaterialTheme.colorScheme.onSurfaceVariant,
+                          maxLines = 1,
+                          overflow = TextOverflow.Ellipsis)
+                    }
 
-                // Timestamp
-                Text(
-                    text = formatTimestamp(activity.timestamp.toDate().time),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-              }
+                    // Timestamp
+                    Text(
+                        text = formatTimestamp(activity.timestamp.toDate().time),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                  }
 
               // Delete button
               IconButton(
                   onClick = onDelete,
-                  modifier = Modifier.align(Alignment.Top).testTag("DeleteButton_${activity.activityId}")
-              ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete activity",
-                    tint = MaterialTheme.colorScheme.error
-                )
-              }
+                  modifier =
+                      Modifier.align(Alignment.Top)
+                          .testTag("DeleteButton_${activity.activityId}")) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete activity",
+                        tint = MaterialTheme.colorScheme.error)
+                  }
             }
       }
 }
@@ -150,16 +149,13 @@ private fun ActivityIcon(
 ) {
   val (icon, color) = getIconAndColor(activityType, entityType)
 
-  Surface(
-      modifier = modifier.size(40.dp),
-      shape = CircleShape,
-      color = color.copy(alpha = 0.12f)) {
-        Icon(
-            imageVector = icon,
-            contentDescription = "$activityType $entityType",
-            tint = color,
-            modifier = Modifier.padding(8.dp))
-      }
+  Surface(modifier = modifier.size(40.dp), shape = CircleShape, color = color.copy(alpha = 0.12f)) {
+    Icon(
+        imageVector = icon,
+        contentDescription = "$activityType $entityType",
+        tint = color,
+        modifier = Modifier.padding(8.dp))
+  }
 }
 
 /**
@@ -169,7 +165,10 @@ private fun ActivityIcon(
  * @param entityType Type of entity
  * @return Pair of icon and color
  */
-private fun getIconAndColor(activityType: ActivityType, entityType: EntityType): Pair<ImageVector, Color> {
+private fun getIconAndColor(
+    activityType: ActivityType,
+    entityType: EntityType
+): Pair<ImageVector, Color> {
   return when (activityType) {
     ActivityType.CREATED ->
         when (entityType) {

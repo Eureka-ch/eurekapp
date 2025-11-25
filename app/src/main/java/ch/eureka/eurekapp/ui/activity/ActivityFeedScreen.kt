@@ -22,7 +22,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import ch.eureka.eurekapp.model.data.activity.EntityType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,8 +30,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -40,6 +39,7 @@ import java.util.Locale
 
 /**
  * Activity feed screen with filtering and real-time updates.
+ *
  * @param projectId Project ID to show activities for
  * @param onActivityClick Callback when activity clicked (receives entityId)
  * @param onNavigateBack Back button callback
@@ -79,140 +79,136 @@ fun ActivityFeedScreen(
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
           // Filter buttons
           Row(
-              modifier = Modifier
-                  .fillMaxWidth()
-                  .padding(horizontal = Spacing.md, vertical = Spacing.sm),
-              horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
-          ) {
-            FilterChip(
-                selected = uiState.filterEntityType == EntityType.PROJECT,
-                onClick = {
-                  if (uiState.filterEntityType == EntityType.PROJECT) {
-                    viewModel.clearFilters(globalProjectId)
-                  } else {
-                    viewModel.loadActivitiesByEntityType(globalProjectId, EntityType.PROJECT)
-                  }
-                },
-                label = { Text("Projects") },
-                modifier = Modifier.testTag("ProjectsFilterChip")
-            )
+              modifier =
+                  Modifier.fillMaxWidth().padding(horizontal = Spacing.md, vertical = Spacing.sm),
+              horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                FilterChip(
+                    selected = uiState.filterEntityType == EntityType.PROJECT,
+                    onClick = {
+                      if (uiState.filterEntityType == EntityType.PROJECT) {
+                        viewModel.clearFilters(globalProjectId)
+                      } else {
+                        viewModel.loadActivitiesByEntityType(globalProjectId, EntityType.PROJECT)
+                      }
+                    },
+                    label = { Text("Projects") },
+                    modifier = Modifier.testTag("ProjectsFilterChip"))
 
-            FilterChip(
-                selected = uiState.filterEntityType == EntityType.MEETING,
-                onClick = {
-                  if (uiState.filterEntityType == EntityType.MEETING) {
-                    viewModel.clearFilters(globalProjectId)
-                  } else {
-                    viewModel.loadActivitiesByEntityType(globalProjectId, EntityType.MEETING)
-                  }
-                },
-                label = { Text("Meetings") },
-                modifier = Modifier.testTag("MeetingsFilterChip")
-            )
-          }
+                FilterChip(
+                    selected = uiState.filterEntityType == EntityType.MEETING,
+                    onClick = {
+                      if (uiState.filterEntityType == EntityType.MEETING) {
+                        viewModel.clearFilters(globalProjectId)
+                      } else {
+                        viewModel.loadActivitiesByEntityType(globalProjectId, EntityType.MEETING)
+                      }
+                    },
+                    label = { Text("Meetings") },
+                    modifier = Modifier.testTag("MeetingsFilterChip"))
+              }
 
           Box(modifier = Modifier.fillMaxSize()) {
             when {
-            uiState.isLoading && uiState.activities.isEmpty() -> {
-              // Initial loading state
-              Column(
-                  modifier = Modifier.fillMaxSize(),
-                  verticalArrangement = Arrangement.Center,
-                  horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator(modifier = Modifier.testTag("LoadingIndicator"))
-                    Spacer(modifier = Modifier.height(Spacing.md))
-                    Text(
-                        text = "Loading activities...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                  }
-            }
-            uiState.activities.isEmpty() -> {
-              // Empty state
-              Column(
-                  modifier = Modifier.fillMaxSize(),
-                  verticalArrangement = Arrangement.Center,
-                  horizontalAlignment = Alignment.CenterHorizontally) {
-                    if (uiState.filterEntityType == null) {
-                      // No filter selected
+              uiState.isLoading && uiState.activities.isEmpty() -> {
+                // Initial loading state
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                      CircularProgressIndicator(modifier = Modifier.testTag("LoadingIndicator"))
+                      Spacer(modifier = Modifier.height(Spacing.md))
                       Text(
-                          text = "Select a filter",
-                          style = MaterialTheme.typography.titleMedium,
-                          fontWeight = FontWeight.Bold,
-                          color = MaterialTheme.colorScheme.onSurface,
-                          modifier = Modifier.testTag("EmptyState"))
-                      Spacer(modifier = Modifier.height(Spacing.sm))
-                      Text(
-                          text = "Choose 'Projects' or 'Meetings' above to view activities",
-                          style = MaterialTheme.typography.bodyMedium,
-                          color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    } else {
-                      // Filter selected but no results
-                      Text(
-                          text = "No activities yet",
-                          style = MaterialTheme.typography.titleMedium,
-                          fontWeight = FontWeight.Bold,
-                          color = MaterialTheme.colorScheme.onSurface,
-                          modifier = Modifier.testTag("EmptyState"))
-                      Spacer(modifier = Modifier.height(Spacing.sm))
-                      Text(
-                          text = "Activities will appear here when actions are performed",
+                          text = "Loading activities...",
                           style = MaterialTheme.typography.bodyMedium,
                           color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                  }
-            }
-            else -> {
-              // Activities list with date grouping
-              LazyColumn(
-                  modifier = Modifier.fillMaxSize().testTag("ActivitiesList"),
-                  contentPadding = PaddingValues(vertical = Spacing.md),
-                  verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                    // Group activities by date
-                    val activitiesByDate = uiState.activities.groupBy { activity ->
-                      val calendar = Calendar.getInstance()
-                      calendar.time = activity.timestamp.toDate()
-                      calendar.set(Calendar.HOUR_OF_DAY, 0)
-                      calendar.set(Calendar.MINUTE, 0)
-                      calendar.set(Calendar.SECOND, 0)
-                      calendar.set(Calendar.MILLISECOND, 0)
-                      calendar.timeInMillis
-                    }
-
-                    activitiesByDate.forEach { (dateMillis, activities) ->
-                      // Date header
-                      item(key = "header_$dateMillis") {
+              }
+              uiState.activities.isEmpty() -> {
+                // Empty state
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                      if (uiState.filterEntityType == null) {
+                        // No filter selected
                         Text(
-                            text = formatDateHeader(dateMillis),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier =
-                                Modifier.padding(
-                                        horizontal = Spacing.md, vertical = Spacing.sm)
-                                    .testTag("DateHeader_$dateMillis"))
-                      }
-
-                      // Activities for this date
-                      items(items = activities, key = { it.activityId }) { activity ->
-                        ActivityCard(
-                            activity = activity,
-                            onClick = { onActivityClick(activity.entityId) },
-                            onDelete = { viewModel.deleteActivity(globalProjectId, activity.activityId) },
-                            modifier = Modifier.padding(horizontal = Spacing.md))
+                            text = "Select a filter",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.testTag("EmptyState"))
+                        Spacer(modifier = Modifier.height(Spacing.sm))
+                        Text(
+                            text = "Choose 'Projects' or 'Meetings' above to view activities",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                      } else {
+                        // Filter selected but no results
+                        Text(
+                            text = "No activities yet",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.testTag("EmptyState"))
+                        Spacer(modifier = Modifier.height(Spacing.sm))
+                        Text(
+                            text = "Activities will appear here when actions are performed",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
                       }
                     }
-                  }
+              }
+              else -> {
+                // Activities list with date grouping
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().testTag("ActivitiesList"),
+                    contentPadding = PaddingValues(vertical = Spacing.md),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                      // Group activities by date
+                      val activitiesByDate =
+                          uiState.activities.groupBy { activity ->
+                            val calendar = Calendar.getInstance()
+                            calendar.time = activity.timestamp.toDate()
+                            calendar.set(Calendar.HOUR_OF_DAY, 0)
+                            calendar.set(Calendar.MINUTE, 0)
+                            calendar.set(Calendar.SECOND, 0)
+                            calendar.set(Calendar.MILLISECOND, 0)
+                            calendar.timeInMillis
+                          }
+
+                      activitiesByDate.forEach { (dateMillis, activities) ->
+                        // Date header
+                        item(key = "header_$dateMillis") {
+                          Text(
+                              text = formatDateHeader(dateMillis),
+                              style = MaterialTheme.typography.titleSmall,
+                              fontWeight = FontWeight.SemiBold,
+                              color = MaterialTheme.colorScheme.primary,
+                              modifier =
+                                  Modifier.padding(horizontal = Spacing.md, vertical = Spacing.sm)
+                                      .testTag("DateHeader_$dateMillis"))
+                        }
+
+                        // Activities for this date
+                        items(items = activities, key = { it.activityId }) { activity ->
+                          ActivityCard(
+                              activity = activity,
+                              onClick = { onActivityClick(activity.entityId) },
+                              onDelete = {
+                                viewModel.deleteActivity(globalProjectId, activity.activityId)
+                              },
+                              modifier = Modifier.padding(horizontal = Spacing.md))
+                        }
+                      }
+                    }
+              }
             }
-          }
 
             // Error message overlay
             uiState.errorMsg?.let { error ->
               Box(
                   modifier =
-                      Modifier.fillMaxWidth()
-                          .padding(Spacing.md)
-                          .align(Alignment.BottomCenter)) {
+                      Modifier.fillMaxWidth().padding(Spacing.md).align(Alignment.BottomCenter)) {
                     androidx.compose.material3.Surface(
                         color = MaterialTheme.colorScheme.errorContainer,
                         shape = MaterialTheme.shapes.medium,

@@ -13,13 +13,21 @@ interface ActivityRepository {
   fun getActivitiesInProject(projectId: String, limit: Int = 20): Flow<List<Activity>>
 
   /** Get activities filtered by entity type. */
-  fun getActivitiesByEntityType(projectId: String, entityType: EntityType, limit: Int = 20): Flow<List<Activity>>
+  fun getActivitiesByEntityType(
+      projectId: String,
+      entityType: EntityType,
+      limit: Int = 20
+  ): Flow<List<Activity>>
 
   /** Get activities performed by a specific user. */
   fun getActivitiesByUser(projectId: String, userId: String, limit: Int = 20): Flow<List<Activity>>
 
   /** Get activities filtered by activity type. */
-  fun getActivitiesByActivityType(projectId: String, activityType: ActivityType, limit: Int = 20): Flow<List<Activity>>
+  fun getActivitiesByActivityType(
+      projectId: String,
+      activityType: ActivityType,
+      limit: Int = 20
+  ): Flow<List<Activity>>
 
   /** Get activities for a specific entity. */
   fun getActivitiesForEntity(projectId: String, entityId: String): Flow<List<Activity>>

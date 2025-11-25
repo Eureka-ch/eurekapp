@@ -32,7 +32,8 @@ class FirebaseFileStorageRepository(
 ) : FileStorageRepository {
 
   override suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String> = runCatching {
-    val currentUser = auth.currentUser ?: throw IllegalStateException("User must be authenticated to upload")
+    val currentUser =
+        auth.currentUser ?: throw IllegalStateException("User must be authenticated to upload")
 
     val ref = storage.reference.child(storagePath)
     val contentType = StorageHelpers.getContentTypeFromPath(storagePath)
@@ -104,6 +105,7 @@ class FirebaseFileStorageRepository(
    * Extract projectId from storage path.
    *
    * Assumes path format: "projects/{projectId}/..."
+   *
    * @return The projectId if found, null otherwise
    */
   private fun extractProjectIdFromPath(storagePath: String): String? {

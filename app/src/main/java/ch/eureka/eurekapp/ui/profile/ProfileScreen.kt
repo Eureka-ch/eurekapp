@@ -44,14 +44,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
 import ch.eureka.eurekapp.ui.components.EurekaInfoCard
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Locale
-import kotlinx.coroutines.flow.firstOrNull
 
 /** Test tags for the Profile screen UI elements. */
 object ProfileScreenTestTags {
@@ -175,13 +173,12 @@ fun ProfileScreen(
                     Button(
                         onClick = { navigate("global-activities") },
                         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    ) {
-                      Text("🔔 View Activity Feed")
-                    }
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer)) {
+                          Text("🔔 View Activity Feed")
+                        }
 
                     Spacer(modifier = Modifier.height(16.dp))
                   }

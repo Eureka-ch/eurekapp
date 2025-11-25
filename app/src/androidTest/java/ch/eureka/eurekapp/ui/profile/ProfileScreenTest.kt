@@ -555,8 +555,7 @@ class ProfileScreenTest {
       ProfileScreen(
           viewModel = viewModel,
           firebaseAuth = firebaseAuth,
-          onNavigateToActivityFeed = { projectId -> navigatedProjectId = projectId }
-      )
+          onNavigateToActivityFeed = { projectId -> navigatedProjectId = projectId })
     }
 
     // When - Click the activity feed button
@@ -576,10 +575,7 @@ class ProfileScreenTest {
 
     composeTestRule.setContent {
       ProfileScreen(
-          viewModel = viewModel,
-          firebaseAuth = firebaseAuth,
-          onNavigateToActivityFeed = { }
-      )
+          viewModel = viewModel, firebaseAuth = firebaseAuth, onNavigateToActivityFeed = {})
     }
 
     // Then - Button should be displayed
@@ -593,10 +589,7 @@ class ProfileScreenTest {
 
     composeTestRule.setContent {
       ProfileScreen(
-          viewModel = viewModel,
-          firebaseAuth = firebaseAuth,
-          onNavigateToActivityFeed = null
-      )
+          viewModel = viewModel, firebaseAuth = firebaseAuth, onNavigateToActivityFeed = null)
     }
 
     // Then - Button should not be displayed

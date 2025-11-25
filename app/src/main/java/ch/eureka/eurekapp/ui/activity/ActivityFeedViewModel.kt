@@ -48,9 +48,7 @@ class ActivityFeedViewModel(
     userIds.forEach { userId ->
       try {
         val userDoc = firestore.collection(FirestorePaths.USERS).document(userId).get().await()
-        userDoc.getString("displayName")?.let { displayName ->
-          userNames[userId] = displayName
-        }
+        userDoc.getString("displayName")?.let { displayName -> userNames[userId] = displayName }
       } catch (e: Exception) {
         // If fetch fails, skip this user
       }
@@ -88,22 +86,24 @@ class ActivityFeedViewModel(
     _uiState.update { it.copy(filterEntityType = entityType) }
     viewModelScope.launch {
       repository
-          .getActivitiesInProject(projectId, limit = 100) // Fetch more to have enough after filtering
-          .onStart {
-            _uiState.update { it.copy(isLoading = true) }
-          }
-          .catch { e ->
-            _uiState.update { it.copy(isLoading = false, errorMsg = e.message) }
-          }
+          .getActivitiesInProject(
+              projectId, limit = 100) // Fetch more to have enough after filtering
+          .onStart { _uiState.update { it.copy(isLoading = true) } }
+          .catch { e -> _uiState.update { it.copy(isLoading = false, errorMsg = e.message) } }
           .collect { activities ->
             // Filter by entity type in app code
-            val filtered = activities.filter { activity ->
-              when (entityType) {
-                EntityType.PROJECT -> activity.entityType == EntityType.PROJECT || activity.entityType == EntityType.MEMBER
-                EntityType.MEETING -> activity.entityType == EntityType.MEETING
-                else -> activity.entityType == entityType
-              }
-            }.take(_uiState.value.limit)
+            val filtered =
+                activities
+                    .filter { activity ->
+                      when (entityType) {
+                        EntityType.PROJECT ->
+                            activity.entityType == EntityType.PROJECT ||
+                                activity.entityType == EntityType.MEMBER
+                        EntityType.MEETING -> activity.entityType == EntityType.MEETING
+                        else -> activity.entityType == entityType
+                      }
+                    }
+                    .take(_uiState.value.limit)
             val enriched = enrichActivitiesWithUserNames(filtered)
             _uiState.update { it.copy(isLoading = false, activities = enriched) }
           }
@@ -117,12 +117,16 @@ class ActivityFeedViewModel(
           .getActivitiesByActivityType(projectId, activityType, limit = _uiState.value.limit)
           .onStart { _uiState.update { it.copy(isLoading = true) } }
           .catch { e -> _uiState.update { it.copy(isLoading = false, errorMsg = e.message) } }
-          .collect { activities -> _uiState.update { it.copy(isLoading = false, activities = activities) } }
+          .collect { activities ->
+            _uiState.update { it.copy(isLoading = false, activities = activities) }
+          }
     }
   }
 
   fun clearFilters(projectId: String) {
-    _uiState.update { it.copy(filterEntityType = null, filterActivityType = null, activities = emptyList()) }
+    _uiState.update {
+      it.copy(filterEntityType = null, filterActivityType = null, activities = emptyList())
+    }
   }
 
   fun refresh(projectId: String) {
@@ -139,14 +143,15 @@ class ActivityFeedViewModel(
     viewModelScope.launch {
       // Optimistically remove from UI
       val currentActivities = _uiState.value.activities
-      _uiState.update { it.copy(activities = currentActivities.filter { it.activityId != activityId }) }
+      _uiState.update {
+        it.copy(activities = currentActivities.filter { it.activityId != activityId })
+      }
 
       // Delete from repository
-      repository.deleteActivity(projectId, activityId)
-          .onFailure { e ->
-            // Restore on failure
-            _uiState.update { it.copy(activities = currentActivities, errorMsg = e.message) }
-          }
+      repository.deleteActivity(projectId, activityId).onFailure { e ->
+        // Restore on failure
+        _uiState.update { it.copy(activities = currentActivities, errorMsg = e.message) }
+      }
     }
   }
 }

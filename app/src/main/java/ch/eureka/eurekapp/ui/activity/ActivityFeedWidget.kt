@@ -24,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
@@ -72,10 +71,9 @@ fun ActivityFeedWidget(
               fontWeight = FontWeight.Bold,
               color = MaterialTheme.colorScheme.onSurface)
 
-          TextButton(
-              onClick = onSeeAllClick, modifier = Modifier.testTag("SeeAllButton")) {
-                Text(text = "See All")
-              }
+          TextButton(onClick = onSeeAllClick, modifier = Modifier.testTag("SeeAllButton")) {
+            Text(text = "See All")
+          }
         }
 
     // Content: Activities list or loading/empty state

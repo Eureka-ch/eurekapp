@@ -29,6 +29,7 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.AutoAssignResultScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
+import ch.eureka.eurekapp.ui.activity.ActivityFeedScreen
 import ch.eureka.eurekapp.ui.authentication.TokenEntryScreen
 import ch.eureka.eurekapp.ui.map.MeetingLocationSelectionScreen
 import ch.eureka.eurekapp.ui.meeting.CreateDateTimeFormatProposalForMeetingScreen
@@ -36,7 +37,6 @@ import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingViewModel
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailActionsConfig
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreen
-import ch.eureka.eurekapp.ui.activity.ActivityFeedScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingNavigationScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingProposalVoteScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
@@ -198,8 +198,7 @@ fun NavigationMenu() {
                 ProfileScreen(
                     onNavigateToActivityFeed = { projectId ->
                       navigationController.navigate(Route.ActivityFeed(projectId = projectId))
-                    }
-                )
+                    })
               }
               composable<Route.SelfNotes> { SelfNotesScreen() }
               composable<Route.ActivityFeed> { backStackEntry ->

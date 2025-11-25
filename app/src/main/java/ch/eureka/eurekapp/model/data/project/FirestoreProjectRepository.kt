@@ -172,11 +172,7 @@ class FirestoreProjectRepository(
           entityType = EntityType.MEMBER,
           entityId = userId,
           userId = currentUserId,
-          metadata = mapOf(
-              "role" to role.name,
-              "title" to projectName,
-              "projectId" to projectId
-          ))
+          metadata = mapOf("role" to role.name, "title" to projectName, "projectId" to projectId))
     }
   }
 

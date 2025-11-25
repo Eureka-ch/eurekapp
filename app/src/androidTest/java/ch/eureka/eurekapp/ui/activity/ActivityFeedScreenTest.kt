@@ -45,9 +45,7 @@ class ActivityFeedScreenTest {
 
   @Test
   fun displaysFilterChipsAndEmptyState() {
-    composeTestRule.setContent {
-      ActivityFeedScreen(projectId = projectId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").assertIsDisplayed()
     composeTestRule.onNodeWithTag("MeetingsFilterChip").assertIsDisplayed()
@@ -60,9 +58,7 @@ class ActivityFeedScreenTest {
     val activities = listOf(createActivity("1", EntityType.PROJECT, "Test Project"))
     coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(activities)
 
-    composeTestRule.setContent {
-      ActivityFeedScreen(projectId = projectId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
     composeTestRule.waitForIdle()
@@ -76,9 +72,7 @@ class ActivityFeedScreenTest {
     val activities = listOf(createActivity("1", EntityType.MEETING, "Sprint Meeting"))
     coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(activities)
 
-    composeTestRule.setContent {
-      ActivityFeedScreen(projectId = projectId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
 
     composeTestRule.onNodeWithTag("MeetingsFilterChip").performClick()
     composeTestRule.waitForIdle()
@@ -89,11 +83,10 @@ class ActivityFeedScreenTest {
 
   @Test
   fun deselectingFilter_showsEmptyStateAgain() {
-    coEvery { repository.getActivitiesInProject(projectId, any()) } returns flowOf(listOf(createActivity("1", EntityType.PROJECT, "Test")))
+    coEvery { repository.getActivitiesInProject(projectId, any()) } returns
+        flowOf(listOf(createActivity("1", EntityType.PROJECT, "Test")))
 
-    composeTestRule.setContent {
-      ActivityFeedScreen(projectId = projectId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
     composeTestRule.waitForIdle()
@@ -107,9 +100,7 @@ class ActivityFeedScreenTest {
   fun filterSelected_noActivities_showsNoActivitiesMessage() {
     coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(emptyList())
 
-    composeTestRule.setContent {
-      ActivityFeedScreen(projectId = projectId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
     composeTestRule.waitForIdle()
@@ -126,9 +117,7 @@ class ActivityFeedScreenTest {
 
     coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(allActivities)
 
-    composeTestRule.setContent {
-      ActivityFeedScreen(projectId = projectId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
     composeTestRule.waitForIdle()
@@ -141,16 +130,14 @@ class ActivityFeedScreenTest {
 
   @Test
   fun deleteButton_removesActivityFromList() {
-    val activities = listOf(
-        createActivity("1", EntityType.PROJECT, "Project Alpha"),
-        createActivity("2", EntityType.PROJECT, "Project Beta")
-    )
+    val activities =
+        listOf(
+            createActivity("1", EntityType.PROJECT, "Project Alpha"),
+            createActivity("2", EntityType.PROJECT, "Project Beta"))
     coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(activities)
     coEvery { repository.deleteActivity(projectId, "1") } returns Result.success(Unit)
 
-    composeTestRule.setContent {
-      ActivityFeedScreen(projectId = projectId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
     composeTestRule.waitForIdle()
@@ -170,9 +157,7 @@ class ActivityFeedScreenTest {
     coEvery { repository.getActivitiesInProject(projectId, 100) } returns
         kotlinx.coroutines.flow.flow { throw Exception("Network error") }
 
-    composeTestRule.setContent {
-      ActivityFeedScreen(projectId = projectId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
     composeTestRule.waitForIdle()
@@ -186,9 +171,7 @@ class ActivityFeedScreenTest {
     val activities = listOf(createActivity("1", EntityType.PROJECT, "Test Project"))
     coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(activities)
 
-    composeTestRule.setContent {
-      ActivityFeedScreen(projectId = projectId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
     composeTestRule.waitForIdle()
@@ -199,13 +182,9 @@ class ActivityFeedScreenTest {
   @Test
   fun loadingState_showsLoadingIndicator() {
     coEvery { repository.getActivitiesInProject(projectId, 100) } returns
-        kotlinx.coroutines.flow.flow {
-          kotlinx.coroutines.delay(Long.MAX_VALUE)
-        }
+        kotlinx.coroutines.flow.flow { kotlinx.coroutines.delay(Long.MAX_VALUE) }
 
-    composeTestRule.setContent {
-      ActivityFeedScreen(projectId = projectId, viewModel = viewModel)
-    }
+    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
 
@@ -223,8 +202,7 @@ class ActivityFeedScreenTest {
       ActivityFeedScreen(
           projectId = projectId,
           viewModel = viewModel,
-          onActivityClick = { entityId -> clickedEntityId = entityId }
-      )
+          onActivityClick = { entityId -> clickedEntityId = entityId })
     }
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
@@ -236,14 +214,14 @@ class ActivityFeedScreenTest {
     assert(clickedEntityId == "entity-1")
   }
 
-  private fun createActivity(id: String, entityType: EntityType, title: String) = Activity(
-      activityId = id,
-      projectId = projectId,
-      activityType = ActivityType.CREATED,
-      entityType = entityType,
-      entityId = "entity-$id",
-      userId = "user-1",
-      timestamp = Timestamp.now(),
-      metadata = mapOf("title" to title, "userName" to "Test User")
-  )
+  private fun createActivity(id: String, entityType: EntityType, title: String) =
+      Activity(
+          activityId = id,
+          projectId = projectId,
+          activityType = ActivityType.CREATED,
+          entityType = entityType,
+          entityId = "entity-$id",
+          userId = "user-1",
+          timestamp = Timestamp.now(),
+          metadata = mapOf("title" to title, "userName" to "Test User"))
 }
