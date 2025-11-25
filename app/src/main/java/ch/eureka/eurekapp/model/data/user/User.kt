@@ -16,6 +16,8 @@ import com.google.firebase.Timestamp
  * @property photoUrl URL to the user's profile photo.
  * @property lastActive Timestamp of the user's last activity in the application.
  * @property fcmToken User token for firebase to send notifications to
+ * @property notificationSettings notification settings for user (the key must be a key
+ * from UserNotificationSettingsKeys)
  */
 data class User(
     val uid: String = "",
@@ -23,5 +25,6 @@ data class User(
     val email: String = "",
     val photoUrl: String = "",
     val lastActive: Timestamp = Timestamp(0, 0),
-    val fcmToken: String = ""
+    val fcmToken: String = "",
+    val notificationSettings: Map<String, Boolean> = defaultValuesNotificationSettingsKeys
 )
