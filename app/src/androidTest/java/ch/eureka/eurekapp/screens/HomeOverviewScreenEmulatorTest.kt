@@ -258,79 +258,55 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
 
       val list = composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN)
 
-      // Wait for tasks to be displayed first
-      composeTestRule.waitUntil(timeoutMillis = 15_000) {
-        try {
-          composeTestRule
-              .onNodeWithTag("${HomeOverviewTestTags.TASK_ITEM_PREFIX}Upcoming Task 1")
-              .assertExists()
-          true
-        } catch (e: AssertionError) {
-          false
+      fun waitForTag(tag: String, timeout: Long = 30_000L) {
+        composeTestRule.waitUntil(timeoutMillis = timeout) {
+          try {
+            composeTestRule.onNodeWithTag(tag).assertExists()
+            true
+          } catch (e: AssertionError) {
+            false
+          }
         }
       }
-      list.performScrollToNode(
-          hasTestTag("${HomeOverviewTestTags.TASK_ITEM_PREFIX}Upcoming Task 1"))
-      composeTestRule
-          .onNodeWithTag("${HomeOverviewTestTags.TASK_ITEM_PREFIX}Upcoming Task 1")
-          .assertIsDisplayed()
 
-      // Wait for meetings to be displayed before checking buttons
-      composeTestRule.waitUntil(timeoutMillis = 15_000) {
-        try {
-          composeTestRule
-              .onNodeWithTag("${HomeOverviewTestTags.MEETING_ITEM_PREFIX}Upcoming Meeting 1")
-              .assertExists()
-          true
-        } catch (e: AssertionError) {
-          false
-        }
-      }
-      list.performScrollToNode(
-          hasTestTag("${HomeOverviewTestTags.MEETING_ITEM_PREFIX}Upcoming Meeting 1"))
-      composeTestRule
-          .onNodeWithTag("${HomeOverviewTestTags.MEETING_ITEM_PREFIX}Upcoming Meeting 1")
-          .assertIsDisplayed()
+      val task1Tag = "${HomeOverviewTestTags.TASK_ITEM_PREFIX}task-1"
+      waitForTag(task1Tag)
+      list.performScrollToNode(hasTestTag(task1Tag))
+      composeTestRule.onNodeWithTag(task1Tag).assertIsDisplayed()
 
-      // Wait for projects to be displayed
-      composeTestRule.waitUntil(timeoutMillis = 15_000) {
-        try {
-          composeTestRule
-              .onNodeWithTag("${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}project-beta")
-              .assertExists()
-          true
-        } catch (e: AssertionError) {
-          false
-        }
-      }
-      list.performScrollToNode(
-          hasTestTag("${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}project-beta"))
-      composeTestRule
-          .onNodeWithTag("${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}project-beta")
-          .assertIsDisplayed()
+      val task2Tag = "${HomeOverviewTestTags.TASK_ITEM_PREFIX}task-2"
+      waitForTag(task2Tag)
+      composeTestRule.onNodeWithTag(task2Tag).assertExists()
+
+      val task3Tag = "${HomeOverviewTestTags.TASK_ITEM_PREFIX}task-3"
+      waitForTag(task3Tag)
+      composeTestRule.onNodeWithTag(task3Tag).assertExists()
+
+      val meeting1Tag = "${HomeOverviewTestTags.MEETING_ITEM_PREFIX}meeting-1"
+      waitForTag(meeting1Tag)
+      list.performScrollToNode(hasTestTag(meeting1Tag))
+      composeTestRule.onNodeWithTag(meeting1Tag).assertIsDisplayed()
+
+      val meeting2Tag = "${HomeOverviewTestTags.MEETING_ITEM_PREFIX}meeting-2"
+      waitForTag(meeting2Tag)
+      composeTestRule.onNodeWithTag(meeting2Tag).assertExists()
+
+      val projectBetaTag = "${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}project-beta"
+      waitForTag(projectBetaTag)
+      list.performScrollToNode(hasTestTag(projectBetaTag))
+      composeTestRule.onNodeWithTag(projectBetaTag).assertIsDisplayed()
+
+      val projectAlphaTag = "${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}project-alpha"
+      waitForTag(projectAlphaTag)
+      composeTestRule.onNodeWithTag(projectAlphaTag).assertExists()
 
       // Verify action buttons exist (they should be present if content is displayed)
+      list.performScrollToNode(hasTestTag(HomeOverviewTestTags.CTA_TASKS))
       composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).assertExists()
+      list.performScrollToNode(hasTestTag(HomeOverviewTestTags.CTA_MEETINGS))
       composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_MEETINGS).assertExists()
+      list.performScrollToNode(hasTestTag(HomeOverviewTestTags.CTA_PROJECTS))
       composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_PROJECTS).assertExists()
-
-      // Verify tasks are displayed (limited to 3)
-      composeTestRule
-          .onNodeWithTag("${HomeOverviewTestTags.TASK_ITEM_PREFIX}Upcoming Task 2")
-          .assertExists()
-      composeTestRule
-          .onNodeWithTag("${HomeOverviewTestTags.TASK_ITEM_PREFIX}Upcoming Task 3")
-          .assertExists()
-
-      // Verify meetings are displayed
-      composeTestRule
-          .onNodeWithTag("${HomeOverviewTestTags.MEETING_ITEM_PREFIX}Upcoming Meeting 2")
-          .assertExists()
-
-      // Verify projects are displayed
-      composeTestRule
-          .onNodeWithTag("${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}project-alpha")
-          .assertExists()
     }
   }
 

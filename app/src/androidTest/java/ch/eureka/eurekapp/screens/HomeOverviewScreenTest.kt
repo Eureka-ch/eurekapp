@@ -63,9 +63,12 @@ class HomeOverviewScreenTest {
         .onNodeWithTag("${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}Project A")
         .assertIsDisplayed()
 
-    // Verify action buttons are displayed (static content, should be available after waitForIdle)
+    // Verify action buttons are displayed (scroll into view first)
+    list.performScrollToNode(hasTestTag(HomeOverviewTestTags.CTA_TASKS))
     composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).assertIsDisplayed()
+    list.performScrollToNode(hasTestTag(HomeOverviewTestTags.CTA_MEETINGS))
     composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_MEETINGS).assertIsDisplayed()
+    list.performScrollToNode(hasTestTag(HomeOverviewTestTags.CTA_PROJECTS))
     composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_PROJECTS).assertIsDisplayed()
   }
 
@@ -127,11 +130,17 @@ class HomeOverviewScreenTest {
 
     composeTestRule.waitForIdle()
 
-    // Buttons should be available immediately after waitForIdle for static content
+    val list = composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN)
+
+    list.performScrollToNode(hasTestTag(HomeOverviewTestTags.CTA_TASKS))
     composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).performClick()
     composeTestRule.waitForIdle()
+
+    list.performScrollToNode(hasTestTag(HomeOverviewTestTags.CTA_MEETINGS))
     composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_MEETINGS).performClick()
     composeTestRule.waitForIdle()
+
+    list.performScrollToNode(hasTestTag(HomeOverviewTestTags.CTA_PROJECTS))
     composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_PROJECTS).performClick()
 
     assertTrue(tasksClicked)
