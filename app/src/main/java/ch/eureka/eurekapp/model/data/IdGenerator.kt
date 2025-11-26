@@ -33,4 +33,7 @@ object IdGenerator {
   fun generateMessageId(): String = "msg_${UUID.randomUUID()}"
 
   fun generateUniqueToken(): String = "token_${UUID.randomUUID()}"
+
+  /** Generates a unique field ID with "field_" prefix. */
+  fun generateFieldId(label: String): String = "field_${UUID.randomUUID()}"
 }
