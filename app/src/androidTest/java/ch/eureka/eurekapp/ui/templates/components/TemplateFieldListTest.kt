@@ -40,12 +40,14 @@ class TemplateFieldListTest {
           fields = emptyList(),
           editingFieldId = null,
           fieldErrors = emptyMap(),
-          onFieldEdit = {},
-          onFieldSave = { _, _ -> },
-          onFieldCancel = {},
-          onFieldDelete = {},
-          onFieldDuplicate = {},
-          onFieldsReorder = { _, _ -> })
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }))
     }
 
     composeTestRule.onNodeWithText("No fields yet").assertIsDisplayed()
@@ -60,12 +62,14 @@ class TemplateFieldListTest {
           fields = testFields,
           editingFieldId = null,
           fieldErrors = emptyMap(),
-          onFieldEdit = {},
-          onFieldSave = { _, _ -> },
-          onFieldCancel = {},
-          onFieldDelete = {},
-          onFieldDuplicate = {},
-          onFieldsReorder = { _, _ -> })
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }))
     }
 
     composeTestRule.onNodeWithText("First Field").assertIsDisplayed()
@@ -81,12 +85,14 @@ class TemplateFieldListTest {
           fields = testFields,
           editingFieldId = null,
           fieldErrors = emptyMap(),
-          onFieldEdit = {},
-          onFieldSave = { _, _ -> },
-          onFieldCancel = {},
-          onFieldDelete = {},
-          onFieldDuplicate = {},
-          onFieldsReorder = { _, _ -> })
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }))
     }
 
     composeTestRule.onNodeWithText("No fields yet").assertIsNotDisplayed()
@@ -99,12 +105,14 @@ class TemplateFieldListTest {
           fields = testFields,
           editingFieldId = null,
           fieldErrors = emptyMap(),
-          onFieldEdit = {},
-          onFieldSave = { _, _ -> },
-          onFieldCancel = {},
-          onFieldDelete = {},
-          onFieldDuplicate = {},
-          onFieldsReorder = { _, _ -> })
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }))
     }
 
     composeTestRule.onNodeWithText("Text").assertIsDisplayed()
@@ -120,12 +128,14 @@ class TemplateFieldListTest {
           fields = testFields,
           editingFieldId = null,
           fieldErrors = emptyMap(),
-          onFieldEdit = {},
-          onFieldSave = { _, _ -> },
-          onFieldCancel = {},
-          onFieldDelete = {},
-          onFieldDuplicate = {},
-          onFieldsReorder = { _, _ -> })
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }))
     }
 
     composeTestRule.onNodeWithText("First Field").assertIsDisplayed()
@@ -139,12 +149,14 @@ class TemplateFieldListTest {
           fields = testFields,
           editingFieldId = null,
           fieldErrors = emptyMap(),
-          onFieldEdit = {},
-          onFieldSave = { _, _ -> },
-          onFieldCancel = {},
-          onFieldDelete = {},
-          onFieldDuplicate = {},
-          onFieldsReorder = { _, _ -> })
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }))
     }
 
     val reorderNodes = composeTestRule.onAllNodes(hasContentDescription("Reorder"))
@@ -158,12 +170,14 @@ class TemplateFieldListTest {
           fields = testFields,
           editingFieldId = "field1",
           fieldErrors = emptyMap(),
-          onFieldEdit = {},
-          onFieldSave = { _, _ -> },
-          onFieldCancel = {},
-          onFieldDelete = {},
-          onFieldDuplicate = {},
-          onFieldsReorder = { _, _ -> })
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }))
     }
 
     composeTestRule.onNodeWithContentDescription("Save").assertIsDisplayed()
@@ -179,12 +193,14 @@ class TemplateFieldListTest {
           fields = testFields,
           editingFieldId = null,
           fieldErrors = emptyMap(),
-          onFieldEdit = {},
-          onFieldSave = { _, _ -> },
-          onFieldCancel = {},
-          onFieldDelete = {},
-          onFieldDuplicate = {},
-          onFieldsReorder = { _, _ -> })
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }))
     }
 
     composeTestRule.onNodeWithContentDescription("Save").assertDoesNotExist()
@@ -202,12 +218,14 @@ class TemplateFieldListTest {
           fields = testFields,
           editingFieldId = null,
           fieldErrors = emptyMap(),
-          onFieldEdit = { editedFieldId = it },
-          onFieldSave = { _, _ -> },
-          onFieldCancel = {},
-          onFieldDelete = {},
-          onFieldDuplicate = {},
-          onFieldsReorder = { _, _ -> })
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = { editedFieldId = it },
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }))
     }
 
     composeTestRule.onNodeWithText("First Field").performClick()
@@ -222,12 +240,14 @@ class TemplateFieldListTest {
           fields = testFields,
           editingFieldId = null,
           fieldErrors = mapOf("field1" to "Invalid field"),
-          onFieldEdit = {},
-          onFieldSave = { _, _ -> },
-          onFieldCancel = {},
-          onFieldDelete = {},
-          onFieldDuplicate = {},
-          onFieldsReorder = { _, _ -> })
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }))
     }
 
     composeTestRule.onNodeWithContentDescription("Error").assertIsDisplayed()
@@ -243,15 +263,17 @@ class TemplateFieldListTest {
           fields = testFields,
           editingFieldId = null,
           fieldErrors = emptyMap(),
-          onFieldEdit = {},
-          onFieldSave = { _, _ -> },
-          onFieldCancel = {},
-          onFieldDelete = {},
-          onFieldDuplicate = {},
-          onFieldsReorder = { from, to ->
-            fromIndex = from
-            toIndex = to
-          })
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { from, to ->
+                    fromIndex = from
+                    toIndex = to
+                  }))
     }
   }
 
@@ -265,12 +287,14 @@ class TemplateFieldListTest {
           fields = singleField,
           editingFieldId = null,
           fieldErrors = emptyMap(),
-          onFieldEdit = {},
-          onFieldSave = { _, _ -> },
-          onFieldCancel = {},
-          onFieldDelete = {},
-          onFieldDuplicate = {},
-          onFieldsReorder = { _, _ -> })
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }))
     }
 
     composeTestRule.onNodeWithText("Only Field").assertIsDisplayed()
@@ -286,12 +310,14 @@ class TemplateFieldListTest {
           fields = testFields,
           editingFieldId = "field1",
           fieldErrors = emptyMap(),
-          onFieldEdit = {},
-          onFieldSave = { _, _ -> },
-          onFieldCancel = {},
-          onFieldDelete = { deletedFieldId = it },
-          onFieldDuplicate = {},
-          onFieldsReorder = { _, _ -> })
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = { deletedFieldId = it },
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }))
     }
 
     composeTestRule.onNodeWithContentDescription("Delete").performClick()
@@ -308,12 +334,14 @@ class TemplateFieldListTest {
           fields = testFields,
           editingFieldId = "field1",
           fieldErrors = emptyMap(),
-          onFieldEdit = {},
-          onFieldSave = { _, _ -> },
-          onFieldCancel = {},
-          onFieldDelete = {},
-          onFieldDuplicate = { duplicatedFieldId = it },
-          onFieldsReorder = { _, _ -> })
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = { duplicatedFieldId = it },
+                  onFieldsReorder = { _, _ -> }))
     }
 
     composeTestRule.onNodeWithContentDescription("Duplicate").performClick()
@@ -330,12 +358,14 @@ class TemplateFieldListTest {
           fields = testFields,
           editingFieldId = "field1",
           fieldErrors = emptyMap(),
-          onFieldEdit = {},
-          onFieldSave = { _, _ -> },
-          onFieldCancel = { cancelledFieldId = it },
-          onFieldDelete = {},
-          onFieldDuplicate = {},
-          onFieldsReorder = { _, _ -> })
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = { cancelledFieldId = it },
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }))
     }
 
     composeTestRule.onNodeWithContentDescription("Cancel").performClick()
@@ -350,12 +380,14 @@ class TemplateFieldListTest {
           fields = testFields,
           editingFieldId = "field1",
           fieldErrors = emptyMap(),
-          onFieldEdit = {},
-          onFieldSave = { _, _ -> },
-          onFieldCancel = {},
-          onFieldDelete = {},
-          onFieldDuplicate = {},
-          onFieldsReorder = { _, _ -> })
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }))
     }
 
     composeTestRule.onNodeWithText("Label *").assertIsDisplayed()
@@ -368,12 +400,14 @@ class TemplateFieldListTest {
           fields = testFields,
           editingFieldId = null,
           fieldErrors = mapOf("field1" to "Error 1", "field2" to "Error 2", "field3" to "Error 3"),
-          onFieldEdit = {},
-          onFieldSave = { _, _ -> },
-          onFieldCancel = {},
-          onFieldDelete = {},
-          onFieldDuplicate = {},
-          onFieldsReorder = { _, _ -> })
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }))
     }
 
     val errorNodes = composeTestRule.onAllNodes(hasContentDescription("Error"))

@@ -70,13 +70,16 @@ class TemplateFieldListItemTest {
           field = testTextField,
           isExpanded = false,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithText("Test Text Field").assertIsDisplayed()
@@ -90,13 +93,16 @@ class TemplateFieldListItemTest {
           field = testTextField,
           isExpanded = false,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithContentDescription("Expand").assertIsDisplayed()
@@ -109,13 +115,16 @@ class TemplateFieldListItemTest {
           field = testTextField,
           isExpanded = false,
           error = "Validation error",
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithContentDescription("Error").assertIsDisplayed()
@@ -128,13 +137,16 @@ class TemplateFieldListItemTest {
           field = testTextField,
           isExpanded = false,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithContentDescription("Error").assertDoesNotExist()
@@ -148,13 +160,16 @@ class TemplateFieldListItemTest {
           field = testTextField,
           isExpanded = false,
           error = null,
-          onExpand = { expandCalled = true },
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = { expandCalled = true },
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithText("Test Text Field").performClick()
@@ -168,13 +183,16 @@ class TemplateFieldListItemTest {
           field = testTextField,
           isExpanded = true,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithTag("field_label_input").assertIsDisplayed()
@@ -189,13 +207,16 @@ class TemplateFieldListItemTest {
           field = testTextField,
           isExpanded = true,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithTag("text_max_length").assertIsDisplayed()
@@ -209,13 +230,16 @@ class TemplateFieldListItemTest {
           field = testNumberField,
           isExpanded = true,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithTag("number_min").assertIsDisplayed()
@@ -229,13 +253,16 @@ class TemplateFieldListItemTest {
           field = testDateField,
           isExpanded = true,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithTag("date_include_time").assertIsDisplayed()
@@ -248,13 +275,16 @@ class TemplateFieldListItemTest {
           field = testSingleSelectField,
           isExpanded = true,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithTag("single_select_allow_custom").assertIsDisplayed()
@@ -267,13 +297,16 @@ class TemplateFieldListItemTest {
           field = testMultiSelectField,
           isExpanded = true,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithTag("multi_select_min").assertIsDisplayed()
@@ -287,13 +320,16 @@ class TemplateFieldListItemTest {
           field = testTextField,
           isExpanded = true,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithContentDescription("Save").assertIsDisplayed()
@@ -309,13 +345,16 @@ class TemplateFieldListItemTest {
           field = testTextField,
           isExpanded = true,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithContentDescription("Expand").assertIsNotDisplayed()
@@ -332,16 +371,19 @@ class TemplateFieldListItemTest {
           field = testTextField,
           isExpanded = true,
           error = null,
-          onExpand = {},
-          onFieldChange = {
-            fieldChangeCalled = true
-            fieldChangeValue = it
-          },
-          onSave = { saveCalled = true },
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {
+                    fieldChangeCalled = true
+                    fieldChangeValue = it
+                  },
+                  onSave = { saveCalled = true },
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithContentDescription("Save").performClick()
@@ -358,13 +400,16 @@ class TemplateFieldListItemTest {
           field = testTextField,
           isExpanded = true,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = { cancelCalled = true },
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = { cancelCalled = true },
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithContentDescription("Cancel").performClick()
@@ -379,13 +424,16 @@ class TemplateFieldListItemTest {
           field = testTextField,
           isExpanded = true,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = { deleteCalled = true },
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = { deleteCalled = true },
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithContentDescription("Delete").performClick()
@@ -400,13 +448,16 @@ class TemplateFieldListItemTest {
           field = testTextField,
           isExpanded = true,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = { duplicateCalled = true },
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = { duplicateCalled = true })) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithContentDescription("Duplicate").performClick()
@@ -421,13 +472,16 @@ class TemplateFieldListItemTest {
           field = testTextField,
           isExpanded = true,
           error = null,
-          onExpand = { expandCalled = true },
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = { expandCalled = true },
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     // Header is not clickable when expanded
@@ -441,13 +495,16 @@ class TemplateFieldListItemTest {
           field = testTextField,
           isExpanded = false,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithContentDescription("Drag").assertIsDisplayed()
@@ -460,13 +517,16 @@ class TemplateFieldListItemTest {
           field = testTextField.copy(required = true),
           isExpanded = false,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithText("Test Text Field").assertIsDisplayed()
@@ -479,13 +539,16 @@ class TemplateFieldListItemTest {
           field = testTextField.copy(required = false),
           isExpanded = false,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithText("Test Text Field").assertIsDisplayed()
@@ -498,13 +561,16 @@ class TemplateFieldListItemTest {
           field = testTextField,
           isExpanded = false,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithText("Text").assertIsDisplayed()
@@ -517,13 +583,16 @@ class TemplateFieldListItemTest {
           field = testNumberField,
           isExpanded = false,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithText("Number").assertIsDisplayed()
@@ -536,13 +605,16 @@ class TemplateFieldListItemTest {
           field = testDateField,
           isExpanded = false,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithText("Date").assertIsDisplayed()
@@ -555,13 +627,16 @@ class TemplateFieldListItemTest {
           field = testSingleSelectField,
           isExpanded = false,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithText("Single Select").assertIsDisplayed()
@@ -574,13 +649,16 @@ class TemplateFieldListItemTest {
           field = testMultiSelectField,
           isExpanded = false,
           error = null,
-          onExpand = {},
-          onFieldChange = {},
-          onSave = {},
-          onCancel = {},
-          onDelete = {},
-          onDuplicate = {},
-          dragHandle = { Icon(Icons.Default.DragHandle, "Drag") })
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = {},
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
     }
 
     composeTestRule.onNodeWithText("Multi Select").assertIsDisplayed()
