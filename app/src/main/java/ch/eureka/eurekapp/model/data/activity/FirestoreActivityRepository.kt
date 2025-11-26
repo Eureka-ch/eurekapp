@@ -1,7 +1,6 @@
 /*
 Note: This file was co-authored by Claude Code.
 Note: This file was co-authored by Grok.
-Portions of the code in this file are inspired by the Bootcamp solution B3 provided by the SwEnt staff.
 */
 package ch.eureka.eurekapp.model.data.activity
 
@@ -12,7 +11,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 
-/** Firestore implementation with one-time activity fetching. */
+/**
+ * Firestore implementation with one-time activity fetching.
+ *
+ * @param firestore The Firestore instance to use for database operations (defaults to singleton
+ *   instance).
+ */
 class FirestoreActivityRepository(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) : ActivityRepository {

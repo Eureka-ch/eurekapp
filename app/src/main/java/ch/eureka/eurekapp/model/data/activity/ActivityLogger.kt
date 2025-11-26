@@ -1,12 +1,11 @@
 /*
 Note: This file was co-authored by Claude Code.
 Note: This file was co-authored by Grok.
-Portions of the code in this file are inspired by the Bootcamp solution B3 provided by the SwEnt staff.
 */
 package ch.eureka.eurekapp.model.data.activity
 
+import android.util.Log
 import com.google.firebase.Timestamp
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -17,6 +16,20 @@ object ActivityLogger {
   private val activityRepository: ActivityRepository = FirestoreActivityRepository()
   private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+  /**
+   * Logs an activity asynchronously without blocking the calling operation.
+   *
+   * Activities are logged in the background using a coroutine scope. If logging fails, the
+   * exception is caught silently to prevent disrupting the main operation flow.
+   *
+   * @param projectId ID of the project where the activity occurred.
+   * @param activityType Type of activity (CREATED, UPDATED, DELETED, etc.).
+   * @param entityType Type of entity the activity is associated with (MEETING, TASK, FILE, etc.).
+   * @param entityId ID of the specific entity that was acted upon.
+   * @param userId ID of the user who performed the action.
+   * @param metadata Optional map containing additional context about the activity (e.g., titles,
+   *   old/new values).
+   */
   fun logActivity(
       projectId: String,
       activityType: ActivityType,
@@ -38,72 +51,8 @@ object ActivityLogger {
                 metadata = metadata)
         activityRepository.createActivity(activity)
       } catch (e: Exception) {
-        // Silent failure - activity logging should not block operations
+        Log.e("ActivityLogger", "Failed to log activity for $entityType:$entityId", e)
       }
     }
   }
-
-  private fun log(
-      type: ActivityType,
-      projectId: String,
-      entityType: EntityType,
-      entityId: String,
-      userId: String,
-      title: String? = null
-  ) {
-    val metadata = buildMap {
-      title?.let { put("title", it) }
-      FirebaseAuth.getInstance().currentUser?.displayName?.let { put("userName", it) }
-    }
-    logActivity(projectId, type, entityType, entityId, userId, metadata)
-  }
-
-  fun logCreated(
-      projectId: String,
-      entityType: EntityType,
-      entityId: String,
-      userId: String,
-      title: String? = null
-  ) = log(ActivityType.CREATED, projectId, entityType, entityId, userId, title)
-
-  fun logUpdated(
-      projectId: String,
-      entityType: EntityType,
-      entityId: String,
-      userId: String,
-      title: String? = null
-  ) = log(ActivityType.UPDATED, projectId, entityType, entityId, userId, title)
-
-  fun logDeleted(
-      projectId: String,
-      entityType: EntityType,
-      entityId: String,
-      userId: String,
-      title: String? = null
-  ) = log(ActivityType.DELETED, projectId, entityType, entityId, userId, title)
-
-  fun logFileUploaded(projectId: String, fileId: String, userId: String, fileName: String) =
-      logActivity(
-          projectId,
-          ActivityType.UPLOADED,
-          EntityType.FILE,
-          fileId,
-          userId,
-          mapOf("fileName" to fileName))
-
-  fun logStatusChanged(
-      projectId: String,
-      entityType: EntityType,
-      entityId: String,
-      userId: String,
-      oldStatus: String,
-      newStatus: String
-  ) =
-      logActivity(
-          projectId,
-          ActivityType.STATUS_CHANGED,
-          entityType,
-          entityId,
-          userId,
-          mapOf("oldStatus" to oldStatus, "newStatus" to newStatus))
 }

@@ -1,7 +1,6 @@
 /*
 Note: This file was co-authored by Claude Code.
 Note: This file was co-authored by Grok.
-Portions of the code in this file are inspired by the Bootcamp solution B3 provided by the SwEnt staff.
 */
 package ch.eureka.eurekapp.model.data.activity
 

@@ -1,12 +1,12 @@
 /*
 Note: This file was co-authored by Claude Code.
 Note: This file was co-authored by Grok.
-Portions of the code in this file are inspired by the Bootcamp solution B3 provided by the SwEnt staff.
 */
 package ch.eureka.eurekapp.model.data.meeting
 
 import ch.eureka.eurekapp.model.data.FirestorePaths
 import ch.eureka.eurekapp.model.data.activity.ActivityLogger
+import ch.eureka.eurekapp.model.data.activity.ActivityType
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -139,13 +139,14 @@ class FirestoreMeetingRepository(
         .set(participant)
         .await()
 
-    // Log activity to global feed so everyone sees all meetings
-    ActivityLogger.logCreated(
+    // Log activity to global feed for cross-project visibility
+    ActivityLogger.logActivity(
         projectId = "global-activities",
+        activityType = ActivityType.CREATED,
         entityType = EntityType.MEETING,
         entityId = meeting.meetingID,
         userId = creatorId,
-        title = meeting.title)
+        metadata = mapOf("title" to meeting.title))
 
     meeting.meetingID
   }
@@ -162,12 +163,13 @@ class FirestoreMeetingRepository(
     // Log activity to global feed after successful update
     val currentUserId = auth.currentUser?.uid
     if (currentUserId != null) {
-      ActivityLogger.logUpdated(
+      ActivityLogger.logActivity(
           projectId = "global-activities",
+          activityType = ActivityType.UPDATED,
           entityType = EntityType.MEETING,
           entityId = meeting.meetingID,
           userId = currentUserId,
-          title = meeting.title)
+          metadata = mapOf("title" to meeting.title))
     }
   }
 
@@ -194,13 +196,14 @@ class FirestoreMeetingRepository(
 
         // Log activity to global feed after successful deletion
         val currentUserId = auth.currentUser?.uid
-        if (currentUserId != null) {
-          ActivityLogger.logDeleted(
+        if (currentUserId != null && meetingTitle != null) {
+          ActivityLogger.logActivity(
               projectId = "global-activities",
+              activityType = ActivityType.DELETED,
               entityType = EntityType.MEETING,
               entityId = meetingId,
               userId = currentUserId,
-              title = meetingTitle)
+              metadata = mapOf("title" to meetingTitle))
         }
       }
 

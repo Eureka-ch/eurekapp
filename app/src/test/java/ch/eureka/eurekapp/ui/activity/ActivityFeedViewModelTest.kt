@@ -126,7 +126,7 @@ class ActivityFeedViewModelTest {
 
     viewModel.loadActivitiesByEntityType(projectId, EntityType.PROJECT)
     advanceUntilIdle()
-    viewModel.clearFilters(projectId)
+    viewModel.clearFilters()
     advanceUntilIdle()
 
     val state = viewModel.uiState.value

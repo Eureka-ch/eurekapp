@@ -1,7 +1,6 @@
 /*
 Note: This file was co-authored by Claude Code.
 Note: This file was co-authored by Grok.
-Portions of the code in this file are inspired by the Bootcamp solution B3 provided by the SwEnt staff.
 */
 package ch.eureka.eurekapp.ui.activity
 
@@ -15,13 +14,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Article
+import androidx.compose.material.icons.automirrored.filled.Article
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.FileUpload
-import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.Card
@@ -173,16 +172,16 @@ private fun getIconAndColor(
     ActivityType.CREATED ->
         when (entityType) {
           EntityType.MEETING -> Icons.Default.CalendarToday to EColors.light.primary
-          EntityType.MESSAGE -> Icons.Default.Message to Color(0xFF4CAF50)
+          EntityType.MESSAGE -> Icons.AutoMirrored.Filled.Message to Color(0xFF4CAF50)
           EntityType.FILE -> Icons.Default.FileUpload to Color(0xFF2196F3)
-          else -> Icons.Default.Article to EColors.light.primary
+          else -> Icons.AutoMirrored.Filled.Article to EColors.light.primary
         }
     ActivityType.UPDATED -> Icons.Default.Edit to Color(0xFFFF9800)
     ActivityType.DELETED -> Icons.Default.Delete to Color(0xFFF44336)
     ActivityType.UPLOADED -> Icons.Default.Upload to Color(0xFF2196F3)
     ActivityType.JOINED -> Icons.Default.PersonAdd to Color(0xFF4CAF50)
-    ActivityType.LEFT -> Icons.Default.ExitToApp to Color(0xFFFF9800)
-    else -> Icons.Default.Article to EColors.light.onSurfaceVariant
+    ActivityType.LEFT -> Icons.AutoMirrored.Filled.ExitToApp to Color(0xFFFF9800)
+    else -> Icons.AutoMirrored.Filled.Article to EColors.light.onSurfaceVariant
   }
 }
 

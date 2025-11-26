@@ -85,13 +85,14 @@ class FirestoreProjectRepository(
     val memberRef = projectRef.collection("members").document(creatorId)
     memberRef.set(member).await()
 
-    // Log activity to global feed so everyone sees project creation
-    ActivityLogger.logCreated(
+    // Log activity to global feed for cross-project visibility
+    ActivityLogger.logActivity(
         projectId = "global-activities",
+        activityType = ActivityType.CREATED,
         entityType = EntityType.PROJECT,
         entityId = project.projectId,
         userId = creatorId,
-        title = project.name)
+        metadata = mapOf("title" to project.name))
 
     project.projectId
   }
@@ -101,12 +102,13 @@ class FirestoreProjectRepository(
 
     // Log activity to global feed after successful update
     auth.currentUser?.uid?.let { userId ->
-      ActivityLogger.logUpdated(
+      ActivityLogger.logActivity(
           projectId = "global-activities",
+          activityType = ActivityType.UPDATED,
           entityType = EntityType.PROJECT,
           entityId = project.projectId,
           userId = userId,
-          title = project.name)
+          metadata = mapOf("title" to project.name))
     }
   }
 
@@ -115,8 +117,9 @@ class FirestoreProjectRepository(
 
     // Log activity to global feed after successful deletion
     auth.currentUser?.uid?.let { userId ->
-      ActivityLogger.logDeleted(
+      ActivityLogger.logActivity(
           projectId = "global-activities",
+          activityType = ActivityType.DELETED,
           entityType = EntityType.PROJECT,
           entityId = projectId,
           userId = userId)

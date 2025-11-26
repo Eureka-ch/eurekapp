@@ -43,8 +43,8 @@ import java.util.Locale
  * @param projectId Project ID to show activities for
  * @param onActivityClick Callback when activity clicked (receives entityId)
  * @param onNavigateBack Back button callback
- * @param modifier Screen modifier
  * @param viewModel ActivityFeedViewModel (injected for testing)
+ * @param modifier Screen modifier
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,8 +52,8 @@ fun ActivityFeedScreen(
     projectId: String,
     onActivityClick: (String) -> Unit = {},
     onNavigateBack: () -> Unit = {},
-    modifier: Modifier = Modifier,
-    viewModel: ActivityFeedViewModel = viewModel()
+    viewModel: ActivityFeedViewModel = viewModel(),
+    modifier: Modifier = Modifier
 ) {
   val uiState by viewModel.uiState.collectAsState()
 
@@ -86,7 +86,7 @@ fun ActivityFeedScreen(
                     selected = uiState.filterEntityType == EntityType.PROJECT,
                     onClick = {
                       if (uiState.filterEntityType == EntityType.PROJECT) {
-                        viewModel.clearFilters(globalProjectId)
+                        viewModel.clearFilters()
                       } else {
                         viewModel.loadActivitiesByEntityType(globalProjectId, EntityType.PROJECT)
                       }
@@ -98,7 +98,7 @@ fun ActivityFeedScreen(
                     selected = uiState.filterEntityType == EntityType.MEETING,
                     onClick = {
                       if (uiState.filterEntityType == EntityType.MEETING) {
-                        viewModel.clearFilters(globalProjectId)
+                        viewModel.clearFilters()
                       } else {
                         viewModel.loadActivitiesByEntityType(globalProjectId, EntityType.MEETING)
                       }
@@ -159,24 +159,12 @@ fun ActivityFeedScreen(
                     }
               }
               else -> {
-                // Activities list with date grouping
+                // Activities list with date grouping (grouped in ViewModel)
                 LazyColumn(
                     modifier = Modifier.fillMaxSize().testTag("ActivitiesList"),
                     contentPadding = PaddingValues(vertical = Spacing.md),
                     verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                      // Group activities by date
-                      val activitiesByDate =
-                          uiState.activities.groupBy { activity ->
-                            val calendar = Calendar.getInstance()
-                            calendar.time = activity.timestamp.toDate()
-                            calendar.set(Calendar.HOUR_OF_DAY, 0)
-                            calendar.set(Calendar.MINUTE, 0)
-                            calendar.set(Calendar.SECOND, 0)
-                            calendar.set(Calendar.MILLISECOND, 0)
-                            calendar.timeInMillis
-                          }
-
-                      activitiesByDate.forEach { (dateMillis, activities) ->
+                      uiState.activitiesByDate.forEach { (dateMillis, activities) ->
                         // Date header
                         item(key = "header_$dateMillis") {
                           Text(

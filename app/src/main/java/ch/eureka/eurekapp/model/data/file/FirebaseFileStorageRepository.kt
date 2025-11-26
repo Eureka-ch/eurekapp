@@ -1,12 +1,12 @@
 /*
 Note: This file was co-authored by Claude Code.
 Note: This file was co-authored by Grok.
-Portions of the code in this file are inspired by the Bootcamp solution B3 provided by the SwEnt staff.
 */
 package ch.eureka.eurekapp.model.data.file
 
 import android.net.Uri
 import ch.eureka.eurekapp.model.data.activity.ActivityLogger
+import ch.eureka.eurekapp.model.data.activity.ActivityType
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
@@ -44,13 +44,20 @@ class FirebaseFileStorageRepository(
 
     val projectId = extractProjectIdFromPath(storagePath)
     val fileName = extractFileNameFromPath(storagePath)
-    if (projectId != null) {
-      ActivityLogger.logFileUploaded(
-          projectId = projectId,
-          fileId = downloadUrl, // Use download URL as file ID
-          userId = currentUser.uid,
-          fileName = fileName)
+
+    if (projectId == null || fileName.isBlank()) {
+      val errorMsg = "Invalid storage path: projectId=$projectId, fileName='$fileName'"
+      android.util.Log.e("FirebaseFileStorageRepository", errorMsg)
+      throw IllegalStateException(errorMsg)
     }
+
+    ActivityLogger.logActivity(
+        projectId = projectId,
+        activityType = ActivityType.UPLOADED,
+        entityType = EntityType.FILE,
+        entityId = downloadUrl,
+        userId = currentUser.uid,
+        metadata = mapOf("fileName" to fileName))
 
     downloadUrl
   }
@@ -65,12 +72,13 @@ class FirebaseFileStorageRepository(
     val projectId = extractProjectIdFromPath(storagePath)
     val fileName = extractFileNameFromPath(storagePath)
     if (currentUserId != null && projectId != null) {
-      ActivityLogger.logDeleted(
-          projectId = "global-activities",
+      ActivityLogger.logActivity(
+          projectId = projectId,
+          activityType = ActivityType.DELETED,
           entityType = EntityType.FILE,
           entityId = downloadUrl,
           userId = currentUserId,
-          title = fileName)
+          metadata = mapOf("title" to fileName))
     }
   }
 
