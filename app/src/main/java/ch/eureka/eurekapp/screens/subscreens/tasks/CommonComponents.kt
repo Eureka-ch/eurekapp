@@ -97,7 +97,7 @@ object CommonTaskTestTags {
   const val ADD_DEPENDENCY_BUTTON = "add_dependency_button"
   const val DEPENDENCY_CYCLE_ERROR = "dependency_cycle_error"
   const val OFFLINE_MESSAGE = "offline_message"
-
+  const val ATTACHMENT_OFFLINE_MESSAGE = "attachment_offline_message"
   const val BACK_BUTTON = "back_button"
 }
 
@@ -235,16 +235,18 @@ fun AttachmentsList(
     modifier: Modifier = Modifier,
     onDelete: ((Int) -> Unit)? = null,
     isReadOnly: Boolean = false,
-    isConnected: Boolean = true
+    isConnected: Boolean = true,
+    downloadedUrls: Set<String> = emptySet()
 ) {
   attachments.forEachIndexed { index, attachment ->
     Row(modifier = modifier) {
       when (attachment) {
         is Attachment.Remote -> {
-          if (!isConnected && isReadOnly) {
+          val isDownloaded = downloadedUrls.contains(attachment.url)
+          if (!isConnected && !isDownloaded) {
             Text(
-                "Photo ${index + 1}: Attachment available, but cannot be visualized offline.",
-                modifier = Modifier.testTag(CommonTaskTestTags.OFFLINE_MESSAGE))
+                "Photo ${index + 1}: Not downloaded",
+                modifier = Modifier.testTag(CommonTaskTestTags.ATTACHMENT_OFFLINE_MESSAGE))
           } else {
             Text("Photo ${index + 1}")
             if (!isReadOnly && onDelete != null) {

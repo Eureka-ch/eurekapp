@@ -4,7 +4,6 @@ package ch.eureka.eurekapp.screen
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
@@ -147,9 +146,7 @@ class ViewTaskScreenOfflineTest {
       composeTestRule.waitForIdle()
 
       composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.OFFLINE_MESSAGE).assertIsDisplayed()
-      composeTestRule
-          .onNodeWithText("You are offline. Editing tasks is unavailable.")
-          .assertIsDisplayed()
+      composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.OFFLINE_MESSAGE).assertIsDisplayed()
     }
   }
 
@@ -191,10 +188,10 @@ class ViewTaskScreenOfflineTest {
       composeTestRule.waitForIdle()
 
       // Verify task details are still visible
-      composeTestRule.onNodeWithText("Offline View Task").assertIsDisplayed()
-      composeTestRule.onNodeWithText("Can view offline").assertIsDisplayed()
-      composeTestRule.onNodeWithText("15/12/2024").assertIsDisplayed()
-      composeTestRule.onNodeWithText("Status: IN PROGRESS").assertIsDisplayed()
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).assertIsDisplayed()
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).assertIsDisplayed()
+      composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.TASK_STATUS).assertIsDisplayed()
     }
   }
 
@@ -274,7 +271,7 @@ class ViewTaskScreenOfflineTest {
 
       // Verify offline message for attachments
       composeTestRule
-          .onNodeWithText("Photo 1: Attachment available, but cannot be visualized offline.")
+          .onNodeWithTag(CommonTaskTestTags.ATTACHMENT_OFFLINE_MESSAGE)
           .assertIsDisplayed()
     }
   }

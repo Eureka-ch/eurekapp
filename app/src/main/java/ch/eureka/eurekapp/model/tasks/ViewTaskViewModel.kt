@@ -135,7 +135,8 @@ class ViewTaskViewModel(
                 taskState.copy(
                     isConnected = isConnected,
                     urlsToDownload = urlsToDownload,
-                    effectiveAttachments = effectiveAttachments)
+                    effectiveAttachments = effectiveAttachments,
+                    downloadedAttachmentUrls = downloadedUrls)
               }
           .stateIn(
               scope = viewModelScope,

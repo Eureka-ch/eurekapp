@@ -1,7 +1,6 @@
 // Portions of this code were generated with the help of Grok and GPT-5.
 package ch.eureka.eurekapp.screens.subscreens.tasks.viewing
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,11 +9,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -41,9 +40,11 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 object ViewTaskScreenTestTags {
   const val EDIT_TASK = "edit_task"
+  const val VIEW_DEPENDENCIES = "view_dependencies"
   const val OFFLINE_MESSAGE = "offline_message"
   const val ASSIGNED_USERS_SECTION = "assigned_users_section"
   const val ASSIGNED_USER_ITEM = "assigned_user_item"
+  const val TASK_STATUS = "task_status"
 
   fun assignedUserItem(index: Int) = "${ASSIGNED_USER_ITEM}_$index"
 }
@@ -73,12 +74,6 @@ fun ViewTaskScreen(
   val isConnected = viewTaskState.isConnected
   val context = LocalContext.current
   val scrollState = rememberScrollState()
-
-  LaunchedEffect(errorMsg) {
-    if (errorMsg != null) {
-      Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
-    }
-  }
 
   DisposableEffect(Unit) {
     onDispose {
@@ -128,7 +123,9 @@ fun ViewTaskScreen(
                   dateRegex = viewTaskViewModel.dateRegex,
                   readOnly = true)
 
-              Text(text = "Status: ${viewTaskState.status.name.replace("_", " ")}")
+              Text(
+                  text = "Status: ${viewTaskState.status.name.replace("_", " ")}",
+                  modifier = Modifier.testTag(ViewTaskScreenTestTags.TASK_STATUS))
 
               if (!isConnected) {
                 Text(
@@ -140,7 +137,6 @@ fun ViewTaskScreen(
               }
 
               AssignedUsersSection(viewTaskState.assignedUsers)
-
               EditButton(
                   isConnected = isConnected,
                   onClick = {
@@ -148,12 +144,14 @@ fun ViewTaskScreen(
                       navigationController.navigate(Route.TasksSection.EditTask(projectId, taskId))
                     }
                   })
-
-              AttachmentsList(
-                  attachments = viewTaskState.effectiveAttachments,
-                  onDelete = null, // Pass null to indicate read-only mode
-                  isReadOnly = true,
-                  isConnected = isConnected)
+              OutlinedButton(
+                  onClick = {
+                    navigationController.navigate(
+                        Route.TasksSection.TaskDependence(projectId, taskId))
+                  },
+                  modifier = Modifier.testTag(ViewTaskScreenTestTags.VIEW_DEPENDENCIES)) {
+                    Text("View Dependencies")
+                  }
 
               DownloadSection(
                   urlsToDownload = viewTaskState.urlsToDownload,
@@ -163,6 +161,13 @@ fun ViewTaskScreen(
                       viewTaskViewModel.downloadFile(url, url.substringAfterLast("/"), context)
                     }
                   })
+
+              AttachmentsList(
+                  attachments = viewTaskState.effectiveAttachments,
+                  onDelete = null,
+                  isReadOnly = true,
+                  isConnected = isConnected,
+                  downloadedUrls = viewTaskState.downloadedAttachmentUrls)
             }
       })
 }

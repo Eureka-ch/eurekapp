@@ -69,6 +69,7 @@ open class ViewTaskScreenTest : TestCase() {
   private lateinit var context: android.content.Context
   private var lastViewVm: ViewTaskViewModel? = null
   private var lastTaskScreenVm: TaskScreenViewModel? = null
+  private val dependenciesScreenTag = "task_dependencies_screen"
   private lateinit var mockConnectivityObserver: MockConnectivityObserver
 
   @Before
@@ -239,6 +240,21 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
+  fun testNavigateToTaskDependencies() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+        setupViewTaskTest(projectId, taskId) { setupTestTask(projectId, taskId) }
+
+        composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.VIEW_DEPENDENCIES).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.VIEW_DEPENDENCIES).performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithTag(dependenciesScreenTag).assertIsDisplayed()
+      }
+
+  @Test
   fun testTaskNotFound() =
       runBlocking<Unit> {
         val projectId = "project123"
@@ -370,6 +386,16 @@ open class ViewTaskScreenTest : TestCase() {
         // Verify we're on TasksScreen
         composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
 
+        // Wait for task card to load from Firestore
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          try {
+            composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).assertExists()
+            true
+          } catch (e: AssertionError) {
+            false
+          }
+        }
+
         // Click on the task card
         composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).performClick()
 
@@ -426,16 +452,6 @@ open class ViewTaskScreenTest : TestCase() {
 
         composeTestRule.waitForIdle()
 
-        // Wait for navigation back to ViewTaskScreen
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-          try {
-            composeTestRule.onNodeWithTag(EditTaskScreenTestTags.STATUS_BUTTON).assertDoesNotExist()
-            true
-          } catch (e: AssertionError) {
-            false
-          }
-        }
-
         // Wait for data to reload on ViewTaskScreen
         composeTestRule.waitUntil(timeoutMillis = 5000) {
           try {
@@ -468,6 +484,18 @@ open class ViewTaskScreenTest : TestCase() {
 
         setupViewTaskTest(projectId, taskId) {
           setupTestTask(projectId, taskId, assignedUserIds = listOf(userId1, userId2))
+        }
+
+        // Wait for assigned users to load from Firestore
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          try {
+            composeTestRule
+                .onNodeWithTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION)
+                .assertExists()
+            true
+          } catch (e: AssertionError) {
+            false
+          }
         }
 
         // Verify assigned users section is displayed
@@ -647,7 +675,9 @@ open class ViewTaskScreenTest : TestCase() {
           connectivityObserver = mockConnectivityObserver,
           dispatcher = Dispatchers.IO)
     }
-    val sharedTaskScreenViewModel = remember { TaskScreenViewModel() }
+    val sharedTaskScreenViewModel = remember {
+      TaskScreenViewModel(connectivityObserver = mockConnectivityObserver)
+    }
 
     NavHost(navController, startDestination = Route.TasksSection.Tasks) {
       composable<Route.TasksSection.Tasks> {
@@ -673,6 +703,9 @@ open class ViewTaskScreenTest : TestCase() {
       composable<Route.TasksSection.EditTask> { backStackEntry ->
         val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.EditTask>()
         EditTaskScreen(editTaskRoute.projectId, editTaskRoute.taskId, navController)
+      }
+      composable<Route.TasksSection.TaskDependence> {
+        Text("Task Dependencies Screen", modifier = Modifier.testTag(dependenciesScreenTag))
       }
     }
   }
@@ -709,6 +742,9 @@ open class ViewTaskScreenTest : TestCase() {
       composable<Route.TasksSection.EditTask> {
         // Dummy edit screen for navigation test
         Text("Edit Task Screen", modifier = Modifier.testTag(EditTaskScreenTestTags.STATUS_BUTTON))
+      }
+      composable<Route.TasksSection.TaskDependence> {
+        Text("Task Dependencies Screen", modifier = Modifier.testTag(dependenciesScreenTag))
       }
     }
   }

@@ -1,6 +1,7 @@
 package ch.eureka.eurekapp.model.data
 
 import ch.eureka.eurekapp.model.data.chat.FirestoreChatRepository
+import ch.eureka.eurekapp.model.data.conversation.FirestoreConversationRepository
 import ch.eureka.eurekapp.model.data.file.FirebaseFileStorageRepository
 import ch.eureka.eurekapp.model.data.invitation.FirestoreInvitationRepository
 import ch.eureka.eurekapp.model.data.meeting.FirestoreMeetingRepository
@@ -21,6 +22,10 @@ import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+
+/*
+Co-author: GPT-5 Codex
+*/
 
 class FirestoreRepositoriesProviderTest {
 
@@ -57,7 +62,8 @@ class FirestoreRepositoriesProviderTest {
             "_invitationRepository",
             "_meetingRepository",
             "_taskTemplateRepository",
-            "_userRepository")
+            "_userRepository",
+            "_conversationRepository")
 
     lazyFields.forEach { fieldName ->
       try {
@@ -182,6 +188,20 @@ class FirestoreRepositoriesProviderTest {
   }
 
   @Test
+  fun conversationRepository_shouldNotBeNull() {
+    assertNotNull(
+        "Conversation repository should not be null",
+        FirestoreRepositoriesProvider.conversationRepository)
+  }
+
+  @Test
+  fun conversationRepository_shouldBeInstanceOfFirestoreConversationRepository() {
+    assertTrue(
+        "Conversation repository should be instance of FirestoreConversationRepository",
+        FirestoreRepositoriesProvider.conversationRepository is FirestoreConversationRepository)
+  }
+
+  @Test
   fun repositoryInstances_shouldBeSingleton() {
     val firstTaskRepo = FirestoreRepositoriesProvider.taskRepository
     val secondTaskRepo = FirestoreRepositoriesProvider.taskRepository
@@ -238,5 +258,12 @@ class FirestoreRepositoriesProviderTest {
         "Multiple accesses should return same user repository instance",
         firstUserRepo,
         secondUserRepo)
+
+    val firstConversationRepo = FirestoreRepositoriesProvider.conversationRepository
+    val secondConversationRepo = FirestoreRepositoriesProvider.conversationRepository
+    assertSame(
+        "Multiple accesses should return same conversation repository instance",
+        firstConversationRepo,
+        secondConversationRepo)
   }
 }
