@@ -17,6 +17,7 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -87,16 +88,18 @@ open class CreateConversationViewModel(
     connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver
 ) : ViewModel() {
 
-  private val _uiState = MutableStateFlow(CreateConversationState())
-  open val uiState: StateFlow<CreateConversationState> = _uiState
+  private val _baseUiState = MutableStateFlow(CreateConversationState())
 
   private val _isConnected =
       connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
+  open val uiState: StateFlow<CreateConversationState> =
+      combine(_baseUiState, _isConnected) { baseState, isConnected ->
+            baseState.copy(isConnected = isConnected)
+          }
+          .stateIn(viewModelScope, SharingStarted.Eagerly, CreateConversationState())
+
   init {
-    viewModelScope.launch {
-      _isConnected.collect { isConnected -> _uiState.update { it.copy(isConnected = isConnected) } }
-    }
     loadProjects()
   }
 
@@ -108,13 +111,13 @@ open class CreateConversationViewModel(
    */
   fun loadProjects() {
     viewModelScope.launch {
-      _uiState.update { it.copy(isLoadingProjects = true) }
+      _baseUiState.update { it.copy(isLoadingProjects = true) }
       try {
         projectRepository.getProjectsForCurrentUser(skipCache = false).collect { projects ->
-          _uiState.update { it.copy(isLoadingProjects = false, projects = projects) }
+          _baseUiState.update { it.copy(isLoadingProjects = false, projects = projects) }
         }
       } catch (e: Exception) {
-        _uiState.update { it.copy(isLoadingProjects = false, errorMsg = e.message) }
+        _baseUiState.update { it.copy(isLoadingProjects = false, errorMsg = e.message) }
       }
     }
   }
@@ -128,7 +131,7 @@ open class CreateConversationViewModel(
    * @param project The project to select.
    */
   fun selectProject(project: Project) {
-    _uiState.update {
+    _baseUiState.update {
       it.copy(selectedProject = project, selectedMember = null, members = emptyList())
     }
     loadMembersForProject(project.projectId)
@@ -144,7 +147,7 @@ open class CreateConversationViewModel(
    */
   private fun loadMembersForProject(projectId: String) {
     viewModelScope.launch {
-      _uiState.update { it.copy(isLoadingMembers = true) }
+      _baseUiState.update { it.copy(isLoadingMembers = true) }
       try {
         val currentUserId = getCurrentUserId() ?: ""
         val members = projectRepository.getMembers(projectId).first()
@@ -155,9 +158,9 @@ open class CreateConversationViewModel(
               user?.let { MemberDisplayData(member = member, user = it) }
             }
 
-        _uiState.update { it.copy(isLoadingMembers = false, members = memberDisplayDataList) }
+        _baseUiState.update { it.copy(isLoadingMembers = false, members = memberDisplayDataList) }
       } catch (e: Exception) {
-        _uiState.update { it.copy(isLoadingMembers = false, errorMsg = e.message) }
+        _baseUiState.update { it.copy(isLoadingMembers = false, errorMsg = e.message) }
       }
     }
   }
@@ -168,7 +171,7 @@ open class CreateConversationViewModel(
    * @param member The member to select for conversation creation.
    */
   fun selectMember(member: MemberDisplayData) {
-    _uiState.update { it.copy(selectedMember = member) }
+    _baseUiState.update { it.copy(selectedMember = member) }
   }
 
   /**
@@ -181,20 +184,20 @@ open class CreateConversationViewModel(
    * the UI to navigate back to the conversation list.
    */
   fun createConversation() {
-    val state = _uiState.value
+    val state = _baseUiState.value
     val selectedProject = state.selectedProject ?: return
     val selectedMember = state.selectedMember ?: return
     val currentUserId = getCurrentUserId() ?: return
 
     viewModelScope.launch {
-      _uiState.update { it.copy(isCreating = true) }
+      _baseUiState.update { it.copy(isCreating = true) }
 
       val existingConversation =
           conversationRepository.findExistingConversation(
               selectedProject.projectId, currentUserId, selectedMember.user.uid)
 
       if (existingConversation != null) {
-        _uiState.update {
+        _baseUiState.update {
           it.copy(isCreating = false, errorMsg = "Conversation already exists with this member")
         }
         return@launch
@@ -209,14 +212,18 @@ open class CreateConversationViewModel(
 
       conversationRepository
           .createConversation(conversation)
-          .onSuccess { _uiState.update { it.copy(isCreating = false, conversationCreated = true) } }
-          .onFailure { e -> _uiState.update { it.copy(isCreating = false, errorMsg = e.message) } }
+          .onSuccess {
+            _baseUiState.update { it.copy(isCreating = false, conversationCreated = true) }
+          }
+          .onFailure { e ->
+            _baseUiState.update { it.copy(isCreating = false, errorMsg = e.message) }
+          }
     }
   }
 
   /** Clear the error message. */
   fun clearErrorMsg() {
-    _uiState.update { it.copy(errorMsg = null) }
+    _baseUiState.update { it.copy(errorMsg = null) }
   }
 
   /**
@@ -226,6 +233,6 @@ open class CreateConversationViewModel(
    * prevent re-triggering navigation on configuration changes.
    */
   fun resetConversationCreated() {
-    _uiState.update { it.copy(conversationCreated = false) }
+    _baseUiState.update { it.copy(conversationCreated = false) }
   }
 }
