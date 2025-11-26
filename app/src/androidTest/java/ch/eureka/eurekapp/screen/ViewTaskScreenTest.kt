@@ -32,6 +32,7 @@ import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.downloads.AppDatabase
 import ch.eureka.eurekapp.model.tasks.ViewTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.TasksScreen
@@ -184,7 +185,7 @@ open class ViewTaskScreenTest : TestCase() {
 
     val viewModel =
         ViewTaskViewModel(
-            projectId, taskId, taskRepository, Dispatchers.IO, mockConnectivityObserver)
+            projectId, taskId, AppDatabase.getDatabase(context).downloadedFileDao(), taskRepository, connectivityObserver = mockConnectivityObserver, dispatcher = Dispatchers.IO)
     lastViewVm = viewModel
     composeTestRule.setContent {
       val navController = rememberNavController()
@@ -601,7 +602,7 @@ open class ViewTaskScreenTest : TestCase() {
 
       val viewModel =
           ViewTaskViewModel(
-              projectId, taskId, taskRepository, Dispatchers.IO, mockConnectivityObserver)
+              projectId, taskId, AppDatabase.getDatabase(context).downloadedFileDao(), taskRepository, connectivityObserver = mockConnectivityObserver, dispatcher = Dispatchers.IO)
       lastViewVm = viewModel
 
       composeTestRule.setContent {
@@ -633,7 +634,7 @@ open class ViewTaskScreenTest : TestCase() {
   private fun FullNavigationGraph(navController: NavHostController) {
     val sharedViewModel = remember {
       ViewTaskViewModel(
-          "project123", "task123", taskRepository, Dispatchers.IO, mockConnectivityObserver)
+          "project123", "task123", AppDatabase.getDatabase(context).downloadedFileDao(), taskRepository, connectivityObserver = mockConnectivityObserver, dispatcher = Dispatchers.IO)
     }
     val sharedTaskScreenViewModel = remember { TaskScreenViewModel() }
 
@@ -676,7 +677,7 @@ open class ViewTaskScreenTest : TestCase() {
         viewModel
             ?: remember {
               ViewTaskViewModel(
-                  projectId, taskId, taskRepository, Dispatchers.IO, mockConnectivityObserver)
+                  projectId, taskId, AppDatabase.getDatabase(context).downloadedFileDao(), taskRepository, connectivityObserver = mockConnectivityObserver, dispatcher = Dispatchers.IO)
             }
     NavHost(navController, startDestination = Route.TasksSection.Tasks) {
       composable<Route.TasksSection.Tasks> {

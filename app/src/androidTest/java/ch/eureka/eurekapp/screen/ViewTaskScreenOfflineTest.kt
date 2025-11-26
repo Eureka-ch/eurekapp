@@ -15,6 +15,7 @@ import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.downloads.AppDatabase
 import ch.eureka.eurekapp.model.tasks.ViewTaskViewModel
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
@@ -127,7 +128,7 @@ class ViewTaskScreenOfflineTest {
       mockConnectivityObserver.setConnected(false)
 
       val viewModel =
-          ViewTaskViewModel(projectId, taskId, connectivityObserver = mockConnectivityObserver)
+          ViewTaskViewModel(projectId, taskId, AppDatabase.getDatabase(context).downloadedFileDao(), taskRepository, connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {
@@ -166,7 +167,7 @@ class ViewTaskScreenOfflineTest {
       mockConnectivityObserver.setConnected(false)
 
       val viewModel =
-          ViewTaskViewModel(projectId, taskId, connectivityObserver = mockConnectivityObserver)
+          ViewTaskViewModel(projectId, taskId, AppDatabase.getDatabase(context).downloadedFileDao(), taskRepository, connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {
@@ -200,7 +201,7 @@ class ViewTaskScreenOfflineTest {
       mockConnectivityObserver.setConnected(false)
 
       val viewModel =
-          ViewTaskViewModel(projectId, taskId, connectivityObserver = mockConnectivityObserver)
+          ViewTaskViewModel(projectId, taskId, AppDatabase.getDatabase(context).downloadedFileDao(), taskRepository, connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {
@@ -238,7 +239,7 @@ class ViewTaskScreenOfflineTest {
       mockConnectivityObserver.setConnected(false)
 
       val viewModel =
-          ViewTaskViewModel(projectId, taskId, connectivityObserver = mockConnectivityObserver)
+          ViewTaskViewModel(projectId, taskId, AppDatabase.getDatabase(context).downloadedFileDao(), taskRepository, connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {
@@ -271,7 +272,7 @@ class ViewTaskScreenOfflineTest {
       mockConnectivityObserver.setConnected(true)
 
       val viewModel =
-          ViewTaskViewModel(projectId, taskId, connectivityObserver = mockConnectivityObserver)
+          ViewTaskViewModel(projectId, taskId, AppDatabase.getDatabase(context).downloadedFileDao(), taskRepository, connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {

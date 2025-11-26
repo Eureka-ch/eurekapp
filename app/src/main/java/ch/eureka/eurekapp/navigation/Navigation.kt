@@ -16,6 +16,7 @@ import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.screens.Camera
+import ch.eureka.eurekapp.screens.FilesManagementScreen
 import ch.eureka.eurekapp.screens.IdeasScreen
 import ch.eureka.eurekapp.screens.OverviewProjectScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
@@ -73,6 +74,8 @@ sealed interface Route {
     @Serializable data object AutoTaskAssignment : TasksSection
 
     @Serializable data object TaskDependence : TasksSection
+
+    @Serializable data object FilesManagement : TasksSection
   }
 
   sealed interface IdeasSection : Route {
@@ -210,6 +213,9 @@ fun NavigationMenu() {
                     onTaskClick = { taskId, projectId ->
                       navigationController.navigate(
                           Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
+                    },
+                    onFilesManagementClick = {
+                      navigationController.navigate(Route.TasksSection.FilesManagement)
                     })
               }
               composable<Route.TasksSection.CreateTask> { CreateTaskScreen(navigationController) }
@@ -227,6 +233,7 @@ fun NavigationMenu() {
                 ViewTaskScreen(
                     taskDetailRoute.projectId, taskDetailRoute.taskId, navigationController)
               }
+              composable<Route.TasksSection.FilesManagement> { FilesManagementScreen(onBackClick = { navigationController.popBackStack() }) }
 
               // Ideas section
               composable<Route.IdeasSection.Ideas> { IdeasScreen() }

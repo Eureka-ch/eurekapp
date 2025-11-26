@@ -242,7 +242,7 @@ dependencies {
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.mockk)
-    testImplementation(libs.mockwebserver)
+    globalTestImplementation(libs.mockwebserver)
     testImplementation(libs.robolectric)
     testImplementation(kotlin("test"))
     testImplementation(libs.json)

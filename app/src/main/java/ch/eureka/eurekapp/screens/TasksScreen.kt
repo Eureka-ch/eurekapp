@@ -2,15 +2,21 @@ package ch.eureka.eurekapp.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -22,6 +28,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
@@ -115,14 +125,32 @@ fun formatDueDate(diffInDays: Long): String {
 private fun HeaderSection(
     onCreateTaskClick: () -> Unit,
     onAutoAssignClick: () -> Unit,
+    onFilesManagementClick: () -> Unit,
     isConnected: Boolean
 ) {
   Column(modifier = Modifier.padding(vertical = Spacing.md)) {
-    Text(
-        text = "Task",
-        style = MaterialTheme.typography.headlineLarge,
-        color = MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+      Text(
+          text = "Task",
+          style = MaterialTheme.typography.headlineLarge,
+          color = MaterialTheme.colorScheme.onSurface,
+          modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
+
+      IconButton(
+          onClick = onFilesManagementClick,
+          enabled = true
+      ) {
+        Icon(
+            Icons.Filled.Folder,
+            contentDescription = "Manage Files",
+            tint = MaterialTheme.colorScheme.primary
+        )
+      }
+    }
 
     Text(
         text = "Manage and track your project tasks",
@@ -311,6 +339,7 @@ fun getFilterTag(filter: TaskScreenFilter): String {
  * @param onTaskClick Callback when a task is clicked
  * @param onCreateTaskClick Callback when create task button is clicked
  * @param onAutoAssignClick Callback when auto-assign button is clicked
+ * @param onFilesManagementClick Callback when files management button is clicked
  * @param modifier Modifier for the composable
  * @param viewModel ViewModel for task state management
  */
@@ -320,6 +349,7 @@ fun TasksScreen(
     onTaskClick: (String, String) -> Unit = { _, _ -> },
     onCreateTaskClick: () -> Unit = {},
     onAutoAssignClick: () -> Unit = {},
+    onFilesManagementClick: () -> Unit = {},
     viewModel: TaskScreenViewModel = viewModel()
 ) {
   val uiState by viewModel.uiState.collectAsState()
@@ -336,7 +366,7 @@ fun TasksScreen(
       innerPadding ->
     Column(
         modifier = Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = Spacing.md)) {
-          HeaderSection(onCreateTaskClick, onAutoAssignClick, isConnected)
+          HeaderSection(onCreateTaskClick, onAutoAssignClick, onFilesManagementClick, isConnected)
           FilterBar(uiState, selectedFilter, ::setFilter)
           if (uiState.isLoading) {
             LoadingState()
