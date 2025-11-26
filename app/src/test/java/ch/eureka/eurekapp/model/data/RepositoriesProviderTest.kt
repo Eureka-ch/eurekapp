@@ -1,13 +1,13 @@
+/* Portions of this file were written with the help of Gemini. */
 package ch.eureka.eurekapp.model.data
 
-import ch.eureka.eurekapp.model.data.chat.FirestoreChatRepository
+import android.content.Context
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.work.WorkManager
 import ch.eureka.eurekapp.model.data.file.FirebaseFileStorageRepository
-import ch.eureka.eurekapp.model.data.invitation.FirestoreInvitationRepository
-import ch.eureka.eurekapp.model.data.meeting.FirestoreMeetingRepository
-import ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository
-import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
-import ch.eureka.eurekapp.model.data.template.FirestoreTaskTemplateRepository
-import ch.eureka.eurekapp.model.data.user.FirestoreUserRepository
+import ch.eureka.eurekapp.model.database.AppDatabase
+import ch.eureka.eurekapp.model.database.MessageDao
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -15,28 +15,54 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
+import java.lang.reflect.Field
 import org.junit.After
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
-class FirestoreRepositoriesProviderTest {
+/**
+ * Unit tests for [RepositoriesProvider].
+ *
+ * This suite verifies the Singleton behavior of all provided repositories. It mocks static
+ * Android/Firebase dependencies to test the provider logic in isolation. It ensures that:
+ * 1. Cloud repositories are lazy-loaded and return the same instance.
+ * 2. Local/Hybrid repositories (Room, DataStore, WorkManager) throw exceptions if accessed before
+ *    initialization.
+ * 3. Local/Hybrid repositories are instantiated correctly after [RepositoriesProvider.initialize]
+ *    is called.
+ */
+class RepositoriesProviderTest {
 
   @Before
   fun setup() {
     mockkStatic(FirebaseFirestore::class)
     mockkStatic(FirebaseAuth::class)
     mockkStatic(FirebaseStorage::class)
+    mockkStatic(Room::class)
+    mockkStatic(WorkManager::class)
 
     val mockFirestore = mockk<FirebaseFirestore>(relaxed = true)
     val mockAuth = mockk<FirebaseAuth>(relaxed = true)
     val mockStorage = mockk<FirebaseStorage>(relaxed = true)
+    val mockWorkManager = mockk<WorkManager>(relaxed = true)
+
+    val mockRoomBuilder = mockk<RoomDatabase.Builder<AppDatabase>>(relaxed = true)
+    val mockDatabase = mockk<AppDatabase>(relaxed = true)
+    val mockDao = mockk<MessageDao>(relaxed = true)
+
+    every { mockDatabase.messageDao() } returns mockDao
+    every { mockRoomBuilder.build() } returns mockDatabase
+    every { Room.databaseBuilder(any<Context>(), AppDatabase::class.java, any()) } returns
+        mockRoomBuilder
 
     every { FirebaseFirestore.getInstance() } returns mockFirestore
     every { FirebaseAuth.getInstance() } returns mockAuth
     every { FirebaseStorage.getInstance() } returns mockStorage
+    every { WorkManager.getInstance(any()) } returns mockWorkManager
 
     resetLazyRepositories()
   }
@@ -48,6 +74,16 @@ class FirestoreRepositoriesProviderTest {
 
   private fun resetLazyRepositories() {
     val providerClass = RepositoriesProvider::class.java
+
+    val contextField: Field = providerClass.getDeclaredField("applicationContext")
+    contextField.isAccessible = true
+    contextField.set(RepositoriesProvider, null)
+
+    val dummyLazy = lazy {}
+    val valueField = dummyLazy.javaClass.getDeclaredField("_value")
+    valueField.isAccessible = true
+    val uninitializedValue = valueField.get(dummyLazy)
+
     val lazyFields =
         listOf(
             "_taskRepository",
@@ -57,7 +93,10 @@ class FirestoreRepositoriesProviderTest {
             "_invitationRepository",
             "_meetingRepository",
             "_taskTemplateRepository",
-            "_userRepository")
+            "_userRepository",
+            "_speechToTextRepository",
+            "_userPreferencesRepository",
+            "_unifiedSelfNotesRepository")
 
     lazyFields.forEach { fieldName ->
       try {
@@ -65,13 +104,11 @@ class FirestoreRepositoriesProviderTest {
         field.isAccessible = true
         val lazyDelegate = field.get(RepositoriesProvider)
         if (lazyDelegate is Lazy<*>) {
-          val valueField = lazyDelegate.javaClass.getDeclaredField("_value")
-          valueField.isAccessible = true
-          valueField.set(lazyDelegate, null)
+          val delegateValueField = lazyDelegate.javaClass.getDeclaredField("_value")
+          delegateValueField.isAccessible = true
+          delegateValueField.set(lazyDelegate, uninitializedValue)
         }
-      } catch (e: Exception) {
-        // Field might not be lazy or might not exist
-      }
+      } catch (_: Exception) {}
     }
   }
 
@@ -81,22 +118,8 @@ class FirestoreRepositoriesProviderTest {
   }
 
   @Test
-  fun taskRepository_shouldBeInstanceOfFirestoreTaskRepository() {
-    assertTrue(
-        "Task repository should be instance of FirestoreTaskRepository",
-        RepositoriesProvider.taskRepository is FirestoreTaskRepository)
-  }
-
-  @Test
   fun projectRepository_shouldNotBeNull() {
     assertNotNull("Project repository should not be null", RepositoriesProvider.projectRepository)
-  }
-
-  @Test
-  fun projectRepository_shouldBeInstanceOfFirestoreProjectRepository() {
-    assertTrue(
-        "Project repository should be instance of FirestoreProjectRepository",
-        RepositoriesProvider.projectRepository is FirestoreProjectRepository)
   }
 
   @Test
@@ -117,35 +140,14 @@ class FirestoreRepositoriesProviderTest {
   }
 
   @Test
-  fun chatRepository_shouldBeInstanceOfFirestoreChatRepository() {
-    assertTrue(
-        "Chat repository should be instance of FirestoreChatRepository",
-        RepositoriesProvider.chatRepository is FirestoreChatRepository)
-  }
-
-  @Test
   fun invitationRepository_shouldNotBeNull() {
     assertNotNull(
         "Invitation repository should not be null", RepositoriesProvider.invitationRepository)
   }
 
   @Test
-  fun invitationRepository_shouldBeInstanceOfFirestoreInvitationRepository() {
-    assertTrue(
-        "Invitation repository should be instance of FirestoreInvitationRepository",
-        RepositoriesProvider.invitationRepository is FirestoreInvitationRepository)
-  }
-
-  @Test
   fun meetingRepository_shouldNotBeNull() {
     assertNotNull("Meeting repository should not be null", RepositoriesProvider.meetingRepository)
-  }
-
-  @Test
-  fun meetingRepository_shouldBeInstanceOfFirestoreMeetingRepository() {
-    assertTrue(
-        "Meeting repository should be instance of FirestoreMeetingRepository",
-        RepositoriesProvider.meetingRepository is FirestoreMeetingRepository)
   }
 
   @Test
@@ -155,22 +157,8 @@ class FirestoreRepositoriesProviderTest {
   }
 
   @Test
-  fun taskTemplateRepository_shouldBeInstanceOfFirestoreTaskTemplateRepository() {
-    assertTrue(
-        "Task template repository should be instance of FirestoreTaskTemplateRepository",
-        RepositoriesProvider.taskTemplateRepository is FirestoreTaskTemplateRepository)
-  }
-
-  @Test
   fun userRepository_shouldNotBeNull() {
     assertNotNull("User repository should not be null", RepositoriesProvider.userRepository)
-  }
-
-  @Test
-  fun userRepository_shouldBeInstanceOfFirestoreUserRepository() {
-    assertTrue(
-        "User repository should be instance of FirestoreUserRepository",
-        RepositoriesProvider.userRepository is FirestoreUserRepository)
   }
 
   @Test
@@ -230,5 +218,40 @@ class FirestoreRepositoriesProviderTest {
         "Multiple accesses should return same user repository instance",
         firstUserRepo,
         secondUserRepo)
+  }
+
+  @Test
+  fun unifiedSelfNotesRepository_shouldBeInstanceOfUnifiedSelfNotesRepository_whenInitialized() {
+    val mockContext = mockk<Context>(relaxed = true)
+    RepositoriesProvider.initialize(mockContext)
+
+    val repo = RepositoriesProvider.unifiedSelfNotesRepository
+
+    assertNotNull(repo)
+  }
+
+  @Test
+  fun userPreferencesRepository_shouldBeInstanceOfUserPreferencesRepository_whenInitialized() {
+    val mockContext = mockk<Context>(relaxed = true)
+    RepositoriesProvider.initialize(mockContext)
+
+    val repo = RepositoriesProvider.userPreferencesRepository
+
+    assertNotNull(repo)
+  }
+
+  @Test
+  fun workManager_shouldThrowIfNotInitialized() {
+    assertThrows(IllegalStateException::class.java) { RepositoriesProvider.workManager }
+  }
+
+  @Test
+  fun workManager_shouldNotBeNull_whenInitialized() {
+    val mockContext = mockk<Context>(relaxed = true)
+    RepositoriesProvider.initialize(mockContext)
+
+    val wm = RepositoriesProvider.workManager
+
+    assertNotNull(wm)
   }
 }

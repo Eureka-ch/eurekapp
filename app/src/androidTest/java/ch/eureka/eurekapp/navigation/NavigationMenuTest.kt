@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.screens.IdeasScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
@@ -54,6 +55,7 @@ class NavigationMenuTest : TestCase() {
 
     val context = InstrumentationRegistry.getInstrumentation().targetContext
     ConnectivityObserverProvider.initialize(context)
+    RepositoriesProvider.initialize(context)
   }
 
   @Test

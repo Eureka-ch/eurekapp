@@ -89,10 +89,17 @@ constructor(
                       is NotesLoadState.Error -> emptyList()
                     }
 
+                val displayedError =
+                    if (notesState is NotesLoadState.Error) {
+                      notesState.message
+                    } else {
+                      errorMsg
+                    }
+
                 SelfNotesUIState(
                     notes = notes,
                     isLoading = false,
-                    errorMsg = errorMsg,
+                    errorMsg = displayedError,
                     currentMessage = currentMessage,
                     isSending = isSending,
                     isCloudStorageEnabled = isCloud)

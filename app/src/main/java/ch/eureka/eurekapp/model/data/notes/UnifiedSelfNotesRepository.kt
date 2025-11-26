@@ -40,20 +40,10 @@ class UnifiedSelfNotesRepository(
     private val auth: FirebaseAuth
 ) : SelfNotesRepository {
 
-  /**
-   * Return the ID of the current user logged in.
-   *
-   * @return The ID of the current user logged in.
-   */
   private fun getCurrentUserId(): String {
     return auth.currentUser?.uid ?: ""
   }
 
-  /**
-   * Helper to check if the device is currently connected to the internet.
-   *
-   * @return True if teh device is currently connected to the internet, false otherwise.
-   */
   private fun isInternetAvailable(): Boolean {
     val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager

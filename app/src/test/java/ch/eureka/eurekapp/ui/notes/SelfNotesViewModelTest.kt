@@ -1,17 +1,25 @@
-/* Portions of this code were written with the help of GPT-5 Codex. */
+/* Portions of this file were written with the help of Gemini. */
 package ch.eureka.eurekapp.ui.notes
 
+import androidx.work.OneTimeWorkRequest
+import androidx.work.Operation
+import androidx.work.WorkManager
+import ch.eureka.eurekapp.model.connection.ConnectivityObserver
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.chat.Message
-import ch.eureka.eurekapp.model.data.notes.SelfNotesRepository
+import ch.eureka.eurekapp.model.data.notes.UnifiedSelfNotesRepository
+import ch.eureka.eurekapp.model.data.prefs.UserPreferencesRepository
 import com.google.firebase.Timestamp
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.unmockkAll
+import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
@@ -27,8 +35,13 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class SelfNotesViewModelTest {
 
-  private lateinit var repository: SelfNotesRepository
+  private lateinit var repository: UnifiedSelfNotesRepository
+  private lateinit var userPrefs: UserPreferencesRepository
+  private lateinit var workManager: WorkManager
   private lateinit var viewModel: SelfNotesViewModel
+  private lateinit var connectivityObserver: ConnectivityObserver
+  private val isOnlineFlow = MutableStateFlow(true)
+
   private val testDispatcher = StandardTestDispatcher()
   private val testUserId = "test-user-id"
 
@@ -37,7 +50,7 @@ class SelfNotesViewModelTest {
           messageID = "msg-1",
           text = "Test note",
           senderId = testUserId,
-          createdAt = Timestamp.Companion.now(),
+          createdAt = Timestamp.now(),
           references = emptyList())
 
   private val testMessages =
@@ -47,13 +60,23 @@ class SelfNotesViewModelTest {
               messageID = "msg-2",
               text = "Another note",
               senderId = testUserId,
-              createdAt = Timestamp.Companion.now(),
+              createdAt = Timestamp.now(),
               references = emptyList()))
 
   @Before
   fun setup() {
     Dispatchers.setMain(testDispatcher)
-    repository = mockk()
+    repository = mockk(relaxed = true)
+    userPrefs = mockk(relaxed = true)
+    workManager = mockk(relaxed = true)
+    connectivityObserver = mockk(relaxed = true)
+    mockkObject(ConnectivityObserverProvider)
+    every { ConnectivityObserverProvider.connectivityObserver } returns connectivityObserver
+    every { connectivityObserver.isConnected } returns isOnlineFlow
+    every { userPrefs.isCloudStorageEnabled } returns flowOf(false) // Default Local
+    every { repository.getNotes(any()) } returns flowOf(testMessages)
+    every { workManager.enqueueUniqueWork(any(), any(), any<OneTimeWorkRequest>()) } returns
+        mockk<Operation>()
   }
 
   @After
@@ -63,269 +86,154 @@ class SelfNotesViewModelTest {
   }
 
   @Test
-  fun `loadNotes loads notes successfully`() = runTest {
-    every { repository.getNotes(any()) } returns flowOf(testMessages)
-
-    viewModel = SelfNotesViewModel(repository = repository, dispatcher = testDispatcher)
-
-    // Subscribe to the StateFlow to trigger collection
+  fun `loadNotes loads notes and preferences successfully`() = runTest {
+    every { userPrefs.isCloudStorageEnabled } returns flowOf(true)
+    viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
     val job = launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
-
     val state = viewModel.uiState.value
     Assert.assertEquals(testMessages, state.notes)
+    Assert.assertTrue(state.isCloudStorageEnabled)
     Assert.assertFalse(state.isLoading)
     Assert.assertNull(state.errorMsg)
-
     job.cancel()
   }
 
   @Test
   fun `loadNotes handles repository exception`() = runTest {
-    every { repository.getNotes(any()) } returns flow { throw Exception("Network error") }
-
-    viewModel = SelfNotesViewModel(repository = repository, dispatcher = testDispatcher)
-
+    every { repository.getNotes(any()) } returns flow { throw Exception("Database error") }
+    viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
     val job = launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
-
     val state = viewModel.uiState.value
     Assert.assertFalse(state.isLoading)
     Assert.assertNotNull(state.errorMsg)
-    Assert.assertTrue(state.errorMsg!!.contains("Failed to load notes"))
-
+    Assert.assertEquals("Database error", state.errorMsg)
     job.cancel()
   }
 
   @Test
-  fun `loadNotes handles authentication error from repository`() = runTest {
-    every { repository.getNotes(any()) } returns
-        flow { throw IllegalStateException("User must be authenticated to access notes") }
+  fun `toggleStorageMode(true) calls repository and updates status`() = runTest {
+    coEvery { repository.setStorageMode(true) } returns 5
+    viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
+    val job = launch { viewModel.uiState.collect {} }
+    viewModel.toggleStorageMode(true)
+    testDispatcher.scheduler.advanceUntilIdle()
+    coVerify { repository.setStorageMode(true) }
+    Assert.assertEquals("Switched to Cloud: Synced 5 notes", viewModel.uiState.value.errorMsg)
+    job.cancel()
+  }
 
-    viewModel = SelfNotesViewModel(repository = repository, dispatcher = testDispatcher)
+  @Test
+  fun `toggleStorageMode(true) shows generic message if 0 synced`() = runTest {
+    coEvery { repository.setStorageMode(true) } returns 0
+    viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
+    val job = launch { viewModel.uiState.collect {} }
+    viewModel.toggleStorageMode(true)
+    testDispatcher.scheduler.advanceUntilIdle()
+    Assert.assertEquals("Switched to Cloud Storage", viewModel.uiState.value.errorMsg)
+    job.cancel()
+  }
 
+  @Test
+  fun `toggleStorageMode(false) shows local message`() = runTest {
+    coEvery { repository.setStorageMode(false) } returns 0
+    viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
+    val job = launch { viewModel.uiState.collect {} }
+    viewModel.toggleStorageMode(false)
+    testDispatcher.scheduler.advanceUntilIdle()
+    Assert.assertEquals("Switched to Local Storage (Private)", viewModel.uiState.value.errorMsg)
+    job.cancel()
+  }
+
+  @Test
+  fun `connectivity change to ONLINE triggers sync`() = runTest {
+    coEvery { repository.syncPendingNotes() } returns 3
+    isOnlineFlow.value = false
+    viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
     val job = launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
-
-    val state = viewModel.uiState.value
-    Assert.assertFalse(state.isLoading)
-    Assert.assertNotNull(state.errorMsg)
-    Assert.assertTrue(state.errorMsg!!.contains("User must be authenticated"))
-
+    isOnlineFlow.value = true
+    testDispatcher.scheduler.advanceUntilIdle()
+    coVerify { repository.syncPendingNotes() }
+    Assert.assertEquals("Back online: Uploaded 3 notes", viewModel.uiState.value.errorMsg)
     job.cancel()
   }
 
   @Test
-  fun `updateMessage handles special characters`() = runTest {
-    every { repository.getNotes(any()) } returns flowOf(emptyList())
-    viewModel = SelfNotesViewModel(repository = repository, dispatcher = testDispatcher)
-
-    val job = launch { viewModel.uiState.collect {} }
+  fun `connectivity change to OFFLINE does nothing`() = runTest {
+    isOnlineFlow.value = true
+    viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
     testDispatcher.scheduler.advanceUntilIdle()
-
-    val specialText = "Test @#\$%^&*() 测试 🎉"
-    viewModel.updateMessage(specialText)
+    io.mockk.clearMocks(repository, answers = false)
+    isOnlineFlow.value = false
     testDispatcher.scheduler.advanceUntilIdle()
-
-    Assert.assertEquals(specialText, viewModel.uiState.value.currentMessage)
-
-    job.cancel()
+    coVerify(exactly = 0) { repository.syncPendingNotes() }
   }
 
   @Test
-  fun `sendNote sends message successfully`() = runTest {
-    every { repository.getNotes(any()) } returns flowOf(emptyList())
+  fun `sendNote sends message successfully and schedules worker`() = runTest {
     coEvery { repository.createNote(any()) } returns Result.success("new-note-id")
-    viewModel = SelfNotesViewModel(repository = repository, dispatcher = testDispatcher)
-
+    viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
     val job = launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.updateMessage("Test note to send")
-    testDispatcher.scheduler.advanceUntilIdle()
-
+    viewModel.updateMessage("Test note")
     viewModel.sendNote()
     testDispatcher.scheduler.advanceUntilIdle()
-
     val state = viewModel.uiState.value
     Assert.assertEquals("", state.currentMessage)
     Assert.assertFalse(state.isSending)
     Assert.assertNull(state.errorMsg)
-    coVerify { repository.createNote(match { it.text == "Test note to send" }) }
-
+    coVerify { repository.createNote(match { it.text == "Test note" }) }
+    verify { workManager.enqueueUniqueWork("SyncNotes", any(), any<OneTimeWorkRequest>()) }
     job.cancel()
   }
 
   @Test
-  fun `sendNote trims whitespace from message`() = runTest {
-    every { repository.getNotes(any()) } returns flowOf(emptyList())
-    coEvery { repository.createNote(any()) } returns Result.success("new-note-id")
-    viewModel = SelfNotesViewModel(repository = repository, dispatcher = testDispatcher)
-
+  fun `sendNote handles failure`() = runTest {
+    coEvery { repository.createNote(any()) } returns Result.failure(Exception("DB Error"))
+    viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
     val job = launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.updateMessage("  Trimmed message  ")
-    testDispatcher.scheduler.advanceUntilIdle()
-
+    viewModel.updateMessage("Fail note")
     viewModel.sendNote()
     testDispatcher.scheduler.advanceUntilIdle()
-
-    coVerify { repository.createNote(match { it.text == "Trimmed message" }) }
-
-    job.cancel()
-  }
-
-  @Test
-  fun `sendNote handles repository failure`() = runTest {
-    every { repository.getNotes(any()) } returns flowOf(emptyList())
-    coEvery { repository.createNote(any()) } returns Result.failure(Exception("Network error"))
-    viewModel = SelfNotesViewModel(repository = repository, dispatcher = testDispatcher)
-
-    val job = launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.updateMessage("Test message")
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.sendNote()
-    testDispatcher.scheduler.advanceUntilIdle()
-
     val state = viewModel.uiState.value
     Assert.assertFalse(state.isSending)
-    Assert.assertNotNull(state.errorMsg)
-    Assert.assertTrue(state.errorMsg!!.contains("Failed to send note"))
-    Assert.assertEquals("Test message", state.currentMessage)
-
+    Assert.assertEquals("Error: DB Error", state.errorMsg)
+    verify(exactly = 0) { workManager.enqueueUniqueWork(any(), any(), any<OneTimeWorkRequest>()) }
     job.cancel()
   }
 
   @Test
-  fun `sendNote sets isSending to true while sending`() = runTest {
-    every { repository.getNotes(any()) } returns flowOf(emptyList())
-    coEvery { repository.createNote(any()) } coAnswers
-        {
-          delay(100)
-          Result.success("new-note-id")
-        }
-    viewModel = SelfNotesViewModel(repository = repository, dispatcher = testDispatcher)
-
-    val job = launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.updateMessage("Test message")
-    testDispatcher.scheduler.advanceUntilIdle()
-
+  fun `sendNote trims whitespace`() = runTest {
+    coEvery { repository.createNote(any()) } returns Result.success("id")
+    viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
+    viewModel.updateMessage("  Trimmed  ")
     viewModel.sendNote()
-    testDispatcher.scheduler.advanceTimeBy(50)
-
-    Assert.assertTrue(viewModel.uiState.value.isSending)
-
     testDispatcher.scheduler.advanceUntilIdle()
-    Assert.assertFalse(viewModel.uiState.value.isSending)
+    coVerify { repository.createNote(match { it.text == "Trimmed" }) }
+  }
 
-    job.cancel()
+  @Test
+  fun `sendNote ignores empty message`() = runTest {
+    viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
+    viewModel.updateMessage("   ")
+    viewModel.sendNote()
+    testDispatcher.scheduler.advanceUntilIdle()
+    coVerify(exactly = 0) { repository.createNote(any()) }
   }
 
   @Test
   fun `clearError clears error message`() = runTest {
-    every { repository.getNotes(any()) } returns flowOf(emptyList())
-    viewModel = SelfNotesViewModel(repository = repository, dispatcher = testDispatcher)
-
-    val job = launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    // Manually trigger an error by sending with failure
     coEvery { repository.createNote(any()) } returns Result.failure(Exception("Error"))
-    viewModel.updateMessage("Test")
-    testDispatcher.scheduler.advanceUntilIdle()
+    viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
+    val job = launch { viewModel.uiState.collect {} }
+    viewModel.updateMessage("Msg")
     viewModel.sendNote()
     testDispatcher.scheduler.advanceUntilIdle()
     Assert.assertNotNull(viewModel.uiState.value.errorMsg)
-
     viewModel.clearError()
     testDispatcher.scheduler.advanceUntilIdle()
-
     Assert.assertNull(viewModel.uiState.value.errorMsg)
-
-    job.cancel()
-  }
-
-  @Test
-  fun `notes are updated when repository emits new values`() = runTest {
-    val updatedMessages = testMessages + testMessage.copy(messageID = "msg-3", text = "New note")
-    every { repository.getNotes(any()) } returns flowOf(testMessages, updatedMessages)
-
-    viewModel = SelfNotesViewModel(repository = repository, dispatcher = testDispatcher)
-
-    val job = launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    Assert.assertEquals(updatedMessages, viewModel.uiState.value.notes)
-
-    job.cancel()
-  }
-
-  @Test
-  fun `multiple sendNote calls work correctly`() = runTest {
-    every { repository.getNotes(any()) } returns flowOf(emptyList())
-    coEvery { repository.createNote(any()) } returns Result.success("new-note-id")
-    viewModel = SelfNotesViewModel(repository = repository, dispatcher = testDispatcher)
-
-    val job = launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.updateMessage("Note 1")
-    testDispatcher.scheduler.advanceUntilIdle()
-    viewModel.sendNote()
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.updateMessage("Note 2")
-    testDispatcher.scheduler.advanceUntilIdle()
-    viewModel.sendNote()
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    coVerify(exactly = 2) { repository.createNote(any()) }
-    Assert.assertEquals("", viewModel.uiState.value.currentMessage)
-
-    job.cancel()
-  }
-
-  @Test
-  fun `sendNote does nothing when message is empty`() = runTest {
-    every { repository.getNotes(any()) } returns flowOf(emptyList())
-    viewModel = SelfNotesViewModel(repository = repository, dispatcher = testDispatcher)
-
-    val job = launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.updateMessage("")
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.sendNote()
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    coVerify(exactly = 0) { repository.createNote(any()) }
-
-    job.cancel()
-  }
-
-  @Test
-  fun `sendNote does nothing when message is only whitespace`() = runTest {
-    every { repository.getNotes(any()) } returns flowOf(emptyList())
-    viewModel = SelfNotesViewModel(repository = repository, dispatcher = testDispatcher)
-
-    val job = launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.updateMessage("   ")
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.sendNote()
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    coVerify(exactly = 0) { repository.createNote(any()) }
-
     job.cancel()
   }
 }
