@@ -8,10 +8,19 @@ import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
+import ch.eureka.eurekapp.model.data.project.Member
+import ch.eureka.eurekapp.model.data.project.Project
+import ch.eureka.eurekapp.model.data.project.ProjectRole
+import ch.eureka.eurekapp.model.data.project.ProjectStatus
+import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
+import ch.eureka.eurekapp.model.data.task.Task
+import ch.eureka.eurekapp.model.data.task.TaskRepository
+import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.screens.HomeOverviewTestTags
 import ch.eureka.eurekapp.screens.IdeasScreenTestTags
 import ch.eureka.eurekapp.screens.SelfNotesScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.ui.profile.ProfileScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
@@ -156,5 +165,108 @@ class NavigationMenuTest : TestCase() {
         false
       }
     }
+  }
+
+  @Test
+  fun testNavigateToTaskDependenciesScreen() {
+    runBlocking {
+      val testUserId =
+          FirebaseEmulator.auth.currentUser?.uid ?: throw IllegalStateException("No user")
+      val projectId = "test-project-id"
+      val taskId = "test-task-id"
+
+      // Setup minimal test project
+      val projectRef = FirebaseEmulator.firestore.collection("projects").document(projectId)
+      projectRef
+          .set(
+              Project(
+                  projectId = projectId,
+                  name = "Test Project",
+                  description = "Test",
+                  status = ProjectStatus.OPEN,
+                  createdBy = testUserId,
+                  memberIds = listOf(testUserId)))
+          .await()
+      projectRef
+          .collection("members")
+          .document(testUserId)
+          .set(Member(userId = testUserId, role = ProjectRole.OWNER))
+          .await()
+
+      // Setup minimal test task
+      val taskRepository: TaskRepository =
+          FirestoreTaskRepository(
+              firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+      val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse("15/10/2025")!!
+      taskRepository
+          .updateTask(
+              Task(
+                  taskID = taskId,
+                  projectId = projectId,
+                  title = "Test Task",
+                  description = "Test",
+                  assignedUserIds = listOf(testUserId),
+                  dueDate = Timestamp(date),
+                  attachmentUrls = emptyList(),
+                  createdBy = testUserId,
+                  status = TaskStatus.TODO))
+          .getOrThrow()
+    }
+
+    // Use actual NavigationMenu to cover the real Navigation.kt lines 233-239
+    composeTestRule.setContent { NavigationMenu() }
+    composeTestRule.waitForIdle()
+
+    // Navigate through UI to reach TaskDependenciesScreen
+    // This will execute the actual composable in Navigation.kt
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+
+    // Wait for task card to appear and click it
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      try {
+        composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).assertExists()
+>>>>>>> 1d6a0c9d (fix: resolve merge conflicts and fix NavigationMenuTest syntax errors)
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
+<<<<<<< HEAD
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertIsDisplayed()
+
+    // Test one callback to ensure callbacks are covered (onOpenTasks)
+    // This covers line 178: onOpenTasks = { navigationController.navigate(Route.TasksSection.Tasks)
+    // }
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      try {
+        composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).performClick()
+    composeTestRule.waitForIdle()
+
+    // Verify navigation happened (confirms callback executed)
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      try {
+        composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
+    composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).performClick()
+    composeTestRule.waitForIdle()
+
+    // Click the dependencies button to navigate to TaskDependenciesScreen
+    // This triggers the actual composable in Navigation.kt lines 233-239
+    composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.VIEW_DEPENDENCIES).performClick()
+    composeTestRule.waitForIdle()
+
+    // Verify the screen is displayed (this confirms the composable executed)
+    composeTestRule.onNodeWithTag("back_button_dependencies").assertIsDisplayed()
   }
 }
