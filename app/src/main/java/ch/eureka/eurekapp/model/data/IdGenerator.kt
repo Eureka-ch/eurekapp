@@ -35,7 +35,7 @@ object IdGenerator {
   fun generateUniqueToken(): String = "token_${UUID.randomUUID()}"
 
   /**
-   * Generates a unique field ID from a label. Sanitizes the label and appends a short UUID for
+   * Generates a unique field ID from a label. Sanitizes the label and appends a full UUID for
    * uniqueness.
    *
    * @param label The field label to generate an ID from
@@ -43,7 +43,7 @@ object IdGenerator {
    */
   fun generateFieldId(label: String): String {
     val sanitized = label.lowercase().replace(Regex("[^a-z0-9]+"), "_").trim('_').take(20)
-    val uuid = UUID.randomUUID().toString().take(8)
+    val uuid = UUID.randomUUID().toString()
     return if (sanitized.isEmpty()) "field_$uuid" else "${sanitized}_${uuid}"
   }
 }

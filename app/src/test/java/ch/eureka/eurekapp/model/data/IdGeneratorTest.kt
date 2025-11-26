@@ -139,9 +139,9 @@ class IdGeneratorTest {
   @Test
   fun generateFieldId_shouldAppendUuidSuffix() {
     val fieldId = IdGenerator.generateFieldId("test")
-    val parts = fieldId.split("_")
+    val parts = fieldId.split("_", limit = 2)
     TestCase.assertEquals(2, parts.size)
     TestCase.assertEquals("test", parts[0])
-    TestCase.assertEquals(8, parts[1].length)
+    TestCase.assertEquals(36, parts[1].length) // Full UUID with hyphens
   }
 }
