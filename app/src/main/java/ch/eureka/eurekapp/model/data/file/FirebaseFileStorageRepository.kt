@@ -45,7 +45,8 @@ class FirebaseFileStorageRepository(
     val projectId = extractProjectIdFromPath(storagePath)
     val fileName = extractFileNameFromPath(storagePath)
 
-    // Only log activity for project files (profile photos and other user files don't have projectId)
+    // Only log activity for project files (profile photos and other user files don't have
+    // projectId)
     if (projectId != null) {
       ActivityLogger.logActivity(
           projectId = projectId,

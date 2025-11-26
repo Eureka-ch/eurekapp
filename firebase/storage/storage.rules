@@ -1,0 +1,46 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user is a member of a project
+    // This queries Firestore to verify project membership
+    function isProjectMember(projectId) {
+      return firestore.exists(/databases/(default)/documents/projects/$(projectId)/members/$(request.auth.uid));
+    }
+
+    // Profile photos - anyone can read, only owner can write
+    // Filename must match the user's UID and user must exist in Firestore
+    //TODO add check in db
+    match /profilePhotos/{filename} {
+      allow read: if isAuthenticated();  // Public read access
+      allow write, delete: if isAuthenticated()
+                           && filename.matches(request.auth.uid + '\\.[a-zA-Z0-9]+');
+    }
+
+    // User personal files - users can only access their own files
+    match /users/{userId}/{filename} {
+      allow read, write, delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Project-level files - only project members can access
+    match /projects/{projectId}/{filename} {
+      allow read, write, delete: if isAuthenticated() && isProjectMember(projectId);
+    }
+
+    // Task attachment files - only project members can access
+    match /projects/{projectId}/tasks/{taskId}/attachments/{filename} {
+      allow read, write, delete: if isAuthenticated() && isProjectMember(projectId);
+    }
+
+    // Meeting attachment files - only project members can access
+    match /projects/{projectId}/meetings/{meetingId}/attachments/{filename} {
+      allow read, write, delete: if isAuthenticated() && isProjectMember(projectId);
+    }
+  }
+}
