@@ -57,6 +57,19 @@ object HomeOverviewTestTags {
 }
 
 /**
+ * Data class grouping all navigation callbacks for HomeOverviewScreen. This reduces the number of
+ * parameters to comply with SonarQube rules.
+ */
+data class HomeOverviewActions(
+    val onOpenProjects: () -> Unit = {},
+    val onOpenTasks: () -> Unit = {},
+    val onOpenMeetings: () -> Unit = {},
+    val onTaskSelected: (projectId: String, taskId: String) -> Unit = { _, _ -> },
+    val onMeetingSelected: (projectId: String, meetingId: String) -> Unit = { _, _ -> },
+    val onProjectSelected: (projectId: String) -> Unit = {}
+)
+
+/**
  * Home overview entry screen.
  *
  * Provides a summary of tasks, meetings, and projects leveraging [HomeOverviewViewModel].
@@ -64,24 +77,11 @@ object HomeOverviewTestTags {
 @Composable
 fun HomeOverviewScreen(
     modifier: Modifier = Modifier,
-    onOpenProjects: () -> Unit = {},
-    onOpenTasks: () -> Unit = {},
-    onOpenMeetings: () -> Unit = {},
-    onTaskSelected: (projectId: String, taskId: String) -> Unit = { _, _ -> },
-    onMeetingSelected: (projectId: String, meetingId: String) -> Unit = { _, _ -> },
-    onProjectSelected: (projectId: String) -> Unit = {},
+    actions: HomeOverviewActions = HomeOverviewActions(),
     homeOverviewViewModel: HomeOverviewViewModel = viewModel(),
 ) {
   val uiState by homeOverviewViewModel.uiState.collectAsState()
-  HomeOverviewLayout(
-      modifier = modifier,
-      uiState = uiState,
-      onOpenProjects = onOpenProjects,
-      onOpenTasks = onOpenTasks,
-      onOpenMeetings = onOpenMeetings,
-      onTaskSelected = onTaskSelected,
-      onMeetingSelected = onMeetingSelected,
-      onProjectSelected = onProjectSelected)
+  HomeOverviewLayout(modifier = modifier, uiState = uiState, actions = actions)
 }
 
 /** Visible-for-testing layout that renders the actual home overview content based on [uiState]. */
@@ -89,12 +89,7 @@ fun HomeOverviewScreen(
 internal fun HomeOverviewLayout(
     modifier: Modifier = Modifier,
     uiState: HomeOverviewUiState,
-    onOpenProjects: () -> Unit = {},
-    onOpenTasks: () -> Unit = {},
-    onOpenMeetings: () -> Unit = {},
-    onTaskSelected: (projectId: String, taskId: String) -> Unit = { _, _ -> },
-    onMeetingSelected: (projectId: String, meetingId: String) -> Unit = { _, _ -> },
-    onProjectSelected: (projectId: String) -> Unit = {}
+    actions: HomeOverviewActions = HomeOverviewActions()
 ) {
   if (uiState.isLoading) {
     Box(
@@ -129,7 +124,7 @@ internal fun HomeOverviewLayout(
               count = uiState.upcomingTasks.size,
               actionLabel = "View all",
               actionTestTag = HomeOverviewTestTags.CTA_TASKS,
-              onActionClick = onOpenTasks)
+              onActionClick = actions.onOpenTasks)
         }
         if (uiState.upcomingTasks.isEmpty()) {
           item { EmptyState(text = "No tasks assigned yet. Create one to get started.") }
@@ -140,7 +135,8 @@ internal fun HomeOverviewLayout(
                     Modifier.fillMaxWidth()
                         .testTag("${HomeOverviewTestTags.TASK_ITEM_PREFIX}${task.taskID}")) {
                   TaskPreviewCard(
-                      task = task, onTaskClick = { onTaskSelected(task.projectId, task.taskID) })
+                      task = task,
+                      onTaskClick = { actions.onTaskSelected(task.projectId, task.taskID) })
                 }
           }
         }
@@ -151,7 +147,7 @@ internal fun HomeOverviewLayout(
               count = uiState.upcomingMeetings.size,
               actionLabel = "Open meetings",
               actionTestTag = HomeOverviewTestTags.CTA_MEETINGS,
-              onActionClick = onOpenMeetings)
+              onActionClick = actions.onOpenMeetings)
         }
         if (uiState.upcomingMeetings.isEmpty()) {
           item { EmptyState(text = "No upcoming meetings. Schedule one to keep your team synced.") }
@@ -167,7 +163,9 @@ internal fun HomeOverviewLayout(
                       config =
                           MeetingCardConfig(
                               isCurrentUserId = { false },
-                              onClick = { onMeetingSelected(meeting.projectId, meeting.meetingID) },
+                              onClick = {
+                                actions.onMeetingSelected(meeting.projectId, meeting.meetingID)
+                              },
                               isConnected = uiState.isConnected))
                 }
           }
@@ -179,7 +177,7 @@ internal fun HomeOverviewLayout(
               count = uiState.recentProjects.size,
               actionLabel = "Browse projects",
               actionTestTag = HomeOverviewTestTags.CTA_PROJECTS,
-              onActionClick = onOpenProjects)
+              onActionClick = actions.onOpenProjects)
         }
         if (uiState.recentProjects.isEmpty()) {
           item { EmptyState(text = "No projects yet. Create a project to organize your work.") }
@@ -187,7 +185,7 @@ internal fun HomeOverviewLayout(
           items(uiState.recentProjects.take(HOME_ITEMS_LIMIT)) { project ->
             ProjectSummaryCard(
                 project = project,
-                onClick = { onProjectSelected(project.projectId) },
+                onClick = { actions.onProjectSelected(project.projectId) },
                 modifier =
                     Modifier.fillMaxWidth()
                         .padding(vertical = Spacing.xs)

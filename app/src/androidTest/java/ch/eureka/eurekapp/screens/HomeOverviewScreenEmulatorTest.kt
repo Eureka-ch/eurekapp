@@ -220,9 +220,13 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
         NavHost(navController, startDestination = Route.HomeOverview) {
           composable<Route.HomeOverview> {
             HomeOverviewScreen(
-                onOpenProjects = { navController.navigate(Route.ProjectSelection) },
-                onOpenTasks = { navController.navigate(Route.TasksSection.Tasks) },
-                onOpenMeetings = { navController.navigate(Route.MeetingsSection.Meetings) })
+                actions =
+                    HomeOverviewActions(
+                        onOpenProjects = { navController.navigate(Route.ProjectSelection) },
+                        onOpenTasks = { navController.navigate(Route.TasksSection.Tasks) },
+                        onOpenMeetings = {
+                          navController.navigate(Route.MeetingsSection.Meetings)
+                        }))
           }
           composable<Route.ProjectSelection> {
             androidx.compose.material3.Text(
@@ -287,18 +291,20 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
         NavHost(navController, startDestination = Route.HomeOverview) {
           composable<Route.HomeOverview> {
             HomeOverviewScreen(
-                onOpenProjects = {
-                  navController.navigate(Route.ProjectSelection)
-                  projectsNavigated = true
-                },
-                onOpenTasks = {
-                  navController.navigate(Route.TasksSection.Tasks)
-                  tasksNavigated = true
-                },
-                onOpenMeetings = {
-                  navController.navigate(Route.MeetingsSection.Meetings)
-                  meetingsNavigated = true
-                })
+                actions =
+                    HomeOverviewActions(
+                        onOpenProjects = {
+                          navController.navigate(Route.ProjectSelection)
+                          projectsNavigated = true
+                        },
+                        onOpenTasks = {
+                          navController.navigate(Route.TasksSection.Tasks)
+                          tasksNavigated = true
+                        },
+                        onOpenMeetings = {
+                          navController.navigate(Route.MeetingsSection.Meetings)
+                          meetingsNavigated = true
+                        }))
           }
           composable<Route.ProjectSelection> {
             androidx.compose.material3.Text(

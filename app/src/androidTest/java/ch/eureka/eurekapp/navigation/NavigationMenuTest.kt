@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
+import ch.eureka.eurekapp.screens.HomeOverviewTestTags
 import ch.eureka.eurekapp.screens.IdeasScreenTestTags
 import ch.eureka.eurekapp.screens.SelfNotesScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
@@ -109,8 +110,51 @@ class NavigationMenuTest : TestCase() {
 
     // Verify home button navigates back to HomeOverview
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
-    composeTestRule
-        .onNodeWithTag(ch.eureka.eurekapp.screens.HomeOverviewTestTags.SCREEN)
-        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertIsDisplayed()
+  }
+
+  @Test
+  fun testHomeOverviewComposable() {
+    // Use actual NavigationMenu to cover Navigation.kt lines 175-194
+    // This test ensures the HomeOverview composable and its callbacks are executed
+    composeTestRule.setContent { NavigationMenu() }
+
+    composeTestRule.waitForIdle()
+
+    // Verify HomeOverview is displayed (start destination)
+    // This covers lines 175-194: composable<Route.HomeOverview> { ... }
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      try {
+        composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertIsDisplayed()
+
+    // Test one callback to ensure callbacks are covered (onOpenTasks)
+    // This covers line 178: onOpenTasks = { navigationController.navigate(Route.TasksSection.Tasks)
+    // }
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      try {
+        composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).performClick()
+    composeTestRule.waitForIdle()
+
+    // Verify navigation happened (confirms callback executed)
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      try {
+        composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
   }
 }

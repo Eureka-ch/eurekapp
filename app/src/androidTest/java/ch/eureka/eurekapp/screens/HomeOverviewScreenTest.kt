@@ -123,9 +123,11 @@ class HomeOverviewScreenTest {
                       upcomingMeetings = listOf(createMeeting("Meeting CTA")),
                       recentProjects = listOf(createProject("Project CTA")),
                       isLoading = false),
-          onOpenTasks = { tasksClicked = true },
-          onOpenMeetings = { meetingsClicked = true },
-          onOpenProjects = { projectsClicked = true })
+          actions =
+              HomeOverviewActions(
+                  onOpenTasks = { tasksClicked = true },
+                  onOpenMeetings = { meetingsClicked = true },
+                  onOpenProjects = { projectsClicked = true }))
     }
 
     composeTestRule.waitForIdle()

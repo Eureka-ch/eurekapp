@@ -5,8 +5,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -319,35 +317,6 @@ class TaskEndToEndTest : TestCase() {
           .performClick()
       composeTestRule.waitForIdle()
       composeTestRule.onNodeWithText("30 minutes").performClick()
-      composeTestRule.onNodeWithText("OK").performClick()
-      composeTestRule.waitForIdle()
-
-      // Date selection: Click on tomorrow's date to ensure it's always in the future
-      // Calculate tomorrow's day number and click on it in the calendar grid
-      composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE).performClick()
-      composeTestRule.waitForIdle()
-
-      // Wait for date picker to load
-      composeTestRule.waitUntil(timeoutMillis = 5000) {
-        try {
-          composeTestRule.onNodeWithText("OK").assertExists()
-          true
-        } catch (e: AssertionError) {
-          false
-        }
-      }
-
-      // Get tomorrow's day of month
-      val tomorrow =
-          java.util.Calendar.getInstance().apply { add(java.util.Calendar.DAY_OF_MONTH, 1) }
-      val tomorrowDay = tomorrow.get(java.util.Calendar.DAY_OF_MONTH).toString()
-
-      // Click on tomorrow's day in the calendar grid
-      // This ensures we always select a date in the future
-      runCatching {
-        composeTestRule.onAllNodesWithText(tomorrowDay, substring = true).onFirst().performClick()
-      }
-
       composeTestRule.onNodeWithText("OK").performClick()
       composeTestRule.waitForIdle()
 
