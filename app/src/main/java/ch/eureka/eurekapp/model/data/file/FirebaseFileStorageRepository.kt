@@ -45,22 +45,19 @@ class FirebaseFileStorageRepository(
     val projectId = extractProjectIdFromPath(storagePath)
     val fileName = extractFileNameFromPath(storagePath)
 
-    if (fileName.isBlank()) {
-      val errorMsg = "Invalid storage path: fileName='$fileName'"
+    if (projectId == null || fileName.isBlank()) {
+      val errorMsg = "Invalid storage path: projectId=$projectId, fileName='$fileName'"
       android.util.Log.e("FirebaseFileStorageRepository", errorMsg)
       throw IllegalStateException(errorMsg)
     }
 
-    // Only log activity for project files (profile photos and other user files don't have projectId)
-    if (projectId != null) {
-      ActivityLogger.logActivity(
-          projectId = projectId,
-          activityType = ActivityType.UPLOADED,
-          entityType = EntityType.FILE,
-          entityId = downloadUrl,
-          userId = currentUser.uid,
-          metadata = mapOf("fileName" to fileName))
-    }
+    ActivityLogger.logActivity(
+        projectId = projectId,
+        activityType = ActivityType.UPLOADED,
+        entityType = EntityType.FILE,
+        entityId = downloadUrl,
+        userId = currentUser.uid,
+        metadata = mapOf("fileName" to fileName))
 
     downloadUrl
   }
