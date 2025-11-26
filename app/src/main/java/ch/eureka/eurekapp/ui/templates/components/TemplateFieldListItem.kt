@@ -23,32 +23,42 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.*
 import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fieldtypes.*
 
 /**
- * List item for a template field with expand/collapse editing.
+ * Callbacks for template field list item actions.
  *
- * @param field The field definition
- * @param isExpanded Whether the field is expanded for editing
- * @param error Validation error if any
  * @param onExpand Callback to expand the field
  * @param onFieldChange Callback when field definition changes
  * @param onSave Callback to save changes (collapses)
  * @param onCancel Callback to cancel changes (collapses)
  * @param onDelete Callback to delete field
  * @param onDuplicate Callback to duplicate field
+ */
+data class TemplateFieldCallbacks(
+    val onExpand: () -> Unit,
+    val onFieldChange: (FieldDefinition) -> Unit,
+    val onSave: () -> Unit,
+    val onCancel: () -> Unit,
+    val onDelete: () -> Unit,
+    val onDuplicate: () -> Unit
+)
+
+/**
+ * List item for a template field with expand/collapse editing.
+ *
+ * @param modifier Modifier to apply to the root card
+ * @param field The field definition
+ * @param isExpanded Whether the field is expanded for editing
+ * @param error Validation error if any
+ * @param callbacks Grouped callbacks for field actions
  * @param dragHandle Composable for drag handle
  */
 @Composable
 fun TemplateFieldListItem(
+    modifier: Modifier = Modifier,
     field: FieldDefinition,
     isExpanded: Boolean,
     error: String?,
-    onExpand: () -> Unit,
-    onFieldChange: (FieldDefinition) -> Unit,
-    onSave: () -> Unit,
-    onCancel: () -> Unit,
-    onDelete: () -> Unit,
-    onDuplicate: () -> Unit,
-    dragHandle: @Composable () -> Unit,
-    modifier: Modifier = Modifier
+    callbacks: TemplateFieldCallbacks,
+    dragHandle: @Composable () -> Unit
 ) {
   var localField by remember(field, isExpanded) { mutableStateOf(field) }
 
@@ -58,7 +68,7 @@ fun TemplateFieldListItem(
       Row(
           modifier =
               Modifier.fillMaxWidth()
-                  .clickable(enabled = !isExpanded) { onExpand() }
+                  .clickable(enabled = !isExpanded) { callbacks.onExpand() }
                   .padding(16.dp),
           horizontalArrangement = Arrangement.spacedBy(8.dp),
           verticalAlignment = Alignment.CenterVertically) {
@@ -107,15 +117,17 @@ fun TemplateFieldListItem(
           Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             IconButton(
                 onClick = {
-                  onFieldChange(localField)
-                  onSave()
+                  callbacks.onFieldChange(localField)
+                  callbacks.onSave()
                 }) {
                   Icon(Icons.Default.Check, "Save", tint = MaterialTheme.colorScheme.primary)
                 }
-            IconButton(onClick = onCancel) { Icon(Icons.Default.Close, "Cancel") }
+            IconButton(onClick = callbacks.onCancel) { Icon(Icons.Default.Close, "Cancel") }
             Spacer(Modifier.weight(1f))
-            IconButton(onClick = onDuplicate) { Icon(Icons.Default.ContentCopy, "Duplicate") }
-            IconButton(onClick = onDelete) {
+            IconButton(onClick = callbacks.onDuplicate) {
+              Icon(Icons.Default.ContentCopy, "Duplicate")
+            }
+            IconButton(onClick = callbacks.onDelete) {
               Icon(Icons.Default.Delete, "Delete", tint = MaterialTheme.colorScheme.error)
             }
           }

@@ -20,45 +20,64 @@ import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import sh.calvin.reorderable.*
 
 /**
- * Reorderable list of template fields.
+ * Callbacks for template field list operations.
  *
- * @param fields List of field definitions
- * @param editingFieldId ID of field being edited
- * @param fieldErrors Map of field errors
  * @param onFieldEdit Callback to start editing a field
  * @param onFieldSave Callback to save field changes
  * @param onFieldCancel Callback to cancel editing
  * @param onFieldDelete Callback to delete a field
  * @param onFieldDuplicate Callback to duplicate a field
  * @param onFieldsReorder Callback when fields are reordered
+ */
+data class TemplateFieldListCallbacks(
+    val onFieldEdit: (String) -> Unit,
+    val onFieldSave: (String, FieldDefinition) -> Unit,
+    val onFieldCancel: (String) -> Unit,
+    val onFieldDelete: (String) -> Unit,
+    val onFieldDuplicate: (String) -> Unit,
+    val onFieldsReorder: (Int, Int) -> Unit
+)
+
+/**
+ * Callbacks for template basic info (title/description).
+ *
+ * @param onTitleChange Callback when title changes
+ * @param onDescriptionChange Callback when description changes
+ */
+data class TemplateBasicInfoCallbacks(
+    val onTitleChange: (String) -> Unit,
+    val onDescriptionChange: (String) -> Unit
+)
+
+/**
+ * Reorderable list of template fields.
+ *
+ * @param modifier Modifier to apply to the root lazy column
+ * @param fields List of field definitions
+ * @param editingFieldId ID of field being edited
+ * @param fieldErrors Map of field errors
+ * @param callbacks Callbacks for field operations
  * @param title Template title (optional, for scrollable header)
  * @param description Template description (optional, for scrollable header)
  * @param titleError Title validation error (optional)
- * @param onTitleChange Callback when title changes
- * @param onDescriptionChange Callback when description changes
+ * @param basicInfoCallbacks Callbacks for title/description changes (optional)
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TemplateFieldList(
+    modifier: Modifier = Modifier,
     fields: List<FieldDefinition>,
     editingFieldId: String?,
     fieldErrors: Map<String, String>,
-    onFieldEdit: (String) -> Unit,
-    onFieldSave: (String, FieldDefinition) -> Unit,
-    onFieldCancel: (String) -> Unit,
-    onFieldDelete: (String) -> Unit,
-    onFieldDuplicate: (String) -> Unit,
-    onFieldsReorder: (Int, Int) -> Unit,
-    modifier: Modifier = Modifier,
+    callbacks: TemplateFieldListCallbacks,
     title: String? = null,
     description: String? = null,
     titleError: String? = null,
-    onTitleChange: ((String) -> Unit)? = null,
-    onDescriptionChange: ((String) -> Unit)? = null
+    basicInfoCallbacks: TemplateBasicInfoCallbacks? = null
 ) {
   val lazyListState = rememberLazyListState()
   // Calculate offset: 1 if basic info section is present, 0 otherwise
-  val hasBasicInfo = title != null && onTitleChange != null && onDescriptionChange != null
+  val hasBasicInfo = title != null && basicInfoCallbacks != null
   val indexOffset = if (hasBasicInfo) 1 else 0
 
   val reorderableState =
@@ -68,7 +87,7 @@ fun TemplateFieldList(
         val toFieldIndex = to.index - indexOffset
         // Only reorder if both indices are valid field indices
         if (fromFieldIndex >= 0 && toFieldIndex >= 0) {
-          onFieldsReorder(fromFieldIndex, toFieldIndex)
+          callbacks.onFieldsReorder(fromFieldIndex, toFieldIndex)
         }
       }
 
@@ -77,15 +96,15 @@ fun TemplateFieldList(
       modifier = modifier,
       contentPadding = PaddingValues(16.dp),
       verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (title != null && onTitleChange != null && onDescriptionChange != null) {
+        if (title != null && basicInfoCallbacks != null) {
           item(key = "basic_info") {
             Column {
               TemplateBasicInfoSection(
                   title = title,
                   description = description ?: "",
                   titleError = titleError,
-                  onTitleChange = onTitleChange,
-                  onDescriptionChange = onDescriptionChange)
+                  onTitleChange = basicInfoCallbacks.onTitleChange,
+                  onDescriptionChange = basicInfoCallbacks.onDescriptionChange)
               Spacer(Modifier.height(8.dp))
               HorizontalDivider()
               Spacer(Modifier.height(8.dp))
@@ -113,21 +132,22 @@ fun TemplateFieldList(
           items(fields, key = { it.id }) { field ->
             ReorderableItem(reorderableState, key = field.id) { isDragging ->
               TemplateFieldListItem(
+                  modifier = Modifier.shadow(if (isDragging) 8.dp else 0.dp),
                   field = field,
                   isExpanded = editingFieldId == field.id,
                   error = fieldErrors[field.id],
-                  onExpand = { onFieldEdit(field.id) },
-                  onFieldChange = { onFieldSave(field.id, it) },
-                  onSave = { onFieldCancel(field.id) },
-                  onCancel = { onFieldCancel(field.id) },
-                  onDelete = { onFieldDelete(field.id) },
-                  onDuplicate = { onFieldDuplicate(field.id) },
-                  dragHandle = {
+                  callbacks =
+                      TemplateFieldCallbacks(
+                          onExpand = { callbacks.onFieldEdit(field.id) },
+                          onFieldChange = { callbacks.onFieldSave(field.id, it) },
+                          onSave = { callbacks.onFieldCancel(field.id) },
+                          onCancel = { callbacks.onFieldCancel(field.id) },
+                          onDelete = { callbacks.onFieldDelete(field.id) },
+                          onDuplicate = { callbacks.onFieldDuplicate(field.id) })) {
                     IconButton(onClick = {}, modifier = Modifier.draggableHandle()) {
                       Icon(Icons.Default.DragHandle, "Reorder")
                     }
-                  },
-                  modifier = Modifier.shadow(if (isDragging) 8.dp else 0.dp))
+                  }
             }
           }
         }
