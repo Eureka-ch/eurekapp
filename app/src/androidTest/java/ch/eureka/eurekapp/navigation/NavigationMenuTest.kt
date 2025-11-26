@@ -125,48 +125,50 @@ class NavigationMenuTest : TestCase() {
   }
 
   @Test
-  fun testNavigateToTaskDependenciesScreen() = runBlocking {
-    val testUserId =
-        FirebaseEmulator.auth.currentUser?.uid ?: throw IllegalStateException("No user")
-    val projectId = "test-project-id"
-    val taskId = "test-task-id"
+  fun testNavigateToTaskDependenciesScreen() {
+    runBlocking {
+      val testUserId =
+          FirebaseEmulator.auth.currentUser?.uid ?: throw IllegalStateException("No user")
+      val projectId = "test-project-id"
+      val taskId = "test-task-id"
 
-    // Setup minimal test project
-    val projectRef = FirebaseEmulator.firestore.collection("projects").document(projectId)
-    projectRef
-        .set(
-            Project(
-                projectId = projectId,
-                name = "Test Project",
-                description = "Test",
-                status = ProjectStatus.OPEN,
-                createdBy = testUserId,
-                memberIds = listOf(testUserId)))
-        .await()
-    projectRef
-        .collection("members")
-        .document(testUserId)
-        .set(Member(userId = testUserId, role = ProjectRole.OWNER))
-        .await()
+      // Setup minimal test project
+      val projectRef = FirebaseEmulator.firestore.collection("projects").document(projectId)
+      projectRef
+          .set(
+              Project(
+                  projectId = projectId,
+                  name = "Test Project",
+                  description = "Test",
+                  status = ProjectStatus.OPEN,
+                  createdBy = testUserId,
+                  memberIds = listOf(testUserId)))
+          .await()
+      projectRef
+          .collection("members")
+          .document(testUserId)
+          .set(Member(userId = testUserId, role = ProjectRole.OWNER))
+          .await()
 
-    // Setup minimal test task
-    val taskRepository: TaskRepository =
-        FirestoreTaskRepository(
-            firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
-    val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse("15/10/2025")!!
-    taskRepository
-        .updateTask(
-            Task(
-                taskID = taskId,
-                projectId = projectId,
-                title = "Test Task",
-                description = "Test",
-                assignedUserIds = listOf(testUserId),
-                dueDate = Timestamp(date),
-                attachmentUrls = emptyList(),
-                createdBy = testUserId,
-                status = TaskStatus.TODO))
-        .getOrThrow()
+      // Setup minimal test task
+      val taskRepository: TaskRepository =
+          FirestoreTaskRepository(
+              firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+      val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse("15/10/2025")!!
+      taskRepository
+          .updateTask(
+              Task(
+                  taskID = taskId,
+                  projectId = projectId,
+                  title = "Test Task",
+                  description = "Test",
+                  assignedUserIds = listOf(testUserId),
+                  dueDate = Timestamp(date),
+                  attachmentUrls = emptyList(),
+                  createdBy = testUserId,
+                  status = TaskStatus.TODO))
+          .getOrThrow()
+    }
 
     // Use actual NavigationMenu to cover the real Navigation.kt lines 233-239
     composeTestRule.setContent { NavigationMenu() }
