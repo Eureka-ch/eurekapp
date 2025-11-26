@@ -48,10 +48,14 @@ class ViewTaskViewModel(
           .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
   fun downloadFile(url: String, fileName: String, context: Context) {
-    val downloadService = DownloadService(context)
     viewModelScope.launch {
-      val uri = downloadService.downloadFile(url, fileName)
-      if (uri != null) {
+      if (downloadedFileDao.isDownloaded(url)) {
+        // File already downloaded, skip
+        return@launch
+      }
+      val downloadService = DownloadService(context)
+      val result = downloadService.downloadFile(url, fileName)
+      result.onSuccess { uri ->
         downloadedFileDao.insert(
             DownloadedFile(url = url, localPath = uri.toString(), fileName = fileName))
       }
@@ -105,21 +109,27 @@ class ViewTaskViewModel(
                 val urlToUriMap: Map<String, Uri> =
                     downloadedFiles.associate { file -> file.url to file.localPath.toUri() }
 
-                val offlineAttachments =
-                    if (!isConnected) {
-                      taskState.attachmentUrls.mapNotNull { url -> urlToUriMap[url] }
-                    } else {
-                      emptyList()
-                    }
-
                 val downloadedUrls = downloadedFiles.map { it.url }.toSet()
                 val urlsToDownload = taskState.attachmentUrls.filter { it !in downloadedUrls }
 
                 val effectiveAttachments =
-                    if (isConnected) {
-                      taskState.attachmentUrls + taskState.attachmentUris
-                    } else {
-                      offlineAttachments + taskState.attachmentUris + urlsToDownload
+                    buildList<Attachment> {
+                      if (isConnected) {
+                        // Online: show all remote URLs
+                        taskState.attachmentUrls.forEach { url -> add(Attachment.Remote(url)) }
+                      } else {
+                        // Offline: show downloaded files as Local, undownloaded as Remote
+                        taskState.attachmentUrls.forEach { url ->
+                          val localUri = urlToUriMap[url]
+                          if (localUri != null) {
+                            add(Attachment.Local(localUri))
+                          } else {
+                            add(Attachment.Remote(url))
+                          }
+                        }
+                      }
+                      // Add local URIs (e.g., newly taken photos)
+                      taskState.attachmentUris.forEach { uri -> add(Attachment.Local(uri)) }
                     }
 
                 taskState.copy(

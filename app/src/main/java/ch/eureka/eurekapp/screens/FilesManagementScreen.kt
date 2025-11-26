@@ -1,6 +1,7 @@
 // Portions of this code were generated with the help of Grok.
 package ch.eureka.eurekapp.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,6 +62,24 @@ fun FilesManagementScreen(
   val files = state.files
   var showDeleteDialog by remember { mutableStateOf(false) }
   var fileToDelete by remember { mutableStateOf<FileItem?>(null) }
+  var openFileIntent by remember { mutableStateOf<android.content.Intent?>(null) }
+  val context = LocalContext.current
+
+  LaunchedEffect(openFileIntent) {
+    openFileIntent?.let { intent ->
+      try {
+        val chooser =
+            android.content.Intent.createChooser(intent, "Open with").apply {
+              addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+        context.startActivity(chooser)
+      } catch (e: Exception) {
+        Toast.makeText(context, "No app found to open this file", android.widget.Toast.LENGTH_SHORT)
+            .show()
+      }
+      openFileIntent = null
+    }
+  }
 
   Scaffold(
       topBar = {
@@ -98,7 +118,7 @@ fun FilesManagementScreen(
                           }
                       Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(
-                            onClick = { viewModel.openFile(fileItem) },
+                            onClick = { openFileIntent = viewModel.getOpenFileIntent(fileItem) },
                             modifier =
                                 Modifier.testTag(FilesManagementScreenTestTags.OPEN_BUTTON)) {
                               Text("Open")

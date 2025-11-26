@@ -27,6 +27,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.downloads.AppDatabase
+import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
 import ch.eureka.eurekapp.model.tasks.ViewTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AttachmentsList
@@ -53,6 +54,7 @@ object ViewTaskScreenTestTags {
  * @param projectId The ID of the project that contains the task.
  * @param taskId The ID of the task to be viewed.
  * @param navigationController The NavHostController for handling navigation actions.
+ * @param downloadedFileDao The DAO for downloaded files, defaults to the app database instance.
  * @param viewTaskViewModel The ViewTaskViewModel instance for loading and displaying task details.
  */
 @Composable
@@ -60,11 +62,10 @@ fun ViewTaskScreen(
     projectId: String,
     taskId: String,
     navigationController: NavHostController = rememberNavController(),
-    viewTaskViewModel: ViewTaskViewModel = run {
-      val context = LocalContext.current
-      remember {
-        ViewTaskViewModel(projectId, taskId, AppDatabase.getDatabase(context).downloadedFileDao())
-      }
+    downloadedFileDao: DownloadedFileDao =
+        AppDatabase.getDatabase(LocalContext.current).downloadedFileDao(),
+    viewTaskViewModel: ViewTaskViewModel = remember {
+      ViewTaskViewModel(projectId, taskId, downloadedFileDao)
     },
 ) {
   val viewTaskState by viewTaskViewModel.uiState.collectAsState()

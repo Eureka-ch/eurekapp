@@ -46,9 +46,11 @@ class DownloadServiceTest {
     val fileName = "test-file.txt"
 
     // When
-    val uri = downloadService.downloadFile(url, fileName)
+    val result = downloadService.downloadFile(url, fileName)
 
     // Then
+    assertTrue(result.isSuccess)
+    val uri = result.getOrNull()
     assertNotNull(uri)
     val file = File(context.cacheDir, "downloads/$fileName")
     assertTrue(file.exists())
@@ -66,9 +68,10 @@ class DownloadServiceTest {
     val url = mockWebServer.url("/file.txt").toString()
 
     // When
-    downloadService.downloadFile(url, "file.txt")
+    val result = downloadService.downloadFile(url, "file.txt")
 
     // Then
+    assertTrue(result.isSuccess)
     assertTrue(downloadsDir.exists())
     assertTrue(downloadsDir.isDirectory)
   }
@@ -80,10 +83,10 @@ class DownloadServiceTest {
     val fileName = "test.txt"
 
     // When
-    val uri = downloadService.downloadFile(invalidUrl, fileName)
+    val result = downloadService.downloadFile(invalidUrl, fileName)
 
     // Then
-    assertNull(uri)
+    assertTrue(result.isFailure)
   }
 
   @Test
@@ -94,10 +97,10 @@ class DownloadServiceTest {
     val fileName = "test.txt"
 
     // When
-    val uri = downloadService.downloadFile(url, fileName)
+    val result = downloadService.downloadFile(url, fileName)
 
     // Then
-    assertNull(uri)
+    assertTrue(result.isFailure)
   }
 
   @Test
@@ -108,9 +111,11 @@ class DownloadServiceTest {
     val fileName = "empty.txt"
 
     // When
-    val uri = downloadService.downloadFile(url, fileName)
+    val result = downloadService.downloadFile(url, fileName)
 
     // Then
+    assertTrue(result.isSuccess)
+    val uri = result.getOrNull()
     assertNotNull(uri)
     val file = File(context.cacheDir, "downloads/$fileName")
     assertTrue(file.exists())
@@ -129,9 +134,11 @@ class DownloadServiceTest {
     val url = mockWebServer.url("/overwrite.txt").toString()
 
     // When
-    val uri = downloadService.downloadFile(url, fileName)
+    val result = downloadService.downloadFile(url, fileName)
 
     // Then
+    assertTrue(result.isSuccess)
+    val uri = result.getOrNull()
     assertNotNull(uri)
     assertEquals("new content", file.readText())
   }

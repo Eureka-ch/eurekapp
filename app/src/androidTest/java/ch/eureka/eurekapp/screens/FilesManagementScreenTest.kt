@@ -244,7 +244,7 @@ class FilesManagementScreenTest {
 
     composeTestRule.onNodeWithTag(FilesManagementScreenTestTags.OPEN_BUTTON).performClick()
 
-    verify { viewModel.openFile(fileItem) }
+    verify { viewModel.getOpenFileIntent(fileItem) }
   }
 
   @Test

@@ -14,4 +14,7 @@ interface DownloadedFileDao {
   @Query("SELECT * FROM downloaded_files") fun getAll(): Flow<List<DownloadedFile>>
 
   @Delete suspend fun delete(downloadedFile: DownloadedFile)
+
+  @Query("SELECT EXISTS(SELECT 1 FROM downloaded_files WHERE url = :url)")
+  suspend fun isDownloaded(url: String): Boolean
 }

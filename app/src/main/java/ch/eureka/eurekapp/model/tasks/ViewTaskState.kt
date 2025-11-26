@@ -1,4 +1,4 @@
-// Portions of this code were generated with the help of Grok nad GPT-5.
+// Portions of this code were generated with the help of Grok and GPT-5.
 package ch.eureka.eurekapp.model.tasks
 
 import android.net.Uri
@@ -19,5 +19,5 @@ data class ViewTaskState(
     val isConnected: Boolean = true,
     val assignedUsers: List<User> = emptyList(),
     val urlsToDownload: List<String> = emptyList(),
-    val effectiveAttachments: List<Any> = emptyList()
+    val effectiveAttachments: List<Attachment> = emptyList()
 ) : TaskStateRead

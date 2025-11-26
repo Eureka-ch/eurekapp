@@ -32,6 +32,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.tasks.Attachment
 import ch.eureka.eurekapp.model.tasks.EditTaskState
 import ch.eureka.eurekapp.model.tasks.EditTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
@@ -192,7 +193,9 @@ fun EditTaskScreen(
                         }
                   }
 
-              val allAttachments = editTaskState.attachmentUrls + editTaskState.attachmentUris
+              val allAttachments =
+                  editTaskState.attachmentUrls.map { Attachment.Remote(it) } +
+                      editTaskState.attachmentUris.map { Attachment.Local(it) }
               AttachmentsList(
                   attachments = allAttachments,
                   onDelete = { index ->

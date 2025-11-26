@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.user.User
+import ch.eureka.eurekapp.model.tasks.Attachment
 import ch.eureka.eurekapp.ui.camera.PhotoViewer
 import ch.eureka.eurekapp.utils.Formatters
 
@@ -230,28 +231,45 @@ fun TaskReminderField(
 
 @Composable
 fun AttachmentsList(
-    attachments: List<Any>,
+    attachments: List<Attachment>,
     modifier: Modifier = Modifier,
     onDelete: ((Int) -> Unit)? = null,
     isReadOnly: Boolean = false,
     isConnected: Boolean = true
 ) {
-  attachments.forEachIndexed { index, file ->
+  attachments.forEachIndexed { index, attachment ->
     Row(modifier = modifier) {
-      if (file is String && !isConnected) {
-        Text(
-            "Photo ${index + 1}: Attachment available, but cannot be visualized offline.",
-            modifier = Modifier.testTag(CommonTaskTestTags.OFFLINE_MESSAGE))
-      } else {
-        Text("Photo ${index + 1}")
-        if (!isReadOnly && onDelete != null) {
-          IconButton(
-              onClick = { onDelete(index) },
-              modifier = Modifier.testTag(CommonTaskTestTags.DELETE_PHOTO)) {
-                Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
-              }
+      when (attachment) {
+        is Attachment.Remote -> {
+          if (!isConnected && isReadOnly) {
+            Text(
+                "Photo ${index + 1}: Attachment available, but cannot be visualized offline.",
+                modifier = Modifier.testTag(CommonTaskTestTags.OFFLINE_MESSAGE))
+          } else {
+            Text("Photo ${index + 1}")
+            if (!isReadOnly && onDelete != null) {
+              IconButton(
+                  onClick = { onDelete(index) },
+                  modifier = Modifier.testTag(CommonTaskTestTags.DELETE_PHOTO)) {
+                    Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
+                  }
+            }
+            PhotoViewer(
+                attachment.url, modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.PHOTO))
+          }
         }
-        PhotoViewer(file, modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.PHOTO))
+        is Attachment.Local -> {
+          Text("Photo ${index + 1}")
+          if (!isReadOnly && onDelete != null) {
+            IconButton(
+                onClick = { onDelete(index) },
+                modifier = Modifier.testTag(CommonTaskTestTags.DELETE_PHOTO)) {
+                  Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
+                }
+          }
+          PhotoViewer(
+              attachment.uri, modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.PHOTO))
+        }
       }
     }
   }

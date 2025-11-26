@@ -5,7 +5,6 @@ import android.app.Application
 import android.content.Intent
 import android.net.Uri
 import android.webkit.MimeTypeMap
-import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
@@ -19,7 +18,10 @@ import kotlinx.coroutines.launch
 
 class FilesManagementViewModel(
     private val dao: DownloadedFileDao,
-    private val application: Application
+    private val application: Application,
+    private val mimeTypeResolver: (String) -> String? = { extension ->
+      MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+    }
 ) : ViewModel() {
 
   val uiState: StateFlow<FilesManagementState> =
@@ -42,27 +44,22 @@ class FilesManagementViewModel(
   }
 
   fun deleteFile(fileItem: FileItem) {
-    viewModelScope.launch { dao.delete(fileItem.file) }
+    viewModelScope.launch {
+      val file = File(fileItem.file.localPath)
+      if (file.exists()) {
+        file.delete()
+      }
+      dao.delete(fileItem.file)
+    }
   }
 
-  fun openFile(fileItem: FileItem) {
+  fun getOpenFileIntent(fileItem: FileItem): Intent {
     val extension = fileItem.displayName.substringAfterLast('.', "").lowercase()
-    val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "*/*"
+    val mimeType = mimeTypeResolver(extension) ?: "*/*"
 
-    val intent =
-        Intent(Intent.ACTION_VIEW).apply {
-          setDataAndType(fileItem.uri, mimeType)
-          addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-
-    try {
-      val chooser =
-          Intent.createChooser(intent, "Open with").apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-          }
-      application.startActivity(chooser)
-    } catch (e: Exception) {
-      Toast.makeText(application, "No app found to open this file", Toast.LENGTH_SHORT).show()
+    return Intent(Intent.ACTION_VIEW).apply {
+      setDataAndType(fileItem.uri, mimeType)
+      addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
   }
 }

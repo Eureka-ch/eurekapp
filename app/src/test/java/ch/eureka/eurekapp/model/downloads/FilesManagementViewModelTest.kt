@@ -3,15 +3,12 @@ package ch.eureka.eurekapp.model.downloads
 import android.app.Application
 import android.content.Intent
 import android.net.Uri
-import android.webkit.MimeTypeMap
-import android.widget.Toast
 import androidx.core.content.FileProvider
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -26,8 +23,11 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(RobolectricTestRunner::class)
 class FilesManagementViewModelTest {
 
   private lateinit var dao: DownloadedFileDao
@@ -43,7 +43,6 @@ class FilesManagementViewModelTest {
     every { application.packageName } returns "ch.eureka.eurekapp"
     every { application.applicationContext } returns application
     mockkStatic(FileProvider::class)
-    mockkStatic(Uri::class)
   }
 
   @After
@@ -67,9 +66,6 @@ class FilesManagementViewModelTest {
             url = "http://example.com/test.pdf",
             fileName = "test.pdf",
             localPath = "content://downloads/test.pdf")
-    val mockUri = mockk<Uri>()
-    every { Uri.decode("test.pdf") } returns "test.pdf"
-    every { Uri.parse("content://downloads/test.pdf") } returns mockUri
     coEvery { dao.getAll() } returns flowOf(listOf(downloadedFile))
 
     viewModel = FilesManagementViewModel(dao, application)
@@ -86,9 +82,6 @@ class FilesManagementViewModelTest {
             url = "http://example.com/photo.jpg",
             fileName = "photo.jpg",
             localPath = "content://downloads/photo.jpg")
-    val mockUri = mockk<Uri>()
-    every { Uri.decode("photo.jpg") } returns "photo.jpg"
-    every { Uri.parse("content://downloads/photo.jpg") } returns mockUri
     coEvery { dao.getAll() } returns flowOf(listOf(downloadedFile))
 
     viewModel = FilesManagementViewModel(dao, application)
@@ -105,9 +98,6 @@ class FilesManagementViewModelTest {
             url = "http://example.com/test.pdf",
             fileName = "test.pdf",
             localPath = "content://downloads/test.pdf")
-    val mockUri = mockk<Uri>()
-    every { Uri.decode("test.pdf") } returns "test.pdf"
-    every { Uri.parse("content://downloads/test.pdf") } returns mockUri
     coEvery { dao.getAll() } returns flowOf(listOf(downloadedFile))
 
     viewModel = FilesManagementViewModel(dao, application)
@@ -139,9 +129,6 @@ class FilesManagementViewModelTest {
             url = "http://example.com/my%20file.pdf",
             fileName = "my%20file.pdf",
             localPath = "content://downloads/file.pdf")
-    val mockUri = mockk<Uri>()
-    every { Uri.decode("my%20file.pdf") } returns "my file.pdf"
-    every { Uri.parse("content://downloads/file.pdf") } returns mockUri
     coEvery { dao.getAll() } returns flowOf(listOf(downloadedFile))
 
     viewModel = FilesManagementViewModel(dao, application)
@@ -160,9 +147,6 @@ class FilesManagementViewModelTest {
               url = "http://example.com/image.$format",
               localPath = "content://downloads/image.$format",
               fileName = "image.$format")
-      val mockUri = mockk<Uri>()
-      every { Uri.decode("image.$format") } returns "image.$format"
-      every { Uri.parse("content://downloads/image.$format") } returns mockUri
       coEvery { dao.getAll() } returns flowOf(listOf(file))
       viewModel = FilesManagementViewModel(dao, application)
 
@@ -172,50 +156,54 @@ class FilesManagementViewModelTest {
   }
 
   @Test
-  fun filesManagementViewModel_openFileOpensFileWithAvailableApp() = runTest {
+  fun filesManagementViewModel_getOpenFileIntentReturnsCorrectIntentForPdf() = runTest {
     coEvery { dao.getAll() } returns flowOf(emptyList())
-    viewModel = FilesManagementViewModel(dao, application)
+    val mimeTypeResolver = { extension: String ->
+      if (extension == "pdf") "application/pdf" else null
+    }
+    viewModel = FilesManagementViewModel(dao, application, mimeTypeResolver)
 
     val file =
         DownloadedFile(
             url = "http://example.com/test.pdf", localPath = "/path", fileName = "test.pdf")
-    val fileItem = FileItem(file = file, displayName = "test.pdf", isImage = false, uri = mockk())
-    val mockIntent = mockk<Intent>(relaxed = true)
+    val fileItem =
+        FileItem(
+            file = file,
+            displayName = "test.pdf",
+            isImage = false,
+            uri = Uri.parse("content://example.com/test.pdf"))
 
-    mockkStatic(MimeTypeMap::class)
-    val mockMimeTypeMap = mockk<MimeTypeMap>()
-    every { MimeTypeMap.getSingleton() } returns mockMimeTypeMap
-    every { mockMimeTypeMap.getMimeTypeFromExtension("pdf") } returns "application/pdf"
-    mockkStatic(Intent::class)
-    every { Intent.createChooser(any(), any()) } returns mockIntent
+    val result = viewModel.getOpenFileIntent(fileItem)
 
-    viewModel.openFile(fileItem)
-
-    verify { application.startActivity(mockIntent) }
+    assertEquals(fileItem.uri, result.data)
+    assertEquals("application/pdf", result.type)
+    assertEquals(Intent.ACTION_VIEW, result.action)
+    assertTrue(result.flags and Intent.FLAG_GRANT_READ_URI_PERMISSION != 0)
   }
 
   @Test
-  fun filesManagementViewModel_openFileShowsToastWhenNoAppFound() = runTest {
+  fun filesManagementViewModel_getOpenFileIntentReturnsIntentForUnknownFile() = runTest {
     coEvery { dao.getAll() } returns flowOf(emptyList())
-    viewModel = FilesManagementViewModel(dao, application)
+    val mimeTypeResolver = { extension: String ->
+      if (extension == "unknown") null else "application/pdf"
+    }
+    viewModel = FilesManagementViewModel(dao, application, mimeTypeResolver)
 
     val file =
         DownloadedFile(
             url = "http://example.com/test.unknown", localPath = "/path", fileName = "test.unknown")
     val fileItem =
-        FileItem(file = file, displayName = "test.unknown", isImage = false, uri = mockk())
-    val mockToast = mockk<Toast>(relaxed = true)
+        FileItem(
+            file = file,
+            displayName = "test.unknown",
+            isImage = false,
+            uri = Uri.parse("content://example.com/test.unknown"))
 
-    every { application.startActivity(any()) } throws android.content.ActivityNotFoundException()
-    mockkStatic(MimeTypeMap::class)
-    val mockMimeTypeMap = mockk<MimeTypeMap>()
-    every { MimeTypeMap.getSingleton() } returns mockMimeTypeMap
-    every { mockMimeTypeMap.getMimeTypeFromExtension("unknown") } returns null
-    mockkStatic(Toast::class)
-    every { Toast.makeText(any(), any<String>(), any()) } returns mockToast
+    val result = viewModel.getOpenFileIntent(fileItem)
 
-    viewModel.openFile(fileItem)
-
-    verify { mockToast.show() }
+    assertEquals(fileItem.uri, result.data)
+    assertEquals("*/*", result.type)
+    assertEquals(Intent.ACTION_VIEW, result.action)
+    assertTrue(result.flags and Intent.FLAG_GRANT_READ_URI_PERMISSION != 0)
   }
 }
