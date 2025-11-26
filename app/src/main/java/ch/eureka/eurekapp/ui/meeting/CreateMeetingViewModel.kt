@@ -60,7 +60,7 @@ import kotlinx.coroutines.launch
  */
 data class CreateMeetingUIState(
     val title: String = "",
-    val date: LocalDate = LocalDate.now(),
+    val date: LocalDate = LocalDate.now().plusDays(7),
     val time: LocalTime = LocalTime.now(),
     val duration: Int = 0,
     val format: MeetingFormat = MeetingFormat.IN_PERSON,
