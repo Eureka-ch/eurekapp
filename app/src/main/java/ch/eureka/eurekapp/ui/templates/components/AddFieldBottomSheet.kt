@@ -33,7 +33,7 @@ fun AddFieldBottomSheet(
 
   ModalBottomSheet(onDismissRequest = onDismiss, modifier = modifier) {
     Column(modifier = Modifier.padding(16.dp)) {
-      selectedType?.let { type -> currentField?.let { FieldEditor(it, onDismiss, onFieldCreated) } }
+      selectedType?.let { _ -> currentField?.let { FieldEditor(it, onDismiss, onFieldCreated) } }
           ?: FieldTypeSelector { type ->
             selectedType = type
             currentField =
