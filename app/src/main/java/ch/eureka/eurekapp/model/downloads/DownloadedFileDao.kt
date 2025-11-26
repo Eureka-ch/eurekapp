@@ -9,13 +9,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface DownloadedFileDao {
-    @Insert
-    suspend fun insert(downloadedFile: DownloadedFile)
+  @Insert suspend fun insert(downloadedFile: DownloadedFile)
 
+  @Query("SELECT * FROM downloaded_files") fun getAll(): Flow<List<DownloadedFile>>
 
-    @Query("SELECT * FROM downloaded_files")
-    fun getAll(): Flow<List<DownloadedFile>>
-
-    @Delete
-    suspend fun delete(downloadedFile: DownloadedFile)
+  @Delete suspend fun delete(downloadedFile: DownloadedFile)
 }

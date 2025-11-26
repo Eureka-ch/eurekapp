@@ -1,3 +1,4 @@
+// Portions of this code were generated with the help of Grok and GPT-5.
 package ch.eureka.eurekapp.screens.subscreens.tasks.viewing
 
 import android.widget.Toast
@@ -24,6 +25,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.downloads.AppDatabase
 import ch.eureka.eurekapp.model.tasks.ViewTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
@@ -45,12 +47,6 @@ object ViewTaskScreenTestTags {
   fun assignedUserItem(index: Int) = "${ASSIGNED_USER_ITEM}_$index"
 }
 
-/*
-Portions of this code were generated with the help of Grok.
-Note: This file was partially written by GPT-5 Codex
-Co-author : GPT-5
-*/
-
 /**
  * A composable screen for viewing an existing task's details.
  *
@@ -67,11 +63,7 @@ fun ViewTaskScreen(
     viewTaskViewModel: ViewTaskViewModel = run {
       val context = LocalContext.current
       remember {
-        ViewTaskViewModel(
-            projectId,
-            taskId,
-            AppDatabase.getDatabase(context).downloadedFileDao()
-        )
+        ViewTaskViewModel(projectId, taskId, AppDatabase.getDatabase(context).downloadedFileDao())
       }
     },
 ) {
@@ -146,34 +138,15 @@ fun ViewTaskScreen(
                         Modifier.padding(16.dp).testTag(ViewTaskScreenTestTags.OFFLINE_MESSAGE))
               }
 
-              // Display assigned users
-              if (viewTaskState.assignedUsers.isNotEmpty()) {
-                Column(modifier = Modifier.testTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION)) {
-                  Text(
-                      text = "Assigned Users:",
-                      style = androidx.compose.material3.MaterialTheme.typography.titleMedium)
-                  viewTaskState.assignedUsers.forEachIndexed { index, user ->
-                    Text(
-                        text = "• ${user.displayName.ifBlank { user.email }}",
-                        style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.testTag(ViewTaskScreenTestTags.assignedUserItem(index)))
-                  }
-                }
-              }
+              AssignedUsersSection(viewTaskState.assignedUsers)
 
-              Button(
+              EditButton(
+                  isConnected = isConnected,
                   onClick = {
                     if (isConnected) {
                       navigationController.navigate(Route.TasksSection.EditTask(projectId, taskId))
                     }
-                  },
-                  enabled = isConnected,
-                  modifier =
-                      Modifier.testTag(ViewTaskScreenTestTags.EDIT_TASK)
-                          .alpha(if (isConnected) 1f else 0.6f),
-                  colors = EurekaStyles.primaryButtonColors()) {
-                    Text("Edit Task")
-                  }
+                  })
 
               AttachmentsList(
                   attachments = viewTaskState.effectiveAttachments,
@@ -181,24 +154,60 @@ fun ViewTaskScreen(
                   isReadOnly = true,
                   isConnected = isConnected)
 
-              // Add download buttons for remote attachments
-              if (viewTaskState.urlsToDownload.isNotEmpty() && isConnected) {
-                Text(
-                    text = "Download Attachments:",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(top = 16.dp)
-                )
-                Button(
-                    onClick = { 
-                      viewTaskState.urlsToDownload.forEach { url -> 
-                        viewTaskViewModel.downloadFile(url, url.substringAfterLast("/"), context) 
-                      } 
-                    },
-                    modifier = Modifier.padding(vertical = 4.dp)
-                ) {
-                  Text("Download All Attachments")
-                }
-              }
+              DownloadSection(
+                  urlsToDownload = viewTaskState.urlsToDownload,
+                  isConnected = isConnected,
+                  onDownloadAll = {
+                    viewTaskState.urlsToDownload.forEach { url ->
+                      viewTaskViewModel.downloadFile(url, url.substringAfterLast("/"), context)
+                    }
+                  })
             }
       })
+}
+
+@Composable
+private fun AssignedUsersSection(assignedUsers: List<User>) {
+  if (assignedUsers.isNotEmpty()) {
+    Column(modifier = Modifier.testTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION)) {
+      Text(
+          text = "Assigned Users:",
+          style = androidx.compose.material3.MaterialTheme.typography.titleMedium)
+      assignedUsers.forEachIndexed { index, user ->
+        Text(
+            text = "• ${user.displayName.ifBlank { user.email }}",
+            style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.testTag(ViewTaskScreenTestTags.assignedUserItem(index)))
+      }
+    }
+  }
+}
+
+@Composable
+private fun EditButton(isConnected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+  Button(
+      onClick = onClick,
+      enabled = isConnected,
+      modifier =
+          modifier.testTag(ViewTaskScreenTestTags.EDIT_TASK).alpha(if (isConnected) 1f else 0.6f),
+      colors = EurekaStyles.primaryButtonColors()) {
+        Text("Edit Task")
+      }
+}
+
+@Composable
+private fun DownloadSection(
+    urlsToDownload: List<String>,
+    isConnected: Boolean,
+    onDownloadAll: () -> Unit
+) {
+  if (urlsToDownload.isNotEmpty() && isConnected) {
+    Text(
+        text = "Download Attachments:",
+        style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier.padding(top = 16.dp))
+    Button(onClick = onDownloadAll, modifier = Modifier.padding(vertical = 4.dp)) {
+      Text("Download All Attachments")
+    }
+  }
 }

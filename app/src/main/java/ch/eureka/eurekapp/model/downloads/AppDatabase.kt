@@ -8,22 +8,22 @@ import androidx.room.RoomDatabase
 
 @Database(entities = [DownloadedFile::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun downloadedFileDao(): DownloadedFileDao
+  abstract fun downloadedFileDao(): DownloadedFileDao
 
-    companion object {
-        @Volatile
-        private var INSTANCE: AppDatabase? = null
+  companion object {
+    @Volatile private var INSTANCE: AppDatabase? = null
 
-        fun getDatabase(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    AppDatabase::class.java,
-                    "eurekapp_database"
-                ).fallbackToDestructiveMigration(true).build()
-                INSTANCE = instance
-                instance
-            }
-        }
+    fun getDatabase(context: Context): AppDatabase {
+      return INSTANCE
+          ?: synchronized(this) {
+            val instance =
+                Room.databaseBuilder(
+                        context.applicationContext, AppDatabase::class.java, "eurekapp_database")
+                    .fallbackToDestructiveMigration(true)
+                    .build()
+            INSTANCE = instance
+            instance
+          }
     }
+  }
 }

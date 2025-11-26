@@ -10,6 +10,4 @@ data class FileItem(
     val uri: Uri
 )
 
-data class FilesManagementState(
-    val files: List<FileItem> = emptyList()
-)
+data class FilesManagementState(val files: List<FileItem> = emptyList())

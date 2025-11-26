@@ -1,3 +1,4 @@
+// Portions of this code were generated with the help of Grok.
 package ch.eureka.eurekapp.screen
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -31,8 +32,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-
-// Portions of this code were generated with the help of Grok.
 
 class ViewTaskScreenOfflineTest {
 
@@ -128,7 +127,12 @@ class ViewTaskScreenOfflineTest {
       mockConnectivityObserver.setConnected(false)
 
       val viewModel =
-          ViewTaskViewModel(projectId, taskId, AppDatabase.getDatabase(context).downloadedFileDao(), taskRepository, connectivityObserver = mockConnectivityObserver)
+          ViewTaskViewModel(
+              projectId,
+              taskId,
+              AppDatabase.getDatabase(context).downloadedFileDao(),
+              taskRepository,
+              connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {
@@ -167,7 +171,12 @@ class ViewTaskScreenOfflineTest {
       mockConnectivityObserver.setConnected(false)
 
       val viewModel =
-          ViewTaskViewModel(projectId, taskId, AppDatabase.getDatabase(context).downloadedFileDao(), taskRepository, connectivityObserver = mockConnectivityObserver)
+          ViewTaskViewModel(
+              projectId,
+              taskId,
+              AppDatabase.getDatabase(context).downloadedFileDao(),
+              taskRepository,
+              connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {
@@ -201,7 +210,12 @@ class ViewTaskScreenOfflineTest {
       mockConnectivityObserver.setConnected(false)
 
       val viewModel =
-          ViewTaskViewModel(projectId, taskId, AppDatabase.getDatabase(context).downloadedFileDao(), taskRepository, connectivityObserver = mockConnectivityObserver)
+          ViewTaskViewModel(
+              projectId,
+              taskId,
+              AppDatabase.getDatabase(context).downloadedFileDao(),
+              taskRepository,
+              connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {
@@ -239,7 +253,12 @@ class ViewTaskScreenOfflineTest {
       mockConnectivityObserver.setConnected(false)
 
       val viewModel =
-          ViewTaskViewModel(projectId, taskId, AppDatabase.getDatabase(context).downloadedFileDao(), taskRepository, connectivityObserver = mockConnectivityObserver)
+          ViewTaskViewModel(
+              projectId,
+              taskId,
+              AppDatabase.getDatabase(context).downloadedFileDao(),
+              taskRepository,
+              connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {
@@ -272,7 +291,12 @@ class ViewTaskScreenOfflineTest {
       mockConnectivityObserver.setConnected(true)
 
       val viewModel =
-          ViewTaskViewModel(projectId, taskId, AppDatabase.getDatabase(context).downloadedFileDao(), taskRepository, connectivityObserver = mockConnectivityObserver)
+          ViewTaskViewModel(
+              projectId,
+              taskId,
+              AppDatabase.getDatabase(context).downloadedFileDao(),
+              taskRepository,
+              connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {

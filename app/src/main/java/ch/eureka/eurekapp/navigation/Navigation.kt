@@ -233,7 +233,9 @@ fun NavigationMenu() {
                 ViewTaskScreen(
                     taskDetailRoute.projectId, taskDetailRoute.taskId, navigationController)
               }
-              composable<Route.TasksSection.FilesManagement> { FilesManagementScreen(onBackClick = { navigationController.popBackStack() }) }
+              composable<Route.TasksSection.FilesManagement> {
+                FilesManagementScreen(onBackClick = { navigationController.popBackStack() })
+              }
 
               // Ideas section
               composable<Route.IdeasSection.Ideas> { IdeasScreen() }

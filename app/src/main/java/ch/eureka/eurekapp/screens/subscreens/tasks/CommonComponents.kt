@@ -1,3 +1,4 @@
+// Portions added by Jiří Gebauer partially generated with the help of Grok and GPT-5.
 package ch.eureka.eurekapp.screens.subscreens.tasks
 
 import androidx.compose.foundation.clickable
@@ -36,13 +37,6 @@ import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.camera.PhotoViewer
 import ch.eureka.eurekapp.utils.Formatters
 
-// Portions of this code were generated with the help of AI.
-// Portions added by Jiří Gebauer partially generated with the help of Grok.
-
-/*
-Note: This file was partially written by GPT-5 Codex
-Co-author : GPT-5
-*/
 /**
  * Helper function to determine if an error should be shown for a field.
  *

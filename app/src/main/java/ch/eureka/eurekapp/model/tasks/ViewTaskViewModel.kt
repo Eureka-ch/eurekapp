@@ -1,8 +1,8 @@
+// Portions of this code were generated with the help of Grok and GPT-5.
 package ch.eureka.eurekapp.model.tasks
 
 import android.content.Context
 import android.net.Uri
-import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
@@ -13,7 +13,6 @@ import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.model.downloads.DownloadService
 import ch.eureka.eurekapp.model.downloads.DownloadedFile
 import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
-import java.io.File
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
@@ -25,12 +24,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-
-// Portions of this code were generated with the help of Grok.
-/*
-Note: This file was partially written by GPT-5 Codex
-Co-author : GPT-5
-*/
 
 /**
  * ViewModel for viewing task details. This ViewModel is responsible only for loading and displaying
@@ -49,8 +42,10 @@ class ViewTaskViewModel(
   private val _isConnected =
       connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
-  private val _downloadedFiles = downloadedFileDao.getAll()
-      .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+  private val _downloadedFiles =
+      downloadedFileDao
+          .getAll()
+          .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
   fun downloadFile(url: String, fileName: String, context: Context) {
     val downloadService = DownloadService(context)
@@ -58,12 +53,7 @@ class ViewTaskViewModel(
       val uri = downloadService.downloadFile(url, fileName)
       if (uri != null) {
         downloadedFileDao.insert(
-            DownloadedFile(
-                url = url,
-                localPath = uri.toString(),
-                fileName = fileName
-            )
-        )
+            DownloadedFile(url = url, localPath = uri.toString(), fileName = fileName))
       }
     }
   }
@@ -112,24 +102,25 @@ class ViewTaskViewModel(
                   },
               _isConnected,
               _downloadedFiles) { taskState, isConnected, downloadedFiles ->
-                val urlToUriMap: Map<String, Uri> = downloadedFiles.associate { file ->
-                  file.url to file.localPath.toUri()
-                }
+                val urlToUriMap: Map<String, Uri> =
+                    downloadedFiles.associate { file -> file.url to file.localPath.toUri() }
 
-                val offlineAttachments = if (!isConnected) {
-                  taskState.attachmentUrls.mapNotNull { url -> urlToUriMap[url] }
-                } else {
-                  emptyList()
-                }
+                val offlineAttachments =
+                    if (!isConnected) {
+                      taskState.attachmentUrls.mapNotNull { url -> urlToUriMap[url] }
+                    } else {
+                      emptyList()
+                    }
 
                 val downloadedUrls = downloadedFiles.map { it.url }.toSet()
                 val urlsToDownload = taskState.attachmentUrls.filter { it !in downloadedUrls }
 
-                val effectiveAttachments = if (isConnected) {
-                  taskState.attachmentUrls + taskState.attachmentUris
-                } else {
-                  offlineAttachments + taskState.attachmentUris + urlsToDownload
-                }
+                val effectiveAttachments =
+                    if (isConnected) {
+                      taskState.attachmentUrls + taskState.attachmentUris
+                    } else {
+                      offlineAttachments + taskState.attachmentUris + urlsToDownload
+                    }
 
                 taskState.copy(
                     isConnected = isConnected,
