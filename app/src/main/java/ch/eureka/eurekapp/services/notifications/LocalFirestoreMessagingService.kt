@@ -94,14 +94,12 @@ class LocalFirestoreMessagingService : FirebaseMessagingService() {
   }
 
   private fun createNotificationChannel(channelId: String) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      val name = channelId.uppercase()
-      val description = "$channelId notifications"
-      val importance = NotificationManager.IMPORTANCE_HIGH
-      val channel =
-          NotificationChannel(channelId, name, importance).apply { this.description = description }
-      val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-      manager.createNotificationChannel(channel)
-    }
+    val name = channelId.uppercase()
+    val description = "$channelId notifications"
+    val importance = NotificationManager.IMPORTANCE_HIGH
+    val channel =
+        NotificationChannel(channelId, name, importance).apply { this.description = description }
+    val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    manager.createNotificationChannel(channel)
   }
 }

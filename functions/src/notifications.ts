@@ -23,15 +23,34 @@ if (!admin.apps.length) {
     });
 }
 
+function chunkArray<T>(array: Array<T>, chunkSize: number): Array<Array<T>> {
+    const originalArraySize = array.length;
+    const numberOfSubArrays = Math.ceil(originalArraySize / chunkSize);
+    const chunkedArray: Array<Array<T>> = [];
+    for(let i = 0; i < numberOfSubArrays; i++){
+        const subArray: Array<T> = []
+        const start = i * chunkSize;
+        const end = (i + 1) * chunkSize;
+        for(let j = start; j < Math.min(end, originalArraySize); j++){
+            subArray.push(array[j]);
+        }
+        chunkedArray.push(subArray);
+    }
+    return chunkedArray;
+}
+
 async function getMemberIdsFcmToken(participantIds: string[]): Promise<string[]> {
     try {
         const tokens: string[] = [];
-        const usersSnapshot = await admin.firestore()
-            .collection("users")
-            .where("uid", "in", participantIds)
+        const chunkedParticipantIds = chunkArray(participantIds, 10);
+        const promises = chunkedParticipantIds.flatMap(array => {
+            return admin.firestore()
+            .collection("users").where("uid", "in", array)
             .get();
-
-        usersSnapshot.forEach(user => {
+        });
+        const querySnapshot = await Promise.all(promises);
+        
+        querySnapshot.forEach(snapshot => snapshot.docs.forEach(user => {
             const data = user.data();
             const token = data?.fcmToken;
             
@@ -41,9 +60,10 @@ async function getMemberIdsFcmToken(participantIds: string[]): Promise<string[]>
             } else if (token) {
                 functions.logger.warn(`Invalid FCM token for user ${user.id}: ${token?.substring(0, 20)}...`);
             }
-        });
+        }));
+
         
-        functions.logger.info(`Retrieved ${tokens.length} valid FCM tokens from ${usersSnapshot.size} users`);
+        functions.logger.info(`Retrieved ${tokens.length} valid FCM tokens`);
         return tokens;
     } catch (error) {
         functions.logger.error('Error getting participants fcmTokens:', error);

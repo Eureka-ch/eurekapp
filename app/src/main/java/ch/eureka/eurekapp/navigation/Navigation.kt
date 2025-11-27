@@ -1,7 +1,6 @@
 // This code was partially written by GPT-5, and Grok
 package ch.eureka.eurekapp.navigation
 
-import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -192,9 +191,6 @@ fun NavigationMenu(
     if (notificationType != null) {
       when (notificationType) {
         NotificationType.MEETING_NOTIFICATION.backendTypeString -> {
-          Log.d("Notification handling", notificationType)
-          Log.d("Notification handling", notificationProjectId.toString())
-          Log.d("Notification handling", notificationId.toString())
           if (notificationId != null && notificationProjectId != null) {
             navigationController.navigate(
                 Route.MeetingsSection.MeetingDetail(

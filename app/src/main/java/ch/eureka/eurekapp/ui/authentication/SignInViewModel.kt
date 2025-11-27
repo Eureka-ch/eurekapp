@@ -225,7 +225,7 @@ class SignInViewModel(
       val newToken = FirebaseMessaging.getInstance().token.await()
       val currentUser = userRepository.getCurrentUser().first()
       var retries = 0.0
-      var result: Result<Unit> = Result.failure(Exception("init"))
+      var result: Result<Unit>
       if (currentUser != null && currentUser.fcmToken != newToken) {
         do {
           result = userRepository.updateFcmToken(currentUser.uid, newToken)
