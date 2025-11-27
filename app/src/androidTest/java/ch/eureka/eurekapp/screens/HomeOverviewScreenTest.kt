@@ -198,9 +198,7 @@ class HomeOverviewScreenTest {
 
     list.performScrollToNode(
         hasTestTag("${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}${project.projectId}"))
-    composeTestRule
-        .onNodeWithTag("${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}${project.projectId}")
-        .performClick()
+    composeTestRule.onNodeWithText("Open project").performClick()
 
     assertTrue(taskSelected)
     assertTrue(meetingSelected)
