@@ -10,11 +10,7 @@ import com.google.firebase.Timestamp
 /**
  * Converts the raw database entity into a clean domain model for the UI.
  *
- * This function handles the conversion of primitive SQL types back into rich objects:
- * - Converts [Long] milliseconds back to a Firebase [Timestamp].
- *
  * @return A [Message] object ready to be displayed in the UI.
- * @note Currently, the `references` list is not parsed from JSON and returns an empty list.
  */
 fun MessageEntity.toDomainModel(): Message {
   return Message(
@@ -28,12 +24,7 @@ fun MessageEntity.toDomainModel(): Message {
 /**
  * Converts the domain model into a database entity optimized for SQLite storage.
  *
- * This function flattens complex objects into primitives supported by Room:
- * - Converts Firebase [Timestamp] into a [Long] (milliseconds).
- * - Serializes lists into Strings (JSON).
- *
  * @return A [MessageEntity] ready to be inserted into the local database.
- * @note Currently, the `references` list is not serialized and is saved as an empty string.
  */
 fun Message.toEntity(): MessageEntity {
   return MessageEntity(

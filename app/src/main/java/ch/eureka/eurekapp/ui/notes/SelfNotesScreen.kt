@@ -52,16 +52,6 @@ object SelfNotesScreenTestTags {
  * architecture where users can seamlessly switch between local-only storage and cloud
  * synchronization.
  *
- * Features:
- * - **Chat Interface:** Displays notes as message bubbles in a reverse-chronological list.
- * - **Storage Toggle:** Allows users to switch between "Local" (private, on-device) and "Cloud"
- *   (synced across devices) modes via a toggle switch in the Top Bar.
- * - **Real-time Updates:** Observes the local database (Room) which is kept in sync with Firestore.
- * - **Message Composition:** Provides an input field to write and send new notes.
- * - **Auto-scrolling:** Automatically scrolls to the newest note upon sending.
- * - **Feedback:** Displays loading indicators, empty states, and snackbar notifications for sync
- *   status.
- *
  * @param modifier Optional modifier for customizing the layout behavior of the screen root.
  * @param viewModel The [SelfNotesViewModel] that manages the UI state and business logic. Defaults
  *   to using the standard `viewModel()` factory.
