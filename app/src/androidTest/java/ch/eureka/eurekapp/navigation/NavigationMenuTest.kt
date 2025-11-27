@@ -34,7 +34,10 @@ import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.ui.profile.ProfileScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
+import com.google.firebase.Timestamp
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
+import java.text.SimpleDateFormat
+import java.util.Locale
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.Before
@@ -280,33 +283,6 @@ class NavigationMenuTest : TestCase() {
     composeTestRule.waitUntil(timeoutMillis = 5000) {
       try {
         composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).assertExists()
->>>>>>> 1d6a0c9d (fix: resolve merge conflicts and fix NavigationMenuTest syntax errors)
-        true
-      } catch (e: AssertionError) {
-        false
-      }
-    }
-<<<<<<< HEAD
-    composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertIsDisplayed()
-
-    // Test one callback to ensure callbacks are covered (onOpenTasks)
-    // This covers line 178: onOpenTasks = { navigationController.navigate(Route.TasksSection.Tasks)
-    // }
-    composeTestRule.waitUntil(timeoutMillis = 5000) {
-      try {
-        composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).assertExists()
-        true
-      } catch (e: AssertionError) {
-        false
-      }
-    }
-    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).performClick()
-    composeTestRule.waitForIdle()
-
-    // Verify navigation happened (confirms callback executed)
-    composeTestRule.waitUntil(timeoutMillis = 5000) {
-      try {
-        composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertExists()
         true
       } catch (e: AssertionError) {
         false
