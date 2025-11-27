@@ -41,7 +41,7 @@ class UnifiedSelfNotesRepository(
 ) : SelfNotesRepository {
 
   private fun getCurrentUserId(): String {
-    return auth.currentUser?.uid ?: ""
+    return auth.currentUser?.uid ?: throw IllegalStateException("User must be authenticated")
   }
 
   private fun isInternetAvailable(): Boolean {

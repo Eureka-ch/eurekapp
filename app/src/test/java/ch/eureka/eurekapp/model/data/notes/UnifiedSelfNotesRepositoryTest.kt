@@ -23,9 +23,11 @@ import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -246,11 +248,12 @@ class UnifiedSelfNotesRepositoryTest {
   }
 
   @Test
-  fun `syncPendingNotes returns 0 if user not logged in`() = runTest {
+  fun `syncPendingNotes throws exception if user not logged in`() = runTest {
     mockNetwork(true)
     every { auth.currentUser } returns null
-    val count = repository.syncPendingNotes()
-    assertEquals(0, count)
+    assertThrows(IllegalStateException::class.java) {
+      runBlocking { repository.syncPendingNotes() }
+    }
   }
 
   @Test
