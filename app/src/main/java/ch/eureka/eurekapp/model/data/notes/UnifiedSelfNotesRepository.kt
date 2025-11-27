@@ -195,6 +195,8 @@ class UnifiedSelfNotesRepository(
         if (result.isSuccess) {
           localDao.markAsSynced(entity.messageId, userId)
           successCount++
+        } else {
+          Log.e("UnifiedSelfNotesRepository", "Failed to upload pending notes.")
         }
       }
       successCount
