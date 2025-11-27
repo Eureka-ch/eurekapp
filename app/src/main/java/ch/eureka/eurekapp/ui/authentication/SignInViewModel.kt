@@ -22,6 +22,7 @@ import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.messaging.FirebaseMessaging
+import kotlin.math.exp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -224,12 +225,12 @@ class SignInViewModel(
       val newToken = FirebaseMessaging.getInstance().token.await()
       val currentUser = userRepository.getCurrentUser().first()
       var retries = 0.0
-      checkNotNull(currentUser)
-      if (currentUser.fcmToken != newToken) {
+      var result: Result<Unit> = Result.failure(Exception("init"))
+      if (currentUser != null && currentUser.fcmToken != newToken) {
         do {
-          val result = userRepository.updateFcmToken(currentUser.uid, newToken)
+          result = userRepository.updateFcmToken(currentUser.uid, newToken)
           if (result.isFailure) {
-            delay(1000L * Math.exp(retries).toLong())
+            delay(1000L * exp(retries).toLong())
             retries += 1
           }
         } while (result.isFailure)
