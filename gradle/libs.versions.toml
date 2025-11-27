@@ -23,6 +23,7 @@ coroutinesTest = "1.7.3"
 json = "20231013"
 room = "2.8.4"
 ksp = "2.2.20-2.0.4"
+reorderable = "2.4.1"
 
 # Firebase
 firebaseBom = "34.1.0"
@@ -138,6 +139,7 @@ androidx-room-runtime = { group = "androidx.room", name = "room-runtime", versio
 androidx-room-ktx     = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
+reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

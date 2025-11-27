@@ -321,7 +321,7 @@ class FilesManagementScreenTest {
         .onNodeWithTag(FilesManagementScreenTestTags.CONFIRM_DELETE_BUTTON)
         .performClick()
 
-    verify { viewModel.deleteFile(fileItem) }
+    verify { viewModel.deleteFile(fileItem, any()) }
     composeTestRule.waitForIdle()
     composeTestRule
         .onNodeWithTag(FilesManagementScreenTestTags.DELETE_DIALOG_TITLE)

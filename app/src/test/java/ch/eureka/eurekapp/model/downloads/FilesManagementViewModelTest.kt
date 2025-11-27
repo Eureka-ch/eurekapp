@@ -117,7 +117,7 @@ class FilesManagementViewModelTest {
             url = "http://example.com/test.pdf", localPath = "/path", fileName = "test.pdf")
     val fileItem = FileItem(file = file, displayName = "test.pdf", isImage = false, uri = mockk())
 
-    viewModel.deleteFile(fileItem)
+    viewModel.deleteFile(fileItem) {}
 
     coVerify { dao.delete(file) }
   }
