@@ -52,6 +52,7 @@ import com.google.firebase.auth.auth
 import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
 
+// part of the code was written by GPT-5, and Grok
 sealed interface Route {
   // Main screens
   @Serializable data object ProjectSelection : Route
