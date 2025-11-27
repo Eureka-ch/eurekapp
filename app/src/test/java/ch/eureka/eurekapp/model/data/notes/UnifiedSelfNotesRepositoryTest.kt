@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
+import android.util.Log
 import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.prefs.UserPreferencesRepository
 import ch.eureka.eurekapp.model.database.MessageDao
@@ -17,6 +18,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.flow.first
@@ -46,20 +48,18 @@ class UnifiedSelfNotesRepositoryTest {
   @MockK private lateinit var auth: FirebaseAuth
   @MockK private lateinit var firebaseUser: FirebaseUser
   @MockK private lateinit var connectivityManager: ConnectivityManager
-
   private lateinit var repository: UnifiedSelfNotesRepository
 
   @Before
   fun setUp() {
     MockKAnnotations.init(this)
-
+    mockkStatic(Log::class)
+    every { Log.e(any(), any(), any()) } returns 0
+    every { Log.d(any(), any()) } returns 0
     every { auth.currentUser } returns firebaseUser
     every { firebaseUser.uid } returns "testUser"
-
     every { context.getSystemService(Context.CONNECTIVITY_SERVICE) } returns connectivityManager
-
     every { localDao.insertMessage(any()) } returns 1L
-
     repository = UnifiedSelfNotesRepository(context, localDao, firestoreRepo, userPreferences, auth)
   }
 
@@ -152,13 +152,29 @@ class UnifiedSelfNotesRepositoryTest {
   }
 
   @Test
-  fun `createNote handles Firestore failure gracefully (Offline First)`() = runTest {
+  fun `createNote rolls back cloud upload if markAsSynced fails`() = runTest {
+    mockNetwork(true)
+    coEvery { userPreferences.isCloudStorageEnabled } returns flowOf(true)
+    coEvery { firestoreRepo.createNote(any()) } returns Result.success("msg1")
+    every { localDao.markAsSynced(any(), any()) } throws RuntimeException("DB update failed")
+    coEvery { firestoreRepo.deleteNote("msg1") } returns Result.success(Unit)
+    val msg = Message(messageID = "msg1")
+    val result = repository.createNote(msg)
+    assertTrue(result.isFailure)
+    verify { localDao.insertMessage(any()) }
+    coVerify { firestoreRepo.createNote(any()) }
+    verify { localDao.markAsSynced("msg1", "testUser") }
+    coVerify { firestoreRepo.deleteNote("msg1") }
+  }
+
+  @Test
+  fun `createNote fails if Firestore upload throws exception`() = runTest {
     mockNetwork(true)
     coEvery { userPreferences.isCloudStorageEnabled } returns flowOf(true)
     coEvery { firestoreRepo.createNote(any()) } throws RuntimeException("Upload failed")
     val msg = Message(messageID = "msg1")
     val result = repository.createNote(msg)
-    assertTrue(result.isSuccess)
+    assertTrue(result.isFailure)
     verify { localDao.insertMessage(any()) }
     coVerify { firestoreRepo.createNote(any()) }
     verify(exactly = 0) { localDao.markAsSynced(any(), any()) }

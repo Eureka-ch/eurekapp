@@ -79,16 +79,30 @@ class UnifiedSelfNotesRepository(
           // Only attempt Cloud upload if Cloud is enabled AND we are online.
           if (isCloudEnabled) {
             if (isInternetAvailable()) {
-              try {
-                val result = firestoreRepo.createNote(messageWithUser)
-                if (result.isSuccess) {
+              val result =
+                  try {
+                    firestoreRepo.createNote(messageWithUser)
+                  } catch (e: Exception) {
+                    return@withContext Result.failure(e)
+                  }
+              if (result.isSuccess) {
+                try {
                   localDao.markAsSynced(message.messageID, userId)
+                } catch (e: Exception) {
+                  Log.e(
+                      "UnifiedSelfNotesRepository",
+                      "Failed to mark synced. Rolling back upload.",
+                      e)
+                  try {
+                    firestoreRepo.deleteNote(message.messageID)
+                  } catch (deleteEx: Exception) {
+                    Log.e("UnifiedSelfNotesRepository", "Failed to rollback upload!", deleteEx)
+                  }
+                  throw e
                 }
-              } catch (e: Exception) {
-                Log.e("UnifiedRepo", "Immediate upload failed, will sync later via Worker", e)
               }
             } else {
-              Log.d("UnifiedRepo", "Offline: Note stored locally, pending sync.")
+              Log.d("UnifiedSelfNotesRepository", "Offline: Note stored locally, pending sync.")
             }
           }
 
