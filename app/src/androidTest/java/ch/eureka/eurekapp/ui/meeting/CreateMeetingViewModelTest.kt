@@ -112,7 +112,7 @@ class CreateMeetingViewModelTest {
     val uiState = viewModel.uiState.value
 
     assertEquals("", uiState.title)
-    assertEquals(LocalDate.now(), uiState.date)
+    assertEquals(LocalDate.now().plusDays(7), uiState.date)
     assertNotNull(uiState.time)
     assertEquals(0, uiState.duration)
     assertEquals(MeetingFormat.IN_PERSON, uiState.format)

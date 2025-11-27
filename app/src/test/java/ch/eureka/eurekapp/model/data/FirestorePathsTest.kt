@@ -183,4 +183,27 @@ class FirestorePathsTest {
     val expected = "users/user123/selfNotes/note456"
     TestCase.assertEquals(expected, FirestorePaths.selfNotePath(userId, noteId))
   }
+
+  // ==================== Conversations Tests ====================
+
+  @Test
+  fun constants_shouldHaveConversationsValue() {
+    // Verify the CONVERSATIONS constant is correctly defined
+    TestCase.assertEquals("conversations", FirestorePaths.CONVERSATIONS)
+  }
+
+  @Test
+  fun conversationsPath_shouldReturnCorrectPath() {
+    // Conversations is a top-level collection, so path is just the collection name
+    val expected = "conversations"
+    TestCase.assertEquals(expected, FirestorePaths.conversationsPath())
+  }
+
+  @Test
+  fun conversationPath_shouldReturnCorrectPath() {
+    // Individual conversation document path
+    val conversationId = "conv123"
+    val expected = "conversations/conv123"
+    TestCase.assertEquals(expected, FirestorePaths.conversationPath(conversationId))
+  }
 }
