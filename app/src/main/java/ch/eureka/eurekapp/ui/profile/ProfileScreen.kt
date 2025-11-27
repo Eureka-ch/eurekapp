@@ -1,3 +1,8 @@
+/*
+Note: This file was co-authored by Claude Code.
+Note: This file was co-authored by Grok.
+Portions of the code in this file are inspired by the Bootcamp solution B3 provided by the SwEnt staff.
+*/
 package ch.eureka.eurekapp.ui.profile
 
 import androidx.compose.foundation.layout.Arrangement
@@ -46,10 +51,6 @@ import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-/*
-Co-author: GPT-5 Codex
-*/
-
 /** Test tags for the Profile screen UI elements. */
 object ProfileScreenTestTags {
   const val PROFILE_SCREEN = "ProfileScreen"
@@ -71,11 +72,13 @@ object ProfileScreenTestTags {
  *
  * @param viewModel The [ProfileViewModel] managing the screen's state and logic.
  * @param firebaseAuth The [FirebaseAuth] instance for authentication operations.
+ * @param onNavigateToActivityFeed Callback to navigate to activity feed screen.
  */
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = viewModel(),
-    firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
+    firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance(),
+    onNavigateToActivityFeed: () -> Unit = {},
 ) {
   val uiState by viewModel.uiState.collectAsState()
 
@@ -165,6 +168,18 @@ fun ProfileScreen(
                       modifier = Modifier.testTag(ProfileScreenTestTags.LAST_ACTIVE_TEXT))
 
                   Spacer(modifier = Modifier.height(24.dp))
+
+                  Button(
+                      onClick = onNavigateToActivityFeed,
+                      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                      colors =
+                          ButtonDefaults.buttonColors(
+                              containerColor = MaterialTheme.colorScheme.primaryContainer,
+                              contentColor = MaterialTheme.colorScheme.onPrimaryContainer)) {
+                        Text("View Activity Feed")
+                      }
+
+                  Spacer(modifier = Modifier.height(16.dp))
 
                   // Save/Cancel Buttons (shown when editing)
                   if (uiState.isEditing) {
