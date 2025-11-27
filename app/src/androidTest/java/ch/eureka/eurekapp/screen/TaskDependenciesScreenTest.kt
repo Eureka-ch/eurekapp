@@ -1,8 +1,10 @@
 package ch.eureka.eurekapp.screen
 
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
@@ -94,6 +96,31 @@ open class TaskDependenciesScreenTest : TestCase() {
           .performClick()
 
       composeTestRule.waitForIdle()
+    }
+  }
+
+  @Test
+  fun testBackButtonIsDisplayed() {
+    runBlocking {
+      val viewModel =
+          TaskDependenciesViewModel(
+              tasksRepository = tasksRepository,
+              usersRepository = usersRepository,
+              projectsRepository = projectRepository)
+
+      composeTestRule.setContent {
+        val navController = rememberNavController()
+        TaskDependenciesScreen(
+            projectId = "test-project-id",
+            taskId = "task1",
+            navigationController = navController,
+            taskDependenciesViewModel = viewModel)
+      }
+
+      composeTestRule.waitForIdle()
+
+      // Verify back button is displayed
+      composeTestRule.onNodeWithTag("back_button_dependencies").assertIsDisplayed()
     }
   }
 
