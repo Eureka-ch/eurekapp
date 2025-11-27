@@ -130,7 +130,7 @@ private fun EditorContent(
     callbacks: TemplateEditorCallbacks
 ) {
   Column(Modifier.padding(padding)) {
-    TabRow(pagerState.currentPage) {
+    PrimaryTabRow(pagerState.currentPage) {
       Tab(
           pagerState.currentPage == 0,
           onClick = { scope.launch { pagerState.animateScrollToPage(0) } },
