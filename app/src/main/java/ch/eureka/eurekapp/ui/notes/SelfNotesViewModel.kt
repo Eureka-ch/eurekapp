@@ -187,7 +187,9 @@ constructor(
                 _currentMessage.value = ""
                 _isSending.value = false
                 _errorMsg.value = null
-                scheduleWorker()
+                if (uiState.value.isCloudStorageEnabled) {
+                  scheduleWorker()
+                }
               },
               onFailure = { error ->
                 _isSending.value = false

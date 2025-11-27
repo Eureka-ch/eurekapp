@@ -107,7 +107,6 @@ class SelfNotesViewModelTest {
     testDispatcher.scheduler.advanceUntilIdle()
     val state = viewModel.uiState.value
     Assert.assertFalse(state.isLoading)
-    Assert.assertNotNull(state.errorMsg)
     Assert.assertEquals("Database error", state.errorMsg)
     job.cancel()
   }
@@ -173,9 +172,11 @@ class SelfNotesViewModelTest {
 
   @Test
   fun `sendNote sends message successfully and schedules worker`() = runTest {
+    every { userPrefs.isCloudStorageEnabled } returns flowOf(true)
     coEvery { repository.createNote(any()) } returns Result.success("new-note-id")
     viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
     val job = launch { viewModel.uiState.collect {} }
+    testDispatcher.scheduler.advanceUntilIdle()
     viewModel.updateMessage("Test note")
     viewModel.sendNote()
     testDispatcher.scheduler.advanceUntilIdle()
@@ -185,6 +186,21 @@ class SelfNotesViewModelTest {
     Assert.assertNull(state.errorMsg)
     coVerify { repository.createNote(match { it.text == "Test note" }) }
     verify { workManager.enqueueUniqueWork("SyncNotes", any(), any<OneTimeWorkRequest>()) }
+    job.cancel()
+  }
+
+  @Test
+  fun `sendNote sends message but does NOT schedule worker IF cloud is disabled`() = runTest {
+    every { userPrefs.isCloudStorageEnabled } returns flowOf(false)
+    coEvery { repository.createNote(any()) } returns Result.success("new-note-id")
+    viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
+    val job = launch { viewModel.uiState.collect {} }
+    testDispatcher.scheduler.advanceUntilIdle()
+    viewModel.updateMessage("Local note")
+    viewModel.sendNote()
+    testDispatcher.scheduler.advanceUntilIdle()
+    coVerify { repository.createNote(match { it.text == "Local note" }) }
+    verify(exactly = 0) { workManager.enqueueUniqueWork(any(), any(), any<OneTimeWorkRequest>()) }
     job.cancel()
   }
 
