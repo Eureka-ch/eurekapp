@@ -16,8 +16,15 @@ fun CreateTemplateScreen(
       config = TemplateEditorConfig(title = "Create Template"),
       state = state,
       onNavigateBack = onNavigateBack,
-      onSave = viewModel::save,
-      onSaveSuccess = { result -> @Suppress("UNCHECKED_CAST") onTemplateCreated(result as String) },
+      onSave = { onSuccess, onFailure ->
+        viewModel.save(
+            onSuccess = { templateId ->
+              onSuccess()
+              onTemplateCreated(templateId)
+            },
+            onFailure = onFailure)
+      },
+      onSaveSuccess = {},
       callbacks =
           TemplateEditorCallbacks(
               onTitleChange = viewModel::updateTitle,

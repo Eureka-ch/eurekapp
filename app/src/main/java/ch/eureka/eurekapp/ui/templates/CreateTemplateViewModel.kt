@@ -1,6 +1,7 @@
 package ch.eureka.eurekapp.ui.templates
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.IdGenerator
 import ch.eureka.eurekapp.model.data.template.TaskTemplate
 import ch.eureka.eurekapp.model.data.template.TaskTemplateRepository
@@ -9,6 +10,7 @@ import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class CreateTemplateViewModel(
     private val repository: TaskTemplateRepository,
@@ -39,17 +41,25 @@ class CreateTemplateViewModel(
 
   fun validateAll() = ops.validateAll()
 
-  suspend fun save(): Result<String> {
-    if (!ops.validateAll()) return Result.failure(Exception("Validation failed"))
+  fun save(onSuccess: (String) -> Unit, onFailure: (String) -> Unit) {
+    if (!ops.validateAll()) {
+      onFailure("Validation failed")
+      return
+    }
     ops.setSaving(true)
-    val template =
-        TaskTemplate(
-            templateID = IdGenerator.generateTaskTemplateId(),
-            projectId = _state.value.projectId ?: "",
-            title = _state.value.title,
-            description = _state.value.description,
-            definedFields = TaskTemplateSchema(_state.value.fields),
-            createdBy = "")
-    return repository.createTemplate(template).also { ops.setSaving(false) }
+    viewModelScope.launch {
+      val template =
+          TaskTemplate(
+              templateID = IdGenerator.generateTaskTemplateId(),
+              projectId = _state.value.projectId ?: "",
+              title = _state.value.title,
+              description = _state.value.description,
+              definedFields = TaskTemplateSchema(_state.value.fields),
+              createdBy = "")
+      repository
+          .createTemplate(template)
+          .fold(onSuccess = onSuccess, onFailure = { onFailure(it.message ?: "Save failed") })
+      ops.setSaving(false)
+    }
   }
 }

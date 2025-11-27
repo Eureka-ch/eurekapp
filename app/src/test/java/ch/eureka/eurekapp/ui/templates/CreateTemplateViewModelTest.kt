@@ -348,11 +348,14 @@ class CreateTemplateViewModelTest {
 
     mockRepository.setCreateResult(Result.success("template1"))
 
-    val result = viewModel.save()
+    var successResult: String? = null
+    var failureResult: String? = null
+    viewModel.save(onSuccess = { successResult = it }, onFailure = { failureResult = it })
     advanceUntilIdle()
 
-    assertTrue(result.isSuccess)
-    assertEquals("template1", result.getOrNull())
+    assertNotNull(successResult)
+    assertNull(failureResult)
+    assertEquals("template1", successResult)
     assertEquals(1, mockRepository.createTemplateCalls.size)
 
     val savedTemplate = mockRepository.createTemplateCalls[0]
@@ -370,10 +373,13 @@ class CreateTemplateViewModelTest {
     viewModel.updateTitle("")
     advanceUntilIdle()
 
-    val result = viewModel.save()
+    var successResult: String? = null
+    var failureResult: String? = null
+    viewModel.save(onSuccess = { successResult = it }, onFailure = { failureResult = it })
     advanceUntilIdle()
 
-    assertTrue(result.isFailure)
+    assertNull(successResult)
+    assertNotNull(failureResult)
     assertEquals(0, mockRepository.createTemplateCalls.size)
   }
 
@@ -389,7 +395,8 @@ class CreateTemplateViewModelTest {
 
     mockRepository.setCreateResult(Result.success("template1"))
 
-    viewModel.save()
+    viewModel.save(onSuccess = {}, onFailure = {})
+    advanceUntilIdle()
 
     val finalState = viewModel.state.first()
     assertFalse(finalState.isSaving)

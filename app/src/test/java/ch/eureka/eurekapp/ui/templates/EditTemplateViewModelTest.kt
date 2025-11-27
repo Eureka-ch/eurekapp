@@ -139,9 +139,13 @@ class EditTemplateViewModelTest {
     advanceUntilIdle()
 
     viewModel.updateTitle("Updated Title")
-    val result = viewModel.save()
+    var successCalled = false
+    var failureMessage: String? = null
+    viewModel.save(onSuccess = { successCalled = true }, onFailure = { failureMessage = it })
+    advanceUntilIdle()
 
-    assertTrue(result.isSuccess)
+    assertTrue(successCalled)
+    assertNull(failureMessage)
     assertEquals(1, mockRepository.updateTemplateCalls.size)
     assertEquals("Updated Title", mockRepository.updateTemplateCalls[0].title)
   }
@@ -162,9 +166,13 @@ class EditTemplateViewModelTest {
     advanceUntilIdle()
 
     viewModel.updateTitle("")
-    val result = viewModel.save()
+    var successCalled = false
+    var failureMessage: String? = null
+    viewModel.save(onSuccess = { successCalled = true }, onFailure = { failureMessage = it })
+    advanceUntilIdle()
 
-    assertTrue(result.isFailure)
+    assertFalse(successCalled)
+    assertNotNull(failureMessage)
     assertEquals(0, mockRepository.updateTemplateCalls.size)
   }
 

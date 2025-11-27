@@ -20,8 +20,8 @@ fun EditTemplateScreen(
               title = "Edit Template", isLoading = isLoading, loadError = loadError),
       state = state,
       onNavigateBack = onNavigateBack,
-      onSave = viewModel::save,
-      onSaveSuccess = { onTemplateSaved() },
+      onSave = { onSuccess, onFailure -> viewModel.save(onSuccess, onFailure) },
+      onSaveSuccess = onTemplateSaved,
       callbacks =
           TemplateEditorCallbacks(
               onTitleChange = viewModel::updateTitle,

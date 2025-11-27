@@ -66,17 +66,25 @@ class EditTemplateViewModel(
 
   fun validateAll() = ops.validateAll()
 
-  suspend fun save(): Result<Unit> {
-    if (!ops.validateAll()) return Result.failure(Exception("Validation failed"))
+  fun save(onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+    if (!ops.validateAll()) {
+      onFailure("Validation failed")
+      return
+    }
     ops.setSaving(true)
-    val template =
-        TaskTemplate(
-            templateID = templateId,
-            projectId = projectId,
-            title = _state.value.title,
-            description = _state.value.description,
-            definedFields = TaskTemplateSchema(_state.value.fields),
-            createdBy = "")
-    return repository.updateTemplate(template).also { ops.setSaving(false) }
+    viewModelScope.launch {
+      val template =
+          TaskTemplate(
+              templateID = templateId,
+              projectId = projectId,
+              title = _state.value.title,
+              description = _state.value.description,
+              definedFields = TaskTemplateSchema(_state.value.fields),
+              createdBy = "")
+      repository
+          .updateTemplate(template)
+          .fold(onSuccess = { onSuccess() }, onFailure = { onFailure(it.message ?: "Save failed") })
+      ops.setSaving(false)
+    }
   }
 }

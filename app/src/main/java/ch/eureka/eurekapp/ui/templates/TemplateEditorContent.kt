@@ -44,8 +44,8 @@ fun TemplateEditorContent(
     config: TemplateEditorConfig,
     state: TemplateEditorState,
     onNavigateBack: () -> Unit,
-    onSave: suspend () -> Result<*>,
-    onSaveSuccess: (Any?) -> Unit,
+    onSave: (onSuccess: () -> Unit, onFailure: (String) -> Unit) -> Unit,
+    onSaveSuccess: () -> Unit,
     callbacks: TemplateEditorCallbacks
 ) {
   val pagerState = rememberPagerState { 2 }
@@ -62,14 +62,9 @@ fun TemplateEditorContent(
               if (!config.isLoading && config.loadError == null) {
                 TextButton(
                     onClick = {
-                      scope.launch {
-                        onSave()
-                            .fold(
-                                onSuccess = { result -> onSaveSuccess(result) },
-                                onFailure = {
-                                  snackbarHostState.showSnackbar(it.message ?: "Save failed")
-                                })
-                      }
+                      onSave(
+                          { onSaveSuccess() },
+                          { message -> scope.launch { snackbarHostState.showSnackbar(message) } })
                     },
                     enabled = !state.isSaving) {
                       if (state.isSaving)
