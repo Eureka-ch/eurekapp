@@ -88,12 +88,12 @@ fun Eurekapp(
   if (!signedIn) {
     SignInScreen(credentialManager = credentialManager, onSignedIn = { signedIn = true })
   } else {
-    /**NavigationMenu(
+    NavigationMenu(
       notificationType = notificationType,
       notificationId = notificationId,
       notificationProjectId = notificationProjectId
-    )**/
-      NotificationPreferencesScreen()
+    )
+      //NotificationPreferencesScreen(onFinishedSettingNotifications = {})
   }
 }
 

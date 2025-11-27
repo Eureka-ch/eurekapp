@@ -9,8 +9,6 @@ enum class UserNotificationSettingsKeys(val displayName: String,
         NotificationType.MEETING_NOTIFICATION),
     ON_MEETING_OPEN_TO_VOTES_NOTIFY("Notify when meeting is open to votes: ",
         NotificationType.MEETING_NOTIFICATION),
-    ON_MEETING_CREATED_NOTIFY("Notify when meeting is created: ",
-        NotificationType.MEETING_NOTIFICATION),
     ON_MEETING_NOTIFY_TEN_MINUTES_BEFORE("Notify when meeting is in 10 minutes: ",
         NotificationType.MEETING_NOTIFICATION),
 

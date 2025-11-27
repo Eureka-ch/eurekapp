@@ -32,6 +32,13 @@ class TaskDependenciesViewModelTest {
     override suspend fun updateLastActive(userId: String): Result<Unit> {
       return Result.success(Unit)
     }
+
+      override suspend fun updateFcmToken(
+          userId: String,
+          fcmToken: String
+      ): Result<Unit> {
+          TODO("Not yet implemented")
+      }
   }
 
   private class TasksFakeRepository : TaskRepository {

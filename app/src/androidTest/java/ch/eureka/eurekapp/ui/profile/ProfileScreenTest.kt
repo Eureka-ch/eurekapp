@@ -34,6 +34,12 @@ class FakeUserRepository : UserRepository {
   }
 
   override suspend fun updateLastActive(userId: String) = Result.success(Unit)
+  override suspend fun updateFcmToken(
+    userId: String,
+    fcmToken: String
+  ): Result<Unit> {
+    TODO("Not yet implemented")
+  }
 }
 
 @RunWith(AndroidJUnit4::class)

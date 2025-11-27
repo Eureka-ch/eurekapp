@@ -898,6 +898,13 @@ open class EditTaskScreenTest : TestCase() {
       // No-op, just return success
       return Result.success(Unit)
     }
+
+      override suspend fun updateFcmToken(
+          userId: String,
+          fcmToken: String
+      ): Result<Unit> {
+          return Result.success(Unit)
+      }
   }
 
   class FakeProjectRepository : ProjectRepository {
