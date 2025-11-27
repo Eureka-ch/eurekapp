@@ -1,3 +1,4 @@
+// Portions of this code were generated with the help of Grok.
 package ch.eureka.eurekapp.model.tasks
 
 import android.content.Context
@@ -10,8 +11,6 @@ import java.util.Locale
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-
-// Portions of this code were generated with the help of Grok.
 
 /** Interface for base task state properties shared by read-only views */
 interface TaskStateRead {
@@ -40,11 +39,17 @@ abstract class ReadTaskViewModel<T : TaskStateRead>(
   fun deletePhotosOnDispose(context: Context, photoUris: List<Uri>) {
     viewModelScope.launch(dispatcher) {
       photoUris.forEach { uri ->
-        when (uri.scheme) {
-          "content",
-          "file" -> {
-            context.contentResolver.delete(uri, null, null)
+        try {
+          when (uri.scheme) {
+            "content",
+            "file" -> {
+              context.contentResolver.delete(uri, null, null)
+            }
           }
+        } catch (_: Exception) {
+          // Ignore errors during cleanup
+          // This is a best-effort cleanup
+          // File may not exist or may be inaccessible
         }
       }
     }

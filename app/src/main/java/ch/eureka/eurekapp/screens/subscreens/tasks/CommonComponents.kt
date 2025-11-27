@@ -1,3 +1,4 @@
+// Portions added by Jiří Gebauer partially generated with the help of Grok and GPT-5.
 package ch.eureka.eurekapp.screens.subscreens.tasks
 
 import androidx.compose.foundation.clickable
@@ -33,16 +34,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.user.User
+import ch.eureka.eurekapp.model.tasks.Attachment
 import ch.eureka.eurekapp.ui.camera.PhotoViewer
 import ch.eureka.eurekapp.utils.Formatters
 
-// Portions of this code were generated with the help of AI.
-// Portions added by Jiří Gebauer partially generated with the help of Grok.
-
-/*
-Note: This file was partially written by GPT-5 Codex
-Co-author : GPT-5
-*/
 /**
  * Helper function to determine if an error should be shown for a field.
  *
@@ -102,7 +97,7 @@ object CommonTaskTestTags {
   const val ADD_DEPENDENCY_BUTTON = "add_dependency_button"
   const val DEPENDENCY_CYCLE_ERROR = "dependency_cycle_error"
   const val OFFLINE_MESSAGE = "offline_message"
-
+  const val ATTACHMENT_OFFLINE_MESSAGE = "attachment_offline_message"
   const val BACK_BUTTON = "back_button"
 }
 
@@ -236,28 +231,72 @@ fun TaskReminderField(
 
 @Composable
 fun AttachmentsList(
-    attachments: List<Any>,
+    attachments: List<Attachment>,
     modifier: Modifier = Modifier,
     onDelete: ((Int) -> Unit)? = null,
     isReadOnly: Boolean = false,
-    isConnected: Boolean = true
+    isConnected: Boolean = true,
+    downloadedUrls: Set<String> = emptySet()
 ) {
-  attachments.forEachIndexed { index, file ->
-    Row(modifier = modifier) {
-      if (!isConnected) {
-        Text(
-            "Photo ${index + 1}: Attachment available, but cannot be visualized offline.",
-            modifier = Modifier.testTag(CommonTaskTestTags.OFFLINE_MESSAGE))
-      } else {
-        Text("Photo ${index + 1}")
-        if (!isReadOnly && onDelete != null) {
+  attachments.forEachIndexed { index, attachment ->
+    AttachmentItem(
+        index = index,
+        attachment = attachment,
+        onDelete = onDelete,
+        isReadOnly = isReadOnly,
+        isConnected = isConnected,
+        downloadedUrls = downloadedUrls,
+        modifier = modifier)
+  }
+}
+
+@Composable
+private fun AttachmentItem(
+    index: Int,
+    attachment: Attachment,
+    onDelete: ((Int) -> Unit)?,
+    isReadOnly: Boolean,
+    isConnected: Boolean,
+    downloadedUrls: Set<String>,
+    modifier: Modifier = Modifier
+) {
+  Row(modifier = modifier) {
+    val photoIndex = index + 1
+    val shouldShowDelete = !isReadOnly && onDelete != null
+
+    when (attachment) {
+      is Attachment.Remote -> {
+        val isDownloaded = downloadedUrls.contains(attachment.url)
+        val isOffline = !isConnected && !isDownloaded
+
+        if (isOffline) {
+          Text(
+              "Photo $photoIndex: Not downloaded",
+              modifier = Modifier.testTag(CommonTaskTestTags.ATTACHMENT_OFFLINE_MESSAGE))
+        } else {
+          Text("Photo $photoIndex")
+          if (shouldShowDelete) {
+            IconButton(
+                onClick = { onDelete(index) },
+                modifier = Modifier.testTag(CommonTaskTestTags.DELETE_PHOTO)) {
+                  Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
+                }
+          }
+          PhotoViewer(
+              attachment.url, modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.PHOTO))
+        }
+      }
+      is Attachment.Local -> {
+        Text("Photo $photoIndex")
+        if (shouldShowDelete) {
           IconButton(
               onClick = { onDelete(index) },
               modifier = Modifier.testTag(CommonTaskTestTags.DELETE_PHOTO)) {
                 Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
               }
         }
-        PhotoViewer(file, modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.PHOTO))
+        PhotoViewer(
+            attachment.uri, modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.PHOTO))
       }
     }
   }

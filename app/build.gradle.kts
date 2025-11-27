@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.sonar)
     id("jacoco")
     id("kotlin-parcelize")
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -175,6 +176,11 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.material)
 
+    // Room
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
     // Kotlin
     implementation(libs.kotlin.reflect)
 
@@ -240,7 +246,7 @@ dependencies {
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.mockk)
-    testImplementation(libs.mockwebserver)
+    globalTestImplementation(libs.mockwebserver)
     testImplementation(libs.robolectric)
     testImplementation(kotlin("test"))
     testImplementation(libs.json)
