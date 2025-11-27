@@ -194,13 +194,8 @@ class FirestoreMeetingRepository(
             .await()
 
         // Log activity to global feed after successful deletion
-        val currentUserId = auth.currentUser?.uid
-        if (currentUserId == null) {
-          throw IllegalArgumentException("User must be logged in.")
-        }
-        if (meetingTitle == null) {
-          throw IllegalArgumentException("Title should not be null.")
-        }
+        val currentUserId = requireNotNull(auth.currentUser?.uid) { "User must be logged in." }
+        requireNotNull(meetingTitle) { "Title should not be null." }
         ActivityLogger.logActivity(
             projectId = projectId,
             activityType = ActivityType.DELETED,

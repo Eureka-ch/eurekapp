@@ -64,9 +64,9 @@ import java.util.Locale
 @Composable
 fun ActivityCard(
     activity: Activity,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
-    onDelete: () -> Unit = {},
-    modifier: Modifier = Modifier
+    onDelete: () -> Unit = {}
 ) {
   Card(
       shape = RoundedCornerShape(12.dp),

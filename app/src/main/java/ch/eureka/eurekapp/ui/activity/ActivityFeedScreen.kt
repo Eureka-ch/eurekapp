@@ -71,116 +71,142 @@ fun ActivityFeedScreen(
             })
       }) { paddingValues ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-          // Filter buttons
-          Row(
-              modifier =
-                  Modifier.fillMaxWidth().padding(horizontal = Spacing.md, vertical = Spacing.sm),
-              horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+          FilterChipsRow(
+              currentFilter = uiState.filterEntityType,
+              onProjectsClick = {
+                if (uiState.filterEntityType == EntityType.PROJECT) viewModel.clearFilters()
+                else viewModel.applyFilter(EntityType.PROJECT)
+              },
+              onMeetingsClick = {
+                if (uiState.filterEntityType == EntityType.MEETING) viewModel.clearFilters()
+                else viewModel.applyFilter(EntityType.MEETING)
+              })
 
-                // PROJECTS FILTER
-                FilterChip(
-                    selected = uiState.filterEntityType == EntityType.PROJECT,
-                    onClick = {
-                      if (uiState.filterEntityType == EntityType.PROJECT) {
-                        viewModel.clearFilters()
-                      } else {
-                        viewModel.applyFilter(EntityType.PROJECT)
-                      }
-                    },
-                    label = { Text("Projects") },
-                    modifier = Modifier.testTag("ProjectsFilterChip"))
+          ActivityContent(
+              uiState = uiState,
+              onActivityClick = onActivityClick,
+              onDeleteActivity = { viewModel.deleteActivity(it) })
+        }
+      }
+}
 
-                // MEETINGS FILTER
-                FilterChip(
-                    selected = uiState.filterEntityType == EntityType.MEETING,
-                    onClick = {
-                      if (uiState.filterEntityType == EntityType.MEETING) {
-                        viewModel.clearFilters()
-                      } else {
-                        viewModel.applyFilter(EntityType.MEETING)
-                      }
-                    },
-                    label = { Text("Meetings") },
-                    modifier = Modifier.testTag("MeetingsFilterChip"))
-              }
+@Composable
+private fun FilterChipsRow(
+    currentFilter: EntityType?,
+    onProjectsClick: () -> Unit,
+    onMeetingsClick: () -> Unit
+) {
+  Row(
+      modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.md, vertical = Spacing.sm),
+      horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        FilterChip(
+            selected = currentFilter == EntityType.PROJECT,
+            onClick = onProjectsClick,
+            label = { Text("Projects") },
+            modifier = Modifier.testTag("ProjectsFilterChip"))
 
-          Box(modifier = Modifier.fillMaxSize()) {
-            when {
-              uiState.isLoading && uiState.activities.isEmpty() -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally) {
-                      CircularProgressIndicator(modifier = Modifier.testTag("LoadingIndicator"))
-                      Spacer(modifier = Modifier.height(Spacing.md))
-                      Text("Loading activities...")
-                    }
-              }
-              uiState.activities.isEmpty() -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally) {
-                      Text(
-                          text = "No activities found",
-                          style = MaterialTheme.typography.titleMedium,
-                          fontWeight = FontWeight.Bold,
-                          modifier = Modifier.testTag("EmptyState"))
-                    }
-              }
-              else -> {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize().testTag("ActivitiesList"),
-                    contentPadding = PaddingValues(vertical = Spacing.md),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                      uiState.activitiesByDate.forEach { (dateMillis, activities) ->
-                        item(key = "header_$dateMillis") {
-                          Text(
-                              text = formatDateHeader(dateMillis),
-                              style = MaterialTheme.typography.titleSmall,
-                              fontWeight = FontWeight.SemiBold,
-                              color = MaterialTheme.colorScheme.primary,
-                              modifier =
-                                  Modifier.padding(horizontal = Spacing.md, vertical = Spacing.sm))
-                        }
+        FilterChip(
+            selected = currentFilter == EntityType.MEETING,
+            onClick = onMeetingsClick,
+            label = { Text("Meetings") },
+            modifier = Modifier.testTag("MeetingsFilterChip"))
+      }
+}
 
-                        items(items = activities, key = { it.activityId }) { activity ->
-                          ActivityCard(
-                              activity = activity,
-                              onClick = { onActivityClick(activity.entityId) },
-                              onDelete = { viewModel.deleteActivity(activity.activityId) },
-                              modifier = Modifier.padding(horizontal = Spacing.md))
-                        }
-                      }
-                    }
-              }
-            }
+@Composable
+private fun ActivityContent(
+    uiState: ActivityFeedUIState,
+    onActivityClick: (String) -> Unit,
+    onDeleteActivity: (String) -> Unit
+) {
+  Box(modifier = Modifier.fillMaxSize()) {
+    when {
+      uiState.isLoading && uiState.activities.isEmpty() -> LoadingState()
+      uiState.activities.isEmpty() -> EmptyState()
+      else -> ActivitiesList(uiState.activitiesByDate, onActivityClick, onDeleteActivity)
+    }
 
-            uiState.errorMsg?.let { error ->
-              Box(
-                  modifier =
-                      Modifier.fillMaxWidth().padding(Spacing.md).align(Alignment.BottomCenter)) {
-                    Text("Error: $error", color = MaterialTheme.colorScheme.error)
-                  }
-            }
+    uiState.errorMsg?.let { error -> ErrorMessage(error, Modifier.align(Alignment.BottomCenter)) }
+  }
+}
+
+@Composable
+private fun LoadingState() {
+  Column(
+      modifier = Modifier.fillMaxSize(),
+      verticalArrangement = Arrangement.Center,
+      horizontalAlignment = Alignment.CenterHorizontally) {
+        CircularProgressIndicator(modifier = Modifier.testTag("LoadingIndicator"))
+        Spacer(modifier = Modifier.height(Spacing.md))
+        Text("Loading activities...")
+      }
+}
+
+@Composable
+private fun EmptyState() {
+  Column(
+      modifier = Modifier.fillMaxSize(),
+      verticalArrangement = Arrangement.Center,
+      horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = "No activities found",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.testTag("EmptyState"))
+      }
+}
+
+@Composable
+private fun ActivitiesList(
+    activitiesByDate: Map<Long, List<ch.eureka.eurekapp.model.data.activity.Activity>>,
+    onActivityClick: (String) -> Unit,
+    onDeleteActivity: (String) -> Unit
+) {
+  LazyColumn(
+      modifier = Modifier.fillMaxSize().testTag("ActivitiesList"),
+      contentPadding = PaddingValues(vertical = Spacing.md),
+      verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        activitiesByDate.forEach { (dateMillis, activities) ->
+          item(key = "header_$dateMillis") {
+            Text(
+                text = formatDateHeader(dateMillis),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.sm))
+          }
+
+          items(items = activities, key = { it.activityId }) { activity ->
+            ActivityCard(
+                activity = activity,
+                modifier = Modifier.padding(horizontal = Spacing.md),
+                onClick = { onActivityClick(activity.entityId) },
+                onDelete = { onDeleteActivity(activity.activityId) })
           }
         }
       }
 }
 
+@Composable
+private fun ErrorMessage(error: String, modifier: Modifier = Modifier) {
+  Box(modifier = modifier.fillMaxWidth().padding(Spacing.md)) {
+    Text("Error: $error", color = MaterialTheme.colorScheme.error)
+  }
+}
+
 private fun formatDateHeader(dateMillis: Long): String {
   val today = Calendar.getInstance()
-  today.set(Calendar.HOUR_OF_DAY, 0)
-  today.set(Calendar.MINUTE, 0)
-  today.set(Calendar.SECOND, 0)
-  today.set(Calendar.MILLISECOND, 0)
+  today[Calendar.HOUR_OF_DAY] = 0
+  today[Calendar.MINUTE] = 0
+  today[Calendar.SECOND] = 0
+  today[Calendar.MILLISECOND] = 0
 
   val yesterday = Calendar.getInstance()
   yesterday.add(Calendar.DAY_OF_YEAR, -1)
-  yesterday.set(Calendar.HOUR_OF_DAY, 0)
-  yesterday.set(Calendar.MINUTE, 0)
-  yesterday.set(Calendar.SECOND, 0)
-  yesterday.set(Calendar.MILLISECOND, 0)
+  yesterday[Calendar.HOUR_OF_DAY] = 0
+  yesterday[Calendar.MINUTE] = 0
+  yesterday[Calendar.SECOND] = 0
+  yesterday[Calendar.MILLISECOND] = 0
 
   return when (dateMillis) {
     today.timeInMillis -> "Today"

@@ -212,9 +212,9 @@ fun NavigationMenu() {
                     })
               }
               composable<Route.SelfNotes> { SelfNotesScreen() }
-              composable<Route.ActivityFeed> { backStackEntry ->
+              composable<Route.ActivityFeed> {
                 ActivityFeedScreen(
-                    onActivityClick = { entityId ->
+                    onActivityClick = { _ ->
                       // Navigate to entity detail screen based on entity type
                       // For now, just go back
                       navigationController.popBackStack()

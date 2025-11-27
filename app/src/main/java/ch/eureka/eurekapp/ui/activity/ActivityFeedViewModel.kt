@@ -77,10 +77,10 @@ class ActivityFeedViewModel(
     return activities.groupBy { activity ->
       val calendar = Calendar.getInstance()
       calendar.time = activity.timestamp.toDate()
-      calendar.set(Calendar.HOUR_OF_DAY, 0)
-      calendar.set(Calendar.MINUTE, 0)
-      calendar.set(Calendar.SECOND, 0)
-      calendar.set(Calendar.MILLISECOND, 0)
+      calendar[Calendar.HOUR_OF_DAY] = 0
+      calendar[Calendar.MINUTE] = 0
+      calendar[Calendar.SECOND] = 0
+      calendar[Calendar.MILLISECOND] = 0
       calendar.timeInMillis
     }
   }
