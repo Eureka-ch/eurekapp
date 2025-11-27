@@ -64,75 +64,114 @@ fun TemplateFieldListItem(
 
   Card(modifier = modifier.fillMaxWidth()) {
     Column {
-      // Collapsed header
-      Row(
-          modifier =
-              Modifier.fillMaxWidth()
-                  .clickable(enabled = !isExpanded) { callbacks.onExpand() }
-                  .padding(16.dp),
-          horizontalArrangement = Arrangement.spacedBy(8.dp),
-          verticalAlignment = Alignment.CenterVertically) {
-            dragHandle()
-            Icon(field.type.icon, null, tint = MaterialTheme.colorScheme.primary)
+      FieldListItemHeader(
+          field = field,
+          isExpanded = isExpanded,
+          hasError = error != null,
+          onExpand = callbacks.onExpand,
+          dragHandle = dragHandle)
 
-            Column(modifier = Modifier.weight(1f)) {
-              Row {
-                Text(field.label, style = MaterialTheme.typography.bodyLarge)
-                if (field.required) Text(" *", color = MaterialTheme.colorScheme.error)
-              }
-              Text(field.type.name, style = MaterialTheme.typography.bodySmall)
-            }
-
-            if (error != null)
-                Icon(Icons.Default.Warning, "Error", tint = MaterialTheme.colorScheme.error)
-            if (!isExpanded) Icon(Icons.Default.ExpandMore, "Expand")
-          }
-
-      // Expanded content
       if (isExpanded) {
         HorizontalDivider()
-        Column(modifier = Modifier.padding(16.dp)) {
-          CommonFieldConfiguration(
-              field = localField, onFieldUpdate = { localField = it }, enabled = true)
-
-          Spacer(modifier = Modifier.height(8.dp))
-
-          // Type-specific config (reuse PR 312 components)
-          when (val type = localField.type) {
-            is FieldType.Text ->
-                TextFieldConfiguration(type, { localField = localField.copy(type = it) }, true)
-            is FieldType.Number ->
-                NumberFieldConfiguration(type, { localField = localField.copy(type = it) }, true)
-            is FieldType.Date ->
-                DateFieldConfiguration(type, { localField = localField.copy(type = it) }, true)
-            is FieldType.SingleSelect ->
-                SingleSelectFieldConfiguration(
-                    type, { localField = localField.copy(type = it) }, true)
-            is FieldType.MultiSelect ->
-                MultiSelectFieldConfiguration(
-                    type, { localField = localField.copy(type = it) }, true)
-          }
-
-          // Actions
-          Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            IconButton(
-                onClick = {
-                  callbacks.onFieldChange(localField)
-                  callbacks.onSave()
-                }) {
-                  Icon(Icons.Default.Check, "Save", tint = MaterialTheme.colorScheme.primary)
-                }
-            IconButton(onClick = callbacks.onCancel) { Icon(Icons.Default.Close, "Cancel") }
-            Spacer(Modifier.weight(1f))
-            IconButton(onClick = callbacks.onDuplicate) {
-              Icon(Icons.Default.ContentCopy, "Duplicate")
-            }
-            IconButton(onClick = callbacks.onDelete) {
-              Icon(Icons.Default.Delete, "Delete", tint = MaterialTheme.colorScheme.error)
-            }
-          }
-        }
+        FieldListItemExpandedContent(
+            localField = localField,
+            onLocalFieldChange = { localField = it },
+            callbacks = callbacks)
       }
+    }
+  }
+}
+
+@Composable
+private fun FieldListItemHeader(
+    field: FieldDefinition,
+    isExpanded: Boolean,
+    hasError: Boolean,
+    onExpand: () -> Unit,
+    dragHandle: @Composable () -> Unit
+) {
+  Row(
+      modifier =
+          Modifier.fillMaxWidth().clickable(enabled = !isExpanded) { onExpand() }.padding(16.dp),
+      horizontalArrangement = Arrangement.spacedBy(8.dp),
+      verticalAlignment = Alignment.CenterVertically) {
+        dragHandle()
+        Icon(field.type.icon, null, tint = MaterialTheme.colorScheme.primary)
+
+        Column(modifier = Modifier.weight(1f)) {
+          Row {
+            Text(field.label, style = MaterialTheme.typography.bodyLarge)
+            if (field.required) Text(" *", color = MaterialTheme.colorScheme.error)
+          }
+          Text(field.type.name, style = MaterialTheme.typography.bodySmall)
+        }
+
+        if (hasError) Icon(Icons.Default.Warning, "Error", tint = MaterialTheme.colorScheme.error)
+        if (!isExpanded) Icon(Icons.Default.ExpandMore, "Expand")
+      }
+}
+
+@Composable
+private fun FieldListItemExpandedContent(
+    localField: FieldDefinition,
+    onLocalFieldChange: (FieldDefinition) -> Unit,
+    callbacks: TemplateFieldCallbacks
+) {
+  Column(modifier = Modifier.padding(16.dp)) {
+    CommonFieldConfiguration(field = localField, onFieldUpdate = onLocalFieldChange, enabled = true)
+
+    Spacer(modifier = Modifier.height(8.dp))
+
+    TypeSpecificConfiguration(localField, onLocalFieldChange)
+
+    FieldItemActionButtons(
+        onSave = {
+          callbacks.onFieldChange(localField)
+          callbacks.onSave()
+        },
+        onCancel = callbacks.onCancel,
+        onDuplicate = callbacks.onDuplicate,
+        onDelete = callbacks.onDelete)
+  }
+}
+
+@Composable
+private fun TypeSpecificConfiguration(
+    localField: FieldDefinition,
+    onLocalFieldChange: (FieldDefinition) -> Unit
+) {
+  when (val type = localField.type) {
+    is FieldType.Text ->
+        TextFieldConfiguration(type, { onLocalFieldChange(localField.copy(type = it)) }, true)
+    is FieldType.Number ->
+        NumberFieldConfiguration(type, { onLocalFieldChange(localField.copy(type = it)) }, true)
+    is FieldType.Date ->
+        DateFieldConfiguration(type, { onLocalFieldChange(localField.copy(type = it)) }, true)
+    is FieldType.SingleSelect ->
+        SingleSelectFieldConfiguration(
+            type, { onLocalFieldChange(localField.copy(type = it)) }, true)
+    is FieldType.MultiSelect ->
+        MultiSelectFieldConfiguration(
+            type, { onLocalFieldChange(localField.copy(type = it)) }, true)
+  }
+}
+
+@Composable
+private fun FieldItemActionButtons(
+    onSave: () -> Unit,
+    onCancel: () -> Unit,
+    onDuplicate: () -> Unit,
+    onDelete: () -> Unit
+) {
+  Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    IconButton(onClick = onSave) {
+      Icon(Icons.Default.Check, "Save", tint = MaterialTheme.colorScheme.primary)
+    }
+    IconButton(onClick = onCancel) { Icon(Icons.Default.Close, "Cancel") }
+    Spacer(Modifier.weight(1f))
+    IconButton(onClick = onDuplicate) { Icon(Icons.Default.ContentCopy, "Duplicate") }
+    IconButton(onClick = onDelete) {
+      Icon(Icons.Default.Delete, "Delete", tint = MaterialTheme.colorScheme.error)
     }
   }
 }

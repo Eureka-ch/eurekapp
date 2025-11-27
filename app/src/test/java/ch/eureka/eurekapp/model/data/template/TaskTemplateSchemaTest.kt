@@ -335,4 +335,41 @@ class TaskTemplateSchemaTest {
     assertTrue(copy.type is FieldType.Text)
     assertEquals(100, (copy.type as FieldType.Text).maxLength)
   }
+
+  @Test
+  fun `reorderField with same indices returns unchanged schema`() {
+    val field1 = FieldDefinition("field1", "Field 1", FieldType.Text())
+    val field2 = FieldDefinition("field2", "Field 2", FieldType.Text())
+    val schema = TaskTemplateSchema(listOf(field1, field2))
+
+    val result = schema.reorderField(0, 0)
+
+    assertEquals("field1", result.fields[0].id)
+    assertEquals("field2", result.fields[1].id)
+  }
+
+  @Test
+  fun `addField to empty schema succeeds`() {
+    val schema = TaskTemplateSchema()
+    val field = FieldDefinition("field1", "Field 1", FieldType.Text())
+
+    val newSchema = schema.addField(field)
+
+    assertEquals(1, newSchema.fields.size)
+    assertEquals("field1", newSchema.fields[0].id)
+  }
+
+  @Test
+  fun `duplicateField at end of list appends correctly`() {
+    val field1 = FieldDefinition("field1", "Field 1", FieldType.Text())
+    val field2 = FieldDefinition("field2", "Field 2", FieldType.Text())
+    val schema = TaskTemplateSchema(listOf(field1, field2))
+
+    val duplicated = schema.duplicateField("field2")
+
+    assertEquals(3, duplicated.fields.size)
+    assertEquals("field1", duplicated.fields[0].id)
+    assertEquals("field2", duplicated.fields[1].id)
+    assertEquals("Field 2 (copy)", duplicated.fields[2].label)
+  }
 }

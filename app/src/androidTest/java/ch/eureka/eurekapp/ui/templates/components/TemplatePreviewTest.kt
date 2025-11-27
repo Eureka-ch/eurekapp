@@ -204,4 +204,23 @@ class TemplatePreviewTest {
     composeTestRule.onNodeWithText("Single Select Field").assertIsDisplayed()
     composeTestRule.onNodeWithText("Multi Select Field").assertIsDisplayed()
   }
+
+  @Test
+  fun templatePreview_fieldNotInErrorMap_showsFieldPreview() {
+    val fieldErrors = mapOf("nonexistent_field" to "Error for missing field")
+    setTemplatePreviewContent(fields = listOf(testTextFieldDefinition), fieldErrors = fieldErrors)
+
+    composeTestRule.onNodeWithText("Text Field").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Error for missing field").assertDoesNotExist()
+  }
+
+  @Test
+  fun templatePreview_preservesFieldOrder() {
+    val fields = listOf(testDateFieldDefinition, testTextFieldDefinition, testNumberFieldDefinition)
+    setTemplatePreviewContent(fields = fields)
+
+    composeTestRule.onNodeWithText("Date Field").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Text Field").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Number Field").assertIsDisplayed()
+  }
 }

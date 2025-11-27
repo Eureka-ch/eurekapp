@@ -50,6 +50,21 @@ data class TemplateBasicInfoCallbacks(
 )
 
 /**
+ * Configuration for the optional header section in TemplateFieldList.
+ *
+ * @param title Template title
+ * @param description Template description (optional)
+ * @param titleError Title validation error (optional)
+ * @param callbacks Callbacks for title/description changes
+ */
+data class TemplateHeaderConfig(
+    val title: String,
+    val description: String? = null,
+    val titleError: String? = null,
+    val callbacks: TemplateBasicInfoCallbacks
+)
+
+/**
  * Reorderable list of template fields.
  *
  * @param modifier Modifier to apply to the root lazy column
@@ -57,10 +72,7 @@ data class TemplateBasicInfoCallbacks(
  * @param editingFieldId ID of field being edited
  * @param fieldErrors Map of field errors
  * @param callbacks Callbacks for field operations
- * @param title Template title (optional, for scrollable header)
- * @param description Template description (optional, for scrollable header)
- * @param titleError Title validation error (optional)
- * @param basicInfoCallbacks Callbacks for title/description changes (optional)
+ * @param headerConfig Optional header configuration for title/description section
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -70,25 +82,14 @@ fun TemplateFieldList(
     editingFieldId: String?,
     fieldErrors: Map<String, String>,
     callbacks: TemplateFieldListCallbacks,
-    title: String? = null,
-    description: String? = null,
-    titleError: String? = null,
-    basicInfoCallbacks: TemplateBasicInfoCallbacks? = null
+    headerConfig: TemplateHeaderConfig? = null
 ) {
   val lazyListState = rememberLazyListState()
-  // Calculate offset: 1 if basic info section is present, 0 otherwise
-  val hasBasicInfo = title != null && basicInfoCallbacks != null
-  val indexOffset = if (hasBasicInfo) 1 else 0
+  val indexOffset = if (headerConfig != null) 1 else 0
 
   val reorderableState =
       rememberReorderableLazyListState(lazyListState) { from, to ->
-        // Adjust indices to account for basic info section
-        val fromFieldIndex = from.index - indexOffset
-        val toFieldIndex = to.index - indexOffset
-        // Only reorder if both indices are valid field indices
-        if (fromFieldIndex >= 0 && toFieldIndex >= 0) {
-          callbacks.onFieldsReorder(fromFieldIndex, toFieldIndex)
-        }
+        handleReorder(from.index, to.index, indexOffset, callbacks.onFieldsReorder)
       }
 
   LazyColumn(
@@ -96,38 +97,11 @@ fun TemplateFieldList(
       modifier = modifier,
       contentPadding = PaddingValues(16.dp),
       verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (title != null && basicInfoCallbacks != null) {
-          item(key = "basic_info") {
-            Column {
-              TemplateBasicInfoSection(
-                  title = title,
-                  description = description ?: "",
-                  titleError = titleError,
-                  onTitleChange = basicInfoCallbacks.onTitleChange,
-                  onDescriptionChange = basicInfoCallbacks.onDescriptionChange)
-              Spacer(Modifier.height(8.dp))
-              HorizontalDivider()
-              Spacer(Modifier.height(8.dp))
-            }
-          }
+        if (headerConfig != null) {
+          item(key = "basic_info") { TemplateFieldListHeader(headerConfig) }
         }
         if (fields.isEmpty()) {
-          item(key = "empty_placeholder") {
-            Box(
-                modifier = Modifier.fillMaxWidth().height(400.dp),
-                contentAlignment = Alignment.Center) {
-                  Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = "Add field",
-                        modifier = Modifier.size(64.dp))
-                    Spacer(Modifier.height(16.dp))
-                    Text("No fields yet", style = MaterialTheme.typography.bodyLarge)
-                    Text(
-                        "Tap + to add your first field", style = MaterialTheme.typography.bodySmall)
-                  }
-                }
-          }
+          item(key = "empty_placeholder") { EmptyFieldsPlaceholderContent() }
         } else {
           items(fields, key = { it.id }) { field ->
             ReorderableItem(reorderableState, key = field.id) { isDragging ->
@@ -154,9 +128,37 @@ fun TemplateFieldList(
       }
 }
 
+private fun handleReorder(
+    fromIndex: Int,
+    toIndex: Int,
+    offset: Int,
+    onReorder: (Int, Int) -> Unit
+) {
+  val fromFieldIndex = fromIndex - offset
+  val toFieldIndex = toIndex - offset
+  if (fromFieldIndex >= 0 && toFieldIndex >= 0) {
+    onReorder(fromFieldIndex, toFieldIndex)
+  }
+}
+
 @Composable
-private fun EmptyFieldsPlaceholder(modifier: Modifier) {
-  Box(modifier = modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
+private fun TemplateFieldListHeader(config: TemplateHeaderConfig) {
+  Column {
+    TemplateBasicInfoSection(
+        title = config.title,
+        description = config.description ?: "",
+        titleError = config.titleError,
+        onTitleChange = config.callbacks.onTitleChange,
+        onDescriptionChange = config.callbacks.onDescriptionChange)
+    Spacer(Modifier.height(8.dp))
+    HorizontalDivider()
+    Spacer(Modifier.height(8.dp))
+  }
+}
+
+@Composable
+private fun EmptyFieldsPlaceholderContent() {
+  Box(modifier = Modifier.fillMaxWidth().height(400.dp), contentAlignment = Alignment.Center) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
       Icon(Icons.Default.Add, contentDescription = "Add field", modifier = Modifier.size(64.dp))
       Spacer(Modifier.height(16.dp))

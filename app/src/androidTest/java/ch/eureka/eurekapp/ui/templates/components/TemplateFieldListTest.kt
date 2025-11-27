@@ -8,6 +8,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextReplacement
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.SelectOption
@@ -412,6 +413,169 @@ class TemplateFieldListTest {
 
     val errorNodes = composeTestRule.onAllNodes(hasContentDescription("Error"))
     assertEquals(3, errorNodes.fetchSemanticsNodes().size)
+  }
+
+  @Test
+  fun basicInfoSection_displaysWhenHeaderConfigProvided() {
+    composeTestRule.setContent {
+      TemplateFieldList(
+          fields = testFields,
+          editingFieldId = null,
+          fieldErrors = emptyMap(),
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }),
+          headerConfig =
+              TemplateHeaderConfig(
+                  title = "Test Template",
+                  description = "Test description",
+                  callbacks =
+                      TemplateBasicInfoCallbacks(onTitleChange = {}, onDescriptionChange = {})))
+    }
+
+    composeTestRule.onNodeWithText("Test Template").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Test description").assertIsDisplayed()
+  }
+
+  @Test
+  fun basicInfoSection_titleChangeCallback_invoked() {
+    var capturedTitle = ""
+
+    composeTestRule.setContent {
+      TemplateFieldList(
+          fields = testFields,
+          editingFieldId = null,
+          fieldErrors = emptyMap(),
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }),
+          headerConfig =
+              TemplateHeaderConfig(
+                  title = "Initial",
+                  callbacks =
+                      TemplateBasicInfoCallbacks(
+                          onTitleChange = { capturedTitle = it }, onDescriptionChange = {})))
+    }
+
+    composeTestRule.onNodeWithText("Initial").performTextReplacement("Updated Title")
+
+    assertEquals("Updated Title", capturedTitle)
+  }
+
+  @Test
+  fun basicInfoSection_descriptionChangeCallback_invoked() {
+    var capturedDescription = ""
+
+    composeTestRule.setContent {
+      TemplateFieldList(
+          fields = testFields,
+          editingFieldId = null,
+          fieldErrors = emptyMap(),
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }),
+          headerConfig =
+              TemplateHeaderConfig(
+                  title = "Title",
+                  description = "Initial Desc",
+                  callbacks =
+                      TemplateBasicInfoCallbacks(
+                          onTitleChange = {}, onDescriptionChange = { capturedDescription = it })))
+    }
+
+    composeTestRule.onNodeWithText("Initial Desc").performTextReplacement("New Description")
+
+    assertEquals("New Description", capturedDescription)
+  }
+
+  @Test
+  fun basicInfoSection_titleError_displayed() {
+    composeTestRule.setContent {
+      TemplateFieldList(
+          fields = testFields,
+          editingFieldId = null,
+          fieldErrors = emptyMap(),
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }),
+          headerConfig =
+              TemplateHeaderConfig(
+                  title = "",
+                  titleError = "Title is required",
+                  callbacks =
+                      TemplateBasicInfoCallbacks(onTitleChange = {}, onDescriptionChange = {})))
+    }
+
+    composeTestRule.onNodeWithText("Title is required").assertIsDisplayed()
+  }
+
+  @Test
+  fun basicInfoSection_notDisplayed_whenHeaderConfigNull() {
+    composeTestRule.setContent {
+      TemplateFieldList(
+          fields = testFields,
+          editingFieldId = null,
+          fieldErrors = emptyMap(),
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }),
+          headerConfig = null)
+    }
+
+    composeTestRule.onNodeWithText("Template Title").assertDoesNotExist()
+    composeTestRule.onNodeWithText("Description").assertDoesNotExist()
+  }
+
+  @Test
+  fun fieldList_withHeaderConfig_displaysFieldsAfterHeader() {
+    composeTestRule.setContent {
+      TemplateFieldList(
+          fields = testFields,
+          editingFieldId = null,
+          fieldErrors = emptyMap(),
+          callbacks =
+              TemplateFieldListCallbacks(
+                  onFieldEdit = {},
+                  onFieldSave = { _, _ -> },
+                  onFieldCancel = {},
+                  onFieldDelete = {},
+                  onFieldDuplicate = {},
+                  onFieldsReorder = { _, _ -> }),
+          headerConfig =
+              TemplateHeaderConfig(
+                  title = "Header Title",
+                  callbacks =
+                      TemplateBasicInfoCallbacks(onTitleChange = {}, onDescriptionChange = {})))
+    }
+
+    composeTestRule.onNodeWithText("Header Title").assertIsDisplayed()
+    composeTestRule.onNodeWithText("First Field").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Second Field").assertIsDisplayed()
   }
 }
 

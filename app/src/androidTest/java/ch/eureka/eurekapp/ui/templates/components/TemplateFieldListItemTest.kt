@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextReplacement
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.SelectOption
@@ -662,5 +663,114 @@ class TemplateFieldListItemTest {
     }
 
     composeTestRule.onNodeWithText("Multi Select").assertIsDisplayed()
+  }
+
+  @Test
+  fun saveButton_callsOnFieldChangeBeforeOnSave() {
+    val callOrder = mutableListOf<String>()
+
+    composeTestRule.setContent {
+      TemplateFieldListItem(
+          field = testTextField,
+          isExpanded = true,
+          error = null,
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = { callOrder.add("fieldChange") },
+                  onSave = { callOrder.add("save") },
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
+    }
+
+    composeTestRule.onNodeWithContentDescription("Save").performClick()
+
+    assertEquals(listOf("fieldChange", "save"), callOrder)
+  }
+
+  @Test
+  fun editingLabel_updatesLocalFieldState_andPassesToCallback() {
+    var capturedField: FieldDefinition? = null
+
+    composeTestRule.setContent {
+      TemplateFieldListItem(
+          field = testTextField,
+          isExpanded = true,
+          error = null,
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = { capturedField = it },
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
+    }
+
+    composeTestRule.onNodeWithTag("field_label_input").performTextReplacement("Updated Label")
+    composeTestRule.onNodeWithContentDescription("Save").performClick()
+
+    assertEquals("Updated Label", capturedField?.label)
+  }
+
+  @Test
+  fun editingDescription_updatesLocalFieldState_andPassesToCallback() {
+    var capturedField: FieldDefinition? = null
+
+    composeTestRule.setContent {
+      TemplateFieldListItem(
+          field = testTextField,
+          isExpanded = true,
+          error = null,
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = { capturedField = it },
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
+    }
+
+    composeTestRule
+        .onNodeWithTag("field_description_input")
+        .performTextReplacement("New description")
+    composeTestRule.onNodeWithContentDescription("Save").performClick()
+
+    assertEquals("New description", capturedField?.description)
+  }
+
+  @Test
+  fun togglingRequired_updatesLocalFieldState_andPassesToCallback() {
+    var capturedField: FieldDefinition? = null
+
+    composeTestRule.setContent {
+      TemplateFieldListItem(
+          field = testTextField.copy(required = false),
+          isExpanded = true,
+          error = null,
+          callbacks =
+              TemplateFieldCallbacks(
+                  onExpand = {},
+                  onFieldChange = { capturedField = it },
+                  onSave = {},
+                  onCancel = {},
+                  onDelete = {},
+                  onDuplicate = {})) {
+            Icon(Icons.Default.DragHandle, "Drag")
+          }
+    }
+
+    composeTestRule.onNodeWithTag("field_required_checkbox").performClick()
+    composeTestRule.onNodeWithContentDescription("Save").performClick()
+
+    assertTrue(capturedField?.required == true)
   }
 }

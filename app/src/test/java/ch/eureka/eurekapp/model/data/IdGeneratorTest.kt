@@ -144,4 +144,49 @@ class IdGeneratorTest {
     TestCase.assertEquals("test", parts[0])
     TestCase.assertEquals(36, parts[1].length) // Full UUID with hyphens
   }
+
+  @Test
+  fun generateUniqueToken_shouldStartWithTokenPrefix() {
+    val token = IdGenerator.generateUniqueToken()
+    TestCase.assertTrue(token.startsWith("token_"))
+  }
+
+  @Test
+  fun generateUniqueToken_shouldBeUnique() {
+    val token1 = IdGenerator.generateUniqueToken()
+    val token2 = IdGenerator.generateUniqueToken()
+    TestCase.assertFalse(token1 == token2)
+  }
+
+  @Test
+  fun generateUniqueToken_shouldContainValidUuid() {
+    val token = IdGenerator.generateUniqueToken()
+    val uuidPart = token.removePrefix("token_")
+    TestCase.assertEquals(36, uuidPart.length) // UUID format with hyphens
+  }
+
+  @Test
+  fun generateFieldId_shouldHandleWhitespaceOnlyLabel() {
+    val fieldId = IdGenerator.generateFieldId("   ")
+    TestCase.assertTrue(fieldId.startsWith("field_"))
+  }
+
+  @Test
+  fun generateFieldId_shouldHandleUnicodeCharacters() {
+    val fieldId = IdGenerator.generateFieldId("Café résumé")
+    TestCase.assertTrue(fieldId.contains("caf") || fieldId.startsWith("field_"))
+    TestCase.assertTrue(fieldId.length > 6)
+  }
+
+  @Test
+  fun generateFieldId_shouldHandleSingleCharacterLabel() {
+    val fieldId = IdGenerator.generateFieldId("a")
+    TestCase.assertTrue(fieldId.startsWith("a_"))
+  }
+
+  @Test
+  fun generateFieldId_shouldCollapseConsecutiveSpecialCharacters() {
+    val fieldId = IdGenerator.generateFieldId("field!!!name")
+    TestCase.assertTrue(fieldId.contains("field_name_"))
+  }
 }
