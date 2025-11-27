@@ -26,6 +26,7 @@ import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingTranscriptViewScree
 import ch.eureka.eurekapp.screens.subscreens.projects.creation.CreateProjectScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitationSubscreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.AutoAssignResultScreen
+import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
@@ -74,6 +75,9 @@ sealed interface Route {
     @Serializable data class EditTask(val projectId: String, val taskId: String) : TasksSection
 
     @Serializable data object AutoTaskAssignment : TasksSection
+
+    @Serializable
+    data class TaskDependence(val projectId: String, val taskId: String) : TasksSection
   }
 
   sealed interface IdeasSection : Route {
@@ -248,6 +252,14 @@ fun NavigationMenu() {
                 val taskDetailRoute = backStackEntry.toRoute<Route.TasksSection.ViewTask>()
                 ViewTaskScreen(
                     taskDetailRoute.projectId, taskDetailRoute.taskId, navigationController)
+              }
+
+              composable<Route.TasksSection.TaskDependence> { backStackEntry ->
+                val dependenceRoute = backStackEntry.toRoute<Route.TasksSection.TaskDependence>()
+                TaskDependenciesScreen(
+                    projectId = dependenceRoute.projectId,
+                    taskId = dependenceRoute.taskId,
+                    navigationController = navigationController)
               }
 
               // Ideas section
