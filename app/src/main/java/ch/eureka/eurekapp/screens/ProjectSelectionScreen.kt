@@ -36,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +46,7 @@ import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectSelectionScreenViewModel
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.data.user.User
+import ch.eureka.eurekapp.ui.components.IconTextRow
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.LightingBlue
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.SuccessGreen
@@ -248,8 +248,8 @@ private fun ProjectCard(
                     verticalArrangement = Arrangement.Top,
                 ) {
                   Row(modifier = Modifier.weight(2f)) {
-                    InformationContainer(
-                        project.description,
+                    IconTextRow(
+                        text = project.description,
                         iconVector = Icons.Default.Description,
                         iconColor = WarningOrange)
                   }
@@ -279,8 +279,8 @@ private fun ProjectCard(
                             modifier = Modifier.fillMaxSize(),
                             horizontalAlignment = Alignment.CenterHorizontally) {
                               items(projectUsers.value) { user ->
-                                InformationContainer(
-                                    user.displayName,
+                                IconTextRow(
+                                    text = user.displayName,
                                     iconVector = Icons.Default.Person,
                                     iconColor = DarkColorScheme.background)
                               }
@@ -294,34 +294,6 @@ private fun ProjectCard(
                       }
                 }
               }
-            }
-      }
-}
-
-/**
- * Displays a row containing an icon and text (e.g., for project description or user info).
- *
- * @param text text to display next to the icon.
- * @param iconVector vector icon to display.
- * @param iconColor color of the icon.
- */
-@Composable
-fun InformationContainer(text: String, iconVector: ImageVector, iconColor: Color) {
-  Row(
-      modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
-      horizontalArrangement = Arrangement.Center,
-      verticalAlignment = Alignment.CenterVertically) {
-        Row(
-            modifier = Modifier.fillMaxHeight(),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.Top) {
-              Icon(iconVector, null, tint = iconColor)
-            }
-        Row(
-            modifier = Modifier.fillMaxHeight().padding(vertical = 5.dp, horizontal = 3.dp),
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.Start) {
-              Text(text, style = Typography.labelMedium)
             }
       }
 }

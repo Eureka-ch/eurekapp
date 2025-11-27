@@ -48,19 +48,19 @@ class HomeOverviewScreenTest {
 
     // Scroll to make sure items are visible and verify via test tags
     val list = composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN)
-    list.performScrollToNode(hasTestTag("${HomeOverviewTestTags.TASK_ITEM_PREFIX}Task A"))
+    list.performScrollToNode(hasTestTag(HomeOverviewTestTags.getTaskItemTestTag("Task A")))
     composeTestRule
-        .onNodeWithTag("${HomeOverviewTestTags.TASK_ITEM_PREFIX}Task A")
+        .onNodeWithTag(HomeOverviewTestTags.getTaskItemTestTag("Task A"))
         .assertIsDisplayed()
 
-    list.performScrollToNode(hasTestTag("${HomeOverviewTestTags.MEETING_ITEM_PREFIX}Meeting A"))
+    list.performScrollToNode(hasTestTag(HomeOverviewTestTags.getMeetingItemTestTag("Meeting A")))
     composeTestRule
-        .onNodeWithTag("${HomeOverviewTestTags.MEETING_ITEM_PREFIX}Meeting A")
+        .onNodeWithTag(HomeOverviewTestTags.getMeetingItemTestTag("Meeting A"))
         .assertIsDisplayed()
 
-    list.performScrollToNode(hasTestTag("${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}Project A"))
+    list.performScrollToNode(hasTestTag(HomeOverviewTestTags.getProjectItemTestTag("Project A")))
     composeTestRule
-        .onNodeWithTag("${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}Project A")
+        .onNodeWithTag(HomeOverviewTestTags.getProjectItemTestTag("Project A"))
         .assertIsDisplayed()
 
     // Verify action buttons are displayed (scroll into view first)
@@ -185,23 +185,23 @@ class HomeOverviewScreenTest {
 
     val list = composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN)
 
-    list.performScrollToNode(hasTestTag("${HomeOverviewTestTags.TASK_ITEM_PREFIX}${task.taskID}"))
+    list.performScrollToNode(hasTestTag(HomeOverviewTestTags.getTaskItemTestTag(task.taskID)))
     composeTestRule
-        .onNodeWithTag("${HomeOverviewTestTags.TASK_ITEM_PREFIX}${task.taskID}")
+        .onNodeWithTag(HomeOverviewTestTags.getTaskItemTestTag(task.taskID))
         .performClick()
 
     list.performScrollToNode(
-        hasTestTag("${HomeOverviewTestTags.MEETING_ITEM_PREFIX}${meeting.meetingID}"))
+        hasTestTag(HomeOverviewTestTags.getMeetingItemTestTag(meeting.meetingID)))
     composeTestRule
-        .onNodeWithTag("${HomeOverviewTestTags.MEETING_ITEM_PREFIX}${meeting.meetingID}")
+        .onNodeWithTag(HomeOverviewTestTags.getMeetingItemTestTag(meeting.meetingID))
         .performClick()
 
     list.performScrollToNode(
-        hasTestTag("${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}${project.projectId}"))
+        hasTestTag(HomeOverviewTestTags.getProjectItemTestTag(project.projectId)))
     list.performScrollToNode(
-        hasTestTag("${HomeOverviewTestTags.PROJECT_LINK_PREFIX}${project.projectId}"))
+        hasTestTag(HomeOverviewTestTags.getProjectLinkTestTag(project.projectId)))
     composeTestRule
-        .onNodeWithTag("${HomeOverviewTestTags.PROJECT_LINK_PREFIX}${project.projectId}")
+        .onNodeWithTag(HomeOverviewTestTags.getProjectLinkTestTag(project.projectId))
         .performClick()
 
     assertTrue(taskSelected)

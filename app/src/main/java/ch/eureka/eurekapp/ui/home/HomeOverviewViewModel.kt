@@ -137,7 +137,7 @@ class HomeOverviewViewModel(
 }
 
 private fun Timestamp?.toEpochMillisOrMax(): Long {
-  return this?.toDate()?.time ?: Long.MAX_VALUE
+  return this?.toDate()?.time ?: System.currentTimeMillis()
 }
 
 private fun Timestamp?.toEpochMillisOrMin(): Long {

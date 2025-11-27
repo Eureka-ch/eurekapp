@@ -36,6 +36,7 @@ import ch.eureka.eurekapp.model.data.task.getDaysUntilDue
 import ch.eureka.eurekapp.model.data.task.getDueDateTag
 import ch.eureka.eurekapp.ui.components.EurekaInfoCard
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
+import ch.eureka.eurekapp.ui.components.IconTextRow
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.home.HOME_ITEMS_LIMIT
 import ch.eureka.eurekapp.ui.home.HomeOverviewUiState
@@ -56,6 +57,22 @@ object HomeOverviewTestTags {
   const val MEETING_ITEM_PREFIX = "homeOverviewMeeting_"
   const val PROJECT_ITEM_PREFIX = "homeOverviewProject_"
   const val PROJECT_LINK_PREFIX = "homeOverviewProjectLink_"
+
+  fun getTaskItemTestTag(taskId: String): String {
+    return "${TASK_ITEM_PREFIX}$taskId"
+  }
+
+  fun getMeetingItemTestTag(meetingId: String): String {
+    return "${MEETING_ITEM_PREFIX}$meetingId"
+  }
+
+  fun getProjectItemTestTag(projectId: String): String {
+    return "${PROJECT_ITEM_PREFIX}$projectId"
+  }
+
+  fun getProjectLinkTestTag(projectId: String): String {
+    return "${PROJECT_LINK_PREFIX}$projectId"
+  }
 }
 
 /**
@@ -144,7 +161,7 @@ internal fun HomeOverviewLayout(
             Box(
                 modifier =
                     Modifier.fillMaxWidth()
-                        .testTag("${HomeOverviewTestTags.TASK_ITEM_PREFIX}${task.taskID}")) {
+                        .testTag(HomeOverviewTestTags.getTaskItemTestTag(task.taskID))) {
                   TaskPreviewCard(
                       task = task,
                       onTaskClick = { actions.onTaskSelected(task.projectId, task.taskID) })
@@ -167,8 +184,7 @@ internal fun HomeOverviewLayout(
             Box(
                 modifier =
                     Modifier.fillMaxWidth()
-                        .testTag(
-                            "${HomeOverviewTestTags.MEETING_ITEM_PREFIX}${meeting.meetingID}")) {
+                        .testTag(HomeOverviewTestTags.getMeetingItemTestTag(meeting.meetingID))) {
                   MeetingCard(
                       meeting = meeting,
                       config =
@@ -200,7 +216,7 @@ internal fun HomeOverviewLayout(
                 modifier =
                     Modifier.fillMaxWidth()
                         .padding(vertical = Spacing.xs)
-                        .testTag("${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}${project.projectId}"))
+                        .testTag(HomeOverviewTestTags.getProjectItemTestTag(project.projectId)))
           }
         }
       }
@@ -329,12 +345,12 @@ private fun ProjectSummaryCard(
               style = MaterialTheme.typography.titleMedium,
               color = MaterialTheme.colorScheme.onSurface)
           Spacer(modifier = Modifier.height(Spacing.xs))
-          InformationContainer(
+          IconTextRow(
               text = project.description.ifEmpty { "No description provided" },
               iconVector = Icons.Default.Description,
               iconColor = MaterialTheme.colorScheme.primary)
           Spacer(modifier = Modifier.height(Spacing.xs))
-          InformationContainer(
+          IconTextRow(
               text = "${project.memberIds.size} members",
               iconVector = Icons.Default.Person,
               iconColor = MaterialTheme.colorScheme.secondary)
@@ -353,7 +369,7 @@ private fun ProjectSummaryCard(
               modifier =
                   Modifier.padding(top = Spacing.xs)
                       .clickable(onClick = onClick)
-                      .testTag("${HomeOverviewTestTags.PROJECT_LINK_PREFIX}${project.projectId}"))
+                      .testTag(HomeOverviewTestTags.getProjectLinkTestTag(project.projectId)))
         }
       }
 }
