@@ -1,9 +1,7 @@
-// Portions of this code were generated with the help of Claude Sonnet 4.5 in Claude Code
-
 package ch.eureka.eurekapp.ui.templates
 
 import androidx.lifecycle.ViewModel
-import ch.eureka.eurekapp.model.data.IdGenerator
+import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.template.TaskTemplate
 import ch.eureka.eurekapp.model.data.template.TaskTemplateRepository
 import ch.eureka.eurekapp.model.data.template.TaskTemplateSchema
@@ -13,60 +11,73 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-/**
- * ViewModel for creating new templates.
- *
- * @param repository Template repository for persistence
- * @param initialProjectId Optional initial project ID from navigation
- */
-class CreateTemplateViewModel(
+class EditTemplateViewModel(
     private val repository: TaskTemplateRepository,
-    initialProjectId: String? = null
+    private val projectId: String,
+    private val templateId: String
 ) : ViewModel() {
 
-  private val _state = MutableStateFlow(TemplateEditorState(projectId = initialProjectId))
+  private val _state = MutableStateFlow(TemplateEditorState(projectId = projectId))
   val state: StateFlow<TemplateEditorState> = _state.asStateFlow()
 
-  /** Updates template title and validates. */
+  private val _isLoading = MutableStateFlow(true)
+  val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+  private val _loadError = MutableStateFlow<String?>(null)
+  val loadError: StateFlow<String?> = _loadError.asStateFlow()
+
+  init {
+    viewModelScope.launch {
+      repository.getTemplateById(projectId, templateId).collect { template ->
+        if (template != null) {
+          _state.value =
+              TemplateEditorState(
+                  title = template.title,
+                  description = template.description,
+                  projectId = template.projectId,
+                  fields = template.definedFields.fields)
+          _isLoading.value = false
+        } else {
+          _loadError.value = "Template not found"
+          _isLoading.value = false
+        }
+      }
+    }
+  }
+
   fun updateTitle(title: String) {
     _state.update { it.updateTitle(title).setTitleError(TemplateValidation.validateTitle(title)) }
   }
 
-  /** Updates template description. */
   fun updateDescription(description: String) {
     _state.update { it.updateDescription(description) }
   }
 
-  /** Adds a new field and validates it. */
   fun addField(field: FieldDefinition) {
     _state.update { it.addField(field) }
     validateField(field.id)
   }
 
-  /** Updates an existing field and validates it. */
   fun updateField(fieldId: String, field: FieldDefinition) {
     _state.update { it.updateField(fieldId) { field } }
     validateField(fieldId)
   }
 
-  /** Removes a field. */
   fun removeField(fieldId: String) {
     _state.update { it.removeField(fieldId) }
   }
 
-  /** Duplicates a field and sets it as editing. */
   fun duplicateField(fieldId: String) {
     _state.update { it.duplicateField(fieldId) }
     _state.value.fields.find { it.label.endsWith(" (copy)") }?.id?.let { setEditingFieldId(it) }
   }
 
-  /** Reorders fields. */
   fun reorderFields(fromIndex: Int, toIndex: Int) {
     _state.update { it.reorderFields(fromIndex, toIndex) }
   }
 
-  /** Sets which field is currently being edited. */
   fun setEditingFieldId(fieldId: String?) {
     _state.update { it.setEditingFieldId(fieldId) }
   }
@@ -77,37 +88,27 @@ class CreateTemplateViewModel(
     _state.update { it.setFieldError(fieldId, error) }
   }
 
-  /** Validates all fields. Returns true if valid. */
   fun validateAll(): Boolean {
     _state.update { it.setTitleError(TemplateValidation.validateTitle(it.title)) }
-
     if (TemplateValidation.validateFields(_state.value.fields).isFailure) return false
-
     _state.value.fields.forEach { validateField(it.id) }
-
     return _state.value.canSave
   }
 
-  /**
-   * Saves the template. Repository will automatically set createdBy to current user.
-   *
-   * @return Result with template ID on success
-   */
-  suspend fun save(): Result<String> {
+  suspend fun save(): Result<Unit> {
     if (!validateAll()) return Result.failure(Exception("Validation failed"))
 
     _state.update { it.setSaving(true) }
 
     val template =
         TaskTemplate(
-            templateID = IdGenerator.generateTaskTemplateId(),
-            projectId = _state.value.projectId ?: "",
+            templateID = templateId,
+            projectId = projectId,
             title = _state.value.title,
             description = _state.value.description,
             definedFields = TaskTemplateSchema(_state.value.fields),
-            createdBy = "" // Repository will set this to current user
-            )
+            createdBy = "")
 
-    return repository.createTemplate(template).also { _state.update { it.setSaving(false) } }
+    return repository.updateTemplate(template).also { _state.update { it.setSaving(false) } }
   }
 }

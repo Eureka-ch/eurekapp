@@ -45,10 +45,16 @@ fun TemplateEditorState.setEditingFieldId(id: String?) = copy(editingFieldId = i
 
 fun TemplateEditorState.setTitleError(error: String?) = copy(titleError = error)
 
+fun TemplateEditorState.setTitleError(result: Result<Unit>) =
+    copy(titleError = result.exceptionOrNull()?.message)
+
 fun TemplateEditorState.setFieldError(fieldId: String, error: String?) =
     copy(
         fieldErrors =
             if (error != null) fieldErrors + (fieldId to error) else fieldErrors - fieldId)
+
+fun TemplateEditorState.setFieldError(fieldId: String, result: Result<Unit>) =
+    setFieldError(fieldId, result.exceptionOrNull()?.message)
 
 fun TemplateEditorState.setSaving(saving: Boolean) = copy(isSaving = saving)
 

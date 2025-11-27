@@ -106,21 +106,27 @@ fun CreateTemplateScreen(
             when (page) {
               0 ->
                   TemplateFieldList(
-                      state.fields,
-                      state.editingFieldId,
-                      state.fieldErrors,
-                      viewModel::setEditingFieldId,
-                      viewModel::updateField,
-                      { viewModel.setEditingFieldId(null) },
-                      viewModel::removeField,
-                      viewModel::duplicateField,
-                      viewModel::reorderFields,
-                      Modifier.fillMaxSize(),
-                      title = state.title,
-                      description = state.description,
-                      titleError = state.titleError,
-                      onTitleChange = viewModel::updateTitle,
-                      onDescriptionChange = viewModel::updateDescription)
+                      modifier = Modifier.fillMaxSize(),
+                      fields = state.fields,
+                      editingFieldId = state.editingFieldId,
+                      fieldErrors = state.fieldErrors,
+                      callbacks =
+                          TemplateFieldListCallbacks(
+                              onFieldEdit = viewModel::setEditingFieldId,
+                              onFieldSave = viewModel::updateField,
+                              onFieldCancel = { viewModel.setEditingFieldId(null) },
+                              onFieldDelete = viewModel::removeField,
+                              onFieldDuplicate = viewModel::duplicateField,
+                              onFieldsReorder = viewModel::reorderFields),
+                      headerConfig =
+                          TemplateHeaderConfig(
+                              title = state.title,
+                              description = state.description,
+                              titleError = state.titleError,
+                              callbacks =
+                                  TemplateBasicInfoCallbacks(
+                                      onTitleChange = viewModel::updateTitle,
+                                      onDescriptionChange = viewModel::updateDescription)))
               1 ->
                   TemplatePreview(
                       state.fields,
