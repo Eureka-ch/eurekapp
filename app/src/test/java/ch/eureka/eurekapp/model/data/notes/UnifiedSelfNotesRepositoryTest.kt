@@ -82,12 +82,7 @@ class UnifiedSelfNotesRepositoryTest {
   @Test
   fun `getNotes maps local entities to domain models`() = runTest {
     val entity =
-        MessageEntity(
-            messageId = "m1",
-            text = "Hi",
-            senderId = "u1",
-            createdAtMillis = 1000,
-            referencesJson = "")
+        MessageEntity(messageId = "m1", text = "Hi", senderId = "u1", createdAtMillis = 1000)
     every { localDao.getMessagesForUser("testUser") } returns flowOf(listOf(entity))
     val result = repository.getNotes(10).first()
     assertEquals(1, result.size)
@@ -267,7 +262,6 @@ class UnifiedSelfNotesRepositoryTest {
             text = "Wait",
             senderId = "testUser",
             createdAtMillis = 0,
-            referencesJson = "",
             isPendingSync = true)
     every { localDao.getPendingSyncMessages("testUser") } returns listOf(pendingEntity)
     coEvery { firestoreRepo.createNote(any()) } returns Result.success("pending1")
@@ -283,20 +277,10 @@ class UnifiedSelfNotesRepositoryTest {
     mockNetwork(true)
     val p1 =
         MessageEntity(
-            messageId = "p1",
-            text = "1",
-            senderId = "u",
-            createdAtMillis = 0,
-            referencesJson = "",
-            isPendingSync = true)
+            messageId = "p1", text = "1", senderId = "u", createdAtMillis = 0, isPendingSync = true)
     val p2 =
         MessageEntity(
-            messageId = "p2",
-            text = "2",
-            senderId = "u",
-            createdAtMillis = 0,
-            referencesJson = "",
-            isPendingSync = true)
+            messageId = "p2", text = "2", senderId = "u", createdAtMillis = 0, isPendingSync = true)
     every { localDao.getPendingSyncMessages("testUser") } returns listOf(p1, p2)
     coEvery { firestoreRepo.createNote(match { it.messageID == "p1" }) } returns
         Result.success("p1")

@@ -19,16 +19,11 @@ class MessageEntityTest {
   fun `default constructor creates object with expected default values`() {
     val entity =
         MessageEntity(
-            messageId = "msg_123",
-            text = "Test Note",
-            senderId = "user_1",
-            createdAtMillis = 1000L,
-            referencesJson = "[]")
+            messageId = "msg_123", text = "Test Note", senderId = "user_1", createdAtMillis = 1000L)
     assertEquals("msg_123", entity.messageId)
     assertEquals("Test Note", entity.text)
     assertEquals("user_1", entity.senderId)
     assertEquals(1000L, entity.createdAtMillis)
-    assertEquals("[]", entity.referencesJson)
     assertEquals(0, entity.localId)
     assertFalse("isPendingSync should be false by default", entity.isPendingSync)
     assertFalse("isPrivacyLocalOnly should be false by default", entity.isPrivacyLocalOnly)
@@ -43,7 +38,6 @@ class MessageEntityTest {
             text = "Offline Note",
             senderId = "user_2",
             createdAtMillis = 2000L,
-            referencesJson = "{}",
             isPendingSync = true,
             isPrivacyLocalOnly = true)
     assertEquals(55, entity.localId)
@@ -51,7 +45,6 @@ class MessageEntityTest {
     assertEquals("Offline Note", entity.text)
     assertEquals("user_2", entity.senderId)
     assertEquals(2000L, entity.createdAtMillis)
-    assertEquals("{}", entity.referencesJson)
     assertTrue(entity.isPendingSync)
     assertTrue(entity.isPrivacyLocalOnly)
   }
@@ -64,24 +57,21 @@ class MessageEntityTest {
             messageId = "id",
             text = "text",
             senderId = "sender",
-            createdAtMillis = 100L,
-            referencesJson = "[]")
+            createdAtMillis = 100L)
     val entity2 =
         MessageEntity(
             localId = 1,
             messageId = "id",
             text = "text",
             senderId = "sender",
-            createdAtMillis = 100L,
-            referencesJson = "[]")
+            createdAtMillis = 100L)
     val entity3 =
         MessageEntity(
             localId = 2,
             messageId = "id",
             text = "text",
             senderId = "sender",
-            createdAtMillis = 100L,
-            referencesJson = "[]")
+            createdAtMillis = 100L)
     assertEquals("Entities with same data should be equal", entity1, entity2)
     assertEquals(
         "HashCodes should be equal for equal objects", entity1.hashCode(), entity2.hashCode())
@@ -95,8 +85,7 @@ class MessageEntityTest {
             messageId = "original_id",
             text = "Original Text",
             senderId = "user",
-            createdAtMillis = 100L,
-            referencesJson = "")
+            createdAtMillis = 100L)
     val copy = original.copy(text = "Updated Text", isPendingSync = true)
     assertEquals("Updated Text", copy.text)
     assertTrue(copy.isPendingSync)

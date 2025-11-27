@@ -22,8 +22,7 @@ fun MessageEntity.toDomainModel(): Message {
       text = this.text,
       senderId = this.senderId,
       // Convert Milliseconds (Long) -> Seconds (for Timestamp)
-      createdAt = Timestamp(this.createdAtMillis / 1000, 0),
-      references = emptyList())
+      createdAt = Timestamp(this.createdAtMillis / 1000, 0))
 }
 
 /**
@@ -42,6 +41,5 @@ fun Message.toEntity(): MessageEntity {
       text = this.text,
       senderId = this.senderId,
       // Convert Timestamp (Seconds) -> Milliseconds (Long)
-      createdAtMillis = this.createdAt.seconds * 1000,
-      referencesJson = "")
+      createdAtMillis = this.createdAt.seconds * 1000)
 }

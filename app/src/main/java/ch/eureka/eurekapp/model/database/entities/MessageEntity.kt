@@ -15,7 +15,6 @@ import androidx.room.PrimaryKey
  * @property text The actual content body of the note/message.
  * @property senderId The unique identifier (UID) of the user who created this note.
  * @property createdAtMillis The creation timestamp in milliseconds.
- * @property referencesJson A serialized JSON string representing the list of referenced entity IDs.
  * @property isPendingSync True if this note needs to be uploaded to the cloud (Offline usage).
  * @property isPrivacyLocalOnly True if the user explicitly chose "Local" storage for this note.
  */
@@ -26,7 +25,6 @@ data class MessageEntity(
     val text: String,
     val senderId: String,
     val createdAtMillis: Long,
-    val referencesJson: String,
     val isPendingSync: Boolean = false,
     val isPrivacyLocalOnly: Boolean = false
 )
