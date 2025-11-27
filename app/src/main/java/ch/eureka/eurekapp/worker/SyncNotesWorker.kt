@@ -2,9 +2,12 @@
 package ch.eureka.eurekapp.worker
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
+import com.google.firebase.auth.FirebaseAuthException
+import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -28,9 +31,15 @@ class SyncNotesWorker(context: Context, params: WorkerParameters) :
 
           repository.syncPendingNotes()
           Result.success()
+        } catch (e: FirebaseAuthException) {
+          Log.e("SyncNotesWorker", "Auth failed - won't retry", e)
+          Result.failure()
+        } catch (e: IOException) {
+          Log.e("SyncNotesWorker", "Network error on attempt $runAttemptCount", e)
+          if (runAttemptCount < 3) Result.retry() else Result.failure()
         } catch (e: Exception) {
-          e.printStackTrace()
-          Result.retry()
+          Log.e("SyncNotesWorker", "Unexpected error - won't retry", e)
+          Result.failure()
         }
       }
 }
