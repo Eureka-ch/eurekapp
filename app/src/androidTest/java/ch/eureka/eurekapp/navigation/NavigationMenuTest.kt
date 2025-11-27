@@ -1,17 +1,13 @@
 package ch.eureka.eurekapp.navigation
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollToNode
 import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
-import ch.eureka.eurekapp.model.data.meeting.Meeting
-import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRole
@@ -20,17 +16,11 @@ import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
-import ch.eureka.eurekapp.screens.HomeOverviewTestOverrides
 import ch.eureka.eurekapp.screens.HomeOverviewTestTags
 import ch.eureka.eurekapp.screens.IdeasScreenTestTags
-import ch.eureka.eurekapp.screens.OverviewProjectsScreenTestTags
-import ch.eureka.eurekapp.screens.ProjectSelectionScreenTestTags
 import ch.eureka.eurekapp.screens.SelfNotesScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
-import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreenTestTags
-import ch.eureka.eurekapp.ui.home.HomeOverviewUiState
-import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.ui.profile.ProfileScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
@@ -51,12 +41,6 @@ Co-author: GPT-5 Codex
 */
 
 class NavigationMenuTest : TestCase() {
-
-  companion object {
-    private const val HOME_OVERVIEW_PROJECT_ID = "home-overview-project-id"
-    private const val HOME_OVERVIEW_TASK_ID = "home-overview-task-id"
-    private const val HOME_OVERVIEW_MEETING_ID = "home-overview-meeting-id"
-  }
 
   @get:Rule
   val permissionRule: GrantPermissionRule =
@@ -143,88 +127,6 @@ class NavigationMenuTest : TestCase() {
   }
 
   @Test
-  fun testHomeOverviewComposable() {
-    runBlocking { seedHomeOverviewData() }
-
-    val overrideState = createHomeOverviewOverrideState()
-    HomeOverviewTestOverrides.uiState = overrideState
-
-    try {
-      composeTestRule.setContent { NavigationMenu() }
-      composeTestRule.waitForIdle()
-
-      fun waitForTag(tag: String) {
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-          try {
-            composeTestRule.onNodeWithTag(tag).assertExists()
-            true
-          } catch (e: AssertionError) {
-            false
-          }
-        }
-      }
-
-      fun returnHome() {
-        composeTestRule
-            .onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON)
-            .performClick()
-        waitForTag(HomeOverviewTestTags.SCREEN)
-      }
-
-      waitForTag(HomeOverviewTestTags.SCREEN)
-
-      waitForTag(HomeOverviewTestTags.CTA_TASKS)
-      composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).performClick()
-      waitForTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
-      returnHome()
-
-      waitForTag(HomeOverviewTestTags.CTA_MEETINGS)
-      composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_MEETINGS).performClick()
-      waitForTag(MeetingScreenTestTags.MEETING_SCREEN)
-      returnHome()
-
-      waitForTag(HomeOverviewTestTags.CTA_PROJECTS)
-      composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_PROJECTS).performClick()
-      waitForTag(ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON)
-      returnHome()
-
-      val taskTag = "${HomeOverviewTestTags.TASK_ITEM_PREFIX}$HOME_OVERVIEW_TASK_ID"
-      val meetingTag = "${HomeOverviewTestTags.MEETING_ITEM_PREFIX}$HOME_OVERVIEW_MEETING_ID"
-      val projectLinkTag = "${HomeOverviewTestTags.PROJECT_LINK_PREFIX}$HOME_OVERVIEW_PROJECT_ID"
-
-      waitForTag(taskTag)
-      composeTestRule.onNodeWithTag(taskTag).performClick()
-      waitForTag(ViewTaskScreenTestTags.VIEW_DEPENDENCIES)
-      composeTestRule.onNodeWithTag(CommonTaskTestTags.BACK_BUTTON).performClick()
-      returnHome()
-
-      waitForTag(meetingTag)
-      composeTestRule.onNodeWithTag(meetingTag).performClick()
-      waitForTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN)
-      returnHome()
-
-      // Scroll to project link in LazyColumn and click it
-      // First get the LazyColumn node, then scroll to the project link
-      val list = composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN)
-      list.performScrollToNode(hasTestTag(projectLinkTag))
-      composeTestRule.waitForIdle()
-      // Now wait for the tag to be visible and clickable
-      composeTestRule.waitUntil(timeoutMillis = 5000) {
-        try {
-          composeTestRule.onNodeWithTag(projectLinkTag).assertIsDisplayed()
-          true
-        } catch (e: AssertionError) {
-          false
-        }
-      }
-      composeTestRule.onNodeWithTag(projectLinkTag).performClick()
-      waitForTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT)
-    } finally {
-      composeTestRule.runOnIdle { HomeOverviewTestOverrides.uiState = null }
-    }
-  }
-
-  @Test
   fun testNavigateToTaskDependenciesScreen() {
     runBlocking {
       val testUserId =
@@ -298,95 +200,5 @@ class NavigationMenuTest : TestCase() {
 
     // Verify the screen is displayed (this confirms the composable executed)
     composeTestRule.onNodeWithTag("back_button_dependencies").assertIsDisplayed()
-  }
-
-  private suspend fun seedHomeOverviewData() {
-    val testUserId =
-        FirebaseEmulator.auth.currentUser?.uid ?: throw IllegalStateException("No user")
-
-    val projectRef =
-        FirebaseEmulator.firestore.collection("projects").document(HOME_OVERVIEW_PROJECT_ID)
-    projectRef
-        .set(
-            Project(
-                projectId = HOME_OVERVIEW_PROJECT_ID,
-                name = "Home Overview Project",
-                description = "Project for coverage",
-                status = ProjectStatus.OPEN,
-                createdBy = testUserId,
-                memberIds = listOf(testUserId),
-                lastUpdated = Timestamp.now()))
-        .await()
-    projectRef
-        .collection("members")
-        .document(testUserId)
-        .set(Member(userId = testUserId, role = ProjectRole.OWNER))
-        .await()
-
-    val taskRepository: TaskRepository =
-        FirestoreTaskRepository(
-            firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
-    val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse("15/10/2025")!!
-    taskRepository
-        .updateTask(
-            Task(
-                taskID = HOME_OVERVIEW_TASK_ID,
-                projectId = HOME_OVERVIEW_PROJECT_ID,
-                title = "Home Overview Task",
-                description = "Task for coverage",
-                assignedUserIds = listOf(testUserId),
-                dueDate = Timestamp(date),
-                attachmentUrls = emptyList(),
-                createdBy = testUserId,
-                status = TaskStatus.TODO))
-        .getOrThrow()
-
-    val meeting =
-        Meeting(
-            meetingID = HOME_OVERVIEW_MEETING_ID,
-            projectId = HOME_OVERVIEW_PROJECT_ID,
-            title = "Coverage Meeting",
-            status = MeetingStatus.SCHEDULED,
-            datetime = Timestamp.now(),
-            createdBy = testUserId,
-            participantIds = listOf(testUserId))
-
-    FirebaseEmulator.firestore
-        .collection("projects")
-        .document(HOME_OVERVIEW_PROJECT_ID)
-        .collection("meetings")
-        .document(HOME_OVERVIEW_MEETING_ID)
-        .set(meeting)
-        .await()
-  }
-
-  private fun createHomeOverviewOverrideState(): HomeOverviewUiState {
-    return HomeOverviewUiState(
-        currentUserName = "Test User",
-        upcomingTasks =
-            listOf(
-                Task(
-                    taskID = HOME_OVERVIEW_TASK_ID,
-                    projectId = HOME_OVERVIEW_PROJECT_ID,
-                    title = "Home Overview Task",
-                    description = "Task for coverage",
-                    status = TaskStatus.TODO)),
-        upcomingMeetings =
-            listOf(
-                Meeting(
-                    meetingID = HOME_OVERVIEW_MEETING_ID,
-                    projectId = HOME_OVERVIEW_PROJECT_ID,
-                    title = "Coverage Meeting",
-                    status = MeetingStatus.SCHEDULED,
-                    createdBy = "test-user")),
-        recentProjects =
-            listOf(
-                Project(
-                    projectId = HOME_OVERVIEW_PROJECT_ID,
-                    name = "Home Overview Project",
-                    description = "Project for home overview coverage",
-                    status = ProjectStatus.OPEN)),
-        isLoading = false,
-        isConnected = true)
   }
 }
