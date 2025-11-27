@@ -86,7 +86,7 @@ fun TemplateEditorContent(
         if (!config.isLoading && config.loadError == null && pagerState.currentPage == 0) {
           ExtendedFloatingActionButton(
               onClick = { showAddFieldSheet = true },
-              icon = { Icon(Icons.Default.Add, null) },
+              icon = { Icon(Icons.Default.Add, contentDescription = "Add field") },
               text = { Text("Add Field") },
               modifier = Modifier.testTag("add_field_button"))
         }

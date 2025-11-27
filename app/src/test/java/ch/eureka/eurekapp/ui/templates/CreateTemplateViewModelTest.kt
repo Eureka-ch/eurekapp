@@ -337,7 +337,9 @@ class CreateTemplateViewModelTest {
 
   @Test
   fun save_withValidData_succeeds() = runTest {
-    viewModel = CreateTemplateViewModel(mockRepository, initialProjectId = "proj1")
+    viewModel =
+        CreateTemplateViewModel(
+            mockRepository, initialProjectId = "proj1", ioDispatcher = testDispatcher)
     advanceUntilIdle()
 
     viewModel.updateTitle("Test Template")
@@ -367,7 +369,7 @@ class CreateTemplateViewModelTest {
 
   @Test
   fun save_withInvalidData_fails() = runTest {
-    viewModel = CreateTemplateViewModel(mockRepository)
+    viewModel = CreateTemplateViewModel(mockRepository, ioDispatcher = testDispatcher)
     advanceUntilIdle()
 
     viewModel.updateTitle("")
@@ -385,7 +387,9 @@ class CreateTemplateViewModelTest {
 
   @Test
   fun save_setsAndClearsSavingState() = runTest {
-    viewModel = CreateTemplateViewModel(mockRepository, initialProjectId = "proj1")
+    viewModel =
+        CreateTemplateViewModel(
+            mockRepository, initialProjectId = "proj1", ioDispatcher = testDispatcher)
     advanceUntilIdle()
 
     viewModel.updateTitle("Test Template")

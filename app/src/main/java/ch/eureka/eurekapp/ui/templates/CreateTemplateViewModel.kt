@@ -7,6 +7,8 @@ import ch.eureka.eurekapp.model.data.template.TaskTemplate
 import ch.eureka.eurekapp.model.data.template.TaskTemplateRepository
 import ch.eureka.eurekapp.model.data.template.TaskTemplateSchema
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,7 +16,8 @@ import kotlinx.coroutines.launch
 
 class CreateTemplateViewModel(
     private val repository: TaskTemplateRepository,
-    initialProjectId: String? = null
+    initialProjectId: String? = null,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
   private val _state = MutableStateFlow(TemplateEditorState(projectId = initialProjectId))
@@ -47,7 +50,7 @@ class CreateTemplateViewModel(
       return
     }
     ops.setSaving(true)
-    viewModelScope.launch {
+    viewModelScope.launch(ioDispatcher) {
       val template =
           TaskTemplate(
               templateID = IdGenerator.generateTaskTemplateId(),

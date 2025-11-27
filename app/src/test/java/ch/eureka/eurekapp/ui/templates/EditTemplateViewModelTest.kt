@@ -40,7 +40,8 @@ class EditTemplateViewModelTest {
   @Test
   fun viewModel_afterLoading_isNotLoading() = runTest {
     mockRepository.setTemplate(null)
-    val viewModel = EditTemplateViewModel(mockRepository, "proj1", "template1")
+    val viewModel =
+        EditTemplateViewModel(mockRepository, "proj1", "template1", ioDispatcher = testDispatcher)
     advanceUntilIdle()
     assertFalse(viewModel.isLoading.first())
   }
@@ -58,7 +59,8 @@ class EditTemplateViewModelTest {
             createdBy = "user1")
     mockRepository.setTemplate(template)
 
-    val viewModel = EditTemplateViewModel(mockRepository, "proj1", "template1")
+    val viewModel =
+        EditTemplateViewModel(mockRepository, "proj1", "template1", ioDispatcher = testDispatcher)
     advanceUntilIdle()
 
     assertFalse(viewModel.isLoading.first())
@@ -75,7 +77,8 @@ class EditTemplateViewModelTest {
   fun viewModel_templateNotFound_setsError() = runTest {
     mockRepository.setTemplate(null)
 
-    val viewModel = EditTemplateViewModel(mockRepository, "proj1", "template1")
+    val viewModel =
+        EditTemplateViewModel(mockRepository, "proj1", "template1", ioDispatcher = testDispatcher)
     advanceUntilIdle()
 
     assertFalse(viewModel.isLoading.first())
@@ -94,7 +97,7 @@ class EditTemplateViewModelTest {
             createdBy = "")
     mockRepository.setTemplate(template)
 
-    val viewModel = EditTemplateViewModel(mockRepository, "p1", "t1")
+    val viewModel = EditTemplateViewModel(mockRepository, "p1", "t1", ioDispatcher = testDispatcher)
     advanceUntilIdle()
 
     viewModel.updateTitle("New Title")
@@ -113,7 +116,7 @@ class EditTemplateViewModelTest {
             createdBy = "")
     mockRepository.setTemplate(template)
 
-    val viewModel = EditTemplateViewModel(mockRepository, "p1", "t1")
+    val viewModel = EditTemplateViewModel(mockRepository, "p1", "t1", ioDispatcher = testDispatcher)
     advanceUntilIdle()
 
     val newField = FieldDefinition(id = "f1", label = "Field", type = FieldType.Text())
@@ -135,7 +138,7 @@ class EditTemplateViewModelTest {
             createdBy = "")
     mockRepository.setTemplate(template)
 
-    val viewModel = EditTemplateViewModel(mockRepository, "p1", "t1")
+    val viewModel = EditTemplateViewModel(mockRepository, "p1", "t1", ioDispatcher = testDispatcher)
     advanceUntilIdle()
 
     viewModel.updateTitle("Updated Title")
@@ -162,7 +165,7 @@ class EditTemplateViewModelTest {
             createdBy = "")
     mockRepository.setTemplate(template)
 
-    val viewModel = EditTemplateViewModel(mockRepository, "p1", "t1")
+    val viewModel = EditTemplateViewModel(mockRepository, "p1", "t1", ioDispatcher = testDispatcher)
     advanceUntilIdle()
 
     viewModel.updateTitle("")
