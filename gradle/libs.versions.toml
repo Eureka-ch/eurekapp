@@ -21,6 +21,8 @@ okhttp = "4.12.0"
 coil = "2.5.0"
 coroutinesTest = "1.7.3"
 json = "20231013"
+room = "2.8.4"
+ksp = "2.2.20-2.0.4"
 reorderable = "2.4.1"
 
 # Firebase
@@ -133,6 +135,10 @@ androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref 
 
 maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "mapsCompose" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-ktx     = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -142,3 +148,4 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "c
 ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt" }
 gms = { id = "com.google.gms.google-services", version.ref = "gms" }
 sonar = { id = "org.sonarqube", version.ref = "sonar" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

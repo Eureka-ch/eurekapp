@@ -16,6 +16,7 @@ import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.screens.Camera
+import ch.eureka.eurekapp.screens.FilesManagementScreen
 import ch.eureka.eurekapp.screens.IdeasScreen
 import ch.eureka.eurekapp.screens.OverviewProjectScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
@@ -74,6 +75,8 @@ sealed interface Route {
     @Serializable data class EditTask(val projectId: String, val taskId: String) : TasksSection
 
     @Serializable data object AutoTaskAssignment : TasksSection
+
+    @Serializable data object FilesManagement : TasksSection
 
     @Serializable
     data class TaskDependence(val projectId: String, val taskId: String) : TasksSection
@@ -226,6 +229,9 @@ fun NavigationMenu() {
                     onTaskClick = { taskId, projectId ->
                       navigationController.navigate(
                           Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
+                    },
+                    onFilesManagementClick = {
+                      navigationController.navigate(Route.TasksSection.FilesManagement)
                     })
               }
               composable<Route.TasksSection.CreateTask> { CreateTaskScreen(navigationController) }
@@ -242,6 +248,9 @@ fun NavigationMenu() {
                 val taskDetailRoute = backStackEntry.toRoute<Route.TasksSection.ViewTask>()
                 ViewTaskScreen(
                     taskDetailRoute.projectId, taskDetailRoute.taskId, navigationController)
+              }
+              composable<Route.TasksSection.FilesManagement> {
+                FilesManagementScreen(onBackClick = { navigationController.popBackStack() })
               }
 
               composable<Route.TasksSection.TaskDependence> { backStackEntry ->

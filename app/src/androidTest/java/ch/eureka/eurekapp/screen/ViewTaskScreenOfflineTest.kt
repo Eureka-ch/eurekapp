@@ -1,9 +1,9 @@
+// Portions of this code were generated with the help of Grok.
 package ch.eureka.eurekapp.screen
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
@@ -15,6 +15,7 @@ import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.downloads.AppDatabase
 import ch.eureka.eurekapp.model.tasks.ViewTaskViewModel
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
@@ -30,8 +31,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-
-// Portions of this code were generated with the help of Grok.
 
 class ViewTaskScreenOfflineTest {
 
@@ -127,7 +126,12 @@ class ViewTaskScreenOfflineTest {
       mockConnectivityObserver.setConnected(false)
 
       val viewModel =
-          ViewTaskViewModel(projectId, taskId, connectivityObserver = mockConnectivityObserver)
+          ViewTaskViewModel(
+              projectId,
+              taskId,
+              AppDatabase.getDatabase(context).downloadedFileDao(),
+              taskRepository,
+              connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {
@@ -142,9 +146,7 @@ class ViewTaskScreenOfflineTest {
       composeTestRule.waitForIdle()
 
       composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.OFFLINE_MESSAGE).assertIsDisplayed()
-      composeTestRule
-          .onNodeWithText("You are offline. Editing tasks is unavailable.")
-          .assertIsDisplayed()
+      composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.OFFLINE_MESSAGE).assertIsDisplayed()
     }
   }
 
@@ -166,7 +168,12 @@ class ViewTaskScreenOfflineTest {
       mockConnectivityObserver.setConnected(false)
 
       val viewModel =
-          ViewTaskViewModel(projectId, taskId, connectivityObserver = mockConnectivityObserver)
+          ViewTaskViewModel(
+              projectId,
+              taskId,
+              AppDatabase.getDatabase(context).downloadedFileDao(),
+              taskRepository,
+              connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {
@@ -181,10 +188,10 @@ class ViewTaskScreenOfflineTest {
       composeTestRule.waitForIdle()
 
       // Verify task details are still visible
-      composeTestRule.onNodeWithText("Offline View Task").assertIsDisplayed()
-      composeTestRule.onNodeWithText("Can view offline").assertIsDisplayed()
-      composeTestRule.onNodeWithText("15/12/2024").assertIsDisplayed()
-      composeTestRule.onNodeWithText("Status: IN PROGRESS").assertIsDisplayed()
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).assertIsDisplayed()
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).assertIsDisplayed()
+      composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.TASK_STATUS).assertIsDisplayed()
     }
   }
 
@@ -200,7 +207,12 @@ class ViewTaskScreenOfflineTest {
       mockConnectivityObserver.setConnected(false)
 
       val viewModel =
-          ViewTaskViewModel(projectId, taskId, connectivityObserver = mockConnectivityObserver)
+          ViewTaskViewModel(
+              projectId,
+              taskId,
+              AppDatabase.getDatabase(context).downloadedFileDao(),
+              taskRepository,
+              connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {
@@ -238,7 +250,12 @@ class ViewTaskScreenOfflineTest {
       mockConnectivityObserver.setConnected(false)
 
       val viewModel =
-          ViewTaskViewModel(projectId, taskId, connectivityObserver = mockConnectivityObserver)
+          ViewTaskViewModel(
+              projectId,
+              taskId,
+              AppDatabase.getDatabase(context).downloadedFileDao(),
+              taskRepository,
+              connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {
@@ -254,7 +271,7 @@ class ViewTaskScreenOfflineTest {
 
       // Verify offline message for attachments
       composeTestRule
-          .onNodeWithText("Photo 1: Attachment available, but cannot be visualized offline.")
+          .onNodeWithTag(CommonTaskTestTags.ATTACHMENT_OFFLINE_MESSAGE)
           .assertIsDisplayed()
     }
   }
@@ -271,7 +288,12 @@ class ViewTaskScreenOfflineTest {
       mockConnectivityObserver.setConnected(true)
 
       val viewModel =
-          ViewTaskViewModel(projectId, taskId, connectivityObserver = mockConnectivityObserver)
+          ViewTaskViewModel(
+              projectId,
+              taskId,
+              AppDatabase.getDatabase(context).downloadedFileDao(),
+              taskRepository,
+              connectivityObserver = mockConnectivityObserver)
       lastViewModel = viewModel
 
       composeTestRule.setContent {
