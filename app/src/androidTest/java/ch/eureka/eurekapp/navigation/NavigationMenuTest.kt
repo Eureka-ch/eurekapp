@@ -18,6 +18,7 @@ import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.screens.HomeOverviewTestOverrides
 import ch.eureka.eurekapp.screens.HomeOverviewTestTags
 import ch.eureka.eurekapp.screens.IdeasScreenTestTags
 import ch.eureka.eurekapp.screens.OverviewProjectsScreenTestTags
@@ -26,6 +27,7 @@ import ch.eureka.eurekapp.screens.SelfNotesScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreenTestTags
+import ch.eureka.eurekapp.ui.home.HomeOverviewUiState
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.ui.profile.ProfileScreenTestTags
@@ -139,62 +141,69 @@ class NavigationMenuTest : TestCase() {
   fun testHomeOverviewComposable() {
     runBlocking { seedHomeOverviewData() }
 
-    composeTestRule.setContent { NavigationMenu() }
-    composeTestRule.waitForIdle()
+    val overrideState = createHomeOverviewOverrideState()
+    HomeOverviewTestOverrides.uiState = overrideState
 
-    fun waitForTag(tag: String) {
-      composeTestRule.waitUntil(timeoutMillis = 5000) {
-        try {
-          composeTestRule.onNodeWithTag(tag).assertExists()
-          true
-        } catch (e: AssertionError) {
-          false
+    try {
+      composeTestRule.setContent { NavigationMenu() }
+      composeTestRule.waitForIdle()
+
+      fun waitForTag(tag: String) {
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          try {
+            composeTestRule.onNodeWithTag(tag).assertExists()
+            true
+          } catch (e: AssertionError) {
+            false
+          }
         }
       }
-    }
 
-    fun returnHome() {
-      composeTestRule
-          .onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON)
-          .performClick()
+      fun returnHome() {
+        composeTestRule
+            .onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON)
+            .performClick()
+        waitForTag(HomeOverviewTestTags.SCREEN)
+      }
+
       waitForTag(HomeOverviewTestTags.SCREEN)
+
+      waitForTag(HomeOverviewTestTags.CTA_TASKS)
+      composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).performClick()
+      waitForTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
+      returnHome()
+
+      waitForTag(HomeOverviewTestTags.CTA_MEETINGS)
+      composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_MEETINGS).performClick()
+      waitForTag(MeetingScreenTestTags.MEETING_SCREEN)
+      returnHome()
+
+      waitForTag(HomeOverviewTestTags.CTA_PROJECTS)
+      composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_PROJECTS).performClick()
+      waitForTag(ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON)
+      returnHome()
+
+      val taskTag = "${HomeOverviewTestTags.TASK_ITEM_PREFIX}$HOME_OVERVIEW_TASK_ID"
+      val meetingTag = "${HomeOverviewTestTags.MEETING_ITEM_PREFIX}$HOME_OVERVIEW_MEETING_ID"
+      val projectTag = "${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}$HOME_OVERVIEW_PROJECT_ID"
+
+      waitForTag(taskTag)
+      composeTestRule.onNodeWithTag(taskTag).performClick()
+      waitForTag(ViewTaskScreenTestTags.VIEW_DEPENDENCIES)
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.BACK_BUTTON).performClick()
+      returnHome()
+
+      waitForTag(meetingTag)
+      composeTestRule.onNodeWithTag(meetingTag).performClick()
+      waitForTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN)
+      returnHome()
+
+      waitForTag(projectTag)
+      composeTestRule.onNodeWithTag(projectTag).performClick()
+      waitForTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT)
+    } finally {
+      composeTestRule.runOnIdle { HomeOverviewTestOverrides.uiState = null }
     }
-
-    waitForTag(HomeOverviewTestTags.SCREEN)
-
-    waitForTag(HomeOverviewTestTags.CTA_TASKS)
-    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).performClick()
-    waitForTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
-    returnHome()
-
-    waitForTag(HomeOverviewTestTags.CTA_MEETINGS)
-    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_MEETINGS).performClick()
-    waitForTag(MeetingScreenTestTags.MEETING_SCREEN)
-    returnHome()
-
-    waitForTag(HomeOverviewTestTags.CTA_PROJECTS)
-    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_PROJECTS).performClick()
-    waitForTag(ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON)
-    returnHome()
-
-    val taskTag = "${HomeOverviewTestTags.TASK_ITEM_PREFIX}$HOME_OVERVIEW_TASK_ID"
-    val meetingTag = "${HomeOverviewTestTags.MEETING_ITEM_PREFIX}$HOME_OVERVIEW_MEETING_ID"
-    val projectTag = "${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}$HOME_OVERVIEW_PROJECT_ID"
-
-    waitForTag(taskTag)
-    composeTestRule.onNodeWithTag(taskTag).performClick()
-    waitForTag(ViewTaskScreenTestTags.VIEW_DEPENDENCIES)
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.BACK_BUTTON).performClick()
-    returnHome()
-
-    waitForTag(meetingTag)
-    composeTestRule.onNodeWithTag(meetingTag).performClick()
-    waitForTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN)
-    returnHome()
-
-    waitForTag(projectTag)
-    composeTestRule.onNodeWithTag(projectTag).performClick()
-    waitForTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT)
   }
 
   @Test
@@ -358,5 +367,35 @@ class NavigationMenuTest : TestCase() {
         .document(HOME_OVERVIEW_MEETING_ID)
         .set(meeting)
         .await()
+  }
+
+  private fun createHomeOverviewOverrideState(): HomeOverviewUiState {
+    return HomeOverviewUiState(
+        currentUserName = "Test User",
+        upcomingTasks =
+            listOf(
+                Task(
+                    taskID = HOME_OVERVIEW_TASK_ID,
+                    projectId = HOME_OVERVIEW_PROJECT_ID,
+                    title = "Home Overview Task",
+                    description = "Task for coverage",
+                    status = TaskStatus.TODO)),
+        upcomingMeetings =
+            listOf(
+                Meeting(
+                    meetingID = HOME_OVERVIEW_MEETING_ID,
+                    projectId = HOME_OVERVIEW_PROJECT_ID,
+                    title = "Coverage Meeting",
+                    status = MeetingStatus.SCHEDULED,
+                    createdBy = "test-user")),
+        recentProjects =
+            listOf(
+                Project(
+                    projectId = HOME_OVERVIEW_PROJECT_ID,
+                    name = "Home Overview Project",
+                    description = "Project for home overview coverage",
+                    status = ProjectStatus.OPEN)),
+        isLoading = false,
+        isConnected = true)
   }
 }

@@ -74,14 +74,23 @@ data class HomeOverviewActions(
  *
  * Provides a summary of tasks, meetings, and projects leveraging [HomeOverviewViewModel].
  */
+internal object HomeOverviewTestOverrides {
+  var uiState: HomeOverviewUiState? = null
+}
+
 @Composable
 fun HomeOverviewScreen(
     modifier: Modifier = Modifier,
     actions: HomeOverviewActions = HomeOverviewActions(),
     homeOverviewViewModel: HomeOverviewViewModel = viewModel(),
 ) {
-  val uiState by homeOverviewViewModel.uiState.collectAsState()
-  HomeOverviewLayout(modifier = modifier, uiState = uiState, actions = actions)
+  val overrideState = HomeOverviewTestOverrides.uiState
+  if (overrideState != null) {
+    HomeOverviewLayout(modifier = modifier, uiState = overrideState, actions = actions)
+  } else {
+    val uiState by homeOverviewViewModel.uiState.collectAsState()
+    HomeOverviewLayout(modifier = modifier, uiState = uiState, actions = actions)
+  }
 }
 
 /** Visible-for-testing layout that renders the actual home overview content based on [uiState]. */

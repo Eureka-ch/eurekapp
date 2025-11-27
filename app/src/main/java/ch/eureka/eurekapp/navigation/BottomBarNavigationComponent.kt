@@ -70,7 +70,7 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
   val isHomeScreenPressed by
       remember(currentDestination) {
         derivedStateOf {
-          currentDestination?.hierarchy?.any { it.hasRoute(Route.HomeOverview::class) } == true
+          currentDestination?.hierarchy?.any { it.hasRoute(Route.HomeOverview::class) } ?: false
         }
       }
 

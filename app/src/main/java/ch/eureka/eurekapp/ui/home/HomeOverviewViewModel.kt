@@ -141,5 +141,5 @@ private fun Timestamp?.toEpochMillisOrMax(): Long {
 }
 
 private fun Timestamp?.toEpochMillisOrMin(): Long {
-  return this?.toDate()?.time ?: Long.MIN_VALUE
+  return this?.toDate()?.time ?: System.currentTimeMillis()
 }
