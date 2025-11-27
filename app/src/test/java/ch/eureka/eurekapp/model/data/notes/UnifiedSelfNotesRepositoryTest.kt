@@ -71,7 +71,6 @@ class UnifiedSelfNotesRepositoryTest {
   private fun mockNetwork(isOnline: Boolean) {
     val network = mockk<Network>()
     val capabilities = mockk<NetworkCapabilities>()
-
     every { connectivityManager.activeNetwork } returns if (isOnline) network else null
     if (isOnline) {
       every { connectivityManager.getNetworkCapabilities(network) } returns capabilities
@@ -98,9 +97,7 @@ class UnifiedSelfNotesRepositoryTest {
   @Test
   fun `createNote fails if user is not logged in`() = runTest {
     every { auth.currentUser } returns null
-
     val result = repository.createNote(Message(messageID = "1"))
-
     assertTrue(result.isFailure)
     assertTrue(result.exceptionOrNull() is IllegalStateException)
   }
@@ -145,13 +142,13 @@ class UnifiedSelfNotesRepositoryTest {
     mockNetwork(true)
     coEvery { userPreferences.isCloudStorageEnabled } returns flowOf(true)
     coEvery { firestoreRepo.createNote(any()) } returns Result.success("msg1")
-    every { localDao.markAsSynced(any()) } returns 1
+    every { localDao.markAsSynced(any(), any()) } returns 1
     val msg = Message(messageID = "msg1")
     val result = repository.createNote(msg)
     assertTrue(result.isSuccess)
     verify { localDao.insertMessage(any()) }
     coVerify { firestoreRepo.createNote(any()) }
-    verify { localDao.markAsSynced("msg1") }
+    verify { localDao.markAsSynced("msg1", "testUser") }
   }
 
   @Test
@@ -164,7 +161,7 @@ class UnifiedSelfNotesRepositoryTest {
     assertTrue(result.isSuccess)
     verify { localDao.insertMessage(any()) }
     coVerify { firestoreRepo.createNote(any()) }
-    verify(exactly = 0) { localDao.markAsSynced(any()) }
+    verify(exactly = 0) { localDao.markAsSynced(any(), any()) }
   }
 
   @Test
@@ -180,9 +177,7 @@ class UnifiedSelfNotesRepositoryTest {
     mockNetwork(true)
     every { localDao.deleteMessage(any(), any()) } returns 1
     coEvery { firestoreRepo.deleteNote(any()) } returns Result.success(Unit)
-
     val result = repository.deleteNote("msg1")
-
     assertTrue(result.isSuccess)
     verify { localDao.deleteMessage("msg1", "testUser") }
     coVerify { firestoreRepo.deleteNote("msg1") }
@@ -192,9 +187,7 @@ class UnifiedSelfNotesRepositoryTest {
   fun `deleteNote deletes only locally if offline`() = runTest {
     mockNetwork(false)
     every { localDao.deleteMessage(any(), any()) } returns 1
-
     val result = repository.deleteNote("msg1")
-
     assertTrue(result.isSuccess)
     verify { localDao.deleteMessage("msg1", "testUser") }
     coVerify(exactly = 0) { firestoreRepo.deleteNote(any()) }
@@ -248,14 +241,13 @@ class UnifiedSelfNotesRepositoryTest {
             createdAtMillis = 0,
             referencesJson = "",
             isPendingSync = true)
-
     every { localDao.getPendingSyncMessages("testUser") } returns listOf(pendingEntity)
     coEvery { firestoreRepo.createNote(any()) } returns Result.success("pending1")
-    every { localDao.markAsSynced("pending1") } returns 1
+    every { localDao.markAsSynced("pending1", "testUser") } returns 1
     val count = repository.syncPendingNotes()
     assertEquals(1, count)
     coVerify { firestoreRepo.createNote(any()) }
-    verify { localDao.markAsSynced("pending1") }
+    verify { localDao.markAsSynced("pending1", "testUser") }
   }
 
   @Test
@@ -277,16 +269,15 @@ class UnifiedSelfNotesRepositoryTest {
             createdAtMillis = 0,
             referencesJson = "",
             isPendingSync = true)
-
     every { localDao.getPendingSyncMessages("testUser") } returns listOf(p1, p2)
     coEvery { firestoreRepo.createNote(match { it.messageID == "p1" }) } returns
         Result.success("p1")
-    every { localDao.markAsSynced("p1") } returns 1
+    every { localDao.markAsSynced("p1", "testUser") } returns 1
     coEvery { firestoreRepo.createNote(match { it.messageID == "p2" }) } returns
         Result.failure(Exception())
     val count = repository.syncPendingNotes()
     assertEquals(1, count)
-    verify { localDao.markAsSynced("p1") }
-    verify(exactly = 0) { localDao.markAsSynced("p2") }
+    verify { localDao.markAsSynced("p1", "testUser") }
+    verify(exactly = 0) { localDao.markAsSynced("p2", any()) }
   }
 }

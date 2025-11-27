@@ -32,8 +32,9 @@ interface MessageDao {
   fun getPendingSyncMessages(userId: String): List<MessageEntity>
 
   /** Marks a specific message as synced. Blocking call (Run on Dispatchers.IO). */
-  @Query("UPDATE local_notes SET isPendingSync = 0 WHERE messageId = :messageId")
-  fun markAsSynced(messageId: String): Int
+  @Query(
+      "UPDATE local_notes SET isPendingSync = 0 WHERE messageId = :messageId AND senderId = :userId")
+  fun markAsSynced(messageId: String, userId: String): Int
 
   /**
    * Updates all local-only notes to be ready for cloud upload. Blocking call (Run on

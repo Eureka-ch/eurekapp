@@ -82,7 +82,7 @@ class UnifiedSelfNotesRepository(
               try {
                 val result = firestoreRepo.createNote(messageWithUser)
                 if (result.isSuccess) {
-                  localDao.markAsSynced(message.messageID)
+                  localDao.markAsSynced(message.messageID, userId)
                 }
               } catch (e: Exception) {
                 Log.e("UnifiedRepo", "Immediate upload failed, will sync later via Worker", e)
@@ -172,7 +172,7 @@ class UnifiedSelfNotesRepository(
         val domainMessage = entity.toDomainModel()
         val result = firestoreRepo.createNote(domainMessage)
         if (result.isSuccess) {
-          localDao.markAsSynced(entity.messageId)
+          localDao.markAsSynced(entity.messageId, userId)
           successCount++
         }
       }
