@@ -1,3 +1,4 @@
+// Portions of this code were generated with the help of Claude Sonnet 4.5 in Claude Code
 /*
 Co-Authored-By: Claude <noreply@anthropic.com>
 */
@@ -222,5 +223,153 @@ class TaskTemplateSchemaTest {
             listOf(textField, numberField, dateField, singleSelectField, multiSelectField))
 
     assertEquals(5, schema.fields.size)
+  }
+
+  @Test
+  fun `reorderField moves field to new position`() {
+    val field1 = FieldDefinition("field1", "Field 1", FieldType.Text())
+    val field2 = FieldDefinition("field2", "Field 2", FieldType.Text())
+    val field3 = FieldDefinition("field3", "Field 3", FieldType.Text())
+    val schema = TaskTemplateSchema(listOf(field1, field2, field3))
+
+    val reordered = schema.reorderField(0, 2)
+
+    assertEquals(3, reordered.fields.size)
+    assertEquals("field2", reordered.fields[0].id)
+    assertEquals("field3", reordered.fields[1].id)
+    assertEquals("field1", reordered.fields[2].id)
+  }
+
+  @Test
+  fun `reorderField with invalid indices returns unchanged schema`() {
+    val field1 = FieldDefinition("field1", "Field 1", FieldType.Text())
+    val schema = TaskTemplateSchema(listOf(field1))
+
+    val result1 = schema.reorderField(-1, 0)
+    val result2 = schema.reorderField(0, 5)
+    val result3 = schema.reorderField(5, 0)
+
+    assertEquals(schema, result1)
+    assertEquals(schema, result2)
+    assertEquals(schema, result3)
+  }
+
+  @Test
+  fun `reorderField is immutable`() {
+    val field1 = FieldDefinition("field1", "Field 1", FieldType.Text())
+    val field2 = FieldDefinition("field2", "Field 2", FieldType.Text())
+    val schema = TaskTemplateSchema(listOf(field1, field2))
+
+    val reordered = schema.reorderField(0, 1)
+
+    assertEquals("field1", schema.fields[0].id)
+    assertEquals("field2", reordered.fields[0].id)
+  }
+
+  @Test
+  fun `duplicateField creates copy with new ID and modified label`() {
+    val field1 = FieldDefinition("field1", "Original", FieldType.Text())
+    val schema = TaskTemplateSchema(listOf(field1))
+
+    val duplicated = schema.duplicateField("field1")
+
+    assertEquals(2, duplicated.fields.size)
+    assertEquals("Original", duplicated.fields[0].label)
+    assertEquals("Original (copy)", duplicated.fields[1].label)
+    assertFalse(duplicated.fields[0].id == duplicated.fields[1].id)
+  }
+
+  @Test
+  fun `duplicateField inserts copy after original`() {
+    val field1 = FieldDefinition("field1", "Field 1", FieldType.Text())
+    val field2 = FieldDefinition("field2", "Field 2", FieldType.Text())
+    val field3 = FieldDefinition("field3", "Field 3", FieldType.Text())
+    val schema = TaskTemplateSchema(listOf(field1, field2, field3))
+
+    val duplicated = schema.duplicateField("field2")
+
+    assertEquals(4, duplicated.fields.size)
+    assertEquals("field1", duplicated.fields[0].id)
+    assertEquals("field2", duplicated.fields[1].id)
+    assertEquals("Field 2 (copy)", duplicated.fields[2].label)
+    assertEquals("field3", duplicated.fields[3].id)
+  }
+
+  @Test
+  fun `duplicateField with non-existent ID returns unchanged schema`() {
+    val field1 = FieldDefinition("field1", "Field 1", FieldType.Text())
+    val schema = TaskTemplateSchema(listOf(field1))
+
+    val result = schema.duplicateField("non_existent")
+
+    assertEquals(schema, result)
+  }
+
+  @Test
+  fun `duplicateField is immutable`() {
+    val field1 = FieldDefinition("field1", "Field 1", FieldType.Text())
+    val schema = TaskTemplateSchema(listOf(field1))
+
+    val duplicated = schema.duplicateField("field1")
+
+    assertEquals(1, schema.fields.size)
+    assertEquals(2, duplicated.fields.size)
+  }
+
+  @Test
+  fun `duplicateField preserves field properties`() {
+    val field1 =
+        FieldDefinition(
+            "field1",
+            "Original",
+            FieldType.Text(maxLength = 100),
+            required = true,
+            description = "Test description")
+    val schema = TaskTemplateSchema(listOf(field1))
+
+    val duplicated = schema.duplicateField("field1")
+
+    val copy = duplicated.fields[1]
+    assertEquals(true, copy.required)
+    assertEquals("Test description", copy.description)
+    assertTrue(copy.type is FieldType.Text)
+    assertEquals(100, (copy.type as FieldType.Text).maxLength)
+  }
+
+  @Test
+  fun `reorderField with same indices returns unchanged schema`() {
+    val field1 = FieldDefinition("field1", "Field 1", FieldType.Text())
+    val field2 = FieldDefinition("field2", "Field 2", FieldType.Text())
+    val schema = TaskTemplateSchema(listOf(field1, field2))
+
+    val result = schema.reorderField(0, 0)
+
+    assertEquals("field1", result.fields[0].id)
+    assertEquals("field2", result.fields[1].id)
+  }
+
+  @Test
+  fun `addField to empty schema succeeds`() {
+    val schema = TaskTemplateSchema()
+    val field = FieldDefinition("field1", "Field 1", FieldType.Text())
+
+    val newSchema = schema.addField(field)
+
+    assertEquals(1, newSchema.fields.size)
+    assertEquals("field1", newSchema.fields[0].id)
+  }
+
+  @Test
+  fun `duplicateField at end of list appends correctly`() {
+    val field1 = FieldDefinition("field1", "Field 1", FieldType.Text())
+    val field2 = FieldDefinition("field2", "Field 2", FieldType.Text())
+    val schema = TaskTemplateSchema(listOf(field1, field2))
+
+    val duplicated = schema.duplicateField("field2")
+
+    assertEquals(3, duplicated.fields.size)
+    assertEquals("field1", duplicated.fields[0].id)
+    assertEquals("field2", duplicated.fields[1].id)
+    assertEquals("Field 2 (copy)", duplicated.fields[2].label)
   }
 }
