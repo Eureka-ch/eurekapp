@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.conversation.Conversation
 import ch.eureka.eurekapp.model.data.conversation.ConversationRepository
 import ch.eureka.eurekapp.model.data.project.Member
@@ -80,10 +80,9 @@ data class MemberDisplayData(val member: Member, val user: User)
  */
 open class CreateConversationViewModel(
     private val conversationRepository: ConversationRepository =
-        FirestoreRepositoriesProvider.conversationRepository,
-    private val projectRepository: ProjectRepository =
-        FirestoreRepositoriesProvider.projectRepository,
-    private val userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository,
+        RepositoriesProvider.conversationRepository,
+    private val projectRepository: ProjectRepository = RepositoriesProvider.projectRepository,
+    private val userRepository: UserRepository = RepositoriesProvider.userRepository,
     private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver
 ) : ViewModel() {
