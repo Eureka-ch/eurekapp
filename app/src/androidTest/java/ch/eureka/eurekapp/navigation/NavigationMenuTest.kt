@@ -8,8 +8,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
-import ch.eureka.eurekapp.model.data.meeting.Meeting
-import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRole
@@ -22,7 +20,6 @@ import ch.eureka.eurekapp.screens.HomeOverviewTestTags
 import ch.eureka.eurekapp.screens.IdeasScreenTestTags
 import ch.eureka.eurekapp.screens.SelfNotesScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
-import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.ui.profile.ProfileScreenTestTags
@@ -127,134 +124,38 @@ class NavigationMenuTest : TestCase() {
 
   @Test
   fun testHomeOverviewComposable() {
-    runBlocking {
-      val testUserId =
-          FirebaseEmulator.auth.currentUser?.uid ?: throw IllegalStateException("No user")
-      val projectId = "home-overview-project-id"
-      val taskId = "home-overview-task-id"
-      val meetingId = "home-overview-meeting-id"
-
-      val projectRef = FirebaseEmulator.firestore.collection("projects").document(projectId)
-      projectRef
-          .set(
-              Project(
-                  projectId = projectId,
-                  name = "Home Overview Project",
-                  description = "Project for home overview coverage",
-                  status = ProjectStatus.OPEN,
-                  createdBy = testUserId,
-                  memberIds = listOf(testUserId),
-                  lastUpdated = Timestamp.now()))
-          .await()
-      projectRef
-          .collection("members")
-          .document(testUserId)
-          .set(Member(userId = testUserId, role = ProjectRole.OWNER))
-          .await()
-
-      val taskRepository: TaskRepository =
-          FirestoreTaskRepository(
-              firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
-      val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse("15/10/2025")!!
-      taskRepository
-          .updateTask(
-              Task(
-                  taskID = taskId,
-                  projectId = projectId,
-                  title = "Home Overview Task",
-                  description = "Task for coverage",
-                  assignedUserIds = listOf(testUserId),
-                  dueDate = Timestamp(date),
-                  attachmentUrls = emptyList(),
-                  createdBy = testUserId,
-                  status = TaskStatus.TODO))
-          .getOrThrow()
-
-      val meeting =
-          Meeting(
-              meetingID = meetingId,
-              projectId = projectId,
-              title = "Coverage Meeting",
-              status = MeetingStatus.SCHEDULED,
-              datetime = Timestamp.now(),
-              createdBy = testUserId,
-              participantIds = listOf(testUserId))
-
-      FirebaseEmulator.firestore
-          .collection("projects")
-          .document(projectId)
-          .collection("meetings")
-          .document(meetingId)
-          .set(meeting)
-          .await()
-    }
-
-    // Use actual NavigationMenu to cover Navigation.kt lines 175-194
-    // This test ensures the HomeOverview composable and its callbacks are executed
     composeTestRule.setContent { NavigationMenu() }
 
     composeTestRule.waitForIdle()
 
-    fun waitForTag(tag: String) {
-      composeTestRule.waitUntil(timeoutMillis = 5000) {
-        try {
-          composeTestRule.onNodeWithTag(tag).assertExists()
-          true
-        } catch (e: AssertionError) {
-          false
-        }
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      try {
+        composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
       }
     }
-
-    // Verify HomeOverview is displayed (start destination)
-    waitForTag(HomeOverviewTestTags.SCREEN)
     composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertIsDisplayed()
 
-    // Cover onOpenTasks
-    waitForTag(HomeOverviewTestTags.CTA_TASKS)
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      try {
+        composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
     composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).performClick()
-    composeTestRule.waitForIdle()
 
-    // Navigate back home
-    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
-    waitForTag(HomeOverviewTestTags.SCREEN)
-
-    // Cover onOpenMeetings
-    waitForTag(HomeOverviewTestTags.CTA_MEETINGS)
-    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_MEETINGS).performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
-    waitForTag(HomeOverviewTestTags.SCREEN)
-
-    // Cover onOpenProjects
-    waitForTag(HomeOverviewTestTags.CTA_PROJECTS)
-    composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_PROJECTS).performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
-    waitForTag(HomeOverviewTestTags.SCREEN)
-
-    val taskTag = "${HomeOverviewTestTags.TASK_ITEM_PREFIX}home-overview-task-id"
-    val meetingTag = "${HomeOverviewTestTags.MEETING_ITEM_PREFIX}home-overview-meeting-id"
-    val projectTag = "${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}home-overview-project-id"
-
-    // Cover onTaskSelected
-    waitForTag(taskTag)
-    composeTestRule.onNodeWithTag(taskTag).performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.BACK_BUTTON).performClick()
-    waitForTag(HomeOverviewTestTags.SCREEN)
-
-    // Cover onMeetingSelected
-    waitForTag(meetingTag)
-    composeTestRule.onNodeWithTag(meetingTag).performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
-    waitForTag(HomeOverviewTestTags.SCREEN)
-
-    // Cover onProjectSelected
-    waitForTag(projectTag)
-    composeTestRule.onNodeWithTag(projectTag).performClick()
-    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      try {
+        composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
   }
 
   @Test
