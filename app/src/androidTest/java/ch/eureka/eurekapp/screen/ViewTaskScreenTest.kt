@@ -1,3 +1,4 @@
+// Portions of this code were generated with the help of Grok and GPT-5.
 package ch.eureka.eurekapp.screen
 
 import android.net.Uri
@@ -32,6 +33,8 @@ import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.downloads.AppDatabase
+import ch.eureka.eurekapp.model.downloads.DownloadedFile
 import ch.eureka.eurekapp.model.tasks.ViewTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.TasksScreen
@@ -58,12 +61,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-// Portions of this code were generated with the help of Grok.
-/*
-Note: This file was partially written by GPT-5 Codex
-Co-author : GPT-5
-*/
-
 open class ViewTaskScreenTest : TestCase() {
 
   @get:Rule val composeTestRule = createComposeRule()
@@ -72,6 +69,7 @@ open class ViewTaskScreenTest : TestCase() {
   private lateinit var context: android.content.Context
   private var lastViewVm: ViewTaskViewModel? = null
   private var lastTaskScreenVm: TaskScreenViewModel? = null
+  private val dependenciesScreenTag = "task_dependencies_screen"
   private lateinit var mockConnectivityObserver: MockConnectivityObserver
 
   @Before
@@ -184,7 +182,12 @@ open class ViewTaskScreenTest : TestCase() {
 
     val viewModel =
         ViewTaskViewModel(
-            projectId, taskId, taskRepository, Dispatchers.IO, mockConnectivityObserver)
+            projectId,
+            taskId,
+            AppDatabase.getDatabase(context).downloadedFileDao(),
+            taskRepository,
+            connectivityObserver = mockConnectivityObserver,
+            dispatcher = Dispatchers.IO)
     lastViewVm = viewModel
     composeTestRule.setContent {
       val navController = rememberNavController()
@@ -234,6 +237,21 @@ open class ViewTaskScreenTest : TestCase() {
         composeTestRule.onNodeWithText("Loaded Desc").assertIsDisplayed()
         composeTestRule.onNodeWithText("20/12/2024").assertIsDisplayed()
         composeTestRule.onNodeWithText("Status: IN PROGRESS").assertIsDisplayed()
+      }
+
+  @Test
+  fun testNavigateToTaskDependencies() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+        setupViewTaskTest(projectId, taskId) { setupTestTask(projectId, taskId) }
+
+        composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.VIEW_DEPENDENCIES).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.VIEW_DEPENDENCIES).performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithTag(dependenciesScreenTag).assertIsDisplayed()
       }
 
   @Test
@@ -368,6 +386,16 @@ open class ViewTaskScreenTest : TestCase() {
         // Verify we're on TasksScreen
         composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
 
+        // Wait for task card to load from Firestore
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          try {
+            composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).assertExists()
+            true
+          } catch (e: AssertionError) {
+            false
+          }
+        }
+
         // Click on the task card
         composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).performClick()
 
@@ -424,16 +452,6 @@ open class ViewTaskScreenTest : TestCase() {
 
         composeTestRule.waitForIdle()
 
-        // Wait for navigation back to ViewTaskScreen
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-          try {
-            composeTestRule.onNodeWithTag(EditTaskScreenTestTags.STATUS_BUTTON).assertDoesNotExist()
-            true
-          } catch (e: AssertionError) {
-            false
-          }
-        }
-
         // Wait for data to reload on ViewTaskScreen
         composeTestRule.waitUntil(timeoutMillis = 5000) {
           try {
@@ -466,6 +484,18 @@ open class ViewTaskScreenTest : TestCase() {
 
         setupViewTaskTest(projectId, taskId) {
           setupTestTask(projectId, taskId, assignedUserIds = listOf(userId1, userId2))
+        }
+
+        // Wait for assigned users to load from Firestore
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          try {
+            composeTestRule
+                .onNodeWithTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION)
+                .assertExists()
+            true
+          } catch (e: AssertionError) {
+            false
+          }
         }
 
         // Verify assigned users section is displayed
@@ -601,7 +631,12 @@ open class ViewTaskScreenTest : TestCase() {
 
       val viewModel =
           ViewTaskViewModel(
-              projectId, taskId, taskRepository, Dispatchers.IO, mockConnectivityObserver)
+              projectId,
+              taskId,
+              AppDatabase.getDatabase(context).downloadedFileDao(),
+              taskRepository,
+              connectivityObserver = mockConnectivityObserver,
+              dispatcher = Dispatchers.IO)
       lastViewVm = viewModel
 
       composeTestRule.setContent {
@@ -633,9 +668,16 @@ open class ViewTaskScreenTest : TestCase() {
   private fun FullNavigationGraph(navController: NavHostController) {
     val sharedViewModel = remember {
       ViewTaskViewModel(
-          "project123", "task123", taskRepository, Dispatchers.IO, mockConnectivityObserver)
+          "project123",
+          "task123",
+          AppDatabase.getDatabase(context).downloadedFileDao(),
+          taskRepository,
+          connectivityObserver = mockConnectivityObserver,
+          dispatcher = Dispatchers.IO)
     }
-    val sharedTaskScreenViewModel = remember { TaskScreenViewModel() }
+    val sharedTaskScreenViewModel = remember {
+      TaskScreenViewModel(connectivityObserver = mockConnectivityObserver)
+    }
 
     NavHost(navController, startDestination = Route.TasksSection.Tasks) {
       composable<Route.TasksSection.Tasks> {
@@ -662,6 +704,9 @@ open class ViewTaskScreenTest : TestCase() {
         val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.EditTask>()
         EditTaskScreen(editTaskRoute.projectId, editTaskRoute.taskId, navController)
       }
+      composable<Route.TasksSection.TaskDependence> {
+        Text("Task Dependencies Screen", modifier = Modifier.testTag(dependenciesScreenTag))
+      }
     }
   }
 
@@ -676,7 +721,12 @@ open class ViewTaskScreenTest : TestCase() {
         viewModel
             ?: remember {
               ViewTaskViewModel(
-                  projectId, taskId, taskRepository, Dispatchers.IO, mockConnectivityObserver)
+                  projectId,
+                  taskId,
+                  AppDatabase.getDatabase(context).downloadedFileDao(),
+                  taskRepository,
+                  connectivityObserver = mockConnectivityObserver,
+                  dispatcher = Dispatchers.IO)
             }
     NavHost(navController, startDestination = Route.TasksSection.Tasks) {
       composable<Route.TasksSection.Tasks> {
@@ -692,6 +742,9 @@ open class ViewTaskScreenTest : TestCase() {
       composable<Route.TasksSection.EditTask> {
         // Dummy edit screen for navigation test
         Text("Edit Task Screen", modifier = Modifier.testTag(EditTaskScreenTestTags.STATUS_BUTTON))
+      }
+      composable<Route.TasksSection.TaskDependence> {
+        Text("Task Dependencies Screen", modifier = Modifier.testTag(dependenciesScreenTag))
       }
     }
   }
@@ -709,4 +762,42 @@ open class ViewTaskScreenTest : TestCase() {
       return Result.success(StorageMetadata.Builder().setContentType("image/jpeg").build())
     }
   }
+
+  @Test
+  fun testDownloadButtonDisplayedWhenAttachmentsExist() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+        val attachmentUrl = "https://example.com/file.jpg"
+        setupViewTaskTest(projectId, taskId) {
+          setupTestTask(projectId, taskId, attachmentUrls = listOf(attachmentUrl))
+        }
+
+        // Verify download button is displayed when there are undownloaded attachments
+        composeTestRule.onNodeWithText("Download All Attachments").assertIsDisplayed()
+      }
+
+  @Test
+  fun testDownloadButtonNotDisplayedWhenAllAttachmentsDownloaded() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+        val attachmentUrl = "https://example.com/file.jpg"
+        setupViewTaskTest(projectId, taskId) {
+          setupTestTask(projectId, taskId, attachmentUrls = listOf(attachmentUrl))
+        }
+
+        // Manually mark the attachment as downloaded in the database
+        val dao = AppDatabase.getDatabase(context).downloadedFileDao()
+        dao.insert(
+            DownloadedFile(
+                url = attachmentUrl,
+                localPath = "file:///fake/path/file.jpg",
+                fileName = "file.jpg"))
+
+        composeTestRule.waitForIdle()
+
+        // Verify download button is not displayed when all attachments are downloaded
+        composeTestRule.onNodeWithText("Download All Attachments").assertDoesNotExist()
+      }
 }

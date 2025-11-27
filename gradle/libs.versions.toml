@@ -25,6 +25,7 @@ room = "2.6.1"
 datastore = "1.1.1"
 ksp = "2.2.20-2.0.3"
 work = "2.9.1"
+reorderable = "2.4.1"
 
 # Firebase
 firebaseBom = "34.1.0"
@@ -139,6 +140,7 @@ androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref 
 maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "mapsCompose" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 
+reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }

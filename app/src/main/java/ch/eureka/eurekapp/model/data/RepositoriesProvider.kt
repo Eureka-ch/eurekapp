@@ -6,6 +6,8 @@ import android.content.Context
 import androidx.room.Room
 import androidx.work.WorkManager
 import ch.eureka.eurekapp.model.data.chat.FirestoreChatRepository
+import ch.eureka.eurekapp.model.data.conversation.ConversationRepository
+import ch.eureka.eurekapp.model.data.conversation.FirestoreConversationRepository
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.file.FirebaseFileStorageRepository
 import ch.eureka.eurekapp.model.data.invitation.FirestoreInvitationRepository
@@ -128,6 +130,10 @@ object RepositoriesProvider {
         auth = FirebaseAuth.getInstance())
   }
 
+  private val _conversationRepository: ConversationRepository by lazy {
+    FirestoreConversationRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
+  }
+
   val taskRepository: FirestoreTaskRepository
     get() = _taskRepository
 
@@ -157,4 +163,7 @@ object RepositoriesProvider {
 
   val unifiedSelfNotesRepository: UnifiedSelfNotesRepository
     get() = _unifiedSelfNotesRepository
+
+  val conversationRepository: ConversationRepository
+    get() = _conversationRepository
 }

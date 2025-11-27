@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.model.tasks
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
 import com.google.firebase.Timestamp
 import io.mockk.every
 import io.mockk.mockk
@@ -38,6 +39,7 @@ class ViewTaskViewModelTest {
   private lateinit var mockTaskRepository: ch.eureka.eurekapp.model.data.task.TaskRepository
   private lateinit var mockUserRepository: ch.eureka.eurekapp.model.data.user.UserRepository
   private lateinit var mockConnectivityObserver: ConnectivityObserver
+  private lateinit var mockDownloadedFileDao: DownloadedFileDao
   private lateinit var viewModel: ViewTaskViewModel
 
   @Before
@@ -47,6 +49,8 @@ class ViewTaskViewModelTest {
     mockConnectivityObserver = mockk()
     every { mockConnectivityObserver.isConnected } returns flowOf(true)
     mockUserRepository = mockk()
+    mockDownloadedFileDao = mockk()
+    every { mockDownloadedFileDao.getAll() } returns flowOf(emptyList())
   }
 
   @After
@@ -76,10 +80,11 @@ class ViewTaskViewModelTest {
         ViewTaskViewModel(
             projectId,
             taskId,
+            mockDownloadedFileDao,
             mockTaskRepository,
-            testDispatcher,
             mockConnectivityObserver,
-            mockUserRepository)
+            mockUserRepository,
+            testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -105,10 +110,11 @@ class ViewTaskViewModelTest {
         ViewTaskViewModel(
             projectId,
             taskId,
+            mockDownloadedFileDao,
             mockTaskRepository,
-            testDispatcher,
             mockConnectivityObserver,
-            mockUserRepository)
+            mockUserRepository,
+            testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -134,10 +140,11 @@ class ViewTaskViewModelTest {
         ViewTaskViewModel(
             projectId,
             taskId,
+            mockDownloadedFileDao,
             mockTaskRepository,
-            testDispatcher,
             mockConnectivityObserver,
-            mockUserRepository)
+            mockUserRepository,
+            testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -177,10 +184,11 @@ class ViewTaskViewModelTest {
         ViewTaskViewModel(
             projectId,
             taskId,
+            mockDownloadedFileDao,
             mockTaskRepository,
-            testDispatcher,
             mockConnectivityObserver,
-            mockUserRepository)
+            mockUserRepository,
+            testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -215,10 +223,11 @@ class ViewTaskViewModelTest {
         ViewTaskViewModel(
             projectId,
             taskId,
+            mockDownloadedFileDao,
             mockTaskRepository,
-            testDispatcher,
             mockConnectivityObserver,
-            mockUserRepository)
+            mockUserRepository,
+            testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -267,10 +276,11 @@ class ViewTaskViewModelTest {
         ViewTaskViewModel(
             projectId,
             taskId,
+            mockDownloadedFileDao,
             mockTaskRepository,
-            testDispatcher,
             mockConnectivityObserver,
-            mockUserRepository)
+            mockUserRepository,
+            testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -311,10 +321,11 @@ class ViewTaskViewModelTest {
         ViewTaskViewModel(
             projectId,
             taskId,
+            mockDownloadedFileDao,
             mockTaskRepository,
-            testDispatcher,
             mockConnectivityObserver,
-            mockUserRepository)
+            mockUserRepository,
+            testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()

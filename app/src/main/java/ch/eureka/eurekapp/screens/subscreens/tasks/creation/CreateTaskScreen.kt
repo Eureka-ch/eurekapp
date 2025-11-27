@@ -30,6 +30,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import ch.eureka.eurekapp.model.tasks.Attachment
 import ch.eureka.eurekapp.model.tasks.CreateTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AttachmentsList
@@ -165,7 +166,7 @@ fun CreateTaskScreen(
               }
 
               AttachmentsList(
-                  attachments = createTaskState.attachmentUris,
+                  attachments = createTaskState.attachmentUris.map { Attachment.Local(it) },
                   onDelete = { index ->
                     val uri = createTaskState.attachmentUris[index]
                     if (createTaskViewModel.deletePhoto(context, uri)) {

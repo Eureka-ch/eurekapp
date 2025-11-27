@@ -16,6 +16,7 @@ import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.screens.Camera
+import ch.eureka.eurekapp.screens.FilesManagementScreen
 import ch.eureka.eurekapp.screens.IdeasScreen
 import ch.eureka.eurekapp.screens.OverviewProjectScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
@@ -25,10 +26,13 @@ import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingTranscriptViewScree
 import ch.eureka.eurekapp.screens.subscreens.projects.creation.CreateProjectScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitationSubscreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.AutoAssignResultScreen
+import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
 import ch.eureka.eurekapp.ui.authentication.TokenEntryScreen
+import ch.eureka.eurekapp.ui.conversation.ConversationListScreen
+import ch.eureka.eurekapp.ui.conversation.CreateConversationScreen
 import ch.eureka.eurekapp.ui.map.MeetingLocationSelectionScreen
 import ch.eureka.eurekapp.ui.meeting.CreateDateTimeFormatProposalForMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
@@ -72,7 +76,22 @@ sealed interface Route {
 
     @Serializable data object AutoTaskAssignment : TasksSection
 
-    @Serializable data object TaskDependence : TasksSection
+    @Serializable data object FilesManagement : TasksSection
+
+    @Serializable
+    data class TaskDependence(val projectId: String, val taskId: String) : TasksSection
+  }
+
+  // Conversations section - 1-on-1 chats between project members
+  sealed interface ConversationsSection : Route {
+    companion object {
+      val routes: Set<KClass<out ConversationsSection>>
+        get() = ConversationsSection::class.sealedSubclasses.toSet()
+    }
+
+    @Serializable data object Conversations : ConversationsSection
+
+    @Serializable data object CreateConversation : ConversationsSection
   }
 
   sealed interface IdeasSection : Route {
@@ -210,6 +229,9 @@ fun NavigationMenu() {
                     onTaskClick = { taskId, projectId ->
                       navigationController.navigate(
                           Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
+                    },
+                    onFilesManagementClick = {
+                      navigationController.navigate(Route.TasksSection.FilesManagement)
                     })
               }
               composable<Route.TasksSection.CreateTask> { CreateTaskScreen(navigationController) }
@@ -226,6 +248,34 @@ fun NavigationMenu() {
                 val taskDetailRoute = backStackEntry.toRoute<Route.TasksSection.ViewTask>()
                 ViewTaskScreen(
                     taskDetailRoute.projectId, taskDetailRoute.taskId, navigationController)
+              }
+              composable<Route.TasksSection.FilesManagement> {
+                FilesManagementScreen(onBackClick = { navigationController.popBackStack() })
+              }
+
+              composable<Route.TasksSection.TaskDependence> { backStackEntry ->
+                val dependenceRoute = backStackEntry.toRoute<Route.TasksSection.TaskDependence>()
+                TaskDependenciesScreen(
+                    projectId = dependenceRoute.projectId,
+                    taskId = dependenceRoute.taskId,
+                    navigationController = navigationController)
+              }
+
+              // Conversations section
+              composable<Route.ConversationsSection.Conversations> {
+                ConversationListScreen(
+                    onCreateConversation = {
+                      navigationController.navigate(Route.ConversationsSection.CreateConversation)
+                    },
+                    onConversationClick = { _ ->
+                      // Future: navigate to chat screen
+                    })
+              }
+              composable<Route.ConversationsSection.CreateConversation> {
+                CreateConversationScreen(
+                    onConversationCreated = {
+                      navigationController.navigate(Route.ConversationsSection.Conversations)
+                    })
               }
 
               // Ideas section
