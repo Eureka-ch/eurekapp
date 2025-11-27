@@ -56,7 +56,7 @@ constructor(
 
   private val _currentMessage = MutableStateFlow("")
   private val _isSending = MutableStateFlow(false)
-  private val _errorMsg = MutableStateFlow<String?>(null)
+  private val _infoMsg = MutableStateFlow<String?>(null)
 
   /**
    * The single source of truth for the UI state.
@@ -76,7 +76,7 @@ constructor(
                   .catch { e -> emit(NotesLoadState.Error(e.message ?: "Error")) },
               _currentMessage,
               _isSending,
-              _errorMsg,
+              _infoMsg,
               userPrefs.isCloudStorageEnabled) {
                   notesState,
                   currentMessage,
@@ -118,7 +118,7 @@ constructor(
           if (isOnline) {
             val syncedCount = repository.syncPendingNotes()
             if (syncedCount > 0) {
-              _errorMsg.value = "Back online: Uploaded $syncedCount notes"
+              _infoMsg.value = "Back online: Uploaded $syncedCount notes"
             }
           }
         }
@@ -132,7 +132,7 @@ constructor(
    * Toggles the storage mode between Local-only and Cloud.
    *
    * When enabling Cloud mode, this triggers an immediate sync of existing local notes. Updates the
-   * [_errorMsg] flow with a status message upon completion.
+   * [_infoMsg] flow with a status message upon completion.
    *
    * @param enableCloud True to enable Cloud storage/sync, False for Local-only.
    */
@@ -141,12 +141,12 @@ constructor(
       val syncedCount = repository.setStorageMode(enableCloud)
       if (enableCloud) {
         if (syncedCount > 0) {
-          _errorMsg.value = "Switched to Cloud: Synced $syncedCount notes"
+          _infoMsg.value = "Switched to Cloud: Synced $syncedCount notes"
         } else {
-          _errorMsg.value = "Switched to Cloud Storage"
+          _infoMsg.value = "Switched to Cloud Storage"
         }
       } else {
-        _errorMsg.value = "Switched to Local Storage (Private)"
+        _infoMsg.value = "Switched to Local Storage (Private)"
       }
     }
   }
@@ -186,14 +186,14 @@ constructor(
               onSuccess = {
                 _currentMessage.value = ""
                 _isSending.value = false
-                _errorMsg.value = null
+                _infoMsg.value = null
                 if (uiState.value.isCloudStorageEnabled) {
                   scheduleWorker()
                 }
               },
               onFailure = { error ->
                 _isSending.value = false
-                _errorMsg.value = "Error: ${error.message}"
+                _infoMsg.value = "Error: ${error.message}"
               })
     }
   }
@@ -217,7 +217,7 @@ constructor(
 
   /** Clears the current error or status message. */
   fun clearError() {
-    _errorMsg.value = null
+    _infoMsg.value = null
   }
 }
 
