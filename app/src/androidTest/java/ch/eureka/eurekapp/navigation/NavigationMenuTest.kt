@@ -1,10 +1,11 @@
 package ch.eureka.eurekapp.navigation
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
@@ -160,15 +161,6 @@ class NavigationMenuTest : TestCase() {
         }
       }
 
-      fun waitForTagAndScroll(tag: String) {
-        waitForTag(tag)
-        try {
-          composeTestRule.onNodeWithTag(tag).performScrollTo()
-        } catch (e: Exception) {
-          // Element might already be visible, ignore
-        }
-      }
-
       fun returnHome() {
         composeTestRule
             .onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON)
@@ -208,9 +200,20 @@ class NavigationMenuTest : TestCase() {
       waitForTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN)
       returnHome()
 
-      // Wait for project link and scroll to it if needed (it's in a LazyColumn)
-      waitForTagAndScroll(projectLinkTag)
-      composeTestRule.onNodeWithTag(projectLinkTag).assertIsDisplayed()
+      // Scroll to project link in LazyColumn and click it
+      // First get the LazyColumn node, then scroll to the project link
+      val list = composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN)
+      list.performScrollToNode(hasTestTag(projectLinkTag))
+      composeTestRule.waitForIdle()
+      // Now wait for the tag to be visible and clickable
+      composeTestRule.waitUntil(timeoutMillis = 5000) {
+        try {
+          composeTestRule.onNodeWithTag(projectLinkTag).assertIsDisplayed()
+          true
+        } catch (e: AssertionError) {
+          false
+        }
+      }
       composeTestRule.onNodeWithTag(projectLinkTag).performClick()
       waitForTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT)
     } finally {
