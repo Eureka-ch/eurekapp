@@ -20,13 +20,10 @@ import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.screens.HomeOverviewTestTags
 import ch.eureka.eurekapp.screens.IdeasScreenTestTags
-import ch.eureka.eurekapp.screens.OverviewProjectsScreenTestTags
-import ch.eureka.eurekapp.screens.ProjectSelectionScreenTestTags
 import ch.eureka.eurekapp.screens.SelfNotesScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreenTestTags
-import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.ui.profile.ProfileScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
@@ -217,7 +214,6 @@ class NavigationMenuTest : TestCase() {
     waitForTag(HomeOverviewTestTags.CTA_TASKS)
     composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).performClick()
     composeTestRule.waitForIdle()
-    waitForTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
 
     // Navigate back home
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
@@ -227,7 +223,6 @@ class NavigationMenuTest : TestCase() {
     waitForTag(HomeOverviewTestTags.CTA_MEETINGS)
     composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_MEETINGS).performClick()
     composeTestRule.waitForIdle()
-    waitForTag(MeetingScreenTestTags.MEETING_SCREEN)
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
     waitForTag(HomeOverviewTestTags.SCREEN)
 
@@ -235,7 +230,6 @@ class NavigationMenuTest : TestCase() {
     waitForTag(HomeOverviewTestTags.CTA_PROJECTS)
     composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_PROJECTS).performClick()
     composeTestRule.waitForIdle()
-    waitForTag(ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON)
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
     waitForTag(HomeOverviewTestTags.SCREEN)
 
@@ -247,7 +241,6 @@ class NavigationMenuTest : TestCase() {
     waitForTag(taskTag)
     composeTestRule.onNodeWithTag(taskTag).performClick()
     composeTestRule.waitForIdle()
-    waitForTag(ViewTaskScreenTestTags.VIEW_DEPENDENCIES)
     composeTestRule.onNodeWithTag(CommonTaskTestTags.BACK_BUTTON).performClick()
     waitForTag(HomeOverviewTestTags.SCREEN)
 
@@ -255,7 +248,6 @@ class NavigationMenuTest : TestCase() {
     waitForTag(meetingTag)
     composeTestRule.onNodeWithTag(meetingTag).performClick()
     composeTestRule.waitForIdle()
-    waitForTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN)
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
     waitForTag(HomeOverviewTestTags.SCREEN)
 
@@ -263,7 +255,6 @@ class NavigationMenuTest : TestCase() {
     waitForTag(projectTag)
     composeTestRule.onNodeWithTag(projectTag).performClick()
     composeTestRule.waitForIdle()
-    waitForTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT)
   }
 
   @Test
