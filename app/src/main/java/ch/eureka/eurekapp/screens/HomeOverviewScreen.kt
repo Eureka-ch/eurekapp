@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,6 +55,7 @@ object HomeOverviewTestTags {
   const val TASK_ITEM_PREFIX = "homeOverviewTask_"
   const val MEETING_ITEM_PREFIX = "homeOverviewMeeting_"
   const val PROJECT_ITEM_PREFIX = "homeOverviewProject_"
+  const val PROJECT_LINK_PREFIX = "homeOverviewProjectLink_"
 }
 
 /**
@@ -344,6 +346,14 @@ private fun ProjectSummaryCard(
                 ProjectStatusDisplay(project.status)
                 TextButton(onClick = onClick) { Text("Open project") }
               }
+          Text(
+              text = "Go to overview",
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.primary,
+              modifier =
+                  Modifier.padding(top = Spacing.xs)
+                      .clickable(onClick = onClick)
+                      .testTag("${HomeOverviewTestTags.PROJECT_LINK_PREFIX}${project.projectId}"))
         }
       }
 }

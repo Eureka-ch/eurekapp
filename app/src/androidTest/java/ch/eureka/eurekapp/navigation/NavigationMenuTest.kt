@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
@@ -159,6 +160,15 @@ class NavigationMenuTest : TestCase() {
         }
       }
 
+      fun waitForTagAndScroll(tag: String) {
+        waitForTag(tag)
+        try {
+          composeTestRule.onNodeWithTag(tag).performScrollTo()
+        } catch (e: Exception) {
+          // Element might already be visible, ignore
+        }
+      }
+
       fun returnHome() {
         composeTestRule
             .onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON)
@@ -185,7 +195,7 @@ class NavigationMenuTest : TestCase() {
 
       val taskTag = "${HomeOverviewTestTags.TASK_ITEM_PREFIX}$HOME_OVERVIEW_TASK_ID"
       val meetingTag = "${HomeOverviewTestTags.MEETING_ITEM_PREFIX}$HOME_OVERVIEW_MEETING_ID"
-      val projectTag = "${HomeOverviewTestTags.PROJECT_ITEM_PREFIX}$HOME_OVERVIEW_PROJECT_ID"
+      val projectLinkTag = "${HomeOverviewTestTags.PROJECT_LINK_PREFIX}$HOME_OVERVIEW_PROJECT_ID"
 
       waitForTag(taskTag)
       composeTestRule.onNodeWithTag(taskTag).performClick()
@@ -198,8 +208,10 @@ class NavigationMenuTest : TestCase() {
       waitForTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN)
       returnHome()
 
-      waitForTag(projectTag)
-      composeTestRule.onNodeWithTag(projectTag).performClick()
+      // Wait for project link and scroll to it if needed (it's in a LazyColumn)
+      waitForTagAndScroll(projectLinkTag)
+      composeTestRule.onNodeWithTag(projectLinkTag).assertIsDisplayed()
+      composeTestRule.onNodeWithTag(projectLinkTag).performClick()
       waitForTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT)
     } finally {
       composeTestRule.runOnIdle { HomeOverviewTestOverrides.uiState = null }
