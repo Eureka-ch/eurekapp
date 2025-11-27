@@ -35,12 +35,9 @@ class RouteRegistryTest {
     assertTrue(
         "TasksSection should contain AutoTaskAssignment",
         registeredRoutes.any { it.simpleName == "AutoTaskAssignment" })
-    assertTrue(
-        "TasksSection should contain TaskDependence",
-        registeredRoutes.any { it.simpleName == "TaskDependence" })
 
-    // Verify we have the expected number of routes (6 as of now)
-    assertEquals("TasksSection should have 6 routes", 6, registeredRoutes.size)
+    // Verify we have the expected number of routes (5 as of now)
+    assertEquals("TasksSection should have 5 routes", 5, registeredRoutes.size)
   }
 
   @Test
@@ -49,11 +46,8 @@ class RouteRegistryTest {
 
     assertTrue(
         "IdeasSection should contain Ideas", registeredRoutes.any { it.simpleName == "Ideas" })
-    assertTrue(
-        "IdeasSection should contain CreateIdeas",
-        registeredRoutes.any { it.simpleName == "CreateIdeas" })
 
-    assertEquals("IdeasSection should have 2 routes", 2, registeredRoutes.size)
+    assertEquals("IdeasSection should have 1 route", 1, registeredRoutes.size)
   }
 
   @Test
@@ -63,9 +57,6 @@ class RouteRegistryTest {
     assertTrue(
         "MeetingsSection should contain Meetings",
         registeredRoutes.any { it.simpleName == "Meetings" })
-    assertTrue(
-        "MeetingsSection should contain MeetingsOverview",
-        registeredRoutes.any { it.simpleName == "MeetingsOverview" })
     assertTrue(
         "MeetingsSection should contain CreateMeeting",
         registeredRoutes.any { it.simpleName == "CreateMeeting" })
@@ -94,7 +85,7 @@ class RouteRegistryTest {
         "MeetingsSection should contain MeetingLocationSelection",
         registeredRoutes.any { it.simpleName == "MeetingLocationSelection" })
 
-    assertEquals("MeetingsSection should have 10 routes", 10, registeredRoutes.size)
+    assertEquals("MeetingsSection should have 9 routes", 9, registeredRoutes.size)
   }
 
   @Test

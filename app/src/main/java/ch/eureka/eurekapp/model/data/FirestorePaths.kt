@@ -111,4 +111,6 @@ object FirestorePaths {
   fun conversationsPath() = CONVERSATIONS
 
   fun conversationPath(conversationId: String) = "$CONVERSATIONS/$conversationId"
+
+  fun activitiesPath() = ACTIVITIES
 }

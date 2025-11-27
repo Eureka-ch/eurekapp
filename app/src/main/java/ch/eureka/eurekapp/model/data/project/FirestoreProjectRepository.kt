@@ -85,9 +85,9 @@ class FirestoreProjectRepository(
     val memberRef = projectRef.collection("members").document(creatorId)
     memberRef.set(member).await()
 
-    // Log activity to global feed for cross-project visibility
+    // Log activity to global feed so everyone sees project creation
     ActivityLogger.logActivity(
-        projectId = "global-activities",
+        projectId = project.projectId,
         activityType = ActivityType.CREATED,
         entityType = EntityType.PROJECT,
         entityId = project.projectId,
@@ -103,7 +103,7 @@ class FirestoreProjectRepository(
     // Log activity to global feed after successful update
     auth.currentUser?.uid?.let { userId ->
       ActivityLogger.logActivity(
-          projectId = "global-activities",
+          projectId = project.projectId,
           activityType = ActivityType.UPDATED,
           entityType = EntityType.PROJECT,
           entityId = project.projectId,
@@ -118,11 +118,12 @@ class FirestoreProjectRepository(
     // Log activity to global feed after successful deletion
     auth.currentUser?.uid?.let { userId ->
       ActivityLogger.logActivity(
-          projectId = "global-activities",
+          projectId = projectId,
           activityType = ActivityType.DELETED,
           entityType = EntityType.PROJECT,
           entityId = projectId,
-          userId = userId)
+          userId = userId,
+          metadata = emptyMap())
     }
   }
 
@@ -170,7 +171,7 @@ class FirestoreProjectRepository(
       val projectName = project?.name ?: "Unknown Project"
 
       ActivityLogger.logActivity(
-          projectId = "global-activities",
+          projectId = projectId,
           activityType = ActivityType.JOINED,
           entityType = EntityType.MEMBER,
           entityId = userId,
@@ -195,7 +196,7 @@ class FirestoreProjectRepository(
     // Log activity to global feed after successful member removal
     auth.currentUser?.uid?.let { currentUserId ->
       ActivityLogger.logActivity(
-          projectId = "global-activities",
+          projectId = projectId,
           activityType = ActivityType.LEFT,
           entityType = EntityType.MEMBER,
           entityId = userId,

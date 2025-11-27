@@ -9,9 +9,13 @@ import ch.eureka.eurekapp.model.data.activity.ActivityType
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import io.mockk.*
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,16 +31,24 @@ class ActivityFeedViewModelTest {
   private lateinit var viewModel: ActivityFeedViewModel
   private lateinit var repository: ActivityRepository
   private lateinit var firestore: FirebaseFirestore
+  private lateinit var auth: FirebaseAuth
   private lateinit var testDispatcher: TestDispatcher
 
-  private val projectId = "global-activities"
+  private val testUserId = "test-user-123"
 
   @Before
   fun setup() {
     testDispatcher = StandardTestDispatcher()
     Dispatchers.setMain(testDispatcher)
+
     repository = mockk(relaxed = true)
     firestore = mockk(relaxed = true)
+    auth = mockk(relaxed = true)
+
+    // Mock Firebase auth
+    val firebaseUser = mockk<FirebaseUser>(relaxed = true)
+    every { firebaseUser.uid } returns testUserId
+    every { auth.currentUser } returns firebaseUser
 
     // Mock Firestore user fetches using Tasks.forResult for immediate completion
     val userDoc = mockk<com.google.firebase.firestore.DocumentSnapshot>(relaxed = true)
@@ -47,7 +59,7 @@ class ActivityFeedViewModelTest {
     every { usersCollection.document(any()) } returns userDocRef
     every { userDocRef.get() } returns Tasks.forResult(userDoc)
 
-    viewModel = ActivityFeedViewModel(repository = repository, firestore = firestore)
+    viewModel = ActivityFeedViewModel(repository = repository, firestore = firestore, auth = auth)
   }
 
   @After
@@ -57,18 +69,78 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun `PROJECT filter includes both PROJECT and MEMBER activities`() = runTest {
+  fun `initial state has correct defaults`() {
+    val state = viewModel.uiState.value
+
+    assertTrue(state.activities.isEmpty())
+    assertTrue(state.allActivities.isEmpty())
+    assertFalse(state.isLoading)
+    assertNull(state.errorMsg)
+    assertNull(state.filterEntityType)
+    assertNull(state.filterActivityType)
+    assertFalse(state.isCompactMode)
+  }
+
+  @Test
+  fun `loadActivities fetches and enriches activities with user names`() = runTest {
+    val activities =
+        listOf(createActivity("1", EntityType.PROJECT), createActivity("2", EntityType.MEETING))
+    coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
+
+    viewModel.loadActivities()
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.value
+    assertFalse(state.isLoading)
+    assertEquals(2, state.activities.size)
+    assertEquals(2, state.allActivities.size)
+    assertEquals("Test User", state.activities[0].metadata["userName"])
+    assertEquals("Test User", state.activities[1].metadata["userName"])
+  }
+
+  @Test
+  fun `loadActivities handles repository errors`() = runTest {
+    coEvery { repository.getActivities(testUserId) } returns
+        kotlinx.coroutines.flow.flow { throw Exception("Network error") }
+
+    viewModel.loadActivities()
+    advanceUntilIdle()
+
+    assertEquals("Network error", viewModel.uiState.value.errorMsg)
+    assertFalse(viewModel.uiState.value.isLoading)
+  }
+
+  @Test
+  fun `loadActivities handles enrichment errors gracefully`() = runTest {
+    val activities = listOf(createActivity("1", EntityType.PROJECT))
+    coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
+
+    // Mock Firestore to throw error
+    every { firestore.collection("users").document(any()).get() } returns
+        Tasks.forException(Exception("Firestore error"))
+
+    viewModel.loadActivities()
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.value
+    assertEquals("Someone", state.activities[0].metadata["userName"])
+  }
+
+  @Test
+  fun `applyFilter PROJECT includes both PROJECT and MEMBER activities`() = runTest {
     val activities =
         listOf(
             createActivity("1", EntityType.PROJECT),
             createActivity("2", EntityType.MEMBER),
-            createActivity("3", EntityType.MEETING))
-    coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(activities)
+            createActivity("3", EntityType.MEETING),
+            createActivity("4", EntityType.FILE))
+    coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
-    viewModel.loadActivitiesByEntityType(projectId, EntityType.PROJECT)
+    viewModel.applyFilter(EntityType.PROJECT)
     advanceUntilIdle()
 
     val state = viewModel.uiState.value
+    assertEquals(EntityType.PROJECT, state.filterEntityType)
     assertEquals(2, state.activities.size) // Only PROJECT + MEMBER
     assertTrue(
         state.activities.all {
@@ -77,178 +149,199 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun `MEETING filter includes only MEETING activities`() = runTest {
+  fun `applyFilter MEETING includes only MEETING activities`() = runTest {
     val activities =
-        listOf(createActivity("1", EntityType.PROJECT), createActivity("2", EntityType.MEETING))
-    coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(activities)
+        listOf(
+            createActivity("1", EntityType.PROJECT),
+            createActivity("2", EntityType.MEETING),
+            createActivity("3", EntityType.MEETING))
+    coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
-    viewModel.loadActivitiesByEntityType(projectId, EntityType.MEETING)
+    viewModel.applyFilter(EntityType.MEETING)
     advanceUntilIdle()
 
     val state = viewModel.uiState.value
+    assertEquals(EntityType.MEETING, state.filterEntityType)
+    assertEquals(2, state.activities.size)
+    assertTrue(state.activities.all { it.entityType == EntityType.MEETING })
+  }
+
+  @Test
+  fun `applyFilter FILE includes only FILE activities`() = runTest {
+    val activities =
+        listOf(
+            createActivity("1", EntityType.PROJECT),
+            createActivity("2", EntityType.FILE),
+            createActivity("3", EntityType.MEETING))
+    coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
+
+    viewModel.applyFilter(EntityType.FILE)
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.value
+    assertEquals(EntityType.FILE, state.filterEntityType)
     assertEquals(1, state.activities.size)
-    assertEquals(EntityType.MEETING, state.activities[0].entityType)
+    assertEquals(EntityType.FILE, state.activities[0].entityType)
   }
 
   @Test
-  fun `deleteActivity removes activity and rolls back on failure`() = runTest {
+  fun `clearFilters shows all activities`() = runTest {
     val activities =
-        listOf(createActivity("1", EntityType.PROJECT), createActivity("2", EntityType.MEETING))
-    coEvery { repository.getActivitiesInProject(projectId, 20) } returns flowOf(activities)
-    coEvery { repository.deleteActivity(projectId, "1") } returns
-        Result.failure(Exception("Failed"))
+        listOf(
+            createActivity("1", EntityType.PROJECT),
+            createActivity("2", EntityType.MEETING),
+            createActivity("3", EntityType.FILE))
+    coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
-    viewModel.loadActivities(projectId)
+    // First apply a filter
+    viewModel.applyFilter(EntityType.PROJECT)
     advanceUntilIdle()
-    viewModel.deleteActivity(projectId, "1")
-    advanceUntilIdle()
+    assertEquals(1, viewModel.uiState.value.activities.size)
 
-    val state = viewModel.uiState.value
-    assertEquals(2, state.activities.size) // Rolled back
-  }
-
-  @Test
-  fun `enrichActivitiesWithUserNames adds userName to metadata`() = runTest {
-    val activities = listOf(createActivity("1", EntityType.PROJECT))
-    coEvery { repository.getActivitiesInProject(projectId, 20) } returns flowOf(activities)
-
-    viewModel.loadActivities(projectId)
-    advanceUntilIdle()
-
-    val state = viewModel.uiState.value
-    assertEquals("Test User", state.activities[0].metadata["userName"])
-  }
-
-  @Test
-  fun `clearFilters resets filter state and clears activities`() = runTest {
-    val activities = listOf(createActivity("1", EntityType.PROJECT))
-    coEvery { repository.getActivitiesInProject(projectId, any()) } returns flowOf(activities)
-
-    viewModel.loadActivitiesByEntityType(projectId, EntityType.PROJECT)
-    advanceUntilIdle()
+    // Then clear filters
     viewModel.clearFilters()
     advanceUntilIdle()
 
     val state = viewModel.uiState.value
-    assertEquals(null, state.filterEntityType)
-    assertEquals(null, state.filterActivityType)
-    assertEquals(0, state.activities.size)
+    assertNull(state.filterEntityType)
+    assertEquals(3, state.activities.size)
   }
 
   @Test
-  fun `setCompactMode changes limit from 20 to 10`() = runTest {
-    var state = viewModel.uiState.value
-    assertEquals(20, state.limit)
+  fun `clearFilters loads activities if cache is empty`() = runTest {
+    val activities = listOf(createActivity("1", EntityType.PROJECT))
+    coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
+
+    viewModel.clearFilters()
+    advanceUntilIdle()
+
+    coVerify { repository.getActivities(testUserId) }
+    assertEquals(1, viewModel.uiState.value.activities.size)
+  }
+
+  @Test
+  fun `setCompactMode updates state correctly`() {
+    assertFalse(viewModel.uiState.value.isCompactMode)
 
     viewModel.setCompactMode(true)
-    advanceUntilIdle()
+    assertTrue(viewModel.uiState.value.isCompactMode)
 
-    state = viewModel.uiState.value
-    assertEquals(10, state.limit)
-    assertTrue(state.isCompactMode)
+    viewModel.setCompactMode(false)
+    assertFalse(viewModel.uiState.value.isCompactMode)
   }
 
   @Test
-  fun `refresh maintains active filters`() = runTest {
-    val activities = listOf(createActivity("1", EntityType.PROJECT))
-    coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(activities)
-    coEvery { repository.getActivitiesByActivityType(projectId, ActivityType.CREATED, 20) } returns
-        flowOf(activities)
+  fun `clearErrorMsg clears error state`() {
+    // Manually set error through failed load
+    coEvery { repository.getActivities(testUserId) } returns
+        kotlinx.coroutines.flow.flow { throw Exception("Test error") }
 
-    viewModel.loadActivitiesByEntityType(projectId, EntityType.PROJECT)
-    advanceUntilIdle()
-    viewModel.refresh(projectId)
-    advanceUntilIdle()
-    assertEquals(EntityType.PROJECT, viewModel.uiState.value.filterEntityType)
+    runTest {
+      viewModel.loadActivities()
+      advanceUntilIdle()
+      assertEquals("Test error", viewModel.uiState.value.errorMsg)
 
-    viewModel.loadActivitiesByActivityType(projectId, ActivityType.CREATED)
-    advanceUntilIdle()
-    viewModel.refresh(projectId)
-    advanceUntilIdle()
-    assertEquals(ActivityType.CREATED, viewModel.uiState.value.filterActivityType)
+      viewModel.clearErrorMsg()
+      assertNull(viewModel.uiState.value.errorMsg)
+    }
   }
 
   @Test
-  fun `loadActivities handles repository errors`() = runTest {
-    coEvery { repository.getActivitiesInProject(projectId, 20) } returns
-        kotlinx.coroutines.flow.flow { throw Exception("Network error") }
-
-    viewModel.loadActivities(projectId)
-    advanceUntilIdle()
-    assertEquals("Network error", viewModel.uiState.value.errorMsg)
-  }
-
-  @Test
-  fun `deleteActivity succeeds and removes activity from list`() = runTest {
+  fun `deleteActivity removes activity from list`() = runTest {
     val activities =
-        listOf(createActivity("1", EntityType.PROJECT), createActivity("2", EntityType.PROJECT))
-    coEvery { repository.getActivitiesInProject(projectId, 20) } returns flowOf(activities)
-    coEvery { repository.deleteActivity(projectId, "1") } returns Result.success(Unit)
+        listOf(createActivity("1", EntityType.PROJECT), createActivity("2", EntityType.MEETING))
+    coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
+    coEvery { repository.deleteActivity("1") } returns Result.success(Unit)
 
-    viewModel.loadActivities(projectId)
+    viewModel.loadActivities()
     advanceUntilIdle()
     assertEquals(2, viewModel.uiState.value.activities.size)
 
-    viewModel.deleteActivity(projectId, "1")
+    viewModel.deleteActivity("1")
     advanceUntilIdle()
+
     val state = viewModel.uiState.value
     assertEquals(1, state.activities.size)
+    assertEquals(1, state.allActivities.size)
     assertEquals("2", state.activities[0].activityId)
   }
 
   @Test
-  fun `error message state management works correctly`() = runTest {
-    viewModel.setErrorMsg("Test error")
+  fun `deleteActivity rolls back on failure`() = runTest {
+    val activities =
+        listOf(createActivity("1", EntityType.PROJECT), createActivity("2", EntityType.MEETING))
+    coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
+    coEvery { repository.deleteActivity("1") } returns Result.failure(Exception("Delete failed"))
+
+    viewModel.loadActivities()
     advanceUntilIdle()
-    assertEquals("Test error", viewModel.uiState.value.errorMsg)
+    assertEquals(2, viewModel.uiState.value.activities.size)
 
-    viewModel.clearErrorMsg()
-    advanceUntilIdle()
-    assertEquals(null, viewModel.uiState.value.errorMsg)
-  }
-
-  @Test
-  fun `enrichActivitiesWithUserNames handles Firestore fetch failure`() = runTest {
-    val activities = listOf(createActivity("1", EntityType.PROJECT))
-    coEvery { repository.getActivitiesInProject(projectId, 20) } returns flowOf(activities)
-
-    val userDocRef = mockk<com.google.firebase.firestore.DocumentReference>(relaxed = true)
-    val newFirestore = mockk<com.google.firebase.firestore.FirebaseFirestore>(relaxed = true)
-    val usersCollection = mockk<com.google.firebase.firestore.CollectionReference>(relaxed = true)
-    every { newFirestore.collection("users") } returns usersCollection
-    every { usersCollection.document(any()) } returns userDocRef
-    every { userDocRef.get() } returns Tasks.forException(Exception("Firestore error"))
-
-    val newViewModel = ActivityFeedViewModel(repository = repository, firestore = newFirestore)
-    newViewModel.loadActivities(projectId)
-    advanceUntilIdle()
-
-    val state = newViewModel.uiState.value
-    assertEquals("Someone", state.activities[0].metadata["userName"])
-  }
-
-  @Test
-  fun `loadActivitiesByEntityType respects compact mode limit`() = runTest {
-    val activities = (1..15).map { createActivity("$it", EntityType.PROJECT) }
-    coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(activities)
-
-    viewModel.setCompactMode(true)
-    advanceUntilIdle()
-    viewModel.loadActivitiesByEntityType(projectId, EntityType.PROJECT)
+    viewModel.deleteActivity("1")
     advanceUntilIdle()
 
     val state = viewModel.uiState.value
-    assertEquals(10, state.activities.size)
+    assertEquals(2, state.activities.size) // Rolled back
+    assertEquals(2, state.allActivities.size)
+    assertEquals("Delete failed", state.errorMsg)
   }
 
-  private fun createActivity(id: String, entityType: EntityType) =
+  @Test
+  fun `deleteActivity removes from filtered view correctly`() = runTest {
+    val activities =
+        listOf(
+            createActivity("1", EntityType.PROJECT),
+            createActivity("2", EntityType.PROJECT),
+            createActivity("3", EntityType.MEETING))
+    coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
+    coEvery { repository.deleteActivity("1") } returns Result.success(Unit)
+
+    viewModel.applyFilter(EntityType.PROJECT)
+    advanceUntilIdle()
+    assertEquals(2, viewModel.uiState.value.activities.size)
+
+    viewModel.deleteActivity("1")
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.value
+    assertEquals(1, state.activities.size) // Filtered view updated
+    assertEquals(2, state.allActivities.size) // Cache updated
+  }
+
+  @Test
+  fun `loadActivities returns early if no current user`() = runTest {
+    every { auth.currentUser } returns null
+
+    viewModel.loadActivities()
+    advanceUntilIdle()
+
+    coVerify(exactly = 0) { repository.getActivities(any()) }
+  }
+
+  @Test
+  fun `applying filter on empty cache loads activities`() = runTest {
+    val activities = listOf(createActivity("1", EntityType.PROJECT))
+    coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
+
+    viewModel.applyFilter(EntityType.PROJECT)
+    advanceUntilIdle()
+
+    coVerify { repository.getActivities(testUserId) }
+    assertEquals(1, viewModel.uiState.value.activities.size)
+  }
+
+  private fun createActivity(
+      id: String,
+      entityType: EntityType,
+      activityType: ActivityType = ActivityType.CREATED
+  ) =
       Activity(
           activityId = id,
-          projectId = projectId,
-          activityType = ActivityType.CREATED,
+          projectId = "test-project",
+          activityType = activityType,
           entityType = entityType,
           entityId = "entity-$id",
-          userId = "user-1",
+          userId = testUserId,
           timestamp = Timestamp.now(),
-          metadata = emptyMap())
+          metadata = mapOf("title" to "Test $entityType $id"))
 }

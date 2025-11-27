@@ -546,26 +546,24 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_activityFeedButton_alwaysPassesGlobalActivities() {
+  fun profileScreen_activityFeedButton_triggersCallback() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
-    var navigatedProjectId: String? = null
+    var callbackTriggered = false
 
     composeTestRule.setContent {
       ProfileScreen(
           viewModel = viewModel,
           firebaseAuth = firebaseAuth,
-          onNavigateToActivityFeed = { projectId -> navigatedProjectId = projectId })
+          onNavigateToActivityFeed = { callbackTriggered = true })
     }
 
     // When - Click the activity feed button
-    composeTestRule.onNodeWithText("🔔 View Activity Feed").performClick()
+    composeTestRule.onNodeWithText("View Activity Feed").performClick()
     composeTestRule.waitForIdle()
 
-    // Then - Should always pass "global-activities"
-    assert(navigatedProjectId == "global-activities") {
-      "Expected 'global-activities' but got '$navigatedProjectId'"
-    }
+    // Then - Callback should be triggered
+    assert(callbackTriggered) { "Expected callback to be triggered but it wasn't" }
   }
 
   @Test
@@ -579,20 +577,17 @@ class ProfileScreenTest {
     }
 
     // Then - Button should be displayed
-    composeTestRule.onNodeWithText("🔔 View Activity Feed").assertIsDisplayed()
+    composeTestRule.onNodeWithText("View Activity Feed").assertIsDisplayed()
   }
 
   @Test
-  fun profileScreen_activityFeedButton_hiddenWhenCallbackNotProvided() {
+  fun profileScreen_activityFeedButton_displaysWithDefaultCallback() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
 
-    composeTestRule.setContent {
-      ProfileScreen(
-          viewModel = viewModel, firebaseAuth = firebaseAuth, onNavigateToActivityFeed = null)
-    }
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
 
-    // Then - Button should not be displayed
-    composeTestRule.onNodeWithText("🔔 View Activity Feed").assertDoesNotExist()
+    // Then - Button should be displayed with default callback
+    composeTestRule.onNodeWithText("View Activity Feed").assertIsDisplayed()
   }
 }

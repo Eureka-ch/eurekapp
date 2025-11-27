@@ -1,7 +1,6 @@
 /*
-Note: This file was co-authored by Claude Code.
-Note: This file was co-authored by Grok.
-*/
+ * This file was co-authored by Claude Code and Gemini.
+ */
 package ch.eureka.eurekapp.model.data.file
 
 import android.net.Uri
@@ -44,18 +43,19 @@ class FirebaseFileStorageRepository(
 
     val projectId = extractProjectIdFromPath(storagePath)
     val fileName = extractFileNameFromPath(storagePath)
-
-    // Only log activity for project files (profile photos and other user files don't have
-    // projectId)
-    if (projectId != null) {
-      ActivityLogger.logActivity(
-          projectId = projectId,
-          activityType = ActivityType.UPLOADED,
-          entityType = EntityType.FILE,
-          entityId = downloadUrl,
-          userId = currentUser.uid,
-          metadata = mapOf("fileName" to fileName))
+    if (projectId == null) {
+      throw IllegalArgumentException("Extracted project ID is null")
     }
+    if (fileName.isBlank()) {
+      throw IllegalArgumentException("Extracted file name is blank.")
+    }
+    ActivityLogger.logActivity(
+        projectId = projectId,
+        activityType = ActivityType.UPLOADED,
+        entityType = EntityType.FILE,
+        entityId = downloadUrl,
+        userId = currentUser.uid,
+        metadata = mapOf("title" to fileName))
 
     downloadUrl
   }

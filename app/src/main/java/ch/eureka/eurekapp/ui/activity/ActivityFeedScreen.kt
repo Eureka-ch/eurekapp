@@ -1,5 +1,5 @@
 /*
- * This file was co-authored by Claude Code.
+ * This file was co-authored by Claude Code and Gemini.
  */
 package ch.eureka.eurekapp.ui.activity
 
@@ -38,31 +38,25 @@ import java.util.Calendar
 import java.util.Locale
 
 /**
- * Activity feed screen with filtering and real-time updates.
+ * Activity feed screen. Shows a unified feed of activities for the current user.
  *
- * @param projectId Project ID to show activities for
- * @param onActivityClick Callback when activity clicked (receives entityId)
- * @param onNavigateBack Back button callback
- * @param viewModel ActivityFeedViewModel (injected for testing)
- * @param modifier Screen modifier
+ * @param modifier Modifier used in the whole screen.
+ * @param onActivityClick Callback executed when an activity is clicked.
+ * @param viewModel The view model associated with that screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActivityFeedScreen(
-    projectId: String,
+    modifier: Modifier = Modifier,
     onActivityClick: (String) -> Unit = {},
-    onNavigateBack: () -> Unit = {},
-    viewModel: ActivityFeedViewModel = viewModel(),
-    modifier: Modifier = Modifier
+    viewModel: ActivityFeedViewModel = viewModel()
 ) {
   val uiState by viewModel.uiState.collectAsState()
 
-  // Always use "global-activities" collection for cross-project visibility
-  val globalProjectId = "global-activities"
-
-  // Set mode but don't load activities until user selects filter
-  LaunchedEffect(projectId) {
-    viewModel.setCompactMode(false) // Full mode, not compact
+  // Load the global feed on entry
+  LaunchedEffect(Unit) {
+    viewModel.setCompactMode(false)
+    viewModel.loadActivities()
   }
 
   Scaffold(
@@ -82,25 +76,28 @@ fun ActivityFeedScreen(
               modifier =
                   Modifier.fillMaxWidth().padding(horizontal = Spacing.md, vertical = Spacing.sm),
               horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+
+                // PROJECTS FILTER
                 FilterChip(
                     selected = uiState.filterEntityType == EntityType.PROJECT,
                     onClick = {
                       if (uiState.filterEntityType == EntityType.PROJECT) {
                         viewModel.clearFilters()
                       } else {
-                        viewModel.loadActivitiesByEntityType(globalProjectId, EntityType.PROJECT)
+                        viewModel.applyFilter(EntityType.PROJECT)
                       }
                     },
                     label = { Text("Projects") },
                     modifier = Modifier.testTag("ProjectsFilterChip"))
 
+                // MEETINGS FILTER
                 FilterChip(
                     selected = uiState.filterEntityType == EntityType.MEETING,
                     onClick = {
                       if (uiState.filterEntityType == EntityType.MEETING) {
                         viewModel.clearFilters()
                       } else {
-                        viewModel.loadActivitiesByEntityType(globalProjectId, EntityType.MEETING)
+                        viewModel.applyFilter(EntityType.MEETING)
                       }
                     },
                     label = { Text("Meetings") },
@@ -110,62 +107,44 @@ fun ActivityFeedScreen(
           Box(modifier = Modifier.fillMaxSize()) {
             when {
               uiState.isLoading && uiState.activities.isEmpty() -> {
-                // Initial loading state
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally) {
                       CircularProgressIndicator(modifier = Modifier.testTag("LoadingIndicator"))
                       Spacer(modifier = Modifier.height(Spacing.md))
-                      Text(
-                          text = "Loading activities...",
-                          style = MaterialTheme.typography.bodyMedium,
-                          color = MaterialTheme.colorScheme.onSurfaceVariant)
+                      Text("Loading activities...")
                     }
               }
               uiState.activities.isEmpty() -> {
-                // Empty state
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally) {
-                      if (uiState.filterEntityType == null) {
-                        // No filter selected
-                        Text(
-                            text = "Select a filter",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.testTag("EmptyState"))
-                        Spacer(modifier = Modifier.height(Spacing.sm))
-                        Text(
-                            text = "Choose 'Projects' or 'Meetings' above to view activities",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                      } else {
-                        // Filter selected but no results
-                        Text(
-                            text = "No activities yet",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.testTag("EmptyState"))
-                        Spacer(modifier = Modifier.height(Spacing.sm))
-                        Text(
-                            text = "Activities will appear here when actions are performed",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                      }
+                      Text(
+                          text = "No activities found",
+                          style = MaterialTheme.typography.titleMedium,
+                          fontWeight = FontWeight.Bold,
+                          modifier = Modifier.testTag("EmptyState"))
                     }
               }
               else -> {
-                // Activities list with date grouping (grouped in ViewModel)
                 LazyColumn(
                     modifier = Modifier.fillMaxSize().testTag("ActivitiesList"),
                     contentPadding = PaddingValues(vertical = Spacing.md),
                     verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                      uiState.activitiesByDate.forEach { (dateMillis, activities) ->
-                        // Date header
+                      val activitiesByDate =
+                          uiState.activities.groupBy { activity ->
+                            val calendar = Calendar.getInstance()
+                            calendar.time = activity.timestamp.toDate()
+                            calendar.set(Calendar.HOUR_OF_DAY, 0)
+                            calendar.set(Calendar.MINUTE, 0)
+                            calendar.set(Calendar.SECOND, 0)
+                            calendar.set(Calendar.MILLISECOND, 0)
+                            calendar.timeInMillis
+                          }
+
+                      activitiesByDate.forEach { (dateMillis, activities) ->
                         item(key = "header_$dateMillis") {
                           Text(
                               text = formatDateHeader(dateMillis),
@@ -173,18 +152,14 @@ fun ActivityFeedScreen(
                               fontWeight = FontWeight.SemiBold,
                               color = MaterialTheme.colorScheme.primary,
                               modifier =
-                                  Modifier.padding(horizontal = Spacing.md, vertical = Spacing.sm)
-                                      .testTag("DateHeader_$dateMillis"))
+                                  Modifier.padding(horizontal = Spacing.md, vertical = Spacing.sm))
                         }
 
-                        // Activities for this date
                         items(items = activities, key = { it.activityId }) { activity ->
                           ActivityCard(
                               activity = activity,
                               onClick = { onActivityClick(activity.entityId) },
-                              onDelete = {
-                                viewModel.deleteActivity(globalProjectId, activity.activityId)
-                              },
+                              onDelete = { viewModel.deleteActivity(activity.activityId) },
                               modifier = Modifier.padding(horizontal = Spacing.md))
                         }
                       }
@@ -192,26 +167,11 @@ fun ActivityFeedScreen(
               }
             }
 
-            // Error message overlay
             uiState.errorMsg?.let { error ->
               Box(
                   modifier =
                       Modifier.fillMaxWidth().padding(Spacing.md).align(Alignment.BottomCenter)) {
-                    androidx.compose.material3.Surface(
-                        color = MaterialTheme.colorScheme.errorContainer,
-                        shape = MaterialTheme.shapes.medium,
-                        modifier = Modifier.fillMaxWidth().testTag("ErrorMessage")) {
-                          Row(
-                              modifier = Modifier.padding(Spacing.md),
-                              horizontalArrangement = Arrangement.SpaceBetween,
-                              verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = "Error: $error",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onErrorContainer,
-                                    modifier = Modifier.weight(1f))
-                              }
-                        }
+                    Text("Error: $error", color = MaterialTheme.colorScheme.error)
                   }
             }
           }
@@ -219,7 +179,6 @@ fun ActivityFeedScreen(
       }
 }
 
-/** Format date for headers (Today, Yesterday, or MMM dd, yyyy). */
 private fun formatDateHeader(dateMillis: Long): String {
   val today = Calendar.getInstance()
   today.set(Calendar.HOUR_OF_DAY, 0)

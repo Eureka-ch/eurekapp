@@ -1,7 +1,6 @@
 /*
-Note: This file was co-authored by Claude Code.
-Note: This file was co-authored by Grok.
-*/
+ * This file was co-authored by Claude Code and Gemini.
+ */
 package ch.eureka.eurekapp.model.data.meeting
 
 import ch.eureka.eurekapp.model.data.FirestorePaths
@@ -139,9 +138,9 @@ class FirestoreMeetingRepository(
         .set(participant)
         .await()
 
-    // Log activity to global feed for cross-project visibility
+    // Log activity to global feed so everyone sees all meetings
     ActivityLogger.logActivity(
-        projectId = "global-activities",
+        projectId = meeting.projectId,
         activityType = ActivityType.CREATED,
         entityType = EntityType.MEETING,
         entityId = meeting.meetingID,
@@ -164,7 +163,7 @@ class FirestoreMeetingRepository(
     val currentUserId = auth.currentUser?.uid
     if (currentUserId != null) {
       ActivityLogger.logActivity(
-          projectId = "global-activities",
+          projectId = meeting.projectId,
           activityType = ActivityType.UPDATED,
           entityType = EntityType.MEETING,
           entityId = meeting.meetingID,
@@ -196,15 +195,19 @@ class FirestoreMeetingRepository(
 
         // Log activity to global feed after successful deletion
         val currentUserId = auth.currentUser?.uid
-        if (currentUserId != null && meetingTitle != null) {
-          ActivityLogger.logActivity(
-              projectId = "global-activities",
-              activityType = ActivityType.DELETED,
-              entityType = EntityType.MEETING,
-              entityId = meetingId,
-              userId = currentUserId,
-              metadata = mapOf("title" to meetingTitle))
+        if (currentUserId == null) {
+          throw IllegalArgumentException("User must be logged in.")
         }
+        if (meetingTitle == null) {
+          throw IllegalArgumentException("Title should not be null.")
+        }
+        ActivityLogger.logActivity(
+            projectId = projectId,
+            activityType = ActivityType.DELETED,
+            entityType = EntityType.MEETING,
+            entityId = meetingId,
+            userId = currentUserId,
+            metadata = mapOf("title" to meetingTitle))
       }
 
   override fun getParticipants(projectId: String, meetingId: String): Flow<List<Participant>> =

@@ -11,8 +11,11 @@ import ch.eureka.eurekapp.model.data.activity.ActivityType
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
@@ -25,40 +28,54 @@ class ActivityFeedScreenTest {
 
   private lateinit var viewModel: ActivityFeedViewModel
   private lateinit var repository: ActivityRepository
+  private lateinit var firestore: FirebaseFirestore
+  private lateinit var auth: FirebaseAuth
 
-  private val projectId = "global-activities"
+  private val testUserId = "test-user-123"
 
   @Before
   fun setup() {
     repository = mockk(relaxed = true)
-    val firestore = mockk<FirebaseFirestore>(relaxed = true)
+    firestore = mockk(relaxed = true)
+    auth = mockk(relaxed = true)
+
+    // Mock Firebase auth
+    val firebaseUser = mockk<FirebaseUser>(relaxed = true)
+    every { firebaseUser.uid } returns testUserId
+    every { auth.currentUser } returns firebaseUser
+
+    // Mock Firestore user fetches
     val userDoc = mockk<com.google.firebase.firestore.DocumentSnapshot>(relaxed = true)
-    io.mockk.every { userDoc.getString("displayName") } returns "Test User"
+    every { userDoc.getString("displayName") } returns "Test User"
     val usersCollection = mockk<com.google.firebase.firestore.CollectionReference>(relaxed = true)
     val userDocRef = mockk<com.google.firebase.firestore.DocumentReference>(relaxed = true)
-    io.mockk.every { firestore.collection("users") } returns usersCollection
-    io.mockk.every { usersCollection.document(any()) } returns userDocRef
-    io.mockk.every { userDocRef.get() } returns Tasks.forResult(userDoc)
+    every { firestore.collection("users") } returns usersCollection
+    every { usersCollection.document(any()) } returns userDocRef
+    every { userDocRef.get() } returns Tasks.forResult(userDoc)
 
-    viewModel = ActivityFeedViewModel(repository = repository, firestore = firestore)
+    viewModel = ActivityFeedViewModel(repository = repository, firestore = firestore, auth = auth)
   }
 
   @Test
   fun displaysFilterChipsAndEmptyState() {
-    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
+    coEvery { repository.getActivities(testUserId) } returns flowOf(emptyList())
+
+    composeTestRule.setContent { ActivityFeedScreen(viewModel = viewModel) }
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").assertIsDisplayed()
     composeTestRule.onNodeWithTag("MeetingsFilterChip").assertIsDisplayed()
     composeTestRule.onNodeWithTag("EmptyState").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Select a filter").assertIsDisplayed()
+    composeTestRule.onNodeWithText("No activities found").assertIsDisplayed()
   }
 
   @Test
   fun clickingProjectsFilter_displaysActivities() {
     val activities = listOf(createActivity("1", EntityType.PROJECT, "Test Project"))
-    coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(activities)
+    coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
-    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
+    composeTestRule.setContent { ActivityFeedScreen(viewModel = viewModel) }
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
     composeTestRule.waitForIdle()
@@ -70,9 +87,10 @@ class ActivityFeedScreenTest {
   @Test
   fun clickingMeetingsFilter_displaysActivities() {
     val activities = listOf(createActivity("1", EntityType.MEETING, "Sprint Meeting"))
-    coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(activities)
+    coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
-    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
+    composeTestRule.setContent { ActivityFeedScreen(viewModel = viewModel) }
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag("MeetingsFilterChip").performClick()
     composeTestRule.waitForIdle()
@@ -83,30 +101,34 @@ class ActivityFeedScreenTest {
 
   @Test
   fun deselectingFilter_showsEmptyStateAgain() {
-    coEvery { repository.getActivitiesInProject(projectId, any()) } returns
+    coEvery { repository.getActivities(testUserId) } returns
         flowOf(listOf(createActivity("1", EntityType.PROJECT, "Test")))
 
-    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
+    composeTestRule.setContent { ActivityFeedScreen(viewModel = viewModel) }
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
     composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithTag("ActivitiesList").assertIsDisplayed()
+
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
     composeTestRule.waitForIdle()
 
-    composeTestRule.onNodeWithTag("EmptyState").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("ActivitiesList").assertIsDisplayed()
   }
 
   @Test
   fun filterSelected_noActivities_showsNoActivitiesMessage() {
-    coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(emptyList())
+    coEvery { repository.getActivities(testUserId) } returns flowOf(emptyList())
 
-    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
+    composeTestRule.setContent { ActivityFeedScreen(viewModel = viewModel) }
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
     composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag("EmptyState").assertIsDisplayed()
-    composeTestRule.onNodeWithText("No activities yet").assertIsDisplayed()
+    composeTestRule.onNodeWithText("No activities found").assertIsDisplayed()
   }
 
   @Test
@@ -115,9 +137,10 @@ class ActivityFeedScreenTest {
     val meetingActivities = listOf(createActivity("2", EntityType.MEETING, "Sprint Planning"))
     val allActivities = projectActivities + meetingActivities
 
-    coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(allActivities)
+    coEvery { repository.getActivities(testUserId) } returns flowOf(allActivities)
 
-    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
+    composeTestRule.setContent { ActivityFeedScreen(viewModel = viewModel) }
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
     composeTestRule.waitForIdle()
@@ -134,10 +157,11 @@ class ActivityFeedScreenTest {
         listOf(
             createActivity("1", EntityType.PROJECT, "Project Alpha"),
             createActivity("2", EntityType.PROJECT, "Project Beta"))
-    coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(activities)
-    coEvery { repository.deleteActivity(projectId, "1") } returns Result.success(Unit)
+    coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
+    coEvery { repository.deleteActivity("1") } returns Result.success(Unit)
 
-    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
+    composeTestRule.setContent { ActivityFeedScreen(viewModel = viewModel) }
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
     composeTestRule.waitForIdle()
@@ -154,24 +178,25 @@ class ActivityFeedScreenTest {
 
   @Test
   fun errorState_displaysErrorMessage() {
-    coEvery { repository.getActivitiesInProject(projectId, 100) } returns
+    coEvery { repository.getActivities(testUserId) } returns
         kotlinx.coroutines.flow.flow { throw Exception("Network error") }
 
-    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
+    composeTestRule.setContent { ActivityFeedScreen(viewModel = viewModel) }
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
     composeTestRule.waitForIdle()
 
-    composeTestRule.onNodeWithTag("ErrorMessage").assertIsDisplayed()
     composeTestRule.onNodeWithText("Error: Network error", substring = true).assertIsDisplayed()
   }
 
   @Test
   fun dateHeader_displaysForActivityGroups() {
     val activities = listOf(createActivity("1", EntityType.PROJECT, "Test Project"))
-    coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(activities)
+    coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
-    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
+    composeTestRule.setContent { ActivityFeedScreen(viewModel = viewModel) }
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
     composeTestRule.waitForIdle()
@@ -181,10 +206,11 @@ class ActivityFeedScreenTest {
 
   @Test
   fun loadingState_showsLoadingIndicator() {
-    coEvery { repository.getActivitiesInProject(projectId, 100) } returns
+    coEvery { repository.getActivities(testUserId) } returns
         kotlinx.coroutines.flow.flow { kotlinx.coroutines.delay(Long.MAX_VALUE) }
 
-    composeTestRule.setContent { ActivityFeedScreen(projectId = projectId, viewModel = viewModel) }
+    composeTestRule.setContent { ActivityFeedScreen(viewModel = viewModel) }
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
 
@@ -195,15 +221,14 @@ class ActivityFeedScreenTest {
   @Test
   fun activityClick_triggersCallback() {
     val activities = listOf(createActivity("1", EntityType.PROJECT, "Test Project"))
-    coEvery { repository.getActivitiesInProject(projectId, 100) } returns flowOf(activities)
+    coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
     var clickedEntityId: String? = null
     composeTestRule.setContent {
       ActivityFeedScreen(
-          projectId = projectId,
-          viewModel = viewModel,
-          onActivityClick = { entityId -> clickedEntityId = entityId })
+          viewModel = viewModel, onActivityClick = { entityId -> clickedEntityId = entityId })
     }
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
     composeTestRule.waitForIdle()
@@ -217,11 +242,11 @@ class ActivityFeedScreenTest {
   private fun createActivity(id: String, entityType: EntityType, title: String) =
       Activity(
           activityId = id,
-          projectId = projectId,
+          projectId = "test-project",
           activityType = ActivityType.CREATED,
           entityType = entityType,
           entityId = "entity-$id",
-          userId = "user-1",
+          userId = testUserId,
           timestamp = Timestamp.now(),
           metadata = mapOf("title" to title, "userName" to "Test User"))
 }

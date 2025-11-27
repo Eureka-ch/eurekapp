@@ -72,13 +72,13 @@ object ProfileScreenTestTags {
  *
  * @param viewModel The [ProfileViewModel] managing the screen's state and logic.
  * @param firebaseAuth The [FirebaseAuth] instance for authentication operations.
- * @param onNavigateToActivityFeed Optional callback to navigate to activity feed screen.
+ * @param onNavigateToActivityFeed Callback to navigate to activity feed screen.
  */
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = viewModel(),
     firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance(),
-    onNavigateToActivityFeed: ((String) -> Unit)? = null
+    onNavigateToActivityFeed: () -> Unit = {},
 ) {
   val uiState by viewModel.uiState.collectAsState()
 
@@ -169,19 +169,17 @@ fun ProfileScreen(
 
                   Spacer(modifier = Modifier.height(24.dp))
 
-                  onNavigateToActivityFeed?.let { navigate ->
-                    Button(
-                        onClick = { navigate("global-activities") },
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                        colors =
-                            ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer)) {
-                          Text("🔔 View Activity Feed")
-                        }
+                  Button(
+                      onClick = onNavigateToActivityFeed,
+                      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                      colors =
+                          ButtonDefaults.buttonColors(
+                              containerColor = MaterialTheme.colorScheme.primaryContainer,
+                              contentColor = MaterialTheme.colorScheme.onPrimaryContainer)) {
+                        Text("View Activity Feed")
+                      }
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                  }
+                  Spacer(modifier = Modifier.height(16.dp))
 
                   // Save/Cancel Buttons (shown when editing)
                   if (uiState.isEditing) {

@@ -1,8 +1,9 @@
 /*
- * This file was co-authored by Claude Code.
+ * This file was co-authored by Claude Code and Gemini.
  */
 package ch.eureka.eurekapp.ui.activity
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.FirestorePaths
@@ -11,201 +12,175 @@ import ch.eureka.eurekapp.model.data.activity.ActivityRepository
 import ch.eureka.eurekapp.model.data.activity.ActivityType
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.model.data.activity.FirestoreActivityRepository
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 /**
- * UI state for activity feed with filtering and pagination support.
+ * UI state for the activity feed screen.
  *
- * @property activities List of all activities (enriched with user names)
- * @property activitiesByDate Activities grouped by date (day) for efficient rendering
- * @property isLoading True when loading activities from repository
- * @property errorMsg Error message to display, null if no error
- * @property filterEntityType Current entity type filter (MEETING, FILE, etc.), null if no filter
- * @property filterActivityType Current activity type filter (CREATED, UPDATED, etc.), null if no
- *   filter
- * @property isCompactMode True for compact display mode with fewer items
- * @property limit Maximum number of activities to fetch and display
+ * @property activities The list of activities currently displayed (filtered).
+ * @property allActivities Cache of all fetched activities to enable fast client-side filtering.
+ * @property isLoading Whether the data is currently being fetched.
+ * @property errorMsg An error message if something went wrong, or null otherwise.
+ * @property filterEntityType The currently active entity type filter (e.g., MEETING, PROJECT), or
+ *   null if showing all.
+ * @property filterActivityType The currently active activity type filter (e.g. CREATED, UPDATED),
+ *   or null if showing all.
+ * @property isCompactMode True if UI should use compact mode, false otherwise.
  */
 data class ActivityFeedUIState(
     val activities: List<Activity> = emptyList(),
-    val activitiesByDate: Map<Long, List<Activity>> = emptyMap(),
+    val allActivities: List<Activity> = emptyList(), // Cache for client-side filtering
     val isLoading: Boolean = false,
     val errorMsg: String? = null,
     val filterEntityType: EntityType? = null,
     val filterActivityType: ActivityType? = null,
-    val isCompactMode: Boolean = false,
-    val limit: Int = 20
+    val isCompactMode: Boolean = false
 )
 
 /**
- * ViewModel managing activity feed with real-time updates and filtering.
+ * ViewModel managing the activity feed logic.
  *
- * @property repository Repository for fetching activities from Firestore
- * @property firestore Firestore instance for fetching user display names
+ * It uses a simplified repository pattern where it fetches all allowed activities for the user and
+ * then handles filtering (by Projects or Meetings) in memory.
+ *
+ * @param repository The [ActivityRepository] for data operations.
+ * @param firestore The [FirebaseFirestore] instance (used mostly for enriching data with user
+ *   names).
+ * @param auth The [FirebaseAuth] instance.
  */
 class ActivityFeedViewModel(
     private val repository: ActivityRepository = FirestoreActivityRepository(),
-    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 ) : ViewModel() {
 
   private val _uiState = MutableStateFlow(ActivityFeedUIState())
   val uiState: StateFlow<ActivityFeedUIState> = _uiState
 
-  /**
-   * Group activities by date (day).
-   *
-   * @param activities List of activities to group
-   * @return Map of date (as timestamp in millis) to list of activities for that date
-   */
-  private fun groupActivitiesByDate(activities: List<Activity>): Map<Long, List<Activity>> {
-    return activities.groupBy { activity ->
-      val calendar = java.util.Calendar.getInstance()
-      calendar.time = activity.timestamp.toDate()
-      calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
-      calendar.set(java.util.Calendar.MINUTE, 0)
-      calendar.set(java.util.Calendar.SECOND, 0)
-      calendar.set(java.util.Calendar.MILLISECOND, 0)
-      calendar.timeInMillis
-    }
-  }
-
   private suspend fun enrichActivitiesWithUserNames(activities: List<Activity>): List<Activity> {
     val userIds = activities.map { it.userId }.distinct()
     val userNames = mutableMapOf<String, String>()
 
-    // Fetch user display names from Firestore
     userIds.forEach { userId ->
       try {
         val userDoc = firestore.collection(FirestorePaths.USERS).document(userId).get().await()
         userDoc.getString("displayName")?.let { displayName -> userNames[userId] = displayName }
       } catch (e: Exception) {
-        android.util.Log.e(
-            "ActivityFeedViewModel", "Failed to fetch display name for user: $userId", e)
+        Log.e("ActivityFeedViewModel", e.message ?: "No message.")
       }
     }
 
-    // Add userName to each activity's metadata
     return activities.map { activity ->
       val userName = userNames[activity.userId] ?: "Someone"
       activity.copy(metadata = activity.metadata + ("userName" to userName))
     }
   }
 
+  /** Clears the error messages. */
   fun clearErrorMsg() = _uiState.update { it.copy(errorMsg = null) }
 
-  fun setErrorMsg(msg: String) = _uiState.update { it.copy(errorMsg = msg) }
-
+  /**
+   * Set compact mode flag.
+   *
+   * @param isCompact The new value for the compact mode flag.
+   */
   fun setCompactMode(isCompact: Boolean) {
-    _uiState.update { it.copy(isCompactMode = isCompact, limit = if (isCompact) 10 else 20) }
+    _uiState.update { it.copy(isCompactMode = isCompact) }
   }
 
-  fun loadActivities(projectId: String) {
-    viewModelScope.launch {
-      repository
-          .getActivitiesInProject(projectId, limit = _uiState.value.limit)
-          .onStart { _uiState.update { it.copy(isLoading = true) } }
-          .catch { e -> _uiState.update { it.copy(isLoading = false, errorMsg = e.message) } }
-          .collect { activities ->
-            val enriched = enrichActivitiesWithUserNames(activities)
-            val grouped = groupActivitiesByDate(enriched)
-            _uiState.update {
-              it.copy(isLoading = false, activities = enriched, activitiesByDate = grouped)
-            }
-          }
-    }
-  }
+  /**
+   * Loads the single unified feed for the current user. Fetches EVERYTHING allowed, then applies
+   * local filters if active.
+   */
+  fun loadActivities() {
+    val currentUserId = auth.currentUser?.uid ?: return
 
-  fun loadActivitiesByEntityType(projectId: String, entityType: EntityType) {
-    _uiState.update { it.copy(filterEntityType = entityType) }
     viewModelScope.launch {
+      _uiState.update { it.copy(isLoading = true) }
+
       repository
-          .getActivitiesInProject(
-              projectId, limit = 100) // Fetch more to have enough after filtering
-          .onStart { _uiState.update { it.copy(isLoading = true) } }
+          .getActivities(currentUserId)
           .catch { e -> _uiState.update { it.copy(isLoading = false, errorMsg = e.message) } }
-          .collect { activities ->
-            // Filter by entity type in app code
-            val filtered =
-                activities
-                    .filter { activity ->
-                      when (entityType) {
-                        EntityType.PROJECT ->
-                            activity.entityType == EntityType.PROJECT ||
-                                activity.entityType == EntityType.MEMBER
-                        EntityType.MEETING -> activity.entityType == EntityType.MEETING
-                        else -> activity.entityType == entityType
-                      }
+          .collect { rawActivities ->
+            try {
+              val enriched = enrichActivitiesWithUserNames(rawActivities)
+              _uiState.update { state ->
+                // Apply current filter to new data
+                val filtered =
+                    if (state.filterEntityType != null) {
+                      filterList(enriched, state.filterEntityType)
+                    } else {
+                      enriched
                     }
-                    .take(_uiState.value.limit)
-            val enriched = enrichActivitiesWithUserNames(filtered)
-            val grouped = groupActivitiesByDate(enriched)
-            _uiState.update {
-              it.copy(isLoading = false, activities = enriched, activitiesByDate = grouped)
+                state.copy(isLoading = false, allActivities = enriched, activities = filtered)
+              }
+            } catch (e: Exception) {
+              _uiState.update { it.copy(isLoading = false, errorMsg = e.message) }
             }
           }
     }
   }
 
-  fun loadActivitiesByActivityType(projectId: String, activityType: ActivityType) {
-    _uiState.update { it.copy(filterActivityType = activityType) }
-    viewModelScope.launch {
-      repository
-          .getActivitiesByActivityType(projectId, activityType, limit = _uiState.value.limit)
-          .onStart { _uiState.update { it.copy(isLoading = true) } }
-          .catch { e -> _uiState.update { it.copy(isLoading = false, errorMsg = e.message) } }
-          .collect { activities ->
-            val grouped = groupActivitiesByDate(activities)
-            _uiState.update {
-              it.copy(isLoading = false, activities = activities, activitiesByDate = grouped)
-            }
-          }
+  /**
+   * Applies a filter to the activity feed.
+   *
+   * @param entityType The type of entity to filter by (e.g., [EntityType.MEETING] or
+   *   [EntityType.PROJECT]).
+   */
+  fun applyFilter(entityType: EntityType) {
+    _uiState.update { state ->
+      state.copy(
+          filterEntityType = entityType, activities = filterList(state.allActivities, entityType))
     }
+    if (_uiState.value.allActivities.isEmpty()) loadActivities()
   }
 
+  /** Clears filters to show everything. */
   fun clearFilters() {
-    _uiState.update {
-      it.copy(filterEntityType = null, filterActivityType = null, activities = emptyList())
+    _uiState.update { state ->
+      state.copy(filterEntityType = null, activities = state.allActivities)
+    }
+    if (_uiState.value.allActivities.isEmpty()) loadActivities()
+  }
+
+  private fun filterList(list: List<Activity>, type: EntityType): List<Activity> {
+    return list.filter { activity ->
+      when (type) {
+        EntityType.PROJECT ->
+            activity.entityType == EntityType.PROJECT || activity.entityType == EntityType.MEMBER
+        EntityType.MEETING -> activity.entityType == EntityType.MEETING
+        else -> activity.entityType == type
+      }
     }
   }
 
-  fun refresh(projectId: String) {
-    when {
-      _uiState.value.filterEntityType != null ->
-          loadActivitiesByEntityType(projectId, _uiState.value.filterEntityType!!)
-      _uiState.value.filterActivityType != null ->
-          loadActivitiesByActivityType(projectId, _uiState.value.filterActivityType!!)
-      else -> loadActivities(projectId)
-    }
-  }
-
-  fun deleteActivity(projectId: String, activityId: String) {
+  /**
+   * Deletes an activity.
+   *
+   * @param activityId The unique ID of the activity to delete.
+   */
+  fun deleteActivity(activityId: String) {
     viewModelScope.launch {
-      // Optimistically remove from UI
-      val currentActivities = _uiState.value.activities
-      val currentActivitiesByDate = _uiState.value.activitiesByDate
-      val filteredActivities =
-          currentActivities.filter { activity -> activity.activityId != activityId }
-      val updatedActivitiesByDate = groupActivitiesByDate(filteredActivities)
+      val prevList = _uiState.value.activities
+      val prevAll = _uiState.value.allActivities
 
-      _uiState.update {
-        it.copy(activities = filteredActivities, activitiesByDate = updatedActivitiesByDate)
+      _uiState.update { state ->
+        state.copy(
+            activities = state.activities.filter { it.activityId != activityId },
+            allActivities = state.allActivities.filter { it.activityId != activityId })
       }
 
-      // Delete from repository
-      repository.deleteActivity(projectId, activityId).onFailure { e ->
-        // Restore on failure
-        _uiState.update {
-          it.copy(
-              activities = currentActivities,
-              activitiesByDate = currentActivitiesByDate,
-              errorMsg = e.message)
+      repository.deleteActivity(activityId).onFailure { e ->
+        // Revert on failure
+        _uiState.update { state ->
+          state.copy(activities = prevList, allActivities = prevAll, errorMsg = e.message)
         }
       }
     }
