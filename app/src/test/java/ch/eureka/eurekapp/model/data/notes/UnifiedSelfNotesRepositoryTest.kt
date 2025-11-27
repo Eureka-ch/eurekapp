@@ -56,6 +56,7 @@ class UnifiedSelfNotesRepositoryTest {
     mockkStatic(Log::class)
     every { Log.e(any(), any(), any()) } returns 0
     every { Log.d(any(), any()) } returns 0
+    every { Log.w(any(), any(), any()) } returns 0
     every { auth.currentUser } returns firebaseUser
     every { firebaseUser.uid } returns "testUser"
     every { context.getSystemService(Context.CONNECTIVITY_SERVICE) } returns connectivityManager
@@ -168,7 +169,7 @@ class UnifiedSelfNotesRepositoryTest {
   }
 
   @Test
-  fun `createNote fails if Firestore upload throws exception`() = runTest {
+  fun `createNote handles Firestore failure gracefully (Offline First)`() = runTest {
     mockNetwork(true)
     coEvery { userPreferences.isCloudStorageEnabled } returns flowOf(true)
     coEvery { firestoreRepo.createNote(any()) } throws RuntimeException("Upload failed")
@@ -189,12 +190,23 @@ class UnifiedSelfNotesRepositoryTest {
   }
 
   @Test
-  fun `deleteNote deletes locally and tries cloud if online`() = runTest {
+  fun `deleteNote succeeds if both local and cloud delete succeed`() = runTest {
     mockNetwork(true)
     every { localDao.deleteMessage(any(), any()) } returns 1
     coEvery { firestoreRepo.deleteNote(any()) } returns Result.success(Unit)
     val result = repository.deleteNote("msg1")
     assertTrue(result.isSuccess)
+    verify { localDao.deleteMessage("msg1", "testUser") }
+    coVerify { firestoreRepo.deleteNote("msg1") }
+  }
+
+  @Test
+  fun `deleteNote fails if cloud delete fails`() = runTest {
+    mockNetwork(true)
+    every { localDao.deleteMessage(any(), any()) } returns 1
+    coEvery { firestoreRepo.deleteNote(any()) } returns Result.failure(Exception("Cloud Error"))
+    val result = repository.deleteNote("msg1")
+    assertTrue(result.isFailure)
     verify { localDao.deleteMessage("msg1", "testUser") }
     coVerify { firestoreRepo.deleteNote("msg1") }
   }

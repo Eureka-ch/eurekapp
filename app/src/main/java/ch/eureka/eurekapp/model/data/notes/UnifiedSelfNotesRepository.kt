@@ -118,7 +118,14 @@ class UnifiedSelfNotesRepository(
         localDao.deleteMessage(noteId, userId)
         // Only try to delete from cloud if online
         if (isInternetAvailable()) {
-          firestoreRepo.deleteNote(noteId)
+          val result = firestoreRepo.deleteNote(noteId)
+          if (result.isFailure) {
+            Log.e(
+                "UnifiedSelfNotesRepository",
+                "Cloud deletion failed: $noteId",
+                result.exceptionOrNull())
+            return@withContext Result.failure(result.exceptionOrNull()!!)
+          }
         }
         Result.success(Unit)
       }
