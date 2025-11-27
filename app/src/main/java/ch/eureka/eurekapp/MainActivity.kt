@@ -12,7 +12,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,7 +28,6 @@ import ch.eureka.eurekapp.navigation.NavigationMenu
 import ch.eureka.eurekapp.resources.C
 import ch.eureka.eurekapp.services.notifications.LocalFirestoreMessagingServiceCompanion
 import ch.eureka.eurekapp.ui.authentication.SignInScreen
-import ch.eureka.eurekapp.ui.notifications.NotificationPreferencesScreen
 import ch.eureka.eurekapp.ui.theme.EurekappTheme
 import com.google.firebase.auth.FirebaseAuth
 import okhttp3.OkHttpClient
@@ -54,21 +52,23 @@ class MainActivity : ComponentActivity() {
     ConnectivityObserverProvider.initialize(this)
     setContent {
       EurekappTheme {
-        val notificationType = intent.getStringExtra(LocalFirestoreMessagingServiceCompanion
-            .intentNotificationTypeString)
-        val notificationId = intent.getStringExtra(LocalFirestoreMessagingServiceCompanion
-            .intentNotificationIdString)
-        val notificationProjectId = intent.getStringExtra(LocalFirestoreMessagingServiceCompanion
-            .intentNotificationProjectId)
+        val notificationType =
+            intent.getStringExtra(
+                LocalFirestoreMessagingServiceCompanion.intentNotificationTypeString)
+        val notificationId =
+            intent.getStringExtra(
+                LocalFirestoreMessagingServiceCompanion.intentNotificationIdString)
+        val notificationProjectId =
+            intent.getStringExtra(
+                LocalFirestoreMessagingServiceCompanion.intentNotificationProjectId)
         // A surface container using the 'background' color from the theme
         Surface(
             modifier = Modifier.fillMaxSize().semantics { testTag = C.Tag.main_screen_container },
             color = MaterialTheme.colorScheme.background) {
               Eurekapp(
-                notificationType = notificationType,
-                notificationId = notificationId,
-                notificationProjectId = notificationProjectId
-              )
+                  notificationType = notificationType,
+                  notificationId = notificationId,
+                  notificationProjectId = notificationProjectId)
             }
       }
     }
@@ -89,11 +89,10 @@ fun Eurekapp(
     SignInScreen(credentialManager = credentialManager, onSignedIn = { signedIn = true })
   } else {
     NavigationMenu(
-      notificationType = notificationType,
-      notificationId = notificationId,
-      notificationProjectId = notificationProjectId
-    )
-      //NotificationPreferencesScreen(onFinishedSettingNotifications = {})
+        notificationType = notificationType,
+        notificationId = notificationId,
+        notificationProjectId = notificationProjectId)
+    // NotificationPreferencesScreen(onFinishedSettingNotifications = {})
   }
 }
 

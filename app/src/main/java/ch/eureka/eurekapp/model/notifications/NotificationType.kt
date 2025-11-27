@@ -12,7 +12,7 @@ package ch.eureka.eurekapp.model.notifications
  * @property backendTypeString The type given to this notification by the backend message
  */
 enum class NotificationType(val displayString: String, val backendTypeString: String) {
-    GENERAL_NOTIFICATION("General", "general"),
-    MEETING_NOTIFICATION("Meetings", "meeting"),
-    MESSAGE_NOTIFICATION("Message", "message")
+  GENERAL_NOTIFICATION("General", "general"),
+  MEETING_NOTIFICATION("Meetings", "meeting"),
+  MESSAGE_NOTIFICATION("Message", "message")
 }

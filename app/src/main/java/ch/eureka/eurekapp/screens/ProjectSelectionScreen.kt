@@ -98,18 +98,16 @@ fun ProjectSelectionScreen(
     onGenerateInviteRequest: (String) -> Unit = {},
     projectSelectionScreenViewModel: ProjectSelectionScreenViewModel = viewModel()
 ) {
-    val context = LocalContext.current
-    var hasNotificationsPermission by remember {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
-            mutableStateOf(
-                ContextCompat.checkSelfPermission(context, Manifest.permission.
-                POST_NOTIFICATIONS) ==
-                        PackageManager.PERMISSION_GRANTED
-            )
-        }else{
-            mutableStateOf(true)
-        }
+  val context = LocalContext.current
+  var hasNotificationsPermission by remember {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      mutableStateOf(
+          ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
+              PackageManager.PERMISSION_GRANTED)
+    } else {
+      mutableStateOf(true)
     }
+  }
 
   val currentUser =
       remember { projectSelectionScreenViewModel.getCurrentUser() }.collectAsState(null)
@@ -117,24 +115,24 @@ fun ProjectSelectionScreen(
   val projectsList =
       remember { projectSelectionScreenViewModel.getProjectsForUser() }.collectAsState(listOf())
 
-    val launcher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
-                isGranted ->
-            hasNotificationsPermission = isGranted
-            if(isGranted){
-                Toast.makeText(context, "Notifications permission granted!",
-                    Toast.LENGTH_SHORT).show()
-            }else{
-                Toast.makeText(context, "You will not be able to receive notifications!",
-                    Toast.LENGTH_SHORT).show()
-            }
+  val launcher =
+      rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
+          isGranted ->
+        hasNotificationsPermission = isGranted
+        if (isGranted) {
+          Toast.makeText(context, "Notifications permission granted!", Toast.LENGTH_SHORT).show()
+        } else {
+          Toast.makeText(
+                  context, "You will not be able to receive notifications!", Toast.LENGTH_SHORT)
+              .show()
         }
+      }
 
-    LaunchedEffect(Unit) {
-        if(!hasNotificationsPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
-            launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
+  LaunchedEffect(Unit) {
+    if (!hasNotificationsPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
+  }
 
   Column(
       modifier = Modifier.fillMaxSize(),

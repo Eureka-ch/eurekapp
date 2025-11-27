@@ -1,4 +1,4 @@
-//Portions of this code were generated with the help of Claude Sonnet 4.5
+// Portions of this code were generated with the help of Claude Sonnet 4.5
 package ch.eureka.eurekapp.ui.notifications
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -20,194 +20,162 @@ import org.junit.Test
 
 class NotificationPreferencesScreenTest {
 
-    @get:Rule
-    val composeTestRule = createComposeRule()
+  @get:Rule val composeTestRule = createComposeRule()
 
-    private lateinit var mockUserRepository: UserRepository
-    private lateinit var viewModel: NotificationSettingsViewModel
+  private lateinit var mockUserRepository: UserRepository
+  private lateinit var viewModel: NotificationSettingsViewModel
 
-    private val mockUser = User(
-        uid = "test123",
-        displayName = "Test User",
-        email = "test@test.com",
-        photoUrl = "",
-        notificationSettings = emptyMap(),
-        fcmToken = "token123"
-    )
+  private val mockUser =
+      User(
+          uid = "test123",
+          displayName = "Test User",
+          email = "test@test.com",
+          photoUrl = "",
+          notificationSettings = emptyMap(),
+          fcmToken = "token123")
 
-    @Before
-    fun setup() {
-        mockUserRepository = mockk(relaxed = true)
-        every { mockUserRepository.getCurrentUser() } returns flowOf(mockUser)
-        coEvery { mockUserRepository.saveUser(any()) } returns Result.success(Unit)
-        viewModel = NotificationSettingsViewModel(mockUserRepository)
+  @Before
+  fun setup() {
+    mockUserRepository = mockk(relaxed = true)
+    every { mockUserRepository.getCurrentUser() } returns flowOf(mockUser)
+    coEvery { mockUserRepository.saveUser(any()) } returns Result.success(Unit)
+    viewModel = NotificationSettingsViewModel(mockUserRepository)
+  }
+
+  @Test
+  fun notificationPreferencesScreenDisplaysCorrectly() {
+    composeTestRule.setContent {
+      NotificationPreferencesScreen(
+          notificationSettingsViewModel = viewModel, onFinishedSettingNotifications = {})
     }
 
-    @Test
-    fun notificationPreferencesScreenDisplaysCorrectly() {
-        composeTestRule.setContent {
-            NotificationPreferencesScreen(
-                notificationSettingsViewModel = viewModel,
-                onFinishedSettingNotifications = {}
-            )
-        }
+    composeTestRule.onNodeWithTag(NotificationPreferencesTestTags.SCREEN).assertIsDisplayed()
+  }
 
-        composeTestRule.onNodeWithTag(NotificationPreferencesTestTags.SCREEN).assertIsDisplayed()
+  @Test
+  fun notificationPreferencesScreenBackButtonWorks() {
+    var backClicked = false
+
+    composeTestRule.setContent {
+      NotificationPreferencesScreen(
+          notificationSettingsViewModel = viewModel,
+          onFinishedSettingNotifications = { backClicked = true })
     }
 
-    @Test
-    fun notificationPreferencesScreenBackButtonWorks() {
-        var backClicked = false
+    composeTestRule.onNodeWithTag(NotificationPreferencesTestTags.BACK_BUTTON).performClick()
+    assert(backClicked)
+  }
 
-        composeTestRule.setContent {
-            NotificationPreferencesScreen(
-                notificationSettingsViewModel = viewModel,
-                onFinishedSettingNotifications = { backClicked = true }
-            )
-        }
-
-        composeTestRule.onNodeWithTag(NotificationPreferencesTestTags.BACK_BUTTON).performClick()
-        assert(backClicked)
+  @Test
+  fun notificationPreferencesScreenDisplaysMeetingCategory() {
+    composeTestRule.setContent {
+      NotificationPreferencesScreen(
+          notificationSettingsViewModel = viewModel, onFinishedSettingNotifications = {})
     }
 
-    @Test
-    fun notificationPreferencesScreenDisplaysMeetingCategory() {
-        composeTestRule.setContent {
-            NotificationPreferencesScreen(
-                notificationSettingsViewModel = viewModel,
-                onFinishedSettingNotifications = {}
-            )
-        }
+    composeTestRule.onNodeWithText("Meeting Notifications:").assertIsDisplayed()
+  }
 
-        composeTestRule.onNodeWithText("Meeting Notifications:").assertIsDisplayed()
+  @Test
+  fun notificationPreferencesScreenDisplaysMessageCategory() {
+    composeTestRule.setContent {
+      NotificationPreferencesScreen(
+          notificationSettingsViewModel = viewModel, onFinishedSettingNotifications = {})
     }
 
-    @Test
-    fun notificationPreferencesScreenDisplaysMessageCategory() {
-        composeTestRule.setContent {
-            NotificationPreferencesScreen(
-                notificationSettingsViewModel = viewModel,
-                onFinishedSettingNotifications = {}
-            )
-        }
+    composeTestRule.onNodeWithText("Message Notifications:").assertIsDisplayed()
+  }
 
-        composeTestRule.onNodeWithText("Message Notifications:").assertIsDisplayed()
+  @Test
+  fun notificationPreferencesScreenDisplaysGeneralCategory() {
+    composeTestRule.setContent {
+      NotificationPreferencesScreen(
+          notificationSettingsViewModel = viewModel, onFinishedSettingNotifications = {})
     }
 
-    @Test
-    fun notificationPreferencesScreenDisplaysGeneralCategory() {
-        composeTestRule.setContent {
-            NotificationPreferencesScreen(
-                notificationSettingsViewModel = viewModel,
-                onFinishedSettingNotifications = {}
-            )
-        }
+    composeTestRule.onNodeWithText("General Notifications:").assertIsDisplayed()
+  }
 
-        composeTestRule.onNodeWithText("General Notifications:").assertIsDisplayed()
+  @Test
+  fun notificationOptionsCategoryDisplaysTitle() {
+    composeTestRule.setContent {
+      NotificationOptionsCategory(title = "Test Category", optionsList = emptyList())
     }
 
-    @Test
-    fun notificationOptionsCategoryDisplaysTitle() {
-        composeTestRule.setContent {
-            NotificationOptionsCategory(
-                title = "Test Category",
-                optionsList = emptyList()
-            )
-        }
+    composeTestRule.onNodeWithText("Test Category").assertIsDisplayed()
+  }
 
-        composeTestRule.onNodeWithText("Test Category").assertIsDisplayed()
-    }
-
-    @Test
-    fun notificationOptionsCategoryDisplaysOptions() {
-        val options = listOf(
+  @Test
+  fun notificationOptionsCategoryDisplaysOptions() {
+    val options =
+        listOf(
             NotificationSettingState(
-                UserNotificationSettingsKeys.ON_MEETING_SCHEDULED_NOTIFY,
-                true,
-                {}
-            )
-        )
+                UserNotificationSettingsKeys.ON_MEETING_SCHEDULED_NOTIFY, true, {}))
 
-        composeTestRule.setContent {
-            NotificationOptionsCategory(
-                title = "Test",
-                optionsList = options
-            )
-        }
-
-        composeTestRule.onNodeWithText(UserNotificationSettingsKeys.ON_MEETING_SCHEDULED_NOTIFY.displayName)
-            .assertIsDisplayed()
+    composeTestRule.setContent {
+      NotificationOptionsCategory(title = "Test", optionsList = options)
     }
 
-    @Test
-    fun optionBooleanSwitchDisplaysTitle() {
-        composeTestRule.setContent {
-            OptionBooleanSwitch(
-                value = true,
-                title = "Test Option",
-                onValueChange = {}
-            )
-        }
+    composeTestRule
+        .onNodeWithText(UserNotificationSettingsKeys.ON_MEETING_SCHEDULED_NOTIFY.displayName)
+        .assertIsDisplayed()
+  }
 
-        composeTestRule.onNodeWithText("Test Option").assertIsDisplayed()
+  @Test
+  fun optionBooleanSwitchDisplaysTitle() {
+    composeTestRule.setContent {
+      OptionBooleanSwitch(value = true, title = "Test Option", onValueChange = {})
     }
 
-    @Test
-    fun optionBooleanSwitchIsDisplayed() {
-        composeTestRule.setContent {
-            OptionBooleanSwitch(
-                value = false,
-                title = "Test Switch",
-                onValueChange = {}
-            )
-        }
+    composeTestRule.onNodeWithText("Test Option").assertIsDisplayed()
+  }
 
-        composeTestRule.onNodeWithTag("${NotificationPreferencesTestTags.OPTION_SWITCH}_Test Switch")
-            .assertIsDisplayed()
+  @Test
+  fun optionBooleanSwitchIsDisplayed() {
+    composeTestRule.setContent {
+      OptionBooleanSwitch(value = false, title = "Test Switch", onValueChange = {})
     }
 
-    @Test
-    fun optionBooleanSwitchCanBeToggled() {
-        var switchValue = false
+    composeTestRule
+        .onNodeWithTag("${NotificationPreferencesTestTags.OPTION_SWITCH}_Test Switch")
+        .assertIsDisplayed()
+  }
 
-        composeTestRule.setContent {
-            OptionBooleanSwitch(
-                value = switchValue,
-                title = "Toggle Test",
-                onValueChange = { switchValue = it }
-            )
-        }
+  @Test
+  fun optionBooleanSwitchCanBeToggled() {
+    var switchValue = false
 
-        composeTestRule.onNodeWithTag("${NotificationPreferencesTestTags.OPTION_SWITCH}_switch_Toggle Test")
-            .performClick()
-
-        assert(switchValue)
+    composeTestRule.setContent {
+      OptionBooleanSwitch(
+          value = switchValue, title = "Toggle Test", onValueChange = { switchValue = it })
     }
 
-    @Test
-    fun notificationSettingStateDataClassWorks() {
-        val state = NotificationSettingState(
-            UserNotificationSettingsKeys.ON_NEW_MESSAGE_NOTIFY,
-            true,
-            {}
-        )
+    composeTestRule
+        .onNodeWithTag("${NotificationPreferencesTestTags.OPTION_SWITCH}_switch_Toggle Test")
+        .performClick()
 
-        assert(state.userNotificationSettingsKey == UserNotificationSettingsKeys.ON_NEW_MESSAGE_NOTIFY)
-        assert(state.value)
+    assert(switchValue)
+  }
+
+  @Test
+  fun notificationSettingStateDataClassWorks() {
+    val state =
+        NotificationSettingState(UserNotificationSettingsKeys.ON_NEW_MESSAGE_NOTIFY, true, {})
+
+    assert(state.userNotificationSettingsKey == UserNotificationSettingsKeys.ON_NEW_MESSAGE_NOTIFY)
+    assert(state.value)
+  }
+
+  @Test
+  fun notificationPreferencesScreenAllNotificationKeysDisplayed() {
+    composeTestRule.setContent {
+      NotificationPreferencesScreen(
+          notificationSettingsViewModel = viewModel, onFinishedSettingNotifications = {})
     }
 
-    @Test
-    fun notificationPreferencesScreenAllNotificationKeysDisplayed() {
-        composeTestRule.setContent {
-            NotificationPreferencesScreen(
-                notificationSettingsViewModel = viewModel,
-                onFinishedSettingNotifications = {}
-            )
-        }
-
-        // Verify all notification setting keys are displayed
-        UserNotificationSettingsKeys.entries.forEach { key ->
-            composeTestRule.onNodeWithText(key.displayName).assertIsDisplayed()
-        }
+    // Verify all notification setting keys are displayed
+    UserNotificationSettingsKeys.entries.forEach { key ->
+      composeTestRule.onNodeWithText(key.displayName).assertIsDisplayed()
     }
+  }
 }

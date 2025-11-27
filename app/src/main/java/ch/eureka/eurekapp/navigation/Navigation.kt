@@ -168,30 +168,29 @@ fun NavigationMenu(
           memberIds = listOf(auth.currentUser?.uid ?: "unknown"),
       )
 
-    //Handle the case where the app has been started by a notification
-  LaunchedEffect(
-        notificationType, notificationId, notificationProjectId
-    ) {
-        if(notificationType != null){
-            when(notificationType){
-                NotificationType.MEETING_NOTIFICATION.backendTypeString -> {
-                    Log.d("Notification handling", notificationType)
-                    Log.d("Notification handling", notificationProjectId.toString())
-                    Log.d("Notification handling", notificationId.toString())
-                    if(notificationId != null && notificationProjectId != null){
-                        navigationController.navigate(Route.MeetingsSection.MeetingDetail(
-                            projectId = notificationProjectId, meetingId = notificationId))
-                    }
-                }
-                NotificationType.MESSAGE_NOTIFICATION.backendTypeString -> {
-                    //TODO fill this when we make the chat screen
-                }
-                else -> {
-                    //Do nothing
-                }
-            }
+  // Handle the case where the app has been started by a notification
+  LaunchedEffect(notificationType, notificationId, notificationProjectId) {
+    if (notificationType != null) {
+      when (notificationType) {
+        NotificationType.MEETING_NOTIFICATION.backendTypeString -> {
+          Log.d("Notification handling", notificationType)
+          Log.d("Notification handling", notificationProjectId.toString())
+          Log.d("Notification handling", notificationId.toString())
+          if (notificationId != null && notificationProjectId != null) {
+            navigationController.navigate(
+                Route.MeetingsSection.MeetingDetail(
+                    projectId = notificationProjectId, meetingId = notificationId))
+          }
         }
+        NotificationType.MESSAGE_NOTIFICATION.backendTypeString -> {
+          // TODO fill this when we make the chat screen
+        }
+        else -> {
+          // Do nothing
+        }
+      }
     }
+  }
 
   Scaffold(
       containerColor = Color.White,

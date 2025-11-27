@@ -36,8 +36,7 @@ class ProjectSelectionScreenTest : TestCase() {
   val notificationPermissionRule: GrantPermissionRule =
       GrantPermissionRule.grant(android.Manifest.permission.POST_NOTIFICATIONS)
 
-
-    private class MockedProjectsRepository : ProjectRepository {
+  private class MockedProjectsRepository : ProjectRepository {
     override fun getProjectById(projectId: String): Flow<Project?> {
       if (projectId == fakeProject1.projectId) {
         return flowOf(fakeProject1)
@@ -112,12 +111,9 @@ class ProjectSelectionScreenTest : TestCase() {
       TODO("Not yet implemented")
     }
 
-      override suspend fun updateFcmToken(
-          userId: String,
-          fcmToken: String
-      ): Result<Unit> {
-          TODO("Not yet implemented")
-      }
+    override suspend fun updateFcmToken(userId: String, fcmToken: String): Result<Unit> {
+      TODO("Not yet implemented")
+    }
   }
 
   @Test

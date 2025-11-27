@@ -62,12 +62,12 @@ class FirestoreUserRepository(
         .await()
   }
 
-    override suspend fun updateFcmToken(userId: String, fcmToken: String): Result<Unit> =
-        runCatching {
+  override suspend fun updateFcmToken(userId: String, fcmToken: String): Result<Unit> =
+      runCatching {
         firestore
             .collection(FirestorePaths.USERS)
             .document(userId)
             .update("fcmToken", fcmToken)
             .await()
-    }
+      }
 }

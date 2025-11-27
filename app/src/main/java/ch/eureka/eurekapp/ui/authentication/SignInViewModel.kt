@@ -22,8 +22,6 @@ import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.messaging.FirebaseMessaging
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -220,25 +218,22 @@ class SignInViewModel(
       }
     }
   }
-    /**
-     * Update users fcm Token in order to send notifications to the user
-     * */
-    fun updateUserFcmToken(){
-        viewModelScope.launch {
-            val newToken = FirebaseMessaging.getInstance().token.await()
-            val currentUser = userRepository.getCurrentUser().first()
-            var retries = 0.0
-            checkNotNull(currentUser)
-            if(currentUser.fcmToken != newToken){
-                do {
-                    val result = userRepository.updateFcmToken(currentUser.uid,
-                        newToken)
-                    if(result.isFailure){
-                        delay(1000L * Math.exp(retries).toLong())
-                        retries += 1
-                    }
-                }while(result.isFailure)
-            }
-        }
+  /** Update users fcm Token in order to send notifications to the user */
+  fun updateUserFcmToken() {
+    viewModelScope.launch {
+      val newToken = FirebaseMessaging.getInstance().token.await()
+      val currentUser = userRepository.getCurrentUser().first()
+      var retries = 0.0
+      checkNotNull(currentUser)
+      if (currentUser.fcmToken != newToken) {
+        do {
+          val result = userRepository.updateFcmToken(currentUser.uid, newToken)
+          if (result.isFailure) {
+            delay(1000L * Math.exp(retries).toLong())
+            retries += 1
+          }
+        } while (result.isFailure)
+      }
     }
+  }
 }
