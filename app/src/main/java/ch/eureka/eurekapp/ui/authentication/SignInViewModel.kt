@@ -232,6 +232,9 @@ class SignInViewModel(
           if (result.isFailure) {
             delay(1000L * exp(retries).toLong())
             retries += 1
+            if (retries >= 4) {
+              break
+            }
           }
         } while (result.isFailure)
       }
