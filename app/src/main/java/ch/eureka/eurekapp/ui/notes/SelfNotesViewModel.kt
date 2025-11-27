@@ -170,6 +170,10 @@ constructor(
   fun sendNote() {
     val currentMessage = _currentMessage.value.trim()
     if (currentMessage.isEmpty()) return
+    if (currentMessage.length > 5000) {
+      _infoMsg.value = "Note too long (max 5000 characters)"
+      return
+    }
 
     _isSending.value = true
 
