@@ -6,11 +6,9 @@ import ch.eureka.eurekapp.model.data.template.TaskTemplate
 import ch.eureka.eurekapp.model.data.template.TaskTemplateRepository
 import ch.eureka.eurekapp.model.data.template.TaskTemplateSchema
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
-import ch.eureka.eurekapp.model.data.template.validation.TemplateValidation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class EditTemplateViewModel(
@@ -27,6 +25,8 @@ class EditTemplateViewModel(
 
   private val _loadError = MutableStateFlow<String?>(null)
   val loadError: StateFlow<String?> = _loadError.asStateFlow()
+
+  private val ops = TemplateEditorOperations(_state)
 
   init {
     viewModelScope.launch {
@@ -47,59 +47,28 @@ class EditTemplateViewModel(
     }
   }
 
-  fun updateTitle(title: String) {
-    _state.update { it.updateTitle(title).setTitleError(TemplateValidation.validateTitle(title)) }
-  }
+  fun updateTitle(title: String) = ops.updateTitle(title)
 
-  fun updateDescription(description: String) {
-    _state.update { it.updateDescription(description) }
-  }
+  fun updateDescription(description: String) = ops.updateDescription(description)
 
-  fun addField(field: FieldDefinition) {
-    _state.update { it.addField(field) }
-    validateField(field.id)
-  }
+  fun addField(field: FieldDefinition) = ops.addField(field)
 
-  fun updateField(fieldId: String, field: FieldDefinition) {
-    _state.update { it.updateField(fieldId) { field } }
-    validateField(fieldId)
-  }
+  fun updateField(fieldId: String, field: FieldDefinition) = ops.updateField(fieldId, field)
 
-  fun removeField(fieldId: String) {
-    _state.update { it.removeField(fieldId) }
-  }
+  fun removeField(fieldId: String) = ops.removeField(fieldId)
 
-  fun duplicateField(fieldId: String) {
-    _state.update { it.duplicateField(fieldId) }
-    _state.value.fields.find { it.label.endsWith(" (copy)") }?.id?.let { setEditingFieldId(it) }
-  }
+  fun duplicateField(fieldId: String) =
+      ops.duplicateField(fieldId)?.let { ops.setEditingFieldId(it) }
 
-  fun reorderFields(fromIndex: Int, toIndex: Int) {
-    _state.update { it.reorderFields(fromIndex, toIndex) }
-  }
+  fun reorderFields(fromIndex: Int, toIndex: Int) = ops.reorderFields(fromIndex, toIndex)
 
-  fun setEditingFieldId(fieldId: String?) {
-    _state.update { it.setEditingFieldId(fieldId) }
-  }
+  fun setEditingFieldId(fieldId: String?) = ops.setEditingFieldId(fieldId)
 
-  private fun validateField(fieldId: String) {
-    val field = _state.value.fields.find { it.id == fieldId } ?: return
-    val error = TemplateValidation.validateFieldDefinition(field)
-    _state.update { it.setFieldError(fieldId, error) }
-  }
-
-  fun validateAll(): Boolean {
-    _state.update { it.setTitleError(TemplateValidation.validateTitle(it.title)) }
-    if (TemplateValidation.validateFields(_state.value.fields).isFailure) return false
-    _state.value.fields.forEach { validateField(it.id) }
-    return _state.value.canSave
-  }
+  fun validateAll() = ops.validateAll()
 
   suspend fun save(): Result<Unit> {
-    if (!validateAll()) return Result.failure(Exception("Validation failed"))
-
-    _state.update { it.setSaving(true) }
-
+    if (!ops.validateAll()) return Result.failure(Exception("Validation failed"))
+    ops.setSaving(true)
     val template =
         TaskTemplate(
             templateID = templateId,
@@ -108,7 +77,6 @@ class EditTemplateViewModel(
             description = _state.value.description,
             definedFields = TaskTemplateSchema(_state.value.fields),
             createdBy = "")
-
-    return repository.updateTemplate(template).also { _state.update { it.setSaving(false) } }
+    return repository.updateTemplate(template).also { ops.setSaving(false) }
   }
 }
