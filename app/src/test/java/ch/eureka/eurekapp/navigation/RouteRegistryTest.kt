@@ -35,9 +35,12 @@ class RouteRegistryTest {
     assertTrue(
         "TasksSection should contain AutoTaskAssignment",
         registeredRoutes.any { it.simpleName == "AutoTaskAssignment" })
+    assertTrue(
+        "TasksSection should contain TaskDependence",
+        registeredRoutes.any { it.simpleName == "TaskDependence" })
 
-    // Verify we have the expected number of routes (5 as of now)
-    assertEquals("TasksSection should have 5 routes", 5, registeredRoutes.size)
+    // Verify we have the expected number of routes (6 as of now)
+    assertEquals("TasksSection should have 6 routes", 6, registeredRoutes.size)
   }
 
   @Test
