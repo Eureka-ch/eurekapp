@@ -43,19 +43,20 @@ class FirebaseFileStorageRepository(
 
     val projectId = extractProjectIdFromPath(storagePath)
     val fileName = extractFileNameFromPath(storagePath)
-    if (projectId == null) {
-      throw IllegalArgumentException("Extracted project ID is null")
+
+    // Only log activity for project-related files
+    if (projectId != null && fileName.isNotBlank()) {
+      ActivityLogger.logActivity(
+          projectId = projectId,
+          activityType = ActivityType.UPLOADED,
+          entityType = EntityType.FILE,
+          entityId = downloadUrl,
+          userId = currentUser.uid,
+          metadata = mapOf("title" to fileName))
+    } else {
+      android.util.Log.d(
+          "FirebaseFileStorage", "Skipping activity log for non-project file: $storagePath")
     }
-    if (fileName.isBlank()) {
-      throw IllegalArgumentException("Extracted file name is blank.")
-    }
-    ActivityLogger.logActivity(
-        projectId = projectId,
-        activityType = ActivityType.UPLOADED,
-        entityType = EntityType.FILE,
-        entityId = downloadUrl,
-        userId = currentUser.uid,
-        metadata = mapOf("title" to fileName))
 
     downloadUrl
   }

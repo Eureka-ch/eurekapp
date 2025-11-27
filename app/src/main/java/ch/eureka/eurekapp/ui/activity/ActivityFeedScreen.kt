@@ -133,18 +133,7 @@ fun ActivityFeedScreen(
                     modifier = Modifier.fillMaxSize().testTag("ActivitiesList"),
                     contentPadding = PaddingValues(vertical = Spacing.md),
                     verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                      val activitiesByDate =
-                          uiState.activities.groupBy { activity ->
-                            val calendar = Calendar.getInstance()
-                            calendar.time = activity.timestamp.toDate()
-                            calendar.set(Calendar.HOUR_OF_DAY, 0)
-                            calendar.set(Calendar.MINUTE, 0)
-                            calendar.set(Calendar.SECOND, 0)
-                            calendar.set(Calendar.MILLISECOND, 0)
-                            calendar.timeInMillis
-                          }
-
-                      activitiesByDate.forEach { (dateMillis, activities) ->
+                      uiState.activitiesByDate.forEach { (dateMillis, activities) ->
                         item(key = "header_$dateMillis") {
                           Text(
                               text = formatDateHeader(dateMillis),

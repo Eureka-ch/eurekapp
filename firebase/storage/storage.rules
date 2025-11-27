@@ -20,7 +20,8 @@ service firebase.storage {
     match /profilePhotos/{filename} {
       allow read: if isAuthenticated();  // Public read access
       allow write, delete: if isAuthenticated()
-                           && filename.matches(request.auth.uid + '\\.[a-zA-Z0-9]+');
+                           && filename.split('\\.')[0] == request.auth.uid
+                           && filename.split('\\.').size() == 2;
     }
 
     // User personal files - users can only access their own files

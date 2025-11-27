@@ -14,6 +14,7 @@ import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.model.data.activity.FirestoreActivityRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.Calendar
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -26,6 +27,7 @@ import kotlinx.coroutines.tasks.await
  *
  * @property activities The list of activities currently displayed (filtered).
  * @property allActivities Cache of all fetched activities to enable fast client-side filtering.
+ * @property activitiesByDate Activities grouped by date (timestamp in millis as key).
  * @property isLoading Whether the data is currently being fetched.
  * @property errorMsg An error message if something went wrong, or null otherwise.
  * @property filterEntityType The currently active entity type filter (e.g., MEETING, PROJECT), or
@@ -37,6 +39,7 @@ import kotlinx.coroutines.tasks.await
 data class ActivityFeedUIState(
     val activities: List<Activity> = emptyList(),
     val allActivities: List<Activity> = emptyList(), // Cache for client-side filtering
+    val activitiesByDate: Map<Long, List<Activity>> = emptyMap(),
     val isLoading: Boolean = false,
     val errorMsg: String? = null,
     val filterEntityType: EntityType? = null,
@@ -63,6 +66,24 @@ class ActivityFeedViewModel(
 
   private val _uiState = MutableStateFlow(ActivityFeedUIState())
   val uiState: StateFlow<ActivityFeedUIState> = _uiState
+
+  /**
+   * Groups activities by date (normalized to start of day).
+   *
+   * @param activities List of activities to group.
+   * @return Map with date in millis as key and list of activities as value.
+   */
+  private fun groupActivitiesByDate(activities: List<Activity>): Map<Long, List<Activity>> {
+    return activities.groupBy { activity ->
+      val calendar = Calendar.getInstance()
+      calendar.time = activity.timestamp.toDate()
+      calendar.set(Calendar.HOUR_OF_DAY, 0)
+      calendar.set(Calendar.MINUTE, 0)
+      calendar.set(Calendar.SECOND, 0)
+      calendar.set(Calendar.MILLISECOND, 0)
+      calendar.timeInMillis
+    }
+  }
 
   private suspend fun enrichActivitiesWithUserNames(activities: List<Activity>): List<Activity> {
     val userIds = activities.map { it.userId }.distinct()
@@ -119,7 +140,12 @@ class ActivityFeedViewModel(
                     } else {
                       enriched
                     }
-                state.copy(isLoading = false, allActivities = enriched, activities = filtered)
+                val groupedByDate = groupActivitiesByDate(filtered)
+                state.copy(
+                    isLoading = false,
+                    allActivities = enriched,
+                    activities = filtered,
+                    activitiesByDate = groupedByDate)
               }
             } catch (e: Exception) {
               _uiState.update { it.copy(isLoading = false, errorMsg = e.message) }
@@ -136,8 +162,10 @@ class ActivityFeedViewModel(
    */
   fun applyFilter(entityType: EntityType) {
     _uiState.update { state ->
+      val filtered = filterList(state.allActivities, entityType)
+      val groupedByDate = groupActivitiesByDate(filtered)
       state.copy(
-          filterEntityType = entityType, activities = filterList(state.allActivities, entityType))
+          filterEntityType = entityType, activities = filtered, activitiesByDate = groupedByDate)
     }
     if (_uiState.value.allActivities.isEmpty()) loadActivities()
   }
@@ -145,7 +173,11 @@ class ActivityFeedViewModel(
   /** Clears filters to show everything. */
   fun clearFilters() {
     _uiState.update { state ->
-      state.copy(filterEntityType = null, activities = state.allActivities)
+      val groupedByDate = groupActivitiesByDate(state.allActivities)
+      state.copy(
+          filterEntityType = null,
+          activities = state.allActivities,
+          activitiesByDate = groupedByDate)
     }
     if (_uiState.value.allActivities.isEmpty()) loadActivities()
   }
@@ -170,17 +202,25 @@ class ActivityFeedViewModel(
     viewModelScope.launch {
       val prevList = _uiState.value.activities
       val prevAll = _uiState.value.allActivities
+      val prevGrouped = _uiState.value.activitiesByDate
 
       _uiState.update { state ->
+        val filtered = state.activities.filter { it.activityId != activityId }
+        val groupedByDate = groupActivitiesByDate(filtered)
         state.copy(
-            activities = state.activities.filter { it.activityId != activityId },
-            allActivities = state.allActivities.filter { it.activityId != activityId })
+            activities = filtered,
+            allActivities = state.allActivities.filter { it.activityId != activityId },
+            activitiesByDate = groupedByDate)
       }
 
       repository.deleteActivity(activityId).onFailure { e ->
         // Revert on failure
         _uiState.update { state ->
-          state.copy(activities = prevList, allActivities = prevAll, errorMsg = e.message)
+          state.copy(
+              activities = prevList,
+              allActivities = prevAll,
+              activitiesByDate = prevGrouped,
+              errorMsg = e.message)
         }
       }
     }

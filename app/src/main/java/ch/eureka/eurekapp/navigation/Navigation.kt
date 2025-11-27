@@ -270,7 +270,8 @@ fun NavigationMenu() {
               composable<Route.ConversationsSection.Conversations> {
                 ConversationListScreen(
                     onCreateConversation = {
-                      navigationController.navigate(Route.ConversationsSection.CreateConversation)
+                      navigationController.navigate(
+                          Route.ConversationsSection.CreateConversation(projectId = testProjectId))
                     },
                     onConversationClick = { conversationId ->
                       navigationController.navigate(
