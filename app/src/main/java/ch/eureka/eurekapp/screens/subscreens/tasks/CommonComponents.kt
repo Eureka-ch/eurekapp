@@ -239,30 +239,43 @@ fun AttachmentsList(
     downloadedUrls: Set<String> = emptySet()
 ) {
   attachments.forEachIndexed { index, attachment ->
-    Row(modifier = modifier) {
-      when (attachment) {
-        is Attachment.Remote -> {
-          val isDownloaded = downloadedUrls.contains(attachment.url)
-          if (!isConnected && !isDownloaded) {
-            Text(
-                "Photo ${index + 1}: Not downloaded",
-                modifier = Modifier.testTag(CommonTaskTestTags.ATTACHMENT_OFFLINE_MESSAGE))
-          } else {
-            Text("Photo ${index + 1}")
-            if (!isReadOnly && onDelete != null) {
-              IconButton(
-                  onClick = { onDelete(index) },
-                  modifier = Modifier.testTag(CommonTaskTestTags.DELETE_PHOTO)) {
-                    Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
-                  }
-            }
-            PhotoViewer(
-                attachment.url, modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.PHOTO))
-          }
-        }
-        is Attachment.Local -> {
-          Text("Photo ${index + 1}")
-          if (!isReadOnly && onDelete != null) {
+    AttachmentItem(
+        index = index,
+        attachment = attachment,
+        onDelete = onDelete,
+        isReadOnly = isReadOnly,
+        isConnected = isConnected,
+        downloadedUrls = downloadedUrls,
+        modifier = modifier)
+  }
+}
+
+@Composable
+private fun AttachmentItem(
+    index: Int,
+    attachment: Attachment,
+    onDelete: ((Int) -> Unit)?,
+    isReadOnly: Boolean,
+    isConnected: Boolean,
+    downloadedUrls: Set<String>,
+    modifier: Modifier = Modifier
+) {
+  Row(modifier = modifier) {
+    val photoIndex = index + 1
+    val shouldShowDelete = !isReadOnly && onDelete != null
+
+    when (attachment) {
+      is Attachment.Remote -> {
+        val isDownloaded = downloadedUrls.contains(attachment.url)
+        val isOffline = !isConnected && !isDownloaded
+
+        if (isOffline) {
+          Text(
+              "Photo $photoIndex: Not downloaded",
+              modifier = Modifier.testTag(CommonTaskTestTags.ATTACHMENT_OFFLINE_MESSAGE))
+        } else {
+          Text("Photo $photoIndex")
+          if (shouldShowDelete) {
             IconButton(
                 onClick = { onDelete(index) },
                 modifier = Modifier.testTag(CommonTaskTestTags.DELETE_PHOTO)) {
@@ -270,8 +283,20 @@ fun AttachmentsList(
                 }
           }
           PhotoViewer(
-              attachment.uri, modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.PHOTO))
+              attachment.url, modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.PHOTO))
         }
+      }
+      is Attachment.Local -> {
+        Text("Photo $photoIndex")
+        if (shouldShowDelete) {
+          IconButton(
+              onClick = { onDelete(index) },
+              modifier = Modifier.testTag(CommonTaskTestTags.DELETE_PHOTO)) {
+                Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
+              }
+        }
+        PhotoViewer(
+            attachment.uri, modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.PHOTO))
       }
     }
   }

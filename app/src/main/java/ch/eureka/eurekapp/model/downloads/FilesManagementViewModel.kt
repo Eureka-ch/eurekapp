@@ -43,13 +43,17 @@ class FilesManagementViewModel(
     return FileItem(file = file, displayName = displayName, isImage = isImage, uri = uri)
   }
 
-  fun deleteFile(fileItem: FileItem) {
+  fun deleteFile(fileItem: FileItem, onComplete: (Boolean) -> Unit) {
     viewModelScope.launch {
       val file = File(fileItem.file.localPath)
-      if (file.exists()) {
-        file.delete()
-      }
+      val fileDeleted =
+          if (file.exists()) {
+            file.delete()
+          } else {
+            true // If file doesn't exist, consider it "deleted"
+          }
       dao.delete(fileItem.file)
+      onComplete(fileDeleted)
     }
   }
 

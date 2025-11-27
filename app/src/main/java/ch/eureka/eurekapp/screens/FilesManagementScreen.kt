@@ -47,6 +47,99 @@ object FilesManagementScreenTestTags {
 }
 
 @Composable
+fun FilesManagementContent(
+    files: List<FileItem>,
+    onOpenFile: (FileItem) -> Unit,
+    onDeleteFile: (FileItem) -> Unit
+) {
+  Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    if (files.isEmpty()) {
+      Text(
+          "No downloaded files.",
+          style = MaterialTheme.typography.bodyLarge,
+          modifier = Modifier.testTag(FilesManagementScreenTestTags.NO_FILES_MESSAGE))
+    } else {
+      LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        items(files) { fileItem ->
+          FileItemRow(fileItem = fileItem, onOpenFile = onOpenFile, onDeleteFile = onDeleteFile)
+        }
+      }
+    }
+  }
+}
+
+@Composable
+fun FileItemRow(
+    fileItem: FileItem,
+    onOpenFile: (FileItem) -> Unit,
+    onDeleteFile: (FileItem) -> Unit
+) {
+  Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceBetween) {
+    Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+      if (fileItem.isImage) {
+        PhotoViewer(image = fileItem.uri, modifier = Modifier.size(64.dp))
+      }
+      Column {
+        Text(
+            fileItem.displayName,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier =
+                Modifier.testTag(
+                    "${FilesManagementScreenTestTags.FILE_DISPLAY_NAME}_${fileItem.displayName}"))
+      }
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+      Button(
+          onClick = { onOpenFile(fileItem) },
+          modifier = Modifier.testTag(FilesManagementScreenTestTags.OPEN_BUTTON)) {
+            Text("Open")
+          }
+      Button(
+          onClick = { onDeleteFile(fileItem) },
+          modifier = Modifier.testTag(FilesManagementScreenTestTags.DELETE_BUTTON)) {
+            Text("Delete")
+          }
+    }
+  }
+}
+
+@Composable
+fun DeleteConfirmationDialog(
+    fileToDelete: FileItem?,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+  if (fileToDelete != null) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+          Text(
+              "Confirm Deletion",
+              modifier = Modifier.testTag(FilesManagementScreenTestTags.DELETE_DIALOG_TITLE))
+        },
+        text = {
+          Text(
+              "Are you sure you want to delete '${fileToDelete.displayName}'?",
+              modifier = Modifier.testTag(FilesManagementScreenTestTags.DELETE_DIALOG_TEXT))
+        },
+        confirmButton = {
+          TextButton(
+              onClick = onConfirm,
+              modifier = Modifier.testTag(FilesManagementScreenTestTags.CONFIRM_DELETE_BUTTON)) {
+                Text("Delete")
+              }
+        },
+        dismissButton = {
+          TextButton(
+              onClick = onDismiss,
+              modifier = Modifier.testTag(FilesManagementScreenTestTags.CANCEL_DELETE_BUTTON)) {
+                Text("Cancel")
+              }
+        })
+  }
+}
+
+@Composable
 fun FilesManagementScreen(
     onBackClick: () -> Unit = {},
     viewModel: FilesManagementViewModel = run {
@@ -89,90 +182,30 @@ fun FilesManagementScreen(
             modifier = Modifier.testTag(FilesManagementScreenTestTags.TOP_BAR_TITLE))
       },
       content = { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
-          if (files.isEmpty()) {
-            Text(
-                "No downloaded files.",
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.testTag(FilesManagementScreenTestTags.NO_FILES_MESSAGE))
-          } else {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-              items(files) { fileItem ->
-                Row(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.SpaceBetween) {
-                      Row(
-                          modifier = Modifier.weight(1f),
-                          horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            if (fileItem.isImage) {
-                              PhotoViewer(image = fileItem.uri, modifier = Modifier.size(64.dp))
-                            }
-                            Column {
-                              Text(
-                                  fileItem.displayName,
-                                  style = MaterialTheme.typography.bodyLarge,
-                                  modifier =
-                                      Modifier.testTag(
-                                          "${FilesManagementScreenTestTags.FILE_DISPLAY_NAME}_${fileItem.displayName}"))
-                            }
-                          }
-                      Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(
-                            onClick = { openFileIntent = viewModel.getOpenFileIntent(fileItem) },
-                            modifier =
-                                Modifier.testTag(FilesManagementScreenTestTags.OPEN_BUTTON)) {
-                              Text("Open")
-                            }
-                        Button(
-                            onClick = {
-                              fileToDelete = fileItem
-                              showDeleteDialog = true
-                            },
-                            modifier =
-                                Modifier.testTag(FilesManagementScreenTestTags.DELETE_BUTTON)) {
-                              Text("Delete")
-                            }
-                      }
-                    }
-              }
-            }
-          }
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+          FilesManagementContent(
+              files = files,
+              onOpenFile = { openFileIntent = viewModel.getOpenFileIntent(it) },
+              onDeleteFile = {
+                fileToDelete = it
+                showDeleteDialog = true
+              })
         }
       })
 
-  if (showDeleteDialog && fileToDelete != null) {
-    AlertDialog(
-        onDismissRequest = { showDeleteDialog = false },
-        title = {
-          Text(
-              "Confirm Deletion",
-              modifier = Modifier.testTag(FilesManagementScreenTestTags.DELETE_DIALOG_TITLE))
-        },
-        text = {
-          Text(
-              "Are you sure you want to delete '${fileToDelete!!.displayName}'?",
-              modifier = Modifier.testTag(FilesManagementScreenTestTags.DELETE_DIALOG_TEXT))
-        },
-        confirmButton = {
-          TextButton(
-              onClick = {
-                viewModel.deleteFile(fileToDelete!!)
-                showDeleteDialog = false
-                fileToDelete = null
-              },
-              modifier = Modifier.testTag(FilesManagementScreenTestTags.CONFIRM_DELETE_BUTTON)) {
-                Text("Delete")
-              }
-        },
-        dismissButton = {
-          TextButton(
-              onClick = {
-                showDeleteDialog = false
-                fileToDelete = null
-              },
-              modifier = Modifier.testTag(FilesManagementScreenTestTags.CANCEL_DELETE_BUTTON)) {
-                Text("Cancel")
-              }
-        })
-  }
+  DeleteConfirmationDialog(
+      fileToDelete = if (showDeleteDialog) fileToDelete else null,
+      onConfirm = {
+        viewModel.deleteFile(fileToDelete!!) { success ->
+          if (!success) {
+            Toast.makeText(context, "Failed to delete file", Toast.LENGTH_SHORT).show()
+          }
+        }
+        showDeleteDialog = false
+        fileToDelete = null
+      },
+      onDismiss = {
+        showDeleteDialog = false
+        fileToDelete = null
+      })
 }

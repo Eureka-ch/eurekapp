@@ -70,7 +70,6 @@ fun ViewTaskScreen(
     },
 ) {
   val viewTaskState by viewTaskViewModel.uiState.collectAsState()
-  val errorMsg = viewTaskState.errorMsg
   val isConnected = viewTaskState.isConnected
   val context = LocalContext.current
   val scrollState = rememberScrollState()
@@ -153,6 +152,13 @@ fun ViewTaskScreen(
                     Text("View Dependencies")
                   }
 
+              AttachmentsList(
+                  attachments = viewTaskState.effectiveAttachments,
+                  onDelete = null,
+                  isReadOnly = true,
+                  isConnected = isConnected,
+                  downloadedUrls = viewTaskState.downloadedAttachmentUrls)
+
               DownloadSection(
                   urlsToDownload = viewTaskState.urlsToDownload,
                   isConnected = isConnected,
@@ -161,13 +167,6 @@ fun ViewTaskScreen(
                       viewTaskViewModel.downloadFile(url, url.substringAfterLast("/"), context)
                     }
                   })
-
-              AttachmentsList(
-                  attachments = viewTaskState.effectiveAttachments,
-                  onDelete = null,
-                  isReadOnly = true,
-                  isConnected = isConnected,
-                  downloadedUrls = viewTaskState.downloadedAttachmentUrls)
             }
       })
 }
