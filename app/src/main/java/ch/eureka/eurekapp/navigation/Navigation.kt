@@ -32,6 +32,7 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
 import ch.eureka.eurekapp.ui.activity.ActivityFeedScreen
 import ch.eureka.eurekapp.ui.authentication.TokenEntryScreen
+import ch.eureka.eurekapp.ui.conversation.ConversationListScreen
 import ch.eureka.eurekapp.ui.map.MeetingLocationSelectionScreen
 import ch.eureka.eurekapp.ui.meeting.CreateDateTimeFormatProposalForMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
@@ -264,6 +265,19 @@ fun NavigationMenu() {
 
               // Ideas section
               composable<Route.IdeasSection.Ideas> { IdeasScreen() }
+
+              // Conversations section
+              composable<Route.ConversationsSection.Conversations> {
+                ConversationListScreen(
+                    onCreateConversation = {
+                      navigationController.navigate(Route.ConversationsSection.CreateConversation)
+                    },
+                    onConversationClick = { conversationId ->
+                      navigationController.navigate(
+                          Route.ConversationsSection.ConversationDetail(
+                              conversationId = conversationId))
+                    })
+              }
 
               // Meetings section
               composable<Route.MeetingsSection.Meetings> {
