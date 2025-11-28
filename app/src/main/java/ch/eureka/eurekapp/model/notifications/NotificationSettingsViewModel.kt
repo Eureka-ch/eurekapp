@@ -4,7 +4,7 @@ package ch.eureka.eurekapp.model.notifications
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.user.UserNotificationSettingsKeys
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.model.data.user.defaultValuesNotificationSettingsKeys
@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
  * UI and the UserRepository to read/write settings.
  */
 class NotificationSettingsViewModel(
-    private val usersRepository: UserRepository = FirestoreRepositoriesProvider.userRepository
+    private val usersRepository: UserRepository = RepositoriesProvider.userRepository
 ) : ViewModel() {
 
   /**

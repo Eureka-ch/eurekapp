@@ -3,7 +3,7 @@ package ch.eureka.eurekapp.ui.meeting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.chatbot.ChatbotRepository
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.transcription.AudioTranscription
@@ -45,10 +45,9 @@ data class TranscriptUIState(
 class TranscriptViewModel(
     private val projectId: String,
     private val meetingId: String,
-    private val meetingRepository: MeetingRepository =
-        FirestoreRepositoriesProvider.meetingRepository,
+    private val meetingRepository: MeetingRepository = RepositoriesProvider.meetingRepository,
     private val speechToTextRepository: SpeechToTextRepository =
-        FirestoreRepositoriesProvider.speechToTextRepository,
+        RepositoriesProvider.speechToTextRepository,
     private val chatbotRepository: ChatbotRepository = ChatbotRepository(),
     private val defaultLanguageCode: String = "en-US",
 ) : ViewModel() {

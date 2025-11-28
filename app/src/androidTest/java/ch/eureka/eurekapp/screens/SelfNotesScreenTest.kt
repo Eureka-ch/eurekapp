@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of GPT-5 Codex and Gemini. */
 package ch.eureka.eurekapp.screens
 
 import androidx.compose.ui.test.*
@@ -7,14 +8,18 @@ import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.ui.components.MessageInputField
 import ch.eureka.eurekapp.ui.components.MessageInputFieldTestTags
 import ch.eureka.eurekapp.ui.notes.SelfNoteMessageBubble
+import ch.eureka.eurekapp.ui.notes.SelfNotesScreen
+import ch.eureka.eurekapp.ui.notes.SelfNotesScreenTestTags
+import ch.eureka.eurekapp.ui.notes.SelfNotesUIState
+import ch.eureka.eurekapp.ui.notes.SelfNotesViewModel
 import com.google.firebase.Timestamp
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-
-/*
-Co-author: GPT-5 Codex
-*/
 
 @RunWith(AndroidJUnit4::class)
 class SelfNotesScreenTest {
@@ -80,5 +85,56 @@ class SelfNotesScreenTest {
     }
 
     composeTestRule.onNodeWithTag(MessageInputFieldTestTags.SEND_BUTTON).assertIsEnabled()
+  }
+
+  @Test
+  fun loadingState_displaysProgressIndicator() {
+    val mockViewModel = mockk<SelfNotesViewModel>(relaxed = true)
+    val uiState = MutableStateFlow(SelfNotesUIState(isLoading = true))
+    every { mockViewModel.uiState } returns uiState
+    composeTestRule.setContent { SelfNotesScreen(viewModel = mockViewModel) }
+    composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.LOADING_INDICATOR).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.NOTES_LIST).assertDoesNotExist()
+    composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.EMPTY_STATE).assertDoesNotExist()
+  }
+
+  @Test
+  fun emptyState_displaysPlaceholder() {
+    val mockViewModel = mockk<SelfNotesViewModel>(relaxed = true)
+    val uiState = MutableStateFlow(SelfNotesUIState(isLoading = false, notes = emptyList()))
+    every { mockViewModel.uiState } returns uiState
+    composeTestRule.setContent { SelfNotesScreen(viewModel = mockViewModel) }
+    composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.EMPTY_STATE).assertIsDisplayed()
+    composeTestRule.onNodeWithText("No notes yet. Start writing!").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.LOADING_INDICATOR).assertDoesNotExist()
+  }
+
+  @Test
+  fun notesState_displaysList() {
+    val mockViewModel = mockk<SelfNotesViewModel>(relaxed = true)
+    val notesList = listOf(testMessage)
+    val uiState = MutableStateFlow(SelfNotesUIState(isLoading = false, notes = notesList))
+    every { mockViewModel.uiState } returns uiState
+    composeTestRule.setContent { SelfNotesScreen(viewModel = mockViewModel) }
+    composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.NOTES_LIST).assertIsDisplayed()
+    composeTestRule.onNodeWithText("Test note content").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.EMPTY_STATE).assertDoesNotExist()
+  }
+
+  @Test
+  fun storageToggle_displaysAndWorks() {
+    val mockViewModel = mockk<SelfNotesViewModel>(relaxed = true)
+    val uiStateFlow =
+        MutableStateFlow(SelfNotesUIState(isLoading = false, isCloudStorageEnabled = false))
+    every { mockViewModel.uiState } returns uiStateFlow
+    composeTestRule.setContent { SelfNotesScreen(viewModel = mockViewModel) }
+    composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.TOGGLE_SWITCH).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.TOGGLE_SWITCH).assertIsOff()
+    composeTestRule.onNodeWithText("Local").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.TOGGLE_SWITCH).performClick()
+    verify { mockViewModel.toggleStorageMode(true) }
+    uiStateFlow.value = SelfNotesUIState(isLoading = false, isCloudStorageEnabled = true)
+    composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.TOGGLE_SWITCH).assertIsOn()
+    composeTestRule.onNodeWithText("Cloud").assertIsDisplayed()
   }
 }

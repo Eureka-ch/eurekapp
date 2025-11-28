@@ -9,6 +9,7 @@ import junit.framework.TestCase.assertNull
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
 import org.junit.Before
 import org.junit.Test
 
@@ -29,11 +30,19 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   override fun getCollectionPaths(): List<String> = listOf("conversations")
 
   @Before
-  override fun setup() = runBlocking {
-    super.setup()
-    repository =
-        FirestoreConversationRepository(
-            firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+  override fun setup() {
+    runBlocking {
+      super.setup()
+      repository =
+          FirestoreConversationRepository(
+              firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+      val snapshot = FirebaseEmulator.firestore.collection("conversations").get().await()
+      val batch = FirebaseEmulator.firestore.batch()
+      for (document in snapshot.documents) {
+        batch.delete(document.reference)
+      }
+      batch.commit().await()
+    }
   }
 
   @Test

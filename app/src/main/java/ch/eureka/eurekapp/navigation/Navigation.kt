@@ -1,6 +1,7 @@
 // This code was partially written by GPT-5, and Grok
 package ch.eureka.eurekapp.navigation
 
+import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -12,7 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.map.Location
@@ -24,7 +25,6 @@ import ch.eureka.eurekapp.screens.HomeOverviewScreen
 import ch.eureka.eurekapp.screens.IdeasScreen
 import ch.eureka.eurekapp.screens.OverviewProjectScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
-import ch.eureka.eurekapp.screens.SelfNotesScreen
 import ch.eureka.eurekapp.screens.TasksScreen
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScreen
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingTranscriptViewScreen
@@ -48,6 +48,7 @@ import ch.eureka.eurekapp.ui.meeting.MeetingNavigationScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingProposalVoteScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenConfig
+import ch.eureka.eurekapp.ui.notes.SelfNotesScreen
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -191,7 +192,7 @@ fun NavigationMenu(
           }
         }
         NotificationType.MESSAGE_NOTIFICATION.backendTypeString -> {
-          // TODO fill this when we make the chat screen
+          Log.d("Navigation", "Not yet implemented")
         }
         else -> {
           // Do nothing
@@ -199,7 +200,7 @@ fun NavigationMenu(
       }
     }
   }
-  FirestoreRepositoriesProvider.projectRepository
+  RepositoriesProvider.projectRepository
   val auth = Firebase.auth
   Project(
       projectId = testProjectId,

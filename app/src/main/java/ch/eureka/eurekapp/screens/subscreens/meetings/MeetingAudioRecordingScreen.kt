@@ -50,7 +50,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.audio.AudioRecordingViewModel
 import ch.eureka.eurekapp.model.audio.RecordingState
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
@@ -75,7 +75,7 @@ fun MeetingAudioRecordingScreen(
     projectId: String,
     meetingId: String,
     audioRecordingViewModel: AudioRecordingViewModel = viewModel(),
-    meetingRepository: MeetingRepository = FirestoreRepositoriesProvider.meetingRepository,
+    meetingRepository: MeetingRepository = RepositoriesProvider.meetingRepository,
     onNavigateToTranscript: (String, String) -> Unit = { _, _ -> }
 ) {
 

@@ -5,7 +5,7 @@ import androidx.camera.core.Preview
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,8 +15,7 @@ import kotlinx.coroutines.runBlocking
 
 /** The view model for the camera operations */
 class CameraViewModel(
-    private val fileStorageRepository: FileStorageRepository =
-        FirestoreRepositoriesProvider.fileRepository
+    private val fileStorageRepository: FileStorageRepository = RepositoriesProvider.fileRepository
 ) : ViewModel() {
   private var _photoState: MutableStateFlow<CameraModel> = MutableStateFlow(CameraModel())
   val photoState: StateFlow<CameraModel> = _photoState.asStateFlow()

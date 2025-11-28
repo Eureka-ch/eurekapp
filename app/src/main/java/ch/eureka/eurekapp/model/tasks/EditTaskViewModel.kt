@@ -10,7 +10,7 @@ import android.os.Looper
 import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.task.Task
@@ -30,10 +30,10 @@ import kotlinx.coroutines.launch
 
 /** ViewModel for the EditTask screen. This ViewModel manages the state of input fields. */
 class EditTaskViewModel(
-    taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
-    fileRepository: FileStorageRepository = FirestoreRepositoriesProvider.fileRepository,
-    projectRepository: ProjectRepository = FirestoreRepositoriesProvider.projectRepository,
-    userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository,
+    taskRepository: TaskRepository = RepositoriesProvider.taskRepository,
+    fileRepository: FileStorageRepository = RepositoriesProvider.fileRepository,
+    projectRepository: ProjectRepository = RepositoriesProvider.projectRepository,
+    userRepository: UserRepository = RepositoriesProvider.userRepository,
     getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) :

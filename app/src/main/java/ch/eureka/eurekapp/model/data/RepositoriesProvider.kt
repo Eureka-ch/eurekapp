@@ -1,5 +1,10 @@
+/* Portions of this file were written with the help of Gemini and ChatGPT (GPT-5) */
 package ch.eureka.eurekapp.model.data
 
+import android.annotation.SuppressLint
+import android.content.Context
+import androidx.room.Room
+import androidx.work.WorkManager
 import ch.eureka.eurekapp.model.data.chat.FirestoreChatRepository
 import ch.eureka.eurekapp.model.data.conversation.ConversationRepository
 import ch.eureka.eurekapp.model.data.conversation.FirestoreConversationRepository
@@ -7,21 +12,47 @@ import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.file.FirebaseFileStorageRepository
 import ch.eureka.eurekapp.model.data.invitation.FirestoreInvitationRepository
 import ch.eureka.eurekapp.model.data.meeting.FirestoreMeetingRepository
-import ch.eureka.eurekapp.model.data.note.FirestoreSelfNotesRepository
-import ch.eureka.eurekapp.model.data.note.SelfNotesRepository
+import ch.eureka.eurekapp.model.data.notes.FirestoreSelfNotesRepository
+import ch.eureka.eurekapp.model.data.notes.UnifiedSelfNotesRepository
+import ch.eureka.eurekapp.model.data.prefs.UserPreferencesRepository
 import ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository
 import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
 import ch.eureka.eurekapp.model.data.template.FirestoreTaskTemplateRepository
 import ch.eureka.eurekapp.model.data.transcription.CloudFunctionSpeechToTextRepository
 import ch.eureka.eurekapp.model.data.transcription.SpeechToTextRepository
 import ch.eureka.eurekapp.model.data.user.FirestoreUserRepository
+import ch.eureka.eurekapp.model.database.AppDatabase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.functions.FirebaseFunctions
 import com.google.firebase.storage.FirebaseStorage
 
-/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
-object FirestoreRepositoriesProvider {
+/**
+ * Central singleton provider for all Data Layer repositories in the application.
+ *
+ * This object acts as a simple Service Locator, managing the lifecycle and initialization of
+ * repositories. It handles both Cloud-based repositories (Firestore, Firebase Storage) and
+ * Local/Hybrid repositories (Room, DataStore).
+ *
+ * Usage:
+ * 1. Must be initialized in [ch.eureka.eurekapp.MainActivity.onCreate] via [initialize].
+ * 2. Repositories can then be accessed globally via the public properties.
+ */
+@SuppressLint("StaticFieldLeak") // Context is application context, so leak is not an issue
+object RepositoriesProvider {
+
+  private var applicationContext: Context? = null
+  private const val ERROR_MSG = "RepositoryProvider.initialize(context) must be called first"
+
+  /**
+   * Initializes the provider with the application context.
+   *
+   * @param context The Android application context.
+   */
+  fun initialize(context: Context) {
+    applicationContext = context.applicationContext
+  }
+
   private val _taskRepository: FirestoreTaskRepository by lazy {
     FirestoreTaskRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
   }
@@ -61,8 +92,34 @@ object FirestoreRepositoriesProvider {
         FirebaseFunctions.getInstance())
   }
 
-  private val _selfNotesRepository: SelfNotesRepository by lazy {
-    FirestoreSelfNotesRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
+  private val _userPreferencesRepository: UserPreferencesRepository by lazy {
+    val context = applicationContext ?: throw IllegalStateException(ERROR_MSG)
+    UserPreferencesRepository(context)
+  }
+
+  val userPreferencesRepository: UserPreferencesRepository
+    get() = _userPreferencesRepository
+
+  val workManager: WorkManager
+    get() {
+      val context = applicationContext ?: throw IllegalStateException(ERROR_MSG)
+      return WorkManager.getInstance(context)
+    }
+
+  private val _unifiedSelfNotesRepository: UnifiedSelfNotesRepository by lazy {
+    val context = applicationContext ?: throw IllegalStateException(ERROR_MSG)
+
+    val database = Room.databaseBuilder(context, AppDatabase::class.java, "eureka_local.db").build()
+
+    val firestoreRepo =
+        FirestoreSelfNotesRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
+
+    UnifiedSelfNotesRepository(
+        context = context, // Pass the context for network checks
+        localDao = database.messageDao(),
+        firestoreRepo = firestoreRepo,
+        userPreferences = _userPreferencesRepository,
+        auth = FirebaseAuth.getInstance())
   }
 
   private val _conversationRepository: ConversationRepository by lazy {
@@ -96,8 +153,8 @@ object FirestoreRepositoriesProvider {
   val speechToTextRepository: SpeechToTextRepository
     get() = _speechToTextRepository
 
-  val selfNotesRepository: SelfNotesRepository
-    get() = _selfNotesRepository
+  val unifiedSelfNotesRepository: UnifiedSelfNotesRepository
+    get() = _unifiedSelfNotesRepository
 
   val conversationRepository: ConversationRepository
     get() = _conversationRepository

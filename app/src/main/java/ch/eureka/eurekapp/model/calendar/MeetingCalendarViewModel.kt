@@ -4,7 +4,7 @@ import android.content.ContentResolver
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
@@ -20,9 +20,8 @@ import kotlinx.coroutines.launch
 
 class MeetingCalendarViewModel(
     private val calendarRepository: CalendarRepository = CalendarRepositoryProvider.repository,
-    private val meetingsRepository: MeetingRepository =
-        FirestoreRepositoriesProvider.meetingRepository,
-    private val usersRepository: UserRepository = FirestoreRepositoriesProvider.userRepository
+    private val meetingsRepository: MeetingRepository = RepositoriesProvider.meetingRepository,
+    private val usersRepository: UserRepository = RepositoriesProvider.userRepository
 ) : ViewModel() {
   private val _registeredMeetings = MutableStateFlow<Map<String, Boolean>>(emptyMap())
   val registeredMeetings = _registeredMeetings.asStateFlow()

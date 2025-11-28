@@ -1,7 +1,7 @@
 package ch.eureka.eurekapp.model.tasks
 
 import androidx.lifecycle.ViewModel
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
@@ -24,10 +24,9 @@ import kotlinx.coroutines.flow.flowOf
  * Disclaimer: This documentation was written by AI (ChatGPT - GPT-5).
  */
 class TaskDependenciesViewModel(
-    private val tasksRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
-    private val usersRepository: UserRepository = FirestoreRepositoriesProvider.userRepository,
-    private val projectsRepository: ProjectRepository =
-        FirestoreRepositoriesProvider.projectRepository
+    private val tasksRepository: TaskRepository = RepositoriesProvider.taskRepository,
+    private val usersRepository: UserRepository = RepositoriesProvider.userRepository,
+    private val projectsRepository: ProjectRepository = RepositoriesProvider.projectRepository
 ) : ViewModel() {
   /**
    * Retrieves the list of dependent tasks for a given task.

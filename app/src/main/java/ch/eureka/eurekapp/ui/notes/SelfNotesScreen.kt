@@ -1,18 +1,25 @@
-package ch.eureka.eurekapp.screens
+/* Portions of this file were written with the help of GPT-5 Codex and Gemini. */
+package ch.eureka.eurekapp.ui.notes
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -20,14 +27,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import ch.eureka.eurekapp.model.notes.SelfNotesViewModel
-import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.MessageInputField
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
-import ch.eureka.eurekapp.ui.notes.SelfNoteMessageBubble
 
 /** Test tags for the Self Notes Screen. */
 object SelfNotesScreenTestTags {
@@ -36,32 +42,27 @@ object SelfNotesScreenTestTags {
   const val EMPTY_STATE = "emptyState"
   const val ERROR_MESSAGE = "errorMessage"
   const val NOTES_LIST = "notesList"
+  const val TOGGLE_SWITCH = "toggleSwitch"
 }
-
-/*
-Co-author: GPT-5 Codex
-*/
 
 /**
  * Screen for displaying and composing self-notes in a chat-like interface.
  *
- * Features:
- * - Chat-style message bubbles for notes
- * - Real-time updates from Firestore
- * - Input field at the bottom for composing new notes
- * - Auto-scroll to latest note when sent
- * - Loading and error states
+ * This screen serves as the main UI for the "Note to Self" feature. It implements an offline-first
+ * architecture where users can seamlessly switch between local-only storage and cloud
+ * synchronization.
  *
- * @param viewModel ViewModel managing the notes state.
- * @param modifier Optional modifier.
+ * @param modifier Optional modifier for customizing the layout behavior of the screen root.
+ * @param viewModel The [SelfNotesViewModel] that manages the UI state and business logic. Defaults
+ *   to using the standard `viewModel()` factory.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelfNotesScreen(modifier: Modifier = Modifier, viewModel: SelfNotesViewModel = viewModel()) {
   val uiState by viewModel.uiState.collectAsState()
   val snackbarHostState = remember { SnackbarHostState() }
   val listState = rememberLazyListState()
 
-  // Show error message in snackbar
   LaunchedEffect(uiState.errorMsg) {
     uiState.errorMsg?.let { errorMsg ->
       snackbarHostState.showSnackbar(errorMsg)
@@ -69,7 +70,6 @@ fun SelfNotesScreen(modifier: Modifier = Modifier, viewModel: SelfNotesViewModel
     }
   }
 
-  // Auto-scroll to top (latest message) when a new note is sent
   LaunchedEffect(uiState.notes.size) {
     if (uiState.notes.isNotEmpty() && !uiState.isLoading) {
       listState.animateScrollToItem(0)
@@ -78,7 +78,36 @@ fun SelfNotesScreen(modifier: Modifier = Modifier, viewModel: SelfNotesViewModel
 
   Scaffold(
       modifier = modifier.fillMaxSize().testTag(SelfNotesScreenTestTags.SCREEN),
-      topBar = { EurekaTopBar(title = "Notes") },
+      topBar = {
+        TopAppBar(
+            title = { Text("Notes") },
+            colors =
+                TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary),
+            actions = {
+              Row(
+                  verticalAlignment = Alignment.CenterVertically,
+                  modifier = Modifier.padding(end = 8.dp)) {
+                    Text(
+                        text = if (uiState.isCloudStorageEnabled) "Cloud" else "Local",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.padding(end = 8.dp))
+                    Switch(
+                        checked = uiState.isCloudStorageEnabled,
+                        onCheckedChange = { viewModel.toggleStorageMode(it) },
+                        modifier = Modifier.testTag(SelfNotesScreenTestTags.TOGGLE_SWITCH),
+                        colors =
+                            SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                checkedTrackColor = MaterialTheme.colorScheme.onPrimary,
+                                uncheckedThumbColor = Color.LightGray,
+                                uncheckedTrackColor = MaterialTheme.colorScheme.primaryContainer))
+                  }
+            })
+      },
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       bottomBar = {
         MessageInputField(

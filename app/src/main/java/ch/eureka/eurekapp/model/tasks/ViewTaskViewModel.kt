@@ -7,7 +7,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.model.downloads.DownloadService
@@ -15,6 +15,7 @@ import ch.eureka.eurekapp.model.downloads.DownloadedFile
 import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -33,9 +34,9 @@ class ViewTaskViewModel(
     projectId: String,
     taskId: String,
     private val downloadedFileDao: DownloadedFileDao,
-    taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
+    taskRepository: TaskRepository = RepositoriesProvider.taskRepository,
     connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver,
-    private val userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository,
+    private val userRepository: UserRepository = RepositoriesProvider.userRepository,
     dispatcher: CoroutineDispatcher = Dispatchers.Main
 ) : ReadTaskViewModel<ViewTaskState>(taskRepository, dispatcher) {
 
@@ -62,6 +63,7 @@ class ViewTaskViewModel(
     }
   }
 
+  @OptIn(ExperimentalCoroutinesApi::class)
   override val uiState: StateFlow<ViewTaskState> =
       combine(
               taskRepository
@@ -112,25 +114,24 @@ class ViewTaskViewModel(
                 val downloadedUrls = downloadedFiles.map { it.url }.toSet()
                 val urlsToDownload = taskState.attachmentUrls.filter { it !in downloadedUrls }
 
-                val effectiveAttachments =
-                    buildList<Attachment> {
-                      if (isConnected) {
-                        // Online: show all remote URLs
-                        taskState.attachmentUrls.forEach { url -> add(Attachment.Remote(url)) }
+                val effectiveAttachments = buildList {
+                  if (isConnected) {
+                    // Online: show all remote URLs
+                    taskState.attachmentUrls.forEach { url -> add(Attachment.Remote(url)) }
+                  } else {
+                    // Offline: show downloaded files as Local, undownloaded as Remote
+                    taskState.attachmentUrls.forEach { url ->
+                      val localUri = urlToUriMap[url]
+                      if (localUri != null) {
+                        add(Attachment.Local(localUri))
                       } else {
-                        // Offline: show downloaded files as Local, undownloaded as Remote
-                        taskState.attachmentUrls.forEach { url ->
-                          val localUri = urlToUriMap[url]
-                          if (localUri != null) {
-                            add(Attachment.Local(localUri))
-                          } else {
-                            add(Attachment.Remote(url))
-                          }
-                        }
+                        add(Attachment.Remote(url))
                       }
-                      // Add local URIs (e.g., newly taken photos)
-                      taskState.attachmentUris.forEach { uri -> add(Attachment.Local(uri)) }
                     }
+                  }
+                  // Add local URIs (e.g., newly taken photos)
+                  taskState.attachmentUris.forEach { uri -> add(Attachment.Local(uri)) }
+                }
 
                 taskState.copy(
                     isConnected = isConnected,

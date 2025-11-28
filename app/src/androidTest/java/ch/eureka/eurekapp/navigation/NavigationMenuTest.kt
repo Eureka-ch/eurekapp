@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRole
@@ -18,10 +19,10 @@ import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.screens.HomeOverviewTestTags
 import ch.eureka.eurekapp.screens.IdeasScreenTestTags
-import ch.eureka.eurekapp.screens.SelfNotesScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
+import ch.eureka.eurekapp.ui.notes.SelfNotesScreenTestTags
 import ch.eureka.eurekapp.ui.profile.ProfileScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.google.firebase.Timestamp
@@ -70,6 +71,7 @@ class NavigationMenuTest : TestCase() {
 
     val context = InstrumentationRegistry.getInstrumentation().targetContext
     ConnectivityObserverProvider.initialize(context)
+    RepositoriesProvider.initialize(context)
   }
 
   @Test
