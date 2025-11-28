@@ -1,5 +1,7 @@
 package ch.eureka.eurekapp.model.data.project
 
+import com.google.firebase.Timestamp
+
 /**
  * Data class representing a project in the application.
  *
@@ -21,5 +23,6 @@ data class Project(
     val description: String = "",
     val status: ProjectStatus = ProjectStatus.OPEN,
     val createdBy: String = "",
-    val memberIds: List<String> = emptyList()
+    val memberIds: List<String> = emptyList(),
+    val lastUpdated: Timestamp? = null,
 )
