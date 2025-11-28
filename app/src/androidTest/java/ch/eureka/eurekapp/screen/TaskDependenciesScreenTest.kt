@@ -177,8 +177,7 @@ open class TaskDependenciesScreenTest : TestCase() {
       composeTestRule.waitUntil(timeoutMillis = 10_000) {
         try {
           composeTestRule
-              .onNodeWithTag(
-                  TaskDependenciesScreenTestTags.getDependentTaskTestTag(dependentTask))
+              .onNodeWithTag(TaskDependenciesScreenTestTags.getDependentTaskTestTag(dependentTask))
               .assertIsDisplayed()
           true
         } catch (e: AssertionError) {
