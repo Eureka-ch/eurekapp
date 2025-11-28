@@ -48,6 +48,7 @@ fun InteractiveHelpEntryPoint(
     chipShape: Shape = MaterialTheme.shapes.large,
     notificationSettingsViewModel: NotificationSettingsViewModel = viewModel()
 ) {
+  // Early return: if help is disabled, don't render anything at all
   val helpEnabledDefault =
       defaultValuesNotificationSettingsKeys.getOrDefault(
           UserNotificationSettingsKeys.SHOW_INTERACTIVE_HELP.name, true)
@@ -56,7 +57,10 @@ fun InteractiveHelpEntryPoint(
           .getUserSetting(UserNotificationSettingsKeys.SHOW_INTERACTIVE_HELP)
           .collectAsState(helpEnabledDefault)
 
-  if (!isHelpEnabled) return
+  // If help is disabled, return early - no UI will be rendered
+  if (!isHelpEnabled) {
+    return
+  }
 
   val resolvedName =
       remember(userProvidedName) {
