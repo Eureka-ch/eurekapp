@@ -3,7 +3,7 @@ package ch.eureka.eurekapp.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
@@ -14,6 +14,7 @@ import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import com.google.firebase.Timestamp
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -38,12 +39,10 @@ data class HomeOverviewUiState(
 )
 
 class HomeOverviewViewModel(
-    private val taskRepository: TaskRepository = FirestoreRepositoriesProvider.taskRepository,
-    private val projectRepository: ProjectRepository =
-        FirestoreRepositoriesProvider.projectRepository,
-    private val meetingRepository: MeetingRepository =
-        FirestoreRepositoriesProvider.meetingRepository,
-    private val userRepository: UserRepository = FirestoreRepositoriesProvider.userRepository,
+    taskRepository: TaskRepository = RepositoriesProvider.taskRepository,
+    projectRepository: ProjectRepository = RepositoriesProvider.projectRepository,
+    private val meetingRepository: MeetingRepository = RepositoriesProvider.meetingRepository,
+    userRepository: UserRepository = RepositoriesProvider.userRepository,
     connectivityFlow: Flow<Boolean> = ConnectivityObserverProvider.connectivityObserver.isConnected,
 ) : ViewModel() {
 
@@ -81,6 +80,7 @@ class HomeOverviewViewModel(
             emit(emptyList())
           }
 
+  @OptIn(ExperimentalCoroutinesApi::class)
   private val upcomingMeetings: Flow<List<Meeting>> =
       projectsFlow.flatMapLatest { projects ->
         if (projects.isEmpty()) {
