@@ -66,6 +66,7 @@ fun SignInScreen(
   LaunchedEffect(uiState.user) {
     uiState.user?.let {
       Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
+      signInViewModel.updateUserFcmToken()
       onSignedIn()
     }
   }

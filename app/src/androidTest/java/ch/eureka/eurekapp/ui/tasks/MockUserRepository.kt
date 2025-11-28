@@ -66,4 +66,8 @@ class MockUserRepository : UserRepository {
   override suspend fun saveUser(user: User): Result<Unit> = Result.success(Unit)
 
   override suspend fun updateLastActive(userId: String): Result<Unit> = Result.success(Unit)
+
+  override suspend fun updateFcmToken(userId: String, fcmToken: String): Result<Unit> {
+    return Result.success(Unit)
+  }
 }

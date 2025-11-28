@@ -8,8 +8,10 @@ import androidx.credentials.GetCredentialResponse
 import ch.eureka.eurekapp.model.authentication.AuthRepository
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.messaging.FirebaseMessaging
 import io.mockk.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -44,6 +46,12 @@ class SignInViewModelTest {
   fun setup() {
     Dispatchers.setMain(testDispatcher)
 
+    mockkStatic(FirebaseMessaging::class)
+
+    val firebaseMessagingMock = mockk<FirebaseMessaging>()
+    every { FirebaseMessaging.getInstance() } returns firebaseMessagingMock
+    every { firebaseMessagingMock.token } returns Tasks.forResult("test-token")
+
     authRepository = mockk(relaxed = true)
     userRepository = mockk(relaxed = true)
     credentialManager = mockk(relaxed = true)
@@ -59,6 +67,8 @@ class SignInViewModelTest {
     every { mockFirebaseUser.photoUrl } returns mockPhotoUrl
 
     every { context.getString(any()) } returns "mock-web-client-id"
+
+    coEvery { userRepository.getCurrentUser() } returns flowOf(User())
 
     viewModel = SignInViewModel(authRepository, userRepository)
   }

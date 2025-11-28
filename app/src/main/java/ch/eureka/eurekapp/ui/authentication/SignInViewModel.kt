@@ -21,11 +21,16 @@ import ch.eureka.eurekapp.model.data.user.UserRepositoryProvider
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlin.math.exp
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 /**
  * Represents the UI state for authentication.
@@ -60,6 +65,7 @@ class SignInViewModel(
     // Check if user is already signed in for offline support
     val currentUser = repository.getCurrentUser()
     if (currentUser != null) {
+      updateUserFcmToken()
       _uiState.update { it.copy(user = currentUser, signedOut = false) }
     }
   }
@@ -210,6 +216,27 @@ class SignInViewModel(
               signedOut = true,
               user = null)
         }
+      }
+    }
+  }
+  /** Update users fcm Token in order to send notifications to the user */
+  fun updateUserFcmToken() {
+    viewModelScope.launch {
+      val newToken = FirebaseMessaging.getInstance().token.await()
+      val currentUser = userRepository.getCurrentUser().first()
+      var retries = 0.0
+      var result: Result<Unit>
+      if (currentUser != null && currentUser.fcmToken != newToken) {
+        do {
+          result = userRepository.updateFcmToken(currentUser.uid, newToken)
+          if (result.isFailure) {
+            delay(1000L * exp(retries).toLong())
+            retries += 1
+            if (retries >= 4) {
+              break
+            }
+          }
+        } while (result.isFailure)
       }
     }
   }
