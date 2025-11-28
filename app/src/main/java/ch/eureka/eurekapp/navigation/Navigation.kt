@@ -12,9 +12,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import ch.eureka.eurekapp.model.data.FirestoreRepositoriesProvider
-import ch.eureka.eurekapp.model.data.project.Project
-import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.model.notifications.NotificationType
 import ch.eureka.eurekapp.screens.Camera
@@ -47,8 +44,6 @@ import ch.eureka.eurekapp.ui.meeting.MeetingProposalVoteScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenConfig
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
 
@@ -173,18 +168,7 @@ fun NavigationMenu(
     notificationProjectId: String? = null
 ) {
   val navigationController = rememberNavController()
-  val projectRepository = FirestoreRepositoriesProvider.projectRepository
-  val auth = Firebase.auth
   val testProjectId = "test-project-id"
-  val testProject =
-      Project(
-          projectId = testProjectId,
-          name = "Test Project",
-          description = "This is a test project",
-          status = ProjectStatus.OPEN,
-          createdBy = auth.currentUser?.uid ?: "unknown",
-          memberIds = listOf(auth.currentUser?.uid ?: "unknown"),
-      )
 
   // Handle the case where the app has been started by a notification
   LaunchedEffect(notificationType, notificationId, notificationProjectId) {
