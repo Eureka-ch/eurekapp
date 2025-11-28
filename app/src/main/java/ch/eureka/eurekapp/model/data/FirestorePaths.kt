@@ -51,6 +51,9 @@ object FirestorePaths {
   /** Top-level conversations collection */
   const val CONVERSATIONS = "conversations"
 
+  /** Conversation messages subcollection name */
+  const val CONVERSATION_MESSAGES = "messages"
+
   fun userPath(userId: String) = "$USERS/$userId"
 
   fun projectPath(projectId: String) = "$PROJECTS/$projectId"
@@ -111,6 +114,12 @@ object FirestorePaths {
   fun conversationsPath() = CONVERSATIONS
 
   fun conversationPath(conversationId: String) = "$CONVERSATIONS/$conversationId"
+
+  fun conversationMessagesPath(conversationId: String) =
+      "${conversationPath(conversationId)}/$CONVERSATION_MESSAGES"
+
+  fun conversationMessagePath(conversationId: String, messageId: String) =
+      "${conversationMessagesPath(conversationId)}/$messageId"
 
   fun activitiesPath() = ACTIVITIES
 }
