@@ -16,7 +16,11 @@ enum class UserNotificationSettingsKeys(
 
   // Message notifications
   ON_NEW_MESSAGE_NOTIFY(
-      "Notify when a new message is sent: ", NotificationType.MESSAGE_NOTIFICATION)
+      "Notify when a new message is sent: ", NotificationType.MESSAGE_NOTIFICATION),
+
+  // General preferences
+  SHOW_INTERACTIVE_HELP(
+      "Show interactive tips on main screens: ", NotificationType.GENERAL_NOTIFICATION)
 }
 
 val defaultValuesNotificationSettingsKeys: Map<String, Boolean> =

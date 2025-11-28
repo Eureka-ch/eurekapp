@@ -37,6 +37,8 @@ import ch.eureka.eurekapp.model.data.task.getDueDateTag
 import ch.eureka.eurekapp.ui.components.EurekaInfoCard
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
 import ch.eureka.eurekapp.ui.components.IconTextRow
+import ch.eureka.eurekapp.ui.components.help.HelpContext
+import ch.eureka.eurekapp.ui.components.help.InteractiveHelpEntryPoint
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.home.HOME_ITEMS_LIMIT
 import ch.eureka.eurekapp.ui.home.HomeOverviewUiState
@@ -105,10 +107,25 @@ fun HomeOverviewScreen(
 ) {
   val overrideState = HomeOverviewTestOverrides.uiState
   if (overrideState != null) {
-    HomeOverviewLayout(modifier = modifier, uiState = overrideState, actions = actions)
+    HomeOverviewScreenContainer(modifier = modifier, uiState = overrideState, actions = actions)
   } else {
     val uiState by homeOverviewViewModel.uiState.collectAsState()
-    HomeOverviewLayout(modifier = modifier, uiState = uiState, actions = actions)
+    HomeOverviewScreenContainer(modifier = modifier, uiState = uiState, actions = actions)
+  }
+}
+
+@Composable
+private fun HomeOverviewScreenContainer(
+    modifier: Modifier,
+    uiState: HomeOverviewUiState,
+    actions: HomeOverviewActions
+) {
+  Box(modifier = modifier.fillMaxSize()) {
+    HomeOverviewLayout(modifier = Modifier.fillMaxSize(), uiState = uiState, actions = actions)
+    InteractiveHelpEntryPoint(
+        helpContext = HelpContext.HOME_OVERVIEW,
+        userProvidedName = uiState.currentUserName,
+        modifier = Modifier.align(Alignment.BottomEnd).padding(Spacing.md))
   }
 }
 
