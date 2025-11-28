@@ -111,11 +111,11 @@ fun InteractiveHelpEntryPoint(
   }
 }
 
-private data class HelpContent(val title: String, val intro: String, val steps: List<HelpStep>)
+internal data class HelpContent(val title: String, val intro: String, val steps: List<HelpStep>)
 
-private data class HelpStep(val highlight: String, val detail: String)
+internal data class HelpStep(val highlight: String, val detail: String)
 
-private fun HelpContext.toHelpContent(userName: String): HelpContent {
+internal fun HelpContext.toHelpContent(userName: String): HelpContent {
   return when (this) {
     HelpContext.HOME_OVERVIEW ->
         HelpContent(
