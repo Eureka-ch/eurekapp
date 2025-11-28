@@ -4,6 +4,8 @@
 
 package ch.eureka.eurekapp.ui.meeting
 
+import androidx.test.platform.app.InstrumentationRegistry
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.*
 import com.google.firebase.Timestamp
 import java.util.*
@@ -63,6 +65,8 @@ class MeetingDetailViewModelTest {
   fun setup() {
     Dispatchers.setMain(testDispatcher)
     repositoryMock = MeetingDetailRepositoryMock()
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+    ConnectivityObserverProvider.initialize(context)
   }
 
   @After
