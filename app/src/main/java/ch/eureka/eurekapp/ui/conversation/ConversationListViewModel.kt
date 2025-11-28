@@ -161,8 +161,12 @@ open class ConversationListViewModel(
         projectName = project?.name ?: "Unknown Project")
   }
 
-  /** Clear the error message by reloading conversations. */
+  /** Clear the error message. */
   fun clearErrorMsg() {
-    loadConversations()
+    _conversationsState.value =
+        when (val current = _conversationsState.value) {
+          is ConversationsDataState.Error -> ConversationsDataState.Success(emptyList())
+          else -> current
+        }
   }
 }
