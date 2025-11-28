@@ -19,6 +19,7 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
@@ -136,13 +137,21 @@ open class TaskDependenciesScreenTest : TestCase() {
       projectRepository.updateProject(
           Project().copy(projectId = projectId, memberIds = listOf("user1", "user2")))
 
-      tasksRepository.createTask(Task().copy(taskID = rootTaskId, projectId = projectId))
+      tasksRepository.createTask(
+          Task().copy(taskID = rootTaskId, projectId = projectId, title = "Root Task"))
       tasksRepository.createTask(
           Task()
               .copy(
                   taskID = dependentTaskId,
                   projectId = projectId,
+                  title = "Dependent Task",
                   dependingOnTasks = listOf(rootTaskId)))
+
+      // Wait for Firestore to persist the data and verify it's there
+      composeTestRule.waitForIdle()
+      val allTasks = tasksRepository.getTasksInProject(projectId).first()
+      assert(allTasks.any { it.taskID == rootTaskId })
+      assert(allTasks.any { it.taskID == dependentTaskId })
 
       val viewModel =
           TaskDependenciesViewModel(
@@ -155,7 +164,10 @@ open class TaskDependenciesScreenTest : TestCase() {
             projectId = projectId, taskId = rootTaskId, taskDependenciesViewModel = viewModel)
       }
 
-      composeTestRule.waitUntil(timeoutMillis = 5_000) {
+      composeTestRule.waitForIdle()
+
+      // Wait for the dependent task to appear (increased timeout to allow Firestore to sync)
+      composeTestRule.waitUntil(timeoutMillis = 10_000) {
         try {
           composeTestRule
               .onNodeWithTag(
