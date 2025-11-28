@@ -42,6 +42,7 @@ import com.google.firebase.storage.FirebaseStorage
 object RepositoriesProvider {
 
   private var applicationContext: Context? = null
+  private const val ERROR_MSG = "RepositoryProvider.initialize(context) must be called first"
 
   /**
    * Initializes the provider with the application context.
@@ -92,10 +93,7 @@ object RepositoriesProvider {
   }
 
   private val _userPreferencesRepository: UserPreferencesRepository by lazy {
-    val context =
-        applicationContext
-            ?: throw IllegalStateException(
-                "RepositoryProvider.initialize(context) must be called first")
+    val context = applicationContext ?: throw IllegalStateException(ERROR_MSG)
     UserPreferencesRepository(context)
   }
 
@@ -104,18 +102,12 @@ object RepositoriesProvider {
 
   val workManager: WorkManager
     get() {
-      val context =
-          applicationContext
-              ?: throw IllegalStateException(
-                  "RepositoryProvider.initialize(context) must be called first")
+      val context = applicationContext ?: throw IllegalStateException(ERROR_MSG)
       return WorkManager.getInstance(context)
     }
 
   private val _unifiedSelfNotesRepository: UnifiedSelfNotesRepository by lazy {
-    val context =
-        applicationContext
-            ?: throw IllegalStateException(
-                "RepositoryProvider.initialize(context) must be called first")
+    val context = applicationContext ?: throw IllegalStateException(ERROR_MSG)
 
     val database = Room.databaseBuilder(context, AppDatabase::class.java, "eureka_local.db").build()
 

@@ -8,24 +8,25 @@ import androidx.work.WorkerParameters
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import com.google.firebase.auth.FirebaseAuthException
 import java.io.IOException
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
  * A background worker that handles the synchronization of local self-notes to the cloud.
  *
- * This worker is scheduled by the [ch.eureka.eurekapp.ui.notes.SelfNotesViewModel] when a note is
- * created while offline or when the app needs to ensure data integrity. It checks for any notes in
- * the local database marked as `pendingSync` and attempts to upload them to Firestore.
- *
  * @param context The application context, provided by WorkManager.
  * @param params Parameters for the worker, provided by WorkManager.
+ * @param dispatcher Default dispatcher used in [SyncNotesWorker].
  */
-class SyncNotesWorker(context: Context, params: WorkerParameters) :
-    CoroutineWorker(context, params) {
+class SyncNotesWorker(
+    context: Context,
+    params: WorkerParameters,
+    val dispatcher: CoroutineDispatcher = Dispatchers.IO
+) : CoroutineWorker(context, params) {
 
   override suspend fun doWork(): Result =
-      withContext(Dispatchers.IO) {
+      withContext(dispatcher) {
         try {
           val repository = RepositoriesProvider.unifiedSelfNotesRepository
 

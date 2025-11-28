@@ -11,7 +11,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.map.Location
@@ -166,7 +165,6 @@ sealed interface Route {
 @Composable
 fun NavigationMenu() {
   val navigationController = rememberNavController()
-  val projectRepository = RepositoriesProvider.projectRepository
   val auth = Firebase.auth
   val testProjectId = "test-project-id"
   Project(

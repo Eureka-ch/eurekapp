@@ -170,21 +170,13 @@ configurations.forEach { configuration ->
 }
 
 dependencies {
-    // AndroidX Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.material)
-
-    // Room
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
-
-    // Kotlin
+    implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.kotlin.reflect)
-
-    // Firebase BOM (manages versions)
+    implementation(libs.kotlinx.serialization.json)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
@@ -193,95 +185,59 @@ dependencies {
     implementation(libs.firebase.ui.auth)
     implementation(libs.firebase.functions)
     implementation(libs.kotlinx.coroutines.play.services)
-    implementation(libs.androidx.compose.ui)
-
-    // Jetpack Compose BOM (manages versions)
     val composeBom = platform(libs.compose.bom)
     implementation(composeBom)
-    globalTestImplementation(composeBom)
-
+    implementation(libs.androidx.compose.ui)
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.graphics)
     implementation(libs.compose.material3)
     implementation(libs.compose.activity)
     implementation(libs.compose.viewmodel)
     implementation(libs.compose.preview)
-    debugImplementation(libs.compose.tooling)
     implementation(libs.androidx.material.icons.extended)
-
-    // Navigation
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.kotlinx.serialization.json)
-
-    // Credential Manager (Google Sign-In)
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.okhttp)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.serialization.converter)
     implementation(libs.credentials)
     implementation(libs.credentials.play.services.auth)
     implementation(libs.googleid)
-
-    // Room Database
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
-
-    // DataStore Preferences
-    implementation(libs.androidx.datastore.preferences)
-
-    // Testing Room
-    testImplementation(libs.androidx.room.testing)
-
-    // Camera
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.location)
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation(libs.guava)
-
-    // Image Loading
-    implementation(libs.coil.compose)
-
-    // Networking
-    implementation(libs.okhttp)
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.serialization.converter)
-
-    // Reorderable (Drag & Drop)
     implementation(libs.reorderable)
-
-    // Google Maps
-    implementation(libs.maps.compose)
-    implementation(libs.play.services.location)
-
-    // Work
-    implementation(libs.androidx.work.runtime.ktx)
-
-    // Testing - Unit
+    ksp(libs.androidx.room.compiler)
+    debugImplementation(libs.compose.tooling)
+    debugImplementation(libs.compose.test.manifest)
+    testImplementation(libs.androidx.room.testing)
     testImplementation(libs.junit)
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.mockk)
-    globalTestImplementation(libs.mockwebserver)
     testImplementation(libs.robolectric)
     testImplementation(kotlin("test"))
     testImplementation(libs.json)
     testImplementation(libs.kotlinx.coroutines.test)
-
-    // Testing - Android
+    androidTestImplementation(libs.mockito.android)
+    androidTestImplementation(libs.mockito.kotlin)
+    androidTestImplementation(libs.mockk.android)
+    globalTestImplementation(composeBom)
+    globalTestImplementation(libs.mockwebserver)
     globalTestImplementation(libs.androidx.junit)
     globalTestImplementation(libs.androidx.espresso.core)
     globalTestImplementation(libs.androidx.lifecycle.runtime.ktx)
     globalTestImplementation(libs.androidx.lifecycle.viewmodel.ktx)
-    androidTestImplementation(libs.mockito.android)
-    androidTestImplementation(libs.mockito.kotlin)
-    androidTestImplementation(libs.mockk.android)
-
-    // Testing - Kaspresso
     globalTestImplementation(libs.kaspresso)
     globalTestImplementation(libs.kaspresso.compose)
-
-    // Testing - Compose
     globalTestImplementation(libs.compose.test.junit)
-    debugImplementation(libs.compose.test.manifest)
-
 }
 
 tasks.withType<Test> {

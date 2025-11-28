@@ -34,12 +34,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
-/**
- * Unit tests for [UnifiedSelfNotesRepository].
- *
- * Uses Robolectric to handle Android logging and threading. Uses MockK to mock database, firestore,
- * and connectivity dependencies.
- */
+/** Unit tests for [UnifiedSelfNotesRepository]. */
 @RunWith(RobolectricTestRunner::class)
 class UnifiedSelfNotesRepositoryTest {
 

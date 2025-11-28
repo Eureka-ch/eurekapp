@@ -8,11 +8,7 @@ import androidx.room.Query
 import ch.eureka.eurekapp.model.database.entities.MessageEntity
 import kotlinx.coroutines.flow.Flow
 
-/**
- * Data Access Object (DAO) for managing [MessageEntity] items in the local Room database.
- * * NOTE: Since these are now blocking calls, they must be called from a background thread
- *   (Dispatchers.IO), which ViewModel and Worker are already doing.
- */
+/** Data Access Object (DAO) for managing [MessageEntity] items in the local Room database. */
 @Dao
 interface MessageDao {
 

@@ -31,13 +31,6 @@ import kotlinx.coroutines.launch
 /**
  * ViewModel for the Self Notes screen.
  *
- * This ViewModel manages the UI state for the "Note to Self" feature. It handles:
- * - Loading notes from the [UnifiedSelfNotesRepository].
- * - Creating and sending new notes.
- * - Toggling between Local-only and Cloud storage modes.
- * - observing network connectivity to trigger synchronization of offline notes.
- * - Scheduling background work for robust synchronization.
- *
  * @property repository The repository for managing notes (Unified Local + Cloud).
  * @property userPrefs The repository for accessing user preferences (storage mode).
  * @property workManager The system WorkManager for scheduling background sync tasks.
@@ -58,16 +51,7 @@ constructor(
   private val _isSending = MutableStateFlow(false)
   private val _infoMsg = MutableStateFlow<String?>(null)
 
-  /**
-   * The single source of truth for the UI state.
-   *
-   * Combines data from multiple flows:
-   * - Notes from the repository
-   * - Current text input
-   * - Sending status
-   * - Error/Status messages
-   * - User's cloud storage preference
-   */
+  /** The single source of truth for the UI state. */
   val uiState: StateFlow<SelfNotesUIState> =
       combine(
               repository
@@ -131,9 +115,6 @@ constructor(
   /**
    * Toggles the storage mode between Local-only and Cloud.
    *
-   * When enabling Cloud mode, this triggers an immediate sync of existing local notes. Updates the
-   * [_infoMsg] flow with a status message upon completion.
-   *
    * @param enableCloud True to enable Cloud storage/sync, False for Local-only.
    */
   fun toggleStorageMode(enableCloud: Boolean) {
@@ -160,13 +141,7 @@ constructor(
     _currentMessage.value = text
   }
 
-  /**
-   * Creates and saves a new note.
-   *
-   * The note is created with the current input text. It is saved via the repository, which handles
-   * local storage and potential cloud upload. If successful, clears the input and schedules a
-   * background worker for redundancy.
-   */
+  /** Creates and saves a new note. */
   fun sendNote() {
     val currentMessage = _currentMessage.value.trim()
     if (currentMessage.isEmpty()) return
@@ -202,13 +177,6 @@ constructor(
     }
   }
 
-  /**
-   * Schedules a [SyncNotesWorker] to run when the device has network connectivity.
-   *
-   * This acts as a "safety net" to ensure notes are uploaded eventually, even if the app is closed
-   * or the immediate upload fails. Uses [ExistingWorkPolicy.KEEP] to avoid duplicate scheduled
-   * jobs.
-   */
   private fun scheduleWorker() {
     val request =
         OneTimeWorkRequestBuilder<SyncNotesWorker>()
@@ -225,21 +193,8 @@ constructor(
   }
 }
 
-/**
- * Sealed class representing the loading state of notes. Used internally to map the repository Flow
- * result to the UI state.
- */
 private sealed class NotesLoadState {
-  /**
-   * State indicating notes loaded successfully.
-   *
-   * @property notes The list of loaded messages.
-   */
   data class Success(val notes: List<Message>) : NotesLoadState()
-  /**
-   * State indicating an error occurred while loading notes.
-   *
-   * @property message The error message describing what went wrong.
-   */
+
   data class Error(val message: String) : NotesLoadState()
 }
