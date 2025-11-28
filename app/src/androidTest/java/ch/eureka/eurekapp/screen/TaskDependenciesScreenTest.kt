@@ -124,6 +124,52 @@ open class TaskDependenciesScreenTest : TestCase() {
     }
   }
 
+  @Test
+  fun showsTasksThatDependOnRootTask() {
+    runBlocking {
+      val projectId = "dependency-project"
+      val rootTaskId = "root-task"
+      val dependentTaskId = "dependent-task"
+
+      projectRepository.createProject(
+          Project().copy(projectId = projectId, memberIds = listOf("user1")), "user1")
+      projectRepository.updateProject(
+          Project().copy(projectId = projectId, memberIds = listOf("user1", "user2")))
+
+      tasksRepository.createTask(Task().copy(taskID = rootTaskId, projectId = projectId))
+      tasksRepository.createTask(
+          Task()
+              .copy(
+                  taskID = dependentTaskId,
+                  projectId = projectId,
+                  dependingOnTasks = listOf(rootTaskId)))
+
+      val viewModel =
+          TaskDependenciesViewModel(
+              tasksRepository = tasksRepository,
+              usersRepository = usersRepository,
+              projectsRepository = projectRepository)
+
+      composeTestRule.setContent {
+        TaskDependenciesScreen(
+            projectId = projectId, taskId = rootTaskId, taskDependenciesViewModel = viewModel)
+      }
+
+      composeTestRule.waitUntil(timeoutMillis = 5_000) {
+        try {
+          composeTestRule
+              .onNodeWithTag(
+                  TaskDependenciesScreenTestTags.getDependentTaskTestTag(
+                      Task(taskID = dependentTaskId)))
+              .assertIsDisplayed()
+          true
+        } catch (e: AssertionError) {
+          false
+        }
+      }
+    }
+  }
+
   @After
   fun tearDown() = runBlocking {
     // Ensure both Firestore and Auth are reset between tests to avoid leaking auth state
