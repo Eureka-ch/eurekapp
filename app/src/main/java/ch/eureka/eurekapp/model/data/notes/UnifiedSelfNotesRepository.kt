@@ -61,7 +61,7 @@ class UnifiedSelfNotesRepository(
       withContext(dispatcher) {
         try {
           val userId = getCurrentUserId()
-          check(!(userId.isEmpty())) { "User not logged in" }
+          check(userId.isNotEmpty()) { "User not logged in" }
 
           val isCloudEnabled = userPreferences.isCloudStorageEnabled.first()
           val messageWithUser = message.copy(senderId = userId)

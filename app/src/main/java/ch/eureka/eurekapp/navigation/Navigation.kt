@@ -1,6 +1,7 @@
 // This code was partially written by GPT-5, and Grok
 package ch.eureka.eurekapp.navigation
 
+import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -191,7 +192,7 @@ fun NavigationMenu(
           }
         }
         NotificationType.MESSAGE_NOTIFICATION.backendTypeString -> {
-          // TODO fill this when we make the chat screen
+          Log.d("Navigation", "Not yet implemented")
         }
         else -> {
           // Do nothing
