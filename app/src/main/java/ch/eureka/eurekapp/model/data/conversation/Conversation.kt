@@ -17,11 +17,17 @@ Co-author: GPT-5 Codex
  * @property memberIds List of user IDs participating in this conversation.
  * @property createdBy User ID of the person who created this conversation.
  * @property createdAt Timestamp when the conversation was created.
+ * @property lastMessageAt Timestamp of the most recent message.
+ * @property lastMessagePreview Preview text of the most recent message.
+ * @property lastReadAt Map of user IDs to their last read timestamp.
  */
 data class Conversation(
     val conversationId: String = "",
     val projectId: String = "",
     val memberIds: List<String> = emptyList(),
     val createdBy: String = "",
-    val createdAt: Timestamp = Timestamp.now()
+    val createdAt: Timestamp = Timestamp.now(),
+    val lastMessageAt: Timestamp? = null,
+    val lastMessagePreview: String? = null,
+    val lastReadAt: Map<String, Timestamp> = emptyMap()
 )
