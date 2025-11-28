@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.screens.subscreens.tasks.creation
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -44,6 +46,8 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.TaskTitleField
 import ch.eureka.eurekapp.screens.subscreens.tasks.UserAssignmentField
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.components.help.HelpContext
+import ch.eureka.eurekapp.ui.components.help.InteractiveHelpEntryPoint
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 const val CREATE_SCREEN_PHOTO_BUTTON_SIZE = 0.3f
@@ -90,13 +94,11 @@ fun CreateTaskScreen(
             })
       },
       content = { paddingValues ->
-        Column(
-            modifier =
-                Modifier.fillMaxSize()
-                    .padding(16.dp)
-                    .padding(paddingValues)
-                    .verticalScroll(scrollState),
-            verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+          Column(
+              modifier =
+                  Modifier.fillMaxSize().padding(16.dp).verticalScroll(scrollState),
+              verticalArrangement = Arrangement.spacedBy(16.dp)) {
               TaskTitleField(
                   value = createTaskState.title,
                   onValueChange = { createTaskViewModel.setTitle(it) },
@@ -174,6 +176,10 @@ fun CreateTaskScreen(
                     }
                   })
             }
+          InteractiveHelpEntryPoint(
+              helpContext = HelpContext.CREATE_TASK,
+              modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp))
+        }
       })
 }
 
