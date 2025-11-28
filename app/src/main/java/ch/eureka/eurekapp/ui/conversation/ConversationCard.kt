@@ -47,6 +47,9 @@ object ConversationCardTestTags {
   const val CONVERSATION_CARD = "ConversationCard"
   const val MEMBER_NAME = "ConversationMemberName"
   const val PROJECT_NAME = "ConversationProjectName"
+  const val LAST_MESSAGE = "ConversationLastMessage"
+  const val LAST_MESSAGE_TIME = "ConversationLastMessageTime"
+  const val UNREAD_INDICATOR = "ConversationUnreadIndicator"
 }
 
 /**
@@ -104,12 +107,28 @@ fun ConversationCard(
 
               // Text content container taking remaining horizontal space
               Column(modifier = Modifier.weight(1f)) {
-                // Primary text: display name of the other conversation participant
-                Text(
-                    text = displayData.otherMemberName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.testTag(ConversationCardTestTags.MEMBER_NAME))
+                // Header row: member name and time
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically) {
+                      // Primary text: display name of the other conversation participant
+                      Text(
+                          text = displayData.otherMemberName,
+                          style = MaterialTheme.typography.titleMedium,
+                          fontWeight =
+                              if (displayData.hasUnread) FontWeight.Bold else FontWeight.SemiBold,
+                          modifier =
+                              Modifier.weight(1f).testTag(ConversationCardTestTags.MEMBER_NAME))
+
+                      // Last message time
+                      displayData.lastMessageTime?.let { time ->
+                        Text(
+                            text = time,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.testTag(ConversationCardTestTags.LAST_MESSAGE_TIME))
+                      }
+                    }
 
                 // Secondary text: project name provides context for this conversation
                 Text(
@@ -117,6 +136,35 @@ fun ConversationCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.testTag(ConversationCardTestTags.PROJECT_NAME))
+
+                // Last message preview row with unread indicator
+                displayData.lastMessagePreview?.let { preview ->
+                  Row(
+                      modifier = Modifier.fillMaxWidth(),
+                      verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = preview,
+                            style = MaterialTheme.typography.bodySmall,
+                            color =
+                                if (displayData.hasUnread) MaterialTheme.colorScheme.onSurface
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = if (displayData.hasUnread) FontWeight.Medium else null,
+                            maxLines = 1,
+                            modifier =
+                                Modifier.weight(1f).testTag(ConversationCardTestTags.LAST_MESSAGE))
+
+                        // Unread indicator dot
+                        if (displayData.hasUnread) {
+                          Spacer(modifier = Modifier.width(8.dp))
+                          Box(
+                              modifier =
+                                  Modifier.size(8.dp)
+                                      .clip(CircleShape)
+                                      .background(MaterialTheme.colorScheme.primary)
+                                      .testTag(ConversationCardTestTags.UNREAD_INDICATOR))
+                        }
+                      }
+                }
               }
             }
       }
