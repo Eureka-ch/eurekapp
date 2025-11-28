@@ -24,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.test.platform.app.InstrumentationRegistry
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
@@ -92,6 +93,8 @@ open class ViewTaskScreenTest : TestCase() {
       context = InstrumentationRegistry.getInstrumentation().targetContext
       mockConnectivityObserver = MockConnectivityObserver(context)
       mockConnectivityObserver.setConnected(true)
+
+      ConnectivityObserverProvider.initialize(context)
     }
   }
 

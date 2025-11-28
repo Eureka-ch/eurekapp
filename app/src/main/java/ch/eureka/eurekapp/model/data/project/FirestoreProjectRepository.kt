@@ -1,6 +1,7 @@
 package ch.eureka.eurekapp.model.data.project
 
 import ch.eureka.eurekapp.model.data.FirestorePaths
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -71,7 +72,8 @@ class FirestoreProjectRepository(
     val projectRef = firestore.collection(FirestorePaths.PROJECTS).document(project.projectId)
 
     // Add creator to memberIds
-    val projectWithMember = project.copy(memberIds = listOf(creatorId))
+    val projectWithMember =
+        project.copy(memberIds = listOf(creatorId), lastUpdated = Timestamp.now())
     projectRef.set(projectWithMember).await()
 
     // Then create initial member document (security rules require project to exist first)
@@ -83,7 +85,12 @@ class FirestoreProjectRepository(
   }
 
   override suspend fun updateProject(project: Project): Result<Unit> = runCatching {
-    firestore.collection(FirestorePaths.PROJECTS).document(project.projectId).set(project).await()
+    val updatedProject = project.copy(lastUpdated = Timestamp.now())
+    firestore
+        .collection(FirestorePaths.PROJECTS)
+        .document(project.projectId)
+        .set(updatedProject)
+        .await()
   }
 
   override suspend fun deleteProject(projectId: String): Result<Unit> = runCatching {

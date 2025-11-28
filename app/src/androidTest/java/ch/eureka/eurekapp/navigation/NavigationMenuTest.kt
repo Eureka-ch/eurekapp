@@ -16,11 +16,11 @@ import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.screens.HomeOverviewTestTags
 import ch.eureka.eurekapp.screens.IdeasScreenTestTags
 import ch.eureka.eurekapp.screens.SelfNotesScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreenTestTags
-import ch.eureka.eurekapp.ui.conversation.ConversationListScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.ui.profile.ProfileScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
@@ -41,6 +41,7 @@ Co-author: GPT-5 Codex
 */
 
 class NavigationMenuTest : TestCase() {
+
   @get:Rule
   val permissionRule: GrantPermissionRule =
       GrantPermissionRule.grant(
@@ -94,9 +95,6 @@ class NavigationMenuTest : TestCase() {
         .onNodeWithTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON)
         .assertIsDisplayed()
     composeTestRule
-        .onNodeWithTag(BottomBarNavigationTestTags.CONVERSATIONS_SCREEN_BUTTON)
-        .assertIsDisplayed()
-    composeTestRule
         .onNodeWithTag(BottomBarNavigationTestTags.NOTES_SCREEN_BUTTON)
         .assertIsDisplayed()
   }
@@ -104,6 +102,11 @@ class NavigationMenuTest : TestCase() {
   @Test
   fun testAllPages() {
     composeTestRule.setContent { NavigationMenu() }
+
+    // Verify HomeOverview is the start destination
+    composeTestRule
+        .onNodeWithTag(ch.eureka.eurekapp.screens.HomeOverviewTestTags.SCREEN)
+        .assertIsDisplayed()
 
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON).performClick()
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.PROFILE_SCREEN).assertIsDisplayed()
@@ -120,10 +123,9 @@ class NavigationMenuTest : TestCase() {
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.NOTES_SCREEN_BUTTON).performClick()
     composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.SCREEN).assertIsDisplayed()
 
-    composeTestRule
-        .onNodeWithTag(BottomBarNavigationTestTags.CONVERSATIONS_SCREEN_BUTTON)
-        .performClick()
-    composeTestRule.onNodeWithTag(ConversationListScreenTestTags.TITLE).assertIsDisplayed()
+    // Verify home button navigates back to HomeOverview
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertIsDisplayed()
   }
 
   @Test

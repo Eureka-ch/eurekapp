@@ -15,6 +15,7 @@ class MockUserRepository : UserRepository {
   private val users = mutableMapOf<String, User>()
   private val userFlows = mutableMapOf<String, Flow<User?>>()
   private val errors = mutableMapOf<String, Exception>()
+  private var currentUserFlow: Flow<User?> = flowOf(null)
 
   // Track method calls for verification
   val getUserByIdCalls = mutableListOf<String>()
@@ -29,14 +30,19 @@ class MockUserRepository : UserRepository {
     userFlows[userId] = flow
   }
 
-  /** Configure a user to return for a user ID (simplified) */
-  fun setUser(userId: String, flow: Flow<User?>) {
-    userFlows[userId] = flow
-  }
-
   /** Configure an error to throw for a specific user ID */
   fun setError(userId: String, error: Exception) {
     errors[userId] = error
+  }
+
+  /** Configure the flow returned by getCurrentUser() */
+  fun setCurrentUser(flow: Flow<User?>) {
+    currentUserFlow = flow
+  }
+
+  /** Configure a specific user flow returned by getUserById */
+  fun setUser(userId: String, flow: Flow<User?>) {
+    userFlows[userId] = flow
   }
 
   /** Clear all configuration */
@@ -45,6 +51,7 @@ class MockUserRepository : UserRepository {
     userFlows.clear()
     errors.clear()
     getUserByIdCalls.clear()
+    currentUserFlow = flowOf(null)
   }
 
   override fun getUserById(userId: String): Flow<User?> {
@@ -62,7 +69,7 @@ class MockUserRepository : UserRepository {
     return flowOf(users[userId])
   }
 
-  override fun getCurrentUser(): Flow<User?> = flowOf(null)
+  override fun getCurrentUser(): Flow<User?> = currentUserFlow
 
   override suspend fun saveUser(user: User): Result<Unit> = Result.success(Unit)
 

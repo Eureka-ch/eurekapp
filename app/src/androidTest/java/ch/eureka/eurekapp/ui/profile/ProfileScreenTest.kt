@@ -1,3 +1,8 @@
+/*
+Note: This file was co-authored by Claude Code.
+Note: This file was co-authored by Grok.
+Portions of the code in this file are inspired by the Bootcamp solution B3 provided by the SwEnt staff.
+*/
 package ch.eureka.eurekapp.ui.profile
 
 import androidx.compose.ui.test.*
@@ -542,5 +547,51 @@ class ProfileScreenTest {
     // Then
     composeTestRule.onNodeWithText(maxText).assertExists()
     composeTestRule.onNodeWithText("50/50").assertExists()
+  }
+
+  @Test
+  fun profileScreen_activityFeedButton_triggersCallback() {
+    // Given
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    var callbackTriggered = false
+
+    composeTestRule.setContent {
+      ProfileScreen(
+          viewModel = viewModel,
+          firebaseAuth = firebaseAuth,
+          onNavigateToActivityFeed = { callbackTriggered = true })
+    }
+
+    // When - Click the activity feed button
+    composeTestRule.onNodeWithText("View Activity Feed").performClick()
+    composeTestRule.waitForIdle()
+
+    // Then - Callback should be triggered
+    assert(callbackTriggered) { "Expected callback to be triggered but it wasn't" }
+  }
+
+  @Test
+  fun profileScreen_activityFeedButton_displaysWhenCallbackProvided() {
+    // Given
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+
+    composeTestRule.setContent {
+      ProfileScreen(
+          viewModel = viewModel, firebaseAuth = firebaseAuth, onNavigateToActivityFeed = {})
+    }
+
+    // Then - Button should be displayed
+    composeTestRule.onNodeWithText("View Activity Feed").assertIsDisplayed()
+  }
+
+  @Test
+  fun profileScreen_activityFeedButton_displaysWithDefaultCallback() {
+    // Given
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
+
+    // Then - Button should be displayed with default callback
+    composeTestRule.onNodeWithText("View Activity Feed").assertIsDisplayed()
   }
 }

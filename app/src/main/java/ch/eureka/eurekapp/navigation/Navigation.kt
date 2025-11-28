@@ -16,6 +16,8 @@ import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.model.notifications.NotificationType
 import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.FilesManagementScreen
+import ch.eureka.eurekapp.screens.HomeOverviewActions
+import ch.eureka.eurekapp.screens.HomeOverviewScreen
 import ch.eureka.eurekapp.screens.IdeasScreen
 import ch.eureka.eurekapp.screens.OverviewProjectScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
@@ -30,9 +32,9 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
+import ch.eureka.eurekapp.ui.activity.ActivityFeedScreen
 import ch.eureka.eurekapp.ui.authentication.TokenEntryScreen
 import ch.eureka.eurekapp.ui.conversation.ConversationListScreen
-import ch.eureka.eurekapp.ui.conversation.CreateConversationScreen
 import ch.eureka.eurekapp.ui.map.MeetingLocationSelectionScreen
 import ch.eureka.eurekapp.ui.meeting.CreateDateTimeFormatProposalForMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
@@ -47,15 +49,20 @@ import ch.eureka.eurekapp.ui.profile.ProfileScreen
 import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
 
+// part of the code was written by GPT-5, and Grok
 sealed interface Route {
   // Main screens
   @Serializable data object ProjectSelection : Route
+
+  @Serializable data object HomeOverview : Route
 
   @Serializable data class OverviewProject(val projectId: String) : Route
 
   @Serializable data object Profile : Route
 
   @Serializable data object SelfNotes : Route
+
+  @Serializable data object ActivityFeed : Route
 
   sealed interface TasksSection : Route {
     companion object {
@@ -79,18 +86,6 @@ sealed interface Route {
     data class TaskDependence(val projectId: String, val taskId: String) : TasksSection
   }
 
-  // Conversations section - 1-on-1 chats between project members
-  sealed interface ConversationsSection : Route {
-    companion object {
-      val routes: Set<KClass<out ConversationsSection>>
-        get() = ConversationsSection::class.sealedSubclasses.toSet()
-    }
-
-    @Serializable data object Conversations : ConversationsSection
-
-    @Serializable data object CreateConversation : ConversationsSection
-  }
-
   sealed interface IdeasSection : Route {
     companion object {
       val routes: Set<KClass<out IdeasSection>>
@@ -98,8 +93,6 @@ sealed interface Route {
     }
 
     @Serializable data object Ideas : IdeasSection
-
-    @Serializable data object CreateIdeas : IdeasSection
   }
 
   sealed interface MeetingsSection : Route {
@@ -109,8 +102,6 @@ sealed interface Route {
     }
 
     @Serializable data object Meetings : MeetingsSection
-
-    @Serializable data class MeetingsOverview(val projectId: String) : MeetingsSection
 
     @Serializable data class CreateMeeting(val projectId: String) : MeetingsSection
 
@@ -159,6 +150,19 @@ sealed interface Route {
   }
 
   @Serializable data object Camera : Route
+
+  sealed interface ConversationsSection : Route {
+    companion object {
+      val routes: Set<KClass<out ConversationsSection>>
+        get() = ConversationsSection::class.sealedSubclasses.toSet()
+    }
+
+    @Serializable data object Conversations : ConversationsSection
+
+    @Serializable data class ConversationDetail(val conversationId: String) : ConversationsSection
+
+    @Serializable data class CreateConversation(val projectId: String) : ConversationsSection
+  }
 }
 
 @Composable
@@ -190,6 +194,17 @@ fun NavigationMenu(
       }
     }
   }
+  FirestoreRepositoriesProvider.projectRepository
+  val auth = Firebase.auth
+  val testProjectId = "test-project-id"
+  Project(
+      projectId = testProjectId,
+      name = "Test Project",
+      description = "This is a test project",
+      status = ProjectStatus.OPEN,
+      createdBy = auth.currentUser?.uid ?: "unknown",
+      memberIds = listOf(auth.currentUser?.uid ?: "unknown"),
+  )
 
   Scaffold(
       containerColor = Color.White,
@@ -198,7 +213,35 @@ fun NavigationMenu(
         NavHost(
             modifier = Modifier.padding(innerPadding),
             navController = navigationController,
-            startDestination = Route.ProjectSelection) {
+            startDestination = Route.HomeOverview) {
+              composable<Route.HomeOverview> {
+                HomeOverviewScreen(
+                    actions =
+                        HomeOverviewActions(
+                            onOpenProjects = {
+                              navigationController.navigate(Route.ProjectSelection)
+                            },
+                            onOpenTasks = {
+                              navigationController.navigate(Route.TasksSection.Tasks)
+                            },
+                            onOpenMeetings = {
+                              navigationController.navigate(Route.MeetingsSection.Meetings)
+                            },
+                            onTaskSelected = { projectId, taskId ->
+                              navigationController.navigate(
+                                  Route.TasksSection.ViewTask(
+                                      projectId = projectId, taskId = taskId))
+                            },
+                            onMeetingSelected = { projectId, meetingId ->
+                              navigationController.navigate(
+                                  Route.MeetingsSection.MeetingDetail(
+                                      projectId = projectId, meetingId = meetingId))
+                            },
+                            onProjectSelected = { projectId ->
+                              navigationController.navigate(
+                                  Route.OverviewProject(projectId = projectId))
+                            }))
+              }
               // Main screens
               composable<Route.ProjectSelection> {
                 ProjectSelectionScreen(
@@ -221,8 +264,21 @@ fun NavigationMenu(
                 TokenEntryScreen(
                     onTokenValidated = { navigationController.navigate(Route.ProjectSelection) })
               }
-              composable<Route.Profile> { ProfileScreen() }
+              composable<Route.Profile> {
+                ProfileScreen(
+                    onNavigateToActivityFeed = {
+                      navigationController.navigate(Route.ActivityFeed)
+                    })
+              }
               composable<Route.SelfNotes> { SelfNotesScreen() }
+              composable<Route.ActivityFeed> {
+                ActivityFeedScreen(
+                    onActivityClick = { _ ->
+                      // Navigate to entity detail screen based on entity type
+                      // For now, just go back
+                      navigationController.popBackStack()
+                    })
+              }
               composable<Route.OverviewProject> { backStackEntry ->
                 val overviewProjectScreenRoute = backStackEntry.toRoute<Route.OverviewProject>()
                 OverviewProjectScreen(projectId = overviewProjectScreenRoute.projectId)
@@ -272,25 +328,22 @@ fun NavigationMenu(
                     navigationController = navigationController)
               }
 
+              // Ideas section
+              composable<Route.IdeasSection.Ideas> { IdeasScreen() }
+
               // Conversations section
               composable<Route.ConversationsSection.Conversations> {
                 ConversationListScreen(
                     onCreateConversation = {
-                      navigationController.navigate(Route.ConversationsSection.CreateConversation)
+                      navigationController.navigate(
+                          Route.ConversationsSection.CreateConversation(projectId = testProjectId))
                     },
-                    onConversationClick = { _ ->
-                      // Future: navigate to chat screen
+                    onConversationClick = { conversationId ->
+                      navigationController.navigate(
+                          Route.ConversationsSection.ConversationDetail(
+                              conversationId = conversationId))
                     })
               }
-              composable<Route.ConversationsSection.CreateConversation> {
-                CreateConversationScreen(
-                    onConversationCreated = {
-                      navigationController.navigate(Route.ConversationsSection.Conversations)
-                    })
-              }
-
-              // Ideas section
-              composable<Route.IdeasSection.Ideas> { IdeasScreen() }
 
               // Meetings section
               composable<Route.MeetingsSection.Meetings> {

@@ -1,6 +1,12 @@
+/*
+ * This file was co-authored by Claude Code and Gemini.
+ */
 package ch.eureka.eurekapp.model.data.meeting
 
 import ch.eureka.eurekapp.model.data.FirestorePaths
+import ch.eureka.eurekapp.model.data.activity.ActivityLogger
+import ch.eureka.eurekapp.model.data.activity.ActivityType
+import ch.eureka.eurekapp.model.data.activity.EntityType
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -132,6 +138,15 @@ class FirestoreMeetingRepository(
         .set(participant)
         .await()
 
+    // Log activity to global feed so everyone sees all meetings
+    ActivityLogger.logActivity(
+        projectId = meeting.projectId,
+        activityType = ActivityType.CREATED,
+        entityType = EntityType.MEETING,
+        entityId = meeting.meetingID,
+        userId = creatorId,
+        metadata = mapOf("title" to meeting.title))
+
     meeting.meetingID
   }
 
@@ -143,10 +158,33 @@ class FirestoreMeetingRepository(
         .document(meeting.meetingID)
         .set(meeting)
         .await()
+
+    // Log activity to global feed after successful update
+    val currentUserId = auth.currentUser?.uid
+    if (currentUserId != null) {
+      ActivityLogger.logActivity(
+          projectId = meeting.projectId,
+          activityType = ActivityType.UPDATED,
+          entityType = EntityType.MEETING,
+          entityId = meeting.meetingID,
+          userId = currentUserId,
+          metadata = mapOf("title" to meeting.title))
+    }
   }
 
   override suspend fun deleteMeeting(projectId: String, meetingId: String): Result<Unit> =
       runCatching {
+        // Get meeting title before deletion for activity log
+        val meetingSnapshot =
+            firestore
+                .collection(FirestorePaths.PROJECTS)
+                .document(projectId)
+                .collection(FirestorePaths.MEETINGS)
+                .document(meetingId)
+                .get()
+                .await()
+        val meetingTitle = meetingSnapshot.toObject(Meeting::class.java)?.title
+
         firestore
             .collection(FirestorePaths.PROJECTS)
             .document(projectId)
@@ -154,6 +192,17 @@ class FirestoreMeetingRepository(
             .document(meetingId)
             .delete()
             .await()
+
+        // Log activity to global feed after successful deletion
+        val currentUserId = requireNotNull(auth.currentUser?.uid) { "User must be logged in." }
+        requireNotNull(meetingTitle) { "Title should not be null." }
+        ActivityLogger.logActivity(
+            projectId = projectId,
+            activityType = ActivityType.DELETED,
+            entityType = EntityType.MEETING,
+            entityId = meetingId,
+            userId = currentUserId,
+            metadata = mapOf("title" to meetingTitle))
       }
 
   override fun getParticipants(projectId: String, meetingId: String): Flow<List<Participant>> =
