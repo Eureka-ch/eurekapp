@@ -1,11 +1,10 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.onNodeWithText
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags.ADD_DEPENDENCY_BUTTON
 import org.junit.Rule
@@ -36,4 +35,3 @@ class TaskDependenciesSelectionFieldTest {
     composeTestRule.onAllNodesWithTag(ADD_DEPENDENCY_BUTTON).assertCountEquals(0)
   }
 }
-
