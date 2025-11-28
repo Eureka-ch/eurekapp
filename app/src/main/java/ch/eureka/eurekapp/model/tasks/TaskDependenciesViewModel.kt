@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 
 /**
  * ViewModel responsible for providing task dependency and user data within a project.
@@ -37,12 +38,10 @@ class TaskDependenciesViewModel(
    *
    * Disclaimer: This description was written by AI (ChatGPT - GPT-5).
    */
-  fun getDependentTasksForTask(projectId: String, task: Task): Flow<List<Task?>> {
-    return combine(
-        task.dependingOnTasks.map { taskId -> tasksRepository.getTaskById(projectId, taskId) }) {
-            tasksArray ->
-          tasksArray.toList()
-        }
+  fun getDependentTasksForTask(projectId: String, task: Task): Flow<List<Task>> {
+    return tasksRepository.getTasksInProject(projectId).map { tasks ->
+      tasks.filter { candidate -> candidate.dependingOnTasks.contains(task.taskID) }
+    }
   }
 
   /**

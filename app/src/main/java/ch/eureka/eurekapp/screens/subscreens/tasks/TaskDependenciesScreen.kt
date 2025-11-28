@@ -215,23 +215,21 @@ fun TreeView(
         TaskSurfaceComponent(task, filterName)
         EqualWidthChildrenColumn(
             tasksDependentOn.value
-                .filter { task2 ->
-                  return@filter task2 != null &&
-                      (task2.status == TaskStatus.TODO || task2.status == TaskStatus.IN_PROGRESS)
+                .filter { child ->
+                  child.status == TaskStatus.TODO || child.status == TaskStatus.IN_PROGRESS
                 }
-                .map { task2 ->
+                .map { childTask ->
                   {
-                    key(task2.hashCode()) {
-                      if (task2 != null) {
-                        TreeView(
-                            modifier =
-                                Modifier.testTag(
-                                    TaskDependenciesScreenTestTags.getDependentTaskTestTag(task2)),
-                            projectId = projectId,
-                            task = task2,
-                            taskDependenciesViewModel = taskDependenciesViewModel,
-                            filterName = filterName)
-                      }
+                    key(childTask.hashCode()) {
+                      TreeView(
+                          modifier =
+                              Modifier.testTag(
+                                  TaskDependenciesScreenTestTags.getDependentTaskTestTag(
+                                      childTask)),
+                          projectId = projectId,
+                          task = childTask,
+                          taskDependenciesViewModel = taskDependenciesViewModel,
+                          filterName = filterName)
                     }
                   }
                 })

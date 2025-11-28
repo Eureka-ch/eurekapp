@@ -547,6 +547,13 @@ private fun DependencyPicker(
             }
       }
     }
+    hasProjectTasks -> {
+      Text(
+          text = "No other tasks in this project can be added as dependencies.",
+          style = MaterialTheme.typography.bodyMedium,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+          modifier = Modifier.fillMaxWidth())
+    }
     !hasProjectTasks -> {
       Text(
           text = "No tasks available in this project",
