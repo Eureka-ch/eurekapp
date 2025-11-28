@@ -60,54 +60,25 @@ fun TemplateEditorContent(
             navigationIcon = { BackButton(onClick = onNavigateBack) },
             actions = {
               if (!config.isLoading && config.loadError == null) {
-                TextButton(
-                    onClick = {
+                SaveButton(
+                    isSaving = state.isSaving,
+                    canSave = state.canSave,
+                    onSave = {
                       onSave(
                           { onSaveSuccess() },
                           { message -> scope.launch { snackbarHostState.showSnackbar(message) } })
-                    },
-                    enabled = !state.isSaving) {
-                      if (state.isSaving)
-                          CircularProgressIndicator(
-                              Modifier.size(16.dp).testTag("progress_indicator"),
-                              color = MaterialTheme.colorScheme.onPrimary)
-                      else
-                          Text(
-                              "Save",
-                              color =
-                                  if (state.canSave) MaterialTheme.colorScheme.onPrimary
-                                  else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f))
-                    }
+                    })
               }
             })
       },
       snackbarHost = { SnackbarHost(snackbarHostState, Modifier.testTag("snackbar_host")) },
       floatingActionButton = {
-        if (!config.isLoading && config.loadError == null && pagerState.currentPage == 0) {
-          ExtendedFloatingActionButton(
-              onClick = { showAddFieldSheet = true },
-              icon = { Icon(Icons.Default.Add, contentDescription = "Add field") },
-              text = { Text("Add Field") },
-              modifier = Modifier.testTag("add_field_button"))
-        }
+        AddFieldFab(
+            isVisible =
+                !config.isLoading && config.loadError == null && pagerState.currentPage == 0,
+            onClick = { showAddFieldSheet = true })
       }) { padding ->
-        when {
-          config.isLoading ->
-              Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-              }
-          config.loadError != null ->
-              Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text(config.loadError)
-              }
-          else ->
-              EditorContent(
-                  padding = padding,
-                  pagerState = pagerState,
-                  scope = scope,
-                  state = state,
-                  callbacks = callbacks)
-        }
+        ScaffoldContent(padding, config, pagerState, scope, state, callbacks)
       }
 
   if (showAddFieldSheet) {
@@ -117,6 +88,63 @@ fun TemplateEditorContent(
           callbacks.onFieldAdd(field)
           callbacks.onFieldEdit(field.id)
         })
+  }
+}
+
+@Composable
+private fun SaveButton(isSaving: Boolean, canSave: Boolean, onSave: () -> Unit) {
+  TextButton(onClick = onSave, enabled = !isSaving) {
+    if (isSaving) {
+      CircularProgressIndicator(
+          Modifier.size(16.dp).testTag("progress_indicator"),
+          color = MaterialTheme.colorScheme.onPrimary)
+    } else {
+      Text(
+          "Save",
+          color =
+              if (canSave) MaterialTheme.colorScheme.onPrimary
+              else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f))
+    }
+  }
+}
+
+@Composable
+private fun AddFieldFab(isVisible: Boolean, onClick: () -> Unit) {
+  if (isVisible) {
+    ExtendedFloatingActionButton(
+        onClick = onClick,
+        icon = { Icon(Icons.Default.Add, contentDescription = "Add field") },
+        text = { Text("Add Field") },
+        modifier = Modifier.testTag("add_field_button"))
+  }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun ScaffoldContent(
+    padding: PaddingValues,
+    config: TemplateEditorConfig,
+    pagerState: PagerState,
+    scope: CoroutineScope,
+    state: TemplateEditorState,
+    callbacks: TemplateEditorCallbacks
+) {
+  when {
+    config.isLoading ->
+        Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+          CircularProgressIndicator()
+        }
+    config.loadError != null ->
+        Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+          Text(config.loadError)
+        }
+    else ->
+        EditorContent(
+            padding = padding,
+            pagerState = pagerState,
+            scope = scope,
+            state = state,
+            callbacks = callbacks)
   }
 }
 
