@@ -132,23 +132,26 @@ open class TaskDependenciesScreenTest : TestCase() {
       val rootTaskId = "root-task"
       val dependentTaskId = "dependent-task"
 
+      // Setup project
       projectRepository.createProject(
           Project().copy(projectId = projectId, memberIds = listOf("user1")), "user1")
       projectRepository.updateProject(
           Project().copy(projectId = projectId, memberIds = listOf("user1", "user2")))
 
-      tasksRepository.createTask(
-          Task().copy(taskID = rootTaskId, projectId = projectId, title = "Root Task"))
-      tasksRepository.createTask(
+      // Create tasks with explicit titles
+      val rootTask = Task().copy(taskID = rootTaskId, projectId = projectId, title = "Root Task")
+      val dependentTask =
           Task()
               .copy(
                   taskID = dependentTaskId,
                   projectId = projectId,
                   title = "Dependent Task",
-                  dependingOnTasks = listOf(rootTaskId)))
+                  dependingOnTasks = listOf(rootTaskId))
 
-      // Wait for Firestore to persist the data and verify it's there
-      composeTestRule.waitForIdle()
+      tasksRepository.createTask(rootTask)
+      tasksRepository.createTask(dependentTask)
+
+      // Wait for Firestore to sync and verify data is present
       val allTasks = tasksRepository.getTasksInProject(projectId).first()
       assert(allTasks.any { it.taskID == rootTaskId })
       assert(allTasks.any { it.taskID == dependentTaskId })
@@ -159,6 +162,10 @@ open class TaskDependenciesScreenTest : TestCase() {
               usersRepository = usersRepository,
               projectsRepository = projectRepository)
 
+      // Verify ViewModel can fetch dependent tasks before showing UI
+      val dependentTasks = viewModel.getDependentTasksForTask(projectId, rootTask).first()
+      assert(dependentTasks.any { it.taskID == dependentTaskId })
+
       composeTestRule.setContent {
         TaskDependenciesScreen(
             projectId = projectId, taskId = rootTaskId, taskDependenciesViewModel = viewModel)
@@ -166,13 +173,12 @@ open class TaskDependenciesScreenTest : TestCase() {
 
       composeTestRule.waitForIdle()
 
-      // Wait for the dependent task to appear (increased timeout to allow Firestore to sync)
+      // Wait for the dependent task to appear in UI
       composeTestRule.waitUntil(timeoutMillis = 10_000) {
         try {
           composeTestRule
               .onNodeWithTag(
-                  TaskDependenciesScreenTestTags.getDependentTaskTestTag(
-                      Task(taskID = dependentTaskId)))
+                  TaskDependenciesScreenTestTags.getDependentTaskTestTag(dependentTask))
               .assertIsDisplayed()
           true
         } catch (e: AssertionError) {
