@@ -35,7 +35,9 @@ import com.google.firebase.auth.auth
 enum class HelpContext {
   HOME_OVERVIEW,
   TASKS,
-  MEETINGS
+  MEETINGS,
+  PROJECTS,
+  CREATE_TASK
 }
 
 @Composable
@@ -160,5 +162,35 @@ private fun HelpContext.toHelpContent(userName: String): HelpContent {
                     HelpStep(
                         "Bouton +",
                         "Le bouton flottant 'Add' crée instantanément une nouvelle réunion (si tu es en ligne).")))
+    HelpContext.PROJECTS ->
+        HelpContent(
+            title = "Vue projet",
+            intro = "Hello $userName, voici comment profiter de l’aperçu projet.",
+            steps =
+                listOf(
+                    HelpStep(
+                        "Contexte du projet",
+                        "La vue affiche les infos clefs du projet sélectionné pour t’aider à rester concentré."),
+                    HelpStep(
+                        "Navigation rapide",
+                        "Tu peux lancer la caméra ou d’autres actions spécifiques au projet depuis cette page."),
+                    HelpStep(
+                        "Revenir à l’accueil",
+                        "Utilise la barre du bas pour retourner rapidement aux tâches ou aux réunions associées.")))
+    HelpContext.CREATE_TASK ->
+        HelpContent(
+            title = "Création guidée",
+            intro = "$userName, passons étape par étape pour créer ta tâche.",
+            steps =
+                listOf(
+                    HelpStep(
+                        "Champs essentiels",
+                        "Commence par le titre, la description et la date limite pour donner le contexte."),
+                    HelpStep(
+                        "Projet & équipe",
+                        "Choisis un projet, assigne des membres et ajoute des dépendances si besoin."),
+                    HelpStep(
+                        "Pièces jointes",
+                        "Ajoute des pièces jointes ou des photos depuis le bas de l’écran avant d’enregistrer.")))
   }
 }
