@@ -96,86 +96,87 @@ fun CreateTaskScreen(
       content = { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
           Column(
-              modifier =
-                  Modifier.fillMaxSize().padding(16.dp).verticalScroll(scrollState),
+              modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(scrollState),
               verticalArrangement = Arrangement.spacedBy(16.dp)) {
-              TaskTitleField(
-                  value = createTaskState.title,
-                  onValueChange = { createTaskViewModel.setTitle(it) },
-                  hasTouched = hasTouchedTitle,
-                  onFocusChanged = { hasTouchedTitle = true })
+                TaskTitleField(
+                    value = createTaskState.title,
+                    onValueChange = { createTaskViewModel.setTitle(it) },
+                    hasTouched = hasTouchedTitle,
+                    onFocusChanged = { hasTouchedTitle = true })
 
-              TaskDescriptionField(
-                  value = createTaskState.description,
-                  onValueChange = { createTaskViewModel.setDescription(it) },
-                  hasTouched = hasTouchedDescription,
-                  onFocusChanged = { hasTouchedDescription = true })
+                TaskDescriptionField(
+                    value = createTaskState.description,
+                    onValueChange = { createTaskViewModel.setDescription(it) },
+                    hasTouched = hasTouchedDescription,
+                    onFocusChanged = { hasTouchedDescription = true })
 
-              TaskDueDateField(
-                  value = createTaskState.dueDate,
-                  onValueChange = { createTaskViewModel.setDueDate(it) },
-                  hasTouched = hasTouchedDate,
-                  onFocusChanged = { hasTouchedDate = true },
-                  dateRegex = createTaskViewModel.dateRegex)
+                TaskDueDateField(
+                    value = createTaskState.dueDate,
+                    onValueChange = { createTaskViewModel.setDueDate(it) },
+                    hasTouched = hasTouchedDate,
+                    onFocusChanged = { hasTouchedDate = true },
+                    dateRegex = createTaskViewModel.dateRegex)
 
-              TaskReminderField(
-                  value = createTaskState.reminderTime,
-                  onValueChange = { createTaskViewModel.setReminderTime(it) })
+                TaskReminderField(
+                    value = createTaskState.reminderTime,
+                    onValueChange = { createTaskViewModel.setReminderTime(it) })
 
-              ProjectSelectionField(
-                  projects = availableProjects,
-                  selectedProjectId = projectId,
-                  onProjectSelected = { projectId -> createTaskViewModel.setProjectId(projectId) })
+                ProjectSelectionField(
+                    projects = availableProjects,
+                    selectedProjectId = projectId,
+                    onProjectSelected = { projectId ->
+                      createTaskViewModel.setProjectId(projectId)
+                    })
 
-              UserAssignmentField(
-                  availableUsers = createTaskState.availableUsers,
-                  selectedUserIds = createTaskState.selectedAssignedUserIds,
-                  onUserToggled = { userId -> createTaskViewModel.toggleUserAssignment(userId) },
-                  enabled = projectId.isNotEmpty())
+                UserAssignmentField(
+                    availableUsers = createTaskState.availableUsers,
+                    selectedUserIds = createTaskState.selectedAssignedUserIds,
+                    onUserToggled = { userId -> createTaskViewModel.toggleUserAssignment(userId) },
+                    enabled = projectId.isNotEmpty())
 
-              if (projectId.isNotEmpty()) {
-                TaskDependenciesSelectionField(
-                    availableTasks = availableTasks,
-                    selectedDependencyIds = createTaskState.dependingOnTasks,
-                    onDependencyAdded = { taskId -> createTaskViewModel.addDependency(taskId) },
-                    onDependencyRemoved = { taskId ->
-                      createTaskViewModel.removeDependency(taskId)
-                    },
-                    currentTaskId = "",
-                    cycleError = cycleError)
+                if (projectId.isNotEmpty()) {
+                  TaskDependenciesSelectionField(
+                      availableTasks = availableTasks,
+                      selectedDependencyIds = createTaskState.dependingOnTasks,
+                      onDependencyAdded = { taskId -> createTaskViewModel.addDependency(taskId) },
+                      onDependencyRemoved = { taskId ->
+                        createTaskViewModel.removeDependency(taskId)
+                      },
+                      currentTaskId = "",
+                      cycleError = cycleError)
+                }
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+                  OutlinedButton(
+                      onClick = {
+                        isNavigatingToCamera = true
+                        navigationController.navigate(Route.Camera)
+                      },
+                      colors = EurekaStyles.outlinedButtonColors(),
+                      modifier =
+                          Modifier.fillMaxWidth(CREATE_SCREEN_PHOTO_BUTTON_SIZE)
+                              .testTag(CommonTaskTestTags.ADD_PHOTO)) {
+                        Text("Add Photo")
+                      }
+
+                  Button(
+                      onClick = { createTaskViewModel.addTask(context) },
+                      enabled = inputValid && !createTaskState.isSaving,
+                      modifier = Modifier.fillMaxWidth().testTag(CommonTaskTestTags.SAVE_TASK),
+                      colors = EurekaStyles.primaryButtonColors()) {
+                        Text(if (createTaskState.isSaving) "Saving..." else "Save")
+                      }
+                }
+
+                AttachmentsList(
+                    attachments = createTaskState.attachmentUris.map { Attachment.Local(it) },
+                    onDelete = { index ->
+                      val uri = createTaskState.attachmentUris[index]
+                      if (createTaskViewModel.deletePhoto(context, uri)) {
+                        createTaskViewModel.removeAttachment(index)
+                      }
+                    })
               }
-
-              Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-                OutlinedButton(
-                    onClick = {
-                      isNavigatingToCamera = true
-                      navigationController.navigate(Route.Camera)
-                    },
-                    colors = EurekaStyles.outlinedButtonColors(),
-                    modifier =
-                        Modifier.fillMaxWidth(CREATE_SCREEN_PHOTO_BUTTON_SIZE)
-                            .testTag(CommonTaskTestTags.ADD_PHOTO)) {
-                      Text("Add Photo")
-                    }
-
-                Button(
-                    onClick = { createTaskViewModel.addTask(context) },
-                    enabled = inputValid && !createTaskState.isSaving,
-                    modifier = Modifier.fillMaxWidth().testTag(CommonTaskTestTags.SAVE_TASK),
-                    colors = EurekaStyles.primaryButtonColors()) {
-                      Text(if (createTaskState.isSaving) "Saving..." else "Save")
-                    }
-              }
-
-              AttachmentsList(
-                  attachments = createTaskState.attachmentUris.map { Attachment.Local(it) },
-                  onDelete = { index ->
-                    val uri = createTaskState.attachmentUris[index]
-                    if (createTaskViewModel.deletePhoto(context, uri)) {
-                      createTaskViewModel.removeAttachment(index)
-                    }
-                  })
-            }
           InteractiveHelpEntryPoint(
               helpContext = HelpContext.CREATE_TASK,
               modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp))
