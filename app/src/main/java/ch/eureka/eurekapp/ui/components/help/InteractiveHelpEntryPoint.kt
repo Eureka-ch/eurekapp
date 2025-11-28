@@ -103,7 +103,7 @@ fun InteractiveHelpEntryPoint(
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Tu peux désactiver cette aide depuis Préférences > Notifications.",
+                text = "You can disable this help from Preferences > Notifications.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
           }
@@ -119,78 +119,81 @@ private fun HelpContext.toHelpContent(userName: String): HelpContent {
   return when (this) {
     HelpContext.HOME_OVERVIEW ->
         HelpContent(
-            title = "Bienvenue $userName 👋",
-            intro = "Hey $userName, faisons un tour rapide du tableau important.",
+            title = "Welcome $userName 👋",
+            intro = "Hey $userName, let's take a quick tour of the important overview.",
             steps =
                 listOf(
                     HelpStep(
-                        "Cartes récap'",
-                        "Les trois cartes du haut te donnent en un clin d'œil tes tâches, réunions et projets actifs."),
+                        "Summary cards",
+                        "The three cards at the top give you a quick glance at your tasks, meetings, and active projects."),
                     HelpStep(
-                        "Actions rapides",
-                        "Utilise les boutons 'View all' pour ouvrir les sections complètes (Tasks, Meetings, Projects)."),
+                        "Quick actions",
+                        "Use the 'View all' buttons to open the full sections (Tasks, Meetings, Projects)."),
                     HelpStep(
-                        "Sections interactives",
-                        "Tap sur une carte de tâche, réunion ou projet pour ouvrir directement la vue détaillée.")))
+                        "Interactive sections",
+                        "Tap on a task, meeting, or project card to open the detailed view directly.")))
     HelpContext.TASKS ->
         HelpContent(
-            title = "Gestion des tâches",
-            intro = "Hello $userName ! Voici comment dompter tes tâches rapidement.",
+            title = "Task management",
+            intro = "Hello $userName! Here's how to master your tasks quickly.",
             steps =
                 listOf(
                     HelpStep(
-                        "Barre de filtres",
-                        "Les chips en haut permettent de passer de 'My tasks' à 'Team', 'Today', etc."),
+                        "Filter bar",
+                        "The chips at the top let you switch from 'My tasks' to 'Team', 'Today', etc."),
                     HelpStep(
-                        "Boutons d'action",
-                        "Les boutons 'Create task' et 'Auto assign' t'aident à lancer ou répartir le travail."),
+                        "Action buttons",
+                        "The 'Create task' and 'Auto assign' buttons help you start or distribute work."),
                     HelpStep(
-                        "Cartes interactives",
-                        "Appuie sur une carte pour ouvrir la tâche; utilise l'icône dossier pour gérer les fichiers.")))
+                        "Interactive cards",
+                        "Tap on a card to open the task; use the folder icon to manage files.")))
     HelpContext.MEETINGS ->
         HelpContent(
-            title = "Réunions maîtrisées",
-            intro = "$userName, passons en revue ce que tu peux faire ici.",
+            title = "Mastering meetings",
+            intro = "$userName, let's review what you can do here.",
             steps =
                 listOf(
                     HelpStep(
-                        "Onglets Upcoming/Past",
-                        "Navigue entre tes réunions futures et passées pour garder le rythme."),
+                        "Upcoming/Past tabs",
+                        "Navigate between your upcoming and past meetings to stay on track."),
                     HelpStep(
-                        "Carte réunion",
-                        "Chaque carte offre l'accès au vote, aux directions et aux actions de suivi."),
+                        "Meeting card",
+                        "Each card provides access to voting, directions, and follow-up actions."),
                     HelpStep(
-                        "Bouton +",
-                        "Le bouton flottant 'Add' crée instantanément une nouvelle réunion (si tu es en ligne).")))
+                        "+ Button",
+                        "The floating 'Add' button instantly creates a new meeting (if you're online).")))
     HelpContext.PROJECTS ->
         HelpContent(
-            title = "Vue projet",
-            intro = "Hello $userName, voici comment profiter de l’aperçu projet.",
+            title = "Project view",
+            intro = "Hello $userName, here's how to make the most of the project overview.",
             steps =
                 listOf(
                     HelpStep(
-                        "Contexte du projet",
-                        "La vue affiche les infos clefs du projet sélectionné pour t’aider à rester concentré."),
+                        "Project context",
+                        "The view displays key information about the selected project to help you stay focused."),
                     HelpStep(
-                        "Navigation rapide",
-                        "Tu peux lancer la caméra ou d’autres actions spécifiques au projet depuis cette page."),
+                        "Quick navigation",
+                        "You can launch the camera or other project-specific actions from this page."),
                     HelpStep(
-                        "Revenir à l’accueil",
-                        "Utilise la barre du bas pour retourner rapidement aux tâches ou aux réunions associées.")))
+                        "Back to home",
+                        "Use the bottom bar to quickly return to associated tasks or meetings.")))
     HelpContext.CREATE_TASK ->
         HelpContent(
-            title = "Création guidée",
-            intro = "$userName, passons étape par étape pour créer ta tâche.",
+            title = "Guided creation",
+            intro = "$userName, let's go step by step to create your task.",
             steps =
                 listOf(
                     HelpStep(
-                        "Champs essentiels",
-                        "Commence par le titre, la description et la date limite pour donner le contexte."),
+                        "Essential fields",
+                        "Start with the title, description, and due date to provide context."),
                     HelpStep(
-                        "Projet & équipe",
-                        "Choisis un projet, assigne des membres et ajoute des dépendances si besoin."),
+                        "Project & team",
+                        "Choose a project and assign members. Once a project is selected, you can assign users."),
                     HelpStep(
-                        "Pièces jointes",
-                        "Ajoute des pièces jointes ou des photos depuis le bas de l’écran avant d’enregistrer.")))
+                        "Task dependencies",
+                        "Dependencies allow you to define the execution order: this task cannot start until its dependent tasks are completed. Select them from the list after choosing a project. The app automatically detects forbidden cycles."),
+                    HelpStep(
+                        "Attachments",
+                        "Add attachments or photos from the bottom of the screen before saving.")))
   }
 }
