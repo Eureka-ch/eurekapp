@@ -201,14 +201,14 @@ fun NavigationMenu(
   }
   FirestoreRepositoriesProvider.projectRepository
   val auth = Firebase.auth
-    Project(
-        projectId = testProjectId,
-        name = "Test Project",
-        description = "This is a test project",
-        status = ProjectStatus.OPEN,
-        createdBy = auth.currentUser?.uid ?: "unknown",
-        memberIds = listOf(auth.currentUser?.uid ?: "unknown"),
-    )
+  Project(
+      projectId = testProjectId,
+      name = "Test Project",
+      description = "This is a test project",
+      status = ProjectStatus.OPEN,
+      createdBy = auth.currentUser?.uid ?: "unknown",
+      memberIds = listOf(auth.currentUser?.uid ?: "unknown"),
+  )
 
   Scaffold(
       containerColor = Color.White,
