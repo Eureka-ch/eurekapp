@@ -47,12 +47,18 @@ data class ConversationListState(
  * @property otherMemberName Display name of the other member in the conversation.
  * @property otherMemberPhotoUrl Photo URL of the other member (from Google profile).
  * @property projectName Name of the project this conversation belongs to.
+ * @property lastMessagePreview Preview of the last message in the conversation.
+ * @property lastMessageTime Formatted time of the last message.
+ * @property hasUnread Whether there are unread messages in this conversation.
  */
 data class ConversationDisplayData(
     val conversation: Conversation,
     val otherMemberName: String,
     val otherMemberPhotoUrl: String,
-    val projectName: String
+    val projectName: String,
+    val lastMessagePreview: String? = null,
+    val lastMessageTime: String? = null,
+    val hasUnread: Boolean = false
 )
 
 /**
@@ -154,11 +160,26 @@ open class ConversationListViewModel(
     val otherUser = userRepository.getUserById(otherUserId).first()
     val project = projectRepository.getProjectById(conversation.projectId).first()
 
+    // Calculate unread status
+    val lastReadAt = conversation.lastReadAt[currentUserId]
+    val hasUnread =
+        conversation.lastMessageAt != null &&
+            (lastReadAt == null || conversation.lastMessageAt > lastReadAt)
+
+    // Format last message time
+    val lastMessageTime =
+        conversation.lastMessageAt?.let { timestamp ->
+          ch.eureka.eurekapp.utils.Formatters.formatRelativeTime(timestamp.toDate())
+        }
+
     return ConversationDisplayData(
         conversation = conversation,
         otherMemberName = otherUser?.displayName ?: "Unknown User",
         otherMemberPhotoUrl = otherUser?.photoUrl ?: "",
-        projectName = project?.name ?: "Unknown Project")
+        projectName = project?.name ?: "Unknown Project",
+        lastMessagePreview = conversation.lastMessagePreview,
+        lastMessageTime = lastMessageTime,
+        hasUnread = hasUnread)
   }
 
   /** Clear the error message. */
