@@ -65,8 +65,11 @@ lifecycleProcess = "2.9.4"
 guava = "31.1-android"
 coroutinesPlayServices = "1.7.3"
 ui = "1.9.4"
+firebaseMessaging = "25.0.1"
 
 [libraries]
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-inappmessaging-display = { module = "com.google.firebase:firebase-inappmessaging-display" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutinesTest" }
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraxVersion" }
 androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "cameraxVersion" }
@@ -147,6 +150,8 @@ androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = 
 androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebaseMessaging" }
+reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

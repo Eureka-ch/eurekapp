@@ -61,7 +61,8 @@ class CreateTaskScreenTests : TestCase() {
 
   @get:Rule val composeTestRule = createComposeRule()
   @get:Rule
-  var permissionRule: GrantPermissionRule? = GrantPermissionRule.grant(Manifest.permission.CAMERA)
+  var permissionRule: GrantPermissionRule? =
+      GrantPermissionRule.grant(Manifest.permission.CAMERA, Manifest.permission.POST_NOTIFICATIONS)
 
   var testUserId: String = ""
   private lateinit var context: Context

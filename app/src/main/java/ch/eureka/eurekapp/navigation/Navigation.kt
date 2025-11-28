@@ -4,6 +4,7 @@ package ch.eureka.eurekapp.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -14,6 +15,7 @@ import androidx.navigation.toRoute
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.map.Location
+import ch.eureka.eurekapp.model.notifications.NotificationType
 import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.FilesManagementScreen
 import ch.eureka.eurekapp.screens.HomeOverviewActions
@@ -168,10 +170,36 @@ sealed interface Route {
 }
 
 @Composable
-fun NavigationMenu() {
+fun NavigationMenu(
+    notificationType: String? = null,
+    notificationId: String? = null,
+    notificationProjectId: String? = null
+) {
   val navigationController = rememberNavController()
-  val auth = Firebase.auth
   val testProjectId = "test-project-id"
+
+  // Handle the case where the app has been started by a notification
+  LaunchedEffect(notificationType, notificationId, notificationProjectId) {
+    if (notificationType != null) {
+      when (notificationType) {
+        NotificationType.MEETING_NOTIFICATION.backendTypeString -> {
+          if (notificationId != null && notificationProjectId != null) {
+            navigationController.navigate(
+                Route.MeetingsSection.MeetingDetail(
+                    projectId = notificationProjectId, meetingId = notificationId))
+          }
+        }
+        NotificationType.MESSAGE_NOTIFICATION.backendTypeString -> {
+          // TODO fill this when we make the chat screen
+        }
+        else -> {
+          // Do nothing
+        }
+      }
+    }
+  }
+  FirestoreRepositoriesProvider.projectRepository
+  val auth = Firebase.auth
   Project(
       projectId = testProjectId,
       name = "Test Project",

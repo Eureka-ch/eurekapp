@@ -46,7 +46,9 @@ class NavigationMenuTest : TestCase() {
   @get:Rule
   val permissionRule: GrantPermissionRule =
       GrantPermissionRule.grant(
-          android.Manifest.permission.READ_CALENDAR, android.Manifest.permission.WRITE_CALENDAR)
+          android.Manifest.permission.READ_CALENDAR,
+          android.Manifest.permission.WRITE_CALENDAR,
+          android.Manifest.permission.POST_NOTIFICATIONS)
   @get:Rule val composeTestRule = createComposeRule()
 
   @Before
