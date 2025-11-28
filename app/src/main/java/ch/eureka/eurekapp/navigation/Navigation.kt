@@ -37,6 +37,8 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
 import ch.eureka.eurekapp.ui.activity.ActivityFeedScreen
 import ch.eureka.eurekapp.ui.authentication.TokenEntryScreen
+import ch.eureka.eurekapp.ui.conversation.ConversationDetailScreen
+import ch.eureka.eurekapp.ui.conversation.ConversationDetailViewModel
 import ch.eureka.eurekapp.ui.conversation.ConversationListScreen
 import ch.eureka.eurekapp.ui.conversation.CreateConversationScreen
 import ch.eureka.eurekapp.ui.map.MeetingLocationSelectionScreen
@@ -359,8 +361,11 @@ fun NavigationMenu(
               composable<Route.ConversationsSection.ConversationDetail> { backStackEntry ->
                 val conversationDetailRoute =
                     backStackEntry.toRoute<Route.ConversationsSection.ConversationDetail>()
-                // TODO: Implement ConversationDetailScreen
-                // For now, just show a placeholder or navigate back
+                ConversationDetailScreen(
+                    viewModel =
+                        ConversationDetailViewModel(
+                            conversationId = conversationDetailRoute.conversationId),
+                    onNavigateBack = { navigationController.popBackStack() })
               }
 
               // Meetings section
