@@ -231,7 +231,10 @@ class InteractiveHelpEntryPointTest {
     composeTestRule.onNodeWithText("Guide").performClick()
     composeTestRule.onNodeWithText("Join with token", substring = true).assertIsDisplayed()
     composeTestRule.onNodeWithText("Get your token", substring = true).assertIsDisplayed()
-    composeTestRule.onNodeWithText("Validate", substring = true).assertIsDisplayed()
+    composeTestRule.onNodeWithText("Enter token", substring = true).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithText("Tap the 'Validate' button", substring = true)
+        .assertIsDisplayed()
   }
 
   @Test
