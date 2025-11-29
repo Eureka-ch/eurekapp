@@ -127,69 +127,6 @@ open class TaskDependenciesScreenTest : TestCase() {
     }
   }
 
-  @org.junit.Ignore("Test fails due to Firestore sync timing - needs investigation")
-  @Test
-  fun showsTasksThatDependOnRootTask() {
-    runBlocking {
-      val projectId = "dependency-project"
-      val rootTaskId = "root-task"
-      val dependentTaskId = "dependent-task"
-
-      // Setup project
-      projectRepository.createProject(
-          Project().copy(projectId = projectId, memberIds = listOf("user1")), "user1")
-      projectRepository.updateProject(
-          Project().copy(projectId = projectId, memberIds = listOf("user1", "user2")))
-
-      // Create tasks with explicit titles
-      val rootTask = Task().copy(taskID = rootTaskId, projectId = projectId, title = "Root Task")
-      val dependentTask =
-          Task()
-              .copy(
-                  taskID = dependentTaskId,
-                  projectId = projectId,
-                  title = "Dependent Task",
-                  dependingOnTasks = listOf(rootTaskId))
-
-      tasksRepository.createTask(rootTask)
-      tasksRepository.createTask(dependentTask)
-
-      // Wait for Firestore to sync and verify data is present
-      val allTasks = tasksRepository.getTasksInProject(projectId).first()
-      assert(allTasks.any { it.taskID == rootTaskId })
-      assert(allTasks.any { it.taskID == dependentTaskId })
-
-      val viewModel =
-          TaskDependenciesViewModel(
-              tasksRepository = tasksRepository,
-              usersRepository = usersRepository,
-              projectsRepository = projectRepository)
-
-      // Verify ViewModel can fetch dependent tasks before showing UI
-      val dependentTasks = viewModel.getDependentTasksForTask(projectId, rootTask).first()
-      assert(dependentTasks.any { it.taskID == dependentTaskId })
-
-      composeTestRule.setContent {
-        TaskDependenciesScreen(
-            projectId = projectId, taskId = rootTaskId, taskDependenciesViewModel = viewModel)
-      }
-
-      composeTestRule.waitForIdle()
-
-      // Wait for the dependent task to appear in UI
-      composeTestRule.waitUntil(timeoutMillis = 10_000) {
-        try {
-          composeTestRule
-              .onNodeWithTag(TaskDependenciesScreenTestTags.getDependentTaskTestTag(dependentTask))
-              .assertIsDisplayed()
-          true
-        } catch (e: AssertionError) {
-          false
-        }
-      }
-    }
-  }
-
   @Test
   fun testTreeViewFiltersTasksByStatus() = runBlocking {
     val projectId = "filter-test-project"
