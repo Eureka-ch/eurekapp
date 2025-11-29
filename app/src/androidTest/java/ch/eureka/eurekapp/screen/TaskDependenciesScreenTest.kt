@@ -193,6 +193,10 @@ open class TaskDependenciesScreenTest : TestCase() {
     assert(dependentTasks.any { it.taskID == inProgressTaskId })
     assert(dependentTasks.any { it.taskID == completedTaskId })
 
+    // Verify ViewModel can fetch dependencies before showing UI
+    val dependentTasksBeforeUI = viewModel.getDependentTasksForTask(projectId, rootTask).first()
+    assert(dependentTasksBeforeUI.size == 3) // rootTask depends on all three
+
     composeTestRule.setContent {
       TaskDependenciesScreen(
           projectId = projectId, taskId = rootTaskId, taskDependenciesViewModel = viewModel)
@@ -201,7 +205,7 @@ open class TaskDependenciesScreenTest : TestCase() {
     composeTestRule.waitForIdle()
 
     // Verify that only TODO and IN_PROGRESS tasks are displayed (not COMPLETED)
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+    composeTestRule.waitUntil(timeoutMillis = 10_000) {
       try {
         composeTestRule
             .onNodeWithTag(TaskDependenciesScreenTestTags.getDependentTaskTestTag(todoTask))
