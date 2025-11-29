@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 
 /**
  * ViewModel responsible for providing task dependency and user data within a project.
@@ -29,20 +30,19 @@ class TaskDependenciesViewModel(
     private val projectsRepository: ProjectRepository = RepositoriesProvider.projectRepository
 ) : ViewModel() {
   /**
-   * Retrieves the list of dependent tasks for a given task.
+   * Retrieves the list of tasks that the given task depends on.
    *
    * @param projectId The ID of the project containing the task.
    * @param task The task whose dependencies are to be fetched.
-   * @return A list of Flows representing each dependent task.
+   * @return A Flow emitting a list of tasks that this task depends on (from task.dependingOnTasks).
    *
    * Disclaimer: This description was written by AI (ChatGPT - GPT-5).
    */
-  fun getDependentTasksForTask(projectId: String, task: Task): Flow<List<Task?>> {
-    return combine(
-        task.dependingOnTasks.map { taskId -> tasksRepository.getTaskById(projectId, taskId) }) {
-            tasksArray ->
-          tasksArray.toList()
-        }
+  fun getDependentTasksForTask(projectId: String, task: Task): Flow<List<Task>> {
+    return tasksRepository.getTasksInProject(projectId).map { tasks ->
+      // Return tasks that this task depends on (from task.dependingOnTasks)
+      task.dependingOnTasks.mapNotNull { taskId -> tasks.find { it.taskID == taskId } }
+    }
   }
 
   /**
