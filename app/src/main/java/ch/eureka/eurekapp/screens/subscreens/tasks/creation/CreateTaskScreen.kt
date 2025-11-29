@@ -262,7 +262,9 @@ private fun CreateTaskContent(config: CreateTaskContentConfig) {
               availableTasks = config.availableTasks,
               selectedDependencyIds = config.createTaskState.dependingOnTasks,
               onDependencyAdded = { taskId -> config.createTaskViewModel.addDependency(taskId) },
-              onDependencyRemoved = { taskId -> config.createTaskViewModel.removeDependency(taskId) },
+              onDependencyRemoved = { taskId ->
+                config.createTaskViewModel.removeDependency(taskId)
+              },
               currentTaskId = "",
               cycleError = config.cycleError)
         }
