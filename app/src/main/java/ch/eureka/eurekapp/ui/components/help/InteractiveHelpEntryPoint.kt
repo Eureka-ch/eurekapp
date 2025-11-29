@@ -1,8 +1,10 @@
 package ch.eureka.eurekapp.ui.components.help
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -21,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
@@ -28,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.user.UserNotificationSettingsKeys
 import ch.eureka.eurekapp.model.data.user.defaultValuesNotificationSettingsKeys
 import ch.eureka.eurekapp.model.notifications.NotificationSettingsViewModel
+import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
@@ -37,7 +41,12 @@ enum class HelpContext {
   TASKS,
   MEETINGS,
   PROJECTS,
-  CREATE_TASK
+  CREATE_TASK,
+  FILES_MANAGEMENT,
+  MEETING_VOTES,
+  TOKEN_ENTRY,
+  VIEW_TASK,
+  NOTES
 }
 
 @Composable
@@ -112,6 +121,33 @@ fun InteractiveHelpEntryPoint(
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
           }
         })
+  }
+}
+
+/**
+ * Wrapper composable that provides a Box layout with the help entry point positioned at the bottom
+ * end. This eliminates the need to manually create Box and alignment in each screen.
+ *
+ * @param helpContext The context for which help content should be displayed.
+ * @param content The main content of the screen.
+ * @param modifier Modifier for the Box container.
+ * @param userProvidedName Optional user name to personalize the help content.
+ * @param helpPadding Padding around the help chip (defaults to Spacing.md).
+ */
+@Composable
+fun ScreenWithHelp(
+    helpContext: HelpContext,
+    content: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    userProvidedName: String? = null,
+    helpPadding: androidx.compose.ui.unit.Dp = Spacing.md
+) {
+  Box(modifier = modifier.fillMaxSize()) {
+    content()
+    InteractiveHelpEntryPoint(
+        helpContext = helpContext,
+        userProvidedName = userProvidedName,
+        modifier = Modifier.align(Alignment.BottomEnd).padding(helpPadding))
   }
 }
 
@@ -199,5 +235,86 @@ internal fun HelpContext.toHelpContent(userName: String): HelpContent {
                     HelpStep(
                         "Attachments",
                         "Add attachments or photos from the bottom of the screen before saving.")))
+    HelpContext.FILES_MANAGEMENT ->
+        HelpContent(
+            title = "File management",
+            intro = "Hello $userName! Here's how to manage your downloaded files.",
+            steps =
+                listOf(
+                    HelpStep(
+                        "View files",
+                        "All your downloaded files are listed here. Images show a preview, other files show their name."),
+                    HelpStep(
+                        "Open files",
+                        "Tap the 'Open' button to open a file with an appropriate app on your device."),
+                    HelpStep(
+                        "Delete files",
+                        "Use the 'Delete' button to remove files you no longer need. You'll be asked to confirm before deletion.")))
+    HelpContext.MEETING_VOTES ->
+        HelpContent(
+            title = "Meeting proposals voting",
+            intro = "$userName, let's learn how to vote on meeting proposals.",
+            steps =
+                listOf(
+                    HelpStep(
+                        "View proposals",
+                        "Each card shows a date/time and format proposal. Review all options before voting."),
+                    HelpStep(
+                        "Select preferences",
+                        "Check the boxes for the proposals that work for you. You can select multiple options."),
+                    HelpStep(
+                        "Add new proposal",
+                        "Use the '+' button to propose a new date/time or format if none of the existing options suit you."),
+                    HelpStep(
+                        "Confirm votes",
+                        "Once you've made your selections, tap the checkmark button to save your votes.")))
+    HelpContext.TOKEN_ENTRY ->
+        HelpContent(
+            title = "Join with token",
+            intro = "Welcome $userName! Here's how to join a project using an invitation token.",
+            steps =
+                listOf(
+                    HelpStep(
+                        "Get your token",
+                        "Ask your project administrator for an invitation token. It usually looks like: 7F4A-93KD-XX12"),
+                    HelpStep(
+                        "Enter token",
+                        "Paste or type the token in the field above. Make sure there are no extra spaces."),
+                    HelpStep(
+                        "Validate",
+                        "Tap the 'Validate' button to join the project. You'll be redirected once the token is accepted.")))
+    HelpContext.VIEW_TASK ->
+        HelpContent(
+            title = "Viewing task details",
+            intro = "$userName, here's what you can do on this task detail screen.",
+            steps =
+                listOf(
+                    HelpStep(
+                        "Task information",
+                        "View all task details including title, description, due date, assignees, and status."),
+                    HelpStep(
+                        "Edit task",
+                        "Use the 'Edit' button to modify task details, change assignees, or update dependencies."),
+                    HelpStep(
+                        "View dependencies",
+                        "Tap 'View Dependencies' to see which tasks depend on this one and which tasks this one depends on."),
+                    HelpStep(
+                        "Attachments",
+                        "View and download any files or photos attached to this task.")))
+    HelpContext.NOTES ->
+        HelpContent(
+            title = "Personal notes",
+            intro = "Hello $userName! Here's how to use your personal notes.",
+            steps =
+                listOf(
+                    HelpStep(
+                        "Cloud vs Local",
+                        "Toggle the switch at the top to choose between cloud storage (syncs across devices) or local-only storage."),
+                    HelpStep(
+                        "Add notes",
+                        "Type your note in the input field at the bottom and send it. Notes appear in a chat-like interface."),
+                    HelpStep(
+                        "View history",
+                        "Scroll through your notes to see your previous entries. The most recent notes appear at the bottom.")))
   }
 }

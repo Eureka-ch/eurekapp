@@ -187,4 +187,80 @@ class InteractiveHelpEntryPointTest {
     composeTestRule.onNodeWithText("Guide").performClick()
     composeTestRule.onNodeWithText("Guided creation", substring = true).assertIsDisplayed()
   }
+
+  @Test
+  fun filesManagementContextDisplaysCorrectContent() {
+    composeTestRule.setContent {
+      InteractiveHelpEntryPoint(
+          helpContext = HelpContext.FILES_MANAGEMENT,
+          userProvidedName = "TestUser",
+          notificationSettingsViewModel = viewModel)
+    }
+
+    composeTestRule.onNodeWithText("Guide").performClick()
+    composeTestRule.onNodeWithText("File management", substring = true).assertIsDisplayed()
+    composeTestRule.onNodeWithText("View files", substring = true).assertIsDisplayed()
+    composeTestRule.onNodeWithText("Open files", substring = true).assertIsDisplayed()
+    composeTestRule.onNodeWithText("Delete files", substring = true).assertIsDisplayed()
+  }
+
+  @Test
+  fun meetingVotesContextDisplaysCorrectContent() {
+    composeTestRule.setContent {
+      InteractiveHelpEntryPoint(
+          helpContext = HelpContext.MEETING_VOTES,
+          userProvidedName = "TestUser",
+          notificationSettingsViewModel = viewModel)
+    }
+
+    composeTestRule.onNodeWithText("Guide").performClick()
+    composeTestRule.onNodeWithText("Meeting proposals voting", substring = true).assertIsDisplayed()
+    composeTestRule.onNodeWithText("View proposals", substring = true).assertIsDisplayed()
+    composeTestRule.onNodeWithText("Confirm votes", substring = true).assertIsDisplayed()
+  }
+
+  @Test
+  fun tokenEntryContextDisplaysCorrectContent() {
+    composeTestRule.setContent {
+      InteractiveHelpEntryPoint(
+          helpContext = HelpContext.TOKEN_ENTRY,
+          userProvidedName = "TestUser",
+          notificationSettingsViewModel = viewModel)
+    }
+
+    composeTestRule.onNodeWithText("Guide").performClick()
+    composeTestRule.onNodeWithText("Join with token", substring = true).assertIsDisplayed()
+    composeTestRule.onNodeWithText("Get your token", substring = true).assertIsDisplayed()
+    composeTestRule.onNodeWithText("Validate", substring = true).assertIsDisplayed()
+  }
+
+  @Test
+  fun viewTaskContextDisplaysCorrectContent() {
+    composeTestRule.setContent {
+      InteractiveHelpEntryPoint(
+          helpContext = HelpContext.VIEW_TASK,
+          userProvidedName = "TestUser",
+          notificationSettingsViewModel = viewModel)
+    }
+
+    composeTestRule.onNodeWithText("Guide").performClick()
+    composeTestRule.onNodeWithText("Viewing task details", substring = true).assertIsDisplayed()
+    composeTestRule.onNodeWithText("Task information", substring = true).assertIsDisplayed()
+    composeTestRule.onNodeWithText("View dependencies", substring = true).assertIsDisplayed()
+  }
+
+  @Test
+  fun notesContextDisplaysCorrectContent() {
+    composeTestRule.setContent {
+      InteractiveHelpEntryPoint(
+          helpContext = HelpContext.NOTES,
+          userProvidedName = "TestUser",
+          notificationSettingsViewModel = viewModel)
+    }
+
+    composeTestRule.onNodeWithText("Guide").performClick()
+    composeTestRule.onNodeWithText("Personal notes", substring = true).assertIsDisplayed()
+    composeTestRule.onNodeWithText("Cloud vs Local", substring = true).assertIsDisplayed()
+    composeTestRule.onNodeWithText("Add notes", substring = true).assertIsDisplayed()
+  }
 }
