@@ -140,36 +140,40 @@ open class TaskDependenciesScreenTest : TestCase() {
         Project().copy(projectId = projectId, memberIds = listOf("user1")), "user1")
 
     // Create tasks with different statuses
-    val rootTask = Task().copy(taskID = rootTaskId, projectId = projectId, title = "Root Task")
+    // rootTask depends on todoTask, inProgressTask, and completedTask
     val todoTask =
         Task()
             .copy(
                 taskID = todoTaskId,
                 projectId = projectId,
                 title = "TODO Task",
-                status = TaskStatus.TODO,
-                dependingOnTasks = listOf(rootTaskId))
+                status = TaskStatus.TODO)
     val inProgressTask =
         Task()
             .copy(
                 taskID = inProgressTaskId,
                 projectId = projectId,
                 title = "In Progress Task",
-                status = TaskStatus.IN_PROGRESS,
-                dependingOnTasks = listOf(rootTaskId))
+                status = TaskStatus.IN_PROGRESS)
     val completedTask =
         Task()
             .copy(
                 taskID = completedTaskId,
                 projectId = projectId,
                 title = "Completed Task",
-                status = TaskStatus.COMPLETED,
-                dependingOnTasks = listOf(rootTaskId))
+                status = TaskStatus.COMPLETED)
+    val rootTask =
+        Task()
+            .copy(
+                taskID = rootTaskId,
+                projectId = projectId,
+                title = "Root Task",
+                dependingOnTasks = listOf(todoTaskId, inProgressTaskId, completedTaskId))
 
-    tasksRepository.createTask(rootTask)
     tasksRepository.createTask(todoTask)
     tasksRepository.createTask(inProgressTask)
     tasksRepository.createTask(completedTask)
+    tasksRepository.createTask(rootTask)
 
     // Wait for Firestore to sync and verify data
     val allTasks = tasksRepository.getTasksInProject(projectId).first()
@@ -182,8 +186,9 @@ open class TaskDependenciesScreenTest : TestCase() {
             projectsRepository = projectRepository)
 
     // Verify ViewModel logic before UI test
+    // rootTask depends on todoTask, inProgressTask, and completedTask
     val dependentTasks = viewModel.getDependentTasksForTask(projectId, rootTask).first()
-    assert(dependentTasks.size == 3) // All three depend on root
+    assert(dependentTasks.size == 3) // rootTask depends on all three
     assert(dependentTasks.any { it.taskID == todoTaskId })
     assert(dependentTasks.any { it.taskID == inProgressTaskId })
     assert(dependentTasks.any { it.taskID == completedTaskId })

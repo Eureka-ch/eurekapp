@@ -30,17 +30,18 @@ class TaskDependenciesViewModel(
     private val projectsRepository: ProjectRepository = RepositoriesProvider.projectRepository
 ) : ViewModel() {
   /**
-   * Retrieves the list of dependent tasks for a given task.
+   * Retrieves the list of tasks that the given task depends on.
    *
    * @param projectId The ID of the project containing the task.
    * @param task The task whose dependencies are to be fetched.
-   * @return A list of Flows representing each dependent task.
+   * @return A Flow emitting a list of tasks that this task depends on (from task.dependingOnTasks).
    *
    * Disclaimer: This description was written by AI (ChatGPT - GPT-5).
    */
   fun getDependentTasksForTask(projectId: String, task: Task): Flow<List<Task>> {
     return tasksRepository.getTasksInProject(projectId).map { tasks ->
-      tasks.filter { candidate -> candidate.dependingOnTasks.contains(task.taskID) }
+      // Return tasks that this task depends on (from task.dependingOnTasks)
+      task.dependingOnTasks.mapNotNull { taskId -> tasks.find { it.taskID == taskId } }
     }
   }
 
