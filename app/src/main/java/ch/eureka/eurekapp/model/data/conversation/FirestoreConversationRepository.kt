@@ -36,7 +36,6 @@ class FirestoreConversationRepository(
         firestore
             .collection(FirestorePaths.CONVERSATIONS)
             .whereArrayContains("memberIds", currentUserId)
-            .orderBy("createdAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
               if (error != null) {
                 close(error)

@@ -46,7 +46,8 @@ class CreateConversationScreenTest {
     val state = CreateConversationState(selectedProject = project, members = members)
 
     composeTestRule.setContent {
-      CreateConversationScreen(onConversationCreated = {}, viewModel = createMockViewModel(state))
+      CreateConversationScreen(
+          onNavigateToConversation = {}, viewModel = createMockViewModel(state))
     }
 
     // Assert: Member dropdown appears after project selection
@@ -68,7 +69,8 @@ class CreateConversationScreenTest {
             isConnected = true)
 
     composeTestRule.setContent {
-      CreateConversationScreen(onConversationCreated = {}, viewModel = createMockViewModel(state))
+      CreateConversationScreen(
+          onNavigateToConversation = {}, viewModel = createMockViewModel(state))
     }
 
     // Assert: Create button is enabled when ready
@@ -84,7 +86,8 @@ class CreateConversationScreenTest {
             selectedProject = project, members = emptyList(), isLoadingMembers = false)
 
     composeTestRule.setContent {
-      CreateConversationScreen(onConversationCreated = {}, viewModel = createMockViewModel(state))
+      CreateConversationScreen(
+          onNavigateToConversation = {}, viewModel = createMockViewModel(state))
     }
 
     // Assert: User sees message explaining no members available
