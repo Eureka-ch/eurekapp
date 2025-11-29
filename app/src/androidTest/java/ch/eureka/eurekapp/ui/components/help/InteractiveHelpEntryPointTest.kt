@@ -124,28 +124,67 @@ class InteractiveHelpEntryPointTest {
   }
 
   @Test
-  fun differentHelpContextsDisplayDifferentContent() {
-    val contexts =
-        listOf(
-            HelpContext.HOME_OVERVIEW to "Welcome",
-            HelpContext.TASKS to "Task management",
-            HelpContext.MEETINGS to "Mastering meetings",
-            HelpContext.PROJECTS to "Project view",
-            HelpContext.CREATE_TASK to "Guided creation")
-
-    contexts.forEach { (context, expectedTitle) ->
-      composeTestRule.setContent {
-        InteractiveHelpEntryPoint(
-            helpContext = context,
-            userProvidedName = "TestUser",
-            notificationSettingsViewModel = viewModel)
-      }
-
-      composeTestRule.onNodeWithText("Guide").performClick()
-      composeTestRule.onNodeWithText(expectedTitle, substring = true).assertIsDisplayed()
-
-      // Close dialog for next iteration
-      composeTestRule.onNodeWithText("Got it!").performClick()
+  fun homeOverviewContextDisplaysCorrectContent() {
+    composeTestRule.setContent {
+      InteractiveHelpEntryPoint(
+          helpContext = HelpContext.HOME_OVERVIEW,
+          userProvidedName = "TestUser",
+          notificationSettingsViewModel = viewModel)
     }
+
+    composeTestRule.onNodeWithText("Guide").performClick()
+    composeTestRule.onNodeWithText("Welcome", substring = true).assertIsDisplayed()
+  }
+
+  @Test
+  fun tasksContextDisplaysCorrectContent() {
+    composeTestRule.setContent {
+      InteractiveHelpEntryPoint(
+          helpContext = HelpContext.TASKS,
+          userProvidedName = "TestUser",
+          notificationSettingsViewModel = viewModel)
+    }
+
+    composeTestRule.onNodeWithText("Guide").performClick()
+    composeTestRule.onNodeWithText("Task management", substring = true).assertIsDisplayed()
+  }
+
+  @Test
+  fun meetingsContextDisplaysCorrectContent() {
+    composeTestRule.setContent {
+      InteractiveHelpEntryPoint(
+          helpContext = HelpContext.MEETINGS,
+          userProvidedName = "TestUser",
+          notificationSettingsViewModel = viewModel)
+    }
+
+    composeTestRule.onNodeWithText("Guide").performClick()
+    composeTestRule.onNodeWithText("Mastering meetings", substring = true).assertIsDisplayed()
+  }
+
+  @Test
+  fun projectsContextDisplaysCorrectContent() {
+    composeTestRule.setContent {
+      InteractiveHelpEntryPoint(
+          helpContext = HelpContext.PROJECTS,
+          userProvidedName = "TestUser",
+          notificationSettingsViewModel = viewModel)
+    }
+
+    composeTestRule.onNodeWithText("Guide").performClick()
+    composeTestRule.onNodeWithText("Project view", substring = true).assertIsDisplayed()
+  }
+
+  @Test
+  fun createTaskContextDisplaysCorrectContent() {
+    composeTestRule.setContent {
+      InteractiveHelpEntryPoint(
+          helpContext = HelpContext.CREATE_TASK,
+          userProvidedName = "TestUser",
+          notificationSettingsViewModel = viewModel)
+    }
+
+    composeTestRule.onNodeWithText("Guide").performClick()
+    composeTestRule.onNodeWithText("Guided creation", substring = true).assertIsDisplayed()
   }
 }
