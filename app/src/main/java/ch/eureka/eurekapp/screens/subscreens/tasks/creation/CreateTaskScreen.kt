@@ -106,24 +106,26 @@ fun CreateTaskScreen(
             helpPadding = 16.dp,
             content = {
               CreateTaskContent(
-                  paddingValues = paddingValues,
-                  scrollState = scrollState,
-                  createTaskState = createTaskState,
-                  createTaskViewModel = createTaskViewModel,
-                  hasTouchedTitle = hasTouchedTitle,
-                  onTitleFocusChanged = { _ -> hasTouchedTitle = true },
-                  hasTouchedDescription = hasTouchedDescription,
-                  onDescriptionFocusChanged = { _ -> hasTouchedDescription = true },
-                  hasTouchedDate = hasTouchedDate,
-                  onDateFocusChanged = { _ -> hasTouchedDate = true },
-                  availableProjects = availableProjects,
-                  projectId = projectId,
-                  availableTasks = availableTasks,
-                  cycleError = cycleError,
-                  isNavigatingToCamera = { isNavigatingToCamera = true },
-                  navigationController = navigationController,
-                  context = context,
-                  inputValid = inputValid)
+                  config =
+                      CreateTaskContentConfig(
+                          paddingValues = paddingValues,
+                          scrollState = scrollState,
+                          createTaskState = createTaskState,
+                          createTaskViewModel = createTaskViewModel,
+                          hasTouchedTitle = hasTouchedTitle,
+                          onTitleFocusChanged = { _ -> hasTouchedTitle = true },
+                          hasTouchedDescription = hasTouchedDescription,
+                          onDescriptionFocusChanged = { _ -> hasTouchedDescription = true },
+                          hasTouchedDate = hasTouchedDate,
+                          onDateFocusChanged = { _ -> hasTouchedDate = true },
+                          availableProjects = availableProjects,
+                          projectId = projectId,
+                          availableTasks = availableTasks,
+                          cycleError = cycleError,
+                          isNavigatingToCamera = { isNavigatingToCamera = true },
+                          navigationController = navigationController,
+                          context = context,
+                          inputValid = inputValid))
             })
       })
 }
@@ -191,80 +193,85 @@ private fun HandlePhotoCleanupDisposableEffect(
   }
 }
 
+private data class CreateTaskContentConfig(
+    val paddingValues: PaddingValues,
+    val scrollState: ScrollState,
+    val createTaskState: CreateTaskState,
+    val createTaskViewModel: CreateTaskViewModel,
+    val hasTouchedTitle: Boolean,
+    val onTitleFocusChanged: (Boolean) -> Unit,
+    val hasTouchedDescription: Boolean,
+    val onDescriptionFocusChanged: (Boolean) -> Unit,
+    val hasTouchedDate: Boolean,
+    val onDateFocusChanged: (Boolean) -> Unit,
+    val availableProjects: List<Project>,
+    val projectId: String,
+    val availableTasks: List<Task>,
+    val cycleError: String?,
+    val isNavigatingToCamera: () -> Unit,
+    val navigationController: NavHostController,
+    val context: android.content.Context,
+    val inputValid: Boolean
+)
+
 @Composable
-private fun CreateTaskContent(
-    paddingValues: PaddingValues,
-    scrollState: ScrollState,
-    createTaskState: CreateTaskState,
-    createTaskViewModel: CreateTaskViewModel,
-    hasTouchedTitle: Boolean,
-    onTitleFocusChanged: (Boolean) -> Unit,
-    hasTouchedDescription: Boolean,
-    onDescriptionFocusChanged: (Boolean) -> Unit,
-    hasTouchedDate: Boolean,
-    onDateFocusChanged: (Boolean) -> Unit,
-    availableProjects: List<Project>,
-    projectId: String,
-    availableTasks: List<Task>,
-    cycleError: String?,
-    isNavigatingToCamera: () -> Unit,
-    navigationController: NavHostController,
-    context: android.content.Context,
-    inputValid: Boolean
-) {
+private fun CreateTaskContent(config: CreateTaskContentConfig) {
   Column(
       modifier =
-          Modifier.fillMaxSize().padding(paddingValues).padding(16.dp).verticalScroll(scrollState),
+          Modifier.fillMaxSize()
+              .padding(config.paddingValues)
+              .padding(16.dp)
+              .verticalScroll(config.scrollState),
       verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TaskTitleField(
-            value = createTaskState.title,
-            onValueChange = { createTaskViewModel.setTitle(it) },
-            hasTouched = hasTouchedTitle,
-            onFocusChanged = onTitleFocusChanged)
+            value = config.createTaskState.title,
+            onValueChange = { config.createTaskViewModel.setTitle(it) },
+            hasTouched = config.hasTouchedTitle,
+            onFocusChanged = config.onTitleFocusChanged)
 
         TaskDescriptionField(
-            value = createTaskState.description,
-            onValueChange = { createTaskViewModel.setDescription(it) },
-            hasTouched = hasTouchedDescription,
-            onFocusChanged = onDescriptionFocusChanged)
+            value = config.createTaskState.description,
+            onValueChange = { config.createTaskViewModel.setDescription(it) },
+            hasTouched = config.hasTouchedDescription,
+            onFocusChanged = config.onDescriptionFocusChanged)
 
         TaskDueDateField(
-            value = createTaskState.dueDate,
-            onValueChange = { createTaskViewModel.setDueDate(it) },
-            hasTouched = hasTouchedDate,
-            onFocusChanged = onDateFocusChanged,
-            dateRegex = createTaskViewModel.dateRegex)
+            value = config.createTaskState.dueDate,
+            onValueChange = { config.createTaskViewModel.setDueDate(it) },
+            hasTouched = config.hasTouchedDate,
+            onFocusChanged = config.onDateFocusChanged,
+            dateRegex = config.createTaskViewModel.dateRegex)
 
         TaskReminderField(
-            value = createTaskState.reminderTime,
-            onValueChange = { createTaskViewModel.setReminderTime(it) })
+            value = config.createTaskState.reminderTime,
+            onValueChange = { config.createTaskViewModel.setReminderTime(it) })
 
         ProjectSelectionField(
-            projects = availableProjects,
-            selectedProjectId = projectId,
-            onProjectSelected = { projectId -> createTaskViewModel.setProjectId(projectId) })
+            projects = config.availableProjects,
+            selectedProjectId = config.projectId,
+            onProjectSelected = { projectId -> config.createTaskViewModel.setProjectId(projectId) })
 
         UserAssignmentField(
-            availableUsers = createTaskState.availableUsers,
-            selectedUserIds = createTaskState.selectedAssignedUserIds,
-            onUserToggled = { userId -> createTaskViewModel.toggleUserAssignment(userId) },
-            enabled = projectId.isNotEmpty())
+            availableUsers = config.createTaskState.availableUsers,
+            selectedUserIds = config.createTaskState.selectedAssignedUserIds,
+            onUserToggled = { userId -> config.createTaskViewModel.toggleUserAssignment(userId) },
+            enabled = config.projectId.isNotEmpty())
 
-        if (projectId.isNotEmpty()) {
+        if (config.projectId.isNotEmpty()) {
           TaskDependenciesSelectionField(
-              availableTasks = availableTasks,
-              selectedDependencyIds = createTaskState.dependingOnTasks,
-              onDependencyAdded = { taskId -> createTaskViewModel.addDependency(taskId) },
-              onDependencyRemoved = { taskId -> createTaskViewModel.removeDependency(taskId) },
+              availableTasks = config.availableTasks,
+              selectedDependencyIds = config.createTaskState.dependingOnTasks,
+              onDependencyAdded = { taskId -> config.createTaskViewModel.addDependency(taskId) },
+              onDependencyRemoved = { taskId -> config.createTaskViewModel.removeDependency(taskId) },
               currentTaskId = "",
-              cycleError = cycleError)
+              cycleError = config.cycleError)
         }
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
           OutlinedButton(
               onClick = {
-                isNavigatingToCamera()
-                navigationController.navigate(Route.Camera)
+                config.isNavigatingToCamera()
+                config.navigationController.navigate(Route.Camera)
               },
               colors = EurekaStyles.outlinedButtonColors(),
               modifier =
@@ -274,20 +281,20 @@ private fun CreateTaskContent(
               }
 
           Button(
-              onClick = { createTaskViewModel.addTask(context) },
-              enabled = inputValid && !createTaskState.isSaving,
+              onClick = { config.createTaskViewModel.addTask(config.context) },
+              enabled = config.inputValid && !config.createTaskState.isSaving,
               modifier = Modifier.fillMaxWidth().testTag(CommonTaskTestTags.SAVE_TASK),
               colors = EurekaStyles.primaryButtonColors()) {
-                Text(if (createTaskState.isSaving) "Saving..." else "Save")
+                Text(if (config.createTaskState.isSaving) "Saving..." else "Save")
               }
         }
 
         AttachmentsList(
-            attachments = createTaskState.attachmentUris.map { Attachment.Local(it) },
+            attachments = config.createTaskState.attachmentUris.map { Attachment.Local(it) },
             onDelete = { index ->
-              val uri = createTaskState.attachmentUris[index]
-              if (createTaskViewModel.deletePhoto(context, uri)) {
-                createTaskViewModel.removeAttachment(index)
+              val uri = config.createTaskState.attachmentUris[index]
+              if (config.createTaskViewModel.deletePhoto(config.context, uri)) {
+                config.createTaskViewModel.removeAttachment(index)
               }
             })
       }
