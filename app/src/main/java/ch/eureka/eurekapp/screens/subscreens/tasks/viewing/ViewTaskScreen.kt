@@ -95,6 +95,9 @@ fun ViewTaskScreen(
             })
       },
       content = { paddingValues ->
+        // Note: userProvidedName is not passed as ViewTaskScreen doesn't have access to user data.
+        // The help composable will fall back to
+        // FirebaseAuth.getInstance().currentUser?.displayName.
         ScreenWithHelp(
             helpContext = HelpContext.VIEW_TASK,
             content = {

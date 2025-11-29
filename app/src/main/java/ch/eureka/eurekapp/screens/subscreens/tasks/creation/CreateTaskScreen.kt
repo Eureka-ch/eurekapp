@@ -97,6 +97,10 @@ fun CreateTaskScreen(
             })
       },
       content = { paddingValues ->
+        // Note: userProvidedName is not passed as CreateTaskScreen doesn't have access to user
+        // data.
+        // The help composable will fall back to
+        // FirebaseAuth.getInstance().currentUser?.displayName.
         ScreenWithHelp(
             helpContext = HelpContext.CREATE_TASK,
             helpPadding = 16.dp,
