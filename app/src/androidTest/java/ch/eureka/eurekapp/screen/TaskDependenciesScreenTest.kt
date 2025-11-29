@@ -232,56 +232,58 @@ open class TaskDependenciesScreenTest : TestCase() {
   }
 
   @Test
-  fun testTaskSurfaceComponentDisplaysWithFilter() = runBlocking {
-    val projectId = "filter-component-project"
-    val taskId = "test-task"
+  fun testTaskSurfaceComponentDisplaysWithFilter() {
+    runBlocking {
+      val projectId = "filter-component-project"
+      val taskId = "test-task"
 
-    projectRepository.createProject(
-        Project().copy(projectId = projectId, memberIds = listOf("user1", "user2")), "user1")
+      projectRepository.createProject(
+          Project().copy(projectId = projectId, memberIds = listOf("user1", "user2")), "user1")
 
-    val task =
-        Task()
-            .copy(
-                taskID = taskId,
-                projectId = projectId,
-                title = "Test Task",
-                assignedUserIds = listOf("user1"))
+      val task =
+          Task()
+              .copy(
+                  taskID = taskId,
+                  projectId = projectId,
+                  title = "Test Task",
+                  assignedUserIds = listOf("user1"))
 
-    tasksRepository.createTask(task)
+      tasksRepository.createTask(task)
 
-    // Verify data is in Firestore
-    val allTasks = tasksRepository.getTasksInProject(projectId).first()
-    assert(allTasks.any { it.taskID == taskId })
+      // Verify data is in Firestore
+      val allTasks = tasksRepository.getTasksInProject(projectId).first()
+      assert(allTasks.any { it.taskID == taskId })
 
-    val viewModel =
-        TaskDependenciesViewModel(
-            tasksRepository = tasksRepository,
-            usersRepository = usersRepository,
-            projectsRepository = projectRepository)
+      val viewModel =
+          TaskDependenciesViewModel(
+              tasksRepository = tasksRepository,
+              usersRepository = usersRepository,
+              projectsRepository = projectRepository)
 
-    // Verify ViewModel can load the task
-    val loadedTask = viewModel.getTaskFromRepository(projectId, taskId).first()
-    assert(loadedTask != null)
-    assert(loadedTask!!.title == "Test Task")
+      // Verify ViewModel can load the task
+      val loadedTask = viewModel.getTaskFromRepository(projectId, taskId).first()
+      assert(loadedTask != null)
+      assert(loadedTask!!.title == "Test Task")
 
-    composeTestRule.setContent {
-      TaskDependenciesScreen(
-          projectId = projectId, taskId = taskId, taskDependenciesViewModel = viewModel)
-    }
-
-    composeTestRule.waitForIdle()
-
-    // Verify TaskSurfaceComponent is displayed (the task title should be visible)
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
-      try {
-        composeTestRule.onNodeWithText("Test Task").assertExists()
-        true
-      } catch (e: AssertionError) {
-        false
+      composeTestRule.setContent {
+        TaskDependenciesScreen(
+            projectId = projectId, taskId = taskId, taskDependenciesViewModel = viewModel)
       }
-    }
 
-    composeTestRule.onNodeWithText("Test Task").assertIsDisplayed()
+      composeTestRule.waitForIdle()
+
+      // Verify TaskSurfaceComponent is displayed (the task title should be visible)
+      composeTestRule.waitUntil(timeoutMillis = 5_000) {
+        try {
+          composeTestRule.onNodeWithText("Test Task").assertExists()
+          true
+        } catch (e: AssertionError) {
+          false
+        }
+      }
+
+      composeTestRule.onNodeWithText("Test Task").assertIsDisplayed()
+    }
   }
 
   @After
