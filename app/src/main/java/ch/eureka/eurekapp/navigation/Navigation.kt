@@ -355,7 +355,12 @@ fun NavigationMenu(
 
               composable<Route.ConversationsSection.CreateConversation> {
                 CreateConversationScreen(
-                    onConversationCreated = { navigationController.popBackStack() })
+                    onNavigateToConversation = { conversationId ->
+                      navigationController.popBackStack()
+                      navigationController.navigate(
+                          Route.ConversationsSection.ConversationDetail(
+                              conversationId = conversationId))
+                    })
               }
 
               composable<Route.ConversationsSection.ConversationDetail> { backStackEntry ->

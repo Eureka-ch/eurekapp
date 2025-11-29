@@ -54,7 +54,7 @@ data class ConversationDetailState(
  *
  * Manages loading messages, sending new messages, and marking messages as read.
  */
-class ConversationDetailViewModel(
+open class ConversationDetailViewModel(
     private val conversationId: String,
     private val conversationRepository: ConversationRepository =
         RepositoriesProvider.conversationRepository,
@@ -65,12 +65,12 @@ class ConversationDetailViewModel(
 ) : ViewModel() {
 
   private val _uiState = MutableStateFlow(ConversationDetailState())
-  val uiState: StateFlow<ConversationDetailState> = _uiState
+  open val uiState: StateFlow<ConversationDetailState> = _uiState
 
   private val _isConnected =
       connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
-  val currentUserId: String?
+  open val currentUserId: String?
     get() = getCurrentUserId()
 
   init {
