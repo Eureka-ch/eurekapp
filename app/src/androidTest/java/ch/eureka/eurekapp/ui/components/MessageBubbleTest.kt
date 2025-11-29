@@ -8,6 +8,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
+/*
+Co-author: Claude 4.5 Sonnet
+*/
+
 @RunWith(AndroidJUnit4::class)
 class MessageBubbleTest {
 

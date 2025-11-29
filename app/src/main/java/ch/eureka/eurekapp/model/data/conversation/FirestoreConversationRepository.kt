@@ -178,7 +178,11 @@ class FirestoreConversationRepository(
     firestore
         .collection(FirestorePaths.CONVERSATIONS)
         .document(conversationId)
-        .update(mapOf("lastMessageAt" to message.createdAt, "lastMessagePreview" to text.take(100)))
+        .update(
+            mapOf(
+                "lastMessageAt" to message.createdAt,
+                "lastMessagePreview" to text.take(100),
+                "lastMessageSenderId" to currentUserId))
         .await()
 
     message
