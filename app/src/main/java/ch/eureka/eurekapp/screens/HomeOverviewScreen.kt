@@ -38,7 +38,7 @@ import ch.eureka.eurekapp.ui.components.EurekaInfoCard
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
 import ch.eureka.eurekapp.ui.components.IconTextRow
 import ch.eureka.eurekapp.ui.components.help.HelpContext
-import ch.eureka.eurekapp.ui.components.help.InteractiveHelpEntryPoint
+import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.home.HOME_ITEMS_LIMIT
 import ch.eureka.eurekapp.ui.home.HomeOverviewUiState
@@ -120,13 +120,12 @@ private fun HomeOverviewScreenContainer(
     uiState: HomeOverviewUiState,
     actions: HomeOverviewActions
 ) {
-  Box(modifier = modifier.fillMaxSize()) {
-    HomeOverviewLayout(modifier = Modifier.fillMaxSize(), uiState = uiState, actions = actions)
-    InteractiveHelpEntryPoint(
-        helpContext = HelpContext.HOME_OVERVIEW,
-        userProvidedName = uiState.currentUserName,
-        modifier = Modifier.align(Alignment.BottomEnd).padding(Spacing.md))
-  }
+  ScreenWithHelp(
+      helpContext = HelpContext.HOME_OVERVIEW,
+      userProvidedName = uiState.currentUserName,
+      content = {
+        HomeOverviewLayout(modifier = Modifier.fillMaxSize(), uiState = uiState, actions = actions)
+      })
 }
 
 /** Visible-for-testing layout that renders the actual home overview content based on [uiState]. */

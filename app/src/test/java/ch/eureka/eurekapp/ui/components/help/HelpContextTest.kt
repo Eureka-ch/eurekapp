@@ -114,4 +114,71 @@ class HelpContextTest {
     assertFalse(content.intro.isBlank())
     assertTrue(content.steps.isNotEmpty())
   }
+
+  @Test
+  fun `FILES_MANAGEMENT context generates correct help content`() {
+    val userName = "Emma"
+    val content = HelpContext.FILES_MANAGEMENT.toHelpContent(userName)
+
+    assertEquals("File management", content.title)
+    assertTrue(content.intro.contains(userName))
+    assertEquals(3, content.steps.size)
+    assertEquals("View files", content.steps[0].highlight)
+    assertEquals("Open files", content.steps[1].highlight)
+    assertEquals("Delete files", content.steps[2].highlight)
+  }
+
+  @Test
+  fun `MEETING_VOTES context generates correct help content`() {
+    val userName = "Frank"
+    val content = HelpContext.MEETING_VOTES.toHelpContent(userName)
+
+    assertEquals("Meeting proposals voting", content.title)
+    assertTrue(content.intro.contains(userName))
+    assertEquals(4, content.steps.size)
+    assertEquals("View proposals", content.steps[0].highlight)
+    assertEquals("Select preferences", content.steps[1].highlight)
+    assertEquals("Add new proposal", content.steps[2].highlight)
+    assertEquals("Confirm votes", content.steps[3].highlight)
+  }
+
+  @Test
+  fun `TOKEN_ENTRY context generates correct help content`() {
+    val userName = "Grace"
+    val content = HelpContext.TOKEN_ENTRY.toHelpContent(userName)
+
+    assertEquals("Join with token", content.title)
+    assertTrue(content.intro.contains(userName))
+    assertEquals(3, content.steps.size)
+    assertEquals("Get your token", content.steps[0].highlight)
+    assertEquals("Enter token", content.steps[1].highlight)
+    assertEquals("Validate", content.steps[2].highlight)
+  }
+
+  @Test
+  fun `VIEW_TASK context generates correct help content`() {
+    val userName = "Henry"
+    val content = HelpContext.VIEW_TASK.toHelpContent(userName)
+
+    assertEquals("Viewing task details", content.title)
+    assertTrue(content.intro.contains(userName))
+    assertEquals(4, content.steps.size)
+    assertEquals("Task information", content.steps[0].highlight)
+    assertEquals("Edit task", content.steps[1].highlight)
+    assertEquals("View dependencies", content.steps[2].highlight)
+    assertEquals("Attachments", content.steps[3].highlight)
+  }
+
+  @Test
+  fun `NOTES context generates correct help content`() {
+    val userName = "Iris"
+    val content = HelpContext.NOTES.toHelpContent(userName)
+
+    assertEquals("Personal notes", content.title)
+    assertTrue(content.intro.contains(userName))
+    assertEquals(3, content.steps.size)
+    assertEquals("Cloud vs Local", content.steps[0].highlight)
+    assertEquals("Add notes", content.steps[1].highlight)
+    assertEquals("View history", content.steps[2].highlight)
+  }
 }

@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.components.help.HelpContext
+import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
 
 /** Test tags for UI testing. */
 object TokenEntryScreenTestTags {
@@ -69,81 +71,89 @@ fun TokenEntryScreen(
       modifier = Modifier.fillMaxSize(),
       topBar = { EurekaTopBar() },
   ) { padding ->
-    Column(
-        modifier =
-            Modifier.fillMaxSize().padding(padding).padding(horizontal = 24.dp, vertical = 32.dp),
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.spacedBy(24.dp)) {
-          // Greeting
-          Text(
-              text = "Hello ${uiState.userName} 👋",
-              style =
-                  MaterialTheme.typography.headlineMedium.copy(
-                      fontSize = 28.sp, fontWeight = FontWeight.Bold),
-              color = MaterialTheme.colorScheme.onBackground,
-              modifier = Modifier.testTag(TokenEntryScreenTestTags.GREETING_TEXT))
-
-          Spacer(modifier = Modifier.height(8.dp))
-
-          // Instructions
-          Text(
-              text = "Enter Access Token",
-              style =
-                  MaterialTheme.typography.titleLarge.copy(
-                      fontSize = 20.sp, fontWeight = FontWeight.SemiBold),
-              color = MaterialTheme.colorScheme.onBackground)
-
-          Text(
-              text = "Paste the token you received to join a group or unlock features.",
-              style = MaterialTheme.typography.bodyMedium,
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-              textAlign = TextAlign.Start)
-
-          Spacer(modifier = Modifier.height(8.dp))
-
-          // Token input field
-          OutlinedTextField(
-              value = uiState.token,
-              onValueChange = { tokenEntryViewModel.updateToken(it) },
-              label = { Text("Token") },
-              placeholder = { Text("Ex: 7F4A-93KD-XX12") },
-              singleLine = true,
-              enabled = !uiState.isLoading,
+    ScreenWithHelp(
+        helpContext = HelpContext.TOKEN_ENTRY,
+        userProvidedName = uiState.userName,
+        content = {
+          Column(
               modifier =
-                  Modifier.fillMaxWidth().testTag(TokenEntryScreenTestTags.TOKEN_INPUT_FIELD),
-              colors =
-                  OutlinedTextFieldDefaults.colors(
-                      focusedBorderColor = MaterialTheme.colorScheme.primary,
-                      unfocusedBorderColor = MaterialTheme.colorScheme.outline))
+                  Modifier.fillMaxSize()
+                      .padding(padding)
+                      .padding(horizontal = 24.dp, vertical = 32.dp),
+              horizontalAlignment = Alignment.Start,
+              verticalArrangement = Arrangement.spacedBy(24.dp)) {
+                // Greeting
+                Text(
+                    text = "Hello ${uiState.userName} 👋",
+                    style =
+                        MaterialTheme.typography.headlineMedium.copy(
+                            fontSize = 28.sp, fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.testTag(TokenEntryScreenTestTags.GREETING_TEXT))
 
-          // Validate button
-          Button(
-              onClick = { tokenEntryViewModel.validateToken() },
-              enabled = !uiState.isLoading && uiState.token.isNotBlank(),
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .height(48.dp)
-                      .testTag(TokenEntryScreenTestTags.VALIDATE_BUTTON),
-              colors =
-                  ButtonDefaults.buttonColors(
-                      containerColor = MaterialTheme.colorScheme.primary,
-                      contentColor = MaterialTheme.colorScheme.onPrimary),
-              shape = RoundedCornerShape(8.dp)) {
-                if (uiState.isLoading) {
-                  CircularProgressIndicator(
-                      color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
-                } else {
-                  Text(
-                      text = "Validate",
-                      style =
-                          MaterialTheme.typography.labelLarge.copy(
-                              fontSize = 16.sp, fontWeight = FontWeight.Medium))
-                }
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Instructions
+                Text(
+                    text = "Enter Access Token",
+                    style =
+                        MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 20.sp, fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.onBackground)
+
+                Text(
+                    text = "Paste the token you received to join a group or unlock features.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Start)
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Token input field
+                OutlinedTextField(
+                    value = uiState.token,
+                    onValueChange = { tokenEntryViewModel.updateToken(it) },
+                    label = { Text("Token") },
+                    placeholder = { Text("Ex: 7F4A-93KD-XX12") },
+                    singleLine = true,
+                    enabled = !uiState.isLoading,
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(TokenEntryScreenTestTags.TOKEN_INPUT_FIELD),
+                    colors =
+                        OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline))
+
+                // Validate button
+                Button(
+                    onClick = { tokenEntryViewModel.validateToken() },
+                    enabled = !uiState.isLoading && uiState.token.isNotBlank(),
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .height(48.dp)
+                            .testTag(TokenEntryScreenTestTags.VALIDATE_BUTTON),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary),
+                    shape = RoundedCornerShape(8.dp)) {
+                      if (uiState.isLoading) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(24.dp))
+                      } else {
+                        Text(
+                            text = "Validate",
+                            style =
+                                MaterialTheme.typography.labelLarge.copy(
+                                    fontSize = 16.sp, fontWeight = FontWeight.Medium))
+                      }
+                    }
+
+                // Help link
+                HelpLink(modifier = Modifier.testTag(TokenEntryScreenTestTags.HELP_LINK))
               }
-
-          // Help link
-          HelpLink(modifier = Modifier.testTag(TokenEntryScreenTestTags.HELP_LINK))
-        }
+        })
   }
 }
 

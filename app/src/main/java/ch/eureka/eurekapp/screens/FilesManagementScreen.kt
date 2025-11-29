@@ -33,6 +33,8 @@ import ch.eureka.eurekapp.model.downloads.FilesManagementViewModel
 import ch.eureka.eurekapp.ui.camera.PhotoViewer
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.components.help.HelpContext
+import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
 
 object FilesManagementScreenTestTags {
   const val NO_FILES_MESSAGE = "no_files_message"
@@ -182,15 +184,19 @@ fun FilesManagementScreen(
             modifier = Modifier.testTag(FilesManagementScreenTestTags.TOP_BAR_TITLE))
       },
       content = { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-          FilesManagementContent(
-              files = files,
-              onOpenFile = { openFileIntent = viewModel.getOpenFileIntent(it) },
-              onDeleteFile = {
-                fileToDelete = it
-                showDeleteDialog = true
-              })
-        }
+        ScreenWithHelp(
+            helpContext = HelpContext.FILES_MANAGEMENT,
+            content = {
+              Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+                FilesManagementContent(
+                    files = files,
+                    onOpenFile = { openFileIntent = viewModel.getOpenFileIntent(it) },
+                    onDeleteFile = {
+                      fileToDelete = it
+                      showDeleteDialog = true
+                    })
+              }
+            })
       })
 
   DeleteConfirmationDialog(
