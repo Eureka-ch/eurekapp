@@ -19,6 +19,7 @@ Co-author: GPT-5 Codex
  * @property createdAt Timestamp when the conversation was created.
  * @property lastMessageAt Timestamp of the most recent message.
  * @property lastMessagePreview Preview text of the most recent message.
+ * @property lastMessageSenderId User ID of who sent the last message.
  * @property lastReadAt Map of user IDs to their last read timestamp.
  */
 data class Conversation(
@@ -29,5 +30,6 @@ data class Conversation(
     val createdAt: Timestamp = Timestamp.now(),
     val lastMessageAt: Timestamp? = null,
     val lastMessagePreview: String? = null,
+    val lastMessageSenderId: String? = null,
     val lastReadAt: Map<String, Timestamp> = emptyMap()
 )

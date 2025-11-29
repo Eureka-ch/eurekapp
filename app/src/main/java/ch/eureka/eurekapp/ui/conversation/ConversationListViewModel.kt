@@ -160,10 +160,11 @@ open class ConversationListViewModel(
     val otherUser = userRepository.getUserById(otherUserId).first()
     val project = projectRepository.getProjectById(conversation.projectId).first()
 
-    // Calculate unread status
+    // Calculate unread status (only unread if someone else sent the last message)
     val lastReadAt = conversation.lastReadAt[currentUserId]
     val hasUnread =
         conversation.lastMessageAt != null &&
+            conversation.lastMessageSenderId != currentUserId &&
             (lastReadAt == null || conversation.lastMessageAt > lastReadAt)
 
     // Format last message time
