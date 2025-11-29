@@ -32,8 +32,7 @@ import ch.eureka.eurekapp.model.data.user.UserNotificationSettingsKeys
 import ch.eureka.eurekapp.model.data.user.defaultValuesNotificationSettingsKeys
 import ch.eureka.eurekapp.model.notifications.NotificationSettingsViewModel
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
+import com.google.firebase.auth.FirebaseAuth
 
 // Partially written using AI.
 enum class HelpContext {
@@ -49,6 +48,22 @@ enum class HelpContext {
   NOTES
 }
 
+/**
+ * Interactive help entry point that displays a "Guide" chip and shows contextual help when clicked.
+ *
+ * **Important for tests**: Always pass [userProvidedName] in tests to avoid Firebase fallback. In
+ * production, if [userProvidedName] is null, the composable will fall back to
+ * `FirebaseAuth.getInstance().currentUser?.displayName`, which may not be available in test
+ * environments.
+ *
+ * @param helpContext The context for which help content should be displayed.
+ * @param modifier Modifier for the chip.
+ * @param userProvidedName Optional user name to personalize the help content. **Always provide this
+ *   in tests.**
+ * @param chipShape Shape for the help chip.
+ * @param notificationSettingsViewModel ViewModel for notification settings. Defaults to
+ *   [viewModel()].
+ */
 @Composable
 fun InteractiveHelpEntryPoint(
     helpContext: HelpContext,
@@ -75,7 +90,7 @@ fun InteractiveHelpEntryPoint(
       remember(userProvidedName) {
             when {
               !userProvidedName.isNullOrBlank() -> userProvidedName
-              else -> Firebase.auth.currentUser?.displayName.orEmpty()
+              else -> FirebaseAuth.getInstance().currentUser?.displayName.orEmpty()
             }
           }
           .ifBlank { "there" }

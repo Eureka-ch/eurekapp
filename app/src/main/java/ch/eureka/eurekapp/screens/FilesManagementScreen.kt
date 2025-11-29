@@ -184,6 +184,10 @@ fun FilesManagementScreen(
             modifier = Modifier.testTag(FilesManagementScreenTestTags.TOP_BAR_TITLE))
       },
       content = { padding ->
+        // Note: userProvidedName is not passed as FilesManagementScreen doesn't have access to user
+        // data.
+        // The help composable will fall back to
+        // FirebaseAuth.getInstance().currentUser?.displayName.
         ScreenWithHelp(
             helpContext = HelpContext.FILES_MANAGEMENT,
             content = {

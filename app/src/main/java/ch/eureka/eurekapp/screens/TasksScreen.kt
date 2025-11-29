@@ -358,6 +358,8 @@ fun TasksScreen(
 
   Scaffold(modifier = modifier.fillMaxSize().testTag(TasksScreenTestTags.TASKS_SCREEN_CONTENT)) {
       innerPadding ->
+    // Note: userProvidedName is not passed as TasksScreen doesn't have access to user data.
+    // The help composable will fall back to FirebaseAuth.getInstance().currentUser?.displayName.
     ScreenWithHelp(
         helpContext = HelpContext.TASKS,
         content = {

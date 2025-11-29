@@ -23,6 +23,8 @@ object OverviewProjectsScreenTestTags {
  */
 @Composable
 fun OverviewProjectScreen(projectId: String) {
+  // Note: userProvidedName is not passed as this screen doesn't have access to user data.
+  // The help composable will fall back to FirebaseAuth.getInstance().currentUser?.displayName.
   ScreenWithHelp(
       helpContext = HelpContext.PROJECTS,
       content = {

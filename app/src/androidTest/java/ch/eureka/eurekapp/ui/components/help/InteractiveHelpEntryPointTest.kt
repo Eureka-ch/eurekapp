@@ -44,7 +44,9 @@ class InteractiveHelpEntryPointTest {
   fun helpChipIsDisplayedWhenHelpIsEnabled() {
     composeTestRule.setContent {
       InteractiveHelpEntryPoint(
-          helpContext = HelpContext.HOME_OVERVIEW, notificationSettingsViewModel = viewModel)
+          helpContext = HelpContext.HOME_OVERVIEW,
+          userProvidedName = "TestUser",
+          notificationSettingsViewModel = viewModel)
     }
 
     composeTestRule.onNodeWithText("Guide").assertIsDisplayed()
@@ -116,6 +118,7 @@ class InteractiveHelpEntryPointTest {
     composeTestRule.setContent {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.HOME_OVERVIEW,
+          userProvidedName = "TestUser",
           notificationSettingsViewModel = disabledViewModel)
     }
 
