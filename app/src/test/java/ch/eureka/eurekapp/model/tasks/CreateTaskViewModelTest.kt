@@ -564,12 +564,13 @@ class CreateTaskViewModelTest {
   // ========== USER ASSIGNMENT TESTS ==========
 
   @Test
-  fun initialState_currentUserIsPreselectedAsAssignee() = runTest {
+  fun initialState_noUserIsPreselectedAsAssignee() = runTest {
     viewModel = createViewModel(getCurrentUserId = { "user-123" })
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
-    assertEquals(listOf("user-123"), state.selectedAssignedUserIds)
+    // No user should be preselected - user can choose to assign or leave empty
+    assertEquals(emptyList<String>(), state.selectedAssignedUserIds)
   }
 
   @Test
@@ -681,7 +682,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun addTask_withEmptySelectedUsers_usesCurrentUserAsDefault() = runTest {
+  fun addTask_withEmptySelectedUsers_createsTaskWithEmptyAssignedUsers() = runTest {
     viewModel = createViewModel(getCurrentUserId = { "test-user-123" })
     viewModel.setProjectId("project123")
     viewModel.setTitle("Test Task")
@@ -692,10 +693,10 @@ class CreateTaskViewModelTest {
     viewModel.addTask(mockContext)
     advanceUntilIdle()
 
-    // Verify task was created with current user as assignee
+    // Verify task was created with empty assigned users list (no default assignment)
     assertTrue(mockTaskRepository.createTaskCalls.isNotEmpty())
     val createdTask = mockTaskRepository.createTaskCalls[0]
-    assertEquals(listOf("test-user-123"), createdTask.assignedUserIds)
+    assertEquals(emptyList<String>(), createdTask.assignedUserIds)
   }
 
   @Test
