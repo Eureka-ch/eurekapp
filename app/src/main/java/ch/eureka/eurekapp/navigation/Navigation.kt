@@ -22,7 +22,6 @@ import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.FilesManagementScreen
 import ch.eureka.eurekapp.screens.HomeOverviewActions
 import ch.eureka.eurekapp.screens.HomeOverviewScreen
-import ch.eureka.eurekapp.screens.IdeasScreen
 import ch.eureka.eurekapp.screens.OverviewProjectScreen
 import ch.eureka.eurekapp.screens.ProjectSelectionScreen
 import ch.eureka.eurekapp.screens.TasksScreen
@@ -92,15 +91,6 @@ sealed interface Route {
 
     @Serializable
     data class TaskDependence(val projectId: String, val taskId: String) : TasksSection
-  }
-
-  sealed interface IdeasSection : Route {
-    companion object {
-      val routes: Set<KClass<out IdeasSection>>
-        get() = IdeasSection::class.sealedSubclasses.toSet()
-    }
-
-    @Serializable data object Ideas : IdeasSection
   }
 
   sealed interface MeetingsSection : Route {
@@ -334,9 +324,6 @@ fun NavigationMenu(
                     taskId = dependenceRoute.taskId,
                     navigationController = navigationController)
               }
-
-              // Ideas section
-              composable<Route.IdeasSection.Ideas> { IdeasScreen() }
 
               // Conversations section
               composable<Route.ConversationsSection.Conversations> {
