@@ -33,6 +33,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.ui.components.MessageInputField
+import ch.eureka.eurekapp.ui.components.help.HelpContext
+import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 /** Test tags for the Self Notes Screen. */
@@ -117,40 +119,44 @@ fun SelfNotesScreen(modifier: Modifier = Modifier, viewModel: SelfNotesViewModel
             isSending = uiState.isSending,
             placeholder = "Write a note to yourself...")
       }) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-          when {
-            uiState.isLoading -> {
-              CircularProgressIndicator(
-                  modifier =
-                      Modifier.align(Alignment.Center)
-                          .testTag(SelfNotesScreenTestTags.LOADING_INDICATOR))
-            }
-            uiState.notes.isEmpty() -> {
-              Text(
-                  text = "No notes yet. Start writing!",
-                  style = MaterialTheme.typography.bodyLarge,
-                  color = MaterialTheme.colorScheme.onSurfaceVariant,
-                  textAlign = TextAlign.Center,
-                  modifier =
-                      Modifier.align(Alignment.Center)
-                          .padding(Spacing.lg)
-                          .testTag(SelfNotesScreenTestTags.EMPTY_STATE))
-            }
-            else -> {
-              LazyColumn(
-                  state = listState,
-                  modifier =
-                      Modifier.fillMaxSize()
-                          .padding(horizontal = Spacing.md)
-                          .testTag(SelfNotesScreenTestTags.NOTES_LIST),
-                  reverseLayout = true,
-                  verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                    items(items = uiState.notes, key = { it.messageID }) { message ->
-                      SelfNoteMessageBubble(message = message)
-                    }
+        ScreenWithHelp(
+            helpContext = HelpContext.NOTES,
+            content = {
+              Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+                when {
+                  uiState.isLoading -> {
+                    CircularProgressIndicator(
+                        modifier =
+                            Modifier.align(Alignment.Center)
+                                .testTag(SelfNotesScreenTestTags.LOADING_INDICATOR))
                   }
-            }
-          }
-        }
+                  uiState.notes.isEmpty() -> {
+                    Text(
+                        text = "No notes yet. Start writing!",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier =
+                            Modifier.align(Alignment.Center)
+                                .padding(Spacing.lg)
+                                .testTag(SelfNotesScreenTestTags.EMPTY_STATE))
+                  }
+                  else -> {
+                    LazyColumn(
+                        state = listState,
+                        modifier =
+                            Modifier.fillMaxSize()
+                                .padding(horizontal = Spacing.md)
+                                .testTag(SelfNotesScreenTestTags.NOTES_LIST),
+                        reverseLayout = true,
+                        verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                          items(items = uiState.notes, key = { it.messageID }) { message ->
+                            SelfNoteMessageBubble(message = message)
+                          }
+                        }
+                  }
+                }
+              }
+            })
       }
 }

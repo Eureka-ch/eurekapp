@@ -1,9 +1,15 @@
 package ch.eureka.eurekapp.screens
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import ch.eureka.eurekapp.ui.components.help.HelpContext
+import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
+import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 object OverviewProjectsScreenTestTags {
   const val OVERVIEW_PROJECTS_SCREEN_TEXT = "OverviewProjectsScreenText" // The text of the overview
@@ -17,9 +23,17 @@ object OverviewProjectsScreenTestTags {
  */
 @Composable
 fun OverviewProjectScreen(projectId: String) {
-  Text(
-      "Overview Projects Screen: $projectId",
-      modifier = Modifier.testTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT))
-  // Camera()
-  Camera()
+  // Note: userProvidedName is not passed as this screen doesn't have access to user data.
+  // The help composable will fall back to FirebaseAuth.getInstance().currentUser?.displayName.
+  ScreenWithHelp(
+      helpContext = HelpContext.PROJECTS,
+      content = {
+        Column(modifier = Modifier.fillMaxSize().padding(Spacing.md)) {
+          Text(
+              "Overview Projects Screen: $projectId",
+              modifier =
+                  Modifier.testTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT))
+          Camera()
+        }
+      })
 }

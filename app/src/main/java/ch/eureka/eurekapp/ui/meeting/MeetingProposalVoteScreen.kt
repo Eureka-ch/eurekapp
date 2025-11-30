@@ -54,6 +54,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingProposal
 import ch.eureka.eurekapp.model.data.meeting.MeetingProposalVote
+import ch.eureka.eurekapp.ui.components.help.HelpContext
+import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.utils.Formatters
 
@@ -144,66 +146,72 @@ fun MeetingProposalVoteScreen(
         }
       },
       content = { padding ->
-        Column(
-            modifier =
-                Modifier.fillMaxSize()
-                    .padding(5.dp)
-                    .testTag(MeetingProposalVoteScreenTestTags.MEETING_PROPOSALS_VOTE_SCREEN)) {
-              Text(
+        ScreenWithHelp(
+            helpContext = HelpContext.MEETING_VOTES,
+            content = {
+              Column(
                   modifier =
-                      Modifier.testTag(
-                          MeetingProposalVoteScreenTestTags.MEETING_PROPOSALS_VOTE_SCREEN_TITLE),
-                  text = "Vote for meeting proposal",
-                  style = MaterialTheme.typography.headlineSmall,
-                  fontWeight = FontWeight.Bold)
-              Spacer(modifier = Modifier.height(8.dp))
-              Text(
-                  modifier =
-                      Modifier.testTag(
-                          MeetingProposalVoteScreenTestTags
-                              .MEETING_PROPOSALS_VOTE_SCREEN_DESCRIPTION),
-                  text = "Vote for existing meeting proposal or propose your own",
-                  style = MaterialTheme.typography.bodyMedium,
-                  color = Color.Gray)
+                      Modifier.fillMaxSize()
+                          .padding(5.dp)
+                          .testTag(
+                              MeetingProposalVoteScreenTestTags.MEETING_PROPOSALS_VOTE_SCREEN)) {
+                    Text(
+                        modifier =
+                            Modifier.testTag(
+                                MeetingProposalVoteScreenTestTags
+                                    .MEETING_PROPOSALS_VOTE_SCREEN_TITLE),
+                        text = "Vote for meeting proposal",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        modifier =
+                            Modifier.testTag(
+                                MeetingProposalVoteScreenTestTags
+                                    .MEETING_PROPOSALS_VOTE_SCREEN_DESCRIPTION),
+                        text = "Vote for existing meeting proposal or propose your own",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray)
 
-              Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(8.dp))
 
-              if (meetingProposalVoteViewModel.userId != null) {
-                MeetingProposalsList(
-                    modifier = Modifier.padding(padding),
-                    meetingProposals = uiState.meetingProposals,
-                    hasVoted = { meetingProposal ->
-                      meetingProposal.votes
-                          .map { v -> v.userId }
-                          .contains(meetingProposalVoteViewModel.userId)
-                    },
-                    hasVotedForFormat = { meetingProposal, format ->
-                      meetingProposalVoteViewModel.hasVotedForFormat(meetingProposal, format)
-                    },
-                    voteActions =
-                        MeetingProposalVoteActions(
-                            addVote = { meetingProposal, formats ->
-                              meetingProposalVoteViewModel.voteForMeetingProposal(
-                                  meetingProposal,
-                                  MeetingProposalVote(
-                                      meetingProposalVoteViewModel.userId, formats.toList()))
-                            },
-                            removeVote = { meetingProposal ->
-                              meetingProposalVoteViewModel.retractVoteForMeetingProposal(
-                                  meetingProposal)
-                            },
-                            addFormatVote = { meetingProposal, format ->
-                              meetingProposalVoteViewModel
-                                  .addFormatVoteForAlreadyVotedMeetingProposal(
-                                      meetingProposal, format)
-                            },
-                            retractFormatVote = { meetingProposal, format ->
-                              meetingProposalVoteViewModel
-                                  .retractFormatVoteForAlreadyVotedMeetingProposal(
-                                      meetingProposal, format)
-                            }))
-              }
-            }
+                    if (meetingProposalVoteViewModel.userId != null) {
+                      MeetingProposalsList(
+                          modifier = Modifier.padding(padding),
+                          meetingProposals = uiState.meetingProposals,
+                          hasVoted = { meetingProposal ->
+                            meetingProposal.votes
+                                .map { v -> v.userId }
+                                .contains(meetingProposalVoteViewModel.userId)
+                          },
+                          hasVotedForFormat = { meetingProposal, format ->
+                            meetingProposalVoteViewModel.hasVotedForFormat(meetingProposal, format)
+                          },
+                          voteActions =
+                              MeetingProposalVoteActions(
+                                  addVote = { meetingProposal, formats ->
+                                    meetingProposalVoteViewModel.voteForMeetingProposal(
+                                        meetingProposal,
+                                        MeetingProposalVote(
+                                            meetingProposalVoteViewModel.userId, formats.toList()))
+                                  },
+                                  removeVote = { meetingProposal ->
+                                    meetingProposalVoteViewModel.retractVoteForMeetingProposal(
+                                        meetingProposal)
+                                  },
+                                  addFormatVote = { meetingProposal, format ->
+                                    meetingProposalVoteViewModel
+                                        .addFormatVoteForAlreadyVotedMeetingProposal(
+                                            meetingProposal, format)
+                                  },
+                                  retractFormatVote = { meetingProposal, format ->
+                                    meetingProposalVoteViewModel
+                                        .retractFormatVoteForAlreadyVotedMeetingProposal(
+                                            meetingProposal, format)
+                                  }))
+                    }
+                  }
+            })
       })
 }
 

@@ -62,6 +62,8 @@ import ch.eureka.eurekapp.model.calendar.MeetingCalendarViewModel
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
+import ch.eureka.eurekapp.ui.components.help.HelpContext
+import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.theme.LightColorScheme
@@ -199,75 +201,92 @@ fun MeetingScreen(
             }
       },
       content = { padding ->
-        Column(
-            modifier =
-                Modifier.fillMaxSize()
-                    .padding(10.dp)
-                    .testTag(MeetingScreenTestTags.MEETING_SCREEN)) {
-              Text(
-                  modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_TITLE),
-                  text = "Meetings",
-                  style = MaterialTheme.typography.headlineSmall,
-                  fontWeight = FontWeight.Bold)
-              Spacer(modifier = Modifier.height(8.dp))
-              Text(
-                  modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_DESCRIPTION),
-                  text = "Schedule and manage your team meetings",
-                  style = MaterialTheme.typography.bodyMedium,
-                  color = Color.Gray)
-
-              Spacer(Modifier.height(16.dp))
-
-              if (!uiState.isConnected) {
-                Text(
-                    text =
-                        "You are offline. Meeting creation is unavailable to prevent sync conflicts.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier =
-                        Modifier.padding(Spacing.md).testTag(MeetingScreenTestTags.OFFLINE_MESSAGE))
-              }
-
-              RoundedTabRow(
-                  tabs = MeetingTab.entries.toTypedArray(),
-                  selectedTab = uiState.selectedTab,
-                  onTabSelected = { meetingViewModel.selectTab(it) })
-
-              Spacer(Modifier.height(16.dp))
-
-              when (uiState.selectedTab) {
-                MeetingTab.UPCOMING ->
-                    MeetingsList(
-                        MeetingsListConfig(
-                            modifier = Modifier.padding(padding),
-                            meetings = uiState.upcomingMeetings,
-                            tabName = MeetingTab.UPCOMING.name.lowercase(),
-                            projectId = config.projectId,
-                            isCurrentUserId = { uid -> meetingViewModel.userId == uid },
-                            onMeetingClick = config.onMeetingClick,
-                            onVoteForMeetingProposalClick = config.onVoteForMeetingProposalClick,
-                            onNavigateToMeeting = config.onNavigateToMeeting,
-                            onCloseVotes = { meeting, isConnected ->
-                              meetingViewModel.closeVotesForMeeting(meeting, isConnected)
-                            },
-                            onViewTranscript = config.onViewTranscript,
-                            onRecord = config.onRecord,
-                            isConnected = uiState.isConnected),
-                        calendarViewModel = calendarViewModel)
-                MeetingTab.PAST ->
-                    MeetingsList(
-                        MeetingsListConfig(
-                            modifier = Modifier.padding(padding),
-                            meetings = uiState.pastMeetings,
-                            tabName = MeetingTab.PAST.name.lowercase(),
-                            projectId = config.projectId,
-                            isCurrentUserId = { uid -> meetingViewModel.userId == uid },
-                            onMeetingClick = config.onMeetingClick,
-                            isConnected = uiState.isConnected),
-                        calendarViewModel = calendarViewModel)
-              }
-            }
+        ScreenWithHelp(
+            helpContext = HelpContext.MEETINGS,
+            content = {
+              MeetingScreenContent(
+                  padding = padding,
+                  uiState = uiState,
+                  config = config,
+                  meetingViewModel = meetingViewModel,
+                  calendarViewModel = calendarViewModel)
+            })
       })
+}
+
+@Composable
+private fun MeetingScreenContent(
+    padding: PaddingValues,
+    uiState: MeetingUIState,
+    config: MeetingScreenConfig,
+    meetingViewModel: MeetingViewModel,
+    calendarViewModel: MeetingCalendarViewModel
+) {
+  Column(
+      modifier =
+          Modifier.fillMaxSize().padding(10.dp).testTag(MeetingScreenTestTags.MEETING_SCREEN)) {
+        Text(
+            modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_TITLE),
+            text = "Meetings",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_DESCRIPTION),
+            text = "Schedule and manage your team meetings",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray)
+
+        Spacer(Modifier.height(16.dp))
+
+        if (!uiState.isConnected) {
+          Text(
+              text = "You are offline. Meeting creation is unavailable to prevent sync conflicts.",
+              style = MaterialTheme.typography.bodyMedium,
+              color = MaterialTheme.colorScheme.error,
+              modifier =
+                  Modifier.padding(Spacing.md).testTag(MeetingScreenTestTags.OFFLINE_MESSAGE))
+        }
+
+        RoundedTabRow(
+            tabs = MeetingTab.entries.toTypedArray(),
+            selectedTab = uiState.selectedTab,
+            onTabSelected = { meetingViewModel.selectTab(it) })
+
+        Spacer(Modifier.height(16.dp))
+
+        when (uiState.selectedTab) {
+          MeetingTab.UPCOMING ->
+              MeetingsList(
+                  MeetingsListConfig(
+                      modifier = Modifier.padding(padding),
+                      meetings = uiState.upcomingMeetings,
+                      tabName = MeetingTab.UPCOMING.name.lowercase(),
+                      projectId = config.projectId,
+                      isCurrentUserId = { uid -> meetingViewModel.userId == uid },
+                      onMeetingClick = config.onMeetingClick,
+                      onVoteForMeetingProposalClick = config.onVoteForMeetingProposalClick,
+                      onNavigateToMeeting = config.onNavigateToMeeting,
+                      onCloseVotes = { meeting, isConnected ->
+                        meetingViewModel.closeVotesForMeeting(meeting, isConnected)
+                      },
+                      onViewTranscript = config.onViewTranscript,
+                      onRecord = config.onRecord,
+                      isConnected = uiState.isConnected),
+                  calendarViewModel = calendarViewModel)
+          MeetingTab.PAST ->
+              MeetingsList(
+                  MeetingsListConfig(
+                      modifier = Modifier.padding(padding),
+                      meetings = uiState.pastMeetings,
+                      tabName = MeetingTab.PAST.name.lowercase(),
+                      projectId = config.projectId,
+                      isCurrentUserId = { uid -> meetingViewModel.userId == uid },
+                      onMeetingClick = config.onMeetingClick,
+                      isConnected = uiState.isConnected),
+                  calendarViewModel = calendarViewModel)
+        }
+      }
 }
 
 /**

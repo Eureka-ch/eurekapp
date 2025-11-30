@@ -36,6 +36,8 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskTitleField
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.components.help.HelpContext
+import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 object ViewTaskScreenTestTags {
@@ -93,81 +95,91 @@ fun ViewTaskScreen(
             })
       },
       content = { paddingValues ->
-        Column(
-            modifier =
-                Modifier.fillMaxSize()
-                    .padding(16.dp)
-                    .padding(paddingValues)
-                    .verticalScroll(scrollState),
-            verticalArrangement = Arrangement.spacedBy(16.dp)) {
-              TaskTitleField(
-                  value = viewTaskState.title,
-                  onValueChange = {},
-                  hasTouched = false,
-                  onFocusChanged = {},
-                  readOnly = true)
+        // Note: userProvidedName is not passed as ViewTaskScreen doesn't have access to user data.
+        // The help composable will fall back to
+        // FirebaseAuth.getInstance().currentUser?.displayName.
+        ScreenWithHelp(
+            helpContext = HelpContext.VIEW_TASK,
+            content = {
+              Column(
+                  modifier =
+                      Modifier.fillMaxSize()
+                          .padding(16.dp)
+                          .padding(paddingValues)
+                          .verticalScroll(scrollState),
+                  verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    TaskTitleField(
+                        value = viewTaskState.title,
+                        onValueChange = {},
+                        hasTouched = false,
+                        onFocusChanged = {},
+                        readOnly = true)
 
-              TaskDescriptionField(
-                  value = viewTaskState.description,
-                  onValueChange = {},
-                  hasTouched = false,
-                  onFocusChanged = {},
-                  readOnly = true)
+                    TaskDescriptionField(
+                        value = viewTaskState.description,
+                        onValueChange = {},
+                        hasTouched = false,
+                        onFocusChanged = {},
+                        readOnly = true)
 
-              TaskDueDateField(
-                  value = viewTaskState.dueDate,
-                  onValueChange = {},
-                  hasTouched = false,
-                  onFocusChanged = {},
-                  dateRegex = viewTaskViewModel.dateRegex,
-                  readOnly = true)
+                    TaskDueDateField(
+                        value = viewTaskState.dueDate,
+                        onValueChange = {},
+                        hasTouched = false,
+                        onFocusChanged = {},
+                        dateRegex = viewTaskViewModel.dateRegex,
+                        readOnly = true)
 
-              Text(
-                  text = "Status: ${viewTaskState.status.name.replace("_", " ")}",
-                  modifier = Modifier.testTag(ViewTaskScreenTestTags.TASK_STATUS))
+                    Text(
+                        text = "Status: ${viewTaskState.status.name.replace("_", " ")}",
+                        modifier = Modifier.testTag(ViewTaskScreenTestTags.TASK_STATUS))
 
-              if (!isConnected) {
-                Text(
-                    text = "You are offline. Editing tasks is unavailable.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier =
-                        Modifier.padding(16.dp).testTag(ViewTaskScreenTestTags.OFFLINE_MESSAGE))
-              }
-
-              AssignedUsersSection(viewTaskState.assignedUsers)
-              EditButton(
-                  isConnected = isConnected,
-                  onClick = {
-                    if (isConnected) {
-                      navigationController.navigate(Route.TasksSection.EditTask(projectId, taskId))
+                    if (!isConnected) {
+                      Text(
+                          text = "You are offline. Editing tasks is unavailable.",
+                          style = MaterialTheme.typography.bodyMedium,
+                          color = MaterialTheme.colorScheme.error,
+                          modifier =
+                              Modifier.padding(16.dp)
+                                  .testTag(ViewTaskScreenTestTags.OFFLINE_MESSAGE))
                     }
-                  })
-              OutlinedButton(
-                  onClick = {
-                    navigationController.navigate(
-                        Route.TasksSection.TaskDependence(projectId, taskId))
-                  },
-                  modifier = Modifier.testTag(ViewTaskScreenTestTags.VIEW_DEPENDENCIES)) {
-                    Text("View Dependencies")
+
+                    AssignedUsersSection(viewTaskState.assignedUsers)
+                    EditButton(
+                        isConnected = isConnected,
+                        onClick = {
+                          if (isConnected) {
+                            navigationController.navigate(
+                                Route.TasksSection.EditTask(projectId, taskId))
+                          }
+                        })
+                    OutlinedButton(
+                        onClick = {
+                          navigationController.navigate(
+                              Route.TasksSection.TaskDependence(projectId, taskId))
+                        },
+                        modifier = Modifier.testTag(ViewTaskScreenTestTags.VIEW_DEPENDENCIES)) {
+                          Text("View Dependencies")
+                        }
+
+                    AttachmentsList(
+                        attachments = viewTaskState.effectiveAttachments,
+                        onDelete = null,
+                        isReadOnly = true,
+                        isConnected = isConnected,
+                        downloadedUrls = viewTaskState.downloadedAttachmentUrls)
+
+                    DownloadSection(
+                        urlsToDownload = viewTaskState.urlsToDownload,
+                        isConnected = isConnected,
+                        onDownloadAll = {
+                          viewTaskState.urlsToDownload.forEach { url ->
+                            viewTaskViewModel.downloadFile(
+                                url, url.substringAfterLast("/"), context)
+                          }
+                        })
                   }
-
-              AttachmentsList(
-                  attachments = viewTaskState.effectiveAttachments,
-                  onDelete = null,
-                  isReadOnly = true,
-                  isConnected = isConnected,
-                  downloadedUrls = viewTaskState.downloadedAttachmentUrls)
-
-              DownloadSection(
-                  urlsToDownload = viewTaskState.urlsToDownload,
-                  isConnected = isConnected,
-                  onDownloadAll = {
-                    viewTaskState.urlsToDownload.forEach { url ->
-                      viewTaskViewModel.downloadFile(url, url.substringAfterLast("/"), context)
-                    }
-                  })
-            }
+            })
       })
 }
 
