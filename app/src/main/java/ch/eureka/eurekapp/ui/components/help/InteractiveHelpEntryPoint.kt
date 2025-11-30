@@ -19,10 +19,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
@@ -32,7 +29,6 @@ import ch.eureka.eurekapp.model.data.user.UserNotificationSettingsKeys
 import ch.eureka.eurekapp.model.data.user.defaultValuesNotificationSettingsKeys
 import ch.eureka.eurekapp.model.notifications.NotificationSettingsViewModel
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
-import com.google.firebase.auth.FirebaseAuth
 
 // Partially written using AI.
 enum class HelpContext {
@@ -51,18 +47,14 @@ enum class HelpContext {
 /**
  * Interactive help entry point that displays a "Guide" chip and shows contextual help when clicked.
  *
- * **Important for tests**: Always pass [userProvidedName] in tests to avoid Firebase fallback. In
- * production, if [userProvidedName] is null, the composable will fall back to
- * `FirebaseAuth.getInstance().currentUser?.displayName`, which may not be available in test
- * environments.
- *
  * @param helpContext The context for which help content should be displayed.
  * @param modifier Modifier for the chip.
- * @param userProvidedName Optional user name to personalize the help content. **Always provide this
- *   in tests.**
+ * @param userProvidedName Optional user name to personalize the help content. If not provided,
+ *   the ViewModel will resolve it from Firebase.
  * @param chipShape Shape for the help chip.
  * @param notificationSettingsViewModel ViewModel for notification settings. Defaults to
  *   [viewModel()].
+ * @param helpViewModel ViewModel for help state management. Defaults to [viewModel()].
  */
 @Composable
 fun InteractiveHelpEntryPoint(
@@ -70,7 +62,8 @@ fun InteractiveHelpEntryPoint(
     modifier: Modifier = Modifier,
     userProvidedName: String? = null,
     chipShape: Shape = MaterialTheme.shapes.large,
-    notificationSettingsViewModel: NotificationSettingsViewModel = viewModel()
+    notificationSettingsViewModel: NotificationSettingsViewModel = viewModel(),
+    helpViewModel: InteractiveHelpViewModel = viewModel()
 ) {
   // Early return: if help is disabled, don't render anything at all
   val helpEnabledDefault =
@@ -86,21 +79,13 @@ fun InteractiveHelpEntryPoint(
     return
   }
 
-  val resolvedName =
-      remember(userProvidedName) {
-            when {
-              !userProvidedName.isNullOrBlank() -> userProvidedName
-              else -> FirebaseAuth.getInstance().currentUser?.displayName.orEmpty()
-            }
-          }
-          .ifBlank { "there" }
-
-  var isDialogOpen by rememberSaveable { mutableStateOf(false) }
+  val resolvedName = remember(userProvidedName) { helpViewModel.resolveUserName(userProvidedName) }
+  val isDialogOpen by helpViewModel.isDialogOpen.collectAsState()
 
   val helpContent = remember(resolvedName, helpContext) { helpContext.toHelpContent(resolvedName) }
 
   AssistChip(
-      onClick = { isDialogOpen = true },
+      onClick = { helpViewModel.openDialog() },
       label = { Text("Guide") },
       leadingIcon = {
         Icon(imageVector = Icons.AutoMirrored.Filled.Help, contentDescription = null)
@@ -110,8 +95,8 @@ fun InteractiveHelpEntryPoint(
 
   if (isDialogOpen) {
     AlertDialog(
-        onDismissRequest = { isDialogOpen = false },
-        confirmButton = { TextButton(onClick = { isDialogOpen = false }) { Text("Got it!") } },
+        onDismissRequest = { helpViewModel.closeDialog() },
+            confirmButton = { TextButton(onClick = { helpViewModel.closeDialog() }) { Text("Got it!") } },
         title = { Text(helpContent.title) },
         text = {
           Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

@@ -2,6 +2,8 @@ package ch.eureka.eurekapp.ui.components.help
 
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserNotificationSettingsKeys
 import ch.eureka.eurekapp.model.data.user.UserRepository
@@ -9,18 +11,22 @@ import ch.eureka.eurekapp.model.notifications.NotificationSettingsViewModel
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 
 // Portions of this code were generated with the help of AI(chatGPT) and Claude Sonnet 4.5
+@RunWith(AndroidJUnit4::class)
 class InteractiveHelpEntryPointTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
   private lateinit var mockUserRepository: UserRepository
-  private lateinit var viewModel: NotificationSettingsViewModel
+  private lateinit var notificationSettingsViewModel: NotificationSettingsViewModel
+  private lateinit var helpViewModel: InteractiveHelpViewModel
 
   private val mockUser =
       User(
@@ -37,7 +43,9 @@ class InteractiveHelpEntryPointTest {
     mockUserRepository = mockk(relaxed = true)
     every { mockUserRepository.getCurrentUser() } returns flowOf(mockUser)
     coEvery { mockUserRepository.saveUser(any()) } returns Result.success(Unit)
-    viewModel = NotificationSettingsViewModel(mockUserRepository)
+    notificationSettingsViewModel = NotificationSettingsViewModel(mockUserRepository)
+    // Create help ViewModel with mock function to avoid Firebase calls
+    helpViewModel = InteractiveHelpViewModel(getCurrentUserDisplayName = { null })
   }
 
   @Test
@@ -46,7 +54,8 @@ class InteractiveHelpEntryPointTest {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.HOME_OVERVIEW,
           userProvidedName = "TestUser",
-          notificationSettingsViewModel = viewModel)
+          notificationSettingsViewModel = notificationSettingsViewModel,
+          helpViewModel = helpViewModel)
     }
 
     composeTestRule.onNodeWithText("Guide").assertIsDisplayed()
@@ -58,7 +67,8 @@ class InteractiveHelpEntryPointTest {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.HOME_OVERVIEW,
           userProvidedName = "John",
-          notificationSettingsViewModel = viewModel)
+          notificationSettingsViewModel = notificationSettingsViewModel,
+          helpViewModel = helpViewModel)
     }
 
     // Click the Guide chip
@@ -89,7 +99,8 @@ class InteractiveHelpEntryPointTest {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.CREATE_TASK,
           userProvidedName = "Alice",
-          notificationSettingsViewModel = viewModel)
+          notificationSettingsViewModel = notificationSettingsViewModel,
+          helpViewModel = helpViewModel)
     }
 
     // Click the Guide chip
@@ -119,7 +130,8 @@ class InteractiveHelpEntryPointTest {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.HOME_OVERVIEW,
           userProvidedName = "TestUser",
-          notificationSettingsViewModel = disabledViewModel)
+          notificationSettingsViewModel = disabledViewModel,
+          helpViewModel = helpViewModel)
     }
 
     // Verify Guide chip is not displayed
@@ -132,7 +144,8 @@ class InteractiveHelpEntryPointTest {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.HOME_OVERVIEW,
           userProvidedName = "TestUser",
-          notificationSettingsViewModel = viewModel)
+          notificationSettingsViewModel = notificationSettingsViewModel,
+          helpViewModel = helpViewModel)
     }
 
     composeTestRule.onNodeWithText("Guide").performClick()
@@ -145,7 +158,8 @@ class InteractiveHelpEntryPointTest {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.TASKS,
           userProvidedName = "TestUser",
-          notificationSettingsViewModel = viewModel)
+          notificationSettingsViewModel = notificationSettingsViewModel,
+          helpViewModel = helpViewModel)
     }
 
     composeTestRule.onNodeWithText("Guide").performClick()
@@ -158,7 +172,8 @@ class InteractiveHelpEntryPointTest {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.MEETINGS,
           userProvidedName = "TestUser",
-          notificationSettingsViewModel = viewModel)
+          notificationSettingsViewModel = notificationSettingsViewModel,
+          helpViewModel = helpViewModel)
     }
 
     composeTestRule.onNodeWithText("Guide").performClick()
@@ -171,7 +186,8 @@ class InteractiveHelpEntryPointTest {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.PROJECTS,
           userProvidedName = "TestUser",
-          notificationSettingsViewModel = viewModel)
+          notificationSettingsViewModel = notificationSettingsViewModel,
+          helpViewModel = helpViewModel)
     }
 
     composeTestRule.onNodeWithText("Guide").performClick()
@@ -184,7 +200,8 @@ class InteractiveHelpEntryPointTest {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.CREATE_TASK,
           userProvidedName = "TestUser",
-          notificationSettingsViewModel = viewModel)
+          notificationSettingsViewModel = notificationSettingsViewModel,
+          helpViewModel = helpViewModel)
     }
 
     composeTestRule.onNodeWithText("Guide").performClick()
@@ -197,7 +214,8 @@ class InteractiveHelpEntryPointTest {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.FILES_MANAGEMENT,
           userProvidedName = "TestUser",
-          notificationSettingsViewModel = viewModel)
+          notificationSettingsViewModel = notificationSettingsViewModel,
+          helpViewModel = helpViewModel)
     }
 
     composeTestRule.onNodeWithText("Guide").performClick()
@@ -213,7 +231,8 @@ class InteractiveHelpEntryPointTest {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.MEETING_VOTES,
           userProvidedName = "TestUser",
-          notificationSettingsViewModel = viewModel)
+          notificationSettingsViewModel = notificationSettingsViewModel,
+          helpViewModel = helpViewModel)
     }
 
     composeTestRule.onNodeWithText("Guide").performClick()
@@ -228,7 +247,8 @@ class InteractiveHelpEntryPointTest {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.TOKEN_ENTRY,
           userProvidedName = "TestUser",
-          notificationSettingsViewModel = viewModel)
+          notificationSettingsViewModel = notificationSettingsViewModel,
+          helpViewModel = helpViewModel)
     }
 
     composeTestRule.onNodeWithText("Guide").performClick()
@@ -246,7 +266,8 @@ class InteractiveHelpEntryPointTest {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.VIEW_TASK,
           userProvidedName = "TestUser",
-          notificationSettingsViewModel = viewModel)
+          notificationSettingsViewModel = notificationSettingsViewModel,
+          helpViewModel = helpViewModel)
     }
 
     composeTestRule.onNodeWithText("Guide").performClick()
@@ -261,7 +282,8 @@ class InteractiveHelpEntryPointTest {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.NOTES,
           userProvidedName = "TestUser",
-          notificationSettingsViewModel = viewModel)
+          notificationSettingsViewModel = notificationSettingsViewModel,
+          helpViewModel = helpViewModel)
     }
 
     composeTestRule.onNodeWithText("Guide").performClick()
