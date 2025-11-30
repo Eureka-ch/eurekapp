@@ -40,7 +40,7 @@ Co-author: Claude 4.5 Sonnet
  * @property isCreating Whether a conversation is being created.
  * @property errorMsg Error message to display, or null if no error.
  * @property isConnected Whether the device is connected to the internet.
- * @property conversationCreated True when conversation was successfully created.
+ * @property navigateToConversationId Conversation ID to navigate to (when created or existing).
  */
 data class CreateConversationState(
     val projects: List<Project> = emptyList(),
@@ -52,7 +52,7 @@ data class CreateConversationState(
     val isCreating: Boolean = false,
     val errorMsg: String? = null,
     val isConnected: Boolean = true,
-    val conversationCreated: Boolean = false
+    val navigateToConversationId: String? = null
 )
 
 /**
@@ -197,7 +197,8 @@ open class CreateConversationViewModel(
 
       if (existingConversation != null) {
         _baseUiState.update {
-          it.copy(isCreating = false, errorMsg = "Conversation already exists with this member")
+          it.copy(
+              isCreating = false, navigateToConversationId = existingConversation.conversationId)
         }
         return@launch
       }
@@ -211,8 +212,10 @@ open class CreateConversationViewModel(
 
       conversationRepository
           .createConversation(conversation)
-          .onSuccess {
-            _baseUiState.update { it.copy(isCreating = false, conversationCreated = true) }
+          .onSuccess { conversationId ->
+            _baseUiState.update {
+              it.copy(isCreating = false, navigateToConversationId = conversationId)
+            }
           }
           .onFailure { e ->
             _baseUiState.update { it.copy(isCreating = false, errorMsg = e.message) }
@@ -225,13 +228,8 @@ open class CreateConversationViewModel(
     _baseUiState.update { it.copy(errorMsg = null) }
   }
 
-  /**
-   * Reset the conversation created flag.
-   *
-   * Should be called after the UI has handled the successful creation (e.g., navigated away) to
-   * prevent re-triggering navigation on configuration changes.
-   */
-  fun resetConversationCreated() {
-    _baseUiState.update { it.copy(conversationCreated = false) }
+  /** Reset the navigation flag after UI has navigated. */
+  fun resetNavigation() {
+    _baseUiState.update { it.copy(navigateToConversationId = null) }
   }
 }

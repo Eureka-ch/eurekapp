@@ -1,23 +1,9 @@
 package ch.eureka.eurekapp.ui.notes
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.chat.Message
-import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
-import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
-import ch.eureka.eurekapp.utils.Formatters
+import ch.eureka.eurekapp.ui.components.MessageBubble
 
 /** Test tags for the Self Note Message Bubble component. */
 object SelfNoteMessageBubbleTestTags {
@@ -41,32 +27,9 @@ Co-author: GPT-5 Codex
  */
 @Composable
 fun SelfNoteMessageBubble(message: Message, modifier: Modifier = Modifier) {
-  Box(
-      modifier = modifier.fillMaxWidth().padding(vertical = Spacing.sm),
-      contentAlignment = Alignment.CenterEnd) {
-        Surface(
-            shape = EurekaStyles.CardShape,
-            color = MaterialTheme.colorScheme.primaryContainer,
-            tonalElevation = EurekaStyles.CardElevation,
-            modifier =
-                Modifier.widthIn(max = 320.dp)
-                    .testTag(SelfNoteMessageBubbleTestTags.MESSAGE_BUBBLE)) {
-              Column(
-                  modifier = Modifier.padding(Spacing.md),
-                  verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
-                    Text(
-                        text = message.text,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.testTag(SelfNoteMessageBubbleTestTags.MESSAGE_TEXT))
-
-                    Text(
-                        text = Formatters.formatDateTime(message.createdAt.toDate()),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                        modifier =
-                            Modifier.testTag(SelfNoteMessageBubbleTestTags.MESSAGE_TIMESTAMP))
-                  }
-            }
-      }
+  MessageBubble(
+      text = message.text,
+      timestamp = message.createdAt,
+      isFromCurrentUser = true,
+      modifier = modifier)
 }

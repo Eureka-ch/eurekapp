@@ -36,7 +36,6 @@ class FirestoreConversationRepository(
         firestore
             .collection(FirestorePaths.CONVERSATIONS)
             .whereArrayContains("memberIds", currentUserId)
-            .orderBy("createdAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
               if (error != null) {
                 close(error)
@@ -130,5 +129,72 @@ class FirestoreConversationRepository(
 
   override suspend fun deleteConversation(conversationId: String): Result<Unit> = runCatching {
     firestore.collection(FirestorePaths.CONVERSATIONS).document(conversationId).delete().await()
+  }
+
+  override fun getMessages(conversationId: String, limit: Int): Flow<List<ConversationMessage>> =
+      callbackFlow {
+        val listener =
+            firestore
+                .collection(FirestorePaths.CONVERSATIONS)
+                .document(conversationId)
+                .collection(FirestorePaths.CONVERSATION_MESSAGES)
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .limit(limit.toLong())
+                .addSnapshotListener { snapshot, error ->
+                  if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                  }
+                  val messages =
+                      snapshot?.documents?.mapNotNull {
+                        it.toObject(ConversationMessage::class.java)
+                      } ?: emptyList()
+                  // Reverse to return oldest-first for display
+                  trySend(messages.reversed())
+                }
+        awaitClose { listener.remove() }
+      }
+
+  override suspend fun sendMessage(
+      conversationId: String,
+      text: String
+  ): Result<ConversationMessage> = runCatching {
+    val currentUserId =
+        auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
+
+    val messagesCollection =
+        firestore
+            .collection(FirestorePaths.CONVERSATIONS)
+            .document(conversationId)
+            .collection(FirestorePaths.CONVERSATION_MESSAGES)
+
+    val docRef = messagesCollection.document()
+    val message = ConversationMessage(messageId = docRef.id, senderId = currentUserId, text = text)
+
+    docRef.set(message).await()
+
+    // Update conversation metadata with server timestamp
+    firestore
+        .collection(FirestorePaths.CONVERSATIONS)
+        .document(conversationId)
+        .update(
+            mapOf(
+                "lastMessageAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                "lastMessagePreview" to text.take(100),
+                "lastMessageSenderId" to currentUserId))
+        .await()
+
+    message
+  }
+
+  override suspend fun markMessagesAsRead(conversationId: String): Result<Unit> = runCatching {
+    val currentUserId =
+        auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
+
+    firestore
+        .collection(FirestorePaths.CONVERSATIONS)
+        .document(conversationId)
+        .update("lastReadAt.$currentUserId", com.google.firebase.Timestamp.now())
+        .await()
   }
 }

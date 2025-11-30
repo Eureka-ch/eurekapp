@@ -12,6 +12,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -30,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +49,82 @@ object ConversationCardTestTags {
   const val CONVERSATION_CARD = "ConversationCard"
   const val MEMBER_NAME = "ConversationMemberName"
   const val PROJECT_NAME = "ConversationProjectName"
+  const val LAST_MESSAGE = "ConversationLastMessage"
+  const val LAST_MESSAGE_TIME = "ConversationLastMessageTime"
+  const val UNREAD_INDICATOR = "ConversationUnreadIndicator"
+}
+
+@Composable
+private fun MemberAvatar(photoUrl: String, memberName: String) {
+  if (photoUrl.isNotEmpty()) {
+    AsyncImage(
+        model = photoUrl,
+        contentDescription = "Profile picture of $memberName",
+        modifier = Modifier.size(48.dp).clip(CircleShape),
+        contentScale = ContentScale.Crop)
+  } else {
+    Box(
+        modifier =
+            Modifier.size(48.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer),
+        contentAlignment = Alignment.Center) {
+          Icon(
+              imageVector = Icons.Default.Person,
+              contentDescription = "Member icon",
+              modifier = Modifier.size(28.dp),
+              tint = MaterialTheme.colorScheme.onPrimaryContainer)
+        }
+  }
+}
+
+@Composable
+private fun RowScope.MemberNameText(name: String, hasUnread: Boolean) {
+  Text(
+      text = name,
+      style = MaterialTheme.typography.titleMedium,
+      fontWeight = if (hasUnread) FontWeight.Bold else FontWeight.SemiBold,
+      modifier = Modifier.weight(1f).testTag(ConversationCardTestTags.MEMBER_NAME))
+}
+
+@Composable
+private fun LastMessageTimeText(time: String) {
+  Text(
+      text = time,
+      style = MaterialTheme.typography.labelSmall,
+      color = MaterialTheme.colorScheme.onSurfaceVariant,
+      modifier = Modifier.testTag(ConversationCardTestTags.LAST_MESSAGE_TIME))
+}
+
+@Composable
+private fun RowScope.LastMessagePreviewText(preview: String, hasUnread: Boolean) {
+  val textColor: Color
+  val textWeight: FontWeight?
+  if (hasUnread) {
+    textColor = MaterialTheme.colorScheme.onSurface
+    textWeight = FontWeight.Medium
+  } else {
+    textColor = MaterialTheme.colorScheme.onSurfaceVariant
+    textWeight = null
+  }
+  Text(
+      text = preview,
+      style = MaterialTheme.typography.bodySmall,
+      color = textColor,
+      fontWeight = textWeight,
+      maxLines = 1,
+      modifier = Modifier.weight(1f).testTag(ConversationCardTestTags.LAST_MESSAGE))
+}
+
+@Composable
+private fun UnreadIndicator() {
+  Spacer(modifier = Modifier.width(8.dp))
+  Box(
+      modifier =
+          Modifier.size(8.dp)
+              .clip(CircleShape)
+              .background(MaterialTheme.colorScheme.primary)
+              .testTag(ConversationCardTestTags.UNREAD_INDICATOR))
 }
 
 /**
@@ -65,7 +143,6 @@ fun ConversationCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-  // Main card container with rounded corners and elevation
   Card(
       shape = RoundedCornerShape(16.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation),
@@ -77,47 +154,34 @@ fun ConversationCard(
         Row(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically) {
-              // Avatar: show Google profile photo if available, otherwise show default icon
-              if (displayData.otherMemberPhotoUrl.isNotEmpty()) {
-                AsyncImage(
-                    model = displayData.otherMemberPhotoUrl,
-                    contentDescription = "Profile picture of ${displayData.otherMemberName}",
-                    modifier = Modifier.size(48.dp).clip(CircleShape),
-                    contentScale = ContentScale.Crop)
-              } else {
-                // Fallback: default person icon in a circular background
-                Box(
-                    modifier =
-                        Modifier.size(48.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primaryContainer),
-                    contentAlignment = Alignment.Center) {
-                      Icon(
-                          imageVector = Icons.Default.Person,
-                          contentDescription = "Member icon",
-                          modifier = Modifier.size(28.dp),
-                          tint = MaterialTheme.colorScheme.onPrimaryContainer)
-                    }
-              }
-
+              MemberAvatar(displayData.otherMemberPhotoUrl, displayData.otherMemberName)
               Spacer(modifier = Modifier.width(12.dp))
-
-              // Text content container taking remaining horizontal space
-              Column(modifier = Modifier.weight(1f)) {
-                // Primary text: display name of the other conversation participant
-                Text(
-                    text = displayData.otherMemberName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.testTag(ConversationCardTestTags.MEMBER_NAME))
-
-                // Secondary text: project name provides context for this conversation
-                Text(
-                    text = displayData.projectName,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.testTag(ConversationCardTestTags.PROJECT_NAME))
-              }
+              ConversationCardContent(displayData)
             }
       }
+}
+
+@Composable
+private fun RowScope.ConversationCardContent(displayData: ConversationDisplayData) {
+  Column(modifier = Modifier.weight(1f)) {
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+      MemberNameText(displayData.otherMemberName, displayData.hasUnread)
+      displayData.lastMessageTime?.let { LastMessageTimeText(it) }
+    }
+
+    Text(
+        text = displayData.projectName,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.testTag(ConversationCardTestTags.PROJECT_NAME))
+
+    displayData.lastMessagePreview?.let { preview ->
+      Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        LastMessagePreviewText(preview, displayData.hasUnread)
+        if (displayData.hasUnread) {
+          UnreadIndicator()
+        }
+      }
+    }
+  }
 }

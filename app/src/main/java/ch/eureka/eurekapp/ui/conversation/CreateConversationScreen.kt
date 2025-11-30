@@ -69,16 +69,16 @@ object CreateConversationScreenTestTags {
  * 1. Select a project from the user's projects
  * 2. Select a member from that project (excluding the current user)
  *
- * When both are selected, the user can create the conversation. Duplicate conversations are
- * prevented by checking if one already exists.
+ * When both are selected, the user can create the conversation. If a conversation already exists,
+ * navigates to it directly.
  *
- * @param onConversationCreated Callback invoked when a conversation is successfully created.
+ * @param onNavigateToConversation Callback invoked with conversation ID to navigate to.
  * @param viewModel The ViewModel managing the create conversation state.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateConversationScreen(
-    onConversationCreated: () -> Unit,
+    onNavigateToConversation: (String) -> Unit,
     viewModel: CreateConversationViewModel = viewModel()
 ) {
   val context = LocalContext.current
@@ -96,13 +96,11 @@ fun CreateConversationScreen(
     }
   }
 
-  // Side effect: Handle successful conversation creation
-  // Shows success toast and navigates back to conversation list
-  LaunchedEffect(uiState.conversationCreated) {
-    if (uiState.conversationCreated) {
-      Toast.makeText(context, "Conversation created!", Toast.LENGTH_SHORT).show()
-      viewModel.resetConversationCreated()
-      onConversationCreated()
+  // Side effect: Navigate to conversation when created or existing one found
+  LaunchedEffect(uiState.navigateToConversationId) {
+    uiState.navigateToConversationId?.let { conversationId ->
+      viewModel.resetNavigation()
+      onNavigateToConversation(conversationId)
     }
   }
 

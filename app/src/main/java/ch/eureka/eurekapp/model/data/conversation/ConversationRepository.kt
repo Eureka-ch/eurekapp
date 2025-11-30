@@ -29,4 +29,18 @@ interface ConversationRepository {
 
   /** Delete a conversation */
   suspend fun deleteConversation(conversationId: String): Result<Unit>
+
+  /**
+   * Get messages in a conversation with real-time updates.
+   *
+   * @param conversationId The ID of the conversation.
+   * @param limit Maximum number of messages to retrieve (default: 50).
+   */
+  fun getMessages(conversationId: String, limit: Int = 50): Flow<List<ConversationMessage>>
+
+  /** Send a message to a conversation */
+  suspend fun sendMessage(conversationId: String, text: String): Result<ConversationMessage>
+
+  /** Mark all messages in a conversation as read by the current user */
+  suspend fun markMessagesAsRead(conversationId: String): Result<Unit>
 }
