@@ -6,6 +6,11 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
+/*
+Co-author: GPT-5 Codex
+Co-author: Claude 4.5 Sonnet
+*/
+
 class ConversationMessageTest {
 
   @Test

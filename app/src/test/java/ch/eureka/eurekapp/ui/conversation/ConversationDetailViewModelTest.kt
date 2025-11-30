@@ -28,6 +28,11 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
+/*
+Co-author: GPT-5 Codex
+Co-author: Claude 4.5 Sonnet
+*/
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class ConversationDetailViewModelTest {
 
