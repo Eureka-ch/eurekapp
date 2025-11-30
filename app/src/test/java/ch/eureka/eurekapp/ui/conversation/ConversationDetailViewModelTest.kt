@@ -14,8 +14,9 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -30,7 +31,7 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class ConversationDetailViewModelTest {
 
-  private val testDispatcher = StandardTestDispatcher()
+  private val testDispatcher = UnconfinedTestDispatcher()
   private lateinit var mockConversationRepository: ConversationRepository
   private lateinit var mockUserRepository: UserRepository
   private lateinit var mockProjectRepository: ProjectRepository
@@ -89,10 +90,10 @@ class ConversationDetailViewModelTest {
     every { mockProjectRepository.getProjectById("project1") } returns flowOf(project)
 
     val viewModel = createViewModel()
-    advanceUntilIdle()
+    val state = viewModel.uiState.first { it.otherMemberName.isNotEmpty() }
 
-    assertEquals("Jane Doe", viewModel.uiState.value.otherMemberName)
-    assertEquals("Test Project", viewModel.uiState.value.projectName)
+    assertEquals("Jane Doe", state.otherMemberName)
+    assertEquals("Test Project", state.projectName)
   }
 
   @Test
@@ -106,9 +107,9 @@ class ConversationDetailViewModelTest {
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(messages)
 
     val viewModel = createViewModel()
-    advanceUntilIdle()
+    val state = viewModel.uiState.first { it.messages.isNotEmpty() }
 
-    assertEquals(2, viewModel.uiState.value.messages.size)
+    assertEquals(2, state.messages.size)
   }
 
   @Test
@@ -145,7 +146,8 @@ class ConversationDetailViewModelTest {
     viewModel.updateMessage("a".repeat(5001))
     viewModel.sendMessage()
     advanceUntilIdle()
-    assertTrue(viewModel.uiState.value.errorMsg?.contains("too long") == true)
+    val state = viewModel.uiState.first { it.errorMsg != null }
+    assertTrue(state.errorMsg?.contains("too long") == true)
   }
 
   @Test
@@ -170,8 +172,8 @@ class ConversationDetailViewModelTest {
     every { mockConnectivityObserver.isConnected } returns flowOf(false)
 
     val viewModel = createViewModel()
-    advanceUntilIdle()
+    val state = viewModel.uiState.first { !it.isConnected }
 
-    assertFalse(viewModel.uiState.value.isConnected)
+    assertFalse(state.isConnected)
   }
 }

@@ -165,22 +165,17 @@ class FirestoreConversationRepository(
             .collection(FirestorePaths.CONVERSATION_MESSAGES)
 
     val docRef = messagesCollection.document()
-    val message =
-        ConversationMessage(
-            messageId = docRef.id,
-            conversationId = conversationId,
-            senderId = currentUserId,
-            text = text)
+    val message = ConversationMessage(messageId = docRef.id, senderId = currentUserId, text = text)
 
     docRef.set(message).await()
 
-    // Update conversation metadata
+    // Update conversation metadata with server timestamp
     firestore
         .collection(FirestorePaths.CONVERSATIONS)
         .document(conversationId)
         .update(
             mapOf(
-                "lastMessageAt" to message.createdAt,
+                "lastMessageAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
                 "lastMessagePreview" to text.take(100),
                 "lastMessageSenderId" to currentUserId))
         .await()

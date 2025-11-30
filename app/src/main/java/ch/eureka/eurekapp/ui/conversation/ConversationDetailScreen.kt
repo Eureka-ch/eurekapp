@@ -46,14 +46,17 @@ Co-author: Claude 4.5 Sonnet
  *
  * Shows messages between two users in a chat-like interface with the ability to send new messages.
  *
- * @param viewModel The ViewModel managing conversation state.
+ * @param conversationId The ID of the conversation to display.
  * @param onNavigateBack Callback when the back button is pressed.
+ * @param viewModel The ViewModel managing conversation state.
  * @param modifier Optional modifier for the screen.
  */
 @Composable
 fun ConversationDetailScreen(
-    viewModel: ConversationDetailViewModel,
+    conversationId: String,
     onNavigateBack: () -> Unit,
+    viewModel: ConversationDetailViewModel =
+        remember(conversationId) { ConversationDetailViewModel(conversationId) },
     modifier: Modifier = Modifier
 ) {
   val uiState by viewModel.uiState.collectAsState()

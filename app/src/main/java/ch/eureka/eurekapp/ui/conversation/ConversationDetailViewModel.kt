@@ -11,11 +11,14 @@ import ch.eureka.eurekapp.model.data.conversation.ConversationRepository
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -49,11 +52,14 @@ data class ConversationDetailState(
     val isConnected: Boolean = true
 )
 
+private data class DisplayData(val otherMemberName: String, val projectName: String)
+
 /**
  * ViewModel for the conversation detail screen.
  *
  * Manages loading messages, sending new messages, and marking messages as read.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 open class ConversationDetailViewModel(
     private val conversationId: String,
     private val conversationRepository: ConversationRepository =
@@ -64,88 +70,94 @@ open class ConversationDetailViewModel(
     connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver
 ) : ViewModel() {
 
-  private val _uiState = MutableStateFlow(ConversationDetailState())
-  open val uiState: StateFlow<ConversationDetailState> = _uiState
+  private val _currentMessage = MutableStateFlow("")
+  private val _isSending = MutableStateFlow(false)
+  private val _errorMsg = MutableStateFlow<String?>(null)
 
-  private val _isConnected =
+  private val conversationFlow =
+      conversationRepository.getConversationById(conversationId).catch { e ->
+        _errorMsg.value = e.message
+      }
+
+  private val messagesFlow =
+      conversationRepository.getMessages(conversationId).catch { e -> _errorMsg.value = e.message }
+
+  private val isConnectedFlow =
       connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
+  private val displayDataFlow =
+      conversationFlow.flatMapLatest { conversation ->
+        if (conversation == null) {
+          flowOf(DisplayData("", ""))
+        } else {
+          val currentUserId = getCurrentUserId() ?: ""
+          val otherUserId = conversation.memberIds.firstOrNull { it != currentUserId } ?: ""
+          combine(
+              userRepository.getUserById(otherUserId),
+              projectRepository.getProjectById(conversation.projectId)) { user, project ->
+                DisplayData(
+                    otherMemberName = user?.displayName ?: "Unknown User",
+                    projectName = project?.name ?: "Unknown Project")
+              }
+        }
+      }
+
+  private val inputStateFlow =
+      combine(_currentMessage, _isSending, _errorMsg) { currentMessage, isSending, errorMsg ->
+        Triple(currentMessage, isSending, errorMsg)
+      }
+
+  open val uiState: StateFlow<ConversationDetailState> =
+      combine(conversationFlow, messagesFlow, displayDataFlow, inputStateFlow, isConnectedFlow) {
+              conversation,
+              messages,
+              displayData,
+              inputState,
+              isConnected ->
+            ConversationDetailState(
+                conversation = conversation,
+                messages = messages,
+                otherMemberName = displayData.otherMemberName,
+                projectName = displayData.projectName,
+                currentMessage = inputState.first,
+                isLoading = conversation == null,
+                isSending = inputState.second,
+                errorMsg = inputState.third,
+                isConnected = isConnected)
+          }
+          .stateIn(
+              scope = viewModelScope,
+              started = SharingStarted.WhileSubscribed(5000),
+              initialValue = ConversationDetailState())
 
   open val currentUserId: String?
     get() = getCurrentUserId()
 
-  init {
-    loadConversation()
-    loadMessages()
-    observeConnectivity()
-  }
-
-  private fun observeConnectivity() {
-    viewModelScope.launch {
-      _isConnected.collect { connected ->
-        _uiState.value = _uiState.value.copy(isConnected = connected)
-      }
-    }
-  }
-
-  private fun loadConversation() {
-    viewModelScope.launch {
-      conversationRepository
-          .getConversationById(conversationId)
-          .catch { e -> _uiState.value = _uiState.value.copy(errorMsg = e.message) }
-          .collect { conversation ->
-            _uiState.value = _uiState.value.copy(conversation = conversation, isLoading = false)
-            if (conversation != null) {
-              resolveDisplayData(conversation)
-            }
-          }
-    }
-  }
-
-  private fun loadMessages() {
-    viewModelScope.launch {
-      conversationRepository
-          .getMessages(conversationId)
-          .catch { e -> _uiState.value = _uiState.value.copy(errorMsg = e.message) }
-          .collect { messages -> _uiState.value = _uiState.value.copy(messages = messages) }
-    }
-  }
-
-  private suspend fun resolveDisplayData(conversation: Conversation) {
-    val currentUserId = getCurrentUserId() ?: ""
-    val otherUserId = conversation.memberIds.firstOrNull { it != currentUserId } ?: ""
-    val otherUser = userRepository.getUserById(otherUserId).first()
-    val project = projectRepository.getProjectById(conversation.projectId).first()
-
-    _uiState.value =
-        _uiState.value.copy(
-            otherMemberName = otherUser?.displayName ?: "Unknown User",
-            projectName = project?.name ?: "Unknown Project")
-  }
-
   fun updateMessage(text: String) {
-    _uiState.value = _uiState.value.copy(currentMessage = text)
+    _currentMessage.value = text
   }
 
   fun sendMessage() {
-    val text = _uiState.value.currentMessage.trim()
+    val text = _currentMessage.value.trim()
     if (text.isEmpty()) return
     if (text.length > 5000) {
-      _uiState.value = _uiState.value.copy(errorMsg = "Message too long (max 5000 characters)")
+      _errorMsg.value = "Message too long (max 5000 characters)"
       return
     }
 
-    _uiState.value = _uiState.value.copy(isSending = true)
+    _isSending.value = true
 
     viewModelScope.launch {
       conversationRepository
           .sendMessage(conversationId, text)
           .fold(
               onSuccess = {
-                _uiState.value = _uiState.value.copy(currentMessage = "", isSending = false)
+                _currentMessage.value = ""
+                _isSending.value = false
               },
               onFailure = { error ->
-                _uiState.value =
-                    _uiState.value.copy(isSending = false, errorMsg = "Error: ${error.message}")
+                _isSending.value = false
+                _errorMsg.value = "Error: ${error.message}"
               })
     }
   }
@@ -155,6 +167,6 @@ open class ConversationDetailViewModel(
   }
 
   fun clearError() {
-    _uiState.value = _uiState.value.copy(errorMsg = null)
+    _errorMsg.value = null
   }
 }
