@@ -34,12 +34,15 @@ class MessageBubbleTest {
   }
 
   @Test
-  fun messageBubble_sentAndReceivedMessages_areDisplayed() {
+  fun messageBubble_sentMessage_isDisplayed() {
     composeTestRule.setContent {
       MessageBubble(text = "Sent", timestamp = Timestamp.now(), isFromCurrentUser = true)
     }
     composeTestRule.onNodeWithTag(MessageBubbleTestTags.BUBBLE).assertIsDisplayed()
+  }
 
+  @Test
+  fun messageBubble_receivedMessage_isDisplayed() {
     composeTestRule.setContent {
       MessageBubble(text = "Received", timestamp = Timestamp.now(), isFromCurrentUser = false)
     }
