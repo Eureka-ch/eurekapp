@@ -131,25 +131,29 @@ class FirestoreConversationRepository(
     firestore.collection(FirestorePaths.CONVERSATIONS).document(conversationId).delete().await()
   }
 
-  override fun getMessages(conversationId: String): Flow<List<ConversationMessage>> = callbackFlow {
-    val listener =
-        firestore
-            .collection(FirestorePaths.CONVERSATIONS)
-            .document(conversationId)
-            .collection(FirestorePaths.CONVERSATION_MESSAGES)
-            .orderBy("createdAt", Query.Direction.ASCENDING)
-            .addSnapshotListener { snapshot, error ->
-              if (error != null) {
-                close(error)
-                return@addSnapshotListener
-              }
-              val messages =
-                  snapshot?.documents?.mapNotNull { it.toObject(ConversationMessage::class.java) }
-                      ?: emptyList()
-              trySend(messages)
-            }
-    awaitClose { listener.remove() }
-  }
+  override fun getMessages(conversationId: String, limit: Int): Flow<List<ConversationMessage>> =
+      callbackFlow {
+        val listener =
+            firestore
+                .collection(FirestorePaths.CONVERSATIONS)
+                .document(conversationId)
+                .collection(FirestorePaths.CONVERSATION_MESSAGES)
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .limit(limit.toLong())
+                .addSnapshotListener { snapshot, error ->
+                  if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                  }
+                  val messages =
+                      snapshot?.documents?.mapNotNull {
+                        it.toObject(ConversationMessage::class.java)
+                      } ?: emptyList()
+                  // Reverse to return oldest-first for display
+                  trySend(messages.reversed())
+                }
+        awaitClose { listener.remove() }
+      }
 
   override suspend fun sendMessage(
       conversationId: String,

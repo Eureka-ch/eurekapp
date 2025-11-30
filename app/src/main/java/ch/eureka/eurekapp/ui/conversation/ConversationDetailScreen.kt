@@ -55,9 +55,9 @@ Co-author: Claude 4.5 Sonnet
 fun ConversationDetailScreen(
     conversationId: String,
     onNavigateBack: () -> Unit,
+    modifier: Modifier = Modifier,
     viewModel: ConversationDetailViewModel =
-        remember(conversationId) { ConversationDetailViewModel(conversationId) },
-    modifier: Modifier = Modifier
+        remember(conversationId) { ConversationDetailViewModel(conversationId) }
 ) {
   val uiState by viewModel.uiState.collectAsState()
   val snackbarHostState = remember { SnackbarHostState() }
