@@ -38,7 +38,7 @@ object MessageBubbleTestTags {
  * left (received) side of the screen with different color schemes.
  *
  * @param text The message text to display.
- * @param timestamp The timestamp of the message.
+ * @param timestamp The timestamp of the message (null if pending server timestamp).
  * @param isFromCurrentUser Whether this message was sent by the current user (affects alignment and
  *   color).
  * @param modifier Optional modifier for the bubble container.
@@ -46,7 +46,7 @@ object MessageBubbleTestTags {
 @Composable
 fun MessageBubble(
     text: String,
-    timestamp: Timestamp,
+    timestamp: Timestamp?,
     isFromCurrentUser: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -81,8 +81,10 @@ fun MessageBubble(
                         color = contentColor,
                         modifier = Modifier.testTag(MessageBubbleTestTags.TEXT))
 
+                    val formattedTime =
+                        timestamp?.let { Formatters.formatDateTime(it.toDate()) } ?: "Sending..."
                     Text(
-                        text = Formatters.formatDateTime(timestamp.toDate()),
+                        text = formattedTime,
                         style = MaterialTheme.typography.labelSmall,
                         color = contentColor.copy(alpha = 0.7f),
                         modifier = Modifier.testTag(MessageBubbleTestTags.TIMESTAMP))

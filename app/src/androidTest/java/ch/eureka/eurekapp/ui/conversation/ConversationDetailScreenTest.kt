@@ -36,7 +36,9 @@ class ConversationDetailScreenTest {
   fun conversationDetailScreen_showsLoadingState() {
     composeTestRule.setContent {
       ConversationDetailScreen(
-          viewModel = createMockViewModel(isLoading = true), onNavigateBack = {})
+          conversationId = "test-conv",
+          viewModel = createMockViewModel(isLoading = true),
+          onNavigateBack = {})
     }
     composeTestRule
         .onNodeWithTag(ConversationDetailScreenTestTags.LOADING_INDICATOR)
@@ -47,7 +49,9 @@ class ConversationDetailScreenTest {
   fun conversationDetailScreen_showsEmptyState() {
     composeTestRule.setContent {
       ConversationDetailScreen(
-          viewModel = createMockViewModel(messages = emptyList()), onNavigateBack = {})
+          conversationId = "test-conv",
+          viewModel = createMockViewModel(messages = emptyList()),
+          onNavigateBack = {})
     }
     composeTestRule.onNodeWithTag(ConversationDetailScreenTestTags.EMPTY_STATE).assertIsDisplayed()
   }
@@ -61,7 +65,9 @@ class ConversationDetailScreenTest {
 
     composeTestRule.setContent {
       ConversationDetailScreen(
-          viewModel = createMockViewModel(messages = messages), onNavigateBack = {})
+          conversationId = "test-conv",
+          viewModel = createMockViewModel(messages = messages),
+          onNavigateBack = {})
     }
 
     composeTestRule
@@ -75,7 +81,9 @@ class ConversationDetailScreenTest {
     var backClicked = false
     composeTestRule.setContent {
       ConversationDetailScreen(
-          viewModel = createMockViewModel(), onNavigateBack = { backClicked = true })
+          conversationId = "test-conv",
+          viewModel = createMockViewModel(),
+          onNavigateBack = { backClicked = true })
     }
     composeTestRule.onNodeWithTag(ConversationDetailScreenTestTags.BACK_BUTTON).performClick()
     assertTrue(backClicked)
@@ -85,7 +93,9 @@ class ConversationDetailScreenTest {
   fun conversationDetailScreen_showsFallbackTitleWhenNameEmpty() {
     composeTestRule.setContent {
       ConversationDetailScreen(
-          viewModel = createMockViewModel(otherMemberName = ""), onNavigateBack = {})
+          conversationId = "test-conv",
+          viewModel = createMockViewModel(otherMemberName = ""),
+          onNavigateBack = {})
     }
     composeTestRule.onNodeWithText("Chat").assertIsDisplayed()
   }
