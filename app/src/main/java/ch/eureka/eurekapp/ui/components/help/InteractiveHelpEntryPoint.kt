@@ -49,8 +49,8 @@ enum class HelpContext {
  *
  * @param helpContext The context for which help content should be displayed.
  * @param modifier Modifier for the chip.
- * @param userProvidedName Optional user name to personalize the help content. If not provided,
- *   the ViewModel will resolve it from Firebase.
+ * @param userProvidedName Optional user name to personalize the help content. If not provided, the
+ *   ViewModel will resolve it from Firebase.
  * @param chipShape Shape for the help chip.
  * @param notificationSettingsViewModel ViewModel for notification settings. Defaults to
  *   [viewModel()].
@@ -96,7 +96,9 @@ fun InteractiveHelpEntryPoint(
   if (isDialogOpen) {
     AlertDialog(
         onDismissRequest = { helpViewModel.closeDialog() },
-            confirmButton = { TextButton(onClick = { helpViewModel.closeDialog() }) { Text("Got it!") } },
+        confirmButton = {
+          TextButton(onClick = { helpViewModel.closeDialog() }) { Text("Got it!") }
+        },
         title = { Text(helpContent.title) },
         text = {
           Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
