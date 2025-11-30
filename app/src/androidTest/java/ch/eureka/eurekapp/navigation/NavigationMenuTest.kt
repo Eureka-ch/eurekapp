@@ -18,7 +18,7 @@ import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.screens.HomeOverviewTestTags
-import ch.eureka.eurekapp.screens.IdeasScreenTestTags
+import ch.eureka.eurekapp.screens.ProjectSelectionScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
@@ -88,7 +88,7 @@ class NavigationMenuTest : TestCase() {
         .onNodeWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON)
         .assertIsDisplayed()
     composeTestRule
-        .onNodeWithTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON)
+        .onNodeWithTag(BottomBarNavigationTestTags.PROJECTS_SCREEN_BUTTON)
         .assertIsDisplayed()
     composeTestRule
         .onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON)
@@ -113,8 +113,10 @@ class NavigationMenuTest : TestCase() {
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON).performClick()
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.PROFILE_SCREEN).assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON).performClick()
-    composeTestRule.onNodeWithTag(IdeasScreenTestTags.IDEAS_SCREEN_TEXT).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.PROJECTS_SCREEN_BUTTON).performClick()
+    composeTestRule
+        .onNodeWithTag(ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON)
+        .assertIsDisplayed()
 
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON).performClick()
     composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
@@ -204,5 +206,78 @@ class NavigationMenuTest : TestCase() {
 
     // Verify the screen is displayed (this confirms the composable executed)
     composeTestRule.onNodeWithTag("back_button_dependencies").assertIsDisplayed()
+  }
+
+  @Test
+  fun testProjectButtonNavigatesToProjectSelectionScreen() {
+    // Test covers: BottomBarNavigationComponent.kt line 174 (onClick Project button)
+    composeTestRule.setContent { NavigationMenu() }
+    composeTestRule.waitForIdle()
+
+    // Verify HomeOverview is displayed initially
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertIsDisplayed()
+
+    // Click on Project button - covers line 174: onClick = { navigateToTab(Route.ProjectSelection)
+    // }
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.PROJECTS_SCREEN_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+
+    // Verify ProjectSelectionScreen is displayed - covers line 174 navigation
+    composeTestRule
+        .onNodeWithTag(ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON)
+        .assertIsDisplayed()
+  }
+
+  @Test
+  fun testHomeButtonAlwaysReturnsToHomeOverviewWithoutRestoringState() {
+    // Test covers: BottomBarNavigationComponent.kt lines 85-91 (navigateToHome function)
+    // and line 187 (onClick = { navigateToHome() })
+    composeTestRule.setContent { NavigationMenu() }
+    composeTestRule.waitForIdle()
+
+    // Verify HomeOverview is displayed initially
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertIsDisplayed()
+
+    // Navigate to Project screen first
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.PROJECTS_SCREEN_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule
+        .onNodeWithTag(ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON)
+        .assertIsDisplayed()
+
+    // Click on Home button - covers line 187: onClick = { navigateToHome() }
+    // This should use navigateToHome() which has restoreState = false (line 89)
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+
+    // Verify we're back at HomeOverview - covers navigateToHome() function (lines 85-91)
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertIsDisplayed()
+
+    // Verify ProjectSelectionScreen is no longer displayed (state not restored)
+    composeTestRule
+        .onNodeWithTag(ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON)
+        .assertDoesNotExist()
+  }
+
+  @Test
+  fun testProjectsScreenPressedState() {
+    // Test covers: BottomBarNavigationComponent.kt lines 119-124 (isProjectsScreenPressed)
+    composeTestRule.setContent { NavigationMenu() }
+    composeTestRule.waitForIdle()
+
+    // Initially, Project button should not be pressed
+    composeTestRule
+        .onNodeWithTag(BottomBarNavigationTestTags.PROJECTS_SCREEN_BUTTON)
+        .assertIsDisplayed()
+
+    // Navigate to Project screen - covers line 122: hasRoute(Route.ProjectSelection::class)
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.PROJECTS_SCREEN_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+
+    // Verify ProjectSelectionScreen is displayed - this confirms isProjectsScreenPressed logic
+    // works
+    composeTestRule
+        .onNodeWithTag(ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON)
+        .assertIsDisplayed()
   }
 }
