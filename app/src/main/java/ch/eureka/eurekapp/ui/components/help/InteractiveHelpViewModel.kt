@@ -1,16 +1,14 @@
 package ch.eureka.eurekapp.ui.components.help
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 /**
- * ViewModel for managing interactive help state.
- * Handles user name resolution and dialog state following MVVM pattern.
+ * ViewModel for managing interactive help state. Handles user name resolution and dialog state
+ * following MVVM pattern.
  */
 class InteractiveHelpViewModel(
     private val getCurrentUserDisplayName: () -> String? = {
@@ -22,8 +20,8 @@ class InteractiveHelpViewModel(
   val isDialogOpen: StateFlow<Boolean> = _isDialogOpen.asStateFlow()
 
   /**
-   * Resolves the user name to display in help content.
-   * Uses provided name if available, otherwise falls back to Firebase current user.
+   * Resolves the user name to display in help content. Uses provided name if available, otherwise
+   * falls back to Firebase current user.
    */
   fun resolveUserName(userProvidedName: String?): String {
     return when {
@@ -40,4 +38,3 @@ class InteractiveHelpViewModel(
     _isDialogOpen.value = false
   }
 }
-
