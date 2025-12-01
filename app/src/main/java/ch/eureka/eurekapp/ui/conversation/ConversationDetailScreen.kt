@@ -1,6 +1,5 @@
 package ch.eureka.eurekapp.ui.conversation
 
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachFile
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,7 +30,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -81,12 +80,11 @@ fun ConversationDetailScreen(
   val snackbarHostState = remember { SnackbarHostState() }
   val listState = rememberLazyListState()
   val context = LocalContext.current
-  val selectedFileUri = remember { mutableStateOf<Uri?>(null) }
 
   val filePickerLauncher =
       rememberLauncherForActivityResult(
           contract = ActivityResultContracts.GetContent(),
-          onResult = { uri -> selectedFileUri.value = uri })
+          onResult = { uri -> viewModel.setSelectedFile(uri) })
 
   LaunchedEffect(snackbarMessage) {
     snackbarMessage?.let {
@@ -132,7 +130,7 @@ fun ConversationDetailScreen(
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       bottomBar = {
         Column(modifier = Modifier.fillMaxWidth()) {
-          selectedFileUri.value?.let { uri ->
+          uiState.selectedFileUri?.let { uri ->
             val selectedFileName =
                 remember(uri) {
                   context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
@@ -142,10 +140,17 @@ fun ConversationDetailScreen(
                     cursor.getString(nameIndex)
                   } ?: "Unknown file"
                 }
-            Text(
-                text = "Selected file: $selectedFileName",
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.xs))
+            Row(
+                modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.xs),
+                verticalAlignment = Alignment.CenterVertically) {
+                  Text(
+                      text = "Selected file: $selectedFileName",
+                      style = MaterialTheme.typography.bodySmall,
+                      modifier = Modifier.weight(1f))
+                  IconButton(onClick = { viewModel.clearSelectedFile() }) {
+                    Icon(Icons.Default.Close, contentDescription = "Remove selected file")
+                  }
+                }
           }
           if (uiState.isUploadingFile) {
             Row(modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.xs)) {
@@ -162,14 +167,12 @@ fun ConversationDetailScreen(
                 message = uiState.currentMessage,
                 onMessageChange = viewModel::updateMessage,
                 onSend = {
-                  selectedFileUri.value?.let { uri ->
-                    viewModel.sendFileMessage(uri, context)
-                    selectedFileUri.value = null
-                  } ?: viewModel.sendMessage()
+                  uiState.selectedFileUri?.let { uri -> viewModel.sendFileMessage(uri, context) }
+                      ?: viewModel.sendMessage()
                 },
                 isSending = uiState.isSending,
                 placeholder = "Write a message...",
-                canSend = uiState.currentMessage.isNotBlank() || selectedFileUri.value != null)
+                canSend = uiState.currentMessage.isNotBlank() || uiState.selectedFileUri != null)
           }
         }
       }) { paddingValues ->
