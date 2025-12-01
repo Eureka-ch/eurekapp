@@ -1,13 +1,21 @@
 package ch.eureka.eurekapp.ui.conversation
 
+import android.app.DownloadManager
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Environment
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
+import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.conversation.Conversation
 import ch.eureka.eurekapp.model.data.conversation.ConversationMessage
 import ch.eureka.eurekapp.model.data.conversation.ConversationRepository
+import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -25,6 +33,7 @@ import kotlinx.coroutines.launch
 /*
 Co-author: GPT-5 Codex
 Co-author: Claude 4.5 Sonnet
+Co-author: Grok
 */
 
 /**
@@ -39,6 +48,7 @@ Co-author: Claude 4.5 Sonnet
  * @property isSending Whether a message is being sent.
  * @property errorMsg Error message to display.
  * @property isConnected Whether the device is connected.
+ * @property isUploadingFile Whether a file is currently being uploaded.
  */
 data class ConversationDetailState(
     val conversation: Conversation? = null,
@@ -49,7 +59,8 @@ data class ConversationDetailState(
     val isLoading: Boolean = true,
     val isSending: Boolean = false,
     val errorMsg: String? = null,
-    val isConnected: Boolean = true
+    val isConnected: Boolean = true,
+    val isUploadingFile: Boolean = false
 )
 
 private data class DisplayData(val otherMemberName: String, val projectName: String)
@@ -66,13 +77,23 @@ open class ConversationDetailViewModel(
         RepositoriesProvider.conversationRepository,
     private val userRepository: UserRepository = RepositoriesProvider.userRepository,
     private val projectRepository: ProjectRepository = RepositoriesProvider.projectRepository,
+    private val fileStorageRepository: FileStorageRepository = RepositoriesProvider.fileRepository,
     private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver
 ) : ViewModel() {
 
+  private data class Quadruple<A, B, C, D>(
+      val first: A,
+      val second: B,
+      val third: C,
+      val fourth: D
+  )
+
   private val _currentMessage = MutableStateFlow("")
   private val _isSending = MutableStateFlow(false)
   private val _errorMsg = MutableStateFlow<String?>(null)
+  private val _isUploadingFile = MutableStateFlow(false)
+  private val _snackbarMessage = MutableStateFlow<String?>(null)
 
   private val conversationFlow =
       conversationRepository.getConversationById(conversationId).catch { e ->
@@ -103,8 +124,12 @@ open class ConversationDetailViewModel(
       }
 
   private val inputStateFlow =
-      combine(_currentMessage, _isSending, _errorMsg) { currentMessage, isSending, errorMsg ->
-        Triple(currentMessage, isSending, errorMsg)
+      combine(_currentMessage, _isSending, _errorMsg, _isUploadingFile) {
+          currentMessage,
+          isSending,
+          errorMsg,
+          isUploadingFile ->
+        Quadruple(currentMessage, isSending, errorMsg, isUploadingFile)
       }
 
   open val uiState: StateFlow<ConversationDetailState> =
@@ -123,7 +148,8 @@ open class ConversationDetailViewModel(
                 isLoading = conversation == null,
                 isSending = inputState.second,
                 errorMsg = inputState.third,
-                isConnected = isConnected)
+                isConnected = isConnected,
+                isUploadingFile = inputState.fourth)
           }
           .stateIn(
               scope = viewModelScope,
@@ -132,6 +158,12 @@ open class ConversationDetailViewModel(
 
   open val currentUserId: String?
     get() = getCurrentUserId()
+
+  val snackbarMessage: StateFlow<String?> =
+      _snackbarMessage.stateIn(
+          scope = viewModelScope,
+          started = SharingStarted.WhileSubscribed(5000),
+          initialValue = null)
 
   fun updateMessage(text: String) {
     _currentMessage.value = text
@@ -162,11 +194,92 @@ open class ConversationDetailViewModel(
     }
   }
 
+  fun sendFileMessage(fileUri: Uri, context: Context) {
+    val text = _currentMessage.value.trim()
+    val messageText = text.ifEmpty { "File attached" }
+
+    _isSending.value = true
+    _isUploadingFile.value = true
+
+    viewModelScope.launch {
+      // Get original filename with extension from ContentResolver
+      val originalFilename =
+          context.contentResolver.query(fileUri, null, null, null, null)?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+            cursor.moveToFirst()
+            cursor.getString(nameIndex)
+          } ?: "file"
+
+      // Split filename into name and extension
+      val lastDotIndex = originalFilename.lastIndexOf('.')
+      val (baseName, extension) =
+          if (lastDotIndex > 0) {
+            val name = originalFilename.take(lastDotIndex)
+            val ext = originalFilename.drop(lastDotIndex) // includes the dot
+            name to ext
+          } else {
+            originalFilename to ""
+          }
+
+      // Sanitize base name (remove special characters, keep only safe chars)
+      val sanitizedBaseName = baseName.replace(Regex("[^a-zA-Z0-9._-]"), "_")
+
+      // Create filename with timestamp before extension
+      val filename = "${sanitizedBaseName}_${System.currentTimeMillis()}${extension}"
+      val storagePath = StoragePaths.conversationFilePath(conversationId, filename)
+      fileStorageRepository
+          .uploadFile(storagePath, fileUri)
+          .fold(
+              onSuccess = { downloadUrl ->
+                _isUploadingFile.value = false
+                conversationRepository
+                    .sendFileMessage(conversationId, messageText, downloadUrl)
+                    .fold(
+                        onSuccess = {
+                          _currentMessage.value = ""
+                          _isSending.value = false
+                        },
+                        onFailure = { error ->
+                          _isSending.value = false
+                          _errorMsg.value = "Error sending file: ${error.message}"
+                        })
+              },
+              onFailure = { error ->
+                _isUploadingFile.value = false
+                _isSending.value = false
+                _errorMsg.value = "Error uploading file: ${error.message}"
+              })
+    }
+  }
+
+  fun openUrl(url: String, context: Context) {
+    val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+    context.startActivity(intent)
+  }
+
+  fun downloadFile(url: String, context: Context) {
+    val fileName = url.substringAfterLast("/")
+    val request = DownloadManager.Request(url.toUri())
+    request.setTitle(fileName)
+    request.setDescription("Downloading file from chat")
+    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+    request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+    val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+    downloadManager.enqueue(request)
+
+    // Show feedback to user
+    _snackbarMessage.value = "Download started"
+  }
+
   fun markAsRead() {
     viewModelScope.launch { conversationRepository.markMessagesAsRead(conversationId) }
   }
 
   fun clearError() {
     _errorMsg.value = null
+  }
+
+  fun clearSnackbarMessage() {
+    _snackbarMessage.value = null
   }
 }

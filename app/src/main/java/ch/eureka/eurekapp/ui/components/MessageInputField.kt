@@ -23,6 +23,7 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 /*
 Note: This file was partially written by GPT-5 Codex
 Co-author : GPT-5
+Co-author: Grok
 */
 
 object MessageInputFieldTestTags {
@@ -42,6 +43,8 @@ object MessageInputFieldTestTags {
  * @param isSending Whether a message is currently being sent.
  * @param placeholder Placeholder text for the input field.
  * @param modifier Optional modifier.
+ * @param canSend Whether sending is allowed (e.g., if message is not blank or an attachment is
+ *   selected).
  */
 @Composable
 fun MessageInputField(
@@ -50,7 +53,8 @@ fun MessageInputField(
     onSend: () -> Unit,
     isSending: Boolean,
     modifier: Modifier = Modifier,
-    placeholder: String = "Write a message..."
+    placeholder: String = "Write a message...",
+    canSend: Boolean = message.isNotBlank()
 ) {
   Row(
       modifier = modifier.fillMaxWidth().padding(Spacing.md),
@@ -61,15 +65,14 @@ fun MessageInputField(
             modifier = Modifier.weight(1f).testTag(MessageInputFieldTestTags.INPUT_FIELD),
             placeholder = { Text(placeholder) },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-            keyboardActions =
-                KeyboardActions(onSend = { if (message.isNotBlank() && !isSending) onSend() }),
+            keyboardActions = KeyboardActions(onSend = { if (canSend && !isSending) onSend() }),
             maxLines = 4,
             shape = MaterialTheme.shapes.medium,
             colors = EurekaStyles.textFieldColors())
 
         IconButton(
             onClick = onSend,
-            enabled = message.isNotBlank() && !isSending,
+            enabled = canSend && !isSending,
             modifier =
                 Modifier.padding(start = Spacing.sm)
                     .testTag(MessageInputFieldTestTags.SEND_BUTTON)) {
@@ -77,7 +80,7 @@ fun MessageInputField(
                   imageVector = Icons.AutoMirrored.Filled.Send,
                   contentDescription = "Send",
                   tint =
-                      if (message.isNotBlank() && !isSending) MaterialTheme.colorScheme.primary
+                      if (canSend && !isSending) MaterialTheme.colorScheme.primary
                       else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f))
             }
       }
