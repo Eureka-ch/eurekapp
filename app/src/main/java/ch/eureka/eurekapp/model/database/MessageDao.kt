@@ -12,22 +12,72 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface MessageDao {
 
+  /**
+   * Observes all messages for a specific user.
+   *
+   * @param userId The ID of the user.
+   * @return A Flow of list of messages.
+   */
   @Query("SELECT * FROM local_notes WHERE senderId = :userId ORDER BY createdAtMillis DESC")
   fun getMessagesForUser(userId: String): Flow<List<MessageEntity>>
 
-  /** Inserts a message. Blocking call (Run on Dispatchers.IO). */
+  /**
+   * Retrieves a specific message by its ID.
+   *
+   * @param messageId The unique ID of the message.
+   * @param userId The ID of the current user (security check).
+   * @return The message entity or null if not found.
+   */
+  @Query("SELECT * FROM local_notes WHERE messageId = :messageId AND senderId = :userId LIMIT 1")
+  fun getMessageById(messageId: String, userId: String): MessageEntity?
+
+  /**
+   * Inserts a message. Blocking call (Run on Dispatchers.IO).
+   * * @param note The message entity to insert.
+   *
+   * @return The row ID.
+   */
   @Insert(onConflict = OnConflictStrategy.REPLACE) fun insertMessage(note: MessageEntity): Long
 
-  /** Deletes a message. Blocking call (Run on Dispatchers.IO). */
+  /**
+   * Updates the text of an existing message.
+   *
+   * @param messageId The ID of the message to update.
+   * @param userId The ID of the user.
+   * @param newText The new text content.
+   * @param isPendingSync Whether this update needs to be synced to cloud.
+   */
+  @Query(
+      "UPDATE local_notes SET text = :newText, isPendingSync = :isPendingSync WHERE messageId = :messageId AND senderId = :userId")
+  fun updateMessageText(messageId: String, userId: String, newText: String, isPendingSync: Boolean)
+
+  /**
+   * Deletes a message. Blocking call (Run on Dispatchers.IO).
+   * * @param messageId The ID of the message to delete.
+   *
+   * @param userId The ID of the user.
+   * @return The number of rows deleted.
+   */
   @Query("DELETE FROM local_notes WHERE messageId = :messageId AND senderId = :userId")
   fun deleteMessage(messageId: String, userId: String): Int
 
-  /** Gets pending sync messages. Blocking call (Run on Dispatchers.IO). */
+  /**
+   * Gets pending sync messages. Blocking call (Run on Dispatchers.IO).
+   *
+   * @param userId The ID of the user.
+   * @return List of pending messages.
+   */
   @Query(
       "SELECT * FROM local_notes WHERE senderId = :userId AND isPendingSync = 1 AND isPrivacyLocalOnly = 0")
   fun getPendingSyncMessages(userId: String): List<MessageEntity>
 
-  /** Marks a specific message as synced. Blocking call (Run on Dispatchers.IO). */
+  /**
+   * Marks a specific message as synced. Blocking call (Run on Dispatchers.IO).
+   *
+   * @param messageId The ID of the message.
+   * @param userId The ID of the user.
+   * @return Number of rows updated.
+   */
   @Query(
       "UPDATE local_notes SET isPendingSync = 0 WHERE messageId = :messageId AND senderId = :userId")
   fun markAsSynced(messageId: String, userId: String): Int
@@ -35,6 +85,9 @@ interface MessageDao {
   /**
    * Updates all local-only notes to be ready for cloud upload. Blocking call (Run on
    * Dispatchers.IO).
+   *
+   * @param userId The ID of the user.
+   * @return Number of rows updated.
    */
   @Query(
       "UPDATE local_notes SET isPrivacyLocalOnly = 0, isPendingSync = 1 WHERE senderId = :userId AND isPrivacyLocalOnly = 1")
