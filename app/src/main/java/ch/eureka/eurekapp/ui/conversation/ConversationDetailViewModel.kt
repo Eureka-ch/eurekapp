@@ -49,6 +49,7 @@ Co-author: Grok
  * @property errorMsg Error message to display.
  * @property isConnected Whether the device is connected.
  * @property isUploadingFile Whether a file is currently being uploaded.
+ * @property selectedFileUri The URI of the selected file for sending.
  */
 data class ConversationDetailState(
     val conversation: Conversation? = null,
@@ -60,7 +61,8 @@ data class ConversationDetailState(
     val isSending: Boolean = false,
     val errorMsg: String? = null,
     val isConnected: Boolean = true,
-    val isUploadingFile: Boolean = false
+    val isUploadingFile: Boolean = false,
+    val selectedFileUri: Uri? = null
 )
 
 private data class DisplayData(val otherMemberName: String, val projectName: String)
@@ -82,17 +84,19 @@ open class ConversationDetailViewModel(
     connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver
 ) : ViewModel() {
 
-  private data class Quadruple<A, B, C, D>(
+  private data class Quintuple<A, B, C, D, E>(
       val first: A,
       val second: B,
       val third: C,
-      val fourth: D
+      val fourth: D,
+      val fifth: E
   )
 
   private val _currentMessage = MutableStateFlow("")
   private val _isSending = MutableStateFlow(false)
   private val _errorMsg = MutableStateFlow<String?>(null)
   private val _isUploadingFile = MutableStateFlow(false)
+  private val _selectedFileUri = MutableStateFlow<Uri?>(null)
   private val _snackbarMessage = MutableStateFlow<String?>(null)
 
   private val conversationFlow =
@@ -124,12 +128,13 @@ open class ConversationDetailViewModel(
       }
 
   private val inputStateFlow =
-      combine(_currentMessage, _isSending, _errorMsg, _isUploadingFile) {
+      combine(_currentMessage, _isSending, _errorMsg, _isUploadingFile, _selectedFileUri) {
           currentMessage,
           isSending,
           errorMsg,
-          isUploadingFile ->
-        Quadruple(currentMessage, isSending, errorMsg, isUploadingFile)
+          isUploadingFile,
+          selectedFileUri ->
+        Quintuple(currentMessage, isSending, errorMsg, isUploadingFile, selectedFileUri)
       }
 
   open val uiState: StateFlow<ConversationDetailState> =
@@ -149,7 +154,8 @@ open class ConversationDetailViewModel(
                 isSending = inputState.second,
                 errorMsg = inputState.third,
                 isConnected = isConnected,
-                isUploadingFile = inputState.fourth)
+                isUploadingFile = inputState.fourth,
+                selectedFileUri = inputState.fifth)
           }
           .stateIn(
               scope = viewModelScope,
@@ -167,6 +173,14 @@ open class ConversationDetailViewModel(
 
   fun updateMessage(text: String) {
     _currentMessage.value = text
+  }
+
+  fun setSelectedFile(uri: Uri?) {
+    _selectedFileUri.value = uri
+  }
+
+  fun clearSelectedFile() {
+    _selectedFileUri.value = null
   }
 
   fun sendMessage() {
@@ -248,6 +262,7 @@ open class ConversationDetailViewModel(
                     .fold(
                         onSuccess = {
                           _currentMessage.value = ""
+                          _selectedFileUri.value = null
                           _isSending.value = false
                         },
                         onFailure = { error ->
