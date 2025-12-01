@@ -75,6 +75,8 @@ class HomeOverviewViewModelTest {
               projectId = projectA.projectId,
               title = "Task $index",
               status = TaskStatus.TODO,
+              // Home overview filters on tasks assigned to the current user
+              assignedUserIds = listOf("user-1"),
               dueDate = timestamp(now + index * DAY))
         }
     taskRepository.setCurrentUserTasks(flowOf(tasks))
