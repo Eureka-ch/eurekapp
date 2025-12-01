@@ -1,12 +1,9 @@
+/* Portions of this file were written with the help of Gemini and GPT-5 Codex. */
 package ch.eureka.eurekapp.model.data.notes
 
 import ch.eureka.eurekapp.model.data.chat.Message
 import kotlinx.coroutines.flow.Flow
 
-/*
-Note: This file was partially written by GPT-5 Codex
-Co-author : GPT-5
-*/
 /**
  * Repository interface for managing user's self-notes.
  *
@@ -34,6 +31,16 @@ interface SelfNotesRepository {
    * @throws IllegalStateException if no user is authenticated.
    */
   suspend fun createNote(message: Message): Result<String>
+
+  /**
+   * Updates the content of an existing note.
+   *
+   * @param messageId The ID of the note to update.
+   * @param newText The new text content.
+   * @return Result indicating success or failure.
+   * @throws IllegalStateException if no user is authenticated.
+   */
+  suspend fun updateNote(messageId: String, newText: String): Result<Unit>
 
   /**
    * Deletes a note for the current authenticated user.

@@ -77,6 +77,44 @@ class UnifiedSelfNotesRepository(
         }
       }
 
+  override suspend fun updateNote(messageId: String, newText: String): Result<Unit> =
+      withContext(dispatcher) {
+        try {
+          val userId = getCurrentUserId()
+          val existingEntity =
+              localDao.getMessageById(messageId, userId)
+                  ?: return@withContext Result.failure(Exception("Note not found"))
+
+          // Determine if we need to sync this update to cloud
+          val isCloudNote = !existingEntity.isPrivacyLocalOnly
+
+          // If it is a cloud note, we mark it pending sync in case the network call fails below
+          localDao.updateMessageText(messageId, userId, newText, isPendingSync = isCloudNote)
+
+          // Update Cloud (if applicable and online)
+          if (isCloudNote) {
+            if (isInternetAvailable()) {
+              val cloudResult = firestoreRepo.updateNote(messageId, newText)
+              if (cloudResult.isSuccess) {
+                localDao.markAsSynced(messageId, userId)
+              } else {
+                Log.e(
+                    "UnifiedSelfNotesRepository",
+                    "Cloud update failed, note remains pending sync",
+                    cloudResult.exceptionOrNull())
+              }
+            } else {
+              Log.d(
+                  "UnifiedSelfNotesRepository",
+                  "Offline: Note update stored locally, pending sync.")
+            }
+          }
+          Result.success(Unit)
+        } catch (e: Exception) {
+          Result.failure(e)
+        }
+      }
+
   private fun saveNoteLocally(message: Message, isCloudEnabled: Boolean) {
     val entity =
         message
@@ -121,8 +159,11 @@ class UnifiedSelfNotesRepository(
   override suspend fun deleteNote(noteId: String): Result<Unit> =
       withContext(dispatcher) {
         val userId = getCurrentUserId()
+
+        // Delete Locally
         localDao.deleteMessage(noteId, userId)
-        // Only try to delete from cloud if online
+
+        // Delete from Cloud (Attempt best effort)
         if (isInternetAvailable()) {
           val result = firestoreRepo.deleteNote(noteId)
           if (result.isFailure) {
@@ -130,7 +171,6 @@ class UnifiedSelfNotesRepository(
                 "UnifiedSelfNotesRepository",
                 "Cloud deletion failed: $noteId",
                 result.exceptionOrNull())
-            return@withContext Result.failure(result.exceptionOrNull()!!)
           }
         }
         Result.success(Unit)
