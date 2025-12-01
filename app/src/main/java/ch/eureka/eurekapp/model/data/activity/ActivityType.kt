@@ -35,5 +35,17 @@ enum class ActivityType {
   JOINED,
 
   /** User left or was removed */
-  LEFT
+  LEFT,
+
+  /** User was assigned to an entity (e.g., task) */
+  ASSIGNED,
+
+  /** User was unassigned from an entity (e.g., task) */
+  UNASSIGNED,
+
+  /** User role was changed */
+  ROLE_CHANGED,
+
+  /** File was downloaded */
+  DOWNLOADED
 }

@@ -27,6 +27,14 @@ interface ActivityRepository {
   fun getActivities(userId: String): Flow<List<Activity>>
 
   /**
+   * Fetches a specific activity by its ID.
+   *
+   * @param activityId The unique identifier of the activity to fetch.
+   * @return The [Activity] object if found, or null otherwise.
+   */
+  suspend fun getActivityById(activityId: String): Activity?
+
+  /**
    * Creates a new activity entry in the database.
    *
    * @param activity The [Activity] object to be created. The `activityId` field in this object is
