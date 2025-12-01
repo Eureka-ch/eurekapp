@@ -70,7 +70,16 @@ sealed interface Route {
 
   @Serializable data object SelfNotes : Route
 
-  @Serializable data object ActivityFeed : Route
+  sealed interface ActivitySection : Route {
+    companion object {
+      val routes: Set<KClass<out ActivitySection>>
+        get() = ActivitySection::class.sealedSubclasses.toSet()
+    }
+
+    @Serializable data object ActivityFeed : ActivitySection
+
+    @Serializable data class ActivityDetail(val activityId: String) : ActivitySection
+  }
 
   sealed interface TasksSection : Route {
     companion object {
@@ -274,16 +283,36 @@ fun NavigationMenu(
               composable<Route.Profile> {
                 ProfileScreen(
                     onNavigateToActivityFeed = {
-                      navigationController.navigate(Route.ActivityFeed)
+                      navigationController.navigate(Route.ActivitySection.ActivityFeed)
                     })
               }
               composable<Route.SelfNotes> { SelfNotesScreen() }
-              composable<Route.ActivityFeed> {
+
+              // Activity section
+              composable<Route.ActivitySection.ActivityFeed> {
                 ActivityFeedScreen(
-                    onActivityClick = { _ ->
-                      // Navigate to entity detail screen based on entity type
-                      // For now, just go back
-                      navigationController.popBackStack()
+                    onActivityClick = { activityId ->
+                      navigationController.navigate(Route.ActivitySection.ActivityDetail(activityId))
+                    })
+              }
+              composable<Route.ActivitySection.ActivityDetail> { backStackEntry ->
+                val activityDetailRoute = backStackEntry.toRoute<Route.ActivitySection.ActivityDetail>()
+                ch.eureka.eurekapp.ui.activity.ActivityDetailScreen(
+                    activityId = activityDetailRoute.activityId,
+                    onNavigateBack = { navigationController.popBackStack() },
+                    onNavigateToEntity = { entityId, entityType ->
+                      // Navigate to appropriate entity screen based on type
+                      when (entityType) {
+                        ch.eureka.eurekapp.model.data.activity.EntityType.MEETING -> {
+                          // Extract projectId from activity metadata or use default
+                          // For now, we'll need to navigate back since we don't have projectId easily accessible
+                          navigationController.popBackStack()
+                        }
+                        ch.eureka.eurekapp.model.data.activity.EntityType.TASK -> {
+                          navigationController.popBackStack()
+                        }
+                        else -> navigationController.popBackStack()
+                      }
                     })
               }
               composable<Route.OverviewProject> { backStackEntry ->
