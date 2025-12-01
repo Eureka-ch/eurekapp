@@ -1,6 +1,7 @@
 /*
 Note: This file was co-authored by Claude Code.
 Note: This file was co-authored by Grok.
+Co-author: Claude 4.5 Sonnet
 Portions of the code in this file are inspired by the Bootcamp solution B3 provided by the SwEnt staff.
 */
 package ch.eureka.eurekapp.ui.profile
@@ -179,6 +180,23 @@ fun ProfileScreen(
                         Text("View Activity Feed")
                       }
 
+                  if (!uiState.isEditing) {
+                    Button(
+                        onClick = { firebaseAuth.signOut() },
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                                .testTag(ProfileScreenTestTags.SIGN_OUT_BUTTON),
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error,
+                                contentColor = MaterialTheme.colorScheme.onError)) {
+                          Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null)
+                          Spacer(modifier = Modifier.size(8.dp))
+                          Text("Sign Out")
+                        }
+                  }
+
                   Spacer(modifier = Modifier.height(16.dp))
 
                   // Save/Cancel Buttons (shown when editing)
@@ -209,24 +227,6 @@ fun ProfileScreen(
                           modifier = Modifier.testTag(ProfileScreenTestTags.ERROR_TEXT))
                     }
               }
-
-          if (!uiState.isEditing) {
-            Button(
-                onClick = { firebaseAuth.signOut() },
-                modifier =
-                    Modifier.align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .testTag(ProfileScreenTestTags.SIGN_OUT_BUTTON),
-                colors =
-                    ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError)) {
-                  Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null)
-                  Spacer(modifier = Modifier.size(8.dp))
-                  Text("Sign Out")
-                }
-          }
         }
   }
 }
