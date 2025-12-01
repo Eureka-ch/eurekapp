@@ -30,9 +30,14 @@ class TaskRepositoryTest : FirestoreRepositoryTest() {
   @Before
   override fun setup() = runBlocking {
     super.setup()
+    val projectRepository: ch.eureka.eurekapp.model.data.project.ProjectRepository =
+        ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository(
+            firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
     repository =
         FirestoreTaskRepository(
-            firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+            firestore = FirebaseEmulator.firestore,
+            auth = FirebaseEmulator.auth,
+            projectRepository = projectRepository)
   }
 
   @Test

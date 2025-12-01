@@ -133,12 +133,14 @@ sealed class TaskScreenFilter(val displayName: String) {
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 open class TaskScreenViewModel(
-    private val taskRepository: TaskRepository =
-        FirestoreTaskRepository(
-            firestore = FirebaseFirestore.getInstance(), auth = FirebaseAuth.getInstance()),
     private val projectRepository: ProjectRepository =
         FirestoreProjectRepository(
             firestore = FirebaseFirestore.getInstance(), auth = FirebaseAuth.getInstance()),
+    private val taskRepository: TaskRepository =
+        FirestoreTaskRepository(
+            firestore = FirebaseFirestore.getInstance(),
+            auth = FirebaseAuth.getInstance(),
+            projectRepository = projectRepository),
     private val userRepository: UserRepository =
         FirestoreUserRepository(
             firestore = FirebaseFirestore.getInstance(), auth = FirebaseAuth.getInstance()),

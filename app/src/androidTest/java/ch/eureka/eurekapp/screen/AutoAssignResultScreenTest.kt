@@ -80,7 +80,9 @@ class AutoAssignResultScreenTest {
                 navigationController = navController,
                 viewModel =
                     AutoAssignResultViewModel(
-                        mockTaskRepository, mockProjectRepository, mockUserRepository))
+                        projectRepository = mockProjectRepository,
+                        taskRepository = mockTaskRepository,
+                        userRepository = mockUserRepository))
           }
         }
         navController.navigate(Route.TasksSection.AutoTaskAssignment)
@@ -95,7 +97,9 @@ class AutoAssignResultScreenTest {
                 navigationController = navController,
                 viewModel =
                     AutoAssignResultViewModel(
-                        mockTaskRepository, mockProjectRepository, mockUserRepository))
+                        projectRepository = mockProjectRepository,
+                        taskRepository = mockTaskRepository,
+                        userRepository = mockUserRepository))
           }
         }
       }

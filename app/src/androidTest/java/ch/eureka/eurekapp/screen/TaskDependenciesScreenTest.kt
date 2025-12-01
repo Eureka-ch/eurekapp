@@ -47,13 +47,15 @@ open class TaskDependenciesScreenTest : TestCase() {
         FirestoreUserRepository(
             firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
 
-    tasksRepository =
-        FirestoreTaskRepository(
-            firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
-
     projectRepository =
         FirestoreProjectRepository(
             firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+
+    tasksRepository =
+        FirestoreTaskRepository(
+            firestore = FirebaseEmulator.firestore,
+            auth = FirebaseEmulator.auth,
+            projectRepository = projectRepository)
 
     usersRepository.saveUser(User().copy(uid = "user1", displayName = "user1"))
     usersRepository.saveUser(User().copy(uid = "user2", displayName = "user2"))

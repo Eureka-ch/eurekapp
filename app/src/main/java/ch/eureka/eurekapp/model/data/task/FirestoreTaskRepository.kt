@@ -4,6 +4,7 @@ import ch.eureka.eurekapp.model.data.FirestorePaths
 import ch.eureka.eurekapp.model.data.activity.ActivityLogger
 import ch.eureka.eurekapp.model.data.activity.ActivityType
 import ch.eureka.eurekapp.model.data.activity.EntityType
+import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.template.field.serialization.FirestoreConverters
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -11,11 +12,15 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.tasks.await
 
 class FirestoreTaskRepository(
     private val firestore: FirebaseFirestore,
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    private val projectRepository: ProjectRepository
 ) : TaskRepository {
 
   companion object {
@@ -59,29 +64,23 @@ class FirestoreTaskRepository(
     awaitClose { listener.remove() }
   }
 
-  override fun getTasksForCurrentUser(): Flow<List<Task>> = callbackFlow {
+  override fun getTasksForCurrentUser(): Flow<List<Task>> {
     val currentUserId = auth.currentUser?.uid
     if (currentUserId == null) {
-      trySend(emptyList())
-      close()
-      return@callbackFlow
+      return flowOf(emptyList())
     }
 
-    val listener =
-        firestore
-            .collectionGroup(FirestorePaths.TASKS)
-            .whereArrayContains("assignedUserIds", currentUserId)
-            .addSnapshotListener { snapshot, error ->
-              if (error != null) {
-                close(error)
-                trySend(emptyList())
-                return@addSnapshotListener
-              }
-              val tasks =
-                  snapshot?.documents?.mapNotNull { doc -> parseSnapshot(doc.data) } ?: emptyList()
-              trySend(tasks)
-            }
-    awaitClose { listener.remove() }
+    // Get all projects where the user is a member
+    return projectRepository.getProjectsForCurrentUser(skipCache = false).flatMapLatest { projects
+      ->
+      if (projects.isEmpty()) {
+        flowOf(emptyList())
+      } else {
+        // Get all tasks from all projects where user is a member
+        val taskFlows = projects.map { project -> getTasksInProject(project.projectId) }
+        combine(taskFlows) { taskArrays -> taskArrays.flatMap { it.toList() } }
+      }
+    }
   }
 
   override suspend fun createTask(task: Task): Result<String> = runCatching {

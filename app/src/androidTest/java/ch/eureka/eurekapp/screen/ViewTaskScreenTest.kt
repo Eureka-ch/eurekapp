@@ -125,8 +125,15 @@ open class ViewTaskScreenTest : TestCase() {
     FirebaseEmulator.clearAuthEmulator()
   }
 
+  private val projectRepository: ch.eureka.eurekapp.model.data.project.ProjectRepository =
+      ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository(
+          firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+
   private val taskRepository: TaskRepository =
-      FirestoreTaskRepository(firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+      FirestoreTaskRepository(
+          firestore = FirebaseEmulator.firestore,
+          auth = FirebaseEmulator.auth,
+          projectRepository = projectRepository)
 
   private val templateRepository =
       FirestoreTaskTemplateRepository(

@@ -15,12 +15,17 @@ import kotlinx.coroutines.flow.StateFlow
  * Allows direct control over UI state without depending on repository flows
  */
 class MockTaskScreenViewModel(
-    taskRepository: TaskRepository,
     projectRepository: ProjectRepository,
+    taskRepository: TaskRepository,
     userRepository: UserRepository,
     currentUserId: String?,
     initialState: TaskScreenUiState = TaskScreenUiState()
-) : TaskScreenViewModel(taskRepository, projectRepository, userRepository, currentUserId) {
+) :
+    TaskScreenViewModel(
+        projectRepository = projectRepository,
+        taskRepository = taskRepository,
+        userRepository = userRepository,
+        currentUserId = currentUserId) {
 
   private val _mockUiState = MutableStateFlow(initialState)
 
