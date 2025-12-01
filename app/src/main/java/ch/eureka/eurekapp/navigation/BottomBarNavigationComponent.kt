@@ -143,7 +143,7 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
       containerColor = EColors.light.surface,
       modifier =
           Modifier.fillMaxWidth()
-              .padding(horizontal = 15.dp, vertical = 10.dp)
+              .padding(horizontal = 0.dp, vertical = 0.dp)
               .windowInsetsPadding(WindowInsets.navigationBars)
               .clip(RoundedCornerShape(25.dp)),
       tonalElevation = 8.dp,

@@ -257,7 +257,7 @@ private fun TaskList(
   // Task lists
   LazyColumn(
       verticalArrangement = Arrangement.spacedBy(Spacing.sm),
-      modifier = Modifier.testTag(TasksScreenTestTags.TASK_LIST)) {
+      modifier = Modifier.fillMaxSize().testTag(TasksScreenTestTags.TASK_LIST)) {
         if (!isConnected) {
           item {
             Text(
