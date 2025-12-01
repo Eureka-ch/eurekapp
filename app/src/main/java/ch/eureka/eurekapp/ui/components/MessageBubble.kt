@@ -1,6 +1,5 @@
 package ch.eureka.eurekapp.ui.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +11,9 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachFile
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -120,8 +121,7 @@ fun MessageBubble(
 
                     if (isFile && fileUrl.isNotEmpty()) {
                       Row(
-                          modifier =
-                              Modifier.padding(top = 8.dp).clickable { onDownloadClick(fileUrl) },
+                          modifier = Modifier.padding(top = 8.dp),
                           verticalAlignment = Alignment.CenterVertically,
                           horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             // Extract filename from Firebase Storage URL by decoding the path
@@ -153,6 +153,12 @@ fun MessageBubble(
                                   color = contentColor,
                                   style = MaterialTheme.typography.bodySmall)
                             }
+                            IconButton(onClick = { onDownloadClick(fileUrl) }) {
+                              Icon(
+                                  imageVector = Icons.Default.Download,
+                                  contentDescription = "Download file",
+                                  tint = contentColor)
+                            }
                           }
                     }
 
@@ -168,7 +174,7 @@ fun MessageBubble(
       }
 }
 
-private fun isImageFile(url: String): Boolean {
-  val extension = url.substringAfterLast(".").lowercase()
+private fun isImageFile(filename: String): Boolean {
+  val extension = filename.substringAfterLast(".").lowercase()
   return extension in listOf("jpg", "jpeg", "png", "gif", "bmp", "webp")
 }

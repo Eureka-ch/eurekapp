@@ -103,6 +103,13 @@ fun ConversationDetailScreen(
 
   LaunchedEffect(Unit) { viewModel.markAsRead() }
 
+  LaunchedEffect(uiState.errorMsg) {
+    uiState.errorMsg?.let {
+      snackbarHostState.showSnackbar(it)
+      viewModel.clearError()
+    }
+  }
+
   Scaffold(
       modifier = modifier.fillMaxSize().testTag(ConversationDetailScreenTestTags.SCREEN),
       topBar = {
@@ -126,8 +133,17 @@ fun ConversationDetailScreen(
       bottomBar = {
         Column(modifier = Modifier.fillMaxWidth()) {
           selectedFileUri.value?.let { uri ->
+            val selectedFileName =
+                remember(uri) {
+                  context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                    val nameIndex =
+                        cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                    cursor.moveToFirst()
+                    cursor.getString(nameIndex)
+                  } ?: "Unknown file"
+                }
             Text(
-                text = "Selected file: ${uri.lastPathSegment ?: "Unknown"}",
+                text = "Selected file: $selectedFileName",
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.xs))
           }
