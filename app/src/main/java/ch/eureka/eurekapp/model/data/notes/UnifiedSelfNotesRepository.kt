@@ -8,14 +8,22 @@ import android.util.Log
 import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.prefs.UserPreferencesRepository
 import ch.eureka.eurekapp.model.database.MessageDao
+import ch.eureka.eurekapp.model.database.entities.MessageEntity
 import ch.eureka.eurekapp.model.database.toDomainModel
 import ch.eureka.eurekapp.model.database.toEntity
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
@@ -38,6 +46,13 @@ class UnifiedSelfNotesRepository(
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : SelfNotesRepository {
 
+  // Scope for background sync operations (independent of UI lifecycle)
+  private val repositoryScope = CoroutineScope(SupervisorJob() + dispatcher)
+
+  init {
+    startObservingRemoteNotes()
+  }
+
   private fun getCurrentUserId(): String {
     return auth.currentUser?.uid ?: throw IllegalStateException("User must be authenticated")
   }
@@ -48,6 +63,71 @@ class UnifiedSelfNotesRepository(
     val network = connectivityManager.activeNetwork ?: return false
     val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
     return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+  }
+
+  /**
+   * Starts observing remote Firestore notes when Cloud Mode is enabled. This ensures that notes
+   * from other devices (or restored notes) are synced down to Local DB.
+   */
+  @OptIn(ExperimentalCoroutinesApi::class)
+  private fun startObservingRemoteNotes() {
+    repositoryScope.launch {
+      userPreferences.isCloudStorageEnabled
+          .flatMapLatest { isCloudEnabled ->
+            if (isCloudEnabled && auth.currentUser != null) {
+              firestoreRepo.getNotes()
+            } else {
+              emptyFlow()
+            }
+          }
+          .collectLatest { remoteNotes -> saveRemoteNotesLocally(remoteNotes) }
+    }
+  }
+
+  /**
+   * Saves a list of notes fetched from the remote source (Firestore) into the local database.
+   *
+   * This function implements a conflict resolution strategy where **Local Edits Win**. It checks
+   * for any local notes that are currently pending sync (i.e., user has edited them but they
+   * haven't been uploaded yet) and ensures they are NOT overwritten by the incoming cloud data.
+   *
+   * @param remoteNotes The list of notes retrieved from Firestore.
+   */
+  private fun saveRemoteNotesLocally(remoteNotes: List<Message>) {
+    if (remoteNotes.isEmpty()) return
+
+    try {
+      val userId = getCurrentUserId()
+
+      val pendingIds = localDao.getPendingSyncMessageIds(userId).toSet()
+
+      val notesToUpsert = ArrayList<MessageEntity>()
+
+      for (remoteMessage in remoteNotes) {
+        if (remoteMessage.messageID in pendingIds) continue
+
+        val existingEntity = localDao.getMessageById(remoteMessage.messageID, userId)
+
+        val entity =
+            if (existingEntity != null) {
+              remoteMessage
+                  .toEntity()
+                  .copy(
+                      localId = existingEntity.localId,
+                      isPendingSync = false,
+                      isPrivacyLocalOnly = false)
+            } else {
+              remoteMessage.toEntity().copy(isPendingSync = false, isPrivacyLocalOnly = false)
+            }
+        notesToUpsert.add(entity)
+      }
+
+      if (notesToUpsert.isNotEmpty()) {
+        localDao.insertMessages(notesToUpsert)
+      }
+    } catch (e: Exception) {
+      Log.e("UnifiedRepo", "Error syncing down remote notes", e)
+    }
   }
 
   override fun getNotes(limit: Int): Flow<List<Message>> {
@@ -88,7 +168,7 @@ class UnifiedSelfNotesRepository(
           // Determine if we need to sync this update to cloud
           val isCloudNote = !existingEntity.isPrivacyLocalOnly
 
-          // If it is a cloud note, we mark it pending sync in case the network call fails below
+          // Update Locally
           localDao.updateMessageText(messageId, userId, newText, isPendingSync = isCloudNote)
 
           // Update Cloud (if applicable and online)
@@ -99,14 +179,12 @@ class UnifiedSelfNotesRepository(
                 localDao.markAsSynced(messageId, userId)
               } else {
                 Log.e(
-                    "UnifiedSelfNotesRepository",
+                    "UnifiedRepo",
                     "Cloud update failed, note remains pending sync",
                     cloudResult.exceptionOrNull())
               }
             } else {
-              Log.d(
-                  "UnifiedSelfNotesRepository",
-                  "Offline: Note update stored locally, pending sync.")
+              Log.d("UnifiedRepo", "Offline: Note update stored locally, pending sync.")
             }
           }
           Result.success(Unit)
@@ -189,13 +267,31 @@ class UnifiedSelfNotesRepository(
         userPreferences.setCloudStorageEnabled(enableCloud)
 
         var syncedCount = 0
+        val userId = getCurrentUserId()
+
         if (enableCloud) {
-          val userId = getCurrentUserId()
-          // If switching to Cloud, mark all existing local private notes as "Ready for Sync"
           localDao.makeAllMessagesPublicForUser(userId)
-          // Trigger a sync and return the count
           if (isInternetAvailable()) {
             syncedCount = syncPendingNotes()
+          }
+        } else {
+          if (isInternetAvailable()) {
+            try {
+              val cloudNotes = firestoreRepo.getNotes().first()
+              cloudNotes.forEach { note -> firestoreRepo.deleteNote(note.messageID) }
+              Log.d(
+                  "UnifiedSelfNotesRepository",
+                  "Deleted ${cloudNotes.size} notes from cloud due to local switch.")
+            } catch (e: Exception) {
+              Log.e("UnifiedSelfNotesRepository", "Failed to clear cloud notes", e)
+            }
+          }
+
+          val localEntities = localDao.getMessagesForUser(userId).first()
+          val privateEntities =
+              localEntities.map { it.copy(isPrivacyLocalOnly = true, isPendingSync = false) }
+          if (privateEntities.isNotEmpty()) {
+            localDao.insertMessages(privateEntities)
           }
         }
         syncedCount

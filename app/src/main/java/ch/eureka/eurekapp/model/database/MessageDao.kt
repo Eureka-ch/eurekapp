@@ -32,12 +32,19 @@ interface MessageDao {
   fun getMessageById(messageId: String, userId: String): MessageEntity?
 
   /**
-   * Inserts a message. Blocking call (Run on Dispatchers.IO).
-   * * @param note The message entity to insert.
+   * Inserts a single message.
    *
+   * @param note The message entity to insert.
    * @return The row ID.
    */
   @Insert(onConflict = OnConflictStrategy.REPLACE) fun insertMessage(note: MessageEntity): Long
+
+  /**
+   * Inserts a list of messages efficiently.
+   *
+   * @param notes The list of message entities to insert.
+   */
+  @Insert(onConflict = OnConflictStrategy.REPLACE) fun insertMessages(notes: List<MessageEntity>)
 
   /**
    * Updates the text of an existing message.
@@ -52,9 +59,9 @@ interface MessageDao {
   fun updateMessageText(messageId: String, userId: String, newText: String, isPendingSync: Boolean)
 
   /**
-   * Deletes a message. Blocking call (Run on Dispatchers.IO).
-   * * @param messageId The ID of the message to delete.
+   * Deletes a message.
    *
+   * @param messageId The ID of the message to delete.
    * @param userId The ID of the user.
    * @return The number of rows deleted.
    */
@@ -62,7 +69,7 @@ interface MessageDao {
   fun deleteMessage(messageId: String, userId: String): Int
 
   /**
-   * Gets pending sync messages. Blocking call (Run on Dispatchers.IO).
+   * Gets pending sync messages.
    *
    * @param userId The ID of the user.
    * @return List of pending messages.
@@ -72,7 +79,17 @@ interface MessageDao {
   fun getPendingSyncMessages(userId: String): List<MessageEntity>
 
   /**
-   * Marks a specific message as synced. Blocking call (Run on Dispatchers.IO).
+   * Gets the IDs of all messages that are currently pending sync. Used to prevent overwriting local
+   * edits with incoming cloud data.
+   *
+   * @param userId The ID of the user.
+   * @return List of message IDs.
+   */
+  @Query("SELECT messageId FROM local_notes WHERE senderId = :userId AND isPendingSync = 1")
+  fun getPendingSyncMessageIds(userId: String): List<String>
+
+  /**
+   * Marks a specific message as synced.
    *
    * @param messageId The ID of the message.
    * @param userId The ID of the user.
@@ -83,8 +100,7 @@ interface MessageDao {
   fun markAsSynced(messageId: String, userId: String): Int
 
   /**
-   * Updates all local-only notes to be ready for cloud upload. Blocking call (Run on
-   * Dispatchers.IO).
+   * Updates all local-only notes to be ready for cloud upload.
    *
    * @param userId The ID of the user.
    * @return Number of rows updated.
