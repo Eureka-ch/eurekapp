@@ -34,6 +34,10 @@ import kotlinx.coroutines.tasks.await
  *   null if showing all.
  * @property filterActivityType The currently active activity type filter (e.g. CREATED, UPDATED),
  *   or null if showing all.
+ * @property searchQuery The current search query for filtering activities.
+ * @property readActivityIds Set of activity IDs that have been marked as read.
+ * @property groupByProject Whether to group activities by project.
+ * @property isRefreshing Whether the feed is being refreshed (pull-to-refresh).
  * @property isCompactMode True if UI should use compact mode, false otherwise.
  */
 data class ActivityFeedUIState(
@@ -44,6 +48,10 @@ data class ActivityFeedUIState(
     val errorMsg: String? = null,
     val filterEntityType: EntityType? = null,
     val filterActivityType: ActivityType? = null,
+    val searchQuery: String = "",
+    val readActivityIds: Set<String> = emptySet(),
+    val groupByProject: Boolean = false,
+    val isRefreshing: Boolean = false,
     val isCompactMode: Boolean = false
 )
 
@@ -133,13 +141,13 @@ class ActivityFeedViewModel(
             try {
               val enriched = enrichActivitiesWithUserNames(rawActivities)
               _uiState.update { state ->
-                // Apply current filter to new data
-                val filtered =
-                    if (state.filterEntityType != null) {
-                      filterList(enriched, state.filterEntityType)
-                    } else {
-                      enriched
-                    }
+                // Apply current filters to new data
+                val filtered = applyAllFilters(
+                    enriched,
+                    state.filterEntityType,
+                    state.filterActivityType,
+                    state.searchQuery
+                )
                 val groupedByDate = groupActivitiesByDate(filtered)
                 state.copy(
                     isLoading = false,
@@ -155,14 +163,14 @@ class ActivityFeedViewModel(
   }
 
   /**
-   * Applies a filter to the activity feed.
+   * Applies an entity type filter to the activity feed.
    *
    * @param entityType The type of entity to filter by (e.g., [EntityType.MEETING] or
    *   [EntityType.PROJECT]).
    */
-  fun applyFilter(entityType: EntityType) {
+  fun applyEntityTypeFilter(entityType: EntityType) {
     _uiState.update { state ->
-      val filtered = filterList(state.allActivities, entityType)
+      val filtered = applyAllFilters(state.allActivities, entityType, state.filterActivityType, state.searchQuery)
       val groupedByDate = groupActivitiesByDate(filtered)
       state.copy(
           filterEntityType = entityType, activities = filtered, activitiesByDate = groupedByDate)
@@ -170,16 +178,123 @@ class ActivityFeedViewModel(
     if (_uiState.value.allActivities.isEmpty()) loadActivities()
   }
 
-  /** Clears filters to show everything. */
+  /**
+   * Applies an activity type filter to the activity feed.
+   *
+   * @param activityType The type of activity to filter by (e.g., [ActivityType.CREATED]).
+   */
+  fun applyActivityTypeFilter(activityType: ActivityType?) {
+    _uiState.update { state ->
+      val filtered = applyAllFilters(state.allActivities, state.filterEntityType, activityType, state.searchQuery)
+      val groupedByDate = groupActivitiesByDate(filtered)
+      state.copy(
+          filterActivityType = activityType, activities = filtered, activitiesByDate = groupedByDate)
+    }
+  }
+
+  /**
+   * Applies a search query to filter activities.
+   *
+   * @param query The search query string.
+   */
+  fun applySearch(query: String) {
+    _uiState.update { state ->
+      val filtered = applyAllFilters(state.allActivities, state.filterEntityType, state.filterActivityType, query)
+      val groupedByDate = groupActivitiesByDate(filtered)
+      state.copy(
+          searchQuery = query, activities = filtered, activitiesByDate = groupedByDate)
+    }
+  }
+
+  /** Clears all filters to show nothing (user must select a filter). */
   fun clearFilters() {
     _uiState.update { state ->
-      val groupedByDate = groupActivitiesByDate(state.allActivities)
       state.copy(
           filterEntityType = null,
-          activities = state.allActivities,
-          activitiesByDate = groupedByDate)
+          filterActivityType = null,
+          searchQuery = "",
+          activities = emptyList(),
+          activitiesByDate = emptyMap())
     }
-    if (_uiState.value.allActivities.isEmpty()) loadActivities()
+  }
+
+  /**
+   * Marks an activity as read.
+   *
+   * @param activityId The ID of the activity to mark as read.
+   */
+  fun markAsRead(activityId: String) {
+    _uiState.update { state ->
+      state.copy(readActivityIds = state.readActivityIds + activityId)
+    }
+  }
+
+  /**
+   * Marks all currently visible activities as read.
+   */
+  fun markAllAsRead() {
+    _uiState.update { state ->
+      val allActivityIds = state.activities.map { it.activityId }.toSet()
+      state.copy(readActivityIds = state.readActivityIds + allActivityIds)
+    }
+  }
+
+  /**
+   * Toggles project grouping mode.
+   */
+  fun toggleGroupByProject() {
+    _uiState.update { state ->
+      state.copy(groupByProject = !state.groupByProject)
+    }
+  }
+
+  /**
+   * Refreshes the activity feed (for pull-to-refresh).
+   */
+  fun refresh() {
+    _uiState.update { it.copy(isRefreshing = true) }
+    loadActivities()
+    _uiState.update { it.copy(isRefreshing = false) }
+  }
+
+  /**
+   * Applies all active filters to a list of activities.
+   */
+  private fun applyAllFilters(
+      list: List<Activity>,
+      entityType: EntityType?,
+      activityType: ActivityType?,
+      query: String
+  ): List<Activity> {
+    var filtered = list
+
+    // Apply entity type filter
+    if (entityType != null) {
+      filtered = filtered.filter { activity ->
+        when (entityType) {
+          EntityType.PROJECT ->
+              activity.entityType == EntityType.PROJECT || activity.entityType == EntityType.MEMBER
+          EntityType.MEETING -> activity.entityType == EntityType.MEETING
+          else -> activity.entityType == entityType
+        }
+      }
+    }
+
+    // Apply activity type filter
+    if (activityType != null) {
+      filtered = filtered.filter { it.activityType == activityType }
+    }
+
+    // Apply search query
+    if (query.isNotBlank()) {
+      filtered = filtered.filter { activity ->
+        val title = activity.metadata["title"]?.toString() ?: ""
+        val userName = activity.metadata["userName"]?.toString() ?: ""
+        title.contains(query, ignoreCase = true) || userName.contains(query, ignoreCase = true)
+      }
+    }
+
+    return filtered
   }
 
   private fun filterList(list: List<Activity>, type: EntityType): List<Activity> {
