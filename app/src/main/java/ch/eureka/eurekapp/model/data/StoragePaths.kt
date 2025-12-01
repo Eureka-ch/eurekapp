@@ -1,6 +1,5 @@
 /*
- * Portions of this file were co-authored by Claude Code (Anthropic AI assistant).
- * Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5
+ * Portions of this file were co-authored by Claude Code (Anthropic AI assistant), GPT-5, and Grok.
  */
 package ch.eureka.eurekapp.model.data
 
@@ -19,6 +18,7 @@ package ch.eureka.eurekapp.model.data
  * - projects/{projectId}/meetings/{meetingId}/attachments/{filename} - Meeting attachments
  * - projects/{projectId}/meetings/{meetingId}/transcriptions/{filename} - Meeting audio
  *   transcriptions
+ * - conversationFiles/{conversationId}/{filename} - Chat attachments
  */
 object StoragePaths {
   private const val PROFILE_PHOTOS = "profilePhotos"
@@ -28,6 +28,7 @@ object StoragePaths {
   private const val MEETINGS = "meetings"
   private const val ATTACHMENTS = "attachments"
   private const val TRANSCRIPTIONS = "transcriptions"
+  private const val CONVERSATION_FILES = "conversationFiles"
 
   /**
    * Generate storage path for user profile photo.
@@ -91,4 +92,14 @@ object StoragePaths {
    */
   fun meetingTranscriptionAudioPath(projectId: String, meetingId: String, filename: String) =
       "$PROJECTS/$projectId/$MEETINGS/$meetingId/$TRANSCRIPTIONS/$filename"
+
+  /**
+   * Generate storage path for chat attachment files.
+   *
+   * @param conversationId The conversation ID
+   * @param filename The filename to store
+   * @return Storage path: conversationFiles/{conversationId}/{filename}
+   */
+  fun conversationFilePath(conversationId: String, filename: String) =
+      "$CONVERSATION_FILES/$conversationId/$filename"
 }

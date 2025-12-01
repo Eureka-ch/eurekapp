@@ -1,13 +1,26 @@
 package ch.eureka.eurekapp.ui.conversation
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -17,11 +30,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.MessageBubble
@@ -39,6 +55,7 @@ object ConversationDetailScreenTestTags {
 /*
 Co-author: GPT-5 Codex
 Co-author: Claude 4.5 Sonnet
+Co-author: Grok
 */
 
 /**
@@ -60,13 +77,21 @@ fun ConversationDetailScreen(
         remember(conversationId) { ConversationDetailViewModel(conversationId) }
 ) {
   val uiState by viewModel.uiState.collectAsState()
+  val snackbarMessage by viewModel.snackbarMessage.collectAsState()
   val snackbarHostState = remember { SnackbarHostState() }
   val listState = rememberLazyListState()
+  val context = LocalContext.current
+  val selectedFileUri = remember { mutableStateOf<Uri?>(null) }
 
-  LaunchedEffect(uiState.errorMsg) {
-    uiState.errorMsg?.let { errorMsg ->
-      snackbarHostState.showSnackbar(errorMsg)
-      viewModel.clearError()
+  val filePickerLauncher =
+      rememberLauncherForActivityResult(
+          contract = ActivityResultContracts.GetContent(),
+          onResult = { uri -> selectedFileUri.value = uri })
+
+  LaunchedEffect(snackbarMessage) {
+    snackbarMessage?.let {
+      snackbarHostState.showSnackbar(it)
+      viewModel.clearSnackbarMessage()
     }
   }
 
@@ -99,12 +124,38 @@ fun ConversationDetailScreen(
       },
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       bottomBar = {
-        MessageInputField(
-            message = uiState.currentMessage,
-            onMessageChange = viewModel::updateMessage,
-            onSend = { viewModel.sendMessage() },
-            isSending = uiState.isSending,
-            placeholder = "Write a message...")
+        Column(modifier = Modifier.fillMaxWidth()) {
+          selectedFileUri.value?.let { uri ->
+            Text(
+                text = "Selected file: ${uri.lastPathSegment ?: "Unknown"}",
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.xs))
+          }
+          if (uiState.isUploadingFile) {
+            Row(modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.xs)) {
+              CircularProgressIndicator(modifier = Modifier.size(16.dp))
+              Spacer(modifier = Modifier.width(Spacing.sm))
+              Text("Uploading file...", style = MaterialTheme.typography.bodySmall)
+            }
+          }
+          Row {
+            IconButton(onClick = { filePickerLauncher.launch("*/*") }) {
+              Icon(Icons.Default.AttachFile, contentDescription = "Attach file")
+            }
+            MessageInputField(
+                message = uiState.currentMessage,
+                onMessageChange = viewModel::updateMessage,
+                onSend = {
+                  selectedFileUri.value?.let { uri ->
+                    viewModel.sendFileMessage(uri, context)
+                    selectedFileUri.value = null
+                  } ?: viewModel.sendMessage()
+                },
+                isSending = uiState.isSending,
+                placeholder = "Write a message...",
+                canSend = uiState.currentMessage.isNotBlank() || selectedFileUri.value != null)
+          }
+        }
       }) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
           when {
@@ -138,7 +189,11 @@ fun ConversationDetailScreen(
                       MessageBubble(
                           text = message.text,
                           timestamp = message.createdAt,
-                          isFromCurrentUser = message.senderId == viewModel.currentUserId)
+                          isFromCurrentUser = message.senderId == viewModel.currentUserId,
+                          isFile = message.isFile,
+                          fileUrl = message.fileUrl,
+                          onLinkClick = { url -> viewModel.openUrl(url, context) },
+                          onDownloadClick = { url -> viewModel.downloadFile(url, context) })
                     }
                   }
             }
