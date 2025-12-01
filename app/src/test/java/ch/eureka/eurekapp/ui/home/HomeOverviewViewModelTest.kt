@@ -141,6 +141,18 @@ class HomeOverviewViewModelTest {
     assertTrue(state.upcomingTasks.isEmpty())
   }
 
+  @Test
+  fun projectsFlow_catchBlock_handlesError() = runTest {
+    projectRepository.setCurrentUserProjects(flow { throw IllegalStateException("Project error") })
+    userRepository.setCurrentUser(flowOf(null))
+    taskRepository.setCurrentUserTasks(flowOf(emptyList()))
+    val viewModel =
+        HomeOverviewViewModel(
+            taskRepository, projectRepository, meetingRepository, userRepository, connectivityFlow)
+    advanceUntilIdle()
+    assertEquals("Project error", viewModel.uiState.value.error)
+  }
+
   private fun timestamp(timeMillis: Long) = Timestamp(java.util.Date(timeMillis))
 
   companion object {

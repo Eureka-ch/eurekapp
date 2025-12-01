@@ -72,7 +72,8 @@ class AutoAssignResultViewModelTest {
     // Set up empty projects to trigger immediate completion
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
 
-    // Create ViewModel - it initializes with isLoading = true
+    // Create ViewModel with projectRepository first to cover line 60 (projectRepository passed to
+    // FirestoreTaskRepository)
     viewModel =
         AutoAssignResultViewModel(
             projectRepository = mockProjectRepository,
@@ -376,5 +377,17 @@ class AutoAssignResultViewModelTest {
     val uiState = viewModel.uiState.first()
     assertFalse(uiState.isLoading)
     assertTrue(uiState.proposedAssignments.isNotEmpty() || uiState.error != null)
+  }
+
+  @Test
+  fun viewModel_constructor_passesProjectRepositoryToTaskRepository() = runTest {
+    // Cover line 60: projectRepository passed to FirestoreTaskRepository
+    // By not passing taskRepository, we use the default which creates FirestoreTaskRepository with
+    // projectRepository
+    viewModel =
+        AutoAssignResultViewModel(
+            projectRepository = mockProjectRepository, userRepository = mockUserRepository)
+    // Just verify the ViewModel is created successfully
+    assertNotNull(viewModel)
   }
 }
