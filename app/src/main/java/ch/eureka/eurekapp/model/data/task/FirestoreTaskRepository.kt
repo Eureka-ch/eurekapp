@@ -1,6 +1,9 @@
 package ch.eureka.eurekapp.model.data.task
 
 import ch.eureka.eurekapp.model.data.FirestorePaths
+import ch.eureka.eurekapp.model.data.activity.ActivityLogger
+import ch.eureka.eurekapp.model.data.activity.ActivityType
+import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.model.data.template.field.serialization.FirestoreConverters
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -84,10 +87,35 @@ class FirestoreTaskRepository(
         .document(task.taskID)
         .set(FirestoreConverters.taskToMap(task))
         .await()
+
+    // Log creation activity
+    ActivityLogger.logActivity(
+        projectId = task.projectId,
+        activityType = ActivityType.CREATED,
+        entityType = EntityType.TASK,
+        entityId = task.taskID,
+        userId = task.createdBy,
+        metadata = mapOf(
+            "title" to task.title,
+            "status" to task.status.name
+        )
+    )
+
     task.taskID
   }
 
   override suspend fun updateTask(task: Task): Result<Unit> = runCatching {
+    // Fetch old task to detect status changes
+    val oldTaskDoc = firestore
+        .collection(FirestorePaths.PROJECTS)
+        .document(task.projectId)
+        .collection(FirestorePaths.TASKS)
+        .document(task.taskID)
+        .get()
+        .await()
+    val oldTask = parseSnapshot(oldTaskDoc.data)
+
+    // Perform the update
     firestore
         .collection(FirestorePaths.PROJECTS)
         .document(task.projectId)
@@ -95,9 +123,50 @@ class FirestoreTaskRepository(
         .document(task.taskID)
         .set(FirestoreConverters.taskToMap(task))
         .await()
+
+    // Determine activity type and metadata based on what changed
+    val currentUserId = auth.currentUser?.uid ?: task.createdBy
+
+    if (oldTask != null && oldTask.status != task.status) {
+      // Status changed - use STATUS_CHANGED
+      ActivityLogger.logActivity(
+          projectId = task.projectId,
+          activityType = ActivityType.STATUS_CHANGED,
+          entityType = EntityType.TASK,
+          entityId = task.taskID,
+          userId = currentUserId,
+          metadata = mapOf(
+              "title" to task.title,
+              "oldStatus" to oldTask.status.name,
+              "newStatus" to task.status.name
+          )
+      )
+    } else {
+      // Other fields changed - use UPDATED
+      ActivityLogger.logActivity(
+          projectId = task.projectId,
+          activityType = ActivityType.UPDATED,
+          entityType = EntityType.TASK,
+          entityId = task.taskID,
+          userId = currentUserId,
+          metadata = mapOf("title" to task.title)
+      )
+    }
   }
 
   override suspend fun deleteTask(projectId: String, taskId: String): Result<Unit> = runCatching {
+    // Fetch task for metadata before deletion
+    val taskDoc = firestore
+        .collection(FirestorePaths.PROJECTS)
+        .document(projectId)
+        .collection(FirestorePaths.TASKS)
+        .document(taskId)
+        .get()
+        .await()
+    val task = parseSnapshot(taskDoc.data)
+    val taskTitle = task?.title ?: "Unknown Task"
+
+    // Perform deletion
     firestore
         .collection(FirestorePaths.PROJECTS)
         .document(projectId)
@@ -105,10 +174,33 @@ class FirestoreTaskRepository(
         .document(taskId)
         .delete()
         .await()
+
+    // Log deletion activity
+    val currentUserId = auth.currentUser?.uid ?: ""
+    ActivityLogger.logActivity(
+        projectId = projectId,
+        activityType = ActivityType.DELETED,
+        entityType = EntityType.TASK,
+        entityId = taskId,
+        userId = currentUserId,
+        metadata = mapOf("title" to taskTitle)
+    )
   }
 
   override suspend fun assignUser(projectId: String, taskId: String, userId: String): Result<Unit> =
       runCatching {
+        // Fetch task for metadata
+        val taskDoc = firestore
+            .collection(FirestorePaths.PROJECTS)
+            .document(projectId)
+            .collection(FirestorePaths.TASKS)
+            .document(taskId)
+            .get()
+            .await()
+        val task = parseSnapshot(taskDoc.data)
+        val taskTitle = task?.title ?: "Unknown Task"
+
+        // Perform assignment
         firestore
             .collection(FirestorePaths.PROJECTS)
             .document(projectId)
@@ -116,6 +208,20 @@ class FirestoreTaskRepository(
             .document(taskId)
             .update("assignedUserIds", FieldValue.arrayUnion(userId))
             .await()
+
+        // Log assignment activity
+        val currentUserId = auth.currentUser?.uid ?: userId
+        ActivityLogger.logActivity(
+            projectId = projectId,
+            activityType = ActivityType.ASSIGNED,
+            entityType = EntityType.TASK,
+            entityId = taskId,
+            userId = currentUserId,
+            metadata = mapOf(
+                "title" to taskTitle,
+                "assigneeId" to userId
+            )
+        )
       }
 
   override suspend fun unassignUser(
@@ -123,6 +229,18 @@ class FirestoreTaskRepository(
       taskId: String,
       userId: String
   ): Result<Unit> = runCatching {
+    // Fetch task for metadata
+    val taskDoc = firestore
+        .collection(FirestorePaths.PROJECTS)
+        .document(projectId)
+        .collection(FirestorePaths.TASKS)
+        .document(taskId)
+        .get()
+        .await()
+    val task = parseSnapshot(taskDoc.data)
+    val taskTitle = task?.title ?: "Unknown Task"
+
+    // Perform unassignment
     firestore
         .collection(FirestorePaths.PROJECTS)
         .document(projectId)
@@ -130,6 +248,20 @@ class FirestoreTaskRepository(
         .document(taskId)
         .update("assignedUserIds", FieldValue.arrayRemove(userId))
         .await()
+
+    // Log unassignment activity
+    val currentUserId = auth.currentUser?.uid ?: userId
+    ActivityLogger.logActivity(
+        projectId = projectId,
+        activityType = ActivityType.UNASSIGNED,
+        entityType = EntityType.TASK,
+        entityId = taskId,
+        userId = currentUserId,
+        metadata = mapOf(
+            "title" to taskTitle,
+            "assigneeId" to userId
+        )
+    )
   }
 
   private fun parseSnapshot(data: Map<String, Any>?): Task? {

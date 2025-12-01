@@ -151,6 +151,17 @@ class FirestoreMeetingRepository(
   }
 
   override suspend fun updateMeeting(meeting: Meeting): Result<Unit> = runCatching {
+    // Fetch old meeting to detect status changes
+    val oldMeetingDoc = firestore
+        .collection(FirestorePaths.PROJECTS)
+        .document(meeting.projectId)
+        .collection(FirestorePaths.MEETINGS)
+        .document(meeting.meetingID)
+        .get()
+        .await()
+    val oldMeeting = oldMeetingDoc.toObject(Meeting::class.java)
+
+    // Perform the update
     firestore
         .collection(FirestorePaths.PROJECTS)
         .document(meeting.projectId)
@@ -162,13 +173,29 @@ class FirestoreMeetingRepository(
     // Log activity to global feed after successful update
     val currentUserId = auth.currentUser?.uid
     if (currentUserId != null) {
-      ActivityLogger.logActivity(
-          projectId = meeting.projectId,
-          activityType = ActivityType.UPDATED,
-          entityType = EntityType.MEETING,
-          entityId = meeting.meetingID,
-          userId = currentUserId,
-          metadata = mapOf("title" to meeting.title))
+      if (oldMeeting != null && oldMeeting.status != meeting.status) {
+        // Status changed - use STATUS_CHANGED
+        ActivityLogger.logActivity(
+            projectId = meeting.projectId,
+            activityType = ActivityType.STATUS_CHANGED,
+            entityType = EntityType.MEETING,
+            entityId = meeting.meetingID,
+            userId = currentUserId,
+            metadata = mapOf(
+                "title" to meeting.title,
+                "oldStatus" to oldMeeting.status.name,
+                "newStatus" to meeting.status.name
+            ))
+      } else {
+        // Other fields changed - use UPDATED
+        ActivityLogger.logActivity(
+            projectId = meeting.projectId,
+            activityType = ActivityType.UPDATED,
+            entityType = EntityType.MEETING,
+            entityId = meeting.meetingID,
+            userId = currentUserId,
+            metadata = mapOf("title" to meeting.title))
+      }
     }
   }
 

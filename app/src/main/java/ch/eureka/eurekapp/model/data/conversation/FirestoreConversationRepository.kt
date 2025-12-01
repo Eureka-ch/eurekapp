@@ -1,6 +1,9 @@
 package ch.eureka.eurekapp.model.data.conversation
 
 import ch.eureka.eurekapp.model.data.FirestorePaths
+import ch.eureka.eurekapp.model.data.activity.ActivityLogger
+import ch.eureka.eurekapp.model.data.activity.ActivityType
+import ch.eureka.eurekapp.model.data.activity.EntityType
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
@@ -113,6 +116,9 @@ class FirestoreConversationRepository(
 
   override suspend fun createConversation(conversation: Conversation): Result<String> =
       runCatching {
+        val currentUserId =
+            auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
+
         val docRef =
             if (conversation.conversationId.isNotEmpty()) {
               firestore
@@ -124,6 +130,37 @@ class FirestoreConversationRepository(
 
         val conversationWithId = conversation.copy(conversationId = docRef.id)
         docRef.set(conversationWithId).await()
+
+        // Log activity to global feed after successful creation
+        if (conversationWithId.projectId.isNotEmpty()) {
+          // Get other member names for metadata
+          val otherMembers = conversationWithId.memberIds.filter { it != currentUserId }
+          val memberNames = otherMembers.mapNotNull { memberId ->
+            try {
+              val userDoc = firestore
+                  .collection(FirestorePaths.USERS)
+                  .document(memberId)
+                  .get()
+                  .await()
+              userDoc.getString("displayName")
+            } catch (e: Exception) {
+              null
+            }
+          }
+
+          ActivityLogger.logActivity(
+              projectId = conversationWithId.projectId,
+              activityType = ActivityType.CREATED,
+              entityType = EntityType.MESSAGE,
+              entityId = docRef.id,
+              userId = currentUserId,
+              metadata = mapOf(
+                  "title" to "Conversation with ${memberNames.joinToString(", ")}",
+                  "conversationId" to docRef.id
+              )
+          )
+        }
+
         docRef.id
       }
 
@@ -183,6 +220,29 @@ class FirestoreConversationRepository(
                 "lastMessagePreview" to text.take(100),
                 "lastMessageSenderId" to currentUserId))
         .await()
+
+    // Log activity to global feed after successful message send
+    val conversationDoc = firestore
+        .collection(FirestorePaths.CONVERSATIONS)
+        .document(conversationId)
+        .get()
+        .await()
+    val conversation = conversationDoc.toObject(Conversation::class.java)
+
+    // Log activity if conversation exists and has a projectId
+    if (conversation != null && conversation.projectId.isNotEmpty()) {
+      ActivityLogger.logActivity(
+          projectId = conversation.projectId,
+          activityType = ActivityType.CREATED,
+          entityType = EntityType.MESSAGE,
+          entityId = message.messageId,
+          userId = currentUserId,
+          metadata = mapOf(
+              "title" to text.take(50),
+              "conversationId" to conversationId
+          )
+      )
+    }
 
     message
   }

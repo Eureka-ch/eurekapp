@@ -1,6 +1,9 @@
 package ch.eureka.eurekapp.model.data.project
 
 import ch.eureka.eurekapp.model.data.FirestorePaths
+import ch.eureka.eurekapp.model.data.activity.ActivityLogger
+import ch.eureka.eurekapp.model.data.activity.ActivityType
+import ch.eureka.eurekapp.model.data.activity.EntityType
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -81,6 +84,16 @@ class FirestoreProjectRepository(
     val memberRef = projectRef.collection("members").document(creatorId)
     memberRef.set(member).await()
 
+    // Log project creation activity
+    ActivityLogger.logActivity(
+        projectId = project.projectId,
+        activityType = ActivityType.CREATED,
+        entityType = EntityType.PROJECT,
+        entityId = project.projectId,
+        userId = creatorId,
+        metadata = mapOf("name" to project.name)
+    )
+
     project.projectId
   }
 
@@ -91,10 +104,45 @@ class FirestoreProjectRepository(
         .document(project.projectId)
         .set(updatedProject)
         .await()
+
+    // Log activity to global feed after successful update
+    val currentUserId = auth.currentUser?.uid
+    if (currentUserId != null) {
+      ActivityLogger.logActivity(
+          projectId = project.projectId,
+          activityType = ActivityType.UPDATED,
+          entityType = EntityType.PROJECT,
+          entityId = project.projectId,
+          userId = currentUserId,
+          metadata = mapOf("name" to project.name)
+      )
+    }
   }
 
   override suspend fun deleteProject(projectId: String): Result<Unit> = runCatching {
+    // Get project name before deletion for activity log
+    val projectSnapshot = firestore
+        .collection(FirestorePaths.PROJECTS)
+        .document(projectId)
+        .get()
+        .await()
+    val projectName = projectSnapshot.toObject(Project::class.java)?.name
+
+    // Perform deletion
     firestore.collection(FirestorePaths.PROJECTS).document(projectId).delete().await()
+
+    // Log activity to global feed after successful deletion
+    val currentUserId = auth.currentUser?.uid
+    if (currentUserId != null && projectName != null) {
+      ActivityLogger.logActivity(
+          projectId = projectId,
+          activityType = ActivityType.DELETED,
+          entityType = EntityType.PROJECT,
+          entityId = projectId,
+          userId = currentUserId,
+          metadata = mapOf("name" to projectName)
+      )
+    }
   }
 
   override fun getMembers(projectId: String): Flow<List<Member>> = callbackFlow {
@@ -132,6 +180,16 @@ class FirestoreProjectRepository(
           batch[projectRef.collection("members").document(userId)] = member
         }
         .await()
+
+    // Log member joining activity
+    ActivityLogger.logActivity(
+        projectId = projectId,
+        activityType = ActivityType.JOINED,
+        entityType = EntityType.MEMBER,
+        entityId = userId,
+        userId = userId,
+        metadata = mapOf("role" to role.name)
+    )
   }
 
   override suspend fun removeMember(projectId: String, userId: String): Result<Unit> = runCatching {
@@ -153,6 +211,18 @@ class FirestoreProjectRepository(
       userId: String,
       role: ProjectRole
   ): Result<Unit> = runCatching {
+    // Fetch old member to get previous role
+    val oldMemberDoc = firestore
+        .collection(FirestorePaths.PROJECTS)
+        .document(projectId)
+        .collection("members")
+        .document(userId)
+        .get()
+        .await()
+    val oldMember = oldMemberDoc.toObject(Member::class.java)
+    val oldRole = oldMember?.role
+
+    // Perform role update
     firestore
         .collection(FirestorePaths.PROJECTS)
         .document(projectId)
@@ -160,5 +230,22 @@ class FirestoreProjectRepository(
         .document(userId)
         .update("role", role.name)
         .await()
+
+    // Log role change activity
+    val currentUserId = auth.currentUser?.uid ?: userId
+    if (oldRole != null) {
+      ActivityLogger.logActivity(
+          projectId = projectId,
+          activityType = ActivityType.ROLE_CHANGED,
+          entityType = EntityType.MEMBER,
+          entityId = userId,
+          userId = currentUserId,
+          metadata = mapOf(
+              "targetUserId" to userId,
+              "oldRole" to oldRole.name,
+              "newRole" to role.name
+          )
+      )
+    }
   }
 }
