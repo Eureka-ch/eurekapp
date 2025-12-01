@@ -19,12 +19,12 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AssignmentTurnedIn
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.AssignmentTurnedIn
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -55,7 +55,7 @@ Co-author: GPT-5 Codex
 object BottomBarNavigationTestTags {
   const val TASKS_SCREEN_BUTTON = "TasksScreenButton"
   const val CONVERSATIONS_SCREEN_BUTTON = "ConversationsScreenButton"
-  const val IDEAS_SCREEN_BUTTON = "IdeasScreenButton"
+  const val PROJECTS_SCREEN_BUTTON = "ProjectsScreenButton"
   const val OVERVIEW_SCREEN_BUTTON = "OverviewScreenButton"
   const val MEETINGS_SCREEN_BUTTON = "MeetingsScreenButton"
   const val NOTES_SCREEN_BUTTON = "NotesScreenButton"
@@ -79,6 +79,14 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
       popUpTo(navigationController.graph.startDestinationId) { saveState = true }
       launchSingleTop = true
       restoreState = true
+    }
+  }
+
+  fun navigateToHome() {
+    navigationController.navigate(Route.HomeOverview) {
+      popUpTo(navigationController.graph.startDestinationId) { saveState = false }
+      launchSingleTop = true
+      restoreState = false
     }
   }
 
@@ -108,12 +116,10 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
         }
       }
 
-  val isIdeasScreenPressed by
+  val isProjectsScreenPressed by
       remember(currentDestination) {
         derivedStateOf {
-          Route.IdeasSection.routes.any { routeClass ->
-            currentDestination?.hierarchy?.any { it.hasRoute(routeClass) } == true
-          }
+          currentDestination?.hierarchy?.any { it.hasRoute(Route.ProjectSelection::class) } ?: false
         }
       }
 
@@ -151,7 +157,7 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
               iconVector = Icons.Outlined.AssignmentTurnedIn,
               pressedIconVector = Icons.Filled.AssignmentTurnedIn,
               isPressed = isTasksPressed)
-          // Conversations tab - between Tasks and Ideas (left of Home)
+          // Conversations tab - between Tasks and Project (left of Home)
           CustomIconButtonComposable(
               modifier =
                   Modifier.weight(1f)
@@ -163,12 +169,12 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
               isPressed = isConversationsScreenPressed)
           CustomIconButtonComposable(
               modifier =
-                  Modifier.weight(1f).testTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON),
-              "Ideas",
-              onClick = { navigateToTab(Route.IdeasSection.Ideas) },
-              iconVector = Icons.Outlined.Lightbulb,
-              pressedIconVector = Icons.Filled.Lightbulb,
-              isPressed = isIdeasScreenPressed)
+                  Modifier.weight(1f).testTag(BottomBarNavigationTestTags.PROJECTS_SCREEN_BUTTON),
+              "Project",
+              onClick = { navigateToTab(Route.ProjectSelection) },
+              iconVector = Icons.Outlined.Folder,
+              pressedIconVector = Icons.Filled.Folder,
+              isPressed = isProjectsScreenPressed)
           Row(
               modifier = Modifier.weight(1f),
               horizontalArrangement = Arrangement.Center,
@@ -178,7 +184,7 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
                       modifier =
                           Modifier.testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
                       isPressed = isHomeScreenPressed,
-                      onClick = { navigateToTab(Route.HomeOverview) })
+                      onClick = { navigateToHome() })
                 }
               }
           CustomIconButtonComposable(

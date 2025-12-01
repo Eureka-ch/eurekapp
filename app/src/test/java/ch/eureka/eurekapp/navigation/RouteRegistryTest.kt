@@ -47,16 +47,6 @@ class RouteRegistryTest {
   }
 
   @Test
-  fun ideasSectionRoutes_containsExpectedRoutes() {
-    val registeredRoutes = Route.IdeasSection.routes
-
-    assertTrue(
-        "IdeasSection should contain Ideas", registeredRoutes.any { it.simpleName == "Ideas" })
-
-    assertEquals("IdeasSection should have 1 route", 1, registeredRoutes.size)
-  }
-
-  @Test
   fun meetingsSectionRoutes_containsExpectedRoutes() {
     val registeredRoutes = Route.MeetingsSection.routes
 
@@ -124,13 +114,6 @@ class RouteRegistryTest {
   }
 
   @Test
-  fun ideasSectionRegistry_isNotEmpty() {
-    assertTrue(
-        "IdeasSection should have at least one route registered",
-        Route.IdeasSection.routes.isNotEmpty())
-  }
-
-  @Test
   fun meetingsSectionRegistry_isNotEmpty() {
     assertTrue(
         "MeetingsSection should have at least one route registered",
@@ -142,7 +125,6 @@ class RouteRegistryTest {
     val allSections =
         mapOf(
             "TasksSection" to Route.TasksSection.routes,
-            "IdeasSection" to Route.IdeasSection.routes,
             "MeetingsSection" to Route.MeetingsSection.routes,
             "ProjectSelectionSection" to Route.ProjectSelectionSection.routes,
             "OverviewProjectSection" to Route.OverviewProjectSection.routes)
