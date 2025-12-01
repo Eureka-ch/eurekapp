@@ -1,4 +1,4 @@
-/* Portions of this file were written with the help of GPT-5 Codex and Gemini. */
+/* Portions of this file were written with the help of Gemini. */
 package ch.eureka.eurekapp.ui.notes
 
 import ch.eureka.eurekapp.model.data.chat.Message
@@ -16,6 +16,8 @@ import ch.eureka.eurekapp.model.data.chat.Message
  * @property isSending Whether a note is currently being sent to Firestore.
  * @property isCloudStorageEnabled Whether the user has opted into Cloud Sync (true) or Local Only
  *   (false).
+ * @property editingMessageId The ID of the message currently being edited, or null if in "Create"
+ *   mode.
  */
 data class SelfNotesUIState(
     val notes: List<Message> = emptyList(),
@@ -23,5 +25,6 @@ data class SelfNotesUIState(
     val errorMsg: String? = null,
     val currentMessage: String = "",
     val isSending: Boolean = false,
-    val isCloudStorageEnabled: Boolean = false
+    val isCloudStorageEnabled: Boolean = false,
+    val editingMessageId: String? = null
 )

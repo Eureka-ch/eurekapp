@@ -9,8 +9,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -72,6 +76,7 @@ fun SelfNotesScreen(modifier: Modifier = Modifier, viewModel: SelfNotesViewModel
     }
   }
 
+  // Scroll to bottom when new notes arrive (only if creating, not necessarily editing)
   LaunchedEffect(uiState.notes.size) {
     if (uiState.notes.isNotEmpty() && !uiState.isLoading) {
       listState.animateScrollToItem(0)
@@ -82,12 +87,19 @@ fun SelfNotesScreen(modifier: Modifier = Modifier, viewModel: SelfNotesViewModel
       modifier = modifier.fillMaxSize().testTag(SelfNotesScreenTestTags.SCREEN),
       topBar = {
         TopAppBar(
-            title = { Text("Notes") },
+            title = { Text(if (uiState.editingMessageId != null) "Editing Note" else "Notes") },
             colors =
                 TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
                     actionIconContentColor = MaterialTheme.colorScheme.onPrimary),
+            navigationIcon = {
+              if (uiState.editingMessageId != null) {
+                IconButton(onClick = { viewModel.cancelEditing() }) {
+                  Icon(Icons.Default.Close, contentDescription = "Cancel Edit")
+                }
+              }
+            },
             actions = {
               Row(
                   verticalAlignment = Alignment.CenterVertically,
@@ -117,7 +129,9 @@ fun SelfNotesScreen(modifier: Modifier = Modifier, viewModel: SelfNotesViewModel
             onMessageChange = viewModel::updateMessage,
             onSend = { viewModel.sendNote() },
             isSending = uiState.isSending,
-            placeholder = "Write a note to yourself...")
+            placeholder =
+                if (uiState.editingMessageId != null) "Edit your note..."
+                else "Write a note to yourself...")
       }) { paddingValues ->
         ScreenWithHelp(
             helpContext = HelpContext.NOTES,
@@ -149,9 +163,12 @@ fun SelfNotesScreen(modifier: Modifier = Modifier, viewModel: SelfNotesViewModel
                                 .padding(horizontal = Spacing.md)
                                 .testTag(SelfNotesScreenTestTags.NOTES_LIST),
                         reverseLayout = true,
-                        verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                        verticalArrangement = Arrangement.Center) {
                           items(items = uiState.notes, key = { it.messageID }) { message ->
-                            SelfNoteMessageBubble(message = message)
+                            SelfNoteMessageBubble(
+                                message = message,
+                                onEditClick = { viewModel.startEditing(message) },
+                                onDeleteClick = { viewModel.deleteNote(message) })
                           }
                         }
                   }

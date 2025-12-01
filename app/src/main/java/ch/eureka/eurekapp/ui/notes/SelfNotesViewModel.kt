@@ -50,8 +50,10 @@ constructor(
   private val _currentMessage = MutableStateFlow("")
   private val _isSending = MutableStateFlow(false)
   private val _infoMsg = MutableStateFlow<String?>(null)
+  private val _editingMessageId = MutableStateFlow<String?>(null)
 
   /** The single source of truth for the UI state. */
+  @Suppress("UNCHECKED_CAST") // Safe casts for combine array
   val uiState: StateFlow<SelfNotesUIState> =
       combine(
               repository
@@ -61,12 +63,15 @@ constructor(
               _currentMessage,
               _isSending,
               _infoMsg,
-              userPrefs.isCloudStorageEnabled) {
-                  notesState,
-                  currentMessage,
-                  isSending,
-                  errorMsg,
-                  isCloud ->
+              userPrefs.isCloudStorageEnabled,
+              _editingMessageId) { args ->
+                val notesState = args[0] as NotesLoadState
+                val currentMessage = args[1] as String
+                val isSending = args[2] as Boolean
+                val errorMsg = args[3] as String?
+                val isCloud = args[4] as Boolean
+                val editingId = args[5] as String?
+
                 val notes =
                     when (notesState) {
                       is NotesLoadState.Success -> notesState.notes
@@ -86,7 +91,8 @@ constructor(
                     errorMsg = displayedError,
                     currentMessage = currentMessage,
                     isSending = isSending,
-                    isCloudStorageEnabled = isCloud)
+                    isCloudStorageEnabled = isCloud,
+                    editingMessageId = editingId)
               }
           .stateIn(
               scope = viewModelScope,
@@ -141,39 +147,78 @@ constructor(
     _currentMessage.value = text
   }
 
-  /** Creates and saves a new note. */
+  /**
+   * Enters "Edit Mode" for a specific note. Populates the input field with the note's text.
+   *
+   * @param note The note to edit.
+   */
+  fun startEditing(note: Message) {
+    _editingMessageId.value = note.messageID
+    _currentMessage.value = note.text
+  }
+
+  /** Cancels the current edit operation and clears the input. */
+  fun cancelEditing() {
+    _editingMessageId.value = null
+    _currentMessage.value = ""
+  }
+
+  /**
+   * Deletes a note.
+   *
+   * @param note The note to delete.
+   */
+  fun deleteNote(note: Message) {
+    viewModelScope.launch(dispatcher) {
+      repository.deleteNote(note.messageID).onFailure { e ->
+        _infoMsg.value = "Failed to delete: ${e.message}"
+      }
+      if (_editingMessageId.value == note.messageID) {
+        cancelEditing()
+      }
+    }
+  }
+
+  /** Creates and saves a new note, OR updates the existing note if in edit mode. */
   fun sendNote() {
-    val currentMessage = _currentMessage.value.trim()
-    if (currentMessage.isEmpty()) return
-    if (currentMessage.length > 5000) {
+    val currentMessageText = _currentMessage.value.trim()
+    if (currentMessageText.isEmpty()) return
+    if (currentMessageText.length > 5000) {
       _infoMsg.value = "Note too long (max 5000 characters)"
       return
     }
 
     _isSending.value = true
+    val editingId = _editingMessageId.value
 
     viewModelScope.launch(dispatcher) {
-      val message =
-          Message(
-              messageID = IdGenerator.generateMessageId(),
-              text = currentMessage,
-              createdAt = Timestamp.now())
+      val result =
+          if (editingId != null) {
+            repository.updateNote(editingId, currentMessageText)
+          } else {
+            val message =
+                Message(
+                    messageID = IdGenerator.generateMessageId(),
+                    text = currentMessageText,
+                    createdAt = Timestamp.now())
+            repository.createNote(message).map { Unit }
+          }
 
-      repository
-          .createNote(message)
-          .fold(
-              onSuccess = {
-                _currentMessage.value = ""
-                _isSending.value = false
-                _infoMsg.value = null
-                if (uiState.value.isCloudStorageEnabled) {
-                  scheduleWorker()
-                }
-              },
-              onFailure = { error ->
-                _isSending.value = false
-                _infoMsg.value = "Error: ${error.message}"
-              })
+      result.fold(
+          onSuccess = {
+            _currentMessage.value = ""
+            _editingMessageId.value = null
+            _isSending.value = false
+            _infoMsg.value = null
+
+            if (uiState.value.isCloudStorageEnabled) {
+              scheduleWorker()
+            }
+          },
+          onFailure = { error ->
+            _isSending.value = false
+            _infoMsg.value = "Error: ${error.message}"
+          })
     }
   }
 
