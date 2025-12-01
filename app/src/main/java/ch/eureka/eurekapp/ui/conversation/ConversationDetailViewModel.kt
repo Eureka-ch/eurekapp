@@ -210,6 +210,17 @@ open class ConversationDetailViewModel(
             cursor.getString(nameIndex)
           } ?: "file"
 
+      // Check file size
+      val fileSize =
+          context.contentResolver.openFileDescriptor(fileUri, "r")?.use { it.statSize } ?: 0L
+      val maxSize = 100L * 1024L * 1024L // 100 MB
+      if (fileSize > maxSize) {
+        _isSending.value = false
+        _isUploadingFile.value = false
+        _errorMsg.value = "File too large (max 100 MB)"
+        return@launch
+      }
+
       // Split filename into name and extension
       val lastDotIndex = originalFilename.lastIndexOf('.')
       val (baseName, extension) =
@@ -258,9 +269,16 @@ open class ConversationDetailViewModel(
   }
 
   fun downloadFile(url: String, context: Context) {
-    val fileName = url.substringAfterLast("/")
+    // Extract filename from Firebase Storage URL by decoding the path
+    val fileName =
+        url.substringAfter("/o/")
+            .substringBefore("?")
+            .let { java.net.URLDecoder.decode(it, "UTF-8") }
+            .substringAfterLast("/")
+    // Remove timestamp from display name (format: name_timestamp.ext)
+    val displayName = fileName.replace(Regex("_\\d{13}(?=\\.[^.]+$|$)"), "")
     val request = DownloadManager.Request(url.toUri())
-    request.setTitle(fileName)
+    request.setTitle(displayName)
     request.setDescription("Downloading file from chat")
     request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
     request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
