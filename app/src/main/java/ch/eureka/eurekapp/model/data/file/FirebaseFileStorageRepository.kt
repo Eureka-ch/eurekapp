@@ -38,7 +38,7 @@ class FirebaseFileStorageRepository(
     val contentType = StorageHelpers.getContentTypeFromPath(storagePath)
     val metadata = StorageMetadata.Builder().setContentType(contentType).build()
 
-    ref.putFile(fileUri, metadata).await()
+    val uploadTask = ref.putFile(fileUri, metadata).await()
     val downloadUrl = ref.downloadUrl.await().toString()
 
     val projectId = extractProjectIdFromPath(storagePath)
@@ -46,13 +46,18 @@ class FirebaseFileStorageRepository(
 
     // Only log activity for project-related files
     if (projectId != null && fileName.isNotBlank()) {
+      val fileSize = uploadTask.metadata?.sizeBytes ?: 0L
       ActivityLogger.logActivity(
           projectId = projectId,
           activityType = ActivityType.UPLOADED,
           entityType = EntityType.FILE,
           entityId = downloadUrl,
           userId = currentUser.uid,
-          metadata = mapOf("title" to fileName))
+          metadata = mapOf(
+              "title" to fileName,
+              "size" to fileSize,
+              "type" to contentType
+          ))
     } else {
       android.util.Log.d(
           "FirebaseFileStorage", "Skipping activity log for non-project file: $storagePath")
