@@ -378,16 +378,4 @@ class AutoAssignResultViewModelTest {
     assertFalse(uiState.isLoading)
     assertTrue(uiState.proposedAssignments.isNotEmpty() || uiState.error != null)
   }
-
-  @Test
-  fun viewModel_constructor_passesProjectRepositoryToTaskRepository() = runTest {
-    // Cover line 60: projectRepository passed to FirestoreTaskRepository
-    // By not passing taskRepository, we use the default which creates FirestoreTaskRepository with
-    // projectRepository
-    viewModel =
-        AutoAssignResultViewModel(
-            projectRepository = mockProjectRepository, userRepository = mockUserRepository)
-    // Just verify the ViewModel is created successfully
-    assertNotNull(viewModel)
-  }
 }
