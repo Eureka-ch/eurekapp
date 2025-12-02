@@ -89,3 +89,36 @@ fun formatDateHeader(timestamp: Long): String {
     }
   }
 }
+
+/**
+ * Convert EntityType to display string.
+ */
+fun EntityType.toDisplayString() =
+    when (this) {
+      EntityType.MEETING -> "Meetings"
+      EntityType.MESSAGE -> "Messages"
+      EntityType.FILE -> "Files"
+      EntityType.TASK -> "Tasks"
+      EntityType.PROJECT -> "Projects"
+      EntityType.MEMBER -> "Members"
+    }
+
+/**
+ * Convert ActivityType to display string.
+ */
+fun ActivityType.toDisplayString() =
+    when (this) {
+      ActivityType.CREATED -> "Created"
+      ActivityType.UPDATED -> "Updated"
+      ActivityType.DELETED -> "Deleted"
+      ActivityType.UPLOADED -> "Uploaded"
+      ActivityType.SHARED -> "Shared"
+      ActivityType.COMMENTED -> "Commented"
+      ActivityType.STATUS_CHANGED -> "Status Changed"
+      ActivityType.JOINED -> "Joined"
+      ActivityType.LEFT -> "Left"
+      ActivityType.ASSIGNED -> "Assigned"
+      ActivityType.UNASSIGNED -> "Unassigned"
+      ActivityType.ROLE_CHANGED -> "Role Changed"
+      ActivityType.DOWNLOADED -> "Downloaded"
+    }
