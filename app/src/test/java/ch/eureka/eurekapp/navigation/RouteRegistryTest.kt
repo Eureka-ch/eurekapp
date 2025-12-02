@@ -11,8 +11,8 @@ import org.junit.Test
  * The registries are now automatic - when you add a new route to a section, it's automatically
  * included via Kotlin's built-in sealedSubclasses property.
  *
- * Co-Authored-By: Claude <noreply@anthropic.com> Note :This file was partially written by ChatGPT
- * (GPT-5) Co-author : GPT-5
+ * Portions of this code were generated with the help of Claude <noreply@anthropic.com> and ChatGPT
+ * (GPT-5). Co-Authored-By: Claude Sonnet 4.5
  */
 class RouteRegistryTest {
 
@@ -41,9 +41,12 @@ class RouteRegistryTest {
     assertTrue(
         "TasksSection should contain FilesManagement",
         registeredRoutes.any { it.simpleName == "FilesManagement" })
+    assertTrue(
+        "TasksSection should contain CreateTemplate",
+        registeredRoutes.any { it.simpleName == "CreateTemplate" })
 
-    // Verify we have the expected number of routes (7 as of now)
-    assertEquals("TasksSection should have 7 routes", 7, registeredRoutes.size)
+    // Verify we have the expected number of routes (8 as of now)
+    assertEquals("TasksSection should have 8 routes", 8, registeredRoutes.size)
   }
 
   @Test

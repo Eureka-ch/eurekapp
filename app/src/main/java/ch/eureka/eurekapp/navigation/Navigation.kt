@@ -1,4 +1,7 @@
-// This code was partially written by GPT-5, and Grok
+/*
+ * This code was partially written by GPT-5 and Grok.
+ * Co-Authored-By: Claude Sonnet 4.5
+ */
 package ch.eureka.eurekapp.navigation
 
 import android.util.Log
@@ -51,6 +54,8 @@ import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenConfig
 import ch.eureka.eurekapp.ui.notes.SelfNotesScreen
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
+import ch.eureka.eurekapp.ui.templates.CreateTemplateScreen
+import ch.eureka.eurekapp.ui.templates.CreateTemplateViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlin.reflect.KClass
@@ -91,6 +96,8 @@ sealed interface Route {
 
     @Serializable
     data class TaskDependence(val projectId: String, val taskId: String) : TasksSection
+
+    @Serializable data class CreateTemplate(val projectId: String) : TasksSection
   }
 
   sealed interface MeetingsSection : Route {
@@ -323,6 +330,23 @@ fun NavigationMenu(
                     projectId = dependenceRoute.projectId,
                     taskId = dependenceRoute.taskId,
                     navigationController = navigationController)
+              }
+
+              composable<Route.TasksSection.CreateTemplate> { backStackEntry ->
+                val route = backStackEntry.toRoute<Route.TasksSection.CreateTemplate>()
+                val templateViewModel =
+                    CreateTemplateViewModel(
+                        repository = RepositoriesProvider.taskTemplateRepository,
+                        initialProjectId = route.projectId)
+                CreateTemplateScreen(
+                    onNavigateBack = { navigationController.popBackStack() },
+                    onTemplateCreated = { templateId ->
+                      navigationController.previousBackStackEntry
+                          ?.savedStateHandle
+                          ?.set("createdTemplateId", templateId)
+                      navigationController.popBackStack()
+                    },
+                    viewModel = templateViewModel)
               }
 
               // Conversations section

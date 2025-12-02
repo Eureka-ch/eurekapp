@@ -12,7 +12,10 @@ import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.task.Task
+import ch.eureka.eurekapp.model.data.task.TaskCustomData
 import ch.eureka.eurekapp.model.data.task.TaskRepository
+import ch.eureka.eurekapp.model.data.template.TaskTemplateRepository
+import ch.eureka.eurekapp.model.data.template.field.FieldValue
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.utils.TaskDependencyCycleDetector
 import com.google.firebase.auth.FirebaseAuth
@@ -25,12 +28,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /*
-Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
-Portions of this code were generated with the help of Grok.
-Co-Authored-By: Claude <noreply@anthropic.com>
-Note: This file was partially written by GPT-5 Codex
-Co-author : GPT-5
-*/
+ * Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
+ * Portions of this code were generated with the help of Grok.
+ * Co-Authored-By: Claude <noreply@anthropic.com>
+ * Note: This file was partially written by GPT-5 Codex
+ * Co-author : GPT-5
+ * Co-authored-by: Claude Sonnet 4.5
+ */
 
 /** ViewModel for the CreateTask screen. This ViewModel manages the state of input fields. */
 class CreateTaskViewModel(
@@ -38,6 +42,8 @@ class CreateTaskViewModel(
     fileRepository: FileStorageRepository = RepositoriesProvider.fileRepository,
     projectRepository: ProjectRepository = RepositoriesProvider.projectRepository,
     userRepository: UserRepository = RepositoriesProvider.userRepository,
+    private val templateRepository: TaskTemplateRepository =
+        RepositoriesProvider.taskTemplateRepository,
     getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) :
@@ -68,6 +74,47 @@ class CreateTaskViewModel(
         updateState { copy(availableProjects = projects) }
       }
     }
+  }
+
+  /** Loads available templates for the given project */
+  fun loadTemplatesForProject(projectId: String) {
+    if (projectId.isEmpty()) {
+      updateState { copy(availableTemplates = emptyList(), selectedTemplate = null) }
+      return
+    }
+    viewModelScope.launch(dispatcher) {
+      templateRepository.getTemplatesInProject(projectId).collect { templates ->
+        updateState { copy(availableTemplates = templates) }
+      }
+    }
+  }
+
+  /** Selects a template and initializes customData with default values */
+  fun selectTemplate(templateId: String?) {
+    val templates = uiState.value.availableTemplates
+    val template = templates.find { it.templateID == templateId }
+    val initialData = initializeCustomData(template)
+    updateState {
+      copy(templateId = templateId, selectedTemplate = template, customData = initialData)
+    }
+  }
+
+  /** Initializes customData with default values from the template */
+  private fun initializeCustomData(
+      template: ch.eureka.eurekapp.model.data.template.TaskTemplate?
+  ): TaskCustomData {
+    if (template == null) return TaskCustomData()
+    val initialData = mutableMapOf<String, FieldValue>()
+    template.definedFields.fields.forEach { field ->
+      field.defaultValue?.let { initialData[field.id] = it }
+    }
+    return TaskCustomData(initialData)
+  }
+
+  /** Updates a custom field value */
+  fun updateCustomFieldValue(fieldId: String, value: FieldValue) {
+    val currentData = uiState.value.customData
+    updateState { copy(customData = currentData.setValue(fieldId, value)) }
   }
 
   // Placeholder used for dependency validation before the task is persisted.
@@ -148,6 +195,7 @@ class CreateTaskViewModel(
         val task =
             Task(
                 taskID = taskId,
+                templateId = state.templateId ?: "",
                 projectId = projectIdToUse,
                 title = state.title,
                 description = state.description,
@@ -155,6 +203,7 @@ class CreateTaskViewModel(
                 dueDate = timestamp,
                 reminderTime = reminderTimestamp,
                 attachmentUrls = photoUrls,
+                customData = state.customData,
                 createdBy = currentUser,
                 dependingOnTasks = state.dependingOnTasks)
 
