@@ -10,7 +10,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,10 +23,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -58,11 +55,11 @@ fun CreateInvitationSubscreen(
 ) {
 
   val createInvitationToken = remember { mutableStateOf<Invitation?>(null) }
-  val createdInvitation = remember { mutableStateOf<Boolean>(false) }
+  val createdInvitation = remember { mutableStateOf(false) }
 
   val copyToClipBoard = remember { derivedStateOf { createdInvitation.value } }
 
-  val errorText = remember { mutableStateOf<String>("") }
+  val errorText = remember { mutableStateOf("") }
 
   val context = LocalContext.current
   Column(
@@ -104,16 +101,14 @@ fun CreateInvitationSubscreen(
                               verticalAlignment = Alignment.CenterVertically) {
                                 if (createInvitationToken.value != null) {
                                   Text(
-                                      "Invitation token: " + createInvitationToken.value!!.token,
+                                      createInvitationToken.value!!.token,
                                       textAlign = TextAlign.Center,
                                       style = Typography.titleLarge,
                                       fontWeight = FontWeight(600))
                                 }
                               }
 
-                          Spacer(modifier = Modifier.weight(1f))
-
-                          Row() {
+                          Row {
                             FilledTonalButton(
                                 modifier =
                                     Modifier.width(190.dp)
@@ -179,7 +174,7 @@ fun CreateInvitationSubscreen(
                                 }
                           }
 
-                          Row() { Text(errorText.value) }
+                          Row { Text(errorText.value) }
                         }
                   }
             }
