@@ -18,19 +18,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Article
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.automirrored.filled.Message
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.ChangeCircle
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.OpenInNew
-import androidx.compose.material.icons.filled.PersonAdd
-import androidx.compose.material.icons.filled.PersonRemove
-import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -49,13 +38,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.activity.Activity
-import ch.eureka.eurekapp.model.data.activity.ActivityType
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import java.text.SimpleDateFormat
@@ -172,11 +159,6 @@ private fun ActivityDetailContent(
 
         // Entity details
         EntityDetailsCard(activity, entityDetails, onNavigateToEntity)
-
-        // Metadata
-        if (activity.metadata.isNotEmpty()) {
-          MetadataCard(activity.metadata)
-        }
       }
 }
 
@@ -191,7 +173,8 @@ private fun ActivityHeader(activity: Activity) {
             horizontalArrangement = Arrangement.spacedBy(Spacing.md),
             verticalAlignment = Alignment.CenterVertically) {
               // Activity icon
-              val (icon, color) = getIconAndColor(activity.activityType, activity.entityType)
+              val (icon, color) =
+                  getActivityIconAndColor(activity.activityType, activity.entityType)
               Surface(
                   modifier = Modifier.size(56.dp),
                   shape = CircleShape,
@@ -285,80 +268,43 @@ private fun EntityDetailsCard(
           HorizontalDivider()
 
           // Display entity-specific details
-          when (activity.entityType) {
-            EntityType.MEETING -> DisplayMeetingDetails(entityDetails)
-            EntityType.TASK -> DisplayTaskDetails(entityDetails)
-            EntityType.FILE -> DisplayFileDetails(entityDetails, activity)
-            EntityType.PROJECT -> DisplayProjectDetails(entityDetails)
-            EntityType.MEMBER -> DisplayMemberDetails(entityDetails)
-            EntityType.MESSAGE -> DisplayMessageDetails(entityDetails)
-          }
+          DisplayEntityDetails(activity, entityDetails)
         }
   }
 }
 
 @Composable
-private fun DisplayMeetingDetails(details: Map<String, Any>) {
-  details["title"]?.let { InfoRow(label = "Title", value = it.toString()) }
-  details["description"]?.let { InfoRow(label = "Description", value = it.toString()) }
-  details["status"]?.let { InfoRow(label = "Status", value = it.toString()) }
-  details["location"]?.let { InfoRow(label = "Location", value = it.toString()) }
-  details["duration"]?.let { InfoRow(label = "Duration", value = "${it} minutes") }
-}
+private fun DisplayEntityDetails(activity: Activity, details: Map<String, Any>) {
+  val fieldMappings =
+      when (activity.entityType) {
+        EntityType.FILE ->
+            mapOf(
+                "title" to "File Name", "size" to "Size", "type" to "Type", "downloadUrl" to "URL")
+        EntityType.MEMBER -> mapOf("displayName" to "Name", "email" to "Email", "role" to "Role")
+        EntityType.MESSAGE -> mapOf("content" to "Content")
+        EntityType.PROJECT -> mapOf("name" to "Name", "description" to "Description")
+        else ->
+            mapOf(
+                "title" to "Title",
+                "description" to "Description",
+                "status" to "Status",
+                "location" to "Location",
+                "duration" to "Duration")
+      }
 
-@Composable
-private fun DisplayTaskDetails(details: Map<String, Any>) {
-  details["title"]?.let { InfoRow(label = "Title", value = it.toString()) }
-  details["description"]?.let { InfoRow(label = "Description", value = it.toString()) }
-  details["status"]?.let { InfoRow(label = "Status", value = it.toString()) }
-}
-
-@Composable
-private fun DisplayFileDetails(details: Map<String, Any>, activity: Activity) {
-  activity.metadata["title"]?.let { InfoRow(label = "File Name", value = it.toString()) }
-  activity.metadata["size"]?.let { InfoRow(label = "Size", value = "${it} bytes") }
-  activity.metadata["type"]?.let { InfoRow(label = "Type", value = it.toString()) }
-  details["downloadUrl"]?.let { InfoRow(label = "URL", value = it.toString()) }
-}
-
-@Composable
-private fun DisplayProjectDetails(details: Map<String, Any>) {
-  details["name"]?.let { InfoRow(label = "Name", value = it.toString()) }
-  details["description"]?.let { InfoRow(label = "Description", value = it.toString()) }
-}
-
-@Composable
-private fun DisplayMemberDetails(details: Map<String, Any>) {
-  details["displayName"]?.let { InfoRow(label = "Name", value = it.toString()) }
-  details["email"]?.let { InfoRow(label = "Email", value = it.toString()) }
-  details["role"]?.let { InfoRow(label = "Role", value = it.toString()) }
-}
-
-@Composable
-private fun DisplayMessageDetails(details: Map<String, Any>) {
-  details["content"]?.let { InfoRow(label = "Content", value = it.toString()) }
-}
-
-@Composable
-private fun MetadataCard(metadata: Map<String, Any>) {
-  Card(modifier = Modifier.fillMaxWidth()) {
-    Column(
-        modifier = Modifier.padding(Spacing.md),
-        verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-          Text(
-              text = "Additional Metadata",
-              style = MaterialTheme.typography.titleMedium,
-              fontWeight = FontWeight.SemiBold)
-
-          HorizontalDivider()
-
-          metadata.forEach { (key, value) ->
-            // Skip userName and title as they're already shown
-            if (key != "userName" && key != "title") {
-              InfoRow(label = key.replaceFirstChar { it.uppercase() }, value = value.toString())
-            }
-          }
+  fieldMappings.forEach { (key, label) ->
+    val value =
+        if (activity.entityType == EntityType.FILE && key in listOf("title", "size", "type")) {
+          activity.metadata[key]
+        } else {
+          details[key]
         }
+    value?.let {
+      val displayValue =
+          if (key == "size") "${it} bytes"
+          else if (key == "duration") "${it} minutes" else it.toString()
+      InfoRow(label = label, value = displayValue)
+    }
   }
 }
 
@@ -379,30 +325,4 @@ private fun InfoRow(label: String, value: String) {
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.weight(0.6f))
       }
-}
-
-// Reuse the icon helper from ActivityCard
-private fun getIconAndColor(
-    activityType: ActivityType,
-    entityType: EntityType
-): Pair<androidx.compose.ui.graphics.vector.ImageVector, Color> {
-  return when (activityType) {
-    ActivityType.CREATED ->
-        when (entityType) {
-          EntityType.MEETING -> Icons.Default.CalendarToday to Color(0xFF6200EA)
-          EntityType.MESSAGE -> Icons.AutoMirrored.Filled.Message to Color(0xFF4CAF50)
-          EntityType.FILE -> Icons.Default.FileUpload to Color(0xFF2196F3)
-          else -> Icons.AutoMirrored.Filled.Article to Color(0xFF6200EA)
-        }
-    ActivityType.UPDATED -> Icons.Default.Edit to Color(0xFFFF9800)
-    ActivityType.DELETED -> Icons.Default.Delete to Color(0xFFF44336)
-    ActivityType.UPLOADED -> Icons.Default.Upload to Color(0xFF2196F3)
-    ActivityType.JOINED -> Icons.Default.PersonAdd to Color(0xFF4CAF50)
-    ActivityType.LEFT -> Icons.AutoMirrored.Filled.ExitToApp to Color(0xFFFF9800)
-    ActivityType.ASSIGNED -> Icons.Default.PersonAdd to Color(0xFF4CAF50)
-    ActivityType.UNASSIGNED -> Icons.Default.PersonRemove to Color(0xFFFF9800)
-    ActivityType.ROLE_CHANGED -> Icons.Default.ChangeCircle to Color(0xFF2196F3)
-    ActivityType.DOWNLOADED -> Icons.Default.Download to Color(0xFF4CAF50)
-    else -> Icons.AutoMirrored.Filled.Article to Color(0xFF757575)
-  }
 }

@@ -14,15 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Article
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.automirrored.filled.Message
-import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.FileUpload
-import androidx.compose.material.icons.filled.PersonAdd
-import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -33,8 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.SpanStyle
@@ -46,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.activity.Activity
 import ch.eureka.eurekapp.model.data.activity.ActivityType
 import ch.eureka.eurekapp.model.data.activity.EntityType
-import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import java.text.SimpleDateFormat
@@ -165,7 +154,7 @@ private fun ActivityIcon(
     entityType: EntityType,
     modifier: Modifier = Modifier
 ) {
-  val (icon, color) = getIconAndColor(activityType, entityType)
+  val (icon, color) = getActivityIconAndColor(activityType, entityType)
 
   Surface(modifier = modifier.size(40.dp), shape = CircleShape, color = color.copy(alpha = 0.12f)) {
     Icon(
@@ -173,34 +162,6 @@ private fun ActivityIcon(
         contentDescription = "$activityType $entityType",
         tint = color,
         modifier = Modifier.padding(8.dp))
-  }
-}
-
-/**
- * Get the appropriate icon and color for the activity.
- *
- * @param activityType Type of activity
- * @param entityType Type of entity
- * @return Pair of icon and color
- */
-private fun getIconAndColor(
-    activityType: ActivityType,
-    entityType: EntityType
-): Pair<ImageVector, Color> {
-  return when (activityType) {
-    ActivityType.CREATED ->
-        when (entityType) {
-          EntityType.MEETING -> Icons.Default.CalendarToday to EColors.light.primary
-          EntityType.MESSAGE -> Icons.AutoMirrored.Filled.Message to Color(0xFF4CAF50)
-          EntityType.FILE -> Icons.Default.FileUpload to Color(0xFF2196F3)
-          else -> Icons.AutoMirrored.Filled.Article to EColors.light.primary
-        }
-    ActivityType.UPDATED -> Icons.Default.Edit to Color(0xFFFF9800)
-    ActivityType.DELETED -> Icons.Default.Delete to Color(0xFFF44336)
-    ActivityType.UPLOADED -> Icons.Default.Upload to Color(0xFF2196F3)
-    ActivityType.JOINED -> Icons.Default.PersonAdd to Color(0xFF4CAF50)
-    ActivityType.LEFT -> Icons.AutoMirrored.Filled.ExitToApp to Color(0xFFFF9800)
-    else -> Icons.AutoMirrored.Filled.Article to EColors.light.onSurfaceVariant
   }
 }
 

@@ -43,9 +43,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
 
 /**
  * Activity feed screen. Shows a unified feed of activities for the current user.
@@ -139,35 +136,19 @@ private fun FilterChipsRow(
               .horizontalScroll(rememberScrollState())
               .padding(horizontal = Spacing.md, vertical = Spacing.sm),
       horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-        ActivityTypeFilterChip(
-            label = EntityType.PROJECT.toDisplayString(),
-            selected = currentEntityFilter == EntityType.PROJECT,
-            onClick = { onEntityFilterClick(EntityType.PROJECT) },
-            modifier = Modifier.testTag("ProjectsFilterChip"))
-
-        ActivityTypeFilterChip(
-            label = EntityType.MEETING.toDisplayString(),
-            selected = currentEntityFilter == EntityType.MEETING,
-            onClick = { onEntityFilterClick(EntityType.MEETING) },
-            modifier = Modifier.testTag("MeetingsFilterChip"))
-
-        ActivityTypeFilterChip(
-            label = EntityType.MESSAGE.toDisplayString(),
-            selected = currentEntityFilter == EntityType.MESSAGE,
-            onClick = { onEntityFilterClick(EntityType.MESSAGE) },
-            modifier = Modifier.testTag("MessagesFilterChip"))
-
-        ActivityTypeFilterChip(
-            label = EntityType.FILE.toDisplayString(),
-            selected = currentEntityFilter == EntityType.FILE,
-            onClick = { onEntityFilterClick(EntityType.FILE) },
-            modifier = Modifier.testTag("FilesFilterChip"))
-
-        ActivityTypeFilterChip(
-            label = EntityType.TASK.toDisplayString(),
-            selected = currentEntityFilter == EntityType.TASK,
-            onClick = { onEntityFilterClick(EntityType.TASK) },
-            modifier = Modifier.testTag("TasksFilterChip"))
+        listOf(
+                EntityType.PROJECT,
+                EntityType.MEETING,
+                EntityType.MESSAGE,
+                EntityType.FILE,
+                EntityType.TASK)
+            .forEach { entityType ->
+              ActivityTypeFilterChip(
+                  label = entityType.toDisplayString(),
+                  selected = currentEntityFilter == entityType,
+                  onClick = { onEntityFilterClick(entityType) },
+                  modifier = Modifier.testTag("${entityType.toDisplayString()}FilterChip"))
+            }
       }
 }
 
@@ -287,26 +268,5 @@ private fun ActivitiesList(
 private fun ErrorMessage(error: String, modifier: Modifier = Modifier) {
   Box(modifier = modifier.fillMaxWidth().padding(Spacing.md)) {
     Text("Error: $error", color = MaterialTheme.colorScheme.error)
-  }
-}
-
-private fun formatDateHeader(dateMillis: Long): String {
-  val today = Calendar.getInstance()
-  today[Calendar.HOUR_OF_DAY] = 0
-  today[Calendar.MINUTE] = 0
-  today[Calendar.SECOND] = 0
-  today[Calendar.MILLISECOND] = 0
-
-  val yesterday = Calendar.getInstance()
-  yesterday.add(Calendar.DAY_OF_YEAR, -1)
-  yesterday[Calendar.HOUR_OF_DAY] = 0
-  yesterday[Calendar.MINUTE] = 0
-  yesterday[Calendar.SECOND] = 0
-  yesterday[Calendar.MILLISECOND] = 0
-
-  return when (dateMillis) {
-    today.timeInMillis -> "Today"
-    yesterday.timeInMillis -> "Yesterday"
-    else -> SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(dateMillis)
   }
 }

@@ -112,6 +112,19 @@ class ActivityFeedViewModel(
     }
   }
 
+  /** Apply filters and update UI state with filtered activities. */
+  private fun updateFilteredActivities(
+      entityType: EntityType? = _uiState.value.filterEntityType,
+      activityType: ActivityType? = _uiState.value.filterActivityType,
+      query: String = _uiState.value.searchQuery
+  ) {
+    _uiState.update { state ->
+      val filtered = applyAllFilters(state.allActivities, entityType, activityType, query)
+      val groupedByDate = groupActivitiesByDate(filtered)
+      state.copy(activities = filtered, activitiesByDate = groupedByDate)
+    }
+  }
+
   /** Clears the error messages. */
   fun clearErrorMsg() = _uiState.update { it.copy(errorMsg = null) }
 
@@ -169,14 +182,8 @@ class ActivityFeedViewModel(
    *   [EntityType.PROJECT]).
    */
   fun applyEntityTypeFilter(entityType: EntityType) {
-    _uiState.update { state ->
-      val filtered =
-          applyAllFilters(
-              state.allActivities, entityType, state.filterActivityType, state.searchQuery)
-      val groupedByDate = groupActivitiesByDate(filtered)
-      state.copy(
-          filterEntityType = entityType, activities = filtered, activitiesByDate = groupedByDate)
-    }
+    _uiState.update { it.copy(filterEntityType = entityType) }
+    updateFilteredActivities(entityType = entityType)
     if (_uiState.value.allActivities.isEmpty()) loadActivities()
   }
 
@@ -186,16 +193,8 @@ class ActivityFeedViewModel(
    * @param activityType The type of activity to filter by (e.g., [ActivityType.CREATED]).
    */
   fun applyActivityTypeFilter(activityType: ActivityType?) {
-    _uiState.update { state ->
-      val filtered =
-          applyAllFilters(
-              state.allActivities, state.filterEntityType, activityType, state.searchQuery)
-      val groupedByDate = groupActivitiesByDate(filtered)
-      state.copy(
-          filterActivityType = activityType,
-          activities = filtered,
-          activitiesByDate = groupedByDate)
-    }
+    _uiState.update { it.copy(filterActivityType = activityType) }
+    updateFilteredActivities(activityType = activityType)
   }
 
   /**
@@ -204,13 +203,8 @@ class ActivityFeedViewModel(
    * @param query The search query string.
    */
   fun applySearch(query: String) {
-    _uiState.update { state ->
-      val filtered =
-          applyAllFilters(
-              state.allActivities, state.filterEntityType, state.filterActivityType, query)
-      val groupedByDate = groupActivitiesByDate(filtered)
-      state.copy(searchQuery = query, activities = filtered, activitiesByDate = groupedByDate)
-    }
+    _uiState.update { it.copy(searchQuery = query) }
+    updateFilteredActivities(query = query)
   }
 
   /** Clears all filters to show nothing (user must select a filter). */
@@ -293,17 +287,6 @@ class ActivityFeedViewModel(
     }
 
     return filtered
-  }
-
-  private fun filterList(list: List<Activity>, type: EntityType): List<Activity> {
-    return list.filter { activity ->
-      when (type) {
-        EntityType.PROJECT ->
-            activity.entityType == EntityType.PROJECT || activity.entityType == EntityType.MEMBER
-        EntityType.MEETING -> activity.entityType == EntityType.MEETING
-        else -> activity.entityType == type
-      }
-    }
   }
 
   /**

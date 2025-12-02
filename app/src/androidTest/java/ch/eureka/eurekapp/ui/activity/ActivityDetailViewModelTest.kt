@@ -108,7 +108,9 @@ class ActivityDetailViewModelTest {
     val state = viewModel.uiState.first()
     assertFalse(state.isLoading)
     assertNull(state.activity)
-    assertNotNull(state.errorMsg) // Error message should be set (might be "Unknown error" due to exception handling)
+    assertNotNull(
+        state.errorMsg) // Error message should be set (might be "Unknown error" due to exception
+    // handling)
     assertTrue(state.errorMsg == "Network error" || state.errorMsg == "Unknown error")
   }
 
