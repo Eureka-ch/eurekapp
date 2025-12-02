@@ -1,3 +1,6 @@
+/*
+ * Co-Authored-By: Claude Sonnet 4.5
+ */
 package ch.eureka.eurekapp.screen
 
 import android.Manifest
@@ -39,6 +42,7 @@ import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.CameraScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.TemplateSelectionTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
@@ -730,6 +734,12 @@ class CreateTaskScreenTests : TestCase() {
             modifier = androidx.compose.ui.Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
       }
       composable<Route.Camera> { Camera(navigationController = navController) }
+      composable<Route.TasksSection.CreateTemplate> {
+        // Fake CreateTemplate screen for testing navigation
+        androidx.compose.material3.Text(
+            "Create Template Screen",
+            modifier = androidx.compose.ui.Modifier.testTag("create_template_screen"))
+      }
     }
   }
 
@@ -992,5 +1002,77 @@ class CreateTaskScreenTests : TestCase() {
       // Verify navigation back to TasksScreen
       composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
     }
+  }
+
+  // ========== TEMPLATE SELECTION TESTS ==========
+
+  @Test
+  fun templateSelectionShowsCreateButtonWhenProjectSelected() {
+    val projectId = "project123"
+
+    val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+    lastCreateVm = viewModel
+
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      FakeNavGraph(navController = navController, viewModel = viewModel)
+      navController.navigate(Route.TasksSection.CreateTask)
+    }
+    composeTestRule.waitForIdle()
+
+    // Before selecting project, template selection should not be visible
+    composeTestRule.onNodeWithTag(TemplateSelectionTestTags.CREATE_BUTTON).assertDoesNotExist()
+
+    // Select project
+    viewModel.setProjectId(projectId)
+    composeTestRule.waitForIdle()
+
+    // After selecting project, create template button should be visible
+    try {
+      composeTestRule.onNodeWithTag(TemplateSelectionTestTags.CREATE_BUTTON).assertIsDisplayed()
+    } catch (e: Exception) {
+      composeTestRule
+          .onRoot()
+          .performScrollToNode(hasTestTag(TemplateSelectionTestTags.CREATE_BUTTON))
+      composeTestRule.onNodeWithTag(TemplateSelectionTestTags.CREATE_BUTTON).assertIsDisplayed()
+    }
+  }
+
+  @Test
+  fun templateSelectionNavigatesToCreateTemplateScreen() {
+    val projectId = "project123"
+
+    val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+    lastCreateVm = viewModel
+
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      FakeNavGraph(navController = navController, viewModel = viewModel)
+      navController.navigate(Route.TasksSection.CreateTask)
+    }
+    composeTestRule.waitForIdle()
+
+    // Select project
+    viewModel.setProjectId(projectId)
+    composeTestRule.waitForIdle()
+
+    // Scroll to create button if needed
+    try {
+      composeTestRule.onNodeWithTag(TemplateSelectionTestTags.CREATE_BUTTON).assertIsDisplayed()
+    } catch (e: Exception) {
+      composeTestRule
+          .onRoot()
+          .performScrollToNode(hasTestTag(TemplateSelectionTestTags.CREATE_BUTTON))
+    }
+
+    // Click create template button
+    composeTestRule.onNodeWithTag(TemplateSelectionTestTags.CREATE_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+
+    // Verify navigation to CreateTemplateScreen
+    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+      composeTestRule.onAllNodesWithTag("create_template_screen").fetchSemanticsNodes().isNotEmpty()
+    }
+    composeTestRule.onNodeWithTag("create_template_screen").assertIsDisplayed()
   }
 }

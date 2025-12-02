@@ -1,3 +1,6 @@
+/*
+ * Co-Authored-By: Claude Sonnet 4.5
+ */
 package ch.eureka.eurekapp.screens.subscreens.tasks.creation
 
 import android.net.Uri
@@ -46,6 +49,7 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDescriptionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskReminderField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskTitleField
+import ch.eureka.eurekapp.screens.subscreens.tasks.TemplateSelectionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.UserAssignmentField
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
@@ -74,6 +78,9 @@ fun CreateTaskScreen(
   val photoUri by
       savedStateHandle?.getStateFlow("photoUri", "")?.collectAsState()
           ?: remember { mutableStateOf("") }
+  val createdTemplateId by
+      savedStateHandle?.getStateFlow("createdTemplateId", "")?.collectAsState()
+          ?: remember { mutableStateOf("") }
   val context = LocalContext.current
   val scrollState = rememberScrollState()
   var isNavigatingToCamera by remember { mutableStateOf(false) }
@@ -81,6 +88,7 @@ fun CreateTaskScreen(
   HandleErrorToast(errorMsg, createTaskViewModel, context)
   HandlePhotoUri(photoUri, createTaskViewModel)
   HandleProjectId(projectId, createTaskViewModel)
+  HandleCreatedTemplateId(createdTemplateId, createTaskViewModel, savedStateHandle)
   HandleTaskSaved(createTaskState.taskSaved, navigationController, createTaskViewModel)
 
   HandlePhotoCleanupDisposableEffect(
@@ -159,6 +167,21 @@ private fun HandleProjectId(projectId: String, createTaskViewModel: CreateTaskVi
     if (projectId.isNotEmpty()) {
       createTaskViewModel.loadAvailableTasks(projectId)
       createTaskViewModel.loadProjectMembers(projectId)
+      createTaskViewModel.loadTemplatesForProject(projectId)
+    }
+  }
+}
+
+@Composable
+private fun HandleCreatedTemplateId(
+    createdTemplateId: String,
+    createTaskViewModel: CreateTaskViewModel,
+    savedStateHandle: androidx.lifecycle.SavedStateHandle?
+) {
+  LaunchedEffect(createdTemplateId) {
+    if (createdTemplateId.isNotEmpty()) {
+      createTaskViewModel.selectTemplate(createdTemplateId)
+      savedStateHandle?.remove<String>("createdTemplateId")
     }
   }
 }
@@ -250,6 +273,19 @@ private fun CreateTaskContent(config: CreateTaskContentConfig) {
             projects = config.availableProjects,
             selectedProjectId = config.projectId,
             onProjectSelected = { projectId -> config.createTaskViewModel.setProjectId(projectId) })
+
+        if (config.projectId.isNotEmpty()) {
+          TemplateSelectionField(
+              templates = config.createTaskState.availableTemplates,
+              selectedTemplateId = config.createTaskState.templateId,
+              onTemplateSelected = { templateId ->
+                config.createTaskViewModel.selectTemplate(templateId)
+              },
+              onCreateTemplate = {
+                config.navigationController.navigate(
+                    Route.TasksSection.CreateTemplate(projectId = config.projectId))
+              })
+        }
 
         UserAssignmentField(
             availableUsers = config.createTaskState.availableUsers,
