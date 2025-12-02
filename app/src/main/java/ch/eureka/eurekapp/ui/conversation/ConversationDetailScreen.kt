@@ -49,6 +49,8 @@ object ConversationDetailScreenTestTags {
   const val EMPTY_STATE = "emptyState"
   const val MESSAGES_LIST = "messagesList"
   const val BACK_BUTTON = "backButton"
+  const val SELECTED_FILE_TEXT = "selectedFileText"
+  const val UPLOADING_TEXT = "uploadingText"
 }
 
 /*
@@ -146,7 +148,9 @@ fun ConversationDetailScreen(
                   Text(
                       text = "Selected file: $selectedFileName",
                       style = MaterialTheme.typography.bodySmall,
-                      modifier = Modifier.weight(1f))
+                      modifier =
+                          Modifier.weight(1f)
+                              .testTag(ConversationDetailScreenTestTags.SELECTED_FILE_TEXT))
                   IconButton(onClick = { viewModel.clearSelectedFile() }) {
                     Icon(Icons.Default.Close, contentDescription = "Remove selected file")
                   }
@@ -156,7 +160,10 @@ fun ConversationDetailScreen(
             Row(modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.xs)) {
               CircularProgressIndicator(modifier = Modifier.size(16.dp))
               Spacer(modifier = Modifier.width(Spacing.sm))
-              Text("Uploading file...", style = MaterialTheme.typography.bodySmall)
+              Text(
+                  "Uploading file...",
+                  style = MaterialTheme.typography.bodySmall,
+                  modifier = Modifier.testTag(ConversationDetailScreenTestTags.UPLOADING_TEXT))
             }
           }
           Row {
