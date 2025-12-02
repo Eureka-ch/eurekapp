@@ -76,13 +76,13 @@ fun ActivityCard(
   Card(
       shape = RoundedCornerShape(12.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-      colors = if (isRead) {
-        CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
-        )
-      } else {
-        EurekaStyles.taskCardColors()
-      },
+      colors =
+          if (isRead) {
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f))
+          } else {
+            EurekaStyles.taskCardColors()
+          },
       border = if (isRead) null else EurekaStyles.taskCardBorder(),
       modifier =
           modifier
@@ -96,12 +96,9 @@ fun ActivityCard(
               // Unread indicator
               if (!isRead) {
                 Surface(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .align(Alignment.CenterVertically),
+                    modifier = Modifier.size(8.dp).align(Alignment.CenterVertically),
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primary
-                ) {}
+                    color = MaterialTheme.colorScheme.primary) {}
               }
 
               // Icon indicator
@@ -246,9 +243,7 @@ private fun getActivityDescription(activity: Activity) = buildAnnotatedString {
       val projectName = activity.metadata["name"]?.toString()
       if (projectName != null) {
         append("the project ")
-        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-          append(projectName)
-        }
+        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append(projectName) }
       } else {
         append("the project")
       }

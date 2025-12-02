@@ -53,11 +53,7 @@ class FirebaseFileStorageRepository(
           entityType = EntityType.FILE,
           entityId = downloadUrl,
           userId = currentUser.uid,
-          metadata = mapOf(
-              "title" to fileName,
-              "size" to fileSize,
-              "type" to contentType
-          ))
+          metadata = mapOf("title" to fileName, "size" to fileSize, "type" to contentType))
     } else {
       android.util.Log.d(
           "FirebaseFileStorage", "Skipping activity log for non-project file: $storagePath")

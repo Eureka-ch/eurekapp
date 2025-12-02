@@ -292,11 +292,13 @@ fun NavigationMenu(
               composable<Route.ActivitySection.ActivityFeed> {
                 ActivityFeedScreen(
                     onActivityClick = { activityId ->
-                      navigationController.navigate(Route.ActivitySection.ActivityDetail(activityId))
+                      navigationController.navigate(
+                          Route.ActivitySection.ActivityDetail(activityId))
                     })
               }
               composable<Route.ActivitySection.ActivityDetail> { backStackEntry ->
-                val activityDetailRoute = backStackEntry.toRoute<Route.ActivitySection.ActivityDetail>()
+                val activityDetailRoute =
+                    backStackEntry.toRoute<Route.ActivitySection.ActivityDetail>()
                 ch.eureka.eurekapp.ui.activity.ActivityDetailScreen(
                     activityId = activityDetailRoute.activityId,
                     onNavigateBack = { navigationController.popBackStack() },
@@ -305,7 +307,8 @@ fun NavigationMenu(
                       when (entityType) {
                         ch.eureka.eurekapp.model.data.activity.EntityType.MEETING -> {
                           // Extract projectId from activity metadata or use default
-                          // For now, we'll need to navigate back since we don't have projectId easily accessible
+                          // For now, we'll need to navigate back since we don't have projectId
+                          // easily accessible
                           navigationController.popBackStack()
                         }
                         ch.eureka.eurekapp.model.data.activity.EntityType.TASK -> {

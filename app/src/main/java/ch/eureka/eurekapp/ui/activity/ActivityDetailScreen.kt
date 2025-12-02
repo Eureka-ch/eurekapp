@@ -184,7 +184,8 @@ private fun ActivityDetailContent(
 private fun ActivityHeader(activity: Activity) {
   Card(
       modifier = Modifier.fillMaxWidth(),
-      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+      colors =
+          CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
         Row(
             modifier = Modifier.padding(Spacing.md),
             horizontalArrangement = Arrangement.spacedBy(Spacing.md),
@@ -222,25 +223,31 @@ private fun ActivityHeader(activity: Activity) {
 @Composable
 private fun UserInfoCard(activity: Activity) {
   Card(modifier = Modifier.fillMaxWidth()) {
-    Column(modifier = Modifier.padding(Spacing.md), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-      Text(
-          text = "Activity Information",
-          style = MaterialTheme.typography.titleMedium,
-          fontWeight = FontWeight.SemiBold)
+    Column(
+        modifier = Modifier.padding(Spacing.md),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+          Text(
+              text = "Activity Information",
+              style = MaterialTheme.typography.titleMedium,
+              fontWeight = FontWeight.SemiBold)
 
-      HorizontalDivider()
+          HorizontalDivider()
 
-      // User
-      InfoRow(label = "Performed by", value = activity.metadata["userName"]?.toString() ?: "Unknown User")
+          // User
+          InfoRow(
+              label = "Performed by",
+              value = activity.metadata["userName"]?.toString() ?: "Unknown User")
 
-      // Timestamp
-      val dateFormat = SimpleDateFormat("MMM dd, yyyy 'at' hh:mm a", Locale.getDefault())
-      val formattedDate = dateFormat.format(activity.timestamp.toDate())
-      InfoRow(label = "Timestamp", value = formattedDate)
+          // Timestamp
+          val dateFormat = SimpleDateFormat("MMM dd, yyyy 'at' hh:mm a", Locale.getDefault())
+          val formattedDate = dateFormat.format(activity.timestamp.toDate())
+          InfoRow(label = "Timestamp", value = formattedDate)
 
-      // Project name
-      InfoRow(label = "Project", value = activity.metadata["projectName"]?.toString() ?: activity.projectId)
-    }
+          // Project name
+          InfoRow(
+              label = "Project",
+              value = activity.metadata["projectName"]?.toString() ?: activity.projectId)
+        }
   }
 }
 
@@ -251,40 +258,42 @@ private fun EntityDetailsCard(
     onNavigateToEntity: (String) -> Unit
 ) {
   Card(modifier = Modifier.fillMaxWidth()) {
-    Column(modifier = Modifier.padding(Spacing.md), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-      Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = "Related ${activity.entityType.toDisplayString()}",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.weight(1f))
+    Column(
+        modifier = Modifier.padding(Spacing.md),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+          Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.SpaceBetween,
+              verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "Related ${activity.entityType.toDisplayString()}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.weight(1f))
 
-            // Navigate to entity button
-            IconButton(
-                onClick = { onNavigateToEntity(activity.entityId) },
-                modifier = Modifier.testTag("NavigateToEntityButton")) {
-                  Icon(
-                      imageVector = Icons.Default.OpenInNew,
-                      contentDescription = "Open ${activity.entityType}",
-                      tint = MaterialTheme.colorScheme.primary)
-                }
+                // Navigate to entity button
+                IconButton(
+                    onClick = { onNavigateToEntity(activity.entityId) },
+                    modifier = Modifier.testTag("NavigateToEntityButton")) {
+                      Icon(
+                          imageVector = Icons.Default.OpenInNew,
+                          contentDescription = "Open ${activity.entityType}",
+                          tint = MaterialTheme.colorScheme.primary)
+                    }
+              }
+
+          HorizontalDivider()
+
+          // Display entity-specific details
+          when (activity.entityType) {
+            EntityType.MEETING -> DisplayMeetingDetails(entityDetails)
+            EntityType.TASK -> DisplayTaskDetails(entityDetails)
+            EntityType.FILE -> DisplayFileDetails(entityDetails, activity)
+            EntityType.PROJECT -> DisplayProjectDetails(entityDetails)
+            EntityType.MEMBER -> DisplayMemberDetails(entityDetails)
+            EntityType.MESSAGE -> DisplayMessageDetails(entityDetails)
           }
-
-      HorizontalDivider()
-
-      // Display entity-specific details
-      when (activity.entityType) {
-        EntityType.MEETING -> DisplayMeetingDetails(entityDetails)
-        EntityType.TASK -> DisplayTaskDetails(entityDetails)
-        EntityType.FILE -> DisplayFileDetails(entityDetails, activity)
-        EntityType.PROJECT -> DisplayProjectDetails(entityDetails)
-        EntityType.MEMBER -> DisplayMemberDetails(entityDetails)
-        EntityType.MESSAGE -> DisplayMessageDetails(entityDetails)
-      }
-    }
+        }
   }
 }
 
@@ -333,21 +342,23 @@ private fun DisplayMessageDetails(details: Map<String, Any>) {
 @Composable
 private fun MetadataCard(metadata: Map<String, Any>) {
   Card(modifier = Modifier.fillMaxWidth()) {
-    Column(modifier = Modifier.padding(Spacing.md), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-      Text(
-          text = "Additional Metadata",
-          style = MaterialTheme.typography.titleMedium,
-          fontWeight = FontWeight.SemiBold)
+    Column(
+        modifier = Modifier.padding(Spacing.md),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+          Text(
+              text = "Additional Metadata",
+              style = MaterialTheme.typography.titleMedium,
+              fontWeight = FontWeight.SemiBold)
 
-      HorizontalDivider()
+          HorizontalDivider()
 
-      metadata.forEach { (key, value) ->
-        // Skip userName and title as they're already shown
-        if (key != "userName" && key != "title") {
-          InfoRow(label = key.replaceFirstChar { it.uppercase() }, value = value.toString())
+          metadata.forEach { (key, value) ->
+            // Skip userName and title as they're already shown
+            if (key != "userName" && key != "title") {
+              InfoRow(label = key.replaceFirstChar { it.uppercase() }, value = value.toString())
+            }
+          }
         }
-      }
-    }
   }
 }
 
@@ -378,32 +389,20 @@ private fun getIconAndColor(
   return when (activityType) {
     ActivityType.CREATED ->
         when (entityType) {
-          EntityType.MEETING ->
-              Icons.Default.CalendarToday to Color(0xFF6200EA)
-          EntityType.MESSAGE ->
-              Icons.AutoMirrored.Filled.Message to Color(0xFF4CAF50)
-          EntityType.FILE ->
-              Icons.Default.FileUpload to Color(0xFF2196F3)
+          EntityType.MEETING -> Icons.Default.CalendarToday to Color(0xFF6200EA)
+          EntityType.MESSAGE -> Icons.AutoMirrored.Filled.Message to Color(0xFF4CAF50)
+          EntityType.FILE -> Icons.Default.FileUpload to Color(0xFF2196F3)
           else -> Icons.AutoMirrored.Filled.Article to Color(0xFF6200EA)
         }
-    ActivityType.UPDATED ->
-        Icons.Default.Edit to Color(0xFFFF9800)
-    ActivityType.DELETED ->
-        Icons.Default.Delete to Color(0xFFF44336)
-    ActivityType.UPLOADED ->
-        Icons.Default.Upload to Color(0xFF2196F3)
-    ActivityType.JOINED ->
-        Icons.Default.PersonAdd to Color(0xFF4CAF50)
-    ActivityType.LEFT ->
-        Icons.AutoMirrored.Filled.ExitToApp to Color(0xFFFF9800)
-    ActivityType.ASSIGNED ->
-        Icons.Default.PersonAdd to Color(0xFF4CAF50)
-    ActivityType.UNASSIGNED ->
-        Icons.Default.PersonRemove to Color(0xFFFF9800)
-    ActivityType.ROLE_CHANGED ->
-        Icons.Default.ChangeCircle to Color(0xFF2196F3)
-    ActivityType.DOWNLOADED ->
-        Icons.Default.Download to Color(0xFF4CAF50)
+    ActivityType.UPDATED -> Icons.Default.Edit to Color(0xFFFF9800)
+    ActivityType.DELETED -> Icons.Default.Delete to Color(0xFFF44336)
+    ActivityType.UPLOADED -> Icons.Default.Upload to Color(0xFF2196F3)
+    ActivityType.JOINED -> Icons.Default.PersonAdd to Color(0xFF4CAF50)
+    ActivityType.LEFT -> Icons.AutoMirrored.Filled.ExitToApp to Color(0xFFFF9800)
+    ActivityType.ASSIGNED -> Icons.Default.PersonAdd to Color(0xFF4CAF50)
+    ActivityType.UNASSIGNED -> Icons.Default.PersonRemove to Color(0xFFFF9800)
+    ActivityType.ROLE_CHANGED -> Icons.Default.ChangeCircle to Color(0xFF2196F3)
+    ActivityType.DOWNLOADED -> Icons.Default.Download to Color(0xFF4CAF50)
     else -> Icons.AutoMirrored.Filled.Article to Color(0xFF757575)
   }
 }

@@ -91,8 +91,7 @@ class FirestoreProjectRepository(
         entityType = EntityType.PROJECT,
         entityId = project.projectId,
         userId = creatorId,
-        metadata = mapOf("name" to project.name)
-    )
+        metadata = mapOf("name" to project.name))
 
     project.projectId
   }
@@ -114,18 +113,14 @@ class FirestoreProjectRepository(
           entityType = EntityType.PROJECT,
           entityId = project.projectId,
           userId = currentUserId,
-          metadata = mapOf("name" to project.name)
-      )
+          metadata = mapOf("name" to project.name))
     }
   }
 
   override suspend fun deleteProject(projectId: String): Result<Unit> = runCatching {
     // Get project name before deletion for activity log
-    val projectSnapshot = firestore
-        .collection(FirestorePaths.PROJECTS)
-        .document(projectId)
-        .get()
-        .await()
+    val projectSnapshot =
+        firestore.collection(FirestorePaths.PROJECTS).document(projectId).get().await()
     val projectName = projectSnapshot.toObject(Project::class.java)?.name
 
     // Perform deletion
@@ -140,8 +135,7 @@ class FirestoreProjectRepository(
           entityType = EntityType.PROJECT,
           entityId = projectId,
           userId = currentUserId,
-          metadata = mapOf("name" to projectName)
-      )
+          metadata = mapOf("name" to projectName))
     }
   }
 
@@ -188,8 +182,7 @@ class FirestoreProjectRepository(
         entityType = EntityType.MEMBER,
         entityId = userId,
         userId = userId,
-        metadata = mapOf("role" to role.name)
-    )
+        metadata = mapOf("role" to role.name))
   }
 
   override suspend fun removeMember(projectId: String, userId: String): Result<Unit> = runCatching {
@@ -212,13 +205,14 @@ class FirestoreProjectRepository(
       role: ProjectRole
   ): Result<Unit> = runCatching {
     // Fetch old member to get previous role
-    val oldMemberDoc = firestore
-        .collection(FirestorePaths.PROJECTS)
-        .document(projectId)
-        .collection("members")
-        .document(userId)
-        .get()
-        .await()
+    val oldMemberDoc =
+        firestore
+            .collection(FirestorePaths.PROJECTS)
+            .document(projectId)
+            .collection("members")
+            .document(userId)
+            .get()
+            .await()
     val oldMember = oldMemberDoc.toObject(Member::class.java)
     val oldRole = oldMember?.role
 
@@ -240,12 +234,8 @@ class FirestoreProjectRepository(
           entityType = EntityType.MEMBER,
           entityId = userId,
           userId = currentUserId,
-          metadata = mapOf(
-              "targetUserId" to userId,
-              "oldRole" to oldRole.name,
-              "newRole" to role.name
-          )
-      )
+          metadata =
+              mapOf("targetUserId" to userId, "oldRole" to oldRole.name, "newRole" to role.name))
     }
   }
 }

@@ -62,40 +62,31 @@ class ActivityDetailViewModel(
         val activity = repository.getActivityById(activityId)
 
         if (activity == null) {
-          _uiState.update {
-            it.copy(isLoading = false, errorMsg = "Activity not found")
-          }
+          _uiState.update { it.copy(isLoading = false, errorMsg = "Activity not found") }
           return@launch
         }
 
         // Enrich with user name and project name
         val userName = fetchUserName(activity.userId)
         val projectName = fetchProjectName(activity.projectId)
-        val enrichedActivity = activity.copy(
-            metadata = activity.metadata + ("userName" to userName) + ("projectName" to projectName)
-        )
+        val enrichedActivity =
+            activity.copy(
+                metadata =
+                    activity.metadata + ("userName" to userName) + ("projectName" to projectName))
 
         // Fetch entity details based on type
         val entityDetails = fetchEntityDetails(enrichedActivity)
 
         _uiState.update {
-          it.copy(
-              activity = enrichedActivity,
-              entityDetails = entityDetails,
-              isLoading = false
-          )
+          it.copy(activity = enrichedActivity, entityDetails = entityDetails, isLoading = false)
         }
       } catch (e: Exception) {
-        _uiState.update {
-          it.copy(isLoading = false, errorMsg = e.message ?: "Unknown error")
-        }
+        _uiState.update { it.copy(isLoading = false, errorMsg = e.message ?: "Unknown error") }
       }
     }
   }
 
-  /**
-   * Deletes the current activity.
-   */
+  /** Deletes the current activity. */
   fun deleteActivity() {
     val activityId = _uiState.value.activity?.activityId ?: return
 
@@ -106,32 +97,22 @@ class ActivityDetailViewModel(
     }
   }
 
-  /**
-   * Clears the error message.
-   */
+  /** Clears the error message. */
   fun clearError() {
     _uiState.update { it.copy(errorMsg = null) }
   }
 
-  /**
-   * Fetches the display name for a user.
-   */
+  /** Fetches the display name for a user. */
   private suspend fun fetchUserName(userId: String): String {
     return try {
-      val userDoc = firestore
-          .collection(FirestorePaths.USERS)
-          .document(userId)
-          .get()
-          .await()
+      val userDoc = firestore.collection(FirestorePaths.USERS).document(userId).get().await()
       userDoc.getString("displayName") ?: "Unknown User"
     } catch (e: Exception) {
       "Unknown User"
     }
   }
 
-  /**
-   * Fetches the project name.
-   */
+  /** Fetches the project name. */
   private suspend fun fetchProjectName(projectId: String): String {
     // If projectId is empty, return "None"
     if (projectId.isEmpty()) {
@@ -139,11 +120,8 @@ class ActivityDetailViewModel(
     }
 
     return try {
-      val projectDoc = firestore
-          .collection(FirestorePaths.PROJECTS)
-          .document(projectId)
-          .get()
-          .await()
+      val projectDoc =
+          firestore.collection(FirestorePaths.PROJECTS).document(projectId).get().await()
 
       // If project doesn't exist or has no name, return "None"
       if (!projectDoc.exists()) {
@@ -156,9 +134,7 @@ class ActivityDetailViewModel(
     }
   }
 
-  /**
-   * Fetches additional details about the entity related to this activity.
-   */
+  /** Fetches additional details about the entity related to this activity. */
   private suspend fun fetchEntityDetails(activity: Activity): Map<String, Any> {
     return try {
       when (activity.entityType) {
@@ -175,13 +151,14 @@ class ActivityDetailViewModel(
   }
 
   private suspend fun fetchMeetingDetails(projectId: String, meetingId: String): Map<String, Any> {
-    val doc = firestore
-        .collection(FirestorePaths.PROJECTS)
-        .document(projectId)
-        .collection(FirestorePaths.MEETINGS)
-        .document(meetingId)
-        .get()
-        .await()
+    val doc =
+        firestore
+            .collection(FirestorePaths.PROJECTS)
+            .document(projectId)
+            .collection(FirestorePaths.MEETINGS)
+            .document(meetingId)
+            .get()
+            .await()
 
     return buildMap {
       doc.getString("title")?.let { put("title", it) }
@@ -194,13 +171,14 @@ class ActivityDetailViewModel(
   }
 
   private suspend fun fetchTaskDetails(projectId: String, taskId: String): Map<String, Any> {
-    val doc = firestore
-        .collection(FirestorePaths.PROJECTS)
-        .document(projectId)
-        .collection(FirestorePaths.TASKS)
-        .document(taskId)
-        .get()
-        .await()
+    val doc =
+        firestore
+            .collection(FirestorePaths.PROJECTS)
+            .document(projectId)
+            .collection(FirestorePaths.TASKS)
+            .document(taskId)
+            .get()
+            .await()
 
     return buildMap {
       doc.getString("title")?.let { put("title", it) }
@@ -218,11 +196,7 @@ class ActivityDetailViewModel(
   }
 
   private suspend fun fetchProjectDetails(projectId: String): Map<String, Any> {
-    val doc = firestore
-        .collection(FirestorePaths.PROJECTS)
-        .document(projectId)
-        .get()
-        .await()
+    val doc = firestore.collection(FirestorePaths.PROJECTS).document(projectId).get().await()
 
     return buildMap {
       doc.getString("name")?.let { put("name", it) }
@@ -232,19 +206,16 @@ class ActivityDetailViewModel(
   }
 
   private suspend fun fetchMemberDetails(projectId: String, userId: String): Map<String, Any> {
-    val memberDoc = firestore
-        .collection(FirestorePaths.PROJECTS)
-        .document(projectId)
-        .collection("members")
-        .document(userId)
-        .get()
-        .await()
+    val memberDoc =
+        firestore
+            .collection(FirestorePaths.PROJECTS)
+            .document(projectId)
+            .collection("members")
+            .document(userId)
+            .get()
+            .await()
 
-    val userDoc = firestore
-        .collection(FirestorePaths.USERS)
-        .document(userId)
-        .get()
-        .await()
+    val userDoc = firestore.collection(FirestorePaths.USERS).document(userId).get().await()
 
     return buildMap {
       userDoc.getString("displayName")?.let { put("displayName", it) }

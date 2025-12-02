@@ -152,13 +152,14 @@ class FirestoreMeetingRepository(
 
   override suspend fun updateMeeting(meeting: Meeting): Result<Unit> = runCatching {
     // Fetch old meeting to detect status changes
-    val oldMeetingDoc = firestore
-        .collection(FirestorePaths.PROJECTS)
-        .document(meeting.projectId)
-        .collection(FirestorePaths.MEETINGS)
-        .document(meeting.meetingID)
-        .get()
-        .await()
+    val oldMeetingDoc =
+        firestore
+            .collection(FirestorePaths.PROJECTS)
+            .document(meeting.projectId)
+            .collection(FirestorePaths.MEETINGS)
+            .document(meeting.meetingID)
+            .get()
+            .await()
     val oldMeeting = oldMeetingDoc.toObject(Meeting::class.java)
 
     // Perform the update
@@ -181,11 +182,11 @@ class FirestoreMeetingRepository(
             entityType = EntityType.MEETING,
             entityId = meeting.meetingID,
             userId = currentUserId,
-            metadata = mapOf(
-                "title" to meeting.title,
-                "oldStatus" to oldMeeting.status.name,
-                "newStatus" to meeting.status.name
-            ))
+            metadata =
+                mapOf(
+                    "title" to meeting.title,
+                    "oldStatus" to oldMeeting.status.name,
+                    "newStatus" to meeting.status.name))
       } else {
         // Other fields changed - use UPDATED
         ActivityLogger.logActivity(
