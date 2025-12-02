@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -57,6 +58,7 @@ class UnifiedSelfNotesRepositoryTest {
 
   private lateinit var repository: UnifiedSelfNotesRepository
   private val testDispatcher = StandardTestDispatcher()
+  private val testScope = TestScope(testDispatcher)
 
   // To control the preference flow for testing the init block
   private val isCloudEnabledFlow = MutableStateFlow(false)
@@ -87,7 +89,7 @@ class UnifiedSelfNotesRepositoryTest {
 
     repository =
         UnifiedSelfNotesRepository(
-            context, localDao, firestoreRepo, userPreferences, auth, testDispatcher)
+            context, localDao, firestoreRepo, userPreferences, auth, testScope, testDispatcher)
   }
 
   @After

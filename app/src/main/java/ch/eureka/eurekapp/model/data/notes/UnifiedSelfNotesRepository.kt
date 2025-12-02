@@ -22,7 +22,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
@@ -52,6 +51,7 @@ data class SyncStats(val upserts: Int = 0, val deletes: Int = 0) {
  * @property userPreferences The repository for managing user preferences, such as the storage mode
  *   toggle.
  * @property auth The Firebase Authentication instance used to retrieve the current user's ID.
+ * @property applicationScope The scope used for long-running observation operations.
  * @property dispatcher The coroutine dispatcher for background operations (default: IO).
  */
 class UnifiedSelfNotesRepository(
@@ -60,10 +60,9 @@ class UnifiedSelfNotesRepository(
     private val firestoreRepo: FirestoreSelfNotesRepository,
     private val userPreferences: UserPreferencesRepository,
     private val auth: FirebaseAuth,
+    private val applicationScope: CoroutineScope,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : SelfNotesRepository {
-
-  private val repositoryScope = CoroutineScope(SupervisorJob() + dispatcher)
 
   init {
     startObservingRemoteNotes()
@@ -101,7 +100,7 @@ class UnifiedSelfNotesRepository(
    */
   @OptIn(ExperimentalCoroutinesApi::class)
   private fun startObservingRemoteNotes() {
-    repositoryScope.launch {
+    applicationScope.launch {
       try {
         userPreferences.isCloudStorageEnabled
             .flatMapLatest { isCloudEnabled ->
