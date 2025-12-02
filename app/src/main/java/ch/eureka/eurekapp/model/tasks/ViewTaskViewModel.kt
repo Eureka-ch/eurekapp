@@ -9,6 +9,8 @@ import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.task.TaskRepository
+import ch.eureka.eurekapp.model.data.template.TaskTemplate
+import ch.eureka.eurekapp.model.data.template.TaskTemplateRepository
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.model.downloads.DownloadService
 import ch.eureka.eurekapp.model.downloads.DownloadedFile
@@ -35,6 +37,8 @@ class ViewTaskViewModel(
     taskId: String,
     private val downloadedFileDao: DownloadedFileDao,
     taskRepository: TaskRepository = RepositoriesProvider.taskRepository,
+    private val templateRepository: TaskTemplateRepository =
+        RepositoriesProvider.taskTemplateRepository,
     connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver,
     private val userRepository: UserRepository = RepositoriesProvider.userRepository,
     dispatcher: CoroutineDispatcher = Dispatchers.Main
@@ -83,18 +87,30 @@ class ViewTaskViewModel(
                               status = task.status,
                               isLoading = false,
                               errorMsg = null,
-                              assignedUsers = emptyList())
+                              assignedUsers = emptyList(),
+                              customData = task.customData)
 
-                      if (task.assignedUserIds.isEmpty()) {
-                        flowOf(baseState)
-                      } else {
-                        // Combine all user flows to get assigned users
-                        val userFlows =
-                            task.assignedUserIds.map { userId ->
-                              userRepository.getUserById(userId)
-                            }
-                        combine(userFlows) { users -> users.toList().filterNotNull() }
-                            .map { assignedUsers -> baseState.copy(assignedUsers = assignedUsers) }
+                      // Combine users and template flows
+                      val userFlow =
+                          if (task.assignedUserIds.isEmpty()) {
+                            flowOf(emptyList())
+                          } else {
+                            val userFlows =
+                                task.assignedUserIds.map { userId ->
+                                  userRepository.getUserById(userId)
+                                }
+                            combine(userFlows) { users -> users.toList().filterNotNull() }
+                          }
+
+                      val templateFlow: kotlinx.coroutines.flow.Flow<TaskTemplate?> =
+                          if (task.templateId.isNotEmpty()) {
+                            templateRepository.getTemplateById(task.projectId, task.templateId)
+                          } else {
+                            flowOf(null)
+                          }
+
+                      combine(userFlow, templateFlow) { users, template ->
+                        baseState.copy(assignedUsers = users, selectedTemplate = template)
                       }
                     } else {
                       flowOf(ViewTaskState(isLoading = false, errorMsg = "Task not found."))

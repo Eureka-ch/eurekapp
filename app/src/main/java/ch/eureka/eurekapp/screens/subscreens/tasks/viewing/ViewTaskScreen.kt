@@ -31,9 +31,11 @@ import ch.eureka.eurekapp.model.tasks.ViewTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AttachmentsList
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.FieldInteractionMode
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDescriptionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskTitleField
+import ch.eureka.eurekapp.screens.subscreens.tasks.TemplateFieldsSection
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.help.HelpContext
@@ -133,6 +135,14 @@ fun ViewTaskScreen(
                     Text(
                         text = "Status: ${viewTaskState.status.name.replace("_", " ")}",
                         modifier = Modifier.testTag(ViewTaskScreenTestTags.TASK_STATUS))
+
+                    if (viewTaskState.selectedTemplate != null) {
+                      TemplateFieldsSection(
+                          template = viewTaskState.selectedTemplate,
+                          customData = viewTaskState.customData,
+                          onFieldValueChange = { _, _ -> },
+                          mode = FieldInteractionMode.ViewOnly)
+                    }
 
                     if (!isConnected) {
                       Text(

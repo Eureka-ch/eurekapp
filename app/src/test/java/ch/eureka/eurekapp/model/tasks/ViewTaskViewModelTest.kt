@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.model.tasks
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.data.template.TaskTemplateRepository
 import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
 import com.google.firebase.Timestamp
 import io.mockk.every
@@ -37,6 +38,7 @@ class ViewTaskViewModelTest {
   private val testDispatcher = UnconfinedTestDispatcher()
 
   private lateinit var mockTaskRepository: ch.eureka.eurekapp.model.data.task.TaskRepository
+  private lateinit var mockTemplateRepository: TaskTemplateRepository
   private lateinit var mockUserRepository: ch.eureka.eurekapp.model.data.user.UserRepository
   private lateinit var mockConnectivityObserver: ConnectivityObserver
   private lateinit var mockDownloadedFileDao: DownloadedFileDao
@@ -46,6 +48,8 @@ class ViewTaskViewModelTest {
   fun setUp() {
     Dispatchers.setMain(testDispatcher)
     mockTaskRepository = mockk()
+    mockTemplateRepository = mockk()
+    every { mockTemplateRepository.getTemplateById(any(), any()) } returns flowOf(null)
     mockConnectivityObserver = mockk()
     every { mockConnectivityObserver.isConnected } returns flowOf(true)
     mockUserRepository = mockk()
@@ -82,6 +86,7 @@ class ViewTaskViewModelTest {
             taskId,
             mockDownloadedFileDao,
             mockTaskRepository,
+            mockTemplateRepository,
             mockConnectivityObserver,
             mockUserRepository,
             testDispatcher)
@@ -112,6 +117,7 @@ class ViewTaskViewModelTest {
             taskId,
             mockDownloadedFileDao,
             mockTaskRepository,
+            mockTemplateRepository,
             mockConnectivityObserver,
             mockUserRepository,
             testDispatcher)
@@ -142,6 +148,7 @@ class ViewTaskViewModelTest {
             taskId,
             mockDownloadedFileDao,
             mockTaskRepository,
+            mockTemplateRepository,
             mockConnectivityObserver,
             mockUserRepository,
             testDispatcher)
@@ -186,6 +193,7 @@ class ViewTaskViewModelTest {
             taskId,
             mockDownloadedFileDao,
             mockTaskRepository,
+            mockTemplateRepository,
             mockConnectivityObserver,
             mockUserRepository,
             testDispatcher)
@@ -225,6 +233,7 @@ class ViewTaskViewModelTest {
             taskId,
             mockDownloadedFileDao,
             mockTaskRepository,
+            mockTemplateRepository,
             mockConnectivityObserver,
             mockUserRepository,
             testDispatcher)
@@ -278,6 +287,7 @@ class ViewTaskViewModelTest {
             taskId,
             mockDownloadedFileDao,
             mockTaskRepository,
+            mockTemplateRepository,
             mockConnectivityObserver,
             mockUserRepository,
             testDispatcher)
@@ -323,6 +333,7 @@ class ViewTaskViewModelTest {
             taskId,
             mockDownloadedFileDao,
             mockTaskRepository,
+            mockTemplateRepository,
             mockConnectivityObserver,
             mockUserRepository,
             testDispatcher)

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class CreateTemplateViewModel(
     private val repository: TaskTemplateRepository,
@@ -59,10 +60,11 @@ class CreateTemplateViewModel(
               description = _state.value.description,
               definedFields = TaskTemplateSchema(_state.value.fields),
               createdBy = "")
-      repository
-          .createTemplate(template)
-          .fold(onSuccess = onSuccess, onFailure = { onFailure(it.message ?: "Save failed") })
-      ops.setSaving(false)
+      val result = repository.createTemplate(template)
+      withContext(Dispatchers.Main) {
+        result.fold(onSuccess = onSuccess, onFailure = { onFailure(it.message ?: "Save failed") })
+        ops.setSaving(false)
+      }
     }
   }
 }

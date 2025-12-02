@@ -5,6 +5,8 @@ import android.net.Uri
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.data.task.Task
+import ch.eureka.eurekapp.model.data.template.TaskTemplate
+import ch.eureka.eurekapp.model.data.template.TaskTemplateRepository
 import ch.eureka.eurekapp.ui.tasks.MockProjectRepository
 import ch.eureka.eurekapp.ui.tasks.MockTaskRepository
 import ch.eureka.eurekapp.ui.tasks.MockUserRepository
@@ -13,7 +15,10 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -43,6 +48,7 @@ class EditTaskViewModelTest {
   private lateinit var mockFileRepository: MockFileStorageRepository
   private lateinit var mockProjectRepository: MockProjectRepository
   private lateinit var mockUserRepository: MockUserRepository
+  private lateinit var mockTemplateRepository: MockTaskTemplateRepository
   private lateinit var viewModel: EditTaskViewModel
   private lateinit var mockContext: Context
 
@@ -53,6 +59,7 @@ class EditTaskViewModelTest {
     mockFileRepository = MockFileStorageRepository()
     mockProjectRepository = MockProjectRepository()
     mockUserRepository = MockUserRepository()
+    mockTemplateRepository = MockTaskTemplateRepository()
     mockContext =
         mockk(relaxed = true) {
           val contentResolver = mockk<android.content.ContentResolver>(relaxed = true)
@@ -90,6 +97,7 @@ class EditTaskViewModelTest {
             fileRepository = mockFileRepository,
             projectRepository = mockProjectRepository,
             userRepository = mockUserRepository,
+            templateRepository = mockTemplateRepository,
             getCurrentUserId = { null },
             dispatcher = testDispatcher)
     advanceUntilIdle()
@@ -107,6 +115,7 @@ class EditTaskViewModelTest {
             fileRepository = mockFileRepository,
             projectRepository = mockProjectRepository,
             userRepository = mockUserRepository,
+            templateRepository = mockTemplateRepository,
             getCurrentUserId = { null },
             dispatcher = testDispatcher)
     advanceUntilIdle()
@@ -124,6 +133,7 @@ class EditTaskViewModelTest {
             fileRepository = mockFileRepository,
             projectRepository = mockProjectRepository,
             userRepository = mockUserRepository,
+            templateRepository = mockTemplateRepository,
             getCurrentUserId = { null },
             dispatcher = testDispatcher)
     advanceUntilIdle()
@@ -152,7 +162,13 @@ class EditTaskViewModelTest {
     mockTaskRepository.addTask(task)
 
     viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+        EditTaskViewModel(
+            taskRepository = mockTaskRepository,
+            fileRepository = mockFileRepository,
+            projectRepository = mockProjectRepository,
+            userRepository = mockUserRepository,
+            templateRepository = mockTemplateRepository,
+            dispatcher = testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
 
@@ -163,7 +179,13 @@ class EditTaskViewModelTest {
   @Test
   fun addDependency_addsDependencyToList() = runTest {
     viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+        EditTaskViewModel(
+            taskRepository = mockTaskRepository,
+            fileRepository = mockFileRepository,
+            projectRepository = mockProjectRepository,
+            userRepository = mockUserRepository,
+            templateRepository = mockTemplateRepository,
+            dispatcher = testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
 
@@ -190,7 +212,13 @@ class EditTaskViewModelTest {
     mockTaskRepository.addTask(task)
 
     viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+        EditTaskViewModel(
+            taskRepository = mockTaskRepository,
+            fileRepository = mockFileRepository,
+            projectRepository = mockProjectRepository,
+            userRepository = mockUserRepository,
+            templateRepository = mockTemplateRepository,
+            dispatcher = testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
 
@@ -219,7 +247,13 @@ class EditTaskViewModelTest {
     mockTaskRepository.addTask(task)
 
     viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+        EditTaskViewModel(
+            taskRepository = mockTaskRepository,
+            fileRepository = mockFileRepository,
+            projectRepository = mockProjectRepository,
+            userRepository = mockUserRepository,
+            templateRepository = mockTemplateRepository,
+            dispatcher = testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
 
@@ -251,7 +285,13 @@ class EditTaskViewModelTest {
     mockTaskRepository.addTask(task)
 
     viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+        EditTaskViewModel(
+            taskRepository = mockTaskRepository,
+            fileRepository = mockFileRepository,
+            projectRepository = mockProjectRepository,
+            userRepository = mockUserRepository,
+            templateRepository = mockTemplateRepository,
+            dispatcher = testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
 
@@ -274,7 +314,13 @@ class EditTaskViewModelTest {
     mockTaskRepository.addTask(task)
 
     viewModel =
-        EditTaskViewModel(mockTaskRepository, mockFileRepository, dispatcher = testDispatcher)
+        EditTaskViewModel(
+            taskRepository = mockTaskRepository,
+            fileRepository = mockFileRepository,
+            projectRepository = mockProjectRepository,
+            userRepository = mockUserRepository,
+            templateRepository = mockTemplateRepository,
+            dispatcher = testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
 
@@ -305,6 +351,7 @@ class EditTaskViewModelTest {
             fileRepository = mockFileRepository,
             projectRepository = mockProjectRepository,
             userRepository = mockUserRepository,
+            templateRepository = mockTemplateRepository,
             getCurrentUserId = { "test-user" },
             dispatcher = testDispatcher)
     viewModel.loadTask("project123", "task123")
@@ -345,6 +392,7 @@ class EditTaskViewModelTest {
             fileRepository = mockFileRepository,
             projectRepository = mockProjectRepository,
             userRepository = mockUserRepository,
+            templateRepository = mockTemplateRepository,
             getCurrentUserId = { "test-user" },
             dispatcher = testDispatcher)
     viewModel.loadTask("project123", "task123")
@@ -380,5 +428,23 @@ class EditTaskViewModelTest {
     // Error message should be set by the cycle validation in editTask
     assertNotNull(state.errorMsg)
     assertTrue(state.errorMsg!!.contains("circular") || state.errorMsg!!.contains("dependency"))
+  }
+
+  private class MockTaskTemplateRepository : TaskTemplateRepository {
+    private val templateFlow = MutableStateFlow<TaskTemplate?>(null)
+
+    override fun getTemplatesInProject(projectId: String): Flow<List<TaskTemplate>> =
+        flowOf(emptyList())
+
+    override fun getTemplateById(projectId: String, templateId: String): Flow<TaskTemplate?> =
+        templateFlow
+
+    override suspend fun createTemplate(template: TaskTemplate): Result<String> =
+        Result.success(template.templateID)
+
+    override suspend fun updateTemplate(template: TaskTemplate): Result<Unit> = Result.success(Unit)
+
+    override suspend fun deleteTemplate(projectId: String, templateId: String): Result<Unit> =
+        Result.success(Unit)
   }
 }
