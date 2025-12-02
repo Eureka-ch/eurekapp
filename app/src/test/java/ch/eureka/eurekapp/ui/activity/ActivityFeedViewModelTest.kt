@@ -136,7 +136,7 @@ class ActivityFeedViewModelTest {
             createActivity("4", EntityType.FILE))
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
-    viewModel.applyFilter(EntityType.PROJECT)
+    viewModel.applyEntityTypeFilter(EntityType.PROJECT)
     advanceUntilIdle()
 
     val state = viewModel.uiState.value
@@ -157,7 +157,7 @@ class ActivityFeedViewModelTest {
             createActivity("3", EntityType.MEETING))
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
-    viewModel.applyFilter(EntityType.MEETING)
+    viewModel.applyEntityTypeFilter(EntityType.MEETING)
     advanceUntilIdle()
 
     val state = viewModel.uiState.value
@@ -175,7 +175,7 @@ class ActivityFeedViewModelTest {
             createActivity("3", EntityType.MEETING))
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
-    viewModel.applyFilter(EntityType.FILE)
+    viewModel.applyEntityTypeFilter(EntityType.FILE)
     advanceUntilIdle()
 
     val state = viewModel.uiState.value
@@ -185,7 +185,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun `clearFilters shows all activities`() = runTest {
+  fun `clearFilters shows empty state`() = runTest {
     val activities =
         listOf(
             createActivity("1", EntityType.PROJECT),
@@ -194,7 +194,7 @@ class ActivityFeedViewModelTest {
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
     // First apply a filter
-    viewModel.applyFilter(EntityType.PROJECT)
+    viewModel.applyEntityTypeFilter(EntityType.PROJECT)
     advanceUntilIdle()
     assertEquals(1, viewModel.uiState.value.activities.size)
 
@@ -204,19 +204,32 @@ class ActivityFeedViewModelTest {
 
     val state = viewModel.uiState.value
     assertNull(state.filterEntityType)
-    assertEquals(3, state.activities.size)
+    assertEquals(0, state.activities.size) // Empty state when no filter selected
+    assertEquals(3, state.allActivities.size) // Cache still has all activities
   }
 
   @Test
-  fun `clearFilters loads activities if cache is empty`() = runTest {
+  fun `clearFilters results in empty displayed activities`() = runTest {
     val activities = listOf(createActivity("1", EntityType.PROJECT))
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
+    // Load activities first
+    viewModel.loadActivities()
+    advanceUntilIdle()
+
+    // Apply a filter to show activities
+    viewModel.applyEntityTypeFilter(EntityType.PROJECT)
+    advanceUntilIdle()
+    assertEquals(1, viewModel.uiState.value.activities.size)
+
+    // Clear filters - should show empty state
     viewModel.clearFilters()
     advanceUntilIdle()
 
-    coVerify { repository.getActivities(testUserId) }
-    assertEquals(1, viewModel.uiState.value.activities.size)
+    val state = viewModel.uiState.value
+    assertNull(state.filterEntityType)
+    assertEquals(0, state.activities.size) // No activities displayed when no filter
+    assertEquals(1, state.allActivities.size) // Cache still has loaded data
   }
 
   @Test
@@ -296,7 +309,7 @@ class ActivityFeedViewModelTest {
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
     coEvery { repository.deleteActivity("1") } returns Result.success(Unit)
 
-    viewModel.applyFilter(EntityType.PROJECT)
+    viewModel.applyEntityTypeFilter(EntityType.PROJECT)
     advanceUntilIdle()
     assertEquals(2, viewModel.uiState.value.activities.size)
 
@@ -323,7 +336,7 @@ class ActivityFeedViewModelTest {
     val activities = listOf(createActivity("1", EntityType.PROJECT))
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
-    viewModel.applyFilter(EntityType.PROJECT)
+    viewModel.applyEntityTypeFilter(EntityType.PROJECT)
     advanceUntilIdle()
 
     coVerify { repository.getActivities(testUserId) }
