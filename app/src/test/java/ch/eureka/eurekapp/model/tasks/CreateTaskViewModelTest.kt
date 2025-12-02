@@ -42,9 +42,8 @@ import org.junit.Before
 import org.junit.Test
 
 /*
- * Co-Authored-By: Claude <noreply@anthropic.com>
- * Note: This file was partially written by GPT-5 Codex Co-author : GPT-5
- * Co-authored-by: Claude Sonnet 4.5
+ * Portions of this code were generated with the help of Claude <noreply@anthropic.com> and GPT-5 Codex.
+ * Co-Authored-By: Claude Sonnet 4.5
  */
 
 @OptIn(ExperimentalCoroutinesApi::class)

@@ -29,11 +29,8 @@ import kotlinx.coroutines.launch
 
 /*
  * Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
- * Portions of this code were generated with the help of Grok.
- * Co-Authored-By: Claude <noreply@anthropic.com>
- * Note: This file was partially written by GPT-5 Codex
- * Co-author : GPT-5
- * Co-authored-by: Claude Sonnet 4.5
+ * Portions of this code were generated with the help of Claude <noreply@anthropic.com>, Grok, and GPT-5 Codex.
+ * Co-Authored-By: Claude Sonnet 4.5
  */
 
 /** ViewModel for the CreateTask screen. This ViewModel manages the state of input fields. */
