@@ -102,15 +102,20 @@ class UnifiedSelfNotesRepository(
   @OptIn(ExperimentalCoroutinesApi::class)
   private fun startObservingRemoteNotes() {
     repositoryScope.launch {
-      userPreferences.isCloudStorageEnabled
-          .flatMapLatest { isCloudEnabled ->
-            if (isCloudEnabled && auth.currentUser != null) {
-              firestoreRepo.getNotes()
-            } else {
-              emptyFlow()
+      try {
+        userPreferences.isCloudStorageEnabled
+            .flatMapLatest { isCloudEnabled ->
+              // Only sync if enabled AND user is logged in
+              if (isCloudEnabled && auth.currentUser != null) {
+                firestoreRepo.getNotes()
+              } else {
+                emptyFlow()
+              }
             }
-          }
-          .collectLatest { remoteNotes -> saveRemoteNotesLocally(remoteNotes) }
+            .collectLatest { remoteNotes -> saveRemoteNotesLocally(remoteNotes) }
+      } catch (e: Exception) {
+        Log.e("UnifiedSelfNotesRepository", "Failed to start observing remote notes", e)
+      }
     }
   }
 
