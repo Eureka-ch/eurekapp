@@ -351,37 +351,50 @@ class UnifiedSelfNotesRepository(
   suspend fun setStorageMode(enableCloud: Boolean): SyncStats =
       withContext(dispatcher) {
         userPreferences.setCloudStorageEnabled(enableCloud)
-
-        var stats = SyncStats(0, 0)
         val userId = getCurrentUserId()
 
         if (enableCloud) {
-          localDao.makeAllMessagesPublicForUser(userId)
-          if (isInternetAvailable()) {
-            stats = syncPendingNotes()
-          }
+          enableCloudStorage(userId)
         } else {
-          if (isInternetAvailable()) {
-            try {
-              val cloudNotes = firestoreRepo.getNotes().first()
-              cloudNotes.forEach { note -> firestoreRepo.deleteNote(note.messageID) }
-              Log.d(
-                  "UnifiedSelfNotesRepository",
-                  "Deleted ${cloudNotes.size} notes from cloud due to local switch.")
-            } catch (e: Exception) {
-              Log.e("UnifiedSelfNotesRepository", "Failed to clear cloud notes", e)
-            }
-          }
-
-          val localEntities = localDao.getMessagesForUser(userId).first()
-          val privateEntities =
-              localEntities.map { it.copy(isPrivacyLocalOnly = true, isPendingSync = false) }
-          if (privateEntities.isNotEmpty()) {
-            localDao.insertMessages(privateEntities)
-          }
+          disableCloudStorage(userId)
+          SyncStats(0, 0)
         }
-        stats
       }
+
+  private suspend fun enableCloudStorage(userId: String): SyncStats {
+    localDao.makeAllMessagesPublicForUser(userId)
+    return if (isInternetAvailable()) {
+      syncPendingNotes()
+    } else {
+      SyncStats(0, 0)
+    }
+  }
+
+  private suspend fun disableCloudStorage(userId: String) {
+    if (isInternetAvailable()) {
+      clearAllCloudNotes()
+    }
+    makeLocalNotesPrivate(userId)
+  }
+
+  private suspend fun clearAllCloudNotes() {
+    try {
+      val cloudNotes = firestoreRepo.getNotes().first()
+      cloudNotes.forEach { note -> firestoreRepo.deleteNote(note.messageID) }
+      Log.d("UnifiedSelfNotesRepository", "Deleted ${cloudNotes.size} notes from cloud...")
+    } catch (e: Exception) {
+      Log.e("UnifiedSelfNotesRepository", "Failed to clear cloud notes", e)
+    }
+  }
+
+  private suspend fun makeLocalNotesPrivate(userId: String) {
+    val localEntities = localDao.getMessagesForUser(userId).first()
+    val privateEntities =
+        localEntities.map { it.copy(isPrivacyLocalOnly = true, isPendingSync = false) }
+    if (privateEntities.isNotEmpty()) {
+      localDao.insertMessages(privateEntities)
+    }
+  }
 
   /**
    * Uploads (or deletes) all notes marked as 'isPendingSync' to the cloud. This is called by the
@@ -410,25 +423,35 @@ class UnifiedSelfNotesRepository(
 
       pendingNotes.forEach { entity ->
         if (entity.isDeleted) {
-          val result = firestoreRepo.deleteNote(entity.messageId)
-          if (result.isSuccess) {
-            localDao.deleteMessage(entity.messageId, userId)
-            successDeletes++
-          } else {
-            Log.e("UnifiedSelfNotesRepository", "Retry failed for delete: ${entity.messageId}")
-          }
+          if (syncDelete(entity, userId)) successDeletes++
         } else {
-          val domainMessage = entity.toDomainModel()
-          val result = firestoreRepo.createNote(domainMessage)
-          if (result.isSuccess) {
-            localDao.markAsSynced(entity.messageId, userId)
-            successUpserts++
-          } else {
-            Log.e("UnifiedSelfNotesRepository", "Retry failed for upsert: ${entity.messageId}")
-          }
+          if (syncUpsert(entity, userId)) successUpserts++
         }
       }
       SyncStats(upserts = successUpserts, deletes = successDeletes)
+    }
+  }
+
+  private suspend fun syncDelete(entity: MessageEntity, userId: String): Boolean {
+    val result = firestoreRepo.deleteNote(entity.messageId)
+    return if (result.isSuccess) {
+      localDao.deleteMessage(entity.messageId, userId)
+      true
+    } else {
+      Log.e("UnifiedSelfNotesRepository", "Retry failed for delete: ${entity.messageId}")
+      false
+    }
+  }
+
+  private suspend fun syncUpsert(entity: MessageEntity, userId: String): Boolean {
+    val domainMessage = entity.toDomainModel()
+    val result = firestoreRepo.createNote(domainMessage)
+    return if (result.isSuccess) {
+      localDao.markAsSynced(entity.messageId, userId)
+      true
+    } else {
+      Log.e("UnifiedSelfNotesRepository", "Retry failed for upsert: ${entity.messageId}")
+      false
     }
   }
 

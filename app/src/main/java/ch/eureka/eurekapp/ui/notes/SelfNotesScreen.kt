@@ -4,10 +4,12 @@ package ch.eureka.eurekapp.ui.notes
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -54,7 +56,6 @@ object SelfNotesScreenTestTags {
   const val TOGGLE_SWITCH = "toggleSwitch"
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelfNotesScreen(modifier: Modifier = Modifier, viewModel: SelfNotesViewModel = viewModel()) {
   val uiState by viewModel.uiState.collectAsState()
@@ -84,135 +85,216 @@ fun SelfNotesScreen(modifier: Modifier = Modifier, viewModel: SelfNotesViewModel
   Scaffold(
       modifier = modifier.fillMaxSize().testTag(SelfNotesScreenTestTags.SCREEN),
       topBar = {
-        if (uiState.isSelectionMode) {
-          TopAppBar(
-              title = { Text("${uiState.selectedNoteIds.size} Selected") },
-              colors =
-                  TopAppBarDefaults.topAppBarColors(
-                      containerColor =
-                          MaterialTheme.colorScheme
-                              .surfaceVariant, // Different color for context mode
-                      titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                      actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant),
-              navigationIcon = {
-                IconButton(onClick = { viewModel.clearSelection() }) {
-                  Icon(Icons.Default.Close, contentDescription = "Cancel Selection")
-                }
-              },
-              actions = {
-                if (uiState.selectedNoteIds.size == 1) {
-                  IconButton(
-                      onClick = {
-                        val selectedId = uiState.selectedNoteIds.first()
-                        val noteToEdit = uiState.notes.find { it.messageID == selectedId }
-                        if (noteToEdit != null) viewModel.startEditing(noteToEdit)
-                      }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit Note")
-                      }
-                }
-                IconButton(onClick = { viewModel.deleteSelectedNotes() }) {
-                  Icon(Icons.Default.Delete, contentDescription = "Delete Selected")
-                }
-              })
-        } else {
-          TopAppBar(
-              title = { Text(if (uiState.editingMessageId != null) "Editing Note" else "Notes") },
-              colors =
-                  TopAppBarDefaults.topAppBarColors(
-                      containerColor = MaterialTheme.colorScheme.primary,
-                      titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                      actionIconContentColor = MaterialTheme.colorScheme.onPrimary),
-              navigationIcon = {
-                if (uiState.editingMessageId != null) {
-                  IconButton(onClick = { viewModel.cancelEditing() }) {
-                    Icon(Icons.Default.Close, contentDescription = "Cancel Edit")
-                  }
-                }
-              },
-              actions = {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(end = 8.dp)) {
-                      Text(
-                          text = if (uiState.isCloudStorageEnabled) "Cloud" else "Local",
-                          style = MaterialTheme.typography.labelMedium,
-                          color = MaterialTheme.colorScheme.onPrimary,
-                          modifier = Modifier.padding(end = 8.dp))
-                      Switch(
-                          checked = uiState.isCloudStorageEnabled,
-                          onCheckedChange = { viewModel.toggleStorageMode(it) },
-                          modifier = Modifier.testTag(SelfNotesScreenTestTags.TOGGLE_SWITCH),
-                          colors =
-                              SwitchDefaults.colors(
-                                  checkedThumbColor = MaterialTheme.colorScheme.primary,
-                                  checkedTrackColor = MaterialTheme.colorScheme.onPrimary,
-                                  uncheckedThumbColor = Color.LightGray,
-                                  uncheckedTrackColor = MaterialTheme.colorScheme.primaryContainer))
-                    }
-              })
-        }
+        SelfNotesTopBar(
+            uiState = uiState,
+            onClearSelection = viewModel::clearSelection,
+            onEditSelected = { id ->
+              val note = uiState.notes.find { it.messageID == id }
+              if (note != null) viewModel.startEditing(note)
+            },
+            onDeleteSelected = viewModel::deleteSelectedNotes,
+            onCancelEditing = viewModel::cancelEditing,
+            onToggleStorage = viewModel::toggleStorageMode)
       },
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       bottomBar = {
-        if (!uiState.isSelectionMode) {
-          MessageInputField(
-              message = uiState.currentMessage,
-              onMessageChange = viewModel::updateMessage,
-              onSend = { viewModel.sendNote() },
-              isSending = uiState.isSending,
-              placeholder =
-                  if (uiState.editingMessageId != null) "Edit your note..."
-                  else "Write a note to yourself...")
-        }
+        SelfNotesBottomBar(
+            uiState = uiState,
+            onMessageChange = viewModel::updateMessage,
+            onSend = viewModel::sendNote)
       }) { paddingValues ->
         ScreenWithHelp(
             helpContext = HelpContext.NOTES,
             content = {
-              Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-                when {
-                  uiState.isLoading -> {
-                    CircularProgressIndicator(
-                        modifier =
-                            Modifier.align(Alignment.Center)
-                                .testTag(SelfNotesScreenTestTags.LOADING_INDICATOR))
-                  }
-                  uiState.notes.isEmpty() -> {
-                    Text(
-                        text = "No notes yet. Start writing!",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                        modifier =
-                            Modifier.align(Alignment.Center)
-                                .padding(Spacing.lg)
-                                .testTag(SelfNotesScreenTestTags.EMPTY_STATE))
-                  }
-                  else -> {
-                    LazyColumn(
-                        state = listState,
-                        modifier =
-                            Modifier.fillMaxSize()
-                                .padding(horizontal = Spacing.md)
-                                .testTag(SelfNotesScreenTestTags.NOTES_LIST),
-                        reverseLayout = true,
-                        verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                          items(items = uiState.notes, key = { it.messageID }) { message ->
-                            val isSelected = uiState.selectedNoteIds.contains(message.messageID)
-
-                            SelfNoteMessageBubble(
-                                message = message,
-                                isSelected = isSelected,
-                                onClick = {
-                                  if (uiState.isSelectionMode) {
-                                    viewModel.toggleSelection(message.messageID)
-                                  }
-                                },
-                                onLongClick = { viewModel.toggleSelection(message.messageID) })
-                          }
-                        }
-                  }
-                }
-              }
+              SelfNotesContent(
+                  uiState = uiState,
+                  listState = listState,
+                  paddingValues = paddingValues,
+                  onToggleSelection = viewModel::toggleSelection)
             })
+      }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SelfNotesTopBar(
+    uiState: SelfNotesUIState,
+    onClearSelection: () -> Unit,
+    onEditSelected: (String) -> Unit,
+    onDeleteSelected: () -> Unit,
+    onCancelEditing: () -> Unit,
+    onToggleStorage: (Boolean) -> Unit
+) {
+  if (uiState.isSelectionMode) {
+    ContextualSelectionTopBar(
+        selectionCount = uiState.selectedNoteIds.size,
+        selectedIds = uiState.selectedNoteIds,
+        onClearSelection = onClearSelection,
+        onEditSelected = onEditSelected,
+        onDeleteSelected = onDeleteSelected)
+  } else {
+    StandardTopBar(
+        isEditing = uiState.editingMessageId != null,
+        isCloudEnabled = uiState.isCloudStorageEnabled,
+        onCancelEditing = onCancelEditing,
+        onToggleStorage = onToggleStorage)
+  }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ContextualSelectionTopBar(
+    selectionCount: Int,
+    selectedIds: Set<String>,
+    onClearSelection: () -> Unit,
+    onEditSelected: (String) -> Unit,
+    onDeleteSelected: () -> Unit
+) {
+  TopAppBar(
+      title = { Text("$selectionCount Selected") },
+      colors =
+          TopAppBarDefaults.topAppBarColors(
+              containerColor = MaterialTheme.colorScheme.surfaceVariant,
+              titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+              actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant),
+      navigationIcon = {
+        IconButton(onClick = onClearSelection) {
+          Icon(Icons.Default.Close, contentDescription = "Cancel Selection")
+        }
+      },
+      actions = {
+        if (selectionCount == 1) {
+          IconButton(onClick = { onEditSelected(selectedIds.first()) }) {
+            Icon(Icons.Default.Edit, contentDescription = "Edit Note")
+          }
+        }
+        IconButton(onClick = onDeleteSelected) {
+          Icon(Icons.Default.Delete, contentDescription = "Delete Selected")
+        }
+      })
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun StandardTopBar(
+    isEditing: Boolean,
+    isCloudEnabled: Boolean,
+    onCancelEditing: () -> Unit,
+    onToggleStorage: (Boolean) -> Unit
+) {
+  TopAppBar(
+      title = { Text(if (isEditing) "Editing Note" else "Notes") },
+      colors =
+          TopAppBarDefaults.topAppBarColors(
+              containerColor = MaterialTheme.colorScheme.primary,
+              titleContentColor = MaterialTheme.colorScheme.onPrimary,
+              actionIconContentColor = MaterialTheme.colorScheme.onPrimary),
+      navigationIcon = {
+        if (isEditing) {
+          IconButton(onClick = onCancelEditing) {
+            Icon(Icons.Default.Close, contentDescription = "Cancel Edit")
+          }
+        }
+      },
+      actions = {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(end = 8.dp)) {
+              Text(
+                  text = if (isCloudEnabled) "Cloud" else "Local",
+                  style = MaterialTheme.typography.labelMedium,
+                  color = MaterialTheme.colorScheme.onPrimary,
+                  modifier = Modifier.padding(end = 8.dp))
+              Switch(
+                  checked = isCloudEnabled,
+                  onCheckedChange = onToggleStorage,
+                  modifier = Modifier.testTag(SelfNotesScreenTestTags.TOGGLE_SWITCH),
+                  colors =
+                      SwitchDefaults.colors(
+                          checkedThumbColor = MaterialTheme.colorScheme.primary,
+                          checkedTrackColor = MaterialTheme.colorScheme.onPrimary,
+                          uncheckedThumbColor = Color.LightGray,
+                          uncheckedTrackColor = MaterialTheme.colorScheme.primaryContainer))
+            }
+      })
+}
+
+@Composable
+private fun SelfNotesBottomBar(
+    uiState: SelfNotesUIState,
+    onMessageChange: (String) -> Unit,
+    onSend: () -> Unit
+) {
+  if (!uiState.isSelectionMode) {
+    MessageInputField(
+        message = uiState.currentMessage,
+        onMessageChange = onMessageChange,
+        onSend = onSend,
+        isSending = uiState.isSending,
+        placeholder =
+            if (uiState.editingMessageId != null) "Edit your note..."
+            else "Write a note to yourself...")
+  }
+}
+
+@Composable
+private fun SelfNotesContent(
+    uiState: SelfNotesUIState,
+    listState: LazyListState,
+    paddingValues: PaddingValues,
+    onToggleSelection: (String) -> Unit
+) {
+  Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+    when {
+      uiState.isLoading -> {
+        CircularProgressIndicator(
+            modifier =
+                Modifier.align(Alignment.Center).testTag(SelfNotesScreenTestTags.LOADING_INDICATOR))
+      }
+      uiState.notes.isEmpty() -> {
+        Text(
+            text = "No notes yet. Start writing!",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier =
+                Modifier.align(Alignment.Center)
+                    .padding(Spacing.lg)
+                    .testTag(SelfNotesScreenTestTags.EMPTY_STATE))
+      }
+      else -> {
+        NotesList(uiState = uiState, listState = listState, onToggleSelection = onToggleSelection)
+      }
+    }
+  }
+}
+
+@Composable
+private fun NotesList(
+    uiState: SelfNotesUIState,
+    listState: LazyListState,
+    onToggleSelection: (String) -> Unit
+) {
+  LazyColumn(
+      state = listState,
+      modifier =
+          Modifier.fillMaxSize()
+              .padding(horizontal = Spacing.md)
+              .testTag(SelfNotesScreenTestTags.NOTES_LIST),
+      reverseLayout = true,
+      verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        items(items = uiState.notes, key = { it.messageID }) { message ->
+          val isSelected = uiState.selectedNoteIds.contains(message.messageID)
+
+          SelfNoteMessageBubble(
+              message = message,
+              isSelected = isSelected,
+              onClick = {
+                if (uiState.isSelectionMode) {
+                  onToggleSelection(message.messageID)
+                }
+              },
+              onLongClick = { onToggleSelection(message.messageID) })
+        }
       }
 }
