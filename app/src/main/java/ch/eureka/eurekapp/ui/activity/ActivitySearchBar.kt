@@ -22,8 +22,8 @@ import androidx.compose.ui.unit.dp
 /**
  * A collapsible search bar for filtering activities.
  *
- * This component provides a text field that can be shown/hidden for searching activities.
- * It includes a clear button when text is entered.
+ * This component provides a text field that can be shown/hidden for searching activities. It
+ * includes a clear button when text is entered.
  *
  * @param query The current search query.
  * @param onQueryChange Callback when the search query changes.

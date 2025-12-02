@@ -95,24 +95,21 @@ class FirestoreTaskRepository(
         entityType = EntityType.TASK,
         entityId = task.taskID,
         userId = task.createdBy,
-        metadata = mapOf(
-            "title" to task.title,
-            "status" to task.status.name
-        )
-    )
+        metadata = mapOf("title" to task.title, "status" to task.status.name))
 
     task.taskID
   }
 
   override suspend fun updateTask(task: Task): Result<Unit> = runCatching {
     // Fetch old task to detect status changes
-    val oldTaskDoc = firestore
-        .collection(FirestorePaths.PROJECTS)
-        .document(task.projectId)
-        .collection(FirestorePaths.TASKS)
-        .document(task.taskID)
-        .get()
-        .await()
+    val oldTaskDoc =
+        firestore
+            .collection(FirestorePaths.PROJECTS)
+            .document(task.projectId)
+            .collection(FirestorePaths.TASKS)
+            .document(task.taskID)
+            .get()
+            .await()
     val oldTask = parseSnapshot(oldTaskDoc.data)
 
     // Perform the update
@@ -135,12 +132,11 @@ class FirestoreTaskRepository(
           entityType = EntityType.TASK,
           entityId = task.taskID,
           userId = currentUserId,
-          metadata = mapOf(
-              "title" to task.title,
-              "oldStatus" to oldTask.status.name,
-              "newStatus" to task.status.name
-          )
-      )
+          metadata =
+              mapOf(
+                  "title" to task.title,
+                  "oldStatus" to oldTask.status.name,
+                  "newStatus" to task.status.name))
     } else {
       // Other fields changed - use UPDATED
       ActivityLogger.logActivity(
@@ -149,20 +145,20 @@ class FirestoreTaskRepository(
           entityType = EntityType.TASK,
           entityId = task.taskID,
           userId = currentUserId,
-          metadata = mapOf("title" to task.title)
-      )
+          metadata = mapOf("title" to task.title))
     }
   }
 
   override suspend fun deleteTask(projectId: String, taskId: String): Result<Unit> = runCatching {
     // Fetch task for metadata before deletion
-    val taskDoc = firestore
-        .collection(FirestorePaths.PROJECTS)
-        .document(projectId)
-        .collection(FirestorePaths.TASKS)
-        .document(taskId)
-        .get()
-        .await()
+    val taskDoc =
+        firestore
+            .collection(FirestorePaths.PROJECTS)
+            .document(projectId)
+            .collection(FirestorePaths.TASKS)
+            .document(taskId)
+            .get()
+            .await()
     val task = parseSnapshot(taskDoc.data)
     val taskTitle = task?.title ?: "Unknown Task"
 
@@ -183,20 +179,20 @@ class FirestoreTaskRepository(
         entityType = EntityType.TASK,
         entityId = taskId,
         userId = currentUserId,
-        metadata = mapOf("title" to taskTitle)
-    )
+        metadata = mapOf("title" to taskTitle))
   }
 
   override suspend fun assignUser(projectId: String, taskId: String, userId: String): Result<Unit> =
       runCatching {
         // Fetch task for metadata
-        val taskDoc = firestore
-            .collection(FirestorePaths.PROJECTS)
-            .document(projectId)
-            .collection(FirestorePaths.TASKS)
-            .document(taskId)
-            .get()
-            .await()
+        val taskDoc =
+            firestore
+                .collection(FirestorePaths.PROJECTS)
+                .document(projectId)
+                .collection(FirestorePaths.TASKS)
+                .document(taskId)
+                .get()
+                .await()
         val task = parseSnapshot(taskDoc.data)
         val taskTitle = task?.title ?: "Unknown Task"
 
@@ -217,11 +213,7 @@ class FirestoreTaskRepository(
             entityType = EntityType.TASK,
             entityId = taskId,
             userId = currentUserId,
-            metadata = mapOf(
-                "title" to taskTitle,
-                "assigneeId" to userId
-            )
-        )
+            metadata = mapOf("title" to taskTitle, "assigneeId" to userId))
       }
 
   override suspend fun unassignUser(
@@ -230,13 +222,14 @@ class FirestoreTaskRepository(
       userId: String
   ): Result<Unit> = runCatching {
     // Fetch task for metadata
-    val taskDoc = firestore
-        .collection(FirestorePaths.PROJECTS)
-        .document(projectId)
-        .collection(FirestorePaths.TASKS)
-        .document(taskId)
-        .get()
-        .await()
+    val taskDoc =
+        firestore
+            .collection(FirestorePaths.PROJECTS)
+            .document(projectId)
+            .collection(FirestorePaths.TASKS)
+            .document(taskId)
+            .get()
+            .await()
     val task = parseSnapshot(taskDoc.data)
     val taskTitle = task?.title ?: "Unknown Task"
 
@@ -257,11 +250,7 @@ class FirestoreTaskRepository(
         entityType = EntityType.TASK,
         entityId = taskId,
         userId = currentUserId,
-        metadata = mapOf(
-            "title" to taskTitle,
-            "assigneeId" to userId
-        )
-    )
+        metadata = mapOf("title" to taskTitle, "assigneeId" to userId))
   }
 
   private fun parseSnapshot(data: Map<String, Any>?): Task? {

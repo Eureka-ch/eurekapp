@@ -142,12 +142,12 @@ class ActivityFeedViewModel(
               val enriched = enrichActivitiesWithUserNames(rawActivities)
               _uiState.update { state ->
                 // Apply current filters to new data
-                val filtered = applyAllFilters(
-                    enriched,
-                    state.filterEntityType,
-                    state.filterActivityType,
-                    state.searchQuery
-                )
+                val filtered =
+                    applyAllFilters(
+                        enriched,
+                        state.filterEntityType,
+                        state.filterActivityType,
+                        state.searchQuery)
                 val groupedByDate = groupActivitiesByDate(filtered)
                 state.copy(
                     isLoading = false,
@@ -170,7 +170,9 @@ class ActivityFeedViewModel(
    */
   fun applyEntityTypeFilter(entityType: EntityType) {
     _uiState.update { state ->
-      val filtered = applyAllFilters(state.allActivities, entityType, state.filterActivityType, state.searchQuery)
+      val filtered =
+          applyAllFilters(
+              state.allActivities, entityType, state.filterActivityType, state.searchQuery)
       val groupedByDate = groupActivitiesByDate(filtered)
       state.copy(
           filterEntityType = entityType, activities = filtered, activitiesByDate = groupedByDate)
@@ -185,10 +187,14 @@ class ActivityFeedViewModel(
    */
   fun applyActivityTypeFilter(activityType: ActivityType?) {
     _uiState.update { state ->
-      val filtered = applyAllFilters(state.allActivities, state.filterEntityType, activityType, state.searchQuery)
+      val filtered =
+          applyAllFilters(
+              state.allActivities, state.filterEntityType, activityType, state.searchQuery)
       val groupedByDate = groupActivitiesByDate(filtered)
       state.copy(
-          filterActivityType = activityType, activities = filtered, activitiesByDate = groupedByDate)
+          filterActivityType = activityType,
+          activities = filtered,
+          activitiesByDate = groupedByDate)
     }
   }
 
@@ -199,10 +205,11 @@ class ActivityFeedViewModel(
    */
   fun applySearch(query: String) {
     _uiState.update { state ->
-      val filtered = applyAllFilters(state.allActivities, state.filterEntityType, state.filterActivityType, query)
+      val filtered =
+          applyAllFilters(
+              state.allActivities, state.filterEntityType, state.filterActivityType, query)
       val groupedByDate = groupActivitiesByDate(filtered)
-      state.copy(
-          searchQuery = query, activities = filtered, activitiesByDate = groupedByDate)
+      state.copy(searchQuery = query, activities = filtered, activitiesByDate = groupedByDate)
     }
   }
 
@@ -224,14 +231,10 @@ class ActivityFeedViewModel(
    * @param activityId The ID of the activity to mark as read.
    */
   fun markAsRead(activityId: String) {
-    _uiState.update { state ->
-      state.copy(readActivityIds = state.readActivityIds + activityId)
-    }
+    _uiState.update { state -> state.copy(readActivityIds = state.readActivityIds + activityId) }
   }
 
-  /**
-   * Marks all currently visible activities as read.
-   */
+  /** Marks all currently visible activities as read. */
   fun markAllAsRead() {
     _uiState.update { state ->
       val allActivityIds = state.activities.map { it.activityId }.toSet()
@@ -239,27 +242,19 @@ class ActivityFeedViewModel(
     }
   }
 
-  /**
-   * Toggles project grouping mode.
-   */
+  /** Toggles project grouping mode. */
   fun toggleGroupByProject() {
-    _uiState.update { state ->
-      state.copy(groupByProject = !state.groupByProject)
-    }
+    _uiState.update { state -> state.copy(groupByProject = !state.groupByProject) }
   }
 
-  /**
-   * Refreshes the activity feed (for pull-to-refresh).
-   */
+  /** Refreshes the activity feed (for pull-to-refresh). */
   fun refresh() {
     _uiState.update { it.copy(isRefreshing = true) }
     loadActivities()
     _uiState.update { it.copy(isRefreshing = false) }
   }
 
-  /**
-   * Applies all active filters to a list of activities.
-   */
+  /** Applies all active filters to a list of activities. */
   private fun applyAllFilters(
       list: List<Activity>,
       entityType: EntityType?,
@@ -270,14 +265,16 @@ class ActivityFeedViewModel(
 
     // Apply entity type filter
     if (entityType != null) {
-      filtered = filtered.filter { activity ->
-        when (entityType) {
-          EntityType.PROJECT ->
-              activity.entityType == EntityType.PROJECT || activity.entityType == EntityType.MEMBER
-          EntityType.MEETING -> activity.entityType == EntityType.MEETING
-          else -> activity.entityType == entityType
-        }
-      }
+      filtered =
+          filtered.filter { activity ->
+            when (entityType) {
+              EntityType.PROJECT ->
+                  activity.entityType == EntityType.PROJECT ||
+                      activity.entityType == EntityType.MEMBER
+              EntityType.MEETING -> activity.entityType == EntityType.MEETING
+              else -> activity.entityType == entityType
+            }
+          }
     }
 
     // Apply activity type filter
@@ -287,11 +284,12 @@ class ActivityFeedViewModel(
 
     // Apply search query
     if (query.isNotBlank()) {
-      filtered = filtered.filter { activity ->
-        val title = activity.metadata["title"]?.toString() ?: ""
-        val userName = activity.metadata["userName"]?.toString() ?: ""
-        title.contains(query, ignoreCase = true) || userName.contains(query, ignoreCase = true)
-      }
+      filtered =
+          filtered.filter { activity ->
+            val title = activity.metadata["title"]?.toString() ?: ""
+            val userName = activity.metadata["userName"]?.toString() ?: ""
+            title.contains(query, ignoreCase = true) || userName.contains(query, ignoreCase = true)
+          }
     }
 
     return filtered

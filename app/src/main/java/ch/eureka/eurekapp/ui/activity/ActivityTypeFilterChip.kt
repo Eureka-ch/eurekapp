@@ -17,8 +17,8 @@ import ch.eureka.eurekapp.model.data.activity.EntityType
 /**
  * A filter chip for filtering activities by type.
  *
- * This component displays a clickable chip that can be selected/deselected to filter
- * activities. It shows a visual indication when selected.
+ * This component displays a clickable chip that can be selected/deselected to filter activities. It
+ * shows a visual indication when selected.
  *
  * @param label The text to display on the chip.
  * @param selected Whether this filter is currently selected.
@@ -43,9 +43,7 @@ fun ActivityTypeFilterChip(
               selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer))
 }
 
-/**
- * Helper function to get display label for EntityType.
- */
+/** Helper function to get display label for EntityType. */
 fun EntityType.toDisplayString(): String {
   return when (this) {
     EntityType.MEETING -> "Meetings"
@@ -57,9 +55,7 @@ fun EntityType.toDisplayString(): String {
   }
 }
 
-/**
- * Helper function to get display label for ActivityType.
- */
+/** Helper function to get display label for ActivityType. */
 fun ActivityType.toDisplayString(): String {
   return when (this) {
     ActivityType.CREATED -> "Created"

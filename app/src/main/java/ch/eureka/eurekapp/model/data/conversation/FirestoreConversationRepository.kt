@@ -135,18 +135,16 @@ class FirestoreConversationRepository(
         if (conversationWithId.projectId.isNotEmpty()) {
           // Get other member names for metadata
           val otherMembers = conversationWithId.memberIds.filter { it != currentUserId }
-          val memberNames = otherMembers.mapNotNull { memberId ->
-            try {
-              val userDoc = firestore
-                  .collection(FirestorePaths.USERS)
-                  .document(memberId)
-                  .get()
-                  .await()
-              userDoc.getString("displayName")
-            } catch (e: Exception) {
-              null
-            }
-          }
+          val memberNames =
+              otherMembers.mapNotNull { memberId ->
+                try {
+                  val userDoc =
+                      firestore.collection(FirestorePaths.USERS).document(memberId).get().await()
+                  userDoc.getString("displayName")
+                } catch (e: Exception) {
+                  null
+                }
+              }
 
           ActivityLogger.logActivity(
               projectId = conversationWithId.projectId,
@@ -154,11 +152,10 @@ class FirestoreConversationRepository(
               entityType = EntityType.MESSAGE,
               entityId = docRef.id,
               userId = currentUserId,
-              metadata = mapOf(
-                  "title" to "Conversation with ${memberNames.joinToString(", ")}",
-                  "conversationId" to docRef.id
-              )
-          )
+              metadata =
+                  mapOf(
+                      "title" to "Conversation with ${memberNames.joinToString(", ")}",
+                      "conversationId" to docRef.id))
         }
 
         docRef.id
@@ -222,11 +219,8 @@ class FirestoreConversationRepository(
         .await()
 
     // Log activity to global feed after successful message send
-    val conversationDoc = firestore
-        .collection(FirestorePaths.CONVERSATIONS)
-        .document(conversationId)
-        .get()
-        .await()
+    val conversationDoc =
+        firestore.collection(FirestorePaths.CONVERSATIONS).document(conversationId).get().await()
     val conversation = conversationDoc.toObject(Conversation::class.java)
 
     // Log activity if conversation exists and has a projectId
@@ -237,11 +231,7 @@ class FirestoreConversationRepository(
           entityType = EntityType.MESSAGE,
           entityId = message.messageId,
           userId = currentUserId,
-          metadata = mapOf(
-              "title" to text.take(50),
-              "conversationId" to conversationId
-          )
-      )
+          metadata = mapOf("title" to text.take(50), "conversationId" to conversationId))
     }
 
     message

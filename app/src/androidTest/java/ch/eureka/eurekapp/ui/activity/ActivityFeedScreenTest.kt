@@ -66,7 +66,7 @@ class ActivityFeedScreenTest {
     composeTestRule.onNodeWithTag("ProjectsFilterChip").assertIsDisplayed()
     composeTestRule.onNodeWithTag("MeetingsFilterChip").assertIsDisplayed()
     composeTestRule.onNodeWithTag("EmptyState").assertIsDisplayed()
-    composeTestRule.onNodeWithText("No activities found").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Select a filter to view activities").assertIsDisplayed()
   }
 
   @Test
@@ -114,7 +114,8 @@ class ActivityFeedScreenTest {
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
     composeTestRule.waitForIdle()
 
-    composeTestRule.onNodeWithTag("ActivitiesList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EmptyState").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Select a filter to view activities").assertIsDisplayed()
   }
 
   @Test
@@ -128,7 +129,7 @@ class ActivityFeedScreenTest {
     composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag("EmptyState").assertIsDisplayed()
-    composeTestRule.onNodeWithText("No activities found").assertIsDisplayed()
+    composeTestRule.onNodeWithText("No activities match your filters").assertIsDisplayed()
   }
 
   @Test
@@ -223,10 +224,10 @@ class ActivityFeedScreenTest {
     val activities = listOf(createActivity("1", EntityType.PROJECT, "Test Project"))
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
-    var clickedEntityId: String? = null
+    var clickedActivityId: String? = null
     composeTestRule.setContent {
       ActivityFeedScreen(
-          viewModel = viewModel, onActivityClick = { entityId -> clickedEntityId = entityId })
+          viewModel = viewModel, onActivityClick = { activityId -> clickedActivityId = activityId })
     }
     composeTestRule.waitForIdle()
 
@@ -236,7 +237,7 @@ class ActivityFeedScreenTest {
     composeTestRule.onNodeWithText("Test Project", substring = true).performClick()
     composeTestRule.waitForIdle()
 
-    assert(clickedEntityId == "entity-1")
+    assert(clickedActivityId == "1")
   }
 
   private fun createActivity(id: String, entityType: EntityType, title: String) =

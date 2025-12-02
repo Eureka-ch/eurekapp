@@ -41,7 +41,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
-import ch.eureka.eurekapp.model.data.activity.ActivityType
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import java.text.SimpleDateFormat
@@ -66,9 +65,7 @@ fun ActivityFeedScreen(
   var searchExpanded by remember { mutableStateOf(false) }
 
   // Set compact mode on entry, but don't load activities until filter is selected
-  LaunchedEffect(Unit) {
-    viewModel.setCompactMode(false)
-  }
+  LaunchedEffect(Unit) { viewModel.setCompactMode(false) }
 
   Scaffold(
       modifier = modifier.fillMaxSize().testTag("ActivityFeedScreen"),
@@ -83,20 +80,15 @@ fun ActivityFeedScreen(
             actions = {
               // Refresh button
               IconButton(
-                  onClick = { viewModel.refresh() },
-                  modifier = Modifier.testTag("RefreshButton")) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = "Refresh")
+                  onClick = { viewModel.refresh() }, modifier = Modifier.testTag("RefreshButton")) {
+                    Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh")
                   }
 
               // Search toggle button
               IconButton(
                   onClick = { searchExpanded = !searchExpanded },
                   modifier = Modifier.testTag("SearchButton")) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Toggle search")
+                    Icon(imageVector = Icons.Default.Search, contentDescription = "Toggle search")
                   }
 
               // Mark all as read button
@@ -142,10 +134,10 @@ private fun FilterChipsRow(
     onEntityFilterClick: (EntityType) -> Unit
 ) {
   Row(
-      modifier = Modifier
-          .fillMaxWidth()
-          .horizontalScroll(rememberScrollState())
-          .padding(horizontal = Spacing.md, vertical = Spacing.sm),
+      modifier =
+          Modifier.fillMaxWidth()
+              .horizontalScroll(rememberScrollState())
+              .padding(horizontal = Spacing.md, vertical = Spacing.sm),
       horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         ActivityTypeFilterChip(
             label = EntityType.PROJECT.toDisplayString(),
@@ -189,16 +181,19 @@ private fun ActivityContent(
   Box(modifier = Modifier.fillMaxSize()) {
     when {
       uiState.isLoading && uiState.activities.isEmpty() -> LoadingState()
-      uiState.activities.isEmpty() -> EmptyState(
-          hasFilters = uiState.filterEntityType != null ||
-              uiState.filterActivityType != null ||
-              uiState.searchQuery.isNotBlank())
-      else -> ActivitiesList(
-          activitiesByDate = uiState.activitiesByDate,
-          readActivityIds = uiState.readActivityIds,
-          onActivityClick = onActivityClick,
-          onDeleteActivity = onDeleteActivity,
-          onMarkAsRead = onMarkAsRead)
+      uiState.activities.isEmpty() ->
+          EmptyState(
+              hasFilters =
+                  uiState.filterEntityType != null ||
+                      uiState.filterActivityType != null ||
+                      uiState.searchQuery.isNotBlank())
+      else ->
+          ActivitiesList(
+              activitiesByDate = uiState.activitiesByDate,
+              readActivityIds = uiState.readActivityIds,
+              onActivityClick = onActivityClick,
+              onDeleteActivity = onDeleteActivity,
+              onMarkAsRead = onMarkAsRead)
     }
 
     uiState.errorMsg?.let { error -> ErrorMessage(error, Modifier.align(Alignment.BottomCenter)) }
@@ -224,7 +219,9 @@ private fun EmptyState(hasFilters: Boolean = false) {
       verticalArrangement = Arrangement.Center,
       horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = if (hasFilters) "No activities match your filters" else "Select a filter to view activities",
+            text =
+                if (hasFilters) "No activities match your filters"
+                else "Select a filter to view activities",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.testTag("EmptyState"))
