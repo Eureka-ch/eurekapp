@@ -43,6 +43,7 @@ object MessageBubbleTestTags {
   const val BUBBLE = "messageBubble"
   const val TEXT = "messageText"
   const val TIMESTAMP = "messageTimestamp"
+  const val PHOTO_VIEWER = "photoViewer"
 }
 
 /**
@@ -135,7 +136,10 @@ fun MessageBubble(
                             if (isImage) {
                               PhotoViewer(
                                   image = fileUrl,
-                                  modifier = Modifier.size(100.dp).clip(RoundedCornerShape(8.dp)))
+                                  modifier =
+                                      Modifier.size(100.dp)
+                                          .clip(RoundedCornerShape(8.dp))
+                                          .testTag(MessageBubbleTestTags.PHOTO_VIEWER))
                             } else {
                               Icon(
                                   imageVector = Icons.Default.AttachFile,

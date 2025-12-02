@@ -1,9 +1,13 @@
 package ch.eureka.eurekapp.ui.conversation
 
+import android.app.DownloadManager
+import android.content.Context
+import android.net.Uri
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.data.conversation.Conversation
 import ch.eureka.eurekapp.model.data.conversation.ConversationMessage
 import ch.eureka.eurekapp.model.data.conversation.ConversationRepository
+import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.user.User
@@ -12,6 +16,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -31,6 +36,7 @@ import org.junit.Test
 /*
 Co-author: GPT-5 Codex
 Co-author: Claude 4.5 Sonnet
+Co-author: Grok
 */
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -41,6 +47,9 @@ class ConversationDetailViewModelTest {
   private lateinit var mockUserRepository: UserRepository
   private lateinit var mockProjectRepository: ProjectRepository
   private lateinit var mockConnectivityObserver: ConnectivityObserver
+  private lateinit var mockFileStorageRepository: FileStorageRepository
+  private lateinit var mockContext: Context
+  private lateinit var mockDownloadManager: DownloadManager
   private val currentUserId = "currentUser123"
   private val conversationId = "conv123"
 
@@ -51,7 +60,11 @@ class ConversationDetailViewModelTest {
     mockUserRepository = mockk()
     mockProjectRepository = mockk()
     mockConnectivityObserver = mockk()
+    mockFileStorageRepository = mockk(relaxed = true)
+    mockContext = mockk(relaxed = true)
+    mockDownloadManager = mockk<DownloadManager>(relaxed = true)
     every { mockConnectivityObserver.isConnected } returns flowOf(true)
+    every { mockContext.getSystemService(Context.DOWNLOAD_SERVICE) } returns mockDownloadManager
   }
 
   @After
@@ -65,12 +78,13 @@ class ConversationDetailViewModelTest {
         conversationRepository = mockConversationRepository,
         userRepository = mockUserRepository,
         projectRepository = mockProjectRepository,
+        fileStorageRepository = mockFileStorageRepository,
         getCurrentUserId = { currentUserId },
         connectivityObserver = mockConnectivityObserver)
   }
 
   @Test
-  fun `initial state is loading`() = runTest {
+  fun conversationDetailViewModel_initialStateIsLoading() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
 
@@ -79,7 +93,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `loadConversation resolves display data correctly`() = runTest {
+  fun conversationDetailViewModel_loadConversationResolvesDisplayDataCorrectly() = runTest {
     val otherUser = User(uid = "otherUser", displayName = "Jane Doe")
     val project = Project(projectId = "project1", name = "Test Project")
     val conversation =
@@ -102,7 +116,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `loadMessages populates messages list`() = runTest {
+  fun conversationDetailViewModel_loadMessagesPopulatesMessagesList() = runTest {
     val messages =
         listOf(
             ConversationMessage(messageId = "msg1", text = "Hello"),
@@ -118,7 +132,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `sendMessage sends and clears input`() = runTest {
+  fun conversationDetailViewModel_sendMessageSendsAndClearsInput() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
     coEvery { mockConversationRepository.sendMessage(conversationId, "Test") } returns
@@ -136,7 +150,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `sendMessage validates empty and long messages`() = runTest {
+  fun conversationDetailViewModel_sendMessageValidatesEmptyAndLongMessages() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
 
@@ -156,7 +170,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `markAsRead calls repository`() = runTest {
+  fun conversationDetailViewModel_markAsReadCallsRepository() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
     coEvery { mockConversationRepository.markMessagesAsRead(conversationId) } returns
@@ -171,7 +185,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `connectivity state updates UI`() = runTest {
+  fun conversationDetailViewModel_connectivityStateUpdatesUi() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
     every { mockConnectivityObserver.isConnected } returns flowOf(false)
@@ -180,5 +194,189 @@ class ConversationDetailViewModelTest {
     val state = viewModel.uiState.first { !it.isConnected }
 
     assertFalse(state.isConnected)
+  }
+
+  @Test
+  fun conversationDetailViewModel_setSelectedFileUpdatesSelectedFileUri() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    val testUri = mockk<Uri>()
+    viewModel.setSelectedFile(testUri)
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.first { it.selectedFileUri != null }
+    assertEquals(testUri, state.selectedFileUri)
+  }
+
+  @Test
+  fun conversationDetailViewModel_clearSelectedFileClearsSelectedFileUri() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    val testUri = mockk<Uri>()
+    viewModel.setSelectedFile(testUri)
+    advanceUntilIdle()
+
+    viewModel.clearSelectedFile()
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.first { it.selectedFileUri == null }
+    assertEquals(null, state.selectedFileUri)
+  }
+
+  @Test
+  fun conversationDetailViewModel_sendFileMessageUploadsFileAndSendsMessage() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val testUri = mockk<Uri>()
+    val downloadUrl = "https://storage.example.com/file.pdf"
+    val mockContentResolver = mockk<android.content.ContentResolver>(relaxed = true)
+    val mockCursor = mockk<android.database.Cursor>(relaxed = true)
+    val mockFileDescriptor = mockk<android.os.ParcelFileDescriptor>(relaxed = true)
+
+    every { mockContext.contentResolver } returns mockContentResolver
+    every { mockContentResolver.query(testUri, null, null, null, null) } returns mockCursor
+    every { mockCursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME) } returns 0
+    every { mockCursor.moveToFirst() } returns true
+    every { mockCursor.getString(0) } returns "test_file.pdf"
+    every { mockContentResolver.openFileDescriptor(testUri, "r") } returns mockFileDescriptor
+    every { mockFileDescriptor.statSize } returns 1024L
+
+    coEvery { mockFileStorageRepository.uploadFile(any(), testUri) } returns
+        Result.success(downloadUrl)
+    coEvery {
+      mockConversationRepository.sendFileMessage(conversationId, "Test message", downloadUrl)
+    } returns Result.success(ConversationMessage(messageId = "msg1", text = "Test message"))
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.updateMessage("Test message")
+    viewModel.sendFileMessage(testUri, mockContext)
+    advanceUntilIdle()
+
+    coVerify { mockFileStorageRepository.uploadFile(any(), testUri) }
+    coVerify {
+      mockConversationRepository.sendFileMessage(conversationId, "Test message", downloadUrl)
+    }
+
+    val state = viewModel.uiState.first { !it.isSending }
+    assertEquals("", state.currentMessage)
+    assertEquals(null, state.selectedFileUri)
+  }
+
+  @Test
+  fun conversationDetailViewModel_sendFileMessageValidatesFileSize() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val testUri = mockk<Uri>()
+    val mockContentResolver = mockk<android.content.ContentResolver>(relaxed = true)
+    val mockFileDescriptor = mockk<android.os.ParcelFileDescriptor>(relaxed = true)
+
+    every { mockContext.contentResolver } returns mockContentResolver
+    every { mockContentResolver.openFileDescriptor(testUri, "r") } returns mockFileDescriptor
+    every { mockFileDescriptor.statSize } returns 101L * 1024L * 1024L // 101 MB
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.sendFileMessage(testUri, mockContext)
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.first { it.errorMsg != null }
+    assertTrue(state.errorMsg?.contains("too large") == true)
+    assertFalse(state.isSending)
+    assertFalse(state.isUploadingFile)
+  }
+
+  @Test
+  fun conversationDetailViewModel_sendFileMessageHandlesUploadFailure() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val testUri = mockk<Uri>()
+    val mockContentResolver = mockk<android.content.ContentResolver>(relaxed = true)
+    val mockCursor = mockk<android.database.Cursor>(relaxed = true)
+    val mockFileDescriptor = mockk<android.os.ParcelFileDescriptor>(relaxed = true)
+
+    every { mockContext.contentResolver } returns mockContentResolver
+    every { mockContentResolver.query(testUri, null, null, null, null) } returns mockCursor
+    every { mockCursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME) } returns 0
+    every { mockCursor.moveToFirst() } returns true
+    every { mockCursor.getString(0) } returns "test_file.pdf"
+    every { mockContentResolver.openFileDescriptor(testUri, "r") } returns mockFileDescriptor
+    every { mockFileDescriptor.statSize } returns 1024L
+
+    coEvery { mockFileStorageRepository.uploadFile(any(), testUri) } returns
+        Result.failure(Exception("Upload failed"))
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.sendFileMessage(testUri, mockContext)
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.first { it.errorMsg != null }
+    assertTrue(state.errorMsg?.contains("uploading file") == true)
+    assertFalse(state.isSending)
+    assertFalse(state.isUploadingFile)
+  }
+
+  @Test
+  fun conversationDetailViewModel_openUrlStartsActivityWithCorrectIntent() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    val testUrl = "https://example.com"
+    viewModel.openUrl(testUrl, mockContext)
+
+    verify { mockContext.startActivity(any()) }
+  }
+
+  @Test
+  fun conversationDetailViewModel_downloadFileEnqueuesDownloadAndShowsSnackbar() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    val testUrl = "https://storage.example.com/file.pdf"
+    viewModel.downloadFile(testUrl, mockContext)
+    advanceUntilIdle()
+
+    val snackbar = viewModel.snackbarMessage.first { it != null }
+    assertEquals("Download started", snackbar)
+    verify { mockDownloadManager.enqueue(any()) }
+  }
+
+  @Test
+  fun conversationDetailViewModel_clearSnackbarMessageClearsSnackbar() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.downloadFile("https://test.com/file.pdf", mockContext)
+    advanceUntilIdle()
+
+    viewModel.clearSnackbarMessage()
+    advanceUntilIdle()
+
+    assertEquals(null, viewModel.snackbarMessage.value)
+    verify { mockDownloadManager.enqueue(any()) }
   }
 }
