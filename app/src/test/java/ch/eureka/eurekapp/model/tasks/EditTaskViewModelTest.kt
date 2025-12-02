@@ -31,6 +31,7 @@ import org.junit.Test
 Co-Authored-By: Claude <noreply@anthropic.com>
 Note: This file was partially written by GPT-5 Codex
 Co-author : GPT-5
+Co-Authored-By: Claude Opus 4.5
 */
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -85,12 +86,12 @@ class EditTaskViewModelTest {
                 status = ProjectStatus.OPEN))
     viewModel =
         EditTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            mockUserRepository,
-            { null },
-            testDispatcher)
+            taskRepository = mockTaskRepository,
+            fileRepository = mockFileRepository,
+            projectRepository = mockProjectRepository,
+            userRepository = mockUserRepository,
+            getCurrentUserId = { null },
+            dispatcher = testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -102,12 +103,12 @@ class EditTaskViewModelTest {
   fun availableProjects_emptyListWhenNoProjects() = runTest {
     viewModel =
         EditTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            mockUserRepository,
-            { null },
-            testDispatcher)
+            taskRepository = mockTaskRepository,
+            fileRepository = mockFileRepository,
+            projectRepository = mockProjectRepository,
+            userRepository = mockUserRepository,
+            getCurrentUserId = { null },
+            dispatcher = testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -119,12 +120,12 @@ class EditTaskViewModelTest {
   fun viewModel_initialState_hasCorrectDefaults() = runTest {
     viewModel =
         EditTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            mockUserRepository,
-            { null },
-            testDispatcher)
+            taskRepository = mockTaskRepository,
+            fileRepository = mockFileRepository,
+            projectRepository = mockProjectRepository,
+            userRepository = mockUserRepository,
+            getCurrentUserId = { null },
+            dispatcher = testDispatcher)
     advanceUntilIdle()
 
     val state = viewModel.uiState.first()
@@ -300,12 +301,12 @@ class EditTaskViewModelTest {
 
     viewModel =
         EditTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            mockUserRepository,
-            { "test-user" },
-            testDispatcher)
+            taskRepository = mockTaskRepository,
+            fileRepository = mockFileRepository,
+            projectRepository = mockProjectRepository,
+            userRepository = mockUserRepository,
+            getCurrentUserId = { "test-user" },
+            dispatcher = testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
 
@@ -340,12 +341,12 @@ class EditTaskViewModelTest {
 
     viewModel =
         EditTaskViewModel(
-            mockTaskRepository,
-            mockFileRepository,
-            mockProjectRepository,
-            mockUserRepository,
-            { "test-user" },
-            testDispatcher)
+            taskRepository = mockTaskRepository,
+            fileRepository = mockFileRepository,
+            projectRepository = mockProjectRepository,
+            userRepository = mockUserRepository,
+            getCurrentUserId = { "test-user" },
+            dispatcher = testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
 

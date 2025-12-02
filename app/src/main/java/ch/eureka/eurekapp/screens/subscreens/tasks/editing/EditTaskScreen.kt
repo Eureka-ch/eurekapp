@@ -1,3 +1,4 @@
+// Co-Authored-By: Claude Opus 4.5
 package ch.eureka.eurekapp.screens.subscreens.tasks.editing
 
 import android.net.Uri
@@ -38,11 +39,13 @@ import ch.eureka.eurekapp.model.tasks.EditTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AttachmentsList
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.FieldInteractionMode
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesSelectionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDescriptionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskReminderField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskTitleField
+import ch.eureka.eurekapp.screens.subscreens.tasks.TemplateFieldsSection
 import ch.eureka.eurekapp.screens.subscreens.tasks.UserAssignmentField
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
@@ -137,6 +140,16 @@ fun EditTaskScreen(
                   selectedUserIds = editTaskState.selectedAssignedUserIds,
                   onUserToggled = { userId -> editTaskViewModel.toggleUserAssignment(userId) },
                   enabled = editTaskState.projectId.isNotEmpty())
+
+              if (editTaskState.selectedTemplate != null) {
+                TemplateFieldsSection(
+                    template = editTaskState.selectedTemplate,
+                    customData = editTaskState.customData,
+                    onFieldValueChange = { fieldId, value ->
+                      editTaskViewModel.updateCustomFieldValue(fieldId, value)
+                    },
+                    mode = FieldInteractionMode.EditOnly)
+              }
 
               DependenciesSelectionSection(
                   projectId = editTaskState.projectId,

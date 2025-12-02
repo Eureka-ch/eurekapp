@@ -1,5 +1,5 @@
 /*
- * Co-Authored-By: Claude Sonnet 4.5
+ * Co-Authored-By: Claude Sonnet 4.5, Claude Opus 4.5
  */
 package ch.eureka.eurekapp.screens.subscreens.tasks.creation
 
@@ -43,12 +43,14 @@ import ch.eureka.eurekapp.model.tasks.CreateTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AttachmentsList
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.FieldInteractionMode
 import ch.eureka.eurekapp.screens.subscreens.tasks.ProjectSelectionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesSelectionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDescriptionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskReminderField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskTitleField
+import ch.eureka.eurekapp.screens.subscreens.tasks.TemplateFieldsSection
 import ch.eureka.eurekapp.screens.subscreens.tasks.TemplateSelectionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.UserAssignmentField
 import ch.eureka.eurekapp.ui.components.BackButton
@@ -285,6 +287,16 @@ private fun CreateTaskContent(config: CreateTaskContentConfig) {
                 config.navigationController.navigate(
                     Route.TasksSection.CreateTemplate(projectId = config.projectId))
               })
+
+          if (config.createTaskState.selectedTemplate != null) {
+            TemplateFieldsSection(
+                template = config.createTaskState.selectedTemplate,
+                customData = config.createTaskState.customData,
+                onFieldValueChange = { fieldId, value ->
+                  config.createTaskViewModel.updateCustomFieldValue(fieldId, value)
+                },
+                mode = FieldInteractionMode.EditOnly)
+          }
         }
 
         UserAssignmentField(

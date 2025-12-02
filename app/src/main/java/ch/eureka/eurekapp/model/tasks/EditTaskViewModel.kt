@@ -1,6 +1,7 @@
 // Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the
 // SwEnt staff.
 // Portions of this code were generated with the help of Grok, Claude, and GPT-5.
+// Co-Authored-By: Claude Opus 4.5
 package ch.eureka.eurekapp.model.tasks
 
 import android.content.Context
@@ -16,6 +17,8 @@ import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.data.template.TaskTemplateRepository
+import ch.eureka.eurekapp.model.data.template.field.FieldValue
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.utils.TaskDependencyCycleDetector
 import com.google.firebase.auth.FirebaseAuth
@@ -34,6 +37,8 @@ class EditTaskViewModel(
     fileRepository: FileStorageRepository = RepositoriesProvider.fileRepository,
     projectRepository: ProjectRepository = RepositoriesProvider.projectRepository,
     userRepository: UserRepository = RepositoriesProvider.userRepository,
+    private val templateRepository: TaskTemplateRepository =
+        RepositoriesProvider.taskTemplateRepository,
     getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) :
@@ -123,6 +128,7 @@ class EditTaskViewModel(
         val task =
             Task(
                 taskID = state.taskId,
+                templateId = state.templateId ?: "",
                 projectId = state.projectId,
                 title = state.title,
                 description = state.description,
@@ -130,6 +136,7 @@ class EditTaskViewModel(
                 dueDate = timestamp,
                 reminderTime = reminderTimestamp,
                 attachmentUrls = state.attachmentUrls + newPhotoUrls,
+                customData = state.customData,
                 createdBy = currentUser,
                 status = state.status,
                 dependingOnTasks = state.dependingOnTasks)
@@ -223,12 +230,29 @@ class EditTaskViewModel(
                 }
                 // Load project members after task is loaded
                 loadProjectMembers(task.projectId)
+                // Load template if present
+                if (!task.templateId.isNullOrEmpty()) {
+                  loadTemplate(task.projectId, task.templateId)
+                }
               } else {
                 setErrorMsg("Task not found.")
               }
             }
           }
     }
+  }
+
+  private fun loadTemplate(projectId: String, templateId: String) {
+    viewModelScope.launch(dispatcher) {
+      templateRepository.getTemplateById(projectId, templateId).collect { template ->
+        updateState { copy(selectedTemplate = template) }
+      }
+    }
+  }
+
+  fun updateCustomFieldValue(fieldId: String, value: FieldValue) {
+    val currentData = uiState.value.customData
+    updateState { copy(customData = currentData.setValue(fieldId, value)) }
   }
 
   fun deleteTask(projectId: String, taskId: String) {
