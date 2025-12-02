@@ -3,6 +3,9 @@
  */
 package ch.eureka.eurekapp.ui.activity
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,14 +21,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -40,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
@@ -269,4 +277,51 @@ private fun ErrorMessage(error: String, modifier: Modifier = Modifier) {
   Box(modifier = modifier.fillMaxWidth().padding(Spacing.md)) {
     Text("Error: $error", color = MaterialTheme.colorScheme.error)
   }
+}
+
+@Composable
+private fun ActivitySearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    expanded: Boolean,
+    modifier: Modifier = Modifier
+) {
+  AnimatedVisibility(
+      visible = expanded,
+      enter = expandVertically(),
+      exit = shrinkVertically(),
+      modifier = modifier) {
+        OutlinedTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            placeholder = { Text("Search activities...") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+            trailingIcon = {
+              if (query.isNotEmpty()) {
+                IconButton(onClick = { onQueryChange("") }) {
+                  Icon(Icons.Default.Clear, contentDescription = "Clear search")
+                }
+              }
+            },
+            singleLine = true)
+      }
+}
+
+@Composable
+private fun ActivityTypeFilterChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+  FilterChip(
+      selected = selected,
+      onClick = onClick,
+      label = { Text(label) },
+      modifier = modifier.padding(horizontal = 4.dp),
+      colors =
+          FilterChipDefaults.filterChipColors(
+              selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+              selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer))
 }
