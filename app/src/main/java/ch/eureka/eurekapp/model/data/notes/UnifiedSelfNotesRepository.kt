@@ -5,12 +5,18 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
+import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.prefs.UserPreferencesRepository
 import ch.eureka.eurekapp.model.database.MessageDao
 import ch.eureka.eurekapp.model.database.entities.MessageEntity
 import ch.eureka.eurekapp.model.database.toDomainModel
 import ch.eureka.eurekapp.model.database.toEntity
+import ch.eureka.eurekapp.worker.SyncNotesWorker
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -29,13 +35,18 @@ import kotlinx.coroutines.withContext
 /**
  * A unified repository that manages self-notes across Local Storage (Room) and Cloud (Firestore).
  *
+ * This repository implements an "Offline-First" architecture. It serves data primarily from the
+ * local database (Room) to ensure instant UI updates and offline accessibility. Background
+ * synchronization logic handles pushing changes to the cloud (Firestore) and pulling remote changes
+ * down, respecting user privacy settings (Local vs. Cloud storage modes).
+ *
  * @property context The application context used to check network connectivity.
  * @property localDao The Data Access Object for interacting with the local Room database.
  * @property firestoreRepo The repository for interacting with the remote Firestore database.
  * @property userPreferences The repository for managing user preferences, such as the storage mode
  *   toggle.
  * @property auth The Firebase Authentication instance used to retrieve the current user's ID.
- * @property dispatcher Default dispatcher used in [UnifiedSelfNotesRepository].
+ * @property dispatcher The coroutine dispatcher for background operations (default: IO).
  */
 class UnifiedSelfNotesRepository(
     private val context: Context,
@@ -46,17 +57,27 @@ class UnifiedSelfNotesRepository(
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : SelfNotesRepository {
 
-  // Scope for background sync operations (independent of UI lifecycle)
   private val repositoryScope = CoroutineScope(SupervisorJob() + dispatcher)
 
   init {
     startObservingRemoteNotes()
   }
 
+  /**
+   * Retrieves the current authenticated user's ID.
+   *
+   * @return The unique User ID (UID) string.
+   * @throws IllegalStateException If no user is currently signed in.
+   */
   private fun getCurrentUserId(): String {
     return auth.currentUser?.uid ?: throw IllegalStateException("User must be authenticated")
   }
 
+  /**
+   * Checks if the device currently has an active internet connection.
+   *
+   * @return True if the device is connected to the internet, false otherwise.
+   */
   private fun isInternetAvailable(): Boolean {
     val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -66,8 +87,11 @@ class UnifiedSelfNotesRepository(
   }
 
   /**
-   * Starts observing remote Firestore notes when Cloud Mode is enabled. This ensures that notes
-   * from other devices (or restored notes) are synced down to Local DB.
+   * Starts observing remote Firestore notes when Cloud Mode is enabled.
+   *
+   * This function sets up a background flow that listens to the user's storage preference. If Cloud
+   * Mode is enabled, it subscribes to real-time updates from Firestore and passes incoming data to
+   * [saveRemoteNotesLocally].
    */
   @OptIn(ExperimentalCoroutinesApi::class)
   private fun startObservingRemoteNotes() {
@@ -91,7 +115,7 @@ class UnifiedSelfNotesRepository(
    * for any local notes that are currently pending sync (i.e., user has edited them but they
    * haven't been uploaded yet) and ensures they are NOT overwritten by the incoming cloud data.
    *
-   * @param remoteNotes The list of notes retrieved from Firestore.
+   * @param remoteNotes The list of [Message] objects retrieved from Firestore.
    */
   private fun saveRemoteNotesLocally(remoteNotes: List<Message>) {
     if (remoteNotes.isEmpty()) return
@@ -115,9 +139,12 @@ class UnifiedSelfNotesRepository(
                   .copy(
                       localId = existingEntity.localId,
                       isPendingSync = false,
-                      isPrivacyLocalOnly = false)
+                      isPrivacyLocalOnly = false,
+                      isDeleted = false)
             } else {
-              remoteMessage.toEntity().copy(isPendingSync = false, isPrivacyLocalOnly = false)
+              remoteMessage
+                  .toEntity()
+                  .copy(isPendingSync = false, isPrivacyLocalOnly = false, isDeleted = false)
             }
         notesToUpsert.add(entity)
       }
@@ -126,7 +153,7 @@ class UnifiedSelfNotesRepository(
         localDao.insertMessages(notesToUpsert)
       }
     } catch (e: Exception) {
-      Log.e("UnifiedRepo", "Error syncing down remote notes", e)
+      Log.e("UnifiedSelfNotesRepository", "Error syncing down remote notes", e)
     }
   }
 
@@ -149,7 +176,11 @@ class UnifiedSelfNotesRepository(
           saveNoteLocally(messageWithUser, isCloudEnabled)
 
           if (isCloudEnabled) {
-            handleCloudSync(messageWithUser, userId)
+            if (isInternetAvailable()) {
+              handleCloudUpsert(messageWithUser, userId)
+            } else {
+              scheduleWorker()
+            }
           }
           Result.success(message.messageID)
         } catch (e: Exception) {
@@ -165,26 +196,20 @@ class UnifiedSelfNotesRepository(
               localDao.getMessageById(messageId, userId)
                   ?: return@withContext Result.failure(Exception("Note not found"))
 
-          // Determine if we need to sync this update to cloud
           val isCloudNote = !existingEntity.isPrivacyLocalOnly
 
-          // Update Locally
           localDao.updateMessageText(messageId, userId, newText, isPendingSync = isCloudNote)
 
-          // Update Cloud (if applicable and online)
           if (isCloudNote) {
             if (isInternetAvailable()) {
               val cloudResult = firestoreRepo.updateNote(messageId, newText)
               if (cloudResult.isSuccess) {
                 localDao.markAsSynced(messageId, userId)
               } else {
-                Log.e(
-                    "UnifiedRepo",
-                    "Cloud update failed, note remains pending sync",
-                    cloudResult.exceptionOrNull())
+                scheduleWorker()
               }
             } else {
-              Log.d("UnifiedRepo", "Offline: Note update stored locally, pending sync.")
+              scheduleWorker()
             }
           }
           Result.success(Unit)
@@ -193,29 +218,50 @@ class UnifiedSelfNotesRepository(
         }
       }
 
+  /**
+   * Helper function to save a note to the local database.
+   *
+   * @param message The domain message object.
+   * @param isCloudEnabled Whether cloud storage is currently enabled (determines privacy flags).
+   */
   private fun saveNoteLocally(message: Message, isCloudEnabled: Boolean) {
     val entity =
         message
             .toEntity()
-            .copy(isPendingSync = isCloudEnabled, isPrivacyLocalOnly = !isCloudEnabled)
+            .copy(
+                isPendingSync = isCloudEnabled,
+                isPrivacyLocalOnly = !isCloudEnabled,
+                isDeleted = false)
     localDao.insertMessage(entity)
   }
 
-  private suspend fun handleCloudSync(message: Message, userId: String) {
-    if (!isInternetAvailable()) {
-      Log.d("UnifiedSelfNotesRepository", "Offline: Note stored locally, pending sync.")
-      return
-    }
+  /**
+   * Handles the immediate upload (upsert) of a note to Firestore.
+   *
+   * @param message The message to upload.
+   * @param userId The ID of the user.
+   * @throws Exception if the network call fails.
+   */
+  private suspend fun handleCloudUpsert(message: Message, userId: String) {
+    if (!isInternetAvailable()) return
 
     val cloudResult = firestoreRepo.createNote(message)
 
     if (cloudResult.isFailure) {
+      scheduleWorker()
       throw cloudResult.exceptionOrNull()!!
     }
 
     finalizeSyncWithRollback(message.messageID, userId)
   }
 
+  /**
+   * Marks a note as synced locally after a successful cloud operation. If this local update fails,
+   * it attempts to rollback the cloud operation to maintain consistency.
+   *
+   * @param noteId The ID of the note.
+   * @param userId The ID of the user.
+   */
   private suspend fun finalizeSyncWithRollback(noteId: String, userId: String) {
     try {
       localDao.markAsSynced(noteId, userId)
@@ -226,6 +272,12 @@ class UnifiedSelfNotesRepository(
     }
   }
 
+  /**
+   * Rolls back a cloud creation by deleting the note from Firestore. Used when the local database
+   * fails to update the sync status.
+   *
+   * @param noteId The ID of the note to delete from cloud.
+   */
   private suspend fun performRollback(noteId: String) {
     try {
       firestoreRepo.deleteNote(noteId)
@@ -234,31 +286,55 @@ class UnifiedSelfNotesRepository(
     }
   }
 
+  /**
+   * Deletes a note.
+   *
+   * Behavior depends on the note type:
+   * - **Local-Only:** Immediately deletes the row from the local database.
+   * - **Cloud Note:** Performs a "Soft Delete" locally (hides from UI, marks pending sync) and
+   *   attempts to delete from Firestore. If offline, the worker handles the cloud deletion later.
+   *
+   * @param noteId The ID of the note to delete.
+   * @return A [Result] indicating success.
+   */
   override suspend fun deleteNote(noteId: String): Result<Unit> =
       withContext(dispatcher) {
         val userId = getCurrentUserId()
 
-        // Delete Locally
-        localDao.deleteMessage(noteId, userId)
+        val existingEntity =
+            localDao.getMessageById(noteId, userId) ?: return@withContext Result.success(Unit)
 
-        // Delete from Cloud (Attempt best effort)
+        if (existingEntity.isPrivacyLocalOnly) {
+          localDao.deleteMessage(noteId, userId)
+          return@withContext Result.success(Unit)
+        }
+
+        localDao.markAsDeleted(noteId, userId)
+
         if (isInternetAvailable()) {
           val result = firestoreRepo.deleteNote(noteId)
-          if (result.isFailure) {
+          if (result.isSuccess) {
+            localDao.deleteMessage(noteId, userId)
+          } else {
             Log.e(
                 "UnifiedSelfNotesRepository",
-                "Cloud deletion failed: $noteId",
+                "Cloud delete failed, scheduling worker",
                 result.exceptionOrNull())
+            scheduleWorker()
           }
+        } else {
+          scheduleWorker()
         }
         Result.success(Unit)
       }
 
   /**
    * Updates the user's preference for storage location (Local-only vs. Cloud).
+   * - **Switching to Cloud:** Marks all local notes as pending sync and triggers an upload.
+   * - **Switching to Local:** Deletes all notes from the Cloud (for privacy) and marks local notes
+   *   as private.
    *
-   * @param enableCloud True to enable Cloud storage and sync; False to revert to Local-only
-   *   storage.
+   * @param enableCloud True to enable Cloud storage; False to revert to Local-only.
    * @return The number of notes successfully synced to the cloud during this operation (0 if
    *   disabling cloud).
    */
@@ -298,9 +374,14 @@ class UnifiedSelfNotesRepository(
       }
 
   /**
-   * Uploads all notes marked as 'isPendingSync' to the cloud.
+   * Uploads (or deletes) all notes marked as 'isPendingSync' to the cloud. This is called by the
+   * [SyncNotesWorker] for background synchronization.
    *
-   * @return The number of notes successfully uploaded.
+   * It handles two cases based on the pending note's state:
+   * 1. **Soft Deleted (`isDeleted = 1`):** Deletes from Firestore, then hard deletes locally.
+   * 2. **Created/Updated:** Upserts to Firestore, then marks as synced locally.
+   *
+   * @return The number of notes successfully processed (uploaded or deleted).
    */
   suspend fun syncPendingNotes(): Int {
     return withContext(dispatcher) {
@@ -311,21 +392,48 @@ class UnifiedSelfNotesRepository(
 
       val pendingNotes = localDao.getPendingSyncMessages(userId)
       if (pendingNotes.isNotEmpty()) {
-        Log.d("UnifiedRepo", "Found ${pendingNotes.size} notes to sync")
+        Log.d(
+            "UnifiedSelfNotesRepository",
+            "Found ${pendingNotes.size} pending notes (create/update/delete)")
       }
 
       var successCount = 0
       pendingNotes.forEach { entity ->
-        val domainMessage = entity.toDomainModel()
-        val result = firestoreRepo.createNote(domainMessage)
-        if (result.isSuccess) {
-          localDao.markAsSynced(entity.messageId, userId)
-          successCount++
+        if (entity.isDeleted) {
+          val result = firestoreRepo.deleteNote(entity.messageId)
+          if (result.isSuccess) {
+            localDao.deleteMessage(entity.messageId, userId)
+            successCount++
+          } else {
+            Log.e("UnifiedSelfNotesRepository", "Failed to sync delete for ${entity.messageId}")
+          }
         } else {
-          Log.e("UnifiedSelfNotesRepository", "Failed to upload pending notes.")
+          val domainMessage = entity.toDomainModel()
+          val result = firestoreRepo.createNote(domainMessage)
+          if (result.isSuccess) {
+            localDao.markAsSynced(entity.messageId, userId)
+            successCount++
+          } else {
+            Log.e("UnifiedSelfNotesRepository", "Failed to upload pending note ${entity.messageId}")
+          }
         }
       }
       successCount
     }
+  }
+
+  /**
+   * Schedules a [SyncNotesWorker] to run as soon as the network is connected. Used when an
+   * operation fails due to lack of internet or API errors.
+   */
+  private fun scheduleWorker() {
+    val request =
+        OneTimeWorkRequestBuilder<SyncNotesWorker>()
+            .setConstraints(
+                Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+            .build()
+
+    WorkManager.getInstance(context)
+        .enqueueUniqueWork("SyncNotes", ExistingWorkPolicy.KEEP, request)
   }
 }
