@@ -193,24 +193,3 @@ private fun ErrorMessage(error: String, modifier: Modifier = Modifier) {
     Text("Error: $error", color = MaterialTheme.colorScheme.error)
   }
 }
-
-private fun formatDateHeader(dateMillis: Long): String {
-  val today = Calendar.getInstance()
-  today[Calendar.HOUR_OF_DAY] = 0
-  today[Calendar.MINUTE] = 0
-  today[Calendar.SECOND] = 0
-  today[Calendar.MILLISECOND] = 0
-
-  val yesterday = Calendar.getInstance()
-  yesterday.add(Calendar.DAY_OF_YEAR, -1)
-  yesterday[Calendar.HOUR_OF_DAY] = 0
-  yesterday[Calendar.MINUTE] = 0
-  yesterday[Calendar.SECOND] = 0
-  yesterday[Calendar.MILLISECOND] = 0
-
-  return when (dateMillis) {
-    today.timeInMillis -> "Today"
-    yesterday.timeInMillis -> "Yesterday"
-    else -> SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(dateMillis)
-  }
-}
