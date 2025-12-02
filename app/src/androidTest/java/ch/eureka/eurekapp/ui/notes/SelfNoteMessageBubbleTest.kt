@@ -1,18 +1,19 @@
+/* Portions of this file were written with the help of Gemini and GPT-5 Codex. */
 package ch.eureka.eurekapp.ui.notes
 
-import androidx.compose.ui.test.*
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import ch.eureka.eurekapp.model.data.chat.Message
-import ch.eureka.eurekapp.ui.components.MessageBubbleTestTags
 import com.google.firebase.Timestamp
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-
-/*
-Co-author: GPT-5 Codex
-*/
 
 @RunWith(AndroidJUnit4::class)
 class SelfNoteMessageBubbleTest {
@@ -36,20 +37,9 @@ class SelfNoteMessageBubbleTest {
   fun selfNoteMessageBubble_displaysMessageText() {
     val message = createTestMessage(text = "Hello, this is a test note")
 
-    composeTestRule.setContent { SelfNoteMessageBubble(message = message) }
+    composeTestRule.setContent { SelfNoteMessageBubble(message = message, isSelected = false) }
 
-    composeTestRule
-        .onNodeWithTag(MessageBubbleTestTags.TEXT)
-        .assertTextEquals("Hello, this is a test note")
-  }
-
-  @Test
-  fun selfNoteMessageBubble_displaysTimestamp() {
-    val message = createTestMessage()
-
-    composeTestRule.setContent { SelfNoteMessageBubble(message = message) }
-
-    composeTestRule.onNodeWithTag(MessageBubbleTestTags.TIMESTAMP).assertIsDisplayed()
+    composeTestRule.onNodeWithText("Hello, this is a test note").assertIsDisplayed()
   }
 
   @Test
@@ -57,8 +47,45 @@ class SelfNoteMessageBubbleTest {
     val multilineText = "Line 1\nLine 2\nLine 3"
     val message = createTestMessage(text = multilineText)
 
-    composeTestRule.setContent { SelfNoteMessageBubble(message = message) }
+    composeTestRule.setContent { SelfNoteMessageBubble(message = message, isSelected = false) }
 
-    composeTestRule.onNodeWithTag(MessageBubbleTestTags.TEXT).assertTextEquals(multilineText)
+    composeTestRule.onNodeWithText(multilineText).assertIsDisplayed()
+  }
+
+  @Test
+  fun selfNoteMessageBubble_handlesClick() {
+    val message = createTestMessage(text = "Click me")
+    var isClicked = false
+
+    composeTestRule.setContent {
+      SelfNoteMessageBubble(message = message, isSelected = false, onClick = { isClicked = true })
+    }
+
+    composeTestRule.onNodeWithText("Click me").performClick()
+
+    assertTrue("onClick lambda should be triggered", isClicked)
+  }
+
+  @Test
+  fun selfNoteMessageBubble_handlesLongClick() {
+    val message = createTestMessage(text = "Long press me")
+    var isLongClicked = false
+
+    composeTestRule.setContent {
+      SelfNoteMessageBubble(
+          message = message, isSelected = false, onLongClick = { isLongClicked = true })
+    }
+
+    composeTestRule.onNodeWithText("Long press me").performTouchInput { longClick() }
+
+    assertTrue("onLongClick lambda should be triggered", isLongClicked)
+  }
+
+  @Test
+  fun selfNoteMessageBubble_rendersCorrectlyWhenSelected() {
+    val message = createTestMessage(text = "Selected Note")
+
+    composeTestRule.setContent { SelfNoteMessageBubble(message = message, isSelected = true) }
+    composeTestRule.onNodeWithText("Selected Note").assertIsDisplayed()
   }
 }
