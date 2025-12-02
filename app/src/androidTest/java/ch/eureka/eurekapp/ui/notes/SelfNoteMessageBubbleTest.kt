@@ -4,6 +4,7 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import ch.eureka.eurekapp.model.data.chat.Message
+import ch.eureka.eurekapp.ui.components.MessageBubbleTestTags
 import com.google.firebase.Timestamp
 import org.junit.Rule
 import org.junit.Test
@@ -38,7 +39,7 @@ class SelfNoteMessageBubbleTest {
     composeTestRule.setContent { SelfNoteMessageBubble(message = message) }
 
     composeTestRule
-        .onNodeWithTag(SelfNoteMessageBubbleTestTags.MESSAGE_TEXT)
+        .onNodeWithTag(MessageBubbleTestTags.TEXT)
         .assertTextEquals("Hello, this is a test note")
   }
 
@@ -48,9 +49,7 @@ class SelfNoteMessageBubbleTest {
 
     composeTestRule.setContent { SelfNoteMessageBubble(message = message) }
 
-    composeTestRule
-        .onNodeWithTag(SelfNoteMessageBubbleTestTags.MESSAGE_TIMESTAMP)
-        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MessageBubbleTestTags.TIMESTAMP).assertIsDisplayed()
   }
 
   @Test
@@ -60,8 +59,6 @@ class SelfNoteMessageBubbleTest {
 
     composeTestRule.setContent { SelfNoteMessageBubble(message = message) }
 
-    composeTestRule
-        .onNodeWithTag(SelfNoteMessageBubbleTestTags.MESSAGE_TEXT)
-        .assertTextEquals(multilineText)
+    composeTestRule.onNodeWithTag(MessageBubbleTestTags.TEXT).assertTextEquals(multilineText)
   }
 }

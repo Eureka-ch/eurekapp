@@ -37,6 +37,7 @@ import kotlinx.coroutines.launch
  * - Handling user input for creating and editing notes.
  * - Toggling between Local-Only and Cloud-Sync storage modes.
  * - Managing background synchronization status and error reporting.
+ * - Handling multi-selection for bulk actions (deletion).
  *
  * @property repository The repository for managing notes (Unified Local + Cloud).
  * @property userPrefs The repository for accessing user preferences (storage mode).
@@ -59,6 +60,8 @@ constructor(
   private val _infoMsg = MutableStateFlow<String?>(null)
   // Track which message is being edited. Null means creating new.
   private val _editingMessageId = MutableStateFlow<String?>(null)
+  // Track selected messages for bulk actions
+  private val _selectedNoteIds = MutableStateFlow<Set<String>>(emptySet())
 
   /** The single source of truth for the UI state. */
   @Suppress("UNCHECKED_CAST")
@@ -72,7 +75,8 @@ constructor(
               _isSending,
               _infoMsg,
               userPrefs.isCloudStorageEnabled,
-              _editingMessageId) { args ->
+              _editingMessageId,
+              _selectedNoteIds) { args ->
                 // Combine with >5 args uses vararg and passes an Array<Any?>
                 val notesState = args[0] as NotesLoadState
                 val currentMessage = args[1] as String
@@ -80,6 +84,7 @@ constructor(
                 val errorMsg = args[3] as String?
                 val isCloud = args[4] as Boolean
                 val editingId = args[5] as String?
+                val selectedIds = args[6] as Set<String>
 
                 val notes =
                     when (notesState) {
@@ -101,7 +106,8 @@ constructor(
                     currentMessage = currentMessage,
                     isSending = isSending,
                     isCloudStorageEnabled = isCloud,
-                    editingMessageId = editingId)
+                    editingMessageId = editingId,
+                    selectedNoteIds = selectedIds)
               }
           .stateIn(
               scope = viewModelScope,
@@ -173,12 +179,59 @@ constructor(
   }
 
   /**
+   * Toggles the selection state of a note.
+   *
+   * Used for multi-selection mode. If the note is already selected, it is deselected. If the
+   * resulting selection is empty, the UI automatically exits selection mode.
+   *
+   * @param noteId The unique ID of the note to toggle.
+   */
+  fun toggleSelection(noteId: String) {
+    val currentSelection = _selectedNoteIds.value.toMutableSet()
+    if (currentSelection.contains(noteId)) {
+      currentSelection.remove(noteId)
+    } else {
+      currentSelection.add(noteId)
+    }
+    _selectedNoteIds.value = currentSelection
+  }
+
+  /** Clears all selected notes, effectively exiting selection mode. */
+  fun clearSelection() {
+    _selectedNoteIds.value = emptySet()
+  }
+
+  /**
+   * Deletes all currently selected notes.
+   *
+   * This action is performed optimistically: selection is cleared immediately, and deletions are
+   * queued in the background.
+   */
+  fun deleteSelectedNotes() {
+    val selectedIds = _selectedNoteIds.value.toSet()
+    if (selectedIds.isEmpty()) return
+
+    viewModelScope.launch(dispatcher) {
+      clearSelection()
+
+      selectedIds.forEach { id ->
+        repository.deleteNote(id).onFailure {
+          Log.e("SelfNotesViewModel", "Error deleting $id: ${it.message}")
+        }
+      }
+    }
+  }
+
+  /**
    * Enters "Edit Mode" for a specific note. Populates the input field with the note's text and
    * stores the ID of the note being edited.
+   *
+   * If selection mode was active, it is cleared first.
    *
    * @param note The note object to edit.
    */
   fun startEditing(note: Message) {
+    clearSelection()
     _editingMessageId.value = note.messageID
     _currentMessage.value = note.text
   }
@@ -190,25 +243,6 @@ constructor(
   fun cancelEditing() {
     _editingMessageId.value = null
     _currentMessage.value = ""
-  }
-
-  /**
-   * Deletes a note.
-   *
-   * This operation handles both local deletion and cloud sync (if enabled). If the note was
-   * currently being edited, the edit session is cancelled.
-   *
-   * @param note The note to delete.
-   */
-  fun deleteNote(note: Message) {
-    viewModelScope.launch(dispatcher) {
-      repository.deleteNote(note.messageID).onFailure { e ->
-        _infoMsg.value = "Failed to delete: ${e.message}"
-      }
-      if (_editingMessageId.value == note.messageID) {
-        cancelEditing()
-      }
-    }
   }
 
   /**

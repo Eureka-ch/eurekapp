@@ -1,6 +1,7 @@
 /* Portions of this file were written with the help of GPT-5 Codex and Gemini. */
 package ch.eureka.eurekapp.ui.notes
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -51,23 +54,18 @@ object SelfNotesScreenTestTags {
   const val TOGGLE_SWITCH = "toggleSwitch"
 }
 
-/**
- * Screen for displaying and composing self-notes in a chat-like interface.
- *
- * This screen serves as the main UI for the "Note to Self" feature. It implements an offline-first
- * architecture where users can seamlessly switch between local-only storage and cloud
- * synchronization.
- *
- * @param modifier Optional modifier for customizing the layout behavior of the screen root.
- * @param viewModel The [SelfNotesViewModel] that manages the UI state and business logic. Defaults
- *   to using the standard `viewModel()` factory.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelfNotesScreen(modifier: Modifier = Modifier, viewModel: SelfNotesViewModel = viewModel()) {
   val uiState by viewModel.uiState.collectAsState()
   val snackbarHostState = remember { SnackbarHostState() }
   val listState = rememberLazyListState()
+
+  // Handle hardware "Back" button to exit selection mode or edit mode
+  BackHandler(enabled = uiState.isSelectionMode || uiState.editingMessageId != null) {
+    if (uiState.isSelectionMode) viewModel.clearSelection()
+    if (uiState.editingMessageId != null) viewModel.cancelEditing()
+  }
 
   LaunchedEffect(uiState.errorMsg) {
     uiState.errorMsg?.let { errorMsg ->
@@ -76,9 +74,9 @@ fun SelfNotesScreen(modifier: Modifier = Modifier, viewModel: SelfNotesViewModel
     }
   }
 
-  // Scroll to bottom when new notes arrive (only if creating, not necessarily editing)
+  // Auto-scroll when new notes arrive (only if NOT in selection mode to avoid jumping)
   LaunchedEffect(uiState.notes.size) {
-    if (uiState.notes.isNotEmpty() && !uiState.isLoading) {
+    if (uiState.notes.isNotEmpty() && !uiState.isLoading && !uiState.isSelectionMode) {
       listState.animateScrollToItem(0)
     }
   }
@@ -86,52 +84,86 @@ fun SelfNotesScreen(modifier: Modifier = Modifier, viewModel: SelfNotesViewModel
   Scaffold(
       modifier = modifier.fillMaxSize().testTag(SelfNotesScreenTestTags.SCREEN),
       topBar = {
-        TopAppBar(
-            title = { Text(if (uiState.editingMessageId != null) "Editing Note" else "Notes") },
-            colors =
-                TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary),
-            navigationIcon = {
-              if (uiState.editingMessageId != null) {
-                IconButton(onClick = { viewModel.cancelEditing() }) {
-                  Icon(Icons.Default.Close, contentDescription = "Cancel Edit")
+        if (uiState.isSelectionMode) {
+          TopAppBar(
+              title = { Text("${uiState.selectedNoteIds.size} Selected") },
+              colors =
+                  TopAppBarDefaults.topAppBarColors(
+                      containerColor =
+                          MaterialTheme.colorScheme
+                              .surfaceVariant, // Different color for context mode
+                      titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                      actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant),
+              navigationIcon = {
+                IconButton(onClick = { viewModel.clearSelection() }) {
+                  Icon(Icons.Default.Close, contentDescription = "Cancel Selection")
                 }
-              }
-            },
-            actions = {
-              Row(
-                  verticalAlignment = Alignment.CenterVertically,
-                  modifier = Modifier.padding(end = 8.dp)) {
-                    Text(
-                        text = if (uiState.isCloudStorageEnabled) "Cloud" else "Local",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(end = 8.dp))
-                    Switch(
-                        checked = uiState.isCloudStorageEnabled,
-                        onCheckedChange = { viewModel.toggleStorageMode(it) },
-                        modifier = Modifier.testTag(SelfNotesScreenTestTags.TOGGLE_SWITCH),
-                        colors =
-                            SwitchDefaults.colors(
-                                checkedThumbColor = MaterialTheme.colorScheme.primary,
-                                checkedTrackColor = MaterialTheme.colorScheme.onPrimary,
-                                uncheckedThumbColor = Color.LightGray,
-                                uncheckedTrackColor = MaterialTheme.colorScheme.primaryContainer))
+              },
+              actions = {
+                if (uiState.selectedNoteIds.size == 1) {
+                  IconButton(
+                      onClick = {
+                        val selectedId = uiState.selectedNoteIds.first()
+                        val noteToEdit = uiState.notes.find { it.messageID == selectedId }
+                        if (noteToEdit != null) viewModel.startEditing(noteToEdit)
+                      }) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit Note")
+                      }
+                }
+                IconButton(onClick = { viewModel.deleteSelectedNotes() }) {
+                  Icon(Icons.Default.Delete, contentDescription = "Delete Selected")
+                }
+              })
+        } else {
+          TopAppBar(
+              title = { Text(if (uiState.editingMessageId != null) "Editing Note" else "Notes") },
+              colors =
+                  TopAppBarDefaults.topAppBarColors(
+                      containerColor = MaterialTheme.colorScheme.primary,
+                      titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                      actionIconContentColor = MaterialTheme.colorScheme.onPrimary),
+              navigationIcon = {
+                if (uiState.editingMessageId != null) {
+                  IconButton(onClick = { viewModel.cancelEditing() }) {
+                    Icon(Icons.Default.Close, contentDescription = "Cancel Edit")
                   }
-            })
+                }
+              },
+              actions = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(end = 8.dp)) {
+                      Text(
+                          text = if (uiState.isCloudStorageEnabled) "Cloud" else "Local",
+                          style = MaterialTheme.typography.labelMedium,
+                          color = MaterialTheme.colorScheme.onPrimary,
+                          modifier = Modifier.padding(end = 8.dp))
+                      Switch(
+                          checked = uiState.isCloudStorageEnabled,
+                          onCheckedChange = { viewModel.toggleStorageMode(it) },
+                          modifier = Modifier.testTag(SelfNotesScreenTestTags.TOGGLE_SWITCH),
+                          colors =
+                              SwitchDefaults.colors(
+                                  checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                  checkedTrackColor = MaterialTheme.colorScheme.onPrimary,
+                                  uncheckedThumbColor = Color.LightGray,
+                                  uncheckedTrackColor = MaterialTheme.colorScheme.primaryContainer))
+                    }
+              })
+        }
       },
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       bottomBar = {
-        MessageInputField(
-            message = uiState.currentMessage,
-            onMessageChange = viewModel::updateMessage,
-            onSend = { viewModel.sendNote() },
-            isSending = uiState.isSending,
-            placeholder =
-                if (uiState.editingMessageId != null) "Edit your note..."
-                else "Write a note to yourself...")
+        if (!uiState.isSelectionMode) {
+          MessageInputField(
+              message = uiState.currentMessage,
+              onMessageChange = viewModel::updateMessage,
+              onSend = { viewModel.sendNote() },
+              isSending = uiState.isSending,
+              placeholder =
+                  if (uiState.editingMessageId != null) "Edit your note..."
+                  else "Write a note to yourself...")
+        }
       }) { paddingValues ->
         ScreenWithHelp(
             helpContext = HelpContext.NOTES,
@@ -163,12 +195,19 @@ fun SelfNotesScreen(modifier: Modifier = Modifier, viewModel: SelfNotesViewModel
                                 .padding(horizontal = Spacing.md)
                                 .testTag(SelfNotesScreenTestTags.NOTES_LIST),
                         reverseLayout = true,
-                        verticalArrangement = Arrangement.Center) {
+                        verticalArrangement = Arrangement.spacedBy(2.dp)) {
                           items(items = uiState.notes, key = { it.messageID }) { message ->
+                            val isSelected = uiState.selectedNoteIds.contains(message.messageID)
+
                             SelfNoteMessageBubble(
                                 message = message,
-                                onEditClick = { viewModel.startEditing(message) },
-                                onDeleteClick = { viewModel.deleteNote(message) })
+                                isSelected = isSelected,
+                                onClick = {
+                                  if (uiState.isSelectionMode) {
+                                    viewModel.toggleSelection(message.messageID)
+                                  }
+                                },
+                                onLongClick = { viewModel.toggleSelection(message.messageID) })
                           }
                         }
                   }
