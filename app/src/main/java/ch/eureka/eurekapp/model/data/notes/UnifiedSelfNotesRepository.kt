@@ -32,6 +32,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/** Simple data class to report synchronization results. */
+data class SyncStats(val upserts: Int = 0, val deletes: Int = 0) {
+  val total: Int
+    get() = upserts + deletes
+}
+
 /**
  * A unified repository that manages self-notes across Local Storage (Room) and Cloud (Firestore).
  *
@@ -338,17 +344,17 @@ class UnifiedSelfNotesRepository(
    * @return The number of notes successfully synced to the cloud during this operation (0 if
    *   disabling cloud).
    */
-  suspend fun setStorageMode(enableCloud: Boolean): Int =
+  suspend fun setStorageMode(enableCloud: Boolean): SyncStats =
       withContext(dispatcher) {
         userPreferences.setCloudStorageEnabled(enableCloud)
 
-        var syncedCount = 0
+        var stats = SyncStats(0, 0)
         val userId = getCurrentUserId()
 
         if (enableCloud) {
           localDao.makeAllMessagesPublicForUser(userId)
           if (isInternetAvailable()) {
-            syncedCount = syncPendingNotes()
+            stats = syncPendingNotes()
           }
         } else {
           if (isInternetAvailable()) {
@@ -370,7 +376,7 @@ class UnifiedSelfNotesRepository(
             localDao.insertMessages(privateEntities)
           }
         }
-        syncedCount
+        stats
       }
 
   /**
@@ -383,42 +389,42 @@ class UnifiedSelfNotesRepository(
    *
    * @return The number of notes successfully processed (uploaded or deleted).
    */
-  suspend fun syncPendingNotes(): Int {
+  suspend fun syncPendingNotes(): SyncStats {
     return withContext(dispatcher) {
-      if (!isInternetAvailable()) return@withContext 0
+      if (!isInternetAvailable()) return@withContext SyncStats(0, 0)
 
       val userId = getCurrentUserId()
-      if (userId.isEmpty()) return@withContext 0
+      if (userId.isEmpty()) return@withContext SyncStats(0, 0)
 
       val pendingNotes = localDao.getPendingSyncMessages(userId)
       if (pendingNotes.isNotEmpty()) {
-        Log.d(
-            "UnifiedSelfNotesRepository",
-            "Found ${pendingNotes.size} pending notes (create/update/delete)")
+        Log.d("UnifiedSelfNotesRepository", "Processing ${pendingNotes.size} pending items")
       }
 
-      var successCount = 0
+      var successDeletes = 0
+      var successUpserts = 0
+
       pendingNotes.forEach { entity ->
         if (entity.isDeleted) {
           val result = firestoreRepo.deleteNote(entity.messageId)
           if (result.isSuccess) {
             localDao.deleteMessage(entity.messageId, userId)
-            successCount++
+            successDeletes++
           } else {
-            Log.e("UnifiedSelfNotesRepository", "Failed to sync delete for ${entity.messageId}")
+            Log.e("UnifiedSelfNotesRepository", "Retry failed for delete: ${entity.messageId}")
           }
         } else {
           val domainMessage = entity.toDomainModel()
           val result = firestoreRepo.createNote(domainMessage)
           if (result.isSuccess) {
             localDao.markAsSynced(entity.messageId, userId)
-            successCount++
+            successUpserts++
           } else {
-            Log.e("UnifiedSelfNotesRepository", "Failed to upload pending note ${entity.messageId}")
+            Log.e("UnifiedSelfNotesRepository", "Retry failed for upsert: ${entity.messageId}")
           }
         }
       }
-      successCount
+      SyncStats(upserts = successUpserts, deletes = successDeletes)
     }
   }
 
