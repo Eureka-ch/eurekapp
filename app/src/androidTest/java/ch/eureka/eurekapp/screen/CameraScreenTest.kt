@@ -1,3 +1,4 @@
+// Portions of this code were generated with the help of Grok.
 package ch.eureka.eurekapp.screen
 
 import android.Manifest
@@ -9,11 +10,14 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.navigation.NavHostController
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.CameraScreenTestTags
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.verify
 
 class CameraScreenNoPermissionTest {
   @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
@@ -25,6 +29,20 @@ class CameraScreenNoPermissionTest {
     composeTestRule.onNodeWithTag(CameraScreenTestTags.NO_PERMISSION).assertIsDisplayed()
 
     composeTestRule.onNodeWithTag(CameraScreenTestTags.GRANT_PERMISSION).assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag(CameraScreenTestTags.BACK_BUTTON).assertIsDisplayed()
+  }
+
+  @Test
+  fun testBackButtonFunctionality() {
+    val mockNavController = mock(NavHostController::class.java)
+    composeTestRule.setContent {
+      MaterialTheme { Camera(navigationController = mockNavController) }
+    }
+
+    composeTestRule.onNodeWithTag(CameraScreenTestTags.BACK_BUTTON).performClick()
+
+    verify(mockNavController).popBackStack()
   }
 }
 
@@ -46,7 +64,7 @@ class CameraScreenTest {
 
     composeTestRule.onNodeWithTag(CameraScreenTestTags.PREVIEW).assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
+    composeTestRule.onNodeWithTag(CameraScreenTestTags.BACK_BUTTON).assertIsDisplayed()
 
     composeTestRule.waitUntil(timeoutMillis = 6_000) {
       composeTestRule
@@ -79,5 +97,17 @@ class CameraScreenTest {
     composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).assertIsNotDisplayed()
 
     composeTestRule.onNodeWithTag(CameraScreenTestTags.PREVIEW).assertIsDisplayed()
+  }
+
+  @Test
+  fun testBackButtonFunctionality() {
+    val mockNavController = mock(NavHostController::class.java)
+    composeTestRule.setContent {
+      MaterialTheme { Camera(navigationController = mockNavController) }
+    }
+
+    composeTestRule.onNodeWithTag(CameraScreenTestTags.BACK_BUTTON).performClick()
+
+    verify(mockNavController).popBackStack()
   }
 }

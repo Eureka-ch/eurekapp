@@ -1,4 +1,4 @@
-/* Portions of this code were written with the help of Gemini */
+/* Portions of this code were written with the help of Gemini and Grok */
 package ch.eureka.eurekapp.ui.meeting
 
 import android.widget.Toast
@@ -54,6 +54,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingProposal
 import ch.eureka.eurekapp.model.data.meeting.MeetingProposalVote
+import ch.eureka.eurekapp.ui.components.BackButton
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.help.HelpContext
 import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
@@ -75,6 +77,7 @@ object MeetingProposalVoteScreenTestTags {
   const val VIRTUAL_OPTION = "VirtualOption"
   const val IN_PERSON_BUTTON = "InPersonButton"
   const val VIRTUAL_BUTTON = "VirtualButton"
+  const val BACK_BUTTON = "BackButton"
 }
 
 /**
@@ -92,6 +95,7 @@ fun MeetingProposalVoteScreen(
     meetingId: String,
     onCreateDateTimeFormatProposalForMeeting: () -> Unit,
     onDone: () -> Unit,
+    onBackClick: () -> Unit,
     meetingProposalVoteViewModel: MeetingProposalVoteViewModel = viewModel {
       MeetingProposalVoteViewModel(projectId, meetingId)
     },
@@ -123,6 +127,15 @@ fun MeetingProposalVoteScreen(
   }
 
   Scaffold(
+      topBar = {
+        EurekaTopBar(
+            title = "Vote for Meeting Proposal",
+            navigationIcon = {
+              BackButton(
+                  onClick = onBackClick,
+                  modifier = Modifier.testTag(MeetingProposalVoteScreenTestTags.BACK_BUTTON))
+            })
+      },
       floatingActionButton = {
         Column(horizontalAlignment = Alignment.End) {
           FloatingActionButton(

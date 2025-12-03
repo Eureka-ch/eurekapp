@@ -1,4 +1,4 @@
-/* Portions of this file were written with the help of Gemini.*/
+/* Portions of this file were written with the help of Gemini and Grok.*/
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +47,7 @@ class MeetingProposalVoteScreenTest {
   private lateinit var viewModel: MeetingProposalVoteViewModel
   private lateinit var repositoryMock: MeetingProposalVoteRepositoryMock
   private val onDoneCalled = mutableStateOf(false)
+  private val onBackClickCalled = mutableStateOf(false)
 
   private val PROJECT_ID = "test-project"
   private val MEETING_ID = "test-meeting"
@@ -103,7 +104,7 @@ class MeetingProposalVoteScreenTest {
   }
 
   /** Helper function to set the Composable content for a test. */
-  private fun setContent(currentUserId: String? = USER_ID) {
+  private fun setContent(currentUserId: String? = USER_ID, onBackClick: () -> Unit = {}) {
     viewModel =
         MeetingProposalVoteViewModel(
             projectId = PROJECT_ID,
@@ -116,6 +117,7 @@ class MeetingProposalVoteScreenTest {
           projectId = PROJECT_ID,
           meetingId = MEETING_ID,
           onDone = { onDoneCalled.value = true },
+          onBackClick = onBackClick,
           meetingProposalVoteViewModel = viewModel,
           onCreateDateTimeFormatProposalForMeeting = {})
     }
@@ -390,5 +392,21 @@ class MeetingProposalVoteScreenTest {
     assertNotNull(vote)
     assertFalse(vote!!.formatPreferences.contains(MeetingFormat.IN_PERSON))
     assertTrue(vote.formatPreferences.contains(MeetingFormat.VIRTUAL))
+  }
+
+  @Test
+  fun test_backButton_isDisplayed_andCallsOnBackClick() {
+    repositoryMock.setMeetingToReturn(MOCK_MEETING)
+    setContent(onBackClick = { onBackClickCalled.value = true })
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(MeetingProposalVoteScreenTestTags.BACK_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+
+    composeTestRule.waitUntil(timeoutMillis = 5000) { onBackClickCalled.value }
+
+    assertTrue("onBackClick should be called", onBackClickCalled.value)
   }
 }

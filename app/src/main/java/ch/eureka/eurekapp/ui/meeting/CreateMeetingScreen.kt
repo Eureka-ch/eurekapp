@@ -1,5 +1,5 @@
 /*
-Portions of the code in this file were written with the help of chatGPT and Gemini.
+Portions of the code in this file were written with the help of chatGPT, Gemini and Grok.
 Portions of the code in this file are copy-pasted from the Bootcamp solution B3 provided by the SwEnt staff.
 */
 package ch.eureka.eurekapp.ui.meeting
@@ -64,6 +64,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.map.Location
+import ch.eureka.eurekapp.ui.components.BackButton
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -86,6 +88,7 @@ object CreateMeetingScreenTestTags {
   const val INPUT_MEETING_LOCATION = "InputMeetingLocation"
   const val LOCATION_SUGGESTION = "LocationSuggestion"
   const val PICK_LOCATION = "PickLocation"
+  const val BACK_BUTTON = "BackButton"
 }
 
 /** Spacing between each component or subcomponent on the screen. */
@@ -130,6 +133,7 @@ data class CreateMeetingActions(
  * @param onDone Function called when meeting proposal was correctly created and saved on the
  *   database.
  * @param onPickLocationOnMap Function called when the user wants to select a location on the map.
+ * @param onBackClick Function called when the back button is clicked.
  * @param createMeetingViewModel View model associated with create meeting screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -138,6 +142,7 @@ fun CreateMeetingScreen(
     projectId: String,
     onDone: () -> Unit,
     onPickLocationOnMap: () -> Unit = {},
+    onBackClick: () -> Unit = {},
     createMeetingViewModel: CreateMeetingViewModel = viewModel()
 ) {
   val context = LocalContext.current
@@ -172,6 +177,15 @@ fun CreateMeetingScreen(
           onSave = { createMeetingViewModel.createMeeting(projectId) })
 
   Scaffold(
+      topBar = {
+        EurekaTopBar(
+            title = "Create Meeting",
+            navigationIcon = {
+              BackButton(
+                  onClick = onBackClick,
+                  modifier = Modifier.testTag(CreateMeetingScreenTestTags.BACK_BUTTON))
+            })
+      },
       content = { padding ->
         CreateMeetingContent(
             modifier = Modifier.padding(padding), uiState = uiState, actions = actions)
