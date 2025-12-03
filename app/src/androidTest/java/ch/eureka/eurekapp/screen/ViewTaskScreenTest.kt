@@ -26,6 +26,7 @@ import androidx.navigation.toRoute
 import androidx.test.platform.app.InstrumentationRegistry
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
+import ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository
 import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRole
@@ -41,6 +42,7 @@ import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.FieldValue
 import ch.eureka.eurekapp.model.data.template.field.SelectOption
+import ch.eureka.eurekapp.model.data.user.FirestoreUserRepository
 import ch.eureka.eurekapp.model.downloads.AppDatabase
 import ch.eureka.eurekapp.model.downloads.DownloadedFile
 import ch.eureka.eurekapp.model.tasks.ViewTaskViewModel
@@ -196,7 +198,7 @@ open class ViewTaskScreenTest : TestCase() {
     FirebaseEmulator.firestore
         .collection("projects")
         .document(projectId)
-        .collection("templates")
+        .collection("taskTemplates")
         .document(templateId)
         .set(template)
         .await()
@@ -713,7 +715,16 @@ open class ViewTaskScreenTest : TestCase() {
           dispatcher = Dispatchers.IO)
     }
     val sharedTaskScreenViewModel = remember {
-      TaskScreenViewModel(connectivityObserver = mockConnectivityObserver)
+      TaskScreenViewModel(
+          taskRepository = taskRepository,
+          projectRepository =
+              FirestoreProjectRepository(
+                  firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth),
+          userRepository =
+              FirestoreUserRepository(
+                  firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth),
+          currentUserId = testUserId,
+          connectivityObserver = mockConnectivityObserver)
     }
 
     NavHost(navController, startDestination = Route.TasksSection.Tasks) {
