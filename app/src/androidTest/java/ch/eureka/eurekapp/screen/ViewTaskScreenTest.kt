@@ -17,6 +17,7 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -282,6 +283,8 @@ open class ViewTaskScreenTest : TestCase() {
         composeTestRule.onNodeWithText("Loaded Task").assertIsDisplayed()
         composeTestRule.onNodeWithText("Loaded Desc").assertIsDisplayed()
         composeTestRule.onNodeWithText("20/12/2024").assertIsDisplayed()
+        // Scroll to status text in case it's below the fold on small screens
+        composeTestRule.onNodeWithText("Status: IN PROGRESS").performScrollTo()
         composeTestRule.onNodeWithText("Status: IN PROGRESS").assertIsDisplayed()
       }
 
@@ -874,9 +877,11 @@ open class ViewTaskScreenTest : TestCase() {
         // Verify section title
         composeTestRule.onNodeWithText("Template Fields").assertIsDisplayed()
 
-        // Verify individual field labels are displayed
-        composeTestRule.onNodeWithText("Severity").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Additional Notes").assertIsDisplayed()
+        // Verify individual field labels are displayed (scroll to make visible on small screens)
+        composeTestRule.onNodeWithText("Severity", substring = true).performScrollTo()
+        composeTestRule.onNodeWithText("Severity", substring = true).assertIsDisplayed()
+        composeTestRule.onNodeWithText("Additional Notes", substring = true).performScrollTo()
+        composeTestRule.onNodeWithText("Additional Notes", substring = true).assertIsDisplayed()
       }
 
   @Test
