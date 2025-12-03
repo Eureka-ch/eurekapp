@@ -18,6 +18,7 @@ import ch.eureka.eurekapp.ui.components.MessageBubbleTestTags
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.junit.Assert.assertTrue
@@ -209,6 +210,48 @@ class ConversationDetailScreenTest {
     }
     // When file is selected, send button should be enabled
     composeTestRule.onNodeWithContentDescription("Send").assertIsEnabled()
+  }
+
+  @Test
+  fun conversationDetailScreen_sendButtonCallsSendMessageWhenNoFileSelected() {
+    val mockViewModel = mockk<ConversationDetailViewModel>(relaxed = true)
+    val stateFlow = MutableStateFlow(ConversationDetailState(currentMessage = "Test message"))
+
+    every { mockViewModel.uiState } returns stateFlow
+    every { mockViewModel.currentUserId } returns currentUserId
+    every { mockViewModel.snackbarMessage } returns MutableStateFlow(null)
+
+    composeTestRule.setContent {
+      ConversationDetailScreen(
+          conversationId = "test-conv", viewModel = mockViewModel, onNavigateBack = {})
+    }
+
+    composeTestRule.onNodeWithContentDescription("Send").performClick()
+
+    verify { mockViewModel.sendMessage() }
+  }
+
+  @Test
+  fun conversationDetailScreen_sendButtonCallsSendFileMessageWhenFileSelected() {
+    val mockUri = Uri.parse("content://test/file.pdf")
+    val mockViewModel = mockk<ConversationDetailViewModel>(relaxed = true)
+    val stateFlow =
+        MutableStateFlow(
+            ConversationDetailState(
+                selectedFileUri = mockUri, currentMessage = "Test file message"))
+
+    every { mockViewModel.uiState } returns stateFlow
+    every { mockViewModel.currentUserId } returns currentUserId
+    every { mockViewModel.snackbarMessage } returns MutableStateFlow(null)
+
+    composeTestRule.setContent {
+      ConversationDetailScreen(
+          conversationId = "test-conv", viewModel = mockViewModel, onNavigateBack = {})
+    }
+
+    composeTestRule.onNodeWithContentDescription("Send").performClick()
+
+    verify { mockViewModel.sendFileMessage(mockUri, any()) }
   }
 
   private fun createMockViewModel(

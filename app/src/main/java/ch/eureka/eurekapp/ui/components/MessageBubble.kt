@@ -57,10 +57,8 @@ object MessageBubbleTestTags {
  * @param isFromCurrentUser Whether this message was sent by the current user (affects alignment and
  *   color).
  * @param modifier Optional modifier for the bubble container.
- * @param isFile Whether this message contains a file attachment.
- * @param fileUrl URL to download the file if isFile is true.
+ * @param fileAttachment Configuration for file attachment display.
  * @param onLinkClick Callback when a link in the text is clicked.
- * @param onDownloadClick Callback when the download button is clicked for file messages.
  */
 @Composable
 fun MessageBubble(
@@ -68,24 +66,10 @@ fun MessageBubble(
     timestamp: Timestamp?,
     isFromCurrentUser: Boolean,
     modifier: Modifier = Modifier,
-    isFile: Boolean = false,
-    fileUrl: String = "",
-    onLinkClick: (String) -> Unit = {},
-    onDownloadClick: (String) -> Unit = {}
+    fileAttachment: MessageBubbleFileAttachment = MessageBubbleFileAttachment(),
+    onLinkClick: (String) -> Unit = {}
 ) {
-  val containerColor: Color
-  val contentColor: Color
-  val alignment: Alignment
-
-  if (isFromCurrentUser) {
-    containerColor = MaterialTheme.colorScheme.primaryContainer
-    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-    alignment = Alignment.CenterEnd
-  } else {
-    containerColor = MaterialTheme.colorScheme.secondaryContainer
-    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-    alignment = Alignment.CenterStart
-  }
+  val (containerColor, contentColor, alignment) = getBubbleColors(isFromCurrentUser)
 
   Box(
       modifier = modifier.fillMaxWidth().padding(vertical = Spacing.sm),
@@ -99,83 +83,114 @@ fun MessageBubble(
                   modifier = Modifier.padding(Spacing.md),
                   verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
                     if (text.isNotEmpty()) {
-                      val annotatedText = buildAnnotatedString {
-                        val urlRegex = Regex("https?://\\S+")
-                        val matches = urlRegex.findAll(text).toList()
-                        var lastIndex = 0
-                        for (match in matches) {
-                          append(text.substring(lastIndex, match.range.first))
-                          withLink(
-                              LinkAnnotation.Clickable(match.value) { onLinkClick(match.value) }) {
-                                append(match.value)
-                              }
-                          lastIndex = match.range.last + 1
-                        }
-                        append(text.substring(lastIndex))
-                      }
                       Text(
-                          text = annotatedText,
+                          text = buildAnnotatedText(text, onLinkClick),
                           style = MaterialTheme.typography.bodyMedium,
                           color = contentColor,
                           modifier = Modifier.testTag(MessageBubbleTestTags.TEXT))
                     }
 
-                    if (isFile && fileUrl.isNotEmpty()) {
-                      Row(
-                          modifier = Modifier.padding(top = 8.dp),
-                          verticalAlignment = Alignment.CenterVertically,
-                          horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            // Extract filename from Firebase Storage URL by decoding the path
-                            val fileName =
-                                fileUrl
-                                    .substringAfter("/o/")
-                                    .substringBefore("?")
-                                    .let { java.net.URLDecoder.decode(it, "UTF-8") }
-                                    .substringAfterLast("/")
-                            val isImage = isImageFile(fileName)
-                            if (isImage) {
-                              PhotoViewer(
-                                  image = fileUrl,
-                                  modifier =
-                                      Modifier.size(100.dp)
-                                          .clip(RoundedCornerShape(8.dp))
-                                          .testTag(MessageBubbleTestTags.PHOTO_VIEWER))
-                            } else {
-                              Icon(
-                                  imageVector = Icons.Default.AttachFile,
-                                  contentDescription = "File attachment",
-                                  tint = contentColor,
-                                  modifier = Modifier.size(24.dp))
-                              // Remove timestamp from display name (format: name_timestamp.ext)
-                              val displayName =
-                                  fileName.replace(Regex("_\\d{13}(?=\\.[^.]+$|$)"), "")
-                              val truncatedName =
-                                  if (displayName.length > 20) displayName.take(17) + "..."
-                                  else displayName
-                              Text(
-                                  text = truncatedName,
-                                  color = contentColor,
-                                  style = MaterialTheme.typography.bodySmall)
-                            }
-                            IconButton(onClick = { onDownloadClick(fileUrl) }) {
-                              Icon(
-                                  imageVector = Icons.Default.Download,
-                                  contentDescription = "Download file",
-                                  tint = contentColor)
-                            }
-                          }
-                    }
+                    FileAttachment(fileAttachment, contentColor)
 
-                    val formattedTime =
-                        timestamp?.let { Formatters.formatDateTime(it.toDate()) } ?: "Sending..."
                     Text(
-                        text = formattedTime,
+                        text = getFormattedTime(timestamp),
                         style = MaterialTheme.typography.labelSmall,
                         color = contentColor.copy(alpha = 0.7f),
                         modifier = Modifier.testTag(MessageBubbleTestTags.TIMESTAMP))
                   }
             }
       }
+}
+
+data class MessageBubbleFileAttachment(
+    val isFile: Boolean = false,
+    val fileUrl: String = "",
+    val onDownloadClick: (String) -> Unit = {}
+)
+
+@Composable
+private fun getBubbleColors(isFromCurrentUser: Boolean): Triple<Color, Color, Alignment> {
+  return if (isFromCurrentUser) {
+    Triple(
+        MaterialTheme.colorScheme.primaryContainer,
+        MaterialTheme.colorScheme.onPrimaryContainer,
+        Alignment.CenterEnd)
+  } else {
+    Triple(
+        MaterialTheme.colorScheme.secondaryContainer,
+        MaterialTheme.colorScheme.onSecondaryContainer,
+        Alignment.CenterStart)
+  }
+}
+
+private fun buildAnnotatedText(
+    text: String,
+    onLinkClick: (String) -> Unit
+): androidx.compose.ui.text.AnnotatedString {
+  return buildAnnotatedString {
+    val urlRegex = Regex("https?://\\S+")
+    val matches = urlRegex.findAll(text).toList()
+    var lastIndex = 0
+    for (match in matches) {
+      append(text.substring(lastIndex, match.range.first))
+      withLink(LinkAnnotation.Clickable(match.value) { onLinkClick(match.value) }) {
+        append(match.value)
+      }
+      lastIndex = match.range.last + 1
+    }
+    append(text.substring(lastIndex))
+  }
+}
+
+@Composable
+private fun FileAttachment(fileAttachment: MessageBubbleFileAttachment, contentColor: Color) {
+  if (!fileAttachment.isFile || fileAttachment.fileUrl.isEmpty()) return
+
+  Row(
+      modifier = Modifier.padding(top = 8.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        // Extract filename from Firebase Storage URL by decoding the path
+        val fileName =
+            fileAttachment.fileUrl
+                .substringAfter("/o/")
+                .substringBefore("?")
+                .let { java.net.URLDecoder.decode(it, "UTF-8") }
+                .substringAfterLast("/")
+        val isImage = isImageFile(fileName)
+        if (isImage) {
+          PhotoViewer(
+              image = fileAttachment.fileUrl,
+              modifier =
+                  Modifier.size(100.dp)
+                      .clip(RoundedCornerShape(8.dp))
+                      .testTag(MessageBubbleTestTags.PHOTO_VIEWER))
+        } else {
+          Icon(
+              imageVector = Icons.Default.AttachFile,
+              contentDescription = "File attachment",
+              tint = contentColor,
+              modifier = Modifier.size(24.dp))
+          // Remove timestamp from display name (format: name_timestamp.ext)
+          val displayName = fileName.replace(Regex("_\\d{13}(?=\\.[^.]+$|$)"), "")
+          val truncatedName =
+              if (displayName.length > 20) displayName.take(17) + "..." else displayName
+          Text(
+              text = truncatedName,
+              color = contentColor,
+              style = MaterialTheme.typography.bodySmall)
+        }
+        IconButton(onClick = { fileAttachment.onDownloadClick(fileAttachment.fileUrl) }) {
+          Icon(
+              imageVector = Icons.Default.Download,
+              contentDescription = "Download file",
+              tint = contentColor)
+        }
+      }
+}
+
+private fun getFormattedTime(timestamp: Timestamp?): String {
+  return timestamp?.let { Formatters.formatDateTime(it.toDate()) } ?: "Sending..."
 }
 
 private fun isImageFile(filename: String): Boolean {

@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.MessageBubble
+import ch.eureka.eurekapp.ui.components.MessageBubbleFileAttachment
 import ch.eureka.eurekapp.ui.components.MessageInputField
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
@@ -102,13 +103,6 @@ fun ConversationDetailScreen(
   }
 
   LaunchedEffect(Unit) { viewModel.markAsRead() }
-
-  LaunchedEffect(uiState.errorMsg) {
-    uiState.errorMsg?.let {
-      snackbarHostState.showSnackbar(it)
-      viewModel.clearError()
-    }
-  }
 
   Scaffold(
       modifier = modifier.fillMaxSize().testTag(ConversationDetailScreenTestTags.SCREEN),
@@ -216,10 +210,14 @@ fun ConversationDetailScreen(
                           text = message.text,
                           timestamp = message.createdAt,
                           isFromCurrentUser = message.senderId == viewModel.currentUserId,
-                          isFile = message.isFile,
-                          fileUrl = message.fileUrl,
-                          onLinkClick = { url -> viewModel.openUrl(url, context) },
-                          onDownloadClick = { url -> viewModel.downloadFile(url, context) })
+                          fileAttachment =
+                              MessageBubbleFileAttachment(
+                                  isFile = message.isFile,
+                                  fileUrl = message.fileUrl,
+                                  onDownloadClick = { url ->
+                                    viewModel.downloadFile(url, context)
+                                  }),
+                          onLinkClick = { url -> viewModel.openUrl(url, context) })
                     }
                   }
             }
