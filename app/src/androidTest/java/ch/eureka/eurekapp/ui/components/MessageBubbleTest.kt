@@ -57,8 +57,8 @@ class MessageBubbleTest {
           text = "File message",
           timestamp = Timestamp.now(),
           isFromCurrentUser = true,
-          isFile = true,
-          fileUrl = "https://example.com/file.pdf")
+          fileAttachment =
+              MessageBubbleFileAttachment(isFile = true, fileUrl = "https://example.com/file.pdf"))
     }
     composeTestRule.onNodeWithContentDescription("Download file").assertIsDisplayed()
   }
@@ -70,8 +70,8 @@ class MessageBubbleTest {
           text = "Image message",
           timestamp = Timestamp.now(),
           isFromCurrentUser = true,
-          isFile = true,
-          fileUrl = "https://example.com/image.jpg")
+          fileAttachment =
+              MessageBubbleFileAttachment(isFile = true, fileUrl = "https://example.com/image.jpg"))
     }
     composeTestRule.onNodeWithTag(MessageBubbleTestTags.PHOTO_VIEWER).assertIsDisplayed()
     composeTestRule.onNodeWithContentDescription("Download file").assertIsDisplayed()

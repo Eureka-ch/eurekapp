@@ -25,6 +25,10 @@ class FirestoreConversationRepository(
     private val auth: FirebaseAuth
 ) : ConversationRepository {
 
+  companion object {
+    private const val USER_NOT_AUTHENTICATED = "User not authenticated"
+  }
+
   override fun getConversationsForCurrentUser(): Flow<List<Conversation>> = callbackFlow {
     val currentUserId = auth.currentUser?.uid
     if (currentUserId == null) {
@@ -170,8 +174,7 @@ class FirestoreConversationRepository(
       conversationId: String,
       text: String
   ): Result<ConversationMessage> = runCatching {
-    val currentUserId =
-        auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
+    val currentUserId = auth.currentUser?.uid ?: throw IllegalStateException(USER_NOT_AUTHENTICATED)
 
     val messagesCollection =
         firestore
@@ -203,8 +206,7 @@ class FirestoreConversationRepository(
       text: String,
       fileUrl: String
   ): Result<ConversationMessage> = runCatching {
-    val currentUserId =
-        auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
+    val currentUserId = auth.currentUser?.uid ?: throw IllegalStateException(USER_NOT_AUTHENTICATED)
 
     val messagesCollection =
         firestore
@@ -246,8 +248,7 @@ class FirestoreConversationRepository(
   }
 
   override suspend fun markMessagesAsRead(conversationId: String): Result<Unit> = runCatching {
-    val currentUserId =
-        auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
+    val currentUserId = auth.currentUser?.uid ?: throw IllegalStateException(USER_NOT_AUTHENTICATED)
 
     firestore
         .collection(FirestorePaths.CONVERSATIONS)

@@ -379,4 +379,73 @@ class ConversationDetailViewModelTest {
     assertEquals(null, viewModel.snackbarMessage.value)
     verify { mockDownloadManager.enqueue(any()) }
   }
+
+  @Test
+  fun conversationDetailViewModel_sendFileMessage_usesDefaultFilenameWhenQueryReturnsNull() =
+      runTest {
+        every { mockConversationRepository.getConversationById(conversationId) } returns
+            flowOf(null)
+        every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+        val testUri = mockk<Uri>()
+        val mockContentResolver = mockk<android.content.ContentResolver>(relaxed = true)
+        val mockFileDescriptor = mockk<android.os.ParcelFileDescriptor>(relaxed = true)
+
+        every { mockContext.contentResolver } returns mockContentResolver
+        every { mockContentResolver.query(testUri, null, null, null, null) } returns null
+        every { mockContentResolver.openFileDescriptor(testUri, "r") } returns mockFileDescriptor
+        every { mockFileDescriptor.statSize } returns 1024L
+
+        coEvery { mockFileStorageRepository.uploadFile(any(), testUri) } returns
+            Result.success("url")
+        coEvery { mockConversationRepository.sendFileMessage(any(), any(), any()) } returns
+            Result.success(mockk())
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.sendFileMessage(testUri, mockContext)
+        advanceUntilIdle()
+
+        // Verify uploadFile is called with a path containing the default "file" filename
+        coVerify { mockFileStorageRepository.uploadFile(match { it.contains("file_") }, testUri) }
+      }
+
+  @Test
+  fun conversationDetailViewModel_sendFileMessage_handlesCursorMoveToFirstFailure() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val testUri = mockk<Uri>()
+    val mockContentResolver = mockk<android.content.ContentResolver>(relaxed = true)
+    val mockCursor = mockk<android.database.Cursor>(relaxed = true)
+    val mockFileDescriptor = mockk<android.os.ParcelFileDescriptor>(relaxed = true)
+
+    every { mockContext.contentResolver } returns mockContentResolver
+    every { mockContentResolver.query(testUri, null, null, null, null) } returns mockCursor
+    every { mockCursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME) } returns 0
+    every { mockCursor.moveToFirst() } returns false // Simulate failure
+    every { mockCursor.getString(0) } returns "fallback_name" // Mock getString even if invalid
+    every { mockContentResolver.openFileDescriptor(testUri, "r") } returns mockFileDescriptor
+    every { mockFileDescriptor.statSize } returns 1024L
+
+    coEvery { mockFileStorageRepository.uploadFile(any(), testUri) } returns Result.success("url")
+    coEvery { mockConversationRepository.sendFileMessage(any(), any(), any()) } returns
+        Result.success(mockk())
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.sendFileMessage(testUri, mockContext)
+    advanceUntilIdle()
+
+    // Verify the lines are attempted (cursor methods called), and upload proceeds with the mocked
+    // name
+    verify { mockCursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME) }
+    verify { mockCursor.moveToFirst() }
+    verify { mockCursor.getString(0) }
+    coVerify {
+      mockFileStorageRepository.uploadFile(match { it.contains("fallback_name_") }, testUri)
+    }
+  }
 }
