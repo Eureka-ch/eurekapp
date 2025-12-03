@@ -13,6 +13,7 @@ import ch.eureka.eurekapp.model.data.activity.ActivityType
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.model.data.activity.FirestoreActivityRepository
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.Calendar
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,24 +26,22 @@ import kotlinx.coroutines.tasks.await
 /**
  * UI state for the activity feed screen.
  *
- * @property activities The list of activities currently displayed (filtered).
- * @property allActivities Cache of all fetched activities to enable fast client-side filtering.
- * @property activitiesByDate Activities grouped by date (timestamp in millis as key).
- * @property isLoading Whether the data is currently being fetched.
- * @property errorMsg An error message if something went wrong, or null otherwise.
- * @property filterEntityType The currently active entity type filter (e.g., MEETING, PROJECT), or
- *   null if showing all.
- * @property filterActivityType The currently active activity type filter (e.g. CREATED, UPDATED),
- *   or null if showing all.
- * @property searchQuery The current search query for filtering activities.
- * @property readActivityIds Set of activity IDs that have been marked as read.
- * @property groupByProject Whether to group activities by project.
- * @property isRefreshing Whether the feed is being refreshed (pull-to-refresh).
- * @property isCompactMode True if UI should use compact mode, false otherwise.
+ * @property activities Currently displayed activities (filtered).
+ * @property allActivities Cache of all fetched activities for client-side filtering.
+ * @property activitiesByDate Activities grouped by date.
+ * @property isLoading Whether data is being fetched.
+ * @property errorMsg Error message if something went wrong.
+ * @property filterEntityType Active entity type filter.
+ * @property filterActivityType Active activity type filter.
+ * @property searchQuery Current search query.
+ * @property readActivityIds Activity IDs marked as read.
+ * @property groupByProject Whether to group by project.
+ * @property isRefreshing Whether pull-to-refresh is active.
+ * @property isCompactMode Whether to use compact UI mode.
  */
 data class ActivityFeedUIState(
     val activities: List<Activity> = emptyList(),
-    val allActivities: List<Activity> = emptyList(), // Cache for client-side filtering
+    val allActivities: List<Activity> = emptyList(),
     val activitiesByDate: Map<Long, List<Activity>> = emptyMap(),
     val isLoading: Boolean = false,
     val errorMsg: String? = null,
@@ -56,15 +55,11 @@ data class ActivityFeedUIState(
 )
 
 /**
- * ViewModel managing the activity feed logic.
+ * ViewModel for activity feed with Firestore-persisted read status.
  *
- * It uses a simplified repository pattern where it fetches all allowed activities for the user and
- * then handles filtering (by Projects or Meetings) in memory.
- *
- * @param repository The [ActivityRepository] for data operations.
- * @param firestore The [FirebaseFirestore] instance (used mostly for enriching data with user
- *   names).
- * @param auth The [FirebaseAuth] instance.
+ * @param repository Activity data repository.
+ * @param firestore Firestore instance for user data and read status.
+ * @param auth Firebase Auth instance.
  */
 class ActivityFeedViewModel(
     private val repository: ActivityRepository = FirestoreActivityRepository(),
@@ -75,12 +70,18 @@ class ActivityFeedViewModel(
   private val _uiState = MutableStateFlow(ActivityFeedUIState())
   val uiState: StateFlow<ActivityFeedUIState> = _uiState
 
-  /**
-   * Groups activities by date (normalized to start of day).
-   *
-   * @param activities List of activities to group.
-   * @return Map with date in millis as key and list of activities as value.
-   */
+  /** Loads read activity IDs from Firestore. */
+  private suspend fun loadReadActivityIds(userId: String): Set<String> {
+    return try {
+      val userDoc = firestore.collection(FirestorePaths.USERS).document(userId).get().await()
+      @Suppress("UNCHECKED_CAST")
+      (userDoc.get("readActivityIds") as? List<String>)?.toSet() ?: emptySet()
+    } catch (e: Exception) {
+      Log.e("ActivityFeedViewModel", "Failed to load read IDs: ${e.message}")
+      emptySet()
+    }
+  }
+
   private fun groupActivitiesByDate(activities: List<Activity>): Map<Long, List<Activity>> {
     return activities.groupBy { activity ->
       val calendar = Calendar.getInstance()
@@ -112,27 +113,23 @@ class ActivityFeedViewModel(
     }
   }
 
-  /** Clears the error messages. */
+  /** Clears error message. */
   fun clearErrorMsg() = _uiState.update { it.copy(errorMsg = null) }
 
-  /**
-   * Set compact mode flag.
-   *
-   * @param isCompact The new value for the compact mode flag.
-   */
+  /** Sets compact mode. */
   fun setCompactMode(isCompact: Boolean) {
     _uiState.update { it.copy(isCompactMode = isCompact) }
   }
 
-  /**
-   * Loads the single unified feed for the current user. Fetches EVERYTHING allowed, then applies
-   * local filters if active.
-   */
+  /** Loads activities for current user. */
   fun loadActivities() {
     val currentUserId = auth.currentUser?.uid ?: return
 
     viewModelScope.launch {
       _uiState.update { it.copy(isLoading = true) }
+
+      // Load read activity IDs from Firestore
+      val readIds = loadReadActivityIds(currentUserId)
 
       repository
           .getActivities(currentUserId)
@@ -141,7 +138,6 @@ class ActivityFeedViewModel(
             try {
               val enriched = enrichActivitiesWithUserNames(rawActivities)
               _uiState.update { state ->
-                // Apply current filters to new data
                 val filtered =
                     applyAllFilters(
                         enriched,
@@ -153,7 +149,8 @@ class ActivityFeedViewModel(
                     isLoading = false,
                     allActivities = enriched,
                     activities = filtered,
-                    activitiesByDate = groupedByDate)
+                    activitiesByDate = groupedByDate,
+                    readActivityIds = readIds)
               }
             } catch (e: Exception) {
               _uiState.update { it.copy(isLoading = false, errorMsg = e.message) }
@@ -162,12 +159,7 @@ class ActivityFeedViewModel(
     }
   }
 
-  /**
-   * Applies an entity type filter to the activity feed.
-   *
-   * @param entityType The type of entity to filter by (e.g., [EntityType.MEETING] or
-   *   [EntityType.PROJECT]).
-   */
+  /** Applies entity type filter (PROJECT, MEETING, etc). */
   fun applyEntityTypeFilter(entityType: EntityType) {
     _uiState.update { state ->
       val filtered =
@@ -180,11 +172,7 @@ class ActivityFeedViewModel(
     if (_uiState.value.allActivities.isEmpty()) loadActivities()
   }
 
-  /**
-   * Applies an activity type filter to the activity feed.
-   *
-   * @param activityType The type of activity to filter by (e.g., [ActivityType.CREATED]).
-   */
+  /** Applies activity type filter (CREATED, UPDATED, etc). */
   fun applyActivityTypeFilter(activityType: ActivityType?) {
     _uiState.update { state ->
       val filtered =
@@ -198,11 +186,7 @@ class ActivityFeedViewModel(
     }
   }
 
-  /**
-   * Applies a search query to filter activities.
-   *
-   * @param query The search query string.
-   */
+  /** Applies search query filter. */
   fun applySearch(query: String) {
     _uiState.update { state ->
       val filtered =
@@ -213,7 +197,7 @@ class ActivityFeedViewModel(
     }
   }
 
-  /** Clears all filters to show nothing (user must select a filter). */
+  /** Clears all filters. */
   fun clearFilters() {
     _uiState.update { state ->
       state.copy(
@@ -225,20 +209,42 @@ class ActivityFeedViewModel(
     }
   }
 
-  /**
-   * Marks an activity as read.
-   *
-   * @param activityId The ID of the activity to mark as read.
-   */
+  /** Marks activity as read. */
   fun markAsRead(activityId: String) {
-    _uiState.update { state -> state.copy(readActivityIds = state.readActivityIds + activityId) }
+    val userId = auth.currentUser?.uid ?: return
+    viewModelScope.launch {
+      try {
+        firestore
+            .collection(FirestorePaths.USERS)
+            .document(userId)
+            .update("readActivityIds", FieldValue.arrayUnion(activityId))
+            .await()
+        _uiState.update { state ->
+          state.copy(readActivityIds = state.readActivityIds + activityId)
+        }
+      } catch (e: Exception) {
+        Log.e("ActivityFeedViewModel", "Failed to mark as read: ${e.message}")
+      }
+    }
   }
 
-  /** Marks all currently visible activities as read. */
+  /** Marks all visible activities as read. */
   fun markAllAsRead() {
-    _uiState.update { state ->
-      val allActivityIds = state.activities.map { it.activityId }.toSet()
-      state.copy(readActivityIds = state.readActivityIds + allActivityIds)
+    val userId = auth.currentUser?.uid ?: return
+    val allActivityIds = _uiState.value.activities.map { it.activityId }
+    viewModelScope.launch {
+      try {
+        firestore
+            .collection(FirestorePaths.USERS)
+            .document(userId)
+            .update("readActivityIds", FieldValue.arrayUnion(*allActivityIds.toTypedArray()))
+            .await()
+        _uiState.update { state ->
+          state.copy(readActivityIds = state.readActivityIds + allActivityIds)
+        }
+      } catch (e: Exception) {
+        Log.e("ActivityFeedViewModel", "Failed to mark all as read: ${e.message}")
+      }
     }
   }
 
@@ -247,14 +253,13 @@ class ActivityFeedViewModel(
     _uiState.update { state -> state.copy(groupByProject = !state.groupByProject) }
   }
 
-  /** Refreshes the activity feed (for pull-to-refresh). */
+  /** Refreshes activity feed. */
   fun refresh() {
     _uiState.update { it.copy(isRefreshing = true) }
     loadActivities()
     _uiState.update { it.copy(isRefreshing = false) }
   }
 
-  /** Applies all active filters to a list of activities. */
   private fun applyAllFilters(
       list: List<Activity>,
       entityType: EntityType?,
@@ -295,16 +300,14 @@ class ActivityFeedViewModel(
     return filtered
   }
 
-  /**
-   * Deletes an activity.
-   *
-   * @param activityId The unique ID of the activity to delete.
-   */
+  /** Deletes an activity. */
   fun deleteActivity(activityId: String) {
+    val userId = auth.currentUser?.uid ?: return
     viewModelScope.launch {
       val prevList = _uiState.value.activities
       val prevAll = _uiState.value.allActivities
       val prevGrouped = _uiState.value.activitiesByDate
+      val prevReadIds = _uiState.value.readActivityIds
 
       _uiState.update { state ->
         val filtered = state.activities.filter { it.activityId != activityId }
@@ -312,17 +315,31 @@ class ActivityFeedViewModel(
         state.copy(
             activities = filtered,
             allActivities = state.allActivities.filter { it.activityId != activityId },
-            activitiesByDate = groupedByDate)
+            activitiesByDate = groupedByDate,
+            readActivityIds = state.readActivityIds - activityId)
       }
 
-      repository.deleteActivity(activityId).onFailure { e ->
-        // Revert on failure
+      val deleteResult = repository.deleteActivity(activityId)
+
+      if (deleteResult.isSuccess) {
+        try {
+          firestore
+              .collection(FirestorePaths.USERS)
+              .document(userId)
+              .update("readActivityIds", FieldValue.arrayRemove(activityId))
+              .await()
+        } catch (e: Exception) {
+          Log.e("ActivityFeedViewModel", "Failed to remove read status: ${e.message}")
+        }
+      } else {
+        val exception = deleteResult.exceptionOrNull()
         _uiState.update { state ->
           state.copy(
               activities = prevList,
               allActivities = prevAll,
               activitiesByDate = prevGrouped,
-              errorMsg = e.message)
+              readActivityIds = prevReadIds,
+              errorMsg = exception?.message)
         }
       }
     }

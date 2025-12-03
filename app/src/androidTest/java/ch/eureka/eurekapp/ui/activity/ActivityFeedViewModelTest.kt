@@ -53,7 +53,10 @@ class ActivityFeedViewModelTest {
 
     val userDoc = mockk<DocumentSnapshot>(relaxed = true)
     every { userDoc.getString("displayName") } returns "Test User"
+    every { userDoc.get("readActivityIds") } returns emptyList<String>()
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
+    every { firestore.collection("users").document(any()).update(any<String>(), any()) } returns
+        Tasks.forResult<Void>(null)
 
     viewModel = ActivityFeedViewModel(repository, firestore, auth)
   }

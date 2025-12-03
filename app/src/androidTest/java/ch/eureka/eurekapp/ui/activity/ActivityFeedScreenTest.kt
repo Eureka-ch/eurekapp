@@ -39,21 +39,20 @@ class ActivityFeedScreenTest {
     firestore = mockk(relaxed = true)
     auth = mockk(relaxed = true)
 
-    // Mock Firebase auth
     val firebaseUser = mockk<FirebaseUser>(relaxed = true)
     every { firebaseUser.uid } returns testUserId
     every { auth.currentUser } returns firebaseUser
 
-    // Mock Firestore user fetches
     val userDoc = mockk<com.google.firebase.firestore.DocumentSnapshot>(relaxed = true)
     every { userDoc.getString("displayName") } returns "Test User"
+    every { userDoc.get("readActivityIds") } returns emptyList<String>()
     val usersCollection = mockk<com.google.firebase.firestore.CollectionReference>(relaxed = true)
     val userDocRef = mockk<com.google.firebase.firestore.DocumentReference>(relaxed = true)
     every { firestore.collection("users") } returns usersCollection
     every { usersCollection.document(any()) } returns userDocRef
     every { userDocRef.get() } returns Tasks.forResult(userDoc)
 
-    viewModel = ActivityFeedViewModel(repository = repository, firestore = firestore, auth = auth)
+    viewModel = ActivityFeedViewModel(repository, firestore, auth)
   }
 
   @Test
