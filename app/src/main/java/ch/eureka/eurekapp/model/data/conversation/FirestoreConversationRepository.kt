@@ -150,6 +150,9 @@ class FirestoreConversationRepository(
                     close(error)
                     return@addSnapshotListener
                   }
+                  // Use manual mapping instead of doc.toObject(ConversationMessage::class.java)
+                  // to gracefully handle data inconsistencies
+                  // Messages sent with old versions of the app will have missing fields
                   val messages =
                       snapshot?.documents?.mapNotNull { doc ->
                         try {
@@ -161,7 +164,7 @@ class FirestoreConversationRepository(
                               isFile = doc.getBoolean("isFile") ?: false,
                               fileUrl = doc.getString("fileUrl") ?: "")
                         } catch (e: Exception) {
-                          null
+                          null // Skip malformed messages silently
                         }
                       } ?: emptyList()
                   // Reverse to return oldest-first for display
