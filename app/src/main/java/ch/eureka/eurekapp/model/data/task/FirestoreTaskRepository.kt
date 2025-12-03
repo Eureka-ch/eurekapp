@@ -122,30 +122,45 @@ class FirestoreTaskRepository(
         .await()
 
     // Determine activity type and metadata based on what changed
-    val currentUserId = auth.currentUser?.uid ?: task.createdBy
+    val currentUserId = auth.currentUser?.uid
 
-    if (oldTask != null && oldTask.status != task.status) {
-      // Status changed - use STATUS_CHANGED
-      ActivityLogger.logActivity(
-          projectId = task.projectId,
-          activityType = ActivityType.STATUS_CHANGED,
-          entityType = EntityType.TASK,
-          entityId = task.taskID,
-          userId = currentUserId,
-          metadata =
-              mapOf(
-                  "title" to task.title,
-                  "oldStatus" to oldTask.status.name,
-                  "newStatus" to task.status.name))
-    } else {
-      // Other fields changed - use UPDATED
-      ActivityLogger.logActivity(
-          projectId = task.projectId,
-          activityType = ActivityType.UPDATED,
-          entityType = EntityType.TASK,
-          entityId = task.taskID,
-          userId = currentUserId,
-          metadata = mapOf("title" to task.title))
+    // Log if currentUserId is null
+    if (currentUserId == null) {
+      android.util.Log.e(
+          "FirestoreTaskRepository", "Cannot log activity for task update: currentUser is null")
+    }
+
+    // Log if oldTask is null
+    if (oldTask == null) {
+      android.util.Log.e(
+          "FirestoreTaskRepository",
+          "Failed to fetch old task for status change detection: projectId=${task.projectId}, taskId=${task.taskID}")
+    }
+
+    if (currentUserId != null && oldTask != null) {
+      if (oldTask.status != task.status) {
+        // Status changed - use STATUS_CHANGED
+        ActivityLogger.logActivity(
+            projectId = task.projectId,
+            activityType = ActivityType.STATUS_CHANGED,
+            entityType = EntityType.TASK,
+            entityId = task.taskID,
+            userId = currentUserId,
+            metadata =
+                mapOf(
+                    "title" to task.title,
+                    "oldStatus" to oldTask.status.name,
+                    "newStatus" to task.status.name))
+      } else {
+        // Other fields changed - use UPDATED
+        ActivityLogger.logActivity(
+            projectId = task.projectId,
+            activityType = ActivityType.UPDATED,
+            entityType = EntityType.TASK,
+            entityId = task.taskID,
+            userId = currentUserId,
+            metadata = mapOf("title" to task.title))
+      }
     }
   }
 
@@ -160,7 +175,12 @@ class FirestoreTaskRepository(
             .get()
             .await()
     val task = parseSnapshot(taskDoc.data)
-    val taskTitle = task?.title ?: "Unknown Task"
+
+    // Validate task data
+    if (task == null) {
+      throw IllegalArgumentException(
+          "Task is malformed or not found: projectId=$projectId, taskId=$taskId")
+    }
 
     // Perform deletion
     firestore
@@ -172,14 +192,19 @@ class FirestoreTaskRepository(
         .await()
 
     // Log deletion activity
-    val currentUserId = auth.currentUser?.uid ?: ""
-    ActivityLogger.logActivity(
-        projectId = projectId,
-        activityType = ActivityType.DELETED,
-        entityType = EntityType.TASK,
-        entityId = taskId,
-        userId = currentUserId,
-        metadata = mapOf("title" to taskTitle))
+    val currentUserId = auth.currentUser?.uid
+    if (currentUserId == null) {
+      android.util.Log.e(
+          "FirestoreTaskRepository", "Cannot log activity for task deletion: currentUser is null")
+    } else {
+      ActivityLogger.logActivity(
+          projectId = projectId,
+          activityType = ActivityType.DELETED,
+          entityType = EntityType.TASK,
+          entityId = taskId,
+          userId = currentUserId,
+          metadata = mapOf("title" to task.title))
+    }
   }
 
   override suspend fun assignUser(projectId: String, taskId: String, userId: String): Result<Unit> =
@@ -194,7 +219,12 @@ class FirestoreTaskRepository(
                 .get()
                 .await()
         val task = parseSnapshot(taskDoc.data)
-        val taskTitle = task?.title ?: "Unknown Task"
+
+        // Validate task data
+        if (task == null) {
+          throw IllegalArgumentException(
+              "Task is malformed or not found: projectId=$projectId, taskId=$taskId")
+        }
 
         // Perform assignment
         firestore
@@ -206,14 +236,20 @@ class FirestoreTaskRepository(
             .await()
 
         // Log assignment activity
-        val currentUserId = auth.currentUser?.uid ?: userId
-        ActivityLogger.logActivity(
-            projectId = projectId,
-            activityType = ActivityType.ASSIGNED,
-            entityType = EntityType.TASK,
-            entityId = taskId,
-            userId = currentUserId,
-            metadata = mapOf("title" to taskTitle, "assigneeId" to userId))
+        val currentUserId = auth.currentUser?.uid
+        if (currentUserId == null) {
+          android.util.Log.e(
+              "FirestoreTaskRepository",
+              "Cannot log activity for task assignment: currentUser is null")
+        } else {
+          ActivityLogger.logActivity(
+              projectId = projectId,
+              activityType = ActivityType.ASSIGNED,
+              entityType = EntityType.TASK,
+              entityId = taskId,
+              userId = currentUserId,
+              metadata = mapOf("title" to task.title, "assigneeId" to userId))
+        }
       }
 
   override suspend fun unassignUser(
@@ -231,7 +267,12 @@ class FirestoreTaskRepository(
             .get()
             .await()
     val task = parseSnapshot(taskDoc.data)
-    val taskTitle = task?.title ?: "Unknown Task"
+
+    // Validate task data
+    if (task == null) {
+      throw IllegalArgumentException(
+          "Task is malformed or not found: projectId=$projectId, taskId=$taskId")
+    }
 
     // Perform unassignment
     firestore
@@ -243,14 +284,20 @@ class FirestoreTaskRepository(
         .await()
 
     // Log unassignment activity
-    val currentUserId = auth.currentUser?.uid ?: userId
-    ActivityLogger.logActivity(
-        projectId = projectId,
-        activityType = ActivityType.UNASSIGNED,
-        entityType = EntityType.TASK,
-        entityId = taskId,
-        userId = currentUserId,
-        metadata = mapOf("title" to taskTitle, "assigneeId" to userId))
+    val currentUserId = auth.currentUser?.uid
+    if (currentUserId == null) {
+      android.util.Log.e(
+          "FirestoreTaskRepository",
+          "Cannot log activity for task unassignment: currentUser is null")
+    } else {
+      ActivityLogger.logActivity(
+          projectId = projectId,
+          activityType = ActivityType.UNASSIGNED,
+          entityType = EntityType.TASK,
+          entityId = taskId,
+          userId = currentUserId,
+          metadata = mapOf("title" to task.title, "assigneeId" to userId))
+    }
   }
 
   private fun parseSnapshot(data: Map<String, Any>?): Task? {

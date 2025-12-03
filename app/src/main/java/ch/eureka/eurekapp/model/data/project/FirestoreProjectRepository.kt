@@ -106,7 +106,11 @@ class FirestoreProjectRepository(
 
     // Log activity to global feed after successful update
     val currentUserId = auth.currentUser?.uid
-    if (currentUserId != null) {
+    if (currentUserId == null) {
+      android.util.Log.e(
+          "FirestoreProjectRepository",
+          "Cannot log activity for project update: currentUser is null")
+    } else {
       ActivityLogger.logActivity(
           projectId = project.projectId,
           activityType = ActivityType.UPDATED,
@@ -128,6 +132,21 @@ class FirestoreProjectRepository(
 
     // Log activity to global feed after successful deletion
     val currentUserId = auth.currentUser?.uid
+
+    // Log if currentUserId is null
+    if (currentUserId == null) {
+      android.util.Log.e(
+          "FirestoreProjectRepository",
+          "Cannot log activity for project deletion: currentUser is null")
+    }
+
+    // Log if projectName is null
+    if (projectName == null) {
+      android.util.Log.e(
+          "FirestoreProjectRepository",
+          "Cannot log activity for project deletion: project name is null for projectId=$projectId")
+    }
+
     if (currentUserId != null && projectName != null) {
       ActivityLogger.logActivity(
           projectId = projectId,
@@ -227,7 +246,13 @@ class FirestoreProjectRepository(
 
     // Log role change activity
     val currentUserId = auth.currentUser?.uid ?: userId
-    if (oldRole != null) {
+
+    // Log if oldRole is null
+    if (oldRole == null) {
+      android.util.Log.e(
+          "FirestoreProjectRepository",
+          "Cannot log role change activity: old role is null for projectId=$projectId, userId=$userId")
+    } else {
       ActivityLogger.logActivity(
           projectId = projectId,
           activityType = ActivityType.ROLE_CHANGED,

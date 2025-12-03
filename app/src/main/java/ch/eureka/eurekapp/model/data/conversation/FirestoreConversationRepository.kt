@@ -133,17 +133,28 @@ class FirestoreConversationRepository(
 
         // Log activity to global feed after successful creation
         if (conversationWithId.projectId.isNotEmpty()) {
-          // Get other member names for metadata
+          // Get other member names for metadata using single whereIn query
           val otherMembers = conversationWithId.memberIds.filter { it != currentUserId }
           val memberNames =
-              otherMembers.mapNotNull { memberId ->
+              if (otherMembers.isNotEmpty()) {
                 try {
-                  val userDoc =
-                      firestore.collection(FirestorePaths.USERS).document(memberId).get().await()
-                  userDoc.getString("displayName")
+                  val usersSnapshot =
+                      firestore
+                          .collection(FirestorePaths.USERS)
+                          .whereIn(
+                              com.google.firebase.firestore.FieldPath.documentId(), otherMembers)
+                          .get()
+                          .await()
+                  usersSnapshot.documents.mapNotNull { it.getString("displayName") }
                 } catch (e: Exception) {
-                  null
+                  android.util.Log.e(
+                      "FirestoreConversationRepository",
+                      "Failed to fetch user names for conversation creation logging",
+                      e)
+                  emptyList()
                 }
+              } else {
+                emptyList()
               }
 
           ActivityLogger.logActivity(
@@ -162,7 +173,56 @@ class FirestoreConversationRepository(
       }
 
   override suspend fun deleteConversation(conversationId: String): Result<Unit> = runCatching {
+    // Get conversation data before deletion for activity log
+    val conversationSnapshot =
+        firestore.collection(FirestorePaths.CONVERSATIONS).document(conversationId).get().await()
+    val conversation = conversationSnapshot.toObject(Conversation::class.java)
+
+    // Validate conversation data
+    if (conversation != null && conversation.projectId.isBlank()) {
+      throw IllegalArgumentException("Conversation has blank projectId - malformed data")
+    }
+
+    // Perform deletion
     firestore.collection(FirestorePaths.CONVERSATIONS).document(conversationId).delete().await()
+
+    // Log activity to global feed after successful deletion
+    val currentUserId = auth.currentUser?.uid
+    if (currentUserId != null && conversation != null && conversation.projectId.isNotEmpty()) {
+      // Get other member names for metadata using single whereIn query
+      val otherMembers = conversation.memberIds.filter { it != currentUserId }
+      val memberNames =
+          if (otherMembers.isNotEmpty()) {
+            try {
+              val usersSnapshot =
+                  firestore
+                      .collection(FirestorePaths.USERS)
+                      .whereIn(com.google.firebase.firestore.FieldPath.documentId(), otherMembers)
+                      .get()
+                      .await()
+              usersSnapshot.documents.mapNotNull { it.getString("displayName") }
+            } catch (e: Exception) {
+              android.util.Log.e(
+                  "FirestoreConversationRepository",
+                  "Failed to fetch user names for conversation deletion logging",
+                  e)
+              emptyList()
+            }
+          } else {
+            emptyList()
+          }
+
+      ActivityLogger.logActivity(
+          projectId = conversation.projectId,
+          activityType = ActivityType.DELETED,
+          entityType = EntityType.MESSAGE,
+          entityId = conversationId,
+          userId = currentUserId,
+          metadata =
+              mapOf(
+                  "title" to "Conversation with ${memberNames.joinToString(", ")}",
+                  "conversationId" to conversationId))
+    }
   }
 
   override fun getMessages(conversationId: String, limit: Int): Flow<List<ConversationMessage>> =

@@ -13,6 +13,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 
 class FirestoreMeetingRepository(
@@ -151,16 +152,8 @@ class FirestoreMeetingRepository(
   }
 
   override suspend fun updateMeeting(meeting: Meeting): Result<Unit> = runCatching {
-    // Fetch old meeting to detect status changes
-    val oldMeetingDoc =
-        firestore
-            .collection(FirestorePaths.PROJECTS)
-            .document(meeting.projectId)
-            .collection(FirestorePaths.MEETINGS)
-            .document(meeting.meetingID)
-            .get()
-            .await()
-    val oldMeeting = oldMeetingDoc.toObject(Meeting::class.java)
+    // Fetch old meeting to detect status changes using getMeetingById
+    val oldMeeting = getMeetingById(meeting.projectId, meeting.meetingID).first()
 
     // Perform the update
     firestore
@@ -173,8 +166,23 @@ class FirestoreMeetingRepository(
 
     // Log activity to global feed after successful update
     val currentUserId = auth.currentUser?.uid
-    if (currentUserId != null) {
-      if (oldMeeting != null && oldMeeting.status != meeting.status) {
+
+    // Log if oldMeeting is null
+    if (oldMeeting == null) {
+      android.util.Log.e(
+          "FirestoreMeetingRepository",
+          "Failed to fetch old meeting for status change detection: projectId=${meeting.projectId}, meetingId=${meeting.meetingID}")
+    }
+
+    // Log if currentUserId is null
+    if (currentUserId == null) {
+      android.util.Log.e(
+          "FirestoreMeetingRepository",
+          "Cannot log activity for meeting update: currentUser is null")
+    }
+
+    if (currentUserId != null && oldMeeting != null) {
+      if (oldMeeting.status != meeting.status) {
         // Status changed - use STATUS_CHANGED
         ActivityLogger.logActivity(
             projectId = meeting.projectId,
