@@ -16,6 +16,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -250,8 +251,9 @@ class ConversationDetailViewModelTest {
     every { mockContentResolver.openFileDescriptor(testUri, "r") } returns mockFileDescriptor
     every { mockFileDescriptor.statSize } returns 1024L
 
-    coEvery { mockFileStorageRepository.uploadFile(any(), testUri) } returns
-        Result.success(downloadUrl)
+    coEvery {
+      mockFileStorageRepository.uploadFile(any(), any<android.os.ParcelFileDescriptor>())
+    } returns Result.success(downloadUrl)
     coEvery {
       mockConversationRepository.sendFileMessage(conversationId, "Test message", downloadUrl)
     } returns Result.success(ConversationMessage(messageId = "msg1", text = "Test message"))
@@ -263,7 +265,7 @@ class ConversationDetailViewModelTest {
     viewModel.sendFileMessage(testUri, mockContext)
     advanceUntilIdle()
 
-    coVerify { mockFileStorageRepository.uploadFile(any(), testUri) }
+    coVerify { mockFileStorageRepository.uploadFile(any(), any<android.os.ParcelFileDescriptor>()) }
     coVerify {
       mockConversationRepository.sendFileMessage(conversationId, "Test message", downloadUrl)
     }
@@ -316,8 +318,9 @@ class ConversationDetailViewModelTest {
     every { mockContentResolver.openFileDescriptor(testUri, "r") } returns mockFileDescriptor
     every { mockFileDescriptor.statSize } returns 1024L
 
-    coEvery { mockFileStorageRepository.uploadFile(any(), testUri) } returns
-        Result.failure(Exception("Upload failed"))
+    coEvery {
+      mockFileStorageRepository.uploadFile(any(), any<android.os.ParcelFileDescriptor>())
+    } returns Result.failure(Exception("Upload failed"))
 
     val viewModel = createViewModel()
     advanceUntilIdle()
@@ -333,6 +336,11 @@ class ConversationDetailViewModelTest {
 
   @Test
   fun conversationDetailViewModel_openUrlStartsActivityWithCorrectIntent() = runTest {
+    mockkStatic(Uri::class)
+    val mockUri = mockk<Uri>(relaxed = true)
+    every { Uri.parse(any()) } returns mockUri
+    every { mockUri.scheme } returns "https"
+
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
 
@@ -396,8 +404,9 @@ class ConversationDetailViewModelTest {
         every { mockContentResolver.openFileDescriptor(testUri, "r") } returns mockFileDescriptor
         every { mockFileDescriptor.statSize } returns 1024L
 
-        coEvery { mockFileStorageRepository.uploadFile(any(), testUri) } returns
-            Result.success("url")
+        coEvery {
+          mockFileStorageRepository.uploadFile(any(), any<android.os.ParcelFileDescriptor>())
+        } returns Result.success("url")
         coEvery { mockConversationRepository.sendFileMessage(any(), any(), any()) } returns
             Result.success(mockk())
 
@@ -408,7 +417,10 @@ class ConversationDetailViewModelTest {
         advanceUntilIdle()
 
         // Verify uploadFile is called with a path containing the default "file" filename
-        coVerify { mockFileStorageRepository.uploadFile(match { it.contains("file_") }, testUri) }
+        coVerify {
+          mockFileStorageRepository.uploadFile(
+              match { it.contains("file_") }, any<android.os.ParcelFileDescriptor>())
+        }
       }
 
   @Test
@@ -425,11 +437,12 @@ class ConversationDetailViewModelTest {
     every { mockContentResolver.query(testUri, null, null, null, null) } returns mockCursor
     every { mockCursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME) } returns 0
     every { mockCursor.moveToFirst() } returns false // Simulate failure
-    every { mockCursor.getString(0) } returns "fallback_name" // Mock getString even if invalid
     every { mockContentResolver.openFileDescriptor(testUri, "r") } returns mockFileDescriptor
     every { mockFileDescriptor.statSize } returns 1024L
 
-    coEvery { mockFileStorageRepository.uploadFile(any(), testUri) } returns Result.success("url")
+    coEvery {
+      mockFileStorageRepository.uploadFile(any(), any<android.os.ParcelFileDescriptor>())
+    } returns Result.success("url")
     coEvery { mockConversationRepository.sendFileMessage(any(), any(), any()) } returns
         Result.success(mockk())
 
@@ -439,13 +452,13 @@ class ConversationDetailViewModelTest {
     viewModel.sendFileMessage(testUri, mockContext)
     advanceUntilIdle()
 
-    // Verify the lines are attempted (cursor methods called), and upload proceeds with the mocked
-    // name
+    // Verify the cursor methods are called
     verify { mockCursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME) }
     verify { mockCursor.moveToFirst() }
-    verify { mockCursor.getString(0) }
+    // Verify upload is called with ParcelFileDescriptor and path containing default filename
     coVerify {
-      mockFileStorageRepository.uploadFile(match { it.contains("fallback_name_") }, testUri)
+      mockFileStorageRepository.uploadFile(
+          match { it.contains("file_") }, any<android.os.ParcelFileDescriptor>())
     }
   }
 }

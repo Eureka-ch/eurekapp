@@ -128,8 +128,7 @@ private fun buildAnnotatedText(
     onLinkClick: (String) -> Unit
 ): androidx.compose.ui.text.AnnotatedString {
   return buildAnnotatedString {
-    val urlRegex = Regex("https?://\\S+")
-    val matches = urlRegex.findAll(text).toList()
+    val matches = URL_REGEX.findAll(text).toList()
     var lastIndex = 0
     for (match in matches) {
       append(text.substring(lastIndex, match.range.first))
@@ -172,7 +171,7 @@ private fun FileAttachment(fileAttachment: MessageBubbleFileAttachment, contentC
               tint = contentColor,
               modifier = Modifier.size(24.dp))
           // Remove timestamp from display name (format: name_timestamp.ext)
-          val displayName = fileName.replace(Regex("_\\d{13}(?=\\.[^.]+$|$)"), "")
+          val displayName = fileName.replace(TIMESTAMP_REGEX, "")
           val truncatedName =
               if (displayName.length > 20) displayName.take(17) + "..." else displayName
           Text(
@@ -197,3 +196,6 @@ private fun isImageFile(filename: String): Boolean {
   val extension = filename.substringAfterLast(".").lowercase()
   return extension in listOf("jpg", "jpeg", "png", "gif", "bmp", "webp")
 }
+
+private val URL_REGEX = Regex("https?://\\S+")
+private val TIMESTAMP_REGEX = Regex("_\\d{13}(?=\\.[^.]+$|$)")

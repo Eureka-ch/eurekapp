@@ -1,6 +1,7 @@
 package ch.eureka.eurekapp.ui.conversation
 
 import android.app.DownloadManager
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -84,6 +85,14 @@ open class ConversationDetailViewModel(
     connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver
 ) : ViewModel() {
 
+  companion object {
+    const val MAX_MESSAGE_LENGTH = 5000
+    const val MAX_FILE_SIZE_MB = 100L
+    const val MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024L * 1024L
+    const val TIMESTAMP_LENGTH = 13
+    const val SUBSCRIPTION_TIMEOUT = 5000L
+  }
+
   private data class Quintuple<A, B, C, D, E>(
       val first: A,
       val second: B,
@@ -159,7 +168,7 @@ open class ConversationDetailViewModel(
           }
           .stateIn(
               scope = viewModelScope,
-              started = SharingStarted.WhileSubscribed(5000),
+              started = SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT),
               initialValue = ConversationDetailState())
 
   open val currentUserId: String?
@@ -168,7 +177,7 @@ open class ConversationDetailViewModel(
   val snackbarMessage: StateFlow<String?> =
       _snackbarMessage.stateIn(
           scope = viewModelScope,
-          started = SharingStarted.WhileSubscribed(5000),
+          started = SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT),
           initialValue = null)
 
   fun updateMessage(text: String) {
@@ -186,8 +195,8 @@ open class ConversationDetailViewModel(
   fun sendMessage() {
     val text = _currentMessage.value.trim()
     if (text.isEmpty()) return
-    if (text.length > 5000) {
-      _errorMsg.value = "Message too long (max 5000 characters)"
+    if (text.length > MAX_MESSAGE_LENGTH) {
+      _errorMsg.value = "Message too long (max $MAX_MESSAGE_LENGTH characters)"
       return
     }
 
@@ -220,18 +229,29 @@ open class ConversationDetailViewModel(
       val originalFilename =
           context.contentResolver.query(fileUri, null, null, null, null)?.use { cursor ->
             val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
-            cursor.moveToFirst()
-            cursor.getString(nameIndex)
-          } ?: "file"
+            if (nameIndex >= 0 && cursor.moveToFirst()) {
+              cursor.getString(nameIndex) ?: "file_${System.currentTimeMillis()}"
+            } else {
+              "file_${System.currentTimeMillis()}"
+            }
+          } ?: "file_${System.currentTimeMillis()}"
 
-      // Check file size
-      val fileSize =
-          context.contentResolver.openFileDescriptor(fileUri, "r")?.use { it.statSize } ?: 0L
-      val maxSize = 100L * 1024L * 1024L // 100 MB
-      if (fileSize > maxSize) {
+      // Open file descriptor once for size check and upload
+      val fileDescriptor = context.contentResolver.openFileDescriptor(fileUri, "r")
+      if (fileDescriptor == null) {
+        _errorMsg.value = "Cannot access file"
         _isSending.value = false
         _isUploadingFile.value = false
-        _errorMsg.value = "File too large (max 100 MB)"
+        return@launch
+      }
+
+      val fileSize = fileDescriptor.statSize
+      val maxSize = MAX_FILE_SIZE_BYTES
+      if (fileSize > maxSize) {
+        fileDescriptor.close()
+        _isSending.value = false
+        _isUploadingFile.value = false
+        _errorMsg.value = "File too large (max $MAX_FILE_SIZE_MB MB)"
         return@launch
       }
 
@@ -253,9 +273,10 @@ open class ConversationDetailViewModel(
       val filename = "${sanitizedBaseName}_${System.currentTimeMillis()}${extension}"
       val storagePath = StoragePaths.conversationFilePath(conversationId, filename)
       fileStorageRepository
-          .uploadFile(storagePath, fileUri)
+          .uploadFile(storagePath, fileDescriptor)
           .fold(
               onSuccess = { downloadUrl ->
+                fileDescriptor.close()
                 _isUploadingFile.value = false
                 conversationRepository
                     .sendFileMessage(conversationId, messageText, downloadUrl)
@@ -271,6 +292,7 @@ open class ConversationDetailViewModel(
                         })
               },
               onFailure = { error ->
+                fileDescriptor.close()
                 _isUploadingFile.value = false
                 _isSending.value = false
                 _errorMsg.value = "Error uploading file: ${error.message}"
@@ -279,8 +301,23 @@ open class ConversationDetailViewModel(
   }
 
   fun openUrl(url: String, context: Context) {
-    val intent = Intent(Intent.ACTION_VIEW, url.toUri())
-    context.startActivity(intent)
+    val uri =
+        try {
+          url.toUri()
+        } catch (e: Exception) {
+          null
+        }
+
+    if (uri == null || uri.scheme == null || uri.scheme !in listOf("http", "https")) {
+      _snackbarMessage.value = "Invalid URL"
+      return
+    }
+    val intent = Intent(Intent.ACTION_VIEW, uri)
+    try {
+      context.startActivity(intent)
+    } catch (e: ActivityNotFoundException) {
+      _snackbarMessage.value = "Cannot open file"
+    }
   }
 
   fun downloadFile(url: String, context: Context) {
@@ -291,13 +328,19 @@ open class ConversationDetailViewModel(
             .let { java.net.URLDecoder.decode(it, "UTF-8") }
             .substringAfterLast("/")
     // Remove timestamp from display name (format: name_timestamp.ext)
-    val displayName = fileName.replace(Regex("_\\d{13}(?=\\.[^.]+$|$)"), "")
+    val displayName = fileName.replace(Regex("_\\d{${TIMESTAMP_LENGTH}}(?=\\.[^.]+$|$)"), "")
+
     val request = DownloadManager.Request(url.toUri())
     request.setTitle(displayName)
     request.setDescription("Downloading file from chat")
     request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
     request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
-    val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+    val downloadManager =
+        context.getSystemService(Context.DOWNLOAD_SERVICE) as? DownloadManager
+            ?: run {
+              _snackbarMessage.value = "Download manager not available"
+              return
+            }
     downloadManager.enqueue(request)
 
     // Show feedback to user
