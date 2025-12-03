@@ -414,44 +414,41 @@ class UnifiedSelfNotesRepository(
       if (userId.isEmpty()) return@withContext SyncStats(0, 0)
 
       val pendingNotes = localDao.getPendingSyncMessages(userId)
-      if (pendingNotes.isNotEmpty()) {
-        Log.d("UnifiedSelfNotesRepository", "Processing ${pendingNotes.size} pending items")
-      }
 
       var successDeletes = 0
       var successUpserts = 0
 
       pendingNotes.forEach { entity ->
         if (entity.isDeleted) {
-          if (syncDelete(entity, userId)) successDeletes++
+          successDeletes += syncDelete(entity, userId)
         } else {
-          if (syncUpsert(entity, userId)) successUpserts++
+          successUpserts += syncUpsert(entity, userId)
         }
       }
       SyncStats(upserts = successUpserts, deletes = successDeletes)
     }
   }
 
-  private suspend fun syncDelete(entity: MessageEntity, userId: String): Boolean {
+  private suspend fun syncDelete(entity: MessageEntity, userId: String): Int {
     val result = firestoreRepo.deleteNote(entity.messageId)
     return if (result.isSuccess) {
       localDao.deleteMessage(entity.messageId, userId)
-      true
+      1
     } else {
       Log.e("UnifiedSelfNotesRepository", "Retry failed for delete: ${entity.messageId}")
-      false
+      0
     }
   }
 
-  private suspend fun syncUpsert(entity: MessageEntity, userId: String): Boolean {
+  private suspend fun syncUpsert(entity: MessageEntity, userId: String): Int {
     val domainMessage = entity.toDomainModel()
     val result = firestoreRepo.createNote(domainMessage)
     return if (result.isSuccess) {
       localDao.markAsSynced(entity.messageId, userId)
-      true
+      1
     } else {
       Log.e("UnifiedSelfNotesRepository", "Retry failed for upsert: ${entity.messageId}")
-      false
+      0
     }
   }
 
