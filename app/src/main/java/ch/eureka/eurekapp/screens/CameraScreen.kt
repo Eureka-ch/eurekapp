@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -33,6 +35,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.camera.CameraViewModel
 import ch.eureka.eurekapp.ui.camera.PhotoViewer
+import ch.eureka.eurekapp.ui.components.BackButton
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 object CameraScreenTestTags {
@@ -43,6 +47,7 @@ object CameraScreenTestTags {
   const val SAVE_PHOTO = "save_photo"
   const val NO_PERMISSION = "no_permission"
   const val GRANT_PERMISSION = "grant_permission"
+  const val BACK_BUTTON = "back_button"
 }
 
 // Portions of this code (and KDoc) were generated with the help of Grok.
@@ -68,69 +73,87 @@ fun CameraScreen(
             PackageManager.PERMISSION_GRANTED)
   }
 
-  if (hasPermission) {
-    Box(modifier = Modifier.fillMaxSize()) {
-      if (cameraState.picture != null) {
-        cameraState.picture?.let { uri ->
-          PhotoViewer(uri, modifier = Modifier.fillMaxSize().testTag(CameraScreenTestTags.PHOTO))
-        }
-        OutlinedButton(
-            onClick = { cameraViewModel.deletePhoto() },
-            colors = EurekaStyles.outlinedButtonColors(),
-            modifier =
-                Modifier.align(Alignment.BottomStart).testTag(CameraScreenTestTags.DELETE_PHOTO)) {
-              Text(text = "Delete photo")
+  Scaffold(
+      topBar = {
+        EurekaTopBar(
+            title = "Camera",
+            navigationIcon = {
+              BackButton(
+                  onClick = { navigationController.popBackStack() },
+                  modifier = Modifier.testTag(CameraScreenTestTags.BACK_BUTTON))
+            })
+      },
+      content = { paddingValues ->
+        if (hasPermission) {
+          Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            if (cameraState.picture != null) {
+              cameraState.picture?.let { uri ->
+                PhotoViewer(
+                    uri, modifier = Modifier.fillMaxSize().testTag(CameraScreenTestTags.PHOTO))
+              }
+              OutlinedButton(
+                  onClick = { cameraViewModel.deletePhoto() },
+                  colors = EurekaStyles.outlinedButtonColors(),
+                  modifier =
+                      Modifier.align(Alignment.BottomStart)
+                          .testTag(CameraScreenTestTags.DELETE_PHOTO)) {
+                    Text(text = "Delete photo")
+                  }
+              Button(
+                  onClick = {
+                    navigationController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("photoUri", cameraState.picture.toString())
+                    navigationController.popBackStack()
+                  },
+                  colors = EurekaStyles.primaryButtonColors(),
+                  modifier =
+                      Modifier.align(Alignment.BottomEnd)
+                          .testTag(CameraScreenTestTags.SAVE_PHOTO)) {
+                    Text(text = "Save photo")
+                  }
+            } else if (cameraPreview != null) {
+              AndroidView(
+                  factory = { previewView },
+                  modifier = Modifier.fillMaxSize().testTag(CameraScreenTestTags.PREVIEW)) {
+                    cameraViewModel.getPreview().surfaceProvider = previewView.surfaceProvider
+                  }
+              OutlinedButton(
+                  onClick = { cameraViewModel.takePhoto() },
+                  colors = EurekaStyles.outlinedButtonColors(),
+                  modifier =
+                      Modifier.align(Alignment.BottomCenter)
+                          .testTag(CameraScreenTestTags.TAKE_PHOTO)) {
+                    Text(text = "Take photo")
+                  }
             }
-        Button(
-            onClick = {
-              navigationController.previousBackStackEntry
-                  ?.savedStateHandle
-                  ?.set("photoUri", cameraState.picture.toString())
-              navigationController.popBackStack()
-            },
-            colors = EurekaStyles.primaryButtonColors(),
-            modifier =
-                Modifier.align(Alignment.BottomEnd).testTag(CameraScreenTestTags.SAVE_PHOTO)) {
-              Text(text = "Save photo")
-            }
-      } else if (cameraPreview != null) {
-        AndroidView(
-            factory = { previewView },
-            modifier = Modifier.fillMaxSize().testTag(CameraScreenTestTags.PREVIEW)) {
-              cameraViewModel.getPreview().surfaceProvider = previewView.surfaceProvider
-            }
-        OutlinedButton(
-            onClick = { cameraViewModel.takePhoto() },
-            colors = EurekaStyles.outlinedButtonColors(),
-            modifier =
-                Modifier.align(Alignment.BottomCenter).testTag(CameraScreenTestTags.TAKE_PHOTO)) {
-              Text(text = "Take photo")
-            }
-      }
-    }
-  } else {
-    val launcher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
-            isGranted ->
-          hasPermission = isGranted
-        }
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-      Column(
-          horizontalAlignment = Alignment.CenterHorizontally,
-          verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text(
-                text = "Camera permission is required.",
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.testTag(CameraScreenTestTags.NO_PERMISSION))
-            Button(
-                onClick = { launcher.launch(Manifest.permission.CAMERA) },
-                colors = EurekaStyles.primaryButtonColors(),
-                modifier = Modifier.testTag(CameraScreenTestTags.GRANT_PERMISSION)) {
-                  Text("Grant permission")
-                }
           }
-    }
-  }
+        } else {
+          val launcher =
+              rememberLauncherForActivityResult(
+                  contract = ActivityResultContracts.RequestPermission()) { isGranted ->
+                    hasPermission = isGranted
+                  }
+          Box(
+              modifier = Modifier.fillMaxSize().padding(paddingValues),
+              contentAlignment = Alignment.Center) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                      Text(
+                          text = "Camera permission is required.",
+                          style = MaterialTheme.typography.bodyLarge,
+                          modifier = Modifier.testTag(CameraScreenTestTags.NO_PERMISSION))
+                      Button(
+                          onClick = { launcher.launch(Manifest.permission.CAMERA) },
+                          colors = EurekaStyles.primaryButtonColors(),
+                          modifier = Modifier.testTag(CameraScreenTestTags.GRANT_PERMISSION)) {
+                            Text("Grant permission")
+                          }
+                    }
+              }
+        }
+      })
 }
 
 @Composable

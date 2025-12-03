@@ -2,6 +2,7 @@ package ch.eureka.eurekapp.ui.meeting.audio
 
 import android.Manifest
 import android.content.Context
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -17,7 +18,10 @@ import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioScreenTestTags
 import org.junit.Rule
 import org.junit.Test
 
-/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
+/**
+ * Note :This file was partially written by ChatGPT (GPT-5) and Grok Co-author : GPT-5 Co-author :
+ * Grok
+ */
 class MeetingAudioRecordingScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -166,5 +170,33 @@ class MeetingAudioRecordingScreenTest {
     assert(navigatedToTranscript)
     assert(capturedProjectId == "test-project-id")
     assert(capturedMeetingId == "meeting-id")
+  }
+
+  @Test
+  fun test_backButton_isDisplayed_andCallsOnBackClick() {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    val onBackClickCalled = mutableStateOf(false)
+    composeTestRule.setContent {
+      MeetingAudioRecordingScreen(
+          context = context,
+          projectId = "test-project-id",
+          meetingId = "meeting-id",
+          audioRecordingViewModel =
+              AudioRecordingViewModel(
+                  fileStorageRepository = MockedStorageRepository(),
+                  recordingRepository = LocalAudioRecordingRepository()),
+          onBackClick = { onBackClickCalled.value = true })
+    }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(MeetingAudioScreenTestTags.BACK_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+
+    composeTestRule.waitUntil(timeoutMillis = 5000) { onBackClickCalled.value }
+
+    assert(onBackClickCalled.value) { "onBackClick should be called" }
   }
 }

@@ -157,6 +157,8 @@ class CreateProjectScreenTest : TestCase() {
     composeRule
         .onNodeWithTag(CreateProjectScreenTestTags.CHECKBOX_ENABLE_GOOGLE_DRIVE_FOLDER_TEST_TAG)
         .performClick()
+
+    composeRule.onNodeWithTag(CreateProjectScreenTestTags.BACK_BUTTON).assertIsDisplayed()
   }
 
   @Test
@@ -226,6 +228,20 @@ class CreateProjectScreenTest : TestCase() {
 
       composeRule.waitForIdle()
       assert(createdProject)
+
+      composeRule.onNodeWithTag(CreateProjectScreenTestTags.BACK_BUTTON).assertIsDisplayed()
     }
+  }
+
+  @Test
+  fun testBackButtonFunctionality() {
+    val onBackClickCalled = mutableStateOf(false)
+    composeRule.setContent { CreateProjectScreen(onBackClick = { onBackClickCalled.value = true }) }
+
+    composeRule.onNodeWithTag(CreateProjectScreenTestTags.BACK_BUTTON).performClick()
+
+    composeRule.waitUntil(timeoutMillis = 5000) { onBackClickCalled.value }
+
+    assert(onBackClickCalled.value) { "onBackClick should be called" }
   }
 }

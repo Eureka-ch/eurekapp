@@ -1,3 +1,4 @@
+// Portions of this code were generated with the help of Grok.
 package ch.eureka.eurekapp.ui.authentication
 
 import androidx.compose.ui.test.*
@@ -215,6 +216,28 @@ class TokenEntryScreenTest {
 
     // Note: TODO in code - currently does nothing
     composeTestRule.waitForIdle()
+  }
+
+  @Test
+  fun backButton_isDisplayed() {
+    composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
+
+    // Back button should be displayed
+    composeTestRule.onNodeWithTag(TokenEntryScreenTestTags.BACK_BUTTON).assertIsDisplayed()
+  }
+
+  @Test
+  fun backButton_clickInvokesCallback() {
+    var backClicked = false
+    composeTestRule.setContent {
+      TokenEntryScreen(tokenEntryViewModel = viewModel, onBackClick = { backClicked = true })
+    }
+
+    // Click back button
+    composeTestRule.onNodeWithTag(TokenEntryScreenTestTags.BACK_BUTTON).performClick()
+
+    // Callback should be invoked
+    assert(backClicked)
   }
 
   // ========================================
