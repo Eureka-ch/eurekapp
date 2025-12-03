@@ -36,12 +36,14 @@ import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskCustomData
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.data.template.FirestoreTaskTemplateRepository
 import ch.eureka.eurekapp.model.data.template.TaskTemplate
 import ch.eureka.eurekapp.model.data.template.TaskTemplateSchema
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.FieldValue
 import ch.eureka.eurekapp.model.data.template.field.SelectOption
+import ch.eureka.eurekapp.model.data.template.field.serialization.FirestoreConverters
 import ch.eureka.eurekapp.model.data.user.FirestoreUserRepository
 import ch.eureka.eurekapp.model.downloads.AppDatabase
 import ch.eureka.eurekapp.model.downloads.DownloadedFile
@@ -123,6 +125,10 @@ open class ViewTaskScreenTest : TestCase() {
   private val taskRepository: TaskRepository =
       FirestoreTaskRepository(firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
 
+  private val templateRepository =
+      FirestoreTaskTemplateRepository(
+          firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+
   protected suspend fun setupTestProject(projectId: String, role: ProjectRole = ProjectRole.OWNER) {
     val projectRef = FirebaseEmulator.firestore.collection("projects").document(projectId)
 
@@ -200,7 +206,7 @@ open class ViewTaskScreenTest : TestCase() {
         .document(projectId)
         .collection("taskTemplates")
         .document(templateId)
-        .set(template)
+        .set(FirestoreConverters.taskTemplateToMap(template))
         .await()
   }
 
@@ -225,6 +231,7 @@ open class ViewTaskScreenTest : TestCase() {
             taskId,
             AppDatabase.getDatabase(context).downloadedFileDao(),
             taskRepository,
+            templateRepository = templateRepository,
             connectivityObserver = mockConnectivityObserver,
             dispatcher = Dispatchers.IO)
     lastViewVm = viewModel
