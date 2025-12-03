@@ -18,6 +18,11 @@ class FirestoreTaskRepository(
     private val auth: FirebaseAuth
 ) : TaskRepository {
 
+  companion object {
+    private fun taskNotFoundMessage(projectId: String, taskId: String) =
+        "Task is malformed or not found: projectId=$projectId, taskId=$taskId"
+  }
+
   override fun getTaskById(projectId: String, taskId: String): Flow<Task?> = callbackFlow {
     val listener =
         firestore
@@ -177,10 +182,7 @@ class FirestoreTaskRepository(
     val task = parseSnapshot(taskDoc.data)
 
     // Validate task data
-    if (task == null) {
-      throw IllegalArgumentException(
-          "Task is malformed or not found: projectId=$projectId, taskId=$taskId")
-    }
+    requireNotNull(task) { taskNotFoundMessage(projectId, taskId) }
 
     // Perform deletion
     firestore
@@ -221,9 +223,8 @@ class FirestoreTaskRepository(
         val task = parseSnapshot(taskDoc.data)
 
         // Validate task data
-        if (task == null) {
-          throw IllegalArgumentException(
-              "Task is malformed or not found: projectId=$projectId, taskId=$taskId")
+        requireNotNull(task) {
+          "Task is malformed or not found: projectId=$projectId, taskId=$taskId"
         }
 
         // Perform assignment
@@ -269,10 +270,7 @@ class FirestoreTaskRepository(
     val task = parseSnapshot(taskDoc.data)
 
     // Validate task data
-    if (task == null) {
-      throw IllegalArgumentException(
-          "Task is malformed or not found: projectId=$projectId, taskId=$taskId")
-    }
+    requireNotNull(task) { taskNotFoundMessage(projectId, taskId) }
 
     // Perform unassignment
     firestore
