@@ -566,7 +566,16 @@ fun NavigationMenu(
                     projectId = createInvitationRoute.projectId, onInvitationCreate = {})
               }
 
-              composable<Route.Camera> { Camera(navigationController) }
+              composable<Route.Camera> {
+                Camera(
+                    onBackClick = { navigationController.popBackStack() },
+                    onPhotoSaved = { uri ->
+                      navigationController.previousBackStackEntry
+                          ?.savedStateHandle
+                          ?.set("photoUri", uri)
+                      navigationController.popBackStack()
+                    })
+              }
             }
       }
 }
