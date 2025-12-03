@@ -27,6 +27,10 @@ class FirestoreConversationRepository(
     private val auth: FirebaseAuth
 ) : ConversationRepository {
 
+  companion object {
+    private const val USER_NOT_AUTHENTICATED_ERROR = "User not authenticated"
+  }
+
   override fun getConversationsForCurrentUser(): Flow<List<Conversation>> = callbackFlow {
     val currentUserId = auth.currentUser?.uid
     if (currentUserId == null) {
@@ -117,7 +121,7 @@ class FirestoreConversationRepository(
   override suspend fun createConversation(conversation: Conversation): Result<String> =
       runCatching {
         val currentUserId =
-            auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
+            auth.currentUser?.uid ?: throw IllegalStateException(USER_NOT_AUTHENTICATED_ERROR)
 
         val docRef =
             if (conversation.conversationId.isNotEmpty()) {
@@ -254,7 +258,7 @@ class FirestoreConversationRepository(
       text: String
   ): Result<ConversationMessage> = runCatching {
     val currentUserId =
-        auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
+        auth.currentUser?.uid ?: throw IllegalStateException(USER_NOT_AUTHENTICATED_ERROR)
 
     val messagesCollection =
         firestore
@@ -299,7 +303,7 @@ class FirestoreConversationRepository(
 
   override suspend fun markMessagesAsRead(conversationId: String): Result<Unit> = runCatching {
     val currentUserId =
-        auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
+        auth.currentUser?.uid ?: throw IllegalStateException(USER_NOT_AUTHENTICATED_ERROR)
 
     firestore
         .collection(FirestorePaths.CONVERSATIONS)

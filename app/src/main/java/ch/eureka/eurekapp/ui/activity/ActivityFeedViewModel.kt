@@ -295,17 +295,6 @@ class ActivityFeedViewModel(
     return filtered
   }
 
-  private fun filterList(list: List<Activity>, type: EntityType): List<Activity> {
-    return list.filter { activity ->
-      when (type) {
-        EntityType.PROJECT ->
-            activity.entityType == EntityType.PROJECT || activity.entityType == EntityType.MEMBER
-        EntityType.MEETING -> activity.entityType == EntityType.MEETING
-        else -> activity.entityType == type
-      }
-    }
-  }
-
   /**
    * Deletes an activity.
    *

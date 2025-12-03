@@ -68,8 +68,8 @@ import java.util.Locale
 @Composable
 fun ActivityCard(
     activity: Activity,
-    isRead: Boolean = false,
     modifier: Modifier = Modifier,
+    isRead: Boolean = false,
     onClick: () -> Unit = {},
     onDelete: () -> Unit = {}
 ) {
