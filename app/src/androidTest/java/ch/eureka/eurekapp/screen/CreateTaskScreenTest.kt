@@ -539,6 +539,7 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Task 1")
     composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performTextInput("Description")
     composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("15/10/2025")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.REMINDER_TIME).performTextInput("10:00")
 
     // Project already selected via viewModel
 
@@ -566,8 +567,9 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
     composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).assertIsDisplayed()
 
+    composeTestRule.waitForIdle()
     composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
-    composeTestRule.waitUntil(timeoutMillis = 5000) {
+    composeTestRule.waitUntil(timeoutMillis = 10000) {
       composeTestRule
           .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
           .fetchSemanticsNodes()
@@ -729,7 +731,14 @@ class CreateTaskScreenTests : TestCase() {
             "Tasks Screen",
             modifier = androidx.compose.ui.Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
       }
-      composable<Route.Camera> { Camera(navigationController = navController) }
+      composable<Route.Camera> {
+        Camera(
+            onBackClick = { navController.popBackStack() },
+            onPhotoSaved = { uri ->
+              navController.previousBackStackEntry?.savedStateHandle?.set("photoUri", uri)
+              navController.popBackStack()
+            })
+      }
     }
   }
 

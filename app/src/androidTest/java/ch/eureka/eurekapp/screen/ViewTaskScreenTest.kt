@@ -38,6 +38,7 @@ import ch.eureka.eurekapp.model.downloads.AppDatabase
 import ch.eureka.eurekapp.model.downloads.DownloadedFile
 import ch.eureka.eurekapp.model.tasks.ViewTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
+import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.TasksScreen
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
@@ -710,6 +711,7 @@ open class ViewTaskScreenTest : TestCase() {
       composable<Route.TasksSection.TaskDependence> {
         Text("Task Dependencies Screen", modifier = Modifier.testTag(dependenciesScreenTag))
       }
+      composable<Route.Camera> { Camera(onBackClick = {}, onPhotoSaved = {}) }
     }
   }
 
@@ -749,6 +751,7 @@ open class ViewTaskScreenTest : TestCase() {
       composable<Route.TasksSection.TaskDependence> {
         Text("Task Dependencies Screen", modifier = Modifier.testTag(dependenciesScreenTag))
       }
+      composable<Route.Camera> { Camera(onBackClick = {}, onPhotoSaved = {}) }
     }
   }
 

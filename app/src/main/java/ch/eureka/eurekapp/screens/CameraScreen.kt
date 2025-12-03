@@ -31,8 +31,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.camera.CameraViewModel
 import ch.eureka.eurekapp.ui.camera.PhotoViewer
 import ch.eureka.eurekapp.ui.components.BackButton
@@ -55,13 +53,15 @@ object CameraScreenTestTags {
  * A composable screen for capturing and managing photos using the device's camera. This screen
  * displays a live camera preview or the captured photo image.
  *
- * @param navigationController The NavHostController for handling navigation actions.
  * @param cameraViewModel The CameraViewModel instance responsible for managing camera state.
+ * @param onBackClick The callback to be invoked when the back button is clicked.
+ * @param onPhotoSaved The callback to be invoked when a photo is saved.
  */
 @Composable
 fun CameraScreen(
-    navigationController: NavHostController,
     cameraViewModel: CameraViewModel,
+    onBackClick: () -> Unit,
+    onPhotoSaved: (String) -> Unit,
 ) {
   val cameraState by cameraViewModel.photoState.collectAsState()
   val cameraPreview by cameraViewModel.preview.collectAsState()
@@ -79,7 +79,7 @@ fun CameraScreen(
             title = "Camera",
             navigationIcon = {
               BackButton(
-                  onClick = { navigationController.popBackStack() },
+                  onClick = onBackClick,
                   modifier = Modifier.testTag(CameraScreenTestTags.BACK_BUTTON))
             })
       },
@@ -100,12 +100,7 @@ fun CameraScreen(
                     Text(text = "Delete photo")
                   }
               Button(
-                  onClick = {
-                    navigationController.previousBackStackEntry
-                        ?.savedStateHandle
-                        ?.set("photoUri", cameraState.picture.toString())
-                    navigationController.popBackStack()
-                  },
+                  onClick = { onPhotoSaved(cameraState.picture.toString()) },
                   colors = EurekaStyles.primaryButtonColors(),
                   modifier =
                       Modifier.align(Alignment.BottomEnd)
@@ -158,13 +153,14 @@ fun CameraScreen(
 
 @Composable
 fun Camera(
-    navigationController: NavHostController = rememberNavController(),
+    onBackClick: () -> Unit = {},
+    onPhotoSaved: (String) -> Unit = {},
 ) {
   val viewModel: CameraViewModel = viewModel()
   val lifecycleOwner = LocalLifecycleOwner.current
   val context = LocalContext.current
 
-  CameraScreen(navigationController, cameraViewModel = viewModel)
+  CameraScreen(cameraViewModel = viewModel, onBackClick = onBackClick, onPhotoSaved = onPhotoSaved)
   DisposableEffect(lifecycleOwner) {
     viewModel.startCamera(context, lifecycleOwner)
     onDispose { viewModel.unbindCamera() }

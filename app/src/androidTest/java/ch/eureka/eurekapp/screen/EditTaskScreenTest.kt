@@ -400,7 +400,14 @@ open class EditTaskScreenTest : TestCase() {
                   "Tasks Screen",
                   modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
             }
-            composable<Route.Camera> { Camera(navigationController = navController) }
+            composable<Route.Camera> {
+              Camera(
+                  onBackClick = { navController.popBackStack() },
+                  onPhotoSaved = { uri ->
+                    navController.previousBackStackEntry?.savedStateHandle?.set("photoUri", uri)
+                    navController.popBackStack()
+                  })
+            }
           }
           // Navigate through ViewTask to EditTask to simulate real navigation flow
           navController.navigate(
@@ -570,7 +577,14 @@ open class EditTaskScreenTest : TestCase() {
                   navigationController = navController,
                   editTaskViewModel = editTaskViewModel)
             }
-            composable<Route.Camera> { Camera(navigationController = navController) }
+            composable<Route.Camera> {
+              Camera(
+                  onBackClick = { navController.popBackStack() },
+                  onPhotoSaved = { uri ->
+                    navController.previousBackStackEntry?.savedStateHandle?.set("photoUri", uri)
+                    navController.popBackStack()
+                  })
+            }
           }
         }
 
@@ -871,7 +885,14 @@ open class EditTaskScreenTest : TestCase() {
       composable<Route.TasksSection.Tasks> {
         Text("Tasks Screen", modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
       }
-      composable<Route.Camera> { Camera(navigationController = navController) }
+      composable<Route.Camera> {
+        Camera(
+            onBackClick = { navController.popBackStack() },
+            onPhotoSaved = { uri ->
+              navController.previousBackStackEntry?.savedStateHandle?.set("photoUri", uri)
+              navController.popBackStack()
+            })
+      }
     }
   }
 

@@ -298,12 +298,24 @@ class TaskEndToEndTest : TestCase() {
       }
 
       // Step 1: Create Meeting - Title + duration only (no date/time) → OPEN_TO_VOTES status
+      composeTestRule.waitUntil(timeoutMillis = 1_000) {
+        composeTestRule
+            .onAllNodesWithTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
+
       composeTestRule.onNodeWithTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON).performClick()
 
       composeTestRule.waitForIdle()
 
-      // Wait for create meeting screen to load
-      composeTestRule.waitUntilExactlyOneExists(hasText("Create Meeting"), timeoutMillis = 10_000)
+      // Wait for create meeting screen to load by checking for the title input field
+      composeTestRule.waitUntil(timeoutMillis = 5_000) {
+        composeTestRule
+            .onAllNodesWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
 
       val meetingTitle = "E2E Test Meeting"
 
