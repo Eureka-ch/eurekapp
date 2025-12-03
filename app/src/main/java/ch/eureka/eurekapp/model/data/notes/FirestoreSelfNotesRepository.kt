@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Gemini and GPT-5 Codex. */
 package ch.eureka.eurekapp.model.data.notes
 
 import ch.eureka.eurekapp.model.data.FirestorePaths
@@ -10,10 +11,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
-/*
-Note: This file was partially written by GPT-5 Codex
-Co-author : GPT-5
-*/
 /**
  * Firestore implementation of [SelfNotesRepository].
  *
@@ -57,6 +54,14 @@ class FirestoreSelfNotesRepository(
     val userId = getCurrentUserId()
     firestore.document(FirestorePaths.selfNotePath(userId, message.messageID)).set(message).await()
     message.messageID
+  }
+
+  override suspend fun updateNote(messageId: String, newText: String): Result<Unit> = runCatching {
+    val userId = getCurrentUserId()
+    firestore
+        .document(FirestorePaths.selfNotePath(userId, messageId))
+        .update("text", newText)
+        .await()
   }
 
   override suspend fun deleteNote(noteId: String): Result<Unit> = runCatching {
