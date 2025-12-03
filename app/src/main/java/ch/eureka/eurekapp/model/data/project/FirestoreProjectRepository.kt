@@ -245,14 +245,19 @@ class FirestoreProjectRepository(
         .await()
 
     // Log role change activity
-    val currentUserId = auth.currentUser?.uid ?: userId
+    val currentUserId = auth.currentUser?.uid
+    if (currentUserId == null) {
+      android.util.Log.e(
+          "FirestoreProjectRepository", "Cannot log role change activity: currentUser is null")
+    }
 
     // Log if oldRole is null
     if (oldRole == null) {
       android.util.Log.e(
           "FirestoreProjectRepository",
           "Cannot log role change activity: old role is null for projectId=$projectId, userId=$userId")
-    } else {
+    }
+    if (currentUserId != null && oldRole != null) {
       ActivityLogger.logActivity(
           projectId = projectId,
           activityType = ActivityType.ROLE_CHANGED,
