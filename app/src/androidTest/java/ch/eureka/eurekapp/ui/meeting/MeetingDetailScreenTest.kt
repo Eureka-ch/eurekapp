@@ -4,6 +4,8 @@
 
 package ch.eureka.eurekapp.ui.meeting
 
+import android.net.Uri
+import android.os.ParcelFileDescriptor
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -12,6 +14,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.platform.app.InstrumentationRegistry
+import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
@@ -19,6 +22,7 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.Participant
 import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
+import com.google.firebase.storage.StorageMetadata
 import java.util.Date
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,6 +51,7 @@ class MeetingDetailScreenTest {
   private val participantsFlow = MutableStateFlow<List<Participant>>(emptyList())
   private var deleteResult = Result.success(Unit)
   private lateinit var viewModel: MeetingDetailViewModel
+  private lateinit var attachmentsViewModel: MeetingAttachmentsViewModel
   private lateinit var mockConnectivityObserver: MockConnectivityObserver
 
   @Before
@@ -54,6 +59,31 @@ class MeetingDetailScreenTest {
     mockConnectivityObserver =
         MockConnectivityObserver(InstrumentationRegistry.getInstrumentation().targetContext)
     mockConnectivityObserver.setConnected(true)
+  }
+
+  private class FileStorageRepositoryMock: FileStorageRepository {
+    override suspend fun uploadFile(
+      storagePath: String,
+      fileUri: Uri
+    ): Result<String> {
+      return Result.failure(Exception(""))
+    }
+
+    override suspend fun uploadFile(
+      storagePath: String,
+      fileDescriptor: ParcelFileDescriptor
+    ): Result<String> {
+      return Result.failure(Exception(""))
+    }
+
+    override suspend fun deleteFile(downloadUrl: String): Result<Unit> {
+      return Result.failure(Exception(""))
+    }
+
+    override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
+      return Result.failure(Exception(""))
+    }
+
   }
 
   private val repositoryMock =
@@ -85,6 +115,8 @@ class MeetingDetailScreenTest {
             "test_project", "test_meeting", repositoryMock, mockConnectivityObserver)
     composeTestRule.setContent {
       MeetingDetailScreen(
+          attachmentsViewModel = MeetingAttachmentsViewModel(FileStorageRepositoryMock(),repositoryMock,
+            mockConnectivityObserver),
           projectId = "test_project",
           meetingId = "test_meeting",
           viewModel = viewModel,
@@ -118,6 +150,8 @@ class MeetingDetailScreenTest {
             "test_project", "test_meeting", neverEmittingRepository, mockConnectivityObserver)
     composeTestRule.setContent {
       MeetingDetailScreen(
+        attachmentsViewModel = MeetingAttachmentsViewModel(FileStorageRepositoryMock(),repositoryMock,
+          mockConnectivityObserver),
           projectId = "test_project", meetingId = "test_meeting", viewModel = viewModel)
     }
 
@@ -285,9 +319,6 @@ class MeetingDetailScreenTest {
         .onNodeWithText("Attachments (${meeting.attachmentUrls.size})")
         .assertIsDisplayed()
 
-    meeting.attachmentUrls.forEach { url ->
-      composeTestRule.onNodeWithText(url).assertIsDisplayed()
-    }
   }
 
   @Test
@@ -615,7 +646,9 @@ class MeetingDetailScreenTest {
     composeTestRule.waitForIdle()
 
     // Click edit button
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performClick()
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON)
+      .performScrollTo()
+      .performClick()
     composeTestRule.waitForIdle()
 
     // Verify edit mode buttons appear

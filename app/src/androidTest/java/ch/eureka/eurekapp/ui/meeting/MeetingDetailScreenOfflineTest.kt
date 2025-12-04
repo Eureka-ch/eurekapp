@@ -1,15 +1,19 @@
 // Portions of this code were generated with the help of Grok.
 package ch.eureka.eurekapp.ui.meeting
 
+import android.net.Uri
+import android.os.ParcelFileDescriptor
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
@@ -18,6 +22,7 @@ import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
+import com.google.firebase.storage.StorageMetadata
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
 import org.junit.Before
@@ -33,11 +38,37 @@ class MeetingDetailScreenOfflineTest {
 
   private lateinit var mockConnectivityObserver: MockConnectivityObserver
   private lateinit var viewModel: MeetingDetailViewModel
+  private lateinit var attachmentsViewModel: MeetingAttachmentsViewModel
   private val testProjectId = "testProject123"
   private val testMeetingId = "testMeeting123"
 
   private val meetingFlow = MutableStateFlow<Meeting?>(null)
   private val participantsFlow = MutableStateFlow<List<Participant>>(emptyList())
+
+    private class FileStorageRepositoryMock: FileStorageRepository {
+        override suspend fun uploadFile(
+            storagePath: String,
+            fileUri: Uri
+        ): Result<String> {
+            return Result.failure(Exception(""))
+        }
+
+        override suspend fun uploadFile(
+            storagePath: String,
+            fileDescriptor: ParcelFileDescriptor
+        ): Result<String> {
+            return Result.failure(Exception(""))
+        }
+
+        override suspend fun deleteFile(downloadUrl: String): Result<Unit> {
+            return Result.failure(Exception(""))
+        }
+
+        override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
+            return Result.failure(Exception(""))
+        }
+
+    }
 
   private val repositoryMock =
       object : MeetingRepositoryMock() {
@@ -63,6 +94,11 @@ class MeetingDetailScreenOfflineTest {
     viewModel =
         MeetingDetailViewModel(
             testProjectId, testMeetingId, repositoryMock, mockConnectivityObserver)
+    attachmentsViewModel = MeetingAttachmentsViewModel(
+        fileStorageRepository = FileStorageRepositoryMock(),
+        meetingsRepository = repositoryMock,
+        connectivityObserver = mockConnectivityObserver
+    )
   }
 
   @After
@@ -94,6 +130,7 @@ class MeetingDetailScreenOfflineTest {
           projectId = testProjectId,
           meetingId = testMeetingId,
           viewModel = viewModel,
+          attachmentsViewModel = attachmentsViewModel,
           actionsConfig = MeetingDetailActionsConfig())
     }
 
@@ -139,6 +176,7 @@ class MeetingDetailScreenOfflineTest {
           projectId = testProjectId,
           meetingId = testMeetingId,
           viewModel = viewModel,
+          attachmentsViewModel = attachmentsViewModel,
           actionsConfig = MeetingDetailActionsConfig())
     }
 
@@ -178,6 +216,7 @@ class MeetingDetailScreenOfflineTest {
           projectId = testProjectId,
           meetingId = testMeetingId,
           viewModel = viewModel,
+          attachmentsViewModel = attachmentsViewModel,
           actionsConfig = MeetingDetailActionsConfig())
     }
 
@@ -220,6 +259,7 @@ class MeetingDetailScreenOfflineTest {
           projectId = testProjectId,
           meetingId = testMeetingId,
           viewModel = viewModel,
+          attachmentsViewModel = attachmentsViewModel,
           actionsConfig = MeetingDetailActionsConfig())
     }
 
@@ -235,6 +275,7 @@ class MeetingDetailScreenOfflineTest {
     // Verify delete button is displayed but disabled when offline
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.DELETE_BUTTON)
+        .performScrollTo()
         .assertIsDisplayed()
         .assertIsNotEnabled()
   }
@@ -262,6 +303,7 @@ class MeetingDetailScreenOfflineTest {
           projectId = testProjectId,
           meetingId = testMeetingId,
           viewModel = viewModel,
+          attachmentsViewModel = attachmentsViewModel,
           actionsConfig = MeetingDetailActionsConfig())
     }
 
@@ -304,6 +346,7 @@ class MeetingDetailScreenOfflineTest {
           projectId = testProjectId,
           meetingId = testMeetingId,
           viewModel = viewModel,
+          attachmentsViewModel = attachmentsViewModel,
           actionsConfig = MeetingDetailActionsConfig())
     }
 
@@ -347,6 +390,7 @@ class MeetingDetailScreenOfflineTest {
           projectId = testProjectId,
           meetingId = testMeetingId,
           viewModel = viewModel,
+          attachmentsViewModel = attachmentsViewModel,
           actionsConfig = MeetingDetailActionsConfig())
     }
 
@@ -389,6 +433,7 @@ class MeetingDetailScreenOfflineTest {
           projectId = testProjectId,
           meetingId = testMeetingId,
           viewModel = viewModel,
+          attachmentsViewModel = attachmentsViewModel,
           actionsConfig = MeetingDetailActionsConfig())
     }
 
@@ -440,6 +485,7 @@ class MeetingDetailScreenOfflineTest {
           projectId = testProjectId,
           meetingId = testMeetingId,
           viewModel = viewModel,
+          attachmentsViewModel = attachmentsViewModel,
           actionsConfig = MeetingDetailActionsConfig())
     }
 

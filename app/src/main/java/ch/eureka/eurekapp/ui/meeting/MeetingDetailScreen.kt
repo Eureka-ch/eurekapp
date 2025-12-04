@@ -171,6 +171,7 @@ fun MeetingDetailScreen(
     projectId: String,
     meetingId: String,
     viewModel: MeetingDetailViewModel = viewModel { MeetingDetailViewModel(projectId, meetingId) },
+    attachmentsViewModel: MeetingAttachmentsViewModel = viewModel(),
     actionsConfig: MeetingDetailActionsConfig = MeetingDetailActionsConfig()
 ) {
   val context = LocalContext.current
@@ -227,6 +228,7 @@ fun MeetingDetailScreen(
                 modifier = Modifier.padding(padding),
                 meeting = meeting,
                 participants = uiState.participants,
+                attachmentsViewModel = attachmentsViewModel,
                 editConfig =
                     EditConfig(
                         isEditMode = uiState.isEditMode,
@@ -411,6 +413,7 @@ private fun MeetingDetailContent(
     editConfig: EditConfig,
     actionsConfig: MeetingDetailContentActionsConfig,
     modifier: Modifier = Modifier,
+    attachmentsViewModel: MeetingAttachmentsViewModel,
     isConnected: Boolean = true,
 ) {
   LazyColumn(
@@ -446,7 +449,7 @@ private fun MeetingDetailContent(
 
         item { ParticipantsSection(participants = participants) }
 
-        item { AttachmentsSection(meeting = meeting) }
+        item { AttachmentsSection(meeting = meeting, attachmentsViewModel = attachmentsViewModel) }
 
         item {
           if (editConfig.isEditMode) {
@@ -938,7 +941,7 @@ fun AttachmentsSection(
 
               HorizontalDivider()
 
-              Column(modifier = Modifier.fillMaxSize()) {
+              Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                 MeetingAttachmentFilePicker(
                     meeting.projectId, meeting.meetingID, attachmentsViewModel)
                 if (attachments.isEmpty()) {

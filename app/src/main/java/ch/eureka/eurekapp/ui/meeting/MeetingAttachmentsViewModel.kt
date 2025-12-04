@@ -207,9 +207,13 @@ class MeetingAttachmentsViewModel(
   }
 
   fun getFilenameFromDownloadURL(downloadUrl: String): String? {
-    val storageRef = FirebaseStorage.getInstance().reference
-    val linkReference = storageRef.storage.getReferenceFromUrl(downloadUrl)
-    return linkReference.name
+    try {
+      val storageRef = FirebaseStorage.getInstance().reference
+      val linkReference = storageRef.storage.getReferenceFromUrl(downloadUrl)
+      return linkReference.name
+    }catch (e: Exception){
+      return null
+    }
   }
 
   private fun getFileNameFromUri(uri: Uri, contentResolver: ContentResolver): String? {
