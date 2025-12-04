@@ -438,7 +438,6 @@ class MeetingAttachmentsViewModelTest {
       return Result.failure(IllegalArgumentException(""))
     }
 
-
     override suspend fun deleteFile(downloadUrl: String): Result<Unit> {
       return Result.success(Unit)
     }
