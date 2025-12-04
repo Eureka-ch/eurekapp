@@ -35,11 +35,11 @@ import ch.eureka.eurekapp.model.tasks.CreateTaskViewModel
 import ch.eureka.eurekapp.navigation.BottomBarNavigationTestTags
 import ch.eureka.eurekapp.navigation.NavigationMenu
 import ch.eureka.eurekapp.navigation.Route
-import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.CameraScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
+import ch.eureka.eurekapp.testutils.testCameraRoute
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import kotlinx.coroutines.cancel
@@ -731,14 +731,7 @@ class CreateTaskScreenTests : TestCase() {
             "Tasks Screen",
             modifier = androidx.compose.ui.Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
       }
-      composable<Route.Camera> {
-        Camera(
-            onBackClick = { navController.popBackStack() },
-            onPhotoSaved = { uri ->
-              navController.previousBackStackEntry?.savedStateHandle?.set("photoUri", uri)
-              navController.popBackStack()
-            })
-      }
+      testCameraRoute(navController)
     }
   }
 
