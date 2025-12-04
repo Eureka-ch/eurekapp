@@ -652,7 +652,10 @@ class MeetingDetailScreenTest {
     composeTestRule.waitForIdle()
 
     // Verify edit mode buttons appear
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.SAVE_BUTTON).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.SAVE_BUTTON)
+        .performScrollTo()
+        .assertIsDisplayed()
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.CANCEL_EDIT_BUTTON)
         .performScrollTo()
