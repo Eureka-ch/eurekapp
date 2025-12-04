@@ -339,7 +339,10 @@ class CreateTemplateViewModelTest {
   fun save_withValidData_succeeds() = runTest {
     viewModel =
         CreateTemplateViewModel(
-            mockRepository, initialProjectId = "proj1", ioDispatcher = testDispatcher)
+            mockRepository,
+            initialProjectId = "proj1",
+            ioDispatcher = testDispatcher,
+            mainDispatcher = testDispatcher)
     advanceUntilIdle()
 
     viewModel.updateTitle("Test Template")
@@ -369,7 +372,9 @@ class CreateTemplateViewModelTest {
 
   @Test
   fun save_withInvalidData_fails() = runTest {
-    viewModel = CreateTemplateViewModel(mockRepository, ioDispatcher = testDispatcher)
+    viewModel =
+        CreateTemplateViewModel(
+            mockRepository, ioDispatcher = testDispatcher, mainDispatcher = testDispatcher)
     advanceUntilIdle()
 
     viewModel.updateTitle("")
@@ -389,7 +394,10 @@ class CreateTemplateViewModelTest {
   fun save_setsAndClearsSavingState() = runTest {
     viewModel =
         CreateTemplateViewModel(
-            mockRepository, initialProjectId = "proj1", ioDispatcher = testDispatcher)
+            mockRepository,
+            initialProjectId = "proj1",
+            ioDispatcher = testDispatcher,
+            mainDispatcher = testDispatcher)
     advanceUntilIdle()
 
     viewModel.updateTitle("Test Template")
@@ -404,6 +412,34 @@ class CreateTemplateViewModelTest {
 
     val finalState = viewModel.state.first()
     assertFalse(finalState.isSaving)
+  }
+
+  @Test
+  fun save_onRepositoryFailure_callsOnFailure() = runTest {
+    viewModel =
+        CreateTemplateViewModel(
+            mockRepository,
+            initialProjectId = "proj1",
+            ioDispatcher = testDispatcher,
+            mainDispatcher = testDispatcher)
+    advanceUntilIdle()
+
+    viewModel.updateTitle("Test Template")
+    val field = FieldDefinition(id = "field1", label = "Name", type = FieldType.Text())
+    viewModel.addField(field)
+    advanceUntilIdle()
+
+    mockRepository.setCreateResult(Result.failure(Exception("Network error")))
+
+    var successResult: String? = null
+    var failureResult: String? = null
+    viewModel.save(onSuccess = { successResult = it }, onFailure = { failureResult = it })
+    advanceUntilIdle()
+
+    assertNull(successResult)
+    assertNotNull(failureResult)
+    assertEquals("Network error", failureResult)
+    assertEquals(1, mockRepository.createTemplateCalls.size)
   }
 
   @Test

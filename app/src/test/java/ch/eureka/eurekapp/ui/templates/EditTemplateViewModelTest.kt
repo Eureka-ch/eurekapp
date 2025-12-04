@@ -138,7 +138,13 @@ class EditTemplateViewModelTest {
             createdBy = "")
     mockRepository.setTemplate(template)
 
-    val viewModel = EditTemplateViewModel(mockRepository, "p1", "t1", ioDispatcher = testDispatcher)
+    val viewModel =
+        EditTemplateViewModel(
+            mockRepository,
+            "p1",
+            "t1",
+            ioDispatcher = testDispatcher,
+            mainDispatcher = testDispatcher)
     advanceUntilIdle()
 
     viewModel.updateTitle("Updated Title")
@@ -165,7 +171,13 @@ class EditTemplateViewModelTest {
             createdBy = "")
     mockRepository.setTemplate(template)
 
-    val viewModel = EditTemplateViewModel(mockRepository, "p1", "t1", ioDispatcher = testDispatcher)
+    val viewModel =
+        EditTemplateViewModel(
+            mockRepository,
+            "p1",
+            "t1",
+            ioDispatcher = testDispatcher,
+            mainDispatcher = testDispatcher)
     advanceUntilIdle()
 
     viewModel.updateTitle("")
@@ -179,12 +191,51 @@ class EditTemplateViewModelTest {
     assertEquals(0, mockRepository.updateTemplateCalls.size)
   }
 
+  @Test
+  fun save_repositoryFailure_callsOnFailure() = runTest {
+    val existingField = FieldDefinition(id = "f1", label = "Name", type = FieldType.Text())
+    val template =
+        TaskTemplate(
+            templateID = "t1",
+            projectId = "p1",
+            title = "Test",
+            description = "",
+            definedFields = TaskTemplateSchema(listOf(existingField)),
+            createdBy = "")
+    mockRepository.setTemplate(template)
+    mockRepository.setUpdateResult(Result.failure(Exception("Network error")))
+
+    val viewModel =
+        EditTemplateViewModel(
+            mockRepository,
+            "p1",
+            "t1",
+            ioDispatcher = testDispatcher,
+            mainDispatcher = testDispatcher)
+    advanceUntilIdle()
+
+    var successCalled = false
+    var failureMessage: String? = null
+    viewModel.save(onSuccess = { successCalled = true }, onFailure = { failureMessage = it })
+    advanceUntilIdle()
+
+    assertFalse(successCalled)
+    assertNotNull(failureMessage)
+    assertEquals("Network error", failureMessage)
+    assertEquals(1, mockRepository.updateTemplateCalls.size)
+  }
+
   private class MockTaskTemplateRepository : TaskTemplateRepository {
     val updateTemplateCalls = mutableListOf<TaskTemplate>()
     private val templateFlow = MutableStateFlow<TaskTemplate?>(null)
+    private var updateResult: Result<Unit> = Result.success(Unit)
 
     fun setTemplate(template: TaskTemplate?) {
       templateFlow.value = template
+    }
+
+    fun setUpdateResult(result: Result<Unit>) {
+      updateResult = result
     }
 
     override fun getTemplateById(projectId: String, templateId: String): Flow<TaskTemplate?> =
@@ -198,7 +249,7 @@ class EditTemplateViewModelTest {
 
     override suspend fun updateTemplate(template: TaskTemplate): Result<Unit> {
       updateTemplateCalls.add(template)
-      return Result.success(Unit)
+      return updateResult
     }
 
     override suspend fun deleteTemplate(projectId: String, templateId: String) =

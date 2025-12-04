@@ -2,10 +2,16 @@ package ch.eureka.eurekapp.model.tasks
 
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.data.task.Task
+import ch.eureka.eurekapp.model.data.task.TaskCustomData
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.data.template.TaskTemplate
 import ch.eureka.eurekapp.model.data.template.TaskTemplateRepository
+import ch.eureka.eurekapp.model.data.template.TaskTemplateSchema
+import ch.eureka.eurekapp.model.downloads.DownloadedFile
 import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
 import com.google.firebase.Timestamp
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -342,5 +348,170 @@ class ViewTaskViewModelTest {
     val state = viewModel.uiState.first()
     assertEquals(1, state.assignedUsers.size)
     assertEquals("User One", state.assignedUsers[0].displayName)
+  }
+
+  @Test
+  fun downloadFile_alreadyDownloaded_skipsInsert() = runTest {
+    val projectId = "project123"
+    val taskId = "task123"
+    val task =
+        Task(
+            taskID = taskId,
+            projectId = projectId,
+            title = "Test Task",
+            description = "Test Description",
+            assignedUserIds = emptyList(),
+            dueDate = Timestamp.now(),
+            attachmentUrls = listOf("http://example.com/file.pdf"),
+            status = TaskStatus.TODO,
+            createdBy = "user1")
+
+    every { mockTaskRepository.getTaskById(projectId, taskId) } returns flowOf(task)
+    coEvery { mockDownloadedFileDao.isDownloaded("http://example.com/file.pdf") } returns true
+    coEvery { mockDownloadedFileDao.insert(any()) } returns Unit
+
+    viewModel =
+        ViewTaskViewModel(
+            projectId,
+            taskId,
+            mockDownloadedFileDao,
+            mockTaskRepository,
+            mockTemplateRepository,
+            mockConnectivityObserver,
+            mockUserRepository,
+            testDispatcher)
+    advanceUntilIdle()
+
+    val mockContext = mockk<android.content.Context>(relaxed = true)
+    viewModel.downloadFile("http://example.com/file.pdf", "file.pdf", mockContext)
+    advanceUntilIdle()
+
+    coVerify(exactly = 0) { mockDownloadedFileDao.insert(any()) }
+  }
+
+  @Test
+  fun uiState_offlineMode_withDownloadedFiles_setsDownloadedUrls() = runTest {
+    val projectId = "project123"
+    val taskId = "task123"
+    val task =
+        Task(
+            taskID = taskId,
+            projectId = projectId,
+            title = "Test Task",
+            description = "Test Description",
+            assignedUserIds = emptyList(),
+            dueDate = Timestamp.now(),
+            attachmentUrls = listOf("http://example.com/file1.pdf", "http://example.com/file2.pdf"),
+            status = TaskStatus.TODO,
+            createdBy = "user1")
+
+    val downloadedFile =
+        DownloadedFile(
+            url = "http://example.com/file1.pdf",
+            localPath = "file:///local/file1.pdf",
+            fileName = "file1.pdf")
+
+    every { mockTaskRepository.getTaskById(projectId, taskId) } returns flowOf(task)
+    every { mockDownloadedFileDao.getAll() } returns flowOf(listOf(downloadedFile))
+
+    viewModel =
+        ViewTaskViewModel(
+            projectId,
+            taskId,
+            mockDownloadedFileDao,
+            mockTaskRepository,
+            mockTemplateRepository,
+            mockConnectivityObserver,
+            mockUserRepository,
+            testDispatcher)
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.first()
+    assertEquals(setOf("http://example.com/file1.pdf"), state.downloadedAttachmentUrls)
+    assertEquals(listOf("http://example.com/file2.pdf"), state.urlsToDownload)
+  }
+
+  @Test
+  fun uiState_loadsTemplateWhenTaskHasTemplateId() = runTest {
+    val projectId = "project123"
+    val taskId = "task123"
+    val templateId = "template123"
+    val template =
+        TaskTemplate(
+            templateID = templateId,
+            projectId = projectId,
+            title = "Test Template",
+            description = "Template Description",
+            definedFields = TaskTemplateSchema(emptyList()),
+            createdBy = "user1")
+    val task =
+        Task(
+            taskID = taskId,
+            projectId = projectId,
+            templateId = templateId,
+            title = "Test Task",
+            description = "Test Description",
+            assignedUserIds = emptyList(),
+            dueDate = Timestamp.now(),
+            attachmentUrls = emptyList(),
+            status = TaskStatus.TODO,
+            customData = TaskCustomData(),
+            createdBy = "user1")
+
+    every { mockTaskRepository.getTaskById(projectId, taskId) } returns flowOf(task)
+    every { mockTemplateRepository.getTemplateById(projectId, templateId) } returns flowOf(template)
+
+    viewModel =
+        ViewTaskViewModel(
+            projectId,
+            taskId,
+            mockDownloadedFileDao,
+            mockTaskRepository,
+            mockTemplateRepository,
+            mockConnectivityObserver,
+            mockUserRepository,
+            testDispatcher)
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.first()
+    assertEquals(template, state.selectedTemplate)
+    assertEquals("Test Template", state.selectedTemplate?.title)
+  }
+
+  @Test
+  fun uiState_onlineMode_showsRemoteAttachments() = runTest {
+    val projectId = "project123"
+    val taskId = "task123"
+    val task =
+        Task(
+            taskID = taskId,
+            projectId = projectId,
+            title = "Test Task",
+            description = "Test Description",
+            assignedUserIds = emptyList(),
+            dueDate = Timestamp.now(),
+            attachmentUrls = listOf("http://example.com/file1.pdf", "http://example.com/file2.pdf"),
+            status = TaskStatus.TODO,
+            createdBy = "user1")
+
+    every { mockTaskRepository.getTaskById(projectId, taskId) } returns flowOf(task)
+    every { mockConnectivityObserver.isConnected } returns flowOf(true)
+
+    viewModel =
+        ViewTaskViewModel(
+            projectId,
+            taskId,
+            mockDownloadedFileDao,
+            mockTaskRepository,
+            mockTemplateRepository,
+            mockConnectivityObserver,
+            mockUserRepository,
+            testDispatcher)
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.first()
+    assertTrue(state.isConnected)
+    assertEquals(2, state.effectiveAttachments.size)
+    assertTrue(state.effectiveAttachments.all { it is Attachment.Remote })
   }
 }

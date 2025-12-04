@@ -5,8 +5,11 @@ import android.net.Uri
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.data.task.Task
+import ch.eureka.eurekapp.model.data.task.TaskCustomData
 import ch.eureka.eurekapp.model.data.template.TaskTemplate
 import ch.eureka.eurekapp.model.data.template.TaskTemplateRepository
+import ch.eureka.eurekapp.model.data.template.TaskTemplateSchema
+import ch.eureka.eurekapp.model.data.template.field.FieldValue
 import ch.eureka.eurekapp.ui.tasks.MockProjectRepository
 import ch.eureka.eurekapp.ui.tasks.MockTaskRepository
 import ch.eureka.eurekapp.ui.tasks.MockUserRepository
@@ -430,8 +433,154 @@ class EditTaskViewModelTest {
     assertTrue(state.errorMsg!!.contains("circular") || state.errorMsg!!.contains("dependency"))
   }
 
+  @Test
+  fun removeAttachment_removesUrlAtIndex() = runTest {
+    val task =
+        Task(
+            taskID = "task123",
+            projectId = "project123",
+            title = "Test Task",
+            description = "Description",
+            dueDate = Timestamp.now(),
+            attachmentUrls = listOf("http://example.com/file1.pdf", "http://example.com/file2.pdf"))
+    mockTaskRepository.addTask(task)
+
+    viewModel =
+        EditTaskViewModel(
+            taskRepository = mockTaskRepository,
+            fileRepository = mockFileRepository,
+            projectRepository = mockProjectRepository,
+            userRepository = mockUserRepository,
+            templateRepository = mockTemplateRepository,
+            dispatcher = testDispatcher)
+    viewModel.loadTask("project123", "task123")
+    advanceUntilIdle()
+
+    // Verify initial state has 2 URLs
+    var state = viewModel.uiState.first()
+    assertEquals(2, state.attachmentUrls.size)
+
+    // Remove the first URL (index 0 - since attachmentUris is empty, index 0 is in URLs)
+    viewModel.removeAttachment(0)
+    advanceUntilIdle()
+
+    state = viewModel.uiState.first()
+    assertEquals(1, state.attachmentUrls.size)
+    assertEquals("http://example.com/file2.pdf", state.attachmentUrls[0])
+  }
+
+  @Test
+  fun loadTask_loadsTemplateWhenPresent() = runTest {
+    val template =
+        TaskTemplate(
+            templateID = "template123",
+            projectId = "project123",
+            title = "Test Template",
+            description = "Template Description",
+            definedFields = TaskTemplateSchema(emptyList()),
+            createdBy = "user1")
+    mockTemplateRepository.setTemplate(template)
+
+    val task =
+        Task(
+            taskID = "task123",
+            projectId = "project123",
+            templateId = "template123",
+            title = "Test Task",
+            description = "Description",
+            dueDate = Timestamp.now(),
+            customData = TaskCustomData())
+    mockTaskRepository.addTask(task)
+
+    viewModel =
+        EditTaskViewModel(
+            taskRepository = mockTaskRepository,
+            fileRepository = mockFileRepository,
+            projectRepository = mockProjectRepository,
+            userRepository = mockUserRepository,
+            templateRepository = mockTemplateRepository,
+            dispatcher = testDispatcher)
+    viewModel.loadTask("project123", "task123")
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.first()
+    assertNotNull(state.selectedTemplate)
+    assertEquals("Test Template", state.selectedTemplate?.title)
+    assertEquals("template123", state.selectedTemplate?.templateID)
+  }
+
+  @Test
+  fun updateCustomFieldValue_updatesState() = runTest {
+    val task =
+        Task(
+            taskID = "task123",
+            projectId = "project123",
+            title = "Test Task",
+            description = "Description",
+            dueDate = Timestamp.now(),
+            customData = TaskCustomData())
+    mockTaskRepository.addTask(task)
+
+    viewModel =
+        EditTaskViewModel(
+            taskRepository = mockTaskRepository,
+            fileRepository = mockFileRepository,
+            projectRepository = mockProjectRepository,
+            userRepository = mockUserRepository,
+            templateRepository = mockTemplateRepository,
+            dispatcher = testDispatcher)
+    viewModel.loadTask("project123", "task123")
+    advanceUntilIdle()
+
+    viewModel.updateCustomFieldValue("field1", FieldValue.TextValue("test value"))
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.first()
+    val fieldValue = state.customData.getValue("field1")
+    assertNotNull(fieldValue)
+    assertTrue(fieldValue is FieldValue.TextValue)
+    assertEquals("test value", (fieldValue as FieldValue.TextValue).value)
+  }
+
+  @Test
+  fun loadTask_skipsWhenDeletingOrDeleted() = runTest {
+    val task =
+        Task(
+            taskID = "task123",
+            projectId = "project123",
+            title = "Test Task",
+            description = "Description",
+            dueDate = Timestamp.now())
+    mockTaskRepository.addTask(task)
+
+    viewModel =
+        EditTaskViewModel(
+            taskRepository = mockTaskRepository,
+            fileRepository = mockFileRepository,
+            projectRepository = mockProjectRepository,
+            userRepository = mockUserRepository,
+            templateRepository = mockTemplateRepository,
+            dispatcher = testDispatcher)
+
+    // Simulate deletion in progress
+    viewModel.deleteTask("project123", "task123")
+    advanceUntilIdle()
+
+    // Now try to load - should skip because task is being deleted
+    viewModel.loadTask("project123", "task123")
+    advanceUntilIdle()
+
+    // State should reflect deleted status
+    val state = viewModel.uiState.first()
+    assertTrue(state.taskDeleted)
+  }
+
   private class MockTaskTemplateRepository : TaskTemplateRepository {
     private val templateFlow = MutableStateFlow<TaskTemplate?>(null)
+
+    fun setTemplate(template: TaskTemplate?) {
+      templateFlow.value = template
+    }
 
     override fun getTemplatesInProject(projectId: String): Flow<List<TaskTemplate>> =
         flowOf(emptyList())
