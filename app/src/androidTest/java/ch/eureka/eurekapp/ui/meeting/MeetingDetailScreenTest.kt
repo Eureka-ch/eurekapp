@@ -632,7 +632,10 @@ class MeetingDetailScreenTest {
     setContent()
     composeTestRule.waitForIdle()
 
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performScrollTo().assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON)
+        .performScrollTo()
+        .assertIsDisplayed()
   }
 
   @Test
@@ -696,8 +699,10 @@ class MeetingDetailScreenTest {
     composeTestRule.waitForIdle()
 
     // Enter edit mode
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performScrollTo()
-      .performClick()
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON)
+        .performScrollTo()
+        .performClick()
     composeTestRule.waitForIdle()
 
     // Verify in edit mode
@@ -753,7 +758,10 @@ class MeetingDetailScreenTest {
     composeTestRule.waitForIdle()
 
     // Enter and exit edit mode without saving
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performScrollTo().performClick()
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON)
+        .performScrollTo()
+        .performClick()
     composeTestRule.waitForIdle()
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.CANCEL_EDIT_BUTTON)
