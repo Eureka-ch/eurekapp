@@ -188,18 +188,18 @@ class MeetingAttachmentsViewModelTest {
     }
 
     override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> {
-      TODO("Not yet implemented")
+      return flowOf(listOf())
     }
 
     override fun getMeetingsForTask(projectId: String, taskId: String): Flow<List<Meeting>> {
-      TODO("Not yet implemented")
+      return flowOf(listOf())
     }
 
     override fun getMeetingsForCurrentUser(
         projectId: String,
         skipCache: Boolean
     ): Flow<List<Meeting>> {
-      TODO("Not yet implemented")
+      return flowOf(listOf())
     }
 
     override suspend fun createMeeting(
@@ -207,7 +207,7 @@ class MeetingAttachmentsViewModelTest {
         creatorId: String,
         creatorRole: MeetingRole
     ): Result<String> {
-      TODO("Not yet implemented")
+      return Result.success("")
     }
 
     override suspend fun updateMeeting(meeting: Meeting): Result<Unit> {
@@ -215,11 +215,11 @@ class MeetingAttachmentsViewModelTest {
     }
 
     override suspend fun deleteMeeting(projectId: String, meetingId: String): Result<Unit> {
-      TODO("Not yet implemented")
+      return Result.success(Unit)
     }
 
     override fun getParticipants(projectId: String, meetingId: String): Flow<List<Participant>> {
-      TODO("Not yet implemented")
+      return flowOf(listOf())
     }
 
     override suspend fun addParticipant(
@@ -228,7 +228,7 @@ class MeetingAttachmentsViewModelTest {
         userId: String,
         role: MeetingRole
     ): Result<Unit> {
-      TODO("Not yet implemented")
+      return Result.success(Unit)
     }
 
     override suspend fun removeParticipant(
@@ -236,7 +236,7 @@ class MeetingAttachmentsViewModelTest {
         meetingId: String,
         userId: String
     ): Result<Unit> {
-      TODO("Not yet implemented")
+      return Result.success(Unit)
     }
 
     override suspend fun updateParticipantRole(
@@ -245,7 +245,7 @@ class MeetingAttachmentsViewModelTest {
         userId: String,
         role: MeetingRole
     ): Result<Unit> {
-      TODO("Not yet implemented")
+      return Result.success(Unit)
     }
   }
 
@@ -259,7 +259,7 @@ class MeetingAttachmentsViewModelTest {
     }
 
     override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
-      TODO("Not yet implemented")
+      return Result.failure(IllegalArgumentException(""))
     }
   }
 
@@ -438,12 +438,13 @@ class MeetingAttachmentsViewModelTest {
       return Result.failure(IllegalArgumentException(""))
     }
 
+
     override suspend fun deleteFile(downloadUrl: String): Result<Unit> {
       return Result.success(Unit)
     }
 
     override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
-      TODO("Not yet implemented")
+      return Result.failure(IllegalArgumentException(""))
     }
   }
 
