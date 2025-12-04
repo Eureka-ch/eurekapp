@@ -7,7 +7,6 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.provider.OpenableColumns
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
@@ -155,54 +154,54 @@ class MeetingAttachmentsViewModel(
       onFailure: (String) -> Unit
   ) {
     viewModelScope.launch {
-      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
-          withContext(Dispatchers.IO) {
-              try {
-                  val storageRef = FirebaseStorage.getInstance().reference
-                  val linkReference = storageRef.storage.getReferenceFromUrl(downloadUrl)
-                  val fileName = linkReference.name
-                  val mimeType = linkReference.metadata.await().contentType ?: "application/octet-stream"
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        withContext(Dispatchers.IO) {
+          try {
+            val storageRef = FirebaseStorage.getInstance().reference
+            val linkReference = storageRef.storage.getReferenceFromUrl(downloadUrl)
+            val fileName = linkReference.name
+            val mimeType = linkReference.metadata.await().contentType ?: "application/octet-stream"
 
-                  val contentValues =
-                      ContentValues().apply {
-                          put(MediaStore.Downloads.DISPLAY_NAME, fileName)
-                          put(MediaStore.Downloads.MIME_TYPE, mimeType)
-                          put(MediaStore.Downloads.IS_PENDING, 1)
-                      }
+            val contentValues =
+                ContentValues().apply {
+                  put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                  put(MediaStore.Downloads.MIME_TYPE, mimeType)
+                  put(MediaStore.Downloads.IS_PENDING, 1)
+                }
 
-                  val resolver = context.contentResolver
-                  val fileUri =
-                      resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-                          ?: throw IOException("Failed to create MediaStore entry")
+            val resolver = context.contentResolver
+            val fileUri =
+                resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                    ?: throw IOException("Failed to create MediaStore entry")
 
-                  val tempFile = File.createTempFile("temp_download", null, context.cacheDir)
+            val tempFile = File.createTempFile("temp_download", null, context.cacheDir)
 
-                  // Set that we are downloading a file:
-                  _downloadingFilesSet.value += downloadUrl
+            // Set that we are downloading a file:
+            _downloadingFilesSet.value += downloadUrl
 
-                  linkReference.getFile(tempFile).await()
+            linkReference.getFile(tempFile).await()
 
-                  resolver.openOutputStream(fileUri).use { outputStream ->
-                      if (outputStream == null) {
-                          resolver.delete(fileUri, null, null)
-                          _downloadingFilesSet.value -= downloadUrl
-                          onFailure("Failed to download the file")
-                          throw IOException("Temp file did not exist!")
-                      }
-
-                      tempFile.inputStream().use { inputStream ->
-                          inputStream.copyTo(outputStream)
-                          contentValues.put(MediaStore.Downloads.IS_PENDING, 0)
-                          resolver.update(fileUri, contentValues, null, null)
-                          _downloadingFilesSet.value -= downloadUrl
-                          onSuccess()
-                      }
-                  }
-              } catch (e: Exception) {
-                  _downloadingFilesSet.value -= downloadUrl
-                  onFailure("Failed to download the file: ${e.message}")
+            resolver.openOutputStream(fileUri).use { outputStream ->
+              if (outputStream == null) {
+                resolver.delete(fileUri, null, null)
+                _downloadingFilesSet.value -= downloadUrl
+                onFailure("Failed to download the file")
+                throw IOException("Temp file did not exist!")
               }
+
+              tempFile.inputStream().use { inputStream ->
+                inputStream.copyTo(outputStream)
+                contentValues.put(MediaStore.Downloads.IS_PENDING, 0)
+                resolver.update(fileUri, contentValues, null, null)
+                _downloadingFilesSet.value -= downloadUrl
+                onSuccess()
+              }
+            }
+          } catch (e: Exception) {
+            _downloadingFilesSet.value -= downloadUrl
+            onFailure("Failed to download the file: ${e.message}")
           }
+        }
       }
     }
   }

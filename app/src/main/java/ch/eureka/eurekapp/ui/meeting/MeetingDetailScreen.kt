@@ -165,7 +165,6 @@ data class MeetingDetailActionsConfig(
  * @param viewModel The ViewModel managing the meeting detail state.
  * @param actionsConfig The actions that can be executed with buttons on the detail meeting screen.
  */
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MeetingDetailScreen(
