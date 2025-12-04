@@ -75,7 +75,7 @@ class ActivityFeedViewModel(
     return try {
       val userDoc = firestore.collection(FirestorePaths.USERS).document(userId).get().await()
       @Suppress("UNCHECKED_CAST")
-      (userDoc.get("readActivityIds") as? List<String>)?.toSet() ?: emptySet()
+      (userDoc["readActivityIds"] as? List<String>)?.toSet() ?: emptySet()
     } catch (e: Exception) {
       Log.e("ActivityFeedViewModel", "Failed to load read IDs: ${e.message}")
       emptySet()
