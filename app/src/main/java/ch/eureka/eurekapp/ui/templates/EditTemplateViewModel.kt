@@ -18,7 +18,8 @@ class EditTemplateViewModel(
     private val repository: TaskTemplateRepository,
     private val projectId: String,
     private val templateId: String,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main
 ) : ViewModel() {
 
   private val _state = MutableStateFlow(TemplateEditorState(projectId = projectId))
@@ -86,7 +87,7 @@ class EditTemplateViewModel(
               definedFields = TaskTemplateSchema(_state.value.fields),
               createdBy = "")
       val result = repository.updateTemplate(template)
-      withContext(Dispatchers.Main) {
+      withContext(mainDispatcher) {
         result.fold(
             onSuccess = { onSuccess() }, onFailure = { onFailure(it.message ?: "Save failed") })
         ops.setSaving(false)

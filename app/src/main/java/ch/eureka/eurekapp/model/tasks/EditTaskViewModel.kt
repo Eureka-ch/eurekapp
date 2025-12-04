@@ -189,56 +189,57 @@ class EditTaskViewModel(
     }
   }
 
+  private fun isBeingDeletedOrDeleted() = _uiState.value.isDeleting || _uiState.value.taskDeleted
+
   fun loadTask(projectId: String, taskId: String) {
-    // Don't load task if it's being deleted or already deleted
-    if (_uiState.value.isDeleting || _uiState.value.taskDeleted) {
-      return
-    }
+    if (isBeingDeletedOrDeleted()) return
 
     viewModelScope.launch(dispatcher) {
       taskRepository
           .getTaskById(projectId, taskId)
           .catch { exception ->
-            // Only show error if we're not in the process of deleting
-            if (!_uiState.value.isDeleting && !_uiState.value.taskDeleted) {
+            if (!isBeingDeletedOrDeleted()) {
               setErrorMsg("Failed to load Task: ${exception.message}")
             }
           }
-          .collect { task ->
-            if (!_uiState.value.isDeleting && !_uiState.value.taskDeleted) {
-              if (task != null) {
-                val deletedUrls = _uiState.value.deletedAttachmentUrls
-                val filteredAttachments = task.attachmentUrls.filterNot { it in deletedUrls }
-                updateState {
-                  copy(
-                      title = task.title,
-                      description = task.description,
-                      dueDate =
-                          task.dueDate?.let { date -> dateFormat.format(date.toDate()) } ?: "",
-                      reminderTime =
-                          task.reminderTime?.let { time -> timeFormat.format(time.toDate()) } ?: "",
-                      templateId = task.templateId,
-                      projectId = task.projectId,
-                      taskId = task.taskID,
-                      assignedUserIds = task.assignedUserIds,
-                      selectedAssignedUserIds = task.assignedUserIds,
-                      attachmentUrls = filteredAttachments,
-                      status = task.status,
-                      customData = task.customData,
-                      dependingOnTasks = task.dependingOnTasks,
-                  )
-                }
-                // Load project members after task is loaded
-                loadProjectMembers(task.projectId)
-                // Load template if present
-                if (!task.templateId.isNullOrEmpty()) {
-                  loadTemplate(task.projectId, task.templateId)
-                }
-              } else {
-                setErrorMsg("Task not found.")
-              }
-            }
-          }
+          .collect { task -> handleTaskLoaded(task) }
+    }
+  }
+
+  private fun handleTaskLoaded(task: Task?) {
+    if (isBeingDeletedOrDeleted()) return
+
+    if (task == null) {
+      setErrorMsg("Task not found.")
+      return
+    }
+
+    updateStateFromTask(task)
+    loadProjectMembers(task.projectId)
+    if (!task.templateId.isNullOrEmpty()) {
+      loadTemplate(task.projectId, task.templateId)
+    }
+  }
+
+  private fun updateStateFromTask(task: Task) {
+    val deletedUrls = _uiState.value.deletedAttachmentUrls
+    val filteredAttachments = task.attachmentUrls.filterNot { it in deletedUrls }
+    updateState {
+      copy(
+          title = task.title,
+          description = task.description,
+          dueDate = task.dueDate?.let { date -> dateFormat.format(date.toDate()) } ?: "",
+          reminderTime = task.reminderTime?.let { time -> timeFormat.format(time.toDate()) } ?: "",
+          templateId = task.templateId,
+          projectId = task.projectId,
+          taskId = task.taskID,
+          assignedUserIds = task.assignedUserIds,
+          selectedAssignedUserIds = task.assignedUserIds,
+          attachmentUrls = filteredAttachments,
+          status = task.status,
+          customData = task.customData,
+          dependingOnTasks = task.dependingOnTasks,
+      )
     }
   }
 

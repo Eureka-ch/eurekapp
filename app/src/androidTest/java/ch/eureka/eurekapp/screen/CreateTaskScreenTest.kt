@@ -738,7 +738,9 @@ class CreateTaskScreenTests : TestCase() {
         // Fake CreateTemplate screen for testing navigation
         androidx.compose.material3.Text(
             "Create Template Screen",
-            modifier = androidx.compose.ui.Modifier.testTag("create_template_screen"))
+            modifier =
+                androidx.compose.ui.Modifier.testTag(
+                    TemplateSelectionTestTags.CREATE_TEMPLATE_SCREEN))
       }
     }
   }
@@ -1071,8 +1073,13 @@ class CreateTaskScreenTests : TestCase() {
 
     // Verify navigation to CreateTemplateScreen
     composeTestRule.waitUntil(timeoutMillis = 5_000) {
-      composeTestRule.onAllNodesWithTag("create_template_screen").fetchSemanticsNodes().isNotEmpty()
+      composeTestRule
+          .onAllNodesWithTag(TemplateSelectionTestTags.CREATE_TEMPLATE_SCREEN)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
     }
-    composeTestRule.onNodeWithTag("create_template_screen").assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(TemplateSelectionTestTags.CREATE_TEMPLATE_SCREEN)
+        .assertIsDisplayed()
   }
 }

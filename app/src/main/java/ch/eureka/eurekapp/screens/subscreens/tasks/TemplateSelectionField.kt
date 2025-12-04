@@ -32,7 +32,12 @@ object TemplateSelectionTestTags {
   const val NO_TEMPLATE_OPTION = "template_option_none"
   const val TEMPLATE_OPTION_PREFIX = "template_option_"
   const val CREATE_BUTTON = "template_create_button"
+  const val CREATE_TEMPLATE_SCREEN = "create_template_screen"
+
+  fun templateOptionTag(templateId: String) = "$TEMPLATE_OPTION_PREFIX$templateId"
 }
+
+private const val NO_TEMPLATE_TEXT = "No template"
 
 @Composable
 fun TemplateSelectionField(
@@ -44,7 +49,7 @@ fun TemplateSelectionField(
 ) {
   var expanded by remember { mutableStateOf(false) }
   val selectedTemplate = templates.find { it.templateID == selectedTemplateId }
-  val displayText = selectedTemplate?.title ?: "No template"
+  val displayText = selectedTemplate?.title ?: NO_TEMPLATE_TEXT
 
   Column(modifier = modifier) {
     Text(text = "Use Template", style = MaterialTheme.typography.titleMedium)
@@ -57,7 +62,7 @@ fun TemplateSelectionField(
             value = displayText,
             onValueChange = {},
             readOnly = true,
-            placeholder = { Text("No template") },
+            placeholder = { Text(NO_TEMPLATE_TEXT) },
             modifier = Modifier.fillMaxWidth().testTag(TemplateSelectionTestTags.DROPDOWN),
             enabled = false)
 
@@ -66,7 +71,7 @@ fun TemplateSelectionField(
             onDismissRequest = { expanded = false },
             modifier = Modifier.testTag(TemplateSelectionTestTags.DROPDOWN_MENU)) {
               DropdownMenuItem(
-                  text = { Text("No template") },
+                  text = { Text(NO_TEMPLATE_TEXT) },
                   onClick = {
                     onTemplateSelected(null)
                     expanded = false
@@ -82,7 +87,7 @@ fun TemplateSelectionField(
                     },
                     modifier =
                         Modifier.testTag(
-                            "${TemplateSelectionTestTags.TEMPLATE_OPTION_PREFIX}${template.templateID}"))
+                            TemplateSelectionTestTags.templateOptionTag(template.templateID)))
               }
             }
       }

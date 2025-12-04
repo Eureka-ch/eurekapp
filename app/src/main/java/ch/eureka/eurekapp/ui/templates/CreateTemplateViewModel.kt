@@ -18,7 +18,8 @@ import kotlinx.coroutines.withContext
 class CreateTemplateViewModel(
     private val repository: TaskTemplateRepository,
     initialProjectId: String? = null,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main
 ) : ViewModel() {
 
   private val _state = MutableStateFlow(TemplateEditorState(projectId = initialProjectId))
@@ -61,7 +62,7 @@ class CreateTemplateViewModel(
               definedFields = TaskTemplateSchema(_state.value.fields),
               createdBy = "")
       val result = repository.createTemplate(template)
-      withContext(Dispatchers.Main) {
+      withContext(mainDispatcher) {
         result.fold(onSuccess = onSuccess, onFailure = { onFailure(it.message ?: "Save failed") })
         ops.setSaving(false)
       }

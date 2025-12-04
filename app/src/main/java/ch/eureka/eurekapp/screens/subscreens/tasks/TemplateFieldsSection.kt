@@ -31,8 +31,8 @@ fun TemplateFieldsSection(
     template: TaskTemplate?,
     customData: TaskCustomData,
     onFieldValueChange: (fieldId: String, value: FieldValue) -> Unit,
-    mode: FieldInteractionMode = FieldInteractionMode.EditOnly,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    mode: FieldInteractionMode = FieldInteractionMode.EditOnly
 ) {
   if (template == null || template.definedFields.fields.isEmpty()) {
     return

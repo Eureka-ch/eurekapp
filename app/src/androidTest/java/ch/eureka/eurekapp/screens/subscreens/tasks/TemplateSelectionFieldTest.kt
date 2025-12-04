@@ -97,7 +97,7 @@ class TemplateSelectionFieldTest {
 
     composeTestRule.onNodeWithTag(TemplateSelectionTestTags.DROPDOWN).performClick()
     composeTestRule
-        .onNodeWithTag("${TemplateSelectionTestTags.TEMPLATE_OPTION_PREFIX}template-1")
+        .onNodeWithTag(TemplateSelectionTestTags.templateOptionTag("template-1"))
         .performClick()
 
     assertEquals("template-1", selectedId)

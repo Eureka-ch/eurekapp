@@ -217,29 +217,41 @@ fun EditTaskScreen(
             }
       })
 
-  if (showDeleteDialog) {
-    androidx.compose.material3.AlertDialog(
-        onDismissRequest = { showDeleteDialog = false },
-        title = { Text("Confirm Deletion") },
-        text = { Text("Are you sure you want to delete the task?") },
-        confirmButton = {
-          Button(
-              onClick = {
-                showDeleteDialog = false
-                editTaskViewModel.deleteTask(projectId, taskId)
-              },
-              modifier = Modifier.testTag(EditTaskScreenTestTags.CONFIRM_DELETE)) {
-                Text("Yes")
-              }
-        },
-        dismissButton = {
-          OutlinedButton(
-              onClick = { showDeleteDialog = false },
-              modifier = Modifier.testTag(EditTaskScreenTestTags.CANCEL_DELETE)) {
-                Text("No")
-              }
-        })
-  }
+  DeleteConfirmationDialog(
+      showDialog = showDeleteDialog,
+      onDismiss = { showDeleteDialog = false },
+      onConfirm = {
+        showDeleteDialog = false
+        editTaskViewModel.deleteTask(projectId, taskId)
+      })
+}
+
+@Composable
+private fun DeleteConfirmationDialog(
+    showDialog: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+  if (!showDialog) return
+
+  androidx.compose.material3.AlertDialog(
+      onDismissRequest = onDismiss,
+      title = { Text("Confirm Deletion") },
+      text = { Text("Are you sure you want to delete the task?") },
+      confirmButton = {
+        Button(
+            onClick = onConfirm,
+            modifier = Modifier.testTag(EditTaskScreenTestTags.CONFIRM_DELETE)) {
+              Text("Yes")
+            }
+      },
+      dismissButton = {
+        OutlinedButton(
+            onClick = onDismiss,
+            modifier = Modifier.testTag(EditTaskScreenTestTags.CANCEL_DELETE)) {
+              Text("No")
+            }
+      })
 }
 
 fun getNextStatus(currentStatus: TaskStatus): TaskStatus {
