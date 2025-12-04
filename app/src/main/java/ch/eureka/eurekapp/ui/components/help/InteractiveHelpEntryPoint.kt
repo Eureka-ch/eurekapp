@@ -136,6 +136,7 @@ fun InteractiveHelpEntryPoint(
  * @param modifier Modifier for the Box container.
  * @param userProvidedName Optional user name to personalize the help content.
  * @param helpPadding Padding around the help chip (defaults to Spacing.md).
+ * @param position Position of the help button: BottomEnd (default) or TopEnd.
  */
 @Composable
 fun ScreenWithHelp(
@@ -143,14 +144,15 @@ fun ScreenWithHelp(
     content: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     userProvidedName: String? = null,
-    helpPadding: PaddingValues = PaddingValues(Spacing.md)
+    helpPadding: PaddingValues = PaddingValues(Spacing.md),
+    position: Alignment = Alignment.BottomEnd
 ) {
   Box(modifier = modifier.fillMaxSize()) {
     content()
     InteractiveHelpEntryPoint(
         helpContext = helpContext,
         userProvidedName = userProvidedName,
-        modifier = Modifier.align(Alignment.BottomEnd).padding(helpPadding))
+        modifier = Modifier.align(position).padding(helpPadding))
   }
 }
 
