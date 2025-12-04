@@ -129,6 +129,8 @@ object MeetingDetailScreenTestTags {
   const val CANCEL_EDIT_BUTTON = "CancelEditButton"
   const val OFFLINE_MESSAGE = "offlineMessage"
   const val CONTENT_COLUMN = "ContentColumn"
+  const val DOWNLOADING_FILES_PROGRESS_INDICATOR = "DownloadingFilesProgressIndicator"
+  const val DOWNLOADING_FILES_BUTTON = "DownloadingFilesButton"
 }
 
 /**
@@ -165,6 +167,7 @@ data class MeetingDetailActionsConfig(
  * @param viewModel The ViewModel managing the meeting detail state.
  * @param actionsConfig The actions that can be executed with buttons on the detail meeting screen.
  */
+@RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MeetingDetailScreen(
@@ -404,6 +407,7 @@ data class ActionButtonsConfig(
  * @param modifier Modifier to be applied to the root composable.
  * @param isConnected Whether the device is connected to the internet.
  */
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 private fun MeetingDetailContent(
     meeting: Meeting,
@@ -912,8 +916,9 @@ private fun ParticipantItem(participant: Participant) {
  * @param meeting the meeting whose attachments to display
  * @param attachmentsViewModel meeting attachments view model
  */
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-private fun AttachmentsSection(meeting: Meeting, attachmentsViewModel: MeetingAttachmentsViewModel = viewModel()) {
+fun AttachmentsSection(meeting: Meeting, attachmentsViewModel: MeetingAttachmentsViewModel = viewModel()) {
     val attachments = meeting.attachmentUrls
     Card(
       modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.ATTACHMENTS_SECTION),
@@ -935,35 +940,55 @@ private fun AttachmentsSection(meeting: Meeting, attachmentsViewModel: MeetingAt
 
               HorizontalDivider()
 
-              Row(){
+              Column(
+                  modifier = Modifier.fillMaxSize()
+              ){
                   MeetingAttachmentFilePicker(meeting.projectId,
                       meeting.meetingID, attachmentsViewModel)
-              }
-
-              if (attachments.isEmpty()) {
-                Text(
-                    text = "No attachments",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    modifier = Modifier.testTag(MeetingDetailScreenTestTags.NO_ATTACHMENTS_MESSAGE))
-              } else {
-                attachments.forEach { attachment -> AttachmentItem(attachmentUrl = attachment,
-                    attachmentsViewModel = attachmentsViewModel) }
+                  if (attachments.isEmpty()) {
+                      Text(
+                          text = "No attachments",
+                          style = MaterialTheme.typography.bodyMedium,
+                          color = Color.Gray,
+                          modifier = Modifier.testTag(MeetingDetailScreenTestTags.NO_ATTACHMENTS_MESSAGE))
+                  } else {
+                      attachments.forEach { attachment -> AttachmentItem(attachmentUrl = attachment,
+                          projectId = meeting.projectId,
+                          meetingId = meeting.meetingID,
+                          attachmentsViewModel = attachmentsViewModel) }
+                  }
               }
             }
       }
 }
 
+object AttachmentItemTestTags {
+    fun deleteButtonAttachmentTestTag(downloadUrl: String): String {
+        return "delete_button_$downloadUrl"
+    }
+    fun downloadButtonAttachmentTestTag(downloadUrl: String): String {
+        return "download_button_$downloadUrl"
+    }
+
+    fun downloadButtonCircularProgressIndicatorTestTag(downloadUrl: String): String {
+        return "download_button_circular_progress_indicator_$downloadUrl"
+    }
+}
+
 /**
  * Individual attachment item.
  *
+ * @param projectId the project id
+ * @param meetingId the meeting id
  * @param attachmentUrl The URL of the attachment to display.
  * @param attachmentsViewModel view model that handles attachments
  */
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-private fun AttachmentItem(attachmentUrl: String, attachmentsViewModel: MeetingAttachmentsViewModel) {
+fun AttachmentItem(projectId: String, meetingId: String, attachmentUrl: String,
+                   attachmentsViewModel: MeetingAttachmentsViewModel) {
   val context = LocalContext.current
+    val downloadingFilesSet = remember {attachmentsViewModel.isDownloadingFile}.collectAsState()
   Row(
       modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.ATTACHMENT_ITEM),
       verticalAlignment = Alignment.CenterVertically) {
@@ -978,31 +1003,54 @@ private fun AttachmentItem(attachmentUrl: String, attachmentsViewModel: MeetingA
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp))
             Spacer(modifier = Modifier.width(12.dp))
-            Text(text = attachmentUrl, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+            Text(text = attachmentsViewModel.getFilenameFromDownloadURL(
+                attachmentUrl) ?: "",
+                style = MaterialTheme.typography.bodyMedium, maxLines = 1)
         }
         Row(
             modifier = Modifier.weight(1f),
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ){
-            IconButton(onClick = {
-                attachmentsViewModel.deleteFileFromMeetingAttachments(attachmentUrl)
+            IconButton(
+                modifier = Modifier
+                    .testTag(AttachmentItemTestTags
+                        .deleteButtonAttachmentTestTag(attachmentUrl)),
+                onClick = {
+                attachmentsViewModel.deleteFileFromMeetingAttachments(projectId, meetingId,
+                    attachmentUrl, onFailure = { message ->
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                })
             }, colors = IconButtonDefaults.iconButtonColors(
                 containerColor = LightColorScheme.primary
             )){
                 Icon(imageVector = Icons.Default.Delete, tint = Color.White, contentDescription = null)
             }
             Spacer(modifier = Modifier.width(12.dp))
-            IconButton(onClick = {
-                attachmentsViewModel.downloadFileToPhone(context, attachmentUrl,
-                    {},
-                    { message ->
-                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                    })
-            }, colors = IconButtonDefaults.iconButtonColors(
-                containerColor = LightingBlue
-            )){
-                Icon(imageVector = Icons.Default.Download, tint = Color.White, contentDescription = null)
+            if(downloadingFilesSet.value.contains(attachmentUrl)){
+                CircularProgressIndicator(
+                    modifier = Modifier.testTag(AttachmentItemTestTags
+                        .downloadButtonCircularProgressIndicatorTestTag(
+                            attachmentUrl)),
+                    color = MaterialTheme.colorScheme.primary,
+                    strokeWidth = 4.dp
+                )
+            }else{
+                IconButton(
+                    modifier = Modifier
+                        .testTag(AttachmentItemTestTags
+                            .downloadButtonAttachmentTestTag(attachmentUrl)),
+                    onClick = {
+                    attachmentsViewModel.downloadFileToPhone(context, attachmentUrl,
+                        {},
+                        { message ->
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                        })
+                }, colors = IconButtonDefaults.iconButtonColors(
+                    containerColor = LightingBlue
+                )){
+                    Icon(imageVector = Icons.Default.Download, tint = Color.White, contentDescription = null)
+                }
             }
         }
       }
@@ -1224,20 +1272,23 @@ private fun MeetingAttachmentFilePicker(projectId: String, meetingId: String, me
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         if(!uploadingFile.value){
-            Button(onClick = {
+            Button(
+                modifier = Modifier.testTag(MeetingDetailScreenTestTags.
+                DOWNLOADING_FILES_BUTTON),
+                onClick = {
                 filePickerLauncher.launch("*/*")
             }) {
                 Text("Pick a File")
             }
         }else{
             CircularProgressIndicator(
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.testTag(MeetingDetailScreenTestTags
+                    .DOWNLOADING_FILES_PROGRESS_INDICATOR).size(48.dp),
                 color = MaterialTheme.colorScheme.primary,
                 strokeWidth = 4.dp
             )

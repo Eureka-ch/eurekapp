@@ -1,5 +1,5 @@
 package ch.eureka.eurekapp.ui.meeting
-
+//Portions of this code were generated with the help of Gemini 3 Pro.
 import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
@@ -7,7 +7,6 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.provider.OpenableColumns
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,7 +15,6 @@ import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
-import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +26,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.io.IOException
 
 
@@ -36,8 +35,8 @@ class MeetingAttachmentsViewModel(
     private val meetingsRepository: MeetingRepository = RepositoriesProvider.meetingRepository,
     private val connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver
 ): ViewModel() {
-    private val _isDownloadingFile = MutableStateFlow(false)
-    val isDownloadingFile = _isDownloadingFile.asStateFlow()
+    private val _downloadingFilesSet: MutableStateFlow<Set<String>> = MutableStateFlow(setOf())
+    val isDownloadingFile = _downloadingFilesSet.asStateFlow()
 
     private val _isUploadingFile = MutableStateFlow(false)
     val isUploadingFile = _isUploadingFile.asStateFlow()
@@ -91,12 +90,12 @@ class MeetingAttachmentsViewModel(
                             if(updatedMeetingResult.isSuccess){
                                 onSuccess()
                             }else{
-                                deleteFileFromMeetingAttachments(
+                                deleteFileFromMeetingAttachments(projectId, meetingId,
                                     downloadUrlResult.getOrNull()!!)
                                 onFailure("Unexpected error occurred!")
                             }
                         }else{
-                            deleteFileFromMeetingAttachments(downloadUrlResult.getOrNull()!!)
+                            deleteFileFromMeetingAttachments(projectId, meetingId, downloadUrlResult.getOrNull()!!)
                             onFailure("Meeting whose attachment you want no longer exists!")
                         }
                     }else{
@@ -111,10 +110,27 @@ class MeetingAttachmentsViewModel(
         }
     }
 
-    fun deleteFileFromMeetingAttachments(meeting: Meeting, downloadUrl: String){
+    fun deleteFileFromMeetingAttachments(projectId: String, meetingId: String, downloadUrl: String, onFailure: (String) -> Unit = {}, onSuccess: () -> Unit = {}){
+        if(!_isConnected.value){
+            onFailure("You are not connected to the internet!")
+            return
+        }
         viewModelScope.launch {
-            fileStorageRepository.deleteFile(downloadUrl)
-            val updatedMeeting = meeting.copy(attachmentUrls = meeting.attachmentUrls - downloadUrl)
+            withContext(Dispatchers.IO){
+                try {
+                    val deletedFile = fileStorageRepository.deleteFile(downloadUrl)
+                    val meetingGot = meetingsRepository.getMeetingById(projectId, meetingId).first()
+                    if(meetingGot != null && deletedFile.isSuccess){
+                        val updatedMeeting = meetingGot.copy(attachmentUrls = meetingGot.attachmentUrls - downloadUrl)
+                        meetingsRepository.updateMeeting(updatedMeeting)
+                        onSuccess()
+                    }else{
+                        onFailure("Unexpected error occurred")
+                    }
+                }catch (e: Exception){
+                    onFailure(e.message.toString())
+                }
+            }
         }
     }
 
@@ -139,27 +155,42 @@ class MeetingAttachmentsViewModel(
                     val fileUri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
                         ?: throw IOException("Failed to create MediaStore entry")
 
-                    //Set that we are downloading a file:
-                    _isDownloadingFile.value = true
+                    val tempFile = File.createTempFile("temp_download", null, context.cacheDir)
 
-                    linkReference.getFile(fileUri).addOnCompleteListener {
-                        contentValues.put(MediaStore.Downloads.IS_PENDING, 0)
-                        resolver.update(fileUri, contentValues, null, null)
-                        _isDownloadingFile.value = false
-                        onSuccess()
-                    }.addOnFailureListener {
-                        resolver.delete(fileUri, null, null)
-                        _isDownloadingFile.value = false
-                        onFailure("Failed to download the file")
+                    //Set that we are downloading a file:
+                    _downloadingFilesSet.value += downloadUrl
+
+                    linkReference.getFile(tempFile).await()
+
+                    resolver.openOutputStream(fileUri).use { outputStream ->
+                        if (outputStream == null){
+                            resolver.delete(fileUri, null, null)
+                            _downloadingFilesSet.value -= downloadUrl
+                            onFailure("Failed to download the file")
+                            throw IOException("Temp file did not exist!")
+                        }
+
+                        tempFile.inputStream().use { inputStream ->
+                            inputStream.copyTo(outputStream)
+                            contentValues.put(MediaStore.Downloads.IS_PENDING, 0)
+                            resolver.update(fileUri, contentValues, null, null)
+                            _downloadingFilesSet.value -= downloadUrl
+                            onSuccess()
+                        }
                     }
 
                 }catch (e: Exception){
+                    _downloadingFilesSet.value -= downloadUrl
                     onFailure("Failed to download the file: ${e.message}")
                 }
             }
         }
     }
-
+    fun getFilenameFromDownloadURL(downloadUrl: String): String?{
+        val storageRef = FirebaseStorage.getInstance().reference
+        val linkReference = storageRef.storage.getReferenceFromUrl(downloadUrl)
+        return linkReference.name
+    }
 
     private fun getFileNameFromUri(uri: Uri, contentResolver: ContentResolver): String? {
         var name: String? = null
