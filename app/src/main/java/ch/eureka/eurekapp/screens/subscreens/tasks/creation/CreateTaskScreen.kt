@@ -103,7 +103,7 @@ fun CreateTaskScreen(
         // FirebaseAuth.getInstance().currentUser?.displayName.
         ScreenWithHelp(
             helpContext = HelpContext.CREATE_TASK,
-            helpPadding = 16.dp,
+            helpPadding = PaddingValues(16.dp),
             content = {
               CreateTaskContent(
                   config =

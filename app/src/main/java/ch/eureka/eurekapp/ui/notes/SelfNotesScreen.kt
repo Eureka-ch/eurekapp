@@ -105,6 +105,9 @@ fun SelfNotesScreen(modifier: Modifier = Modifier, viewModel: SelfNotesViewModel
       }) { paddingValues ->
         ScreenWithHelp(
             helpContext = HelpContext.NOTES,
+            helpPadding =
+                PaddingValues(
+                    start = Spacing.md, end = Spacing.md, top = Spacing.md, bottom = 100.dp),
             content = {
               SelfNotesContent(
                   uiState = uiState,
