@@ -10,6 +10,7 @@ import org.junit.runner.RunWith
 
 /*
 Co-author: Claude 4.5 Sonnet
+Co-author: Grok
 */
 
 @RunWith(AndroidJUnit4::class)
@@ -47,5 +48,32 @@ class MessageBubbleTest {
       MessageBubble(text = "Received", timestamp = Timestamp.now(), isFromCurrentUser = false)
     }
     composeTestRule.onNodeWithTag(MessageBubbleTestTags.BUBBLE).assertIsDisplayed()
+  }
+
+  @Test
+  fun messageBubble_fileMessage_showsDownloadButton() {
+    composeTestRule.setContent {
+      MessageBubble(
+          text = "File message",
+          timestamp = Timestamp.now(),
+          isFromCurrentUser = true,
+          fileAttachment =
+              MessageBubbleFileAttachment(isFile = true, fileUrl = "https://example.com/file.pdf"))
+    }
+    composeTestRule.onNodeWithContentDescription("Download file").assertIsDisplayed()
+  }
+
+  @Test
+  fun messageBubble_imageFile_showsPreview() {
+    composeTestRule.setContent {
+      MessageBubble(
+          text = "Image message",
+          timestamp = Timestamp.now(),
+          isFromCurrentUser = true,
+          fileAttachment =
+              MessageBubbleFileAttachment(isFile = true, fileUrl = "https://example.com/image.jpg"))
+    }
+    composeTestRule.onNodeWithTag(MessageBubbleTestTags.PHOTO_VIEWER).assertIsDisplayed()
+    composeTestRule.onNodeWithContentDescription("Download file").assertIsDisplayed()
   }
 }

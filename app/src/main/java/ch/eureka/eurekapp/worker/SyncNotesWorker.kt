@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
+import ch.eureka.eurekapp.model.data.notes.UnifiedSelfNotesRepository
 import com.google.firebase.auth.FirebaseAuthException
 import java.io.IOException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -14,10 +15,8 @@ import kotlinx.coroutines.withContext
 
 /**
  * A background worker that handles the synchronization of local self-notes to the cloud.
- *
- * @param context The application context, provided by WorkManager.
- * @param params Parameters for the worker, provided by WorkManager.
- * @param dispatcher Default dispatcher used in [SyncNotesWorker].
+ * * This unified worker handles ALL pending operations (Creates, Updates, and Deletions). It relies
+ *   on the [UnifiedSelfNotesRepository.syncPendingNotes] function to process the database queue.
  */
 class SyncNotesWorker(
     context: Context,
@@ -30,7 +29,9 @@ class SyncNotesWorker(
         try {
           val repository = RepositoriesProvider.unifiedSelfNotesRepository
 
+          Log.d("SyncNotesWorker", "Starting unified sync (Creates, Updates, Deletes)")
           repository.syncPendingNotes()
+
           Result.success()
         } catch (e: FirebaseAuthException) {
           Log.e("SyncNotesWorker", "Auth failed - won't retry", e)

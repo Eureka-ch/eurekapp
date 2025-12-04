@@ -27,6 +27,7 @@ class MessageEntityTest {
     assertEquals(0, entity.localId)
     assertFalse("isPendingSync should be false by default", entity.isPendingSync)
     assertFalse("isPrivacyLocalOnly should be false by default", entity.isPrivacyLocalOnly)
+    assertFalse("isDeleted should be false by default", entity.isDeleted)
   }
 
   @Test
@@ -39,7 +40,8 @@ class MessageEntityTest {
             senderId = "user_2",
             createdAtMillis = 2000L,
             isPendingSync = true,
-            isPrivacyLocalOnly = true)
+            isPrivacyLocalOnly = true,
+            isDeleted = true)
     assertEquals(55, entity.localId)
     assertEquals("msg_456", entity.messageId)
     assertEquals("Offline Note", entity.text)
@@ -47,6 +49,7 @@ class MessageEntityTest {
     assertEquals(2000L, entity.createdAtMillis)
     assertTrue(entity.isPendingSync)
     assertTrue(entity.isPrivacyLocalOnly)
+    assertTrue(entity.isDeleted)
   }
 
   @Test
@@ -57,25 +60,39 @@ class MessageEntityTest {
             messageId = "id",
             text = "text",
             senderId = "sender",
-            createdAtMillis = 100L)
+            createdAtMillis = 100L,
+            isDeleted = false)
     val entity2 =
         MessageEntity(
             localId = 1,
             messageId = "id",
             text = "text",
             senderId = "sender",
-            createdAtMillis = 100L)
+            createdAtMillis = 100L,
+            isDeleted = false)
     val entity3 =
         MessageEntity(
             localId = 2,
             messageId = "id",
             text = "text",
             senderId = "sender",
-            createdAtMillis = 100L)
+            createdAtMillis = 100L,
+            isDeleted = false)
+    val entity4 =
+        MessageEntity(
+            localId = 1,
+            messageId = "id",
+            text = "text",
+            senderId = "sender",
+            createdAtMillis = 100L,
+            isDeleted = true)
+
     assertEquals("Entities with same data should be equal", entity1, entity2)
     assertEquals(
         "HashCodes should be equal for equal objects", entity1.hashCode(), entity2.hashCode())
-    assertNotEquals("Entities with different data should not be equal", entity1, entity3)
+
+    assertNotEquals("Entities with different localId should not be equal", entity1, entity3)
+    assertNotEquals("Entities with different isDeleted should not be equal", entity1, entity4)
   }
 
   @Test
@@ -86,10 +103,16 @@ class MessageEntityTest {
             text = "Original Text",
             senderId = "user",
             createdAtMillis = 100L)
-    val copy = original.copy(text = "Updated Text", isPendingSync = true)
+
+    val copy = original.copy(text = "Updated Text", isPendingSync = true, isDeleted = true)
+
     assertEquals("Updated Text", copy.text)
     assertTrue(copy.isPendingSync)
+    assertTrue(copy.isDeleted)
+
+    // Verify untouched fields remain same
     assertEquals(original.messageId, copy.messageId)
     assertEquals(original.senderId, copy.senderId)
+    assertEquals(original.isPrivacyLocalOnly, copy.isPrivacyLocalOnly)
   }
 }

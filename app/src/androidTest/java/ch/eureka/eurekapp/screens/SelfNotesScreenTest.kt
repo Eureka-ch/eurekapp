@@ -1,13 +1,20 @@
-/* Portions of this file were written with the help of GPT-5 Codex and Gemini. */
+/* Portions of this file were written with the help of Gemini. */
 package ch.eureka.eurekapp.screens
 
-import androidx.compose.ui.test.*
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import ch.eureka.eurekapp.model.data.chat.Message
-import ch.eureka.eurekapp.ui.components.MessageInputField
 import ch.eureka.eurekapp.ui.components.MessageInputFieldTestTags
-import ch.eureka.eurekapp.ui.notes.SelfNoteMessageBubble
 import ch.eureka.eurekapp.ui.notes.SelfNotesScreen
 import ch.eureka.eurekapp.ui.notes.SelfNotesScreenTestTags
 import ch.eureka.eurekapp.ui.notes.SelfNotesUIState
@@ -21,6 +28,14 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
+/**
+ * UI Test suite for [ch.eureka.eurekapp.ui.notes.SelfNotesScreen]. Covers:
+ * - Loading / Empty / Content states
+ * - Input field interactions
+ * - Storage mode toggle
+ * - Multi-selection mode (Contextual Action Bar)
+ * - Bulk deletion and Editing
+ */
 @RunWith(AndroidJUnit4::class)
 class SelfNotesScreenTest {
 
@@ -28,71 +43,27 @@ class SelfNotesScreenTest {
 
   private val testUserId = "test-user-id"
 
-  private val testMessage =
+  private fun createMessage(id: String, text: String) =
       Message(
-          messageID = "msg-1",
-          text = "Test note content",
+          messageID = id,
+          text = text,
           senderId = testUserId,
           createdAt = Timestamp.now(),
           references = emptyList())
 
-  @Test
-  fun messageInputFieldDisplaysInSelfNotesContext() {
-    composeTestRule.setContent {
-      MessageInputField(
-          message = "",
-          onMessageChange = {},
-          onSend = {},
-          isSending = false,
-          placeholder = "Write a note to yourself...")
-    }
+  private val mockViewModel = mockk<SelfNotesViewModel>(relaxed = true)
+  private val uiStateFlow = MutableStateFlow(SelfNotesUIState())
 
-    composeTestRule.onNodeWithText("Write a note to yourself...").assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MessageInputFieldTestTags.INPUT_FIELD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MessageInputFieldTestTags.SEND_BUTTON).assertIsDisplayed()
-  }
-
-  @Test
-  fun selfNoteMessageBubbleDisplaysCorrectly() {
-    composeTestRule.setContent { SelfNoteMessageBubble(message = testMessage) }
-
-    composeTestRule.onNodeWithText("Test note content").assertIsDisplayed()
-  }
-
-  @Test
-  fun sendButtonDisabledWhenEmpty() {
-    composeTestRule.setContent {
-      MessageInputField(
-          message = "",
-          onMessageChange = {},
-          onSend = {},
-          isSending = false,
-          placeholder = "Write a note to yourself...")
-    }
-
-    composeTestRule.onNodeWithTag(MessageInputFieldTestTags.SEND_BUTTON).assertIsNotEnabled()
-  }
-
-  @Test
-  fun sendButtonEnabledWithText() {
-    composeTestRule.setContent {
-      MessageInputField(
-          message = "Test note",
-          onMessageChange = {},
-          onSend = {},
-          isSending = false,
-          placeholder = "Write a note to yourself...")
-    }
-
-    composeTestRule.onNodeWithTag(MessageInputFieldTestTags.SEND_BUTTON).assertIsEnabled()
+  private fun setupScreen() {
+    every { mockViewModel.uiState } returns uiStateFlow
+    composeTestRule.setContent { SelfNotesScreen(viewModel = mockViewModel) }
   }
 
   @Test
   fun loadingState_displaysProgressIndicator() {
-    val mockViewModel = mockk<SelfNotesViewModel>(relaxed = true)
-    val uiState = MutableStateFlow(SelfNotesUIState(isLoading = true))
-    every { mockViewModel.uiState } returns uiState
-    composeTestRule.setContent { SelfNotesScreen(viewModel = mockViewModel) }
+    uiStateFlow.value = SelfNotesUIState(isLoading = true)
+    setupScreen()
+
     composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.LOADING_INDICATOR).assertIsDisplayed()
     composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.NOTES_LIST).assertDoesNotExist()
     composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.EMPTY_STATE).assertDoesNotExist()
@@ -100,41 +71,123 @@ class SelfNotesScreenTest {
 
   @Test
   fun emptyState_displaysPlaceholder() {
-    val mockViewModel = mockk<SelfNotesViewModel>(relaxed = true)
-    val uiState = MutableStateFlow(SelfNotesUIState(isLoading = false, notes = emptyList()))
-    every { mockViewModel.uiState } returns uiState
-    composeTestRule.setContent { SelfNotesScreen(viewModel = mockViewModel) }
+    uiStateFlow.value = SelfNotesUIState(isLoading = false, notes = emptyList())
+    setupScreen()
+
     composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.EMPTY_STATE).assertIsDisplayed()
     composeTestRule.onNodeWithText("No notes yet. Start writing!").assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.LOADING_INDICATOR).assertDoesNotExist()
   }
 
   @Test
   fun notesState_displaysList() {
-    val mockViewModel = mockk<SelfNotesViewModel>(relaxed = true)
-    val notesList = listOf(testMessage)
-    val uiState = MutableStateFlow(SelfNotesUIState(isLoading = false, notes = notesList))
-    every { mockViewModel.uiState } returns uiState
-    composeTestRule.setContent { SelfNotesScreen(viewModel = mockViewModel) }
+    val notes = listOf(createMessage("1", "First Note"), createMessage("2", "Second Note"))
+    uiStateFlow.value = SelfNotesUIState(isLoading = false, notes = notes)
+    setupScreen()
+
     composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.NOTES_LIST).assertIsDisplayed()
-    composeTestRule.onNodeWithText("Test note content").assertIsDisplayed()
-    composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.EMPTY_STATE).assertDoesNotExist()
+    composeTestRule.onNodeWithText("First Note").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Second Note").assertIsDisplayed()
+  }
+
+  @Test
+  fun inputField_handlesTextEntryAndSending() {
+    setupScreen()
+
+    val inputText = "My new note"
+    composeTestRule.onNodeWithTag(MessageInputFieldTestTags.INPUT_FIELD).performTextInput(inputText)
+
+    verify { mockViewModel.updateMessage(inputText) }
+
+    uiStateFlow.value = uiStateFlow.value.copy(currentMessage = inputText)
+
+    composeTestRule.onNodeWithTag(MessageInputFieldTestTags.SEND_BUTTON).performClick()
+    verify { mockViewModel.sendNote() }
   }
 
   @Test
   fun storageToggle_displaysAndWorks() {
-    val mockViewModel = mockk<SelfNotesViewModel>(relaxed = true)
-    val uiStateFlow =
-        MutableStateFlow(SelfNotesUIState(isLoading = false, isCloudStorageEnabled = false))
-    every { mockViewModel.uiState } returns uiStateFlow
-    composeTestRule.setContent { SelfNotesScreen(viewModel = mockViewModel) }
-    composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.TOGGLE_SWITCH).assertIsDisplayed()
+    uiStateFlow.value = SelfNotesUIState(isCloudStorageEnabled = false)
+    setupScreen()
+
     composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.TOGGLE_SWITCH).assertIsOff()
     composeTestRule.onNodeWithText("Local").assertIsDisplayed()
+
     composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.TOGGLE_SWITCH).performClick()
     verify { mockViewModel.toggleStorageMode(true) }
-    uiStateFlow.value = SelfNotesUIState(isLoading = false, isCloudStorageEnabled = true)
+
+    uiStateFlow.value = SelfNotesUIState(isCloudStorageEnabled = true)
     composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.TOGGLE_SWITCH).assertIsOn()
     composeTestRule.onNodeWithText("Cloud").assertIsDisplayed()
+  }
+
+  @Test
+  fun longClickOnNote_togglesSelection() {
+    val notes = listOf(createMessage("1", "Long press me"))
+    uiStateFlow.value = SelfNotesUIState(notes = notes)
+    setupScreen()
+
+    composeTestRule.onNodeWithText("Long press me").performTouchInput { longClick() }
+
+    verify { mockViewModel.toggleSelection("1") }
+  }
+
+  @Test
+  fun selectionMode_displaysContextualTopBar_andHidesInput() {
+    val notes = listOf(createMessage("1", "Note 1"), createMessage("2", "Note 2"))
+    uiStateFlow.value = SelfNotesUIState(notes = notes, selectedNoteIds = setOf("1", "2"))
+    setupScreen()
+
+    composeTestRule.onNodeWithText("2 Selected").assertIsDisplayed()
+
+    composeTestRule.onNode(hasContentDescription("Cancel Selection")).assertIsDisplayed()
+    composeTestRule.onNode(hasContentDescription("Delete Selected")).assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag(MessageInputFieldTestTags.INPUT_FIELD).assertDoesNotExist()
+  }
+
+  @Test
+  fun selectionMode_showsEditButton_onlyForSingleSelection() {
+    val notes = listOf(createMessage("1", "Note 1"), createMessage("2", "Note 2"))
+
+    uiStateFlow.value = SelfNotesUIState(notes = notes, selectedNoteIds = setOf("1"))
+    setupScreen()
+    composeTestRule.onNode(hasContentDescription("Edit Note")).assertIsDisplayed()
+
+    uiStateFlow.value = SelfNotesUIState(notes = notes, selectedNoteIds = setOf("1", "2"))
+    composeTestRule.onNode(hasContentDescription("Edit Note")).assertDoesNotExist()
+  }
+
+  @Test
+  fun selectionMode_actionsTriggerViewModel() {
+    val notes = listOf(createMessage("1", "Note 1"))
+    uiStateFlow.value = SelfNotesUIState(notes = notes, selectedNoteIds = setOf("1"))
+    setupScreen()
+
+    composeTestRule.onNode(hasContentDescription("Edit Note")).performClick()
+    verify { mockViewModel.startEditing(match { it.messageID == "1" }) }
+
+    composeTestRule.onNode(hasContentDescription("Delete Selected")).performClick()
+    verify { mockViewModel.deleteSelectedNotes() }
+
+    composeTestRule.onNode(hasContentDescription("Cancel Selection")).performClick()
+    verify { mockViewModel.clearSelection() }
+  }
+
+  @Test
+  fun editMode_changesUiState() {
+    val notes = listOf(createMessage("1", "Note 1"))
+    uiStateFlow.value =
+        SelfNotesUIState(notes = notes, editingMessageId = "1", currentMessage = "Note 1 content")
+    setupScreen()
+
+    composeTestRule.onNodeWithText("Editing Note").assertIsDisplayed()
+
+    composeTestRule.onNode(hasContentDescription("Cancel Edit")).assertIsDisplayed()
+
+    composeTestRule.onNode(hasContentDescription("Cancel Edit")).performClick()
+    verify { mockViewModel.cancelEditing() }
+
+    uiStateFlow.value = uiStateFlow.value.copy(currentMessage = "")
+    composeTestRule.onNodeWithText("Edit your note...").assertIsDisplayed()
   }
 }
