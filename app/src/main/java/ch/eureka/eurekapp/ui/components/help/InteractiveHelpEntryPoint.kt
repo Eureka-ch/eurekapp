@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.ui.components.help
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -142,7 +143,7 @@ fun ScreenWithHelp(
     content: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     userProvidedName: String? = null,
-    helpPadding: androidx.compose.ui.unit.Dp = Spacing.md
+    helpPadding: PaddingValues = PaddingValues(Spacing.md)
 ) {
   Box(modifier = modifier.fillMaxSize()) {
     content()
