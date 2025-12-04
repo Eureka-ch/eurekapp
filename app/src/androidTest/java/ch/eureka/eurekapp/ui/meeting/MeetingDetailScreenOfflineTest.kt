@@ -45,30 +45,26 @@ class MeetingDetailScreenOfflineTest {
   private val meetingFlow = MutableStateFlow<Meeting?>(null)
   private val participantsFlow = MutableStateFlow<List<Participant>>(emptyList())
 
-    private class FileStorageRepositoryMock: FileStorageRepository {
-        override suspend fun uploadFile(
-            storagePath: String,
-            fileUri: Uri
-        ): Result<String> {
-            return Result.failure(Exception(""))
-        }
-
-        override suspend fun uploadFile(
-            storagePath: String,
-            fileDescriptor: ParcelFileDescriptor
-        ): Result<String> {
-            return Result.failure(Exception(""))
-        }
-
-        override suspend fun deleteFile(downloadUrl: String): Result<Unit> {
-            return Result.failure(Exception(""))
-        }
-
-        override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
-            return Result.failure(Exception(""))
-        }
-
+  private class FileStorageRepositoryMock : FileStorageRepository {
+    override suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String> {
+      return Result.failure(Exception(""))
     }
+
+    override suspend fun uploadFile(
+        storagePath: String,
+        fileDescriptor: ParcelFileDescriptor
+    ): Result<String> {
+      return Result.failure(Exception(""))
+    }
+
+    override suspend fun deleteFile(downloadUrl: String): Result<Unit> {
+      return Result.failure(Exception(""))
+    }
+
+    override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
+      return Result.failure(Exception(""))
+    }
+  }
 
   private val repositoryMock =
       object : MeetingRepositoryMock() {
@@ -94,11 +90,11 @@ class MeetingDetailScreenOfflineTest {
     viewModel =
         MeetingDetailViewModel(
             testProjectId, testMeetingId, repositoryMock, mockConnectivityObserver)
-    attachmentsViewModel = MeetingAttachmentsViewModel(
-        fileStorageRepository = FileStorageRepositoryMock(),
-        meetingsRepository = repositoryMock,
-        connectivityObserver = mockConnectivityObserver
-    )
+    attachmentsViewModel =
+        MeetingAttachmentsViewModel(
+            fileStorageRepository = FileStorageRepositoryMock(),
+            meetingsRepository = repositoryMock,
+            connectivityObserver = mockConnectivityObserver)
   }
 
   @After

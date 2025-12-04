@@ -941,26 +941,28 @@ fun AttachmentsSection(
 
               HorizontalDivider()
 
-              Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                MeetingAttachmentFilePicker(
-                    meeting.projectId, meeting.meetingID, attachmentsViewModel)
-                if (attachments.isEmpty()) {
-                  Text(
-                      text = "No attachments",
-                      style = MaterialTheme.typography.bodyMedium,
-                      color = Color.Gray,
-                      modifier =
-                          Modifier.testTag(MeetingDetailScreenTestTags.NO_ATTACHMENTS_MESSAGE))
-                } else {
-                  attachments.forEach { attachment ->
-                    AttachmentItem(
-                        attachmentUrl = attachment,
-                        projectId = meeting.projectId,
-                        meetingId = meeting.meetingID,
-                        attachmentsViewModel = attachmentsViewModel)
+              Column(
+                  modifier = Modifier.fillMaxSize(),
+                  horizontalAlignment = Alignment.CenterHorizontally) {
+                    MeetingAttachmentFilePicker(
+                        meeting.projectId, meeting.meetingID, attachmentsViewModel)
+                    if (attachments.isEmpty()) {
+                      Text(
+                          text = "No attachments",
+                          style = MaterialTheme.typography.bodyMedium,
+                          color = Color.Gray,
+                          modifier =
+                              Modifier.testTag(MeetingDetailScreenTestTags.NO_ATTACHMENTS_MESSAGE))
+                    } else {
+                      attachments.forEach { attachment ->
+                        AttachmentItem(
+                            attachmentUrl = attachment,
+                            projectId = meeting.projectId,
+                            meetingId = meeting.meetingID,
+                            attachmentsViewModel = attachmentsViewModel)
+                      }
+                    }
                   }
-                }
-              }
             }
       }
 }

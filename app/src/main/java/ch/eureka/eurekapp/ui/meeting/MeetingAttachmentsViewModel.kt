@@ -211,7 +211,7 @@ class MeetingAttachmentsViewModel(
       val storageRef = FirebaseStorage.getInstance().reference
       val linkReference = storageRef.storage.getReferenceFromUrl(downloadUrl)
       return linkReference.name
-    }catch (e: Exception){
+    } catch (e: Exception) {
       return null
     }
   }

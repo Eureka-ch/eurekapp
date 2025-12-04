@@ -61,17 +61,14 @@ class MeetingDetailScreenTest {
     mockConnectivityObserver.setConnected(true)
   }
 
-  private class FileStorageRepositoryMock: FileStorageRepository {
-    override suspend fun uploadFile(
-      storagePath: String,
-      fileUri: Uri
-    ): Result<String> {
+  private class FileStorageRepositoryMock : FileStorageRepository {
+    override suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String> {
       return Result.failure(Exception(""))
     }
 
     override suspend fun uploadFile(
-      storagePath: String,
-      fileDescriptor: ParcelFileDescriptor
+        storagePath: String,
+        fileDescriptor: ParcelFileDescriptor
     ): Result<String> {
       return Result.failure(Exception(""))
     }
@@ -83,7 +80,6 @@ class MeetingDetailScreenTest {
     override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
       return Result.failure(Exception(""))
     }
-
   }
 
   private val repositoryMock =
@@ -115,8 +111,9 @@ class MeetingDetailScreenTest {
             "test_project", "test_meeting", repositoryMock, mockConnectivityObserver)
     composeTestRule.setContent {
       MeetingDetailScreen(
-          attachmentsViewModel = MeetingAttachmentsViewModel(FileStorageRepositoryMock(),repositoryMock,
-            mockConnectivityObserver),
+          attachmentsViewModel =
+              MeetingAttachmentsViewModel(
+                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver),
           projectId = "test_project",
           meetingId = "test_meeting",
           viewModel = viewModel,
@@ -150,9 +147,12 @@ class MeetingDetailScreenTest {
             "test_project", "test_meeting", neverEmittingRepository, mockConnectivityObserver)
     composeTestRule.setContent {
       MeetingDetailScreen(
-        attachmentsViewModel = MeetingAttachmentsViewModel(FileStorageRepositoryMock(),repositoryMock,
-          mockConnectivityObserver),
-          projectId = "test_project", meetingId = "test_meeting", viewModel = viewModel)
+          attachmentsViewModel =
+              MeetingAttachmentsViewModel(
+                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver),
+          projectId = "test_project",
+          meetingId = "test_meeting",
+          viewModel = viewModel)
     }
 
     composeTestRule.waitForIdle()
@@ -318,7 +318,6 @@ class MeetingDetailScreenTest {
     composeTestRule
         .onNodeWithText("Attachments (${meeting.attachmentUrls.size})")
         .assertIsDisplayed()
-
   }
 
   @Test
@@ -646,9 +645,10 @@ class MeetingDetailScreenTest {
     composeTestRule.waitForIdle()
 
     // Click edit button
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON)
-      .performScrollTo()
-      .performClick()
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON)
+        .performScrollTo()
+        .performClick()
     composeTestRule.waitForIdle()
 
     // Verify edit mode buttons appear
