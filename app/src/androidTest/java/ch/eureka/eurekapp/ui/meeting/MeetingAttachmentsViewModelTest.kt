@@ -4,6 +4,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
@@ -254,6 +255,13 @@ class MeetingAttachmentsViewModelTest {
       return Result.success("Dummy")
     }
 
+    override suspend fun uploadFile(
+        storagePath: String,
+        fileDescriptor: ParcelFileDescriptor
+    ): Result<String> {
+      TODO("Not yet implemented")
+    }
+
     override suspend fun deleteFile(downloadUrl: String): Result<Unit> {
       return Result.success(Unit)
     }
@@ -436,6 +444,13 @@ class MeetingAttachmentsViewModelTest {
   private class MockedFileStorageRepositoryForFailsWhenUploadFails : FileStorageRepository {
     override suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String> {
       return Result.failure(IllegalArgumentException(""))
+    }
+
+    override suspend fun uploadFile(
+        storagePath: String,
+        fileDescriptor: ParcelFileDescriptor
+    ): Result<String> {
+      TODO("Not yet implemented")
     }
 
     override suspend fun deleteFile(downloadUrl: String): Result<Unit> {
