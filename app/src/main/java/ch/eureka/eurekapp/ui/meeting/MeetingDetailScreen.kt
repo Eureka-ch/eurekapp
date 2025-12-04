@@ -999,9 +999,7 @@ fun AttachmentItem(
   val context = LocalContext.current
   val downloadingFilesSet = remember { attachmentsViewModel.downloadingFilesSet }.collectAsState()
   val fileNames = remember { attachmentsViewModel.attachmentUrlsToFileNames }.collectAsState()
-    LaunchedEffect(Unit) {
-        attachmentsViewModel.getFilenameFromDownloadURL(attachmentUrl)
-    }
+  LaunchedEffect(Unit) { attachmentsViewModel.getFilenameFromDownloadURL(attachmentUrl) }
   Row(
       modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.ATTACHMENT_ITEM),
       verticalAlignment = Alignment.CenterVertically) {

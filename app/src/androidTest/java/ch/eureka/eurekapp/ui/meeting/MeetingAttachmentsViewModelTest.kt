@@ -102,18 +102,16 @@ class MeetingAttachmentsViewModelTest {
     Dispatchers.resetMain()
   }
 
-  private class MockedFileRepositorsForSuccess: FileStorageRepository{
+  private class MockedFileRepositorsForSuccess : FileStorageRepository {
     val downloadUrl = "http://fake.url/file.pdf"
-    override suspend fun uploadFile(
-      storagePath: String,
-      fileUri: Uri
-    ): Result<String> {
+
+    override suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String> {
       return Result.success(downloadUrl)
     }
 
     override suspend fun uploadFile(
-      storagePath: String,
-      fileDescriptor: ParcelFileDescriptor
+        storagePath: String,
+        fileDescriptor: ParcelFileDescriptor
     ): Result<String> {
       TODO("Not yet implemented")
     }
@@ -125,7 +123,6 @@ class MeetingAttachmentsViewModelTest {
     override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
       TODO("Not yet implemented")
     }
-
   }
 
   private class MockedMeetingRepositoryForSuccess : MeetingRepository {
@@ -133,7 +130,8 @@ class MeetingAttachmentsViewModelTest {
     val meetingId = "meet1"
     val downloadUrl = "http://fake.url/file.pdf"
     val existingMeeting =
-      Meeting(meetingID = meetingId, projectId = projectId, attachmentUrls = emptyList())
+        Meeting(meetingID = meetingId, projectId = projectId, attachmentUrls = emptyList())
+
     override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> {
       return flowOf(existingMeeting)
     }
@@ -147,16 +145,16 @@ class MeetingAttachmentsViewModelTest {
     }
 
     override fun getMeetingsForCurrentUser(
-      projectId: String,
-      skipCache: Boolean
+        projectId: String,
+        skipCache: Boolean
     ): Flow<List<Meeting>> {
       return flowOf(listOf())
     }
 
     override suspend fun createMeeting(
-      meeting: Meeting,
-      creatorId: String,
-      creatorRole: MeetingRole
+        meeting: Meeting,
+        creatorId: String,
+        creatorRole: MeetingRole
     ): Result<String> {
       return Result.success("")
     }
@@ -174,27 +172,27 @@ class MeetingAttachmentsViewModelTest {
     }
 
     override suspend fun addParticipant(
-      projectId: String,
-      meetingId: String,
-      userId: String,
-      role: MeetingRole
+        projectId: String,
+        meetingId: String,
+        userId: String,
+        role: MeetingRole
     ): Result<Unit> {
       return Result.success(Unit)
     }
 
     override suspend fun removeParticipant(
-      projectId: String,
-      meetingId: String,
-      userId: String
+        projectId: String,
+        meetingId: String,
+        userId: String
     ): Result<Unit> {
       return Result.success(Unit)
     }
 
     override suspend fun updateParticipantRole(
-      projectId: String,
-      meetingId: String,
-      userId: String,
-      role: MeetingRole
+        projectId: String,
+        meetingId: String,
+        userId: String,
+        role: MeetingRole
     ): Result<Unit> {
       return Result.success(Unit)
     }
@@ -214,11 +212,12 @@ class MeetingAttachmentsViewModelTest {
     every { cursor.getString(1) } returns "test.pdf"
     every { cursor.close() } returns Unit
 
-
-
     var successCalled = false
-    val newViewModel = MeetingAttachmentsViewModel(MockedFileRepositorsForSuccess(),
-      MockedMeetingRepositoryForSuccess(), connectivityObserver)
+    val newViewModel =
+        MeetingAttachmentsViewModel(
+            MockedFileRepositorsForSuccess(),
+            MockedMeetingRepositoryForSuccess(),
+            connectivityObserver)
     newViewModel.uploadMeetingFileToFirestore(
         contentResolver,
         uri,
@@ -795,14 +794,12 @@ class MeetingAttachmentsViewModelTest {
 
   @Test
   fun getFilenameFromDownloadURLParsesCorrectly() = runTest {
+    val url = "https://firebasestorage.googleapis.com/b/bucket/o/folder%2FMyFile.pdf"
+    val expectedName = "MyFile.pdf"
+    every { storageReference.name } returns expectedName
 
-      val url = "https://firebasestorage.googleapis.com/b/bucket/o/folder%2FMyFile.pdf"
-      val expectedName = "MyFile.pdf"
-      every { storageReference.name } returns expectedName
-
-      val result = viewModel.getFilenameFromDownloadURL(url)
-      advanceUntilIdle()
-      assertEquals(expectedName, viewModel.attachmentUrlsToFileNames.value.get(url))
-
+    val result = viewModel.getFilenameFromDownloadURL(url)
+    advanceUntilIdle()
+    assertEquals(expectedName, viewModel.attachmentUrlsToFileNames.value.get(url))
   }
 }
