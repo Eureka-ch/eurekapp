@@ -308,7 +308,8 @@ class FirestoreConversationRepository(
       text: String,
       fileUrl: String
   ): Result<ConversationMessage> = runCatching {
-    val currentUserId = auth.currentUser?.uid ?: throw IllegalStateException(USER_NOT_AUTHENTICATED)
+    val currentUserId =
+        auth.currentUser?.uid ?: throw IllegalStateException(USER_NOT_AUTHENTICATED_ERROR)
 
     val messagesCollection =
         firestore
