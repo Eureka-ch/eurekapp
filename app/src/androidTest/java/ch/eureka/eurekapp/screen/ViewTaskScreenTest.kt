@@ -2,6 +2,7 @@
 package ch.eureka.eurekapp.screen
 
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -754,6 +755,13 @@ open class ViewTaskScreenTest : TestCase() {
 
   class FakeFileRepository : FileStorageRepository {
     override suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String> {
+      return Result.success("https://fakeurl.com/file.jpg")
+    }
+
+    override suspend fun uploadFile(
+        storagePath: String,
+        fileDescriptor: ParcelFileDescriptor
+    ): Result<String> {
       return Result.success("https://fakeurl.com/file.jpg")
     }
 

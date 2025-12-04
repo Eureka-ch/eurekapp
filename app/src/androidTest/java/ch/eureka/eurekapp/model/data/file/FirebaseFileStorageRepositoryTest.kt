@@ -1,9 +1,10 @@
 /*
- * This test file was co-authored by Claude Code (Anthropic AI assistant).
+ * This test file was co-authored by Claude Code (Anthropic AI assistant) and Grok.
  */
 package ch.eureka.eurekapp.model.data.file
 
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import androidx.test.platform.app.InstrumentationRegistry
 import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.utils.FirebaseEmulator
@@ -394,5 +395,107 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
     val metadata = repository.getFileMetadata(downloadUrl)
     assertTrue(metadata.isSuccess)
     // Get download URL using Firebase SDK
+  }
+
+  @Test
+  fun uploadFile_withFileDescriptor_shouldUploadAndReturnDownloadUrl() = runBlocking {
+    val projectId = "test_project_fd_1"
+    setupTestProject(projectId)
+
+    val testContent = "Test file content for upload via descriptor"
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+    val tempFile = File.createTempFile("test_upload_fd", ".txt", context.cacheDir)
+    tempFile.writeText(testContent)
+    tempFiles.add(tempFile)
+    val fileDescriptor = ParcelFileDescriptor.open(tempFile, ParcelFileDescriptor.MODE_READ_ONLY)
+    val expectedPath = StoragePaths.taskAttachmentPath(projectId, "task1", "test_fd.txt")
+
+    val result = repository.uploadFile(storagePath = expectedPath, fileDescriptor = fileDescriptor)
+
+    val downloadUrl = result.getOrNull()
+    assertNotNull(downloadUrl)
+
+    // Verify URL format
+    assertTrue(
+        "Expected storage URL but got: $downloadUrl",
+        downloadUrl!!.startsWith("http://10.0.2.2:9199/v0/b/eureka-app-ch.firebasestorage.app/o/"))
+
+    // Verify storage path is correct
+    val storagePath = getStoragePath(downloadUrl)
+    assertEquals("Storage path mismatch", expectedPath, storagePath)
+
+    // Verify token is present
+    val token = getToken(downloadUrl)
+    assertTrue("Download URL should contain token", token.isNotEmpty())
+
+    // Verify file content by downloading
+    compareFileContent(testContent, downloadUrl)
+  }
+
+  @Test
+  fun uploadFile_withFileDescriptor_shouldFailWhenNotAuthenticated() = runBlocking {
+    // Sign out to test unauthenticated access
+    FirebaseEmulator.auth.signOut()
+
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+    val tempFile = File.createTempFile("test_unauth_fd", ".txt", context.cacheDir)
+    tempFile.writeText("Test content")
+    tempFiles.add(tempFile)
+    val fileDescriptor = ParcelFileDescriptor.open(tempFile, ParcelFileDescriptor.MODE_READ_ONLY)
+
+    val result =
+        repository.uploadFile(
+            storagePath = StoragePaths.userFilePath("user1", "test_fd.txt"),
+            fileDescriptor = fileDescriptor)
+
+    assertTrue(result.isFailure)
+    assertTrue(result.exceptionOrNull() is IllegalStateException)
+  }
+
+  @Test
+  fun uploadFile_withFileDescriptor_shouldHandleDifferentFileTypes() = runBlocking {
+    val projectId = "test_project_fd_2"
+    setupTestProject(projectId)
+
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    // Test text file
+    val txtFile = File.createTempFile("test_fd", ".txt", context.cacheDir)
+    txtFile.writeText("Text content")
+    tempFiles.add(txtFile)
+    val txtDescriptor = ParcelFileDescriptor.open(txtFile, ParcelFileDescriptor.MODE_READ_ONLY)
+    val txtResult =
+        repository.uploadFile(
+            storagePath = StoragePaths.projectFilePath(projectId, "test_fd.txt"),
+            fileDescriptor = txtDescriptor)
+    assertTrue(txtResult.isSuccess)
+    val txtMetadata = repository.getFileMetadata(txtResult.getOrNull()!!).getOrNull()
+    assertEquals("text/plain", txtMetadata?.contentType)
+
+    // Test PDF file (simulated)
+    val pdfFile = File.createTempFile("document_fd", ".pdf", context.cacheDir)
+    pdfFile.writeText("PDF content")
+    tempFiles.add(pdfFile)
+    val pdfDescriptor = ParcelFileDescriptor.open(pdfFile, ParcelFileDescriptor.MODE_READ_ONLY)
+    val pdfResult =
+        repository.uploadFile(
+            storagePath = StoragePaths.projectFilePath(projectId, "doc_fd.pdf"),
+            fileDescriptor = pdfDescriptor)
+    assertTrue(pdfResult.isSuccess)
+    val pdfMetadata = repository.getFileMetadata(pdfResult.getOrNull()!!).getOrNull()
+    assertEquals("application/pdf", pdfMetadata?.contentType)
+
+    // Test image file (simulated)
+    val imgFile = File.createTempFile("image_fd", ".jpg", context.cacheDir)
+    imgFile.writeText("Image content")
+    tempFiles.add(imgFile)
+    val imgDescriptor = ParcelFileDescriptor.open(imgFile, ParcelFileDescriptor.MODE_READ_ONLY)
+    val imgResult =
+        repository.uploadFile(
+            storagePath = StoragePaths.projectFilePath(projectId, "img_fd.jpg"),
+            fileDescriptor = imgDescriptor)
+    assertTrue(imgResult.isSuccess)
+    val imgMetadata = repository.getFileMetadata(imgResult.getOrNull()!!).getOrNull()
+    assertEquals("image/jpeg", imgMetadata?.contentType)
   }
 }

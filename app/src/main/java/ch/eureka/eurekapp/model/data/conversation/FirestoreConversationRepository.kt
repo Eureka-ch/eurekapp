@@ -12,6 +12,7 @@ import kotlinx.coroutines.tasks.await
 /*
 Co-author: GPT-5 Codex
 Co-author: Claude 4.5 Sonnet
+Co-author: Grok
 */
 
 /**
@@ -23,6 +24,10 @@ class FirestoreConversationRepository(
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth
 ) : ConversationRepository {
+
+  companion object {
+    private const val USER_NOT_AUTHENTICATED = "User not authenticated"
+  }
 
   override fun getConversationsForCurrentUser(): Flow<List<Conversation>> = callbackFlow {
     val currentUserId = auth.currentUser?.uid
@@ -145,9 +150,22 @@ class FirestoreConversationRepository(
                     close(error)
                     return@addSnapshotListener
                   }
+                  // Use manual mapping instead of doc.toObject(ConversationMessage::class.java)
+                  // to gracefully handle data inconsistencies
+                  // Messages sent with old versions of the app will have missing fields
                   val messages =
-                      snapshot?.documents?.mapNotNull {
-                        it.toObject(ConversationMessage::class.java)
+                      snapshot?.documents?.mapNotNull { doc ->
+                        try {
+                          ConversationMessage(
+                              messageId = doc.id,
+                              senderId = doc.getString("senderId") ?: "",
+                              text = doc.getString("text") ?: "",
+                              createdAt = doc.getTimestamp("createdAt"),
+                              isFile = doc.getBoolean("isFile") ?: false,
+                              fileUrl = doc.getString("fileUrl") ?: "")
+                        } catch (e: Exception) {
+                          null // Skip malformed messages silently
+                        }
                       } ?: emptyList()
                   // Reverse to return oldest-first for display
                   trySend(messages.reversed())
@@ -159,8 +177,7 @@ class FirestoreConversationRepository(
       conversationId: String,
       text: String
   ): Result<ConversationMessage> = runCatching {
-    val currentUserId =
-        auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
+    val currentUserId = auth.currentUser?.uid ?: throw IllegalStateException(USER_NOT_AUTHENTICATED)
 
     val messagesCollection =
         firestore
@@ -187,9 +204,54 @@ class FirestoreConversationRepository(
     message
   }
 
+  override suspend fun sendFileMessage(
+      conversationId: String,
+      text: String,
+      fileUrl: String
+  ): Result<ConversationMessage> = runCatching {
+    val currentUserId = auth.currentUser?.uid ?: throw IllegalStateException(USER_NOT_AUTHENTICATED)
+
+    val messagesCollection =
+        firestore
+            .collection(FirestorePaths.CONVERSATIONS)
+            .document(conversationId)
+            .collection(FirestorePaths.CONVERSATION_MESSAGES)
+
+    val docRef = messagesCollection.document()
+    val message =
+        ConversationMessage(
+            messageId = docRef.id,
+            senderId = currentUserId,
+            text = text,
+            isFile = true,
+            fileUrl = fileUrl)
+
+    val messageData =
+        hashMapOf(
+            "senderId" to currentUserId,
+            "text" to text,
+            "isFile" to true,
+            "fileUrl" to fileUrl,
+            "createdAt" to com.google.firebase.firestore.FieldValue.serverTimestamp())
+
+    docRef.set(messageData).await()
+
+    // Update conversation metadata with server timestamp
+    firestore
+        .collection(FirestorePaths.CONVERSATIONS)
+        .document(conversationId)
+        .update(
+            mapOf(
+                "lastMessageAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                "lastMessagePreview" to text.take(100),
+                "lastMessageSenderId" to currentUserId))
+        .await()
+
+    message
+  }
+
   override suspend fun markMessagesAsRead(conversationId: String): Result<Unit> = runCatching {
-    val currentUserId =
-        auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
+    val currentUserId = auth.currentUser?.uid ?: throw IllegalStateException(USER_NOT_AUTHENTICATED)
 
     firestore
         .collection(FirestorePaths.CONVERSATIONS)
