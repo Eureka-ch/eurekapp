@@ -632,7 +632,7 @@ class MeetingDetailScreenTest {
     setContent()
     composeTestRule.waitForIdle()
 
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performScrollTo().assertIsDisplayed()
   }
 
   @Test
@@ -679,11 +679,11 @@ class MeetingDetailScreenTest {
     composeTestRule.waitForIdle()
 
     // Verify editable field labels are displayed
-    composeTestRule.onNodeWithText("Edit Meeting Information").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Title").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Date").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Time").assertIsDisplayed()
-    composeTestRule.onNodeWithText("Duration").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Edit Meeting Information").performScrollTo().assertIsDisplayed()
+    composeTestRule.onNodeWithText("Title").performScrollTo().assertIsDisplayed()
+    composeTestRule.onNodeWithText("Date").performScrollTo().assertIsDisplayed()
+    composeTestRule.onNodeWithText("Time").performScrollTo().assertIsDisplayed()
+    composeTestRule.onNodeWithText("Duration").performScrollTo().assertIsDisplayed()
   }
 
   @Test
@@ -696,7 +696,8 @@ class MeetingDetailScreenTest {
     composeTestRule.waitForIdle()
 
     // Enter edit mode
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performClick()
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performScrollTo()
+      .performClick()
     composeTestRule.waitForIdle()
 
     // Verify in edit mode
@@ -729,6 +730,7 @@ class MeetingDetailScreenTest {
     // Verify action buttons section exists before edit mode
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.ACTION_BUTTONS_SECTION)
+        .performScrollTo()
         .assertIsDisplayed()
 
     // Enter edit mode
@@ -751,7 +753,7 @@ class MeetingDetailScreenTest {
     composeTestRule.waitForIdle()
 
     // Enter and exit edit mode without saving
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performClick()
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performScrollTo().performClick()
     composeTestRule.waitForIdle()
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.CANCEL_EDIT_BUTTON)
@@ -785,6 +787,7 @@ class MeetingDetailScreenTest {
     // Error message should appear
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.ERROR_MSG)
+        .performScrollTo()
         .assertIsDisplayed()
         .assertTextEquals("Meeting should be scheduled in the future.")
   }
