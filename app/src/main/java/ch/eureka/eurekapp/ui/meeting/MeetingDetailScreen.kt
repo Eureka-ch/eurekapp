@@ -997,7 +997,11 @@ fun AttachmentItem(
     attachmentsViewModel: MeetingAttachmentsViewModel
 ) {
   val context = LocalContext.current
-  val downloadingFilesSet = remember { attachmentsViewModel.isDownloadingFile }.collectAsState()
+  val downloadingFilesSet = remember { attachmentsViewModel.downloadingFilesSet }.collectAsState()
+  val fileNames = remember { attachmentsViewModel.attachmentUrlsToFileNames }.collectAsState()
+    LaunchedEffect(Unit) {
+        attachmentsViewModel.getFilenameFromDownloadURL(attachmentUrl)
+    }
   Row(
       modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.ATTACHMENT_ITEM),
       verticalAlignment = Alignment.CenterVertically) {
@@ -1012,7 +1016,7 @@ fun AttachmentItem(
                   modifier = Modifier.size(24.dp))
               Spacer(modifier = Modifier.width(12.dp))
               Text(
-                  text = attachmentsViewModel.getFilenameFromDownloadURL(attachmentUrl) ?: "",
+                  text = fileNames.value[attachmentUrl] ?: "",
                   style = MaterialTheme.typography.bodyMedium,
                   maxLines = 1)
             }

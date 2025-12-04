@@ -33,7 +33,7 @@ class MeetingAttachmentsTest {
   @Before
   fun setup() {
     // Wire up the StateFlows using Mockk syntax
-    every { mockViewModel.isDownloadingFile } returns downloadingFilesFlow
+    every { mockViewModel.downloadingFilesSet } returns downloadingFilesFlow
     every { mockViewModel.isUploadingFile } returns uploadingFileFlow
 
     // Mock the filename getter logic

@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.ui.meeting
 // Portions of this code were generated with the help of Gemini 3 Pro.
+
 import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
@@ -16,6 +17,7 @@ import ch.eureka.eurekapp.model.data.StoragePaths
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.CoroutineDispatcher
 import java.io.File
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
@@ -29,84 +31,101 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class MeetingAttachmentsViewModel(
-    private val fileStorageRepository: FileStorageRepository = RepositoriesProvider.fileRepository,
-    private val meetingsRepository: MeetingRepository = RepositoriesProvider.meetingRepository,
-    private val connectivityObserver: ConnectivityObserver =
-        ConnectivityObserverProvider.connectivityObserver
+  private val fileStorageRepository: FileStorageRepository = RepositoriesProvider.fileRepository,
+  private val meetingsRepository: MeetingRepository = RepositoriesProvider.meetingRepository,
+  private val connectivityObserver: ConnectivityObserver =
+    ConnectivityObserverProvider.connectivityObserver,
+  private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
+
   private val _downloadingFilesSet: MutableStateFlow<Set<String>> = MutableStateFlow(setOf())
-  val isDownloadingFile = _downloadingFilesSet.asStateFlow()
+  val downloadingFilesSet = _downloadingFilesSet.asStateFlow()
 
   private val _isUploadingFile = MutableStateFlow(false)
   val isUploadingFile = _isUploadingFile.asStateFlow()
 
   private val _isConnected =
-      connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
+    connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
+  private val _attachmentUrlsToFileNames: MutableStateFlow<Map<String, String>> =
+    MutableStateFlow(mapOf())
+  val attachmentUrlsToFileNames = _attachmentUrlsToFileNames.asStateFlow()
 
   fun uploadMeetingFileToFirestore(
-      contentResolver: ContentResolver,
-      uri: Uri,
-      projectId: String,
-      meetingId: String,
-      onSuccess: () -> Unit,
-      onFailure: (String) -> Unit
+    contentResolver: ContentResolver,
+    uri: Uri,
+    projectId: String,
+    meetingId: String,
+    onSuccess: () -> Unit,
+    onFailure: (String) -> Unit
   ) {
     if (!_isConnected.value) {
       onFailure("You are not connected to the internet!")
       return
     }
-    viewModelScope.launch {
-      withContext(Dispatchers.IO) {
-        try {
-          _isUploadingFile.value = true
-          // First of all we do not want to exceed 50MB file size so we will check this before
-          // doing anything
-          contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-            if (cursor.moveToFirst()) {
-              val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
-              if (sizeIndex != -1) {
-                val sizeInBytes = cursor.getLong(sizeIndex)
-                if (sizeInBytes / (1024.0 * 1024.0) > 50) {
-                  _isUploadingFile.value = false
-                  onFailure("File you are trying to upload is too big!")
-                  return@withContext
-                }
-              } else {
-                _isUploadingFile.value = false
-                onFailure("Failed to get the size of the file!")
-                return@withContext
-              }
+
+    fun checkFileSize(): String? {
+      contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+        if (cursor.moveToFirst()) {
+          val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+          if (sizeIndex != -1) {
+            val sizeInBytes = cursor.getLong(sizeIndex)
+            if (sizeInBytes / (1024.0 * 1024.0) > 50) {
+              return "File you are trying to upload is too big!"
             }
+            return null
+          }
+          return "Failed to get the size of the file!"
+        }
+      }
+      return null
+    }
+
+    viewModelScope.launch {
+      withContext(ioDispatcher) {
+        _isUploadingFile.value = true
+        try {
+          checkFileSize()?.let {
+            onFailure(it)
+            return@withContext
           }
 
           val fileName = getFileNameFromUri(uri, contentResolver)
           checkNotNull(fileName)
-          val downloadUrlResult =
-              fileStorageRepository.uploadFile(
-                  StoragePaths.meetingAttachmentPath(projectId, meetingId, fileName), uri)
-          if (downloadUrlResult.isSuccess && downloadUrlResult.getOrNull() != null) {
-            val meetingToUpdate = meetingsRepository.getMeetingById(projectId, meetingId).first()
-            if (meetingToUpdate != null) {
-              val updatedMeeting =
-                  meetingToUpdate.copy(
-                      attachmentUrls =
-                          meetingToUpdate.attachmentUrls + downloadUrlResult.getOrNull()!!)
-              val updatedMeetingResult = meetingsRepository.updateMeeting(updatedMeeting)
-              if (updatedMeetingResult.isSuccess) {
-                onSuccess()
-              } else {
-                deleteFileFromMeetingAttachments(
-                    projectId, meetingId, downloadUrlResult.getOrNull()!!)
-                onFailure("Unexpected error occurred!")
-              }
-            } else {
-              deleteFileFromMeetingAttachments(
-                  projectId, meetingId, downloadUrlResult.getOrNull()!!)
-              onFailure("Meeting whose attachment you want no longer exists!")
-            }
+
+          val uploadResult = fileStorageRepository.uploadFile(
+            StoragePaths.meetingAttachmentPath(projectId, meetingId, fileName),
+            uri
+          )
+
+          val downloadUrl = uploadResult.getOrNull()
+          if (!(uploadResult.isSuccess && downloadUrl != null)) {
+            onFailure("Unexpected error occurred!")
+            return@withContext
+          }
+
+          val meeting = meetingsRepository
+            .getMeetingById(projectId, meetingId)
+            .first()
+
+          if (meeting == null) {
+            deleteFileFromMeetingAttachments(projectId, meetingId, downloadUrl)
+            onFailure("Meeting whose attachment you want no longer exists!")
+            return@withContext
+          }
+
+          val updatedMeeting = meeting.copy(
+            attachmentUrls = meeting.attachmentUrls + downloadUrl
+          )
+
+          val updateResult = meetingsRepository.updateMeeting(updatedMeeting)
+          if (updateResult.isSuccess) {
+            onSuccess()
           } else {
+            deleteFileFromMeetingAttachments(projectId, meetingId, downloadUrl)
             onFailure("Unexpected error occurred!")
           }
+
         } catch (e: Exception) {
           onFailure(e.message.toString())
         } finally {
@@ -117,24 +136,24 @@ class MeetingAttachmentsViewModel(
   }
 
   fun deleteFileFromMeetingAttachments(
-      projectId: String,
-      meetingId: String,
-      downloadUrl: String,
-      onFailure: (String) -> Unit = {},
-      onSuccess: () -> Unit = {}
+    projectId: String,
+    meetingId: String,
+    downloadUrl: String,
+    onFailure: (String) -> Unit = {},
+    onSuccess: () -> Unit = {}
   ) {
     if (!_isConnected.value) {
       onFailure("You are not connected to the internet!")
       return
     }
     viewModelScope.launch {
-      withContext(Dispatchers.IO) {
+      withContext(ioDispatcher) {
         try {
           val deletedFile = fileStorageRepository.deleteFile(downloadUrl)
           val meetingGot = meetingsRepository.getMeetingById(projectId, meetingId).first()
           if (meetingGot != null && deletedFile.isSuccess) {
             val updatedMeeting =
-                meetingGot.copy(attachmentUrls = meetingGot.attachmentUrls - downloadUrl)
+              meetingGot.copy(attachmentUrls = meetingGot.attachmentUrls - downloadUrl)
             meetingsRepository.updateMeeting(updatedMeeting)
             onSuccess()
           } else {
@@ -148,35 +167,36 @@ class MeetingAttachmentsViewModel(
   }
 
   fun downloadFileToPhone(
-      context: Context,
-      downloadUrl: String,
-      onSuccess: () -> Unit,
-      onFailure: (String) -> Unit
+    context: Context,
+    downloadUrl: String,
+    onSuccess: () -> Unit,
+    onFailure: (String) -> Unit
   ) {
     viewModelScope.launch {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
           try {
             val storageRef = FirebaseStorage.getInstance().reference
             val linkReference = storageRef.storage.getReferenceFromUrl(downloadUrl)
             val fileName = linkReference.name
-            val mimeType = linkReference.metadata.await().contentType ?: "application/octet-stream"
+            val mimeType =
+              linkReference.metadata.await().contentType ?: "application/octet-stream"
 
             val contentValues =
-                ContentValues().apply {
-                  put(MediaStore.Downloads.DISPLAY_NAME, fileName)
-                  put(MediaStore.Downloads.MIME_TYPE, mimeType)
-                  put(MediaStore.Downloads.IS_PENDING, 1)
-                }
+              ContentValues().apply {
+                put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                put(MediaStore.Downloads.MIME_TYPE, mimeType)
+                put(MediaStore.Downloads.IS_PENDING, 1)
+              }
 
             val resolver = context.contentResolver
             val fileUri =
-                resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-                    ?: throw IOException("Failed to create MediaStore entry")
+              resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                ?: throw IOException("Failed to create MediaStore entry")
 
-            val tempFile = File.createTempFile("temp_download", null, context.cacheDir)
+            val tempFile =
+              File.createTempFile("temp_download", null, context.cacheDir)
 
-            // Set that we are downloading a file:
             _downloadingFilesSet.value += downloadUrl
 
             linkReference.getFile(tempFile).await()
@@ -206,13 +226,16 @@ class MeetingAttachmentsViewModel(
     }
   }
 
-  fun getFilenameFromDownloadURL(downloadUrl: String): String? {
-    try {
-      val storageRef = FirebaseStorage.getInstance().reference
-      val linkReference = storageRef.storage.getReferenceFromUrl(downloadUrl)
-      return linkReference.name
-    } catch (e: Exception) {
-      return null
+  fun getFilenameFromDownloadURL(downloadUrl: String) {
+    viewModelScope.launch {
+      withContext(ioDispatcher) {
+        try {
+          val storageRef = FirebaseStorage.getInstance().reference
+          val linkReference = storageRef.storage.getReferenceFromUrl(downloadUrl)
+          _attachmentUrlsToFileNames.value += downloadUrl to linkReference.name
+        } catch (e: Exception) {
+        }
+      }
     }
   }
 
@@ -227,5 +250,30 @@ class MeetingAttachmentsViewModel(
       }
     }
     return name
+  }
+
+  private fun getFileSizeWithinLimits(
+    contentResolver: ContentResolver,
+    uri: Uri,
+    onFailure: (String) -> Unit
+  ): Boolean {
+    contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+      if (cursor.moveToFirst()) {
+        val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+        if (sizeIndex != -1) {
+          val sizeInBytes = cursor.getLong(sizeIndex)
+          if (sizeInBytes / (1024.0 * 1024.0) > 50) {
+            _isUploadingFile.value = false
+            onFailure("File you are trying to upload is too big!")
+            return false
+          }
+        } else {
+          _isUploadingFile.value = false
+          onFailure("Failed to get the size of the file!")
+          return true
+        }
+      }
+    }
+    return false
   }
 }

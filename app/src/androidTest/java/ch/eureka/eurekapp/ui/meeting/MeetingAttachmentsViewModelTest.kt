@@ -102,13 +102,108 @@ class MeetingAttachmentsViewModelTest {
     Dispatchers.resetMain()
   }
 
-  @Test
-  fun uploadMeetingFileToFirestoreSuccess() = runTest {
+  private class MockedFileRepositorsForSuccess: FileStorageRepository{
+    val downloadUrl = "http://fake.url/file.pdf"
+    override suspend fun uploadFile(
+      storagePath: String,
+      fileUri: Uri
+    ): Result<String> {
+      return Result.success(downloadUrl)
+    }
+
+    override suspend fun uploadFile(
+      storagePath: String,
+      fileDescriptor: ParcelFileDescriptor
+    ): Result<String> {
+      TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteFile(downloadUrl: String): Result<Unit> {
+      TODO("Not yet implemented")
+    }
+
+    override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
+      TODO("Not yet implemented")
+    }
+
+  }
+
+  private class MockedMeetingRepositoryForSuccess : MeetingRepository {
     val projectId = "proj1"
     val meetingId = "meet1"
     val downloadUrl = "http://fake.url/file.pdf"
     val existingMeeting =
-        Meeting(meetingID = meetingId, projectId = projectId, attachmentUrls = emptyList())
+      Meeting(meetingID = meetingId, projectId = projectId, attachmentUrls = emptyList())
+    override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> {
+      return flowOf(existingMeeting)
+    }
+
+    override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> {
+      return flowOf(listOf())
+    }
+
+    override fun getMeetingsForTask(projectId: String, taskId: String): Flow<List<Meeting>> {
+      return flowOf(listOf())
+    }
+
+    override fun getMeetingsForCurrentUser(
+      projectId: String,
+      skipCache: Boolean
+    ): Flow<List<Meeting>> {
+      return flowOf(listOf())
+    }
+
+    override suspend fun createMeeting(
+      meeting: Meeting,
+      creatorId: String,
+      creatorRole: MeetingRole
+    ): Result<String> {
+      return Result.success("")
+    }
+
+    override suspend fun updateMeeting(meeting: Meeting): Result<Unit> {
+      return Result.success(Unit)
+    }
+
+    override suspend fun deleteMeeting(projectId: String, meetingId: String): Result<Unit> {
+      return Result.success(Unit)
+    }
+
+    override fun getParticipants(projectId: String, meetingId: String): Flow<List<Participant>> {
+      return flowOf(listOf())
+    }
+
+    override suspend fun addParticipant(
+      projectId: String,
+      meetingId: String,
+      userId: String,
+      role: MeetingRole
+    ): Result<Unit> {
+      return Result.success(Unit)
+    }
+
+    override suspend fun removeParticipant(
+      projectId: String,
+      meetingId: String,
+      userId: String
+    ): Result<Unit> {
+      return Result.success(Unit)
+    }
+
+    override suspend fun updateParticipantRole(
+      projectId: String,
+      meetingId: String,
+      userId: String,
+      role: MeetingRole
+    ): Result<Unit> {
+      return Result.success(Unit)
+    }
+  }
+
+  @Test
+  fun uploadMeetingFileToFirestoreSuccess() = runTest {
+    val projectId = "proj1"
+    val meetingId = "meet1"
 
     // Cursor logic
     every { contentResolver.query(uri, null, null, null, null) } returns cursor
@@ -119,13 +214,12 @@ class MeetingAttachmentsViewModelTest {
     every { cursor.getString(1) } returns "test.pdf"
     every { cursor.close() } returns Unit
 
-    coEvery { fileStorageRepository.uploadFile(any(), uri) } returns Result.success(downloadUrl)
-    coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns
-        flowOf(existingMeeting)
-    coEvery { meetingRepository.updateMeeting(any()) } returns Result.success(Unit)
+
 
     var successCalled = false
-    viewModel.uploadMeetingFileToFirestore(
+    val newViewModel = MeetingAttachmentsViewModel(MockedFileRepositorsForSuccess(),
+      MockedMeetingRepositoryForSuccess(), connectivityObserver)
+    newViewModel.uploadMeetingFileToFirestore(
         contentResolver,
         uri,
         projectId,
@@ -136,7 +230,6 @@ class MeetingAttachmentsViewModelTest {
     advanceUntilIdle()
 
     assertTrue(successCalled)
-    coVerify { meetingRepository.updateMeeting(any()) }
   }
 
   @Test
@@ -697,16 +790,19 @@ class MeetingAttachmentsViewModelTest {
     val downloadUrl = "https://test.com/file.pdf"
 
     // Initially empty
-    assertEquals(emptySet<String>(), viewModel.isDownloadingFile.value)
+    assertEquals(emptySet<String>(), viewModel.downloadingFilesSet.value)
   }
 
   @Test
-  fun getFilenameFromDownloadURLParsesCorrectly() {
-    val url = "https://firebasestorage.googleapis.com/b/bucket/o/folder%2FMyFile.pdf"
-    val expectedName = "MyFile.pdf"
-    every { storageReference.name } returns expectedName
+  fun getFilenameFromDownloadURLParsesCorrectly() = runTest {
 
-    val result = viewModel.getFilenameFromDownloadURL(url)
-    assertEquals(expectedName, result)
+      val url = "https://firebasestorage.googleapis.com/b/bucket/o/folder%2FMyFile.pdf"
+      val expectedName = "MyFile.pdf"
+      every { storageReference.name } returns expectedName
+
+      val result = viewModel.getFilenameFromDownloadURL(url)
+      advanceUntilIdle()
+      assertEquals(expectedName, viewModel.attachmentUrlsToFileNames.value.get(url))
+
   }
 }
