@@ -45,13 +45,13 @@ import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.model.tasks.EditTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
-import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.CameraScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreen
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreenTestTags
+import ch.eureka.eurekapp.testutils.testCameraRoute
 import ch.eureka.eurekapp.ui.tasks.TaskScreenViewModel
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.google.firebase.Timestamp
@@ -400,14 +400,7 @@ open class EditTaskScreenTest : TestCase() {
                   "Tasks Screen",
                   modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
             }
-            composable<Route.Camera> {
-              Camera(
-                  onBackClick = { navController.popBackStack() },
-                  onPhotoSaved = { uri ->
-                    navController.previousBackStackEntry?.savedStateHandle?.set("photoUri", uri)
-                    navController.popBackStack()
-                  })
-            }
+            testCameraRoute(navController)
           }
           // Navigate through ViewTask to EditTask to simulate real navigation flow
           navController.navigate(
@@ -577,14 +570,7 @@ open class EditTaskScreenTest : TestCase() {
                   navigationController = navController,
                   editTaskViewModel = editTaskViewModel)
             }
-            composable<Route.Camera> {
-              Camera(
-                  onBackClick = { navController.popBackStack() },
-                  onPhotoSaved = { uri ->
-                    navController.previousBackStackEntry?.savedStateHandle?.set("photoUri", uri)
-                    navController.popBackStack()
-                  })
-            }
+            testCameraRoute(navController)
           }
         }
 
@@ -885,14 +871,7 @@ open class EditTaskScreenTest : TestCase() {
       composable<Route.TasksSection.Tasks> {
         Text("Tasks Screen", modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
       }
-      composable<Route.Camera> {
-        Camera(
-            onBackClick = { navController.popBackStack() },
-            onPhotoSaved = { uri ->
-              navController.previousBackStackEntry?.savedStateHandle?.set("photoUri", uri)
-              navController.popBackStack()
-            })
-      }
+      testCameraRoute(navController)
     }
   }
 
