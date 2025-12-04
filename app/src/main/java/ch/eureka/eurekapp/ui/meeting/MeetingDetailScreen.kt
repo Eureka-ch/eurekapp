@@ -2,11 +2,9 @@
 package ch.eureka.eurekapp.ui.meeting
 
 import android.net.Uri
-import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -167,7 +165,7 @@ data class MeetingDetailActionsConfig(
  * @param viewModel The ViewModel managing the meeting detail state.
  * @param actionsConfig The actions that can be executed with buttons on the detail meeting screen.
  */
-@RequiresApi(Build.VERSION_CODES.Q)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MeetingDetailScreen(
@@ -407,7 +405,6 @@ data class ActionButtonsConfig(
  * @param modifier Modifier to be applied to the root composable.
  * @param isConnected Whether the device is connected to the internet.
  */
-@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 private fun MeetingDetailContent(
     meeting: Meeting,
@@ -916,7 +913,6 @@ private fun ParticipantItem(participant: Participant) {
  * @param meeting the meeting whose attachments to display
  * @param attachmentsViewModel meeting attachments view model
  */
-@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun AttachmentsSection(
     meeting: Meeting,
@@ -989,7 +985,6 @@ object AttachmentItemTestTags {
  * @param attachmentUrl The URL of the attachment to display.
  * @param attachmentsViewModel view model that handles attachments
  */
-@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun AttachmentItem(
     projectId: String,
