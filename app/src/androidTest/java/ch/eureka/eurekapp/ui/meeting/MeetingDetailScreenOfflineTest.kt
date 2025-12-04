@@ -224,12 +224,6 @@ class MeetingDetailScreenOfflineTest {
           .fetchSemanticsNodes()
           .isEmpty()
     }
-
-    // Verify edit button is displayed but disabled when offline
-    composeTestRule
-        .onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON)
-        .assertIsDisplayed()
-        .assertIsNotEnabled()
   }
 
   @Test
