@@ -64,69 +64,71 @@ class MeetingAttachmentsViewModel(
       return
     }
 
-    fun checkFileSize(): String? {
-      contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-        if (cursor.moveToFirst()) {
-          val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
-          if (sizeIndex != -1) {
-            val sizeInBytes = cursor.getLong(sizeIndex)
-            if (sizeInBytes / (1024.0 * 1024.0) > 50) {
-              return "File you are trying to upload is too big!"
-            }
-            return null
-          }
-          return "Failed to get the size of the file!"
-        }
-      }
-      return null
-    }
-
     viewModelScope.launch {
       withContext(ioDispatcher) {
         _isUploadingFile.value = true
-        try {
-          checkFileSize()?.let {
-            onFailure(it)
-            return@withContext
+        launchIO {
+          try {
+            checkFileSize(contentResolver, uri)?.let {
+              onFailure(it)
+              return@launchIO
+            }
+
+            val fileName = getFileNameFromUri(uri, contentResolver)
+            checkNotNull(fileName)
+
+            val uploadResult =
+                fileStorageRepository.uploadFile(
+                    StoragePaths.meetingAttachmentPath(projectId, meetingId, fileName), uri)
+
+            val downloadUrl = uploadResult.getOrNull()
+            if (!(uploadResult.isSuccess && downloadUrl != null)) {
+              onFailure("Unexpected error occurred!")
+              return@launchIO
+            }
+
+            val meeting = meetingsRepository.getMeetingById(projectId, meetingId).first()
+
+            if (meeting == null) {
+              deleteFileFromMeetingAttachments(projectId, meetingId, downloadUrl)
+              onFailure("Meeting whose attachment you want no longer exists!")
+              return@launchIO
+            }
+
+            val updatedMeeting = meeting.copy(attachmentUrls = meeting.attachmentUrls + downloadUrl)
+
+            val updateResult = meetingsRepository.updateMeeting(updatedMeeting)
+            if (updateResult.isSuccess) {
+              onSuccess()
+            } else {
+              deleteFileFromMeetingAttachments(projectId, meetingId, downloadUrl)
+              onFailure("Unexpected error occurred!")
+            }
+          } catch (e: Exception) {
+            onFailure(e.message.toString())
+          } finally {
+            _isUploadingFile.value = false
           }
-
-          val fileName = getFileNameFromUri(uri, contentResolver)
-          checkNotNull(fileName)
-
-          val uploadResult =
-              fileStorageRepository.uploadFile(
-                  StoragePaths.meetingAttachmentPath(projectId, meetingId, fileName), uri)
-
-          val downloadUrl = uploadResult.getOrNull()
-          if (!(uploadResult.isSuccess && downloadUrl != null)) {
-            onFailure("Unexpected error occurred!")
-            return@withContext
-          }
-
-          val meeting = meetingsRepository.getMeetingById(projectId, meetingId).first()
-
-          if (meeting == null) {
-            deleteFileFromMeetingAttachments(projectId, meetingId, downloadUrl)
-            onFailure("Meeting whose attachment you want no longer exists!")
-            return@withContext
-          }
-
-          val updatedMeeting = meeting.copy(attachmentUrls = meeting.attachmentUrls + downloadUrl)
-
-          val updateResult = meetingsRepository.updateMeeting(updatedMeeting)
-          if (updateResult.isSuccess) {
-            onSuccess()
-          } else {
-            deleteFileFromMeetingAttachments(projectId, meetingId, downloadUrl)
-            onFailure("Unexpected error occurred!")
-          }
-        } catch (e: Exception) {
-          onFailure(e.message.toString())
-        } finally {
-          _isUploadingFile.value = false
         }
       }
     }
+  }
+
+  fun checkFileSize(contentResolver: ContentResolver, uri: Uri): String? {
+    contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+      if (cursor.moveToFirst()) {
+        val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+        if (sizeIndex != -1) {
+          val sizeInBytes = cursor.getLong(sizeIndex)
+          if (sizeInBytes / (1024.0 * 1024.0) > 50) {
+            return "File you are trying to upload is too big!"
+          }
+          return null
+        }
+        return "Failed to get the size of the file!"
+      }
+    }
+    return null
   }
 
   fun deleteFileFromMeetingAttachments(
@@ -140,22 +142,20 @@ class MeetingAttachmentsViewModel(
       onFailure("You are not connected to the internet!")
       return
     }
-    viewModelScope.launch {
-      withContext(ioDispatcher) {
-        try {
-          val deletedFile = fileStorageRepository.deleteFile(downloadUrl)
-          val meetingGot = meetingsRepository.getMeetingById(projectId, meetingId).first()
-          if (meetingGot != null && deletedFile.isSuccess) {
-            val updatedMeeting =
-                meetingGot.copy(attachmentUrls = meetingGot.attachmentUrls - downloadUrl)
-            meetingsRepository.updateMeeting(updatedMeeting)
-            onSuccess()
-          } else {
-            onFailure("Unexpected error occurred")
-          }
-        } catch (e: Exception) {
-          onFailure(e.message.toString())
+    launchIO {
+      try {
+        val deletedFile = fileStorageRepository.deleteFile(downloadUrl)
+        val meetingGot = meetingsRepository.getMeetingById(projectId, meetingId).first()
+        if (meetingGot != null && deletedFile.isSuccess) {
+          val updatedMeeting =
+              meetingGot.copy(attachmentUrls = meetingGot.attachmentUrls - downloadUrl)
+          meetingsRepository.updateMeeting(updatedMeeting)
+          onSuccess()
+        } else {
+          onFailure("Unexpected error occurred")
         }
+      } catch (e: Exception) {
+        onFailure(e.message.toString())
       }
     }
   }
@@ -219,13 +219,11 @@ class MeetingAttachmentsViewModel(
   }
 
   fun getFilenameFromDownloadURL(downloadUrl: String) {
-    viewModelScope.launch {
-      withContext(ioDispatcher) {
-        try {
-          val storageRef = FirebaseStorage.getInstance().reference
-          val linkReference = storageRef.storage.getReferenceFromUrl(downloadUrl)
-          _attachmentUrlsToFileNames.value += downloadUrl to linkReference.name
-        } catch (e: Exception) {}
+    launchIO {
+      runCatching {
+        val storageRef = FirebaseStorage.getInstance().reference
+        val linkReference = storageRef.storage.getReferenceFromUrl(downloadUrl)
+        _attachmentUrlsToFileNames.value += downloadUrl to linkReference.name
       }
     }
   }
@@ -243,28 +241,7 @@ class MeetingAttachmentsViewModel(
     return name
   }
 
-  private fun getFileSizeWithinLimits(
-      contentResolver: ContentResolver,
-      uri: Uri,
-      onFailure: (String) -> Unit
-  ): Boolean {
-    contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-      if (cursor.moveToFirst()) {
-        val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
-        if (sizeIndex != -1) {
-          val sizeInBytes = cursor.getLong(sizeIndex)
-          if (sizeInBytes / (1024.0 * 1024.0) > 50) {
-            _isUploadingFile.value = false
-            onFailure("File you are trying to upload is too big!")
-            return false
-          }
-        } else {
-          _isUploadingFile.value = false
-          onFailure("Failed to get the size of the file!")
-          return true
-        }
-      }
-    }
-    return false
+  private fun ViewModel.launchIO(block: suspend () -> Unit) {
+    viewModelScope.launch { withContext(Dispatchers.IO) { block() } }
   }
 }
