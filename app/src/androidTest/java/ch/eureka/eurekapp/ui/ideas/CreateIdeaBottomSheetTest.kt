@@ -342,3 +342,4 @@ class CreateIdeaBottomSheetTest {
     composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN).assertIsDisplayed()
   }
 }
+
