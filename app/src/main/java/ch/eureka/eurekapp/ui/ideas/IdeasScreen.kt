@@ -5,12 +5,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -18,25 +28,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.viewmodel.compose.viewModel
-import ch.eureka.eurekapp.ui.components.MessageInputField
-import ch.eureka.eurekapp.ui.ideas.IdeasContent
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.ui.components.BackButton
+import ch.eureka.eurekapp.ui.components.MessageInputField
 
 /** Test tags for the Ideas Screen. */
 object IdeasScreenTestTags {
@@ -108,34 +104,49 @@ fun IdeasScreen(
                         onValueChange = {},
                         readOnly = true,
                         placeholder = { Text("Select a project") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = projectDropdownExpanded) },
-                        modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = MaterialTheme.colorScheme.onPrimary,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
-                            focusedContainerColor = MaterialTheme.colorScheme.primary,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.primary))
-                    ExposedDropdownMenu(expanded = projectDropdownExpanded, onDismissRequest = { projectDropdownExpanded = false }) {
-                      if (uiState.availableProjects.isEmpty()) {
-                        DropdownMenuItem(text = { Text("No projects available") }, onClick = {}, enabled = false)
-                      } else {
-                        uiState.availableProjects.forEach { project ->
-                          DropdownMenuItem(
-                              text = { Text(project.name) },
-                              onClick = {
-                                viewModel?.selectProject(project)
-                                projectDropdownExpanded = false
-                              })
+                        trailingIcon = {
+                          ExposedDropdownMenuDefaults.TrailingIcon(
+                              expanded = projectDropdownExpanded)
+                        },
+                        modifier =
+                            Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                        colors =
+                            OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                                focusedContainerColor = MaterialTheme.colorScheme.primary,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.primary))
+                    ExposedDropdownMenu(
+                        expanded = projectDropdownExpanded,
+                        onDismissRequest = { projectDropdownExpanded = false }) {
+                          if (uiState.availableProjects.isEmpty()) {
+                            DropdownMenuItem(
+                                text = { Text("No projects available") },
+                                onClick = {},
+                                enabled = false)
+                          } else {
+                            uiState.availableProjects.forEach { project ->
+                              DropdownMenuItem(
+                                  text = { Text(project.name) },
+                                  onClick = {
+                                    viewModel?.selectProject(project)
+                                    projectDropdownExpanded = false
+                                  })
+                            }
+                          }
                         }
-                      }
-                    }
                   }
             },
-            navigationIcon = { BackButton(onClick = onNavigateBack, modifier = Modifier.testTag(IdeasScreenTestTags.PROJECT_SELECTOR)) },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                actionIconContentColor = MaterialTheme.colorScheme.onPrimary))
+            navigationIcon = {
+              BackButton(
+                  onClick = onNavigateBack,
+                  modifier = Modifier.testTag(IdeasScreenTestTags.PROJECT_SELECTOR))
+            },
+            colors =
+                TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary))
       },
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       floatingActionButton = {
@@ -187,5 +198,3 @@ fun IdeasScreen(
         onProjectSelected = { projectId -> viewModel?.loadUsersForProject(projectId) })
   }
 }
-
-

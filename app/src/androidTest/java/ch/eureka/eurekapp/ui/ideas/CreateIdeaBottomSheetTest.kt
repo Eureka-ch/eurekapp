@@ -11,18 +11,36 @@ import androidx.compose.ui.test.performTextInput
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.user.User
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Rule
 import org.junit.Test
 
 class CreateIdeaBottomSheetTest {
   @get:Rule val composeTestRule = createComposeRule()
-  private val testProjects = listOf(Project(projectId = "p1", name = "Project 1"), Project(projectId = "p2", name = "Project 2"))
-  private val testUsers = listOf(User(uid = "user1", displayName = "User One", email = "user1@test.com"), User(uid = "user2", displayName = "User Two", email = "user2@test.com"))
+  private val testProjects =
+      listOf(
+          Project(projectId = "p1", name = "Project 1"),
+          Project(projectId = "p2", name = "Project 2"))
+  private val testUsers =
+      listOf(
+          User(uid = "user1", displayName = "User One", email = "user1@test.com"),
+          User(uid = "user2", displayName = "User Two", email = "user2@test.com"))
 
-  private fun setContent(projects: List<Project> = testProjects, users: List<User> = emptyList(), isLoading: Boolean = false, onProjectSelected: (String) -> Unit = {}, onCreateIdea: (String?, String, List<String>) -> Unit = { _, _, _ -> }, onDismiss: () -> Unit = {}) {
+  private fun setContent(
+      projects: List<Project> = testProjects,
+      users: List<User> = emptyList(),
+      isLoading: Boolean = false,
+      onProjectSelected: (String) -> Unit = {},
+      onCreateIdea: (String?, String, List<String>) -> Unit = { _, _, _ -> },
+      onDismiss: () -> Unit = {}
+  ) {
     composeTestRule.setContent {
-      CreateIdeaBottomSheet(onDismiss = onDismiss, onCreateIdea = onCreateIdea, availableProjects = projects, availableUsers = users, isLoading = isLoading, onProjectSelected = onProjectSelected)
+      CreateIdeaBottomSheet(
+          onDismiss = onDismiss,
+          onCreateIdea = onCreateIdea,
+          availableProjects = projects,
+          availableUsers = users,
+          isLoading = isLoading,
+          onProjectSelected = onProjectSelected)
     }
   }
 
@@ -38,7 +56,9 @@ class CreateIdeaBottomSheetTest {
     setContent()
     composeTestRule.onNodeWithText("Create New Idea").assertIsDisplayed()
     composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.TITLE_FIELD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.PROJECT_DROPDOWN).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.PROJECT_DROPDOWN)
+        .assertIsDisplayed()
     composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.CREATE_BUTTON).assertIsDisplayed()
     composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.CANCEL_BUTTON).assertIsDisplayed()
   }
@@ -59,7 +79,9 @@ class CreateIdeaBottomSheetTest {
   @Test
   fun createIdeaBottomSheet_titleFieldAcceptsInput() {
     setContent()
-    composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.TITLE_FIELD).performTextInput("My Idea Title")
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.TITLE_FIELD)
+        .performTextInput("My Idea Title")
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.TITLE_FIELD).assertIsDisplayed()
   }
@@ -79,14 +101,18 @@ class CreateIdeaBottomSheetTest {
     setContent(users = testUsers, onProjectSelected = { projectSelectedId = it })
     selectProject()
     assertEquals("p1", projectSelectedId)
-    composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)
+        .assertIsDisplayed()
   }
 
   @Test
   fun createIdeaBottomSheet_participantSelectionOpensDropdown() {
     setContent(users = testUsers)
     selectProject()
-    composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN).performClick()
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)
+        .performClick()
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithText("User One").assertIsDisplayed()
     composeTestRule.onNodeWithText("User Two").assertIsDisplayed()
@@ -96,11 +122,15 @@ class CreateIdeaBottomSheetTest {
   fun createIdeaBottomSheet_createButtonCallsOnCreateIdea() {
     var createdTitle: String? = null
     var createdProjectId: String? = null
-    setContent(users = testUsers, onCreateIdea = { title, projectId, _ ->
-      createdTitle = title
-      createdProjectId = projectId
-    })
-    composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.TITLE_FIELD).performTextInput("My Idea")
+    setContent(
+        users = testUsers,
+        onCreateIdea = { title, projectId, _ ->
+          createdTitle = title
+          createdProjectId = projectId
+        })
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.TITLE_FIELD)
+        .performTextInput("My Idea")
     composeTestRule.waitForIdle()
     selectProject()
     composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.CREATE_BUTTON).performClick()
@@ -134,9 +164,13 @@ class CreateIdeaBottomSheetTest {
   @Test
   fun createIdeaBottomSheet_createWithParticipants_callsOnCreateIdeaWithParticipantIds() {
     var createdParticipantIds: List<String>? = null
-    setContent(users = testUsers, onCreateIdea = { _, _, participantIds -> createdParticipantIds = participantIds })
+    setContent(
+        users = testUsers,
+        onCreateIdea = { _, _, participantIds -> createdParticipantIds = participantIds })
     selectProject()
-    composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN).performClick()
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)
+        .performClick()
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithText("User One").performClick()
     composeTestRule.waitForIdle()
@@ -150,6 +184,8 @@ class CreateIdeaBottomSheetTest {
   fun createIdeaBottomSheet_showsLoadingIndicatorWhenLoadingUsers() {
     setContent(users = emptyList(), isLoading = true)
     selectProject()
-    composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)
+        .assertIsDisplayed()
   }
 }

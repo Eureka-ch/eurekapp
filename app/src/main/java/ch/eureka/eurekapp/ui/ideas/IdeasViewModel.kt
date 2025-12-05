@@ -28,9 +28,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/**
- * UI state data class for Ideas Screen.
- */
+/** UI state data class for Ideas Screen. */
 data class IdeasUIState(
     val selectedProject: Project? = null,
     val availableProjects: List<Project> = emptyList(),
@@ -62,49 +60,65 @@ fun IdeasUIStatePlaceholder(): IdeasUIState =
         availableUsers = emptyList(),
         isLoadingUsers = false)
 
-/**
- * Interface for IdeasViewModel to allow optional ViewModel injection.
- */
+/** Interface for IdeasViewModel to allow optional ViewModel injection. */
 interface IdeasViewModelInterface {
   val uiState: kotlinx.coroutines.flow.StateFlow<IdeasUIState>
+
   fun selectProject(project: Project)
+
   fun selectIdea(idea: Idea)
+
   fun createNewIdea(title: String?, projectId: String, participantIds: List<String>)
+
   fun deleteIdea(ideaId: String)
+
   fun addParticipantToIdea(ideaId: String, userId: String)
+
   fun updateMessage(message: String)
+
   fun sendMessage()
+
   fun clearError()
+
   fun getCurrentUserId(): String?
+
   fun loadUsersForProject(projectId: String)
 }
 
-/**
- * Placeholder repository interface for Ideas.
- */
+/** Placeholder repository interface for Ideas. */
 interface IdeasRepository {
   fun getIdeasForProject(projectId: String): Flow<List<Idea>>
+
   suspend fun createIdea(idea: Idea): Result<String>
+
   suspend fun deleteIdea(projectId: String, ideaId: String): Result<Unit>
+
   fun getMessagesForIdea(ideaId: String): Flow<List<Message>>
+
   suspend fun sendMessage(ideaId: String, message: Message): Result<Unit>
+
   suspend fun addParticipant(projectId: String, ideaId: String, userId: String): Result<Unit>
 }
 
-/**
- * Placeholder implementation of IdeasRepository.
- */
+/** Placeholder implementation of IdeasRepository. */
 class IdeasRepositoryPlaceholder : IdeasRepository {
   override fun getIdeasForProject(projectId: String): Flow<List<Idea>> = flowOf(emptyList())
+
   override suspend fun createIdea(idea: Idea): Result<String> =
       Result.failure(Exception("IdeasRepository not yet implemented"))
+
   override suspend fun deleteIdea(projectId: String, ideaId: String): Result<Unit> =
       Result.failure(Exception("IdeasRepository not yet implemented"))
+
   override fun getMessagesForIdea(ideaId: String): Flow<List<Message>> = flowOf(emptyList())
+
   override suspend fun sendMessage(ideaId: String, message: Message): Result<Unit> =
       Result.failure(Exception("IdeasRepository not yet implemented"))
+
   override suspend fun addParticipant(
-      projectId: String, ideaId: String, userId: String
+      projectId: String,
+      ideaId: String,
+      userId: String
   ): Result<Unit> = Result.failure(Exception("IdeasRepository not yet implemented"))
 }
 
@@ -442,4 +456,3 @@ constructor(
 
   override fun getCurrentUserId(): String? = getCurrentUserId.invoke()
 }
-

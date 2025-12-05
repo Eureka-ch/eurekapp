@@ -44,8 +44,7 @@ fun IdeasContent(
     when {
       isLoading -> {
         CircularProgressIndicator(
-            modifier =
-                Modifier.align(Alignment.Center).testTag("loadingIndicator"))
+            modifier = Modifier.align(Alignment.Center).testTag("loadingIndicator"))
       }
       selectedProject == null -> {
         // No project selected
@@ -54,10 +53,7 @@ fun IdeasContent(
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
-            modifier =
-                Modifier.align(Alignment.Center)
-                    .padding(Spacing.lg)
-                    .testTag("emptyState"))
+            modifier = Modifier.align(Alignment.Center).padding(Spacing.lg).testTag("emptyState"))
       }
       viewMode == IdeasViewMode.LIST -> {
         // Mode LISTE : Afficher la liste des Ideas
@@ -164,10 +160,7 @@ private fun IdeasConversationContent(
     // Messages list
     LazyColumn(
         state = listState,
-        modifier =
-            Modifier.fillMaxSize()
-                .padding(horizontal = Spacing.md)
-                .testTag("messagesList"),
+        modifier = Modifier.fillMaxSize().padding(horizontal = Spacing.md).testTag("messagesList"),
         reverseLayout = true,
         verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
           items(items = messages, key = { it.messageID }) { message ->

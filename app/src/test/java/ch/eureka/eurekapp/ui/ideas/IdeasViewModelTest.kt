@@ -20,7 +20,6 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -125,7 +124,8 @@ class IdeasViewModelTest {
     viewModel.createNewIdea("Test Idea", "project-123", listOf("user1", "user2", "user3"))
     advanceUntilIdle()
     val createdIdea = mockIdeasRepository.createIdeaCalls[0]
-    assertTrue(createdIdea.participantIds.containsAll(listOf(currentUserId, "user1", "user2", "user3")))
+    assertTrue(
+        createdIdea.participantIds.containsAll(listOf(currentUserId, "user1", "user2", "user3")))
     assertEquals(4, createdIdea.participantIds.size)
   }
 
@@ -158,7 +158,8 @@ class IdeasViewModelTest {
     mockIdeasRepository.setCreateIdeaResult(Result.success("idea-123"))
     viewModel = createViewModel()
     advanceUntilIdle()
-    viewModel.createNewIdea("Test Idea", "project-123", listOf(currentUserId, "user1", currentUserId))
+    viewModel.createNewIdea(
+        "Test Idea", "project-123", listOf(currentUserId, "user1", currentUserId))
     advanceUntilIdle()
     val participantIds = mockIdeasRepository.createIdeaCalls[0].participantIds.toSet()
     assertEquals(2, participantIds.size)
@@ -167,7 +168,10 @@ class IdeasViewModelTest {
 
   @Test
   fun loadUsersForProject_loadsUsersFromProjectMembers() = runTest {
-    val members = listOf(Member(userId = "user1", role = ProjectRole.MEMBER), Member(userId = "user2", role = ProjectRole.MEMBER))
+    val members =
+        listOf(
+            Member(userId = "user1", role = ProjectRole.MEMBER),
+            Member(userId = "user2", role = ProjectRole.MEMBER))
     val user1 = ch.eureka.eurekapp.model.data.user.User(uid = "user1", displayName = "User 1")
     val user2 = ch.eureka.eurekapp.model.data.user.User(uid = "user2", displayName = "User 2")
     mockProjectRepository.setMembers("project-123", flowOf(members))
@@ -191,7 +195,8 @@ class IdeasViewModelTest {
     advanceUntilIdle()
     val members = listOf(Member(userId = "user1", role = ProjectRole.MEMBER))
     mockProjectRepository.setMembers("project-123", flowOf(members))
-    mockUserRepository.setUser("user1", flowOf(ch.eureka.eurekapp.model.data.user.User(uid = "user1")))
+    mockUserRepository.setUser(
+        "user1", flowOf(ch.eureka.eurekapp.model.data.user.User(uid = "user1")))
     viewModel.loadUsersForProject("project-123")
     advanceUntilIdle()
     viewModel.loadUsersForProject("")
@@ -201,7 +206,8 @@ class IdeasViewModelTest {
 
   @Test
   fun loadUsersForProject_onError_showsError() = runTest {
-    mockProjectRepository.setMembers("project-123", flowOf(listOf(Member(userId = "user1", role = ProjectRole.MEMBER))))
+    mockProjectRepository.setMembers(
+        "project-123", flowOf(listOf(Member(userId = "user1", role = ProjectRole.MEMBER))))
     mockUserRepository.setError("user1", Exception("User not found"))
     viewModel = createViewModel()
     advanceUntilIdle()
@@ -216,7 +222,8 @@ class IdeasViewModelTest {
   fun loadUsersForProject_setsLoadingState() = runTest {
     val members = listOf(Member(userId = "user1", role = ProjectRole.MEMBER))
     mockProjectRepository.setMembers("project-123", flowOf(members))
-    mockUserRepository.setUser("user1", flowOf(ch.eureka.eurekapp.model.data.user.User(uid = "user1")))
+    mockUserRepository.setUser(
+        "user1", flowOf(ch.eureka.eurekapp.model.data.user.User(uid = "user1")))
     viewModel = createViewModel()
     advanceUntilIdle()
     viewModel.loadUsersForProject("project-123")
@@ -238,7 +245,10 @@ class IdeasViewModelTest {
 
   @Test
   fun loadUsersForProject_filtersNullUsers() = runTest {
-    val members = listOf(Member(userId = "user1", role = ProjectRole.MEMBER), Member(userId = "user2", role = ProjectRole.MEMBER))
+    val members =
+        listOf(
+            Member(userId = "user1", role = ProjectRole.MEMBER),
+            Member(userId = "user2", role = ProjectRole.MEMBER))
     val user1 = ch.eureka.eurekapp.model.data.user.User(uid = "user1", displayName = "User 1")
     mockProjectRepository.setMembers("project-123", flowOf(members))
     mockUserRepository.setUser("user1", flowOf(user1))
