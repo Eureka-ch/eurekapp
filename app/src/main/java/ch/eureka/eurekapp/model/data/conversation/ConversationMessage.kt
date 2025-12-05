@@ -18,6 +18,8 @@ Co-author: Grok
  * @property createdAt Timestamp when the message was sent (set by server).
  * @property isFile Whether this message contains a file attachment.
  * @property fileUrl URL to download the file if isFile is true.
+ * @property editedAt Timestamp when the message was last edited (null if never edited).
+ * @property isDeleted Whether this message has been soft-deleted.
  */
 data class ConversationMessage(
     val messageId: String = "",
@@ -25,5 +27,7 @@ data class ConversationMessage(
     val text: String = "",
     @ServerTimestamp val createdAt: Timestamp? = null,
     val isFile: Boolean = false,
-    val fileUrl: String = ""
+    val fileUrl: String = "",
+    val editedAt: Timestamp? = null,
+    val isDeleted: Boolean = false
 )
