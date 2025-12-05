@@ -1,5 +1,7 @@
 package ch.eureka.eurekapp.ui.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,6 +46,7 @@ object MessageBubbleTestTags {
   const val TEXT = "messageText"
   const val TIMESTAMP = "messageTimestamp"
   const val PHOTO_VIEWER = "photoViewer"
+  const val EDITED_INDICATOR = "editedIndicator"
 }
 
 /**
@@ -59,7 +62,10 @@ object MessageBubbleTestTags {
  * @param modifier Optional modifier for the bubble container.
  * @param fileAttachment Configuration for file attachment display.
  * @param onLinkClick Callback when a link in the text is clicked.
+ * @param editedAt Timestamp when the message was last edited (null if never edited).
+ * @param onLongClick Callback when the message is long-pressed.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MessageBubble(
     text: String,
@@ -67,7 +73,9 @@ fun MessageBubble(
     isFromCurrentUser: Boolean,
     modifier: Modifier = Modifier,
     fileAttachment: MessageBubbleFileAttachment = MessageBubbleFileAttachment(),
-    onLinkClick: (String) -> Unit = {}
+    onLinkClick: (String) -> Unit = {},
+    editedAt: Timestamp? = null,
+    onLongClick: (() -> Unit)? = null
 ) {
   val (containerColor, contentColor, alignment) = getBubbleColors(isFromCurrentUser)
 
@@ -78,7 +86,17 @@ fun MessageBubble(
             shape = EurekaStyles.CardShape,
             color = containerColor,
             tonalElevation = EurekaStyles.CardElevation,
-            modifier = Modifier.widthIn(max = 280.dp).testTag(MessageBubbleTestTags.BUBBLE)) {
+            modifier =
+                Modifier.widthIn(max = 280.dp)
+                    .testTag(MessageBubbleTestTags.BUBBLE)
+                    .then(
+                        if (onLongClick != null) {
+                          Modifier.combinedClickable(
+                              onClick = {},
+                              onLongClick = onLongClick)
+                        } else {
+                          Modifier
+                        })) {
               Column(
                   modifier = Modifier.padding(Spacing.md),
                   verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
@@ -92,11 +110,22 @@ fun MessageBubble(
 
                     FileAttachment(fileAttachment, contentColor)
 
-                    Text(
-                        text = getFormattedTime(timestamp),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = contentColor.copy(alpha = 0.7f),
-                        modifier = Modifier.testTag(MessageBubbleTestTags.TIMESTAMP))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+                        verticalAlignment = Alignment.CenterVertically) {
+                          Text(
+                              text = getFormattedTime(timestamp),
+                              style = MaterialTheme.typography.labelSmall,
+                              color = contentColor.copy(alpha = 0.7f),
+                              modifier = Modifier.testTag(MessageBubbleTestTags.TIMESTAMP))
+                          if (editedAt != null) {
+                            Text(
+                                text = "(edited)",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = contentColor.copy(alpha = 0.5f),
+                                modifier = Modifier.testTag(MessageBubbleTestTags.EDITED_INDICATOR))
+                          }
+                        }
                   }
             }
       }
