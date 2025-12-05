@@ -242,6 +242,6 @@ class MeetingAttachmentsViewModel(
   }
 
   private fun ViewModel.launchIO(block: suspend () -> Unit) {
-    viewModelScope.launch { withContext(Dispatchers.IO) { block() } }
+    viewModelScope.launch { withContext(ioDispatcher) { block() } }
   }
 }
