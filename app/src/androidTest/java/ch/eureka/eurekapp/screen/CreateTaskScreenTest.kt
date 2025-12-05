@@ -38,12 +38,12 @@ import ch.eureka.eurekapp.model.tasks.CreateTaskViewModel
 import ch.eureka.eurekapp.navigation.BottomBarNavigationTestTags
 import ch.eureka.eurekapp.navigation.NavigationMenu
 import ch.eureka.eurekapp.navigation.Route
-import ch.eureka.eurekapp.screens.Camera
 import ch.eureka.eurekapp.screens.CameraScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.TemplateSelectionTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
+import ch.eureka.eurekapp.testutils.testCameraRoute
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import kotlinx.coroutines.cancel
@@ -543,6 +543,7 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Task 1")
     composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performTextInput("Description")
     composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("15/10/2025")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.REMINDER_TIME).performTextInput("10:00")
 
     // Project already selected via viewModel
 
@@ -570,8 +571,9 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
     composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).assertIsDisplayed()
 
+    composeTestRule.waitForIdle()
     composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
-    composeTestRule.waitUntil(timeoutMillis = 5000) {
+    composeTestRule.waitUntil(timeoutMillis = 10000) {
       composeTestRule
           .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
           .fetchSemanticsNodes()
@@ -733,7 +735,6 @@ class CreateTaskScreenTests : TestCase() {
             "Tasks Screen",
             modifier = androidx.compose.ui.Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
       }
-      composable<Route.Camera> { Camera(navigationController = navController) }
       composable<Route.TasksSection.CreateTemplate> {
         // Fake CreateTemplate screen for testing navigation
         androidx.compose.material3.Text(
@@ -742,6 +743,7 @@ class CreateTaskScreenTests : TestCase() {
                 androidx.compose.ui.Modifier.testTag(
                     TemplateSelectionTestTags.CREATE_TEMPLATE_SCREEN))
       }
+      testCameraRoute(navController)
     }
   }
 

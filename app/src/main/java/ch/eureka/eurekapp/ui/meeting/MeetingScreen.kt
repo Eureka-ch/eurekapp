@@ -63,7 +63,7 @@ import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.ui.components.help.HelpContext
-import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
+import ch.eureka.eurekapp.ui.components.help.InteractiveHelpEntryPoint
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.theme.LightColorScheme
@@ -201,16 +201,12 @@ fun MeetingScreen(
             }
       },
       content = { padding ->
-        ScreenWithHelp(
-            helpContext = HelpContext.MEETINGS,
-            content = {
-              MeetingScreenContent(
-                  padding = padding,
-                  uiState = uiState,
-                  config = config,
-                  meetingViewModel = meetingViewModel,
-                  calendarViewModel = calendarViewModel)
-            })
+        MeetingScreenContent(
+            padding = padding,
+            uiState = uiState,
+            config = config,
+            meetingViewModel = meetingViewModel,
+            calendarViewModel = calendarViewModel)
       })
 }
 
@@ -225,11 +221,19 @@ private fun MeetingScreenContent(
   Column(
       modifier =
           Modifier.fillMaxSize().padding(10.dp).testTag(MeetingScreenTestTags.MEETING_SCREEN)) {
-        Text(
-            modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_TITLE),
-            text = "Meetings",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically) {
+              Text(
+                  modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_TITLE),
+                  text = "Meetings",
+                  style = MaterialTheme.typography.headlineSmall,
+                  fontWeight = FontWeight.Bold)
+              InteractiveHelpEntryPoint(
+                  helpContext = HelpContext.MEETINGS,
+                  modifier = Modifier.padding(start = Spacing.md))
+            }
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_DESCRIPTION),

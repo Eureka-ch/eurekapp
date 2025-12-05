@@ -2,6 +2,7 @@
 package ch.eureka.eurekapp.screen
 
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -58,6 +59,7 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreenTestTags
+import ch.eureka.eurekapp.testutils.testCameraRoute
 import ch.eureka.eurekapp.ui.tasks.TaskScreenViewModel
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import ch.eureka.eurekapp.utils.MockConnectivityObserver
@@ -765,6 +767,7 @@ open class ViewTaskScreenTest : TestCase() {
       composable<Route.TasksSection.TaskDependence> {
         Text("Task Dependencies Screen", modifier = Modifier.testTag(dependenciesScreenTag))
       }
+      testCameraRoute(navController)
     }
   }
 
@@ -804,11 +807,19 @@ open class ViewTaskScreenTest : TestCase() {
       composable<Route.TasksSection.TaskDependence> {
         Text("Task Dependencies Screen", modifier = Modifier.testTag(dependenciesScreenTag))
       }
+      testCameraRoute(navController, onBackClick = {}, onPhotoSaved = {})
     }
   }
 
   class FakeFileRepository : FileStorageRepository {
     override suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String> {
+      return Result.success("https://fakeurl.com/file.jpg")
+    }
+
+    override suspend fun uploadFile(
+        storagePath: String,
+        fileDescriptor: ParcelFileDescriptor
+    ): Result<String> {
       return Result.success("https://fakeurl.com/file.jpg")
     }
 

@@ -266,7 +266,8 @@ fun NavigationMenu(
               }
               composable<Route.OverviewProjectSection.TokenEntry> {
                 TokenEntryScreen(
-                    onTokenValidated = { navigationController.navigate(Route.ProjectSelection) })
+                    onTokenValidated = { navigationController.navigate(Route.ProjectSelection) },
+                    onBackClick = { navigationController.popBackStack() })
               }
               composable<Route.Profile> {
                 ProfileScreen(
@@ -472,7 +473,8 @@ fun NavigationMenu(
               // Project selection section
               composable<Route.ProjectSelectionSection.CreateProject> {
                 CreateProjectScreen(
-                    onProjectCreated = { navigationController.navigate(Route.ProjectSelection) })
+                    onProjectCreated = { navigationController.navigate(Route.ProjectSelection) },
+                    onBackClick = { navigationController.popBackStack() })
               }
 
               composable<Route.MeetingsSection.CreateMeeting> { backStackEntry ->
@@ -496,7 +498,8 @@ fun NavigationMenu(
                     createMeetingViewModel = viewModel,
                     onPickLocationOnMap = {
                       navigationController.navigate(Route.MeetingsSection.MeetingLocationSelection)
-                    })
+                    },
+                    onBackClick = { navigationController.popBackStack() })
               }
 
               composable<Route.MeetingsSection.MeetingLocationSelection> {
@@ -518,6 +521,7 @@ fun NavigationMenu(
                     projectId = meetingProposalVotesRoute.projectId,
                     meetingId = meetingProposalVotesRoute.meetingId,
                     onDone = { navigationController.navigate(Route.MeetingsSection.Meetings) },
+                    onBackClick = { navigationController.popBackStack() },
                     onCreateDateTimeFormatProposalForMeeting = {
                       navigationController.navigate(
                           Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting(
@@ -566,7 +570,8 @@ fun NavigationMenu(
                       navigationController.navigate(
                           Route.MeetingsSection.AudioTranscript(
                               projectId = projectId, meetingId = meetingId))
-                    })
+                    },
+                    onBackClick = { navigationController.popBackStack() })
               }
 
               composable<Route.MeetingsSection.AudioTranscript> { backStackEntry ->
@@ -585,7 +590,16 @@ fun NavigationMenu(
                     projectId = createInvitationRoute.projectId, onInvitationCreate = {})
               }
 
-              composable<Route.Camera> { Camera(navigationController) }
+              composable<Route.Camera> {
+                Camera(
+                    onBackClick = { navigationController.popBackStack() },
+                    onPhotoSaved = { uri ->
+                      navigationController.previousBackStackEntry
+                          ?.savedStateHandle
+                          ?.set("photoUri", uri)
+                      navigationController.popBackStack()
+                    })
+              }
             }
       }
 }

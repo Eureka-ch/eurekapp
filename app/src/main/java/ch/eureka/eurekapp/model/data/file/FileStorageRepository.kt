@@ -1,6 +1,8 @@
+// Portions of this code were generated with the help of Grok.
 package ch.eureka.eurekapp.model.data.file
 
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import com.google.firebase.storage.StorageMetadata
 
 /**
@@ -26,6 +28,18 @@ interface FileStorageRepository {
    * @return Result containing the download URL on success, or an exception on failure
    */
   suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String>
+
+  /**
+   * Upload a file to storage at the specified path using a file descriptor.
+   *
+   * This overload accepts a ParcelFileDescriptor to avoid opening the file multiple times. The
+   * caller is responsible for closing the descriptor after this method returns.
+   *
+   * @param storagePath The full storage path where the file should be stored
+   * @param fileDescriptor The ParcelFileDescriptor of the file to upload
+   * @return Result containing the download URL on success, or an exception on failure
+   */
+  suspend fun uploadFile(storagePath: String, fileDescriptor: ParcelFileDescriptor): Result<String>
 
   /**
    * Delete a file from storage using its download URL.

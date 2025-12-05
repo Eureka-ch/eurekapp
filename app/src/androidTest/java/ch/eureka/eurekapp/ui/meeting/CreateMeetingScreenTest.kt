@@ -1,4 +1,4 @@
-/* Portions of this file were written with the help of Gemini.*/
+/* Portions of this file were written with the help of Gemini and Grok.*/
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -45,6 +45,7 @@ class CreateMeetingScreenTest {
   private lateinit var locationRepositoryMock: MockLocationRepository
 
   private var onDoneCalled = false
+  private var onBackClickCalled = false
   private val testProjectId = "project-123"
 
   private val futureDate: LocalDate = LocalDate.now().plusDays(1)
@@ -55,6 +56,7 @@ class CreateMeetingScreenTest {
     TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
 
     onDoneCalled = false
+    onBackClickCalled = false
 
     repositoryMock = MockCreateMeetingRepository()
     locationRepositoryMock = MockLocationRepository()
@@ -69,6 +71,7 @@ class CreateMeetingScreenTest {
       CreateMeetingScreen(
           projectId = testProjectId,
           onDone = { onDoneCalled = true },
+          onBackClick = { onBackClickCalled = true },
           createMeetingViewModel = viewModel)
     }
   }
@@ -513,5 +516,19 @@ class CreateMeetingScreenTest {
         .assertIsDisplayed()
         .assertIsEnabled()
         .performClick()
+  }
+
+  @Test
+  fun test_backButton_isDisplayed_andCallsOnBackClick() {
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.BACK_BUTTON)
+        .assertIsDisplayed()
+        .performClick()
+
+    composeTestRule.waitUntil(timeoutMillis = 5000) { onBackClickCalled }
+
+    assertTrue("onBackClick should be called", onBackClickCalled)
   }
 }

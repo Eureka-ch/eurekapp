@@ -81,6 +81,21 @@ class FirestoreActivityRepository(
   }
 
   /**
+   * Fetches a specific activity by its ID.
+   *
+   * @param activityId The unique identifier of the activity to fetch.
+   * @return The [Activity] object if found, or null otherwise.
+   */
+  override suspend fun getActivityById(activityId: String): Activity? =
+      try {
+        val doc = activitiesCollection().document(activityId).get().await()
+        doc.toObject(Activity::class.java)?.copy(activityId = doc.id)
+      } catch (e: Exception) {
+        Log.e("FirestoreActivityRepository", "Error fetching activity: ${e.message}")
+        null
+      }
+
+  /**
    * Creates a new activity in the top-level collection.
    *
    * @param activity The activity object to store.

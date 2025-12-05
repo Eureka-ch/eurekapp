@@ -2,6 +2,7 @@
 package ch.eureka.eurekapp.model.data
 
 import android.content.Context
+import android.util.Log
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.work.WorkManager
@@ -39,6 +40,13 @@ class RepositoriesProviderTest {
 
   @Before
   fun setup() {
+    // Mock Android Log to prevent "Method not mocked" exceptions during repository initialization
+    // error handling
+    mockkStatic(Log::class)
+    every { Log.e(any(), any(), any()) } returns 0
+    every { Log.d(any(), any()) } returns 0
+    every { Log.w(any(), any(), any()) } returns 0
+
     mockkStatic(FirebaseFirestore::class)
     mockkStatic(FirebaseAuth::class)
     mockkStatic(FirebaseStorage::class)
@@ -55,7 +63,11 @@ class RepositoriesProviderTest {
     val mockDao = mockk<MessageDao>(relaxed = true)
 
     every { mockDatabase.messageDao() } returns mockDao
+
+    // Ensure method chaining works for Room builder
+    every { mockRoomBuilder.fallbackToDestructiveMigration(false) } returns mockRoomBuilder
     every { mockRoomBuilder.build() } returns mockDatabase
+
     every { Room.databaseBuilder(any<Context>(), AppDatabase::class.java, any()) } returns
         mockRoomBuilder
 

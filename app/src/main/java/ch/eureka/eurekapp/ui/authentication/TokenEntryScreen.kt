@@ -1,3 +1,4 @@
+// Portions of this code were generated with the help of Grok.
 package ch.eureka.eurekapp.ui.authentication
 
 import android.widget.Toast
@@ -21,6 +22,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.help.HelpContext
 import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
@@ -32,6 +34,7 @@ object TokenEntryScreenTestTags {
   const val VALIDATE_BUTTON = "validateButton"
   const val HELP_LINK = "helpLink"
   const val ERROR_TEXT = "errorText"
+  const val BACK_BUTTON = "BackButton"
 }
 
 /**
@@ -42,11 +45,13 @@ object TokenEntryScreenTestTags {
  *
  * @param tokenEntryViewModel The ViewModel managing token validation logic.
  * @param onTokenValidated Callback invoked when the token is successfully validated.
+ * @param onBackClick Callback invoked when the back button is clicked.
  */
 @Composable
 fun TokenEntryScreen(
     tokenEntryViewModel: TokenEntryViewModel = viewModel(),
-    onTokenValidated: () -> Unit = {}
+    onTokenValidated: () -> Unit = {},
+    onBackClick: () -> Unit = {}
 ) {
   val context = LocalContext.current
   val uiState by tokenEntryViewModel.uiState.collectAsState()
@@ -69,7 +74,14 @@ fun TokenEntryScreen(
 
   Scaffold(
       modifier = Modifier.fillMaxSize(),
-      topBar = { EurekaTopBar() },
+      topBar = {
+        EurekaTopBar(
+            navigationIcon = {
+              BackButton(
+                  onClick = onBackClick,
+                  modifier = Modifier.testTag(TokenEntryScreenTestTags.BACK_BUTTON))
+            })
+      },
   ) { padding ->
     ScreenWithHelp(
         helpContext = HelpContext.TOKEN_ENTRY,

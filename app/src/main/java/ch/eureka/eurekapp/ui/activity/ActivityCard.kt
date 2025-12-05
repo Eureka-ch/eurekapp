@@ -37,8 +37,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.activity.Activity
 import ch.eureka.eurekapp.model.data.activity.ActivityType
@@ -57,6 +60,7 @@ import java.util.Locale
  * Note: This file was co-authored by Claude Code.
  *
  * @param activity The activity to display
+ * @param isRead Whether this activity has been read
  * @param onClick Callback when the card is clicked
  * @param onDelete Callback when the delete button is clicked
  * @param modifier Modifier for the card
@@ -65,14 +69,21 @@ import java.util.Locale
 fun ActivityCard(
     activity: Activity,
     modifier: Modifier = Modifier,
+    isRead: Boolean = false,
     onClick: () -> Unit = {},
     onDelete: () -> Unit = {}
 ) {
   Card(
       shape = RoundedCornerShape(12.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-      colors = EurekaStyles.taskCardColors(),
-      border = EurekaStyles.taskCardBorder(),
+      colors =
+          if (isRead) {
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f))
+          } else {
+            EurekaStyles.taskCardColors()
+          },
+      border = if (isRead) null else EurekaStyles.taskCardBorder(),
       modifier =
           modifier
               .fillMaxWidth()
@@ -82,6 +93,14 @@ fun ActivityCard(
             modifier = Modifier.padding(Spacing.md).fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(Spacing.md),
             verticalAlignment = Alignment.Top) {
+              // Unread indicator
+              if (!isRead) {
+                Surface(
+                    modifier = Modifier.size(8.dp).align(Alignment.CenterVertically),
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primary) {}
+              }
+
               // Icon indicator
               ActivityIcon(
                   activityType = activity.activityType,
@@ -189,9 +208,9 @@ private fun getIconAndColor(
  * Generate a human-readable description of the activity.
  *
  * @param activity The activity to describe
- * @return Description string
+ * @return Description with formatted text (project name in bold)
  */
-private fun getActivityDescription(activity: Activity): String {
+private fun getActivityDescription(activity: Activity) = buildAnnotatedString {
   // Get user name from metadata, or use a placeholder
   val userName = activity.metadata["userName"]?.toString() ?: "Someone"
 
@@ -206,19 +225,31 @@ private fun getActivityDescription(activity: Activity): String {
         ActivityType.STATUS_CHANGED -> "changed status of"
         ActivityType.JOINED -> "joined"
         ActivityType.LEFT -> "left"
+        ActivityType.ASSIGNED -> "assigned"
+        ActivityType.UNASSIGNED -> "unassigned from"
+        ActivityType.ROLE_CHANGED -> "changed role in"
+        ActivityType.DOWNLOADED -> "downloaded"
       }
 
-  val entity =
-      when (activity.entityType) {
-        EntityType.MEETING -> "a meeting"
-        EntityType.MESSAGE -> "a message"
-        EntityType.FILE -> "a file"
-        EntityType.TASK -> "a task"
-        EntityType.PROJECT -> "the project"
-        EntityType.MEMBER -> "the project"
-      }
+  // Build the description with styling
+  append("$userName $action ")
 
-  return "$userName $action $entity"
+  when (activity.entityType) {
+    EntityType.MEETING -> append("a meeting")
+    EntityType.MESSAGE -> append("a message")
+    EntityType.FILE -> append("a file")
+    EntityType.TASK -> append("a task")
+    EntityType.PROJECT -> {
+      val projectName = activity.metadata["name"]?.toString()
+      if (projectName != null) {
+        append("the project ")
+        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append(projectName) }
+      } else {
+        append("the project")
+      }
+    }
+    EntityType.MEMBER -> append("the project")
+  }
 }
 
 /**

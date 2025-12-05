@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 
 /*
 Co-author: GPT-5 Codex
+Co-author: Grok
 */
 
 /**
@@ -40,6 +41,13 @@ interface ConversationRepository {
 
   /** Send a message to a conversation */
   suspend fun sendMessage(conversationId: String, text: String): Result<ConversationMessage>
+
+  /** Send a file message to a conversation */
+  suspend fun sendFileMessage(
+      conversationId: String,
+      text: String,
+      fileUrl: String
+  ): Result<ConversationMessage>
 
   /** Mark all messages in a conversation as read by the current user */
   suspend fun markMessagesAsRead(conversationId: String): Result<Unit>

@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Gemini and GPT-5 Codex. */
 package ch.eureka.eurekapp.model.data.notes
 
 import ch.eureka.eurekapp.model.data.chat.Message
@@ -11,10 +12,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.Before
 import org.junit.Test
-
-/*
-Co-author: GPT-5 Codex
-*/
 
 /**
  * Test suite for SelfNotesRepository implementation.
@@ -154,6 +151,46 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
     val notes = flow.first()
 
     assertEquals(3, notes.size)
+  }
+
+  @Test
+  fun updateNote_shouldUpdateTextInFirestore() = runBlocking {
+    val message =
+        Message(
+            messageID = "note_to_update",
+            text = "Original text",
+            senderId = testUserId,
+            createdAt = Timestamp.now(),
+            references = emptyList())
+
+    repository.createNote(message)
+
+    val newText = "Updated text content"
+    val result = repository.updateNote("note_to_update", newText)
+
+    assertTrue(result.isSuccess)
+
+    val updatedNote =
+        FirebaseEmulator.firestore
+            .collection("users")
+            .document(testUserId)
+            .collection("selfNotes")
+            .document("note_to_update")
+            .get()
+            .await()
+            .toObject(Message::class.java)
+
+    assertEquals(newText, updatedNote?.text)
+    assertEquals(message.messageID, updatedNote?.messageID)
+  }
+
+  @Test
+  fun updateNote_shouldFailIfNoteDoesNotExist() = runBlocking {
+    val result = repository.updateNote("non_existent_note_update", "New text")
+
+    // Firestore update fails (throws NOT_FOUND) if document does not exist,
+    // which runCatching should capture as a failure.
+    assertTrue(result.isFailure)
   }
 
   @Test

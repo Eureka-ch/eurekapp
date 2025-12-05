@@ -13,6 +13,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 
 class FirestoreMeetingRepository(
@@ -151,6 +152,10 @@ class FirestoreMeetingRepository(
   }
 
   override suspend fun updateMeeting(meeting: Meeting): Result<Unit> = runCatching {
+    // Fetch old meeting to detect status changes using getMeetingById
+    val oldMeeting = getMeetingById(meeting.projectId, meeting.meetingID).first()
+
+    // Perform the update
     firestore
         .collection(FirestorePaths.PROJECTS)
         .document(meeting.projectId)
@@ -161,14 +166,45 @@ class FirestoreMeetingRepository(
 
     // Log activity to global feed after successful update
     val currentUserId = auth.currentUser?.uid
-    if (currentUserId != null) {
-      ActivityLogger.logActivity(
-          projectId = meeting.projectId,
-          activityType = ActivityType.UPDATED,
-          entityType = EntityType.MEETING,
-          entityId = meeting.meetingID,
-          userId = currentUserId,
-          metadata = mapOf("title" to meeting.title))
+
+    // Log if oldMeeting is null
+    if (oldMeeting == null) {
+      android.util.Log.e(
+          "FirestoreMeetingRepository",
+          "Failed to fetch old meeting for status change detection: projectId=${meeting.projectId}, meetingId=${meeting.meetingID}")
+    }
+
+    // Log if currentUserId is null
+    if (currentUserId == null) {
+      android.util.Log.e(
+          "FirestoreMeetingRepository",
+          "Cannot log activity for meeting update: currentUser is null")
+    }
+
+    if (currentUserId != null && oldMeeting != null) {
+      if (oldMeeting.status != meeting.status) {
+        // Status changed - use STATUS_CHANGED
+        ActivityLogger.logActivity(
+            projectId = meeting.projectId,
+            activityType = ActivityType.STATUS_CHANGED,
+            entityType = EntityType.MEETING,
+            entityId = meeting.meetingID,
+            userId = currentUserId,
+            metadata =
+                mapOf(
+                    "title" to meeting.title,
+                    "oldStatus" to oldMeeting.status.name,
+                    "newStatus" to meeting.status.name))
+      } else {
+        // Other fields changed - use UPDATED
+        ActivityLogger.logActivity(
+            projectId = meeting.projectId,
+            activityType = ActivityType.UPDATED,
+            entityType = EntityType.MEETING,
+            entityId = meeting.meetingID,
+            userId = currentUserId,
+            metadata = mapOf("title" to meeting.title))
+      }
     }
   }
 

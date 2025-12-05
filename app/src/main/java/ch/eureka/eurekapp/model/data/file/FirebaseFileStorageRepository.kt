@@ -1,9 +1,10 @@
 /*
- * This file was co-authored by Claude Code and Gemini.
+ * This file was co-authored by Claude Code, Gemini and Grok.
  */
 package ch.eureka.eurekapp.model.data.file
 
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import ch.eureka.eurekapp.model.data.activity.ActivityLogger
 import ch.eureka.eurekapp.model.data.activity.ActivityType
 import ch.eureka.eurekapp.model.data.activity.EntityType
@@ -38,7 +39,40 @@ class FirebaseFileStorageRepository(
     val contentType = StorageHelpers.getContentTypeFromPath(storagePath)
     val metadata = StorageMetadata.Builder().setContentType(contentType).build()
 
-    ref.putFile(fileUri, metadata).await()
+    val uploadTask = ref.putFile(fileUri, metadata).await()
+    val downloadUrl = ref.downloadUrl.await().toString()
+
+    val projectId = extractProjectIdFromPath(storagePath)
+    val fileName = extractFileNameFromPath(storagePath)
+
+    // Only log activity for project-related files
+    if (projectId != null && fileName.isNotBlank()) {
+      val fileSize = uploadTask.metadata?.sizeBytes ?: 0L
+      ActivityLogger.logActivity(
+          projectId = projectId,
+          activityType = ActivityType.UPLOADED,
+          entityType = EntityType.FILE,
+          entityId = downloadUrl,
+          userId = currentUser.uid,
+          metadata = mapOf("title" to fileName, "size" to fileSize, "type" to contentType))
+    }
+
+    downloadUrl
+  }
+
+  override suspend fun uploadFile(
+      storagePath: String,
+      fileDescriptor: ParcelFileDescriptor
+  ): Result<String> = runCatching {
+    val currentUser =
+        auth.currentUser ?: throw IllegalStateException("User must be authenticated to upload")
+
+    val ref = storage.reference.child(storagePath)
+    val contentType = StorageHelpers.getContentTypeFromPath(storagePath)
+    val metadata = StorageMetadata.Builder().setContentType(contentType).build()
+
+    val inputStream = ParcelFileDescriptor.AutoCloseInputStream(fileDescriptor)
+    ref.putStream(inputStream, metadata).await()
     val downloadUrl = ref.downloadUrl.await().toString()
 
     val projectId = extractProjectIdFromPath(storagePath)
@@ -53,9 +87,6 @@ class FirebaseFileStorageRepository(
           entityId = downloadUrl,
           userId = currentUser.uid,
           metadata = mapOf("title" to fileName))
-    } else {
-      android.util.Log.d(
-          "FirebaseFileStorage", "Skipping activity log for non-project file: $storagePath")
     }
 
     downloadUrl

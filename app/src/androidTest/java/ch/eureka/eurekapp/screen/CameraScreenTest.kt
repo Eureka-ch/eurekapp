@@ -1,3 +1,4 @@
+// Portions of this code were generated with the help of Grok.
 package ch.eureka.eurekapp.screen
 
 import android.Manifest
@@ -18,13 +19,32 @@ import org.junit.Test
 class CameraScreenNoPermissionTest {
   @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
+  private var onBackClickCalled = false
+
   @Test
   fun testCameraUI() {
-    composeTestRule.setContent { MaterialTheme { Camera() } }
+    onBackClickCalled = false
+    composeTestRule.setContent {
+      MaterialTheme { Camera(onBackClick = { onBackClickCalled = true }, onPhotoSaved = {}) }
+    }
 
     composeTestRule.onNodeWithTag(CameraScreenTestTags.NO_PERMISSION).assertIsDisplayed()
 
     composeTestRule.onNodeWithTag(CameraScreenTestTags.GRANT_PERMISSION).assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag(CameraScreenTestTags.BACK_BUTTON).assertIsDisplayed()
+  }
+
+  @Test
+  fun testBackButtonFunctionality() {
+    onBackClickCalled = false
+    composeTestRule.setContent {
+      MaterialTheme { Camera(onBackClick = { onBackClickCalled = true }, onPhotoSaved = {}) }
+    }
+
+    composeTestRule.onNodeWithTag(CameraScreenTestTags.BACK_BUTTON).performClick()
+
+    assert(onBackClickCalled) { "onBackClick should be called" }
   }
 }
 
@@ -34,9 +54,14 @@ class CameraScreenTest {
   @get:Rule
   var permissionRule: GrantPermissionRule? = GrantPermissionRule.grant(Manifest.permission.CAMERA)
 
+  private var onBackClickCalled = false
+
   @Test
   fun testCameraUI() {
-    composeTestRule.setContent { MaterialTheme { Camera() } }
+    onBackClickCalled = false
+    composeTestRule.setContent {
+      MaterialTheme { Camera(onBackClick = { onBackClickCalled = true }, onPhotoSaved = {}) }
+    }
 
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).assertIsDisplayed()
 
@@ -46,16 +71,17 @@ class CameraScreenTest {
 
     composeTestRule.onNodeWithTag(CameraScreenTestTags.PREVIEW).assertIsDisplayed()
 
+    composeTestRule.onNodeWithTag(CameraScreenTestTags.BACK_BUTTON).assertIsDisplayed()
+
+    // Click take photo button
     composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
 
     composeTestRule.waitUntil(timeoutMillis = 6_000) {
       composeTestRule
-          .onAllNodesWithTag(CameraScreenTestTags.TAKE_PHOTO)
+          .onAllNodesWithTag(CameraScreenTestTags.SAVE_PHOTO)
           .fetchSemanticsNodes()
-          .isEmpty()
+          .isNotEmpty()
     }
-
-    composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).assertIsNotDisplayed()
 
     composeTestRule.onNodeWithTag(CameraScreenTestTags.DELETE_PHOTO).assertIsDisplayed()
 
@@ -79,5 +105,17 @@ class CameraScreenTest {
     composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).assertIsNotDisplayed()
 
     composeTestRule.onNodeWithTag(CameraScreenTestTags.PREVIEW).assertIsDisplayed()
+  }
+
+  @Test
+  fun testBackButtonFunctionality() {
+    onBackClickCalled = false
+    composeTestRule.setContent {
+      MaterialTheme { Camera(onBackClick = { onBackClickCalled = true }, onPhotoSaved = {}) }
+    }
+
+    composeTestRule.onNodeWithTag(CameraScreenTestTags.BACK_BUTTON).performClick()
+
+    assert(onBackClickCalled) { "onBackClick should be called" }
   }
 }

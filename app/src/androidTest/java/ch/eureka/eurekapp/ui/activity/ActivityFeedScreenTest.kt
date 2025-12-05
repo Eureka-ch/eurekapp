@@ -39,21 +39,20 @@ class ActivityFeedScreenTest {
     firestore = mockk(relaxed = true)
     auth = mockk(relaxed = true)
 
-    // Mock Firebase auth
     val firebaseUser = mockk<FirebaseUser>(relaxed = true)
     every { firebaseUser.uid } returns testUserId
     every { auth.currentUser } returns firebaseUser
 
-    // Mock Firestore user fetches
     val userDoc = mockk<com.google.firebase.firestore.DocumentSnapshot>(relaxed = true)
     every { userDoc.getString("displayName") } returns "Test User"
+    every { userDoc.get("readActivityIds") } returns emptyList<String>()
     val usersCollection = mockk<com.google.firebase.firestore.CollectionReference>(relaxed = true)
     val userDocRef = mockk<com.google.firebase.firestore.DocumentReference>(relaxed = true)
     every { firestore.collection("users") } returns usersCollection
     every { usersCollection.document(any()) } returns userDocRef
     every { userDocRef.get() } returns Tasks.forResult(userDoc)
 
-    viewModel = ActivityFeedViewModel(repository = repository, firestore = firestore, auth = auth)
+    viewModel = ActivityFeedViewModel(repository, firestore, auth)
   }
 
   @Test
@@ -66,7 +65,7 @@ class ActivityFeedScreenTest {
     composeTestRule.onNodeWithTag("ProjectsFilterChip").assertIsDisplayed()
     composeTestRule.onNodeWithTag("MeetingsFilterChip").assertIsDisplayed()
     composeTestRule.onNodeWithTag("EmptyState").assertIsDisplayed()
-    composeTestRule.onNodeWithText("No activities found").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Select a filter to view activities").assertIsDisplayed()
   }
 
   @Test
@@ -114,7 +113,8 @@ class ActivityFeedScreenTest {
     composeTestRule.onNodeWithTag("ProjectsFilterChip").performClick()
     composeTestRule.waitForIdle()
 
-    composeTestRule.onNodeWithTag("ActivitiesList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EmptyState").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Select a filter to view activities").assertIsDisplayed()
   }
 
   @Test
@@ -128,7 +128,7 @@ class ActivityFeedScreenTest {
     composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag("EmptyState").assertIsDisplayed()
-    composeTestRule.onNodeWithText("No activities found").assertIsDisplayed()
+    composeTestRule.onNodeWithText("No activities match your filters").assertIsDisplayed()
   }
 
   @Test
@@ -223,10 +223,10 @@ class ActivityFeedScreenTest {
     val activities = listOf(createActivity("1", EntityType.PROJECT, "Test Project"))
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
-    var clickedEntityId: String? = null
+    var clickedActivityId: String? = null
     composeTestRule.setContent {
       ActivityFeedScreen(
-          viewModel = viewModel, onActivityClick = { entityId -> clickedEntityId = entityId })
+          viewModel = viewModel, onActivityClick = { activityId -> clickedActivityId = activityId })
     }
     composeTestRule.waitForIdle()
 
@@ -236,7 +236,7 @@ class ActivityFeedScreenTest {
     composeTestRule.onNodeWithText("Test Project", substring = true).performClick()
     composeTestRule.waitForIdle()
 
-    assert(clickedEntityId == "entity-1")
+    assert(clickedActivityId == "1")
   }
 
   private fun createActivity(id: String, entityType: EntityType, title: String) =
