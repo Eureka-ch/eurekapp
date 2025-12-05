@@ -52,6 +52,7 @@ import ch.eureka.eurekapp.ui.meeting.MeetingNavigationScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingProposalVoteScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenConfig
+import ch.eureka.eurekapp.ui.ideas.IdeasScreen
 import ch.eureka.eurekapp.ui.notes.SelfNotesScreen
 import ch.eureka.eurekapp.ui.notifications.NotificationPreferencesScreen
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
@@ -170,6 +171,15 @@ sealed interface Route {
     @Serializable data class ConversationDetail(val conversationId: String) : ConversationsSection
 
     @Serializable data class CreateConversation(val projectId: String) : ConversationsSection
+  }
+
+  sealed interface IdeasSection : Route {
+    companion object {
+      val routes: Set<KClass<out IdeasSection>>
+        get() = IdeasSection::class.sealedSubclasses.toSet()
+    }
+
+    @Serializable data class Ideas(val projectId: String? = null) : IdeasSection
   }
 }
 
@@ -293,6 +303,15 @@ fun NavigationMenu(
                       // For now, just go back
                       navigationController.popBackStack()
                     })
+              }
+              composable<Route.IdeasSection.Ideas> { backStackEntry ->
+                val ideasRoute = backStackEntry.toRoute<Route.IdeasSection.Ideas>()
+                // TODO: Pass actual projects and ViewModel when implemented
+                IdeasScreen(
+                    selectedProject = null,
+                    availableProjects = emptyList(),
+                    onProjectSelected = { /* TODO: Handle project selection */ },
+                    onNavigateBack = { navigationController.popBackStack() })
               }
               composable<Route.OverviewProject> { backStackEntry ->
                 val overviewProjectScreenRoute = backStackEntry.toRoute<Route.OverviewProject>()
