@@ -230,7 +230,7 @@ constructor(
    * Load users for a project (for participant selection).
    * Uses first() to get a snapshot instead of continuous collection.
    */
-  fun loadUsersForProject(projectId: String) {
+  override fun loadUsersForProject(projectId: String) {
     if (projectId.isBlank()) {
       _availableUsersForProject.value = emptyList()
       return
