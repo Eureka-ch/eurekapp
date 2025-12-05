@@ -1,26 +1,16 @@
 /* Portions of this file were written with the help of GPT-5 Codex and Gemini. */
 package ch.eureka.eurekapp.ui.ideas
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -32,15 +22,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 
 /** Test tags for Create Idea Bottom Sheet */
 object CreateIdeaBottomSheetTestTags {
@@ -113,36 +113,98 @@ fun CreateIdeaBottomSheet(
                   colors = EurekaStyles.textFieldColors())
 
               // Project selection
-              ProjectSelectionField(
-                  projects = availableProjects,
-                  selectedProject = selectedProject,
-                  expanded = projectDropdownExpanded,
-                  onExpandedChange = { projectDropdownExpanded = it },
-                  onProjectSelected = {
-                    selectedProject = it
-                    projectDropdownExpanded = false
-                    // Clear participants when project changes
-                    selectedParticipantIds = emptySet()
-                  },
-                  isLoading = isLoading)
+              Column {
+                Text(text = "Project", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Medium)
+                Spacer(modifier = Modifier.height(Spacing.xs))
+                if (isLoading && availableProjects.isEmpty()) {
+                  Box(modifier = Modifier.fillMaxWidth().height(56.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(strokeWidth = 2.dp)
+                  }
+                } else if (availableProjects.isEmpty()) {
+                  Text(text = "No projects available", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                } else {
+                  ExposedDropdownMenuBox(
+                      expanded = projectDropdownExpanded,
+                      onExpandedChange = { projectDropdownExpanded = it },
+                      modifier = Modifier.fillMaxWidth().testTag(CreateIdeaBottomSheetTestTags.PROJECT_DROPDOWN)) {
+                        OutlinedTextField(
+                            value = selectedProject?.name ?: "",
+                            onValueChange = {},
+                            readOnly = true,
+                            placeholder = { Text("Select a project") },
+                            label = { Text("Project") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = projectDropdownExpanded) },
+                            modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                            colors = EurekaStyles.textFieldColors())
+                        ExposedDropdownMenu(expanded = projectDropdownExpanded, onDismissRequest = { projectDropdownExpanded = false }) {
+                          availableProjects.forEach { project ->
+                            DropdownMenuItem(
+                                text = { Text(project.name) },
+                                onClick = {
+                                  selectedProject = project
+                                  projectDropdownExpanded = false
+                                  selectedParticipantIds = emptySet()
+                                })
+                          }
+                        }
+                      }
+                }
+                if (availableProjects.isNotEmpty() && selectedProject == null) {
+                  Text(text = "Please select a project", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = Spacing.xs))
+                }
+              }
 
               // Participants selection (only if project is selected)
               if (selectedProject != null) {
-                ParticipantsSelectionField(
-                    availableUsers = availableUsers,
-                    selectedParticipantIds = selectedParticipantIds,
-                    expanded = participantsDropdownExpanded,
-                    onExpandedChange = { participantsDropdownExpanded = it },
-                    onParticipantToggled = { userId ->
-                      val newSet = selectedParticipantIds.toMutableSet()
-                      if (newSet.contains(userId)) {
-                        newSet.remove(userId)
-                      } else {
-                        newSet.add(userId)
-                      }
-                      selectedParticipantIds = newSet
-                    },
-                    isLoading = isLoading)
+                val selectedCount = selectedParticipantIds.size
+                val displayText = when {
+                  selectedCount == 0 -> "No participants selected"
+                  selectedCount == 1 -> {
+                    val user = availableUsers.firstOrNull { it.uid == selectedParticipantIds.first() }
+                    user?.displayName?.ifBlank { user.email } ?: "1 participant selected"
+                  }
+                  else -> "$selectedCount participants selected"
+                }
+                Column {
+                  Text(text = "Add Participants (Optional)", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Medium)
+                  Spacer(modifier = Modifier.height(Spacing.xs))
+                  if (isLoading && availableUsers.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxWidth().height(56.dp), contentAlignment = Alignment.Center) {
+                      CircularProgressIndicator(strokeWidth = 2.dp)
+                    }
+                  } else if (availableUsers.isEmpty()) {
+                    Text(text = "No users available in this project", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                  } else {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().clickable { participantsDropdownExpanded = !participantsDropdownExpanded }.testTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)) {
+                          OutlinedTextField(
+                              value = displayText,
+                              onValueChange = {},
+                              readOnly = true,
+                              placeholder = { Text("Select participants to share with") },
+                              label = { Text("Participants") },
+                              enabled = false,
+                              modifier = Modifier.fillMaxWidth(),
+                              colors = EurekaStyles.textFieldColors())
+                          DropdownMenu(expanded = participantsDropdownExpanded, onDismissRequest = { participantsDropdownExpanded = false }, modifier = Modifier.fillMaxWidth()) {
+                            availableUsers.forEach { user ->
+                              DropdownMenuItem(
+                                  text = {
+                                    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                      Text(text = user.displayName.ifBlank { user.email }, style = MaterialTheme.typography.bodyMedium)
+                                      Checkbox(checked = selectedParticipantIds.contains(user.uid), onCheckedChange = null)
+                                    }
+                                  },
+                                  onClick = {
+                                    val newSet = selectedParticipantIds.toMutableSet()
+                                    if (newSet.contains(user.uid)) newSet.remove(user.uid) else newSet.add(user.uid)
+                                    selectedParticipantIds = newSet
+                                  })
+                            }
+                          }
+                        }
+                  }
+                }
               }
 
               // Buttons
@@ -181,152 +243,3 @@ fun CreateIdeaBottomSheet(
       }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ProjectSelectionField(
-    projects: List<Project>,
-    selectedProject: Project?,
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
-    onProjectSelected: (Project) -> Unit,
-    isLoading: Boolean
-) {
-  Column {
-    Text(
-        text = "Project",
-        style = MaterialTheme.typography.labelLarge,
-        fontWeight = FontWeight.Medium)
-
-    Spacer(modifier = Modifier.height(Spacing.xs))
-
-    if (isLoading && projects.isEmpty()) {
-      Box(modifier = Modifier.fillMaxWidth().height(56.dp), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator(strokeWidth = 2.dp)
-      }
-    } else if (projects.isEmpty()) {
-      Text(
-          text = "No projects available",
-          style = MaterialTheme.typography.bodyMedium,
-          color = MaterialTheme.colorScheme.onSurfaceVariant)
-    } else {
-      ExposedDropdownMenuBox(
-          expanded = expanded,
-          onExpandedChange = onExpandedChange,
-          modifier =
-              Modifier.fillMaxWidth().testTag(CreateIdeaBottomSheetTestTags.PROJECT_DROPDOWN)) {
-            OutlinedTextField(
-                value = selectedProject?.name ?: "",
-                onValueChange = {},
-                readOnly = true,
-                placeholder = { Text("Select a project") },
-                label = { Text("Project") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
-                colors = EurekaStyles.textFieldColors())
-
-            ExposedDropdownMenu(
-                expanded = expanded, onDismissRequest = { onExpandedChange(false) }) {
-                  projects.forEach { project ->
-                    DropdownMenuItem(
-                        text = { Text(project.name) },
-                        onClick = {
-                          onProjectSelected(project)
-                          onExpandedChange(false)
-                        })
-                  }
-                }
-          }
-    }
-
-    if (projects.isNotEmpty() && selectedProject == null) {
-      Text(
-          text = "Please select a project",
-          color = MaterialTheme.colorScheme.error,
-          style = MaterialTheme.typography.bodySmall,
-          modifier = Modifier.padding(top = Spacing.xs))
-    }
-  }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ParticipantsSelectionField(
-    availableUsers: List<User>,
-    selectedParticipantIds: Set<String>,
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
-    onParticipantToggled: (String) -> Unit,
-    isLoading: Boolean
-) {
-  val selectedCount = selectedParticipantIds.size
-  val displayText =
-      when {
-        selectedCount == 0 -> "No participants selected"
-        selectedCount == 1 -> {
-          val user = availableUsers.firstOrNull { it.uid == selectedParticipantIds.first() }
-          user?.displayName?.ifBlank { user.email } ?: "1 participant selected"
-        }
-        else -> "$selectedCount participants selected"
-      }
-
-  Column {
-    Text(
-        text = "Add Participants (Optional)",
-        style = MaterialTheme.typography.labelLarge,
-        fontWeight = FontWeight.Medium)
-
-    Spacer(modifier = Modifier.height(Spacing.xs))
-
-    if (isLoading && availableUsers.isEmpty()) {
-      Box(modifier = Modifier.fillMaxWidth().height(56.dp), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator(strokeWidth = 2.dp)
-      }
-    } else if (availableUsers.isEmpty()) {
-      Text(
-          text = "No users available in this project",
-          style = MaterialTheme.typography.bodyMedium,
-          color = MaterialTheme.colorScheme.onSurfaceVariant)
-    } else {
-      Box(
-          modifier =
-              Modifier.fillMaxWidth()
-                  .clickable { onExpandedChange(!expanded) }
-                  .testTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)) {
-            OutlinedTextField(
-                value = displayText,
-                onValueChange = {},
-                readOnly = true,
-                placeholder = { Text("Select participants to share with") },
-                label = { Text("Participants") },
-                enabled = false,
-                modifier = Modifier.fillMaxWidth(),
-                colors = EurekaStyles.textFieldColors())
-
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { onExpandedChange(false) },
-                modifier = Modifier.fillMaxWidth()) {
-                  availableUsers.forEach { user ->
-                    DropdownMenuItem(
-                        text = {
-                          Row(
-                              modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                              horizontalArrangement = Arrangement.SpaceBetween,
-                              verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = user.displayName.ifBlank { user.email },
-                                    style = MaterialTheme.typography.bodyMedium)
-                                Checkbox(
-                                    checked = selectedParticipantIds.contains(user.uid),
-                                    onCheckedChange = null)
-                              }
-                        },
-                        onClick = { onParticipantToggled(user.uid) })
-                  }
-                }
-          }
-    }
-  }
-}
