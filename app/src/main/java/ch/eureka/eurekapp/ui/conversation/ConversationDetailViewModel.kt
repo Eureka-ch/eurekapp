@@ -51,6 +51,9 @@ Co-author: Grok
  * @property isConnected Whether the device is connected.
  * @property isUploadingFile Whether a file is currently being uploaded.
  * @property selectedFileUri The URI of the selected file for sending.
+ * @property editingMessageId The ID of the message being edited, or null if not editing.
+ * @property selectedMessageId The ID of the message selected for actions (edit/delete menu).
+ * @property showDeleteConfirmation Whether to show the delete confirmation dialog.
  */
 data class ConversationDetailState(
     val conversation: Conversation? = null,
@@ -63,8 +66,15 @@ data class ConversationDetailState(
     val errorMsg: String? = null,
     val isConnected: Boolean = true,
     val isUploadingFile: Boolean = false,
-    val selectedFileUri: Uri? = null
-)
+    val selectedFileUri: Uri? = null,
+    val editingMessageId: String? = null,
+    val selectedMessageId: String? = null,
+    val showDeleteConfirmation: Boolean = false
+) {
+  /** Whether the user is currently in edit mode. */
+  val isEditing: Boolean
+    get() = editingMessageId != null
+}
 
 private data class DisplayData(val otherMemberName: String, val projectName: String)
 
@@ -93,12 +103,15 @@ open class ConversationDetailViewModel(
     const val SUBSCRIPTION_TIMEOUT = 5000L
   }
 
-  private data class Quintuple<A, B, C, D, E>(
-      val first: A,
-      val second: B,
-      val third: C,
-      val fourth: D,
-      val fifth: E
+  private data class InputState(
+      val currentMessage: String,
+      val isSending: Boolean,
+      val errorMsg: String?,
+      val isUploadingFile: Boolean,
+      val selectedFileUri: Uri?,
+      val editingMessageId: String?,
+      val selectedMessageId: String?,
+      val showDeleteConfirmation: Boolean
   )
 
   private val _currentMessage = MutableStateFlow("")
@@ -107,6 +120,9 @@ open class ConversationDetailViewModel(
   private val _isUploadingFile = MutableStateFlow(false)
   private val _selectedFileUri = MutableStateFlow<Uri?>(null)
   private val _snackbarMessage = MutableStateFlow<String?>(null)
+  private val _editingMessageId = MutableStateFlow<String?>(null)
+  private val _selectedMessageId = MutableStateFlow<String?>(null)
+  private val _showDeleteConfirmation = MutableStateFlow(false)
 
   private val conversationFlow =
       conversationRepository.getConversationById(conversationId).catch { e ->
@@ -137,14 +153,33 @@ open class ConversationDetailViewModel(
       }
 
   private val inputStateFlow =
-      combine(_currentMessage, _isSending, _errorMsg, _isUploadingFile, _selectedFileUri) {
-          currentMessage,
-          isSending,
-          errorMsg,
-          isUploadingFile,
-          selectedFileUri ->
-        Quintuple(currentMessage, isSending, errorMsg, isUploadingFile, selectedFileUri)
-      }
+      combine(
+          _currentMessage,
+          _isSending,
+          _errorMsg,
+          _isUploadingFile,
+          _selectedFileUri,
+          _editingMessageId,
+          _selectedMessageId,
+          _showDeleteConfirmation) {
+              currentMessage,
+              isSending,
+              errorMsg,
+              isUploadingFile,
+              selectedFileUri,
+              editingMessageId,
+              selectedMessageId,
+              showDeleteConfirmation ->
+            InputState(
+                currentMessage,
+                isSending,
+                errorMsg,
+                isUploadingFile,
+                selectedFileUri,
+                editingMessageId,
+                selectedMessageId,
+                showDeleteConfirmation)
+          }
 
   open val uiState: StateFlow<ConversationDetailState> =
       combine(conversationFlow, messagesFlow, displayDataFlow, inputStateFlow, isConnectedFlow) {
@@ -158,13 +193,16 @@ open class ConversationDetailViewModel(
                 messages = messages,
                 otherMemberName = displayData.otherMemberName,
                 projectName = displayData.projectName,
-                currentMessage = inputState.first,
+                currentMessage = inputState.currentMessage,
                 isLoading = conversation == null,
-                isSending = inputState.second,
-                errorMsg = inputState.third,
+                isSending = inputState.isSending,
+                errorMsg = inputState.errorMsg,
                 isConnected = isConnected,
-                isUploadingFile = inputState.fourth,
-                selectedFileUri = inputState.fifth)
+                isUploadingFile = inputState.isUploadingFile,
+                selectedFileUri = inputState.selectedFileUri,
+                editingMessageId = inputState.editingMessageId,
+                selectedMessageId = inputState.selectedMessageId,
+                showDeleteConfirmation = inputState.showDeleteConfirmation)
           }
           .stateIn(
               scope = viewModelScope,
@@ -357,5 +395,103 @@ open class ConversationDetailViewModel(
 
   fun clearSnackbarMessage() {
     _snackbarMessage.value = null
+  }
+
+  // --- Edit/Delete Message Methods ---
+
+  /** Select a message for showing the action menu. Pass null to clear selection. */
+  fun selectMessage(messageId: String?) {
+    _selectedMessageId.value = messageId
+  }
+
+  /** Clear the selected message (close action menu). */
+  fun clearMessageSelection() {
+    _selectedMessageId.value = null
+  }
+
+  /** Enter edit mode for a message. Populates the input field with the message text. */
+  fun startEditing(message: ConversationMessage) {
+    _selectedMessageId.value = null
+    _editingMessageId.value = message.messageId
+    _currentMessage.value = message.text
+  }
+
+  /** Cancel the current edit operation and clear the input field. */
+  fun cancelEditing() {
+    _editingMessageId.value = null
+    _currentMessage.value = ""
+  }
+
+  /** Save the edited message. Called when user submits while in edit mode. */
+  fun saveEditedMessage() {
+    val messageId = _editingMessageId.value ?: return
+    val newText = _currentMessage.value.trim()
+
+    if (newText.isEmpty()) {
+      _errorMsg.value = "Message cannot be empty"
+      return
+    }
+    if (newText.length > MAX_MESSAGE_LENGTH) {
+      _errorMsg.value = "Message too long (max $MAX_MESSAGE_LENGTH characters)"
+      return
+    }
+
+    _isSending.value = true
+
+    viewModelScope.launch {
+      conversationRepository
+          .updateMessage(conversationId, messageId, newText)
+          .fold(
+              onSuccess = {
+                _currentMessage.value = ""
+                _editingMessageId.value = null
+                _isSending.value = false
+                _snackbarMessage.value = "Message updated"
+              },
+              onFailure = { error ->
+                _isSending.value = false
+                _errorMsg.value = "Error: ${error.message}"
+              })
+    }
+  }
+
+  /** Request to delete a message. Shows the confirmation dialog. */
+  fun requestDeleteMessage(messageId: String) {
+    _selectedMessageId.value = messageId
+    _showDeleteConfirmation.value = true
+  }
+
+  /** Confirm deletion of the selected message. */
+  fun confirmDeleteMessage() {
+    val messageId = _selectedMessageId.value ?: return
+    _showDeleteConfirmation.value = false
+    _selectedMessageId.value = null
+
+    viewModelScope.launch {
+      conversationRepository
+          .deleteMessage(conversationId, messageId)
+          .fold(
+              onSuccess = { _snackbarMessage.value = "Message deleted" },
+              onFailure = { error -> _errorMsg.value = "Error: ${error.message}" })
+    }
+  }
+
+  /** Cancel the delete confirmation dialog. */
+  fun cancelDeleteMessage() {
+    _showDeleteConfirmation.value = false
+    _selectedMessageId.value = null
+  }
+
+  /** Remove the attachment from a message (keeps file in storage). */
+  fun removeAttachment(messageId: String) {
+    _selectedMessageId.value = null
+
+    viewModelScope.launch {
+      conversationRepository
+          .removeAttachment(conversationId, messageId)
+          .fold(
+              onSuccess = { _snackbarMessage.value = "Attachment removed" },
+              onFailure = { error -> _errorMsg.value = "Error: ${error.message}" })
+    }
   }
 }
