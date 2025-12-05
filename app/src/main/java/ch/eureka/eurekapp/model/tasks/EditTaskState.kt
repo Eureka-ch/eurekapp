@@ -4,6 +4,7 @@ import android.net.Uri
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.TaskCustomData
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.data.template.TaskTemplate
 import ch.eureka.eurekapp.model.data.user.User
 
 /*
@@ -12,6 +13,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 Portions of this code were generated with the help of Grok.
 Note: This file was partially written by GPT-5 Codex
 Co-author : GPT-5
+Co-Authored-By: Claude Opus 4.5
 */
 
 /** State for the CreateTaskScreen screen. This state holds the data needed to create a new Task */
@@ -21,6 +23,7 @@ data class EditTaskState(
     override val dueDate: String = "",
     val reminderTime: String = "",
     val templateId: String? = null,
+    val selectedTemplate: TaskTemplate? = null,
     override val projectId: String = "",
     override val availableProjects: List<Project> = emptyList(),
     override val availableUsers: List<User> = emptyList(),

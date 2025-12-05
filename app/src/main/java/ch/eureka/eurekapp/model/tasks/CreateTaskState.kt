@@ -2,15 +2,15 @@ package ch.eureka.eurekapp.model.tasks
 
 import android.net.Uri
 import ch.eureka.eurekapp.model.data.project.Project
+import ch.eureka.eurekapp.model.data.task.TaskCustomData
+import ch.eureka.eurekapp.model.data.template.TaskTemplate
 import ch.eureka.eurekapp.model.data.user.User
 
 /*
-Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
-Co-Authored-By: Claude <noreply@anthropic.com>
-Portions of this code were generated with the help of Grok.
-Note: This file was partially written by GPT-5 Codex
-Co-author : GPT-5
-*/
+ * Portions of the code in this file are copy-pasted from the Bootcamp solution provided by the SwEnt staff.
+ * Portions of this code were generated with the help of Claude <noreply@anthropic.com>, Grok, and GPT-5 Codex.
+ * Co-Authored-By: Claude Sonnet 4.5
+ */
 
 /** State for the CreateTaskScreen screen. This state holds the data needed to create a new Task */
 data class CreateTaskState(
@@ -26,5 +26,9 @@ data class CreateTaskState(
     override val isSaving: Boolean = false,
     override val taskSaved: Boolean = false,
     override val errorMsg: String? = null,
-    override val dependingOnTasks: List<String> = emptyList()
+    override val dependingOnTasks: List<String> = emptyList(),
+    val templateId: String? = null,
+    val customData: TaskCustomData = TaskCustomData(),
+    val availableTemplates: List<TaskTemplate> = emptyList(),
+    val selectedTemplate: TaskTemplate? = null
 ) : TaskStateReadWrite

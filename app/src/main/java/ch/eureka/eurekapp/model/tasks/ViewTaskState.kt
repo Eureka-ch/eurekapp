@@ -2,7 +2,9 @@
 package ch.eureka.eurekapp.model.tasks
 
 import android.net.Uri
+import ch.eureka.eurekapp.model.data.task.TaskCustomData
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.data.template.TaskTemplate
 import ch.eureka.eurekapp.model.data.user.User
 
 data class ViewTaskState(
@@ -20,5 +22,7 @@ data class ViewTaskState(
     val assignedUsers: List<User> = emptyList(),
     val urlsToDownload: List<String> = emptyList(),
     val effectiveAttachments: List<Attachment> = emptyList(),
-    val downloadedAttachmentUrls: Set<String> = emptySet()
+    val downloadedAttachmentUrls: Set<String> = emptySet(),
+    val selectedTemplate: TaskTemplate? = null,
+    val customData: TaskCustomData = TaskCustomData()
 ) : TaskStateRead

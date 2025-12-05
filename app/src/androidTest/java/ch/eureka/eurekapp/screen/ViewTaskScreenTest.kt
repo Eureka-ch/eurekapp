@@ -18,6 +18,7 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -27,14 +28,25 @@ import androidx.navigation.toRoute
 import androidx.test.platform.app.InstrumentationRegistry
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
+import ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository
 import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRole
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.data.task.FirestoreTaskRepository
 import ch.eureka.eurekapp.model.data.task.Task
+import ch.eureka.eurekapp.model.data.task.TaskCustomData
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.data.template.FirestoreTaskTemplateRepository
+import ch.eureka.eurekapp.model.data.template.TaskTemplate
+import ch.eureka.eurekapp.model.data.template.TaskTemplateSchema
+import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
+import ch.eureka.eurekapp.model.data.template.field.FieldType
+import ch.eureka.eurekapp.model.data.template.field.FieldValue
+import ch.eureka.eurekapp.model.data.template.field.SelectOption
+import ch.eureka.eurekapp.model.data.template.field.serialization.FirestoreConverters
+import ch.eureka.eurekapp.model.data.user.FirestoreUserRepository
 import ch.eureka.eurekapp.model.downloads.AppDatabase
 import ch.eureka.eurekapp.model.downloads.DownloadedFile
 import ch.eureka.eurekapp.model.tasks.ViewTaskViewModel
@@ -42,6 +54,7 @@ import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.TasksScreen
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.TemplateFieldsSectionTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
@@ -115,6 +128,10 @@ open class ViewTaskScreenTest : TestCase() {
   private val taskRepository: TaskRepository =
       FirestoreTaskRepository(firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
 
+  private val templateRepository =
+      FirestoreTaskTemplateRepository(
+          firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+
   protected suspend fun setupTestProject(projectId: String, role: ProjectRole = ProjectRole.OWNER) {
     val projectRef = FirebaseEmulator.firestore.collection("projects").document(projectId)
 
@@ -152,7 +169,9 @@ open class ViewTaskScreenTest : TestCase() {
       dueDate: String = "15/10/2025",
       status: TaskStatus = TaskStatus.TODO,
       attachmentUrls: List<String> = emptyList(),
-      assignedUserIds: List<String> = listOf()
+      assignedUserIds: List<String> = listOf(),
+      templateId: String = "",
+      customData: TaskCustomData = TaskCustomData()
   ) {
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     val date = dateFormat.parse(dueDate)!!
@@ -166,8 +185,32 @@ open class ViewTaskScreenTest : TestCase() {
             dueDate = Timestamp(date),
             attachmentUrls = attachmentUrls,
             createdBy = testUserId,
-            status = status)
+            status = status,
+            templateId = templateId,
+            customData = customData)
     taskRepository.updateTask(task).getOrThrow()
+  }
+
+  private suspend fun setupTestTemplate(
+      projectId: String,
+      templateId: String,
+      title: String = "Test Template",
+      fields: List<FieldDefinition> = emptyList()
+  ) {
+    val template =
+        TaskTemplate(
+            templateID = templateId,
+            projectId = projectId,
+            title = title,
+            definedFields = TaskTemplateSchema(fields),
+            createdBy = testUserId)
+    FirebaseEmulator.firestore
+        .collection("projects")
+        .document(projectId)
+        .collection("taskTemplates")
+        .document(templateId)
+        .set(FirestoreConverters.taskTemplateToMap(template))
+        .await()
   }
 
   /**
@@ -191,6 +234,7 @@ open class ViewTaskScreenTest : TestCase() {
             taskId,
             AppDatabase.getDatabase(context).downloadedFileDao(),
             taskRepository,
+            templateRepository = templateRepository,
             connectivityObserver = mockConnectivityObserver,
             dispatcher = Dispatchers.IO)
     lastViewVm = viewModel
@@ -241,6 +285,8 @@ open class ViewTaskScreenTest : TestCase() {
         composeTestRule.onNodeWithText("Loaded Task").assertIsDisplayed()
         composeTestRule.onNodeWithText("Loaded Desc").assertIsDisplayed()
         composeTestRule.onNodeWithText("20/12/2024").assertIsDisplayed()
+        // Scroll to status text in case it's below the fold on small screens
+        composeTestRule.onNodeWithText("Status: IN PROGRESS").performScrollTo()
         composeTestRule.onNodeWithText("Status: IN PROGRESS").assertIsDisplayed()
       }
 
@@ -681,7 +727,16 @@ open class ViewTaskScreenTest : TestCase() {
           dispatcher = Dispatchers.IO)
     }
     val sharedTaskScreenViewModel = remember {
-      TaskScreenViewModel(connectivityObserver = mockConnectivityObserver)
+      TaskScreenViewModel(
+          taskRepository = taskRepository,
+          projectRepository =
+              FirestoreProjectRepository(
+                  firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth),
+          userRepository =
+              FirestoreUserRepository(
+                  firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth),
+          currentUserId = testUserId,
+          connectivityObserver = mockConnectivityObserver)
     }
 
     NavHost(navController, startDestination = Route.TasksSection.Tasks) {
@@ -776,6 +831,85 @@ open class ViewTaskScreenTest : TestCase() {
       return Result.success(StorageMetadata.Builder().setContentType("image/jpeg").build())
     }
   }
+
+  @Test
+  fun testTemplateFieldsDisplayedWhenTaskHasTemplate() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+        val templateId = "template123"
+
+        val fields =
+            listOf(
+                FieldDefinition(
+                    id = "severity",
+                    label = "Severity",
+                    type =
+                        FieldType.SingleSelect(
+                            listOf(
+                                SelectOption("low", "Low"),
+                                SelectOption("medium", "Medium"),
+                                SelectOption("high", "High"))),
+                    required = true),
+                FieldDefinition(
+                    id = "notes",
+                    label = "Additional Notes",
+                    type = FieldType.Text(maxLength = 200),
+                    required = false))
+
+        val customData =
+            TaskCustomData()
+                .setValue("severity", FieldValue.SingleSelectValue("high"))
+                .setValue("notes", FieldValue.TextValue("This is urgent"))
+
+        setupViewTaskTest(projectId, taskId) {
+          setupTestTemplate(projectId, templateId, "Bug Report Template", fields)
+          setupTestTask(
+              projectId,
+              taskId,
+              title = "Bug Task",
+              templateId = templateId,
+              customData = customData)
+        }
+
+        // Wait for template fields section to load
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          try {
+            composeTestRule.onNodeWithTag(TemplateFieldsSectionTestTags.SECTION).assertExists()
+            true
+          } catch (e: AssertionError) {
+            false
+          }
+        }
+
+        // Verify template fields section is displayed
+        composeTestRule.onNodeWithTag(TemplateFieldsSectionTestTags.SECTION).assertIsDisplayed()
+
+        // Verify section title
+        composeTestRule.onNodeWithText("Template Fields").assertIsDisplayed()
+
+        // Verify individual field labels are displayed (scroll to make visible on small screens)
+        composeTestRule.onNodeWithText("Severity", substring = true).performScrollTo()
+        composeTestRule.onNodeWithText("Severity", substring = true).assertIsDisplayed()
+        composeTestRule.onNodeWithText("Additional Notes", substring = true).performScrollTo()
+        composeTestRule.onNodeWithText("Additional Notes", substring = true).assertIsDisplayed()
+      }
+
+  @Test
+  fun testTemplateFieldsNotDisplayedWhenNoTemplate() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+
+        setupViewTaskTest(projectId, taskId) {
+          setupTestTask(projectId, taskId, title = "Task Without Template")
+        }
+
+        composeTestRule.waitForIdle()
+
+        // Verify template fields section is NOT displayed
+        composeTestRule.onNodeWithTag(TemplateFieldsSectionTestTags.SECTION).assertDoesNotExist()
+      }
 
   @Test
   fun testDownloadButtonDisplayedWhenAttachmentsExist() =

@@ -1,3 +1,4 @@
+// Co-Authored-By: Claude Opus 4.5
 package ch.eureka.eurekapp.screens.subscreens.tasks.editing
 
 import android.net.Uri
@@ -38,11 +39,13 @@ import ch.eureka.eurekapp.model.tasks.EditTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AttachmentsList
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
+import ch.eureka.eurekapp.screens.subscreens.tasks.FieldInteractionMode
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesSelectionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDescriptionField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDueDateField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskReminderField
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskTitleField
+import ch.eureka.eurekapp.screens.subscreens.tasks.TemplateFieldsSection
 import ch.eureka.eurekapp.screens.subscreens.tasks.UserAssignmentField
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
@@ -138,6 +141,16 @@ fun EditTaskScreen(
                   onUserToggled = { userId -> editTaskViewModel.toggleUserAssignment(userId) },
                   enabled = editTaskState.projectId.isNotEmpty())
 
+              if (editTaskState.selectedTemplate != null) {
+                TemplateFieldsSection(
+                    template = editTaskState.selectedTemplate,
+                    customData = editTaskState.customData,
+                    onFieldValueChange = { fieldId, value ->
+                      editTaskViewModel.updateCustomFieldValue(fieldId, value)
+                    },
+                    mode = FieldInteractionMode.EditOnly)
+              }
+
               DependenciesSelectionSection(
                   projectId = editTaskState.projectId,
                   availableTasks = availableTasks,
@@ -204,29 +217,41 @@ fun EditTaskScreen(
             }
       })
 
-  if (showDeleteDialog) {
-    androidx.compose.material3.AlertDialog(
-        onDismissRequest = { showDeleteDialog = false },
-        title = { Text("Confirm Deletion") },
-        text = { Text("Are you sure you want to delete the task?") },
-        confirmButton = {
-          Button(
-              onClick = {
-                showDeleteDialog = false
-                editTaskViewModel.deleteTask(projectId, taskId)
-              },
-              modifier = Modifier.testTag(EditTaskScreenTestTags.CONFIRM_DELETE)) {
-                Text("Yes")
-              }
-        },
-        dismissButton = {
-          OutlinedButton(
-              onClick = { showDeleteDialog = false },
-              modifier = Modifier.testTag(EditTaskScreenTestTags.CANCEL_DELETE)) {
-                Text("No")
-              }
-        })
-  }
+  DeleteConfirmationDialog(
+      showDialog = showDeleteDialog,
+      onDismiss = { showDeleteDialog = false },
+      onConfirm = {
+        showDeleteDialog = false
+        editTaskViewModel.deleteTask(projectId, taskId)
+      })
+}
+
+@Composable
+private fun DeleteConfirmationDialog(
+    showDialog: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+  if (!showDialog) return
+
+  androidx.compose.material3.AlertDialog(
+      onDismissRequest = onDismiss,
+      title = { Text("Confirm Deletion") },
+      text = { Text("Are you sure you want to delete the task?") },
+      confirmButton = {
+        Button(
+            onClick = onConfirm,
+            modifier = Modifier.testTag(EditTaskScreenTestTags.CONFIRM_DELETE)) {
+              Text("Yes")
+            }
+      },
+      dismissButton = {
+        OutlinedButton(
+            onClick = onDismiss,
+            modifier = Modifier.testTag(EditTaskScreenTestTags.CANCEL_DELETE)) {
+              Text("No")
+            }
+      })
 }
 
 fun getNextStatus(currentStatus: TaskStatus): TaskStatus {
