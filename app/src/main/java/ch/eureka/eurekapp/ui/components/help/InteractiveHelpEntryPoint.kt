@@ -206,7 +206,10 @@ internal fun HelpContext.toHelpContent(userName: String): HelpContent {
                         "Each card provides access to voting, directions, and follow-up actions."),
                     HelpStep(
                         "+ Button",
-                        "The floating 'Add' button instantly creates a new meeting (if you're online).")))
+                        "The floating 'Add' button instantly creates a new meeting (if you're online)."),
+                    HelpStep(
+                        "File attachments",
+                        "Upload files and documents to meetings. Use the 'Pick a File' button in the meeting details to attach relevant files that participants can view and download.")))
     HelpContext.PROJECTS ->
         HelpContent(
             title = "Project view",
@@ -235,11 +238,11 @@ internal fun HelpContext.toHelpContent(userName: String): HelpContent {
                         "Project & team",
                         "Choose a project and assign members. Once a project is selected, you can assign users."),
                     HelpStep(
-                        "Task dependencies",
-                        "Dependencies allow you to define the execution order: this task cannot start until its dependent tasks are completed. Select them from the list after choosing a project. The app automatically detects forbidden cycles."),
+                        "Task templates",
+                        "Use templates to speed up task creation. Select a template from the dropdown to automatically add custom fields (text, numbers, dates, selections). You can also create new templates with the '+ Create Template' button to standardize your workflow."),
                     HelpStep(
-                        "Attachments",
-                        "Add attachments or photos from the bottom of the screen before saving.")))
+                        "Task dependencies",
+                        "Dependencies allow you to define the execution order: this task cannot start until its dependent tasks are completed. Select them from the list after choosing a project. The app automatically detects forbidden cycles.")))
     HelpContext.FILES_MANAGEMENT ->
         HelpContent(
             title = "File management",
@@ -314,7 +317,7 @@ internal fun HelpContext.toHelpContent(userName: String): HelpContent {
                 listOf(
                     HelpStep(
                         "Cloud vs Local",
-                        "Toggle the switch at the top to choose between cloud storage (syncs across devices) or local-only storage."),
+                        "Toggle the switch at the top to choose between cloud storage (syncs across devices) or local-only storage. In cloud mode, your notes are saved locally first and automatically synchronized when you're online. Even without internet, all your notes are safe and will sync once connection is restored."),
                     HelpStep(
                         "Add notes",
                         "Type your note in the input field at the bottom and send it. Notes appear in a chat-like interface."),

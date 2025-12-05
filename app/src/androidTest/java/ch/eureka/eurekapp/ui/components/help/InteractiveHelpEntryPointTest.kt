@@ -107,6 +107,9 @@ class InteractiveHelpEntryPointTest {
     // Verify dialog title
     composeTestRule.onNodeWithText("Guided creation").assertIsDisplayed()
 
+    // Verify task templates step is displayed
+    composeTestRule.onNodeWithText("Task templates").assertIsDisplayed()
+
     // Verify dependencies step is displayed
     composeTestRule.onNodeWithText("Task dependencies").assertIsDisplayed()
 
@@ -176,6 +179,7 @@ class InteractiveHelpEntryPointTest {
 
     composeTestRule.onNodeWithText("Guide").performClick()
     composeTestRule.onNodeWithText("Mastering meetings", substring = true).assertIsDisplayed()
+    composeTestRule.onNodeWithText("File attachments", substring = true).assertIsDisplayed()
   }
 
   @Test
@@ -288,5 +292,9 @@ class InteractiveHelpEntryPointTest {
     composeTestRule.onNodeWithText("Personal notes", substring = true).assertIsDisplayed()
     composeTestRule.onNodeWithText("Cloud vs Local", substring = true).assertIsDisplayed()
     composeTestRule.onNodeWithText("Add notes", substring = true).assertIsDisplayed()
+    // Verify cloud sync explanation
+    composeTestRule
+        .onNodeWithText("automatically synchronized", substring = true)
+        .assertIsDisplayed()
   }
 }
