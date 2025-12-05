@@ -450,18 +450,30 @@ open class ConversationDetailViewModel(
   }
 
   /** Request to delete a message. Shows the confirmation dialog. */
-  fun requestDeleteMessage(messageId: String) {
+  fun requestDeleteMessage(messageId: String, fileUrl: String? = null) {
     _selectedMessageId.value = messageId
+    _pendingDeleteFileUrl.value = fileUrl
     _showDeleteConfirmation.value = true
   }
 
-  /** Confirm deletion of the selected message. */
+  /** Confirm deletion of the selected message. Also deletes attachment from storage if present. */
   fun confirmDeleteMessage() {
     val messageId = _selectedMessageId.value ?: return
+    val fileUrl = _pendingDeleteFileUrl.value
     _showDeleteConfirmation.value = false
     _selectedMessageId.value = null
+    _pendingDeleteFileUrl.value = null
 
     viewModelScope.launch {
+      // Delete the file from storage if the message has an attachment
+      if (!fileUrl.isNullOrEmpty()) {
+        fileStorageRepository.deleteFile(fileUrl).onFailure { error ->
+          // Log but don't block message deletion if file deletion fails
+          android.util.Log.e(
+              "ConversationDetailVM", "Failed to delete attachment: ${error.message}")
+        }
+      }
+
       conversationRepository
           .deleteMessage(conversationId, messageId)
           .fold(
@@ -474,6 +486,7 @@ open class ConversationDetailViewModel(
   fun cancelDeleteMessage() {
     _showDeleteConfirmation.value = false
     _selectedMessageId.value = null
+    _pendingDeleteFileUrl.value = null
   }
 
   /** Remove the attachment from a message and delete the file from storage. */

@@ -280,7 +280,11 @@ fun ConversationDetailScreen(
                               expanded = true,
                               onDismiss = { viewModel.clearMessageSelection() },
                               onEdit = { viewModel.startEditing(message) },
-                              onDelete = { viewModel.requestDeleteMessage(message.messageId) },
+                              onDelete = {
+                                viewModel.requestDeleteMessage(
+                                    message.messageId,
+                                    if (message.isFile) message.fileUrl else null)
+                              },
                               onRemoveAttachment = {
                                 viewModel.removeAttachment(message.messageId, message.fileUrl)
                               },
