@@ -17,10 +17,10 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -35,9 +35,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
@@ -86,9 +85,7 @@ fun CreateIdeaBottomSheet(
 
   // Load users when project is selected
   LaunchedEffect(selectedProject?.projectId) {
-    selectedProject?.projectId?.let { projectId ->
-      onProjectSelected(projectId)
-    }
+    selectedProject?.projectId?.let { projectId -> onProjectSelected(projectId) }
   }
 
   ModalBottomSheet(
@@ -96,9 +93,7 @@ fun CreateIdeaBottomSheet(
       modifier = modifier.testTag(CreateIdeaBottomSheetTestTags.SHEET)) {
         Column(
             modifier =
-                Modifier.fillMaxWidth()
-                    .padding(Spacing.md)
-                    .verticalScroll(rememberScrollState()),
+                Modifier.fillMaxWidth().padding(Spacing.md).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
               // Title
               Text(
@@ -113,8 +108,7 @@ fun CreateIdeaBottomSheet(
                   label = { Text("Idea Title (Optional)") },
                   placeholder = { Text("Enter a title for your idea...") },
                   modifier =
-                      Modifier.fillMaxWidth()
-                          .testTag(CreateIdeaBottomSheetTestTags.TITLE_FIELD),
+                      Modifier.fillMaxWidth().testTag(CreateIdeaBottomSheetTestTags.TITLE_FIELD),
                   singleLine = true,
                   colors = EurekaStyles.textFieldColors())
 
@@ -177,7 +171,8 @@ fun CreateIdeaBottomSheet(
                         },
                         enabled = selectedProject != null && !isLoading,
                         modifier =
-                            Modifier.weight(1f).testTag(CreateIdeaBottomSheetTestTags.CREATE_BUTTON),
+                            Modifier.weight(1f)
+                                .testTag(CreateIdeaBottomSheetTestTags.CREATE_BUTTON),
                         colors = EurekaStyles.primaryButtonColors()) {
                           Text("Create")
                         }
@@ -205,11 +200,9 @@ private fun ProjectSelectionField(
     Spacer(modifier = Modifier.height(Spacing.xs))
 
     if (isLoading && projects.isEmpty()) {
-      Box(
-          modifier = Modifier.fillMaxWidth().height(56.dp),
-          contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(strokeWidth = 2.dp)
-          }
+      Box(modifier = Modifier.fillMaxWidth().height(56.dp), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator(strokeWidth = 2.dp)
+      }
     } else if (projects.isEmpty()) {
       Text(
           text = "No projects available",
@@ -219,16 +212,15 @@ private fun ProjectSelectionField(
       ExposedDropdownMenuBox(
           expanded = expanded,
           onExpandedChange = onExpandedChange,
-          modifier = Modifier.fillMaxWidth().testTag(CreateIdeaBottomSheetTestTags.PROJECT_DROPDOWN)) {
+          modifier =
+              Modifier.fillMaxWidth().testTag(CreateIdeaBottomSheetTestTags.PROJECT_DROPDOWN)) {
             OutlinedTextField(
                 value = selectedProject?.name ?: "",
                 onValueChange = {},
                 readOnly = true,
                 placeholder = { Text("Select a project") },
                 label = { Text("Project") },
-                trailingIcon = {
-                  ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 modifier =
                     Modifier.fillMaxWidth()
                         .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
@@ -288,11 +280,9 @@ private fun ParticipantsSelectionField(
     Spacer(modifier = Modifier.height(Spacing.xs))
 
     if (isLoading && availableUsers.isEmpty()) {
-      Box(
-          modifier = Modifier.fillMaxWidth().height(56.dp),
-          contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(strokeWidth = 2.dp)
-          }
+      Box(modifier = Modifier.fillMaxWidth().height(56.dp), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator(strokeWidth = 2.dp)
+      }
     } else if (availableUsers.isEmpty()) {
       Text(
           text = "No users available in this project",

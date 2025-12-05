@@ -42,6 +42,8 @@ import ch.eureka.eurekapp.ui.authentication.TokenEntryScreen
 import ch.eureka.eurekapp.ui.conversation.ConversationDetailScreen
 import ch.eureka.eurekapp.ui.conversation.ConversationListScreen
 import ch.eureka.eurekapp.ui.conversation.CreateConversationScreen
+import ch.eureka.eurekapp.ui.ideas.IdeasScreen
+import ch.eureka.eurekapp.ui.ideas.IdeasViewModel
 import ch.eureka.eurekapp.ui.map.MeetingLocationSelectionScreen
 import ch.eureka.eurekapp.ui.meeting.CreateDateTimeFormatProposalForMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
@@ -52,8 +54,6 @@ import ch.eureka.eurekapp.ui.meeting.MeetingNavigationScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingProposalVoteScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenConfig
-import ch.eureka.eurekapp.ui.ideas.IdeasScreen
-import ch.eureka.eurekapp.ui.ideas.IdeasViewModel
 import ch.eureka.eurekapp.ui.notes.SelfNotesScreen
 import ch.eureka.eurekapp.ui.notifications.NotificationPreferencesScreen
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
@@ -309,8 +309,7 @@ fun NavigationMenu(
                 val ideasRoute = backStackEntry.toRoute<Route.IdeasSection.Ideas>()
                 IdeasScreen(
                     onNavigateBack = { navigationController.popBackStack() },
-                    viewModel = viewModel<IdeasViewModel>()
-                )
+                    viewModel = viewModel<IdeasViewModel>())
               }
               composable<Route.OverviewProject> { backStackEntry ->
                 val overviewProjectScreenRoute = backStackEntry.toRoute<Route.OverviewProject>()

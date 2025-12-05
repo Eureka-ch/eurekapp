@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.flowOf
 /**
  * Configurable mock implementation of IdeasRepository for testing.
  *
- * Allows tests to configure idea data, flows, and error scenarios.
- * Pattern follows MockTaskRepository and MockProjectRepository.
+ * Allows tests to configure idea data, flows, and error scenarios. Pattern follows
+ * MockTaskRepository and MockProjectRepository.
  */
 class MockIdeasRepository : IdeasRepository {
   private val ideasByProject = mutableMapOf<String, Flow<List<Idea>>>()
@@ -23,7 +23,8 @@ class MockIdeasRepository : IdeasRepository {
   val getIdeasForProjectCalls = mutableListOf<String>()
   val getMessagesForIdeaCalls = mutableListOf<String>()
   val sendMessageCalls = mutableListOf<Pair<String, Message>>()
-  val addParticipantCalls = mutableListOf<Triple<String, String, String>>() // projectId, ideaId, userId
+  val addParticipantCalls =
+      mutableListOf<Triple<String, String, String>>() // projectId, ideaId, userId
 
   /** Configure ideas returned by getIdeasForProject() */
   fun setIdeasForProject(projectId: String, flow: Flow<List<Idea>>) {
@@ -88,9 +89,12 @@ class MockIdeasRepository : IdeasRepository {
     return sendMessageResult
   }
 
-  override suspend fun addParticipant(projectId: String, ideaId: String, userId: String): Result<Unit> {
+  override suspend fun addParticipant(
+      projectId: String,
+      ideaId: String,
+      userId: String
+  ): Result<Unit> {
     addParticipantCalls.add(Triple(projectId, ideaId, userId))
     return addParticipantResult
   }
 }
-

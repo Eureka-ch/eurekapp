@@ -19,14 +19,16 @@ import org.junit.Test
 /**
  * Android tests for CreateIdeaBottomSheet.
  *
- * Tests UI interactions and display states.
- * Pattern follows AddFieldBottomSheetTest.
+ * Tests UI interactions and display states. Pattern follows AddFieldBottomSheetTest.
  */
 class CreateIdeaBottomSheetTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
-  private val testProjects = listOf(Project(projectId = "p1", name = "Project 1"), Project(projectId = "p2", name = "Project 2"))
+  private val testProjects =
+      listOf(
+          Project(projectId = "p1", name = "Project 1"),
+          Project(projectId = "p2", name = "Project 2"))
 
   private val testUsers =
       listOf(
@@ -51,7 +53,9 @@ class CreateIdeaBottomSheetTest {
 
     composeTestRule.onNodeWithText("Create New Idea").assertIsDisplayed()
     composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.TITLE_FIELD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.PROJECT_DROPDOWN).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.PROJECT_DROPDOWN)
+        .assertIsDisplayed()
     composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.CREATE_BUTTON).assertIsDisplayed()
     composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.CANCEL_BUTTON).assertIsDisplayed()
   }
@@ -104,7 +108,9 @@ class CreateIdeaBottomSheetTest {
           isLoading = false)
     }
 
-    composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.TITLE_FIELD).performTextInput("My Idea Title")
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.TITLE_FIELD)
+        .performTextInput("My Idea Title")
     composeTestRule.waitForIdle()
 
     // Verify text was entered (field should contain the text)
@@ -154,7 +160,9 @@ class CreateIdeaBottomSheetTest {
     assertEquals("p1", projectSelectedId)
 
     // Verify participants field is now visible
-    composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)
+        .assertIsDisplayed()
   }
 
   @Test
@@ -176,7 +184,9 @@ class CreateIdeaBottomSheetTest {
     composeTestRule.waitForIdle()
 
     // Then open participants dropdown
-    composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN).performClick()
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)
+        .performClick()
     composeTestRule.waitForIdle()
 
     // Verify participant items are displayed
@@ -209,7 +219,9 @@ class CreateIdeaBottomSheetTest {
     }
 
     // Enter title
-    composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.TITLE_FIELD).performTextInput("My Idea")
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.TITLE_FIELD)
+        .performTextInput("My Idea")
     composeTestRule.waitForIdle()
 
     // Select project
@@ -303,7 +315,9 @@ class CreateIdeaBottomSheetTest {
     composeTestRule.waitForIdle()
 
     // Select participants
-    composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN).performClick()
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)
+        .performClick()
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithText("User One").performClick()
     composeTestRule.waitForIdle()
@@ -339,7 +353,8 @@ class CreateIdeaBottomSheetTest {
 
     // Loading indicator should be visible (CircularProgressIndicator)
     // Note: We check for the participants field which shows loading state
-    composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)
+        .assertIsDisplayed()
   }
 }
-

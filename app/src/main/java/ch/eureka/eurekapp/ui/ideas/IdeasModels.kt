@@ -4,8 +4,8 @@ package ch.eureka.eurekapp.ui.ideas
 import com.google.firebase.Timestamp
 
 /**
- * Data class representing an Idea (conversation with AI).
- * Each Idea is a separate conversation that can be shared with participants.
+ * Data class representing an Idea (conversation with AI). Each Idea is a separate conversation that
+ * can be shared with participants.
  *
  * @property ideaId Unique identifier for the idea.
  * @property projectId ID of the project this idea belongs to.
@@ -27,10 +27,8 @@ data class Idea(
     val lastUpdated: Timestamp? = null
 )
 
-/**
- * View mode for the Ideas screen.
- */
+/** View mode for the Ideas screen. */
 enum class IdeasViewMode {
-    LIST,           // Display list of Ideas
-    CONVERSATION    // Display conversation of selected Idea
+  LIST, // Display list of Ideas
+  CONVERSATION // Display conversation of selected Idea
 }

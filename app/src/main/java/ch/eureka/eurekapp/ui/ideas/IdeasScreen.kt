@@ -17,10 +17,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -43,13 +43,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.ui.components.BackButton
-import ch.eureka.eurekapp.ui.components.MessageInputField
 import ch.eureka.eurekapp.ui.components.MessageBubble
+import ch.eureka.eurekapp.ui.components.MessageInputField
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 /** Test tags for the Ideas Screen. */
@@ -64,13 +63,13 @@ object IdeasScreenTestTags {
 /**
  * Ideas Screen - Ready for ViewModel integration.
  *
- * This screen provides a chat interface for discussing project ideas with MCP.
- * The screen is prepared to work with IdeasViewModel when it's implemented.
+ * This screen provides a chat interface for discussing project ideas with MCP. The screen is
+ * prepared to work with IdeasViewModel when it's implemented.
  *
  * @param onNavigateBack Callback to navigate back.
  * @param modifier Optional modifier.
- * @param viewModel Optional ViewModel for state management. If not provided, will use default viewModel().
- *                  For now, pass null to use placeholder UI state until ViewModel is implemented.
+ * @param viewModel Optional ViewModel for state management. If not provided, will use default
+ *   viewModel(). For now, pass null to use placeholder UI state until ViewModel is implemented.
  */
 @Composable
 fun IdeasScreen(
@@ -128,9 +127,7 @@ fun IdeasScreen(
           FloatingActionButton(
               onClick = { showCreateIdeaDialog = true },
               modifier = Modifier.testTag("createIdeaButton")) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Create new idea")
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Create new idea")
               }
         }
       },
@@ -170,35 +167,41 @@ fun IdeasScreen(
         availableProjects = uiState.availableProjects,
         availableUsers = uiState.availableUsers,
         isLoading = uiState.isLoadingUsers,
-        onProjectSelected = { projectId ->
-          viewModel?.loadUsersForProject(projectId)
-        })
+        onProjectSelected = { projectId -> viewModel?.loadUsersForProject(projectId) })
   }
 }
 
 /**
- * Interface for IdeasViewModel to allow optional ViewModel injection.
- * When ViewModel is implemented, it should implement this interface.
+ * Interface for IdeasViewModel to allow optional ViewModel injection. When ViewModel is
+ * implemented, it should implement this interface.
  */
 interface IdeasViewModelInterface {
   val uiState: kotlinx.coroutines.flow.StateFlow<IdeasUIState>
+
   fun selectProject(project: Project)
+
   fun selectIdea(idea: Idea)
+
   fun createNewIdea(title: String?, projectId: String, participantIds: List<String>)
+
   fun deleteIdea(ideaId: String)
+
   fun addParticipantToIdea(ideaId: String, userId: String)
+
   fun updateMessage(message: String)
+
   fun sendMessage()
+
   fun clearError()
+
   fun getCurrentUserId(): String?
+
   fun loadUsersForProject(projectId: String)
 }
 
 // Idea and IdeasViewMode are now in IdeasModels.kt
 
-/**
- * Placeholder UI state function for when ViewModel is not yet implemented.
- */
+/** Placeholder UI state function for when ViewModel is not yet implemented. */
 private fun IdeasUIStatePlaceholder(): IdeasUIState =
     IdeasUIState(
         selectedProject = null,
@@ -215,8 +218,7 @@ private fun IdeasUIStatePlaceholder(): IdeasUIState =
         isLoadingUsers = false)
 
 /**
- * UI state data class for Ideas Screen.
- * This will be used by the actual ViewModel when implemented.
+ * UI state data class for Ideas Screen. This will be used by the actual ViewModel when implemented.
  */
 data class IdeasUIState(
     val selectedProject: Project? = null,
@@ -282,9 +284,7 @@ private fun ProjectSelectorInTopBar(
             onValueChange = {},
             readOnly = true,
             placeholder = { Text("Select a project") },
-            trailingIcon = {
-              ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-            },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
             colors =
                 OutlinedTextFieldDefaults.colors(
@@ -293,24 +293,21 @@ private fun ProjectSelectorInTopBar(
                     focusedContainerColor = MaterialTheme.colorScheme.primary,
                     unfocusedContainerColor = MaterialTheme.colorScheme.primary))
 
-        ExposedDropdownMenu(
-            expanded = expanded, onDismissRequest = { onExpandedChange(false) }) {
-              if (availableProjects.isEmpty()) {
-                DropdownMenuItem(
-                    text = { Text("No projects available") },
-                    onClick = {},
-                    enabled = false)
-              } else {
-                availableProjects.forEach { project ->
-                  DropdownMenuItem(
-                      text = { Text(project.name) },
-                      onClick = {
-                        onProjectSelected(project)
-                        onExpandedChange(false)
-                      })
-                }
-              }
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { onExpandedChange(false) }) {
+          if (availableProjects.isEmpty()) {
+            DropdownMenuItem(
+                text = { Text("No projects available") }, onClick = {}, enabled = false)
+          } else {
+            availableProjects.forEach { project ->
+              DropdownMenuItem(
+                  text = { Text(project.name) },
+                  onClick = {
+                    onProjectSelected(project)
+                    onExpandedChange(false)
+                  })
             }
+          }
+        }
       }
 }
 
@@ -334,8 +331,7 @@ private fun IdeasContent(
       isLoading -> {
         CircularProgressIndicator(
             modifier =
-                Modifier.align(Alignment.Center)
-                    .testTag(IdeasScreenTestTags.LOADING_INDICATOR))
+                Modifier.align(Alignment.Center).testTag(IdeasScreenTestTags.LOADING_INDICATOR))
       }
       selectedProject == null -> {
         // No project selected
@@ -382,9 +378,7 @@ private fun IdeasListContent(
     // Empty state - no ideas yet
     Column(
         modifier =
-            Modifier.fillMaxSize()
-                .padding(Spacing.lg)
-                .testTag(IdeasScreenTestTags.EMPTY_STATE),
+            Modifier.fillMaxSize().padding(Spacing.lg).testTag(IdeasScreenTestTags.EMPTY_STATE),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center) {
           Text(
@@ -402,30 +396,25 @@ private fun IdeasListContent(
   } else {
     // Ideas list
     LazyColumn(
-        modifier =
-            Modifier.fillMaxSize()
-                .padding(horizontal = Spacing.md)
-                .testTag("ideasList"),
+        modifier = Modifier.fillMaxSize().padding(horizontal = Spacing.md).testTag("ideasList"),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
           items(items = ideas, key = { it.ideaId }) { idea ->
             // TODO: Créer un composant IdeaCard pour afficher chaque Idea
             // Pour l'instant, juste un placeholder
-            Card(
-                onClick = { onIdeaClick(idea) },
-                modifier = Modifier.fillMaxWidth()) {
-                  Column(modifier = Modifier.padding(Spacing.md)) {
-                    Text(
-                        text = idea.title ?: "Untitled Idea",
-                        style = MaterialTheme.typography.titleMedium)
-                    if (idea.content != null) {
-                      Text(
-                          text = idea.content,
-                          style = MaterialTheme.typography.bodyMedium,
-                          maxLines = 2,
-                          modifier = Modifier.padding(top = Spacing.xs))
-                    }
-                  }
+            Card(onClick = { onIdeaClick(idea) }, modifier = Modifier.fillMaxWidth()) {
+              Column(modifier = Modifier.padding(Spacing.md)) {
+                Text(
+                    text = idea.title ?: "Untitled Idea",
+                    style = MaterialTheme.typography.titleMedium)
+                if (idea.content != null) {
+                  Text(
+                      text = idea.content,
+                      style = MaterialTheme.typography.bodyMedium,
+                      maxLines = 2,
+                      modifier = Modifier.padding(top = Spacing.xs))
                 }
+              }
+            }
           }
         }
   }
@@ -442,9 +431,7 @@ private fun IdeasConversationContent(
     // Empty state - no messages yet
     Column(
         modifier =
-            Modifier.fillMaxSize()
-                .padding(Spacing.lg)
-                .testTag(IdeasScreenTestTags.EMPTY_STATE),
+            Modifier.fillMaxSize().padding(Spacing.lg).testTag(IdeasScreenTestTags.EMPTY_STATE),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center) {
           Text(

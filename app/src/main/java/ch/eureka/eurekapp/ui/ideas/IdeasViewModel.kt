@@ -4,8 +4,6 @@ package ch.eureka.eurekapp.ui.ideas
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ch.eureka.eurekapp.model.connection.ConnectivityObserver
-import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.IdGenerator
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.chat.Message
@@ -23,9 +21,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -50,8 +47,7 @@ import kotlinx.coroutines.launch
 class IdeasViewModel
 @JvmOverloads
 constructor(
-    private val projectRepository: ProjectRepository =
-        RepositoriesProvider.projectRepository,
+    private val projectRepository: ProjectRepository = RepositoriesProvider.projectRepository,
     private val userRepository: UserRepository = RepositoriesProvider.userRepository,
     private val ideasRepository: IdeasRepository =
         IdeasRepositoryPlaceholder(), // Placeholder until repository is implemented
@@ -207,28 +203,30 @@ constructor(
               createdAt = Timestamp.now(),
               lastUpdated = Timestamp.now())
 
-      ideasRepository.createIdea(newIdea).fold(
-          onSuccess = {
-            // Select the project and the newly created idea
-            // Find project from current projects list
-            val currentProjects = projectsFlow.first()
-            val project = currentProjects.find { it.projectId == projectId }
-            if (project != null) {
-              _selectedProject.value = project
-            }
-            _selectedIdea.value = newIdea
-            _viewMode.value = IdeasViewMode.CONVERSATION
-          },
-          onFailure = { error ->
-            Log.e(TAG, "Error creating idea", error)
-            _errorMsg.value = "Error creating idea: ${error.message}"
-          })
+      ideasRepository
+          .createIdea(newIdea)
+          .fold(
+              onSuccess = {
+                // Select the project and the newly created idea
+                // Find project from current projects list
+                val currentProjects = projectsFlow.first()
+                val project = currentProjects.find { it.projectId == projectId }
+                if (project != null) {
+                  _selectedProject.value = project
+                }
+                _selectedIdea.value = newIdea
+                _viewMode.value = IdeasViewMode.CONVERSATION
+              },
+              onFailure = { error ->
+                Log.e(TAG, "Error creating idea", error)
+                _errorMsg.value = "Error creating idea: ${error.message}"
+              })
     }
   }
 
   /**
-   * Load users for a project (for participant selection).
-   * Uses first() to get a snapshot instead of continuous collection.
+   * Load users for a project (for participant selection). Uses first() to get a snapshot instead of
+   * continuous collection.
    */
   override fun loadUsersForProject(projectId: String) {
     if (projectId.isBlank()) {
@@ -288,15 +286,17 @@ constructor(
     }
 
     viewModelScope.launch(dispatcher) {
-      ideasRepository.addParticipant(projectId, ideaId, userId).fold(
-          onSuccess = {
-            // Update the idea in the list by reloading
-            // The flow will automatically update
-          },
-          onFailure = { error ->
-            Log.e(TAG, "Error adding participant", error)
-            _errorMsg.value = "Error sharing idea: ${error.message}"
-          })
+      ideasRepository
+          .addParticipant(projectId, ideaId, userId)
+          .fold(
+              onSuccess = {
+                // Update the idea in the list by reloading
+                // The flow will automatically update
+              },
+              onFailure = { error ->
+                Log.e(TAG, "Error adding participant", error)
+                _errorMsg.value = "Error sharing idea: ${error.message}"
+              })
     }
   }
 
@@ -341,16 +341,18 @@ constructor(
               senderId = currentUserId,
               createdAt = Timestamp.now())
 
-      ideasRepository.sendMessage(ideaId, message).fold(
-          onSuccess = {
-            _currentMessage.value = ""
-            _isSending.value = false
-          },
-          onFailure = { error ->
-            Log.e(TAG, "Error sending message", error)
-            _errorMsg.value = "Error sending message: ${error.message}"
-            _isSending.value = false
-          })
+      ideasRepository
+          .sendMessage(ideaId, message)
+          .fold(
+              onSuccess = {
+                _currentMessage.value = ""
+                _isSending.value = false
+              },
+              onFailure = { error ->
+                Log.e(TAG, "Error sending message", error)
+                _errorMsg.value = "Error sending message: ${error.message}"
+                _isSending.value = false
+              })
     }
   }
 
@@ -362,21 +364,26 @@ constructor(
 }
 
 /**
- * Placeholder repository interface for Ideas.
- * This will be replaced with actual Firestore implementation.
+ * Placeholder repository interface for Ideas. This will be replaced with actual Firestore
+ * implementation.
  */
 interface IdeasRepository {
   fun getIdeasForProject(projectId: String): Flow<List<Idea>>
+
   suspend fun createIdea(idea: Idea): Result<String>
+
   suspend fun deleteIdea(projectId: String, ideaId: String): Result<Unit>
+
   fun getMessagesForIdea(ideaId: String): Flow<List<Message>>
+
   suspend fun sendMessage(ideaId: String, message: Message): Result<Unit>
+
   suspend fun addParticipant(projectId: String, ideaId: String, userId: String): Result<Unit>
 }
 
 /**
- * Placeholder implementation of IdeasRepository.
- * Returns empty data until the real repository is implemented.
+ * Placeholder implementation of IdeasRepository. Returns empty data until the real repository is
+ * implemented.
  */
 private class IdeasRepositoryPlaceholder : IdeasRepository {
   override fun getIdeasForProject(projectId: String): Flow<List<Idea>> = flowOf(emptyList())
@@ -392,6 +399,9 @@ private class IdeasRepositoryPlaceholder : IdeasRepository {
   override suspend fun sendMessage(ideaId: String, message: Message): Result<Unit> =
       Result.failure(Exception("IdeasRepository not yet implemented"))
 
-  override suspend fun addParticipant(projectId: String, ideaId: String, userId: String): Result<Unit> =
-      Result.failure(Exception("IdeasRepository not yet implemented"))
+  override suspend fun addParticipant(
+      projectId: String,
+      ideaId: String,
+      userId: String
+  ): Result<Unit> = Result.failure(Exception("IdeasRepository not yet implemented"))
 }
