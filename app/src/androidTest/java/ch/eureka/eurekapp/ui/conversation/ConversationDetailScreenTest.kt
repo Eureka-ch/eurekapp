@@ -4,13 +4,19 @@ import android.net.Uri
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.longClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import ch.eureka.eurekapp.ui.components.DeleteConfirmationDialogTestTags
+import ch.eureka.eurekapp.ui.components.MessageActionMenuTestTags
+import com.google.firebase.Timestamp
 import androidx.test.platform.app.InstrumentationRegistry
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.conversation.ConversationMessage
@@ -261,7 +267,11 @@ class ConversationDetailScreenTest {
       isLoading: Boolean = false,
       isConnected: Boolean = true,
       isUploadingFile: Boolean = false,
-      selectedFileUri: Uri? = null
+      selectedFileUri: Uri? = null,
+      editingMessageId: String? = null,
+      selectedMessageId: String? = null,
+      showDeleteConfirmation: Boolean = false,
+      currentMessage: String = ""
   ): ConversationDetailViewModel {
     return object :
         ConversationDetailViewModel(
@@ -275,10 +285,307 @@ class ConversationDetailScreenTest {
                   isLoading = isLoading,
                   isConnected = isConnected,
                   isUploadingFile = isUploadingFile,
-                  selectedFileUri = selectedFileUri))
+                  selectedFileUri = selectedFileUri,
+                  editingMessageId = editingMessageId,
+                  selectedMessageId = selectedMessageId,
+                  showDeleteConfirmation = showDeleteConfirmation,
+                  currentMessage = currentMessage))
 
       override val currentUserId: String?
         get() = this@ConversationDetailScreenTest.currentUserId
     }
+  }
+
+  // --- Edit/Delete Message Tests ---
+
+  @Test
+  fun conversationDetailScreen_showsEditingTopBarInEditMode() {
+    val messages =
+        listOf(ConversationMessage(messageId = "msg1", senderId = currentUserId, text = "Hello!"))
+
+    composeTestRule.setContent {
+      ConversationDetailScreen(
+          conversationId = "test-conv",
+          viewModel =
+              createMockViewModel(
+                  messages = messages,
+                  editingMessageId = "msg1",
+                  currentMessage = "Hello!"),
+          onNavigateBack = {})
+    }
+
+    composeTestRule
+        .onNodeWithTag(ConversationDetailScreenTestTags.EDITING_TOP_BAR)
+        .assertIsDisplayed()
+    composeTestRule.onNodeWithText("Editing Message").assertIsDisplayed()
+  }
+
+  @Test
+  fun conversationDetailScreen_showsCancelButtonInEditMode() {
+    val messages =
+        listOf(ConversationMessage(messageId = "msg1", senderId = currentUserId, text = "Hello!"))
+
+    composeTestRule.setContent {
+      ConversationDetailScreen(
+          conversationId = "test-conv",
+          viewModel =
+              createMockViewModel(
+                  messages = messages,
+                  editingMessageId = "msg1",
+                  currentMessage = "Hello!"),
+          onNavigateBack = {})
+    }
+
+    composeTestRule
+        .onNodeWithTag(ConversationDetailScreenTestTags.CANCEL_EDIT_BUTTON)
+        .assertIsDisplayed()
+  }
+
+  @Test
+  fun conversationDetailScreen_cancelEditButtonCallsCancelEditing() {
+    val messages =
+        listOf(ConversationMessage(messageId = "msg1", senderId = currentUserId, text = "Hello!"))
+
+    val mockViewModel = mockk<ConversationDetailViewModel>(relaxed = true)
+    val stateFlow =
+        MutableStateFlow(
+            ConversationDetailState(
+                messages = messages,
+                editingMessageId = "msg1",
+                currentMessage = "Hello!"))
+
+    every { mockViewModel.uiState } returns stateFlow
+    every { mockViewModel.currentUserId } returns currentUserId
+    every { mockViewModel.snackbarMessage } returns MutableStateFlow(null)
+
+    composeTestRule.setContent {
+      ConversationDetailScreen(
+          conversationId = "test-conv", viewModel = mockViewModel, onNavigateBack = {})
+    }
+
+    composeTestRule
+        .onNodeWithTag(ConversationDetailScreenTestTags.CANCEL_EDIT_BUTTON)
+        .performClick()
+
+    verify { mockViewModel.cancelEditing() }
+  }
+
+  @Test
+  fun conversationDetailScreen_hidesAttachFileButtonInEditMode() {
+    val messages =
+        listOf(ConversationMessage(messageId = "msg1", senderId = currentUserId, text = "Hello!"))
+
+    composeTestRule.setContent {
+      ConversationDetailScreen(
+          conversationId = "test-conv",
+          viewModel =
+              createMockViewModel(
+                  messages = messages,
+                  editingMessageId = "msg1",
+                  currentMessage = "Hello!"),
+          onNavigateBack = {})
+    }
+
+    composeTestRule.onNodeWithContentDescription("Attach file").assertDoesNotExist()
+  }
+
+  @Test
+  fun conversationDetailScreen_showsDeleteConfirmationDialog() {
+    val messages =
+        listOf(ConversationMessage(messageId = "msg1", senderId = currentUserId, text = "Hello!"))
+
+    composeTestRule.setContent {
+      ConversationDetailScreen(
+          conversationId = "test-conv",
+          viewModel =
+              createMockViewModel(
+                  messages = messages,
+                  selectedMessageId = "msg1",
+                  showDeleteConfirmation = true),
+          onNavigateBack = {})
+    }
+
+    composeTestRule
+        .onNodeWithTag(DeleteConfirmationDialogTestTags.DIALOG)
+        .assertIsDisplayed()
+    composeTestRule.onNodeWithText("Delete Message").assertIsDisplayed()
+  }
+
+  @Test
+  fun conversationDetailScreen_confirmDeleteButtonCallsConfirmDelete() {
+    val messages =
+        listOf(ConversationMessage(messageId = "msg1", senderId = currentUserId, text = "Hello!"))
+
+    val mockViewModel = mockk<ConversationDetailViewModel>(relaxed = true)
+    val stateFlow =
+        MutableStateFlow(
+            ConversationDetailState(
+                messages = messages,
+                selectedMessageId = "msg1",
+                showDeleteConfirmation = true))
+
+    every { mockViewModel.uiState } returns stateFlow
+    every { mockViewModel.currentUserId } returns currentUserId
+    every { mockViewModel.snackbarMessage } returns MutableStateFlow(null)
+
+    composeTestRule.setContent {
+      ConversationDetailScreen(
+          conversationId = "test-conv", viewModel = mockViewModel, onNavigateBack = {})
+    }
+
+    composeTestRule
+        .onNodeWithTag(DeleteConfirmationDialogTestTags.CONFIRM_BUTTON)
+        .performClick()
+
+    verify { mockViewModel.confirmDeleteMessage() }
+  }
+
+  @Test
+  fun conversationDetailScreen_cancelDeleteButtonCallsCancelDelete() {
+    val messages =
+        listOf(ConversationMessage(messageId = "msg1", senderId = currentUserId, text = "Hello!"))
+
+    val mockViewModel = mockk<ConversationDetailViewModel>(relaxed = true)
+    val stateFlow =
+        MutableStateFlow(
+            ConversationDetailState(
+                messages = messages,
+                selectedMessageId = "msg1",
+                showDeleteConfirmation = true))
+
+    every { mockViewModel.uiState } returns stateFlow
+    every { mockViewModel.currentUserId } returns currentUserId
+    every { mockViewModel.snackbarMessage } returns MutableStateFlow(null)
+
+    composeTestRule.setContent {
+      ConversationDetailScreen(
+          conversationId = "test-conv", viewModel = mockViewModel, onNavigateBack = {})
+    }
+
+    composeTestRule
+        .onNodeWithTag(DeleteConfirmationDialogTestTags.CANCEL_BUTTON)
+        .performClick()
+
+    verify { mockViewModel.cancelDeleteMessage() }
+  }
+
+  @Test
+  fun conversationDetailScreen_showsEditedIndicator() {
+    val editedMessage =
+        ConversationMessage(
+            messageId = "msg1",
+            senderId = currentUserId,
+            text = "Edited message",
+            editedAt = Timestamp.now())
+
+    composeTestRule.setContent {
+      ConversationDetailScreen(
+          conversationId = "test-conv",
+          viewModel = createMockViewModel(messages = listOf(editedMessage)),
+          onNavigateBack = {})
+    }
+
+    composeTestRule
+        .onNodeWithTag(MessageBubbleTestTags.EDITED_INDICATOR)
+        .assertIsDisplayed()
+  }
+
+  @Test
+  fun conversationDetailScreen_doesNotShowEditedIndicatorForUnedited() {
+    val message =
+        ConversationMessage(
+            messageId = "msg1",
+            senderId = currentUserId,
+            text = "Regular message",
+            editedAt = null)
+
+    composeTestRule.setContent {
+      ConversationDetailScreen(
+          conversationId = "test-conv",
+          viewModel = createMockViewModel(messages = listOf(message)),
+          onNavigateBack = {})
+    }
+
+    composeTestRule.onNodeWithTag(MessageBubbleTestTags.EDITED_INDICATOR).assertDoesNotExist()
+  }
+
+  @Test
+  fun conversationDetailScreen_sendButtonCallsSaveEditedMessageInEditMode() {
+    val messages =
+        listOf(ConversationMessage(messageId = "msg1", senderId = currentUserId, text = "Hello!"))
+
+    val mockViewModel = mockk<ConversationDetailViewModel>(relaxed = true)
+    val stateFlow =
+        MutableStateFlow(
+            ConversationDetailState(
+                messages = messages,
+                editingMessageId = "msg1",
+                currentMessage = "Updated message"))
+
+    every { mockViewModel.uiState } returns stateFlow
+    every { mockViewModel.currentUserId } returns currentUserId
+    every { mockViewModel.snackbarMessage } returns MutableStateFlow(null)
+
+    composeTestRule.setContent {
+      ConversationDetailScreen(
+          conversationId = "test-conv", viewModel = mockViewModel, onNavigateBack = {})
+    }
+
+    composeTestRule.onNodeWithContentDescription("Send").performClick()
+
+    verify { mockViewModel.saveEditedMessage() }
+  }
+
+  @Test
+  fun conversationDetailScreen_showsActionMenuForSelectedOwnMessage() {
+    val messages =
+        listOf(ConversationMessage(messageId = "msg1", senderId = currentUserId, text = "Hello!"))
+
+    composeTestRule.setContent {
+      ConversationDetailScreen(
+          conversationId = "test-conv",
+          viewModel = createMockViewModel(messages = messages, selectedMessageId = "msg1"),
+          onNavigateBack = {})
+    }
+
+    composeTestRule.onNodeWithTag(MessageActionMenuTestTags.MENU).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MessageActionMenuTestTags.EDIT_OPTION).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MessageActionMenuTestTags.DELETE_OPTION).assertIsDisplayed()
+  }
+
+  @Test
+  fun conversationDetailScreen_showsRemoveAttachmentOptionForFileMessage() {
+    val fileMessage =
+        ConversationMessage(
+            messageId = "msg1",
+            senderId = currentUserId,
+            text = "File",
+            isFile = true,
+            fileUrl = "https://example.com/file.pdf")
+
+    composeTestRule.setContent {
+      ConversationDetailScreen(
+          conversationId = "test-conv",
+          viewModel = createMockViewModel(messages = listOf(fileMessage), selectedMessageId = "msg1"),
+          onNavigateBack = {})
+    }
+
+    composeTestRule.onNodeWithTag(MessageActionMenuTestTags.REMOVE_ATTACHMENT_OPTION).assertIsDisplayed()
+  }
+
+  @Test
+  fun conversationDetailScreen_doesNotShowRemoveAttachmentForTextOnlyMessage() {
+    val textMessage =
+        ConversationMessage(
+            messageId = "msg1", senderId = currentUserId, text = "Hello!", isFile = false)
+
+    composeTestRule.setContent {
+      ConversationDetailScreen(
+          conversationId = "test-conv",
+          viewModel = createMockViewModel(messages = listOf(textMessage), selectedMessageId = "msg1"),
+          onNavigateBack = {})
+    }
+
+    composeTestRule.onNodeWithTag(MessageActionMenuTestTags.REMOVE_ATTACHMENT_OPTION).assertDoesNotExist()
   }
 }
