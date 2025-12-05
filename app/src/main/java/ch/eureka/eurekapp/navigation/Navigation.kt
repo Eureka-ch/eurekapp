@@ -53,6 +53,7 @@ import ch.eureka.eurekapp.ui.meeting.MeetingProposalVoteScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenConfig
 import ch.eureka.eurekapp.ui.ideas.IdeasScreen
+import ch.eureka.eurekapp.ui.ideas.IdeasViewModel
 import ch.eureka.eurekapp.ui.notes.SelfNotesScreen
 import ch.eureka.eurekapp.ui.notifications.NotificationPreferencesScreen
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
@@ -306,12 +307,10 @@ fun NavigationMenu(
               }
               composable<Route.IdeasSection.Ideas> { backStackEntry ->
                 val ideasRoute = backStackEntry.toRoute<Route.IdeasSection.Ideas>()
-                // TODO: Pass actual projects and ViewModel when implemented
                 IdeasScreen(
-                    selectedProject = null,
-                    availableProjects = emptyList(),
-                    onProjectSelected = { /* TODO: Handle project selection */ },
-                    onNavigateBack = { navigationController.popBackStack() })
+                    onNavigateBack = { navigationController.popBackStack() },
+                    viewModel = viewModel<IdeasViewModel>()
+                )
               }
               composable<Route.OverviewProject> { backStackEntry ->
                 val overviewProjectScreenRoute = backStackEntry.toRoute<Route.OverviewProject>()

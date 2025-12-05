@@ -49,7 +49,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 
 /*
-Co-author: GPT-5 Codex
+Co-author: GPT-5 Codex and Cursor
 */
 
 object BottomBarNavigationTestTags {
