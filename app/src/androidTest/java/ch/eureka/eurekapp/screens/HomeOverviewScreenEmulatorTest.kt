@@ -127,9 +127,14 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
       dueDate: Timestamp = Timestamp.now(),
       status: TaskStatus = TaskStatus.TODO
   ) {
+    val projectRepository: ch.eureka.eurekapp.model.data.project.ProjectRepository =
+        ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository(
+            firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
     val taskRepository =
         FirestoreTaskRepository(
-            firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+            firestore = FirebaseEmulator.firestore,
+            auth = FirebaseEmulator.auth,
+            projectRepository = projectRepository)
     val task =
         Task(
             taskID = taskId,

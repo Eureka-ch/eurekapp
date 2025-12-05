@@ -75,6 +75,8 @@ class HomeOverviewViewModelTest {
               projectId = projectA.projectId,
               title = "Task $index",
               status = TaskStatus.TODO,
+              // Home overview filters on tasks assigned to the current user
+              assignedUserIds = listOf("user-1"),
               dueDate = timestamp(now + index * DAY))
         }
     taskRepository.setCurrentUserTasks(flowOf(tasks))
@@ -137,6 +139,18 @@ class HomeOverviewViewModelTest {
     assertFalse(state.isConnected)
     assertEquals("Task failure", state.error)
     assertTrue(state.upcomingTasks.isEmpty())
+  }
+
+  @Test
+  fun projectsFlow_catchBlock_handlesError() = runTest {
+    projectRepository.setCurrentUserProjects(flow { throw IllegalStateException("Project error") })
+    userRepository.setCurrentUser(flowOf(null))
+    taskRepository.setCurrentUserTasks(flowOf(emptyList()))
+    val viewModel =
+        HomeOverviewViewModel(
+            taskRepository, projectRepository, meetingRepository, userRepository, connectivityFlow)
+    advanceUntilIdle()
+    assertEquals("Project error", viewModel.uiState.value.error)
   }
 
   private fun timestamp(timeMillis: Long) = Timestamp(java.util.Date(timeMillis))

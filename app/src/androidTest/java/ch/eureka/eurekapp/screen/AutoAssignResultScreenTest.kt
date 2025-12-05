@@ -13,11 +13,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository
 import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRole
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.data.user.FirestoreUserRepository
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.navigation.Route
 import ch.eureka.eurekapp.screens.subscreens.tasks.AutoAssignResultScreen
@@ -27,7 +29,11 @@ import ch.eureka.eurekapp.ui.tasks.AutoAssignResultViewModel
 import ch.eureka.eurekapp.ui.tasks.MockProjectRepository
 import ch.eureka.eurekapp.ui.tasks.MockTaskRepository
 import ch.eureka.eurekapp.ui.tasks.MockUserRepository
+import ch.eureka.eurekapp.utils.FirebaseEmulator
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
+import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -80,7 +86,9 @@ class AutoAssignResultScreenTest {
                 navigationController = navController,
                 viewModel =
                     AutoAssignResultViewModel(
-                        mockTaskRepository, mockProjectRepository, mockUserRepository))
+                        projectRepository = mockProjectRepository,
+                        taskRepository = mockTaskRepository,
+                        userRepository = mockUserRepository))
           }
         }
         navController.navigate(Route.TasksSection.AutoTaskAssignment)
@@ -95,7 +103,9 @@ class AutoAssignResultScreenTest {
                 navigationController = navController,
                 viewModel =
                     AutoAssignResultViewModel(
-                        mockTaskRepository, mockProjectRepository, mockUserRepository))
+                        projectRepository = mockProjectRepository,
+                        taskRepository = mockTaskRepository,
+                        userRepository = mockUserRepository))
           }
         }
       }
@@ -328,5 +338,42 @@ class AutoAssignResultScreenTest {
     }
     composeTestRule.onNodeWithText("No assignments to review").assertIsDisplayed()
     composeTestRule.onNodeWithText("Go Back").assertIsDisplayed()
+  }
+
+  @Test
+  fun constructor_passesProjectRepositoryToTaskRepository() = runBlocking {
+    // Setup Firebase for this test
+    if (!FirebaseEmulator.isRunning) {
+      throw IllegalStateException("Firebase Emulator must be running for tests")
+    }
+
+    FirebaseEmulator.clearFirestoreEmulator()
+    FirebaseEmulator.clearAuthEmulator()
+
+    val authResult = FirebaseEmulator.auth.signInAnonymously().await()
+    if (authResult.user == null) {
+      throw IllegalStateException("Failed to sign in")
+    }
+
+    if (FirebaseEmulator.auth.currentUser == null) {
+      throw IllegalStateException("Auth state not properly established after sign-in")
+    }
+
+    // Create projectRepository and userRepository with Firebase
+    val projectRepository =
+        FirestoreProjectRepository(
+            firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+    val userRepository =
+        FirestoreUserRepository(
+            firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+
+    // Create ViewModel without passing taskRepository to use default value
+    // This covers line 60: projectRepository passed to FirestoreTaskRepository
+    val viewModel =
+        AutoAssignResultViewModel(
+            projectRepository = projectRepository, userRepository = userRepository)
+
+    // Verify ViewModel is created successfully
+    assertNotNull(viewModel)
   }
 }

@@ -214,8 +214,15 @@ class CreateTaskScreenTests : TestCase() {
     FirebaseEmulator.clearAuthEmulator()
   }
 
+  private val projectRepository: ProjectRepository =
+      ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository(
+          firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+
   private val taskRepository: TaskRepository =
-      FirestoreTaskRepository(firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+      FirestoreTaskRepository(
+          firestore = FirebaseEmulator.firestore,
+          auth = FirebaseEmulator.auth,
+          projectRepository = projectRepository)
 
   /**
    * Helper function to select a project from the dropdown menu. This replaces the old

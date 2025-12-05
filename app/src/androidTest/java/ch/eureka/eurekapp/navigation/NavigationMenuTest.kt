@@ -159,9 +159,14 @@ class NavigationMenuTest : TestCase() {
           .await()
 
       // Setup minimal test task
+      val projectRepository: ch.eureka.eurekapp.model.data.project.ProjectRepository =
+          ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository(
+              firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
       val taskRepository: TaskRepository =
           FirestoreTaskRepository(
-              firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+              firestore = FirebaseEmulator.firestore,
+              auth = FirebaseEmulator.auth,
+              projectRepository = projectRepository)
       val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse("15/10/2025")!!
       taskRepository
           .updateTask(

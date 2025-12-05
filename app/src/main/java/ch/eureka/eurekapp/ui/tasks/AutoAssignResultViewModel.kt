@@ -50,12 +50,14 @@ data class AutoAssignResultUiState(
  * Handles displaying proposed assignments and applying accepted assignments.
  */
 class AutoAssignResultViewModel(
-    private val taskRepository: TaskRepository =
-        FirestoreTaskRepository(
-            firestore = FirebaseFirestore.getInstance(), auth = FirebaseAuth.getInstance()),
     private val projectRepository: ProjectRepository =
         FirestoreProjectRepository(
             firestore = FirebaseFirestore.getInstance(), auth = FirebaseAuth.getInstance()),
+    private val taskRepository: TaskRepository =
+        FirestoreTaskRepository(
+            firestore = FirebaseFirestore.getInstance(),
+            auth = FirebaseAuth.getInstance(),
+            projectRepository = projectRepository),
     private val userRepository: UserRepository =
         FirestoreUserRepository(
             firestore = FirebaseFirestore.getInstance(), auth = FirebaseAuth.getInstance()),

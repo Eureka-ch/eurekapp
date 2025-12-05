@@ -116,8 +116,15 @@ open class EditTaskScreenTest : TestCase() {
     FirebaseEmulator.clearAuthEmulator()
   }
 
+  private val projectRepository: ch.eureka.eurekapp.model.data.project.ProjectRepository =
+      ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository(
+          firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+
   private val taskRepository: TaskRepository =
-      FirestoreTaskRepository(firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+      FirestoreTaskRepository(
+          firestore = FirebaseEmulator.firestore,
+          auth = FirebaseEmulator.auth,
+          projectRepository = projectRepository)
 
   protected suspend fun setupTestProject(projectId: String, role: ProjectRole = ProjectRole.OWNER) {
     // Create project and member sequentially (security rules require project to exist first)
@@ -1057,7 +1064,12 @@ class TestableTaskScreenViewModel(
     projectRepository: ProjectRepository,
     userRepository: UserRepository,
     currentUserId: String?
-) : TaskScreenViewModel(taskRepository, projectRepository, userRepository, currentUserId) {
+) :
+    TaskScreenViewModel(
+        projectRepository = projectRepository,
+        taskRepository = taskRepository,
+        userRepository = userRepository,
+        currentUserId = currentUserId) {
   fun cleanupForTest() {
     viewModelScope.cancel()
   }

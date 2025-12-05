@@ -30,9 +30,14 @@ class TaskRepositoryTest : FirestoreRepositoryTest() {
   @Before
   override fun setup() = runBlocking {
     super.setup()
+    val projectRepository: ch.eureka.eurekapp.model.data.project.ProjectRepository =
+        ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository(
+            firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
     repository =
         FirestoreTaskRepository(
-            firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+            firestore = FirebaseEmulator.firestore,
+            auth = FirebaseEmulator.auth,
+            projectRepository = projectRepository)
   }
 
   @Test
@@ -148,7 +153,7 @@ class TaskRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getTasksForCurrentUser_shouldReturnTasksAssignedToCurrentUser() = runBlocking {
+  fun getTasksForCurrentUser_shouldReturnAllTasksInMemberProjects() = runBlocking {
     val projectId = "project_task_6"
     setupTestProject(projectId)
 
@@ -174,9 +179,10 @@ class TaskRepositoryTest : FirestoreRepositoryTest() {
     val flow = repository.getTasksForCurrentUser()
     val tasks = flow.first()
 
-    assertEquals(1, tasks.size)
-    assertEquals("task5", tasks[0].taskID)
-    assertTrue(tasks[0].assignedUserIds.contains(testUserId))
+    // getTasksForCurrentUser now returns all tasks from projects where user is a member
+    assertEquals(2, tasks.size)
+    assertTrue(tasks.any { it.taskID == "task5" && it.assignedUserIds.contains(testUserId) })
+    assertTrue(tasks.any { it.taskID == "task6" && !it.assignedUserIds.contains(testUserId) })
   }
   /*
   @Test

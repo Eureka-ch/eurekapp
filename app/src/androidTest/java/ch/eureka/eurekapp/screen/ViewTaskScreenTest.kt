@@ -125,8 +125,15 @@ open class ViewTaskScreenTest : TestCase() {
     FirebaseEmulator.clearAuthEmulator()
   }
 
+  private val projectRepository: ch.eureka.eurekapp.model.data.project.ProjectRepository =
+      ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository(
+          firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+
   private val taskRepository: TaskRepository =
-      FirestoreTaskRepository(firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+      FirestoreTaskRepository(
+          firestore = FirebaseEmulator.firestore,
+          auth = FirebaseEmulator.auth,
+          projectRepository = projectRepository)
 
   private val templateRepository =
       FirestoreTaskTemplateRepository(
@@ -438,7 +445,9 @@ open class ViewTaskScreenTest : TestCase() {
         composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
 
         // Wait for task card to load from Firestore
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
+        // Increased timeout because getTasksForCurrentUser() now needs to fetch projects first,
+        // then tasks from each project, which can take longer
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
           try {
             composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).assertExists()
             true

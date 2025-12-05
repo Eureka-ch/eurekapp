@@ -132,7 +132,7 @@ class EditTaskViewModel(
                 projectId = state.projectId,
                 title = state.title,
                 description = state.description,
-                assignedUserIds = state.selectedAssignedUserIds.ifEmpty { listOf(currentUser) },
+                assignedUserIds = state.selectedAssignedUserIds,
                 dueDate = timestamp,
                 reminderTime = reminderTimestamp,
                 attachmentUrls = state.attachmentUrls + newPhotoUrls,

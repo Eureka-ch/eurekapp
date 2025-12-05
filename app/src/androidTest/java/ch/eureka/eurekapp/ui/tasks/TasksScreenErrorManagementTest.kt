@@ -50,7 +50,10 @@ class TasksScreenErrorManagementTest {
 
     mockViewModel =
         MockTaskScreenViewModel(
-            mockTaskRepository, mockProjectRepository, mockUserRepository, "user1")
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
+            currentUserId = "user1")
   }
 
   @Test

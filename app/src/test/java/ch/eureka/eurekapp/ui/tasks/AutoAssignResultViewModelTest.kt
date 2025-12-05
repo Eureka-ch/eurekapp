@@ -72,9 +72,13 @@ class AutoAssignResultViewModelTest {
     // Set up empty projects to trigger immediate completion
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
 
-    // Create ViewModel - it initializes with isLoading = true
+    // Create ViewModel with projectRepository first to cover line 60 (projectRepository passed to
+    // FirestoreTaskRepository)
     viewModel =
-        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+        AutoAssignResultViewModel(
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository)
 
     // With UnconfinedTestDispatcher, loadAutoAssignResults() executes immediately
     // So the state might already be updated. However, the ViewModel does initialize
@@ -93,7 +97,10 @@ class AutoAssignResultViewModelTest {
   fun viewModel_withNoProjects_showsError() = runTest {
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
     viewModel =
-        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+        AutoAssignResultViewModel(
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository)
     advanceUntilIdle()
 
     val uiState = viewModel.uiState.first()
@@ -108,7 +115,10 @@ class AutoAssignResultViewModelTest {
     mockProjectRepository.setMembers("proj1", flowOf(emptyList()))
     mockTaskRepository.setProjectTasks("proj1", flowOf(emptyList()))
     viewModel =
-        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+        AutoAssignResultViewModel(
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository)
     advanceUntilIdle()
 
     val uiState = viewModel.uiState.first()
@@ -124,7 +134,10 @@ class AutoAssignResultViewModelTest {
         "proj1", flowOf(listOf(createTask("task1"), createTask("task2"))))
 
     viewModel =
-        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+        AutoAssignResultViewModel(
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository)
     advanceUntilIdle()
 
     val uiState = viewModel.uiState.first()
@@ -141,7 +154,10 @@ class AutoAssignResultViewModelTest {
     mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(createTask("task1"))))
 
     viewModel =
-        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+        AutoAssignResultViewModel(
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository)
     advanceUntilIdle()
 
     val assignment = viewModel.uiState.first().proposedAssignments.first()
@@ -159,7 +175,10 @@ class AutoAssignResultViewModelTest {
     mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(createTask("task1"))))
 
     viewModel =
-        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+        AutoAssignResultViewModel(
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository)
     advanceUntilIdle()
 
     val assignment = viewModel.uiState.first().proposedAssignments.first()
@@ -178,7 +197,10 @@ class AutoAssignResultViewModelTest {
         "proj1", flowOf(listOf(createTask("task1"), createTask("task2"))))
 
     viewModel =
-        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+        AutoAssignResultViewModel(
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository)
     advanceUntilIdle()
 
     viewModel.acceptAll()
@@ -197,7 +219,10 @@ class AutoAssignResultViewModelTest {
         "proj1", flowOf(listOf(createTask("task1"), createTask("task2"))))
 
     viewModel =
-        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+        AutoAssignResultViewModel(
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository)
     advanceUntilIdle()
 
     viewModel.rejectAll()
@@ -216,7 +241,10 @@ class AutoAssignResultViewModelTest {
         "proj1", flowOf(listOf(createTask("task1"), createTask("task2"))))
 
     viewModel =
-        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+        AutoAssignResultViewModel(
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository)
     advanceUntilIdle()
 
     val assignment1 =
@@ -239,7 +267,10 @@ class AutoAssignResultViewModelTest {
     mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(createTask("task1"))))
 
     viewModel =
-        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+        AutoAssignResultViewModel(
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository)
     advanceUntilIdle()
 
     val assignment = viewModel.uiState.first().proposedAssignments.first()
@@ -262,7 +293,10 @@ class AutoAssignResultViewModelTest {
         "proj1", flowOf(listOf(createTask("task1"), createTask("task2"))))
 
     viewModel =
-        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+        AutoAssignResultViewModel(
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository)
     advanceUntilIdle()
 
     val uiState = viewModel.uiState.first()
@@ -277,7 +311,10 @@ class AutoAssignResultViewModelTest {
     mockUserRepository.setUser("user1", flowOf(null))
 
     viewModel =
-        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+        AutoAssignResultViewModel(
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository)
     advanceUntilIdle()
 
     val uiState = viewModel.uiState.first()
@@ -303,7 +340,10 @@ class AutoAssignResultViewModelTest {
     mockUserRepository.setUser("user2", flowOf(testUser2))
 
     viewModel =
-        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+        AutoAssignResultViewModel(
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository)
     advanceUntilIdle()
 
     val uiState = viewModel.uiState.first()
@@ -328,7 +368,10 @@ class AutoAssignResultViewModelTest {
     mockUserRepository.setUser("user1", flowOf(testUser1))
 
     viewModel =
-        AutoAssignResultViewModel(mockTaskRepository, mockProjectRepository, mockUserRepository)
+        AutoAssignResultViewModel(
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository)
     advanceUntilIdle()
 
     val uiState = viewModel.uiState.first()

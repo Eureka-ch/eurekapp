@@ -72,9 +72,9 @@ class TaskScreenViewModelTest {
   fun viewModel_initialState_hasCorrectDefaults() = runTest {
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()
@@ -106,9 +106,9 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()
@@ -141,9 +141,9 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()
@@ -179,9 +179,9 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()
@@ -234,9 +234,9 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()
@@ -290,9 +290,9 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()
@@ -346,9 +346,9 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()
@@ -384,9 +384,9 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()
@@ -415,9 +415,9 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()
@@ -446,9 +446,9 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()
@@ -477,9 +477,9 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()
@@ -501,9 +501,9 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()
@@ -521,9 +521,9 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()
@@ -555,9 +555,9 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()
@@ -575,9 +575,9 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()
@@ -596,9 +596,9 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()
@@ -622,9 +622,9 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()
@@ -667,9 +667,9 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()
@@ -704,9 +704,9 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()
@@ -750,9 +750,9 @@ class TaskScreenViewModelTest {
 
     viewModel =
         TaskScreenViewModel(
-            mockTaskRepository,
-            mockProjectRepository,
-            mockUserRepository,
+            projectRepository = mockProjectRepository,
+            taskRepository = mockTaskRepository,
+            userRepository = mockUserRepository,
             currentUserId = "user1",
             mockConnectivityObserver)
     advanceUntilIdle()

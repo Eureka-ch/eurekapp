@@ -87,9 +87,9 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
-                  mockUserRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
+                  userRepository = mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
     }
@@ -109,9 +109,9 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
-                  mockUserRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
+                  userRepository = mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
     }
@@ -130,9 +130,9 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
-                  mockUserRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
+                  userRepository = mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
     }
@@ -161,9 +161,9 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
-                  mockUserRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
+                  userRepository = mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
     }
@@ -205,9 +205,9 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
-                  mockUserRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
+                  userRepository = mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
     }
@@ -256,9 +256,9 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
-                  mockUserRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
+                  userRepository = mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
     }
@@ -313,9 +313,9 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
-                  mockUserRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
+                  userRepository = mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
     }
@@ -381,9 +381,9 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
-                  mockUserRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
+                  userRepository = mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
     }
@@ -432,9 +432,9 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
-                  mockUserRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
+                  userRepository = mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
     }
@@ -467,9 +467,9 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
-                  mockUserRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
+                  userRepository = mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
     }
@@ -491,9 +491,9 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
-                  mockUserRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
+                  userRepository = mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
     }
@@ -532,9 +532,9 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
-                  mockUserRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
+                  userRepository = mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
     }
@@ -571,9 +571,9 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
-                  mockUserRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
+                  userRepository = mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
     }
@@ -621,9 +621,9 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
-                  mockUserRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
+                  userRepository = mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
     }
@@ -659,9 +659,9 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
-                  mockUserRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
+                  userRepository = mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
     }
@@ -698,9 +698,9 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
-                  mockUserRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
+                  userRepository = mockUserRepository,
                   "user1",
                   mockConnectivityObserver),
           onCreateTaskClick = { createTaskClicked = true })
@@ -723,9 +723,9 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
-                  mockUserRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
+                  userRepository = mockUserRepository,
                   "user1",
                   mockConnectivityObserver),
           onAutoAssignClick = { autoAssignClicked = true })
@@ -749,9 +749,9 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
-                  mockUserRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
+                  userRepository = mockUserRepository,
                   "user1",
                   mockConnectivityObserver),
           onCreateTaskClick = { createTaskClicked = true },
@@ -781,9 +781,9 @@ class TasksScreenTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
-                  mockUserRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
+                  userRepository = mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
     }

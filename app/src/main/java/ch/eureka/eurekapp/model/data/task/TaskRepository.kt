@@ -9,7 +9,10 @@ interface TaskRepository {
   /** Get all tasks in project with real-time updates */
   fun getTasksInProject(projectId: String): Flow<List<Task>>
 
-  /** Get all tasks assigned to current user across all projects with real-time updates */
+  /**
+   * Get all tasks from projects where current user is a member (regardless of assignment) with
+   * real-time updates
+   */
   fun getTasksForCurrentUser(): Flow<List<Task>>
 
   /** Create a new task */

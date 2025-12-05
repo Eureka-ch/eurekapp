@@ -12,6 +12,7 @@ import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
 import ch.eureka.eurekapp.model.data.task.TaskStatus
+import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -48,6 +49,13 @@ class HomeOverviewViewModel(
 
   private val _error = MutableStateFlow<String?>(null)
 
+  /** Flow of the current user so we can reuse it for name and task filtering. */
+  private val currentUser: Flow<User?> =
+      userRepository.getCurrentUser().catch { throwable ->
+        _error.value = throwable.message
+        emit(null)
+      }
+
   private val projectsFlow: StateFlow<List<Project>> =
       projectRepository
           .getProjectsForCurrentUser(skipCache = false)
@@ -58,8 +66,7 @@ class HomeOverviewViewModel(
           .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
   private val currentUserName: Flow<String> =
-      userRepository
-          .getCurrentUser()
+      currentUser
           .map { user -> user?.displayName ?: "" }
           .catch { throwable ->
             _error.value = throwable.message
@@ -67,11 +74,15 @@ class HomeOverviewViewModel(
           }
 
   private val upcomingTasks: Flow<List<Task>> =
-      taskRepository
-          .getTasksForCurrentUser()
-          .map { tasks ->
+      combine(currentUser, taskRepository.getTasksForCurrentUser()) { user, tasks ->
+            val currentUserId = user?.uid
             tasks
-                .filter { it.status != TaskStatus.COMPLETED }
+                // Home overview: only show tasks assigned to the current user
+                .filter { task ->
+                  currentUserId != null &&
+                      task.assignedUserIds.contains(currentUserId) &&
+                      task.status != TaskStatus.COMPLETED
+                }
                 .sortedBy { it.dueDate.toEpochMillisOrMax() }
                 .take(HOME_ITEMS_LIMIT)
           }

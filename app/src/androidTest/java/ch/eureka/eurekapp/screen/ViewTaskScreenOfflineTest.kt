@@ -41,8 +41,15 @@ class ViewTaskScreenOfflineTest {
   private lateinit var context: android.content.Context
   private lateinit var mockConnectivityObserver: MockConnectivityObserver
 
+  private val projectRepository: ch.eureka.eurekapp.model.data.project.ProjectRepository =
+      ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository(
+          firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+
   private val taskRepository: TaskRepository =
-      FirestoreTaskRepository(firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth)
+      FirestoreTaskRepository(
+          firestore = FirebaseEmulator.firestore,
+          auth = FirebaseEmulator.auth,
+          projectRepository = projectRepository)
 
   @Before
   fun setup() = runBlocking {

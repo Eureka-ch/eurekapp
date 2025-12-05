@@ -20,7 +20,12 @@ class MockTaskScreenViewModel(
     userRepository: UserRepository,
     currentUserId: String?,
     initialState: TaskScreenUiState = TaskScreenUiState()
-) : TaskScreenViewModel(taskRepository, projectRepository, userRepository, currentUserId) {
+) :
+    TaskScreenViewModel(
+        projectRepository = projectRepository,
+        taskRepository = taskRepository,
+        userRepository = userRepository,
+        currentUserId = currentUserId) {
 
   private val _mockUiState = MutableStateFlow(initialState)
 

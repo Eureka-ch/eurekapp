@@ -56,10 +56,6 @@ class CreateTaskViewModel(
   override val uiState: StateFlow<CreateTaskState> = _uiState.asStateFlow()
 
   init {
-    // Initialize with current user as default assignee
-    getCurrentUserId()?.let { userId ->
-      updateState { copy(selectedAssignedUserIds = listOf(userId)) }
-    }
     // Load available projects
     loadAvailableProjects()
   }
@@ -196,7 +192,7 @@ class CreateTaskViewModel(
                 projectId = projectIdToUse,
                 title = state.title,
                 description = state.description,
-                assignedUserIds = state.selectedAssignedUserIds.ifEmpty { listOf(currentUser) },
+                assignedUserIds = state.selectedAssignedUserIds,
                 dueDate = timestamp,
                 reminderTime = reminderTimestamp,
                 attachmentUrls = photoUrls,

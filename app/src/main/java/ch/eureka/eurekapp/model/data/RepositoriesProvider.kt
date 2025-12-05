@@ -59,7 +59,8 @@ object RepositoriesProvider {
   }
 
   private val _taskRepository: FirestoreTaskRepository by lazy {
-    FirestoreTaskRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
+    FirestoreTaskRepository(
+        FirebaseFirestore.getInstance(), FirebaseAuth.getInstance(), _projectRepository)
   }
 
   private val _projectRepository: FirestoreProjectRepository by lazy {

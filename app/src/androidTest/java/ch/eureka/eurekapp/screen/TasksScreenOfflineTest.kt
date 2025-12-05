@@ -75,8 +75,8 @@ class TasksScreenOfflineTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
                   mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
@@ -99,8 +99,8 @@ class TasksScreenOfflineTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
                   mockUserRepository,
                   "user1",
                   mockConnectivityObserver),
@@ -135,8 +135,8 @@ class TasksScreenOfflineTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
                   mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
@@ -164,8 +164,8 @@ class TasksScreenOfflineTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
                   mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
@@ -198,8 +198,8 @@ class TasksScreenOfflineTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
                   mockUserRepository,
                   "user1",
                   mockConnectivityObserver))
@@ -241,8 +241,8 @@ class TasksScreenOfflineTest {
       TasksScreen(
           viewModel =
               TaskScreenViewModel(
-                  mockTaskRepository,
-                  mockProjectRepository,
+                  projectRepository = mockProjectRepository,
+                  taskRepository = mockTaskRepository,
                   mockUserRepository,
                   "user1",
                   mockConnectivityObserver),
