@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.ui.conversation
 
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +28,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -38,7 +42,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.ui.components.BackButton
+import ch.eureka.eurekapp.ui.components.DeleteConfirmationDialog
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.components.MessageActionMenu
 import ch.eureka.eurekapp.ui.components.MessageBubble
 import ch.eureka.eurekapp.ui.components.MessageBubbleFileAttachment
 import ch.eureka.eurekapp.ui.components.MessageInputField
@@ -52,6 +58,8 @@ object ConversationDetailScreenTestTags {
   const val BACK_BUTTON = "backButton"
   const val SELECTED_FILE_TEXT = "selectedFileText"
   const val UPLOADING_TEXT = "uploadingText"
+  const val EDITING_TOP_BAR = "editingTopBar"
+  const val CANCEL_EDIT_BUTTON = "cancelEditButton"
 }
 
 /*
@@ -70,6 +78,7 @@ Co-author: Grok
  * @param viewModel The ViewModel managing conversation state.
  * @param modifier Optional modifier for the screen.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConversationDetailScreen(
     conversationId: String,
@@ -89,6 +98,9 @@ fun ConversationDetailScreen(
           contract = ActivityResultContracts.GetContent(),
           onResult = { uri -> viewModel.setSelectedFile(uri) })
 
+  // Handle back button to exit edit mode
+  BackHandler(enabled = uiState.isEditing) { viewModel.cancelEditing() }
+
   LaunchedEffect(snackbarMessage) {
     snackbarMessage?.let {
       snackbarHostState.showSnackbar(it)
@@ -104,24 +116,49 @@ fun ConversationDetailScreen(
 
   LaunchedEffect(Unit) { viewModel.markAsRead() }
 
+  // Show delete confirmation dialog
+  if (uiState.showDeleteConfirmation) {
+    DeleteConfirmationDialog(
+        onConfirm = viewModel::confirmDeleteMessage, onDismiss = viewModel::cancelDeleteMessage)
+  }
+
   Scaffold(
       modifier = modifier.fillMaxSize().testTag(ConversationDetailScreenTestTags.SCREEN),
       topBar = {
-        EurekaTopBar(
-            title = uiState.otherMemberName.ifEmpty { "Chat" },
-            navigationIcon = {
-              BackButton(
-                  onClick = onNavigateBack,
-                  modifier = Modifier.testTag(ConversationDetailScreenTestTags.BACK_BUTTON))
-            },
-            actions = {
-              if (uiState.projectName.isNotEmpty()) {
-                Text(
-                    text = uiState.projectName,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f))
-              }
-            })
+        if (uiState.isEditing) {
+          // Contextual top bar for editing mode
+          TopAppBar(
+              title = { Text("Editing Message") },
+              modifier = Modifier.testTag(ConversationDetailScreenTestTags.EDITING_TOP_BAR),
+              colors =
+                  TopAppBarDefaults.topAppBarColors(
+                      containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                      titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant),
+              navigationIcon = {
+                IconButton(
+                    onClick = viewModel::cancelEditing,
+                    modifier = Modifier.testTag(ConversationDetailScreenTestTags.CANCEL_EDIT_BUTTON)) {
+                      Icon(Icons.Default.Close, contentDescription = "Cancel Edit")
+                    }
+              })
+        } else {
+          // Standard top bar
+          EurekaTopBar(
+              title = uiState.otherMemberName.ifEmpty { "Chat" },
+              navigationIcon = {
+                BackButton(
+                    onClick = onNavigateBack,
+                    modifier = Modifier.testTag(ConversationDetailScreenTestTags.BACK_BUTTON))
+              },
+              actions = {
+                if (uiState.projectName.isNotEmpty()) {
+                  Text(
+                      text = uiState.projectName,
+                      style = MaterialTheme.typography.labelSmall,
+                      color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f))
+                }
+              })
+        }
       },
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       bottomBar = {
@@ -161,19 +198,28 @@ fun ConversationDetailScreen(
             }
           }
           Row {
-            IconButton(onClick = { filePickerLauncher.launch("*/*") }) {
-              Icon(Icons.Default.AttachFile, contentDescription = "Attach file")
+            if (!uiState.isEditing) {
+              IconButton(onClick = { filePickerLauncher.launch("*/*") }) {
+                Icon(Icons.Default.AttachFile, contentDescription = "Attach file")
+              }
             }
             MessageInputField(
                 message = uiState.currentMessage,
                 onMessageChange = viewModel::updateMessage,
                 onSend = {
-                  uiState.selectedFileUri?.let { uri -> viewModel.sendFileMessage(uri, context) }
-                      ?: viewModel.sendMessage()
+                  if (uiState.isEditing) {
+                    viewModel.saveEditedMessage()
+                  } else {
+                    uiState.selectedFileUri?.let { uri -> viewModel.sendFileMessage(uri, context) }
+                        ?: viewModel.sendMessage()
+                  }
                 },
                 isSending = uiState.isSending,
-                placeholder = "Write a message...",
-                canSend = uiState.currentMessage.isNotBlank() || uiState.selectedFileUri != null)
+                placeholder =
+                    if (uiState.isEditing) "Edit your message..." else "Write a message...",
+                canSend =
+                    uiState.currentMessage.isNotBlank() ||
+                        (!uiState.isEditing && uiState.selectedFileUri != null))
           }
         }
       }) { paddingValues ->
@@ -206,18 +252,41 @@ fun ConversationDetailScreen(
                   reverseLayout = true,
                   verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                     items(items = uiState.messages.reversed(), key = { it.messageId }) { message ->
-                      MessageBubble(
-                          text = message.text,
-                          timestamp = message.createdAt,
-                          isFromCurrentUser = message.senderId == viewModel.currentUserId,
-                          fileAttachment =
-                              MessageBubbleFileAttachment(
-                                  isFile = message.isFile,
-                                  fileUrl = message.fileUrl,
-                                  onDownloadClick = { url ->
-                                    viewModel.downloadFile(url, context)
-                                  }),
-                          onLinkClick = { url -> viewModel.openUrl(url, context) })
+                      val isFromCurrentUser = message.senderId == viewModel.currentUserId
+                      val isSelected = uiState.selectedMessageId == message.messageId
+
+                      Box {
+                        MessageBubble(
+                            text = message.text,
+                            timestamp = message.createdAt,
+                            isFromCurrentUser = isFromCurrentUser,
+                            fileAttachment =
+                                MessageBubbleFileAttachment(
+                                    isFile = message.isFile,
+                                    fileUrl = message.fileUrl,
+                                    onDownloadClick = { url ->
+                                      viewModel.downloadFile(url, context)
+                                    }),
+                            onLinkClick = { url -> viewModel.openUrl(url, context) },
+                            editedAt = message.editedAt,
+                            onLongClick =
+                                if (isFromCurrentUser) {
+                                  { viewModel.selectMessage(message.messageId) }
+                                } else null)
+
+                        // Show action menu for selected message (only for own messages)
+                        if (isSelected && isFromCurrentUser) {
+                          MessageActionMenu(
+                              expanded = true,
+                              onDismiss = { viewModel.clearMessageSelection() },
+                              onEdit = { viewModel.startEditing(message) },
+                              onDelete = { viewModel.requestDeleteMessage(message.messageId) },
+                              onRemoveAttachment = {
+                                viewModel.removeAttachment(message.messageId, message.fileUrl)
+                              },
+                              hasAttachment = message.isFile)
+                        }
+                      }
                     }
                   }
             }

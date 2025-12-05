@@ -123,6 +123,7 @@ open class ConversationDetailViewModel(
   private val _editingMessageId = MutableStateFlow<String?>(null)
   private val _selectedMessageId = MutableStateFlow<String?>(null)
   private val _showDeleteConfirmation = MutableStateFlow(false)
+  private val _pendingDeleteFileUrl = MutableStateFlow<String?>(null)
 
   private val conversationFlow =
       conversationRepository.getConversationById(conversationId).catch { e ->
@@ -152,6 +153,7 @@ open class ConversationDetailViewModel(
         }
       }
 
+  @Suppress("UNCHECKED_CAST")
   private val inputStateFlow =
       combine(
           _currentMessage,
@@ -161,24 +163,16 @@ open class ConversationDetailViewModel(
           _selectedFileUri,
           _editingMessageId,
           _selectedMessageId,
-          _showDeleteConfirmation) {
-              currentMessage,
-              isSending,
-              errorMsg,
-              isUploadingFile,
-              selectedFileUri,
-              editingMessageId,
-              selectedMessageId,
-              showDeleteConfirmation ->
+          _showDeleteConfirmation) { args ->
             InputState(
-                currentMessage,
-                isSending,
-                errorMsg,
-                isUploadingFile,
-                selectedFileUri,
-                editingMessageId,
-                selectedMessageId,
-                showDeleteConfirmation)
+                currentMessage = args[0] as String,
+                isSending = args[1] as Boolean,
+                errorMsg = args[2] as String?,
+                isUploadingFile = args[3] as Boolean,
+                selectedFileUri = args[4] as Uri?,
+                editingMessageId = args[5] as String?,
+                selectedMessageId = args[6] as String?,
+                showDeleteConfirmation = args[7] as Boolean)
           }
 
   open val uiState: StateFlow<ConversationDetailState> =
@@ -482,16 +476,22 @@ open class ConversationDetailViewModel(
     _selectedMessageId.value = null
   }
 
-  /** Remove the attachment from a message (keeps file in storage). */
-  fun removeAttachment(messageId: String) {
+  /** Remove the attachment from a message and delete the file from storage. */
+  fun removeAttachment(messageId: String, fileUrl: String) {
     _selectedMessageId.value = null
 
     viewModelScope.launch {
-      conversationRepository
-          .removeAttachment(conversationId, messageId)
-          .fold(
-              onSuccess = { _snackbarMessage.value = "Attachment removed" },
-              onFailure = { error -> _errorMsg.value = "Error: ${error.message}" })
+      // First delete the file from storage
+      fileStorageRepository.deleteFile(fileUrl).fold(
+          onSuccess = {
+            // Then remove the attachment reference from the message
+            conversationRepository
+                .removeAttachment(conversationId, messageId)
+                .fold(
+                    onSuccess = { _snackbarMessage.value = "Attachment removed" },
+                    onFailure = { error -> _errorMsg.value = "Error: ${error.message}" })
+          },
+          onFailure = { error -> _errorMsg.value = "Error deleting file: ${error.message}" })
     }
   }
 }
