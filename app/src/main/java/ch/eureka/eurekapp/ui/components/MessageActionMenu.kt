@@ -26,7 +26,8 @@ object MessageActionMenuTestTags {
  * @param onDismiss Callback when the menu is dismissed.
  * @param onEdit Callback when the edit option is selected.
  * @param onDelete Callback when the delete option is selected.
- * @param onRemoveAttachment Callback when the remove attachment option is selected (null if no attachment).
+ * @param onRemoveAttachment Callback when the remove attachment option is selected (null if no
+ *   attachment).
  * @param hasAttachment Whether the message has an attachment that can be removed.
  */
 @Composable

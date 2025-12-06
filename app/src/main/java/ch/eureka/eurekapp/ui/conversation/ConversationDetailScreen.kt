@@ -137,7 +137,8 @@ fun ConversationDetailScreen(
               navigationIcon = {
                 IconButton(
                     onClick = viewModel::cancelEditing,
-                    modifier = Modifier.testTag(ConversationDetailScreenTestTags.CANCEL_EDIT_BUTTON)) {
+                    modifier =
+                        Modifier.testTag(ConversationDetailScreenTestTags.CANCEL_EDIT_BUTTON)) {
                       Icon(Icons.Default.Close, contentDescription = "Cancel Edit")
                     }
               })
