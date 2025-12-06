@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 class MockIdeasViewModel :
     IdeasViewModel(
         projectRepository = RepositoriesProvider.projectRepository,
-        ideasRepository = IdeasRepositoryPlaceholder(),
+        ideasRepository = MockIdeasRepository(),
         getCurrentUserId = { "test-user-id" }) {
 
   private val _uiState =

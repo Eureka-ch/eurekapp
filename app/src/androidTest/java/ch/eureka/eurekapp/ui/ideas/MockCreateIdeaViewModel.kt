@@ -12,7 +12,7 @@ class MockCreateIdeaViewModel :
     CreateIdeaViewModel(
         projectRepository = RepositoriesProvider.projectRepository,
         userRepository = RepositoriesProvider.userRepository,
-        ideasRepository = IdeasRepositoryPlaceholder()) {
+        ideasRepository = MockIdeasRepository()) {
   private val _uiState =
       MutableStateFlow(
           CreateIdeaState(

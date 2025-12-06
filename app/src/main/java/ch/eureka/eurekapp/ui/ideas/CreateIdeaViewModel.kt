@@ -48,7 +48,7 @@ open class CreateIdeaViewModel
 constructor(
     private val projectRepository: ProjectRepository = RepositoriesProvider.projectRepository,
     private val userRepository: UserRepository = RepositoriesProvider.userRepository,
-    private val ideasRepository: IdeasRepository = IdeasRepositoryPlaceholder(),
+    private val ideasRepository: IdeasRepository = RepositoriesProvider.ideasRepository,
     private val getCurrentUserId: () -> String? = { null },
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
