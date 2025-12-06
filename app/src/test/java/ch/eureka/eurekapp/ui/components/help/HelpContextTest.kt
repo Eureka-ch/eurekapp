@@ -41,10 +41,11 @@ class HelpContextTest {
 
     assertEquals("Mastering meetings", content.title)
     assertTrue(content.intro.contains(userName))
-    assertEquals(3, content.steps.size)
+    assertEquals(4, content.steps.size)
     assertEquals("Upcoming/Past tabs", content.steps[0].highlight)
     assertEquals("Meeting card", content.steps[1].highlight)
     assertEquals("+ Button", content.steps[2].highlight)
+    assertEquals("File attachments", content.steps[3].highlight)
   }
 
   @Test
@@ -70,11 +71,16 @@ class HelpContextTest {
     assertEquals(4, content.steps.size)
     assertEquals("Essential fields", content.steps[0].highlight)
     assertEquals("Project & team", content.steps[1].highlight)
-    assertEquals("Task dependencies", content.steps[2].highlight)
-    assertEquals("Attachments", content.steps[3].highlight)
+    assertEquals("Task templates", content.steps[2].highlight)
+    assertEquals("Task dependencies", content.steps[3].highlight)
+
+    // Verify templates explanation is present
+    val templatesStep = content.steps[2]
+    assertTrue(templatesStep.detail.contains("templates"))
+    assertTrue(templatesStep.detail.contains("custom fields"))
 
     // Verify dependencies explanation is present
-    val dependenciesStep = content.steps[2]
+    val dependenciesStep = content.steps[3]
     assertTrue(dependenciesStep.detail.contains("execution order"))
     assertTrue(dependenciesStep.detail.contains("cannot start"))
     assertTrue(dependenciesStep.detail.contains("cycles"))
@@ -180,5 +186,10 @@ class HelpContextTest {
     assertEquals("Cloud vs Local", content.steps[0].highlight)
     assertEquals("Add notes", content.steps[1].highlight)
     assertEquals("View history", content.steps[2].highlight)
+
+    // Verify cloud sync explanation is present
+    val cloudStep = content.steps[0]
+    assertTrue(cloudStep.detail.contains("automatically synchronized"))
+    assertTrue(cloudStep.detail.contains("safe"))
   }
 }
