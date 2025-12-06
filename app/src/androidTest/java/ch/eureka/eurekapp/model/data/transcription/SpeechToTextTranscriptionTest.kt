@@ -109,28 +109,10 @@ class SpeechToTextTranscriptionTest {
     }
   }
 
-  @Test
-  fun testGetTranscriptionsForMeeting_returnsAllTranscriptions() = runBlocking {
-
-    // First create a transcription
-    val createResult =
-        repository.transcribeAudio(
-            audioDownloadUrl = testAudioUrl,
-            meetingId = "$testMeetingId-list",
-            projectId = testProjectId,
-            languageCode = "en-US")
-
-    assertTrue("Should create transcription", createResult.isSuccess)
-
-    // Wait a bit for Firestore to update
-    kotlinx.coroutines.delay(2000)
-
-    // Get all transcriptions
-    val transcriptions =
-        repository.getTranscriptionsForMeeting(testProjectId, "$testMeetingId-list").first()
-
-    assertFalse("Should have at least one transcription", transcriptions.isEmpty())
-  }
+  // Note: testGetTranscriptionsForMeeting functionality is covered by unit tests in
+  // CloudFunctionSpeechToTextRepositoryTest.kt which uses mocks instead of requiring
+  // Firebase emulators. The integration test was removed as it duplicated the unit test
+  // coverage and required external infrastructure.
 
   @Test
   fun testTranscribeAudio_withInvalidUrl_fails() = runBlocking {
