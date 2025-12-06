@@ -40,29 +40,6 @@ data class IdeasUIState(
 /** Placeholder UI state function for when ViewModel is not yet implemented. */
 fun IdeasUIStatePlaceholder(): IdeasUIState = IdeasUIState()
 
-/** Interface for IdeasViewModel to allow optional ViewModel injection. */
-interface IdeasViewModelInterface {
-  val uiState: StateFlow<IdeasUIState>
-
-  fun selectProject(project: Project)
-
-  fun selectIdea(idea: Idea)
-
-  fun onIdeaCreated(idea: Idea)
-
-  fun deleteIdea(ideaId: String)
-
-  fun addParticipantToIdea(ideaId: String, userId: String)
-
-  fun updateMessage(message: String)
-
-  fun sendMessage()
-
-  fun clearError()
-
-  fun getCurrentUserId(): String?
-}
-
 /** Placeholder repository interface for Ideas. */
 interface IdeasRepository {
   fun getIdeasForProject(projectId: String): Flow<List<Idea>>
@@ -112,19 +89,18 @@ class IdeasRepositoryPlaceholder : IdeasRepository {
  * - Hiding ideas locally (deletion is local only, not global)
  *
  * @property projectRepository Repository for project data operations.
- * @property ideasRepository Repository for ideas data operations (to be implemented).
+ * @property ideasRepository Repository for ideas data operations.
  * @property getCurrentUserId Function to get the current authenticated user's ID.
  * @property dispatcher Coroutine dispatcher for background operations.
  */
-class IdeasViewModel
+open class IdeasViewModel
 @JvmOverloads
 constructor(
     private val projectRepository: ProjectRepository = RepositoriesProvider.projectRepository,
-    private val ideasRepository: IdeasRepository =
-        IdeasRepositoryPlaceholder(), // Placeholder until repository is implemented
+    private val ideasRepository: IdeasRepository = IdeasRepositoryPlaceholder(),
     private val getCurrentUserId: () -> String? = { null },
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
-) : ViewModel(), IdeasViewModelInterface {
+) : ViewModel() {
 
   companion object {
     private const val MAX_MESSAGE_LENGTH = 5000
@@ -186,7 +162,7 @@ constructor(
 
   /** The single source of truth for the UI state. */
   @Suppress("UNCHECKED_CAST")
-  override val uiState: StateFlow<IdeasUIState> =
+  open val uiState: StateFlow<IdeasUIState> =
       combine(
               projectsFlow,
               _selectedProject,
@@ -224,21 +200,21 @@ constructor(
               started = SharingStarted.WhileSubscribed(5000),
               initialValue = IdeasUIState(isLoading = true))
 
-  override fun selectProject(project: Project) {
+  open fun selectProject(project: Project) {
     _selectedProject.value = project
     _viewMode.value = IdeasViewMode.LIST
     _selectedIdea.value = null
     _currentMessage.value = ""
   }
 
-  override fun selectIdea(idea: Idea) {
+  open fun selectIdea(idea: Idea) {
     _selectedIdea.value = idea
     _viewMode.value = IdeasViewMode.CONVERSATION
     _currentMessage.value = ""
   }
 
   /** Called when a new idea is created from CreateIdeaViewModel */
-  override fun onIdeaCreated(idea: Idea) {
+  open fun onIdeaCreated(idea: Idea) {
     val project = projectsFlow.value.find { it.projectId == idea.projectId }
     if (project != null) {
       _selectedProject.value = project
@@ -247,7 +223,7 @@ constructor(
     _viewMode.value = IdeasViewMode.CONVERSATION
   }
 
-  override fun deleteIdea(ideaId: String) {
+  open fun deleteIdea(ideaId: String) {
     val currentUserId = getCurrentUserId()
     if (currentUserId == null) return
 
@@ -262,7 +238,7 @@ constructor(
     }
   }
 
-  override fun addParticipantToIdea(ideaId: String, userId: String) {
+  open fun addParticipantToIdea(ideaId: String, userId: String) {
     val projectId = _selectedProject.value?.projectId
     if (projectId == null) {
       _errorMsg.value = "No project selected"
@@ -281,7 +257,7 @@ constructor(
     }
   }
 
-  override fun updateMessage(message: String) {
+  open fun updateMessage(message: String) {
     if (message.length <= MAX_MESSAGE_LENGTH) {
       _currentMessage.value = message
     } else {
@@ -289,7 +265,7 @@ constructor(
     }
   }
 
-  override fun sendMessage() {
+  open fun sendMessage() {
     val ideaId = _selectedIdea.value?.ideaId
     val messageText = _currentMessage.value.trim()
     val currentUserId = getCurrentUserId()
@@ -337,9 +313,9 @@ constructor(
     }
   }
 
-  override fun clearError() {
+  open fun clearError() {
     _errorMsg.value = null
   }
 
-  override fun getCurrentUserId(): String? = getCurrentUserId.invoke()
+  open fun getCurrentUserId(): String? = getCurrentUserId.invoke()
 }

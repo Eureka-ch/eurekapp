@@ -1,12 +1,18 @@
 package ch.eureka.eurekapp.ui.ideas
 
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.project.Project
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-/** Mock implementation of IdeasViewModelInterface for Android tests. */
-class MockIdeasViewModel : IdeasViewModelInterface {
+/** Mock implementation of IdeasViewModel for Android tests. */
+class MockIdeasViewModel :
+    IdeasViewModel(
+        projectRepository = RepositoriesProvider.projectRepository,
+        ideasRepository = IdeasRepositoryPlaceholder(),
+        getCurrentUserId = { "test-user-id" }) {
+
   private val _uiState =
       MutableStateFlow(
           IdeasUIState(

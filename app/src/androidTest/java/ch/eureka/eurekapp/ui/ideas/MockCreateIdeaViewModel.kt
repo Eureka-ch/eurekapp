@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.ui.ideas
 
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.user.User
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -7,7 +8,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /** Mock implementation of CreateIdeaViewModel for Android tests. */
-class MockCreateIdeaViewModel : CreateIdeaViewModel() {
+class MockCreateIdeaViewModel :
+    CreateIdeaViewModel(
+        projectRepository = RepositoriesProvider.projectRepository,
+        userRepository = RepositoriesProvider.userRepository,
+        ideasRepository = IdeasRepositoryPlaceholder()) {
   private val _uiState =
       MutableStateFlow(
           CreateIdeaState(

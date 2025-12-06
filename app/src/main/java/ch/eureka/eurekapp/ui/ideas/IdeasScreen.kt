@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.MessageInputField
 
@@ -57,14 +58,9 @@ object IdeasScreenTestTags {
 fun IdeasScreen(
     onNavigateBack: () -> Unit = {},
     modifier: Modifier = Modifier,
-    viewModel: IdeasViewModelInterface? = null
+    viewModel: IdeasViewModel = viewModel()
 ) {
-  val uiState =
-      if (viewModel != null) {
-        viewModel.uiState.collectAsState().value
-      } else {
-        IdeasUIStatePlaceholder()
-      }
+  val uiState by viewModel.uiState.collectAsState()
 
   var projectDropdownExpanded by remember { mutableStateOf(false) }
   var showCreateIdeaDialog by remember { mutableStateOf(false) }
@@ -74,7 +70,7 @@ fun IdeasScreen(
   LaunchedEffect(uiState.errorMsg) {
     uiState.errorMsg?.let { errorMsg ->
       snackbarHostState.showSnackbar(errorMsg)
-      viewModel?.clearError()
+      viewModel.clearError()
     }
   }
 
@@ -124,7 +120,7 @@ fun IdeasScreen(
                               DropdownMenuItem(
                                   text = { Text(project.name) },
                                   onClick = {
-                                    viewModel?.selectProject(project)
+                                    viewModel.selectProject(project)
                                     projectDropdownExpanded = false
                                   })
                             }
@@ -157,8 +153,8 @@ fun IdeasScreen(
         if (uiState.viewMode == IdeasViewMode.CONVERSATION && uiState.selectedIdea != null) {
           MessageInputField(
               message = uiState.currentMessage,
-              onMessageChange = { viewModel?.updateMessage(it) },
-              onSend = { viewModel?.sendMessage() },
+              onMessageChange = { viewModel.updateMessage(it) },
+              onSend = { viewModel.sendMessage() },
               isSending = uiState.isSending,
               placeholder = "Ask about the project...")
         }
@@ -169,17 +165,17 @@ fun IdeasScreen(
             ideas = uiState.ideas,
             selectedIdea = uiState.selectedIdea,
             messages = uiState.messages,
-            currentUserId = viewModel?.getCurrentUserId(),
+            currentUserId = viewModel.getCurrentUserId(),
             listState = listState,
             paddingValues = paddingValues,
             isLoading = uiState.isLoading,
-            onIdeaClick = { idea -> viewModel?.selectIdea(idea) },
-            onDeleteIdea = { ideaId -> viewModel?.deleteIdea(ideaId) },
-            onShareIdea = { ideaId, userId -> viewModel?.addParticipantToIdea(ideaId, userId) })
+            onIdeaClick = { idea -> viewModel.selectIdea(idea) },
+            onDeleteIdea = { ideaId -> viewModel.deleteIdea(ideaId) },
+            onShareIdea = { ideaId, userId -> viewModel.addParticipantToIdea(ideaId, userId) })
       }
 
-  if (showCreateIdeaDialog && viewModel != null) {
-    val createIdeaViewModel: CreateIdeaViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+  if (showCreateIdeaDialog) {
+    val createIdeaViewModel: CreateIdeaViewModel = viewModel()
     CreateIdeaBottomSheet(
         onDismiss = {
           createIdeaViewModel.reset()
