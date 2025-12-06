@@ -22,8 +22,8 @@ import ch.eureka.eurekapp.model.data.template.FirestoreTaskTemplateRepository
 import ch.eureka.eurekapp.model.data.transcription.CloudFunctionSpeechToTextRepository
 import ch.eureka.eurekapp.model.data.transcription.SpeechToTextRepository
 import ch.eureka.eurekapp.model.data.user.FirestoreUserRepository
-import ch.eureka.eurekapp.ui.ideas.IdeasRepository
 import ch.eureka.eurekapp.model.database.AppDatabase
+import ch.eureka.eurekapp.ui.ideas.IdeasRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.functions.FirebaseFunctions
