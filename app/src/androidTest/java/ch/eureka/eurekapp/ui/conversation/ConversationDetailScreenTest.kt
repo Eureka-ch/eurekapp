@@ -1,26 +1,16 @@
 package ch.eureka.eurekapp.ui.conversation
 
 import android.net.Uri
-import androidx.compose.ui.test.assertCountEquals
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.longClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import ch.eureka.eurekapp.ui.components.DeleteConfirmationDialogTestTags
-import ch.eureka.eurekapp.ui.components.MessageActionMenuTestTags
-import com.google.firebase.Timestamp
 import androidx.test.platform.app.InstrumentationRegistry
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.conversation.ConversationMessage
+import ch.eureka.eurekapp.ui.components.DeleteConfirmationDialogTestTags
+import ch.eureka.eurekapp.ui.components.MessageActionMenuTestTags
 import ch.eureka.eurekapp.ui.components.MessageBubbleTestTags
+import com.google.firebase.Timestamp
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -308,9 +298,7 @@ class ConversationDetailScreenTest {
           conversationId = "test-conv",
           viewModel =
               createMockViewModel(
-                  messages = messages,
-                  editingMessageId = "msg1",
-                  currentMessage = "Hello!"),
+                  messages = messages, editingMessageId = "msg1", currentMessage = "Hello!"),
           onNavigateBack = {})
     }
 
@@ -330,9 +318,7 @@ class ConversationDetailScreenTest {
           conversationId = "test-conv",
           viewModel =
               createMockViewModel(
-                  messages = messages,
-                  editingMessageId = "msg1",
-                  currentMessage = "Hello!"),
+                  messages = messages, editingMessageId = "msg1", currentMessage = "Hello!"),
           onNavigateBack = {})
     }
 
@@ -350,9 +336,7 @@ class ConversationDetailScreenTest {
     val stateFlow =
         MutableStateFlow(
             ConversationDetailState(
-                messages = messages,
-                editingMessageId = "msg1",
-                currentMessage = "Hello!"))
+                messages = messages, editingMessageId = "msg1", currentMessage = "Hello!"))
 
     every { mockViewModel.uiState } returns stateFlow
     every { mockViewModel.currentUserId } returns currentUserId
@@ -380,9 +364,7 @@ class ConversationDetailScreenTest {
           conversationId = "test-conv",
           viewModel =
               createMockViewModel(
-                  messages = messages,
-                  editingMessageId = "msg1",
-                  currentMessage = "Hello!"),
+                  messages = messages, editingMessageId = "msg1", currentMessage = "Hello!"),
           onNavigateBack = {})
     }
 
@@ -399,15 +381,11 @@ class ConversationDetailScreenTest {
           conversationId = "test-conv",
           viewModel =
               createMockViewModel(
-                  messages = messages,
-                  selectedMessageId = "msg1",
-                  showDeleteConfirmation = true),
+                  messages = messages, selectedMessageId = "msg1", showDeleteConfirmation = true),
           onNavigateBack = {})
     }
 
-    composeTestRule
-        .onNodeWithTag(DeleteConfirmationDialogTestTags.DIALOG)
-        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag(DeleteConfirmationDialogTestTags.DIALOG).assertIsDisplayed()
     composeTestRule.onNodeWithText("Delete Message").assertIsDisplayed()
   }
 
@@ -420,9 +398,7 @@ class ConversationDetailScreenTest {
     val stateFlow =
         MutableStateFlow(
             ConversationDetailState(
-                messages = messages,
-                selectedMessageId = "msg1",
-                showDeleteConfirmation = true))
+                messages = messages, selectedMessageId = "msg1", showDeleteConfirmation = true))
 
     every { mockViewModel.uiState } returns stateFlow
     every { mockViewModel.currentUserId } returns currentUserId
@@ -433,9 +409,7 @@ class ConversationDetailScreenTest {
           conversationId = "test-conv", viewModel = mockViewModel, onNavigateBack = {})
     }
 
-    composeTestRule
-        .onNodeWithTag(DeleteConfirmationDialogTestTags.CONFIRM_BUTTON)
-        .performClick()
+    composeTestRule.onNodeWithTag(DeleteConfirmationDialogTestTags.CONFIRM_BUTTON).performClick()
 
     verify { mockViewModel.confirmDeleteMessage() }
   }
@@ -449,9 +423,7 @@ class ConversationDetailScreenTest {
     val stateFlow =
         MutableStateFlow(
             ConversationDetailState(
-                messages = messages,
-                selectedMessageId = "msg1",
-                showDeleteConfirmation = true))
+                messages = messages, selectedMessageId = "msg1", showDeleteConfirmation = true))
 
     every { mockViewModel.uiState } returns stateFlow
     every { mockViewModel.currentUserId } returns currentUserId
@@ -462,9 +434,7 @@ class ConversationDetailScreenTest {
           conversationId = "test-conv", viewModel = mockViewModel, onNavigateBack = {})
     }
 
-    composeTestRule
-        .onNodeWithTag(DeleteConfirmationDialogTestTags.CANCEL_BUTTON)
-        .performClick()
+    composeTestRule.onNodeWithTag(DeleteConfirmationDialogTestTags.CANCEL_BUTTON).performClick()
 
     verify { mockViewModel.cancelDeleteMessage() }
   }
@@ -485,8 +455,9 @@ class ConversationDetailScreenTest {
           onNavigateBack = {})
     }
 
+    // Use unmerged tree because combinedClickable on message bubble merges descendants
     composeTestRule
-        .onNodeWithTag(MessageBubbleTestTags.EDITED_INDICATOR)
+        .onNodeWithTag(MessageBubbleTestTags.EDITED_INDICATOR, useUnmergedTree = true)
         .assertIsDisplayed()
   }
 
@@ -494,10 +465,7 @@ class ConversationDetailScreenTest {
   fun conversationDetailScreen_doesNotShowEditedIndicatorForUnedited() {
     val message =
         ConversationMessage(
-            messageId = "msg1",
-            senderId = currentUserId,
-            text = "Regular message",
-            editedAt = null)
+            messageId = "msg1", senderId = currentUserId, text = "Regular message", editedAt = null)
 
     composeTestRule.setContent {
       ConversationDetailScreen(
@@ -506,7 +474,10 @@ class ConversationDetailScreenTest {
           onNavigateBack = {})
     }
 
-    composeTestRule.onNodeWithTag(MessageBubbleTestTags.EDITED_INDICATOR).assertDoesNotExist()
+    // Use unmerged tree because combinedClickable on message bubble merges descendants
+    composeTestRule
+        .onNodeWithTag(MessageBubbleTestTags.EDITED_INDICATOR, useUnmergedTree = true)
+        .assertDoesNotExist()
   }
 
   @Test
@@ -518,9 +489,7 @@ class ConversationDetailScreenTest {
     val stateFlow =
         MutableStateFlow(
             ConversationDetailState(
-                messages = messages,
-                editingMessageId = "msg1",
-                currentMessage = "Updated message"))
+                messages = messages, editingMessageId = "msg1", currentMessage = "Updated message"))
 
     every { mockViewModel.uiState } returns stateFlow
     every { mockViewModel.currentUserId } returns currentUserId
@@ -566,11 +535,14 @@ class ConversationDetailScreenTest {
     composeTestRule.setContent {
       ConversationDetailScreen(
           conversationId = "test-conv",
-          viewModel = createMockViewModel(messages = listOf(fileMessage), selectedMessageId = "msg1"),
+          viewModel =
+              createMockViewModel(messages = listOf(fileMessage), selectedMessageId = "msg1"),
           onNavigateBack = {})
     }
 
-    composeTestRule.onNodeWithTag(MessageActionMenuTestTags.REMOVE_ATTACHMENT_OPTION).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(MessageActionMenuTestTags.REMOVE_ATTACHMENT_OPTION)
+        .assertIsDisplayed()
   }
 
   @Test
@@ -582,10 +554,13 @@ class ConversationDetailScreenTest {
     composeTestRule.setContent {
       ConversationDetailScreen(
           conversationId = "test-conv",
-          viewModel = createMockViewModel(messages = listOf(textMessage), selectedMessageId = "msg1"),
+          viewModel =
+              createMockViewModel(messages = listOf(textMessage), selectedMessageId = "msg1"),
           onNavigateBack = {})
     }
 
-    composeTestRule.onNodeWithTag(MessageActionMenuTestTags.REMOVE_ATTACHMENT_OPTION).assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag(MessageActionMenuTestTags.REMOVE_ATTACHMENT_OPTION)
+        .assertDoesNotExist()
   }
 }

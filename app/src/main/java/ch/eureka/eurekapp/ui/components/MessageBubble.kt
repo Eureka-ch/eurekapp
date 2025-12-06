@@ -91,9 +91,7 @@ fun MessageBubble(
                     .testTag(MessageBubbleTestTags.BUBBLE)
                     .then(
                         if (onLongClick != null) {
-                          Modifier.combinedClickable(
-                              onClick = {},
-                              onLongClick = onLongClick)
+                          Modifier.combinedClickable(onClick = {}, onLongClick = onLongClick)
                         } else {
                           Modifier
                         })) {

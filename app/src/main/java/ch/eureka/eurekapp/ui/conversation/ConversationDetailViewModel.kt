@@ -495,16 +495,18 @@ open class ConversationDetailViewModel(
 
     viewModelScope.launch {
       // First delete the file from storage
-      fileStorageRepository.deleteFile(fileUrl).fold(
-          onSuccess = {
-            // Then remove the attachment reference from the message
-            conversationRepository
-                .removeAttachment(conversationId, messageId)
-                .fold(
-                    onSuccess = { _snackbarMessage.value = "Attachment removed" },
-                    onFailure = { error -> _errorMsg.value = "Error: ${error.message}" })
-          },
-          onFailure = { error -> _errorMsg.value = "Error deleting file: ${error.message}" })
+      fileStorageRepository
+          .deleteFile(fileUrl)
+          .fold(
+              onSuccess = {
+                // Then remove the attachment reference from the message
+                conversationRepository
+                    .removeAttachment(conversationId, messageId)
+                    .fold(
+                        onSuccess = { _snackbarMessage.value = "Attachment removed" },
+                        onFailure = { error -> _errorMsg.value = "Error: ${error.message}" })
+              },
+              onFailure = { error -> _errorMsg.value = "Error deleting file: ${error.message}" })
     }
   }
 }
