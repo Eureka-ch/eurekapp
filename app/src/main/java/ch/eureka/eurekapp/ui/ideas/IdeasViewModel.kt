@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -55,26 +56,69 @@ interface IdeasRepository {
   suspend fun addParticipant(projectId: String, ideaId: String, userId: String): Result<Unit>
 }
 
-/** Placeholder implementation of IdeasRepository. */
+/** In-memory implementation of IdeasRepository for testing/development. */
 class IdeasRepositoryPlaceholder : IdeasRepository {
-  override fun getIdeasForProject(projectId: String): Flow<List<Idea>> = flowOf(emptyList())
+  private val ideas = mutableMapOf<String, MutableList<Idea>>()
+  private val messages = mutableMapOf<String, MutableList<Message>>()
+  private val ideasFlow = MutableStateFlow<Map<String, List<Idea>>>(emptyMap())
+  private val messagesFlow = MutableStateFlow<Map<String, List<Message>>>(emptyMap())
 
-  override suspend fun createIdea(idea: Idea): Result<String> =
-      Result.failure(Exception("IdeasRepository not yet implemented"))
+  override fun getIdeasForProject(projectId: String): Flow<List<Idea>> =
+      ideasFlow.map { it[projectId] ?: emptyList() }
 
-  override suspend fun deleteIdea(projectId: String, ideaId: String): Result<Unit> =
-      Result.failure(Exception("IdeasRepository not yet implemented"))
+  override suspend fun createIdea(idea: Idea): Result<String> {
+    return try {
+      val projectIdeas = ideas.getOrPut(idea.projectId) { mutableListOf() }
+      projectIdeas.add(idea)
+      ideasFlow.value = ideas.mapValues { it.value.toList() }
+      Result.success(idea.ideaId)
+    } catch (e: Exception) {
+      Result.failure(e)
+    }
+  }
 
-  override fun getMessagesForIdea(ideaId: String): Flow<List<Message>> = flowOf(emptyList())
+  override suspend fun deleteIdea(projectId: String, ideaId: String): Result<Unit> {
+    return try {
+      ideas[projectId]?.removeIf { it.ideaId == ideaId }
+      ideasFlow.value = ideas.mapValues { it.value.toList() }
+      Result.success(Unit)
+    } catch (e: Exception) {
+      Result.failure(e)
+    }
+  }
 
-  override suspend fun sendMessage(ideaId: String, message: Message): Result<Unit> =
-      Result.failure(Exception("IdeasRepository not yet implemented"))
+  override fun getMessagesForIdea(ideaId: String): Flow<List<Message>> =
+      messagesFlow.map { it[ideaId] ?: emptyList() }
+
+  override suspend fun sendMessage(ideaId: String, message: Message): Result<Unit> {
+    return try {
+      val ideaMessages = messages.getOrPut(ideaId) { mutableListOf() }
+      ideaMessages.add(message)
+      messagesFlow.value = messages.mapValues { it.value.toList() }
+      Result.success(Unit)
+    } catch (e: Exception) {
+      Result.failure(e)
+    }
+  }
 
   override suspend fun addParticipant(
       projectId: String,
       ideaId: String,
       userId: String
-  ): Result<Unit> = Result.failure(Exception("IdeasRepository not yet implemented"))
+  ): Result<Unit> {
+    return try {
+      ideas[projectId]?.find { it.ideaId == ideaId }?.let { idea ->
+        val updatedIdea =
+            idea.copy(participantIds = (idea.participantIds + userId).distinct())
+        ideas[projectId]?.removeIf { it.ideaId == ideaId }
+        ideas[projectId]?.add(updatedIdea)
+        ideasFlow.value = ideas.mapValues { it.value.toList() }
+      }
+      Result.success(Unit)
+    } catch (e: Exception) {
+      Result.failure(e)
+    }
+  }
 }
 
 /**
