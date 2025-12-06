@@ -30,7 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.MessageInputField
 
@@ -60,12 +59,10 @@ fun IdeasScreen(
     modifier: Modifier = Modifier,
     viewModel: IdeasViewModelInterface? = null
 ) {
-  // Use ViewModel if provided, otherwise use placeholder state
   val uiState =
       if (viewModel != null) {
         viewModel.uiState.collectAsState().value
       } else {
-        // Placeholder UI state until ViewModel is implemented
         IdeasUIStatePlaceholder()
       }
 
@@ -74,7 +71,6 @@ fun IdeasScreen(
   val snackbarHostState = remember { SnackbarHostState() }
   val listState = rememberLazyListState()
 
-  // Handle error messages
   LaunchedEffect(uiState.errorMsg) {
     uiState.errorMsg?.let { errorMsg ->
       snackbarHostState.showSnackbar(errorMsg)
@@ -82,7 +78,6 @@ fun IdeasScreen(
     }
   }
 
-  // Auto-scroll when new messages arrive
   LaunchedEffect(uiState.messages.size) {
     if (uiState.messages.isNotEmpty() && !uiState.isLoading) {
       listState.animateScrollToItem(0)
@@ -150,7 +145,6 @@ fun IdeasScreen(
       },
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       floatingActionButton = {
-        // FAB pour créer une nouvelle Idea (visible seulement en mode LIST)
         if (uiState.viewMode == IdeasViewMode.LIST) {
           FloatingActionButton(
               onClick = { showCreateIdeaDialog = true },
@@ -160,7 +154,6 @@ fun IdeasScreen(
         }
       },
       bottomBar = {
-        // Input field visible seulement en mode CONVERSATION
         if (uiState.viewMode == IdeasViewMode.CONVERSATION && uiState.selectedIdea != null) {
           MessageInputField(
               message = uiState.currentMessage,
@@ -185,16 +178,17 @@ fun IdeasScreen(
             onShareIdea = { ideaId, userId -> viewModel?.addParticipantToIdea(ideaId, userId) })
       }
 
-  // Create Idea Dialog
-  if (showCreateIdeaDialog) {
+  if (showCreateIdeaDialog && viewModel != null) {
+    val createIdeaViewModel: CreateIdeaViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
     CreateIdeaBottomSheet(
-        onDismiss = { showCreateIdeaDialog = false },
-        onCreateIdea = { title, projectId, participantIds ->
-          viewModel?.createNewIdea(title, projectId, participantIds)
+        onDismiss = {
+          createIdeaViewModel.reset()
+          showCreateIdeaDialog = false
         },
-        availableProjects = uiState.availableProjects,
-        availableUsers = uiState.availableUsers,
-        isLoading = uiState.isLoadingUsers,
-        onProjectSelected = { projectId -> viewModel?.loadUsersForProject(projectId) })
+        onIdeaCreated = { idea ->
+          viewModel.onIdeaCreated(idea)
+          showCreateIdeaDialog = false
+        },
+        viewModel = createIdeaViewModel)
   }
 }

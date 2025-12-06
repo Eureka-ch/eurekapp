@@ -26,6 +26,22 @@ import ch.eureka.eurekapp.ui.components.MessageBubble
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 @Composable
+private fun IdeaCard(idea: Idea, onIdeaClick: () -> Unit) {
+  Card(onClick = onIdeaClick, modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = Modifier.padding(Spacing.md)) {
+      Text(text = idea.title ?: "Untitled Idea", style = MaterialTheme.typography.titleMedium)
+      if (idea.content != null) {
+        Text(
+            text = idea.content,
+            style = MaterialTheme.typography.bodyMedium,
+            maxLines = 2,
+            modifier = Modifier.padding(top = Spacing.xs))
+      }
+    }
+  }
+}
+
+@Composable
 fun IdeasContent(
     viewMode: IdeasViewMode,
     selectedProject: Project?,
@@ -47,7 +63,6 @@ fun IdeasContent(
             modifier = Modifier.align(Alignment.Center).testTag("loadingIndicator"))
       }
       selectedProject == null -> {
-        // No project selected
         Text(
             text = "Please select a project to start",
             style = MaterialTheme.typography.bodyLarge,
@@ -56,7 +71,6 @@ fun IdeasContent(
             modifier = Modifier.align(Alignment.Center).padding(Spacing.lg).testTag("emptyState"))
       }
       viewMode == IdeasViewMode.LIST -> {
-        // Mode LISTE : Afficher la liste des Ideas
         IdeasListContent(
             ideas = ideas,
             selectedProject = selectedProject,
@@ -65,7 +79,6 @@ fun IdeasContent(
             onShareIdea = onShareIdea)
       }
       viewMode == IdeasViewMode.CONVERSATION -> {
-        // Mode CONVERSATION : Afficher les messages de l'Idea sélectionnée
         IdeasConversationContent(
             selectedIdea = selectedIdea,
             messages = messages,
@@ -85,7 +98,6 @@ private fun IdeasListContent(
     onShareIdea: (String, String) -> Unit
 ) {
   if (ideas.isEmpty()) {
-    // Empty state - no ideas yet
     Column(
         modifier =
             Modifier.fillMaxSize().padding(Spacing.lg).testTag(IdeasScreenTestTags.EMPTY_STATE),
@@ -104,27 +116,11 @@ private fun IdeasListContent(
               modifier = Modifier.padding(top = Spacing.sm))
         }
   } else {
-    // Ideas list
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(horizontal = Spacing.md).testTag("ideasList"),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
           items(items = ideas, key = { it.ideaId }) { idea ->
-            // TODO: Créer un composant IdeaCard pour afficher chaque Idea
-            // Pour l'instant, juste un placeholder
-            Card(onClick = { onIdeaClick(idea) }, modifier = Modifier.fillMaxWidth()) {
-              Column(modifier = Modifier.padding(Spacing.md)) {
-                Text(
-                    text = idea.title ?: "Untitled Idea",
-                    style = MaterialTheme.typography.titleMedium)
-                if (idea.content != null) {
-                  Text(
-                      text = idea.content,
-                      style = MaterialTheme.typography.bodyMedium,
-                      maxLines = 2,
-                      modifier = Modifier.padding(top = Spacing.xs))
-                }
-              }
-            }
+            IdeaCard(idea = idea, onIdeaClick = { onIdeaClick(idea) })
           }
         }
   }
@@ -138,7 +134,6 @@ private fun IdeasConversationContent(
     listState: LazyListState
 ) {
   if (messages.isEmpty()) {
-    // Empty state - no messages yet
     Column(
         modifier =
             Modifier.fillMaxSize().padding(Spacing.lg).testTag(IdeasScreenTestTags.EMPTY_STATE),
@@ -157,7 +152,6 @@ private fun IdeasConversationContent(
               modifier = Modifier.padding(top = Spacing.sm))
         }
   } else {
-    // Messages list
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize().padding(horizontal = Spacing.md).testTag("messagesList"),

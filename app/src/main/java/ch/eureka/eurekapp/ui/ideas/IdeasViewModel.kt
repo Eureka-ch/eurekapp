@@ -9,10 +9,7 @@ import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
-import ch.eureka.eurekapp.model.data.user.User
-import ch.eureka.eurekapp.model.data.user.UserRepository
 import com.google.firebase.Timestamp
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -21,10 +18,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -39,36 +34,21 @@ data class IdeasUIState(
     val currentMessage: String = "",
     val isSending: Boolean = false,
     val isLoading: Boolean = false,
-    val errorMsg: String? = null,
-    val availableUsers: List<User> = emptyList(),
-    val isLoadingUsers: Boolean = false
+    val errorMsg: String? = null
 )
 
 /** Placeholder UI state function for when ViewModel is not yet implemented. */
-fun IdeasUIStatePlaceholder(): IdeasUIState =
-    IdeasUIState(
-        selectedProject = null,
-        availableProjects = emptyList(),
-        ideas = emptyList(),
-        selectedIdea = null,
-        messages = emptyList(),
-        viewMode = IdeasViewMode.LIST,
-        currentMessage = "",
-        isSending = false,
-        isLoading = false,
-        errorMsg = null,
-        availableUsers = emptyList(),
-        isLoadingUsers = false)
+fun IdeasUIStatePlaceholder(): IdeasUIState = IdeasUIState()
 
 /** Interface for IdeasViewModel to allow optional ViewModel injection. */
 interface IdeasViewModelInterface {
-  val uiState: kotlinx.coroutines.flow.StateFlow<IdeasUIState>
+  val uiState: StateFlow<IdeasUIState>
 
   fun selectProject(project: Project)
 
   fun selectIdea(idea: Idea)
 
-  fun createNewIdea(title: String?, projectId: String, participantIds: List<String>)
+  fun onIdeaCreated(idea: Idea)
 
   fun deleteIdea(ideaId: String)
 
@@ -81,8 +61,6 @@ interface IdeasViewModelInterface {
   fun clearError()
 
   fun getCurrentUserId(): String?
-
-  fun loadUsersForProject(projectId: String)
 }
 
 /** Placeholder repository interface for Ideas. */
@@ -142,10 +120,9 @@ class IdeasViewModel
 @JvmOverloads
 constructor(
     private val projectRepository: ProjectRepository = RepositoriesProvider.projectRepository,
-    private val userRepository: UserRepository = RepositoriesProvider.userRepository,
     private val ideasRepository: IdeasRepository =
         IdeasRepositoryPlaceholder(), // Placeholder until repository is implemented
-    private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
+    private val getCurrentUserId: () -> String? = { null },
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel(), IdeasViewModelInterface {
 
@@ -160,46 +137,40 @@ constructor(
   private val _currentMessage = MutableStateFlow("")
   private val _isSending = MutableStateFlow(false)
   private val _errorMsg = MutableStateFlow<String?>(null)
-  private val _hiddenIdeaIds = MutableStateFlow<Set<String>>(emptySet()) // Local hiding
-  private val _availableUsersForProject = MutableStateFlow<List<User>>(emptyList())
-  private val _isLoadingUsers = MutableStateFlow(false)
+  private val _hiddenIdeaIds = MutableStateFlow<Set<String>>(emptySet())
 
-  // Flow of available projects
   private val projectsFlow =
-      projectRepository.getProjectsForCurrentUser().catch { e ->
-        Log.e(TAG, "Error loading projects", e)
-        _errorMsg.value = "Error loading projects: ${e.message}"
-        emit(emptyList())
-      }
+      projectRepository
+          .getProjectsForCurrentUser()
+          .catch { e ->
+            Log.e(TAG, "Error loading projects", e)
+            _errorMsg.value = "Error loading projects: ${e.message}"
+            emit(emptyList())
+          }
+          .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-  // Flow of ideas for selected project (excluding hidden ones)
   private val ideasFlow =
-      _selectedProject.flatMapLatest { project ->
-        if (project != null) {
-          ideasRepository
-              .getIdeasForProject(project.projectId)
-              .map { ideas ->
-                // Filter out ideas hidden by current user
-                val hiddenIds = _hiddenIdeaIds.value
-                ideas.filter { idea ->
-                  // Show idea if user is participant AND not hidden locally
-                  val currentUserId = getCurrentUserId()
-                  currentUserId != null &&
-                      idea.participantIds.contains(currentUserId) &&
-                      !hiddenIds.contains(idea.ideaId)
-                }
-              }
-              .catch { e ->
+      combine(
+          _selectedProject.flatMapLatest { project ->
+            if (project != null) {
+              ideasRepository.getIdeasForProject(project.projectId).catch { e ->
                 Log.e(TAG, "Error loading ideas", e)
                 _errorMsg.value = "Error loading ideas: ${e.message}"
                 emit(emptyList())
               }
-        } else {
-          flowOf(emptyList())
-        }
-      }
+            } else {
+              flowOf(emptyList())
+            }
+          },
+          _hiddenIdeaIds) { ideas, hiddenIds ->
+            val currentUserId = getCurrentUserId()
+            ideas.filter { idea ->
+              currentUserId != null &&
+                  idea.participantIds.contains(currentUserId) &&
+                  !hiddenIds.contains(idea.ideaId)
+            }
+          }
 
-  // Flow of messages for selected idea
   private val messagesFlow =
       _selectedIdea.flatMapLatest { idea ->
         if (idea != null) {
@@ -214,6 +185,7 @@ constructor(
       }
 
   /** The single source of truth for the UI state. */
+  @Suppress("UNCHECKED_CAST")
   override val uiState: StateFlow<IdeasUIState> =
       combine(
               projectsFlow,
@@ -224,9 +196,7 @@ constructor(
               _viewMode,
               _currentMessage,
               _isSending,
-              _errorMsg,
-              _availableUsersForProject,
-              _isLoadingUsers) { args ->
+              _errorMsg) { args ->
                 val projects = args[0] as List<Project>
                 val selectedProject = args[1] as Project?
                 val ideas = args[2] as List<Idea>
@@ -236,8 +206,6 @@ constructor(
                 val currentMessage = args[6] as String
                 val isSending = args[7] as Boolean
                 val errorMsg = args[8] as String?
-                val availableUsers = args[9] as List<User>
-                val isLoadingUsers = args[10] as Boolean
 
                 IdeasUIState(
                     selectedProject = selectedProject,
@@ -249,9 +217,7 @@ constructor(
                     currentMessage = currentMessage,
                     isSending = isSending,
                     isLoading = false,
-                    errorMsg = errorMsg,
-                    availableUsers = availableUsers,
-                    isLoadingUsers = isLoadingUsers)
+                    errorMsg = errorMsg)
               }
           .stateIn(
               scope = viewModelScope,
@@ -259,116 +225,40 @@ constructor(
               initialValue = IdeasUIState(isLoading = true))
 
   override fun selectProject(project: Project) {
-    viewModelScope.launch(dispatcher) {
-      _selectedProject.value = project
-      _viewMode.value = IdeasViewMode.LIST
-      _selectedIdea.value = null
-      _currentMessage.value = ""
-    }
+    _selectedProject.value = project
+    _viewMode.value = IdeasViewMode.LIST
+    _selectedIdea.value = null
+    _currentMessage.value = ""
   }
 
   override fun selectIdea(idea: Idea) {
-    viewModelScope.launch(dispatcher) {
-      _selectedIdea.value = idea
-      _viewMode.value = IdeasViewMode.CONVERSATION
-      _currentMessage.value = ""
-    }
+    _selectedIdea.value = idea
+    _viewMode.value = IdeasViewMode.CONVERSATION
+    _currentMessage.value = ""
   }
 
-  override fun createNewIdea(title: String?, projectId: String, participantIds: List<String>) {
-    val currentUserId = getCurrentUserId()
-
-    if (currentUserId == null) {
-      _errorMsg.value = "User not authenticated"
-      return
+  /** Called when a new idea is created from CreateIdeaViewModel */
+  override fun onIdeaCreated(idea: Idea) {
+    val project = projectsFlow.value.find { it.projectId == idea.projectId }
+    if (project != null) {
+      _selectedProject.value = project
     }
-
-    viewModelScope.launch(dispatcher) {
-      // Combine creator with selected participants
-      val allParticipantIds = (listOf(currentUserId) + participantIds).distinct()
-
-      val newIdea =
-          Idea(
-              ideaId = IdGenerator.generateIdeaId(),
-              projectId = projectId,
-              title = title,
-              createdBy = currentUserId,
-              participantIds = allParticipantIds,
-              createdAt = Timestamp.now(),
-              lastUpdated = Timestamp.now())
-
-      ideasRepository
-          .createIdea(newIdea)
-          .fold(
-              onSuccess = {
-                // Select the project and the newly created idea
-                // Find project from current projects list
-                val currentProjects = projectsFlow.first()
-                val project = currentProjects.find { it.projectId == projectId }
-                if (project != null) {
-                  _selectedProject.value = project
-                }
-                _selectedIdea.value = newIdea
-                _viewMode.value = IdeasViewMode.CONVERSATION
-              },
-              onFailure = { error ->
-                Log.e(TAG, "Error creating idea", error)
-                _errorMsg.value = "Error creating idea: ${error.message}"
-              })
-    }
-  }
-
-  /**
-   * Load users for a project (for participant selection). Uses first() to get a snapshot instead of
-   * continuous collection.
-   */
-  override fun loadUsersForProject(projectId: String) {
-    if (projectId.isBlank()) {
-      _availableUsersForProject.value = emptyList()
-      return
-    }
-
-    viewModelScope.launch(dispatcher) {
-      _isLoadingUsers.value = true
-      try {
-        val members = projectRepository.getMembers(projectId).first()
-        if (members.isEmpty()) {
-          _availableUsersForProject.value = emptyList()
-          _isLoadingUsers.value = false
-        } else {
-          // Convert members to users
-          val userFlows = members.map { member -> userRepository.getUserById(member.userId) }
-          val users = combine(userFlows) { userArray -> userArray.toList().filterNotNull() }.first()
-          _availableUsersForProject.value = users
-          _isLoadingUsers.value = false
-        }
-      } catch (e: Exception) {
-        Log.e(TAG, "Error loading users", e)
-        _errorMsg.value = "Error loading users: ${e.message}"
-        _isLoadingUsers.value = false
-      }
-    }
+    _selectedIdea.value = idea
+    _viewMode.value = IdeasViewMode.CONVERSATION
   }
 
   override fun deleteIdea(ideaId: String) {
     val currentUserId = getCurrentUserId()
     if (currentUserId == null) return
 
-    viewModelScope.launch(dispatcher) {
-      // Hide the idea locally (local deletion only)
-      val hiddenIds = _hiddenIdeaIds.value.toMutableSet()
-      hiddenIds.add(ideaId)
-      _hiddenIdeaIds.value = hiddenIds
+    val hiddenIds = _hiddenIdeaIds.value.toMutableSet()
+    hiddenIds.add(ideaId)
+    _hiddenIdeaIds.value = hiddenIds
 
-      // If this was the selected idea, go back to list mode
-      if (_selectedIdea.value?.ideaId == ideaId) {
-        _selectedIdea.value = null
-        _viewMode.value = IdeasViewMode.LIST
-        _currentMessage.value = ""
-      }
-
-      // Note: We don't actually delete from Firestore, just hide locally
-      // The idea will still be visible to other participants
+    if (_selectedIdea.value?.ideaId == ideaId) {
+      _selectedIdea.value = null
+      _viewMode.value = IdeasViewMode.LIST
+      _currentMessage.value = ""
     }
   }
 
@@ -383,10 +273,7 @@ constructor(
       ideasRepository
           .addParticipant(projectId, ideaId, userId)
           .fold(
-              onSuccess = {
-                // Update the idea in the list by reloading
-                // The flow will automatically update
-              },
+              onSuccess = {},
               onFailure = { error ->
                 Log.e(TAG, "Error adding participant", error)
                 _errorMsg.value = "Error sharing idea: ${error.message}"

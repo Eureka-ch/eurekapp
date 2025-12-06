@@ -28,6 +28,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,8 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import ch.eureka.eurekapp.model.data.project.Project
-import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
@@ -61,31 +60,26 @@ object CreateIdeaBottomSheetTestTags {
  * - Add participants (users) to share the idea with
  *
  * @param onDismiss Callback to dismiss the bottom sheet
- * @param onCreateIdea Callback when idea is created with (title, projectId, participantIds)
- * @param availableProjects List of available projects
- * @param availableUsers List of available users (from selected project)
- * @param isLoading Whether data is loading
+ * @param onIdeaCreated Callback when idea is successfully created with the new idea
+ * @param viewModel ViewModel managing the create idea state
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateIdeaBottomSheet(
     onDismiss: () -> Unit,
-    onCreateIdea: (String?, String, List<String>) -> Unit,
-    availableProjects: List<Project>,
-    availableUsers: List<User>,
-    isLoading: Boolean = false,
-    onProjectSelected: (String) -> Unit = {},
+    onIdeaCreated: (Idea) -> Unit,
+    viewModel: CreateIdeaViewModel,
     modifier: Modifier = Modifier
 ) {
-  var title by remember { mutableStateOf("") }
-  var selectedProject by remember { mutableStateOf<Project?>(null) }
-  var selectedParticipantIds by remember { mutableStateOf<Set<String>>(emptySet()) }
-  var projectDropdownExpanded by remember { mutableStateOf(false) }
-  var participantsDropdownExpanded by remember { mutableStateOf(false) }
+  val uiState by viewModel.uiState.collectAsState()
 
-  // Load users when project is selected
-  LaunchedEffect(selectedProject?.projectId) {
-    selectedProject?.projectId?.let { projectId -> onProjectSelected(projectId) }
+  // Handle navigation when idea is created
+  LaunchedEffect(uiState.navigateToIdea) {
+    uiState.navigateToIdea?.let { idea ->
+      onIdeaCreated(idea)
+      viewModel.resetNavigation()
+      onDismiss()
+    }
   }
 
   ModalBottomSheet(
@@ -95,16 +89,14 @@ fun CreateIdeaBottomSheet(
             modifier =
                 Modifier.fillMaxWidth().padding(Spacing.md).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-              // Title
               Text(
                   text = "Create New Idea",
                   style = MaterialTheme.typography.headlineSmall,
                   modifier = Modifier.padding(bottom = Spacing.xs))
 
-              // Title field
               OutlinedTextField(
-                  value = title,
-                  onValueChange = { title = it },
+                  value = uiState.title,
+                  onValueChange = { viewModel.updateTitle(it) },
                   label = { Text("Idea Title (Optional)") },
                   placeholder = { Text("Enter a title for your idea...") },
                   modifier =
@@ -112,25 +104,29 @@ fun CreateIdeaBottomSheet(
                   singleLine = true,
                   colors = EurekaStyles.textFieldColors())
 
-              // Project selection
               Column {
                 Text(
                     text = "Project",
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Medium)
                 Spacer(modifier = Modifier.height(Spacing.xs))
-                if (isLoading && availableProjects.isEmpty()) {
+                if (uiState.availableProjects.isEmpty()) {
                   Box(
                       modifier = Modifier.fillMaxWidth().height(56.dp),
                       contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(strokeWidth = 2.dp)
                       }
-                } else if (availableProjects.isEmpty()) {
+                } else {
                   Text(
                       text = "No projects available",
                       style = MaterialTheme.typography.bodyMedium,
                       color = MaterialTheme.colorScheme.onSurfaceVariant)
-                } else {
+                }
+              }
+
+              if (uiState.availableProjects.isNotEmpty()) {
+                var projectDropdownExpanded by remember { mutableStateOf(false) }
+                Column {
                   ExposedDropdownMenuBox(
                       expanded = projectDropdownExpanded,
                       onExpandedChange = { projectDropdownExpanded = it },
@@ -138,7 +134,7 @@ fun CreateIdeaBottomSheet(
                           Modifier.fillMaxWidth()
                               .testTag(CreateIdeaBottomSheetTestTags.PROJECT_DROPDOWN)) {
                         OutlinedTextField(
-                            value = selectedProject?.name ?: "",
+                            value = uiState.selectedProject?.name ?: "",
                             onValueChange = {},
                             readOnly = true,
                             placeholder = { Text("Select a project") },
@@ -154,19 +150,18 @@ fun CreateIdeaBottomSheet(
                         ExposedDropdownMenu(
                             expanded = projectDropdownExpanded,
                             onDismissRequest = { projectDropdownExpanded = false }) {
-                              availableProjects.forEach { project ->
+                              uiState.availableProjects.forEach { project ->
                                 DropdownMenuItem(
                                     text = { Text(project.name) },
                                     onClick = {
-                                      selectedProject = project
+                                      viewModel.selectProject(project)
                                       projectDropdownExpanded = false
-                                      selectedParticipantIds = emptySet()
                                     })
                               }
                             }
                       }
                 }
-                if (availableProjects.isNotEmpty() && selectedProject == null) {
+                if (uiState.selectedProject == null) {
                   Text(
                       text = "Please select a project",
                       color = MaterialTheme.colorScheme.error,
@@ -175,15 +170,17 @@ fun CreateIdeaBottomSheet(
                 }
               }
 
-              // Participants selection (only if project is selected)
-              if (selectedProject != null) {
-                val selectedCount = selectedParticipantIds.size
+              if (uiState.selectedProject != null) {
+                var participantsDropdownExpanded by remember { mutableStateOf(false) }
+                val selectedCount = uiState.selectedParticipantIds.size
                 val displayText =
                     when {
                       selectedCount == 0 -> "No participants selected"
                       selectedCount == 1 -> {
                         val user =
-                            availableUsers.firstOrNull { it.uid == selectedParticipantIds.first() }
+                            uiState.availableUsers.firstOrNull {
+                              it.uid == uiState.selectedParticipantIds.first()
+                            }
                         user?.displayName?.ifBlank { user.email } ?: "1 participant selected"
                       }
                       else -> "$selectedCount participants selected"
@@ -194,13 +191,13 @@ fun CreateIdeaBottomSheet(
                       style = MaterialTheme.typography.labelLarge,
                       fontWeight = FontWeight.Medium)
                   Spacer(modifier = Modifier.height(Spacing.xs))
-                  if (isLoading && availableUsers.isEmpty()) {
+                  if (uiState.isLoadingUsers) {
                     Box(
                         modifier = Modifier.fillMaxWidth().height(56.dp),
                         contentAlignment = Alignment.Center) {
                           CircularProgressIndicator(strokeWidth = 2.dp)
                         }
-                  } else if (availableUsers.isEmpty()) {
+                  } else if (uiState.availableUsers.isEmpty()) {
                     Text(
                         text = "No users available in this project",
                         style = MaterialTheme.typography.bodyMedium,
@@ -226,7 +223,7 @@ fun CreateIdeaBottomSheet(
                               expanded = participantsDropdownExpanded,
                               onDismissRequest = { participantsDropdownExpanded = false },
                               modifier = Modifier.fillMaxWidth()) {
-                                availableUsers.forEach { user ->
+                                uiState.availableUsers.forEach { user ->
                                   DropdownMenuItem(
                                       text = {
                                         Row(
@@ -239,16 +236,12 @@ fun CreateIdeaBottomSheet(
                                                   style = MaterialTheme.typography.bodyMedium)
                                               Checkbox(
                                                   checked =
-                                                      selectedParticipantIds.contains(user.uid),
+                                                      uiState.selectedParticipantIds.contains(
+                                                          user.uid),
                                                   onCheckedChange = null)
                                             }
                                       },
-                                      onClick = {
-                                        val newSet = selectedParticipantIds.toMutableSet()
-                                        if (newSet.contains(user.uid)) newSet.remove(user.uid)
-                                        else newSet.add(user.uid)
-                                        selectedParticipantIds = newSet
-                                      })
+                                      onClick = { viewModel.toggleParticipant(user.uid) })
                                 }
                               }
                         }
@@ -256,12 +249,14 @@ fun CreateIdeaBottomSheet(
                 }
               }
 
-              // Buttons
               Row(
                   modifier = Modifier.fillMaxWidth().padding(top = Spacing.sm),
                   horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                     OutlinedButton(
-                        onClick = onDismiss,
+                        onClick = {
+                          viewModel.reset()
+                          onDismiss()
+                        },
                         modifier =
                             Modifier.weight(1f)
                                 .testTag(CreateIdeaBottomSheetTestTags.CANCEL_BUTTON),
@@ -270,22 +265,18 @@ fun CreateIdeaBottomSheet(
                         }
 
                     Button(
-                        onClick = {
-                          val projectId = selectedProject?.projectId
-                          if (projectId != null) {
-                            onCreateIdea(
-                                title.takeIf { it.isNotBlank() },
-                                projectId,
-                                selectedParticipantIds.toList())
-                            onDismiss()
-                          }
-                        },
-                        enabled = selectedProject != null && !isLoading,
+                        onClick = { viewModel.createIdea() },
+                        enabled = uiState.selectedProject != null && !uiState.isCreating,
                         modifier =
                             Modifier.weight(1f)
                                 .testTag(CreateIdeaBottomSheetTestTags.CREATE_BUTTON),
                         colors = EurekaStyles.primaryButtonColors()) {
-                          Text("Create")
+                          if (uiState.isCreating) {
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
+                          } else {
+                            Text("Create")
+                          }
                         }
                   }
             }
