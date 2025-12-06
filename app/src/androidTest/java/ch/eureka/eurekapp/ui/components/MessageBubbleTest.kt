@@ -76,4 +76,24 @@ class MessageBubbleTest {
     composeTestRule.onNodeWithTag(MessageBubbleTestTags.PHOTO_VIEWER).assertIsDisplayed()
     composeTestRule.onNodeWithContentDescription("Download file").assertIsDisplayed()
   }
+
+  @Test
+  fun messageBubble_showsEditedIndicator_whenEditedAtIsSet() {
+    composeTestRule.setContent {
+      MessageBubble(
+          text = "Edited message",
+          timestamp = Timestamp.now(),
+          isFromCurrentUser = true,
+          editedAt = Timestamp.now())
+    }
+    composeTestRule.onNodeWithTag(MessageBubbleTestTags.EDITED_INDICATOR).assertIsDisplayed()
+  }
+
+  @Test
+  fun messageBubble_doesNotShowEditedIndicator_whenEditedAtIsNull() {
+    composeTestRule.setContent {
+      MessageBubble(text = "Regular message", timestamp = Timestamp.now(), isFromCurrentUser = true)
+    }
+    composeTestRule.onNodeWithTag(MessageBubbleTestTags.EDITED_INDICATOR).assertDoesNotExist()
+  }
 }
