@@ -32,6 +32,9 @@ object IdGenerator {
   /** Generates a unique message ID with "msg_" prefix. */
   fun generateMessageId(): String = "msg_${UUID.randomUUID()}"
 
+  /** Generates a unique idea ID with "idea_" prefix. */
+  fun generateIdeaId(): String = "idea_${UUID.randomUUID()}"
+
   fun generateUniqueToken(): String = "token_${UUID.randomUUID()}"
 
   /**

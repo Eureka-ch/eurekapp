@@ -22,7 +22,6 @@ import ch.eureka.eurekapp.screens.ProjectSelectionScreenTestTags
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
-import ch.eureka.eurekapp.ui.notes.SelfNotesScreenTestTags
 import ch.eureka.eurekapp.ui.profile.ProfileScreenTestTags
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.google.firebase.Timestamp
@@ -97,7 +96,7 @@ class NavigationMenuTest : TestCase() {
         .onNodeWithTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON)
         .assertIsDisplayed()
     composeTestRule
-        .onNodeWithTag(BottomBarNavigationTestTags.NOTES_SCREEN_BUTTON)
+        .onNodeWithTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON)
         .assertIsDisplayed()
   }
 
@@ -124,8 +123,10 @@ class NavigationMenuTest : TestCase() {
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON).performClick()
     composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_SCREEN).assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.NOTES_SCREEN_BUTTON).performClick()
-    composeTestRule.onNodeWithTag(SelfNotesScreenTestTags.SCREEN).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON).performClick()
+    composeTestRule
+        .onNodeWithTag(ch.eureka.eurekapp.ui.ideas.IdeasScreenTestTags.SCREEN)
+        .assertIsDisplayed()
 
     // Verify home button navigates back to HomeOverview
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON).performClick()

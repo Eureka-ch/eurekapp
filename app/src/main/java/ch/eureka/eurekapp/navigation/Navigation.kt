@@ -42,6 +42,7 @@ import ch.eureka.eurekapp.ui.authentication.TokenEntryScreen
 import ch.eureka.eurekapp.ui.conversation.ConversationDetailScreen
 import ch.eureka.eurekapp.ui.conversation.ConversationListScreen
 import ch.eureka.eurekapp.ui.conversation.CreateConversationScreen
+import ch.eureka.eurekapp.ui.ideas.IdeasScreen
 import ch.eureka.eurekapp.ui.map.MeetingLocationSelectionScreen
 import ch.eureka.eurekapp.ui.meeting.CreateDateTimeFormatProposalForMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
@@ -53,6 +54,7 @@ import ch.eureka.eurekapp.ui.meeting.MeetingProposalVoteScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenConfig
 import ch.eureka.eurekapp.ui.notes.SelfNotesScreen
+import ch.eureka.eurekapp.ui.notifications.NotificationPreferencesScreen
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
 import ch.eureka.eurekapp.ui.templates.CreateTemplateScreen
 import ch.eureka.eurekapp.ui.templates.CreateTemplateViewModel
@@ -75,6 +77,8 @@ sealed interface Route {
   @Serializable data object SelfNotes : Route
 
   @Serializable data object ActivityFeed : Route
+
+  @Serializable data object NotificationPreferences : Route
 
   sealed interface TasksSection : Route {
     companion object {
@@ -167,6 +171,15 @@ sealed interface Route {
     @Serializable data class ConversationDetail(val conversationId: String) : ConversationsSection
 
     @Serializable data class CreateConversation(val projectId: String) : ConversationsSection
+  }
+
+  sealed interface IdeasSection : Route {
+    companion object {
+      val routes: Set<KClass<out IdeasSection>>
+        get() = IdeasSection::class.sealedSubclasses.toSet()
+    }
+
+    @Serializable data class Ideas(val projectId: String? = null) : IdeasSection
   }
 }
 
@@ -273,7 +286,14 @@ fun NavigationMenu(
                 ProfileScreen(
                     onNavigateToActivityFeed = {
                       navigationController.navigate(Route.ActivityFeed)
+                    },
+                    onNavigateToPreferences = {
+                      navigationController.navigate(Route.NotificationPreferences)
                     })
+              }
+              composable<Route.NotificationPreferences> {
+                NotificationPreferencesScreen(
+                    onFinishedSettingNotifications = { navigationController.popBackStack() })
               }
               composable<Route.SelfNotes> { SelfNotesScreen() }
               composable<Route.ActivityFeed> {
@@ -283,6 +303,10 @@ fun NavigationMenu(
                       // For now, just go back
                       navigationController.popBackStack()
                     })
+              }
+              composable<Route.IdeasSection.Ideas> { backStackEntry ->
+                val ideasRoute = backStackEntry.toRoute<Route.IdeasSection.Ideas>()
+                IdeasScreen(onNavigateBack = { navigationController.popBackStack() })
               }
               composable<Route.OverviewProject> { backStackEntry ->
                 val overviewProjectScreenRoute = backStackEntry.toRoute<Route.OverviewProject>()

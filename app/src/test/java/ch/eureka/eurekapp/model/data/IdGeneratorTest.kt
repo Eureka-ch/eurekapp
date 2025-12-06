@@ -189,4 +189,17 @@ class IdGeneratorTest {
     val fieldId = IdGenerator.generateFieldId("field!!!name")
     TestCase.assertTrue(fieldId.contains("field_name_"))
   }
+
+  @Test
+  fun generateIdeaId_shouldStartWithIdeaPrefix() {
+    val ideaId = IdGenerator.generateIdeaId()
+    TestCase.assertTrue(ideaId.startsWith("idea_"))
+  }
+
+  @Test
+  fun generateIdeaId_shouldBeUnique() {
+    val ideaId1 = IdGenerator.generateIdeaId()
+    val ideaId2 = IdGenerator.generateIdeaId()
+    TestCase.assertFalse(ideaId1 == ideaId2)
+  }
 }
