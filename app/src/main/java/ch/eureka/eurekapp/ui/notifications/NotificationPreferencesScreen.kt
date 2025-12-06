@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +24,7 @@ import ch.eureka.eurekapp.model.data.user.defaultValuesNotificationSettingsKeys
 import ch.eureka.eurekapp.model.notifications.NotificationSettingsViewModel
 import ch.eureka.eurekapp.model.notifications.NotificationType
 import ch.eureka.eurekapp.ui.components.BackButton
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.theme.Typography
 
 data class NotificationSettingState(
@@ -45,38 +47,57 @@ fun NotificationPreferencesScreen(
     notificationSettingsViewModel: NotificationSettingsViewModel = viewModel(),
     onFinishedSettingNotifications: () -> Unit
 ) {
-  Column(modifier = Modifier.fillMaxSize().testTag(NotificationPreferencesTestTags.SCREEN)) {
-    BackButton(
-        onClick = onFinishedSettingNotifications,
-        modifier = Modifier.testTag(NotificationPreferencesTestTags.BACK_BUTTON))
-    NotificationOptionsCategory(
-        title = "Meeting Notifications:",
-        optionsList =
-            UserNotificationSettingsKeys.entries
-                .filter { entry -> entry.notificationType == NotificationType.MEETING_NOTIFICATION }
-                .map { entry ->
-                  createNotificationStateFromNotificationsSettingsKey(
-                      entry, notificationSettingsViewModel)
-                })
-    NotificationOptionsCategory(
-        title = "Message Notifications:",
-        optionsList =
-            UserNotificationSettingsKeys.entries
-                .filter { entry -> entry.notificationType == NotificationType.MESSAGE_NOTIFICATION }
-                .map { entry ->
-                  createNotificationStateFromNotificationsSettingsKey(
-                      entry, notificationSettingsViewModel)
-                })
-    NotificationOptionsCategory(
-        title = "General Notifications:",
-        optionsList =
-            UserNotificationSettingsKeys.entries
-                .filter { entry -> entry.notificationType == NotificationType.GENERAL_NOTIFICATION }
-                .map { entry ->
-                  createNotificationStateFromNotificationsSettingsKey(
-                      entry, notificationSettingsViewModel)
-                })
-  }
+  Scaffold(
+      topBar = {
+        EurekaTopBar(
+            title = "Preferences",
+            navigationIcon = {
+              BackButton(
+                  onClick = onFinishedSettingNotifications,
+                  modifier = Modifier.testTag(NotificationPreferencesTestTags.BACK_BUTTON))
+            })
+      },
+      content = { paddingValues ->
+        Column(
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(paddingValues)
+                    .testTag(NotificationPreferencesTestTags.SCREEN)) {
+              NotificationOptionsCategory(
+                  title = "Meeting Notifications:",
+                  optionsList =
+                      UserNotificationSettingsKeys.entries
+                          .filter { entry ->
+                            entry.notificationType == NotificationType.MEETING_NOTIFICATION
+                          }
+                          .map { entry ->
+                            createNotificationStateFromNotificationsSettingsKey(
+                                entry, notificationSettingsViewModel)
+                          })
+              NotificationOptionsCategory(
+                  title = "Message Notifications:",
+                  optionsList =
+                      UserNotificationSettingsKeys.entries
+                          .filter { entry ->
+                            entry.notificationType == NotificationType.MESSAGE_NOTIFICATION
+                          }
+                          .map { entry ->
+                            createNotificationStateFromNotificationsSettingsKey(
+                                entry, notificationSettingsViewModel)
+                          })
+              NotificationOptionsCategory(
+                  title = "General Notifications:",
+                  optionsList =
+                      UserNotificationSettingsKeys.entries
+                          .filter { entry ->
+                            entry.notificationType == NotificationType.GENERAL_NOTIFICATION
+                          }
+                          .map { entry ->
+                            createNotificationStateFromNotificationsSettingsKey(
+                                entry, notificationSettingsViewModel)
+                          })
+            }
+      })
 }
 
 @Composable
