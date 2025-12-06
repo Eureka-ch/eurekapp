@@ -85,14 +85,26 @@ fun CreateIdeaBottomSheet(
   ModalBottomSheet(
       onDismissRequest = onDismiss,
       modifier = modifier.testTag(CreateIdeaBottomSheetTestTags.SHEET)) {
-        Column(
-            modifier =
-                Modifier.fillMaxWidth().padding(Spacing.md).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-              Text(
-                  text = "Create New Idea",
-                  style = MaterialTheme.typography.headlineSmall,
-                  modifier = Modifier.padding(bottom = Spacing.xs))
+        Box(modifier = Modifier.fillMaxWidth()) {
+          Column(
+              modifier =
+                  Modifier.fillMaxWidth()
+                      .padding(Spacing.md)
+                      .verticalScroll(rememberScrollState()),
+              verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                Text(
+                    text = "Create New Idea",
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(bottom = Spacing.xs))
+
+                // Error display
+                uiState.errorMsg?.let { error ->
+                  Text(
+                      text = error,
+                      color = MaterialTheme.colorScheme.error,
+                      style = MaterialTheme.typography.bodyMedium,
+                      modifier = Modifier.padding(vertical = Spacing.xs))
+                }
 
               OutlinedTextField(
                   value = uiState.title,
@@ -267,6 +279,7 @@ fun CreateIdeaBottomSheet(
                           }
                         }
                   }
-            }
+              }
+          }
       }
 }
