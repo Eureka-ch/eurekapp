@@ -10,6 +10,7 @@ import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -60,7 +61,7 @@ open class IdeasViewModel
 constructor(
     private val projectRepository: ProjectRepository = RepositoriesProvider.projectRepository,
     private val ideasRepository: IdeasRepository = RepositoriesProvider.ideasRepository,
-    private val getCurrentUserId: () -> String? = { null },
+    private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
