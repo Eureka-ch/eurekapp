@@ -16,7 +16,6 @@ class MockCreateIdeaViewModel : CreateIdeaViewModel() {
               selectedParticipantIds = emptySet(),
               availableProjects = emptyList(),
               availableUsers = emptyList(),
-              isLoadingUsers = false,
               isCreating = false,
               errorMsg = null,
               navigateToIdea = null))
@@ -37,10 +36,6 @@ class MockCreateIdeaViewModel : CreateIdeaViewModel() {
 
   fun setAvailableUsers(users: List<User>) {
     _uiState.value = _uiState.value.copy(availableUsers = users)
-  }
-
-  fun setIsLoadingUsers(isLoading: Boolean) {
-    _uiState.value = _uiState.value.copy(isLoadingUsers = isLoading)
   }
 
   override fun updateTitle(title: String) {

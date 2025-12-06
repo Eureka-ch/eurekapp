@@ -27,14 +27,12 @@ class CreateIdeaBottomSheetTest {
   private fun setContent(
       projects: List<Project> = testProjects,
       users: List<User> = emptyList(),
-      isLoading: Boolean = false,
       onDismiss: () -> Unit = {},
       onIdeaCreated: (Idea) -> Unit = {}
   ): MockCreateIdeaViewModel {
     val mockViewModel = MockCreateIdeaViewModel()
     mockViewModel.setAvailableProjects(projects)
     mockViewModel.setAvailableUsers(users)
-    mockViewModel.setIsLoadingUsers(isLoading)
     composeTestRule.setContent {
       CreateIdeaBottomSheet(
           onDismiss = onDismiss, onIdeaCreated = onIdeaCreated, viewModel = mockViewModel)
@@ -165,17 +163,5 @@ class CreateIdeaBottomSheetTest {
     composeTestRule.onNodeWithTag(CreateIdeaBottomSheetTestTags.CREATE_BUTTON).performClick()
     composeTestRule.waitForIdle()
     assert(mockViewModel.createIdeaCalled) { "createIdea should be called" }
-  }
-
-  @Test
-  fun createIdeaBottomSheet_showsLoadingIndicatorWhenLoadingUsers() {
-    setContent(users = emptyList(), isLoading = true)
-    selectProject()
-    // When loading, we show CircularProgressIndicator, not the dropdown
-    composeTestRule.waitForIdle()
-    // The loading indicator should be visible in the participants section
-    // We can't easily test the CircularProgressIndicator directly, so we verify
-    // that the "No users available" message is NOT shown (since we're loading)
-    composeTestRule.onNodeWithText("No users available in this project").assertDoesNotExist()
   }
 }

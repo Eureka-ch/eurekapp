@@ -104,27 +104,19 @@ fun CreateIdeaBottomSheet(
                   singleLine = true,
                   colors = EurekaStyles.textFieldColors())
 
-              Column {
-                Text(
-                    text = "Project",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Medium)
-                Spacer(modifier = Modifier.height(Spacing.xs))
-                if (uiState.availableProjects.isEmpty()) {
-                  Box(
-                      modifier = Modifier.fillMaxWidth().height(56.dp),
-                      contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(strokeWidth = 2.dp)
-                      }
-                } else {
+              if (uiState.availableProjects.isEmpty()) {
+                Column {
+                  Text(
+                      text = "Project",
+                      style = MaterialTheme.typography.labelLarge,
+                      fontWeight = FontWeight.Medium)
+                  Spacer(modifier = Modifier.height(Spacing.xs))
                   Text(
                       text = "No projects available",
                       style = MaterialTheme.typography.bodyMedium,
                       color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-              }
-
-              if (uiState.availableProjects.isNotEmpty()) {
+              } else {
                 var projectDropdownExpanded by remember { mutableStateOf(false) }
                 Column {
                   ExposedDropdownMenuBox(
@@ -191,13 +183,7 @@ fun CreateIdeaBottomSheet(
                       style = MaterialTheme.typography.labelLarge,
                       fontWeight = FontWeight.Medium)
                   Spacer(modifier = Modifier.height(Spacing.xs))
-                  if (uiState.isLoadingUsers) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
-                        contentAlignment = Alignment.Center) {
-                          CircularProgressIndicator(strokeWidth = 2.dp)
-                        }
-                  } else if (uiState.availableUsers.isEmpty()) {
+                  if (uiState.availableUsers.isEmpty()) {
                     Text(
                         text = "No users available in this project",
                         style = MaterialTheme.typography.bodyMedium,
@@ -238,7 +224,9 @@ fun CreateIdeaBottomSheet(
                                                   checked =
                                                       uiState.selectedParticipantIds.contains(
                                                           user.uid),
-                                                  onCheckedChange = null)
+                                                  onCheckedChange = {
+                                                    viewModel.toggleParticipant(user.uid)
+                                                  })
                                             }
                                       },
                                       onClick = { viewModel.toggleParticipant(user.uid) })

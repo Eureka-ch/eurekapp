@@ -29,7 +29,6 @@ data class CreateIdeaState(
     val selectedParticipantIds: Set<String> = emptySet(),
     val availableProjects: List<Project> = emptyList(),
     val availableUsers: List<User> = emptyList(),
-    val isLoadingUsers: Boolean = false,
     val isCreating: Boolean = false,
     val errorMsg: String? = null,
     val navigateToIdea: Idea? = null
@@ -62,7 +61,6 @@ constructor(
   private val _selectedProject = MutableStateFlow<Project?>(null)
   private val _selectedParticipantIds = MutableStateFlow<Set<String>>(emptySet())
   private val _availableUsers = MutableStateFlow<List<User>>(emptyList())
-  private val _isLoadingUsers = MutableStateFlow(false)
   private val _isCreating = MutableStateFlow(false)
   private val _errorMsg = MutableStateFlow<String?>(null)
   private val _navigateToIdea = MutableStateFlow<Idea?>(null)
@@ -85,7 +83,6 @@ constructor(
               _selectedParticipantIds,
               projectsFlow,
               _availableUsers,
-              _isLoadingUsers,
               _isCreating,
               _errorMsg,
               _navigateToIdea) { args ->
@@ -94,17 +91,15 @@ constructor(
                 val participants = args[2] as Set<String>
                 val projects = args[3] as List<Project>
                 val users = args[4] as List<User>
-                val loadingUsers = args[5] as Boolean
-                val creating = args[6] as Boolean
-                val error = args[7] as String?
-                val navigate = args[8] as Idea?
+                val creating = args[5] as Boolean
+                val error = args[6] as String?
+                val navigate = args[7] as Idea?
                 CreateIdeaState(
                     title = title,
                     selectedProject = project,
                     selectedParticipantIds = participants,
                     availableProjects = projects,
                     availableUsers = users,
-                    isLoadingUsers = loadingUsers,
                     isCreating = creating,
                     errorMsg = error,
                     navigateToIdea = navigate)
@@ -184,7 +179,6 @@ constructor(
     }
 
     viewModelScope.launch(dispatcher) {
-      _isLoadingUsers.value = true
       try {
         val members = projectRepository.getMembers(projectId).first()
         if (members.isEmpty()) {
@@ -197,8 +191,6 @@ constructor(
       } catch (e: Exception) {
         Log.e(TAG, "Error loading users", e)
         _errorMsg.value = "Error loading users: ${e.message}"
-      } finally {
-        _isLoadingUsers.value = false
       }
     }
   }
@@ -216,7 +208,6 @@ constructor(
     _selectedProject.value = null
     _selectedParticipantIds.value = emptySet()
     _availableUsers.value = emptyList()
-    _isLoadingUsers.value = false
     _isCreating.value = false
     _errorMsg.value = null
     _navigateToIdea.value = null

@@ -70,7 +70,6 @@ class CreateIdeaViewModelTest {
     assertEquals(emptySet<String>(), state.selectedParticipantIds)
     assertEquals(emptyList<Project>(), state.availableProjects)
     assertEquals(emptyList<User>(), state.availableUsers)
-    assertFalse(state.isLoadingUsers)
     assertFalse(state.isCreating)
     assertNull(state.errorMsg)
     assertNull(state.navigateToIdea)
