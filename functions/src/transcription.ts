@@ -4,6 +4,7 @@
  * 
  * Note: This file was partially written by GPT-5 (ChatGPT)
  * Co-author: GPT-5
+ * Co-author: Claude 4.5 Sonnet
  */
 
 import * as functions from 'firebase-functions';
@@ -20,9 +21,9 @@ if (ffmpegPath) {
   ffmpeg.setFfmpegPath(ffmpegPath);
 }
 
-const speechClient = new SpeechClient({
-  keyFilename: path.join(__dirname, '../eureka-stt-service-account.json'),
-});
+// Use Application Default Credentials (ADC) - works automatically in Cloud Functions
+// and locally when GOOGLE_APPLICATION_CREDENTIALS env var is set
+const speechClient = new SpeechClient();
 
 /**
  * Convert audio file to FLAC format using ffmpeg
