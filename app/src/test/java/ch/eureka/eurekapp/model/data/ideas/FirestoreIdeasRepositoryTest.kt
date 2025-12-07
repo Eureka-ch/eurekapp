@@ -10,6 +10,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.*
 import io.mockk.*
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Before
@@ -41,6 +42,35 @@ class FirestoreIdeasRepositoryTest {
     every { auth.currentUser } returns null
     val result = repository.getIdeasForProject(testProjectId).first()
     assertTrue(result.isEmpty())
+  }
+
+  @Test
+  fun `getIdeasForProject returns ideas list when snapshot succeeds`() = runTest {
+    val idea = Idea(ideaId = "idea-1", projectId = testProjectId, createdBy = testUserId)
+    val collectionRef = mockk<CollectionReference>(relaxed = true)
+    val query = mockk<Query>(relaxed = true)
+    val snapshot = mockk<QuerySnapshot>(relaxed = true)
+    val doc = mockk<DocumentSnapshot>(relaxed = true)
+    val listenerSlot = slot<EventListener<QuerySnapshot>>()
+    val registration = mockk<ListenerRegistration>(relaxed = true)
+
+    every { firestore.collection("projects") } returns collectionRef
+    every { collectionRef.document(testProjectId) } returns mockk(relaxed = true)
+    every { collectionRef.document(testProjectId).collection("ideas") } returns collectionRef
+    every { collectionRef.whereArrayContains("participantIds", testUserId) } returns query
+    every { query.addSnapshotListener(capture(listenerSlot)) } answers
+        {
+          listenerSlot.captured.onEvent(snapshot, null)
+          registration
+        }
+    every { snapshot.documents } returns listOf(doc)
+    every { doc.id } returns "idea-1"
+    every { doc.toObject(Idea::class.java) } returns idea.copy(ideaId = "")
+
+    val result = repository.getIdeasForProject(testProjectId).first()
+
+    assertEquals(1, result.size)
+    assertEquals("idea-1", result[0].ideaId)
   }
 
   @Test
@@ -110,5 +140,60 @@ class FirestoreIdeasRepositoryTest {
     val result = repository.addParticipant(testProjectId, "idea-1", testUserId)
 
     assertTrue(result.isSuccess)
+  }
+
+  @Test
+  fun `getMessagesForIdea returns empty list when no projects`() = runTest {
+    every { projectRepository.getProjectsForCurrentUser(skipCache = false) } returns
+        flowOf(emptyList())
+
+    val result = repository.getMessagesForIdea("idea-1").first()
+
+    assertTrue(result.isEmpty())
+  }
+
+  @Test
+  fun `sendMessage finds idea and sends message successfully`() = runTest {
+    val message = Message(messageID = "msg-1", senderId = testUserId, text = "Hello")
+    val project =
+        ch.eureka.eurekapp.model.data.project.Project(projectId = testProjectId, name = "Test")
+    val ideaDoc = mockk<DocumentSnapshot>(relaxed = true)
+    val docRef = mockk<DocumentReference>(relaxed = true)
+    val collectionRef = mockk<CollectionReference>(relaxed = true)
+
+    every { projectRepository.getProjectsForCurrentUser(skipCache = false) } returns
+        flowOf(listOf(project))
+    every { firestore.collection(any()).document(any()).collection(any()).document(any()) } returns
+        docRef
+    every { docRef.get() } returns Tasks.forResult(ideaDoc)
+    every { ideaDoc.exists() } returns true
+    every { docRef.collection(any()) } returns collectionRef
+    every { collectionRef.document(any()) } returns docRef
+    every { docRef.set(any()) } returns Tasks.forResult(null)
+
+    val result = repository.sendMessage("idea-1", message)
+
+    assertTrue(result.isSuccess)
+  }
+
+  @Test
+  fun `sendMessage fails when idea not found in any project`() = runTest {
+    val message = Message(messageID = "msg-1", senderId = testUserId, text = "Hello")
+    val project =
+        ch.eureka.eurekapp.model.data.project.Project(projectId = testProjectId, name = "Test")
+    val ideaDoc = mockk<DocumentSnapshot>(relaxed = true)
+    val docRef = mockk<DocumentReference>(relaxed = true)
+
+    every { projectRepository.getProjectsForCurrentUser(skipCache = false) } returns
+        flowOf(listOf(project))
+    every { firestore.collection(any()).document(any()).collection(any()).document(any()) } returns
+        docRef
+    every { docRef.get() } returns Tasks.forResult(ideaDoc)
+    every { ideaDoc.exists() } returns false
+
+    val result = repository.sendMessage("idea-1", message)
+
+    assertTrue(result.isFailure)
+    assertTrue(result.exceptionOrNull()?.message?.contains("not found") == true)
   }
 }
