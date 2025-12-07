@@ -5,7 +5,6 @@ import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.ui.ideas.Idea
 import com.google.android.gms.tasks.Tasks
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.*
@@ -62,8 +61,7 @@ class FirestoreIdeasRepositoryTest {
   fun `createIdea fails when Firestore fails`() = runTest {
     val idea = Idea(ideaId = "idea-1", projectId = testProjectId, createdBy = testUserId)
     val docRef: DocumentReference = mockk(relaxed = true)
-    val exception =
-        FirebaseFirestoreException("Error", FirebaseFirestoreException.Code.UNAVAILABLE)
+    val exception = FirebaseFirestoreException("Error", FirebaseFirestoreException.Code.UNAVAILABLE)
     every { firestore.collection(any()).document(any()).collection(any()).document(any()) } returns
         docRef
     every { docRef.set(any()) } returns Tasks.forException(exception)

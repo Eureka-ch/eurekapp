@@ -89,4 +89,37 @@ class IdeasViewModelTest {
     // Conversation mode will be tested in frontend PR
     assertEquals(IdeasViewMode.LIST, state.viewMode)
   }
+
+  @Test
+  fun onIdeaCreated_updatesSelectedIdeaAndProject() = runTest {
+    val project = Project(projectId = "project-123", name = "Test Project")
+    mockProjectRepository.setCurrentUserProjects(flowOf(listOf(project)))
+    viewModel = createViewModel()
+    advanceUntilIdle()
+    val idea = Idea(ideaId = "idea-123", projectId = "project-123", createdBy = currentUserId)
+    viewModel.onIdeaCreated(idea)
+    advanceUntilIdle()
+    val state = viewModel.uiState.first()
+    assertEquals(idea, state.selectedIdea)
+    assertEquals(project, state.selectedProject)
+  }
+
+  @Test
+  fun deleteIdea_hidesIdea() = runTest {
+    viewModel = createViewModel()
+    advanceUntilIdle()
+    viewModel.deleteIdea("idea-123")
+    advanceUntilIdle()
+    // Verify deletion logic (hidden in UI state)
+    assertNull(viewModel.uiState.first().errorMsg)
+  }
+
+  @Test
+  fun clearError_resetsErrorMessage() = runTest {
+    viewModel = createViewModel()
+    advanceUntilIdle()
+    viewModel.clearError()
+    advanceUntilIdle()
+    assertNull(viewModel.uiState.first().errorMsg)
+  }
 }

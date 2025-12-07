@@ -135,7 +135,8 @@ class FirestoreIdeasRepository(
       }
 
   override suspend fun sendMessage(ideaId: String, message: Message): Result<Unit> = runCatching {
-    val currentUserId = auth.currentUser?.uid ?: throw Exception("User not authenticated")
+    // Verify user is authenticated
+    auth.currentUser?.uid ?: throw Exception("User not authenticated")
 
     // Find the project ID for this idea
     val projects = projectRepository.getProjectsForCurrentUser(skipCache = false)
