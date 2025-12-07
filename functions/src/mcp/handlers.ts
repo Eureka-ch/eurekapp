@@ -1,7 +1,6 @@
 // Co-authored by Claude Code
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import { Response } from 'express';
 import { validateMcpToken } from './tokenAuth';
 
 function serializeDoc(doc: admin.firestore.DocumentSnapshot): object {
@@ -24,19 +23,7 @@ function serializeData(data: Record<string, unknown>): object {
   return result;
 }
 
-function setCorsHeaders(res: Response): void {
-  res.set('Access-Control-Allow-Origin', '*');
-  res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-}
-
 export const mcpListProjects = functions.https.onRequest(async (req, res) => {
-  setCorsHeaders(res);
-  if (req.method === 'OPTIONS') {
-    res.status(204).send('');
-    return;
-  }
-
   try {
     const auth = await validateMcpToken(req);
 
@@ -60,12 +47,6 @@ export const mcpListProjects = functions.https.onRequest(async (req, res) => {
 });
 
 export const mcpGetProject = functions.https.onRequest(async (req, res) => {
-  setCorsHeaders(res);
-  if (req.method === 'OPTIONS') {
-    res.status(204).send('');
-    return;
-  }
-
   try {
     const auth = await validateMcpToken(req);
     const projectId = req.query.projectId as string;
@@ -105,12 +86,6 @@ export const mcpGetProject = functions.https.onRequest(async (req, res) => {
 
 export const mcpListProjectMembers = functions.https.onRequest(
   async (req, res) => {
-    setCorsHeaders(res);
-    if (req.method === 'OPTIONS') {
-      res.status(204).send('');
-      return;
-    }
-
     try {
       const auth = await validateMcpToken(req);
       const projectId = req.query.projectId as string;
@@ -158,12 +133,6 @@ export const mcpListProjectMembers = functions.https.onRequest(
 );
 
 export const mcpGetUser = functions.https.onRequest(async (req, res) => {
-  setCorsHeaders(res);
-  if (req.method === 'OPTIONS') {
-    res.status(204).send('');
-    return;
-  }
-
   try {
     await validateMcpToken(req);
     const userId = req.query.userId as string;

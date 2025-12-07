@@ -13,15 +13,6 @@ function generateToken(): string {
 }
 
 export const mcpCreateToken = functions.https.onRequest(async (req, res) => {
-  res.set('Access-Control-Allow-Origin', '*');
-  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-  if (req.method === 'OPTIONS') {
-    res.status(204).send('');
-    return;
-  }
-
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
@@ -72,15 +63,6 @@ export const mcpCreateToken = functions.https.onRequest(async (req, res) => {
 });
 
 export const mcpRevokeToken = functions.https.onRequest(async (req, res) => {
-  res.set('Access-Control-Allow-Origin', '*');
-  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-  if (req.method === 'OPTIONS') {
-    res.status(204).send('');
-    return;
-  }
-
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
@@ -127,15 +109,6 @@ export const mcpRevokeToken = functions.https.onRequest(async (req, res) => {
 });
 
 export const mcpListTokens = functions.https.onRequest(async (req, res) => {
-  res.set('Access-Control-Allow-Origin', '*');
-  res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-  if (req.method === 'OPTIONS') {
-    res.status(204).send('');
-    return;
-  }
-
   if (req.method !== 'GET') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
