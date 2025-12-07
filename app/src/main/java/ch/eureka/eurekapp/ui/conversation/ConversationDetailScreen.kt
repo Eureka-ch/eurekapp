@@ -72,6 +72,17 @@ Co-author: Claude 4.5 Sonnet
 Co-author: Grok
 */
 
+/** Callbacks for message-level interactions in the conversation. */
+data class MessageCallbacks(
+    val onDownloadFile: (String, Context) -> Unit,
+    val onOpenUrl: (String, Context) -> Unit,
+    val onSelectMessage: (String) -> Unit,
+    val onClearSelection: () -> Unit,
+    val onStartEditing: (ConversationMessage) -> Unit,
+    val onRequestDelete: (String, String?) -> Unit,
+    val onRemoveAttachment: (String, String) -> Unit
+)
+
 /**
  * Screen for displaying and composing messages in a conversation.
  *
@@ -182,19 +193,23 @@ fun ConversationDetailScreen(
               }
             })
       }) { paddingValues ->
+        val messageCallbacks =
+            MessageCallbacks(
+                onDownloadFile = viewModel::downloadFile,
+                onOpenUrl = viewModel::openUrl,
+                onSelectMessage = viewModel::selectMessage,
+                onClearSelection = viewModel::clearMessageSelection,
+                onStartEditing = viewModel::startEditing,
+                onRequestDelete = viewModel::requestDeleteMessage,
+                onRemoveAttachment = viewModel::removeAttachment)
+
         ConversationContent(
             modifier = Modifier.padding(paddingValues),
             uiState = uiState,
             listState = listState,
             currentUserId = viewModel.currentUserId ?: "",
             context = context,
-            onDownloadFile = viewModel::downloadFile,
-            onOpenUrl = viewModel::openUrl,
-            onSelectMessage = viewModel::selectMessage,
-            onClearSelection = viewModel::clearMessageSelection,
-            onStartEditing = viewModel::startEditing,
-            onRequestDelete = viewModel::requestDeleteMessage,
-            onRemoveAttachment = viewModel::removeAttachment)
+            callbacks = messageCallbacks)
       }
 }
 
@@ -299,13 +314,7 @@ private fun ConversationContent(
     listState: androidx.compose.foundation.lazy.LazyListState,
     currentUserId: String,
     context: Context,
-    onDownloadFile: (String, Context) -> Unit,
-    onOpenUrl: (String, Context) -> Unit,
-    onSelectMessage: (String) -> Unit,
-    onClearSelection: () -> Unit,
-    onStartEditing: (ConversationMessage) -> Unit,
-    onRequestDelete: (String, String?) -> Unit,
-    onRemoveAttachment: (String, String) -> Unit
+    callbacks: MessageCallbacks
 ) {
   Box(modifier = modifier.fillMaxSize()) {
     when {
@@ -333,13 +342,7 @@ private fun ConversationContent(
             listState = listState,
             currentUserId = currentUserId,
             context = context,
-            onDownloadFile = onDownloadFile,
-            onOpenUrl = onOpenUrl,
-            onSelectMessage = onSelectMessage,
-            onClearSelection = onClearSelection,
-            onStartEditing = onStartEditing,
-            onRequestDelete = onRequestDelete,
-            onRemoveAttachment = onRemoveAttachment)
+            callbacks = callbacks)
       }
     }
   }
@@ -352,13 +355,7 @@ private fun MessagesList(
     listState: androidx.compose.foundation.lazy.LazyListState,
     currentUserId: String,
     context: Context,
-    onDownloadFile: (String, Context) -> Unit,
-    onOpenUrl: (String, Context) -> Unit,
-    onSelectMessage: (String) -> Unit,
-    onClearSelection: () -> Unit,
-    onStartEditing: (ConversationMessage) -> Unit,
-    onRequestDelete: (String, String?) -> Unit,
-    onRemoveAttachment: (String, String) -> Unit
+    callbacks: MessageCallbacks
 ) {
   LazyColumn(
       state = listState,
@@ -374,13 +371,7 @@ private fun MessagesList(
               isSelected = selectedMessageId == message.messageId,
               currentUserId = currentUserId,
               context = context,
-              onDownloadFile = onDownloadFile,
-              onOpenUrl = onOpenUrl,
-              onSelectMessage = onSelectMessage,
-              onClearSelection = onClearSelection,
-              onStartEditing = onStartEditing,
-              onRequestDelete = onRequestDelete,
-              onRemoveAttachment = onRemoveAttachment)
+              callbacks = callbacks)
         }
       }
 }
@@ -391,13 +382,7 @@ private fun MessageItem(
     isSelected: Boolean,
     currentUserId: String,
     context: Context,
-    onDownloadFile: (String, Context) -> Unit,
-    onOpenUrl: (String, Context) -> Unit,
-    onSelectMessage: (String) -> Unit,
-    onClearSelection: () -> Unit,
-    onStartEditing: (ConversationMessage) -> Unit,
-    onRequestDelete: (String, String?) -> Unit,
-    onRemoveAttachment: (String, String) -> Unit
+    callbacks: MessageCallbacks
 ) {
   val isFromCurrentUser = message.senderId == currentUserId
 
@@ -410,25 +395,26 @@ private fun MessageItem(
             MessageBubbleFileAttachment(
                 isFile = message.isFile,
                 fileUrl = message.fileUrl,
-                onDownloadClick = { url -> onDownloadFile(url, context) }),
+                onDownloadClick = { url -> callbacks.onDownloadFile(url, context) }),
         editedAt = message.editedAt,
         interactions =
             MessageBubbleInteractions(
-                onLinkClick = { url -> onOpenUrl(url, context) },
+                onLinkClick = { url -> callbacks.onOpenUrl(url, context) },
                 onLongClick =
                     if (isFromCurrentUser) {
-                      { onSelectMessage(message.messageId) }
+                      { callbacks.onSelectMessage(message.messageId) }
                     } else null))
 
     if (isSelected && isFromCurrentUser) {
       MessageActionMenu(
           expanded = true,
-          onDismiss = onClearSelection,
-          onEdit = { onStartEditing(message) },
+          onDismiss = callbacks.onClearSelection,
+          onEdit = { callbacks.onStartEditing(message) },
           onDelete = {
-            onRequestDelete(message.messageId, if (message.isFile) message.fileUrl else null)
+            callbacks.onRequestDelete(
+                message.messageId, if (message.isFile) message.fileUrl else null)
           },
-          onRemoveAttachment = { onRemoveAttachment(message.messageId, message.fileUrl) },
+          onRemoveAttachment = { callbacks.onRemoveAttachment(message.messageId, message.fileUrl) },
           hasAttachment = message.isFile)
     }
   }
