@@ -4,12 +4,10 @@ package ch.eureka.eurekapp.ui.ideas
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ch.eureka.eurekapp.model.data.IdGenerator
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +19,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
 /** UI state data class for Ideas Screen. */
 data class IdeasUIState(
@@ -115,32 +112,27 @@ constructor(
   /** The single source of truth for the UI state. */
   @Suppress("UNCHECKED_CAST")
   open val uiState: StateFlow<IdeasUIState> =
-      combine(
-              projectsFlow,
-              _selectedProject,
-              ideasFlow,
-              _selectedIdea,
-              _viewMode,
-              _errorMsg) { args ->
-                val projects = args[0] as List<Project>
-                val selectedProject = args[1] as Project?
-                val ideas = args[2] as List<Idea>
-                val selectedIdea = args[3] as Idea?
-                val viewMode = args[4] as IdeasViewMode
-                val errorMsg = args[5] as String?
+      combine(projectsFlow, _selectedProject, ideasFlow, _selectedIdea, _viewMode, _errorMsg) { args
+            ->
+            val projects = args[0] as List<Project>
+            val selectedProject = args[1] as Project?
+            val ideas = args[2] as List<Idea>
+            val selectedIdea = args[3] as Idea?
+            val viewMode = args[4] as IdeasViewMode
+            val errorMsg = args[5] as String?
 
-                IdeasUIState(
-                    selectedProject = selectedProject,
-                    availableProjects = projects,
-                    ideas = ideas,
-                    selectedIdea = selectedIdea,
-                    messages = emptyList(), // Chat functionality in separate PR
-                    viewMode = viewMode,
-                    currentMessage = "",
-                    isSending = false,
-                    isLoading = false,
-                    errorMsg = errorMsg)
-              }
+            IdeasUIState(
+                selectedProject = selectedProject,
+                availableProjects = projects,
+                ideas = ideas,
+                selectedIdea = selectedIdea,
+                messages = emptyList(), // Chat functionality in separate PR
+                viewMode = viewMode,
+                currentMessage = "",
+                isSending = false,
+                isLoading = false,
+                errorMsg = errorMsg)
+          }
           .stateIn(
               scope = viewModelScope,
               started = SharingStarted.WhileSubscribed(5000),
