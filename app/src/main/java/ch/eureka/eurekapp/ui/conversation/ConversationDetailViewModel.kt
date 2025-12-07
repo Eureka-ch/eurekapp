@@ -467,10 +467,8 @@ open class ConversationDetailViewModel(
     viewModelScope.launch {
       // Delete the file from storage if the message has an attachment
       if (!fileUrl.isNullOrEmpty()) {
-        fileStorageRepository.deleteFile(fileUrl).onFailure { error ->
-          // Log but don't block message deletion if file deletion fails
-          android.util.Log.e(
-              "ConversationDetailVM", "Failed to delete attachment: ${error.message}")
+        fileStorageRepository.deleteFile(fileUrl).onFailure {
+          _snackbarMessage.value = "Could not delete attachment file"
         }
       }
 
@@ -494,19 +492,20 @@ open class ConversationDetailViewModel(
     _selectedMessageId.value = null
 
     viewModelScope.launch {
-      // First delete the file from storage
-      fileStorageRepository
-          .deleteFile(fileUrl)
+      // First remove the attachment reference from Firestore, then delete the file
+      // This order ensures we don't have broken references if file deletion fails
+      conversationRepository
+          .removeAttachment(conversationId, messageId)
           .fold(
               onSuccess = {
-                // Then remove the attachment reference from the message
-                conversationRepository
-                    .removeAttachment(conversationId, messageId)
-                    .fold(
-                        onSuccess = { _snackbarMessage.value = "Attachment removed" },
-                        onFailure = { error -> _errorMsg.value = "Error: ${error.message}" })
+                // Then delete the file from storage (best effort)
+                fileStorageRepository.deleteFile(fileUrl).onFailure {
+                  _snackbarMessage.value = "Attachment removed, but file deletion failed"
+                  return@fold
+                }
+                _snackbarMessage.value = "Attachment removed"
               },
-              onFailure = { error -> _errorMsg.value = "Error deleting file: ${error.message}" })
+              onFailure = { error -> _errorMsg.value = "Error: ${error.message}" })
     }
   }
 }

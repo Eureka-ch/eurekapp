@@ -770,12 +770,12 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `removeAttachment deletes file and updates message`() = runTest {
+  fun `removeAttachment removes reference then deletes file`() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
-    coEvery { mockFileStorageRepository.deleteFile(any()) } returns Result.success(Unit)
     coEvery { mockConversationRepository.removeAttachment(any(), any()) } returns
         Result.success(Unit)
+    coEvery { mockFileStorageRepository.deleteFile(any()) } returns Result.success(Unit)
 
     val viewModel = createViewModel()
     advanceUntilIdle()
@@ -783,26 +783,35 @@ class ConversationDetailViewModelTest {
     viewModel.removeAttachment("msg-2", "https://storage.example.com/file.pdf")
     advanceUntilIdle()
 
-    coVerify { mockFileStorageRepository.deleteFile("https://storage.example.com/file.pdf") }
+    // Firestore reference removed first, then file deleted
     coVerify { mockConversationRepository.removeAttachment(conversationId, "msg-2") }
+    coVerify { mockFileStorageRepository.deleteFile("https://storage.example.com/file.pdf") }
   }
 
   @Test
-  fun `removeAttachment shows error if file deletion fails`() = runTest {
-    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
-    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
-    coEvery { mockFileStorageRepository.deleteFile(any()) } returns
-        Result.failure(Exception("Storage error"))
+  fun `removeAttachment shows snackbar if file deletion fails but still removes reference`() =
+      runTest {
+        every { mockConversationRepository.getConversationById(conversationId) } returns
+            flowOf(null)
+        every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+        coEvery { mockConversationRepository.removeAttachment(any(), any()) } returns
+            Result.success(Unit)
+        coEvery { mockFileStorageRepository.deleteFile(any()) } returns
+            Result.failure(Exception("Storage error"))
 
-    val viewModel = createViewModel()
-    advanceUntilIdle()
+        val viewModel = createViewModel()
+        advanceUntilIdle()
 
-    viewModel.removeAttachment("msg-2", "https://storage.example.com/file.pdf")
+        viewModel.removeAttachment("msg-2", "https://storage.example.com/file.pdf")
+        advanceUntilIdle()
 
-    val state = viewModel.uiState.first { it.errorMsg != null }
-    assertTrue(state.errorMsg?.contains("Storage error") == true)
-    coVerify(exactly = 0) { mockConversationRepository.removeAttachment(any(), any()) }
-  }
+        // Firestore reference is removed first, then file deletion is attempted
+        coVerify { mockConversationRepository.removeAttachment(conversationId, "msg-2") }
+        coVerify { mockFileStorageRepository.deleteFile("https://storage.example.com/file.pdf") }
+        // Snackbar shows partial success message
+        val snackbar = viewModel.snackbarMessage.first { it != null }
+        assertTrue(snackbar?.contains("file deletion failed") == true)
+      }
 
   @Test
   fun `removeAttachment clears selectedMessageId`() = runTest {

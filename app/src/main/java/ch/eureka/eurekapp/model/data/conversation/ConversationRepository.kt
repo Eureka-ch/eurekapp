@@ -62,6 +62,6 @@ interface ConversationRepository {
   /** Soft-delete a message. Only the sender can delete their own message. */
   suspend fun deleteMessage(conversationId: String, messageId: String): Result<Unit>
 
-  /** Remove the attachment from a message (keeps file in storage). */
+  /** Remove the attachment reference from a message. Does not delete the file from storage. */
   suspend fun removeAttachment(conversationId: String, messageId: String): Result<Unit>
 }
