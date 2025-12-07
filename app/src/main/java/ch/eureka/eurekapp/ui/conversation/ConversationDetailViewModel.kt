@@ -466,16 +466,19 @@ open class ConversationDetailViewModel(
 
     viewModelScope.launch {
       // Delete the file from storage if the message has an attachment
+      var fileDeleteFailed = false
       if (!fileUrl.isNullOrEmpty()) {
-        fileStorageRepository.deleteFile(fileUrl).onFailure {
-          _snackbarMessage.value = "Could not delete attachment file"
-        }
+        fileStorageRepository.deleteFile(fileUrl).onFailure { fileDeleteFailed = true }
       }
 
       conversationRepository
           .deleteMessage(conversationId, messageId)
           .fold(
-              onSuccess = { _snackbarMessage.value = "Message deleted" },
+              onSuccess = {
+                _snackbarMessage.value =
+                    if (fileDeleteFailed) "Message deleted, but could not delete attachment file"
+                    else "Message deleted"
+              },
               onFailure = { error -> _errorMsg.value = "Error: ${error.message}" })
     }
   }
