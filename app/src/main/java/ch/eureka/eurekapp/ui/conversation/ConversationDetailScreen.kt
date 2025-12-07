@@ -1,5 +1,7 @@
 package ch.eureka.eurekapp.ui.conversation
 
+import android.content.Context
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -41,12 +43,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.model.data.conversation.ConversationMessage
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.DeleteConfirmationDialog
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.MessageActionMenu
 import ch.eureka.eurekapp.ui.components.MessageBubble
 import ch.eureka.eurekapp.ui.components.MessageBubbleFileAttachment
+import ch.eureka.eurekapp.ui.components.MessageBubbleInteractions
 import ch.eureka.eurekapp.ui.components.MessageInputField
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
@@ -163,139 +167,269 @@ fun ConversationDetailScreen(
       },
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       bottomBar = {
-        Column(modifier = Modifier.fillMaxWidth()) {
-          uiState.selectedFileUri?.let { uri ->
-            val selectedFileName =
-                remember(uri) {
-                  context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-                    val nameIndex =
-                        cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
-                    cursor.moveToFirst()
-                    cursor.getString(nameIndex)
-                  } ?: "Unknown file"
-                }
-            Row(
-                modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.xs),
-                verticalAlignment = Alignment.CenterVertically) {
-                  Text(
-                      text = "Selected file: $selectedFileName",
-                      style = MaterialTheme.typography.bodySmall,
-                      modifier =
-                          Modifier.weight(1f)
-                              .testTag(ConversationDetailScreenTestTags.SELECTED_FILE_TEXT))
-                  IconButton(onClick = { viewModel.clearSelectedFile() }) {
-                    Icon(Icons.Default.Close, contentDescription = "Remove selected file")
-                  }
-                }
-          }
-          if (uiState.isUploadingFile) {
-            Row(modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.xs)) {
-              CircularProgressIndicator(modifier = Modifier.size(16.dp))
-              Spacer(modifier = Modifier.width(Spacing.sm))
-              Text(
-                  "Uploading file...",
-                  style = MaterialTheme.typography.bodySmall,
-                  modifier = Modifier.testTag(ConversationDetailScreenTestTags.UPLOADING_TEXT))
-            }
-          }
-          Row {
-            if (!uiState.isEditing) {
-              IconButton(onClick = { filePickerLauncher.launch("*/*") }) {
-                Icon(Icons.Default.AttachFile, contentDescription = "Attach file")
+        ConversationBottomBar(
+            uiState = uiState,
+            context = context,
+            onClearSelectedFile = viewModel::clearSelectedFile,
+            onAttachFile = { filePickerLauncher.launch("*/*") },
+            onMessageChange = viewModel::updateMessage,
+            onSend = {
+              if (uiState.isEditing) {
+                viewModel.saveEditedMessage()
+              } else {
+                uiState.selectedFileUri?.let { uri -> viewModel.sendFileMessage(uri, context) }
+                    ?: viewModel.sendMessage()
               }
-            }
-            MessageInputField(
-                message = uiState.currentMessage,
-                onMessageChange = viewModel::updateMessage,
-                onSend = {
-                  if (uiState.isEditing) {
-                    viewModel.saveEditedMessage()
-                  } else {
-                    uiState.selectedFileUri?.let { uri -> viewModel.sendFileMessage(uri, context) }
-                        ?: viewModel.sendMessage()
-                  }
-                },
-                isSending = uiState.isSending,
-                placeholder =
-                    if (uiState.isEditing) "Edit your message..." else "Write a message...",
-                canSend =
-                    uiState.currentMessage.isNotBlank() ||
-                        (!uiState.isEditing && uiState.selectedFileUri != null))
+            })
+      }) { paddingValues ->
+        ConversationContent(
+            modifier = Modifier.padding(paddingValues),
+            uiState = uiState,
+            listState = listState,
+            currentUserId = viewModel.currentUserId ?: "",
+            context = context,
+            onDownloadFile = viewModel::downloadFile,
+            onOpenUrl = viewModel::openUrl,
+            onSelectMessage = viewModel::selectMessage,
+            onClearSelection = viewModel::clearMessageSelection,
+            onStartEditing = viewModel::startEditing,
+            onRequestDelete = viewModel::requestDeleteMessage,
+            onRemoveAttachment = viewModel::removeAttachment)
+      }
+}
+
+@Composable
+private fun ConversationBottomBar(
+    uiState: ConversationDetailState,
+    context: Context,
+    onClearSelectedFile: () -> Unit,
+    onAttachFile: () -> Unit,
+    onMessageChange: (String) -> Unit,
+    onSend: () -> Unit
+) {
+  Column(modifier = Modifier.fillMaxWidth()) {
+    SelectedFileIndicator(
+        selectedFileUri = uiState.selectedFileUri,
+        context = context,
+        onClearSelectedFile = onClearSelectedFile)
+
+    if (uiState.isUploadingFile) {
+      UploadingIndicator()
+    }
+
+    MessageInputRow(
+        uiState = uiState,
+        onAttachFile = onAttachFile,
+        onMessageChange = onMessageChange,
+        onSend = onSend)
+  }
+}
+
+@Composable
+private fun SelectedFileIndicator(
+    selectedFileUri: Uri?,
+    context: Context,
+    onClearSelectedFile: () -> Unit
+) {
+  selectedFileUri?.let { uri ->
+    val selectedFileName =
+        remember(uri) {
+          context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+            cursor.moveToFirst()
+            cursor.getString(nameIndex)
+          } ?: "Unknown file"
+        }
+    Row(
+        modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.xs),
+        verticalAlignment = Alignment.CenterVertically) {
+          Text(
+              text = "Selected file: $selectedFileName",
+              style = MaterialTheme.typography.bodySmall,
+              modifier =
+                  Modifier.weight(1f).testTag(ConversationDetailScreenTestTags.SELECTED_FILE_TEXT))
+          IconButton(onClick = onClearSelectedFile) {
+            Icon(Icons.Default.Close, contentDescription = "Remove selected file")
           }
         }
-      }) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-          when {
-            uiState.isLoading -> {
-              CircularProgressIndicator(
-                  modifier =
-                      Modifier.align(Alignment.Center)
-                          .testTag(ConversationDetailScreenTestTags.LOADING_INDICATOR))
-            }
-            uiState.messages.isEmpty() -> {
-              Text(
-                  text = "No messages yet. Start the conversation!",
-                  style = MaterialTheme.typography.bodyLarge,
-                  color = MaterialTheme.colorScheme.onSurfaceVariant,
-                  textAlign = TextAlign.Center,
-                  modifier =
-                      Modifier.align(Alignment.Center)
-                          .padding(Spacing.lg)
-                          .testTag(ConversationDetailScreenTestTags.EMPTY_STATE))
-            }
-            else -> {
-              LazyColumn(
-                  state = listState,
-                  modifier =
-                      Modifier.fillMaxSize()
-                          .padding(horizontal = Spacing.md)
-                          .testTag(ConversationDetailScreenTestTags.MESSAGES_LIST),
-                  reverseLayout = true,
-                  verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                    items(items = uiState.messages.reversed(), key = { it.messageId }) { message ->
-                      val isFromCurrentUser = message.senderId == viewModel.currentUserId
-                      val isSelected = uiState.selectedMessageId == message.messageId
+  }
+}
 
-                      Box {
-                        MessageBubble(
-                            text = message.text,
-                            timestamp = message.createdAt,
-                            isFromCurrentUser = isFromCurrentUser,
-                            fileAttachment =
-                                MessageBubbleFileAttachment(
-                                    isFile = message.isFile,
-                                    fileUrl = message.fileUrl,
-                                    onDownloadClick = { url ->
-                                      viewModel.downloadFile(url, context)
-                                    }),
-                            onLinkClick = { url -> viewModel.openUrl(url, context) },
-                            editedAt = message.editedAt,
-                            onLongClick =
-                                if (isFromCurrentUser) {
-                                  { viewModel.selectMessage(message.messageId) }
-                                } else null)
+@Composable
+private fun UploadingIndicator() {
+  Row(modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.xs)) {
+    CircularProgressIndicator(modifier = Modifier.size(16.dp))
+    Spacer(modifier = Modifier.width(Spacing.sm))
+    Text(
+        "Uploading file...",
+        style = MaterialTheme.typography.bodySmall,
+        modifier = Modifier.testTag(ConversationDetailScreenTestTags.UPLOADING_TEXT))
+  }
+}
 
-                        // Show action menu for selected message (only for own messages)
-                        if (isSelected && isFromCurrentUser) {
-                          MessageActionMenu(
-                              expanded = true,
-                              onDismiss = { viewModel.clearMessageSelection() },
-                              onEdit = { viewModel.startEditing(message) },
-                              onDelete = {
-                                viewModel.requestDeleteMessage(
-                                    message.messageId,
-                                    if (message.isFile) message.fileUrl else null)
-                              },
-                              onRemoveAttachment = {
-                                viewModel.removeAttachment(message.messageId, message.fileUrl)
-                              },
-                              hasAttachment = message.isFile)
-                        }
-                      }
-                    }
-                  }
-            }
-          }
+@Composable
+private fun MessageInputRow(
+    uiState: ConversationDetailState,
+    onAttachFile: () -> Unit,
+    onMessageChange: (String) -> Unit,
+    onSend: () -> Unit
+) {
+  Row {
+    if (!uiState.isEditing) {
+      IconButton(onClick = onAttachFile) {
+        Icon(Icons.Default.AttachFile, contentDescription = "Attach file")
+      }
+    }
+    MessageInputField(
+        message = uiState.currentMessage,
+        onMessageChange = onMessageChange,
+        onSend = onSend,
+        isSending = uiState.isSending,
+        placeholder = if (uiState.isEditing) "Edit your message..." else "Write a message...",
+        canSend =
+            uiState.currentMessage.isNotBlank() ||
+                (!uiState.isEditing && uiState.selectedFileUri != null))
+  }
+}
+
+@Composable
+private fun ConversationContent(
+    modifier: Modifier = Modifier,
+    uiState: ConversationDetailState,
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    currentUserId: String,
+    context: Context,
+    onDownloadFile: (String, Context) -> Unit,
+    onOpenUrl: (String, Context) -> Unit,
+    onSelectMessage: (String) -> Unit,
+    onClearSelection: () -> Unit,
+    onStartEditing: (ConversationMessage) -> Unit,
+    onRequestDelete: (String, String?) -> Unit,
+    onRemoveAttachment: (String, String) -> Unit
+) {
+  Box(modifier = modifier.fillMaxSize()) {
+    when {
+      uiState.isLoading -> {
+        CircularProgressIndicator(
+            modifier =
+                Modifier.align(Alignment.Center)
+                    .testTag(ConversationDetailScreenTestTags.LOADING_INDICATOR))
+      }
+      uiState.messages.isEmpty() -> {
+        Text(
+            text = "No messages yet. Start the conversation!",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier =
+                Modifier.align(Alignment.Center)
+                    .padding(Spacing.lg)
+                    .testTag(ConversationDetailScreenTestTags.EMPTY_STATE))
+      }
+      else -> {
+        MessagesList(
+            messages = uiState.messages,
+            selectedMessageId = uiState.selectedMessageId,
+            listState = listState,
+            currentUserId = currentUserId,
+            context = context,
+            onDownloadFile = onDownloadFile,
+            onOpenUrl = onOpenUrl,
+            onSelectMessage = onSelectMessage,
+            onClearSelection = onClearSelection,
+            onStartEditing = onStartEditing,
+            onRequestDelete = onRequestDelete,
+            onRemoveAttachment = onRemoveAttachment)
+      }
+    }
+  }
+}
+
+@Composable
+private fun MessagesList(
+    messages: List<ConversationMessage>,
+    selectedMessageId: String?,
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    currentUserId: String,
+    context: Context,
+    onDownloadFile: (String, Context) -> Unit,
+    onOpenUrl: (String, Context) -> Unit,
+    onSelectMessage: (String) -> Unit,
+    onClearSelection: () -> Unit,
+    onStartEditing: (ConversationMessage) -> Unit,
+    onRequestDelete: (String, String?) -> Unit,
+    onRemoveAttachment: (String, String) -> Unit
+) {
+  LazyColumn(
+      state = listState,
+      modifier =
+          Modifier.fillMaxSize()
+              .padding(horizontal = Spacing.md)
+              .testTag(ConversationDetailScreenTestTags.MESSAGES_LIST),
+      reverseLayout = true,
+      verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        items(items = messages.reversed(), key = { it.messageId }) { message ->
+          MessageItem(
+              message = message,
+              isSelected = selectedMessageId == message.messageId,
+              currentUserId = currentUserId,
+              context = context,
+              onDownloadFile = onDownloadFile,
+              onOpenUrl = onOpenUrl,
+              onSelectMessage = onSelectMessage,
+              onClearSelection = onClearSelection,
+              onStartEditing = onStartEditing,
+              onRequestDelete = onRequestDelete,
+              onRemoveAttachment = onRemoveAttachment)
         }
       }
+}
+
+@Composable
+private fun MessageItem(
+    message: ConversationMessage,
+    isSelected: Boolean,
+    currentUserId: String,
+    context: Context,
+    onDownloadFile: (String, Context) -> Unit,
+    onOpenUrl: (String, Context) -> Unit,
+    onSelectMessage: (String) -> Unit,
+    onClearSelection: () -> Unit,
+    onStartEditing: (ConversationMessage) -> Unit,
+    onRequestDelete: (String, String?) -> Unit,
+    onRemoveAttachment: (String, String) -> Unit
+) {
+  val isFromCurrentUser = message.senderId == currentUserId
+
+  Box {
+    MessageBubble(
+        text = message.text,
+        timestamp = message.createdAt,
+        isFromCurrentUser = isFromCurrentUser,
+        fileAttachment =
+            MessageBubbleFileAttachment(
+                isFile = message.isFile,
+                fileUrl = message.fileUrl,
+                onDownloadClick = { url -> onDownloadFile(url, context) }),
+        editedAt = message.editedAt,
+        interactions =
+            MessageBubbleInteractions(
+                onLinkClick = { url -> onOpenUrl(url, context) },
+                onLongClick =
+                    if (isFromCurrentUser) {
+                      { onSelectMessage(message.messageId) }
+                    } else null))
+
+    if (isSelected && isFromCurrentUser) {
+      MessageActionMenu(
+          expanded = true,
+          onDismiss = onClearSelection,
+          onEdit = { onStartEditing(message) },
+          onDelete = {
+            onRequestDelete(message.messageId, if (message.isFile) message.fileUrl else null)
+          },
+          onRemoveAttachment = { onRemoveAttachment(message.messageId, message.fileUrl) },
+          hasAttachment = message.isFile)
+    }
+  }
 }

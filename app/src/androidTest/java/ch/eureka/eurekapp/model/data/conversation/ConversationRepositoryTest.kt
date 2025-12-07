@@ -248,4 +248,366 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
     assertNotNull(updatedConversation?.lastMessagePreview)
     assertEquals(100, updatedConversation?.lastMessagePreview?.length)
   }
+
+  // ==================== updateMessage Tests ====================
+
+  @Test
+  fun updateMessage_shouldUpdateMessageText() = runBlocking {
+    // Arrange: Create conversation and send a message
+    val conversation =
+        Conversation(
+            projectId = "project1",
+            memberIds = listOf(testUserId, "otherUser"),
+            createdBy = testUserId)
+    val conversationId = repository.createConversation(conversation).getOrNull()!!
+    val originalText = "Original message"
+    val messageResult = repository.sendMessage(conversationId, originalText)
+    val messageId = messageResult.getOrNull()!!.messageId
+
+    // Wait for message to be written
+    kotlinx.coroutines.delay(300)
+
+    // Act: Update the message
+    val newText = "Updated message"
+    val updateResult = repository.updateMessage(conversationId, messageId, newText)
+
+    // Wait for update to complete
+    kotlinx.coroutines.delay(300)
+
+    // Assert: Update succeeded and message text changed
+    assertTrue(updateResult.isSuccess)
+    val messages = repository.getMessages(conversationId, 10).first()
+    val updatedMessage = messages.find { it.messageId == messageId }
+    assertNotNull(updatedMessage)
+    assertEquals(newText, updatedMessage?.text)
+  }
+
+  @Test
+  fun updateMessage_shouldSetEditedAtTimestamp() = runBlocking {
+    // Arrange: Create conversation and send a message
+    val conversation =
+        Conversation(
+            projectId = "project1",
+            memberIds = listOf(testUserId, "otherUser"),
+            createdBy = testUserId)
+    val conversationId = repository.createConversation(conversation).getOrNull()!!
+    val messageResult = repository.sendMessage(conversationId, "Original message")
+    val messageId = messageResult.getOrNull()!!.messageId
+
+    // Wait for message to be written
+    kotlinx.coroutines.delay(300)
+
+    // Act: Update the message
+    repository.updateMessage(conversationId, messageId, "Updated message")
+
+    // Wait for update to complete
+    kotlinx.coroutines.delay(300)
+
+    // Assert: editedAt timestamp should be set
+    val messages = repository.getMessages(conversationId, 10).first()
+    val updatedMessage = messages.find { it.messageId == messageId }
+    assertNotNull(updatedMessage?.editedAt)
+  }
+
+  // ==================== deleteMessage Tests ====================
+
+  @Test
+  fun deleteMessage_shouldSoftDeleteMessage() = runBlocking {
+    // Arrange: Create conversation and send a message
+    val conversation =
+        Conversation(
+            projectId = "project1",
+            memberIds = listOf(testUserId, "otherUser"),
+            createdBy = testUserId)
+    val conversationId = repository.createConversation(conversation).getOrNull()!!
+    val messageResult = repository.sendMessage(conversationId, "Message to delete")
+    val messageId = messageResult.getOrNull()!!.messageId
+
+    // Wait for message to be written
+    kotlinx.coroutines.delay(300)
+
+    // Act: Delete the message
+    val deleteResult = repository.deleteMessage(conversationId, messageId)
+
+    // Wait for delete to complete
+    kotlinx.coroutines.delay(300)
+
+    // Assert: Delete succeeded and message no longer appears in list
+    assertTrue(deleteResult.isSuccess)
+    val messages = repository.getMessages(conversationId, 10).first()
+    val deletedMessage = messages.find { it.messageId == messageId }
+    assertNull(deletedMessage)
+  }
+
+  @Test
+  fun deleteMessage_shouldNotAffectOtherMessages() = runBlocking {
+    // Arrange: Create conversation and send multiple messages
+    val conversation =
+        Conversation(
+            projectId = "project1",
+            memberIds = listOf(testUserId, "otherUser"),
+            createdBy = testUserId)
+    val conversationId = repository.createConversation(conversation).getOrNull()!!
+    repository.sendMessage(conversationId, "First message")
+    val messageToDelete = repository.sendMessage(conversationId, "Message to delete").getOrNull()!!
+    repository.sendMessage(conversationId, "Third message")
+
+    // Wait for messages to be written
+    kotlinx.coroutines.delay(500)
+
+    // Act: Delete the middle message
+    repository.deleteMessage(conversationId, messageToDelete.messageId)
+
+    // Wait for delete to complete
+    kotlinx.coroutines.delay(300)
+
+    // Assert: Only 2 messages remain
+    val messages = repository.getMessages(conversationId, 10).first()
+    assertEquals(2, messages.size)
+    assertTrue(messages.any { it.text == "First message" })
+    assertTrue(messages.any { it.text == "Third message" })
+  }
+
+  // ==================== removeAttachment Tests ====================
+
+  @Test
+  fun removeAttachment_shouldClearFileFieldsFromMessage() = runBlocking {
+    // Arrange: Create conversation and send a file message
+    val conversation =
+        Conversation(
+            projectId = "project1",
+            memberIds = listOf(testUserId, "otherUser"),
+            createdBy = testUserId)
+    val conversationId = repository.createConversation(conversation).getOrNull()!!
+    val fileUrl = "https://storage.example.com/files/test.pdf"
+    val messageResult = repository.sendFileMessage(conversationId, "File description", fileUrl)
+    val messageId = messageResult.getOrNull()!!.messageId
+
+    // Wait for message to be written
+    kotlinx.coroutines.delay(300)
+
+    // Act: Remove the attachment
+    val removeResult = repository.removeAttachment(conversationId, messageId)
+
+    // Wait for update to complete
+    kotlinx.coroutines.delay(300)
+
+    // Assert: Attachment removed but message still exists
+    assertTrue(removeResult.isSuccess)
+    val messages = repository.getMessages(conversationId, 10).first()
+    val updatedMessage = messages.find { it.messageId == messageId }
+    assertNotNull(updatedMessage)
+    assertEquals(false, updatedMessage?.isFile)
+    assertEquals("", updatedMessage?.fileUrl)
+  }
+
+  @Test
+  fun removeAttachment_shouldSetEditedAtTimestamp() = runBlocking {
+    // Arrange: Create conversation and send a file message
+    val conversation =
+        Conversation(
+            projectId = "project1",
+            memberIds = listOf(testUserId, "otherUser"),
+            createdBy = testUserId)
+    val conversationId = repository.createConversation(conversation).getOrNull()!!
+    val fileUrl = "https://storage.example.com/files/test.pdf"
+    val messageResult = repository.sendFileMessage(conversationId, "File description", fileUrl)
+    val messageId = messageResult.getOrNull()!!.messageId
+
+    // Wait for message to be written
+    kotlinx.coroutines.delay(300)
+
+    // Act: Remove the attachment
+    repository.removeAttachment(conversationId, messageId)
+
+    // Wait for update to complete
+    kotlinx.coroutines.delay(300)
+
+    // Assert: editedAt timestamp should be set
+    val messages = repository.getMessages(conversationId, 10).first()
+    val updatedMessage = messages.find { it.messageId == messageId }
+    assertNotNull(updatedMessage?.editedAt)
+  }
+
+  @Test
+  fun removeAttachment_shouldPreserveMessageText() = runBlocking {
+    // Arrange: Create conversation and send a file message with text
+    val conversation =
+        Conversation(
+            projectId = "project1",
+            memberIds = listOf(testUserId, "otherUser"),
+            createdBy = testUserId)
+    val conversationId = repository.createConversation(conversation).getOrNull()!!
+    val fileUrl = "https://storage.example.com/files/test.pdf"
+    val messageText = "Important document attached"
+    val messageResult = repository.sendFileMessage(conversationId, messageText, fileUrl)
+    val messageId = messageResult.getOrNull()!!.messageId
+
+    // Wait for message to be written
+    kotlinx.coroutines.delay(300)
+
+    // Act: Remove the attachment
+    repository.removeAttachment(conversationId, messageId)
+
+    // Wait for update to complete
+    kotlinx.coroutines.delay(300)
+
+    // Assert: Message text is preserved
+    val messages = repository.getMessages(conversationId, 10).first()
+    val updatedMessage = messages.find { it.messageId == messageId }
+    assertEquals(messageText, updatedMessage?.text)
+  }
+
+  // ==================== markMessagesAsRead Tests ====================
+
+  @Test
+  fun markMessagesAsRead_shouldUpdateLastReadTimestamp() = runBlocking {
+    // Arrange: Create conversation
+    val conversation =
+        Conversation(
+            projectId = "project1",
+            memberIds = listOf(testUserId, "otherUser"),
+            createdBy = testUserId)
+    val conversationId = repository.createConversation(conversation).getOrNull()!!
+    repository.sendMessage(conversationId, "Test message")
+
+    // Wait for message to be written
+    kotlinx.coroutines.delay(300)
+
+    // Act: Mark messages as read
+    val result = repository.markMessagesAsRead(conversationId)
+
+    // Assert: Operation succeeded
+    assertTrue(result.isSuccess)
+  }
+
+  // ==================== getConversationsInProject Tests ====================
+
+  @Test
+  fun getConversationsInProject_shouldReturnOnlyProjectConversations() = runBlocking {
+    // Arrange: Create conversations in different projects
+    val conv1 =
+        Conversation(
+            projectId = "project1", memberIds = listOf(testUserId, "user2"), createdBy = testUserId)
+    val conv2 =
+        Conversation(
+            projectId = "project1", memberIds = listOf(testUserId, "user3"), createdBy = testUserId)
+    val conv3 =
+        Conversation(
+            projectId = "project2", memberIds = listOf(testUserId, "user4"), createdBy = testUserId)
+
+    repository.createConversation(conv1)
+    repository.createConversation(conv2)
+    repository.createConversation(conv3)
+
+    // Act: Fetch conversations for project1
+    val conversations = repository.getConversationsInProject("project1").first()
+
+    // Assert: Only project1 conversations are returned
+    assertEquals(2, conversations.size)
+    assertTrue(conversations.all { it.projectId == "project1" })
+  }
+
+  // ==================== sendMessage Tests ====================
+
+  @Test
+  fun sendMessage_shouldCreateMessageWithCorrectSender() = runBlocking {
+    // Arrange: Create conversation
+    val conversation =
+        Conversation(
+            projectId = "project1",
+            memberIds = listOf(testUserId, "otherUser"),
+            createdBy = testUserId)
+    val conversationId = repository.createConversation(conversation).getOrNull()!!
+
+    // Act: Send a message
+    val messageText = "Hello, world!"
+    val result = repository.sendMessage(conversationId, messageText)
+
+    // Wait for message to be written
+    kotlinx.coroutines.delay(300)
+
+    // Assert: Message created with correct sender
+    assertTrue(result.isSuccess)
+    val message = result.getOrNull()
+    assertEquals(testUserId, message?.senderId)
+    assertEquals(messageText, message?.text)
+  }
+
+  @Test
+  fun sendMessage_shouldUpdateConversationMetadata() = runBlocking {
+    // Arrange: Create conversation
+    val conversation =
+        Conversation(
+            projectId = "project1",
+            memberIds = listOf(testUserId, "otherUser"),
+            createdBy = testUserId)
+    val conversationId = repository.createConversation(conversation).getOrNull()!!
+
+    // Act: Send a message
+    val messageText = "Test message for metadata"
+    repository.sendMessage(conversationId, messageText)
+
+    // Wait for metadata to update
+    kotlinx.coroutines.delay(500)
+
+    // Assert: Conversation metadata updated
+    val updatedConversation = repository.getConversationById(conversationId).first()
+    assertNotNull(updatedConversation?.lastMessageAt)
+    assertEquals(messageText, updatedConversation?.lastMessagePreview)
+    assertEquals(testUserId, updatedConversation?.lastMessageSenderId)
+  }
+
+  // ==================== getMessages Tests ====================
+
+  @Test
+  fun getMessages_shouldReturnMessagesInChronologicalOrder() = runBlocking {
+    // Arrange: Create conversation and send messages
+    val conversation =
+        Conversation(
+            projectId = "project1",
+            memberIds = listOf(testUserId, "otherUser"),
+            createdBy = testUserId)
+    val conversationId = repository.createConversation(conversation).getOrNull()!!
+
+    repository.sendMessage(conversationId, "First")
+    kotlinx.coroutines.delay(100)
+    repository.sendMessage(conversationId, "Second")
+    kotlinx.coroutines.delay(100)
+    repository.sendMessage(conversationId, "Third")
+
+    // Wait for all messages
+    kotlinx.coroutines.delay(500)
+
+    // Act: Get messages
+    val messages = repository.getMessages(conversationId, 10).first()
+
+    // Assert: Messages returned in chronological order (oldest first for display)
+    assertEquals(3, messages.size)
+    assertEquals("First", messages[0].text)
+    assertEquals("Second", messages[1].text)
+    assertEquals("Third", messages[2].text)
+  }
+
+  @Test
+  fun getMessages_shouldRespectLimit() = runBlocking {
+    // Arrange: Create conversation and send many messages
+    val conversation =
+        Conversation(
+            projectId = "project1",
+            memberIds = listOf(testUserId, "otherUser"),
+            createdBy = testUserId)
+    val conversationId = repository.createConversation(conversation).getOrNull()!!
+
+    repeat(5) { i -> repository.sendMessage(conversationId, "Message $i") }
+
+    // Wait for all messages
+    kotlinx.coroutines.delay(500)
+
+    // Act: Get only 3 messages
+    val messages = repository.getMessages(conversationId, 3).first()
+
+    // Assert: Only 3 most recent messages returned
+    assertEquals(3, messages.size)
+  }
 }

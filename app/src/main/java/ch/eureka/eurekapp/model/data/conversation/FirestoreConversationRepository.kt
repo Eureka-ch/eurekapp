@@ -385,9 +385,7 @@ class FirestoreConversationRepository(
     // Verify ownership before updating
     val messageDoc = messageRef.get().await()
     val senderId = messageDoc.getString("senderId")
-    if (senderId != currentUserId) {
-      throw IllegalStateException("Cannot edit another user's message")
-    }
+    check(senderId == currentUserId) { "Cannot edit another user's message" }
 
     messageRef
         .update(
@@ -412,9 +410,7 @@ class FirestoreConversationRepository(
         // Verify ownership before deleting
         val messageDoc = messageRef.get().await()
         val senderId = messageDoc.getString("senderId")
-        if (senderId != currentUserId) {
-          throw IllegalStateException("Cannot delete another user's message")
-        }
+        check(senderId == currentUserId) { "Cannot delete another user's message" }
 
         // Soft delete - set isDeleted flag instead of removing document
         messageRef.update("isDeleted", true).await()
@@ -435,9 +431,7 @@ class FirestoreConversationRepository(
         // Verify ownership before removing attachment
         val messageDoc = messageRef.get().await()
         val senderId = messageDoc.getString("senderId")
-        if (senderId != currentUserId) {
-          throw IllegalStateException("Cannot modify another user's message")
-        }
+        check(senderId == currentUserId) { "Cannot modify another user's message" }
 
         // Remove attachment reference but keep file in storage
         messageRef

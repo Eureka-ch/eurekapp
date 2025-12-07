@@ -61,9 +61,8 @@ object MessageBubbleTestTags {
  *   color).
  * @param modifier Optional modifier for the bubble container.
  * @param fileAttachment Configuration for file attachment display.
- * @param onLinkClick Callback when a link in the text is clicked.
  * @param editedAt Timestamp when the message was last edited (null if never edited).
- * @param onLongClick Callback when the message is long-pressed.
+ * @param interactions Configuration for message interactions (link clicks, long press).
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -73,11 +72,11 @@ fun MessageBubble(
     isFromCurrentUser: Boolean,
     modifier: Modifier = Modifier,
     fileAttachment: MessageBubbleFileAttachment = MessageBubbleFileAttachment(),
-    onLinkClick: (String) -> Unit = {},
     editedAt: Timestamp? = null,
-    onLongClick: (() -> Unit)? = null
+    interactions: MessageBubbleInteractions = MessageBubbleInteractions()
 ) {
   val (containerColor, contentColor, alignment) = getBubbleColors(isFromCurrentUser)
+  val onLongClick = interactions.onLongClick
 
   Box(
       modifier = modifier.fillMaxWidth().padding(vertical = Spacing.sm),
@@ -100,7 +99,7 @@ fun MessageBubble(
                   verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
                     if (text.isNotEmpty()) {
                       Text(
-                          text = buildAnnotatedText(text, onLinkClick),
+                          text = buildAnnotatedText(text, interactions.onLinkClick),
                           style = MaterialTheme.typography.bodyMedium,
                           color = contentColor,
                           modifier = Modifier.testTag(MessageBubbleTestTags.TEXT))
@@ -133,6 +132,17 @@ data class MessageBubbleFileAttachment(
     val isFile: Boolean = false,
     val fileUrl: String = "",
     val onDownloadClick: (String) -> Unit = {}
+)
+
+/**
+ * Configuration for message interactions (edit, link clicks, long press).
+ *
+ * @param onLinkClick Callback when a link in the text is clicked.
+ * @param onLongClick Callback when the message is long-pressed (null to disable).
+ */
+data class MessageBubbleInteractions(
+    val onLinkClick: (String) -> Unit = {},
+    val onLongClick: (() -> Unit)? = null
 )
 
 @Composable
