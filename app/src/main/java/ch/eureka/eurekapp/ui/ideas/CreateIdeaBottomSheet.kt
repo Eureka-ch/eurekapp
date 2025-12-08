@@ -39,6 +39,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.ideas.Idea
+import ch.eureka.eurekapp.model.data.project.Project
+import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
@@ -105,180 +107,213 @@ fun CreateIdeaBottomSheet(
                       modifier = Modifier.padding(vertical = Spacing.xs))
                 }
 
-                OutlinedTextField(
-                    value = uiState.title,
-                    onValueChange = { viewModel.updateTitle(it) },
-                    label = { Text("Idea Title (Optional)") },
-                    placeholder = { Text("Enter a title for your idea...") },
-                    modifier =
-                        Modifier.fillMaxWidth().testTag(CreateIdeaBottomSheetTestTags.TITLE_FIELD),
-                    singleLine = true,
-                    colors = EurekaStyles.textFieldColors())
+                TitleField(
+                    title = uiState.title,
+                    onTitleChange = { viewModel.updateTitle(it) })
 
-                if (uiState.availableProjects.isEmpty()) {
-                  Column {
-                    Text(
-                        text = "Project",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Medium)
-                    Spacer(modifier = Modifier.height(Spacing.xs))
-                    Text(
-                        text = "No projects available",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                  }
-                } else {
-                  var projectDropdownExpanded by remember { mutableStateOf(false) }
-                  Column {
-                    ExposedDropdownMenuBox(
-                        expanded = projectDropdownExpanded,
-                        onExpandedChange = { projectDropdownExpanded = it },
-                        modifier =
-                            Modifier.fillMaxWidth()
-                                .testTag(CreateIdeaBottomSheetTestTags.PROJECT_DROPDOWN)) {
-                          OutlinedTextField(
-                              value = uiState.selectedProject?.name ?: "",
-                              onValueChange = {},
-                              readOnly = true,
-                              placeholder = { Text("Select a project") },
-                              label = { Text("Project") },
-                              trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(
-                                    expanded = projectDropdownExpanded)
-                              },
-                              modifier =
-                                  Modifier.fillMaxWidth()
-                                      .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
-                              colors = EurekaStyles.textFieldColors())
-                          ExposedDropdownMenu(
-                              expanded = projectDropdownExpanded,
-                              onDismissRequest = { projectDropdownExpanded = false }) {
-                                uiState.availableProjects.forEach { project ->
-                                  DropdownMenuItem(
-                                      text = { Text(project.name) },
-                                      onClick = {
-                                        viewModel.selectProject(project)
-                                        projectDropdownExpanded = false
-                                      })
-                                }
-                              }
-                        }
-                  }
-                  if (uiState.selectedProject == null) {
-                    Text(
-                        text = "Please select a project",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(top = Spacing.xs))
-                  }
-                }
+                ProjectSelector(
+                    availableProjects = uiState.availableProjects,
+                    selectedProject = uiState.selectedProject,
+                    onProjectSelect = { viewModel.selectProject(it) })
 
                 if (uiState.selectedProject != null) {
-                  var participantsDropdownExpanded by remember { mutableStateOf(false) }
-                  val selectedCount = uiState.selectedParticipantIds.size
-                  val displayText =
-                      when {
-                        selectedCount == 0 -> "No participants selected"
-                        selectedCount == 1 -> {
-                          val user =
-                              uiState.availableUsers.firstOrNull {
-                                it.uid == uiState.selectedParticipantIds.first()
-                              }
-                          user?.displayName?.ifBlank { user.email } ?: "1 participant selected"
-                        }
-                        else -> "$selectedCount participants selected"
-                      }
-                  Column {
-                    Text(
-                        text = "Add Participants (Optional)",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Medium)
-                    Spacer(modifier = Modifier.height(Spacing.xs))
-                    if (uiState.availableUsers.isEmpty()) {
-                      Text(
-                          text = "No users available in this project",
-                          style = MaterialTheme.typography.bodyMedium,
-                          color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    } else {
-                      Box(
-                          modifier =
-                              Modifier.fillMaxWidth()
-                                  .clickable {
-                                    participantsDropdownExpanded = !participantsDropdownExpanded
-                                  }
-                                  .testTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)) {
-                            OutlinedTextField(
-                                value = displayText,
-                                onValueChange = {},
-                                readOnly = true,
-                                placeholder = { Text("Select participants to share with") },
-                                label = { Text("Participants") },
-                                enabled = false,
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = EurekaStyles.textFieldColors())
-                            DropdownMenu(
-                                expanded = participantsDropdownExpanded,
-                                onDismissRequest = { participantsDropdownExpanded = false },
-                                modifier = Modifier.fillMaxWidth()) {
-                                  uiState.availableUsers.forEach { user ->
-                                    DropdownMenuItem(
-                                        text = {
-                                          Row(
-                                              modifier =
-                                                  Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                                              horizontalArrangement = Arrangement.SpaceBetween,
-                                              verticalAlignment = Alignment.CenterVertically) {
-                                                Text(
-                                                    text = user.displayName.ifBlank { user.email },
-                                                    style = MaterialTheme.typography.bodyMedium)
-                                                Checkbox(
-                                                    checked =
-                                                        uiState.selectedParticipantIds.contains(
-                                                            user.uid),
-                                                    onCheckedChange = {
-                                                      viewModel.toggleParticipant(user.uid)
-                                                    })
-                                              }
-                                        },
-                                        onClick = { viewModel.toggleParticipant(user.uid) })
-                                  }
-                                }
-                          }
-                    }
-                  }
+                  ParticipantsSelector(
+                      availableUsers = uiState.availableUsers,
+                      selectedParticipantIds = uiState.selectedParticipantIds.toList(),
+                      onToggleParticipant = { viewModel.toggleParticipant(it) })
                 }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = Spacing.sm),
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                      OutlinedButton(
-                          onClick = {
-                            viewModel.reset()
-                            onDismiss()
-                          },
-                          modifier =
-                              Modifier.weight(1f)
-                                  .testTag(CreateIdeaBottomSheetTestTags.CANCEL_BUTTON),
-                          colors = EurekaStyles.outlinedButtonColors()) {
-                            Text("Cancel")
-                          }
-
-                      Button(
-                          onClick = { viewModel.createIdea() },
-                          enabled = uiState.selectedProject != null && !uiState.isCreating,
-                          modifier =
-                              Modifier.weight(1f)
-                                  .testTag(CreateIdeaBottomSheetTestTags.CREATE_BUTTON),
-                          colors = EurekaStyles.primaryButtonColors()) {
-                            if (uiState.isCreating) {
-                              CircularProgressIndicator(
-                                  color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
-                            } else {
-                              Text("Create")
-                            }
-                          }
-                    }
+                ActionButtons(
+                    isCreating = uiState.isCreating,
+                    canCreate = uiState.selectedProject != null,
+                    onCancel = {
+                      viewModel.reset()
+                      onDismiss()
+                    },
+                    onCreate = { viewModel.createIdea() })
               }
         }
+      }
+}
+
+@Composable
+private fun TitleField(title: String, onTitleChange: (String) -> Unit) {
+  OutlinedTextField(
+      value = title,
+      onValueChange = onTitleChange,
+      label = { Text("Idea Title (Optional)") },
+      placeholder = { Text("Enter a title for your idea...") },
+      modifier = Modifier.fillMaxWidth().testTag(CreateIdeaBottomSheetTestTags.TITLE_FIELD),
+      singleLine = true,
+      colors = EurekaStyles.textFieldColors())
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ProjectSelector(
+    availableProjects: List<Project>,
+    selectedProject: Project?,
+    onProjectSelect: (Project) -> Unit
+) {
+  if (availableProjects.isEmpty()) {
+    Column {
+      Text(
+          text = "Project",
+          style = MaterialTheme.typography.labelLarge,
+          fontWeight = FontWeight.Medium)
+      Spacer(modifier = Modifier.height(Spacing.xs))
+      Text(
+          text = "No projects available",
+          style = MaterialTheme.typography.bodyMedium,
+          color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+  } else {
+    var projectDropdownExpanded by remember { mutableStateOf(false) }
+    Column {
+      ExposedDropdownMenuBox(
+          expanded = projectDropdownExpanded,
+          onExpandedChange = { projectDropdownExpanded = it },
+          modifier =
+              Modifier.fillMaxWidth().testTag(CreateIdeaBottomSheetTestTags.PROJECT_DROPDOWN)) {
+            OutlinedTextField(
+                value = selectedProject?.name ?: "",
+                onValueChange = {},
+                readOnly = true,
+                placeholder = { Text("Select a project") },
+                label = { Text("Project") },
+                trailingIcon = {
+                  ExposedDropdownMenuDefaults.TrailingIcon(expanded = projectDropdownExpanded)
+                },
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                colors = EurekaStyles.textFieldColors())
+            ExposedDropdownMenu(
+                expanded = projectDropdownExpanded,
+                onDismissRequest = { projectDropdownExpanded = false }) {
+                  availableProjects.forEach { project ->
+                    DropdownMenuItem(
+                        text = { Text(project.name) },
+                        onClick = {
+                          onProjectSelect(project)
+                          projectDropdownExpanded = false
+                        })
+                  }
+                }
+          }
+      if (selectedProject == null) {
+        Text(
+            text = "Please select a project",
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(top = Spacing.xs))
+      }
+    }
+  }
+}
+
+@Composable
+private fun ParticipantsSelector(
+    availableUsers: List<User>,
+    selectedParticipantIds: List<String>,
+    onToggleParticipant: (String) -> Unit
+) {
+  var participantsDropdownExpanded by remember { mutableStateOf(false) }
+  val selectedCount = selectedParticipantIds.size
+  val displayText =
+      when {
+        selectedCount == 0 -> "No participants selected"
+        selectedCount == 1 -> {
+          val user =
+              availableUsers.firstOrNull { it.uid == selectedParticipantIds.first() }
+          user?.displayName?.ifBlank { user.email } ?: "1 participant selected"
+        }
+        else -> "$selectedCount participants selected"
+      }
+
+  Column {
+    Text(
+        text = "Add Participants (Optional)",
+        style = MaterialTheme.typography.labelLarge,
+        fontWeight = FontWeight.Medium)
+    Spacer(modifier = Modifier.height(Spacing.xs))
+    if (availableUsers.isEmpty()) {
+      Text(
+          text = "No users available in this project",
+          style = MaterialTheme.typography.bodyMedium,
+          color = MaterialTheme.colorScheme.onSurfaceVariant)
+    } else {
+      Box(
+          modifier =
+              Modifier.fillMaxWidth()
+                  .clickable { participantsDropdownExpanded = !participantsDropdownExpanded }
+                  .testTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)) {
+            OutlinedTextField(
+                value = displayText,
+                onValueChange = {},
+                readOnly = true,
+                placeholder = { Text("Select participants to share with") },
+                label = { Text("Participants") },
+                enabled = false,
+                modifier = Modifier.fillMaxWidth(),
+                colors = EurekaStyles.textFieldColors())
+            DropdownMenu(
+                expanded = participantsDropdownExpanded,
+                onDismissRequest = { participantsDropdownExpanded = false },
+                modifier = Modifier.fillMaxWidth()) {
+                  availableUsers.forEach { user ->
+                    DropdownMenuItem(
+                        text = {
+                          Row(
+                              modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                              horizontalArrangement = Arrangement.SpaceBetween,
+                              verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = user.displayName.ifBlank { user.email },
+                                    style = MaterialTheme.typography.bodyMedium)
+                                Checkbox(
+                                    checked = selectedParticipantIds.contains(user.uid),
+                                    onCheckedChange = { onToggleParticipant(user.uid) })
+                              }
+                        },
+                        onClick = { onToggleParticipant(user.uid) })
+                  }
+                }
+          }
+    }
+  }
+}
+
+@Composable
+private fun ActionButtons(
+    isCreating: Boolean,
+    canCreate: Boolean,
+    onCancel: () -> Unit,
+    onCreate: () -> Unit
+) {
+  Row(
+      modifier = Modifier.fillMaxWidth().padding(top = Spacing.sm),
+      horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        OutlinedButton(
+            onClick = onCancel,
+            modifier =
+                Modifier.weight(1f).testTag(CreateIdeaBottomSheetTestTags.CANCEL_BUTTON),
+            colors = EurekaStyles.outlinedButtonColors()) {
+              Text("Cancel")
+            }
+
+        Button(
+            onClick = onCreate,
+            enabled = canCreate && !isCreating,
+            modifier =
+                Modifier.weight(1f).testTag(CreateIdeaBottomSheetTestTags.CREATE_BUTTON),
+            colors = EurekaStyles.primaryButtonColors()) {
+              if (isCreating) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
+              } else {
+                Text("Create")
+              }
+            }
       }
 }

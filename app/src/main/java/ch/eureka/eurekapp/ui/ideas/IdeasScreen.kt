@@ -55,8 +55,8 @@ object IdeasScreenTestTags {
  */
 @Composable
 fun IdeasScreen(
-    onNavigateBack: () -> Unit = {},
     modifier: Modifier = Modifier,
+    onNavigateBack: () -> Unit = {},
     viewModel: IdeasViewModel = viewModel()
 ) {
   val uiState by viewModel.uiState.collectAsState()
@@ -151,17 +151,18 @@ fun IdeasScreen(
         IdeasContent(
             viewMode = uiState.viewMode,
             selectedProject = uiState.selectedProject,
-            ideas = uiState.ideas,
-            selectedIdea = uiState.selectedIdea,
-            messages = uiState.messages,
-            currentUserId = viewModel.getCurrentUserId(),
-            listState = listState,
+            listState =
+                ch.eureka.eurekapp.ui.ideas.ListState(
+                    ideas = uiState.ideas, onIdeaClick = { idea -> viewModel.selectIdea(idea) }),
+            conversationState =
+                ConversationState(
+                    selectedIdea = uiState.selectedIdea,
+                    messages = uiState.messages,
+                    currentUserId = viewModel.getCurrentUserId(),
+                    onBackToList = { viewModel.backToList() }),
+            lazyListState = listState,
             paddingValues = paddingValues,
-            isLoading = uiState.isLoading,
-            onIdeaClick = { idea -> viewModel.selectIdea(idea) },
-            onDeleteIdea = { ideaId -> viewModel.deleteIdea(ideaId) },
-            onShareIdea = { _, _ -> /* Share functionality in separate PR */ },
-            onBackToList = { viewModel.backToList() })
+            isLoading = uiState.isLoading)
       }
 
   if (showCreateIdeaDialog) {

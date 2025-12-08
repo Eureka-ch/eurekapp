@@ -33,6 +33,17 @@ import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.ui.components.MessageBubble
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
+/** Data class to group conversation-related parameters. */
+data class ConversationState(
+    val selectedIdea: Idea?,
+    val messages: List<Message>,
+    val currentUserId: String?,
+    val onBackToList: () -> Unit
+)
+
+/** Data class to group list-related parameters. */
+data class ListState(val ideas: List<Idea>, val onIdeaClick: (Idea) -> Unit)
+
 @Composable
 private fun IdeaCard(idea: Idea, onIdeaClick: () -> Unit) {
   Card(onClick = onIdeaClick, modifier = Modifier.fillMaxWidth()) {
@@ -53,17 +64,11 @@ private fun IdeaCard(idea: Idea, onIdeaClick: () -> Unit) {
 fun IdeasContent(
     viewMode: IdeasViewMode,
     selectedProject: Project?,
-    ideas: List<Idea>,
-    selectedIdea: Idea?,
-    messages: List<Message>,
-    currentUserId: String?,
-    listState: LazyListState,
+    listState: ListState,
+    conversationState: ConversationState,
+    lazyListState: LazyListState,
     paddingValues: PaddingValues,
-    isLoading: Boolean,
-    onIdeaClick: (Idea) -> Unit,
-    onDeleteIdea: (String) -> Unit,
-    onShareIdea: (String, String) -> Unit,
-    onBackToList: () -> Unit = {}
+    isLoading: Boolean
 ) {
   Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
     when {
@@ -79,21 +84,19 @@ fun IdeasContent(
             textAlign = TextAlign.Center,
             modifier = Modifier.align(Alignment.Center).padding(Spacing.lg).testTag("emptyState"))
       }
-      viewMode == IdeasViewMode.CONVERSATION && selectedIdea != null -> {
+      viewMode == IdeasViewMode.CONVERSATION && conversationState.selectedIdea != null -> {
         IdeaConversationContent(
-            idea = selectedIdea,
-            messages = messages,
-            currentUserId = currentUserId,
-            listState = listState,
-            onBackToList = onBackToList)
+            idea = conversationState.selectedIdea,
+            messages = conversationState.messages,
+            currentUserId = conversationState.currentUserId,
+            listState = lazyListState,
+            onBackToList = conversationState.onBackToList)
       }
       else -> {
         IdeasListContent(
-            ideas = ideas,
+            ideas = listState.ideas,
             selectedProject = selectedProject,
-            onIdeaClick = onIdeaClick,
-            onDeleteIdea = onDeleteIdea,
-            onShareIdea = onShareIdea)
+            onIdeaClick = listState.onIdeaClick)
       }
     }
   }
@@ -103,9 +106,7 @@ fun IdeasContent(
 private fun IdeasListContent(
     ideas: List<Idea>,
     selectedProject: Project?,
-    onIdeaClick: (Idea) -> Unit,
-    onDeleteIdea: (String) -> Unit,
-    onShareIdea: (String, String) -> Unit
+    onIdeaClick: (Idea) -> Unit
 ) {
   if (ideas.isEmpty()) {
     Column(

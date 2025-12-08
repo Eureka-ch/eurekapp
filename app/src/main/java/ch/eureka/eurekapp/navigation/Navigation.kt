@@ -357,8 +357,7 @@ fun NavigationMenu(
                       }
                     })
               }
-              composable<Route.IdeasSection.Ideas> { backStackEntry ->
-                val ideasRoute = backStackEntry.toRoute<Route.IdeasSection.Ideas>()
+              composable<Route.IdeasSection.Ideas> {
                 IdeasScreen(onNavigateBack = { navigationController.popBackStack() })
               }
               composable<Route.OverviewProject> { backStackEntry ->
