@@ -132,7 +132,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act: Try to use already-used token
     viewModel.updateToken("USED-FIRESTORE-TOKEN")
     viewModel.validateToken()
-    delay(500) // Allow Firestore operations to complete
+    delay(1500) // Allow Firestore operations to complete
 
     // Assert: Error shown
     assertFalse(viewModel.uiState.value.validationSuccess)

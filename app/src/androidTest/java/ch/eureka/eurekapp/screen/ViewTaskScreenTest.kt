@@ -337,8 +337,15 @@ open class ViewTaskScreenTest : TestCase() {
           setupTestTask(projectId, taskId, attachmentUrls = listOf(attachmentUrl1, attachmentUrl2))
         }
 
-        // Verify attachments are displayed
-        composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).assertCountEquals(2)
+        // Wait for attachments to load from Firestore
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          try {
+            composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).assertCountEquals(2)
+            true
+          } catch (e: AssertionError) {
+            false
+          }
+        }
       }
 
   @Test
@@ -448,8 +455,8 @@ open class ViewTaskScreenTest : TestCase() {
 
         // Wait for task card to load from Firestore
         // Increased timeout because getTasksForCurrentUser() now needs to fetch projects first,
-        // then tasks from each project, which can take longer
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
+        // then tasks from each project, which can take longer on slow CI emulators
+        composeTestRule.waitUntil(timeoutMillis = 15000) {
           try {
             composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).assertExists()
             true
