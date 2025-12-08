@@ -62,7 +62,7 @@ class McpTokenViewModelTest {
   }
 
   @Test
-  fun `initial state has correct defaults`() {
+  fun mcpTokenViewModel_initialStateHasCorrectDefaults() {
     val state = viewModel.uiState.value
 
     assertTrue(state.tokens.isEmpty())
@@ -72,7 +72,7 @@ class McpTokenViewModelTest {
   }
 
   @Test
-  fun `loadTokens fetches tokens successfully`() = runTest {
+  fun loadTokens_fetchesTokensSuccessfully() = runTest {
     advanceUntilIdle()
 
     val state = viewModel.uiState.value
@@ -83,7 +83,7 @@ class McpTokenViewModelTest {
   }
 
   @Test
-  fun `loadTokens handles repository errors`() = runTest {
+  fun loadTokens_handlesRepositoryErrors() = runTest {
     coEvery { repository.listTokens() } returns Result.failure(Exception("Network error"))
 
     viewModel.loadTokens()
@@ -95,7 +95,7 @@ class McpTokenViewModelTest {
   }
 
   @Test
-  fun `createToken creates token and refreshes list`() = runTest {
+  fun createToken_createsTokenAndRefreshesList() = runTest {
     val newToken =
         McpToken(
             tokenId = "new-token-123",
@@ -116,7 +116,7 @@ class McpTokenViewModelTest {
   }
 
   @Test
-  fun `createToken handles errors`() = runTest {
+  fun createToken_handlesErrors() = runTest {
     coEvery { repository.createToken(any(), any()) } returns
         Result.failure(Exception("Creation failed"))
 
@@ -132,7 +132,7 @@ class McpTokenViewModelTest {
   }
 
   @Test
-  fun `createToken uses default name when blank`() = runTest {
+  fun createToken_usesDefaultNameWhenBlank() = runTest {
     val newToken =
         McpToken(
             tokenId = "new-token-123",
@@ -149,7 +149,7 @@ class McpTokenViewModelTest {
   }
 
   @Test
-  fun `revokeToken deletes token and refreshes list`() = runTest {
+  fun revokeToken_deletesTokenAndRefreshesList() = runTest {
     coEvery { repository.revokeToken("token-1") } returns Result.success(Unit)
     coEvery { repository.listTokens() } returns Result.success(listOf(testTokens[1]))
 
@@ -165,7 +165,7 @@ class McpTokenViewModelTest {
   }
 
   @Test
-  fun `revokeToken handles errors`() = runTest {
+  fun revokeToken_handlesErrors() = runTest {
     coEvery { repository.revokeToken(any()) } returns Result.failure(Exception("Revoke failed"))
 
     advanceUntilIdle()
@@ -179,7 +179,7 @@ class McpTokenViewModelTest {
   }
 
   @Test
-  fun `clearNewlyCreatedToken clears the token`() = runTest {
+  fun clearNewlyCreatedToken_clearsTheToken() = runTest {
     val newToken = McpToken(tokenId = "new-token-123", name = "Test")
     coEvery { repository.createToken(any(), any()) } returns Result.success(newToken)
 
@@ -194,7 +194,7 @@ class McpTokenViewModelTest {
   }
 
   @Test
-  fun `clearError clears the error state`() = runTest {
+  fun clearError_clearsTheErrorState() = runTest {
     coEvery { repository.listTokens() } returns Result.failure(Exception("Test error"))
 
     viewModel.loadTokens()
@@ -206,7 +206,7 @@ class McpTokenViewModelTest {
   }
 
   @Test
-  fun `loadTokens is called on init`() = runTest {
+  fun loadTokens_isCalledOnInit() = runTest {
     advanceUntilIdle()
 
     coVerify { repository.listTokens() }

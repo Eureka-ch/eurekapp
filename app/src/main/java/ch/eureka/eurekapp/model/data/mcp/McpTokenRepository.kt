@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.model.data.mcp
 
 import com.google.firebase.auth.FirebaseAuth
 import java.time.Instant
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -24,8 +25,13 @@ interface McpTokenRepository {
 class FirebaseMcpTokenRepository(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
     private val httpClient: OkHttpClient = OkHttpClient(),
-    private val functionsBaseUrl: String = "https://us-central1-eureka-app-ch.cloudfunctions.net"
+    private val functionsBaseUrl: String = "https://us-central1-eureka-app-ch.cloudfunctions.net",
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : McpTokenRepository {
+
+  companion object {
+    private const val DEFAULT_ERROR = "Unknown error"
+  }
 
   private suspend fun getIdToken(): String {
     val user = auth.currentUser ?: throw SecurityException("User must be authenticated")
@@ -33,7 +39,7 @@ class FirebaseMcpTokenRepository(
   }
 
   override suspend fun createToken(name: String, ttlDays: Int): Result<McpToken> = runCatching {
-    withContext(Dispatchers.IO) {
+    withContext(ioDispatcher) {
       val idToken = getIdToken()
       val body = JSONObject().put("name", name).put("ttlDays", ttlDays).toString()
 
@@ -46,13 +52,13 @@ class FirebaseMcpTokenRepository(
 
       val response = httpClient.newCall(request).execute()
       if (!response.isSuccessful) {
-        val errorBody = response.body?.string() ?: "Unknown error"
+        val errorBody = response.body?.string() ?: DEFAULT_ERROR
         throw Exception("Failed to create token: $errorBody")
       }
 
       val responseJson = JSONObject(response.body?.string() ?: "{}")
       if (!responseJson.optBoolean("success", false)) {
-        throw Exception(responseJson.optString("error", "Unknown error"))
+        throw Exception(responseJson.optString("error", DEFAULT_ERROR))
       }
 
       val data = responseJson.getJSONObject("data")
@@ -64,7 +70,7 @@ class FirebaseMcpTokenRepository(
   }
 
   override suspend fun revokeToken(tokenId: String): Result<Unit> = runCatching {
-    withContext(Dispatchers.IO) {
+    withContext(ioDispatcher) {
       val idToken = getIdToken()
       val body = JSONObject().put("tokenId", tokenId).toString()
 
@@ -77,19 +83,19 @@ class FirebaseMcpTokenRepository(
 
       val response = httpClient.newCall(request).execute()
       if (!response.isSuccessful) {
-        val errorBody = response.body?.string() ?: "Unknown error"
+        val errorBody = response.body?.string() ?: DEFAULT_ERROR
         throw Exception("Failed to revoke token: $errorBody")
       }
 
       val responseJson = JSONObject(response.body?.string() ?: "{}")
       if (!responseJson.optBoolean("success", false)) {
-        throw Exception(responseJson.optString("error", "Unknown error"))
+        throw Exception(responseJson.optString("error", DEFAULT_ERROR))
       }
     }
   }
 
   override suspend fun listTokens(): Result<List<McpToken>> = runCatching {
-    withContext(Dispatchers.IO) {
+    withContext(ioDispatcher) {
       val idToken = getIdToken()
 
       val request =
@@ -101,13 +107,13 @@ class FirebaseMcpTokenRepository(
 
       val response = httpClient.newCall(request).execute()
       if (!response.isSuccessful) {
-        val errorBody = response.body?.string() ?: "Unknown error"
+        val errorBody = response.body?.string() ?: DEFAULT_ERROR
         throw Exception("Failed to list tokens: $errorBody")
       }
 
       val responseJson = JSONObject(response.body?.string() ?: "{}")
       if (!responseJson.optBoolean("success", false)) {
-        throw Exception(responseJson.optString("error", "Unknown error"))
+        throw Exception(responseJson.optString("error", DEFAULT_ERROR))
       }
 
       val dataArray = responseJson.getJSONArray("data")
