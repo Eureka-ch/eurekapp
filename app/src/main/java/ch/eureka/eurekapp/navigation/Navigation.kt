@@ -15,6 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
+import ch.eureka.eurekapp.model.data.mcp.FirebaseMcpTokenRepository
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.data.user.UserRepository
@@ -43,6 +44,8 @@ import ch.eureka.eurekapp.ui.conversation.ConversationDetailScreen
 import ch.eureka.eurekapp.ui.conversation.ConversationListScreen
 import ch.eureka.eurekapp.ui.conversation.CreateConversationScreen
 import ch.eureka.eurekapp.ui.map.MeetingLocationSelectionScreen
+import ch.eureka.eurekapp.ui.mcp.McpTokenScreen
+import ch.eureka.eurekapp.ui.mcp.McpTokenViewModel
 import ch.eureka.eurekapp.ui.meeting.CreateDateTimeFormatProposalForMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreen
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingViewModel
@@ -79,6 +82,8 @@ sealed interface Route {
   @Serializable data class OverviewProject(val projectId: String) : Route
 
   @Serializable data object Profile : Route
+
+  @Serializable data object McpTokens : Route
 
   @Serializable data object SelfNotes : Route
 
@@ -283,7 +288,13 @@ fun NavigationMenu(
                 ProfileScreen(
                     onNavigateToActivityFeed = {
                       navigationController.navigate(Route.ActivityFeed)
-                    })
+                    },
+                    onNavigateToMcpTokens = { navigationController.navigate(Route.McpTokens) })
+              }
+              composable<Route.McpTokens> {
+                val viewModel = McpTokenViewModel(FirebaseMcpTokenRepository())
+                McpTokenScreen(
+                    viewModel = viewModel, onNavigateBack = { navigationController.popBackStack() })
               }
               composable<Route.SelfNotes> { SelfNotesScreen() }
               composable<Route.ActivityFeed> {
