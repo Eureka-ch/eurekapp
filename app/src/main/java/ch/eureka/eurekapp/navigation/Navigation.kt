@@ -45,6 +45,7 @@ import ch.eureka.eurekapp.ui.authentication.TokenEntryScreen
 import ch.eureka.eurekapp.ui.conversation.ConversationDetailScreen
 import ch.eureka.eurekapp.ui.conversation.ConversationListScreen
 import ch.eureka.eurekapp.ui.conversation.CreateConversationScreen
+import ch.eureka.eurekapp.ui.ideas.IdeasScreen
 import ch.eureka.eurekapp.ui.map.MeetingLocationSelectionScreen
 import ch.eureka.eurekapp.ui.mcp.McpTokenScreen
 import ch.eureka.eurekapp.ui.mcp.McpTokenViewModel
@@ -191,6 +192,15 @@ sealed interface Route {
     @Serializable data class ConversationDetail(val conversationId: String) : ConversationsSection
 
     @Serializable data class CreateConversation(val projectId: String) : ConversationsSection
+  }
+
+  sealed interface IdeasSection : Route {
+    companion object {
+      val routes: Set<KClass<out IdeasSection>>
+        get() = IdeasSection::class.sealedSubclasses.toSet()
+    }
+
+    @Serializable data class Ideas(val projectId: String? = null) : IdeasSection
   }
 }
 
@@ -346,6 +356,10 @@ fun NavigationMenu(
                         }
                       }
                     })
+              }
+              composable<Route.IdeasSection.Ideas> { backStackEntry ->
+                val ideasRoute = backStackEntry.toRoute<Route.IdeasSection.Ideas>()
+                IdeasScreen(onNavigateBack = { navigationController.popBackStack() })
               }
               composable<Route.OverviewProject> { backStackEntry ->
                 val overviewProjectScreenRoute = backStackEntry.toRoute<Route.OverviewProject>()
