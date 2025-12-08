@@ -10,6 +10,8 @@ import ch.eureka.eurekapp.model.data.conversation.ConversationRepository
 import ch.eureka.eurekapp.model.data.conversation.FirestoreConversationRepository
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.file.FirebaseFileStorageRepository
+import ch.eureka.eurekapp.model.data.ideas.FirestoreIdeasRepository
+import ch.eureka.eurekapp.model.data.ideas.IdeasRepository
 import ch.eureka.eurekapp.model.data.invitation.FirestoreInvitationRepository
 import ch.eureka.eurekapp.model.data.meeting.FirestoreMeetingRepository
 import ch.eureka.eurekapp.model.data.notes.FirestoreSelfNotesRepository
@@ -133,6 +135,10 @@ object RepositoriesProvider {
     FirestoreConversationRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
   }
 
+  private val _ideasRepository: IdeasRepository by lazy {
+    FirestoreIdeasRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
+  }
+
   val taskRepository: FirestoreTaskRepository
     get() = _taskRepository
 
@@ -165,4 +171,7 @@ object RepositoriesProvider {
 
   val conversationRepository: ConversationRepository
     get() = _conversationRepository
+
+  val ideasRepository: IdeasRepository
+    get() = _ideasRepository
 }
