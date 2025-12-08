@@ -116,25 +116,25 @@ constructor(
   open val uiState: StateFlow<IdeasUIState> =
       combine(projectsFlow, _selectedProject, ideasFlow, _selectedIdea, _viewMode, _errorMsg) { args
             ->
-                val projects = args[0] as List<Project>
-                val selectedProject = args[1] as Project?
-                val ideas = args[2] as List<Idea>
-                val selectedIdea = args[3] as Idea?
+            val projects = args[0] as List<Project>
+            val selectedProject = args[1] as Project?
+            val ideas = args[2] as List<Idea>
+            val selectedIdea = args[3] as Idea?
             val viewMode = args[4] as IdeasViewMode
             val errorMsg = args[5] as String?
 
-                IdeasUIState(
-                    selectedProject = selectedProject,
-                    availableProjects = projects,
-                    ideas = ideas,
-                    selectedIdea = selectedIdea,
+            IdeasUIState(
+                selectedProject = selectedProject,
+                availableProjects = projects,
+                ideas = ideas,
+                selectedIdea = selectedIdea,
                 messages = emptyList(), // Chat functionality in separate PR
-                    viewMode = viewMode,
+                viewMode = viewMode,
                 currentMessage = "",
                 isSending = false,
-                    isLoading = false,
+                isLoading = false,
                 errorMsg = errorMsg)
-              }
+          }
           .stateIn(
               scope = viewModelScope,
               started = SharingStarted.WhileSubscribed(5000),
@@ -159,11 +159,11 @@ constructor(
   /** Called when a new idea is created from CreateIdeaViewModel */
   open fun onIdeaCreated(idea: Idea) {
     val project = projectsFlow.value.find { it.projectId == idea.projectId }
-                if (project != null) {
-                  _selectedProject.value = project
-                }
+    if (project != null) {
+      _selectedProject.value = project
+    }
     _selectedIdea.value = idea
-                _viewMode.value = IdeasViewMode.CONVERSATION
+    _viewMode.value = IdeasViewMode.CONVERSATION
   }
 
   open fun deleteIdea(ideaId: String) {
