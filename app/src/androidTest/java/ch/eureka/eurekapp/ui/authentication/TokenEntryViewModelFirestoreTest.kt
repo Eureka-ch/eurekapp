@@ -27,6 +27,16 @@ class TokenEntryViewModelFirestoreTest {
   private lateinit var viewModel: TokenEntryViewModel
   private lateinit var testUserId: String
 
+  private suspend fun waitForValidationComplete(
+      vm: TokenEntryViewModel = viewModel,
+      timeoutMs: Long = 5000
+  ) {
+    val startTime = System.currentTimeMillis()
+    while (vm.uiState.value.isLoading && System.currentTimeMillis() - startTime < timeoutMs) {
+      delay(50)
+    }
+  }
+
   @Before
   fun setup() = runBlocking {
     // Verify Firebase Emulator is running
@@ -79,7 +89,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act: Validate token
     viewModel.updateToken("FIRESTORE-TOKEN-1")
     viewModel.validateToken()
-    delay(500) // Allow validation to complete
+    waitForValidationComplete()
 
     // Assert: Success
     assertTrue(viewModel.uiState.value.validationSuccess)
@@ -106,7 +116,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act: Try to validate non-existent token
     viewModel.updateToken("NONEXISTENT-TOKEN")
     viewModel.validateToken()
-    delay(500) // Allow Firestore operations to complete
+    waitForValidationComplete()
 
     // Assert: Error shown
     assertFalse(viewModel.uiState.value.validationSuccess)
@@ -132,7 +142,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act: Try to use already-used token
     viewModel.updateToken("USED-FIRESTORE-TOKEN")
     viewModel.validateToken()
-    delay(1500) // Allow Firestore operations to complete
+    waitForValidationComplete()
 
     // Assert: Error shown
     assertFalse(viewModel.uiState.value.validationSuccess)
@@ -164,7 +174,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act
     viewModel.updateToken(specialToken)
     viewModel.validateToken()
-    delay(500) // Allow Firestore operations to complete
+    waitForValidationComplete()
 
     // Assert
     assertTrue(viewModel.uiState.value.validationSuccess)
@@ -190,7 +200,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act: Validate first token
     viewModel.updateToken("TOKEN-1")
     viewModel.validateToken()
-    delay(500) // Allow Firestore operations to complete
+    waitForValidationComplete()
 
     assertTrue(viewModel.uiState.value.validationSuccess)
 
@@ -204,7 +214,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act: Validate second token
     viewModel2.updateToken("TOKEN-2")
     viewModel2.validateToken()
-    delay(500) // Allow Firestore operations to complete
+    waitForValidationComplete(viewModel2)
 
     // Assert: Both succeeded
     assertTrue(viewModel2.uiState.value.validationSuccess)
@@ -233,7 +243,7 @@ class TokenEntryViewModelFirestoreTest {
     // only one would succeed. For this test, we verify the mechanism works with single user.
     viewModel.updateToken("RACE-TOKEN")
     viewModel.validateToken()
-    delay(500) // Allow Firestore operations to complete
+    waitForValidationComplete()
 
     // Verify token was marked as used
     val doc =
@@ -260,7 +270,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act: Validate orphaned invitation
     viewModel.updateToken("ORPHANED-TOKEN")
     viewModel.validateToken()
-    delay(500) // Allow Firestore operations to complete
+    waitForValidationComplete()
 
     // Assert: Validation succeeds (ViewModel doesn't check if project exists)
     assertTrue(viewModel.uiState.value.validationSuccess)
@@ -282,7 +292,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act: Input with whitespace
     viewModel.updateToken("  TRIM-TOKEN  ")
     viewModel.validateToken()
-    delay(1500) // Allow Firestore operations to complete
+    waitForValidationComplete()
 
     // Assert: Successfully found and validated (token is trimmed in updateToken)
     assertTrue(viewModel.uiState.value.validationSuccess)
@@ -311,7 +321,7 @@ class TokenEntryViewModelFirestoreTest {
     // Act: Try to find tokens
     viewModel.updateToken("CLEAR-1")
     viewModel.validateToken()
-    delay(500) // Allow Firestore operations to complete
+    waitForValidationComplete()
 
     // Assert: Token not found after clear
     assertFalse(viewModel.uiState.value.validationSuccess)
