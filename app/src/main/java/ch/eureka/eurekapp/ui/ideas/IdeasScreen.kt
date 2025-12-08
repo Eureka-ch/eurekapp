@@ -156,8 +156,8 @@ fun IdeasScreen(
                     ideas = uiState.ideas, onIdeaClick = { idea -> viewModel.selectIdea(idea) }),
             conversationState =
                 ConversationState(
-                    selectedIdea = uiState.selectedIdea,
-                    messages = uiState.messages,
+            selectedIdea = uiState.selectedIdea,
+            messages = uiState.messages,
                     currentUserId = viewModel.getCurrentUserId(),
                     onBackToList = { viewModel.backToList() }),
             lazyListState = listState,

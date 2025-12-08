@@ -171,28 +171,28 @@ private fun IdeaConversationContent(
         }
 
     // Messages list
-    if (messages.isEmpty()) {
+  if (messages.isEmpty()) {
       Box(modifier = Modifier.fillMaxSize().testTag("emptyConversation")) {
-        Text(
+          Text(
             text = "No messages yet. Start the conversation!",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
+              style = MaterialTheme.typography.bodyLarge,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              textAlign = TextAlign.Center,
             modifier = Modifier.align(Alignment.Center).padding(Spacing.lg))
-      }
-    } else {
-      LazyColumn(
-          state = listState,
+        }
+  } else {
+    LazyColumn(
+        state = listState,
           modifier = Modifier.weight(1f).fillMaxWidth().testTag("conversationMessagesList"),
-          reverseLayout = true,
-          verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        reverseLayout = true,
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             items(items = messages.reversed(), key = { it.messageID }) { message ->
-              MessageBubble(
-                  text = message.text,
-                  timestamp = message.createdAt,
-                  isFromCurrentUser = message.senderId == currentUserId)
-            }
+            MessageBubble(
+                text = message.text,
+                timestamp = message.createdAt,
+                isFromCurrentUser = message.senderId == currentUserId)
           }
+        }
     }
     Spacer(modifier = Modifier.height(Spacing.sm))
     // Message input will be added in separate PR as it requires send functionality

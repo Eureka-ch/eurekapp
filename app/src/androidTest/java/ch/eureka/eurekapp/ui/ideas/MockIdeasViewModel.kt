@@ -42,6 +42,22 @@ class MockIdeasViewModel :
     _uiState.value = _uiState.value.copy(availableProjects = projects)
   }
 
+  fun setSelectedProject(project: Project?) {
+    _uiState.value = _uiState.value.copy(selectedProject = project)
+  }
+
+  fun setIdeas(ideas: List<Idea>) {
+    _uiState.value = _uiState.value.copy(ideas = ideas)
+  }
+
+  fun setViewMode(viewMode: IdeasViewMode) {
+    _uiState.value = _uiState.value.copy(viewMode = viewMode)
+  }
+
+  fun setIsLoading(isLoading: Boolean) {
+    _uiState.value = _uiState.value.copy(isLoading = isLoading)
+  }
+
   override fun selectProject(project: Project) {
     selectProjectCalled = true
     _uiState.value = _uiState.value.copy(selectedProject = project)
