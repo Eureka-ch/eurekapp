@@ -7,6 +7,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 
+/*
+Co-author: Claude 4.5 Sonnet
+*/
+
 object DeleteConfirmationDialogTestTags {
   const val DIALOG = "deleteConfirmationDialog"
   const val CONFIRM_BUTTON = "confirmDeleteButton"
