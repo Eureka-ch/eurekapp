@@ -12,6 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 
+/*
+Co-author: Claude 4.5 Sonnet
+*/
+
 object MessageActionMenuTestTags {
   const val MENU = "messageActionMenu"
   const val EDIT_OPTION = "editOption"
