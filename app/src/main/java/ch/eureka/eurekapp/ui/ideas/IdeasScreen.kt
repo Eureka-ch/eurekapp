@@ -148,7 +148,6 @@ fun IdeasScreen(
               }
         }
       }) { paddingValues ->
-        // Chat UI (bottomBar with MessageInputField) will be in separate PR
         IdeasContent(
             viewMode = uiState.viewMode,
             selectedProject = uiState.selectedProject,
@@ -161,7 +160,8 @@ fun IdeasScreen(
             isLoading = uiState.isLoading,
             onIdeaClick = { idea -> viewModel.selectIdea(idea) },
             onDeleteIdea = { ideaId -> viewModel.deleteIdea(ideaId) },
-            onShareIdea = { _, _ -> /* Share functionality in separate PR */ })
+            onShareIdea = { _, _ -> /* Share functionality in separate PR */ },
+            onBackToList = { viewModel.backToList() })
       }
 
   if (showCreateIdeaDialog) {

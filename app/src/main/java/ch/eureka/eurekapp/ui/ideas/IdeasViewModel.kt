@@ -146,9 +146,14 @@ constructor(
     _selectedIdea.value = null
   }
 
+  open fun backToList() {
+    _viewMode.value = IdeasViewMode.LIST
+    _selectedIdea.value = null
+  }
+
   open fun selectIdea(idea: Idea) {
     _selectedIdea.value = idea
-    _viewMode.value = IdeasViewMode.LIST // Conversation mode in separate PR
+    _viewMode.value = IdeasViewMode.CONVERSATION
   }
 
   /** Called when a new idea is created from CreateIdeaViewModel */
@@ -158,7 +163,7 @@ constructor(
       _selectedProject.value = project
     }
     _selectedIdea.value = idea
-    // Conversation navigation in separate PR
+    _viewMode.value = IdeasViewMode.CONVERSATION
   }
 
   open fun deleteIdea(ideaId: String) {

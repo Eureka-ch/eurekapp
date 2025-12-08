@@ -5,14 +5,21 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.ideas.Idea
 import ch.eureka.eurekapp.model.data.project.Project
+import ch.eureka.eurekapp.ui.components.MessageBubble
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 @Composable
@@ -54,7 +62,8 @@ fun IdeasContent(
     isLoading: Boolean,
     onIdeaClick: (Idea) -> Unit,
     onDeleteIdea: (String) -> Unit,
-    onShareIdea: (String, String) -> Unit
+    onShareIdea: (String, String) -> Unit,
+    onBackToList: () -> Unit = {}
 ) {
   Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
     when {
@@ -70,8 +79,15 @@ fun IdeasContent(
             textAlign = TextAlign.Center,
             modifier = Modifier.align(Alignment.Center).padding(Spacing.lg).testTag("emptyState"))
       }
+      viewMode == IdeasViewMode.CONVERSATION && selectedIdea != null -> {
+        IdeaConversationContent(
+            idea = selectedIdea,
+            messages = messages,
+            currentUserId = currentUserId,
+            listState = listState,
+            onBackToList = onBackToList)
+      }
       else -> {
-        // Always show list view - conversation mode in separate PR
         IdeasListContent(
             ideas = ideas,
             selectedProject = selectedProject,
@@ -120,4 +136,64 @@ private fun IdeasListContent(
   }
 }
 
-// Conversation content will be added in separate PR
+@Composable
+private fun IdeaConversationContent(
+    idea: Idea,
+    messages: List<Message>,
+    currentUserId: String?,
+    listState: LazyListState,
+    onBackToList: () -> Unit
+) {
+  Column(modifier = Modifier.fillMaxSize()) {
+    // Header with back button and idea title
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(Spacing.md),
+        verticalAlignment = Alignment.CenterVertically) {
+          IconButton(onClick = onBackToList, modifier = Modifier.testTag("backToListButton")) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back to list")
+          }
+          Column(modifier = Modifier.weight(1f).padding(start = Spacing.sm)) {
+            Text(
+                text = idea.title ?: "Untitled Idea",
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1)
+            if (idea.content != null) {
+              Text(
+                  text = idea.content,
+                  style = MaterialTheme.typography.bodySmall,
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
+                  maxLines = 1)
+            }
+          }
+        }
+
+    // Messages list
+    if (messages.isEmpty()) {
+      Box(modifier = Modifier.fillMaxSize().testTag("emptyConversation")) {
+        Text(
+            text = "No messages yet. Start the conversation!",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.align(Alignment.Center).padding(Spacing.lg))
+      }
+    } else {
+      LazyColumn(
+          state = listState,
+          modifier = Modifier.weight(1f).fillMaxWidth().testTag("conversationMessagesList"),
+          reverseLayout = true,
+          verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            items(items = messages.reversed(), key = { it.messageID }) { message ->
+              MessageBubble(
+                  text = message.text,
+                  timestamp = message.createdAt,
+                  isFromCurrentUser = message.senderId == currentUserId)
+            }
+          }
+    }
+    Spacer(modifier = Modifier.height(Spacing.sm))
+    // Message input will be added in separate PR as it requires send functionality
+  }
+}

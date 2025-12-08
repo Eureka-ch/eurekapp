@@ -79,7 +79,7 @@ class IdeasViewModelTest {
   }
 
   @Test
-  fun selectIdea_updatesSelectedIdea() = runTest {
+  fun selectIdea_updatesSelectedIdeaAndSwitchesToConversationMode() = runTest {
     val idea = Idea(ideaId = "idea-123", projectId = "project-123", createdBy = currentUserId)
     viewModel = createViewModel()
     advanceUntilIdle()
@@ -87,12 +87,32 @@ class IdeasViewModelTest {
     advanceUntilIdle()
     val state = viewModel.uiState.first()
     assertEquals(idea, state.selectedIdea)
-    // Conversation mode will be tested in frontend PR
-    assertEquals(IdeasViewMode.LIST, state.viewMode)
+    assertEquals(IdeasViewMode.CONVERSATION, state.viewMode)
   }
 
   @Test
-  fun onIdeaCreated_updatesSelectedIdeaAndProject() = runTest {
+  fun backToList_switchesToListModeAndClearsSelection() = runTest {
+    val project = Project(projectId = "project-123", name = "Test Project")
+    val idea = Idea(ideaId = "idea-123", projectId = "project-123", createdBy = currentUserId)
+    mockProjectRepository.setCurrentUserProjects(flowOf(listOf(project)))
+    mockIdeasRepository.setIdeasForProject("project-123", flowOf(listOf(idea)))
+    viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.selectProject(project)
+    viewModel.selectIdea(idea)
+    advanceUntilIdle()
+    assertEquals(IdeasViewMode.CONVERSATION, viewModel.uiState.first().viewMode)
+
+    viewModel.backToList()
+    advanceUntilIdle()
+    val state = viewModel.uiState.first()
+    assertEquals(IdeasViewMode.LIST, state.viewMode)
+    assertNull(state.selectedIdea)
+  }
+
+  @Test
+  fun onIdeaCreated_updatesSelectedIdeaAndProjectAndSwitchesToConversationMode() = runTest {
     val project = Project(projectId = "project-123", name = "Test Project")
     mockProjectRepository.setCurrentUserProjects(flowOf(listOf(project)))
     viewModel = createViewModel()
@@ -103,6 +123,7 @@ class IdeasViewModelTest {
     val state = viewModel.uiState.first()
     assertEquals(idea, state.selectedIdea)
     assertEquals(project, state.selectedProject)
+    assertEquals(IdeasViewMode.CONVERSATION, state.viewMode)
   }
 
   @Test
