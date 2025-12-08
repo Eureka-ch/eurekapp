@@ -32,7 +32,12 @@ class TokenEntryViewModelFirestoreTest {
       timeoutMs: Long = 5000
   ) {
     val startTime = System.currentTimeMillis()
-    while (vm.uiState.value.isLoading && System.currentTimeMillis() - startTime < timeoutMs) {
+    // Wait until loading is done AND we have either success or error
+    while (System.currentTimeMillis() - startTime < timeoutMs) {
+      val state = vm.uiState.value
+      if (!state.isLoading && (state.validationSuccess || state.errorMessage != null)) {
+        break
+      }
       delay(50)
     }
   }
