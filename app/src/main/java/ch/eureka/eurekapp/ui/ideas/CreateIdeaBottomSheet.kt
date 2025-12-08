@@ -107,9 +107,7 @@ fun CreateIdeaBottomSheet(
                       modifier = Modifier.padding(vertical = Spacing.xs))
                 }
 
-                TitleField(
-                    title = uiState.title,
-                    onTitleChange = { viewModel.updateTitle(it) })
+                TitleField(title = uiState.title, onTitleChange = { viewModel.updateTitle(it) })
 
                 ProjectSelector(
                     availableProjects = uiState.availableProjects,
@@ -224,8 +222,7 @@ private fun ParticipantsSelector(
       when {
         selectedCount == 0 -> "No participants selected"
         selectedCount == 1 -> {
-          val user =
-              availableUsers.firstOrNull { it.uid == selectedParticipantIds.first() }
+          val user = availableUsers.firstOrNull { it.uid == selectedParticipantIds.first() }
           user?.displayName?.ifBlank { user.email } ?: "1 participant selected"
         }
         else -> "$selectedCount participants selected"
@@ -296,8 +293,7 @@ private fun ActionButtons(
       horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         OutlinedButton(
             onClick = onCancel,
-            modifier =
-                Modifier.weight(1f).testTag(CreateIdeaBottomSheetTestTags.CANCEL_BUTTON),
+            modifier = Modifier.weight(1f).testTag(CreateIdeaBottomSheetTestTags.CANCEL_BUTTON),
             colors = EurekaStyles.outlinedButtonColors()) {
               Text("Cancel")
             }
@@ -305,8 +301,7 @@ private fun ActionButtons(
         Button(
             onClick = onCreate,
             enabled = canCreate && !isCreating,
-            modifier =
-                Modifier.weight(1f).testTag(CreateIdeaBottomSheetTestTags.CREATE_BUTTON),
+            modifier = Modifier.weight(1f).testTag(CreateIdeaBottomSheetTestTags.CREATE_BUTTON),
             colors = EurekaStyles.primaryButtonColors()) {
               if (isCreating) {
                 CircularProgressIndicator(
