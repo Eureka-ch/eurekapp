@@ -2,6 +2,7 @@
 package ch.eureka.eurekapp.ui.ideas
 
 import ch.eureka.eurekapp.model.data.chat.Message
+import ch.eureka.eurekapp.model.data.ideas.Idea
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.ui.tasks.MockProjectRepository
 import kotlinx.coroutines.Dispatchers

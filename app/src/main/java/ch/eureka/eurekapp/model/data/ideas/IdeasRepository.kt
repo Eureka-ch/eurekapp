@@ -1,4 +1,4 @@
-package ch.eureka.eurekapp.ui.ideas
+package ch.eureka.eurekapp.model.data.ideas
 
 import ch.eureka.eurekapp.model.data.chat.Message
 import kotlinx.coroutines.flow.Flow
@@ -15,10 +15,10 @@ interface IdeasRepository {
   suspend fun deleteIdea(projectId: String, ideaId: String): Result<Unit>
 
   /** Get all messages for an idea */
-  fun getMessagesForIdea(ideaId: String): Flow<List<Message>>
+  fun getMessagesForIdea(projectId: String, ideaId: String): Flow<List<Message>>
 
   /** Send a message in an idea conversation */
-  suspend fun sendMessage(ideaId: String, message: Message): Result<Unit>
+  suspend fun sendMessage(projectId: String, ideaId: String, message: Message): Result<Unit>
 
   /** Add a participant to an idea */
   suspend fun addParticipant(projectId: String, ideaId: String, userId: String): Result<Unit>

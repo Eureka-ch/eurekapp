@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.chat.Message
+import ch.eureka.eurekapp.model.data.ideas.Idea
+import ch.eureka.eurekapp.model.data.ideas.IdeasRepository
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import com.google.firebase.auth.FirebaseAuth

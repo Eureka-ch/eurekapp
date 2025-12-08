@@ -2,6 +2,8 @@
 package ch.eureka.eurekapp.ui.ideas
 
 import ch.eureka.eurekapp.model.data.chat.Message
+import ch.eureka.eurekapp.model.data.ideas.Idea
+import ch.eureka.eurekapp.model.data.ideas.IdeasRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
@@ -13,7 +15,7 @@ import kotlinx.coroutines.flow.flowOf
  */
 class MockIdeasRepository : IdeasRepository {
   private val ideasByProject = mutableMapOf<String, Flow<List<Idea>>>()
-  private val messagesByIdea = mutableMapOf<String, Flow<List<Message>>>()
+  private val messagesByIdea = mutableMapOf<Pair<String, String>, Flow<List<Message>>>()
   private var createIdeaResult: Result<String> = Result.success("mock-idea-id")
   private var addParticipantResult: Result<Unit> = Result.success(Unit)
   private var sendMessageResult: Result<Unit> = Result.success(Unit)
@@ -21,8 +23,8 @@ class MockIdeasRepository : IdeasRepository {
   // Track method calls for verification
   val createIdeaCalls = mutableListOf<Idea>()
   val getIdeasForProjectCalls = mutableListOf<String>()
-  val getMessagesForIdeaCalls = mutableListOf<String>()
-  val sendMessageCalls = mutableListOf<Pair<String, Message>>()
+  val getMessagesForIdeaCalls = mutableListOf<Pair<String, String>>()
+  val sendMessageCalls = mutableListOf<Triple<String, String, Message>>()
   val addParticipantCalls =
       mutableListOf<Triple<String, String, String>>() // projectId, ideaId, userId
 
@@ -32,8 +34,8 @@ class MockIdeasRepository : IdeasRepository {
   }
 
   /** Configure messages returned by getMessagesForIdea() */
-  fun setMessagesForIdea(ideaId: String, flow: Flow<List<Message>>) {
-    messagesByIdea[ideaId] = flow
+  fun setMessagesForIdea(projectId: String, ideaId: String, flow: Flow<List<Message>>) {
+    messagesByIdea[projectId to ideaId] = flow
   }
 
   /** Configure the result returned by createIdea() */
@@ -79,13 +81,17 @@ class MockIdeasRepository : IdeasRepository {
     return Result.success(Unit)
   }
 
-  override fun getMessagesForIdea(ideaId: String): Flow<List<Message>> {
-    getMessagesForIdeaCalls.add(ideaId)
-    return messagesByIdea[ideaId] ?: flowOf(emptyList())
+  override fun getMessagesForIdea(projectId: String, ideaId: String): Flow<List<Message>> {
+    getMessagesForIdeaCalls.add(projectId to ideaId)
+    return messagesByIdea[projectId to ideaId] ?: flowOf(emptyList())
   }
 
-  override suspend fun sendMessage(ideaId: String, message: Message): Result<Unit> {
-    sendMessageCalls.add(ideaId to message)
+  override suspend fun sendMessage(
+      projectId: String,
+      ideaId: String,
+      message: Message
+  ): Result<Unit> {
+    sendMessageCalls.add(Triple(projectId, ideaId, message))
     return sendMessageResult
   }
 

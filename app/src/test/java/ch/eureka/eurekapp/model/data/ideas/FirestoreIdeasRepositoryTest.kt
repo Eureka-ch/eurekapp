@@ -2,15 +2,12 @@
 package ch.eureka.eurekapp.model.data.ideas
 
 import ch.eureka.eurekapp.model.data.chat.Message
-import ch.eureka.eurekapp.model.data.project.ProjectRepository
-import ch.eureka.eurekapp.ui.ideas.Idea
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.*
 import io.mockk.*
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Before
@@ -21,7 +18,6 @@ class FirestoreIdeasRepositoryTest {
 
   private lateinit var firestore: FirebaseFirestore
   private lateinit var auth: FirebaseAuth
-  private lateinit var projectRepository: ProjectRepository
   private lateinit var repository: FirestoreIdeasRepository
   private val testUserId = "user-123"
   private val testProjectId = "project-456"
@@ -30,22 +26,21 @@ class FirestoreIdeasRepositoryTest {
   fun setup() {
     firestore = mockk(relaxed = true)
     auth = mockk(relaxed = true)
-    projectRepository = mockk(relaxed = true)
     val mockUser: FirebaseUser = mockk(relaxed = true)
     every { auth.currentUser } returns mockUser
     every { mockUser.uid } returns testUserId
-    repository = FirestoreIdeasRepository(firestore, auth, projectRepository)
+    repository = FirestoreIdeasRepository(firestore, auth)
   }
 
   @Test
-  fun `getIdeasForProject returns empty list when user not authenticated`() = runTest {
+  fun getIdeasForProject_returnsEmptyListWhenUserNotAuthenticated() = runTest {
     every { auth.currentUser } returns null
     val result = repository.getIdeasForProject(testProjectId).first()
     assertTrue(result.isEmpty())
   }
 
   @Test
-  fun `getIdeasForProject returns ideas list when snapshot succeeds`() = runTest {
+  fun getIdeasForProject_returnsIdeasListWhenSnapshotSucceeds() = runTest {
     val idea = Idea(ideaId = "idea-1", projectId = testProjectId, createdBy = testUserId)
     val collectionRef = mockk<CollectionReference>(relaxed = true)
     val query = mockk<Query>(relaxed = true)
@@ -74,7 +69,7 @@ class FirestoreIdeasRepositoryTest {
   }
 
   @Test
-  fun `createIdea succeeds with valid data`() = runTest {
+  fun createIdea_succeedsWithValidData() = runTest {
     val idea = Idea(ideaId = "idea-1", projectId = testProjectId, createdBy = testUserId)
     val docRef: DocumentReference = mockk(relaxed = true)
     every { firestore.collection(any()).document(any()).collection(any()).document(any()) } returns
@@ -88,7 +83,7 @@ class FirestoreIdeasRepositoryTest {
   }
 
   @Test
-  fun `createIdea fails when Firestore fails`() = runTest {
+  fun createIdea_failsWhenFirestoreFails() = runTest {
     val idea = Idea(ideaId = "idea-1", projectId = testProjectId, createdBy = testUserId)
     val docRef: DocumentReference = mockk(relaxed = true)
     val exception = FirebaseFirestoreException("Error", FirebaseFirestoreException.Code.UNAVAILABLE)
@@ -102,7 +97,7 @@ class FirestoreIdeasRepositoryTest {
   }
 
   @Test
-  fun `deleteIdea succeeds when idea exists`() = runTest {
+  fun deleteIdea_succeedsWhenIdeaExists() = runTest {
     val docRef: DocumentReference = mockk(relaxed = true)
     val collectionRef: CollectionReference = mockk(relaxed = true)
     val snapshot: QuerySnapshot = mockk(relaxed = true)
@@ -120,18 +115,35 @@ class FirestoreIdeasRepositoryTest {
   }
 
   @Test
-  fun `sendMessage fails when user not authenticated`() = runTest {
+  fun sendMessage_failsWhenUserNotAuthenticated() = runTest {
     every { auth.currentUser } returns null
     val message = Message(messageID = "msg-1", senderId = testUserId, text = "Hi")
 
-    val result = repository.sendMessage("idea-1", message)
+    val result = repository.sendMessage(testProjectId, "idea-1", message)
 
     assertTrue(result.isFailure)
     assertTrue(result.exceptionOrNull()?.message?.contains("not authenticated") == true)
   }
 
   @Test
-  fun `addParticipant succeeds with valid data`() = runTest {
+  fun sendMessage_sendsMessageSuccessfully() = runTest {
+    val message = Message(messageID = "msg-1", senderId = testUserId, text = "Hello")
+    val docRef = mockk<DocumentReference>(relaxed = true)
+    val collectionRef = mockk<CollectionReference>(relaxed = true)
+
+    every { firestore.collection(any()).document(any()).collection(any()).document(any()) } returns
+        docRef
+    every { docRef.collection(any()) } returns collectionRef
+    every { collectionRef.document(any()) } returns docRef
+    every { docRef.set(any()) } returns Tasks.forResult(null)
+
+    val result = repository.sendMessage(testProjectId, "idea-1", message)
+
+    assertTrue(result.isSuccess)
+  }
+
+  @Test
+  fun addParticipant_succeedsWithValidData() = runTest {
     val docRef: DocumentReference = mockk(relaxed = true)
     every { firestore.collection(any()).document(any()).collection(any()).document(any()) } returns
         docRef
@@ -143,57 +155,32 @@ class FirestoreIdeasRepositoryTest {
   }
 
   @Test
-  fun `getMessagesForIdea returns empty list when no projects`() = runTest {
-    every { projectRepository.getProjectsForCurrentUser(skipCache = false) } returns
-        flowOf(emptyList())
+  fun getMessagesForIdea_returnsMessages() = runTest {
+    val projectCol = mockk<CollectionReference>(relaxed = true)
+    val projectDoc = mockk<DocumentReference>(relaxed = true)
+    val ideasCol = mockk<CollectionReference>(relaxed = true)
+    val ideaDoc = mockk<DocumentReference>(relaxed = true)
+    val messagesCol = mockk<CollectionReference>(relaxed = true)
+    val query = mockk<Query>(relaxed = true)
+    val snapshot = mockk<QuerySnapshot>(relaxed = true)
+    val registration = mockk<ListenerRegistration>(relaxed = true)
+    val listenerSlot = slot<EventListener<QuerySnapshot>>()
 
-    val result = repository.getMessagesForIdea("idea-1").first()
+    every { firestore.collection("projects") } returns projectCol
+    every { projectCol.document(testProjectId) } returns projectDoc
+    every { projectDoc.collection("ideas") } returns ideasCol
+    every { ideasCol.document("idea-1") } returns ideaDoc
+    every { ideaDoc.collection("messages") } returns messagesCol
+    every { messagesCol.orderBy("createdAt") } returns query
+    every { query.addSnapshotListener(capture(listenerSlot)) } answers
+        {
+          listenerSlot.captured.onEvent(snapshot, null)
+          registration
+        }
+    every { snapshot.documents } returns emptyList()
+
+    val result = repository.getMessagesForIdea(testProjectId, "idea-1").first()
 
     assertTrue(result.isEmpty())
-  }
-
-  @Test
-  fun `sendMessage finds idea and sends message successfully`() = runTest {
-    val message = Message(messageID = "msg-1", senderId = testUserId, text = "Hello")
-    val project =
-        ch.eureka.eurekapp.model.data.project.Project(projectId = testProjectId, name = "Test")
-    val ideaDoc = mockk<DocumentSnapshot>(relaxed = true)
-    val docRef = mockk<DocumentReference>(relaxed = true)
-    val collectionRef = mockk<CollectionReference>(relaxed = true)
-
-    every { projectRepository.getProjectsForCurrentUser(skipCache = false) } returns
-        flowOf(listOf(project))
-    every { firestore.collection(any()).document(any()).collection(any()).document(any()) } returns
-        docRef
-    every { docRef.get() } returns Tasks.forResult(ideaDoc)
-    every { ideaDoc.exists() } returns true
-    every { docRef.collection(any()) } returns collectionRef
-    every { collectionRef.document(any()) } returns docRef
-    every { docRef.set(any()) } returns Tasks.forResult(null)
-
-    val result = repository.sendMessage("idea-1", message)
-
-    assertTrue(result.isSuccess)
-  }
-
-  @Test
-  fun `sendMessage fails when idea not found in any project`() = runTest {
-    val message = Message(messageID = "msg-1", senderId = testUserId, text = "Hello")
-    val project =
-        ch.eureka.eurekapp.model.data.project.Project(projectId = testProjectId, name = "Test")
-    val ideaDoc = mockk<DocumentSnapshot>(relaxed = true)
-    val docRef = mockk<DocumentReference>(relaxed = true)
-
-    every { projectRepository.getProjectsForCurrentUser(skipCache = false) } returns
-        flowOf(listOf(project))
-    every { firestore.collection(any()).document(any()).collection(any()).document(any()) } returns
-        docRef
-    every { docRef.get() } returns Tasks.forResult(ideaDoc)
-    every { ideaDoc.exists() } returns false
-
-    val result = repository.sendMessage("idea-1", message)
-
-    assertTrue(result.isFailure)
-    assertTrue(result.exceptionOrNull()?.message?.contains("not found") == true)
   }
 }

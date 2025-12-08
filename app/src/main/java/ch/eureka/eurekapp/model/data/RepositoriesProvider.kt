@@ -11,6 +11,7 @@ import ch.eureka.eurekapp.model.data.conversation.FirestoreConversationRepositor
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.file.FirebaseFileStorageRepository
 import ch.eureka.eurekapp.model.data.ideas.FirestoreIdeasRepository
+import ch.eureka.eurekapp.model.data.ideas.IdeasRepository
 import ch.eureka.eurekapp.model.data.invitation.FirestoreInvitationRepository
 import ch.eureka.eurekapp.model.data.meeting.FirestoreMeetingRepository
 import ch.eureka.eurekapp.model.data.notes.FirestoreSelfNotesRepository
@@ -23,7 +24,6 @@ import ch.eureka.eurekapp.model.data.transcription.CloudFunctionSpeechToTextRepo
 import ch.eureka.eurekapp.model.data.transcription.SpeechToTextRepository
 import ch.eureka.eurekapp.model.data.user.FirestoreUserRepository
 import ch.eureka.eurekapp.model.database.AppDatabase
-import ch.eureka.eurekapp.ui.ideas.IdeasRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.functions.FirebaseFunctions
@@ -136,8 +136,7 @@ object RepositoriesProvider {
   }
 
   private val _ideasRepository: IdeasRepository by lazy {
-    FirestoreIdeasRepository(
-        FirebaseFirestore.getInstance(), FirebaseAuth.getInstance(), _projectRepository)
+    FirestoreIdeasRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
   }
 
   val taskRepository: FirestoreTaskRepository
