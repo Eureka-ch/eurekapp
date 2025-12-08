@@ -238,13 +238,19 @@ class FirestoreConversationRepository(
                   val messages =
                       snapshot?.documents?.mapNotNull { doc ->
                         try {
+                          // Skip soft-deleted messages
+                          val isDeleted = doc.getBoolean("isDeleted") ?: false
+                          if (isDeleted) return@mapNotNull null
+
                           ConversationMessage(
                               messageId = doc.id,
                               senderId = doc.getString("senderId") ?: "",
                               text = doc.getString("text") ?: "",
                               createdAt = doc.getTimestamp("createdAt"),
                               isFile = doc.getBoolean("isFile") ?: false,
-                              fileUrl = doc.getString("fileUrl") ?: "")
+                              fileUrl = doc.getString("fileUrl") ?: "",
+                              editedAt = doc.getTimestamp("editedAt"),
+                              isDeleted = false)
                         } catch (e: Exception) {
                           null // Skip malformed messages silently
                         }
@@ -360,4 +366,80 @@ class FirestoreConversationRepository(
         .update("lastReadAt.$currentUserId", com.google.firebase.Timestamp.now())
         .await()
   }
+
+  override suspend fun updateMessage(
+      conversationId: String,
+      messageId: String,
+      newText: String
+  ): Result<Unit> = runCatching {
+    val currentUserId =
+        auth.currentUser?.uid ?: throw IllegalStateException(USER_NOT_AUTHENTICATED_ERROR)
+
+    val messageRef =
+        firestore
+            .collection(FirestorePaths.CONVERSATIONS)
+            .document(conversationId)
+            .collection(FirestorePaths.CONVERSATION_MESSAGES)
+            .document(messageId)
+
+    // Verify ownership before updating
+    val messageDoc = messageRef.get().await()
+    val senderId = messageDoc.getString("senderId")
+    check(senderId == currentUserId) { "Cannot edit another user's message" }
+
+    messageRef
+        .update(
+            mapOf(
+                "text" to newText,
+                "editedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp()))
+        .await()
+  }
+
+  override suspend fun deleteMessage(conversationId: String, messageId: String): Result<Unit> =
+      runCatching {
+        val currentUserId =
+            auth.currentUser?.uid ?: throw IllegalStateException(USER_NOT_AUTHENTICATED_ERROR)
+
+        val messageRef =
+            firestore
+                .collection(FirestorePaths.CONVERSATIONS)
+                .document(conversationId)
+                .collection(FirestorePaths.CONVERSATION_MESSAGES)
+                .document(messageId)
+
+        // Verify ownership before deleting
+        val messageDoc = messageRef.get().await()
+        val senderId = messageDoc.getString("senderId")
+        check(senderId == currentUserId) { "Cannot delete another user's message" }
+
+        // Soft delete - set isDeleted flag instead of removing document
+        messageRef.update("isDeleted", true).await()
+      }
+
+  override suspend fun removeAttachment(conversationId: String, messageId: String): Result<Unit> =
+      runCatching {
+        val currentUserId =
+            auth.currentUser?.uid ?: throw IllegalStateException(USER_NOT_AUTHENTICATED_ERROR)
+
+        val messageRef =
+            firestore
+                .collection(FirestorePaths.CONVERSATIONS)
+                .document(conversationId)
+                .collection(FirestorePaths.CONVERSATION_MESSAGES)
+                .document(messageId)
+
+        // Verify ownership before removing attachment
+        val messageDoc = messageRef.get().await()
+        val senderId = messageDoc.getString("senderId")
+        check(senderId == currentUserId) { "Cannot modify another user's message" }
+
+        // Remove attachment reference but keep file in storage
+        messageRef
+            .update(
+                mapOf(
+                    "isFile" to false,
+                    "fileUrl" to "",
+                    "editedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp()))
+            .await()
+      }
 }

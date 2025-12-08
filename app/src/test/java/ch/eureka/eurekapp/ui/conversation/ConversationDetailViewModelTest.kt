@@ -30,6 +30,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -460,5 +461,391 @@ class ConversationDetailViewModelTest {
       mockFileStorageRepository.uploadFile(
           match { it.contains("file_") }, any<android.os.ParcelFileDescriptor>())
     }
+  }
+
+  // --- Edit/Delete Message Tests ---
+
+  private val testMessage =
+      ConversationMessage(messageId = "msg-1", senderId = currentUserId, text = "Test message")
+
+  private val testMessageWithAttachment =
+      ConversationMessage(
+          messageId = "msg-2",
+          senderId = currentUserId,
+          text = "File message",
+          isFile = true,
+          fileUrl = "https://storage.example.com/file.pdf")
+
+  @Test
+  fun `selectMessage sets selectedMessageId`() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.selectMessage("msg-1")
+
+    val state = viewModel.uiState.first { it.selectedMessageId == "msg-1" }
+    assertEquals("msg-1", state.selectedMessageId)
+  }
+
+  @Test
+  fun `selectMessage with null clears selection`() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.selectMessage("msg-1")
+    viewModel.uiState.first { it.selectedMessageId == "msg-1" }
+
+    viewModel.selectMessage(null)
+
+    val state = viewModel.uiState.first { it.selectedMessageId == null }
+    assertNull(state.selectedMessageId)
+  }
+
+  @Test
+  fun `clearMessageSelection clears selectedMessageId`() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.selectMessage("msg-1")
+    viewModel.uiState.first { it.selectedMessageId == "msg-1" }
+
+    viewModel.clearMessageSelection()
+
+    val state = viewModel.uiState.first { it.selectedMessageId == null }
+    assertNull(state.selectedMessageId)
+  }
+
+  @Test
+  fun `startEditing populates editingMessageId and currentMessage`() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.startEditing(testMessage)
+
+    val state = viewModel.uiState.first { it.editingMessageId == "msg-1" }
+    assertEquals("msg-1", state.editingMessageId)
+    assertEquals("Test message", state.currentMessage)
+    assertTrue(state.isEditing)
+  }
+
+  @Test
+  fun `startEditing clears selectedMessageId`() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.selectMessage("msg-1")
+    viewModel.uiState.first { it.selectedMessageId == "msg-1" }
+
+    viewModel.startEditing(testMessage)
+
+    val state = viewModel.uiState.first { it.editingMessageId == "msg-1" }
+    assertNull(state.selectedMessageId)
+  }
+
+  @Test
+  fun `cancelEditing clears editing state`() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.startEditing(testMessage)
+    viewModel.uiState.first { it.editingMessageId == "msg-1" }
+
+    viewModel.cancelEditing()
+
+    val state = viewModel.uiState.first { it.editingMessageId == null && it.currentMessage == "" }
+    assertNull(state.editingMessageId)
+    assertEquals("", state.currentMessage)
+    assertFalse(state.isEditing)
+  }
+
+  @Test
+  fun `saveEditedMessage calls repository and clears editing state`() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+    coEvery { mockConversationRepository.updateMessage(any(), any(), any()) } returns
+        Result.success(Unit)
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.startEditing(testMessage)
+    viewModel.uiState.first { it.editingMessageId == "msg-1" }
+
+    viewModel.updateMessage("Updated text")
+    viewModel.saveEditedMessage()
+
+    val state = viewModel.uiState.first { it.editingMessageId == null && !it.isSending }
+    coVerify { mockConversationRepository.updateMessage(conversationId, "msg-1", "Updated text") }
+    assertNull(state.editingMessageId)
+    assertEquals("", state.currentMessage)
+    assertFalse(state.isSending)
+  }
+
+  @Test
+  fun `saveEditedMessage shows error for empty message`() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.startEditing(testMessage)
+    viewModel.uiState.first { it.editingMessageId == "msg-1" }
+
+    viewModel.updateMessage("   ") // Empty/whitespace
+    viewModel.saveEditedMessage()
+
+    val state = viewModel.uiState.first { it.errorMsg != null }
+    assertEquals("Message cannot be empty", state.errorMsg)
+    coVerify(exactly = 0) { mockConversationRepository.updateMessage(any(), any(), any()) }
+  }
+
+  @Test
+  fun `saveEditedMessage shows error for too long message`() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.startEditing(testMessage)
+    viewModel.uiState.first { it.editingMessageId == "msg-1" }
+
+    viewModel.updateMessage("a".repeat(5001))
+    viewModel.saveEditedMessage()
+
+    val state = viewModel.uiState.first { it.errorMsg != null }
+    assertTrue(state.errorMsg?.contains("too long") == true)
+    coVerify(exactly = 0) { mockConversationRepository.updateMessage(any(), any(), any()) }
+  }
+
+  @Test
+  fun `saveEditedMessage handles repository failure`() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+    coEvery { mockConversationRepository.updateMessage(any(), any(), any()) } returns
+        Result.failure(Exception("Update failed"))
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.startEditing(testMessage)
+    viewModel.uiState.first { it.editingMessageId == "msg-1" }
+    viewModel.updateMessage("Updated text")
+    viewModel.saveEditedMessage()
+
+    val state = viewModel.uiState.first { it.errorMsg != null }
+    assertTrue(state.errorMsg?.contains("Update failed") == true)
+    assertFalse(state.isSending)
+  }
+
+  @Test
+  fun `requestDeleteMessage shows confirmation dialog`() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.requestDeleteMessage("msg-1")
+
+    val state = viewModel.uiState.first { it.showDeleteConfirmation }
+    assertTrue(state.showDeleteConfirmation)
+    assertEquals("msg-1", state.selectedMessageId)
+  }
+
+  @Test
+  fun `confirmDeleteMessage calls repository and clears state`() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+    coEvery { mockConversationRepository.deleteMessage(any(), any()) } returns Result.success(Unit)
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.requestDeleteMessage("msg-1")
+    viewModel.uiState.first { it.showDeleteConfirmation }
+
+    viewModel.confirmDeleteMessage()
+
+    val state = viewModel.uiState.first { !it.showDeleteConfirmation }
+    coVerify { mockConversationRepository.deleteMessage(conversationId, "msg-1") }
+    assertFalse(state.showDeleteConfirmation)
+    assertNull(state.selectedMessageId)
+  }
+
+  @Test
+  fun `confirmDeleteMessage deletes file from storage for attachment messages`() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+    coEvery { mockFileStorageRepository.deleteFile(any()) } returns Result.success(Unit)
+    coEvery { mockConversationRepository.deleteMessage(any(), any()) } returns Result.success(Unit)
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.requestDeleteMessage("msg-2", "https://storage.example.com/file.pdf")
+    viewModel.uiState.first { it.showDeleteConfirmation }
+
+    viewModel.confirmDeleteMessage()
+    viewModel.uiState.first { !it.showDeleteConfirmation }
+
+    coVerify { mockFileStorageRepository.deleteFile("https://storage.example.com/file.pdf") }
+    coVerify { mockConversationRepository.deleteMessage(conversationId, "msg-2") }
+  }
+
+  @Test
+  fun `confirmDeleteMessage proceeds even if file deletion fails`() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+    coEvery { mockFileStorageRepository.deleteFile(any()) } returns
+        Result.failure(Exception("Storage error"))
+    coEvery { mockConversationRepository.deleteMessage(any(), any()) } returns Result.success(Unit)
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.requestDeleteMessage("msg-2", "https://storage.example.com/file.pdf")
+    viewModel.uiState.first { it.showDeleteConfirmation }
+
+    viewModel.confirmDeleteMessage()
+    viewModel.uiState.first { !it.showDeleteConfirmation }
+
+    // Should still attempt to delete the message even if file deletion fails
+    coVerify { mockConversationRepository.deleteMessage(conversationId, "msg-2") }
+  }
+
+  @Test
+  fun `confirmDeleteMessage handles repository failure`() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+    coEvery { mockConversationRepository.deleteMessage(any(), any()) } returns
+        Result.failure(Exception("Delete failed"))
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.requestDeleteMessage("msg-1")
+    viewModel.uiState.first { it.showDeleteConfirmation }
+    viewModel.confirmDeleteMessage()
+
+    val state = viewModel.uiState.first { it.errorMsg != null }
+    assertTrue(state.errorMsg?.contains("Delete failed") == true)
+  }
+
+  @Test
+  fun `cancelDeleteMessage hides confirmation dialog`() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.requestDeleteMessage("msg-1")
+    viewModel.uiState.first { it.showDeleteConfirmation }
+
+    viewModel.cancelDeleteMessage()
+
+    val state = viewModel.uiState.first { !it.showDeleteConfirmation }
+    assertFalse(state.showDeleteConfirmation)
+    assertNull(state.selectedMessageId)
+  }
+
+  @Test
+  fun `removeAttachment removes reference then deletes file`() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+    coEvery { mockConversationRepository.removeAttachment(any(), any()) } returns
+        Result.success(Unit)
+    coEvery { mockFileStorageRepository.deleteFile(any()) } returns Result.success(Unit)
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.removeAttachment("msg-2", "https://storage.example.com/file.pdf")
+    advanceUntilIdle()
+
+    // Firestore reference removed first, then file deleted
+    coVerify { mockConversationRepository.removeAttachment(conversationId, "msg-2") }
+    coVerify { mockFileStorageRepository.deleteFile("https://storage.example.com/file.pdf") }
+  }
+
+  @Test
+  fun `removeAttachment shows snackbar if file deletion fails but still removes reference`() =
+      runTest {
+        every { mockConversationRepository.getConversationById(conversationId) } returns
+            flowOf(null)
+        every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+        coEvery { mockConversationRepository.removeAttachment(any(), any()) } returns
+            Result.success(Unit)
+        coEvery { mockFileStorageRepository.deleteFile(any()) } returns
+            Result.failure(Exception("Storage error"))
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.removeAttachment("msg-2", "https://storage.example.com/file.pdf")
+        advanceUntilIdle()
+
+        // Firestore reference is removed first, then file deletion is attempted
+        coVerify { mockConversationRepository.removeAttachment(conversationId, "msg-2") }
+        coVerify { mockFileStorageRepository.deleteFile("https://storage.example.com/file.pdf") }
+        // Snackbar shows partial success message
+        val snackbar = viewModel.snackbarMessage.first { it != null }
+        assertTrue(snackbar?.contains("file deletion failed") == true)
+      }
+
+  @Test
+  fun `removeAttachment clears selectedMessageId`() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+    coEvery { mockFileStorageRepository.deleteFile(any()) } returns Result.success(Unit)
+    coEvery { mockConversationRepository.removeAttachment(any(), any()) } returns
+        Result.success(Unit)
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    viewModel.selectMessage("msg-2")
+    viewModel.uiState.first { it.selectedMessageId == "msg-2" }
+
+    viewModel.removeAttachment("msg-2", "https://storage.example.com/file.pdf")
+
+    val state = viewModel.uiState.first { it.selectedMessageId == null }
+    assertNull(state.selectedMessageId)
+  }
+
+  @Test
+  fun `isEditing returns true when editingMessageId is set`() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+
+    assertFalse(viewModel.uiState.value.isEditing)
+
+    viewModel.startEditing(testMessage)
+
+    val state = viewModel.uiState.first { it.isEditing }
+    assertTrue(state.isEditing)
   }
 }
