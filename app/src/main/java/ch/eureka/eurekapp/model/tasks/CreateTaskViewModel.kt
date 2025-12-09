@@ -230,13 +230,17 @@ class CreateTaskViewModel(
     }
   }
 
-  fun deletePhoto(context: Context, photoUri: Uri): Boolean {
-    return try {
-      val rowsDeleted = context.contentResolver.delete(photoUri, null, null)
-      rowsDeleted > 0
-    } catch (e: SecurityException) {
-      Log.w("CreateTaskViewModel", "Failed to delete photo: ${e.message}")
-      false
+  fun removeAttachmentAndDelete(context: Context, index: Int) {
+    val uri = uiState.value.attachmentUris[index]
+    if (uiState.value.temporaryPhotoUris.contains(uri)) {
+      deletePhotoAsync(context, uri) { success ->
+        if (success) {
+          removeAttachment(index)
+          updateState { copyWithTemporaryPhotoUris(temporaryPhotoUris.filter { it != uri }) }
+        }
+      }
+    } else {
+      removeAttachment(index)
     }
   }
 
@@ -273,6 +277,9 @@ class CreateTaskViewModel(
 
   override fun CreateTaskState.copyWithSelectedAssignedUserIds(userIds: List<String>) =
       copy(selectedAssignedUserIds = userIds)
+
+  override fun CreateTaskState.copyWithTemporaryPhotoUris(uris: List<Uri>) =
+      copy(temporaryPhotoUris = uris)
 
   override fun addDependency(taskId: String) {
     val currentDependencies = uiState.value.dependingOnTasks

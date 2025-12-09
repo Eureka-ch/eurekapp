@@ -37,6 +37,7 @@ interface TaskStateReadWrite : TaskStateRead {
   val availableUsers: List<ch.eureka.eurekapp.model.data.user.User>
   val selectedAssignedUserIds: List<String>
   val dependingOnTasks: List<String>
+  val temporaryPhotoUris: List<Uri>
 }
 
 /** Base ViewModel for task creation and editing with shared functionality */
@@ -269,6 +270,20 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
     }
   }
 
+  fun addAttachment(uri: Uri, isTemporary: Boolean) {
+    if (!uiState.value.attachmentUris.contains(uri)) {
+      updateState {
+        copyWithAttachmentUris(uiState.value.attachmentUris + uri).let { state ->
+          if (isTemporary) {
+            state.copyWithTemporaryPhotoUris(uiState.value.temporaryPhotoUris + uri)
+          } else {
+            state
+          }
+        }
+      }
+    }
+  }
+
   open fun removeAttachment(index: Int) {
     if (index in uiState.value.attachmentUris.indices) {
       updateState {
@@ -430,4 +445,6 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
   protected abstract fun T.copyWithSelectedAssignedUserIds(userIds: List<String>): T
 
   protected abstract fun T.copyWithDependencies(dependencies: List<String>): T
+
+  protected abstract fun T.copyWithTemporaryPhotoUris(uris: List<Uri>): T
 }

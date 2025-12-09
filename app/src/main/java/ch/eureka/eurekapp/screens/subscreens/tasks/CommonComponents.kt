@@ -86,8 +86,8 @@ object CommonTaskTestTags {
   const val REMINDER_TIME = "reminder_time"
   const val ADD_PHOTO = "add_photo"
   const val SAVE_TASK = "save_task"
-  const val PHOTO = "photo"
-  const val DELETE_PHOTO = "delete_photo"
+  const val ATTACHMENT = "photo"
+  const val DELETE_ATTACHMENT = "delete_photo"
   const val ERROR_MSG = "error_msg"
   const val PROJECT_SELECTION_TITLE = "project_selection_title"
   const val PROJECT_RADIO = "project_radio"
@@ -293,12 +293,12 @@ private fun AttachmentItem(
                     null,
                     attachment.mimeType,
                     context,
-                    modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.PHOTO))
+                    modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.ATTACHMENT))
               }
               if (shouldShowDelete) {
                 IconButton(
                     onClick = { onDelete(index) },
-                    modifier = Modifier.testTag(CommonTaskTestTags.DELETE_PHOTO)) {
+                    modifier = Modifier.testTag(CommonTaskTestTags.DELETE_ATTACHMENT)) {
                       Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
                     }
               }
@@ -316,12 +316,12 @@ private fun AttachmentItem(
                   attachment.uri,
                   mimeType,
                   context,
-                  modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.PHOTO))
+                  modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.ATTACHMENT))
             }
             if (shouldShowDelete) {
               IconButton(
                   onClick = { onDelete(index) },
-                  modifier = Modifier.testTag(CommonTaskTestTags.DELETE_PHOTO)) {
+                  modifier = Modifier.testTag(CommonTaskTestTags.DELETE_ATTACHMENT)) {
                     Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
                   }
             }

@@ -297,11 +297,13 @@ open class EditTaskScreenTest : TestCase() {
 
         // Ensure no initial photo previews are present (clean up if any residuals)
         val existingDeletes =
-            composeTestRule.onAllNodesWithTag(CommonTaskTestTags.DELETE_PHOTO).fetchSemanticsNodes()
+            composeTestRule
+                .onAllNodesWithTag(CommonTaskTestTags.DELETE_ATTACHMENT)
+                .fetchSemanticsNodes()
         repeat(existingDeletes.size) {
-          composeTestRule.onAllNodesWithTag(CommonTaskTestTags.DELETE_PHOTO)[0].performClick()
+          composeTestRule.onAllNodesWithTag(CommonTaskTestTags.DELETE_ATTACHMENT)[0].performClick()
         }
-        composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).assertCountEquals(0)
+        composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).assertCountEquals(0)
 
         // Add photo
         composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_PHOTO).performClick()
@@ -316,12 +318,12 @@ open class EditTaskScreenTest : TestCase() {
 
         composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).performClick()
 
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.ATTACHMENT).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_ATTACHMENT).assertIsDisplayed()
 
         // Delete photo
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).performClick()
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsNotDisplayed()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_ATTACHMENT).performClick()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.ATTACHMENT).assertIsNotDisplayed()
       }
 
   @Test
@@ -1011,10 +1013,10 @@ open class EditTaskScreenTest : TestCase() {
         composeTestRule.waitForIdle()
 
         // Wait for photo to be displayed
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.ATTACHMENT).assertIsDisplayed()
 
         // Click delete photo
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).performClick()
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_ATTACHMENT).performClick()
 
         composeTestRule.waitForIdle()
 

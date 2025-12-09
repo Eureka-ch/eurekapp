@@ -23,6 +23,7 @@ data class CreateTaskState(
     override val availableUsers: List<User> = emptyList(),
     override val selectedAssignedUserIds: List<String> = emptyList(),
     override val attachmentUris: List<Uri> = emptyList(),
+    override val temporaryPhotoUris: List<Uri> = emptyList(),
     override val isSaving: Boolean = false,
     override val taskSaved: Boolean = false,
     override val errorMsg: String? = null,

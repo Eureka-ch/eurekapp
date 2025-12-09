@@ -338,7 +338,7 @@ open class ViewTaskScreenTest : TestCase() {
         }
 
         // Verify attachments are displayed
-        composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).assertCountEquals(2)
+        composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).assertCountEquals(2)
       }
 
   @Test
@@ -418,7 +418,7 @@ open class ViewTaskScreenTest : TestCase() {
         }
 
         // Verify no attachments are displayed
-        composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).assertCountEquals(0)
+        composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).assertCountEquals(0)
       }
 
   @Test

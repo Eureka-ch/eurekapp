@@ -101,7 +101,7 @@ fun EditTaskScreen(
   HandleTaskSaved(editTaskState.taskSaved, navigationController, editTaskViewModel)
   HandleTaskDeleted(editTaskState.taskDeleted, navigationController, editTaskViewModel)
   CleanupAttachmentsOnDispose(
-      isNavigatingToCamera, editTaskState.attachmentUris, editTaskViewModel, context)
+      isNavigatingToCamera, editTaskState.temporaryPhotoUris, editTaskViewModel, context)
 
   Scaffold(
       topBar = {
@@ -314,7 +314,7 @@ private fun ShowErrorToast(
 private fun AddAttachment(photoUri: String, editTaskViewModel: EditTaskViewModel) {
   LaunchedEffect(photoUri) {
     if (photoUri.isNotEmpty()) {
-      editTaskViewModel.addAttachment(photoUri.toUri())
+      editTaskViewModel.addAttachment(photoUri.toUri(), true)
     }
   }
 }
@@ -351,14 +351,14 @@ private fun HandleTaskDeleted(
 @Composable
 private fun CleanupAttachmentsOnDispose(
     isNavigatingToCamera: Boolean,
-    attachmentUris: List<Uri>,
+    temporaryPhotoUris: List<Uri>,
     editTaskViewModel: EditTaskViewModel,
     context: android.content.Context
 ) {
   DisposableEffect(Unit) {
     onDispose {
       if (!isNavigatingToCamera) {
-        editTaskViewModel.deletePhotosOnDispose(context, attachmentUris)
+        editTaskViewModel.deletePhotosOnDispose(context, temporaryPhotoUris)
       }
     }
   }

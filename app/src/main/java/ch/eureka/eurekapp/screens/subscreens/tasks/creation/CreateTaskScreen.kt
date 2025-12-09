@@ -106,7 +106,11 @@ fun CreateTaskScreen(
   HandleTaskSaved(createTaskState.taskSaved, navigationController, createTaskViewModel)
 
   HandlePhotoCleanupDisposableEffect(
-      isNavigatingToCamera, createTaskState.attachmentUris, createTaskViewModel, context)
+      isNavigatingToCamera,
+      createTaskState.attachmentUris,
+      createTaskState.temporaryPhotoUris,
+      createTaskViewModel,
+      context)
 
   Scaffold(
       topBar = {
@@ -144,11 +148,13 @@ fun CreateTaskScreen(
                           projectId = projectId,
                           availableTasks = availableTasks,
                           cycleError = cycleError,
-                          isNavigatingToCamera = { isNavigatingToCamera = true },
+                          onNavigatingToCamera = { isNavigatingToCamera = true },
                           navigationController = navigationController,
                           context = context,
                           inputValid = inputValid,
-                          filePickerLauncher = filePickerLauncher))
+                          filePickerLauncher = filePickerLauncher,
+                          isNavigatingToCamera = isNavigatingToCamera,
+                          temporaryPhotoUris = createTaskState.temporaryPhotoUris))
             })
       })
 }
@@ -171,7 +177,7 @@ private fun HandleErrorToast(
 private fun HandlePhotoUri(photoUri: String, createTaskViewModel: CreateTaskViewModel) {
   LaunchedEffect(photoUri) {
     if (photoUri.isNotEmpty()) {
-      createTaskViewModel.addAttachment(photoUri.toUri())
+      createTaskViewModel.addAttachment(photoUri.toUri(), true)
     }
   }
 }
@@ -219,13 +225,14 @@ private fun HandleTaskSaved(
 private fun HandlePhotoCleanupDisposableEffect(
     isNavigatingToCamera: Boolean,
     attachmentUris: List<Uri>,
+    temporaryPhotoUris: List<Uri>,
     createTaskViewModel: CreateTaskViewModel,
     context: android.content.Context
 ) {
   DisposableEffect(Unit) {
     onDispose {
       if (!isNavigatingToCamera) {
-        attachmentUris.forEach { uri -> createTaskViewModel.deletePhoto(context, uri) }
+        createTaskViewModel.deletePhotosOnDispose(context, temporaryPhotoUris)
       }
     }
   }
@@ -246,11 +253,13 @@ private data class CreateTaskContentConfig(
     val projectId: String,
     val availableTasks: List<Task>,
     val cycleError: String?,
-    val isNavigatingToCamera: () -> Unit,
+    val onNavigatingToCamera: () -> Unit,
     val navigationController: NavHostController,
     val context: android.content.Context,
     val inputValid: Boolean,
-    val filePickerLauncher: androidx.activity.compose.ManagedActivityResultLauncher<String, Uri?>
+    val filePickerLauncher: androidx.activity.compose.ManagedActivityResultLauncher<String, Uri?>,
+    val isNavigatingToCamera: Boolean,
+    val temporaryPhotoUris: List<Uri>
 )
 
 @Composable
@@ -336,7 +345,7 @@ private fun CreateTaskContent(config: CreateTaskContentConfig) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)) {
               OutlinedButton(
                   onClick = {
-                    config.isNavigatingToCamera()
+                    config.onNavigatingToCamera()
                     config.navigationController.navigate(Route.Camera)
                   },
                   colors = EurekaStyles.outlinedButtonColors(),
@@ -352,13 +361,17 @@ private fun CreateTaskContent(config: CreateTaskContentConfig) {
                   }
             }
 
+        HandlePhotoCleanupDisposableEffect(
+            config.isNavigatingToCamera,
+            config.createTaskState.attachmentUris,
+            config.temporaryPhotoUris,
+            config.createTaskViewModel,
+            config.context)
+
         AttachmentsList(
             attachments = config.createTaskState.attachmentUris.map { Attachment.Local(it) },
             onDelete = { index ->
-              val uri = config.createTaskState.attachmentUris[index]
-              if (config.createTaskViewModel.deletePhoto(config.context, uri)) {
-                config.createTaskViewModel.removeAttachment(index)
-              }
+              config.createTaskViewModel.removeAttachmentAndDelete(config.context, index)
             },
             isReadOnly = false,
             isConnected = true)

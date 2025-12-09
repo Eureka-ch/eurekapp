@@ -182,10 +182,17 @@ class EditTaskViewModel(
           else -> file as Uri
         }
 
-    deletePhotoAsync(context, uri) { success ->
-      if (success) {
-        removeAttachment(index)
+    // Only delete if it's a temporary photo URI
+    if (uri in _uiState.value.temporaryPhotoUris) {
+      deletePhotoAsync(context, uri) { success ->
+        if (success) {
+          removeAttachment(index)
+          updateState { copyWithTemporaryPhotoUris(temporaryPhotoUris.filter { it != uri }) }
+        }
       }
+    } else {
+      // For non-temporary attachments (picked files or existing URLs), just remove from list
+      removeAttachment(index)
     }
   }
 
@@ -339,4 +346,7 @@ class EditTaskViewModel(
     updateState { copyWithDependencies(currentDependencies.filter { it != taskId }) }
     setCycleError(null)
   }
+
+  override fun EditTaskState.copyWithTemporaryPhotoUris(uris: List<Uri>) =
+      copy(temporaryPhotoUris = uris)
 }
