@@ -1,3 +1,4 @@
+/* Portions of this code were generated with the help of Gemini and chatGPT (GPT-5). */
 package ch.eureka.eurekapp.screen
 
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -213,11 +214,12 @@ class ProjectSelectionScreenTest : TestCase() {
       ProjectSelectionScreen(
           projectSelectionScreenViewModel = fakeViewModel,
           onCreateProjectRequest = {},
-          onProjectSelectRequest = { project ->
-            if (project.projectId == "test-project-1") {
+          onProjectSelectRequest = {},
+          onSeeProjectMembers = { projectId ->
+            if (projectId == "test-project-1") {
               project1HasBeenNavigatedTo = true
             }
-            if (project.projectId == "test-project-2") {
+            if (projectId == "test-project-2") {
               project2HasBeenNavigatedTo = true
             }
           })
@@ -226,12 +228,10 @@ class ProjectSelectionScreenTest : TestCase() {
     composeRule.waitForIdle()
 
     composeRule
-        .onNodeWithTag(
-            ProjectSelectionScreenTestTags.getNavigateButtonTestTagForButton("test-project-1"))
+        .onNodeWithTag(ProjectSelectionScreenTestTags.getShowMembersButtonTestTag("test-project-1"))
         .performClick()
     composeRule
-        .onNodeWithTag(
-            ProjectSelectionScreenTestTags.getNavigateButtonTestTagForButton("test-project-2"))
+        .onNodeWithTag(ProjectSelectionScreenTestTags.getShowMembersButtonTestTag("test-project-2"))
         .performClick()
 
     assertEquals(true, project1HasBeenNavigatedTo)
