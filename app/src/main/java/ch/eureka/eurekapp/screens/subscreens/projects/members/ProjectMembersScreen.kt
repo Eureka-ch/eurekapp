@@ -38,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -199,6 +200,8 @@ fun MemberItem(user: User, isUserOnline: (Timestamp) -> Boolean) {
         // Profile Picture with Online Indicator
         Box(contentAlignment = Alignment.BottomEnd) {
           if (user.photoUrl.isNotEmpty()) {
+            val fallbackPainter = rememberVectorPainter(Icons.Default.Person)
+            val backgroundColor = MaterialTheme.colorScheme.primaryContainer
             AsyncImage(
                 model =
                     ImageRequest.Builder(LocalContext.current)
@@ -206,8 +209,14 @@ fun MemberItem(user: User, isUserOnline: (Timestamp) -> Boolean) {
                         .crossfade(true)
                         .build(),
                 contentDescription = "Profile picture of ${user.displayName}",
+                error = fallbackPainter,
+                placeholder = fallbackPainter,
+                fallback = fallbackPainter,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.size(PROFILE_PICTURE_SIZE).clip(CircleShape))
+                modifier =
+                    Modifier.size(PROFILE_PICTURE_SIZE)
+                        .clip(CircleShape)
+                        .background(backgroundColor))
           } else {
             // Fallback avatar
             Box(
@@ -218,7 +227,7 @@ fun MemberItem(user: User, isUserOnline: (Timestamp) -> Boolean) {
                 contentAlignment = Alignment.Center) {
                   Icon(
                       Icons.Default.Person,
-                      contentDescription = null,
+                      contentDescription = "Default person",
                       tint = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
           }
