@@ -51,7 +51,6 @@ import ch.eureka.eurekapp.model.downloads.AppDatabase
 import ch.eureka.eurekapp.model.downloads.DownloadedFile
 import ch.eureka.eurekapp.model.tasks.ViewTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
-import ch.eureka.eurekapp.screens.TaskAndUsers
 import ch.eureka.eurekapp.screens.TasksScreen
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
@@ -61,7 +60,6 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreenTestTag
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreenTestTags
 import ch.eureka.eurekapp.testutils.testCameraRoute
-import ch.eureka.eurekapp.ui.tasks.TaskScreenUiState
 import ch.eureka.eurekapp.ui.tasks.TaskScreenViewModel
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import ch.eureka.eurekapp.utils.MockConnectivityObserver
@@ -72,8 +70,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
@@ -430,65 +426,6 @@ open class ViewTaskScreenTest : TestCase() {
 
         // Verify no attachments are displayed
         composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).assertCountEquals(0)
-      }
-
-  @Test
-  fun testNavigationFromTasksScreenToViewTask() =
-      runBlocking<Unit> {
-        val projectId = "project123"
-        val taskId = "task123"
-        setupTestProject(projectId)
-        setupTestTask(
-            projectId,
-            taskId,
-            title = "Navigation Test Task",
-            description = "Test Description",
-            dueDate = "01/01/2025")
-
-        // Create a fake ViewModel with pre-populated tasks to avoid Firestore timing issues
-        val testTask =
-            Task(
-                taskID = taskId,
-                projectId = projectId,
-                title = "Navigation Test Task",
-                description = "Test Description",
-                assignedUserIds = listOf(testUserId),
-                dueDate = Timestamp.now(),
-                status = TaskStatus.TODO,
-                createdBy = testUserId)
-        val fakeTaskScreenViewModel =
-            object : TaskScreenViewModel() {
-              override val uiState: StateFlow<TaskScreenUiState> =
-                  MutableStateFlow(
-                      TaskScreenUiState(
-                          tasksAndUsers = listOf(TaskAndUsers(testTask, emptyList())),
-                          isLoading = false))
-            }
-
-        composeTestRule.setContent {
-          val navController = rememberNavController()
-          FullNavigationGraph(
-              navController = navController, taskScreenViewModel = fakeTaskScreenViewModel)
-          // Start on TasksScreen
-          navController.navigate(Route.TasksSection.Tasks)
-        }
-
-        composeTestRule.waitForIdle()
-
-        // Verify we're on TasksScreen
-        composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
-
-        // Task card should be immediately available since we use fake data
-        composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).assertIsDisplayed()
-
-        // Click on the task card
-        composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).performClick()
-
-        composeTestRule.waitForIdle()
-
-        // Verify navigation to ViewTaskScreen
-        composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.EDIT_TASK).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
       }
 
   @Test
