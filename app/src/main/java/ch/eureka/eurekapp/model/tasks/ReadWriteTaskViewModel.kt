@@ -175,11 +175,36 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
       uri: Uri
   ): Result<String> {
     return try {
-      val path = StoragePaths.taskAttachmentPath(projectId, taskId, "${uri.lastPathSegment}.jpg")
-      val photoUrl = withTimeout(5000L) { fileRepository.uploadFile(path, uri) }.getOrThrow()
+      val fileName = uri.lastPathSegment ?: "attachment_${System.currentTimeMillis()}"
+      val mimeType = context.contentResolver.getType(uri) ?: "application/octet-stream"
+      val extension =
+          when {
+            mimeType.startsWith("image/") -> ".jpg"
+            mimeType.startsWith("video/") -> ".mp4"
+            mimeType == "application/pdf" -> ".pdf"
+            mimeType.startsWith("text/") -> ".txt"
+            else -> ""
+          }
+      val finalFileName =
+          if (extension.isNotEmpty() && !fileName.endsWith(extension)) {
+            fileName + extension
+          } else {
+            fileName
+          }
+      val path = StoragePaths.taskAttachmentPath(projectId, taskId, finalFileName)
+      // Increase timeout to 60 seconds for larger files
+      val fileUrl = withTimeout(60000L) { fileRepository.uploadFile(path, uri) }.getOrThrow()
 
-      deletePhotoSuspend(context, uri)
-      Result.success(photoUrl)
+      // Store metadata as "url|name|mime"
+      val metadata = "$fileUrl|$finalFileName|$mimeType"
+
+      // Only delete temporary files (from camera), not files picked from storage
+      // Files from file picker have content:// URI and should not be deleted
+      if (uri.scheme == "file") {
+        deletePhotoSuspend(context, uri)
+      }
+
+      Result.success(metadata)
     } catch (e: Exception) {
       Result.failure(e)
     }

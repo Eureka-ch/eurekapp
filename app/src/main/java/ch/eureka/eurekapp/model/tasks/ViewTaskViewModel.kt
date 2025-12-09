@@ -2,8 +2,6 @@
 package ch.eureka.eurekapp.model.tasks
 
 import android.content.Context
-import android.net.Uri
-import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
@@ -123,36 +121,17 @@ class ViewTaskViewModel(
                   },
               _isConnected,
               _downloadedFiles) { taskState, isConnected, downloadedFiles ->
-                val urlToUriMap: Map<String, Uri> =
-                    downloadedFiles.associate { file -> file.url to file.localPath.toUri() }
-
                 val downloadedUrls = downloadedFiles.map { it.url }.toSet()
-                val urlsToDownload = taskState.attachmentUrls.filter { it !in downloadedUrls }
-
-                val effectiveAttachments = buildList {
-                  if (isConnected) {
-                    // Online: show all remote URLs
-                    taskState.attachmentUrls.forEach { url -> add(Attachment.Remote(url)) }
-                  } else {
-                    // Offline: show downloaded files as Local, undownloaded as Remote
-                    taskState.attachmentUrls.forEach { url ->
-                      val localUri = urlToUriMap[url]
-                      if (localUri != null) {
-                        add(Attachment.Local(localUri))
-                      } else {
-                        add(Attachment.Remote(url))
-                      }
-                    }
-                  }
-                  // Add local URIs (e.g., newly taken photos)
-                  taskState.attachmentUris.forEach { uri -> add(Attachment.Local(uri)) }
-                }
+                val urlsToDownload =
+                    taskState.attachmentUrls
+                        .map { it.substringBefore("|") }
+                        .filter { it !in downloadedUrls }
 
                 taskState.copy(
                     isConnected = isConnected,
                     urlsToDownload = urlsToDownload,
-                    effectiveAttachments = effectiveAttachments,
-                    downloadedAttachmentUrls = downloadedUrls)
+                    downloadedAttachmentUrls = downloadedUrls,
+                    downloadedFiles = downloadedFiles)
               }
           .stateIn(
               scope = viewModelScope,

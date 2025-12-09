@@ -147,10 +147,19 @@ class CreateTaskViewModel(
     val currentUser = getCurrentUserId() ?: throw Exception("User not logged in.")
 
     val handler = CoroutineExceptionHandler { _, exception ->
-      Log.e("CreateTaskViewModel", exception.message ?: "Unknown error")
+      Log.e("CreateTaskViewModel", exception.message ?: "Unknown error", exception)
+
+      val errorMessage =
+          when {
+            exception.message?.contains("Timed out") == true ->
+                "Upload timed out. Please check your connection and try again."
+            exception.message?.contains("Unable to resolve host") == true ->
+                "Network error. Please check your internet connection."
+            else -> "Unable to save task: ${exception.message}"
+          }
 
       Handler(Looper.getMainLooper()).post {
-        Toast.makeText(context.applicationContext, "Unable to save task", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context.applicationContext, errorMessage, Toast.LENGTH_LONG).show()
       }
       updateState { copy(isSaving = false) }
     }
@@ -163,10 +172,19 @@ class CreateTaskViewModel(
     saveFilesAsync(taskId, context, projectIdToUse, state.attachmentUris) { photoUrlsResult ->
       if (photoUrlsResult.isFailure) {
         val exception = photoUrlsResult.exceptionOrNull()
-        Log.e("CreateTaskViewModel", exception?.message ?: "Unknown error")
+        Log.e("CreateTaskViewModel", "Failed to upload files", exception)
+
+        val errorMessage =
+            when {
+              exception?.message?.contains("Timed out") == true ->
+                  "Upload timed out. Please check your connection and try again."
+              exception?.message?.contains("Unable to resolve host") == true ->
+                  "Network error. Please check your internet connection."
+              else -> "Unable to save task: ${exception?.message}"
+            }
+
         Handler(Looper.getMainLooper()).post {
-          Toast.makeText(context.applicationContext, "Unable to save task", Toast.LENGTH_SHORT)
-              .show()
+          Toast.makeText(context.applicationContext, errorMessage, Toast.LENGTH_LONG).show()
         }
         updateState { copy(isSaving = false) }
         return@saveFilesAsync

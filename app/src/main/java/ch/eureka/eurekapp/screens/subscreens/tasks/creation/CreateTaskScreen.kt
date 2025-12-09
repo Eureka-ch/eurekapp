@@ -5,6 +5,8 @@ package ch.eureka.eurekapp.screens.subscreens.tasks.creation
 
 import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -61,6 +63,10 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 const val CREATE_SCREEN_PHOTO_BUTTON_SIZE = 0.3f
 
+object CreateTaskScreenTestTags {
+  const val ADD_FILE = "add_file"
+}
+
 @Composable
 fun CreateTaskScreen(
     navigationController: NavHostController = rememberNavController(),
@@ -86,6 +92,12 @@ fun CreateTaskScreen(
   val context = LocalContext.current
   val scrollState = rememberScrollState()
   var isNavigatingToCamera by remember { mutableStateOf(false) }
+
+  // File picker launcher for any file type
+  val filePickerLauncher =
+      rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
+        uri?.let { createTaskViewModel.addAttachment(it) }
+      }
 
   HandleErrorToast(errorMsg, createTaskViewModel, context)
   HandlePhotoUri(photoUri, createTaskViewModel)
@@ -135,7 +147,8 @@ fun CreateTaskScreen(
                           isNavigatingToCamera = { isNavigatingToCamera = true },
                           navigationController = navigationController,
                           context = context,
-                          inputValid = inputValid))
+                          inputValid = inputValid,
+                          filePickerLauncher = filePickerLauncher))
             })
       })
 }
@@ -236,7 +249,8 @@ private data class CreateTaskContentConfig(
     val isNavigatingToCamera: () -> Unit,
     val navigationController: NavHostController,
     val context: android.content.Context,
-    val inputValid: Boolean
+    val inputValid: Boolean,
+    val filePickerLauncher: androidx.activity.compose.ManagedActivityResultLauncher<String, Uri?>
 )
 
 @Composable
@@ -317,27 +331,26 @@ private fun CreateTaskContent(config: CreateTaskContentConfig) {
               cycleError = config.cycleError)
         }
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-          OutlinedButton(
-              onClick = {
-                config.isNavigatingToCamera()
-                config.navigationController.navigate(Route.Camera)
-              },
-              colors = EurekaStyles.outlinedButtonColors(),
-              modifier =
-                  Modifier.fillMaxWidth(CREATE_SCREEN_PHOTO_BUTTON_SIZE)
-                      .testTag(CommonTaskTestTags.ADD_PHOTO)) {
-                Text("Add Photo")
-              }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+              OutlinedButton(
+                  onClick = {
+                    config.isNavigatingToCamera()
+                    config.navigationController.navigate(Route.Camera)
+                  },
+                  colors = EurekaStyles.outlinedButtonColors(),
+                  modifier = Modifier.weight(1f).testTag(CommonTaskTestTags.ADD_PHOTO)) {
+                    Text("Add Photo")
+                  }
 
-          Button(
-              onClick = { config.createTaskViewModel.addTask(config.context) },
-              enabled = config.inputValid && !config.createTaskState.isSaving,
-              modifier = Modifier.fillMaxWidth().testTag(CommonTaskTestTags.SAVE_TASK),
-              colors = EurekaStyles.primaryButtonColors()) {
-                Text(if (config.createTaskState.isSaving) "Saving..." else "Save")
-              }
-        }
+              OutlinedButton(
+                  onClick = { config.filePickerLauncher.launch("*/*") },
+                  colors = EurekaStyles.outlinedButtonColors(),
+                  modifier = Modifier.weight(1f).testTag(CreateTaskScreenTestTags.ADD_FILE)) {
+                    Text("Add File")
+                  }
+            }
 
         AttachmentsList(
             attachments = config.createTaskState.attachmentUris.map { Attachment.Local(it) },
@@ -346,6 +359,16 @@ private fun CreateTaskContent(config: CreateTaskContentConfig) {
               if (config.createTaskViewModel.deletePhoto(config.context, uri)) {
                 config.createTaskViewModel.removeAttachment(index)
               }
-            })
+            },
+            isReadOnly = false,
+            isConnected = true)
+
+        Button(
+            onClick = { config.createTaskViewModel.addTask(config.context) },
+            enabled = config.inputValid && !config.createTaskState.isSaving,
+            modifier = Modifier.fillMaxWidth().testTag(CommonTaskTestTags.SAVE_TASK),
+            colors = EurekaStyles.primaryButtonColors()) {
+              Text(if (config.createTaskState.isSaving) "Saving..." else "Save")
+            }
       }
 }

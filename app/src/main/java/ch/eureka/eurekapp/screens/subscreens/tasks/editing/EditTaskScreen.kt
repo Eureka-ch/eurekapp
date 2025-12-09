@@ -3,6 +3,8 @@ package ch.eureka.eurekapp.screens.subscreens.tasks.editing
 
 import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,7 +35,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
-import ch.eureka.eurekapp.model.tasks.Attachment
 import ch.eureka.eurekapp.model.tasks.EditTaskState
 import ch.eureka.eurekapp.model.tasks.EditTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
@@ -56,6 +57,7 @@ object EditTaskScreenTestTags {
   const val STATUS_BUTTON = "task_status"
   const val CONFIRM_DELETE = "confirm_delete"
   const val CANCEL_DELETE = "cancel_delete"
+  const val ADD_FILE = "add_file"
 }
 
 const val EDIT_SCREEN_SMALL_BUTTON_SIZE = 0.3f
@@ -84,6 +86,13 @@ fun EditTaskScreen(
   val scrollState = rememberScrollState()
   var isNavigatingToCamera by remember { mutableStateOf(false) }
   var showDeleteDialog by remember { mutableStateOf(false) }
+  val isConnected = true // Assume online for edit screen
+
+  // File picker launcher for any file type
+  val filePickerLauncher =
+      rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
+        uri?.let { editTaskViewModel.addAttachment(it) }
+      }
 
   LoadTask(taskId, editTaskState, editTaskViewModel, projectId)
   LoadAvailableTasks(editTaskState.projectId, editTaskViewModel)
@@ -173,15 +182,25 @@ fun EditTaskScreen(
                                 .testTag(CommonTaskTestTags.ADD_PHOTO)) {
                           Text("Add Photo")
                         }
+
                     OutlinedButton(
-                        onClick = {
-                          editTaskViewModel.setStatus(getNextStatus(editTaskState.status))
-                        },
+                        onClick = { filePickerLauncher.launch("*/*") },
+                        colors = EurekaStyles.outlinedButtonColors(),
                         modifier =
-                            Modifier.fillMaxWidth().testTag(EditTaskScreenTestTags.STATUS_BUTTON)) {
-                          Text(text = editTaskState.status.name.replace("_", " "))
+                            Modifier.fillMaxWidth(EDIT_SCREEN_SMALL_BUTTON_SIZE)
+                                .testTag(EditTaskScreenTestTags.ADD_FILE)) {
+                          Text("Add File")
                         }
                   }
+
+              AttachmentsList(
+                  attachments = editTaskState.effectiveAttachments,
+                  onDelete = { index ->
+                    editTaskViewModel.removeAttachmentAndDelete(context, index)
+                  },
+                  isReadOnly = false,
+                  isConnected = isConnected,
+                  downloadedUrls = editTaskState.downloadedAttachmentUrls)
 
               Row(
                   modifier = Modifier.fillMaxWidth(),
@@ -205,15 +224,6 @@ fun EditTaskScreen(
                           Text(if (editTaskState.isSaving) "Saving..." else "Save")
                         }
                   }
-
-              val allAttachments =
-                  editTaskState.attachmentUrls.map { Attachment.Remote(it) } +
-                      editTaskState.attachmentUris.map { Attachment.Local(it) }
-              AttachmentsList(
-                  attachments = allAttachments,
-                  onDelete = { index ->
-                    editTaskViewModel.removeAttachmentAndDelete(context, index)
-                  })
             }
       })
 
