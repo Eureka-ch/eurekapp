@@ -40,6 +40,7 @@ object IdeasScreenTestTags {
   const val EMPTY_STATE = "emptyState"
   const val MESSAGES_LIST = "messagesList"
   const val PROJECT_SELECTOR = "projectSelector"
+  const val BACK_BUTTON = "backButton"
 }
 
 /**
@@ -130,7 +131,7 @@ fun IdeasScreen(
             navigationIcon = {
               BackButton(
                   onClick = onNavigateBack,
-                  modifier = Modifier.testTag(IdeasScreenTestTags.PROJECT_SELECTOR))
+                  modifier = Modifier.testTag(IdeasScreenTestTags.BACK_BUTTON))
             },
             colors =
                 TopAppBarDefaults.topAppBarColors(
