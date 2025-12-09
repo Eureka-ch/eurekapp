@@ -1,7 +1,4 @@
-/*
- * This code was partially written by GPT-5 and Grok.
- * Co-Authored-By: Claude Sonnet 4.5
- */
+/* This code was partially written by Claude Sonnet 4.5, Gemini, chatGPT-5 and Grok. */
 package ch.eureka.eurekapp.navigation
 
 import android.util.Log
@@ -32,6 +29,7 @@ import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScree
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingTranscriptViewScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.creation.CreateProjectScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitationSubscreen
+import ch.eureka.eurekapp.screens.subscreens.projects.members.ProjectMembersScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.AutoAssignResultScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
@@ -59,9 +57,14 @@ import ch.eureka.eurekapp.ui.templates.CreateTemplateViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlin.reflect.KClass
+import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
-// part of the code was written by GPT-5, and Grok
+/**
+ * The duration in milliseconds between two ping of the app to firestore for last active tracking.
+ */
+const val HEARTBEAT_DURATION = 180000L // 3 minutes
+
 sealed interface Route {
   // Main screens
   @Serializable data object ProjectSelection : Route
@@ -152,6 +155,8 @@ sealed interface Route {
     @Serializable data class CreateInvitation(val projectId: String) : OverviewProjectSection
 
     @Serializable data object TokenEntry : OverviewProjectSection
+
+    @Serializable data class ProjectMembers(val projectId: String) : OverviewProjectSection
   }
 
   @Serializable data object Camera : Route
@@ -174,7 +179,7 @@ sealed interface Route {
 fun NavigationMenu(
     notificationType: String? = null,
     notificationId: String? = null,
-    notificationProjectId: String? = null
+    notificationProjectId: String? = null,
 ) {
   val navigationController = rememberNavController()
   val testProjectId = "test-project-id"
@@ -209,6 +214,23 @@ fun NavigationMenu(
       createdBy = auth.currentUser?.uid ?: "unknown",
       memberIds = listOf(auth.currentUser?.uid ?: "unknown"),
   )
+
+  val userRepository = RepositoriesProvider.userRepository
+  val currentUser = auth.currentUser
+
+  LaunchedEffect(currentUser) {
+    if (currentUser != null) {
+      while (true) {
+        try {
+          userRepository.updateLastActive(currentUser.uid)
+        } catch (e: Exception) {
+          Log.e("Heartbeat", "Failed to ping Firestore", e)
+        }
+        // Wait before the next ping
+        delay(HEARTBEAT_DURATION)
+      }
+    }
+  }
 
   Scaffold(
       containerColor = Color.White,
@@ -262,6 +284,10 @@ fun NavigationMenu(
                     onGenerateInviteRequest = { projectId ->
                       navigationController.navigate(
                           Route.OverviewProjectSection.CreateInvitation(projectId = projectId))
+                    },
+                    onSeeProjectMembers = { projectId ->
+                      navigationController.navigate(
+                          Route.OverviewProjectSection.ProjectMembers(projectId = projectId))
                     })
               }
               composable<Route.OverviewProjectSection.TokenEntry> {
@@ -269,6 +295,14 @@ fun NavigationMenu(
                     onTokenValidated = { navigationController.navigate(Route.ProjectSelection) },
                     onBackClick = { navigationController.popBackStack() })
               }
+
+              composable<Route.OverviewProjectSection.ProjectMembers> { backStackEntry ->
+                val route = backStackEntry.toRoute<Route.OverviewProjectSection.ProjectMembers>()
+                ProjectMembersScreen(
+                    projectId = route.projectId,
+                    onBackClick = { navigationController.popBackStack() })
+              }
+
               composable<Route.Profile> {
                 ProfileScreen(
                     onNavigateToActivityFeed = {
