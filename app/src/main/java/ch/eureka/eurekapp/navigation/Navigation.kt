@@ -9,6 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -16,6 +17,7 @@ import androidx.navigation.toRoute
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
+import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.model.notifications.NotificationType
 import ch.eureka.eurekapp.screens.Camera
@@ -55,6 +57,7 @@ import ch.eureka.eurekapp.ui.profile.ProfileScreen
 import ch.eureka.eurekapp.ui.templates.CreateTemplateScreen
 import ch.eureka.eurekapp.ui.templates.CreateTemplateViewModel
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import kotlin.reflect.KClass
 import kotlinx.coroutines.CancellationException
@@ -186,26 +189,12 @@ fun NavigationMenu(
   val navigationController = rememberNavController()
   val testProjectId = "test-project-id"
 
-  // Handle the case where the app has been started by a notification
-  LaunchedEffect(notificationType, notificationId, notificationProjectId) {
-    if (notificationType != null) {
-      when (notificationType) {
-        NotificationType.MEETING_NOTIFICATION.backendTypeString -> {
-          if (notificationId != null && notificationProjectId != null) {
-            navigationController.navigate(
-                Route.MeetingsSection.MeetingDetail(
-                    projectId = notificationProjectId, meetingId = notificationId))
-          }
-        }
-        NotificationType.MESSAGE_NOTIFICATION.backendTypeString -> {
-          Log.d("Navigation", "Not yet implemented")
-        }
-        else -> {
-          // Do nothing
-        }
-      }
-    }
-  }
+  HandleNotificationNavigation(
+      notificationType = notificationType,
+      notificationId = notificationId,
+      notificationProjectId = notificationProjectId,
+      navigationController = navigationController)
+
   RepositoriesProvider.projectRepository
   val auth = Firebase.auth
   Project(
@@ -221,19 +210,7 @@ fun NavigationMenu(
   val currentUser = auth.currentUser
   require(currentUser != null)
 
-  LaunchedEffect(Unit) {
-    while (isActive) {
-      try {
-        userRepository.updateLastActive(currentUser.uid)
-      } catch (c: CancellationException) {
-        throw c
-      } catch (e: Exception) {
-        Log.e("Navigation", "Failed to ping Firestore (heartbeat)", e)
-      }
-      // Wait before the next ping
-      delay(HEARTBEAT_DURATION)
-    }
-  }
+  UserHeartbeatEffect(userRepository, currentUser)
 
   Scaffold(
       containerColor = Color.White,
@@ -635,6 +612,66 @@ fun NavigationMenu(
               }
             }
       }
+}
+
+/**
+ * Handles navigation events triggered by notifications.
+ *
+ * @param notificationType The type of the notification (e.g., meeting, message).
+ * @param notificationId The ID associated with the notification (e.g., meeting ID).
+ * @param notificationProjectId The project ID associated with the notification.
+ * @param navigationController The [NavHostController] used to perform navigation.
+ */
+@Composable
+private fun HandleNotificationNavigation(
+    notificationType: String?,
+    notificationId: String?,
+    notificationProjectId: String?,
+    navigationController: NavHostController
+) {
+  // Handle the case where the app has been started by a notification
+  LaunchedEffect(notificationType, notificationId, notificationProjectId) {
+    if (notificationType != null) {
+      when (notificationType) {
+        NotificationType.MEETING_NOTIFICATION.backendTypeString -> {
+          if (notificationId != null && notificationProjectId != null) {
+            navigationController.navigate(
+                Route.MeetingsSection.MeetingDetail(
+                    projectId = notificationProjectId, meetingId = notificationId))
+          }
+        }
+        NotificationType.MESSAGE_NOTIFICATION.backendTypeString -> {
+          Log.d("Navigation", "Not yet implemented")
+        }
+        else -> {
+          // Do nothing
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Initiates a periodic heartbeat to update the user's last active timestamp in the repository.
+ *
+ * @param userRepository The repository used to update the user's status.
+ * @param currentUser The currently authenticated [FirebaseUser].
+ */
+@Composable
+private fun UserHeartbeatEffect(userRepository: UserRepository, currentUser: FirebaseUser) {
+  LaunchedEffect(Unit) {
+    while (isActive) {
+      try {
+        userRepository.updateLastActive(currentUser.uid)
+      } catch (c: CancellationException) {
+        throw c
+      } catch (e: Exception) {
+        Log.e("Navigation", "Failed to ping Firestore (heartbeat)", e)
+      }
+      // Wait before the next ping
+      delay(HEARTBEAT_DURATION)
+    }
+  }
 }
 
 private inline fun navigateIfConditionSatisfied(condition: Boolean, navigate: () -> Unit) {
