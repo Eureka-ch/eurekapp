@@ -274,10 +274,6 @@ fun NavigationMenu(
                     onCreateProjectRequest = {
                       navigationController.navigate(Route.ProjectSelectionSection.CreateProject)
                     },
-                    onProjectSelectRequest = { project ->
-                      navigationController.navigate(
-                          Route.OverviewProject(projectId = project.projectId))
-                    },
                     onInputTokenRequest = {
                       navigationController.navigate(Route.OverviewProjectSection.TokenEntry)
                     },

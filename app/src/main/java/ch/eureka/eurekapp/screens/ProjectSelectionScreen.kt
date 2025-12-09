@@ -84,7 +84,6 @@ object ProjectSelectionScreenTestTags {
  * and a scrollable list of ProjectCards.
  *
  * @param onCreateProjectRequest lambda triggered when the create button is clicked.
- * @param onProjectSelectRequest lambda triggered when a project card's navigate button is clicked.
  * @param projectSelectionScreenViewModel optional ViewModel to fetch project data.
  * @param onGenerateInviteRequest lambda triggered when the user wants to generate an invite
  * @param onSeeProjectMembers callback triggered to navigate to the project members screen for the
@@ -94,7 +93,6 @@ object ProjectSelectionScreenTestTags {
 fun ProjectSelectionScreen(
     onCreateProjectRequest: () -> Unit = {},
     onInputTokenRequest: () -> Unit = {},
-    onProjectSelectRequest: (Project) -> Unit = {},
     onGenerateInviteRequest: (String) -> Unit = {},
     onSeeProjectMembers: (String) -> Unit = {},
     projectSelectionScreenViewModel: ProjectSelectionScreenViewModel = viewModel()

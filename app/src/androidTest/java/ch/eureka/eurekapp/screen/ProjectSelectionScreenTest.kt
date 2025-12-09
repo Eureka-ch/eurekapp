@@ -39,10 +39,10 @@ class ProjectSelectionScreenTest : TestCase() {
 
   private class MockedProjectsRepository : ProjectRepository {
     override fun getProjectById(projectId: String): Flow<Project?> {
-      if (projectId == fakeProject1.projectId) {
-        return flowOf(fakeProject1)
+      return if (projectId == fakeProject1.projectId) {
+        flowOf(fakeProject1)
       } else {
-        return flowOf(fakeProject2)
+        flowOf(fakeProject2)
       }
     }
 
@@ -67,10 +67,10 @@ class ProjectSelectionScreenTest : TestCase() {
     }
 
     override fun getMembers(projectId: String): Flow<List<Member>> {
-      if (projectId == fakeProject1.projectId) {
-        return flowOf(listOf(Member().copy(userId = "user1"), Member().copy(userId = "user2")))
+      return if (projectId == fakeProject1.projectId) {
+        flowOf(listOf(Member().copy(userId = "user1"), Member().copy(userId = "user2")))
       } else {
-        return flowOf(listOf(Member().copy(userId = "user1")))
+        flowOf(listOf(Member().copy(userId = "user1")))
       }
     }
 
@@ -164,7 +164,6 @@ class ProjectSelectionScreenTest : TestCase() {
       ProjectSelectionScreen(
           projectSelectionScreenViewModel = fakeViewModel,
           onCreateProjectRequest = {},
-          onProjectSelectRequest = { project -> },
           onGenerateInviteRequest = { invitedUser = true })
     }
 
@@ -189,7 +188,6 @@ class ProjectSelectionScreenTest : TestCase() {
       ProjectSelectionScreen(
           projectSelectionScreenViewModel = fakeViewModel,
           onCreateProjectRequest = {},
-          onProjectSelectRequest = { project -> },
           onInputTokenRequest = { inputToken = true })
     }
 
@@ -214,7 +212,6 @@ class ProjectSelectionScreenTest : TestCase() {
       ProjectSelectionScreen(
           projectSelectionScreenViewModel = fakeViewModel,
           onCreateProjectRequest = {},
-          onProjectSelectRequest = {},
           onSeeProjectMembers = { projectId ->
             if (projectId == "test-project-1") {
               project1HasBeenNavigatedTo = true
@@ -242,8 +239,7 @@ class ProjectSelectionScreenTest : TestCase() {
   fun testProjectScreenCorrectlyCallsCreateProjectCallback() {
     var createProjectCalled = false
     composeRule.setContent {
-      ProjectSelectionScreen(
-          onProjectSelectRequest = {}, onCreateProjectRequest = { createProjectCalled = true })
+      ProjectSelectionScreen(onCreateProjectRequest = { createProjectCalled = true })
     }
     composeRule.waitForIdle()
     composeRule.onNodeWithTag(ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON).performClick()
