@@ -98,7 +98,7 @@ class ProjectMembersViewModelTest {
     testDispatcher.scheduler.advanceUntilIdle()
 
     val state = viewModel.uiState.value as MembersUiState.Error
-    assertTrue(state.message.contains("Project is null"))
+    assertEquals("Failed to load members", state.message)
   }
 
   @Test
@@ -109,7 +109,7 @@ class ProjectMembersViewModelTest {
     testDispatcher.scheduler.advanceUntilIdle()
 
     val state = viewModel.uiState.value as MembersUiState.Error
-    assertTrue(state.message.contains("Repo Error"))
+    assertEquals("Failed to load members", state.message)
   }
 
   @Test

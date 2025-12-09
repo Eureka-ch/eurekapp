@@ -10,6 +10,7 @@ import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.navigation.HEARTBEAT_DURATION
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -90,9 +91,22 @@ class ProjectMembersViewModel(
         }
 
         _uiState.value = MembersUiState.Success(project.name, fetchUsers(project.memberIds))
+      } catch (e: FirebaseFirestoreException) {
+        val message =
+            when (e.code) {
+              FirebaseFirestoreException.Code.UNAVAILABLE -> "Service Unavailable"
+              FirebaseFirestoreException.Code.PERMISSION_DENIED ->
+                  "You don't have permission to view members"
+              else -> "Failed to load members: ${e.message}"
+            }
+        _uiState.value = MembersUiState.Error(message)
+        Log.e("ProjectMembersViewModel", message, e)
       } catch (e: Exception) {
-        Log.e("ProjectMembersViewModel", "Error loading members", e)
-        _uiState.value = MembersUiState.Error("Failed to load members: ${e.message}")
+        _uiState.value = MembersUiState.Error("Failed to load members")
+        Log.e(
+            "ProjectMembersViewModel",
+            "Failed to load members: ${e.message ?: "No error message"}",
+            e)
       }
     }
   }
