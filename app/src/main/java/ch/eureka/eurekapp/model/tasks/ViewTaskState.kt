@@ -9,6 +9,12 @@ import ch.eureka.eurekapp.model.data.template.TaskTemplate
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.downloads.DownloadedFile
 
+data class DownloadProgress(
+    val isDownloading: Boolean = false,
+    val downloadedCount: Int = 0,
+    val totalToDownload: Int = 0
+)
+
 data class ViewTaskState(
     override val title: String = "",
     override val description: String = "",
@@ -26,7 +32,8 @@ data class ViewTaskState(
     val downloadedAttachmentUrls: Set<String> = emptySet(),
     val selectedTemplate: TaskTemplate? = null,
     val customData: TaskCustomData = TaskCustomData(),
-    val downloadedFiles: List<DownloadedFile> = emptyList()
+    val downloadedFiles: List<DownloadedFile> = emptyList(),
+    val downloadProgress: DownloadProgress = DownloadProgress()
 ) : TaskStateRead {
 
   private val urlToUriMap: Map<String, Uri>

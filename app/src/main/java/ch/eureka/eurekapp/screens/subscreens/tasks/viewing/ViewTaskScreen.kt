@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -182,11 +183,12 @@ fun ViewTaskScreen(
                     DownloadSection(
                         urlsToDownload = viewTaskState.urlsToDownload,
                         isConnected = isConnected,
+                        isDownloading = viewTaskState.downloadProgress.isDownloading,
+                        downloadedCount = viewTaskState.downloadProgress.downloadedCount,
+                        totalToDownload = viewTaskState.downloadProgress.totalToDownload,
                         onDownloadAll = {
-                          viewTaskState.urlsToDownload.forEach { url ->
-                            viewTaskViewModel.downloadFile(
-                                url, url.substringAfterLast("/"), context)
-                          }
+                          viewTaskViewModel.downloadAllAttachments(
+                              viewTaskState.urlsToDownload, context)
                         })
                   }
             })
@@ -226,6 +228,9 @@ private fun EditButton(isConnected: Boolean, onClick: () -> Unit, modifier: Modi
 private fun DownloadSection(
     urlsToDownload: List<String>,
     isConnected: Boolean,
+    isDownloading: Boolean,
+    downloadedCount: Int,
+    totalToDownload: Int,
     onDownloadAll: () -> Unit
 ) {
   if (urlsToDownload.isNotEmpty() && isConnected) {
@@ -233,8 +238,19 @@ private fun DownloadSection(
         text = "Download Attachments:",
         style = MaterialTheme.typography.titleMedium,
         modifier = Modifier.padding(top = 16.dp))
-    Button(onClick = onDownloadAll, modifier = Modifier.padding(vertical = 4.dp)) {
-      Text("Download All Attachments")
+    if (isDownloading) {
+      Text(
+          text = "Downloading attachments... $downloadedCount / $totalToDownload",
+          style = MaterialTheme.typography.bodyMedium)
+      LinearProgressIndicator(
+          progress = {
+            if (totalToDownload > 0) downloadedCount.toFloat() / totalToDownload.toFloat() else 0f
+          },
+          modifier = Modifier.padding(vertical = 4.dp))
+    } else {
+      Button(onClick = onDownloadAll, modifier = Modifier.padding(vertical = 4.dp)) {
+        Text("Download All Attachments")
+      }
     }
   }
 }

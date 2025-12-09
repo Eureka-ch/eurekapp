@@ -49,6 +49,11 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
     dispatcher: CoroutineDispatcher
 ) : ReadTaskViewModel<T>(taskRepository, dispatcher) {
 
+  companion object {
+    const val MAX_FILE_SIZE_MB = 100L
+    const val MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024L * 1024L
+  }
+
   abstract override val uiState: StateFlow<T>
 
   val inputValid: StateFlow<Boolean> by lazy {
@@ -175,7 +180,22 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
       uri: Uri
   ): Result<String> {
     return try {
-      val fileName = uri.lastPathSegment ?: "attachment_${System.currentTimeMillis()}"
+      val fileName =
+          if (uri.scheme == "content") {
+            // For content:// URIs, get the display name from the content resolver
+            val cursor = context.contentResolver.query(uri, null, null, null, null)
+            cursor?.use {
+              if (it.moveToFirst()) {
+                it.getString(it.getColumnIndexOrThrow("_display_name"))
+                    ?: "attachment_${System.currentTimeMillis()}"
+              } else {
+                "attachment_${System.currentTimeMillis()}"
+              }
+            } ?: "attachment_${System.currentTimeMillis()}"
+          } else {
+            // For file:// URIs, use lastPathSegment
+            uri.lastPathSegment ?: "attachment_${System.currentTimeMillis()}"
+          }
       val mimeType = context.contentResolver.getType(uri) ?: "application/octet-stream"
       val extension =
           when {
@@ -192,8 +212,22 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
             fileName
           }
       val path = StoragePaths.taskAttachmentPath(projectId, taskId, finalFileName)
-      // Increase timeout to 60 seconds for larger files
-      val fileUrl = withTimeout(60000L) { fileRepository.uploadFile(path, uri) }.getOrThrow()
+
+      // Open file descriptor once for size check and upload
+      val fileDescriptor =
+          context.contentResolver.openFileDescriptor(uri, "r")
+              ?: return Result.failure(Exception("Cannot access file"))
+
+      val fileSize = fileDescriptor.statSize
+      if (fileSize > MAX_FILE_SIZE_BYTES) {
+        fileDescriptor.close()
+        return Result.failure(Exception("File too large (max $MAX_FILE_SIZE_MB MB)"))
+      }
+
+      // Upload using file descriptor to avoid reopening
+      val fileUrl =
+          withTimeout(60000L) { fileRepository.uploadFile(path, fileDescriptor) }.getOrThrow()
+      fileDescriptor.close()
 
       // Store metadata as "url|name|mime"
       val metadata = "$fileUrl|$finalFileName|$mimeType"

@@ -3,7 +3,6 @@ package ch.eureka.eurekapp.model.downloads
 
 import android.app.Application
 import android.content.Intent
-import android.net.Uri
 import android.webkit.MimeTypeMap
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
@@ -30,7 +29,7 @@ class FilesManagementViewModel(
           .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), FilesManagementState())
 
   private fun processFile(file: DownloadedFile): FileItem {
-    val displayName = Uri.decode(file.fileName).substringAfterLast('/').substringBefore('?')
+    val displayName = file.fileName
     val extension = displayName.substringAfterLast('.', "").lowercase()
     val isImage = extension in listOf("jpg", "jpeg", "png", "gif", "webp", "bmp")
     val uri =
