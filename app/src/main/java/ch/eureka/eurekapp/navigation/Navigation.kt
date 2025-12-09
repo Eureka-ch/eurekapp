@@ -57,7 +57,9 @@ import ch.eureka.eurekapp.ui.templates.CreateTemplateViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlin.reflect.KClass
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.serialization.Serializable
 
 /**
@@ -217,18 +219,19 @@ fun NavigationMenu(
 
   val userRepository = RepositoriesProvider.userRepository
   val currentUser = auth.currentUser
+  require(currentUser != null)
 
-  LaunchedEffect(currentUser) {
-    if (currentUser != null) {
-      while (true) {
-        try {
-          userRepository.updateLastActive(currentUser.uid)
-        } catch (e: Exception) {
-          Log.e("Heartbeat", "Failed to ping Firestore", e)
-        }
-        // Wait before the next ping
-        delay(HEARTBEAT_DURATION)
+  LaunchedEffect(Unit) {
+    while (isActive) {
+      try {
+        userRepository.updateLastActive(currentUser.uid)
+      } catch (c: CancellationException) {
+        throw c
+      } catch (e: Exception) {
+        Log.e("Navigation", "Failed to ping Firestore (heartbeat)", e)
       }
+      // Wait before the next ping
+      delay(HEARTBEAT_DURATION)
     }
   }
 
