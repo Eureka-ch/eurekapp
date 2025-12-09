@@ -458,8 +458,8 @@ open class ViewTaskScreenTest : TestCase() {
 
         // Wait for task card to load from Firestore
         // Increased timeout because getTasksForCurrentUser() now needs to fetch projects first,
-        // then tasks from each project, which can take longer (especially on emulators)
-        composeTestRule.waitUntil(timeoutMillis = 20000) {
+        // then tasks from each project, which can take longer
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
           try {
             composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).assertExists()
             true
