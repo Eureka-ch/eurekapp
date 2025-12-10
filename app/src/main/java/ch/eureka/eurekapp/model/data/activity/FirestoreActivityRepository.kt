@@ -88,7 +88,7 @@ class FirestoreActivityRepository(
 
   /**
    * Filters activities based on entity-level access permissions.
-   * - MESSAGE: Visible to all project members
+   * - MESSAGE: User must be a member of the conversation
    * - MEETING: User must be in meeting participantIds OR created the activity
    * - TASK: Visible to all project members
    * - PROJECT/FILE/MEMBER: Project-level access (no additional filtering)
@@ -107,7 +107,10 @@ class FirestoreActivityRepository(
 
       // Otherwise check entity-level access
       when (activity.entityType) {
-        EntityType.MESSAGE -> true // Messages are visible to all project members
+        EntityType.MESSAGE -> {
+          val conversationId = activity.metadata["conversationId"] as? String
+          conversationId != null && hasConversationAccess(conversationId, userId)
+        }
         EntityType.MEETING -> hasMeetingAccess(activity.entityId, userId)
         EntityType.TASK -> true // Tasks are visible to all project members
         EntityType.PROJECT,
@@ -131,6 +134,24 @@ class FirestoreActivityRepository(
       participantIds.contains(userId)
     } catch (e: Exception) {
       Log.e("FirestoreActivityRepository", "Error checking meeting access: ${e.message}")
+      false // Deny access on error
+    }
+  }
+
+  /**
+   * Checks if user has access to a specific conversation (is a member).
+   *
+   * @param conversationId The conversation entity ID
+   * @param userId The user ID to check
+   * @return true if user is a member of the conversation
+   */
+  private suspend fun hasConversationAccess(conversationId: String, userId: String): Boolean {
+    return try {
+      val doc = firestore.collection("conversations").document(conversationId).get().await()
+      val memberIds = doc.get("memberIds") as? List<*> ?: emptyList<String>()
+      memberIds.contains(userId)
+    } catch (e: Exception) {
+      Log.e("FirestoreActivityRepository", "Error checking conversation access: ${e.message}")
       false // Deny access on error
     }
   }

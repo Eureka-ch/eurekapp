@@ -51,13 +51,11 @@ data class ActivityDetailUIState(
  * enriched user data and related activities for the same entity.
  *
  * @property activityId The ID of the activity to display.
- * @property projectId The ID of the project containing the activity.
  * @property repository The repository for activity data operations.
  * @property connectivityObserver The connectivity observer.
  */
 class ActivityDetailViewModel(
     private val activityId: String,
-    private val projectId: String,
     private val repository: ActivityRepository = RepositoriesProvider.activityRepository,
     private val connectivityObserver: ConnectivityObserver =
         ConnectivityObserverProvider.connectivityObserver,
@@ -94,8 +92,8 @@ class ActivityDetailViewModel(
               _shareSuccess,
               _errorMsg,
               _isConnected) { flows: Array<Any?> ->
-                val activity = flows[0] as Activity?
-                val relatedActivities = flows[1] as List<Activity>
+                @Suppress("UNCHECKED_CAST") val activity = flows[0] as Activity?
+                @Suppress("UNCHECKED_CAST") val relatedActivities = flows[1] as List<Activity>
                 val deleteSuccess = flows[2] as Boolean
                 val shareSuccess = flows[3] as Boolean
                 val errorMsg = flows[4] as String?
@@ -144,19 +142,28 @@ class ActivityDetailViewModel(
   /**
    * Enriches an activity with the user's display name from Firestore.
    *
-   * Fetches the display name for the user who performed the activity and adds it to metadata. Falls
-   * back to "Someone" if the user document is not found or an error occurs.
+   * Fetches the display name for the user who performed the activity and adds it to metadata.
+   * Throws an exception if the user document or display name cannot be found.
    *
    * @param activity The activity to enrich.
    * @return The enriched activity with userName in metadata.
+   * @throws IllegalStateException if the user document or displayName is not found.
    */
   private suspend fun enrichActivityWithUserName(activity: Activity): Activity {
     return try {
       val userDoc = firestore.collection("users").document(activity.userId).get().await()
-      val displayName = userDoc.getString("displayName") ?: "Someone"
+      val displayName =
+          userDoc.getString("displayName")
+              ?: run {
+                android.util.Log.e(
+                    "ActivityDetailViewModel",
+                    "Display name not found for user: ${activity.userId}")
+                throw IllegalStateException("Display name not found for user: ${activity.userId}")
+              }
       activity.copy(metadata = activity.metadata + ("userName" to displayName))
     } catch (e: Exception) {
-      activity.copy(metadata = activity.metadata + ("userName" to "Someone"))
+      android.util.Log.e("ActivityDetailViewModel", "Failed to enrich activity with user name", e)
+      throw e
     }
   }
 
@@ -164,7 +171,8 @@ class ActivityDetailViewModel(
    * Loads related activities for the same entity.
    *
    * Filters activities by matching entityId, excludes the current activity, sorts by timestamp
-   * (most recent first), and limits to 10 activities.
+   * (most recent first), and limits to 10 activities. Enriches all activities with user names in a
+   * single batch request for efficiency.
    *
    * @param entityId The entity ID to filter by.
    * @param allActivities All activities in the project.
@@ -176,9 +184,62 @@ class ActivityDetailViewModel(
             .sortedByDescending { it.timestamp }
             .take(10)
 
-    // Enrich all related activities with user names
-    val enriched = related.map { enrichActivityWithUserName(it) }
+    if (related.isEmpty()) {
+      _relatedActivities.value = emptyList()
+      return
+    }
+
+    // Batch fetch all user names in a single Firestore request
+    val userIds = related.map { it.userId }.toSet()
+    val userNames = batchFetchUserNames(userIds)
+
+    // Enrich all activities with the fetched user names
+    val enriched =
+        related.map { activity ->
+          val userName =
+              userNames[activity.userId]
+                  ?: throw IllegalStateException("User name not found for user: ${activity.userId}")
+          activity.copy(metadata = activity.metadata + ("userName" to userName))
+        }
+
     _relatedActivities.value = enriched
+  }
+
+  /**
+   * Batch fetches display names for multiple users in a single Firestore query.
+   *
+   * Uses Firestore's whereIn query to fetch all user documents at once, which is much more
+   * efficient than sequential requests (e.g., 1 request vs 10 sequential requests for 10 users).
+   *
+   * @param userIds Set of user IDs to fetch display names for.
+   * @return Map of userId to displayName.
+   * @throws IllegalStateException if any user document or displayName is not found.
+   */
+  private suspend fun batchFetchUserNames(userIds: Set<String>): Map<String, String> {
+    if (userIds.isEmpty()) return emptyMap()
+
+    return try {
+      val userDocs =
+          firestore
+              .collection("users")
+              .whereIn(com.google.firebase.firestore.FieldPath.documentId(), userIds.toList())
+              .get()
+              .await()
+
+      userDocs.documents.associate { doc ->
+        val displayName =
+            doc.getString("displayName")
+                ?: run {
+                  android.util.Log.e(
+                      "ActivityDetailViewModel", "Display name not found for user: ${doc.id}")
+                  throw IllegalStateException("Display name not found for user: ${doc.id}")
+                }
+        doc.id to displayName
+      }
+    } catch (e: Exception) {
+      android.util.Log.e("ActivityDetailViewModel", "Failed to batch fetch user names", e)
+      throw e
+    }
   }
 
   /**
@@ -200,6 +261,31 @@ class ActivityDetailViewModel(
             onFailure = { e -> _errorMsg.value = "Failed to delete activity: ${e.message}" })
       } catch (e: Exception) {
         _errorMsg.value = "Failed to delete activity: ${e.message}"
+      }
+    }
+  }
+
+  /**
+   * Builds a formatted string with activity details for sharing.
+   *
+   * Returns null if no activity is loaded yet.
+   *
+   * @return Formatted activity details string, or null if activity is not available.
+   */
+  fun getShareText(): String? {
+    val activity = _activity.value ?: return null
+
+    return buildString {
+      appendLine("Activity Details")
+      appendLine("================")
+      appendLine("Type: ${activity.activityType.name}")
+      appendLine("Entity: ${activity.entityType.name}")
+      appendLine("User: ${activity.metadata["userName"]?.toString() ?: "Unknown User"}")
+      appendLine(
+          "Time: ${ch.eureka.eurekapp.utils.Formatters.formatFullTimestamp(activity.timestamp.toDate())}")
+
+      if (activity.metadata.containsKey("title")) {
+        appendLine("Entity: ${activity.metadata["title"]}")
       }
     }
   }

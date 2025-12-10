@@ -59,8 +59,7 @@ class ActivityDetailViewModelTest {
 
     // Act
     viewModel =
-        ActivityDetailViewModel(
-            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     // Assert - Check that ViewModel was created successfully
     assertNotNull(viewModel)
@@ -80,8 +79,7 @@ class ActivityDetailViewModelTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(
-            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     // Wait for initialization
     Thread.sleep(1000)
@@ -113,8 +111,7 @@ class ActivityDetailViewModelTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(
-            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     // Wait for initialization
     Thread.sleep(1000)
@@ -144,8 +141,7 @@ class ActivityDetailViewModelTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(
-            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     // Wait for initialization
     Thread.sleep(1000)
@@ -171,8 +167,7 @@ class ActivityDetailViewModelTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(
-            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     // Wait for error to appear
     Thread.sleep(1000)

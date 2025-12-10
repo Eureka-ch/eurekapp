@@ -75,8 +75,7 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(
-            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -103,8 +102,7 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(
-            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -149,8 +147,7 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(
-            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -177,8 +174,7 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(
-            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -204,8 +200,7 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(
-            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -268,8 +263,7 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(
-            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -304,8 +298,7 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(
-            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -338,8 +331,7 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(
-            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -367,8 +359,7 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(
-            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -399,8 +390,7 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(
-            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -431,8 +421,7 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(
-            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -477,8 +466,7 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(
-            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -508,8 +496,7 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(
-            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -536,8 +523,7 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(
-            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {

@@ -69,8 +69,6 @@ import ch.eureka.eurekapp.model.data.activity.Activity
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.utils.Formatters
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 /** Helper function to get alpha value based on connection status. */
 private fun getAlpha(isConnected: Boolean): Float = if (isConnected) 1f else 0.6f
@@ -127,7 +125,7 @@ fun ActivityDetailScreen(
                     override fun <T : androidx.lifecycle.ViewModel> create(
                         modelClass: Class<T>
                     ): T {
-                      return ActivityDetailViewModel(activityId, projectId) as T
+                      return ActivityDetailViewModel(activityId) as T
                     }
                   })
   val uiState by vm.uiState.collectAsState()
@@ -175,9 +173,12 @@ fun ActivityDetailScreen(
               isConnected = uiState.isConnected,
               onNavigateToEntity = onNavigateToEntity,
               onShare = {
-                shareActivity(context, uiState.activity!!)
-                vm.markShareSuccess()
-                Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                val shareText = vm.getShareText()
+                if (shareText != null) {
+                  shareToClipboard(context, shareText)
+                  vm.markShareSuccess()
+                  Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                }
               },
               onDelete = { vm.deleteActivity() },
               modifier = Modifier.padding(paddingValues))
@@ -285,6 +286,10 @@ private fun ActivityHeader(activity: Activity) {
  */
 @Composable
 private fun ActivityInformationCard(activity: Activity) {
+  // Cache formatted timestamp to avoid recreating SimpleDateFormat on every recomposition
+  val formattedTimestamp =
+      remember(activity.timestamp) { Formatters.formatFullTimestamp(activity.timestamp.toDate()) }
+
   Card(
       modifier = Modifier.fillMaxWidth().testTag(ActivityDetailScreenTestTags.ACTIVITY_INFO_CARD),
       shape = RoundedCornerShape(16.dp),
@@ -319,7 +324,7 @@ private fun ActivityInformationCard(activity: Activity) {
               InfoRow(
                   icon = Icons.Default.AccessTime,
                   label = "Timestamp",
-                  value = formatFullTimestamp(activity.timestamp),
+                  value = formattedTimestamp,
                   testTag = ActivityDetailScreenTestTags.TIMESTAMP)
 
               if (activity.metadata.containsKey("title")) {
@@ -512,30 +517,9 @@ private fun getActivityTypeColor(activityType: String): Color {
   }
 }
 
-/** Helper function to format full timestamp. */
-private fun formatFullTimestamp(timestamp: com.google.firebase.Timestamp): String {
-  val date = timestamp.toDate()
-  val formatter = SimpleDateFormat("MMM dd, yyyy 'at' hh:mm a", Locale.getDefault())
-  return formatter.format(date)
-}
-
-/** Helper function to share activity details to clipboard. */
-private fun shareActivity(context: Context, activity: Activity) {
+/** Helper function to copy text to clipboard. */
+private fun shareToClipboard(context: Context, text: String) {
   val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-
-  val text = buildString {
-    appendLine("Activity Details")
-    appendLine("================")
-    appendLine("Type: ${activity.activityType.name}")
-    appendLine("Entity: ${activity.entityType.name}")
-    appendLine("User: ${activity.metadata["userName"]?.toString() ?: "Unknown User"}")
-    appendLine("Time: ${formatFullTimestamp(activity.timestamp)}")
-
-    if (activity.metadata.containsKey("title")) {
-      appendLine("Entity: ${activity.metadata["title"]}")
-    }
-  }
-
   val clip = ClipData.newPlainText("Activity Details", text)
   clipboard.setPrimaryClip(clip)
 }

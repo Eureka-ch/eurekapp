@@ -17,6 +17,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
+import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.map.Location
@@ -78,11 +79,6 @@ sealed interface Route {
   @Serializable data object ActivityFeed : Route
 
   sealed interface ActivitySection : Route {
-    companion object {
-      val routes: Set<KClass<out ActivitySection>>
-        get() = ActivitySection::class.sealedSubclasses.toSet()
-    }
-
     @Serializable
     data class ActivityDetail(val activityId: String, val projectId: String) : ActivitySection
   }
@@ -303,18 +299,18 @@ fun NavigationMenu(
                     onNavigateBack = { navigationController.popBackStack() },
                     onNavigateToEntity = { entityType, entityId, projectId ->
                       when (entityType) {
-                        ch.eureka.eurekapp.model.data.activity.EntityType.MEETING -> {
+                        EntityType.MEETING -> {
                           navigationController.navigate(
                               Route.MeetingsSection.MeetingDetail(projectId, entityId))
                         }
-                        ch.eureka.eurekapp.model.data.activity.EntityType.TASK -> {
+                        EntityType.TASK -> {
                           navigationController.navigate(
                               Route.TasksSection.ViewTask(projectId, entityId))
                         }
-                        ch.eureka.eurekapp.model.data.activity.EntityType.MESSAGE -> {
+                        EntityType.MESSAGE -> {
                           navigationController.navigate(Route.ConversationsSection.Conversations)
                         }
-                        ch.eureka.eurekapp.model.data.activity.EntityType.PROJECT -> {
+                        EntityType.PROJECT -> {
                           navigationController.navigate(Route.ProjectSelection)
                         }
                         else -> {
