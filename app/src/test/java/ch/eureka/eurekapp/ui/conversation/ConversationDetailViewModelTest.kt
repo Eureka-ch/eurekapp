@@ -111,9 +111,9 @@ class ConversationDetailViewModelTest {
     every { mockProjectRepository.getProjectById("project1") } returns flowOf(project)
 
     val viewModel = createViewModel()
-    val state = viewModel.uiState.first { it.otherMemberName.isNotEmpty() }
+    val state = viewModel.uiState.first { it.otherMemberNames.isNotEmpty() }
 
-    assertEquals("Jane Doe", state.otherMemberName)
+    assertEquals("Jane Doe", state.otherMemberNames)
     assertEquals("Test Project", state.projectName)
   }
 

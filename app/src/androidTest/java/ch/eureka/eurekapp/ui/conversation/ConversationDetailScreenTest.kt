@@ -270,7 +270,7 @@ class ConversationDetailScreenTest {
           MutableStateFlow(
               ConversationDetailState(
                   messages = messages,
-                  otherMemberName = otherMemberName,
+                  otherMemberNames = otherMemberName,
                   projectName = projectName,
                   isLoading = isLoading,
                   isConnected = isConnected,

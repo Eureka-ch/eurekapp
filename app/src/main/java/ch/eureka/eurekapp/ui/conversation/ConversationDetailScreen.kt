@@ -43,6 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.conversation.ConversationMessage
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.DeleteConfirmationDialog
@@ -144,7 +145,8 @@ fun ConversationDetailScreen(
           // Contextual top bar for editing mode
           TopAppBar(
               title = { Text("Editing Message") },
-              modifier = Modifier.testTag(ConversationDetailScreenTestTags.EDITING_TOP_BAR),
+              modifier = Modifier
+                  .testTag(ConversationDetailScreenTestTags.EDITING_TOP_BAR),
               colors =
                   TopAppBarDefaults.topAppBarColors(
                       containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -153,14 +155,16 @@ fun ConversationDetailScreen(
                 IconButton(
                     onClick = viewModel::cancelEditing,
                     modifier =
-                        Modifier.testTag(ConversationDetailScreenTestTags.CANCEL_EDIT_BUTTON)) {
-                      Icon(Icons.Default.Close, contentDescription = "Cancel Edit")
+                        Modifier
+                            .testTag(ConversationDetailScreenTestTags.CANCEL_EDIT_BUTTON)) {
+                      Icon(Icons.Default.Close,
+                          contentDescription = "Cancel Edit")
                     }
               })
         } else {
           // Standard top bar
           EurekaTopBar(
-              title = uiState.otherMemberName.ifEmpty { "Chat" },
+              title = uiState.otherMemberNames.joinToString(", ").ifEmpty { "Chat" },
               navigationIcon = {
                 BackButton(
                     onClick = onNavigateBack,
@@ -188,7 +192,8 @@ fun ConversationDetailScreen(
               if (uiState.isEditing) {
                 viewModel.saveEditedMessage()
               } else {
-                uiState.selectedFileUri?.let { uri -> viewModel.sendFileMessage(uri, context) }
+                uiState.selectedFileUri?.let { uri -> viewModel.sendFileMessage(
+                    uri, context) }
                     ?: viewModel.sendMessage()
               }
             })
@@ -209,7 +214,9 @@ fun ConversationDetailScreen(
             listState = listState,
             currentUserId = viewModel.currentUserId ?: "",
             context = context,
-            callbacks = messageCallbacks)
+            callbacks = messageCallbacks,
+            conversationDetailViewModel = viewModel
+        )
       }
 }
 
@@ -249,8 +256,10 @@ private fun SelectedFileIndicator(
   selectedFileUri?.let { uri ->
     val selectedFileName =
         remember(uri) {
-          context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-            val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+          context.contentResolver.query(uri, null, null, null,
+              null)?.use { cursor ->
+            val nameIndex = cursor
+                .getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
             cursor.moveToFirst()
             cursor.getString(nameIndex)
           } ?: "Unknown file"
@@ -314,7 +323,8 @@ private fun ConversationContent(
     listState: androidx.compose.foundation.lazy.LazyListState,
     currentUserId: String,
     context: Context,
-    callbacks: MessageCallbacks
+    callbacks: MessageCallbacks,
+    conversationDetailViewModel: ConversationDetailViewModel = viewModel()
 ) {
   Box(modifier = modifier.fillMaxSize()) {
     when {
@@ -342,7 +352,9 @@ private fun ConversationContent(
             listState = listState,
             currentUserId = currentUserId,
             context = context,
-            callbacks = callbacks)
+            callbacks = callbacks,
+            conversationDetailViewModel = conversationDetailViewModel
+            )
       }
     }
   }
@@ -355,7 +367,8 @@ private fun MessagesList(
     listState: androidx.compose.foundation.lazy.LazyListState,
     currentUserId: String,
     context: Context,
-    callbacks: MessageCallbacks
+    callbacks: MessageCallbacks,
+    conversationDetailViewModel: ConversationDetailViewModel = viewModel()
 ) {
   LazyColumn(
       state = listState,
@@ -371,7 +384,9 @@ private fun MessagesList(
               isSelected = selectedMessageId == message.messageId,
               currentUserId = currentUserId,
               context = context,
-              callbacks = callbacks)
+              callbacks = callbacks,
+              conversationDetailViewModel = conversationDetailViewModel
+          )
         }
       }
 }
@@ -382,12 +397,17 @@ private fun MessageItem(
     isSelected: Boolean,
     currentUserId: String,
     context: Context,
-    callbacks: MessageCallbacks
+    callbacks: MessageCallbacks,
+    conversationDetailViewModel: ConversationDetailViewModel = viewModel()
 ) {
   val isFromCurrentUser = message.senderId == currentUserId
+  val messageUser = remember {conversationDetailViewModel.getUser(message.senderId)}
+      .collectAsState(null)
 
   Box {
     MessageBubble(
+        senderPhotoUrl = messageUser.value?.photoUrl ?: "",
+        senderDisplayName = messageUser.value?.displayName ?: "",
         text = message.text,
         timestamp = message.createdAt,
         isFromCurrentUser = isFromCurrentUser,
