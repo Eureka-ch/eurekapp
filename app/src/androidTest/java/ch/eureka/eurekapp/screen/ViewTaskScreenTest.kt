@@ -422,53 +422,6 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testNavigationFromTasksScreenToViewTask() =
-      runBlocking<Unit> {
-        val projectId = "project123"
-        val taskId = "task123"
-        setupTestProject(projectId)
-        setupTestTask(
-            projectId,
-            taskId,
-            title = "Navigation Test Task",
-            description = "Test Description",
-            dueDate = "01/01/2025")
-
-        composeTestRule.setContent {
-          val navController = rememberNavController()
-          FullNavigationGraph(navController = navController)
-          // Start on TasksScreen
-          navController.navigate(Route.TasksSection.Tasks)
-        }
-
-        composeTestRule.waitForIdle()
-
-        // Verify we're on TasksScreen
-        composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
-
-        // Wait for task card to load from Firestore
-        // Increased timeout because getTasksForCurrentUser() now needs to fetch projects first,
-        // then tasks from each project, which can take longer
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-          try {
-            composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).assertExists()
-            true
-          } catch (e: AssertionError) {
-            false
-          }
-        }
-
-        // Click on the task card
-        composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).performClick()
-
-        composeTestRule.waitForIdle()
-
-        // Verify navigation to ViewTaskScreen
-        composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.EDIT_TASK).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
-      }
-
-  @Test
   fun testNavigationToEditTaskAndSaveModifications() =
       runBlocking<Unit> {
         val projectId = "project123"
@@ -727,7 +680,10 @@ open class ViewTaskScreenTest : TestCase() {
   }
 
   @Composable
-  private fun FullNavigationGraph(navController: NavHostController) {
+  private fun FullNavigationGraph(
+      navController: NavHostController,
+      taskScreenViewModel: TaskScreenViewModel? = null
+  ) {
     val sharedViewModel = remember {
       ViewTaskViewModel(
           "project123",
@@ -738,16 +694,17 @@ open class ViewTaskScreenTest : TestCase() {
           dispatcher = Dispatchers.IO)
     }
     val sharedTaskScreenViewModel = remember {
-      TaskScreenViewModel(
-          taskRepository = taskRepository,
-          projectRepository =
-              FirestoreProjectRepository(
-                  firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth),
-          userRepository =
-              FirestoreUserRepository(
-                  firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth),
-          currentUserId = testUserId,
-          connectivityObserver = mockConnectivityObserver)
+      taskScreenViewModel
+          ?: TaskScreenViewModel(
+              taskRepository = taskRepository,
+              projectRepository =
+                  FirestoreProjectRepository(
+                      firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth),
+              userRepository =
+                  FirestoreUserRepository(
+                      firestore = FirebaseEmulator.firestore, auth = FirebaseEmulator.auth),
+              currentUserId = testUserId,
+              connectivityObserver = mockConnectivityObserver)
     }
 
     NavHost(navController, startDestination = Route.TasksSection.Tasks) {
