@@ -226,7 +226,8 @@ class ActivityFeedScreenTest {
     var clickedActivityId: String? = null
     composeTestRule.setContent {
       ActivityFeedScreen(
-          viewModel = viewModel, onActivityClick = { activityId, _ -> clickedActivityId = activityId })
+          viewModel = viewModel,
+          onActivityClick = { activityId, _ -> clickedActivityId = activityId })
     }
     composeTestRule.waitForIdle()
 

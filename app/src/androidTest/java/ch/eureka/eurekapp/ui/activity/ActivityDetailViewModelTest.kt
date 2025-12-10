@@ -59,7 +59,8 @@ class ActivityDetailViewModelTest {
 
     // Act
     viewModel =
-        ActivityDetailViewModel(testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(
+            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
 
     // Assert - Check that ViewModel was created successfully
     assertNotNull(viewModel)
@@ -70,8 +71,7 @@ class ActivityDetailViewModelTest {
   fun activityDetailViewModel_deleteActivity_setsDeleteSuccess() {
     // Arrange
     val activity =
-        createActivity(
-            testActivityId, EntityType.TASK, "Task", ActivityType.CREATED, testEntityId)
+        createActivity(testActivityId, EntityType.TASK, "Task", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
     coEvery { repository.deleteActivity(testActivityId) } returns Result.success(Unit)
 
@@ -80,7 +80,8 @@ class ActivityDetailViewModelTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(
+            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
 
     // Wait for initialization
     Thread.sleep(1000)
@@ -112,7 +113,8 @@ class ActivityDetailViewModelTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(
+            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
 
     // Wait for initialization
     Thread.sleep(1000)
@@ -142,7 +144,8 @@ class ActivityDetailViewModelTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(
+            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
 
     // Wait for initialization
     Thread.sleep(1000)
@@ -168,7 +171,8 @@ class ActivityDetailViewModelTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(
+            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
 
     // Wait for error to appear
     Thread.sleep(1000)

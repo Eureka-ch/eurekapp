@@ -94,22 +94,22 @@ class ActivityDetailViewModel(
               _shareSuccess,
               _errorMsg,
               _isConnected) { flows: Array<Any?> ->
-            val activity = flows[0] as Activity?
-            val relatedActivities = flows[1] as List<Activity>
-            val deleteSuccess = flows[2] as Boolean
-            val shareSuccess = flows[3] as Boolean
-            val errorMsg = flows[4] as String?
-            val isConnected = flows[5] as Boolean
+                val activity = flows[0] as Activity?
+                val relatedActivities = flows[1] as List<Activity>
+                val deleteSuccess = flows[2] as Boolean
+                val shareSuccess = flows[3] as Boolean
+                val errorMsg = flows[4] as String?
+                val isConnected = flows[5] as Boolean
 
-            ActivityDetailUIState(
-                activity = activity,
-                relatedActivities = relatedActivities,
-                isLoading = false,
-                deleteSuccess = deleteSuccess,
-                shareSuccess = shareSuccess,
-                errorMsg = errorMsg,
-                isConnected = isConnected)
-          }
+                ActivityDetailUIState(
+                    activity = activity,
+                    relatedActivities = relatedActivities,
+                    isLoading = false,
+                    deleteSuccess = deleteSuccess,
+                    shareSuccess = shareSuccess,
+                    errorMsg = errorMsg,
+                    isConnected = isConnected)
+              }
           .onStart { emit(ActivityDetailUIState(isLoading = true)) }
           .catch { e -> emit(ActivityDetailUIState(errorMsg = e.message, isLoading = false)) }
           .stateIn(
@@ -197,8 +197,7 @@ class ActivityDetailViewModel(
         val result = repository.deleteActivity(activityId)
         result.fold(
             onSuccess = { _deleteSuccess.value = true },
-            onFailure = { e -> _errorMsg.value = "Failed to delete activity: ${e.message}" }
-        )
+            onFailure = { e -> _errorMsg.value = "Failed to delete activity: ${e.message}" })
       } catch (e: Exception) {
         _errorMsg.value = "Failed to delete activity: ${e.message}"
       }

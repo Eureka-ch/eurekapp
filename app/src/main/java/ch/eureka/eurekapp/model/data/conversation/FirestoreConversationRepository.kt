@@ -50,15 +50,15 @@ class FirestoreConversationRepository(
                 return@addSnapshotListener
               }
               val conversations =
-                  snapshot?.documents
+                  snapshot
+                      ?.documents
                       ?.mapNotNull { it.toObject(Conversation::class.java) }
                       ?.filter { conversation ->
                         // Only show conversations where user sent or received messages
                         conversation.lastMessageAt != null &&
                             (conversation.lastMessageSenderId == currentUserId ||
                                 conversation.memberIds.contains(currentUserId))
-                      }
-                      ?: emptyList()
+                      } ?: emptyList()
               trySend(conversations)
             }
     awaitClose { listener.remove() }
@@ -84,15 +84,15 @@ class FirestoreConversationRepository(
                     return@addSnapshotListener
                   }
                   val conversations =
-                      snapshot?.documents
+                      snapshot
+                          ?.documents
                           ?.mapNotNull { it.toObject(Conversation::class.java) }
                           ?.filter { conversation ->
                             // Only show conversations where user sent or received messages
                             conversation.lastMessageAt != null &&
                                 (conversation.lastMessageSenderId == currentUserId ||
                                     conversation.memberIds.contains(currentUserId))
-                          }
-                          ?: emptyList()
+                          } ?: emptyList()
                   trySend(conversations)
                 }
         awaitClose { listener.remove() }

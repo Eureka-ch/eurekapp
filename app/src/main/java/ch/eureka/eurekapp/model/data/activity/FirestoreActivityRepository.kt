@@ -32,14 +32,15 @@ class FirestoreActivityRepository(
   private fun activitiesCollection() = firestore.collection(FirestorePaths.activitiesPath())
 
   /**
-   * Fetches all activities relevant to the user by finding their project memberships
-   * and filtering by entity-level access permissions.
+   * Fetches all activities relevant to the user by finding their project memberships and filtering
+   * by entity-level access permissions.
    *
    * The process is:
    * 1. Query the `members` collection group to find all projects where [userId] is a member.
    * 2. Add the `test-project-id` to this list to ensure visibility of legacy meeting data.
    * 3. Query the top-level `activities` collection where `projectId` is in the user's project list.
-   * 4. Filter activities by entity-level access (MESSAGE, MEETING, TASK require specific permissions).
+   * 4. Filter activities by entity-level access (MESSAGE, MEETING, TASK require specific
+   *    permissions).
    *
    * @param userId The unique identifier of the user.
    * @return A [Flow] emitting the list of relevant activities.
@@ -87,7 +88,6 @@ class FirestoreActivityRepository(
 
   /**
    * Filters activities based on entity-level access permissions.
-   *
    * - MESSAGE: Visible to all project members
    * - MEETING: User must be in meeting participantIds OR created the activity
    * - TASK: Visible to all project members
@@ -110,7 +110,9 @@ class FirestoreActivityRepository(
         EntityType.MESSAGE -> true // Messages are visible to all project members
         EntityType.MEETING -> hasMeetingAccess(activity.entityId, userId)
         EntityType.TASK -> true // Tasks are visible to all project members
-        EntityType.PROJECT, EntityType.FILE, EntityType.MEMBER -> true // Project-level access
+        EntityType.PROJECT,
+        EntityType.FILE,
+        EntityType.MEMBER -> true // Project-level access
       }
     }
   }

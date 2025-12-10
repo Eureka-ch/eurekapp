@@ -19,7 +19,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
 import org.junit.Rule
@@ -76,7 +75,8 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(
+            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -103,7 +103,8 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(
+            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -114,11 +115,21 @@ class ActivityDetailScreenTest {
 
     // Assert
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ACTIVITY_HEADER).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ACTIVITY_INFO_CARD).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ACTIVITY_TYPE).assertTextEquals("CREATED")
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ENTITY_TYPE).assertTextEquals("MEETING")
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.USER_NAME).assertTextEquals("John Doe")
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ENTITY_TITLE).assertTextEquals("Team Meeting")
+    composeTestRule
+        .onNodeWithTag(ActivityDetailScreenTestTags.ACTIVITY_INFO_CARD)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(ActivityDetailScreenTestTags.ACTIVITY_TYPE)
+        .assertTextEquals("CREATED")
+    composeTestRule
+        .onNodeWithTag(ActivityDetailScreenTestTags.ENTITY_TYPE)
+        .assertTextEquals("MEETING")
+    composeTestRule
+        .onNodeWithTag(ActivityDetailScreenTestTags.USER_NAME)
+        .assertTextEquals("John Doe")
+    composeTestRule
+        .onNodeWithTag(ActivityDetailScreenTestTags.ENTITY_TITLE)
+        .assertTextEquals("Team Meeting")
   }
 
   @Test
@@ -138,7 +149,8 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(
+            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -165,7 +177,8 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(
+            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -191,7 +204,8 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(
+            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -254,7 +268,8 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(
+            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -264,7 +279,9 @@ class ActivityDetailScreenTest {
     composeTestRule.waitForIdle()
 
     // Assert
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.RELATED_ACTIVITIES_SECTION).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(ActivityDetailScreenTestTags.RELATED_ACTIVITIES_SECTION)
+        .assertIsDisplayed()
     composeTestRule.onNodeWithText("Related Activities (2)").assertIsDisplayed()
     composeTestRule
         .onNodeWithTag("${ActivityDetailScreenTestTags.RELATED_ACTIVITY_ITEM}_activity-2")
@@ -287,7 +304,8 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(
+            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -297,9 +315,13 @@ class ActivityDetailScreenTest {
     composeTestRule.waitForIdle()
 
     // Assert
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.RELATED_ACTIVITIES_SECTION).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(ActivityDetailScreenTestTags.RELATED_ACTIVITIES_SECTION)
+        .assertIsDisplayed()
     composeTestRule.onNodeWithText("Related Activities (0)").assertIsDisplayed()
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.NO_RELATED_ACTIVITIES).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(ActivityDetailScreenTestTags.NO_RELATED_ACTIVITIES)
+        .assertIsDisplayed()
     composeTestRule.onNodeWithText("No other activities for this entity").assertIsDisplayed()
   }
 
@@ -316,7 +338,8 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(
+            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -344,7 +367,8 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(
+            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -375,7 +399,8 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(
+            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -397,8 +422,7 @@ class ActivityDetailScreenTest {
   fun activityDetailScreen_deleteDialog_confirmButton_deletesActivity() {
     // Arrange
     val activity =
-        createActivity(
-            testActivityId, EntityType.TASK, "Task", ActivityType.CREATED, testEntityId)
+        createActivity(testActivityId, EntityType.TASK, "Task", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
     coEvery { repository.deleteActivity(testActivityId) } returns Result.success(Unit)
 
@@ -407,7 +431,8 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(
+            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -433,7 +458,8 @@ class ActivityDetailScreenTest {
     composeTestRule.waitForIdle()
 
     // Assert - Verify dialog is dismissed (delete was initiated)
-    // Note: Navigation callback timing is unpredictable in tests, so we just verify the dialog closed
+    // Note: Navigation callback timing is unpredictable in tests, so we just verify the dialog
+    // closed
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_DIALOG).assertDoesNotExist()
   }
 
@@ -451,7 +477,8 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(
+            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -462,7 +489,9 @@ class ActivityDetailScreenTest {
 
     // Assert
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.OFFLINE_MESSAGE).assertIsDisplayed()
-    composeTestRule.onNodeWithText("You are offline. Some actions are unavailable.").assertIsDisplayed()
+    composeTestRule
+        .onNodeWithText("You are offline. Some actions are unavailable.")
+        .assertIsDisplayed()
   }
 
   @Test
@@ -479,7 +508,8 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(
+            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {
@@ -498,8 +528,7 @@ class ActivityDetailScreenTest {
   fun activityDetailScreen_backButton_navigatesBack() {
     // Arrange
     val activity =
-        createActivity(
-            testActivityId, EntityType.TASK, "Task", ActivityType.CREATED, testEntityId)
+        createActivity(testActivityId, EntityType.TASK, "Task", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
 
     val userDoc = mockk<DocumentSnapshot>(relaxed = true)
@@ -507,7 +536,8 @@ class ActivityDetailScreenTest {
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
     viewModel =
-        ActivityDetailViewModel(testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
+        ActivityDetailViewModel(
+            testActivityId, testProjectId, repository, connectivityObserver, firestore, auth)
 
     // Act
     composeTestRule.setContent {

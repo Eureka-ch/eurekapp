@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -66,7 +65,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.activity.Activity
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
@@ -120,14 +118,18 @@ fun ActivityDetailScreen(
     onNavigateBack: () -> Unit = {},
     onNavigateToEntity: (EntityType, String, String) -> Unit = { _, _, _ -> }
 ) {
-  val vm: ActivityDetailViewModel = viewModel ?: androidx.lifecycle.viewmodel.compose.viewModel(
-      factory = object : androidx.lifecycle.ViewModelProvider.Factory {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-          return ActivityDetailViewModel(activityId, projectId) as T
-        }
-      }
-  )
+  val vm: ActivityDetailViewModel =
+      viewModel
+          ?: androidx.lifecycle.viewmodel.compose.viewModel(
+              factory =
+                  object : androidx.lifecycle.ViewModelProvider.Factory {
+                    @Suppress("UNCHECKED_CAST")
+                    override fun <T : androidx.lifecycle.ViewModel> create(
+                        modelClass: Class<T>
+                    ): T {
+                      return ActivityDetailViewModel(activityId, projectId) as T
+                    }
+                  })
   val uiState by vm.uiState.collectAsState()
   val context = LocalContext.current
 
@@ -151,17 +153,21 @@ fun ActivityDetailScreen(
             })
       }) { paddingValues ->
         if (uiState.isLoading) {
-          Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(
-                modifier = Modifier.testTag(ActivityDetailScreenTestTags.LOADING_INDICATOR))
-          }
+          Box(
+              modifier = Modifier.fillMaxSize().padding(paddingValues),
+              contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(
+                    modifier = Modifier.testTag(ActivityDetailScreenTestTags.LOADING_INDICATOR))
+              }
         } else if (uiState.errorMsg != null) {
-          Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-            Text(
-                text = uiState.errorMsg ?: "Unknown error",
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.testTag(ActivityDetailScreenTestTags.ERROR_MESSAGE))
-          }
+          Box(
+              modifier = Modifier.fillMaxSize().padding(paddingValues),
+              contentAlignment = Alignment.Center) {
+                Text(
+                    text = uiState.errorMsg ?: "Unknown error",
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.testTag(ActivityDetailScreenTestTags.ERROR_MESSAGE))
+              }
         } else if (uiState.activity != null) {
           ActivityDetailContent(
               activity = uiState.activity!!,
@@ -256,8 +262,7 @@ private fun ActivityDetailContent(
 @Composable
 private fun ActivityHeader(activity: Activity) {
   Row(
-      modifier =
-          Modifier.fillMaxWidth().testTag(ActivityDetailScreenTestTags.ACTIVITY_HEADER),
+      modifier = Modifier.fillMaxWidth().testTag(ActivityDetailScreenTestTags.ACTIVITY_HEADER),
       horizontalArrangement = Arrangement.Center) {
         Surface(
             shape = RoundedCornerShape(20.dp),
@@ -281,8 +286,7 @@ private fun ActivityHeader(activity: Activity) {
 @Composable
 private fun ActivityInformationCard(activity: Activity) {
   Card(
-      modifier =
-          Modifier.fillMaxWidth().testTag(ActivityDetailScreenTestTags.ACTIVITY_INFO_CARD),
+      modifier = Modifier.fillMaxWidth().testTag(ActivityDetailScreenTestTags.ACTIVITY_INFO_CARD),
       shape = RoundedCornerShape(16.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {
         Column(
@@ -345,7 +349,10 @@ private fun InfoRow(icon: ImageVector, label: String, value: String, testTag: St
     Spacer(modifier = Modifier.width(8.dp))
     Column {
       Text(text = label, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-      Text(text = value, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.testTag(testTag))
+      Text(
+          text = value,
+          style = MaterialTheme.typography.bodyMedium,
+          modifier = Modifier.testTag(testTag))
     }
   }
 }
@@ -359,8 +366,7 @@ private fun InfoRow(icon: ImageVector, label: String, value: String, testTag: St
 private fun RelatedActivitiesSection(relatedActivities: List<Activity>) {
   Card(
       modifier =
-          Modifier.fillMaxWidth()
-              .testTag(ActivityDetailScreenTestTags.RELATED_ACTIVITIES_SECTION),
+          Modifier.fillMaxWidth().testTag(ActivityDetailScreenTestTags.RELATED_ACTIVITIES_SECTION),
       shape = RoundedCornerShape(16.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {
         Column(
@@ -395,7 +401,8 @@ private fun RelatedActivityItem(activity: Activity) {
   Row(
       modifier =
           Modifier.fillMaxWidth()
-              .testTag(ActivityDetailScreenTestTags.RELATED_ACTIVITY_ITEM + "_${activity.activityId}"),
+              .testTag(
+                  ActivityDetailScreenTestTags.RELATED_ACTIVITY_ITEM + "_${activity.activityId}"),
       verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier =
@@ -458,8 +465,7 @@ private fun ActionButtonsSection(isConnected: Boolean, onShare: () -> Unit, onDe
                 .testTag(ActivityDetailScreenTestTags.DELETE_BUTTON),
         enabled = isConnected,
         colors =
-            ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.error)) {
+            ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
           Icon(Icons.Default.Delete, "Delete", modifier = Modifier.size(18.dp))
           Spacer(modifier = Modifier.width(8.dp))
           Text("Delete Activity")
