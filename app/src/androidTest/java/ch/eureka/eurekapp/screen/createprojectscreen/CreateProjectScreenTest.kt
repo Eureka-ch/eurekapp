@@ -1,6 +1,5 @@
+/* Portions of this file were written with the help of Gemini and Grok. */
 package ch.eureka.eurekapp.screen.createprojectscreen
-
-// Portions of this code were generated with the help of Grok.
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.runtime.mutableStateOf
@@ -101,7 +100,7 @@ class CreateProjectScreenTest : TestCase() {
   }
 
   @Test
-  fun testTextInputFieldsInCreateProjectScreenTest() {
+  fun textInputFieldsInCreateProjectScreen_works() {
     composeRule.setContent { CreateProjectScreen() }
 
     composeRule
@@ -162,7 +161,7 @@ class CreateProjectScreenTest : TestCase() {
   }
 
   @Test
-  fun testDatePicker() {
+  fun datePicker_works() {
     composeRule.setContent { CreateProjectScreen() }
 
     composeRule
@@ -173,7 +172,7 @@ class CreateProjectScreenTest : TestCase() {
   }
 
   @Test
-  fun createProjectWorks() {
+  fun createProject_works() {
     runBlocking {
       val auth = MockedAuthRepositoryFirebase()
       val firebaseProjectsRepository = MockedProjectsRepository()
@@ -182,7 +181,7 @@ class CreateProjectScreenTest : TestCase() {
           CreateProjectViewModel(
               projectsRepository = firebaseProjectsRepository, authenticationRepository = auth)
 
-      val startDateInjectedState = mutableStateOf<String>("24/12/2007")
+      val startDateInjectedState = mutableStateOf("24/12/2007")
 
       var createdProject = false
 
@@ -224,7 +223,7 @@ class CreateProjectScreenTest : TestCase() {
         } // set scroll position to 300 pixels
       }
 
-      composeRule.onNodeWithTag(CreateProjectScreenTestTags.CREATE_RPOJECT_BUTTON).performClick()
+      composeRule.onNodeWithTag(CreateProjectScreenTestTags.CREATE_PROJECT_BUTTON).performClick()
 
       composeRule.waitForIdle()
       assert(createdProject)
@@ -234,7 +233,7 @@ class CreateProjectScreenTest : TestCase() {
   }
 
   @Test
-  fun testBackButtonFunctionality() {
+  fun backButton_works() {
     val onBackClickCalled = mutableStateOf(false)
     composeRule.setContent { CreateProjectScreen(onBackClick = { onBackClickCalled.value = true }) }
 
