@@ -251,7 +251,6 @@ private fun ParticipantsSelector(
                 readOnly = true,
                 placeholder = { Text("Select participants to share with") },
                 label = { Text("Participants") },
-                enabled = false,
                 modifier = Modifier.fillMaxWidth(),
                 colors = EurekaStyles.textFieldColors())
             DropdownMenu(

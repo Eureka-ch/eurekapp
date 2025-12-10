@@ -15,6 +15,7 @@ import com.google.firebase.Timestamp
 import org.junit.Rule
 import org.junit.Test
 
+// Portions of this file were written with the help of GPT-5 Codex and Gemini.
 class IdeasContentTest {
   @get:Rule val composeTestRule = createComposeRule()
 

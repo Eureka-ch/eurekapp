@@ -186,7 +186,7 @@ private fun IdeaConversationContent(
           modifier = Modifier.weight(1f).fillMaxWidth().testTag("conversationMessagesList"),
           reverseLayout = true,
           verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-            items(items = messages.reversed(), key = { it.messageID }) { message ->
+            items(items = messages, key = { it.messageID }) { message ->
               MessageBubble(
                   text = message.text,
                   timestamp = message.createdAt,

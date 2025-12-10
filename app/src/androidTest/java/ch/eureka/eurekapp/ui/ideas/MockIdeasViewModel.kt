@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+// Portions of this file were written with the help of GPT-5 Codex and Gemini.
 /** Mock implementation of IdeasViewModel for Android tests. */
 class MockIdeasViewModel :
     IdeasViewModel(

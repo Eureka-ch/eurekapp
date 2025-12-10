@@ -10,6 +10,7 @@ import ch.eureka.eurekapp.model.data.project.Project
 import org.junit.Rule
 import org.junit.Test
 
+// Portions of this file were written with the help of GPT-5 Codex and Gemini.
 class IdeasScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
