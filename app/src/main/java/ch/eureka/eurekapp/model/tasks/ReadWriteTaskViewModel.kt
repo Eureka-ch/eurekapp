@@ -366,7 +366,7 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
   }
 
   /** Helper function for subclasses to delete photos - wraps the suspend function */
-  protected fun deletePhotoAsync(context: Context, photoUri: Uri, onResult: (Boolean) -> Unit) {
+  fun deletePhotoAsync(context: Context, photoUri: Uri, onResult: (Boolean) -> Unit) {
     viewModelScope.launch(dispatcher) {
       val result = deletePhotoSuspend(context, photoUri)
       onResult(result)
