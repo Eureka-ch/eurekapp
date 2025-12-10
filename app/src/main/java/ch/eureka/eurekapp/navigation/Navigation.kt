@@ -37,6 +37,7 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
+import ch.eureka.eurekapp.ui.activity.ActivityDetailScreen
 import ch.eureka.eurekapp.ui.activity.ActivityFeedScreen
 import ch.eureka.eurekapp.ui.authentication.TokenEntryScreen
 import ch.eureka.eurekapp.ui.conversation.ConversationDetailScreen
@@ -75,6 +76,16 @@ sealed interface Route {
   @Serializable data object SelfNotes : Route
 
   @Serializable data object ActivityFeed : Route
+
+  sealed interface ActivitySection : Route {
+    companion object {
+      val routes: Set<KClass<out ActivitySection>>
+        get() = ActivitySection::class.sealedSubclasses.toSet()
+    }
+
+    @Serializable
+    data class ActivityDetail(val activityId: String, val projectId: String) : ActivitySection
+  }
 
   sealed interface TasksSection : Route {
     companion object {
@@ -278,10 +289,39 @@ fun NavigationMenu(
               composable<Route.SelfNotes> { SelfNotesScreen() }
               composable<Route.ActivityFeed> {
                 ActivityFeedScreen(
-                    onActivityClick = { _ ->
-                      // Navigate to entity detail screen based on entity type
-                      // For now, just go back
-                      navigationController.popBackStack()
+                    onActivityClick = { activityId, projectId ->
+                      navigationController.navigate(
+                          Route.ActivitySection.ActivityDetail(
+                              activityId = activityId, projectId = projectId))
+                    })
+              }
+              composable<Route.ActivitySection.ActivityDetail> { backStackEntry ->
+                val route = backStackEntry.toRoute<Route.ActivitySection.ActivityDetail>()
+                ActivityDetailScreen(
+                    activityId = route.activityId,
+                    projectId = route.projectId,
+                    onNavigateBack = { navigationController.popBackStack() },
+                    onNavigateToEntity = { entityType, entityId, projectId ->
+                      when (entityType) {
+                        ch.eureka.eurekapp.model.data.activity.EntityType.MEETING -> {
+                          navigationController.navigate(
+                              Route.MeetingsSection.MeetingDetail(projectId, entityId))
+                        }
+                        ch.eureka.eurekapp.model.data.activity.EntityType.TASK -> {
+                          navigationController.navigate(
+                              Route.TasksSection.ViewTask(projectId, entityId))
+                        }
+                        ch.eureka.eurekapp.model.data.activity.EntityType.MESSAGE -> {
+                          navigationController.navigate(
+                              Route.ConversationsSection.ConversationDetail(entityId))
+                        }
+                        ch.eureka.eurekapp.model.data.activity.EntityType.PROJECT -> {
+                          navigationController.navigate(Route.ProjectSelection)
+                        }
+                        else -> {
+                          // FILE and MEMBER types have no detail screen
+                        }
+                      }
                     })
               }
               composable<Route.OverviewProject> { backStackEntry ->

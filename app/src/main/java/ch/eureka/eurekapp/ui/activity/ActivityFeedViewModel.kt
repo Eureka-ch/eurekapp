@@ -305,16 +305,15 @@ class ActivityFeedViewModel(
     val userId = auth.currentUser?.uid ?: return
     viewModelScope.launch {
       val prevList = _uiState.value.activities
-      val prevAll = _uiState.value.allActivities
       val prevGrouped = _uiState.value.activitiesByDate
       val prevReadIds = _uiState.value.readActivityIds
 
+      // Optimistically update UI (only filtered view, let Flow handle allActivities)
       _uiState.update { state ->
         val filtered = state.activities.filter { it.activityId != activityId }
         val groupedByDate = groupActivitiesByDate(filtered)
         state.copy(
             activities = filtered,
-            allActivities = state.allActivities.filter { it.activityId != activityId },
             activitiesByDate = groupedByDate,
             readActivityIds = state.readActivityIds - activityId)
       }
@@ -336,7 +335,6 @@ class ActivityFeedViewModel(
         _uiState.update { state ->
           state.copy(
               activities = prevList,
-              allActivities = prevAll,
               activitiesByDate = prevGrouped,
               readActivityIds = prevReadIds,
               errorMsg = exception?.message)
