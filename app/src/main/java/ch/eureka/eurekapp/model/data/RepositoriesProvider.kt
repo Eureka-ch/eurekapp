@@ -21,6 +21,8 @@ import ch.eureka.eurekapp.model.data.template.FirestoreTaskTemplateRepository
 import ch.eureka.eurekapp.model.data.transcription.CloudFunctionSpeechToTextRepository
 import ch.eureka.eurekapp.model.data.transcription.SpeechToTextRepository
 import ch.eureka.eurekapp.model.data.user.FirestoreUserRepository
+import ch.eureka.eurekapp.model.data.activity.ActivityRepository
+import ch.eureka.eurekapp.model.data.activity.FirestoreActivityRepository
 import ch.eureka.eurekapp.model.database.AppDatabase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -133,6 +135,10 @@ object RepositoriesProvider {
     FirestoreConversationRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
   }
 
+  private val _activityRepository: ActivityRepository by lazy {
+    FirestoreActivityRepository(FirebaseFirestore.getInstance())
+  }
+
   val taskRepository: FirestoreTaskRepository
     get() = _taskRepository
 
@@ -165,4 +171,7 @@ object RepositoriesProvider {
 
   val conversationRepository: ConversationRepository
     get() = _conversationRepository
+
+  val activityRepository: ActivityRepository
+    get() = _activityRepository
 }
