@@ -20,19 +20,29 @@ class ConversationMessageTest {
     assertEquals("", message.senderId)
     assertEquals("", message.text)
     assertNull(message.createdAt)
+    assertNull(message.editedAt)
+    assertEquals(false, message.isDeleted)
   }
 
   @Test
   fun `constructor with all parameters sets values correctly`() {
     val timestamp = Timestamp.now()
+    val editedTimestamp = Timestamp.now()
     val message =
         ConversationMessage(
-            messageId = "msg123", senderId = "user789", text = "Hello world", createdAt = timestamp)
+            messageId = "msg123",
+            senderId = "user789",
+            text = "Hello world",
+            createdAt = timestamp,
+            editedAt = editedTimestamp,
+            isDeleted = true)
 
     assertEquals("msg123", message.messageId)
     assertEquals("user789", message.senderId)
     assertEquals("Hello world", message.text)
     assertEquals(timestamp, message.createdAt)
+    assertEquals(editedTimestamp, message.editedAt)
+    assertEquals(true, message.isDeleted)
   }
 
   @Test

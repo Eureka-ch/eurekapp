@@ -51,4 +51,20 @@ interface ConversationRepository {
 
   /** Mark all messages in a conversation as read by the current user */
   suspend fun markMessagesAsRead(conversationId: String): Result<Unit>
+
+  /** Update the text of a message. Only the sender can update their own message. */
+  suspend fun updateMessage(
+      conversationId: String,
+      messageId: String,
+      newText: String
+  ): Result<Unit>
+
+  /** Soft-delete a message. Only the sender can delete their own message. */
+  suspend fun deleteMessage(conversationId: String, messageId: String): Result<Unit>
+
+  /**
+   * Remove the attachment reference from a message. Does not delete the file from storage. File
+   * deletion should be handled separately by the caller.
+   */
+  suspend fun removeAttachment(conversationId: String, messageId: String): Result<Unit>
 }
