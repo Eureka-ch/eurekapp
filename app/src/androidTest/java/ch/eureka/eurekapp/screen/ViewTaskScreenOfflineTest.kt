@@ -329,7 +329,7 @@ class ViewTaskScreenOfflineTest {
   }
 
   @Test
-  fun testOfflineNoDownloadButton() {
+  fun viewTaskScreenOffline_noDownloadButton() {
     runBlocking {
       val projectId = "project123"
       val taskId = "task123"
@@ -368,7 +368,7 @@ class ViewTaskScreenOfflineTest {
   }
 
   @Test
-  fun testOfflineDownloadedAttachmentDisplayedAsLocal() {
+  fun viewTaskScreenOffline_downloadedAttachmentDisplayedAsLocal() {
     runBlocking {
       val projectId = "project123"
       val taskId = "task123"
@@ -413,7 +413,7 @@ class ViewTaskScreenOfflineTest {
   }
 
   @Test
-  fun testOfflineUndownloadedAttachmentDisplayedAsRemote() {
+  fun viewTaskScreenOffline_undownloadedAttachmentDisplayedAsRemote() {
     runBlocking {
       val projectId = "project123"
       val taskId = "task123"
@@ -454,7 +454,7 @@ class ViewTaskScreenOfflineTest {
   }
 
   @Test
-  fun testOfflineMultipleAttachmentsDisplayedCorrectly() {
+  fun viewTaskScreenOffline_multipleAttachmentsDisplayedCorrectly() {
     runBlocking {
       val projectId = "project123"
       val taskId = "task123"

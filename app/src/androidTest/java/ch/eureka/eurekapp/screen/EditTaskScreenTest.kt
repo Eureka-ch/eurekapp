@@ -1062,7 +1062,7 @@ open class EditTaskScreenTest : TestCase() {
   }
 
   @Test
-  fun testAddFileAttachment() {
+  fun editTaskScreen_addFileAttachment() {
     val projectId = "project123"
     val taskId = "task123"
     val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
@@ -1096,7 +1096,7 @@ open class EditTaskScreenTest : TestCase() {
   }
 
   @Test
-  fun testDeleteFileAttachment() {
+  fun editTaskScreen_deleteFileAttachment() {
     val projectId = "project123"
     val taskId = "task123"
     val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
@@ -1137,7 +1137,7 @@ open class EditTaskScreenTest : TestCase() {
   }
 
   @Test
-  fun testMultipleFileAttachments() {
+  fun editTaskScreen_multipleFileAttachments() {
     val projectId = "project123"
     val taskId = "task123"
     val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
@@ -1170,7 +1170,7 @@ open class EditTaskScreenTest : TestCase() {
   }
 
   @Test
-  fun testFileAttachmentUploadWithTask() {
+  fun editTaskScreen_fileAttachmentUploadWithTask() {
     val projectId = "project123"
     val taskId = "task123"
     val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
@@ -1240,7 +1240,7 @@ open class EditTaskScreenTest : TestCase() {
   }
 
   @Test
-  fun testAddFileButtonIsDisplayed() {
+  fun editTaskScreen_addFileButtonIsDisplayed() {
     val projectId = "project123"
     val taskId = "task123"
     val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
@@ -1266,7 +1266,7 @@ open class EditTaskScreenTest : TestCase() {
   }
 
   @Test
-  fun testMixedPhotoAndFileAttachments() {
+  fun editTaskScreen_mixedPhotoAndFileAttachments() {
     val projectId = "project123"
     val taskId = "task123"
     val viewModel = EditTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
@@ -1315,7 +1315,7 @@ open class EditTaskScreenTest : TestCase() {
   }
 
   @Test
-  fun testDeleteRemoteFileAttachment() {
+  fun editTaskScreen_deleteRemoteFileAttachment() {
     val projectId = "project123"
     val taskId = "task123"
     val remoteUrl = "https://fake.com/file.pdf"

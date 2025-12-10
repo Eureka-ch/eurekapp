@@ -1,5 +1,7 @@
 /*
  * Co-Authored-By: Claude Sonnet 4.5
+ * Portions of this code were generated with the help of AI.
+ * Portions added by Jiří Gebauer were generated with the help of Grok.
  */
 package ch.eureka.eurekapp.screen
 
@@ -61,8 +63,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-// Portions of this code were generated with the help of AI.
-// Portions added by Jiří Gebauer were generated with the help of Grok.
 class CreateTaskScreenTests : TestCase() {
 
   @get:Rule val composeTestRule = createComposeRule()
@@ -1104,7 +1104,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testAddFileAttachment() {
+  fun createTaskScreen_addFileAttachment() {
     val projectId = "project123"
     val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
     lastCreateVm = viewModel
@@ -1131,7 +1131,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testDeleteFileAttachment() {
+  fun createTaskScreen_deleteFileAttachment() {
     val projectId = "project123"
     val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
     lastCreateVm = viewModel
@@ -1165,7 +1165,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testMultipleFileAttachments() {
+  fun createTaskScreen_multipleFileAttachments() {
     val projectId = "project123"
     val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
     lastCreateVm = viewModel
@@ -1191,7 +1191,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testFileAttachmentUploadWithTask() {
+  fun createTaskScreen_fileAttachmentUploadWithTask() {
     val projectId = "project123"
     val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
     lastCreateVm = viewModel
@@ -1250,7 +1250,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testAddFileButtonIsDisplayed() {
+  fun createTaskScreen_addFileButtonIsDisplayed() {
     navigateToCreateTaskScreen()
 
     // Verify "Add File" button is displayed
@@ -1258,7 +1258,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testMixedPhotoAndFileAttachments() {
+  fun createTaskScreen_mixedPhotoAndFileAttachments() {
     val projectId = "project123"
     val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
     lastCreateVm = viewModel

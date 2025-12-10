@@ -1,5 +1,5 @@
 /*
- * Co-Authored-By: Claude Sonnet 4.5, Claude Opus 4.5
+ * Co-Authored-By: Claude Sonnet 4.5, Claude Opus 4.5, and Grok
  */
 package ch.eureka.eurekapp.screens.subscreens.tasks.creation
 

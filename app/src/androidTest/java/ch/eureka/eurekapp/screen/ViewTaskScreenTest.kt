@@ -923,7 +923,7 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testDownloadButtonDisplayedWhenAttachmentsExist() =
+  fun viewTaskScreen_downloadButtonDisplayedWhenAttachmentsExist() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -937,7 +937,7 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testDownloadButtonNotDisplayedWhenAllAttachmentsDownloaded() =
+  fun viewTaskScreen_downloadButtonNotDisplayedWhenAllAttachmentsDownloaded() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -961,7 +961,7 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testAttachmentsAreReadOnlyNoDeleteButton() =
+  fun viewTaskScreen_attachmentsAreReadOnlyNoDeleteButton() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -978,7 +978,7 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testMultipleAttachmentsDisplayedCorrectly() =
+  fun viewTaskScreen_multipleAttachmentsDisplayedCorrectly() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
