@@ -312,8 +312,7 @@ fun NavigationMenu(
                               Route.TasksSection.ViewTask(projectId, entityId))
                         }
                         ch.eureka.eurekapp.model.data.activity.EntityType.MESSAGE -> {
-                          navigationController.navigate(
-                              Route.ConversationsSection.ConversationDetail(entityId))
+                          navigationController.navigate(Route.ConversationsSection.Conversations)
                         }
                         ch.eureka.eurekapp.model.data.activity.EntityType.PROJECT -> {
                           navigationController.navigate(Route.ProjectSelection)
@@ -638,6 +637,34 @@ fun NavigationMenu(
                           ?.savedStateHandle
                           ?.set("photoUri", uri)
                       navigationController.popBackStack()
+                    })
+              }
+
+              // Conversations section
+              composable<Route.ConversationsSection.Conversations> {
+                ConversationListScreen(
+                    onConversationClick = { conversationId ->
+                      navigationController.navigate(
+                          Route.ConversationsSection.ConversationDetail(conversationId))
+                    },
+                    onCreateConversation = {
+                      navigationController.navigate(
+                          Route.ConversationsSection.CreateConversation(projectId = testProjectId))
+                    })
+              }
+
+              composable<Route.ConversationsSection.ConversationDetail> { backStackEntry ->
+                val route = backStackEntry.toRoute<Route.ConversationsSection.ConversationDetail>()
+                ConversationDetailScreen(
+                    conversationId = route.conversationId,
+                    onNavigateBack = { navigationController.popBackStack() })
+              }
+
+              composable<Route.ConversationsSection.CreateConversation> {
+                CreateConversationScreen(
+                    onNavigateToConversation = { conversationId ->
+                      navigationController.navigate(
+                          Route.ConversationsSection.ConversationDetail(conversationId))
                     })
               }
             }

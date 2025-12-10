@@ -88,9 +88,9 @@ class FirestoreActivityRepository(
   /**
    * Filters activities based on entity-level access permissions.
    *
-   * - MESSAGE: User must be in conversation memberIds OR created the activity
+   * - MESSAGE: Visible to all project members
    * - MEETING: User must be in meeting participantIds OR created the activity
-   * - TASK: User must be in task assignedUserIds (or be a project member - allowed for all)
+   * - TASK: Visible to all project members
    * - PROJECT/FILE/MEMBER: Project-level access (no additional filtering)
    *
    * @param activities List of activities to filter
@@ -107,29 +107,11 @@ class FirestoreActivityRepository(
 
       // Otherwise check entity-level access
       when (activity.entityType) {
-        EntityType.MESSAGE -> hasMessageAccess(activity.entityId, userId)
+        EntityType.MESSAGE -> true // Messages are visible to all project members
         EntityType.MEETING -> hasMeetingAccess(activity.entityId, userId)
         EntityType.TASK -> true // Tasks are visible to all project members
         EntityType.PROJECT, EntityType.FILE, EntityType.MEMBER -> true // Project-level access
       }
-    }
-  }
-
-  /**
-   * Checks if user has access to a specific conversation (is a member).
-   *
-   * @param conversationId The conversation entity ID
-   * @param userId The user ID to check
-   * @return true if user is a member of the conversation
-   */
-  private suspend fun hasMessageAccess(conversationId: String, userId: String): Boolean {
-    return try {
-      val doc = firestore.collection("conversations").document(conversationId).get().await()
-      val memberIds = doc.get("memberIds") as? List<*> ?: emptyList<String>()
-      memberIds.contains(userId)
-    } catch (e: Exception) {
-      Log.e("FirestoreActivityRepository", "Error checking message access: ${e.message}")
-      false // Deny access on error
     }
   }
 
