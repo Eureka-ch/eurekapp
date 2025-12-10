@@ -42,6 +42,7 @@ class ViewTaskScreenOfflineTest {
   private var testUserId: String = ""
   private lateinit var context: android.content.Context
   private lateinit var mockConnectivityObserver: MockConnectivityObserver
+  private lateinit var database: AppDatabase
 
   private val projectRepository: ch.eureka.eurekapp.model.data.project.ProjectRepository =
       ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository(
@@ -71,11 +72,16 @@ class ViewTaskScreenOfflineTest {
 
     context = InstrumentationRegistry.getInstrumentation().targetContext
     mockConnectivityObserver = MockConnectivityObserver(context)
+
+    // Clear database before each test
+    database = AppDatabase.getDatabase(context)
+    database.clearAllTables()
   }
 
   @After
   fun tearDown() = runBlocking {
     lastViewModel = null
+    database.clearAllTables()
     FirebaseEmulator.clearFirestoreEmulator()
     FirebaseEmulator.clearAuthEmulator()
   }
@@ -446,6 +452,14 @@ class ViewTaskScreenOfflineTest {
 
       composeTestRule.waitForIdle()
 
+      // Wait for UI to fully render and scroll to the offline message
+      composeTestRule.waitUntil(timeoutMillis = 5000) {
+        composeTestRule
+            .onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT_OFFLINE_MESSAGE)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
+
       // Verify offline message for undownloaded attachments
       composeTestRule
           .onNodeWithTag(CommonTaskTestTags.ATTACHMENT_OFFLINE_MESSAGE)
@@ -494,8 +508,24 @@ class ViewTaskScreenOfflineTest {
 
       composeTestRule.waitForIdle()
 
+      // Wait for UI to fully render
+      composeTestRule.waitUntil(timeoutMillis = 5000) {
+        composeTestRule
+            .onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
+
       // Verify downloaded attachment is displayed
       composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).assertCountEquals(1)
+
+      // Wait for offline message to appear
+      composeTestRule.waitUntil(timeoutMillis = 5000) {
+        composeTestRule
+            .onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT_OFFLINE_MESSAGE)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
 
       // Verify offline message for the undownloaded attachment
       composeTestRule

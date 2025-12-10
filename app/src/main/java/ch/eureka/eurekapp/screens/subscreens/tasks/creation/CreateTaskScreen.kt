@@ -91,7 +91,6 @@ fun CreateTaskScreen(
           ?: remember { mutableStateOf("") }
   val context = LocalContext.current
   val scrollState = rememberScrollState()
-  var isNavigatingToCamera by remember { mutableStateOf(false) }
 
   // File picker launcher for any file type
   val filePickerLauncher =
@@ -104,13 +103,8 @@ fun CreateTaskScreen(
   HandleProjectId(projectId, createTaskViewModel)
   HandleCreatedTemplateId(createdTemplateId, createTaskViewModel, savedStateHandle)
   HandleTaskSaved(createTaskState.taskSaved, navigationController, createTaskViewModel)
-
-  HandlePhotoCleanupDisposableEffect(
-      isNavigatingToCamera,
-      createTaskState.attachmentUris,
-      createTaskState.temporaryPhotoUris,
-      createTaskViewModel,
-      context)
+  CleanupAttachmentsOnDispose(
+      createTaskState.temporaryPhotoUris, createTaskViewModel, context, navigationController)
 
   Scaffold(
       topBar = {
@@ -148,12 +142,10 @@ fun CreateTaskScreen(
                           projectId = projectId,
                           availableTasks = availableTasks,
                           cycleError = cycleError,
-                          onNavigatingToCamera = { isNavigatingToCamera = true },
                           navigationController = navigationController,
                           context = context,
                           inputValid = inputValid,
                           filePickerLauncher = filePickerLauncher,
-                          isNavigatingToCamera = isNavigatingToCamera,
                           temporaryPhotoUris = createTaskState.temporaryPhotoUris))
             })
       })
@@ -222,16 +214,22 @@ private fun HandleTaskSaved(
 }
 
 @Composable
-private fun HandlePhotoCleanupDisposableEffect(
-    isNavigatingToCamera: Boolean,
-    attachmentUris: List<Uri>,
+private fun CleanupAttachmentsOnDispose(
     temporaryPhotoUris: List<Uri>,
     createTaskViewModel: CreateTaskViewModel,
-    context: android.content.Context
+    context: android.content.Context,
+    navigationController: NavHostController
 ) {
+  val isNavigatingToCamera = remember { mutableStateOf(false) }
+
+  LaunchedEffect(navigationController.currentBackStackEntry) {
+    val currentRoute = navigationController.currentBackStackEntry?.destination?.route
+    isNavigatingToCamera.value = currentRoute?.contains("Camera") == true
+  }
+
   DisposableEffect(Unit) {
     onDispose {
-      if (!isNavigatingToCamera) {
+      if (!isNavigatingToCamera.value) {
         createTaskViewModel.deletePhotosOnDispose(context, temporaryPhotoUris)
       }
     }
@@ -253,12 +251,10 @@ private data class CreateTaskContentConfig(
     val projectId: String,
     val availableTasks: List<Task>,
     val cycleError: String?,
-    val onNavigatingToCamera: () -> Unit,
     val navigationController: NavHostController,
     val context: android.content.Context,
     val inputValid: Boolean,
     val filePickerLauncher: androidx.activity.compose.ManagedActivityResultLauncher<String, Uri?>,
-    val isNavigatingToCamera: Boolean,
     val temporaryPhotoUris: List<Uri>
 )
 
@@ -344,10 +340,7 @@ private fun CreateTaskContent(config: CreateTaskContentConfig) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)) {
               OutlinedButton(
-                  onClick = {
-                    config.onNavigatingToCamera()
-                    config.navigationController.navigate(Route.Camera)
-                  },
+                  onClick = { config.navigationController.navigate(Route.Camera) },
                   colors = EurekaStyles.outlinedButtonColors(),
                   modifier = Modifier.weight(1f).testTag(CommonTaskTestTags.ADD_PHOTO)) {
                     Text("Add Photo")
@@ -360,13 +353,6 @@ private fun CreateTaskContent(config: CreateTaskContentConfig) {
                     Text("Add File")
                   }
             }
-
-        HandlePhotoCleanupDisposableEffect(
-            config.isNavigatingToCamera,
-            config.createTaskState.attachmentUris,
-            config.temporaryPhotoUris,
-            config.createTaskViewModel,
-            config.context)
 
         AttachmentsList(
             attachments = config.createTaskState.attachmentUris.map { Attachment.Local(it) },

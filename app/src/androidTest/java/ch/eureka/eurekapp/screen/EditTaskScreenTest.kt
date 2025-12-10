@@ -361,6 +361,9 @@ open class EditTaskScreenTest : TestCase() {
             .performTextInput("Edited Desc")
         composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("25/12/2025")
 
+        // Scroll to Save button
+        composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.SAVE_TASK))
+
         composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
         composeTestRule.waitUntil(timeoutMillis = 5000) {
           composeTestRule
@@ -421,6 +424,9 @@ open class EditTaskScreenTest : TestCase() {
 
         composeTestRule.waitForIdle()
 
+        // Scroll to delete button to ensure it's visible
+        composeTestRule.onRoot().performScrollToNode(hasTestTag(EditTaskScreenTestTags.DELETE_TASK))
+
         // First, click delete to show dialog
         composeTestRule.onNodeWithTag(EditTaskScreenTestTags.DELETE_TASK).performClick()
         // Verify dialog is shown
@@ -480,7 +486,16 @@ open class EditTaskScreenTest : TestCase() {
 
         composeTestRule.waitForIdle()
 
+        // Scroll to status button
+        composeTestRule
+            .onRoot()
+            .performScrollToNode(hasTestTag(EditTaskScreenTestTags.STATUS_BUTTON))
+
         composeTestRule.onNodeWithTag(EditTaskScreenTestTags.STATUS_BUTTON).performClick()
+
+        // Scroll to Save button
+        composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.SAVE_TASK))
+
         composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
         composeTestRule.waitForIdle()
 
@@ -515,6 +530,9 @@ open class EditTaskScreenTest : TestCase() {
         composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performTextClearance()
         composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextClearance()
 
+        // Scroll to Save button
+        composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.SAVE_TASK))
+
         val saveButton = composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK)
         saveButton.performClick() // Should not save with invalid input
 
@@ -522,6 +540,9 @@ open class EditTaskScreenTest : TestCase() {
         composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Valid Title")
         composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performTextInput("Valid Desc")
         composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("15/10/2025")
+
+        // Scroll to Save button again
+        composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.SAVE_TASK))
 
         saveButton.performClick()
         composeTestRule.waitUntil(timeoutMillis = 5000) {
@@ -742,6 +763,9 @@ open class EditTaskScreenTest : TestCase() {
             .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_$dependencyId")
             .performClick()
         composeTestRule.waitForIdle()
+
+        // Scroll to Save button
+        composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.SAVE_TASK))
 
         composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
         composeTestRule.waitUntil(timeoutMillis = 5000) {

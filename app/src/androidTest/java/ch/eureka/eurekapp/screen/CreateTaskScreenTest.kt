@@ -435,6 +435,9 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
     composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_ATTACHMENT).assertIsDisplayed()
 
+    // Scroll to Save button
+    composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.SAVE_TASK))
+
     composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
     // Wait for navigation back to tasks screen
     composeTestRule.waitUntil(timeoutMillis = 5_000) {
@@ -560,7 +563,8 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("15/10/2025")
     composeTestRule.onNodeWithTag(CommonTaskTestTags.REMINDER_TIME).performTextInput("10:00")
 
-    // Project already selected via viewModel
+    // Scroll to Add Photo button
+    composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.ADD_PHOTO))
 
     // Click add photo button to navigate to Camera screen
     composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_PHOTO).performClick()
@@ -584,10 +588,16 @@ class CreateTaskScreenTests : TestCase() {
           .isNotEmpty()
     }
 
+    // Scroll to attachment to verify it's displayed
+    composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.ATTACHMENT))
+
     // Now the photo should be displayed in Create Task screen and inputs conserved
     composeTestRule.onNodeWithTag(CommonTaskTestTags.ATTACHMENT).assertIsDisplayed()
     composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
     composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_ATTACHMENT).assertIsDisplayed()
+
+    // Scroll to Save button
+    composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.SAVE_TASK))
 
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
@@ -684,6 +694,9 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Task 1")
     composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performTextInput("Description")
     composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("15/10/2025")
+
+    // Scroll to Save button
+    composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.SAVE_TASK))
 
     // Save button should be enabled now
     saveButton.performClick()
@@ -981,6 +994,9 @@ class CreateTaskScreenTests : TestCase() {
           .onNodeWithTag("${CommonTaskTestTags.TASK_DEPENDENCIES_FIELD}_$taskId1")
           .performClick()
       composeTestRule.waitForIdle()
+
+      // Scroll to Save button before clicking
+      composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.SAVE_TASK))
 
       // Save task
       composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()

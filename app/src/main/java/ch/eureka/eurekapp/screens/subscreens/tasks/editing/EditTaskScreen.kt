@@ -61,6 +61,7 @@ object EditTaskScreenTestTags {
 }
 
 const val EDIT_SCREEN_SMALL_BUTTON_SIZE = 0.3f
+const val EDIT_SCREEN_EQUAL_WEIGHT = 1f
 
 @Composable
 fun EditTaskScreen(
@@ -84,7 +85,6 @@ fun EditTaskScreen(
 
   val context = LocalContext.current
   val scrollState = rememberScrollState()
-  var isNavigatingToCamera by remember { mutableStateOf(false) }
   var showDeleteDialog by remember { mutableStateOf(false) }
   val isConnected = true // Assume online for edit screen
 
@@ -101,7 +101,7 @@ fun EditTaskScreen(
   HandleTaskSaved(editTaskState.taskSaved, navigationController, editTaskViewModel)
   HandleTaskDeleted(editTaskState.taskDeleted, navigationController, editTaskViewModel)
   CleanupAttachmentsOnDispose(
-      isNavigatingToCamera, editTaskState.temporaryPhotoUris, editTaskViewModel, context)
+      editTaskState.temporaryPhotoUris, editTaskViewModel, context, navigationController)
 
   Scaffold(
       topBar = {
@@ -172,13 +172,10 @@ fun EditTaskScreen(
                   modifier = Modifier.fillMaxWidth(),
                   horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     OutlinedButton(
-                        onClick = {
-                          isNavigatingToCamera = true
-                          navigationController.navigate(Route.Camera)
-                        },
+                        onClick = { navigationController.navigate(Route.Camera) },
                         colors = EurekaStyles.outlinedButtonColors(),
                         modifier =
-                            Modifier.fillMaxWidth(EDIT_SCREEN_SMALL_BUTTON_SIZE)
+                            Modifier.weight(EDIT_SCREEN_EQUAL_WEIGHT)
                                 .testTag(CommonTaskTestTags.ADD_PHOTO)) {
                           Text("Add Photo")
                         }
@@ -187,7 +184,7 @@ fun EditTaskScreen(
                         onClick = { filePickerLauncher.launch("*/*") },
                         colors = EurekaStyles.outlinedButtonColors(),
                         modifier =
-                            Modifier.fillMaxWidth(EDIT_SCREEN_SMALL_BUTTON_SIZE)
+                            Modifier.weight(EDIT_SCREEN_EQUAL_WEIGHT)
                                 .testTag(EditTaskScreenTestTags.ADD_FILE)) {
                           Text("Add File")
                         }
@@ -201,6 +198,16 @@ fun EditTaskScreen(
                   isReadOnly = false,
                   isConnected = isConnected,
                   downloadedUrls = editTaskState.downloadedAttachmentUrls)
+
+              Row(modifier = Modifier.fillMaxWidth()) {
+                OutlinedButton(
+                    onClick = { editTaskViewModel.setStatus(getNextStatus(editTaskState.status)) },
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(EditTaskScreenTestTags.STATUS_BUTTON),
+                    colors = EurekaStyles.outlinedButtonColors()) {
+                      Text(text = editTaskState.status.name.replace("_", " "))
+                    }
+              }
 
               Row(
                   modifier = Modifier.fillMaxWidth(),
@@ -350,14 +357,21 @@ private fun HandleTaskDeleted(
 
 @Composable
 private fun CleanupAttachmentsOnDispose(
-    isNavigatingToCamera: Boolean,
     temporaryPhotoUris: List<Uri>,
     editTaskViewModel: EditTaskViewModel,
-    context: android.content.Context
+    context: android.content.Context,
+    navigationController: NavHostController
 ) {
+  val isNavigatingToCamera = remember { mutableStateOf(false) }
+
+  LaunchedEffect(navigationController.currentBackStackEntry) {
+    val currentRoute = navigationController.currentBackStackEntry?.destination?.route
+    isNavigatingToCamera.value = currentRoute?.contains("Camera") == true
+  }
+
   DisposableEffect(Unit) {
     onDispose {
-      if (!isNavigatingToCamera) {
+      if (!isNavigatingToCamera.value) {
         editTaskViewModel.deletePhotosOnDispose(context, temporaryPhotoUris)
       }
     }

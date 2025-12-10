@@ -233,9 +233,9 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
       // Store metadata as "url|name|mime"
       val metadata = "$fileUrl|$finalFileName|$mimeType"
 
-      // Only delete temporary files (from camera), not files picked from storage
-      // Files from file picker have content:// URI and should not be deleted
-      if (uri.scheme == "file") {
+      // Delete temporary files (from camera)
+      // Check if this URI is in temporaryPhotoUris to determine if it should be deleted
+      if (uiState.value.temporaryPhotoUris.contains(uri)) {
         deletePhotoSuspend(context, uri)
       }
 
