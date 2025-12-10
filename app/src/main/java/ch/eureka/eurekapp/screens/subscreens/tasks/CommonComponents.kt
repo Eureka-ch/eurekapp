@@ -292,7 +292,6 @@ private fun AttachmentItem(
                     attachment.url,
                     null,
                     attachment.mimeType,
-                    context,
                     modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.ATTACHMENT))
               }
               if (shouldShowDelete) {
@@ -315,7 +314,6 @@ private fun AttachmentItem(
                   null,
                   attachment.uri,
                   mimeType,
-                  context,
                   modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.ATTACHMENT))
             }
             if (shouldShowDelete) {
@@ -335,7 +333,6 @@ private fun AttachmentPreview(
     urlString: String?,
     uri: Uri?,
     mimeType: String?,
-    context: Context,
     modifier: Modifier = Modifier
 ) {
   // Convert model to String for consistent handling in PhotoViewer
@@ -366,23 +363,6 @@ private fun AttachmentPreview(
           modifier = modifier,
           tint = MaterialTheme.colorScheme.secondary)
     }
-  }
-}
-
-private fun getMimeTypeFromUrl(url: String): String? {
-  // Remove query parameters to get the clean path
-  val cleanUrl = url.substringBefore("?")
-  return when {
-    cleanUrl.endsWith(".jpg", ignoreCase = true) || cleanUrl.endsWith(".jpeg", ignoreCase = true) ->
-        "image/jpeg"
-    cleanUrl.endsWith(".png", ignoreCase = true) -> "image/png"
-    cleanUrl.endsWith(".gif", ignoreCase = true) -> "image/gif"
-    cleanUrl.endsWith(".mp4", ignoreCase = true) -> "video/mp4"
-    cleanUrl.endsWith(".pdf", ignoreCase = true) -> "application/pdf"
-    cleanUrl.endsWith(".txt", ignoreCase = true) -> "text/plain"
-    cleanUrl.endsWith(".doc", ignoreCase = true) || cleanUrl.endsWith(".docx", ignoreCase = true) ->
-        "application/msword"
-    else -> null
   }
 }
 

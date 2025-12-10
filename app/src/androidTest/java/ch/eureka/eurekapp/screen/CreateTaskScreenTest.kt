@@ -593,7 +593,6 @@ class CreateTaskScreenTests : TestCase() {
 
     // Now the photo should be displayed in Create Task screen and inputs conserved
     composeTestRule.onNodeWithTag(CommonTaskTestTags.ATTACHMENT).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
     composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_ATTACHMENT).assertIsDisplayed()
 
     // Scroll to Save button

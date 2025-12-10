@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.model.tasks
 
+import android.net.Uri
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskCustomData
@@ -7,6 +8,7 @@ import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.template.TaskTemplate
 import ch.eureka.eurekapp.model.data.template.TaskTemplateRepository
 import ch.eureka.eurekapp.model.data.template.TaskTemplateSchema
+import ch.eureka.eurekapp.model.downloads.DownloadService
 import ch.eureka.eurekapp.model.downloads.DownloadedFile
 import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
 import com.google.firebase.Timestamp
@@ -14,6 +16,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkConstructor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -513,5 +516,221 @@ class ViewTaskViewModelTest {
     assertTrue(state.isConnected)
     assertEquals(2, state.effectiveAttachments.size)
     assertTrue(state.effectiveAttachments.all { it is Attachment.Remote })
+  }
+
+  @Test
+  fun downloadAllAttachments_downloadsMultipleFiles() = runTest {
+    val projectId = "project123"
+    val taskId = "task123"
+    val url1 = "http://example.com/file1.pdf"
+    val url2 = "http://example.com/file2.pdf"
+    val task =
+        Task(
+            taskID = taskId,
+            projectId = projectId,
+            title = "Test Task",
+            description = "Test Description",
+            assignedUserIds = emptyList(),
+            dueDate = Timestamp.now(),
+            attachmentUrls =
+                listOf("$url1|file1.pdf|application/pdf", "$url2|file2.pdf|application/pdf"),
+            status = TaskStatus.TODO,
+            createdBy = "user1")
+
+    every { mockTaskRepository.getTaskById(projectId, taskId) } returns flowOf(task)
+    coEvery { mockDownloadedFileDao.isDownloaded(any()) } returns false
+    coEvery { mockDownloadedFileDao.insert(any()) } returns Unit
+
+    mockkConstructor(DownloadService::class)
+    val mockUri1 = mockk<Uri>()
+    val mockUri2 = mockk<Uri>()
+    every { mockUri1.toString() } returns "file:///local/file1.pdf"
+    every { mockUri2.toString() } returns "file:///local/file2.pdf"
+    coEvery { anyConstructed<DownloadService>().downloadFile(url1, "file1.pdf") } returns
+        Result.success(mockUri1)
+    coEvery { anyConstructed<DownloadService>().downloadFile(url2, "file2.pdf") } returns
+        Result.success(mockUri2)
+
+    viewModel =
+        ViewTaskViewModel(
+            projectId,
+            taskId,
+            mockDownloadedFileDao,
+            mockTaskRepository,
+            mockTemplateRepository,
+            mockConnectivityObserver,
+            mockUserRepository,
+            testDispatcher)
+    advanceUntilIdle()
+
+    // Ensure uiState is activated and contains the task attachment metadata before downloading
+    viewModel.uiState.first()
+
+    val mockContext = mockk<android.content.Context>(relaxed = true)
+    viewModel.downloadAllAttachments(listOf(url1, url2), mockContext)
+    advanceUntilIdle()
+
+    coVerify(exactly = 1) {
+      mockDownloadedFileDao.insert(match { it.url == url1 && it.fileName == "file1.pdf" })
+    }
+    coVerify(exactly = 1) {
+      mockDownloadedFileDao.insert(match { it.url == url2 && it.fileName == "file2.pdf" })
+    }
+  }
+
+  @Test
+  fun downloadAllAttachments_skipsAlreadyDownloadedFiles() = runTest {
+    val projectId = "project123"
+    val taskId = "task123"
+    val url1 = "http://example.com/file1.pdf"
+    val url2 = "http://example.com/file2.pdf"
+    val task =
+        Task(
+            taskID = taskId,
+            projectId = projectId,
+            title = "Test Task",
+            description = "Test Description",
+            assignedUserIds = emptyList(),
+            dueDate = Timestamp.now(),
+            attachmentUrls =
+                listOf("$url1|file1.pdf|application/pdf", "$url2|file2.pdf|application/pdf"),
+            status = TaskStatus.TODO,
+            createdBy = "user1")
+
+    every { mockTaskRepository.getTaskById(projectId, taskId) } returns flowOf(task)
+    coEvery { mockDownloadedFileDao.isDownloaded(url1) } returns true
+    coEvery { mockDownloadedFileDao.isDownloaded(url2) } returns false
+    coEvery { mockDownloadedFileDao.insert(any()) } returns Unit
+
+    mockkConstructor(DownloadService::class)
+    val mockUri2 = mockk<Uri>()
+    every { mockUri2.toString() } returns "file:///local/file2.pdf"
+    coEvery { anyConstructed<DownloadService>().downloadFile(url2, "file2.pdf") } returns
+        Result.success(mockUri2)
+
+    viewModel =
+        ViewTaskViewModel(
+            projectId,
+            taskId,
+            mockDownloadedFileDao,
+            mockTaskRepository,
+            mockTemplateRepository,
+            mockConnectivityObserver,
+            mockUserRepository,
+            testDispatcher)
+    advanceUntilIdle()
+
+    // Ensure uiState is activated and contains the task attachment metadata before downloading
+    viewModel.uiState.first()
+
+    val mockContext = mockk<android.content.Context>(relaxed = true)
+    viewModel.downloadAllAttachments(listOf(url1, url2), mockContext)
+    advanceUntilIdle()
+
+    coVerify(exactly = 0) { mockDownloadedFileDao.insert(match { it.url == url1 }) }
+    coVerify(exactly = 1) { mockDownloadedFileDao.insert(match { it.url == url2 }) }
+  }
+
+  @Test
+  fun downloadAllAttachments_extractsDisplayNameFromMetadata() = runTest {
+    val projectId = "project123"
+    val taskId = "task123"
+    val url = "http://example.com/file.pdf"
+    val task =
+        Task(
+            taskID = taskId,
+            projectId = projectId,
+            title = "Test Task",
+            description = "Test Description",
+            assignedUserIds = emptyList(),
+            dueDate = Timestamp.now(),
+            attachmentUrls = listOf("$url|CustomName.pdf|application/pdf"),
+            status = TaskStatus.TODO,
+            createdBy = "user1")
+
+    every { mockTaskRepository.getTaskById(projectId, taskId) } returns flowOf(task)
+    coEvery { mockDownloadedFileDao.isDownloaded(any()) } returns false
+    coEvery { mockDownloadedFileDao.insert(any()) } returns Unit
+
+    mockkConstructor(DownloadService::class)
+    val mockUri = mockk<Uri>()
+    every { mockUri.toString() } returns "file:///local/CustomName.pdf"
+    coEvery { anyConstructed<DownloadService>().downloadFile(url, "CustomName.pdf") } returns
+        Result.success(mockUri)
+
+    viewModel =
+        ViewTaskViewModel(
+            projectId,
+            taskId,
+            mockDownloadedFileDao,
+            mockTaskRepository,
+            mockTemplateRepository,
+            mockConnectivityObserver,
+            mockUserRepository,
+            testDispatcher)
+    advanceUntilIdle()
+
+    // Ensure uiState is activated and contains the task attachment metadata before downloading
+    viewModel.uiState.first()
+
+    val mockContext = mockk<android.content.Context>(relaxed = true)
+    viewModel.downloadAllAttachments(listOf(url), mockContext)
+    advanceUntilIdle()
+
+    coVerify { anyConstructed<DownloadService>().downloadFile(url, "CustomName.pdf") }
+    coVerify {
+      mockDownloadedFileDao.insert(match { it.fileName == "CustomName.pdf" && it.url == url })
+    }
+  }
+
+  @Test
+  fun downloadAllAttachments_usesUrlFilenameWhenNoMetadata() = runTest {
+    val projectId = "project123"
+    val taskId = "task123"
+    val url = "http://example.com/document.pdf"
+    val task =
+        Task(
+            taskID = taskId,
+            projectId = projectId,
+            title = "Test Task",
+            description = "Test Description",
+            assignedUserIds = emptyList(),
+            dueDate = Timestamp.now(),
+            attachmentUrls = listOf(url),
+            status = TaskStatus.TODO,
+            createdBy = "user1")
+
+    every { mockTaskRepository.getTaskById(projectId, taskId) } returns flowOf(task)
+    coEvery { mockDownloadedFileDao.isDownloaded(any()) } returns false
+    coEvery { mockDownloadedFileDao.insert(any()) } returns Unit
+
+    mockkConstructor(DownloadService::class)
+    val mockUri = mockk<Uri>()
+    every { mockUri.toString() } returns "file:///local/document.pdf"
+    coEvery { anyConstructed<DownloadService>().downloadFile(url, "document.pdf") } returns
+        Result.success(mockUri)
+
+    viewModel =
+        ViewTaskViewModel(
+            projectId,
+            taskId,
+            mockDownloadedFileDao,
+            mockTaskRepository,
+            mockTemplateRepository,
+            mockConnectivityObserver,
+            mockUserRepository,
+            testDispatcher)
+    advanceUntilIdle()
+
+    // Ensure uiState is activated before downloading so fallback filename logic runs against
+    // updated state
+    viewModel.uiState.first()
+
+    val mockContext = mockk<android.content.Context>(relaxed = true)
+    viewModel.downloadAllAttachments(listOf(url), mockContext)
+    advanceUntilIdle()
+
+    coVerify { anyConstructed<DownloadService>().downloadFile(url, "document.pdf") }
+    coVerify { mockDownloadedFileDao.insert(match { it.fileName == "document.pdf" }) }
   }
 }
