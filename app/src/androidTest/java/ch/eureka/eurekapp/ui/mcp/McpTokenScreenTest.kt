@@ -1,7 +1,6 @@
 // Co-authored by Claude Code
 package ch.eureka.eurekapp.ui.mcp
 
-import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -11,29 +10,14 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import ch.eureka.eurekapp.model.data.mcp.McpToken
 import ch.eureka.eurekapp.model.data.mcp.McpTokenRepository
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.mockk
 import java.time.Instant
+import kotlinx.coroutines.delay
 import org.junit.Rule
 import org.junit.Test
 
 class McpTokenScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
-
-  private fun waitUntilNotLoading() {
-    composeTestRule.waitUntil(timeoutMillis = 5000) {
-      try {
-        composeTestRule.onNodeWithTag(McpTokenScreenTestTags.LOADING_INDICATOR).assertDoesNotExist()
-        true
-      } catch (e: AssertionError) {
-        false
-      }
-    }
-  }
-
-  private val mockRepository = mockk<McpTokenRepository>(relaxed = true)
 
   private val testTokens =
       listOf(
@@ -48,14 +32,52 @@ class McpTokenScreenTest {
               createdAt = Instant.parse("2025-01-02T00:00:00Z"),
               expiresAt = Instant.parse("2025-02-02T00:00:00Z")))
 
+  private class FakeRepository(
+      private var tokens: List<McpToken> = emptyList(),
+      private var listTokensError: Exception? = null,
+      private var createTokenResult: McpToken? = null,
+      private var createTokenError: Exception? = null,
+      private var shouldDelayListTokens: Boolean = false
+  ) : McpTokenRepository {
+    var createTokenCalled = false
+    var revokeTokenCalled = false
+    var listTokensCalls = 0
+
+    override suspend fun listTokens(): Result<List<McpToken>> {
+      listTokensCalls++
+      if (shouldDelayListTokens) {
+        delay(5000)
+      }
+      return listTokensError?.let { Result.failure(it) } ?: Result.success(tokens)
+    }
+
+    override suspend fun createToken(name: String, ttlDays: Int): Result<McpToken> {
+      createTokenCalled = true
+      return createTokenError?.let { Result.failure(it) }
+          ?: Result.success(createTokenResult ?: McpToken(tokenId = "new-token", name = name))
+    }
+
+    override suspend fun revokeToken(tokenId: String): Result<Unit> {
+      revokeTokenCalled = true
+      return Result.success(Unit)
+    }
+
+    fun setTokens(newTokens: List<McpToken>) {
+      tokens = newTokens
+    }
+
+    fun setError(error: Exception?) {
+      listTokensError = error
+    }
+  }
+
   @Test
   fun mcpTokenScreen_displaysEmptyStateWhenNoTokens() {
-    coEvery { mockRepository.listTokens() } returns Result.success(emptyList())
-
-    val viewModel = McpTokenViewModel(mockRepository)
+    val repository = FakeRepository(tokens = emptyList())
+    val viewModel = McpTokenViewModel(repository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    waitUntilNotLoading()
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.EMPTY_STATE).assertIsDisplayed()
     composeTestRule.onNodeWithText("No MCP tokens yet").assertIsDisplayed()
@@ -63,12 +85,11 @@ class McpTokenScreenTest {
 
   @Test
   fun mcpTokenScreen_displaysTokenListWhenTokensExist() {
-    coEvery { mockRepository.listTokens() } returns Result.success(testTokens)
-
-    val viewModel = McpTokenViewModel(mockRepository)
+    val repository = FakeRepository(tokens = testTokens)
+    val viewModel = McpTokenViewModel(repository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    waitUntilNotLoading()
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.TOKEN_LIST).assertIsDisplayed()
     composeTestRule.onNodeWithText("Test Token").assertIsDisplayed()
@@ -77,13 +98,8 @@ class McpTokenScreenTest {
 
   @Test
   fun mcpTokenScreen_displaysLoadingIndicatorWhenLoading() {
-    coEvery { mockRepository.listTokens() } coAnswers
-        {
-          kotlinx.coroutines.delay(5000)
-          Result.success(emptyList())
-        }
-
-    val viewModel = McpTokenViewModel(mockRepository)
+    val repository = FakeRepository(tokens = emptyList(), shouldDelayListTokens = true)
+    val viewModel = McpTokenViewModel(repository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.LOADING_INDICATOR).assertIsDisplayed()
@@ -91,12 +107,11 @@ class McpTokenScreenTest {
 
   @Test
   fun mcpTokenScreen_displaysErrorWhenLoadingFails() {
-    coEvery { mockRepository.listTokens() } returns Result.failure(Exception("Network error"))
-
-    val viewModel = McpTokenViewModel(mockRepository)
+    val repository = FakeRepository(listTokensError = Exception("Network error"))
+    val viewModel = McpTokenViewModel(repository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    waitUntilNotLoading()
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.ERROR_TEXT).assertIsDisplayed()
     composeTestRule.onNodeWithText("Network error").assertIsDisplayed()
@@ -104,12 +119,11 @@ class McpTokenScreenTest {
 
   @Test
   fun mcpTokenScreen_createButtonOpensDialog() {
-    coEvery { mockRepository.listTokens() } returns Result.success(emptyList())
-
-    val viewModel = McpTokenViewModel(mockRepository)
+    val repository = FakeRepository(tokens = emptyList())
+    val viewModel = McpTokenViewModel(repository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    waitUntilNotLoading()
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.CREATE_BUTTON).performClick()
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.CREATE_DIALOG).assertIsDisplayed()
@@ -117,12 +131,11 @@ class McpTokenScreenTest {
 
   @Test
   fun mcpTokenScreen_createDialogCancelClosesDialog() {
-    coEvery { mockRepository.listTokens() } returns Result.success(emptyList())
-
-    val viewModel = McpTokenViewModel(mockRepository)
+    val repository = FakeRepository(tokens = emptyList())
+    val viewModel = McpTokenViewModel(repository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    waitUntilNotLoading()
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.CREATE_BUTTON).performClick()
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.CREATE_DIALOG).assertIsDisplayed()
@@ -133,14 +146,14 @@ class McpTokenScreenTest {
 
   @Test
   fun mcpTokenScreen_createDialogConfirmCreatesToken() {
-    coEvery { mockRepository.listTokens() } returns Result.success(emptyList())
-    coEvery { mockRepository.createToken(any(), any()) } returns
-        Result.success(McpToken(tokenId = "new-token", name = "New Token"))
-
-    val viewModel = McpTokenViewModel(mockRepository)
+    val repository =
+        FakeRepository(
+            tokens = emptyList(),
+            createTokenResult = McpToken(tokenId = "new-token", name = "New Token"))
+    val viewModel = McpTokenViewModel(repository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    waitUntilNotLoading()
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.CREATE_BUTTON).performClick()
     composeTestRule
@@ -148,19 +161,18 @@ class McpTokenScreenTest {
         .performTextInput("My New Token")
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.CONFIRM_CREATE).performClick()
 
-    waitUntilNotLoading()
+    composeTestRule.waitForIdle()
 
-    coVerify { mockRepository.createToken(any(), any()) }
+    assert(repository.createTokenCalled)
   }
 
   @Test
   fun mcpTokenScreen_tokenCardDisplaysCopyAndDeleteButtons() {
-    coEvery { mockRepository.listTokens() } returns Result.success(testTokens)
-
-    val viewModel = McpTokenViewModel(mockRepository)
+    val repository = FakeRepository(tokens = testTokens)
+    val viewModel = McpTokenViewModel(repository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    waitUntilNotLoading()
+    composeTestRule.waitForIdle()
 
     composeTestRule
         .onNodeWithTag("${McpTokenScreenTestTags.COPY_BUTTON}_token-123-full-id")
@@ -172,12 +184,11 @@ class McpTokenScreenTest {
 
   @Test
   fun mcpTokenScreen_deleteButtonShowsConfirmationDialog() {
-    coEvery { mockRepository.listTokens() } returns Result.success(testTokens)
-
-    val viewModel = McpTokenViewModel(mockRepository)
+    val repository = FakeRepository(tokens = testTokens)
+    val viewModel = McpTokenViewModel(repository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    waitUntilNotLoading()
+    composeTestRule.waitForIdle()
 
     composeTestRule
         .onNodeWithTag("${McpTokenScreenTestTags.DELETE_BUTTON}_token-123-full-id")
@@ -191,15 +202,14 @@ class McpTokenScreenTest {
 
   @Test
   fun mcpTokenScreen_backButtonCallsOnNavigateBack() {
-    coEvery { mockRepository.listTokens() } returns Result.success(emptyList())
-
+    val repository = FakeRepository(tokens = emptyList())
     var backClicked = false
-    val viewModel = McpTokenViewModel(mockRepository)
+    val viewModel = McpTokenViewModel(repository)
     composeTestRule.setContent {
       McpTokenScreen(viewModel = viewModel, onNavigateBack = { backClicked = true })
     }
 
-    waitUntilNotLoading()
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.BACK_BUTTON).performClick()
     assert(backClicked)
@@ -207,19 +217,19 @@ class McpTokenScreenTest {
 
   @Test
   fun mcpTokenScreen_tokenCreatedDialogIsDisplayedWhenTokenCreated() {
-    coEvery { mockRepository.listTokens() } returns Result.success(emptyList())
-    coEvery { mockRepository.createToken(any(), any()) } returns
-        Result.success(McpToken(tokenId = "new-secret-token-value", name = "New Token"))
-
-    val viewModel = McpTokenViewModel(mockRepository)
+    val repository =
+        FakeRepository(
+            tokens = emptyList(),
+            createTokenResult = McpToken(tokenId = "new-secret-token-value", name = "New Token"))
+    val viewModel = McpTokenViewModel(repository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    waitUntilNotLoading()
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.CREATE_BUTTON).performClick()
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.CONFIRM_CREATE).performClick()
 
-    waitUntilNotLoading()
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.TOKEN_CREATED_DIALOG).assertIsDisplayed()
     composeTestRule.onNodeWithText("Token Created").assertIsDisplayed()
@@ -227,30 +237,29 @@ class McpTokenScreenTest {
 
   @Test
   fun mcpTokenScreen_retryButtonReloadsTokensWhenErrorOccurs() {
-    coEvery { mockRepository.listTokens() } returns Result.failure(Exception("Network error"))
-
-    val viewModel = McpTokenViewModel(mockRepository)
+    val repository = FakeRepository(listTokensError = Exception("Network error"))
+    val viewModel = McpTokenViewModel(repository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    waitUntilNotLoading()
+    composeTestRule.waitForIdle()
 
-    coEvery { mockRepository.listTokens() } returns Result.success(testTokens)
+    repository.setError(null)
+    repository.setTokens(testTokens)
 
     composeTestRule.onNodeWithText("Retry").performClick()
 
-    waitUntilNotLoading()
+    composeTestRule.waitForIdle()
 
-    coVerify(atLeast = 2) { mockRepository.listTokens() }
+    assert(repository.listTokensCalls >= 2)
   }
 
   @Test
   fun mcpTokenScreen_tokenCardDisplaysTokenInfo() {
-    coEvery { mockRepository.listTokens() } returns Result.success(testTokens)
-
-    val viewModel = McpTokenViewModel(mockRepository)
+    val repository = FakeRepository(tokens = testTokens)
+    val viewModel = McpTokenViewModel(repository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    waitUntilNotLoading()
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithText("Test Token").assertIsDisplayed()
     composeTestRule.onNodeWithText("ID: token-123-full", substring = true).assertIsDisplayed()
@@ -265,24 +274,22 @@ class McpTokenScreenTest {
             createdAt = Instant.parse("2024-01-01T00:00:00Z"),
             expiresAt = Instant.parse("2024-02-01T00:00:00Z"))
 
-    coEvery { mockRepository.listTokens() } returns Result.success(listOf(expiredToken))
-
-    val viewModel = McpTokenViewModel(mockRepository)
+    val repository = FakeRepository(tokens = listOf(expiredToken))
+    val viewModel = McpTokenViewModel(repository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    waitUntilNotLoading()
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithText("Expired:", substring = true).assertIsDisplayed()
   }
 
   @Test
   fun mcpTokenScreen_displaysTopBar() {
-    coEvery { mockRepository.listTokens() } returns Result.success(emptyList())
-
-    val viewModel = McpTokenViewModel(mockRepository)
+    val repository = FakeRepository(tokens = emptyList())
+    val viewModel = McpTokenViewModel(repository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    waitUntilNotLoading()
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithText("MCP Tokens").assertIsDisplayed()
   }
