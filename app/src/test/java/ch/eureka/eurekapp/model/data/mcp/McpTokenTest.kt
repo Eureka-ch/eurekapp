@@ -1,3 +1,4 @@
+// Co-authored by Claude Code
 package ch.eureka.eurekapp.model.data.mcp
 
 import java.time.Instant

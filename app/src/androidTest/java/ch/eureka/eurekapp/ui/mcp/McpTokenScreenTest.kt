@@ -1,3 +1,4 @@
+// Co-authored by Claude Code
 package ch.eureka.eurekapp.ui.mcp
 
 import androidx.compose.ui.test.assertIsDisplayed
