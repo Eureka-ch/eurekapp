@@ -11,12 +11,14 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -132,8 +134,11 @@ fun CreateConversationScreen(
                 onExpandedChange = { memberDropdownExpanded = it },
                 onMemberSelect = { member ->
                   viewModel.selectMember(member)
-                  memberDropdownExpanded = false
-                })
+                },
+                onMemberDeselect = {
+                    viewModel.removeMember(it)
+                }
+            )
           }
 
           Spacer(modifier = Modifier.height(Spacing.lg))
@@ -217,7 +222,8 @@ private fun MemberSelection(
     uiState: CreateConversationState,
     memberDropdownExpanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
-    onMemberSelect: (MemberDisplayData) -> Unit
+    onMemberSelect: (MemberDisplayData) -> Unit,
+    onMemberDeselect: (MemberDisplayData) -> Unit
 ) {
   Text(text = "Member", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Medium)
   Spacer(modifier = Modifier.height(Spacing.xs))
@@ -242,7 +248,7 @@ private fun MemberSelection(
           onExpandedChange = onExpandedChange,
           modifier = Modifier.testTag(CreateConversationScreenTestTags.MEMBER_DROPDOWN)) {
             OutlinedTextField(
-                value = uiState.selectedMember?.user?.displayName ?: "",
+                value = "${uiState.selectedMembers.size} members selected",
                 onValueChange = {},
                 readOnly = true,
                 placeholder = { Text("Select a member") },
@@ -256,11 +262,12 @@ private fun MemberSelection(
             ExposedDropdownMenu(
                 expanded = memberDropdownExpanded, onDismissRequest = { onExpandedChange(false) }) {
                   uiState.members.forEach { memberData ->
-                    DropdownMenuItem(
-                        text = { Text(memberData.user.displayName) },
-                        onClick = { onMemberSelect(memberData) },
-                        modifier =
-                            Modifier.testTag(CreateConversationScreenTestTags.MEMBER_DROPDOWN_ITEM))
+                    MemberDropdownItem(
+                     selectedMembersList = uiState.selectedMembers,
+                        memberData = memberData,
+                        onMemberSelect = onMemberSelect,
+                        onMemberDeselect = onMemberDeselect
+                    )
                   }
                 }
           }
@@ -269,10 +276,57 @@ private fun MemberSelection(
 }
 
 @Composable
+private fun MemberDropdownItem(selectedMembersList: List<MemberDisplayData>,
+                               memberData: MemberDisplayData,
+                               onMemberSelect: (MemberDisplayData) -> Unit,
+                               onMemberDeselect: (MemberDisplayData) -> Unit){
+    val memberSelected by remember { mutableStateOf(selectedMembersList.contains(memberData)) }
+    DropdownMenuItem(
+        modifier = Modifier.testTag(CreateConversationScreenTestTags.MEMBER_DROPDOWN_ITEM),
+        text = {
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Checkbox(
+                    checked = selectedMembersList.contains(memberData),
+                    onCheckedChange = { value ->
+                        if(value){
+                            onMemberSelect(memberData)
+                        }else{
+                            onMemberDeselect(memberData)
+                        }
+                    }
+                )
+            }
+            Row(
+                modifier = Modifier.weight(3f),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Text(memberData.user.displayName)
+            }
+        }
+    },
+      onClick = {
+       if(memberSelected){
+           onMemberDeselect(memberData)
+       }else{
+           onMemberSelect(memberData)
+       }
+      })
+}
+
+@Composable
 private fun CreateButton(uiState: CreateConversationState, onClick: () -> Unit) {
   val canCreate =
       uiState.selectedProject != null &&
-          uiState.selectedMember != null &&
+          uiState.selectedMembers != null &&
           !uiState.isCreating &&
           uiState.isConnected
 

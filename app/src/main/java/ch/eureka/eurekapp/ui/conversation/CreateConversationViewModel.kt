@@ -34,7 +34,7 @@ Co-author: Claude 4.5 Sonnet
  * @property projects List of projects the user belongs to.
  * @property selectedProject Currently selected project, or null if none selected.
  * @property members List of members in the selected project (excluding current user).
- * @property selectedMember Currently selected member to create conversation with.
+ * @property selectedMembers Currently selected members to create conversation with.
  * @property isLoadingProjects Whether projects are being loaded.
  * @property isLoadingMembers Whether members are being loaded.
  * @property isCreating Whether a conversation is being created.
@@ -46,7 +46,7 @@ data class CreateConversationState(
     val projects: List<Project> = emptyList(),
     val selectedProject: Project? = null,
     val members: List<MemberDisplayData> = emptyList(),
-    val selectedMember: MemberDisplayData? = null,
+    val selectedMembers: List<MemberDisplayData> = emptyList(),
     val isLoadingProjects: Boolean = false,
     val isLoadingMembers: Boolean = false,
     val isCreating: Boolean = false,
@@ -131,7 +131,7 @@ open class CreateConversationViewModel(
    */
   fun selectProject(project: Project) {
     _baseUiState.update {
-      it.copy(selectedProject = project, selectedMember = null, members = emptyList())
+      it.copy(selectedProject = project, selectedMembers = emptyList(), members = emptyList())
     }
     loadMembersForProject(project.projectId)
   }
@@ -170,7 +170,16 @@ open class CreateConversationViewModel(
    * @param member The member to select for conversation creation.
    */
   fun selectMember(member: MemberDisplayData) {
-    _baseUiState.update { it.copy(selectedMember = member) }
+    _baseUiState.update { it.copy(selectedMembers = it.selectedMembers + member) }
+  }
+
+  /**
+   * Remove a member from the conversation being created.
+   *
+   *@param member member to remove
+   * */
+  fun removeMember(member: MemberDisplayData){
+      _baseUiState.update { it.copy(selectedMembers = it.selectedMembers - member) }
   }
 
   /**
@@ -185,7 +194,7 @@ open class CreateConversationViewModel(
   fun createConversation() {
     val state = _baseUiState.value
     val selectedProject = state.selectedProject ?: return
-    val selectedMember = state.selectedMember ?: return
+    val selectedMembersUserIds = state.selectedMembers.map { (member, user) ->  user.uid }
     val currentUserId = getCurrentUserId() ?: return
 
     viewModelScope.launch {
@@ -193,7 +202,7 @@ open class CreateConversationViewModel(
 
       val existingConversation =
           conversationRepository.findExistingConversation(
-              selectedProject.projectId, currentUserId, selectedMember.user.uid)
+              selectedProject.projectId, currentUserId, *selectedMembersUserIds.toTypedArray())
 
       if (existingConversation != null) {
         _baseUiState.update {
@@ -206,7 +215,7 @@ open class CreateConversationViewModel(
       val conversation =
           Conversation(
               projectId = selectedProject.projectId,
-              memberIds = listOf(currentUserId, selectedMember.user.uid),
+              memberIds = selectedMembersUserIds + currentUserId,
               createdBy = currentUserId,
               createdAt = Timestamp.now())
 
