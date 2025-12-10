@@ -2,7 +2,9 @@ package ch.eureka.eurekapp.ui.mcp
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodes
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -19,6 +21,15 @@ import org.junit.Test
 class McpTokenScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
+
+  private fun waitUntilNotLoading() {
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodes(hasTestTag(McpTokenScreenTestTags.LOADING_INDICATOR))
+          .fetchSemanticsNodes()
+          .isEmpty()
+    }
+  }
 
   private val mockRepository = mockk<McpTokenRepository>(relaxed = true)
 
@@ -42,7 +53,7 @@ class McpTokenScreenTest {
     val viewModel = McpTokenViewModel(mockRepository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    composeTestRule.waitForIdle()
+    waitUntilNotLoading()
 
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.EMPTY_STATE).assertIsDisplayed()
     composeTestRule.onNodeWithText("No MCP tokens yet").assertIsDisplayed()
@@ -55,7 +66,7 @@ class McpTokenScreenTest {
     val viewModel = McpTokenViewModel(mockRepository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    composeTestRule.waitForIdle()
+    waitUntilNotLoading()
 
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.TOKEN_LIST).assertIsDisplayed()
     composeTestRule.onNodeWithText("Test Token").assertIsDisplayed()
@@ -83,7 +94,7 @@ class McpTokenScreenTest {
     val viewModel = McpTokenViewModel(mockRepository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    composeTestRule.waitForIdle()
+    waitUntilNotLoading()
 
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.ERROR_TEXT).assertIsDisplayed()
     composeTestRule.onNodeWithText("Network error").assertIsDisplayed()
@@ -96,7 +107,7 @@ class McpTokenScreenTest {
     val viewModel = McpTokenViewModel(mockRepository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    composeTestRule.waitForIdle()
+    waitUntilNotLoading()
 
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.CREATE_BUTTON).performClick()
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.CREATE_DIALOG).assertIsDisplayed()
@@ -109,7 +120,7 @@ class McpTokenScreenTest {
     val viewModel = McpTokenViewModel(mockRepository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    composeTestRule.waitForIdle()
+    waitUntilNotLoading()
 
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.CREATE_BUTTON).performClick()
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.CREATE_DIALOG).assertIsDisplayed()
@@ -127,7 +138,7 @@ class McpTokenScreenTest {
     val viewModel = McpTokenViewModel(mockRepository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    composeTestRule.waitForIdle()
+    waitUntilNotLoading()
 
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.CREATE_BUTTON).performClick()
     composeTestRule
@@ -135,7 +146,7 @@ class McpTokenScreenTest {
         .performTextInput("My New Token")
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.CONFIRM_CREATE).performClick()
 
-    composeTestRule.waitForIdle()
+    waitUntilNotLoading()
 
     coVerify { mockRepository.createToken(any(), any()) }
   }
@@ -147,7 +158,7 @@ class McpTokenScreenTest {
     val viewModel = McpTokenViewModel(mockRepository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    composeTestRule.waitForIdle()
+    waitUntilNotLoading()
 
     composeTestRule
         .onNodeWithTag("${McpTokenScreenTestTags.COPY_BUTTON}_token-123-full-id")
@@ -164,7 +175,7 @@ class McpTokenScreenTest {
     val viewModel = McpTokenViewModel(mockRepository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    composeTestRule.waitForIdle()
+    waitUntilNotLoading()
 
     composeTestRule
         .onNodeWithTag("${McpTokenScreenTestTags.DELETE_BUTTON}_token-123-full-id")
@@ -186,7 +197,7 @@ class McpTokenScreenTest {
       McpTokenScreen(viewModel = viewModel, onNavigateBack = { backClicked = true })
     }
 
-    composeTestRule.waitForIdle()
+    waitUntilNotLoading()
 
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.BACK_BUTTON).performClick()
     assert(backClicked)
@@ -201,12 +212,12 @@ class McpTokenScreenTest {
     val viewModel = McpTokenViewModel(mockRepository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    composeTestRule.waitForIdle()
+    waitUntilNotLoading()
 
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.CREATE_BUTTON).performClick()
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.CONFIRM_CREATE).performClick()
 
-    composeTestRule.waitForIdle()
+    waitUntilNotLoading()
 
     composeTestRule.onNodeWithTag(McpTokenScreenTestTags.TOKEN_CREATED_DIALOG).assertIsDisplayed()
     composeTestRule.onNodeWithText("Token Created").assertIsDisplayed()
@@ -219,13 +230,13 @@ class McpTokenScreenTest {
     val viewModel = McpTokenViewModel(mockRepository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    composeTestRule.waitForIdle()
+    waitUntilNotLoading()
 
     coEvery { mockRepository.listTokens() } returns Result.success(testTokens)
 
     composeTestRule.onNodeWithText("Retry").performClick()
 
-    composeTestRule.waitForIdle()
+    waitUntilNotLoading()
 
     coVerify(atLeast = 2) { mockRepository.listTokens() }
   }
@@ -237,7 +248,7 @@ class McpTokenScreenTest {
     val viewModel = McpTokenViewModel(mockRepository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    composeTestRule.waitForIdle()
+    waitUntilNotLoading()
 
     composeTestRule.onNodeWithText("Test Token").assertIsDisplayed()
     composeTestRule.onNodeWithText("ID: token-123-full", substring = true).assertIsDisplayed()
@@ -257,7 +268,7 @@ class McpTokenScreenTest {
     val viewModel = McpTokenViewModel(mockRepository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    composeTestRule.waitForIdle()
+    waitUntilNotLoading()
 
     composeTestRule.onNodeWithText("Expired:", substring = true).assertIsDisplayed()
   }
@@ -269,7 +280,7 @@ class McpTokenScreenTest {
     val viewModel = McpTokenViewModel(mockRepository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
-    composeTestRule.waitForIdle()
+    waitUntilNotLoading()
 
     composeTestRule.onNodeWithText("MCP Tokens").assertIsDisplayed()
   }
