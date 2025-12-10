@@ -118,7 +118,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun getProjectsForUserWorks() = runBlocking {
+  fun getProjectsForUser_works() = runBlocking {
     val fakeViewModel =
         ProjectSelectionScreenViewModel(
             projectsRepository = MockedProjectsRepository(),
@@ -130,7 +130,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun getProjectUsersInformationWorks() = runBlocking {
+  fun getProjectUsersInformation_works() = runBlocking {
     val fakeViewModel =
         ProjectSelectionScreenViewModel(
             projectsRepository = MockedProjectsRepository(),
@@ -141,7 +141,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun getProjectUser() = runBlocking {
+  fun getCurrentUser_works() = runBlocking {
     val fakeViewModel =
         ProjectSelectionScreenViewModel(
             projectsRepository = MockedProjectsRepository(),
@@ -152,7 +152,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun attemptToInviteUser() = runBlocking {
+  fun attemptToInviteUser_works() = runBlocking {
     val fakeViewModel =
         ProjectSelectionScreenViewModel(
             projectsRepository = MockedProjectsRepository(),
@@ -176,7 +176,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun attemptToEnterToken() = runBlocking {
+  fun attemptToEnterToken_works() = runBlocking {
     val fakeViewModel =
         ProjectSelectionScreenViewModel(
             projectsRepository = MockedProjectsRepository(),
@@ -199,7 +199,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun testProjectScreenCorrectlyShowsProjectsAndNavigatesToThem() {
+  fun projectScreen_correctlyShowsProjectsAndNavigatesToThem() {
     val fakeViewModel =
         ProjectSelectionScreenViewModel(
             projectsRepository = MockedProjectsRepository(),
@@ -236,7 +236,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun testProjectScreenCorrectlyCallsCreateProjectCallback() {
+  fun projectScreen_correctlyCallsCreateProjectCallback() {
     var createProjectCalled = false
     composeRule.setContent {
       ProjectSelectionScreen(onCreateProjectRequest = { createProjectCalled = true })

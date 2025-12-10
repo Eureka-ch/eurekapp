@@ -62,7 +62,7 @@ class ProjectMembersScreenTest {
   }
 
   @Test
-  fun projectMembersScreenDisplaysLoadingState() {
+  fun projectMembersScreen_displaysLoadingState() {
     uiStateFlow.value = MembersUiState.Loading
 
     composeRule.setContent {
@@ -75,7 +75,7 @@ class ProjectMembersScreenTest {
   }
 
   @Test
-  fun projectMembersScreenDisplaysErrorState() {
+  fun projectMembersScreen_displaysErrorState() {
     val errorMessage = "Network error"
     uiStateFlow.value = MembersUiState.Error(errorMessage)
 
@@ -90,7 +90,7 @@ class ProjectMembersScreenTest {
   }
 
   @Test
-  fun projectMembersScreenDisplaysEmptySuccessState() {
+  fun projectMembersScreen_displaysEmptySuccessState() {
     uiStateFlow.value = MembersUiState.Success("My Project", emptyList())
 
     composeRule.setContent {
@@ -103,7 +103,7 @@ class ProjectMembersScreenTest {
   }
 
   @Test
-  fun projectMembersScreenDisplaysMembersList() {
+  fun projectMembersScreen_displaysMembersList() {
     val user1 = User(uid = "1", displayName = "Alice", photoUrl = "http://site.com/pic.jpg")
     val user2 = User(uid = "2", displayName = "Bob", photoUrl = "")
 
@@ -123,7 +123,7 @@ class ProjectMembersScreenTest {
   }
 
   @Test
-  fun onBackClickTriggersCallback() {
+  fun onBackClick_triggersCallback() {
     var backClicked = false
     uiStateFlow.value = MembersUiState.Loading
 
@@ -139,7 +139,7 @@ class ProjectMembersScreenTest {
   }
 
   @Test
-  fun onRefreshClickTriggersLoadMembers() {
+  fun onRefreshClick_triggersLoadMembers() {
     uiStateFlow.value = MembersUiState.Loading
 
     composeRule.setContent {
@@ -152,7 +152,7 @@ class ProjectMembersScreenTest {
   }
 
   @Test
-  fun memberItemDisplaysProfilePictureWhenUrlPresent() {
+  fun memberItem_displaysProfilePictureWhenUrlPresent() {
     val user = User(uid = "1", displayName = "Alice", photoUrl = "http://example.com/image.png")
 
     composeRule.setContent { MemberItem(user = user, isUserOnline = { false }) }
@@ -161,7 +161,7 @@ class ProjectMembersScreenTest {
   }
 
   @Test
-  fun memberItemDisplaysFallbackIconWhenUrlEmpty() {
+  fun memberItem_displaysFallbackIconWhenUrlEmpty() {
     val user = User(uid = "1", displayName = "Alice", photoUrl = "")
 
     composeRule.setContent { MemberItem(user = user, isUserOnline = { false }) }
@@ -171,7 +171,7 @@ class ProjectMembersScreenTest {
   }
 
   @Test
-  fun memberItemShowsOnlineStatusCorrectly() {
+  fun memberItem_showsOnlineStatusCorrectly() {
     val user = User(uid = "1", displayName = "Alice")
 
     composeRule.setContent { MemberItem(user = user, isUserOnline = { true }) }
@@ -180,7 +180,7 @@ class ProjectMembersScreenTest {
   }
 
   @Test
-  fun memberItemThrowsExceptionWhenDisplayNameIsBlank() {
+  fun memberItem_throwsExceptionWhenDisplayNameIsBlank() {
     val invalidUser = User(uid = "1", displayName = "   ")
 
     assertThrows(IllegalArgumentException::class.java) {
@@ -189,19 +189,19 @@ class ProjectMembersScreenTest {
   }
 
   @Test
-  fun getStatusTextReturnsOnlineWhenIsOnlineTrue() {
+  fun getStatusText_returnsOnlineWhenIsOnlineTrue() {
     val result = getStatusText(Timestamp(Date()), isOnline = true)
     assertEquals("Online", result)
   }
 
   @Test
-  fun getStatusTextReturnsNeverActiveWhenTimestampIsZero() {
+  fun getStatusText_returnsNeverActiveWhenTimestampIsZero() {
     val result = getStatusText(Timestamp(0, 0), isOnline = false)
     assertEquals("Never active", result)
   }
 
   @Test
-  fun getStatusTextReturnsRelativeTime() {
+  fun getStatusText_returnsRelativeTime() {
     val now = System.currentTimeMillis()
     val tenMinutesAgo = now - (10 * 60 * 1000)
     val timestamp = Timestamp(Date(tenMinutesAgo))
@@ -214,7 +214,7 @@ class ProjectMembersScreenTest {
   }
 
   @Test
-  fun getStatusTextLogsAndRethrowsOnError() {
+  fun getStatusText_logsAndRethrowsOnError() {
     mockkStatic(DateUtils::class)
     mockkStatic(Log::class)
 

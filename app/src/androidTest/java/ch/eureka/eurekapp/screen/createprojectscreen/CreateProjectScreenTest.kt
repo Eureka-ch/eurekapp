@@ -100,7 +100,7 @@ class CreateProjectScreenTest : TestCase() {
   }
 
   @Test
-  fun testTextInputFieldsInCreateProjectScreenTest() {
+  fun textInputFieldsInCreateProjectScreen_works() {
     composeRule.setContent { CreateProjectScreen() }
 
     composeRule
@@ -161,7 +161,7 @@ class CreateProjectScreenTest : TestCase() {
   }
 
   @Test
-  fun testDatePicker() {
+  fun datePicker_works() {
     composeRule.setContent { CreateProjectScreen() }
 
     composeRule
@@ -172,7 +172,7 @@ class CreateProjectScreenTest : TestCase() {
   }
 
   @Test
-  fun createProjectWorks() {
+  fun createProject_works() {
     runBlocking {
       val auth = MockedAuthRepositoryFirebase()
       val firebaseProjectsRepository = MockedProjectsRepository()
@@ -181,7 +181,7 @@ class CreateProjectScreenTest : TestCase() {
           CreateProjectViewModel(
               projectsRepository = firebaseProjectsRepository, authenticationRepository = auth)
 
-      val startDateInjectedState = mutableStateOf<String>("24/12/2007")
+      val startDateInjectedState = mutableStateOf("24/12/2007")
 
       var createdProject = false
 
@@ -233,7 +233,7 @@ class CreateProjectScreenTest : TestCase() {
   }
 
   @Test
-  fun testBackButtonFunctionality() {
+  fun backButton_works() {
     val onBackClickCalled = mutableStateOf(false)
     composeRule.setContent { CreateProjectScreen(onBackClick = { onBackClickCalled.value = true }) }
 

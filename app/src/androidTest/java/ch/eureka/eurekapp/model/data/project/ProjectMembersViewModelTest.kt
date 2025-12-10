@@ -47,14 +47,14 @@ class ProjectMembersViewModelTest {
   }
 
   @Test
-  fun initialUiStateIsLoading() = runTest {
+  fun initialUiStatesLoading_works() = runTest {
     val viewModel = ProjectMembersViewModel("p1", projectRepository, userRepository)
 
     assertEquals(MembersUiState.Loading, viewModel.uiState.value)
   }
 
   @Test
-  fun loadMembersSuccessWithEmptyMembers() = runTest {
+  fun loadMembersSuccessWithEmptyMembers_works() = runTest {
     val project = Project(projectId = "p1", name = "Test Project", memberIds = emptyList())
     projectRepository.projectToReturn = project
 
@@ -66,7 +66,7 @@ class ProjectMembersViewModelTest {
   }
 
   @Test
-  fun loadMembersSuccessWithSortedMembers() = runTest {
+  fun loadMembersSuccessWithSortedMembers_works() = runTest {
     val project =
         Project(projectId = "p1", name = "Test Project", memberIds = listOf("u1", "u2", "u3"))
     projectRepository.projectToReturn = project
@@ -91,7 +91,7 @@ class ProjectMembersViewModelTest {
   }
 
   @Test
-  fun loadMembersHandlesProjectNull() = runTest {
+  fun loadMembers_handlesProjectNull() = runTest {
     projectRepository.projectToReturn = null
 
     val viewModel = ProjectMembersViewModel("p1", projectRepository, userRepository)
@@ -102,7 +102,7 @@ class ProjectMembersViewModelTest {
   }
 
   @Test
-  fun loadMembersHandlesRepoException() = runTest {
+  fun loadMembers_handlesRepoException() = runTest {
     projectRepository.shouldThrow = true
 
     val viewModel = ProjectMembersViewModel("p1", projectRepository, userRepository)
@@ -113,7 +113,7 @@ class ProjectMembersViewModelTest {
   }
 
   @Test
-  fun fetchUsersSkipsNullUsers() = runTest {
+  fun fetchUsers_skipsNullUsers() = runTest {
     val project = Project(projectId = "p1", name = "Test Project", memberIds = listOf("u1", "u2"))
     projectRepository.projectToReturn = project
 
@@ -130,7 +130,7 @@ class ProjectMembersViewModelTest {
   }
 
   @Test
-  fun fetchUsersHandlesExceptionForSingleUser() = runTest {
+  fun fetchUsers_handlesExceptionForSingleUser() = runTest {
     val project = Project(projectId = "p1", name = "Test Project", memberIds = listOf("u1", "u2"))
     projectRepository.projectToReturn = project
 
@@ -148,14 +148,14 @@ class ProjectMembersViewModelTest {
   }
 
   @Test
-  fun isUserOnlineReturnsFalseForZeroTimestamp() {
+  fun isUserOnline_returnsFalseForZeroTimestamp() {
     val viewModel = ProjectMembersViewModel("p1", projectRepository, userRepository)
     val timestamp = Timestamp(0, 0)
     assertFalse(viewModel.isUserOnline(timestamp))
   }
 
   @Test
-  fun isUserOnlineReturnsTrueForRecentActivity() {
+  fun isUserOnline_returnsTrueForRecentActivity() {
     val viewModel = ProjectMembersViewModel("p1", projectRepository, userRepository)
     val now = Date()
     val timestamp = Timestamp(now)
@@ -163,7 +163,7 @@ class ProjectMembersViewModelTest {
   }
 
   @Test
-  fun isUserOnlineReturnsFalseForOldActivity() {
+  fun isUserOnline_returnsFalseForOldActivity() {
     val viewModel = ProjectMembersViewModel("p1", projectRepository, userRepository)
     val oldTime = System.currentTimeMillis() - (HEARTBEAT_DURATION + 10000)
     val timestamp = Timestamp(Date(oldTime))
@@ -171,7 +171,7 @@ class ProjectMembersViewModelTest {
   }
 
   @Test
-  fun factoryCreatesViewModelInstance() {
+  fun factory_createsViewModelInstance() {
     val factory = ProjectMembersViewModel.Factory("p1")
     val viewModel = factory.create(ProjectMembersViewModel::class.java)
     assertEquals(MembersUiState.Loading, viewModel.uiState.value)
