@@ -67,7 +67,6 @@ class ActivityDetailScreenTest {
 
   @Test
   fun activityDetailScreen_errorState_displaysErrorMessage() {
-    // Arrange
     coEvery { repository.getActivities(testUserId) } returns flowOf(emptyList())
 
     val userDoc = mockk<DocumentSnapshot>(relaxed = true)
@@ -77,21 +76,18 @@ class ActivityDetailScreenTest {
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
-    // Act
     composeTestRule.setContent {
       ActivityDetailScreen(
           activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
-    // Assert
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ERROR_MESSAGE).assertIsDisplayed()
     composeTestRule.onNodeWithText("Activity not found").assertIsDisplayed()
   }
 
   @Test
   fun activityDetailScreen_activityDetails_displayedCorrectly() {
-    // Arrange
     val activity =
         createActivity(
             testActivityId, EntityType.MEETING, "Team Meeting", ActivityType.CREATED, testEntityId)
@@ -104,14 +100,12 @@ class ActivityDetailScreenTest {
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
-    // Act
     composeTestRule.setContent {
       ActivityDetailScreen(
           activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
-    // Assert
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ACTIVITY_HEADER).assertIsDisplayed()
     composeTestRule
         .onNodeWithTag(ActivityDetailScreenTestTags.ACTIVITY_INFO_CARD)
@@ -132,7 +126,6 @@ class ActivityDetailScreenTest {
 
   @Test
   fun activityDetailScreen_entityButton_displayedForSupportedEntities() {
-    // Arrange - MEETING has detail screen
     val activity =
         createActivity(
             testActivityId,
@@ -149,21 +142,18 @@ class ActivityDetailScreenTest {
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
-    // Act
     composeTestRule.setContent {
       ActivityDetailScreen(
           activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
-    // Assert
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ENTITY_BUTTON).assertIsDisplayed()
     composeTestRule.onNodeWithText("View MEETING").assertIsDisplayed()
   }
 
   @Test
   fun activityDetailScreen_entityButton_notDisplayedForFileEntity() {
-    // Arrange - FILE does not have detail screen
     val activity =
         createActivity(
             testActivityId, EntityType.FILE, "document.pdf", ActivityType.UPLOADED, testEntityId)
@@ -176,20 +166,17 @@ class ActivityDetailScreenTest {
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
-    // Act
     composeTestRule.setContent {
       ActivityDetailScreen(
           activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
-    // Assert
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ENTITY_BUTTON).assertDoesNotExist()
   }
 
   @Test
   fun activityDetailScreen_entityButton_navigatesToCorrectScreen() {
-    // Arrange
     val activity =
         createActivity(
             testActivityId, EntityType.TASK, "Fix bug", ActivityType.UPDATED, testEntityId)
@@ -202,7 +189,6 @@ class ActivityDetailScreenTest {
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
-    // Act
     composeTestRule.setContent {
       ActivityDetailScreen(
           activityId = testActivityId,
@@ -220,7 +206,6 @@ class ActivityDetailScreenTest {
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ENTITY_BUTTON).performClick()
     composeTestRule.waitForIdle()
 
-    // Assert
     assert(navigateToEntityCalled)
     assert(lastEntityType == EntityType.TASK)
     assert(lastEntityId == testEntityId)
@@ -229,7 +214,6 @@ class ActivityDetailScreenTest {
 
   @Test
   fun activityDetailScreen_relatedActivities_displayedCorrectly() {
-    // Arrange
     val mainActivity =
         createActivity(
             testActivityId,
@@ -259,20 +243,32 @@ class ActivityDetailScreenTest {
         flowOf(listOf(mainActivity, relatedActivity1, relatedActivity2))
 
     val userDoc = mockk<DocumentSnapshot>(relaxed = true)
+    every { userDoc.id } returns testUserId
     every { userDoc.getString("displayName") } returns "Test User"
-    every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
+
+    val userDocRef = mockk<com.google.firebase.firestore.DocumentReference>(relaxed = true)
+    every { userDocRef.get() } returns Tasks.forResult(userDoc)
+
+    val querySnapshot = mockk<com.google.firebase.firestore.QuerySnapshot>(relaxed = true)
+    every { querySnapshot.documents } returns listOf(userDoc)
+    val usersQuery = mockk<com.google.firebase.firestore.Query>(relaxed = true)
+    every { usersQuery.get() } returns Tasks.forResult(querySnapshot)
+
+    val usersCollection = mockk<com.google.firebase.firestore.CollectionReference>(relaxed = true)
+    every { usersCollection.document(any()) } returns userDocRef
+    every { usersCollection.whereIn(any<com.google.firebase.firestore.FieldPath>(), any()) } returns
+        usersQuery
+    every { firestore.collection("users") } returns usersCollection
 
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
-    // Act
     composeTestRule.setContent {
       ActivityDetailScreen(
           activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
-    // Assert
     composeTestRule
         .onNodeWithTag(ActivityDetailScreenTestTags.RELATED_ACTIVITIES_SECTION)
         .assertIsDisplayed()
@@ -287,7 +283,6 @@ class ActivityDetailScreenTest {
 
   @Test
   fun activityDetailScreen_noRelatedActivities_displaysMessage() {
-    // Arrange
     val activity =
         createActivity(
             testActivityId, EntityType.MESSAGE, "Hello", ActivityType.CREATED, testEntityId)
@@ -300,14 +295,12 @@ class ActivityDetailScreenTest {
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
-    // Act
     composeTestRule.setContent {
       ActivityDetailScreen(
           activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
-    // Assert
     composeTestRule
         .onNodeWithTag(ActivityDetailScreenTestTags.RELATED_ACTIVITIES_SECTION)
         .assertIsDisplayed()
@@ -320,7 +313,6 @@ class ActivityDetailScreenTest {
 
   @Test
   fun activityDetailScreen_shareButton_clickable() {
-    // Arrange
     val activity =
         createActivity(
             testActivityId, EntityType.TASK, "Task 1", ActivityType.CREATED, testEntityId)
@@ -333,14 +325,12 @@ class ActivityDetailScreenTest {
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
-    // Act
     composeTestRule.setContent {
       ActivityDetailScreen(
           activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
-    // Assert
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.SHARE_BUTTON).assertIsDisplayed()
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.SHARE_BUTTON).assertIsEnabled()
     composeTestRule.onNodeWithText("Share Activity").assertIsDisplayed()
@@ -348,7 +338,6 @@ class ActivityDetailScreenTest {
 
   @Test
   fun activityDetailScreen_deleteButton_opensConfirmationDialog() {
-    // Arrange
     val activity =
         createActivity(
             testActivityId, EntityType.PROJECT, "Project", ActivityType.CREATED, testEntityId)
@@ -361,7 +350,6 @@ class ActivityDetailScreenTest {
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
-    // Act
     composeTestRule.setContent {
       ActivityDetailScreen(
           activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
@@ -371,7 +359,6 @@ class ActivityDetailScreenTest {
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_BUTTON).performClick()
     composeTestRule.waitForIdle()
 
-    // Assert
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_DIALOG).assertIsDisplayed()
     composeTestRule.onNodeWithText("Delete Activity?").assertIsDisplayed()
     composeTestRule.onNodeWithText("This action cannot be undone.").assertIsDisplayed()
@@ -379,7 +366,6 @@ class ActivityDetailScreenTest {
 
   @Test
   fun activityDetailScreen_deleteDialog_cancelButton_closesDialog() {
-    // Arrange
     val activity =
         createActivity(
             testActivityId, EntityType.MEETING, "Meeting", ActivityType.CREATED, testEntityId)
@@ -392,7 +378,6 @@ class ActivityDetailScreenTest {
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
-    // Act
     composeTestRule.setContent {
       ActivityDetailScreen(
           activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
@@ -404,13 +389,11 @@ class ActivityDetailScreenTest {
     composeTestRule.onNodeWithText("Cancel").performClick()
     composeTestRule.waitForIdle()
 
-    // Assert
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_DIALOG).assertDoesNotExist()
   }
 
   @Test
   fun activityDetailScreen_deleteDialog_confirmButton_deletesActivity() {
-    // Arrange
     val activity =
         createActivity(testActivityId, EntityType.TASK, "Task", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
@@ -423,7 +406,6 @@ class ActivityDetailScreenTest {
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
-    // Act
     composeTestRule.setContent {
       ActivityDetailScreen(
           activityId = testActivityId,
@@ -436,25 +418,19 @@ class ActivityDetailScreenTest {
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_BUTTON).performClick()
     composeTestRule.waitForIdle()
 
-    // Verify dialog appears
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_DIALOG).assertIsDisplayed()
 
     composeTestRule.onNodeWithText("Delete").performClick()
     composeTestRule.waitForIdle()
 
-    // Wait for async delete operation to complete
     Thread.sleep(2000)
     composeTestRule.waitForIdle()
 
-    // Assert - Verify dialog is dismissed (delete was initiated)
-    // Note: Navigation callback timing is unpredictable in tests, so we just verify the dialog
-    // closed
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_DIALOG).assertDoesNotExist()
   }
 
   @Test
   fun activityDetailScreen_offlineMode_displaysOfflineMessage() {
-    // Arrange
     every { connectivityObserver.isConnected } returns flowOf(false)
     val activity =
         createActivity(
@@ -468,14 +444,12 @@ class ActivityDetailScreenTest {
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
-    // Act
     composeTestRule.setContent {
       ActivityDetailScreen(
           activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
-    // Assert
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.OFFLINE_MESSAGE).assertIsDisplayed()
     composeTestRule
         .onNodeWithText("You are offline. Some actions are unavailable.")
@@ -484,7 +458,6 @@ class ActivityDetailScreenTest {
 
   @Test
   fun activityDetailScreen_offlineMode_disablesActionButtons() {
-    // Arrange
     every { connectivityObserver.isConnected } returns flowOf(false)
     val activity =
         createActivity(
@@ -498,14 +471,12 @@ class ActivityDetailScreenTest {
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
-    // Act
     composeTestRule.setContent {
       ActivityDetailScreen(
           activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
-    // Assert
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.SHARE_BUTTON).assertIsNotEnabled()
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_BUTTON).assertIsNotEnabled()
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ENTITY_BUTTON).assertIsNotEnabled()
@@ -513,7 +484,6 @@ class ActivityDetailScreenTest {
 
   @Test
   fun activityDetailScreen_backButton_navigatesBack() {
-    // Arrange
     val activity =
         createActivity(testActivityId, EntityType.TASK, "Task", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
@@ -525,7 +495,6 @@ class ActivityDetailScreenTest {
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
-    // Act
     composeTestRule.setContent {
       ActivityDetailScreen(
           activityId = testActivityId,
@@ -538,7 +507,6 @@ class ActivityDetailScreenTest {
     composeTestRule.onNodeWithContentDescription("Navigate back").performClick()
     composeTestRule.waitForIdle()
 
-    // Assert
     assert(navigateBackCalled)
   }
 

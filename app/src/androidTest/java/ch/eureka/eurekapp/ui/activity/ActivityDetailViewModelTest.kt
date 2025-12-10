@@ -45,30 +45,25 @@ class ActivityDetailViewModelTest {
     every { firebaseUser.uid } returns testUserId
     every { auth.currentUser } returns firebaseUser
 
-    // Mock connectivity as connected by default
     every { connectivityObserver.isConnected } returns flowOf(true)
   }
 
   @Test
   fun activityDetailViewModel_initialState_isLoading() {
-    // Arrange
     coEvery { repository.getActivities(testUserId) } returns flowOf(emptyList())
     val userDoc = mockk<DocumentSnapshot>(relaxed = true)
     every { userDoc.getString("displayName") } returns "Test User"
     every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
 
-    // Act
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
-    // Assert - Check that ViewModel was created successfully
     assertNotNull(viewModel)
     assertNotNull(viewModel.uiState)
   }
 
   @Test
   fun activityDetailViewModel_deleteActivity_setsDeleteSuccess() {
-    // Arrange
     val activity =
         createActivity(testActivityId, EntityType.TASK, "Task", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
@@ -81,25 +76,18 @@ class ActivityDetailViewModelTest {
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
-    // Wait for initialization
     Thread.sleep(1000)
 
-    // Act
     viewModel.deleteActivity()
 
-    // Wait longer for state to update
     Thread.sleep(1000)
 
-    // Assert - Just verify the ViewModel exists and deleteActivity was called
-    // The actual state change is complex with flows and might not complete in test environment
     assertNotNull("ViewModel should exist", viewModel)
-    // Verify repository deleteActivity was called by checking the interaction
     coEvery { repository.deleteActivity(testActivityId) }
   }
 
   @Test
   fun activityDetailViewModel_deleteActivityOffline_setsError() {
-    // Arrange
     every { connectivityObserver.isConnected } returns flowOf(false)
     val activity =
         createActivity(
@@ -113,24 +101,18 @@ class ActivityDetailViewModelTest {
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
-    // Wait for initialization
     Thread.sleep(1000)
 
-    // Act
     viewModel.deleteActivity()
 
-    // Wait for state update
     Thread.sleep(1000)
 
-    // Assert - Verify ViewModel exists and connectivity was checked
     assertNotNull("ViewModel should exist", viewModel)
-    // Verify connectivity observer was checked
     every { connectivityObserver.isConnected }
   }
 
   @Test
   fun activityDetailViewModel_markShareSuccess_updatesState() {
-    // Arrange
     val activity =
         createActivity(
             testActivityId, EntityType.MESSAGE, "Message", ActivityType.CREATED, testEntityId)
@@ -143,22 +125,17 @@ class ActivityDetailViewModelTest {
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
-    // Wait for initialization
     Thread.sleep(1000)
 
-    // Act
     viewModel.markShareSuccess()
 
-    // Wait for state update
     Thread.sleep(500)
 
-    // Assert - Verify ViewModel exists and method was called
     assertNotNull("ViewModel should exist", viewModel)
   }
 
   @Test
   fun activityDetailViewModel_clearError_removesErrorMessage() {
-    // Arrange - Create scenario with error
     val activities = emptyList<Activity>()
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
@@ -169,16 +146,12 @@ class ActivityDetailViewModelTest {
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
-    // Wait for error to appear
     Thread.sleep(1000)
 
-    // Act
     viewModel.clearError()
 
-    // Wait for state update
     Thread.sleep(500)
 
-    // Assert - Verify ViewModel exists and clearError was called
     assertNotNull("ViewModel should exist", viewModel)
   }
 
