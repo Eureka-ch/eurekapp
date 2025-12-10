@@ -54,6 +54,12 @@ object FirestorePaths {
   /** Conversation messages subcollection name */
   const val CONVERSATION_MESSAGES = "messages"
 
+  /** Ideas subcollection name */
+  const val IDEAS = "ideas"
+
+  /** Idea messages subcollection name */
+  const val IDEA_MESSAGES = "messages"
+
   fun userPath(userId: String) = "$USERS/$userId"
 
   fun projectPath(projectId: String) = "$PROJECTS/$projectId"
@@ -120,6 +126,16 @@ object FirestorePaths {
 
   fun conversationMessagePath(conversationId: String, messageId: String) =
       "${conversationMessagesPath(conversationId)}/$messageId"
+
+  fun ideasPath(projectId: String) = "${projectPath(projectId)}/$IDEAS"
+
+  fun ideaPath(projectId: String, ideaId: String) = "${ideasPath(projectId)}/$ideaId"
+
+  fun ideaMessagesPath(projectId: String, ideaId: String) =
+      "${ideaPath(projectId, ideaId)}/$IDEA_MESSAGES"
+
+  fun ideaMessagePath(projectId: String, ideaId: String, messageId: String) =
+      "${ideaMessagesPath(projectId, ideaId)}/$messageId"
 
   fun activitiesPath() = ACTIVITIES
 }

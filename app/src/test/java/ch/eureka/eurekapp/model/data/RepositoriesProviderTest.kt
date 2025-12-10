@@ -108,7 +108,9 @@ class RepositoriesProviderTest {
             "_userRepository",
             "_speechToTextRepository",
             "_userPreferencesRepository",
-            "_unifiedSelfNotesRepository")
+            "_unifiedSelfNotesRepository",
+            "_conversationRepository",
+            "_ideasRepository")
 
     lazyFields.forEach { fieldName ->
       try {
@@ -174,6 +176,17 @@ class RepositoriesProviderTest {
   }
 
   @Test
+  fun conversationRepository_shouldNotBeNull() {
+    assertNotNull(
+        "Conversation repository should not be null", RepositoriesProvider.conversationRepository)
+  }
+
+  @Test
+  fun ideasRepository_shouldNotBeNull() {
+    assertNotNull("Ideas repository should not be null", RepositoriesProvider.ideasRepository)
+  }
+
+  @Test
   fun repositoryInstances_shouldBeSingleton() {
     val firstTaskRepo = RepositoriesProvider.taskRepository
     val secondTaskRepo = RepositoriesProvider.taskRepository
@@ -230,6 +243,20 @@ class RepositoriesProviderTest {
         "Multiple accesses should return same user repository instance",
         firstUserRepo,
         secondUserRepo)
+
+    val firstConversationRepo = RepositoriesProvider.conversationRepository
+    val secondConversationRepo = RepositoriesProvider.conversationRepository
+    assertSame(
+        "Multiple accesses should return same conversation repository instance",
+        firstConversationRepo,
+        secondConversationRepo)
+
+    val firstIdeasRepo = RepositoriesProvider.ideasRepository
+    val secondIdeasRepo = RepositoriesProvider.ideasRepository
+    assertSame(
+        "Multiple accesses should return same ideas repository instance",
+        firstIdeasRepo,
+        secondIdeasRepo)
   }
 
   @Test

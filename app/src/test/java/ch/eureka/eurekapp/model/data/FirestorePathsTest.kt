@@ -206,4 +206,38 @@ class FirestorePathsTest {
     val expected = "conversations/conv123"
     TestCase.assertEquals(expected, FirestorePaths.conversationPath(conversationId))
   }
+
+  // ==================== Ideas Tests ====================
+
+  @Test
+  fun ideasPath_shouldReturnCorrectPath() {
+    val projectId = "project123"
+    val expected = "projects/project123/ideas"
+    TestCase.assertEquals(expected, FirestorePaths.ideasPath(projectId))
+  }
+
+  @Test
+  fun ideaPath_shouldReturnCorrectPath() {
+    val projectId = "project123"
+    val ideaId = "idea456"
+    val expected = "projects/project123/ideas/idea456"
+    TestCase.assertEquals(expected, FirestorePaths.ideaPath(projectId, ideaId))
+  }
+
+  @Test
+  fun ideaMessagesPath_shouldReturnCorrectPath() {
+    val projectId = "project123"
+    val ideaId = "idea456"
+    val expected = "projects/project123/ideas/idea456/messages"
+    TestCase.assertEquals(expected, FirestorePaths.ideaMessagesPath(projectId, ideaId))
+  }
+
+  @Test
+  fun ideaMessagePath_shouldReturnCorrectPath() {
+    val projectId = "project123"
+    val ideaId = "idea456"
+    val messageId = "msg789"
+    val expected = "projects/project123/ideas/idea456/messages/msg789"
+    TestCase.assertEquals(expected, FirestorePaths.ideaMessagePath(projectId, ideaId, messageId))
+  }
 }
