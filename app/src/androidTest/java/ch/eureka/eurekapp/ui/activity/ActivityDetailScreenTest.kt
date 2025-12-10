@@ -65,14 +65,17 @@ class ActivityDetailScreenTest {
     every { connectivityObserver.isConnected } returns flowOf(true)
   }
 
+  /** Helper to setup standard Firestore user mocking for simple tests. */
+  private fun setupSimpleUserMock(displayName: String = "Test User") {
+    val userDoc = mockk<DocumentSnapshot>(relaxed = true)
+    every { userDoc.getString("displayName") } returns displayName
+    every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
+  }
+
   @Test
   fun activityDetailScreen_errorState_displaysErrorMessage() {
     coEvery { repository.getActivities(testUserId) } returns flowOf(emptyList())
-
-    val userDoc = mockk<DocumentSnapshot>(relaxed = true)
-    every { userDoc.getString("displayName") } returns "Test User"
-    every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
-
+    setupSimpleUserMock()
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
@@ -93,10 +96,7 @@ class ActivityDetailScreenTest {
             testActivityId, EntityType.MEETING, "Team Meeting", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
 
-    val userDoc = mockk<DocumentSnapshot>(relaxed = true)
-    every { userDoc.getString("displayName") } returns "John Doe"
-    every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
-
+    setupSimpleUserMock("John Doe")
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
@@ -135,10 +135,7 @@ class ActivityDetailScreenTest {
             testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
 
-    val userDoc = mockk<DocumentSnapshot>(relaxed = true)
-    every { userDoc.getString("displayName") } returns "Test User"
-    every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
-
+    setupSimpleUserMock()
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
@@ -159,10 +156,7 @@ class ActivityDetailScreenTest {
             testActivityId, EntityType.FILE, "document.pdf", ActivityType.UPLOADED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
 
-    val userDoc = mockk<DocumentSnapshot>(relaxed = true)
-    every { userDoc.getString("displayName") } returns "Test User"
-    every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
-
+    setupSimpleUserMock()
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
@@ -182,10 +176,7 @@ class ActivityDetailScreenTest {
             testActivityId, EntityType.TASK, "Fix bug", ActivityType.UPDATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
 
-    val userDoc = mockk<DocumentSnapshot>(relaxed = true)
-    every { userDoc.getString("displayName") } returns "Test User"
-    every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
-
+    setupSimpleUserMock()
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
@@ -288,10 +279,7 @@ class ActivityDetailScreenTest {
             testActivityId, EntityType.MESSAGE, "Hello", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
 
-    val userDoc = mockk<DocumentSnapshot>(relaxed = true)
-    every { userDoc.getString("displayName") } returns "Test User"
-    every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
-
+    setupSimpleUserMock()
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
@@ -318,10 +306,7 @@ class ActivityDetailScreenTest {
             testActivityId, EntityType.TASK, "Task 1", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
 
-    val userDoc = mockk<DocumentSnapshot>(relaxed = true)
-    every { userDoc.getString("displayName") } returns "Test User"
-    every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
-
+    setupSimpleUserMock()
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
@@ -343,10 +328,7 @@ class ActivityDetailScreenTest {
             testActivityId, EntityType.PROJECT, "Project", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
 
-    val userDoc = mockk<DocumentSnapshot>(relaxed = true)
-    every { userDoc.getString("displayName") } returns "Test User"
-    every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
-
+    setupSimpleUserMock()
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
@@ -371,10 +353,7 @@ class ActivityDetailScreenTest {
             testActivityId, EntityType.MEETING, "Meeting", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
 
-    val userDoc = mockk<DocumentSnapshot>(relaxed = true)
-    every { userDoc.getString("displayName") } returns "Test User"
-    every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
-
+    setupSimpleUserMock()
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
@@ -399,10 +378,7 @@ class ActivityDetailScreenTest {
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
     coEvery { repository.deleteActivity(testActivityId) } returns Result.success(Unit)
 
-    val userDoc = mockk<DocumentSnapshot>(relaxed = true)
-    every { userDoc.getString("displayName") } returns "Test User"
-    every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
-
+    setupSimpleUserMock()
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
@@ -437,10 +413,7 @@ class ActivityDetailScreenTest {
             testActivityId, EntityType.PROJECT, "Project", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
 
-    val userDoc = mockk<DocumentSnapshot>(relaxed = true)
-    every { userDoc.getString("displayName") } returns "Test User"
-    every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
-
+    setupSimpleUserMock()
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
@@ -464,10 +437,7 @@ class ActivityDetailScreenTest {
             testActivityId, EntityType.MEETING, "Meeting", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
 
-    val userDoc = mockk<DocumentSnapshot>(relaxed = true)
-    every { userDoc.getString("displayName") } returns "Test User"
-    every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
-
+    setupSimpleUserMock()
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
@@ -488,10 +458,7 @@ class ActivityDetailScreenTest {
         createActivity(testActivityId, EntityType.TASK, "Task", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
 
-    val userDoc = mockk<DocumentSnapshot>(relaxed = true)
-    every { userDoc.getString("displayName") } returns "Test User"
-    every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
-
+    setupSimpleUserMock()
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 

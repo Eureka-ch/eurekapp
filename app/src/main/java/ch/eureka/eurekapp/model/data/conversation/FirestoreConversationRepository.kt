@@ -140,19 +140,24 @@ class FirestoreConversationRepository(
           "Conversation has blank projectId - malformed data"
         }
         // Log activity to global feed after successful creation
-        val memberNames = fetchMemberNames(conversationWithId.memberIds, currentUserId)
+        try {
+          val memberNames = fetchMemberNames(conversationWithId.memberIds, currentUserId)
 
-        if (memberNames.isNotEmpty()) {
-          ActivityLogger.logActivity(
-              projectId = conversationWithId.projectId,
-              activityType = ActivityType.CREATED,
-              entityType = EntityType.MESSAGE,
-              entityId = docRef.id,
-              userId = currentUserId,
-              metadata =
-                  mapOf(
-                      "title" to "Conversation with ${memberNames.joinToString(", ")}",
-                      "conversationId" to docRef.id))
+          if (memberNames.isNotEmpty()) {
+            ActivityLogger.logActivity(
+                projectId = conversationWithId.projectId,
+                activityType = ActivityType.CREATED,
+                entityType = EntityType.MESSAGE,
+                entityId = docRef.id,
+                userId = currentUserId,
+                metadata =
+                    mapOf(
+                        "title" to "Conversation with ${memberNames.joinToString(", ")}",
+                        "conversationId" to docRef.id))
+          }
+        } catch (e: Exception) {
+          android.util.Log.e(
+              "FirestoreConversationRepository", "Failed to log conversation creation activity", e)
         }
         docRef.id
       }
@@ -176,22 +181,27 @@ class FirestoreConversationRepository(
   }
 
   private suspend fun logConversationDeletion(conversationId: String, conversation: Conversation?) {
-    val currentUserId = auth.currentUser?.uid ?: return
-    if (conversation == null) return
+    try {
+      val currentUserId = auth.currentUser?.uid ?: return
+      if (conversation == null) return
 
-    val memberNames = fetchMemberNames(conversation.memberIds, currentUserId)
-    if (memberNames.isEmpty()) return
+      val memberNames = fetchMemberNames(conversation.memberIds, currentUserId)
+      if (memberNames.isEmpty()) return
 
-    ActivityLogger.logActivity(
-        projectId = conversation.projectId,
-        activityType = ActivityType.DELETED,
-        entityType = EntityType.MESSAGE,
-        entityId = conversationId,
-        userId = currentUserId,
-        metadata =
-            mapOf(
-                "title" to "Conversation with ${memberNames.joinToString(", ")}",
-                "conversationId" to conversationId))
+      ActivityLogger.logActivity(
+          projectId = conversation.projectId,
+          activityType = ActivityType.DELETED,
+          entityType = EntityType.MESSAGE,
+          entityId = conversationId,
+          userId = currentUserId,
+          metadata =
+              mapOf(
+                  "title" to "Conversation with ${memberNames.joinToString(", ")}",
+                  "conversationId" to conversationId))
+    } catch (e: Exception) {
+      android.util.Log.e(
+          "FirestoreConversationRepository", "Failed to log conversation deletion activity", e)
+    }
   }
 
   private suspend fun fetchMemberNames(
@@ -283,27 +293,32 @@ class FirestoreConversationRepository(
     firestore
         .collection(FirestorePaths.CONVERSATIONS)
         .document(conversationId)
-        .update(
+        .set(
             mapOf(
                 "lastMessageAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
                 "lastMessagePreview" to text.take(100),
-                "lastMessageSenderId" to currentUserId))
+                "lastMessageSenderId" to currentUserId),
+            com.google.firebase.firestore.SetOptions.merge())
         .await()
 
     // Log activity to global feed after successful message send
-    val conversationDoc =
-        firestore.collection(FirestorePaths.CONVERSATIONS).document(conversationId).get().await()
-    val conversation = conversationDoc.toObject(Conversation::class.java)
+    try {
+      val conversationDoc =
+          firestore.collection(FirestorePaths.CONVERSATIONS).document(conversationId).get().await()
+      val conversation = conversationDoc.toObject(Conversation::class.java)
 
-    // Log activity if conversation exists and has a projectId
-    if (conversation != null && conversation.projectId.isNotEmpty()) {
-      ActivityLogger.logActivity(
-          projectId = conversation.projectId,
-          activityType = ActivityType.CREATED,
-          entityType = EntityType.MESSAGE,
-          entityId = message.messageId,
-          userId = currentUserId,
-          metadata = mapOf("title" to text.take(50), "conversationId" to conversationId))
+      // Log activity if conversation exists and has a projectId
+      if (conversation != null && conversation.projectId.isNotEmpty()) {
+        ActivityLogger.logActivity(
+            projectId = conversation.projectId,
+            activityType = ActivityType.CREATED,
+            entityType = EntityType.MESSAGE,
+            entityId = message.messageId,
+            userId = currentUserId,
+            metadata = mapOf("title" to text.take(50), "conversationId" to conversationId))
+      }
+    } catch (e: Exception) {
+      android.util.Log.e("FirestoreConversationRepository", "Failed to log message activity", e)
     }
 
     message
@@ -346,11 +361,12 @@ class FirestoreConversationRepository(
     firestore
         .collection(FirestorePaths.CONVERSATIONS)
         .document(conversationId)
-        .update(
+        .set(
             mapOf(
                 "lastMessageAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
                 "lastMessagePreview" to text.take(100),
-                "lastMessageSenderId" to currentUserId))
+                "lastMessageSenderId" to currentUserId),
+            com.google.firebase.firestore.SetOptions.merge())
         .await()
 
     message
