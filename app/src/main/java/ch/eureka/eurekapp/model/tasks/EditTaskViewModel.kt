@@ -190,8 +190,16 @@ class EditTaskViewModel(
           updateState { copyWithTemporaryPhotoUris(temporaryPhotoUris.filter { it != uri }) }
         }
       }
+    } else if (file is String) {
+      // Remote URL, delete from storage
+      viewModelScope.launch(dispatcher) {
+        fileRepository.deleteFile(file).onFailure { exception ->
+          setErrorMsg("Failed to delete attachment: ${exception.message}")
+        }
+        removeAttachment(index)
+      }
     } else {
-      // For non-temporary attachments (picked files or existing URLs), just remove from list
+      // For non-temporary local attachments, just remove from list
       removeAttachment(index)
     }
   }

@@ -959,4 +959,39 @@ open class ViewTaskScreenTest : TestCase() {
         // Verify download button is not displayed when all attachments are downloaded
         composeTestRule.onNodeWithText("Download All Attachments").assertDoesNotExist()
       }
+
+  @Test
+  fun testAttachmentsAreReadOnlyNoDeleteButton() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+        val attachmentUrl = "https://example.com/document.pdf|document.pdf|application/pdf"
+        setupViewTaskTest(projectId, taskId) {
+          setupTestTask(projectId, taskId, attachmentUrls = listOf(attachmentUrl))
+        }
+
+        // Verify attachments are displayed
+        composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).assertCountEquals(1)
+
+        // Verify no delete button is displayed for read-only attachments
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_ATTACHMENT).assertDoesNotExist()
+      }
+
+  @Test
+  fun testMultipleAttachmentsDisplayedCorrectly() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+        val attachmentUrl1 = "https://example.com/photo.jpg|photo.jpg|image/jpeg"
+        val attachmentUrl2 = "https://example.com/document.pdf|document.pdf|application/pdf"
+        setupViewTaskTest(projectId, taskId) {
+          setupTestTask(projectId, taskId, attachmentUrls = listOf(attachmentUrl1, attachmentUrl2))
+        }
+
+        // Verify both attachments are displayed
+        composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).assertCountEquals(2)
+
+        // Verify no delete buttons for read-only mode
+        composeTestRule.onAllNodesWithTag(CommonTaskTestTags.DELETE_ATTACHMENT).assertCountEquals(0)
+      }
 }

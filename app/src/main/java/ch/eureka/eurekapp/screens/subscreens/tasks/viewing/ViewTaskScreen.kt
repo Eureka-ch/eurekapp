@@ -50,6 +50,7 @@ object ViewTaskScreenTestTags {
   const val ASSIGNED_USERS_SECTION = "assigned_users_section"
   const val ASSIGNED_USER_ITEM = "assigned_user_item"
   const val TASK_STATUS = "task_status"
+  const val DOWNLOAD_ALL_ATTACHMENTS = "download_all_attachments"
 
   fun assignedUserItem(index: Int) = "${ASSIGNED_USER_ITEM}_$index"
 }
@@ -248,9 +249,13 @@ private fun DownloadSection(
           },
           modifier = Modifier.padding(vertical = 4.dp))
     } else {
-      Button(onClick = onDownloadAll, modifier = Modifier.padding(vertical = 4.dp)) {
-        Text("Download All Attachments")
-      }
+      Button(
+          onClick = onDownloadAll,
+          modifier =
+              Modifier.padding(vertical = 4.dp)
+                  .testTag(ViewTaskScreenTestTags.DOWNLOAD_ALL_ATTACHMENTS)) {
+            Text("Download All Attachments")
+          }
     }
   }
 }
