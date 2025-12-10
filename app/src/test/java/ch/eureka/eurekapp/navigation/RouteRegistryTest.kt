@@ -106,7 +106,15 @@ class RouteRegistryTest {
         "OverviewProjectSection should contain CreateInvitation",
         registeredRoutes.any { it.simpleName == "CreateInvitation" })
 
-    assertEquals("OverviewProjectSection should have 1 route", 2, registeredRoutes.size)
+    assertTrue(
+        "OverviewProjectSection should contain TokenEntry",
+        registeredRoutes.any { it.simpleName == "TokenEntry" })
+
+    assertTrue(
+        "OverviewProjectSection should contain ProjectMembers",
+        registeredRoutes.any { it.simpleName == "ProjectMembers" })
+
+    assertEquals("OverviewProjectSection should have 3 route", 3, registeredRoutes.size)
   }
 
   @Test

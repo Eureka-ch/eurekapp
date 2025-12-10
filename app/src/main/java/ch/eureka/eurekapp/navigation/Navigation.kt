@@ -1,7 +1,4 @@
-/*
- * This code was partially written by GPT-5 and Grok.
- * Co-Authored-By: Claude Sonnet 4.5
- */
+/* This code was partially written by Claude Sonnet 4.5, Gemini, chatGPT-5 and Grok. */
 package ch.eureka.eurekapp.navigation
 
 import android.util.Log
@@ -12,6 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -19,6 +17,7 @@ import androidx.navigation.toRoute
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
+import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.model.notifications.NotificationType
 import ch.eureka.eurekapp.screens.Camera
@@ -32,6 +31,7 @@ import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingAudioRecordingScree
 import ch.eureka.eurekapp.screens.subscreens.meetings.MeetingTranscriptViewScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.creation.CreateProjectScreen
 import ch.eureka.eurekapp.screens.subscreens.projects.invitation.CreateInvitationSubscreen
+import ch.eureka.eurekapp.screens.subscreens.projects.members.ProjectMembersScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.AutoAssignResultScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
@@ -57,11 +57,19 @@ import ch.eureka.eurekapp.ui.profile.ProfileScreen
 import ch.eureka.eurekapp.ui.templates.CreateTemplateScreen
 import ch.eureka.eurekapp.ui.templates.CreateTemplateViewModel
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import kotlin.reflect.KClass
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.serialization.Serializable
 
-// part of the code was written by GPT-5, and Grok
+/**
+ * The duration in milliseconds between two ping of the app to firestore for last active tracking.
+ */
+const val HEARTBEAT_DURATION = 180000L // 3 minutes
+
 sealed interface Route {
   // Main screens
   @Serializable data object ProjectSelection : Route
@@ -152,6 +160,8 @@ sealed interface Route {
     @Serializable data class CreateInvitation(val projectId: String) : OverviewProjectSection
 
     @Serializable data object TokenEntry : OverviewProjectSection
+
+    @Serializable data class ProjectMembers(val projectId: String) : OverviewProjectSection
   }
 
   @Serializable data object Camera : Route
@@ -174,31 +184,17 @@ sealed interface Route {
 fun NavigationMenu(
     notificationType: String? = null,
     notificationId: String? = null,
-    notificationProjectId: String? = null
+    notificationProjectId: String? = null,
 ) {
   val navigationController = rememberNavController()
   val testProjectId = "test-project-id"
 
-  // Handle the case where the app has been started by a notification
-  LaunchedEffect(notificationType, notificationId, notificationProjectId) {
-    if (notificationType != null) {
-      when (notificationType) {
-        NotificationType.MEETING_NOTIFICATION.backendTypeString -> {
-          if (notificationId != null && notificationProjectId != null) {
-            navigationController.navigate(
-                Route.MeetingsSection.MeetingDetail(
-                    projectId = notificationProjectId, meetingId = notificationId))
-          }
-        }
-        NotificationType.MESSAGE_NOTIFICATION.backendTypeString -> {
-          Log.d("Navigation", "Not yet implemented")
-        }
-        else -> {
-          // Do nothing
-        }
-      }
-    }
-  }
+  HandleNotificationNavigation(
+      notificationType = notificationType,
+      notificationId = notificationId,
+      notificationProjectId = notificationProjectId,
+      navigationController = navigationController)
+
   RepositoriesProvider.projectRepository
   val auth = Firebase.auth
   Project(
@@ -209,6 +205,12 @@ fun NavigationMenu(
       createdBy = auth.currentUser?.uid ?: "unknown",
       memberIds = listOf(auth.currentUser?.uid ?: "unknown"),
   )
+
+  val userRepository = RepositoriesProvider.userRepository
+  val currentUser = auth.currentUser
+  requireNotNull(currentUser)
+
+  UserHeartbeatEffect(userRepository, currentUser)
 
   Scaffold(
       containerColor = Color.White,
@@ -252,16 +254,16 @@ fun NavigationMenu(
                     onCreateProjectRequest = {
                       navigationController.navigate(Route.ProjectSelectionSection.CreateProject)
                     },
-                    onProjectSelectRequest = { project ->
-                      navigationController.navigate(
-                          Route.OverviewProject(projectId = project.projectId))
-                    },
                     onInputTokenRequest = {
                       navigationController.navigate(Route.OverviewProjectSection.TokenEntry)
                     },
                     onGenerateInviteRequest = { projectId ->
                       navigationController.navigate(
                           Route.OverviewProjectSection.CreateInvitation(projectId = projectId))
+                    },
+                    onSeeProjectMembers = { projectId ->
+                      navigationController.navigate(
+                          Route.OverviewProjectSection.ProjectMembers(projectId = projectId))
                     })
               }
               composable<Route.OverviewProjectSection.TokenEntry> {
@@ -269,6 +271,14 @@ fun NavigationMenu(
                     onTokenValidated = { navigationController.navigate(Route.ProjectSelection) },
                     onBackClick = { navigationController.popBackStack() })
               }
+
+              composable<Route.OverviewProjectSection.ProjectMembers> { backStackEntry ->
+                val route = backStackEntry.toRoute<Route.OverviewProjectSection.ProjectMembers>()
+                ProjectMembersScreen(
+                    projectId = route.projectId,
+                    onBackClick = { navigationController.popBackStack() })
+              }
+
               composable<Route.Profile> {
                 ProfileScreen(
                     onNavigateToActivityFeed = {
@@ -602,6 +612,66 @@ fun NavigationMenu(
               }
             }
       }
+}
+
+/**
+ * Handles navigation events triggered by notifications.
+ *
+ * @param notificationType The type of the notification (e.g., meeting, message).
+ * @param notificationId The ID associated with the notification (e.g., meeting ID).
+ * @param notificationProjectId The project ID associated with the notification.
+ * @param navigationController The [NavHostController] used to perform navigation.
+ */
+@Composable
+private fun HandleNotificationNavigation(
+    notificationType: String?,
+    notificationId: String?,
+    notificationProjectId: String?,
+    navigationController: NavHostController
+) {
+  // Handle the case where the app has been started by a notification
+  LaunchedEffect(notificationType, notificationId, notificationProjectId) {
+    if (notificationType != null) {
+      when (notificationType) {
+        NotificationType.MEETING_NOTIFICATION.backendTypeString -> {
+          if (notificationId != null && notificationProjectId != null) {
+            navigationController.navigate(
+                Route.MeetingsSection.MeetingDetail(
+                    projectId = notificationProjectId, meetingId = notificationId))
+          }
+        }
+        NotificationType.MESSAGE_NOTIFICATION.backendTypeString -> {
+          Log.d("Navigation", "Not yet implemented")
+        }
+        else -> {
+          // Do nothing
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Initiates a periodic heartbeat to update the user's last active timestamp in the repository.
+ *
+ * @param userRepository The repository used to update the user's status.
+ * @param currentUser The currently authenticated [FirebaseUser].
+ */
+@Composable
+private fun UserHeartbeatEffect(userRepository: UserRepository, currentUser: FirebaseUser) {
+  LaunchedEffect(Unit) {
+    while (isActive) {
+      try {
+        userRepository.updateLastActive(currentUser.uid)
+      } catch (c: CancellationException) {
+        throw c
+      } catch (e: Exception) {
+        Log.e("Navigation", "Failed to ping Firestore (heartbeat)", e)
+      }
+      // Wait before the next ping
+      delay(HEARTBEAT_DURATION)
+    }
+  }
 }
 
 private inline fun navigateIfConditionSatisfied(condition: Boolean, navigate: () -> Unit) {
