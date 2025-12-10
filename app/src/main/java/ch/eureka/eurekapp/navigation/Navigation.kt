@@ -208,7 +208,7 @@ fun NavigationMenu(
 
   val userRepository = RepositoriesProvider.userRepository
   val currentUser = auth.currentUser
-  require(currentUser != null)
+  requireNotNull(currentUser)
 
   UserHeartbeatEffect(userRepository, currentUser)
 
