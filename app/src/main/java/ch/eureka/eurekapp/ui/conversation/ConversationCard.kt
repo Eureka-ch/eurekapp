@@ -9,15 +9,20 @@ package ch.eureka.eurekapp.ui.conversation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -154,9 +159,53 @@ fun ConversationCard(
         Row(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically) {
-              MemberAvatar(displayData.otherMemberPhotoUrl, displayData.otherMemberName)
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                //show instagram like photos of members
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ){
+                    if(displayData.otherMembers.size > 1){
+                        Row(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+                            MemberAvatar(displayData.otherMembersPhotoUrl.getOrNull(0) ?: "",
+                                displayData.otherMembers.getOrNull(0) ?: "")
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxSize().offset(x = 10.dp, y = 10.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+                            MemberAvatar(displayData.otherMembersPhotoUrl.getOrNull(1) ?: "",
+                                displayData.otherMembers.getOrNull(1) ?: "")
+                        }
+                    }else if(displayData.otherMembers.isNotEmpty()){ //coversations can not have less than 2 members
+                        Row(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+                            MemberAvatar(displayData.otherMembersPhotoUrl.getOrNull(0) ?: "",
+                                displayData.otherMembers.getOrNull(0) ?: "")
+                        }
+                    }
+                }
+            }
               Spacer(modifier = Modifier.width(12.dp))
-              ConversationCardContent(displayData)
+              Row(
+                  modifier = Modifier.weight(4f),
+                  horizontalArrangement = Arrangement.Center,
+                  verticalAlignment = Alignment.CenterVertically
+              ){
+                  ConversationCardContent(displayData)
+              }
             }
       }
 }
@@ -164,8 +213,8 @@ fun ConversationCard(
 @Composable
 private fun RowScope.ConversationCardContent(displayData: ConversationDisplayData) {
   Column(modifier = Modifier.weight(1f)) {
-    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-      MemberNameText(displayData.otherMemberName, displayData.hasUnread)
+    Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), verticalAlignment = Alignment.CenterVertically) {
+      MemberNameText(displayData.otherMembers.joinToString(", "), displayData.hasUnread)
       displayData.lastMessageTime?.let { LastMessageTimeText(it) }
     }
 

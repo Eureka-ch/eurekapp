@@ -28,8 +28,8 @@ class ConversationCardTest {
   ) =
       ConversationDisplayData(
           conversation = Conversation(conversationId = "conv1", projectId = "p1"),
-          otherMemberName = otherMemberName,
-          otherMemberPhotoUrl = "",
+          otherMembers = otherMemberName,
+          otherMembersPhotoUrl = "",
           projectName = projectName,
           lastMessagePreview = lastMessagePreview,
           lastMessageTime = lastMessageTime,

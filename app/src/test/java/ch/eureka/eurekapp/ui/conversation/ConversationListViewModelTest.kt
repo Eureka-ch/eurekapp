@@ -90,9 +90,9 @@ class ConversationListViewModelTest {
     // Assert: Verify display data is correctly resolved
     assertFalse(state.isLoading)
     assertEquals(1, state.conversations.size)
-    assertEquals("John Doe", state.conversations[0].otherMemberName)
+    assertEquals("John Doe", state.conversations[0].otherMembers)
     assertEquals("Test Project", state.conversations[0].projectName)
-    assertEquals("http://photo.url", state.conversations[0].otherMemberPhotoUrl)
+    assertEquals("http://photo.url", state.conversations[0].otherMembersPhotoUrl)
   }
 
   @Test
@@ -125,8 +125,8 @@ class ConversationListViewModelTest {
     val state = viewModel.uiState.value
 
     // Assert: Fallback values are used for unknown user
-    assertEquals("Unknown User", state.conversations[0].otherMemberName)
-    assertEquals("", state.conversations[0].otherMemberPhotoUrl)
+    assertEquals("Unknown User", state.conversations[0].otherMembers)
+    assertEquals("", state.conversations[0].otherMembersPhotoUrl)
   }
 
   @Test
