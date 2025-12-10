@@ -67,7 +67,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun errorState_displaysErrorMessage() {
+  fun activityDetailScreen_errorState_displaysErrorMessage() {
     // Arrange
     coEvery { repository.getActivities(testUserId) } returns flowOf(emptyList())
 
@@ -91,7 +91,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun activityDetails_displayedCorrectly() {
+  fun activityDetailScreen_activityDetails_displayedCorrectly() {
     // Arrange
     val activity =
         createActivity(
@@ -122,7 +122,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun entityButton_displayedForSupportedEntities() {
+  fun activityDetailScreen_entityButton_displayedForSupportedEntities() {
     // Arrange - MEETING has detail screen
     val activity =
         createActivity(
@@ -153,7 +153,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun entityButton_notDisplayedForFileEntity() {
+  fun activityDetailScreen_entityButton_notDisplayedForFileEntity() {
     // Arrange - FILE does not have detail screen
     val activity =
         createActivity(
@@ -179,7 +179,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun entityButton_navigatesToCorrectScreen() {
+  fun activityDetailScreen_entityButton_navigatesToCorrectScreen() {
     // Arrange
     val activity =
         createActivity(
@@ -219,7 +219,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun relatedActivities_displayedCorrectly() {
+  fun activityDetailScreen_relatedActivities_displayedCorrectly() {
     // Arrange
     val mainActivity =
         createActivity(
@@ -275,7 +275,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun noRelatedActivities_displaysMessage() {
+  fun activityDetailScreen_noRelatedActivities_displaysMessage() {
     // Arrange
     val activity =
         createActivity(
@@ -304,7 +304,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun shareButton_clickable() {
+  fun activityDetailScreen_shareButton_clickable() {
     // Arrange
     val activity =
         createActivity(
@@ -332,7 +332,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun deleteButton_opensConfirmationDialog() {
+  fun activityDetailScreen_deleteButton_opensConfirmationDialog() {
     // Arrange
     val activity =
         createActivity(
@@ -363,7 +363,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun deleteDialog_cancelButton_closesDialog() {
+  fun activityDetailScreen_deleteDialog_cancelButton_closesDialog() {
     // Arrange
     val activity =
         createActivity(
@@ -394,7 +394,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun deleteDialog_confirmButton_deletesActivity() {
+  fun activityDetailScreen_deleteDialog_confirmButton_deletesActivity() {
     // Arrange
     val activity =
         createActivity(
@@ -438,7 +438,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun offlineMode_displaysOfflineMessage() {
+  fun activityDetailScreen_offlineMode_displaysOfflineMessage() {
     // Arrange
     every { connectivityObserver.isConnected } returns flowOf(false)
     val activity =
@@ -466,7 +466,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun offlineMode_disablesActionButtons() {
+  fun activityDetailScreen_offlineMode_disablesActionButtons() {
     // Arrange
     every { connectivityObserver.isConnected } returns flowOf(false)
     val activity =
@@ -495,7 +495,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun backButton_navigatesBack() {
+  fun activityDetailScreen_backButton_navigatesBack() {
     // Arrange
     val activity =
         createActivity(

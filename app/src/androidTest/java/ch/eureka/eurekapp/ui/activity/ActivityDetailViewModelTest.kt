@@ -50,7 +50,7 @@ class ActivityDetailViewModelTest {
   }
 
   @Test
-  fun viewModel_initialState_isLoading() {
+  fun activityDetailViewModel_initialState_isLoading() {
     // Arrange
     coEvery { repository.getActivities(testUserId) } returns flowOf(emptyList())
     val userDoc = mockk<DocumentSnapshot>(relaxed = true)
@@ -67,7 +67,7 @@ class ActivityDetailViewModelTest {
   }
 
   @Test
-  fun deleteActivity_setsDeleteSuccess() {
+  fun activityDetailViewModel_deleteActivity_setsDeleteSuccess() {
     // Arrange
     val activity =
         createActivity(
@@ -99,7 +99,7 @@ class ActivityDetailViewModelTest {
   }
 
   @Test
-  fun deleteActivity_offline_setsError() {
+  fun activityDetailViewModel_deleteActivityOffline_setsError() {
     // Arrange
     every { connectivityObserver.isConnected } returns flowOf(false)
     val activity =
@@ -130,7 +130,7 @@ class ActivityDetailViewModelTest {
   }
 
   @Test
-  fun markShareSuccess_updatesState() {
+  fun activityDetailViewModel_markShareSuccess_updatesState() {
     // Arrange
     val activity =
         createActivity(
@@ -158,7 +158,7 @@ class ActivityDetailViewModelTest {
   }
 
   @Test
-  fun clearError_removesErrorMessage() {
+  fun activityDetailViewModel_clearError_removesErrorMessage() {
     // Arrange - Create scenario with error
     val activities = emptyList<Activity>()
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
