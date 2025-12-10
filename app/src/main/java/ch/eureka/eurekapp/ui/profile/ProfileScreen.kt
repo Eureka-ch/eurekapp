@@ -80,6 +80,7 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = viewModel(),
     firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance(),
     onNavigateToActivityFeed: () -> Unit = {},
+    onNavigateToMcpTokens: () -> Unit = {},
 ) {
   val uiState by viewModel.uiState.collectAsState()
 
@@ -178,6 +179,16 @@ fun ProfileScreen(
                               containerColor = MaterialTheme.colorScheme.primaryContainer,
                               contentColor = MaterialTheme.colorScheme.onPrimaryContainer)) {
                         Text("View Activity Feed")
+                      }
+
+                  Button(
+                      onClick = onNavigateToMcpTokens,
+                      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                      colors =
+                          ButtonDefaults.buttonColors(
+                              containerColor = MaterialTheme.colorScheme.primaryContainer,
+                              contentColor = MaterialTheme.colorScheme.onPrimaryContainer)) {
+                        Text("MCP Tokens")
                       }
 
                   if (!uiState.isEditing) {

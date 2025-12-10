@@ -1,4 +1,4 @@
-// Portions of this code were generated with the help of Grok.
+/* Portions of this file were written with the help of Gemini and Grok. */
 package ch.eureka.eurekapp.screens.subscreens.projects.creation
 
 import androidx.compose.foundation.BorderStroke
@@ -118,7 +118,7 @@ private val defaultPopupProperties =
  * @property CALENDAR_ICON_BUTTON_START Tag for the calendar icon button associated with the start
  *   date.
  * @property CALENDAR_ICON_BUTTON_END Tag for the calendar icon button associated with the end date.
- * @property CREATE_RPOJECT_BUTTON Tag for the "Create Project" button.
+ * @property CREATE_PROJECT_BUTTON Tag for the "Create Project" button.
  * @property BACK_BUTTON Tag for the back button.
  * @function createProjectStatusTestTag Generates a dynamic test tag for a given ProjectStatus.
  */
@@ -135,7 +135,7 @@ object CreateProjectScreenTestTags {
   const val CALENDAR_ICON_BUTTON_START = "calendar icon start"
   const val CALENDAR_ICON_BUTTON_END = "calendar icon end"
 
-  const val CREATE_RPOJECT_BUTTON = "create project button"
+  const val CREATE_PROJECT_BUTTON = "create project button"
   const val BACK_BUTTON = "back_button"
 
   fun createProjectStatusTestTag(status: ProjectStatus): String {
@@ -160,25 +160,25 @@ fun CreateProjectScreen(
     scrollState: ScrollState = rememberScrollState(),
     onBackClick: () -> Unit = {}
 ) {
-  val projectName = remember { mutableStateOf<String>("") }
-  val projectNameError = remember { mutableStateOf<Boolean>(false) }
+  val projectName = remember { mutableStateOf("") }
+  val projectNameError = remember { mutableStateOf(false) }
 
-  val projectDescription = remember { mutableStateOf<String>("") }
-  val projectDescriptionError = remember { mutableStateOf<Boolean>(false) }
+  val projectDescription = remember { mutableStateOf("") }
+  val projectDescriptionError = remember { mutableStateOf(false) }
 
-  val startDateError = remember { mutableStateOf<Boolean>(false) }
+  val startDateError = remember { mutableStateOf(false) }
 
-  val endDate = remember { mutableStateOf<String>("") }
-  val endDateError = remember { mutableStateOf<Boolean>(false) }
+  val endDate = remember { mutableStateOf("") }
+  val endDateError = remember { mutableStateOf(false) }
 
-  val projectStatus = remember { mutableStateOf<ProjectStatus>(ProjectStatus.OPEN) }
+  val projectStatus = remember { mutableStateOf(ProjectStatus.OPEN) }
 
-  val enableGoogleDriveFolderChecked = remember { mutableStateOf<Boolean>(false) }
-  val linkGithubRepository = remember { mutableStateOf<Boolean>(false) }
+  val enableGoogleDriveFolderChecked = remember { mutableStateOf(false) }
+  val linkGithubRepository = remember { mutableStateOf(false) }
 
-  val githubUrl = remember { mutableStateOf<String>("") }
+  val githubUrl = remember { mutableStateOf("") }
 
-  var failedToCreateProjectText = remember { mutableStateOf<String>("") }
+  val failedToCreateProjectText = remember { mutableStateOf("") }
 
   Scaffold(
       topBar = {
@@ -349,7 +349,7 @@ fun CreateProjectScreen(
                                         Modifier.width(140.dp)
                                             .height(40.dp)
                                             .testTag(
-                                                CreateProjectScreenTestTags.CREATE_RPOJECT_BUTTON),
+                                                CreateProjectScreenTestTags.CREATE_PROJECT_BUTTON),
                                     onClick = {
                                       /** The method that handles the creation of a project */
                                       projectNameError.value =
@@ -479,7 +479,7 @@ fun CreateProjectTextField(
     title: String,
     textValue: MutableState<String>,
     placeHolderText: String,
-    isErrorState: MutableState<Boolean> = remember { mutableStateOf<Boolean>(false) },
+    isErrorState: MutableState<Boolean> = remember { mutableStateOf(false) },
     inputIsError: (String) -> Boolean,
     errorText: String,
     minLine: Int = 1,
@@ -661,8 +661,7 @@ private fun ProjectStateSelectionMenu(projectStatus: MutableState<ProjectStatus>
 }
 
 private val checkBoxVerticalPadding = 5.dp
-private val checkBoxHorizontalpadding = 6.dp
-private val checkBoxShape = RoundedCornerShape(3.dp)
+private val checkBoxHorizontalPadding = 6.dp
 
 /**
  * A reusable checkbox component with a label, used for enabling or toggling options in the UI.
@@ -685,7 +684,7 @@ private fun CheckboxOptionComponent(title: String, value: MutableState<Boolean>,
   Row(
       modifier =
           Modifier.padding(
-              vertical = checkBoxVerticalPadding, horizontal = checkBoxHorizontalpadding),
+              vertical = checkBoxVerticalPadding, horizontal = checkBoxHorizontalPadding),
       horizontalArrangement = Arrangement.Start,
       verticalAlignment = Alignment.CenterVertically) {
         Checkbox(

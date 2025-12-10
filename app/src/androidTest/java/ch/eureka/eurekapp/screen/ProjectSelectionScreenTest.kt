@@ -1,3 +1,4 @@
+/* Portions of this code were generated with the help of Gemini and chatGPT (GPT-5). */
 package ch.eureka.eurekapp.screen
 
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -38,10 +39,10 @@ class ProjectSelectionScreenTest : TestCase() {
 
   private class MockedProjectsRepository : ProjectRepository {
     override fun getProjectById(projectId: String): Flow<Project?> {
-      if (projectId == fakeProject1.projectId) {
-        return flowOf(fakeProject1)
+      return if (projectId == fakeProject1.projectId) {
+        flowOf(fakeProject1)
       } else {
-        return flowOf(fakeProject2)
+        flowOf(fakeProject2)
       }
     }
 
@@ -66,10 +67,10 @@ class ProjectSelectionScreenTest : TestCase() {
     }
 
     override fun getMembers(projectId: String): Flow<List<Member>> {
-      if (projectId == fakeProject1.projectId) {
-        return flowOf(listOf(Member().copy(userId = "user1"), Member().copy(userId = "user2")))
+      return if (projectId == fakeProject1.projectId) {
+        flowOf(listOf(Member().copy(userId = "user1"), Member().copy(userId = "user2")))
       } else {
-        return flowOf(listOf(Member().copy(userId = "user1")))
+        flowOf(listOf(Member().copy(userId = "user1")))
       }
     }
 
@@ -117,7 +118,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun getProjectsForUserWorks() = runBlocking {
+  fun getProjectsForUser_works() = runBlocking {
     val fakeViewModel =
         ProjectSelectionScreenViewModel(
             projectsRepository = MockedProjectsRepository(),
@@ -129,7 +130,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun getProjectUsersInformationWorks() = runBlocking {
+  fun getProjectUsersInformation_works() = runBlocking {
     val fakeViewModel =
         ProjectSelectionScreenViewModel(
             projectsRepository = MockedProjectsRepository(),
@@ -140,7 +141,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun getProjectUser() = runBlocking {
+  fun getCurrentUser_works() = runBlocking {
     val fakeViewModel =
         ProjectSelectionScreenViewModel(
             projectsRepository = MockedProjectsRepository(),
@@ -151,7 +152,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun attemptToInviteUser() = runBlocking {
+  fun attemptToInviteUser_works() = runBlocking {
     val fakeViewModel =
         ProjectSelectionScreenViewModel(
             projectsRepository = MockedProjectsRepository(),
@@ -163,7 +164,6 @@ class ProjectSelectionScreenTest : TestCase() {
       ProjectSelectionScreen(
           projectSelectionScreenViewModel = fakeViewModel,
           onCreateProjectRequest = {},
-          onProjectSelectRequest = { project -> },
           onGenerateInviteRequest = { invitedUser = true })
     }
 
@@ -176,7 +176,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun attemptToEnterToken() = runBlocking {
+  fun attemptToEnterToken_works() = runBlocking {
     val fakeViewModel =
         ProjectSelectionScreenViewModel(
             projectsRepository = MockedProjectsRepository(),
@@ -188,7 +188,6 @@ class ProjectSelectionScreenTest : TestCase() {
       ProjectSelectionScreen(
           projectSelectionScreenViewModel = fakeViewModel,
           onCreateProjectRequest = {},
-          onProjectSelectRequest = { project -> },
           onInputTokenRequest = { inputToken = true })
     }
 
@@ -200,7 +199,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun testProjectScreenCorrectlyShowsProjectsAndNavigatesToThem() {
+  fun projectScreen_correctlyShowsProjectsAndNavigatesToThem() {
     val fakeViewModel =
         ProjectSelectionScreenViewModel(
             projectsRepository = MockedProjectsRepository(),
@@ -213,11 +212,11 @@ class ProjectSelectionScreenTest : TestCase() {
       ProjectSelectionScreen(
           projectSelectionScreenViewModel = fakeViewModel,
           onCreateProjectRequest = {},
-          onProjectSelectRequest = { project ->
-            if (project.projectId == "test-project-1") {
+          onSeeProjectMembers = { projectId ->
+            if (projectId == "test-project-1") {
               project1HasBeenNavigatedTo = true
             }
-            if (project.projectId == "test-project-2") {
+            if (projectId == "test-project-2") {
               project2HasBeenNavigatedTo = true
             }
           })
@@ -226,12 +225,10 @@ class ProjectSelectionScreenTest : TestCase() {
     composeRule.waitForIdle()
 
     composeRule
-        .onNodeWithTag(
-            ProjectSelectionScreenTestTags.getNavigateButtonTestTagForButton("test-project-1"))
+        .onNodeWithTag(ProjectSelectionScreenTestTags.getShowMembersButtonTestTag("test-project-1"))
         .performClick()
     composeRule
-        .onNodeWithTag(
-            ProjectSelectionScreenTestTags.getNavigateButtonTestTagForButton("test-project-2"))
+        .onNodeWithTag(ProjectSelectionScreenTestTags.getShowMembersButtonTestTag("test-project-2"))
         .performClick()
 
     assertEquals(true, project1HasBeenNavigatedTo)
@@ -239,11 +236,10 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun testProjectScreenCorrectlyCallsCreateProjectCallback() {
+  fun projectScreen_correctlyCallsCreateProjectCallback() {
     var createProjectCalled = false
     composeRule.setContent {
-      ProjectSelectionScreen(
-          onProjectSelectRequest = {}, onCreateProjectRequest = { createProjectCalled = true })
+      ProjectSelectionScreen(onCreateProjectRequest = { createProjectCalled = true })
     }
     composeRule.waitForIdle()
     composeRule.onNodeWithTag(ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON).performClick()
