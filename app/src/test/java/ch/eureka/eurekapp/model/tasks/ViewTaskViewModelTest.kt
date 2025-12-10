@@ -733,4 +733,66 @@ class ViewTaskViewModelTest {
     coVerify { anyConstructed<DownloadService>().downloadFile(url, "document.pdf") }
     coVerify { mockDownloadedFileDao.insert(match { it.fileName == "document.pdf" }) }
   }
+
+  @Test
+  fun downloadAllAttachments_updatesProgressCorrectly() = runTest {
+    val projectId = "project123"
+    val taskId = "task123"
+    val url1 = "http://example.com/file1.pdf"
+    val url2 = "http://example.com/file2.pdf"
+    val task =
+        Task(
+            taskID = taskId,
+            projectId = projectId,
+            title = "Test Task",
+            description = "Test Description",
+            assignedUserIds = emptyList(),
+            dueDate = Timestamp.now(),
+            attachmentUrls =
+                listOf("$url1|file1.pdf|application/pdf", "$url2|file2.pdf|application/pdf"),
+            status = TaskStatus.TODO,
+            createdBy = "user1")
+
+    every { mockTaskRepository.getTaskById(projectId, taskId) } returns flowOf(task)
+    coEvery { mockDownloadedFileDao.isDownloaded(any()) } returns false
+    coEvery { mockDownloadedFileDao.insert(any()) } returns Unit
+
+    mockkConstructor(DownloadService::class)
+    val mockUri1 = mockk<Uri>()
+    val mockUri2 = mockk<Uri>()
+    every { mockUri1.toString() } returns "file:///local/file1.pdf"
+    every { mockUri2.toString() } returns "file:///local/file2.pdf"
+    coEvery { anyConstructed<DownloadService>().downloadFile(url1, "file1.pdf") } returns
+        Result.success(mockUri1)
+    coEvery { anyConstructed<DownloadService>().downloadFile(url2, "file2.pdf") } returns
+        Result.success(mockUri2)
+
+    viewModel =
+        ViewTaskViewModel(
+            projectId,
+            taskId,
+            mockDownloadedFileDao,
+            mockTaskRepository,
+            mockTemplateRepository,
+            mockConnectivityObserver,
+            mockUserRepository,
+            testDispatcher)
+    advanceUntilIdle()
+
+    // Ensure uiState is activated and contains the task attachment metadata before downloading
+    viewModel.uiState.first()
+
+    val mockContext = mockk<android.content.Context>(relaxed = true)
+
+    // Start download
+    viewModel.downloadAllAttachments(listOf(url1, url2), mockContext)
+    advanceUntilIdle()
+
+    // With UnconfinedTestDispatcher, the download completes immediately
+    // Check final progress state
+    val finalState = viewModel.uiState.value.downloadProgress
+    assertFalse(finalState.isDownloading)
+    assertEquals(2, finalState.downloadedCount)
+    assertEquals(2, finalState.totalToDownload)
+  }
 }

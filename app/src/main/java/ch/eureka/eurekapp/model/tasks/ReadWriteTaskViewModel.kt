@@ -53,6 +53,7 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
   companion object {
     const val MAX_FILE_SIZE_MB = 100L
     const val MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024L * 1024L
+    const val UPLOAD_TIMEOUT_MS = 60000L
   }
 
   abstract override val uiState: StateFlow<T>
@@ -197,6 +198,9 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
             // For file:// URIs, use lastPathSegment
             uri.lastPathSegment ?: "attachment_${System.currentTimeMillis()}"
           }
+      // Sanitize filename by replacing | with _
+      val sanitizedFileName = fileName.replace("|", "_")
+
       val mimeType = context.contentResolver.getType(uri) ?: "application/octet-stream"
       val extension =
           when {
@@ -207,10 +211,10 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
             else -> ""
           }
       val finalFileName =
-          if (extension.isNotEmpty() && !fileName.endsWith(extension)) {
-            fileName + extension
+          if (extension.isNotEmpty() && !sanitizedFileName.endsWith(extension)) {
+            sanitizedFileName + extension
           } else {
-            fileName
+            sanitizedFileName
           }
       val path = StoragePaths.taskAttachmentPath(projectId, taskId, finalFileName)
 
@@ -227,7 +231,8 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
 
       // Upload using file descriptor to avoid reopening
       val fileUrl =
-          withTimeout(60000L) { fileRepository.uploadFile(path, fileDescriptor) }.getOrThrow()
+          withTimeout(UPLOAD_TIMEOUT_MS) { fileRepository.uploadFile(path, fileDescriptor) }
+              .getOrThrow()
       fileDescriptor.close()
 
       // Store metadata as "url|name|mime"
