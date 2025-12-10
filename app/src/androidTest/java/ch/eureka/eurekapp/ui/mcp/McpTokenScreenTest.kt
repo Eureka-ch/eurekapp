@@ -1,11 +1,10 @@
 // Co-authored by Claude Code
 package ch.eureka.eurekapp.ui.mcp
 
+import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
-import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onAllNodes
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -25,10 +24,12 @@ class McpTokenScreenTest {
 
   private fun waitUntilNotLoading() {
     composeTestRule.waitUntil(timeoutMillis = 5000) {
-      composeTestRule
-          .onAllNodes(hasTestTag(McpTokenScreenTestTags.LOADING_INDICATOR))
-          .fetchSemanticsNodes()
-          .isEmpty()
+      try {
+        composeTestRule.onNodeWithTag(McpTokenScreenTestTags.LOADING_INDICATOR).assertDoesNotExist()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
     }
   }
 
