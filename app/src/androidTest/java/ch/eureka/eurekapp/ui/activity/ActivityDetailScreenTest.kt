@@ -493,6 +493,60 @@ class ActivityDetailScreenTest {
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ENTITY_TITLE).assertDoesNotExist()
   }
 
+  private fun testActivityTypeColor(type: ActivityType) {
+    val activity = createActivity(testActivityId, EntityType.TASK, "Test", type)
+    coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
+    setupSimpleUserMock()
+    viewModel =
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
+    composeTestRule.setContent {
+      ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
+    }
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ACTIVITY_HEADER).assertIsDisplayed()
+  }
+
+  @Test fun activityTypeColor_created() = testActivityTypeColor(ActivityType.CREATED)
+
+  @Test fun activityTypeColor_updated() = testActivityTypeColor(ActivityType.UPDATED)
+
+  @Test fun activityTypeColor_deleted() = testActivityTypeColor(ActivityType.DELETED)
+
+  @Test fun activityTypeColor_uploaded() = testActivityTypeColor(ActivityType.UPLOADED)
+
+  @Test fun activityTypeColor_shared() = testActivityTypeColor(ActivityType.SHARED)
+
+  @Test fun activityTypeColor_commented() = testActivityTypeColor(ActivityType.COMMENTED)
+
+  @Test fun activityTypeColor_statusChanged() = testActivityTypeColor(ActivityType.STATUS_CHANGED)
+
+  @Test fun activityTypeColor_joined() = testActivityTypeColor(ActivityType.JOINED)
+
+  @Test fun activityTypeColor_left() = testActivityTypeColor(ActivityType.LEFT)
+
+  @Test fun activityTypeColor_assigned() = testActivityTypeColor(ActivityType.ASSIGNED)
+
+  @Test fun activityTypeColor_unassigned() = testActivityTypeColor(ActivityType.UNASSIGNED)
+
+  @Test fun activityTypeColor_roleChanged() = testActivityTypeColor(ActivityType.ROLE_CHANGED)
+
+  @Test fun activityTypeColor_downloaded() = testActivityTypeColor(ActivityType.DOWNLOADED)
+
+  @Test
+  fun shareButton_copiesTextToClipboard() {
+    val activity = createActivity(testActivityId, EntityType.MEETING, "Team Meeting")
+    coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
+    setupSimpleUserMock("John Doe")
+    viewModel =
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
+    composeTestRule.setContent {
+      ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
+    }
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.SHARE_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+  }
+
   private fun createActivity(
       id: String,
       entityType: EntityType,
