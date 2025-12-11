@@ -62,7 +62,7 @@ class FirestoreIdeasRepositoryTest {
           registration
         }
     every { snapshot.documents } returns listOf(doc)
-    every { doc.id } returns "idea-1"
+    every { doc.id } returns TEST_IDEA_ID
     every { doc.toObject(Idea::class.java) } returns idea.copy(ideaId = "")
 
     val result = repository.getIdeasForProject(TEST_PROJECT_ID).first()
