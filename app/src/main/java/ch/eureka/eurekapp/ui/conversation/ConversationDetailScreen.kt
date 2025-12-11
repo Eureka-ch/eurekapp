@@ -51,6 +51,7 @@ import ch.eureka.eurekapp.ui.components.MessageActionMenu
 import ch.eureka.eurekapp.ui.components.MessageBubble
 import ch.eureka.eurekapp.ui.components.MessageBubbleFileAttachment
 import ch.eureka.eurekapp.ui.components.MessageBubbleInteractions
+import ch.eureka.eurekapp.ui.components.MessageBubbleState
 import ch.eureka.eurekapp.ui.components.MessageInputField
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
@@ -70,6 +71,7 @@ object ConversationDetailScreenTestTags {
 Co-author: GPT-5 Codex
 Co-author: Claude 4.5 Sonnet
 Co-author: Grok
+Co-author: Gemini
 */
 
 /** Callbacks for message-level interactions in the conversation. */
@@ -396,24 +398,26 @@ private fun MessageItem(
 
   Box {
     MessageBubble(
-        senderPhotoUrl = messageUser.value?.photoUrl ?: "",
-        senderDisplayName = messageUser.value?.displayName ?: "",
-        text = message.text,
-        timestamp = message.createdAt,
-        isFromCurrentUser = isFromCurrentUser,
-        fileAttachment =
-            MessageBubbleFileAttachment(
-                isFile = message.isFile,
-                fileUrl = message.fileUrl,
-                onDownloadClick = { url -> callbacks.onDownloadFile(url, context) }),
-        editedAt = message.editedAt,
-        interactions =
-            MessageBubbleInteractions(
-                onLinkClick = { url -> callbacks.onOpenUrl(url, context) },
-                onLongClick =
-                    if (isFromCurrentUser) {
-                      { callbacks.onSelectMessage(message.messageId) }
-                    } else null))
+        state =
+            MessageBubbleState(
+                senderPhotoUrl = messageUser.value?.photoUrl ?: "",
+                senderDisplayName = messageUser.value?.displayName ?: "",
+                text = message.text,
+                timestamp = message.createdAt,
+                isFromCurrentUser = isFromCurrentUser,
+                fileAttachment =
+                    MessageBubbleFileAttachment(
+                        isFile = message.isFile,
+                        fileUrl = message.fileUrl,
+                        onDownloadClick = { url -> callbacks.onDownloadFile(url, context) }),
+                editedAt = message.editedAt,
+                interactions =
+                    MessageBubbleInteractions(
+                        onLinkClick = { url -> callbacks.onOpenUrl(url, context) },
+                        onLongClick =
+                            if (isFromCurrentUser) {
+                              { callbacks.onSelectMessage(message.messageId) }
+                            } else null)))
 
     if (isSelected && isFromCurrentUser) {
       MessageActionMenu(

@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.ui.components.MessageBubble
+import ch.eureka.eurekapp.ui.components.MessageBubbleState
 
 /**
  * A chat-style message bubble for displaying a self-note.
@@ -52,10 +53,10 @@ fun SelfNoteMessageBubble(
                 .combinedClickable(onClick = onClick, onLongClick = onLongClick)
                 .padding(4.dp)) {
           MessageBubble(
-              modifier = Modifier.align(Alignment.CenterEnd),
-              text = message.text,
-              timestamp = message.createdAt,
-              isFromCurrentUser = true)
+              state =
+                  MessageBubbleState(
+                      text = message.text, timestamp = message.createdAt, isFromCurrentUser = true),
+              modifier = Modifier.align(Alignment.CenterEnd))
         }
   }
 }

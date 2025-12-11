@@ -194,7 +194,7 @@ open class CreateConversationViewModel(
   open fun createConversation() {
     val state = _baseUiState.value
     val selectedProject = state.selectedProject ?: return
-    val selectedMembersUserIds = state.selectedMembers.map { (member, user) -> user.uid }
+    val selectedMembersUserIds = state.selectedMembers.map { (_, user) -> user.uid }
     val currentUserId = getCurrentUserId() ?: return
 
     viewModelScope.launch {

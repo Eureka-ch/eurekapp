@@ -48,7 +48,7 @@ Co-author: Grok
 */
 
 private val TEXT_WEIGHT = FontWeight(500)
-private val MESSAGE_WEIGHT = 3f
+private const val MESSAGE_WEIGHT = 3f
 
 object MessageBubbleTestTags {
   const val BUBBLE = "messageBubble"
@@ -59,10 +59,7 @@ object MessageBubbleTestTags {
 }
 
 /**
- * A reusable chat-style message bubble component.
- *
- * Displays message text and timestamp in a rounded bubble. Can be aligned to the right (sent) or
- * left (received) side of the screen with different color schemes.
+ * State holder for MessageBubble component parameters.
  *
  * @param senderPhotoUrl photo url of the sender
  * @param senderDisplayName display name of the sender
@@ -70,136 +67,179 @@ object MessageBubbleTestTags {
  * @param timestamp The timestamp of the message (null if pending server timestamp).
  * @param isFromCurrentUser Whether this message was sent by the current user (affects alignment and
  *   color).
- * @param modifier Optional modifier for the bubble container.
  * @param fileAttachment Configuration for file attachment display.
  * @param editedAt Timestamp when the message was last edited (null if never edited).
  * @param interactions Configuration for message interactions (link clicks, long press).
+ */
+data class MessageBubbleState(
+    val senderPhotoUrl: String = "",
+    val senderDisplayName: String = "",
+    val text: String,
+    val timestamp: Timestamp?,
+    val isFromCurrentUser: Boolean,
+    val fileAttachment: MessageBubbleFileAttachment = MessageBubbleFileAttachment(),
+    val editedAt: Timestamp? = null,
+    val interactions: MessageBubbleInteractions = MessageBubbleInteractions()
+)
+
+/**
+ * A reusable chat-style message bubble component.
+ *
+ * Displays message text and timestamp in a rounded bubble. Can be aligned to the right (sent) or
+ * left (received) side of the screen with different color schemes.
+ *
+ * @param state The state holder containing all message bubble parameters.
+ * @param modifier Optional modifier for the bubble container.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MessageBubble(
     modifier: Modifier = Modifier,
-    senderPhotoUrl: String = "",
-    senderDisplayName: String = "",
-    text: String,
-    timestamp: Timestamp?,
-    isFromCurrentUser: Boolean,
-    fileAttachment: MessageBubbleFileAttachment = MessageBubbleFileAttachment(),
-    editedAt: Timestamp? = null,
-    interactions: MessageBubbleInteractions = MessageBubbleInteractions()
+    state: MessageBubbleState,
 ) {
-  val (containerColor, contentColor, alignment) = getBubbleColors(isFromCurrentUser)
-  val onLongClick = interactions.onLongClick
+  val (containerColor, contentColor, alignment) = getBubbleColors(state.isFromCurrentUser)
+  val onLongClick = state.interactions.onLongClick
 
   Box(
       modifier = modifier.fillMaxWidth().padding(vertical = Spacing.sm),
       contentAlignment = alignment) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = if (isFromCurrentUser) Arrangement.End else Arrangement.Start,
+            horizontalArrangement = arrangementBasedOnUser(state.isFromCurrentUser),
             verticalAlignment = Alignment.CenterVertically) {
-              val displayNameText =
-                  @Composable {
-                    if (senderDisplayName != "") {
-                      Row(
-                          modifier = Modifier.padding(Spacing.xxs),
-                          horizontalArrangement = Arrangement.Center,
-                          verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = senderDisplayName,
-                                color = DarkColorScheme.background,
-                                fontWeight = TEXT_WEIGHT,
-                                style = Typography.titleMedium)
-                          }
+              if (state.isFromCurrentUser) {
+                DisplayNameText(state.senderDisplayName)
+                Row(
+                    modifier = Modifier.weight(MESSAGE_WEIGHT),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically) {
+                      MessageDisplay(
+                          MessageDisplayState(
+                              onLongClick = onLongClick,
+                              containerColor = containerColor,
+                              contentColor = contentColor,
+                              text = state.text,
+                              fileAttachment = state.fileAttachment,
+                              interactions = state.interactions,
+                              timestamp = state.timestamp,
+                              editedAt = state.editedAt))
                     }
-                  }
-
-              val message =
-                  @Composable {
-                    Row(
-                        modifier = Modifier.weight(MESSAGE_WEIGHT),
-                        horizontalArrangement =
-                            if (isFromCurrentUser) Arrangement.End else Arrangement.Start,
-                        verticalAlignment = Alignment.CenterVertically) {
-                          Surface(
-                              shape = EurekaStyles.CardShape,
-                              color = containerColor,
-                              tonalElevation = EurekaStyles.CardElevation,
-                              modifier =
-                                  Modifier.widthIn(max = 280.dp)
-                                      .testTag(MessageBubbleTestTags.BUBBLE)
-                                      .then(
-                                          if (onLongClick != null) {
-                                            Modifier.combinedClickable(
-                                                onClick = {}, onLongClick = onLongClick)
-                                          } else {
-                                            Modifier
-                                          })) {
-                                Column(
-                                    modifier = Modifier.padding(Spacing.md),
-                                    verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
-                                      if (text.isNotEmpty()) {
-                                        Text(
-                                            text =
-                                                buildAnnotatedText(text, interactions.onLinkClick),
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = contentColor,
-                                            modifier = Modifier.testTag(MessageBubbleTestTags.TEXT))
-                                      }
-
-                                      FileAttachment(fileAttachment, contentColor)
-
-                                      Row(
-                                          horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
-                                          verticalAlignment = Alignment.CenterVertically) {
-                                            Text(
-                                                text = getFormattedTime(timestamp),
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = contentColor.copy(alpha = 0.7f),
-                                                modifier =
-                                                    Modifier.testTag(
-                                                        MessageBubbleTestTags.TIMESTAMP))
-                                            if (editedAt != null) {
-                                              Text(
-                                                  text = "(edited)",
-                                                  style = MaterialTheme.typography.labelSmall,
-                                                  color = contentColor.copy(alpha = 0.5f),
-                                                  modifier =
-                                                      Modifier.testTag(
-                                                          MessageBubbleTestTags.EDITED_INDICATOR))
-                                            }
-                                          }
-                                    }
-                              }
-                        }
-                  }
-              val icon =
-                  @Composable {
-                    if (senderPhotoUrl != "") {
-                      Row(
-                          modifier = Modifier.padding(Spacing.sm),
-                          horizontalArrangement = Arrangement.Center,
-                          verticalAlignment = Alignment.CenterVertically) {
-                            AsyncImage(
-                                model = senderPhotoUrl,
-                                contentDescription = "Profile picture of $senderPhotoUrl",
-                                modifier = Modifier.size(48.dp).clip(CircleShape),
-                                contentScale = ContentScale.Crop)
-                          }
-                    }
-                  }
-
-              if (isFromCurrentUser) {
-                displayNameText()
-                message()
-                icon()
+                ProfileIcon(state.senderPhotoUrl)
               } else {
-                icon()
-                message()
-                displayNameText()
+                ProfileIcon(state.senderPhotoUrl)
+                Row(
+                    modifier = Modifier.weight(MESSAGE_WEIGHT),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically) {
+                      MessageDisplay(
+                          MessageDisplayState(
+                              onLongClick = onLongClick,
+                              containerColor = containerColor,
+                              contentColor = contentColor,
+                              text = state.text,
+                              fileAttachment = state.fileAttachment,
+                              interactions = state.interactions,
+                              timestamp = state.timestamp,
+                              editedAt = state.editedAt))
+                    }
+                DisplayNameText(state.senderDisplayName)
               }
             }
       }
+}
+
+private data class MessageDisplayState(
+    val onLongClick: (() -> Unit)?,
+    val containerColor: Color,
+    val contentColor: Color,
+    val text: String,
+    val fileAttachment: MessageBubbleFileAttachment,
+    val interactions: MessageBubbleInteractions,
+    val timestamp: Timestamp?,
+    val editedAt: Timestamp?
+)
+
+@Composable
+private fun MessageDisplay(messageDisplayState: MessageDisplayState) {
+  Surface(
+      shape = EurekaStyles.CardShape,
+      color = messageDisplayState.containerColor,
+      tonalElevation = EurekaStyles.CardElevation,
+      modifier =
+          Modifier.widthIn(max = 280.dp)
+              .testTag(MessageBubbleTestTags.BUBBLE)
+              .then(
+                  if (messageDisplayState.onLongClick != null) {
+                    Modifier.combinedClickable(
+                        onClick = {}, onLongClick = messageDisplayState.onLongClick)
+                  } else {
+                    Modifier
+                  })) {
+        Column(
+            modifier = Modifier.padding(Spacing.md),
+            verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
+              if (messageDisplayState.text.isNotEmpty()) {
+                Text(
+                    text =
+                        buildAnnotatedText(
+                            messageDisplayState.text, messageDisplayState.interactions.onLinkClick),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = messageDisplayState.contentColor,
+                    modifier = Modifier.testTag(MessageBubbleTestTags.TEXT))
+              }
+
+              FileAttachment(messageDisplayState.fileAttachment, messageDisplayState.contentColor)
+
+              Row(
+                  horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+                  verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = getFormattedTime(messageDisplayState.timestamp),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = messageDisplayState.contentColor.copy(alpha = 0.7f),
+                        modifier = Modifier.testTag(MessageBubbleTestTags.TIMESTAMP))
+                    if (messageDisplayState.editedAt != null) {
+                      Text(
+                          text = "(edited)",
+                          style = MaterialTheme.typography.labelSmall,
+                          color = messageDisplayState.contentColor.copy(alpha = 0.5f),
+                          modifier = Modifier.testTag(MessageBubbleTestTags.EDITED_INDICATOR))
+                    }
+                  }
+            }
+      }
+}
+
+@Composable
+private fun DisplayNameText(senderDisplayName: String) {
+  if (senderDisplayName != "") {
+    Row(
+        modifier = Modifier.padding(Spacing.xxs),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically) {
+          Text(
+              text = senderDisplayName,
+              color = DarkColorScheme.background,
+              fontWeight = TEXT_WEIGHT,
+              style = Typography.titleMedium)
+        }
+  }
+}
+
+@Composable
+private fun ProfileIcon(senderPhotoUrl: String) {
+  if (senderPhotoUrl != "") {
+    Row(
+        modifier = Modifier.padding(Spacing.sm),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically) {
+          AsyncImage(
+              model = senderPhotoUrl,
+              contentDescription = "Profile picture of $senderPhotoUrl",
+              modifier = Modifier.size(48.dp).clip(CircleShape),
+              contentScale = ContentScale.Crop)
+        }
+  }
 }
 
 data class MessageBubbleFileAttachment(
@@ -310,3 +350,7 @@ private fun isImageFile(filename: String): Boolean {
 
 private val URL_REGEX = Regex("https?://\\S+")
 private val TIMESTAMP_REGEX = Regex("_\\d{13}(?=\\.[^.]+$|$)")
+
+private fun arrangementBasedOnUser(isCurrentUser: Boolean): Arrangement.Horizontal {
+  return if (isCurrentUser) Arrangement.End else Arrangement.Start
+}
