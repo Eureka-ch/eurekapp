@@ -23,54 +23,6 @@ if (!admin.apps.length) {
     });
 }
 
-function chunkArray<T>(array: Array<T>, chunkSize: number): Array<Array<T>> {
-    const originalArraySize = array.length;
-    const numberOfSubArrays = Math.ceil(originalArraySize / chunkSize);
-    const chunkedArray: Array<Array<T>> = [];
-    for(let i = 0; i < numberOfSubArrays; i++){
-        const subArray: Array<T> = []
-        const start = i * chunkSize;
-        const end = (i + 1) * chunkSize;
-        for(let j = start; j < Math.min(end, originalArraySize); j++){
-            subArray.push(array[j]);
-        }
-        chunkedArray.push(subArray);
-    }
-    return chunkedArray;
-}
-
-async function getMemberIdsFcmToken(participantIds: string[]): Promise<string[]> {
-    try {
-        const tokens: string[] = [];
-        const chunkedParticipantIds = chunkArray(participantIds, 10);
-        const promises = chunkedParticipantIds.flatMap(array => {
-            return admin.firestore()
-            .collection("users").where("uid", "in", array)
-            .get();
-        });
-        const querySnapshot = await Promise.all(promises);
-        
-        querySnapshot.forEach(snapshot => snapshot.docs.forEach(user => {
-            const data = user.data();
-            const token = data?.fcmToken;
-            
-            // Validate token format (FCM tokens are typically 140-200 characters)
-            if (token && typeof token === 'string' && token.length > 50) {
-                tokens.push(token);
-            } else if (token) {
-                functions.logger.warn(`Invalid FCM token for user ${user.id}: ${token?.substring(0, 20)}...`);
-            }
-        }));
-
-        
-        functions.logger.info(`Retrieved ${tokens.length} valid FCM tokens`);
-        return tokens;
-    } catch (error) {
-        functions.logger.error('Error getting participants fcmTokens:', error);
-        return [];
-    }
-}
-
 async function getUserNotificationPreferences(userSnapshot: admin.firestore.DocumentSnapshot): Promise<Record<UserNotificationSettingsKeys, boolean>> {
 
     try {
@@ -282,28 +234,30 @@ export const sendMeetingReminder =
     });
 
 export const sendNewMessageNotification =
-    functions.firestore.document("projects/{projectId}/chat_channels/{channelId}/messages/{messageId}")
+    functions.firestore.document("conversations/{conversationId}/messages/{messageId}")
         .onCreate(async (snapshot, context) => {
             try {
                 const message = snapshot.data();
-                const { projectId } = context.params;
-                const senderId = message.senderId;
-                const text = message.text || "";
-                const messageId = message.messageId;
+                const { conversationId } = context.params;
+                const senderId = message?.senderId;
+                const text = message?.text || "";
+                const messageId = message?.messageId;
 
-                const projectSnap = await admin.firestore()
-                    .collection("projects")
-                    .doc(projectId)
-                    .get();
-
-                if (!projectSnap.exists) {
-                    functions.logger.info("Project not found");
+                if (!senderId) {
+                    functions.logger.warn("Message missing senderId");
                     return;
                 }
 
+                const conversationSnap = await admin.firestore().collection("conversations").doc(conversationId).get();
+                const conversation = conversationSnap.data();
+                if(!conversation){
+                    return;
+                }
+                const projectSnap = await admin.firestore().collection("projects").doc(conversation.projectId).get();
+
                 const projectData = projectSnap.data();
                 if (!projectData || !projectData.memberIds) {
-                    functions.logger.info("No members in project");
+                    functions.logger.info("No members in conversation");
                     return;
                 }
 
@@ -322,32 +276,43 @@ export const sendNewMessageNotification =
 
                 const senderName = senderDoc.data()?.displayName ?? "Unknown user";
 
-                const fcmTokens = await getMemberIdsFcmToken(recipients);
-
-                if (!fcmTokens || fcmTokens.length === 0) {
-                    functions.logger.info("No FCM tokens for recipients");
-                    return;
-                }
-
-                // Use send() method for each token
                 let successCount = 0;
                 let failureCount = 0;
 
-                for (const token of fcmTokens) {
+                // Check each recipient's notification preferences
+                for (const recipientId of recipients) {
                     try {
+                        const recipientDoc = await admin.firestore()
+                            .collection("users")
+                            .doc(recipientId)
+                            .get();
+                        
+                        const recipientData = recipientDoc.data();
+                        if (!recipientData?.fcmToken) {
+                            continue;
+                        }
+
+                        const preferences = await getUserNotificationPreferences(recipientDoc);
+                        
+                        if (!preferences[UserNotificationSettingsKeys.ON_NEW_MESSAGE_NOTIFY]) {
+                            functions.logger.info(`User ${recipientId} has message notifications disabled`);
+                            continue;
+                        }
+
                         await admin.messaging().send({
-                            token: token,
+                            token: recipientData.fcmToken,
                             data: {
                                 title: `Chat ${projectData.name}`,
                                 body: `${senderName}: ${text}`,
                                 type: "message",
-                                id: messageId,
+                                id: messageId || "",
+                                projectId: projectData.projectId || ""
                             }
                         });
                         successCount++;
                     } catch (error: any) {
                         failureCount++;
-                        functions.logger.error(`Failed to send message notification: ${error.message}`);
+                        functions.logger.error(`Failed to send notification to ${recipientId}: ${error.message}`);
                     }
                 }
 
