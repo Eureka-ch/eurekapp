@@ -449,6 +449,50 @@ class ActivityDetailScreenTest {
     assert(navigateBackCalled)
   }
 
+  @Test
+  fun activityDetailScreen_updatedActivityType_displaysCorrectColor() {
+    val activity = createActivity(testActivityId, EntityType.TASK, "Test", ActivityType.UPDATED)
+    coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
+    setupSimpleUserMock()
+    viewModel =
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
+
+    composeTestRule.setContent {
+      ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
+    }
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ACTIVITY_HEADER).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag(ActivityDetailScreenTestTags.ACTIVITY_INFO_CARD)
+        .assertIsDisplayed()
+  }
+
+  @Test
+  fun activityDetailScreen_activityWithoutTitle_doesNotDisplayEntityTitle() {
+    val activityNoTitle =
+        Activity(
+            activityId = testActivityId,
+            userId = testUserId,
+            projectId = testProjectId,
+            activityType = ActivityType.CREATED,
+            entityType = EntityType.TASK,
+            entityId = testEntityId,
+            timestamp = Timestamp.now(),
+            metadata = emptyMap())
+    coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activityNoTitle))
+    setupSimpleUserMock()
+    viewModel =
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
+
+    composeTestRule.setContent {
+      ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
+    }
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ENTITY_TITLE).assertDoesNotExist()
+  }
+
   private fun createActivity(
       id: String,
       entityType: EntityType,

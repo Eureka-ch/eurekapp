@@ -128,7 +128,6 @@ fun ActivityDetailScreen(
   val uiState by vm.uiState.collectAsState()
   val context = LocalContext.current
 
-  // Navigate back on successful delete
   LaunchedEffect(uiState.deleteSuccess) {
     if (uiState.deleteSuccess) {
       Toast.makeText(context, "Activity deleted", Toast.LENGTH_SHORT).show()
@@ -275,7 +274,6 @@ private fun ActivityHeader(activity: Activity) {
  */
 @Composable
 private fun ActivityInformationCard(activity: Activity) {
-  // Cache formatted timestamp to avoid recreating SimpleDateFormat on every recomposition
   val formattedTimestamp =
       remember(activity.timestamp) { Formatters.formatFullTimestamp(activity.timestamp.toDate()) }
 
@@ -486,19 +484,19 @@ private fun ActionButtonsSection(isConnected: Boolean, onShare: () -> Unit, onDe
 /** Helper function to get color for activity type. */
 private fun getActivityTypeColor(activityType: String): Color {
   return when (activityType) {
-    "CREATED" -> Color(0xFF4CAF50) // Green
-    "UPDATED" -> Color(0xFF2196F3) // Blue
-    "DELETED" -> Color(0xFFF44336) // Red
-    "UPLOADED" -> Color(0xFF9C27B0) // Purple
-    "SHARED" -> Color(0xFFFF9800) // Orange
-    "COMMENTED" -> Color(0xFF00BCD4) // Cyan
-    "STATUS_CHANGED" -> Color(0xFFFF5722) // Deep Orange
-    "JOINED" -> Color(0xFF8BC34A) // Light Green
-    "LEFT" -> Color(0xFF795548) // Brown
-    "ASSIGNED" -> Color(0xFF3F51B5) // Indigo
-    "UNASSIGNED" -> Color(0xFF607D8B) // Blue Grey
-    "ROLE_CHANGED" -> Color(0xFFE91E63) // Pink
-    "DOWNLOADED" -> Color(0xFF673AB7) // Deep Purple
+    "CREATED" -> Color(0xFF4CAF50)
+    "UPDATED" -> Color(0xFF2196F3)
+    "DELETED" -> Color(0xFFF44336)
+    "UPLOADED" -> Color(0xFF9C27B0)
+    "SHARED" -> Color(0xFFFF9800)
+    "COMMENTED" -> Color(0xFF00BCD4)
+    "STATUS_CHANGED" -> Color(0xFFFF5722)
+    "JOINED" -> Color(0xFF8BC34A)
+    "LEFT" -> Color(0xFF795548)
+    "ASSIGNED" -> Color(0xFF3F51B5)
+    "UNASSIGNED" -> Color(0xFF607D8B)
+    "ROLE_CHANGED" -> Color(0xFFE91E63)
+    "DOWNLOADED" -> Color(0xFF673AB7)
     else -> Color.Gray
   }
 }

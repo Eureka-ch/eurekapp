@@ -127,11 +127,9 @@ class ActivityDetailViewModel(
           val activity = activities.firstOrNull { it.activityId == activityId }
 
           if (activity != null) {
-            // Enrich activity with user name
             val enrichedActivity = enrichActivityWithUserName(activity)
             _activity.value = enrichedActivity
 
-            // Load related activities for the same entity
             loadRelatedActivities(activity.entityId, activities)
           } else {
             _errorMsg.value = "Activity not found"

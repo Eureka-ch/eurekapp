@@ -28,7 +28,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
 
   private lateinit var repository: ConversationRepository
 
-  override fun getCollectionPaths(): List<String> = listOf("conversations")
+  override fun getCollectionPaths(): List<String> = listOf("conversations", "activities", "users")
 
   @Before
   override fun setup() {
@@ -609,5 +609,40 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
 
     // Assert: Only 3 most recent messages returned
     assertEquals(3, messages.size)
+  }
+
+  @Test
+  fun deleteConversation_shouldLogDeletionActivity() = runBlocking {
+    FirebaseEmulator.firestore
+        .collection("users")
+        .document(testUserId)
+        .set(mapOf("displayName" to "Test User"))
+        .await()
+    FirebaseEmulator.firestore
+        .collection("users")
+        .document("otherUser123")
+        .set(mapOf("displayName" to "Other User"))
+        .await()
+
+    val conversation =
+        Conversation(
+            projectId = "test-project-id",
+            memberIds = listOf(testUserId, "otherUser123"),
+            createdBy = testUserId)
+    val conversationId = repository.createConversation(conversation).getOrNull()!!
+    kotlinx.coroutines.delay(300)
+
+    repository.deleteConversation(conversationId)
+    kotlinx.coroutines.delay(500)
+
+    val activities =
+        FirebaseEmulator.firestore
+            .collection("activities")
+            .whereEqualTo("projectId", "test-project-id")
+            .whereEqualTo("entityId", conversationId)
+            .whereEqualTo("activityType", "DELETED")
+            .get()
+            .await()
+    assertTrue(activities.documents.isNotEmpty())
   }
 }

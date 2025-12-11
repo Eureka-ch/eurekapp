@@ -128,7 +128,6 @@ class ActivityFeedViewModel(
     viewModelScope.launch {
       _uiState.update { it.copy(isLoading = true) }
 
-      // Load read activity IDs from Firestore
       val readIds = loadReadActivityIds(currentUserId)
 
       repository
@@ -268,7 +267,6 @@ class ActivityFeedViewModel(
   ): List<Activity> {
     var filtered = list
 
-    // Apply entity type filter
     if (entityType != null) {
       filtered =
           filtered.filter { activity ->
@@ -282,12 +280,10 @@ class ActivityFeedViewModel(
           }
     }
 
-    // Apply activity type filter
     if (activityType != null) {
       filtered = filtered.filter { it.activityType == activityType }
     }
 
-    // Apply search query
     if (query.isNotBlank()) {
       filtered =
           filtered.filter { activity ->
@@ -308,7 +304,6 @@ class ActivityFeedViewModel(
       val prevGrouped = _uiState.value.activitiesByDate
       val prevReadIds = _uiState.value.readActivityIds
 
-      // Optimistically update UI (only filtered view, let Flow handle allActivities)
       _uiState.update { state ->
         val filtered = state.activities.filter { it.activityId != activityId }
         val groupedByDate = groupActivitiesByDate(filtered)

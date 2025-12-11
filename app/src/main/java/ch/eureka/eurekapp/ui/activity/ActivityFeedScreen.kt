@@ -64,7 +64,6 @@ fun ActivityFeedScreen(
   val uiState by viewModel.uiState.collectAsState()
   var searchExpanded by remember { mutableStateOf(false) }
 
-  // Set compact mode on entry, but don't load activities until filter is selected
   LaunchedEffect(Unit) { viewModel.setCompactMode(false) }
 
   Scaffold(
@@ -78,20 +77,17 @@ fun ActivityFeedScreen(
                   fontWeight = FontWeight.Bold)
             },
             actions = {
-              // Refresh button
               IconButton(
                   onClick = { viewModel.refresh() }, modifier = Modifier.testTag("RefreshButton")) {
                     Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh")
                   }
 
-              // Search toggle button
               IconButton(
                   onClick = { searchExpanded = !searchExpanded },
                   modifier = Modifier.testTag("SearchButton")) {
                     Icon(imageVector = Icons.Default.Search, contentDescription = "Toggle search")
                   }
 
-              // Mark all as read button
               if (uiState.activities.isNotEmpty()) {
                 IconButton(
                     onClick = { viewModel.markAllAsRead() },
