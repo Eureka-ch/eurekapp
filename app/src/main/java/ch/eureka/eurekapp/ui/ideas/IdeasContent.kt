@@ -31,6 +31,7 @@ import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.ideas.Idea
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.ui.components.MessageBubble
+import ch.eureka.eurekapp.ui.components.MessageBubbleState
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 /** Data class to group conversation-related parameters. */
@@ -188,9 +189,10 @@ private fun IdeaConversationContent(
           verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             items(items = messages, key = { it.messageID }) { message ->
               MessageBubble(
-                  text = message.text,
-                  timestamp = message.createdAt,
-                  isFromCurrentUser = message.senderId == currentUserId)
+                  state = MessageBubbleState(
+                      text = message.text,
+                      timestamp = message.createdAt,
+                      isFromCurrentUser = message.senderId == currentUserId))
             }
           }
     }
