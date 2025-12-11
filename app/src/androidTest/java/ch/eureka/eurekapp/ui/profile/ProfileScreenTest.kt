@@ -594,4 +594,48 @@ class ProfileScreenTest {
     // Then - Button should be displayed with default callback
     composeTestRule.onNodeWithText("View Activity Feed").assertIsDisplayed()
   }
+
+  @Test
+  fun profileScreen_displaysSettingsButton() {
+    // Given
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+
+    // When
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
+
+    // Then
+    composeTestRule.onNodeWithTag(ProfileScreenTestTags.SETTINGS_BUTTON).assertIsDisplayed()
+  }
+
+  @Test
+  fun profileScreen_clickSettingsButton_triggersCallback() {
+    // Given
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+    var callbackTriggered = false
+
+    composeTestRule.setContent {
+      ProfileScreen(
+          viewModel = viewModel,
+          firebaseAuth = firebaseAuth,
+          onNavigateToPreferences = { callbackTriggered = true })
+    }
+
+    // When
+    composeTestRule.onNodeWithTag(ProfileScreenTestTags.SETTINGS_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+
+    // Then
+    assert(callbackTriggered) { "Expected callback to be triggered but it wasn't" }
+  }
+
+  @Test
+  fun profileScreen_settingsButton_displaysWithDefaultCallback() {
+    // Given
+    val viewModel = ProfileViewModel(userRepository, testUserId)
+
+    composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
+
+    // Then - Button should be displayed with default callback
+    composeTestRule.onNodeWithTag(ProfileScreenTestTags.SETTINGS_BUTTON).assertIsDisplayed()
+  }
 }
