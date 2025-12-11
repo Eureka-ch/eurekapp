@@ -59,7 +59,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -67,6 +66,7 @@ import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.activity.Activity
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
+import ch.eureka.eurekapp.ui.meeting.InfoRow
 import ch.eureka.eurekapp.utils.Formatters
 
 /** Helper function to get alpha value based on connection status. */
@@ -324,31 +324,6 @@ private fun ActivityInformationCard(activity: Activity) {
             }
       }
 }
-
-/**
- * Info row component for displaying labeled information.
- *
- * Shows an icon, label, and value in a horizontal row.
- */
-@Composable
-private fun InfoRow(icon: ImageVector, label: String, value: String, testTag: String) {
-  Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-    Icon(
-        imageVector = icon,
-        contentDescription = label,
-        modifier = Modifier.size(20.dp),
-        tint = MaterialTheme.colorScheme.primary)
-    Spacer(modifier = Modifier.width(8.dp))
-    Column {
-      Text(text = label, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-      Text(
-          text = value,
-          style = MaterialTheme.typography.bodyMedium,
-          modifier = Modifier.testTag(testTag))
-    }
-  }
-}
-
 /**
  * Related activities section.
  *
