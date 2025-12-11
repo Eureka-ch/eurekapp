@@ -182,10 +182,25 @@ class EditTaskViewModel(
           else -> file as Uri
         }
 
-    deletePhotoAsync(context, uri) { success ->
-      if (success) {
+    // Only delete if it's a temporary photo URI
+    if (uri in _uiState.value.temporaryPhotoUris) {
+      deletePhotoAsync(context, uri) { success ->
+        if (success) {
+          removeAttachment(index)
+          updateState { copyWithTemporaryPhotoUris(temporaryPhotoUris.filter { it != uri }) }
+        }
+      }
+    } else if (file is String) {
+      // Remote URL, delete from storage
+      viewModelScope.launch(dispatcher) {
+        fileRepository.deleteFile(file).onFailure { exception ->
+          setErrorMsg("Failed to delete attachment: ${exception.message}")
+        }
         removeAttachment(index)
       }
+    } else {
+      // For non-temporary local attachments, just remove from list
+      removeAttachment(index)
     }
   }
 
@@ -339,4 +354,7 @@ class EditTaskViewModel(
     updateState { copyWithDependencies(currentDependencies.filter { it != taskId }) }
     setCycleError(null)
   }
+
+  override fun EditTaskState.copyWithTemporaryPhotoUris(uris: List<Uri>) =
+      copy(temporaryPhotoUris = uris)
 }

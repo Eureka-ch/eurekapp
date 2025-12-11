@@ -36,7 +36,7 @@ abstract class ReadTaskViewModel<T : TaskStateRead>(
   val dateRegex = Regex("""^\d{2}/\d{2}/\d{4}$""")
 
   /** Deletes photos when composable is disposed (simple, local-only attempt). */
-  fun deletePhotosOnDispose(context: Context, photoUris: List<Uri>) {
+  open fun deletePhotosOnDispose(context: Context, photoUris: List<Uri>) {
     viewModelScope.launch(dispatcher) {
       photoUris.forEach { uri ->
         try {

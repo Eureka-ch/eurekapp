@@ -2,8 +2,6 @@
 package ch.eureka.eurekapp.model.tasks
 
 import android.content.Context
-import android.net.Uri
-import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
@@ -18,6 +16,7 @@ import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -25,6 +24,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
@@ -51,18 +51,35 @@ class ViewTaskViewModel(
           .getAll()
           .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-  fun downloadFile(url: String, fileName: String, context: Context) {
+  private val _downloadProgress = MutableStateFlow(DownloadProgress())
+
+  suspend fun downloadFile(url: String, displayName: String, context: Context) {
+    if (downloadedFileDao.isDownloaded(url)) {
+      // File already downloaded, skip
+      return
+    }
+    val downloadService = DownloadService(context)
+    val actualDisplayName = displayName.ifBlank { url.substringAfterLast("/") }
+    val result = downloadService.downloadFile(url, actualDisplayName)
+    result.onSuccess { uri ->
+      downloadedFileDao.insert(
+          DownloadedFile(url = url, localPath = uri.toString(), fileName = actualDisplayName))
+    }
+  }
+
+  fun downloadAllAttachments(urls: List<String>, context: Context) {
     viewModelScope.launch {
-      if (downloadedFileDao.isDownloaded(url)) {
-        // File already downloaded, skip
-        return@launch
+      _downloadProgress.update {
+        it.copy(isDownloading = true, totalToDownload = urls.size, downloadedCount = 0)
       }
-      val downloadService = DownloadService(context)
-      val result = downloadService.downloadFile(url, fileName)
-      result.onSuccess { uri ->
-        downloadedFileDao.insert(
-            DownloadedFile(url = url, localPath = uri.toString(), fileName = fileName))
+      urls.forEach { url ->
+        val metadata = uiState.value.attachmentUrls.find { it.startsWith("$url|") }
+        // Extract displayName from metadata format "url|displayName|mimeType"
+        val displayName = metadata?.split("|")?.getOrNull(1) ?: url.substringAfterLast("/")
+        downloadFile(url, displayName, context)
+        _downloadProgress.update { it.copy(downloadedCount = it.downloadedCount + 1) }
       }
+      _downloadProgress.update { it.copy(isDownloading = false) }
     }
   }
 
@@ -122,37 +139,20 @@ class ViewTaskViewModel(
                             errorMsg = "Failed to load Task: ${exception.message}"))
                   },
               _isConnected,
-              _downloadedFiles) { taskState, isConnected, downloadedFiles ->
-                val urlToUriMap: Map<String, Uri> =
-                    downloadedFiles.associate { file -> file.url to file.localPath.toUri() }
-
+              _downloadedFiles,
+              _downloadProgress) { taskState, isConnected, downloadedFiles, downloadProgress ->
                 val downloadedUrls = downloadedFiles.map { it.url }.toSet()
-                val urlsToDownload = taskState.attachmentUrls.filter { it !in downloadedUrls }
-
-                val effectiveAttachments = buildList {
-                  if (isConnected) {
-                    // Online: show all remote URLs
-                    taskState.attachmentUrls.forEach { url -> add(Attachment.Remote(url)) }
-                  } else {
-                    // Offline: show downloaded files as Local, undownloaded as Remote
-                    taskState.attachmentUrls.forEach { url ->
-                      val localUri = urlToUriMap[url]
-                      if (localUri != null) {
-                        add(Attachment.Local(localUri))
-                      } else {
-                        add(Attachment.Remote(url))
-                      }
-                    }
-                  }
-                  // Add local URIs (e.g., newly taken photos)
-                  taskState.attachmentUris.forEach { uri -> add(Attachment.Local(uri)) }
-                }
+                val urlsToDownload =
+                    taskState.attachmentUrls
+                        .map { it.substringBefore("|") }
+                        .filter { it !in downloadedUrls }
 
                 taskState.copy(
                     isConnected = isConnected,
                     urlsToDownload = urlsToDownload,
-                    effectiveAttachments = effectiveAttachments,
-                    downloadedAttachmentUrls = downloadedUrls)
+                    downloadedAttachmentUrls = downloadedUrls,
+                    downloadedFiles = downloadedFiles,
+                    downloadProgress = downloadProgress)
               }
           .stateIn(
               scope = viewModelScope,

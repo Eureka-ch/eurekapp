@@ -1,6 +1,9 @@
 // Portions added by Jiří Gebauer partially generated with the help of Grok and GPT-5.
 package ch.eureka.eurekapp.screens.subscreens.tasks
 
+import android.content.Context
+import android.net.Uri
+import android.provider.OpenableColumns
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,6 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.PictureAsPdf
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -30,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.project.Project
@@ -79,8 +86,8 @@ object CommonTaskTestTags {
   const val REMINDER_TIME = "reminder_time"
   const val ADD_PHOTO = "add_photo"
   const val SAVE_TASK = "save_task"
-  const val PHOTO = "photo"
-  const val DELETE_PHOTO = "delete_photo"
+  const val ATTACHMENT = "photo"
+  const val DELETE_ATTACHMENT = "delete_photo"
   const val ERROR_MSG = "error_msg"
   const val PROJECT_SELECTION_TITLE = "project_selection_title"
   const val PROJECT_RADIO = "project_radio"
@@ -260,45 +267,121 @@ private fun AttachmentItem(
     downloadedUrls: Set<String>,
     modifier: Modifier = Modifier
 ) {
-  Row(modifier = modifier) {
-    val photoIndex = index + 1
-    val shouldShowDelete = !isReadOnly && onDelete != null
+  val context = LocalContext.current
+  Row(
+      modifier = modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically) {
+        val attachmentIndex = index + 1
+        val shouldShowDelete = !isReadOnly && onDelete != null
 
-    when (attachment) {
-      is Attachment.Remote -> {
-        val isDownloaded = downloadedUrls.contains(attachment.url)
-        val isOffline = !isConnected && !isDownloaded
+        when (attachment) {
+          is Attachment.Remote -> {
+            val isDownloaded = downloadedUrls.contains(attachment.url)
+            val isOffline = !isConnected && !isDownloaded
 
-        if (isOffline) {
-          Text(
-              "Photo $photoIndex: Not downloaded",
-              modifier = Modifier.testTag(CommonTaskTestTags.ATTACHMENT_OFFLINE_MESSAGE))
-        } else {
-          Text("Photo $photoIndex")
-          if (shouldShowDelete) {
-            IconButton(
-                onClick = { onDelete(index) },
-                modifier = Modifier.testTag(CommonTaskTestTags.DELETE_PHOTO)) {
-                  Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
-                }
+            if (isOffline) {
+              Text(
+                  "Attachment $attachmentIndex: Not downloaded",
+                  modifier =
+                      Modifier.testTag(CommonTaskTestTags.ATTACHMENT_OFFLINE_MESSAGE).weight(1f))
+            } else {
+              Column(modifier = Modifier.weight(1f)) {
+                Text("Attachment $attachmentIndex", style = MaterialTheme.typography.bodyMedium)
+                AttachmentPreview(
+                    attachment.url,
+                    null,
+                    attachment.mimeType,
+                    modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.ATTACHMENT))
+              }
+              if (shouldShowDelete) {
+                IconButton(
+                    onClick = { onDelete(index) },
+                    modifier = Modifier.testTag(CommonTaskTestTags.DELETE_ATTACHMENT)) {
+                      Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
+                    }
+              }
+            }
           }
-          PhotoViewer(
-              attachment.url, modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.PHOTO))
+          is Attachment.Local -> {
+            val fileName = getDisplayNameFromUri(context, attachment.uri) ?: "unknown"
+            val mimeType = context.contentResolver.getType(attachment.uri)
+            Column(modifier = Modifier.weight(1f)) {
+              Text(
+                  "Attachment $attachmentIndex: $fileName",
+                  style = MaterialTheme.typography.bodyMedium)
+              AttachmentPreview(
+                  null,
+                  attachment.uri,
+                  mimeType,
+                  modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.ATTACHMENT))
+            }
+            if (shouldShowDelete) {
+              IconButton(
+                  onClick = { onDelete(index) },
+                  modifier = Modifier.testTag(CommonTaskTestTags.DELETE_ATTACHMENT)) {
+                    Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
+                  }
+            }
+          }
         }
       }
-      is Attachment.Local -> {
-        Text("Photo $photoIndex")
-        if (shouldShowDelete) {
-          IconButton(
-              onClick = { onDelete(index) },
-              modifier = Modifier.testTag(CommonTaskTestTags.DELETE_PHOTO)) {
-                Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
-              }
+}
+
+@Composable
+private fun AttachmentPreview(
+    urlString: String?,
+    uri: Uri?,
+    mimeType: String?,
+    modifier: Modifier = Modifier
+) {
+  // Convert model to String for consistent handling in PhotoViewer
+  val model = uri?.toString() ?: urlString ?: ""
+
+  when {
+    mimeType?.startsWith("image/") == true -> {
+      PhotoViewer(model, modifier = modifier)
+    }
+    mimeType?.startsWith("video/") == true -> {
+      Icon(
+          imageVector = Icons.Filled.VideoLibrary,
+          contentDescription = "Video file",
+          modifier = modifier,
+          tint = MaterialTheme.colorScheme.primary)
+    }
+    mimeType == "application/pdf" -> {
+      Icon(
+          imageVector = Icons.Filled.PictureAsPdf,
+          contentDescription = "PDF file",
+          modifier = modifier,
+          tint = MaterialTheme.colorScheme.error)
+    }
+    else -> {
+      Icon(
+          imageVector = Icons.Filled.Description,
+          contentDescription = "Document file",
+          modifier = modifier,
+          tint = MaterialTheme.colorScheme.secondary)
+    }
+  }
+}
+
+private fun getDisplayNameFromUri(context: Context, uri: Uri): String? {
+  return try {
+    context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+      if (cursor.moveToFirst()) {
+        val displayNameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+        if (displayNameIndex != -1) {
+          cursor.getString(displayNameIndex)
+        } else {
+          null
         }
-        PhotoViewer(
-            attachment.uri, modifier = Modifier.size(100.dp).testTag(CommonTaskTestTags.PHOTO))
+      } else {
+        null
       }
     }
+  } catch (e: Exception) {
+    null
   }
 }
 

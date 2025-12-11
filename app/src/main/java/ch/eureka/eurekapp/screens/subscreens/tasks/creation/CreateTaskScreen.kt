@@ -1,10 +1,12 @@
 /*
- * Co-Authored-By: Claude Sonnet 4.5, Claude Opus 4.5
+ * Co-Authored-By: Claude Sonnet 4.5, Claude Opus 4.5, and Grok
  */
 package ch.eureka.eurekapp.screens.subscreens.tasks.creation
 
 import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -61,6 +63,10 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 const val CREATE_SCREEN_PHOTO_BUTTON_SIZE = 0.3f
 
+object CreateTaskScreenTestTags {
+  const val ADD_FILE = "add_file"
+}
+
 @Composable
 fun CreateTaskScreen(
     navigationController: NavHostController = rememberNavController(),
@@ -85,16 +91,20 @@ fun CreateTaskScreen(
           ?: remember { mutableStateOf("") }
   val context = LocalContext.current
   val scrollState = rememberScrollState()
-  var isNavigatingToCamera by remember { mutableStateOf(false) }
+
+  // File picker launcher for any file type
+  val filePickerLauncher =
+      rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
+        uri?.let { createTaskViewModel.addAttachment(it) }
+      }
 
   HandleErrorToast(errorMsg, createTaskViewModel, context)
   HandlePhotoUri(photoUri, createTaskViewModel)
   HandleProjectId(projectId, createTaskViewModel)
   HandleCreatedTemplateId(createdTemplateId, createTaskViewModel, savedStateHandle)
   HandleTaskSaved(createTaskState.taskSaved, navigationController, createTaskViewModel)
-
-  HandlePhotoCleanupDisposableEffect(
-      isNavigatingToCamera, createTaskState.attachmentUris, createTaskViewModel, context)
+  CleanupAttachmentsOnDispose(
+      createTaskState.temporaryPhotoUris, createTaskViewModel, context, navigationController)
 
   Scaffold(
       topBar = {
@@ -132,10 +142,11 @@ fun CreateTaskScreen(
                           projectId = projectId,
                           availableTasks = availableTasks,
                           cycleError = cycleError,
-                          isNavigatingToCamera = { isNavigatingToCamera = true },
                           navigationController = navigationController,
                           context = context,
-                          inputValid = inputValid))
+                          inputValid = inputValid,
+                          filePickerLauncher = filePickerLauncher,
+                          temporaryPhotoUris = createTaskState.temporaryPhotoUris))
             })
       })
 }
@@ -158,7 +169,7 @@ private fun HandleErrorToast(
 private fun HandlePhotoUri(photoUri: String, createTaskViewModel: CreateTaskViewModel) {
   LaunchedEffect(photoUri) {
     if (photoUri.isNotEmpty()) {
-      createTaskViewModel.addAttachment(photoUri.toUri())
+      createTaskViewModel.addAttachment(photoUri.toUri(), true)
     }
   }
 }
@@ -203,16 +214,23 @@ private fun HandleTaskSaved(
 }
 
 @Composable
-private fun HandlePhotoCleanupDisposableEffect(
-    isNavigatingToCamera: Boolean,
-    attachmentUris: List<Uri>,
+private fun CleanupAttachmentsOnDispose(
+    temporaryPhotoUris: List<Uri>,
     createTaskViewModel: CreateTaskViewModel,
-    context: android.content.Context
+    context: android.content.Context,
+    navigationController: NavHostController
 ) {
+  val isNavigatingToCamera = remember { mutableStateOf(false) }
+
+  LaunchedEffect(navigationController.currentBackStackEntry) {
+    val currentRoute = navigationController.currentBackStackEntry?.destination?.route
+    isNavigatingToCamera.value = currentRoute?.contains("Camera") == true
+  }
+
   DisposableEffect(Unit) {
     onDispose {
-      if (!isNavigatingToCamera) {
-        attachmentUris.forEach { uri -> createTaskViewModel.deletePhoto(context, uri) }
+      if (!isNavigatingToCamera.value) {
+        createTaskViewModel.deletePhotosOnDispose(context, temporaryPhotoUris)
       }
     }
   }
@@ -233,10 +251,11 @@ private data class CreateTaskContentConfig(
     val projectId: String,
     val availableTasks: List<Task>,
     val cycleError: String?,
-    val isNavigatingToCamera: () -> Unit,
     val navigationController: NavHostController,
     val context: android.content.Context,
-    val inputValid: Boolean
+    val inputValid: Boolean,
+    val filePickerLauncher: androidx.activity.compose.ManagedActivityResultLauncher<String, Uri?>,
+    val temporaryPhotoUris: List<Uri>
 )
 
 @Composable
@@ -317,35 +336,38 @@ private fun CreateTaskContent(config: CreateTaskContentConfig) {
               cycleError = config.cycleError)
         }
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-          OutlinedButton(
-              onClick = {
-                config.isNavigatingToCamera()
-                config.navigationController.navigate(Route.Camera)
-              },
-              colors = EurekaStyles.outlinedButtonColors(),
-              modifier =
-                  Modifier.fillMaxWidth(CREATE_SCREEN_PHOTO_BUTTON_SIZE)
-                      .testTag(CommonTaskTestTags.ADD_PHOTO)) {
-                Text("Add Photo")
-              }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+              OutlinedButton(
+                  onClick = { config.navigationController.navigate(Route.Camera) },
+                  colors = EurekaStyles.outlinedButtonColors(),
+                  modifier = Modifier.weight(1f).testTag(CommonTaskTestTags.ADD_PHOTO)) {
+                    Text("Add Photo")
+                  }
 
-          Button(
-              onClick = { config.createTaskViewModel.addTask(config.context) },
-              enabled = config.inputValid && !config.createTaskState.isSaving,
-              modifier = Modifier.fillMaxWidth().testTag(CommonTaskTestTags.SAVE_TASK),
-              colors = EurekaStyles.primaryButtonColors()) {
-                Text(if (config.createTaskState.isSaving) "Saving..." else "Save")
-              }
-        }
+              OutlinedButton(
+                  onClick = { config.filePickerLauncher.launch("*/*") },
+                  colors = EurekaStyles.outlinedButtonColors(),
+                  modifier = Modifier.weight(1f).testTag(CreateTaskScreenTestTags.ADD_FILE)) {
+                    Text("Add File")
+                  }
+            }
 
         AttachmentsList(
             attachments = config.createTaskState.attachmentUris.map { Attachment.Local(it) },
             onDelete = { index ->
-              val uri = config.createTaskState.attachmentUris[index]
-              if (config.createTaskViewModel.deletePhoto(config.context, uri)) {
-                config.createTaskViewModel.removeAttachment(index)
-              }
-            })
+              config.createTaskViewModel.removeAttachmentAndDelete(config.context, index)
+            },
+            isReadOnly = false,
+            isConnected = true)
+
+        Button(
+            onClick = { config.createTaskViewModel.addTask(config.context) },
+            enabled = config.inputValid && !config.createTaskState.isSaving,
+            modifier = Modifier.fillMaxWidth().testTag(CommonTaskTestTags.SAVE_TASK),
+            colors = EurekaStyles.primaryButtonColors()) {
+              Text(if (config.createTaskState.isSaving) "Saving..." else "Save")
+            }
       }
 }

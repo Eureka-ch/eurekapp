@@ -147,10 +147,19 @@ class CreateTaskViewModel(
     val currentUser = getCurrentUserId() ?: throw Exception("User not logged in.")
 
     val handler = CoroutineExceptionHandler { _, exception ->
-      Log.e("CreateTaskViewModel", exception.message ?: "Unknown error")
+      Log.e("CreateTaskViewModel", exception.message ?: "Unknown error", exception)
+
+      val errorMessage =
+          when {
+            exception.message?.contains("Timed out") == true ->
+                "Upload timed out. Please check your connection and try again."
+            exception.message?.contains("Unable to resolve host") == true ->
+                "Network error. Please check your internet connection."
+            else -> "Unable to save task: ${exception.message}"
+          }
 
       Handler(Looper.getMainLooper()).post {
-        Toast.makeText(context.applicationContext, "Unable to save task", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context.applicationContext, errorMessage, Toast.LENGTH_LONG).show()
       }
       updateState { copy(isSaving = false) }
     }
@@ -163,10 +172,19 @@ class CreateTaskViewModel(
     saveFilesAsync(taskId, context, projectIdToUse, state.attachmentUris) { photoUrlsResult ->
       if (photoUrlsResult.isFailure) {
         val exception = photoUrlsResult.exceptionOrNull()
-        Log.e("CreateTaskViewModel", exception?.message ?: "Unknown error")
+        Log.e("CreateTaskViewModel", "Failed to upload files", exception)
+
+        val errorMessage =
+            when {
+              exception?.message?.contains("Timed out") == true ->
+                  "Upload timed out. Please check your connection and try again."
+              exception?.message?.contains("Unable to resolve host") == true ->
+                  "Network error. Please check your internet connection."
+              else -> "Unable to save task: ${exception?.message}"
+            }
+
         Handler(Looper.getMainLooper()).post {
-          Toast.makeText(context.applicationContext, "Unable to save task", Toast.LENGTH_SHORT)
-              .show()
+          Toast.makeText(context.applicationContext, errorMessage, Toast.LENGTH_LONG).show()
         }
         updateState { copy(isSaving = false) }
         return@saveFilesAsync
@@ -212,13 +230,17 @@ class CreateTaskViewModel(
     }
   }
 
-  fun deletePhoto(context: Context, photoUri: Uri): Boolean {
-    return try {
-      val rowsDeleted = context.contentResolver.delete(photoUri, null, null)
-      rowsDeleted > 0
-    } catch (e: SecurityException) {
-      Log.w("CreateTaskViewModel", "Failed to delete photo: ${e.message}")
-      false
+  fun removeAttachmentAndDelete(context: Context, index: Int) {
+    val uri = uiState.value.attachmentUris[index]
+    if (uiState.value.temporaryPhotoUris.contains(uri)) {
+      deletePhotoAsync(context, uri) { success ->
+        if (success) {
+          removeAttachment(index)
+          updateState { copyWithTemporaryPhotoUris(temporaryPhotoUris.filter { it != uri }) }
+        }
+      }
+    } else {
+      removeAttachment(index)
     }
   }
 
@@ -255,6 +277,9 @@ class CreateTaskViewModel(
 
   override fun CreateTaskState.copyWithSelectedAssignedUserIds(userIds: List<String>) =
       copy(selectedAssignedUserIds = userIds)
+
+  override fun CreateTaskState.copyWithTemporaryPhotoUris(uris: List<Uri>) =
+      copy(temporaryPhotoUris = uris)
 
   override fun addDependency(taskId: String) {
     val currentDependencies = uiState.value.dependingOnTasks
