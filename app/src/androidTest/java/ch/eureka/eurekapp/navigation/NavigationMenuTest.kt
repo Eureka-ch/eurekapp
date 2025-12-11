@@ -285,4 +285,12 @@ class NavigationMenuTest : TestCase() {
         .onNodeWithTag(ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON)
         .assertIsDisplayed()
   }
+
+  @Test
+  fun testMeetingScreenCreatesNavigationCallbacks() {
+    composeTestRule.setContent { NavigationMenu() }
+    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_SCREEN).assertIsDisplayed()
+  }
 }

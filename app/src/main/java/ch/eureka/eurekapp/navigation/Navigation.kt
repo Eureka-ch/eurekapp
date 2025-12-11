@@ -403,38 +403,6 @@ fun NavigationMenu(
                     viewModel = templateViewModel)
               }
 
-              // Conversations section
-              composable<Route.ConversationsSection.Conversations> {
-                ConversationListScreen(
-                    onCreateConversation = {
-                      navigationController.navigate(
-                          Route.ConversationsSection.CreateConversation(projectId = testProjectId))
-                    },
-                    onConversationClick = { conversationId ->
-                      navigationController.navigate(
-                          Route.ConversationsSection.ConversationDetail(
-                              conversationId = conversationId))
-                    })
-              }
-
-              composable<Route.ConversationsSection.CreateConversation> {
-                CreateConversationScreen(
-                    onNavigateToConversation = { conversationId ->
-                      navigationController.popBackStack()
-                      navigationController.navigate(
-                          Route.ConversationsSection.ConversationDetail(
-                              conversationId = conversationId))
-                    })
-              }
-
-              composable<Route.ConversationsSection.ConversationDetail> { backStackEntry ->
-                val conversationDetailRoute =
-                    backStackEntry.toRoute<Route.ConversationsSection.ConversationDetail>()
-                ConversationDetailScreen(
-                    conversationId = conversationDetailRoute.conversationId,
-                    onNavigateBack = { navigationController.popBackStack() })
-              }
-
               // Meetings section
               composable<Route.MeetingsSection.Meetings> {
                 MeetingScreen(
