@@ -293,6 +293,12 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
+      - name: Setup JDK 21 for Firebase Emulators
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
       - name: Build Cloud Functions
         run: |
           cd functions
@@ -309,6 +315,13 @@ jobs:
           else
             echo "Firebase emulators not configured, skipping emulator startup..."
           fi
+
+      - name: Restore JDK 17 for Android Tests
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+          cache: gradle
 
       - name: Verify Sharding Configuration
         run: |
