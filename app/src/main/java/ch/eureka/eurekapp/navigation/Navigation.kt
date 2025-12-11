@@ -92,8 +92,7 @@ sealed interface Route {
   @Serializable data object ActivityFeed : Route
 
   sealed interface ActivitySection : Route {
-    @Serializable
-    data class ActivityDetail(val activityId: String, val projectId: String) : ActivitySection
+    @Serializable data class ActivityDetail(val activityId: String) : ActivitySection
   }
 
   sealed interface TasksSection : Route {
@@ -308,15 +307,13 @@ fun NavigationMenu(
                 ActivityFeedScreen(
                     onActivityClick = { activityId, projectId ->
                       navigationController.navigate(
-                          Route.ActivitySection.ActivityDetail(
-                              activityId = activityId, projectId = projectId))
+                          Route.ActivitySection.ActivityDetail(activityId = activityId))
                     })
               }
               composable<Route.ActivitySection.ActivityDetail> { backStackEntry ->
                 val route = backStackEntry.toRoute<Route.ActivitySection.ActivityDetail>()
                 ActivityDetailScreen(
                     activityId = route.activityId,
-                    projectId = route.projectId,
                     onNavigateBack = { navigationController.popBackStack() },
                     onNavigateToEntity = { entityType, entityId, projectId ->
                       when (entityType) {

@@ -64,7 +64,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.activity.Activity
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
@@ -102,7 +101,6 @@ object ActivityDetailScreenTestTags {
  * and action buttons.
  *
  * @param activityId The ID of the activity to display.
- * @param projectId The ID of the project containing the activity.
  * @param viewModel The ViewModel for managing screen state.
  * @param onNavigateBack Callback when the back button is clicked.
  * @param onNavigateToEntity Callback for navigating to the source entity.
@@ -111,7 +109,6 @@ object ActivityDetailScreenTestTags {
 @Composable
 fun ActivityDetailScreen(
     activityId: String,
-    projectId: String,
     viewModel: ActivityDetailViewModel? = null,
     onNavigateBack: () -> Unit = {},
     onNavigateToEntity: (EntityType, String, String) -> Unit = { _, _, _ -> }
@@ -150,38 +147,42 @@ fun ActivityDetailScreen(
               }
             })
       }) { paddingValues ->
-        if (uiState.isLoading) {
-          Box(
-              modifier = Modifier.fillMaxSize().padding(paddingValues),
-              contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(
-                    modifier = Modifier.testTag(ActivityDetailScreenTestTags.LOADING_INDICATOR))
-              }
-        } else if (uiState.errorMsg != null) {
-          Box(
-              modifier = Modifier.fillMaxSize().padding(paddingValues),
-              contentAlignment = Alignment.Center) {
-                Text(
-                    text = uiState.errorMsg ?: "Unknown error",
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.testTag(ActivityDetailScreenTestTags.ERROR_MESSAGE))
-              }
-        } else if (uiState.activity != null) {
-          ActivityDetailContent(
-              activity = uiState.activity!!,
-              relatedActivities = uiState.relatedActivities,
-              isConnected = uiState.isConnected,
-              onNavigateToEntity = onNavigateToEntity,
-              onShare = {
-                val shareText = vm.getShareText()
-                if (shareText != null) {
-                  shareToClipboard(context, shareText)
-                  vm.markShareSuccess()
-                  Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+        when {
+          uiState.isLoading -> {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                contentAlignment = Alignment.Center) {
+                  CircularProgressIndicator(
+                      modifier = Modifier.testTag(ActivityDetailScreenTestTags.LOADING_INDICATOR))
                 }
-              },
-              onDelete = { vm.deleteActivity() },
-              modifier = Modifier.padding(paddingValues))
+          }
+          uiState.errorMsg != null -> {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                contentAlignment = Alignment.Center) {
+                  Text(
+                      text = uiState.errorMsg ?: "Unknown error",
+                      color = MaterialTheme.colorScheme.error,
+                      modifier = Modifier.testTag(ActivityDetailScreenTestTags.ERROR_MESSAGE))
+                }
+          }
+          uiState.activity != null -> {
+            ActivityDetailContent(
+                activity = uiState.activity!!,
+                relatedActivities = uiState.relatedActivities,
+                isConnected = uiState.isConnected,
+                onNavigateToEntity = onNavigateToEntity,
+                onShare = {
+                  val shareText = vm.getShareText()
+                  if (shareText != null) {
+                    shareToClipboard(context, shareText)
+                    vm.markShareSuccess()
+                    Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                  }
+                },
+                onDelete = { vm.deleteActivity() },
+                modifier = Modifier.padding(paddingValues))
+          }
         }
       }
 }

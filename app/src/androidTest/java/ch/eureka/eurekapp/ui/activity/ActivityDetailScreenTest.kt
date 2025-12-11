@@ -80,8 +80,7 @@ class ActivityDetailScreenTest {
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     composeTestRule.setContent {
-      ActivityDetailScreen(
-          activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
+      ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
@@ -101,8 +100,7 @@ class ActivityDetailScreenTest {
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     composeTestRule.setContent {
-      ActivityDetailScreen(
-          activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
+      ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
@@ -140,8 +138,7 @@ class ActivityDetailScreenTest {
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     composeTestRule.setContent {
-      ActivityDetailScreen(
-          activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
+      ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
@@ -161,8 +158,7 @@ class ActivityDetailScreenTest {
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     composeTestRule.setContent {
-      ActivityDetailScreen(
-          activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
+      ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
@@ -183,7 +179,6 @@ class ActivityDetailScreenTest {
     composeTestRule.setContent {
       ActivityDetailScreen(
           activityId = testActivityId,
-          projectId = testProjectId,
           viewModel = viewModel,
           onNavigateToEntity = { type, id, projectId ->
             navigateToEntityCalled = true
@@ -255,8 +250,7 @@ class ActivityDetailScreenTest {
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     composeTestRule.setContent {
-      ActivityDetailScreen(
-          activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
+      ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
@@ -284,8 +278,7 @@ class ActivityDetailScreenTest {
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     composeTestRule.setContent {
-      ActivityDetailScreen(
-          activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
+      ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
@@ -311,8 +304,7 @@ class ActivityDetailScreenTest {
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     composeTestRule.setContent {
-      ActivityDetailScreen(
-          activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
+      ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
@@ -333,8 +325,7 @@ class ActivityDetailScreenTest {
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     composeTestRule.setContent {
-      ActivityDetailScreen(
-          activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
+      ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
@@ -358,8 +349,7 @@ class ActivityDetailScreenTest {
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     composeTestRule.setContent {
-      ActivityDetailScreen(
-          activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
+      ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
@@ -385,7 +375,6 @@ class ActivityDetailScreenTest {
     composeTestRule.setContent {
       ActivityDetailScreen(
           activityId = testActivityId,
-          projectId = testProjectId,
           viewModel = viewModel,
           onNavigateBack = { navigateBackCalled = true })
     }
@@ -418,8 +407,7 @@ class ActivityDetailScreenTest {
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     composeTestRule.setContent {
-      ActivityDetailScreen(
-          activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
+      ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
@@ -442,8 +430,7 @@ class ActivityDetailScreenTest {
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     composeTestRule.setContent {
-      ActivityDetailScreen(
-          activityId = testActivityId, projectId = testProjectId, viewModel = viewModel)
+      ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
 
@@ -465,7 +452,6 @@ class ActivityDetailScreenTest {
     composeTestRule.setContent {
       ActivityDetailScreen(
           activityId = testActivityId,
-          projectId = testProjectId,
           viewModel = viewModel,
           onNavigateBack = { navigateBackCalled = true })
     }

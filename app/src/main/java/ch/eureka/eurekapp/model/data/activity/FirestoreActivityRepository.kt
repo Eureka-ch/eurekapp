@@ -130,7 +130,7 @@ class FirestoreActivityRepository(
   private suspend fun hasMeetingAccess(meetingId: String, userId: String): Boolean {
     return try {
       val doc = firestore.collection("meetings").document(meetingId).get().await()
-      val participantIds = doc.get("participantIds") as? List<*> ?: emptyList<String>()
+      val participantIds = doc["participantIds"] as? List<*> ?: emptyList<String>()
       participantIds.contains(userId)
     } catch (e: Exception) {
       Log.e("FirestoreActivityRepository", "Error checking meeting access: ${e.message}")
@@ -148,7 +148,7 @@ class FirestoreActivityRepository(
   private suspend fun hasConversationAccess(conversationId: String, userId: String): Boolean {
     return try {
       val doc = firestore.collection("conversations").document(conversationId).get().await()
-      val memberIds = doc.get("memberIds") as? List<*> ?: emptyList<String>()
+      val memberIds = doc["memberIds"] as? List<*> ?: emptyList<String>()
       memberIds.contains(userId)
     } catch (e: Exception) {
       Log.e("FirestoreActivityRepository", "Error checking conversation access: ${e.message}")

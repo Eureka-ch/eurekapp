@@ -73,10 +73,6 @@ object Formatters {
     }
   }
 
-  // Cached formatter to avoid recreating on every call
-  private val fullTimestampFormatter =
-      SimpleDateFormat("MMM dd, yyyy 'at' hh:mm a", Locale.getDefault())
-
   /**
    * Format a full timestamp with date and time (e.g., "Jan 15, 2024 at 03:45 PM").
    *
@@ -84,6 +80,7 @@ object Formatters {
    * @return A formatted timestamp string.
    */
   fun formatFullTimestamp(date: Date): String {
-    return fullTimestampFormatter.format(date)
+    val formatter = SimpleDateFormat("MMM dd, yyyy 'at' hh:mm a", Locale.getDefault())
+    return formatter.format(date)
   }
 }
