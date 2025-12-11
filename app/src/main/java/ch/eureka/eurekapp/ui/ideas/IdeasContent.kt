@@ -189,10 +189,11 @@ private fun IdeaConversationContent(
           verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             items(items = messages, key = { it.messageID }) { message ->
               MessageBubble(
-                  state = MessageBubbleState(
-                      text = message.text,
-                      timestamp = message.createdAt,
-                      isFromCurrentUser = message.senderId == currentUserId))
+                  state =
+                      MessageBubbleState(
+                          text = message.text,
+                          timestamp = message.createdAt,
+                          isFromCurrentUser = message.senderId == currentUserId))
             }
           }
     }
