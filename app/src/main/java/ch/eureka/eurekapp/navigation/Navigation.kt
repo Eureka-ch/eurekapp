@@ -95,6 +95,7 @@ sealed interface Route {
   sealed interface ActivitySection : Route {
     @Serializable data class ActivityDetail(val activityId: String) : ActivitySection
   }
+
   @Serializable data object NotificationPreferences : Route
 
   sealed interface TasksSection : Route {
