@@ -23,11 +23,14 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class IdeasViewModelTest {
+  companion object {
+    private const val TEST_USER_ID = "test-user-id"
+  }
+
   private val testDispatcher = UnconfinedTestDispatcher()
   private lateinit var mockProjectRepository: MockProjectRepository
   private lateinit var mockIdeasRepository: MockIdeasRepository
   private lateinit var viewModel: IdeasViewModel
-  private val currentUserId = "current-user-123"
 
   @Before
   fun setUp() {
@@ -43,7 +46,7 @@ class IdeasViewModelTest {
     mockIdeasRepository.reset()
   }
 
-  private fun createViewModel(getCurrentUserId: () -> String? = { currentUserId }): IdeasViewModel =
+  private fun createViewModel(getCurrentUserId: () -> String? = { TEST_USER_ID }): IdeasViewModel =
       IdeasViewModel(
           projectRepository = mockProjectRepository,
           ideasRepository = mockIdeasRepository,
@@ -79,51 +82,30 @@ class IdeasViewModelTest {
   }
 
   @Test
-  fun selectIdea_updatesSelectedIdeaAndSwitchesToConversationMode() = runTest {
-    val idea = Idea(ideaId = "idea-123", projectId = "project-123", createdBy = currentUserId)
+  fun selectIdea_updatesSelectedIdea() = runTest {
+    val idea = Idea(ideaId = "idea-123", projectId = "project-123", createdBy = TEST_USER_ID)
     viewModel = createViewModel()
     advanceUntilIdle()
     viewModel.selectIdea(idea)
     advanceUntilIdle()
     val state = viewModel.uiState.first()
     assertEquals(idea, state.selectedIdea)
-    assertEquals(IdeasViewMode.CONVERSATION, state.viewMode)
-  }
-
-  @Test
-  fun backToList_switchesToListModeAndClearsSelection() = runTest {
-    val project = Project(projectId = "project-123", name = "Test Project")
-    val idea = Idea(ideaId = "idea-123", projectId = "project-123", createdBy = currentUserId)
-    mockProjectRepository.setCurrentUserProjects(flowOf(listOf(project)))
-    mockIdeasRepository.setIdeasForProject("project-123", flowOf(listOf(idea)))
-    viewModel = createViewModel()
-    advanceUntilIdle()
-
-    viewModel.selectProject(project)
-    viewModel.selectIdea(idea)
-    advanceUntilIdle()
-    assertEquals(IdeasViewMode.CONVERSATION, viewModel.uiState.first().viewMode)
-
-    viewModel.backToList()
-    advanceUntilIdle()
-    val state = viewModel.uiState.first()
+    // Conversation mode will be tested in frontend PR
     assertEquals(IdeasViewMode.LIST, state.viewMode)
-    assertNull(state.selectedIdea)
   }
 
   @Test
-  fun onIdeaCreated_updatesSelectedIdeaAndProjectAndSwitchesToConversationMode() = runTest {
+  fun onIdeaCreated_updatesSelectedIdeaAndProject() = runTest {
     val project = Project(projectId = "project-123", name = "Test Project")
     mockProjectRepository.setCurrentUserProjects(flowOf(listOf(project)))
     viewModel = createViewModel()
     advanceUntilIdle()
-    val idea = Idea(ideaId = "idea-123", projectId = "project-123", createdBy = currentUserId)
+    val idea = Idea(ideaId = "idea-123", projectId = "project-123", createdBy = TEST_USER_ID)
     viewModel.onIdeaCreated(idea)
     advanceUntilIdle()
     val state = viewModel.uiState.first()
     assertEquals(idea, state.selectedIdea)
     assertEquals(project, state.selectedProject)
-    assertEquals(IdeasViewMode.CONVERSATION, state.viewMode)
   }
 
   @Test

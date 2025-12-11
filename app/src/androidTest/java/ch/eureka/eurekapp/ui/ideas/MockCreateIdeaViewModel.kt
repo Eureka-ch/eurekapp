@@ -1,19 +1,24 @@
 package ch.eureka.eurekapp.ui.ideas
 
-import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.user.User
+import ch.eureka.eurekapp.ui.tasks.MockProjectRepository
+import ch.eureka.eurekapp.ui.tasks.MockUserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 // Portions of this file were written with the help of GPT-5 Codex and Gemini.
 /** Mock implementation of CreateIdeaViewModel for Android tests. */
-class MockCreateIdeaViewModel :
+class MockCreateIdeaViewModel(
+    projectRepository: MockProjectRepository = MockProjectRepository(),
+    userRepository: MockUserRepository = MockUserRepository(),
+    ideasRepository: MockIdeasRepository = MockIdeasRepository()
+) :
     CreateIdeaViewModel(
-        projectRepository = RepositoriesProvider.projectRepository,
-        userRepository = RepositoriesProvider.userRepository,
-        ideasRepository = MockIdeasRepository()) {
+        projectRepository = projectRepository,
+        userRepository = userRepository,
+        ideasRepository = ideasRepository) {
   private val _uiState =
       MutableStateFlow(
           CreateIdeaState(

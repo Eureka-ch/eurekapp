@@ -146,14 +146,9 @@ constructor(
     _selectedIdea.value = null
   }
 
-  open fun backToList() {
-    _viewMode.value = IdeasViewMode.LIST
-    _selectedIdea.value = null
-  }
-
   open fun selectIdea(idea: Idea) {
     _selectedIdea.value = idea
-    _viewMode.value = IdeasViewMode.CONVERSATION
+    _viewMode.value = IdeasViewMode.LIST // Conversation mode in separate PR
   }
 
   /** Called when a new idea is created from CreateIdeaViewModel */
@@ -163,7 +158,7 @@ constructor(
       _selectedProject.value = project
     }
     _selectedIdea.value = idea
-    _viewMode.value = IdeasViewMode.CONVERSATION
+    // Conversation navigation in separate PR
   }
 
   open fun deleteIdea(ideaId: String) {
@@ -181,6 +176,11 @@ constructor(
   }
 
   // Chat functionality (sendMessage, updateMessage, addParticipant) will be in separate PR
+
+  open fun backToList() {
+    _selectedIdea.value = null
+    _viewMode.value = IdeasViewMode.LIST
+  }
 
   open fun clearError() {
     _errorMsg.value = null
