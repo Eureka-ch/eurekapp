@@ -52,10 +52,10 @@ fun SelfNoteMessageBubble(
                 .combinedClickable(onClick = onClick, onLongClick = onLongClick)
                 .padding(4.dp)) {
           MessageBubble(
+              modifier = Modifier.align(Alignment.CenterEnd),
               text = message.text,
               timestamp = message.createdAt,
-              isFromCurrentUser = true,
-              modifier = Modifier.align(Alignment.CenterEnd))
+              isFromCurrentUser = true)
         }
   }
 }

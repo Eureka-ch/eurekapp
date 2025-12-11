@@ -102,7 +102,6 @@ class MessageBubbleTest {
     composeTestRule.setContent {
       MessageBubble(
           senderPhotoUrl = "https://example.com/photo.jpg",
-          senderDisplayName = "",
           text = "Test",
           timestamp = Timestamp.now(),
           isFromCurrentUser = false)
@@ -115,12 +114,7 @@ class MessageBubbleTest {
   @Test
   fun messageBubble_withEmptySenderPhotoUrlDoesNotDisplayAsyncImage() {
     composeTestRule.setContent {
-      MessageBubble(
-          senderPhotoUrl = "",
-          senderDisplayName = "",
-          text = "Test",
-          timestamp = Timestamp.now(),
-          isFromCurrentUser = false)
+      MessageBubble(text = "Test", timestamp = Timestamp.now(), isFromCurrentUser = false)
     }
     composeTestRule
         .onNodeWithContentDescription("Profile picture of ", substring = true)
@@ -131,7 +125,6 @@ class MessageBubbleTest {
   fun messageBubble_withSenderDisplayNameDisplaysText() {
     composeTestRule.setContent {
       MessageBubble(
-          senderPhotoUrl = "",
           senderDisplayName = "John Doe",
           text = "Test",
           timestamp = Timestamp.now(),

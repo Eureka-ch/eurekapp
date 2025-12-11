@@ -43,7 +43,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.conversation.ConversationMessage
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.DeleteConfirmationDialog
@@ -317,7 +316,7 @@ private fun ConversationContent(
     currentUserId: String,
     context: Context,
     callbacks: MessageCallbacks,
-    conversationDetailViewModel: ConversationDetailViewModel = viewModel()
+    conversationDetailViewModel: ConversationDetailViewModel
 ) {
   Box(modifier = modifier.fillMaxSize()) {
     when {
@@ -360,7 +359,7 @@ private fun MessagesList(
     currentUserId: String,
     context: Context,
     callbacks: MessageCallbacks,
-    conversationDetailViewModel: ConversationDetailViewModel = viewModel()
+    conversationDetailViewModel: ConversationDetailViewModel
 ) {
   LazyColumn(
       state = listState,
@@ -389,7 +388,7 @@ private fun MessageItem(
     currentUserId: String,
     context: Context,
     callbacks: MessageCallbacks,
-    conversationDetailViewModel: ConversationDetailViewModel = viewModel()
+    conversationDetailViewModel: ConversationDetailViewModel
 ) {
   val isFromCurrentUser = message.senderId == currentUserId
   val messageUser =

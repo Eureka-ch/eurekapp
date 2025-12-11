@@ -276,7 +276,6 @@ private fun MemberDropdownItem(
     onMemberSelect: (MemberDisplayData) -> Unit,
     onMemberDeselect: (MemberDisplayData) -> Unit
 ) {
-  val memberSelected by remember { mutableStateOf(selectedMembersList.contains(memberData)) }
   DropdownMenuItem(
       modifier = Modifier.testTag(CreateConversationScreenTestTags.MEMBER_DROPDOWN_ITEM),
       text = {
@@ -306,7 +305,7 @@ private fun MemberDropdownItem(
             }
       },
       onClick = {
-        if (memberSelected) {
+        if (selectedMembersList.contains(memberData)) {
           onMemberDeselect(memberData)
         } else {
           onMemberSelect(memberData)
@@ -318,7 +317,7 @@ private fun MemberDropdownItem(
 private fun CreateButton(uiState: CreateConversationState, onClick: () -> Unit) {
   val canCreate =
       uiState.selectedProject != null &&
-          uiState.selectedMembers != null &&
+          uiState.selectedMembers.isNotEmpty() &&
           !uiState.isCreating &&
           uiState.isConnected
 

@@ -191,7 +191,7 @@ open class CreateConversationViewModel(
    * Sets [CreateConversationState.conversationCreated] to true on success, which can be observed by
    * the UI to navigate back to the conversation list.
    */
-  fun createConversation() {
+  open fun createConversation() {
     val state = _baseUiState.value
     val selectedProject = state.selectedProject ?: return
     val selectedMembersUserIds = state.selectedMembers.map { (member, user) -> user.uid }

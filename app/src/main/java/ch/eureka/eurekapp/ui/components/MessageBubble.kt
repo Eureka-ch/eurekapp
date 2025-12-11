@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.ui.camera.PhotoViewer
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
+import ch.eureka.eurekapp.ui.theme.DarkColorScheme
 import ch.eureka.eurekapp.ui.theme.Typography
 import ch.eureka.eurekapp.utils.Formatters
 import coil.compose.AsyncImage
@@ -45,6 +46,9 @@ Co-author: GPT-5 Codex
 Co-author: Claude 4.5 Sonnet
 Co-author: Grok
 */
+
+private val TEXT_WEIGHT = FontWeight(500)
+private val MESSAGE_WEIGHT = 3f
 
 object MessageBubbleTestTags {
   const val BUBBLE = "messageBubble"
@@ -74,12 +78,12 @@ object MessageBubbleTestTags {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MessageBubble(
+    modifier: Modifier = Modifier,
     senderPhotoUrl: String = "",
     senderDisplayName: String = "",
     text: String,
     timestamp: Timestamp?,
     isFromCurrentUser: Boolean,
-    modifier: Modifier = Modifier,
     fileAttachment: MessageBubbleFileAttachment = MessageBubbleFileAttachment(),
     editedAt: Timestamp? = null,
     interactions: MessageBubbleInteractions = MessageBubbleInteractions()
@@ -98,13 +102,13 @@ fun MessageBubble(
                   @Composable {
                     if (senderDisplayName != "") {
                       Row(
-                          modifier = Modifier.padding(5.dp),
+                          modifier = Modifier.padding(Spacing.xxs),
                           horizontalArrangement = Arrangement.Center,
                           verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = senderDisplayName,
-                                color = Color.Black,
-                                fontWeight = FontWeight(500),
+                                color = DarkColorScheme.background,
+                                fontWeight = TEXT_WEIGHT,
                                 style = Typography.titleMedium)
                           }
                     }
@@ -113,7 +117,7 @@ fun MessageBubble(
               val message =
                   @Composable {
                     Row(
-                        modifier = Modifier.weight(3f),
+                        modifier = Modifier.weight(MESSAGE_WEIGHT),
                         horizontalArrangement =
                             if (isFromCurrentUser) Arrangement.End else Arrangement.Start,
                         verticalAlignment = Alignment.CenterVertically) {
