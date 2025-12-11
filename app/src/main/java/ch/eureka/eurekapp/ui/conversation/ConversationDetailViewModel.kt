@@ -17,10 +17,13 @@ import ch.eureka.eurekapp.model.data.conversation.Conversation
 import ch.eureka.eurekapp.model.data.conversation.ConversationMessage
 import ch.eureka.eurekapp.model.data.conversation.ConversationRepository
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
+import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
+import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -42,7 +45,7 @@ Co-author: Grok
  *
  * @property conversation The conversation data.
  * @property messages List of messages in the conversation.
- * @property otherMemberName Display name of the other member.
+ * @property otherMemberNames Display name of the other member.
  * @property projectName Name of the project this conversation belongs to.
  * @property currentMessage The message being composed.
  * @property isLoading Whether data is loading.
@@ -58,7 +61,7 @@ Co-author: Grok
 data class ConversationDetailState(
     val conversation: Conversation? = null,
     val messages: List<ConversationMessage> = emptyList(),
-    val otherMemberName: String = "",
+    val otherMemberNames: List<String> = emptyList(),
     val projectName: String = "",
     val currentMessage: String = "",
     val isLoading: Boolean = true,
@@ -76,7 +79,7 @@ data class ConversationDetailState(
     get() = editingMessageId != null
 }
 
-private data class DisplayData(val otherMemberName: String, val projectName: String)
+private data class DisplayData(val otherMemberNames: List<String>, val projectName: String)
 
 /**
  * ViewModel for the conversation detail screen.
@@ -139,17 +142,22 @@ open class ConversationDetailViewModel(
   private val displayDataFlow =
       conversationFlow.flatMapLatest { conversation ->
         if (conversation == null) {
-          flowOf(DisplayData("", ""))
+          flowOf(DisplayData(emptyList(), ""))
         } else {
           val currentUserId = getCurrentUserId() ?: ""
-          val otherUserId = conversation.memberIds.firstOrNull { it != currentUserId } ?: ""
-          combine(
-              userRepository.getUserById(otherUserId),
-              projectRepository.getProjectById(conversation.projectId)) { user, project ->
-                DisplayData(
-                    otherMemberName = user?.displayName ?: "Unknown User",
-                    projectName = project?.name ?: "Unknown Project")
+          val otherUserIds = conversation.memberIds.filter { id -> id != currentUserId }
+
+          val projectFlow: Flow<Project?> = projectRepository.getProjectById(conversation.projectId)
+          val combinedUsersFlow: Flow<List<User>> =
+              combine(otherUserIds.map { id -> userRepository.getUserById(id) }) { usersArray ->
+                usersArray.filterNotNull().toList()
               }
+
+          combine(combinedUsersFlow, projectFlow) { users, project ->
+            DisplayData(
+                otherMemberNames = users.map { user -> user.displayName },
+                projectName = project?.name ?: "Unknown Project")
+          }
         }
       }
 
@@ -185,7 +193,7 @@ open class ConversationDetailViewModel(
             ConversationDetailState(
                 conversation = conversation,
                 messages = messages,
-                otherMemberName = displayData.otherMemberName,
+                otherMemberNames = displayData.otherMemberNames,
                 projectName = displayData.projectName,
                 currentMessage = inputState.currentMessage,
                 isLoading = conversation == null,
@@ -510,5 +518,9 @@ open class ConversationDetailViewModel(
               },
               onFailure = { error -> _errorMsg.value = "Error: ${error.message}" })
     }
+  }
+
+  fun getUser(userId: String): Flow<User?> {
+    return userRepository.getUserById(userId)
   }
 }

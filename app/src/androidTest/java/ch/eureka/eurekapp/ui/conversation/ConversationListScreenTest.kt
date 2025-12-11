@@ -61,8 +61,8 @@ class ConversationListScreenTest {
         listOf(
             ConversationDisplayData(
                 conversation = Conversation(conversationId = "conv123", projectId = "p1"),
-                otherMemberName = "Jane Smith",
-                otherMemberPhotoUrl = "",
+                otherMembers = listOf("Jane Smith"),
+                otherMembersPhotoUrl = listOf(""),
                 projectName = "Project X"))
 
     composeTestRule.setContent {

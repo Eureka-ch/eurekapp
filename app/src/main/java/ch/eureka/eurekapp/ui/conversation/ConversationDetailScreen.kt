@@ -51,6 +51,7 @@ import ch.eureka.eurekapp.ui.components.MessageActionMenu
 import ch.eureka.eurekapp.ui.components.MessageBubble
 import ch.eureka.eurekapp.ui.components.MessageBubbleFileAttachment
 import ch.eureka.eurekapp.ui.components.MessageBubbleInteractions
+import ch.eureka.eurekapp.ui.components.MessageBubbleState
 import ch.eureka.eurekapp.ui.components.MessageInputField
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
@@ -70,6 +71,7 @@ object ConversationDetailScreenTestTags {
 Co-author: GPT-5 Codex
 Co-author: Claude 4.5 Sonnet
 Co-author: Grok
+Co-author: Gemini
 */
 
 /** Callbacks for message-level interactions in the conversation. */
@@ -160,7 +162,7 @@ fun ConversationDetailScreen(
         } else {
           // Standard top bar
           EurekaTopBar(
-              title = uiState.otherMemberName.ifEmpty { "Chat" },
+              title = uiState.otherMemberNames.joinToString(", ").ifEmpty { "Chat" },
               navigationIcon = {
                 BackButton(
                     onClick = onNavigateBack,
@@ -209,7 +211,8 @@ fun ConversationDetailScreen(
             listState = listState,
             currentUserId = viewModel.currentUserId ?: "",
             context = context,
-            callbacks = messageCallbacks)
+            callbacks = messageCallbacks,
+            conversationDetailViewModel = viewModel)
       }
 }
 
@@ -314,7 +317,8 @@ private fun ConversationContent(
     listState: androidx.compose.foundation.lazy.LazyListState,
     currentUserId: String,
     context: Context,
-    callbacks: MessageCallbacks
+    callbacks: MessageCallbacks,
+    conversationDetailViewModel: ConversationDetailViewModel
 ) {
   Box(modifier = modifier.fillMaxSize()) {
     when {
@@ -342,7 +346,8 @@ private fun ConversationContent(
             listState = listState,
             currentUserId = currentUserId,
             context = context,
-            callbacks = callbacks)
+            callbacks = callbacks,
+            conversationDetailViewModel = conversationDetailViewModel)
       }
     }
   }
@@ -355,7 +360,8 @@ private fun MessagesList(
     listState: androidx.compose.foundation.lazy.LazyListState,
     currentUserId: String,
     context: Context,
-    callbacks: MessageCallbacks
+    callbacks: MessageCallbacks,
+    conversationDetailViewModel: ConversationDetailViewModel
 ) {
   LazyColumn(
       state = listState,
@@ -371,7 +377,8 @@ private fun MessagesList(
               isSelected = selectedMessageId == message.messageId,
               currentUserId = currentUserId,
               context = context,
-              callbacks = callbacks)
+              callbacks = callbacks,
+              conversationDetailViewModel = conversationDetailViewModel)
         }
       }
 }
@@ -382,28 +389,35 @@ private fun MessageItem(
     isSelected: Boolean,
     currentUserId: String,
     context: Context,
-    callbacks: MessageCallbacks
+    callbacks: MessageCallbacks,
+    conversationDetailViewModel: ConversationDetailViewModel
 ) {
   val isFromCurrentUser = message.senderId == currentUserId
+  val messageUser =
+      remember { conversationDetailViewModel.getUser(message.senderId) }.collectAsState(null)
 
   Box {
     MessageBubble(
-        text = message.text,
-        timestamp = message.createdAt,
-        isFromCurrentUser = isFromCurrentUser,
-        fileAttachment =
-            MessageBubbleFileAttachment(
-                isFile = message.isFile,
-                fileUrl = message.fileUrl,
-                onDownloadClick = { url -> callbacks.onDownloadFile(url, context) }),
-        editedAt = message.editedAt,
-        interactions =
-            MessageBubbleInteractions(
-                onLinkClick = { url -> callbacks.onOpenUrl(url, context) },
-                onLongClick =
-                    if (isFromCurrentUser) {
-                      { callbacks.onSelectMessage(message.messageId) }
-                    } else null))
+        state =
+            MessageBubbleState(
+                senderPhotoUrl = messageUser.value?.photoUrl ?: "",
+                senderDisplayName = messageUser.value?.displayName ?: "",
+                text = message.text,
+                timestamp = message.createdAt,
+                isFromCurrentUser = isFromCurrentUser,
+                fileAttachment =
+                    MessageBubbleFileAttachment(
+                        isFile = message.isFile,
+                        fileUrl = message.fileUrl,
+                        onDownloadClick = { url -> callbacks.onDownloadFile(url, context) }),
+                editedAt = message.editedAt,
+                interactions =
+                    MessageBubbleInteractions(
+                        onLinkClick = { url -> callbacks.onOpenUrl(url, context) },
+                        onLongClick =
+                            if (isFromCurrentUser) {
+                              { callbacks.onSelectMessage(message.messageId) }
+                            } else null)))
 
     if (isSelected && isFromCurrentUser) {
       MessageActionMenu(
