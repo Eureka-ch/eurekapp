@@ -210,6 +210,16 @@ private fun ProjectSelector(
   }
 }
 
+/**
+ * Selector component for choosing participants to share the idea with.
+ *
+ * Displays a read-only text field that opens a dropdown menu when clicked.
+ * Users can select/deselect participants using checkboxes in the dropdown.
+ *
+ * @param availableUsers List of users available in the selected project
+ * @param selectedParticipantIds List of user IDs currently selected as participants
+ * @param onToggleParticipant Callback invoked when a participant is toggled
+ */
 @Composable
 private fun ParticipantsSelector(
     availableUsers: List<User>,
