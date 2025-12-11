@@ -159,53 +159,49 @@ fun ConversationCard(
         Row(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically) {
-            Row(
-                modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ){
-                //show instagram like photos of members
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ){
-                    if(displayData.otherMembers.size > 1){
+              Row(
+                  modifier = Modifier.weight(1f),
+                  horizontalArrangement = Arrangement.Center,
+                  verticalAlignment = Alignment.CenterVertically) {
+                    // show instagram like photos of members
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                      if (displayData.otherMembers.size > 1) {
                         Row(
                             modifier = Modifier.fillMaxSize(),
                             horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ){
-                            MemberAvatar(displayData.otherMembersPhotoUrl.getOrNull(0) ?: "",
-                                displayData.otherMembers.getOrNull(0) ?: "")
-                        }
+                            verticalAlignment = Alignment.CenterVertically) {
+                              MemberAvatar(
+                                  displayData.otherMembersPhotoUrl.getOrNull(0) ?: "",
+                                  displayData.otherMembers.getOrNull(0) ?: "")
+                            }
                         Row(
                             modifier = Modifier.fillMaxSize().offset(x = 10.dp, y = 10.dp),
                             horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ){
-                            MemberAvatar(displayData.otherMembersPhotoUrl.getOrNull(1) ?: "",
-                                displayData.otherMembers.getOrNull(1) ?: "")
-                        }
-                    }else if(displayData.otherMembers.isNotEmpty()){ //coversations can not have less than 2 members
+                            verticalAlignment = Alignment.CenterVertically) {
+                              MemberAvatar(
+                                  displayData.otherMembersPhotoUrl.getOrNull(1) ?: "",
+                                  displayData.otherMembers.getOrNull(1) ?: "")
+                            }
+                      } else if (displayData.otherMembers
+                          .isNotEmpty()) { // coversations can not have less than 2 members
                         Row(
                             modifier = Modifier.fillMaxSize(),
                             horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ){
-                            MemberAvatar(displayData.otherMembersPhotoUrl.getOrNull(0) ?: "",
-                                displayData.otherMembers.getOrNull(0) ?: "")
-                        }
+                            verticalAlignment = Alignment.CenterVertically) {
+                              MemberAvatar(
+                                  displayData.otherMembersPhotoUrl.getOrNull(0) ?: "",
+                                  displayData.otherMembers.getOrNull(0) ?: "")
+                            }
+                      }
                     }
-                }
-            }
+                  }
               Spacer(modifier = Modifier.width(12.dp))
               Row(
                   modifier = Modifier.weight(4f),
                   horizontalArrangement = Arrangement.Center,
-                  verticalAlignment = Alignment.CenterVertically
-              ){
-                  ConversationCardContent(displayData)
-              }
+                  verticalAlignment = Alignment.CenterVertically) {
+                    ConversationCardContent(displayData)
+                  }
             }
       }
 }
@@ -213,10 +209,12 @@ fun ConversationCard(
 @Composable
 private fun RowScope.ConversationCardContent(displayData: ConversationDisplayData) {
   Column(modifier = Modifier.weight(1f)) {
-    Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), verticalAlignment = Alignment.CenterVertically) {
-      MemberNameText(displayData.otherMembers.joinToString(", "), displayData.hasUnread)
-      displayData.lastMessageTime?.let { LastMessageTimeText(it) }
-    }
+    Row(
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        verticalAlignment = Alignment.CenterVertically) {
+          MemberNameText(displayData.otherMembers.joinToString(", "), displayData.hasUnread)
+          displayData.lastMessageTime?.let { LastMessageTimeText(it) }
+        }
 
     Text(
         text = displayData.projectName,

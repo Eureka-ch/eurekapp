@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Environment
-import androidx.compose.ui.platform.isDebugInspectorInfoEnabled
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -149,18 +148,16 @@ open class ConversationDetailViewModel(
           val otherUserIds = conversation.memberIds.filter { id -> id != currentUserId }
 
           val projectFlow: Flow<Project?> = projectRepository.getProjectById(conversation.projectId)
-          val combinedUsersFlow: Flow<List<User>> = combine(otherUserIds.map { id ->
-              userRepository.getUserById(id) }) { usersArray ->
-            usersArray.filterNotNull().toList()
-          }
-
-            combine(
-              combinedUsersFlow,
-              projectFlow) { users, project ->
-                DisplayData(
-                    otherMemberNames = users.map { user -> user.displayName },
-                    projectName = project?.name ?: "Unknown Project")
+          val combinedUsersFlow: Flow<List<User>> =
+              combine(otherUserIds.map { id -> userRepository.getUserById(id) }) { usersArray ->
+                usersArray.filterNotNull().toList()
               }
+
+          combine(combinedUsersFlow, projectFlow) { users, project ->
+            DisplayData(
+                otherMemberNames = users.map { user -> user.displayName },
+                projectName = project?.name ?: "Unknown Project")
+          }
         }
       }
 
@@ -523,7 +520,7 @@ open class ConversationDetailViewModel(
     }
   }
 
-    fun getUser(userId: String): Flow<User?>{
-        return userRepository.getUserById(userId)
-    }
+  fun getUser(userId: String): Flow<User?> {
+    return userRepository.getUserById(userId)
+  }
 }

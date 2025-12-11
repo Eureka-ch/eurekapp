@@ -114,82 +114,76 @@ class ConversationCardTest {
         .assertDoesNotExist()
   }
 
-    @Test
-    fun conversationCard_withSingleMemberDisplaysSingleAvatar() {
-        val displayData = ConversationDisplayData(
+  @Test
+  fun conversationCard_withSingleMemberDisplaysSingleAvatar() {
+    val displayData =
+        ConversationDisplayData(
             conversation = Conversation("conv1", "proj1"),
             otherMembers = listOf("Alice"),
             otherMembersPhotoUrl = listOf("https://example.com/alice.jpg"),
-            projectName = "Project"
-        )
+            projectName = "Project")
 
-        composeTestRule.setContent {
-                ConversationCard(displayData = displayData, onClick = {})
-        }
+    composeTestRule.setContent { ConversationCard(displayData = displayData, onClick = {}) }
 
-        composeTestRule.onNodeWithContentDescription("Profile picture of Alice").assertExists()
-    }
+    composeTestRule.onNodeWithContentDescription("Profile picture of Alice").assertExists()
+  }
 
-    @Test
-    fun conversationCard_withMultipleMembersDisplaysTwoAvatars() {
-        val displayData = ConversationDisplayData(
+  @Test
+  fun conversationCard_withMultipleMembersDisplaysTwoAvatars() {
+    val displayData =
+        ConversationDisplayData(
             conversation = Conversation("conv1", "proj1"),
             otherMembers = listOf("Alice", "Bob", "Charlie"),
-            otherMembersPhotoUrl = listOf("https://example.com/alice.jpg", "https://example.com/bob.jpg", "https://example.com/charlie.jpg"),
-            projectName = "Project"
-        )
+            otherMembersPhotoUrl =
+                listOf(
+                    "https://example.com/alice.jpg",
+                    "https://example.com/bob.jpg",
+                    "https://example.com/charlie.jpg"),
+            projectName = "Project")
 
-        composeTestRule.setContent {
-                ConversationCard(displayData = displayData, onClick = {})
-        }
+    composeTestRule.setContent { ConversationCard(displayData = displayData, onClick = {}) }
 
-        composeTestRule.onNodeWithContentDescription("Profile picture of Alice").assertExists()
-        composeTestRule.onNodeWithContentDescription("Profile picture of Bob").assertExists()
-    }
+    composeTestRule.onNodeWithContentDescription("Profile picture of Alice").assertExists()
+    composeTestRule.onNodeWithContentDescription("Profile picture of Bob").assertExists()
+  }
 
-    @Test
-    fun conversationCard_withEmptyMembersHandlesGracefully() {
-        val displayData = ConversationDisplayData(
+  @Test
+  fun conversationCard_withEmptyMembersHandlesGracefully() {
+    val displayData =
+        ConversationDisplayData(
             conversation = Conversation("conv1", "proj1"),
             otherMembers = listOf(),
             otherMembersPhotoUrl = listOf(),
-            projectName = "Project"
-        )
+            projectName = "Project")
 
-        composeTestRule.setContent {
-                ConversationCard(displayData = displayData, onClick = {})
-        }
-    }
+    composeTestRule.setContent { ConversationCard(displayData = displayData, onClick = {}) }
+  }
 
-    @Test
-    fun conversationCard_withNullPhotoUrlUsesFallbackAvatar() {
-        val displayData = ConversationDisplayData(
+  @Test
+  fun conversationCard_withNullPhotoUrlUsesFallbackAvatar() {
+    val displayData =
+        ConversationDisplayData(
             conversation = Conversation("conv1", "proj1"),
             otherMembers = listOf("Alice"),
             otherMembersPhotoUrl = listOf(""),
-            projectName = "Project"
-        )
+            projectName = "Project")
 
-        composeTestRule.setContent {
-                ConversationCard(displayData = displayData, onClick = {})
-        }
+    composeTestRule.setContent { ConversationCard(displayData = displayData, onClick = {}) }
 
-        composeTestRule.onNodeWithContentDescription("Member icon").assertExists()
-    }
+    composeTestRule.onNodeWithContentDescription("Member icon").assertExists()
+  }
 
-    @Test
-    fun conversationCard_memberNamesJoinedWithComma() {
-        val displayData = ConversationDisplayData(
+  @Test
+  fun conversationCard_memberNamesJoinedWithComma() {
+    val displayData =
+        ConversationDisplayData(
             conversation = Conversation("conv1", "proj1"),
             otherMembers = listOf("Alice", "Bob"),
             otherMembersPhotoUrl = listOf("", ""),
-            projectName = "Project"
-        )
+            projectName = "Project")
 
-        composeTestRule.setContent {
-                ConversationCard(displayData = displayData, onClick = {})
-        }
+    composeTestRule.setContent { ConversationCard(displayData = displayData, onClick = {}) }
 
-        composeTestRule.onNodeWithText("Alice, Bob").assertExists()
-    }
+    composeTestRule.onNodeWithText("Alice, Bob").assertExists()
+  }
 }

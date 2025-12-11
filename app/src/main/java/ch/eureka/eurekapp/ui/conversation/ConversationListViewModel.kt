@@ -159,7 +159,7 @@ open class ConversationListViewModel(
   ): ConversationDisplayData {
     val currentUserId = getCurrentUserId() ?: ""
     val otherUserIds = conversation.memberIds.filter { it != currentUserId }
-    val otherUsers = if(otherUserIds.isNotEmpty()) getUserIds(otherUserIds).first() else listOf()
+    val otherUsers = if (otherUserIds.isNotEmpty()) getUserIds(otherUserIds).first() else listOf()
     val project = projectRepository.getProjectById(conversation.projectId).first()
 
     // Calculate unread status (only unread if someone else sent the last message)
@@ -195,10 +195,8 @@ open class ConversationListViewModel(
   }
 
   private fun getUserIds(userIds: List<String>): Flow<List<User>> {
-    return combine(
-        userIds.map { id ->  userRepository.getUserById(id)}
-    ){ list ->
-        list.filterNotNull().toList()
+    return combine(userIds.map { id -> userRepository.getUserById(id) }) { list ->
+      list.filterNotNull().toList()
     }
   }
 }

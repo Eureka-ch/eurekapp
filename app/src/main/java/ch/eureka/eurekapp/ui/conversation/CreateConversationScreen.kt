@@ -132,13 +132,8 @@ fun CreateConversationScreen(
                 uiState = uiState,
                 memberDropdownExpanded = memberDropdownExpanded,
                 onExpandedChange = { memberDropdownExpanded = it },
-                onMemberSelect = { member ->
-                  viewModel.selectMember(member)
-                },
-                onMemberDeselect = {
-                    viewModel.removeMember(it)
-                }
-            )
+                onMemberSelect = { member -> viewModel.selectMember(member) },
+                onMemberDeselect = { viewModel.removeMember(it) })
           }
 
           Spacer(modifier = Modifier.height(Spacing.lg))
@@ -263,11 +258,10 @@ private fun MemberSelection(
                 expanded = memberDropdownExpanded, onDismissRequest = { onExpandedChange(false) }) {
                   uiState.members.forEach { memberData ->
                     MemberDropdownItem(
-                     selectedMembersList = uiState.selectedMembers,
+                        selectedMembersList = uiState.selectedMembers,
                         memberData = memberData,
                         onMemberSelect = onMemberSelect,
-                        onMemberDeselect = onMemberDeselect
-                    )
+                        onMemberDeselect = onMemberDeselect)
                   }
                 }
           }
@@ -276,49 +270,47 @@ private fun MemberSelection(
 }
 
 @Composable
-private fun MemberDropdownItem(selectedMembersList: List<MemberDisplayData>,
-                               memberData: MemberDisplayData,
-                               onMemberSelect: (MemberDisplayData) -> Unit,
-                               onMemberDeselect: (MemberDisplayData) -> Unit){
-    val memberSelected by remember { mutableStateOf(selectedMembersList.contains(memberData)) }
-    DropdownMenuItem(
-        modifier = Modifier.testTag(CreateConversationScreenTestTags.MEMBER_DROPDOWN_ITEM),
-        text = {
+private fun MemberDropdownItem(
+    selectedMembersList: List<MemberDisplayData>,
+    memberData: MemberDisplayData,
+    onMemberSelect: (MemberDisplayData) -> Unit,
+    onMemberDeselect: (MemberDisplayData) -> Unit
+) {
+  val memberSelected by remember { mutableStateOf(selectedMembersList.contains(memberData)) }
+  DropdownMenuItem(
+      modifier = Modifier.testTag(CreateConversationScreenTestTags.MEMBER_DROPDOWN_ITEM),
+      text = {
         Row(
             horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            Row(
-                modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ){
-                Checkbox(
-                    checked = selectedMembersList.contains(memberData),
-                    onCheckedChange = { value ->
-                        if(value){
+            verticalAlignment = Alignment.CenterVertically) {
+              Row(
+                  modifier = Modifier.weight(1f),
+                  horizontalArrangement = Arrangement.Center,
+                  verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = selectedMembersList.contains(memberData),
+                        onCheckedChange = { value ->
+                          if (value) {
                             onMemberSelect(memberData)
-                        }else{
+                          } else {
                             onMemberDeselect(memberData)
-                        }
-                    }
-                )
+                          }
+                        })
+                  }
+              Row(
+                  modifier = Modifier.weight(3f),
+                  horizontalArrangement = Arrangement.Center,
+                  verticalAlignment = Alignment.CenterVertically) {
+                    Text(memberData.user.displayName)
+                  }
             }
-            Row(
-                modifier = Modifier.weight(3f),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ){
-                Text(memberData.user.displayName)
-            }
-        }
-    },
+      },
       onClick = {
-       if(memberSelected){
-           onMemberDeselect(memberData)
-       }else{
-           onMemberSelect(memberData)
-       }
+        if (memberSelected) {
+          onMemberDeselect(memberData)
+        } else {
+          onMemberSelect(memberData)
+        }
       })
 }
 

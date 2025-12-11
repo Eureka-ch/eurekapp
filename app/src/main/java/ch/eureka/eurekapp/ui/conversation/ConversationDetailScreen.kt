@@ -145,8 +145,7 @@ fun ConversationDetailScreen(
           // Contextual top bar for editing mode
           TopAppBar(
               title = { Text("Editing Message") },
-              modifier = Modifier
-                  .testTag(ConversationDetailScreenTestTags.EDITING_TOP_BAR),
+              modifier = Modifier.testTag(ConversationDetailScreenTestTags.EDITING_TOP_BAR),
               colors =
                   TopAppBarDefaults.topAppBarColors(
                       containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -155,10 +154,8 @@ fun ConversationDetailScreen(
                 IconButton(
                     onClick = viewModel::cancelEditing,
                     modifier =
-                        Modifier
-                            .testTag(ConversationDetailScreenTestTags.CANCEL_EDIT_BUTTON)) {
-                      Icon(Icons.Default.Close,
-                          contentDescription = "Cancel Edit")
+                        Modifier.testTag(ConversationDetailScreenTestTags.CANCEL_EDIT_BUTTON)) {
+                      Icon(Icons.Default.Close, contentDescription = "Cancel Edit")
                     }
               })
         } else {
@@ -192,8 +189,7 @@ fun ConversationDetailScreen(
               if (uiState.isEditing) {
                 viewModel.saveEditedMessage()
               } else {
-                uiState.selectedFileUri?.let { uri -> viewModel.sendFileMessage(
-                    uri, context) }
+                uiState.selectedFileUri?.let { uri -> viewModel.sendFileMessage(uri, context) }
                     ?: viewModel.sendMessage()
               }
             })
@@ -215,8 +211,7 @@ fun ConversationDetailScreen(
             currentUserId = viewModel.currentUserId ?: "",
             context = context,
             callbacks = messageCallbacks,
-            conversationDetailViewModel = viewModel
-        )
+            conversationDetailViewModel = viewModel)
       }
 }
 
@@ -256,10 +251,8 @@ private fun SelectedFileIndicator(
   selectedFileUri?.let { uri ->
     val selectedFileName =
         remember(uri) {
-          context.contentResolver.query(uri, null, null, null,
-              null)?.use { cursor ->
-            val nameIndex = cursor
-                .getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+          context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
             cursor.moveToFirst()
             cursor.getString(nameIndex)
           } ?: "Unknown file"
@@ -353,8 +346,7 @@ private fun ConversationContent(
             currentUserId = currentUserId,
             context = context,
             callbacks = callbacks,
-            conversationDetailViewModel = conversationDetailViewModel
-            )
+            conversationDetailViewModel = conversationDetailViewModel)
       }
     }
   }
@@ -385,8 +377,7 @@ private fun MessagesList(
               currentUserId = currentUserId,
               context = context,
               callbacks = callbacks,
-              conversationDetailViewModel = conversationDetailViewModel
-          )
+              conversationDetailViewModel = conversationDetailViewModel)
         }
       }
 }
@@ -401,8 +392,8 @@ private fun MessageItem(
     conversationDetailViewModel: ConversationDetailViewModel = viewModel()
 ) {
   val isFromCurrentUser = message.senderId == currentUserId
-  val messageUser = remember {conversationDetailViewModel.getUser(message.senderId)}
-      .collectAsState(null)
+  val messageUser =
+      remember { conversationDetailViewModel.getUser(message.senderId) }.collectAsState(null)
 
   Box {
     MessageBubble(

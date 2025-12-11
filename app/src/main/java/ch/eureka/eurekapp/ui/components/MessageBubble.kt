@@ -1,7 +1,6 @@
 package ch.eureka.eurekapp.ui.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,7 +32,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
-import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.camera.PhotoViewer
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
@@ -92,101 +90,111 @@ fun MessageBubble(
   Box(
       modifier = modifier.fillMaxWidth().padding(vertical = Spacing.sm),
       contentAlignment = alignment) {
-        Row(modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = if(isFromCurrentUser) Arrangement.End else Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically){
-            val displayNameText = @Composable {
-                if(senderDisplayName != ""){
-                    Row(
-                        modifier = Modifier.padding(5.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ){
-                        Text(text = senderDisplayName, color = Color.Black,
-                            fontWeight = FontWeight(500),
-                            style = Typography.titleMedium)
-                    }
-                }
-            }
-
-            val message = @Composable {Row(
-                modifier = Modifier.weight(3f),
-                horizontalArrangement = if(isFromCurrentUser) Arrangement.End else Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
-            ){
-                Surface(
-                    shape = EurekaStyles.CardShape,
-                    color = containerColor,
-                    tonalElevation = EurekaStyles.CardElevation,
-                    modifier =
-                        Modifier.widthIn(max = 280.dp)
-                            .testTag(MessageBubbleTestTags.BUBBLE)
-                            .then(
-                                if (onLongClick != null) {
-                                    Modifier.combinedClickable(onClick = {}, onLongClick = onLongClick)
-                                } else {
-                                    Modifier
-                                })){
-                    Column(
-                        modifier = Modifier.padding(Spacing.md),
-                        verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
-                        if (text.isNotEmpty()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = if (isFromCurrentUser) Arrangement.End else Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically) {
+              val displayNameText =
+                  @Composable {
+                    if (senderDisplayName != "") {
+                      Row(
+                          modifier = Modifier.padding(5.dp),
+                          horizontalArrangement = Arrangement.Center,
+                          verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = buildAnnotatedText(text, interactions.onLinkClick),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = contentColor,
-                                modifier = Modifier.testTag(MessageBubbleTestTags.TEXT))
-                        }
-
-                        FileAttachment(fileAttachment, contentColor)
-
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
-                            verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = getFormattedTime(timestamp),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = contentColor.copy(alpha = 0.7f),
-                                modifier = Modifier.testTag(MessageBubbleTestTags.TIMESTAMP))
-                            if (editedAt != null) {
-                                Text(
-                                    text = "(edited)",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = contentColor.copy(alpha = 0.5f),
-                                    modifier = Modifier.testTag(MessageBubbleTestTags.EDITED_INDICATOR))
-                            }
-                        }
+                                text = senderDisplayName,
+                                color = Color.Black,
+                                fontWeight = FontWeight(500),
+                                style = Typography.titleMedium)
+                          }
                     }
+                  }
 
-                }
-            }}
-            val icon = @Composable {
-                if(senderPhotoUrl != ""){
+              val message =
+                  @Composable {
                     Row(
-                        modifier = Modifier.padding(Spacing.sm),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ){
-                        AsyncImage(
-                            model = senderPhotoUrl,
-                            contentDescription = "Profile picture of $senderPhotoUrl",
-                            modifier = Modifier.size(48.dp).clip(CircleShape),
-                            contentScale = ContentScale.Crop)
-                    }
-                }
-            }
+                        modifier = Modifier.weight(3f),
+                        horizontalArrangement =
+                            if (isFromCurrentUser) Arrangement.End else Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically) {
+                          Surface(
+                              shape = EurekaStyles.CardShape,
+                              color = containerColor,
+                              tonalElevation = EurekaStyles.CardElevation,
+                              modifier =
+                                  Modifier.widthIn(max = 280.dp)
+                                      .testTag(MessageBubbleTestTags.BUBBLE)
+                                      .then(
+                                          if (onLongClick != null) {
+                                            Modifier.combinedClickable(
+                                                onClick = {}, onLongClick = onLongClick)
+                                          } else {
+                                            Modifier
+                                          })) {
+                                Column(
+                                    modifier = Modifier.padding(Spacing.md),
+                                    verticalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
+                                      if (text.isNotEmpty()) {
+                                        Text(
+                                            text =
+                                                buildAnnotatedText(text, interactions.onLinkClick),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = contentColor,
+                                            modifier = Modifier.testTag(MessageBubbleTestTags.TEXT))
+                                      }
 
-            if(isFromCurrentUser){
+                                      FileAttachment(fileAttachment, contentColor)
+
+                                      Row(
+                                          horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+                                          verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = getFormattedTime(timestamp),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = contentColor.copy(alpha = 0.7f),
+                                                modifier =
+                                                    Modifier.testTag(
+                                                        MessageBubbleTestTags.TIMESTAMP))
+                                            if (editedAt != null) {
+                                              Text(
+                                                  text = "(edited)",
+                                                  style = MaterialTheme.typography.labelSmall,
+                                                  color = contentColor.copy(alpha = 0.5f),
+                                                  modifier =
+                                                      Modifier.testTag(
+                                                          MessageBubbleTestTags.EDITED_INDICATOR))
+                                            }
+                                          }
+                                    }
+                              }
+                        }
+                  }
+              val icon =
+                  @Composable {
+                    if (senderPhotoUrl != "") {
+                      Row(
+                          modifier = Modifier.padding(Spacing.sm),
+                          horizontalArrangement = Arrangement.Center,
+                          verticalAlignment = Alignment.CenterVertically) {
+                            AsyncImage(
+                                model = senderPhotoUrl,
+                                contentDescription = "Profile picture of $senderPhotoUrl",
+                                modifier = Modifier.size(48.dp).clip(CircleShape),
+                                contentScale = ContentScale.Crop)
+                          }
+                    }
+                  }
+
+              if (isFromCurrentUser) {
                 displayNameText()
                 message()
                 icon()
-            }else{
+              } else {
                 icon()
                 message()
                 displayNameText()
+              }
             }
-        }
-
       }
 }
 
