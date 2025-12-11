@@ -1,10 +1,13 @@
 /*
  * Co-Authored-By: Claude Sonnet 4.5
+ * Portions of this code were generated with the help of AI.
+ * Portions added by Jiří Gebauer were generated with the help of Grok.
  */
 package ch.eureka.eurekapp.screen
 
 import android.Manifest
 import android.content.Context
+import android.net.Uri
 import android.provider.MediaStore
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.testTag
@@ -43,6 +46,7 @@ import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.TemplateSelectionTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
+import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreenTestTags
 import ch.eureka.eurekapp.testutils.testCameraRoute
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
@@ -59,8 +63,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-// Portions of this code were generated with the help of AI.
-// Portions added by Jiří Gebauer were generated with the help of Grok.
 class CreateTaskScreenTests : TestCase() {
 
   @get:Rule val composeTestRule = createComposeRule()
@@ -308,7 +310,7 @@ class CreateTaskScreenTests : TestCase() {
     navigateToCreateTaskScreen()
 
     // Initially, no photo should be displayed
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.ATTACHMENT).assertIsNotDisplayed()
 
     // Click add photo button to navigate to Camera screen
     composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_PHOTO).performClick()
@@ -326,17 +328,20 @@ class CreateTaskScreenTests : TestCase() {
 
     // Wait for navigation back to CreateTaskScreen
     composeTestRule.waitUntil(timeoutMillis = 7_000) {
-      composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).fetchSemanticsNodes().isNotEmpty()
+      composeTestRule
+          .onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
     }
 
     // Now the photo should be displayed in Create Task screen
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.ATTACHMENT).assertIsDisplayed()
     composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_ATTACHMENT).assertIsDisplayed()
 
     // Delete the photo
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).performClick()
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_ATTACHMENT).performClick()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.ATTACHMENT).assertIsNotDisplayed()
   }
 
   @Test
@@ -417,15 +422,21 @@ class CreateTaskScreenTests : TestCase() {
 
     // Wait for navigation back to CreateTaskScreen
     composeTestRule.waitUntil(timeoutMillis = 7_000) {
-      composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).fetchSemanticsNodes().isNotEmpty()
+      composeTestRule
+          .onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
     }
 
     assert(isPhotoSaved(context, "Pictures/EurekApp/"))
 
     // Now the photo should be displayed in Create Task screen and inputs conserved
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.ATTACHMENT).assertIsDisplayed()
     composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_ATTACHMENT).assertIsDisplayed()
+
+    // Scroll to Save button
+    composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.SAVE_TASK))
 
     composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
     // Wait for navigation back to tasks screen
@@ -552,7 +563,8 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("15/10/2025")
     composeTestRule.onNodeWithTag(CommonTaskTestTags.REMINDER_TIME).performTextInput("10:00")
 
-    // Project already selected via viewModel
+    // Scroll to Add Photo button
+    composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.ADD_PHOTO))
 
     // Click add photo button to navigate to Camera screen
     composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_PHOTO).performClick()
@@ -570,13 +582,21 @@ class CreateTaskScreenTests : TestCase() {
 
     // Wait for navigation back to CreateTaskScreen
     composeTestRule.waitUntil(timeoutMillis = 3_000) {
-      composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).fetchSemanticsNodes().isNotEmpty()
+      composeTestRule
+          .onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
     }
 
+    // Scroll to attachment to verify it's displayed
+    composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.ATTACHMENT))
+
     // Now the photo should be displayed in Create Task screen and inputs conserved
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.PHOTO).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_PHOTO).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.ATTACHMENT).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_ATTACHMENT).assertIsDisplayed()
+
+    // Scroll to Save button
+    composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.SAVE_TASK))
 
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
@@ -673,6 +693,9 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Task 1")
     composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performTextInput("Description")
     composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("15/10/2025")
+
+    // Scroll to Save button
+    composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.SAVE_TASK))
 
     // Save button should be enabled now
     saveButton.performClick()
@@ -971,6 +994,9 @@ class CreateTaskScreenTests : TestCase() {
           .performClick()
       composeTestRule.waitForIdle()
 
+      // Scroll to Save button before clicking
+      composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.SAVE_TASK))
+
       // Save task
       composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
       composeTestRule.waitUntil(timeoutMillis = 5000) {
@@ -1090,5 +1116,201 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule
         .onNodeWithTag(TemplateSelectionTestTags.CREATE_TEMPLATE_SCREEN)
         .assertIsDisplayed()
+  }
+
+  @Test
+  fun createTaskScreen_addFileAttachment() {
+    val projectId = "project123"
+    val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+    lastCreateVm = viewModel
+
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      FakeNavGraph(navController = navController, viewModel = viewModel)
+      navController.navigate(Route.TasksSection.CreateTask)
+    }
+
+    viewModel.setProjectId(projectId)
+    composeTestRule.waitForIdle()
+
+    // Initially, no attachments should be displayed
+    composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).assertCountEquals(0)
+
+    // Simulate file picker by directly adding an attachment
+    val testFileUri = Uri.parse("content://test/file.pdf")
+    viewModel.addAttachment(testFileUri)
+    composeTestRule.waitForIdle()
+
+    // Verify attachment is displayed
+    composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).assertCountEquals(1)
+  }
+
+  @Test
+  fun createTaskScreen_deleteFileAttachment() {
+    val projectId = "project123"
+    val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+    lastCreateVm = viewModel
+
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      FakeNavGraph(navController = navController, viewModel = viewModel)
+      navController.navigate(Route.TasksSection.CreateTask)
+    }
+
+    viewModel.setProjectId(projectId)
+    composeTestRule.waitForIdle()
+
+    // Add a file attachment
+    val testFileUri = Uri.parse("content://test/file.pdf")
+    viewModel.addAttachment(testFileUri)
+    composeTestRule.waitForIdle()
+
+    // Verify attachment is displayed
+    composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).assertCountEquals(1)
+
+    // Scroll to the bottom to ensure attachments are visible
+    composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.SAVE_TASK))
+
+    // Delete the attachment
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_ATTACHMENT).performClick()
+    composeTestRule.waitForIdle()
+
+    // Verify attachment is removed
+    composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).assertCountEquals(0)
+  }
+
+  @Test
+  fun createTaskScreen_multipleFileAttachments() {
+    val projectId = "project123"
+    val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+    lastCreateVm = viewModel
+
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      FakeNavGraph(navController = navController, viewModel = viewModel)
+      navController.navigate(Route.TasksSection.CreateTask)
+    }
+
+    viewModel.setProjectId(projectId)
+    composeTestRule.waitForIdle()
+
+    // Add multiple file attachments
+    val testFileUri1 = Uri.parse("content://test/file1.pdf")
+    val testFileUri2 = Uri.parse("content://test/file2.docx")
+    viewModel.addAttachment(testFileUri1)
+    viewModel.addAttachment(testFileUri2)
+    composeTestRule.waitForIdle()
+
+    // Verify both attachments are displayed
+    composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).assertCountEquals(2)
+  }
+
+  @Test
+  fun createTaskScreen_fileAttachmentUploadWithTask() {
+    val projectId = "project123"
+    val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+    lastCreateVm = viewModel
+
+    runBlocking { setupTestProject(projectId, ProjectRole.OWNER) }
+
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      FakeNavGraph(navController = navController, viewModel = viewModel)
+      navController.navigate(Route.TasksSection.CreateTask)
+    }
+
+    viewModel.setProjectId(projectId)
+    composeTestRule.waitForIdle()
+
+    // Fill in valid inputs
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Task with File")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performTextInput("Description")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("15/10/2025")
+
+    // Create a temporary file for testing
+    val tempFile = java.io.File(context.cacheDir, "test.pdf")
+    tempFile.createNewFile()
+    val testFileUri = Uri.fromFile(tempFile)
+
+    // Add a file attachment
+    viewModel.addAttachment(testFileUri)
+    composeTestRule.waitForIdle()
+
+    // Verify attachment is displayed
+    composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).assertCountEquals(1)
+
+    // Scroll to the save button to ensure it's visible
+    composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.SAVE_TASK))
+
+    // Save task
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.SAVE_TASK).performClick()
+    composeTestRule.waitUntil(timeoutMillis = 10000) {
+      composeTestRule
+          .onAllNodesWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+
+    composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
+
+    // Clean up temporary file
+    tempFile.delete()
+
+    // Verify task was created
+    runBlocking {
+      val tasks = taskRepository.getTasksForCurrentUser().first()
+      val found = tasks.any { it.title == "Task with File" }
+      assert(found)
+    }
+  }
+
+  @Test
+  fun createTaskScreen_addFileButtonIsDisplayed() {
+    navigateToCreateTaskScreen()
+
+    // Verify "Add File" button is displayed
+    composeTestRule.onNodeWithTag(CreateTaskScreenTestTags.ADD_FILE).assertIsDisplayed()
+  }
+
+  @Test
+  fun createTaskScreen_mixedPhotoAndFileAttachments() {
+    val projectId = "project123"
+    val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+    lastCreateVm = viewModel
+
+    composeTestRule.setContent {
+      val navController = rememberNavController()
+      FakeNavGraph(navController = navController, viewModel = viewModel)
+      navController.navigate(Route.TasksSection.CreateTask)
+    }
+
+    viewModel.setProjectId(projectId)
+    composeTestRule.waitForIdle()
+
+    // Add a file attachment
+    val testFileUri = Uri.parse("content://test/document.pdf")
+    viewModel.addAttachment(testFileUri)
+    composeTestRule.waitForIdle()
+
+    // Navigate to camera and take a photo
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_PHOTO).performClick()
+    composeTestRule.onNodeWithTag(CameraScreenTestTags.TAKE_PHOTO).performClick()
+
+    composeTestRule.waitUntil(timeoutMillis = 5000) {
+      composeTestRule
+          .onAllNodesWithTag(CameraScreenTestTags.SAVE_PHOTO)
+          .fetchSemanticsNodes()
+          .isNotEmpty()
+    }
+
+    composeTestRule.onNodeWithTag(CameraScreenTestTags.SAVE_PHOTO).performClick()
+
+    composeTestRule.waitUntil(timeoutMillis = 7_000) {
+      composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).fetchSemanticsNodes().size >=
+          2
+    }
+
+    // Verify both attachments are displayed (1 file + 1 photo)
+    composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).assertCountEquals(2)
   }
 }

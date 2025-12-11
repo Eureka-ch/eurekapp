@@ -37,6 +37,7 @@ interface TaskStateReadWrite : TaskStateRead {
   val availableUsers: List<ch.eureka.eurekapp.model.data.user.User>
   val selectedAssignedUserIds: List<String>
   val dependingOnTasks: List<String>
+  val temporaryPhotoUris: List<Uri>
 }
 
 /** Base ViewModel for task creation and editing with shared functionality */
@@ -48,6 +49,12 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
     protected val getCurrentUserId: () -> String?,
     dispatcher: CoroutineDispatcher
 ) : ReadTaskViewModel<T>(taskRepository, dispatcher) {
+
+  companion object {
+    const val MAX_FILE_SIZE_MB = 100L
+    const val MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024L * 1024L
+    const val UPLOAD_TIMEOUT_MS = 60000L
+  }
 
   abstract override val uiState: StateFlow<T>
 
@@ -175,11 +182,69 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
       uri: Uri
   ): Result<String> {
     return try {
-      val path = StoragePaths.taskAttachmentPath(projectId, taskId, "${uri.lastPathSegment}.jpg")
-      val photoUrl = withTimeout(5000L) { fileRepository.uploadFile(path, uri) }.getOrThrow()
+      val fileName =
+          if (uri.scheme == "content") {
+            // For content:// URIs, get the display name from the content resolver
+            val cursor = context.contentResolver.query(uri, null, null, null, null)
+            cursor?.use {
+              if (it.moveToFirst()) {
+                it.getString(it.getColumnIndexOrThrow("_display_name"))
+                    ?: "attachment_${System.currentTimeMillis()}"
+              } else {
+                "attachment_${System.currentTimeMillis()}"
+              }
+            } ?: "attachment_${System.currentTimeMillis()}"
+          } else {
+            // For file:// URIs, use lastPathSegment
+            uri.lastPathSegment ?: "attachment_${System.currentTimeMillis()}"
+          }
+      // Sanitize filename by replacing | with _
+      val sanitizedFileName = fileName.replace("|", "_")
 
-      deletePhotoSuspend(context, uri)
-      Result.success(photoUrl)
+      val mimeType = context.contentResolver.getType(uri) ?: "application/octet-stream"
+      val extension =
+          when {
+            mimeType.startsWith("image/") -> ".jpg"
+            mimeType.startsWith("video/") -> ".mp4"
+            mimeType == "application/pdf" -> ".pdf"
+            mimeType.startsWith("text/") -> ".txt"
+            else -> ""
+          }
+      val finalFileName =
+          if (extension.isNotEmpty() && !sanitizedFileName.endsWith(extension)) {
+            sanitizedFileName + extension
+          } else {
+            sanitizedFileName
+          }
+      val path = StoragePaths.taskAttachmentPath(projectId, taskId, finalFileName)
+
+      // Open file descriptor once for size check and upload
+      val fileDescriptor =
+          context.contentResolver.openFileDescriptor(uri, "r")
+              ?: return Result.failure(Exception("Cannot access file"))
+
+      val fileSize = fileDescriptor.statSize
+      if (fileSize > MAX_FILE_SIZE_BYTES) {
+        fileDescriptor.close()
+        return Result.failure(Exception("File too large (max $MAX_FILE_SIZE_MB MB)"))
+      }
+
+      // Upload using file descriptor to avoid reopening
+      val fileUrl =
+          withTimeout(UPLOAD_TIMEOUT_MS) { fileRepository.uploadFile(path, fileDescriptor) }
+              .getOrThrow()
+      fileDescriptor.close()
+
+      // Store metadata as "url|name|mime"
+      val metadata = "$fileUrl|$finalFileName|$mimeType"
+
+      // Delete temporary files (from camera)
+      // Check if this URI is in temporaryPhotoUris to determine if it should be deleted
+      if (uiState.value.temporaryPhotoUris.contains(uri)) {
+        deletePhotoSuspend(context, uri)
+      }
+
+      Result.success(metadata)
     } catch (e: Exception) {
       Result.failure(e)
     }
@@ -207,6 +272,20 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
   fun addAttachment(uri: Uri) {
     if (!uiState.value.attachmentUris.contains(uri)) {
       updateState { copyWithAttachmentUris(uiState.value.attachmentUris + uri) }
+    }
+  }
+
+  fun addAttachment(uri: Uri, isTemporary: Boolean) {
+    if (!uiState.value.attachmentUris.contains(uri)) {
+      updateState {
+        copyWithAttachmentUris(uiState.value.attachmentUris + uri).let { state ->
+          if (isTemporary) {
+            state.copyWithTemporaryPhotoUris(uiState.value.temporaryPhotoUris + uri)
+          } else {
+            state
+          }
+        }
+      }
     }
   }
 
@@ -292,7 +371,7 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
   }
 
   /** Helper function for subclasses to delete photos - wraps the suspend function */
-  protected fun deletePhotoAsync(context: Context, photoUri: Uri, onResult: (Boolean) -> Unit) {
+  fun deletePhotoAsync(context: Context, photoUri: Uri, onResult: (Boolean) -> Unit) {
     viewModelScope.launch(dispatcher) {
       val result = deletePhotoSuspend(context, photoUri)
       onResult(result)
@@ -371,4 +450,6 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
   protected abstract fun T.copyWithSelectedAssignedUserIds(userIds: List<String>): T
 
   protected abstract fun T.copyWithDependencies(dependencies: List<String>): T
+
+  protected abstract fun T.copyWithTemporaryPhotoUris(uris: List<Uri>): T
 }

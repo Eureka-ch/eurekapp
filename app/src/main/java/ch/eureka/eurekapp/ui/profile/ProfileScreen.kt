@@ -22,6 +22,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -66,6 +68,8 @@ object ProfileScreenTestTags {
   const val LOADING_INDICATOR = "LoadingIndicator"
   const val ERROR_TEXT = "ErrorText"
   const val SIGN_OUT_BUTTON = "SignOutButton"
+  const val SETTINGS_BUTTON = "SettingsButton"
+  const val MCP_TOKENS_BUTTON = "McpTokensButton"
 }
 
 /**
@@ -74,6 +78,7 @@ object ProfileScreenTestTags {
  * @param viewModel The [ProfileViewModel] managing the screen's state and logic.
  * @param firebaseAuth The [FirebaseAuth] instance for authentication operations.
  * @param onNavigateToActivityFeed Callback to navigate to activity feed screen.
+ * @param onNavigateToPreferences Callback to navigate to preferences screen.
  */
 @Composable
 fun ProfileScreen(
@@ -81,6 +86,7 @@ fun ProfileScreen(
     firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance(),
     onNavigateToActivityFeed: () -> Unit = {},
     onNavigateToMcpTokens: () -> Unit = {},
+    onNavigateToPreferences: () -> Unit = {},
 ) {
   val uiState by viewModel.uiState.collectAsState()
 
@@ -90,154 +96,169 @@ fun ProfileScreen(
     uiState.user?.let { user -> editedDisplayName = user.displayName }
   }
 
-  Scaffold(topBar = { EurekaTopBar(title = "Profile") }, containerColor = Color.White) {
-      paddingValues ->
-    Box(
-        modifier =
-            Modifier.fillMaxSize()
-                .padding(paddingValues)
-                .testTag(ProfileScreenTestTags.PROFILE_SCREEN)) {
-          Column(
-              modifier =
-                  Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
-              horizontalAlignment = Alignment.CenterHorizontally,
-              verticalArrangement = Arrangement.Top) {
-                uiState.user?.let { user ->
-                  Spacer(modifier = Modifier.height(32.dp))
-
-                  // Profile Picture (real google profile picture)
-                  if (user.photoUrl.isNotEmpty()) {
-                    AsyncImage(
-                        model = user.photoUrl,
-                        contentDescription = "Profile Picture",
-                        modifier =
-                            Modifier.size(120.dp)
-                                .clip(CircleShape)
-                                .testTag(ProfileScreenTestTags.PROFILE_PICTURE),
-                        contentScale = ContentScale.Crop)
-                  } else {
+  Scaffold(
+      topBar = {
+        EurekaTopBar(
+            title = "Profile",
+            actions = {
+              IconButton(
+                  onClick = onNavigateToMcpTokens,
+                  modifier = Modifier.testTag(ProfileScreenTestTags.MCP_TOKENS_BUTTON)) {
                     Icon(
-                        imageVector = Icons.Default.AccountCircle,
-                        contentDescription = "Profile Picture",
-                        modifier =
-                            Modifier.size(120.dp).testTag(ProfileScreenTestTags.PROFILE_PICTURE),
-                        tint = MaterialTheme.colorScheme.primary)
+                        imageVector = Icons.Default.Key,
+                        contentDescription = "MCP Tokens",
+                        tint = MaterialTheme.colorScheme.onPrimary)
                   }
+              IconButton(
+                  onClick = onNavigateToPreferences,
+                  modifier = Modifier.testTag(ProfileScreenTestTags.SETTINGS_BUTTON)) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Settings",
+                        tint = MaterialTheme.colorScheme.onPrimary)
+                  }
+            })
+      },
+      containerColor = Color.White) { paddingValues ->
+        Box(
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(paddingValues)
+                    .testTag(ProfileScreenTestTags.PROFILE_SCREEN)) {
+              Column(
+                  modifier =
+                      Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+                  horizontalAlignment = Alignment.CenterHorizontally,
+                  verticalArrangement = Arrangement.Top) {
+                    uiState.user?.let { user ->
+                      Spacer(modifier = Modifier.height(32.dp))
 
-                  Spacer(modifier = Modifier.height(24.dp))
+                      // Profile Picture (real google profile picture)
+                      if (user.photoUrl.isNotEmpty()) {
+                        AsyncImage(
+                            model = user.photoUrl,
+                            contentDescription = "Profile Picture",
+                            modifier =
+                                Modifier.size(120.dp)
+                                    .clip(CircleShape)
+                                    .testTag(ProfileScreenTestTags.PROFILE_PICTURE),
+                            contentScale = ContentScale.Crop)
+                      } else {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "Profile Picture",
+                            modifier =
+                                Modifier.size(120.dp)
+                                    .testTag(ProfileScreenTestTags.PROFILE_PICTURE),
+                            tint = MaterialTheme.colorScheme.primary)
+                      }
 
-                  if (uiState.isEditing) {
-                    OutlinedTextField(
-                        value = editedDisplayName,
-                        onValueChange = {
-                          if (it.length <= 50) {
-                            editedDisplayName = it
+                      Spacer(modifier = Modifier.height(24.dp))
+
+                      if (uiState.isEditing) {
+                        OutlinedTextField(
+                            value = editedDisplayName,
+                            onValueChange = {
+                              if (it.length <= 50) {
+                                editedDisplayName = it
+                              }
+                            },
+                            label = { Text("Display Name") },
+                            supportingText = { Text("${editedDisplayName.length}/50") },
+                            singleLine = true,
+                            modifier =
+                                Modifier.fillMaxWidth()
+                                    .testTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD))
+                      } else {
+                        Text(
+                            text = user.displayName,
+                            style = MaterialTheme.typography.headlineMedium,
+                            modifier = Modifier.testTag(ProfileScreenTestTags.DISPLAY_NAME_TEXT))
+
+                        IconButton(
+                            onClick = { viewModel.setEditing(true) },
+                            modifier = Modifier.testTag(ProfileScreenTestTags.EDIT_BUTTON)) {
+                              Icon(Icons.Default.Edit, contentDescription = "Edit Name")
+                            }
+                      }
+
+                      Spacer(modifier = Modifier.height(16.dp))
+
+                      EurekaInfoCard(
+                          title = "Email",
+                          primaryValue = user.email,
+                          modifier = Modifier.testTag(ProfileScreenTestTags.EMAIL_TEXT))
+
+                      Spacer(modifier = Modifier.height(8.dp))
+
+                      val dateFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
+                      val lastActiveDate = user.lastActive.toDate()
+                      EurekaInfoCard(
+                          title = "Last Active",
+                          primaryValue = dateFormat.format(lastActiveDate),
+                          modifier = Modifier.testTag(ProfileScreenTestTags.LAST_ACTIVE_TEXT))
+
+                      Spacer(modifier = Modifier.height(24.dp))
+
+                      Button(
+                          onClick = onNavigateToActivityFeed,
+                          modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                          colors =
+                              ButtonDefaults.buttonColors(
+                                  containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                  contentColor = MaterialTheme.colorScheme.onPrimaryContainer)) {
+                            Text("View Activity Feed")
                           }
-                        },
-                        label = { Text("Display Name") },
-                        supportingText = { Text("${editedDisplayName.length}/50") },
-                        singleLine = true,
-                        modifier =
-                            Modifier.fillMaxWidth()
-                                .testTag(ProfileScreenTestTags.DISPLAY_NAME_FIELD))
-                  } else {
-                    Text(
-                        text = user.displayName,
-                        style = MaterialTheme.typography.headlineMedium,
-                        modifier = Modifier.testTag(ProfileScreenTestTags.DISPLAY_NAME_TEXT))
 
-                    IconButton(
-                        onClick = { viewModel.setEditing(true) },
-                        modifier = Modifier.testTag(ProfileScreenTestTags.EDIT_BUTTON)) {
-                          Icon(Icons.Default.Edit, contentDescription = "Edit Name")
-                        }
-                  }
-
-                  Spacer(modifier = Modifier.height(16.dp))
-
-                  EurekaInfoCard(
-                      title = "Email",
-                      primaryValue = user.email,
-                      modifier = Modifier.testTag(ProfileScreenTestTags.EMAIL_TEXT))
-
-                  Spacer(modifier = Modifier.height(8.dp))
-
-                  val dateFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
-                  val lastActiveDate = user.lastActive.toDate()
-                  EurekaInfoCard(
-                      title = "Last Active",
-                      primaryValue = dateFormat.format(lastActiveDate),
-                      modifier = Modifier.testTag(ProfileScreenTestTags.LAST_ACTIVE_TEXT))
-
-                  Spacer(modifier = Modifier.height(24.dp))
-
-                  Button(
-                      onClick = onNavigateToActivityFeed,
-                      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                      colors =
-                          ButtonDefaults.buttonColors(
-                              containerColor = MaterialTheme.colorScheme.primaryContainer,
-                              contentColor = MaterialTheme.colorScheme.onPrimaryContainer)) {
-                        Text("View Activity Feed")
+                      if (!uiState.isEditing) {
+                        Button(
+                            onClick = { firebaseAuth.signOut() },
+                            modifier =
+                                Modifier.fillMaxWidth()
+                                    .padding(vertical = 8.dp)
+                                    .testTag(ProfileScreenTestTags.SIGN_OUT_BUTTON),
+                            colors =
+                                ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.error,
+                                    contentColor = MaterialTheme.colorScheme.onError)) {
+                              Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null)
+                              Spacer(modifier = Modifier.size(8.dp))
+                              Text("Sign Out")
+                            }
                       }
 
-                  Button(
-                      onClick = onNavigateToMcpTokens,
-                      modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                      colors =
-                          ButtonDefaults.buttonColors(
-                              containerColor = MaterialTheme.colorScheme.primaryContainer,
-                              contentColor = MaterialTheme.colorScheme.onPrimaryContainer)) {
-                        Text("MCP Tokens")
+                      Spacer(modifier = Modifier.height(16.dp))
+
+                      // Save/Cancel Buttons (shown when editing)
+                      if (uiState.isEditing) {
+                        Button(
+                            onClick = { viewModel.updateDisplayName(editedDisplayName) },
+                            modifier =
+                                Modifier.fillMaxWidth()
+                                    .testTag(ProfileScreenTestTags.SAVE_BUTTON)) {
+                              Text("Save")
+                            }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Button(
+                            onClick = {
+                              viewModel.setEditing(false)
+                              editedDisplayName = user.displayName
+                            },
+                            modifier =
+                                Modifier.fillMaxWidth()
+                                    .testTag(ProfileScreenTestTags.CANCEL_BUTTON)) {
+                              Text("Cancel")
+                            }
                       }
-
-                  if (!uiState.isEditing) {
-                    Button(
-                        onClick = { firebaseAuth.signOut() },
-                        modifier =
-                            Modifier.fillMaxWidth()
-                                .padding(vertical = 8.dp)
-                                .testTag(ProfileScreenTestTags.SIGN_OUT_BUTTON),
-                        colors =
-                            ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error,
-                                contentColor = MaterialTheme.colorScheme.onError)) {
-                          Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null)
-                          Spacer(modifier = Modifier.size(8.dp))
-                          Text("Sign Out")
-                        }
-                  }
-
-                  Spacer(modifier = Modifier.height(16.dp))
-
-                  // Save/Cancel Buttons (shown when editing)
-                  if (uiState.isEditing) {
-                    Button(
-                        onClick = { viewModel.updateDisplayName(editedDisplayName) },
-                        modifier =
-                            Modifier.fillMaxWidth().testTag(ProfileScreenTestTags.SAVE_BUTTON)) {
-                          Text("Save")
-                        }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Button(
-                        onClick = {
-                          viewModel.setEditing(false)
-                          editedDisplayName = user.displayName
-                        },
-                        modifier =
-                            Modifier.fillMaxWidth().testTag(ProfileScreenTestTags.CANCEL_BUTTON)) {
-                          Text("Cancel")
-                        }
-                  }
-                }
-                    ?: run {
-                      Text(
-                          text = "No user data available",
-                          modifier = Modifier.testTag(ProfileScreenTestTags.ERROR_TEXT))
                     }
-              }
-        }
-  }
+                        ?: run {
+                          Text(
+                              text = "No user data available",
+                              modifier = Modifier.testTag(ProfileScreenTestTags.ERROR_TEXT))
+                        }
+                  }
+            }
+      }
 }

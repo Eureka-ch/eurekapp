@@ -8,8 +8,10 @@ import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.conversation.Conversation
 import ch.eureka.eurekapp.model.data.conversation.ConversationRepository
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
+import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -44,8 +46,8 @@ data class ConversationListState(
  * Display data for a conversation item in the list.
  *
  * @property conversation The underlying conversation data.
- * @property otherMemberName Display name of the other member in the conversation.
- * @property otherMemberPhotoUrl Photo URL of the other member (from Google profile).
+ * @property otherMembers Display name of the other members in the conversation.
+ * @property otherMembersPhotoUrl Photo URL of the other members (from Google profile).
  * @property projectName Name of the project this conversation belongs to.
  * @property lastMessagePreview Preview of the last message in the conversation.
  * @property lastMessageTime Formatted time of the last message.
@@ -53,8 +55,8 @@ data class ConversationListState(
  */
 data class ConversationDisplayData(
     val conversation: Conversation,
-    val otherMemberName: String,
-    val otherMemberPhotoUrl: String,
+    val otherMembers: List<String>,
+    val otherMembersPhotoUrl: List<String>,
     val projectName: String,
     val lastMessagePreview: String? = null,
     val lastMessageTime: String? = null,
@@ -156,8 +158,8 @@ open class ConversationListViewModel(
       conversation: Conversation
   ): ConversationDisplayData {
     val currentUserId = getCurrentUserId() ?: ""
-    val otherUserId = conversation.memberIds.firstOrNull { it != currentUserId } ?: ""
-    val otherUser = userRepository.getUserById(otherUserId).first()
+    val otherUserIds = conversation.memberIds.filter { it != currentUserId }
+    val otherUsers = if (otherUserIds.isNotEmpty()) getUserIds(otherUserIds).first() else listOf()
     val project = projectRepository.getProjectById(conversation.projectId).first()
 
     // Calculate unread status (only unread if someone else sent the last message)
@@ -175,8 +177,8 @@ open class ConversationListViewModel(
 
     return ConversationDisplayData(
         conversation = conversation,
-        otherMemberName = otherUser?.displayName ?: "Unknown User",
-        otherMemberPhotoUrl = otherUser?.photoUrl ?: "",
+        otherMembers = otherUsers.map { user -> user.displayName },
+        otherMembersPhotoUrl = otherUsers.map { user -> user.photoUrl },
         projectName = project?.name ?: "Unknown Project",
         lastMessagePreview = conversation.lastMessagePreview,
         lastMessageTime = lastMessageTime,
@@ -190,5 +192,11 @@ open class ConversationListViewModel(
           is ConversationsDataState.Error -> ConversationsDataState.Success(emptyList())
           else -> current
         }
+  }
+
+  private fun getUserIds(userIds: List<String>): Flow<List<User>> {
+    return combine(userIds.map { id -> userRepository.getUserById(id) }) { list ->
+      list.filterNotNull().toList()
+    }
   }
 }

@@ -3,13 +3,13 @@ package ch.eureka.eurekapp.model.downloads
 
 import android.app.Application
 import android.content.Intent
-import android.net.Uri
 import android.webkit.MimeTypeMap
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import java.io.File
+import java.net.URLDecoder
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -30,7 +30,7 @@ class FilesManagementViewModel(
           .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), FilesManagementState())
 
   private fun processFile(file: DownloadedFile): FileItem {
-    val displayName = Uri.decode(file.fileName).substringAfterLast('/').substringBefore('?')
+    val displayName = URLDecoder.decode(file.fileName, "UTF-8")
     val extension = displayName.substringAfterLast('.', "").lowercase()
     val isImage = extension in listOf("jpg", "jpeg", "png", "gif", "webp", "bmp")
     val uri =

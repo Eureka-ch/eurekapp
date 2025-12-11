@@ -103,7 +103,7 @@ class ConversationDetailScreenTest {
     composeTestRule.setContent {
       ConversationDetailScreen(
           conversationId = "test-conv",
-          viewModel = createMockViewModel(otherMemberName = ""),
+          viewModel = createMockViewModel(otherMemberNames = emptyList()),
           onNavigateBack = {})
     }
     composeTestRule.onNodeWithText("Chat").assertIsDisplayed()
@@ -252,7 +252,7 @@ class ConversationDetailScreenTest {
 
   private fun createMockViewModel(
       messages: List<ConversationMessage> = emptyList(),
-      otherMemberName: String = "Test User",
+      otherMemberNames: List<String> = listOf("Test User"),
       projectName: String = "Test Project",
       isLoading: Boolean = false,
       isConnected: Boolean = true,
@@ -270,7 +270,7 @@ class ConversationDetailScreenTest {
           MutableStateFlow(
               ConversationDetailState(
                   messages = messages,
-                  otherMemberName = otherMemberName,
+                  otherMemberNames = otherMemberNames,
                   projectName = projectName,
                   isLoading = isLoading,
                   isConnected = isConnected,

@@ -58,6 +58,7 @@ import ch.eureka.eurekapp.ui.meeting.MeetingProposalVoteScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenConfig
 import ch.eureka.eurekapp.ui.notes.SelfNotesScreen
+import ch.eureka.eurekapp.ui.notifications.NotificationPreferencesScreen
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
 import ch.eureka.eurekapp.ui.templates.CreateTemplateScreen
 import ch.eureka.eurekapp.ui.templates.CreateTemplateViewModel
@@ -94,6 +95,7 @@ sealed interface Route {
   sealed interface ActivitySection : Route {
     @Serializable data class ActivityDetail(val activityId: String) : ActivitySection
   }
+  @Serializable data object NotificationPreferences : Route
 
   sealed interface TasksSection : Route {
     companion object {
@@ -295,12 +297,19 @@ fun NavigationMenu(
                     onNavigateToActivityFeed = {
                       navigationController.navigate(Route.ActivityFeed)
                     },
-                    onNavigateToMcpTokens = { navigationController.navigate(Route.McpTokens) })
+                    onNavigateToMcpTokens = { navigationController.navigate(Route.McpTokens) },
+                    onNavigateToPreferences = {
+                      navigationController.navigate(Route.NotificationPreferences)
+                    })
               }
               composable<Route.McpTokens> {
                 val viewModel = McpTokenViewModel(FirebaseMcpTokenRepository())
                 McpTokenScreen(
                     viewModel = viewModel, onNavigateBack = { navigationController.popBackStack() })
+              }
+              composable<Route.NotificationPreferences> {
+                NotificationPreferencesScreen(
+                    onFinishedSettingNotifications = { navigationController.popBackStack() })
               }
               composable<Route.SelfNotes> { SelfNotesScreen() }
               composable<Route.ActivityFeed> {

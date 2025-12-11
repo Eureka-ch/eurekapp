@@ -1,8 +1,10 @@
-// Co-Authored-By: Claude Opus 4.5
+// Co-Authored-By: Claude Opus 4.5 and Grok
 package ch.eureka.eurekapp.screens.subscreens.tasks.editing
 
 import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,7 +35,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
-import ch.eureka.eurekapp.model.tasks.Attachment
 import ch.eureka.eurekapp.model.tasks.EditTaskState
 import ch.eureka.eurekapp.model.tasks.EditTaskViewModel
 import ch.eureka.eurekapp.navigation.Route
@@ -56,9 +57,11 @@ object EditTaskScreenTestTags {
   const val STATUS_BUTTON = "task_status"
   const val CONFIRM_DELETE = "confirm_delete"
   const val CANCEL_DELETE = "cancel_delete"
+  const val ADD_FILE = "add_file"
 }
 
 const val EDIT_SCREEN_SMALL_BUTTON_SIZE = 0.3f
+const val EDIT_SCREEN_EQUAL_WEIGHT = 1f
 
 @Composable
 fun EditTaskScreen(
@@ -82,8 +85,14 @@ fun EditTaskScreen(
 
   val context = LocalContext.current
   val scrollState = rememberScrollState()
-  var isNavigatingToCamera by remember { mutableStateOf(false) }
   var showDeleteDialog by remember { mutableStateOf(false) }
+  val isConnected = true // Assume online for edit screen
+
+  // File picker launcher for any file type
+  val filePickerLauncher =
+      rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
+        uri?.let { editTaskViewModel.addAttachment(it) }
+      }
 
   LoadTask(taskId, editTaskState, editTaskViewModel, projectId)
   LoadAvailableTasks(editTaskState.projectId, editTaskViewModel)
@@ -92,7 +101,7 @@ fun EditTaskScreen(
   HandleTaskSaved(editTaskState.taskSaved, navigationController, editTaskViewModel)
   HandleTaskDeleted(editTaskState.taskDeleted, navigationController, editTaskViewModel)
   CleanupAttachmentsOnDispose(
-      isNavigatingToCamera, editTaskState.attachmentUris, editTaskViewModel, context)
+      editTaskState.temporaryPhotoUris, editTaskViewModel, context, navigationController)
 
   Scaffold(
       topBar = {
@@ -163,25 +172,42 @@ fun EditTaskScreen(
                   modifier = Modifier.fillMaxWidth(),
                   horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     OutlinedButton(
-                        onClick = {
-                          isNavigatingToCamera = true
-                          navigationController.navigate(Route.Camera)
-                        },
+                        onClick = { navigationController.navigate(Route.Camera) },
                         colors = EurekaStyles.outlinedButtonColors(),
                         modifier =
-                            Modifier.fillMaxWidth(EDIT_SCREEN_SMALL_BUTTON_SIZE)
+                            Modifier.weight(EDIT_SCREEN_EQUAL_WEIGHT)
                                 .testTag(CommonTaskTestTags.ADD_PHOTO)) {
                           Text("Add Photo")
                         }
+
                     OutlinedButton(
-                        onClick = {
-                          editTaskViewModel.setStatus(getNextStatus(editTaskState.status))
-                        },
+                        onClick = { filePickerLauncher.launch("*/*") },
+                        colors = EurekaStyles.outlinedButtonColors(),
                         modifier =
-                            Modifier.fillMaxWidth().testTag(EditTaskScreenTestTags.STATUS_BUTTON)) {
-                          Text(text = editTaskState.status.name.replace("_", " "))
+                            Modifier.weight(EDIT_SCREEN_EQUAL_WEIGHT)
+                                .testTag(EditTaskScreenTestTags.ADD_FILE)) {
+                          Text("Add File")
                         }
                   }
+
+              AttachmentsList(
+                  attachments = editTaskState.effectiveAttachments,
+                  onDelete = { index ->
+                    editTaskViewModel.removeAttachmentAndDelete(context, index)
+                  },
+                  isReadOnly = false,
+                  isConnected = isConnected,
+                  downloadedUrls = editTaskState.downloadedAttachmentUrls)
+
+              Row(modifier = Modifier.fillMaxWidth()) {
+                OutlinedButton(
+                    onClick = { editTaskViewModel.setStatus(getNextStatus(editTaskState.status)) },
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(EditTaskScreenTestTags.STATUS_BUTTON),
+                    colors = EurekaStyles.outlinedButtonColors()) {
+                      Text(text = editTaskState.status.name.replace("_", " "))
+                    }
+              }
 
               Row(
                   modifier = Modifier.fillMaxWidth(),
@@ -205,15 +231,6 @@ fun EditTaskScreen(
                           Text(if (editTaskState.isSaving) "Saving..." else "Save")
                         }
                   }
-
-              val allAttachments =
-                  editTaskState.attachmentUrls.map { Attachment.Remote(it) } +
-                      editTaskState.attachmentUris.map { Attachment.Local(it) }
-              AttachmentsList(
-                  attachments = allAttachments,
-                  onDelete = { index ->
-                    editTaskViewModel.removeAttachmentAndDelete(context, index)
-                  })
             }
       })
 
@@ -304,7 +321,7 @@ private fun ShowErrorToast(
 private fun AddAttachment(photoUri: String, editTaskViewModel: EditTaskViewModel) {
   LaunchedEffect(photoUri) {
     if (photoUri.isNotEmpty()) {
-      editTaskViewModel.addAttachment(photoUri.toUri())
+      editTaskViewModel.addAttachment(photoUri.toUri(), true)
     }
   }
 }
@@ -340,15 +357,22 @@ private fun HandleTaskDeleted(
 
 @Composable
 private fun CleanupAttachmentsOnDispose(
-    isNavigatingToCamera: Boolean,
-    attachmentUris: List<Uri>,
+    temporaryPhotoUris: List<Uri>,
     editTaskViewModel: EditTaskViewModel,
-    context: android.content.Context
+    context: android.content.Context,
+    navigationController: NavHostController
 ) {
+  val isNavigatingToCamera = remember { mutableStateOf(false) }
+
+  LaunchedEffect(navigationController.currentBackStackEntry) {
+    val currentRoute = navigationController.currentBackStackEntry?.destination?.route
+    isNavigatingToCamera.value = currentRoute?.contains("Camera") == true
+  }
+
   DisposableEffect(Unit) {
     onDispose {
-      if (!isNavigatingToCamera) {
-        editTaskViewModel.deletePhotosOnDispose(context, attachmentUris)
+      if (!isNavigatingToCamera.value) {
+        editTaskViewModel.deletePhotosOnDispose(context, temporaryPhotoUris)
       }
     }
   }

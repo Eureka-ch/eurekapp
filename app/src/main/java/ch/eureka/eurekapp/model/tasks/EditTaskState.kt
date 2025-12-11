@@ -40,5 +40,13 @@ data class EditTaskState(
     val isDeleting: Boolean = false,
     val taskDeleted: Boolean = false,
     override val errorMsg: String? = null,
-    override val dependingOnTasks: List<String> = emptyList()
-) : TaskStateReadWrite
+    override val dependingOnTasks: List<String> = emptyList(),
+    val downloadedAttachmentUrls: Set<String> = emptySet(),
+    override val temporaryPhotoUris: List<Uri> = emptyList()
+) : TaskStateReadWrite {
+
+  val effectiveAttachments: List<Attachment>
+    get() =
+        attachmentUrls.map { Attachment.parseAttachment(it) } +
+            attachmentUris.map { Attachment.Local(it) }
+}
