@@ -122,19 +122,23 @@ class ActivityDetailViewModel(
    */
   private fun loadActivityDetails() {
     viewModelScope.launch {
-      repository.getActivities(currentUserId).collect { activities ->
-        val activity = activities.firstOrNull { it.activityId == activityId }
+      try {
+        repository.getActivities(currentUserId).collect { activities ->
+          val activity = activities.firstOrNull { it.activityId == activityId }
 
-        if (activity != null) {
-          // Enrich activity with user name
-          val enrichedActivity = enrichActivityWithUserName(activity)
-          _activity.value = enrichedActivity
+          if (activity != null) {
+            // Enrich activity with user name
+            val enrichedActivity = enrichActivityWithUserName(activity)
+            _activity.value = enrichedActivity
 
-          // Load related activities for the same entity
-          loadRelatedActivities(activity.entityId, activities)
-        } else {
-          _errorMsg.value = "Activity not found"
+            // Load related activities for the same entity
+            loadRelatedActivities(activity.entityId, activities)
+          } else {
+            _errorMsg.value = "Activity not found"
+          }
         }
+      } catch (e: Exception) {
+        _errorMsg.value = e.message ?: "An error occurred"
       }
     }
   }

@@ -155,6 +155,134 @@ class ActivityDetailViewModelTest {
     assertNotNull("ViewModel should exist", viewModel)
   }
 
+  @Test
+  fun activityDetailViewModel_enrichActivityMissingDisplayName_setsError() {
+    val activity =
+        createActivity(testActivityId, EntityType.TASK, "Task", ActivityType.CREATED, testEntityId)
+    coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
+
+    val userDoc = mockk<DocumentSnapshot>(relaxed = true)
+    every { userDoc.getString("displayName") } returns null
+    every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
+
+    viewModel =
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
+
+    Thread.sleep(1000)
+
+    assertNotNull("ViewModel should exist", viewModel)
+  }
+
+  @Test
+  fun activityDetailViewModel_enrichActivityFirestoreException_setsError() {
+    val activity =
+        createActivity(testActivityId, EntityType.TASK, "Task", ActivityType.CREATED, testEntityId)
+    coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
+
+    every { firestore.collection("users").document(any()).get() } returns
+        Tasks.forException(RuntimeException("Firestore error"))
+
+    viewModel =
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
+
+    Thread.sleep(1000)
+
+    assertNotNull("ViewModel should exist", viewModel)
+  }
+
+  @Test
+  fun activityDetailViewModel_batchFetchMissingDisplayName_setsError() {
+    val activity1 =
+        createActivity(
+            testActivityId, EntityType.TASK, "Task 1", ActivityType.CREATED, testEntityId)
+    val activity2 =
+        createActivity("activity-2", EntityType.TASK, "Task 2", ActivityType.UPDATED, testEntityId)
+
+    coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity1, activity2))
+
+    val userDoc1 = mockk<DocumentSnapshot>(relaxed = true)
+    every { userDoc1.getString("displayName") } returns "User 1"
+    every { userDoc1.id } returns testUserId
+
+    val userDoc2 = mockk<DocumentSnapshot>(relaxed = true)
+    every { userDoc2.getString("displayName") } returns null
+    every { userDoc2.id } returns "user-2"
+
+    val querySnapshot = mockk<com.google.firebase.firestore.QuerySnapshot>(relaxed = true)
+    every { querySnapshot.documents } returns listOf(userDoc1, userDoc2)
+
+    every { firestore.collection("users").document(testUserId).get() } returns
+        Tasks.forResult(userDoc1)
+
+    every {
+      firestore
+          .collection("users")
+          .whereIn(com.google.firebase.firestore.FieldPath.documentId(), any<List<String>>())
+          .get()
+    } returns Tasks.forResult(querySnapshot)
+
+    viewModel =
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
+
+    Thread.sleep(1000)
+
+    assertNotNull("ViewModel should exist", viewModel)
+  }
+
+  @Test
+  fun activityDetailViewModel_batchFetchFirestoreException_setsError() {
+    val activity1 =
+        createActivity(
+            testActivityId, EntityType.TASK, "Task 1", ActivityType.CREATED, testEntityId)
+    val activity2 =
+        createActivity("activity-2", EntityType.TASK, "Task 2", ActivityType.UPDATED, testEntityId)
+
+    coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity1, activity2))
+
+    val userDoc1 = mockk<DocumentSnapshot>(relaxed = true)
+    every { userDoc1.getString("displayName") } returns "User 1"
+
+    every { firestore.collection("users").document(testUserId).get() } returns
+        Tasks.forResult(userDoc1)
+
+    every {
+      firestore
+          .collection("users")
+          .whereIn(com.google.firebase.firestore.FieldPath.documentId(), any<List<String>>())
+          .get()
+    } returns Tasks.forException(RuntimeException("Batch fetch error"))
+
+    viewModel =
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
+
+    Thread.sleep(1000)
+
+    assertNotNull("ViewModel should exist", viewModel)
+  }
+
+  @Test
+  fun activityDetailViewModel_getShareText_returnsFormattedString() {
+    val activity =
+        createActivity(
+            testActivityId, EntityType.TASK, "Test Task", ActivityType.CREATED, testEntityId)
+    coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
+
+    val userDoc = mockk<DocumentSnapshot>(relaxed = true)
+    every { userDoc.getString("displayName") } returns "Test User"
+    every { firestore.collection("users").document(any()).get() } returns Tasks.forResult(userDoc)
+
+    viewModel =
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
+
+    Thread.sleep(1000)
+
+    val shareText = viewModel.getShareText()
+
+    assertNotNull("Share text should not be null", shareText)
+    assertTrue("Share text should contain activity type", shareText!!.contains("Type:"))
+    assertTrue("Share text should contain entity type", shareText.contains("Entity:"))
+  }
+
   private fun createActivity(
       id: String,
       entityType: EntityType,

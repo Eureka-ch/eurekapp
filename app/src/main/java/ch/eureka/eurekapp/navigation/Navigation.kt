@@ -305,7 +305,7 @@ fun NavigationMenu(
               composable<Route.SelfNotes> { SelfNotesScreen() }
               composable<Route.ActivityFeed> {
                 ActivityFeedScreen(
-                    onActivityClick = { activityId, projectId ->
+                    onActivityClick = { activityId, _ ->
                       navigationController.navigate(
                           Route.ActivitySection.ActivityDetail(activityId = activityId))
                     })
