@@ -213,8 +213,8 @@ private fun ProjectSelector(
 /**
  * Selector component for choosing participants to share the idea with.
  *
- * Displays a read-only text field that opens a dropdown menu when clicked.
- * Users can select/deselect participants using checkboxes in the dropdown.
+ * Displays a read-only text field that opens a dropdown menu when clicked. Users can
+ * select/deselect participants using checkboxes in the dropdown.
  *
  * @param availableUsers List of users available in the selected project
  * @param selectedParticipantIds List of user IDs currently selected as participants
