@@ -261,7 +261,7 @@ export const sendNewMessageNotification =
                     return;
                 }
 
-                const memberIds: string[] = projectData.memberIds;
+                const memberIds: string[] = conversation.memberIds;
                 const recipients = memberIds.filter(uid => uid !== senderId);
 
                 if (recipients.length === 0) {

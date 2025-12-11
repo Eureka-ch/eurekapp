@@ -18,6 +18,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.verify
+import junit.framework.Assert.assertNotNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -113,7 +114,7 @@ class ConversationDetailViewModelTest {
     val viewModel = createViewModel()
     val state = viewModel.uiState.first { it.otherMemberNames.isNotEmpty() }
 
-    assertEquals("Jane Doe", state.otherMemberNames)
+    assertEquals(listOf("Jane Doe"), state.otherMemberNames)
     assertEquals("Test Project", state.projectName)
   }
 
@@ -847,5 +848,97 @@ class ConversationDetailViewModelTest {
 
     val state = viewModel.uiState.first { it.isEditing }
     assertTrue(state.isEditing)
+  }
+
+  @Test
+  fun getUser_returnsUserFlow() = runTest {
+    val mockUserRepo = mockk<ch.eureka.eurekapp.model.data.user.UserRepository>()
+    val mockUser = User(uid = "user1", displayName = "John", email = "john@example.com", photoUrl = "")
+
+    every { mockUserRepo.getUserById("user1") } returns flowOf(mockUser)
+
+    val viewModel = ConversationDetailViewModel(
+      conversationId = "conv1",
+      conversationRepository = mockk(relaxed = true),
+      userRepository = mockUserRepo,
+      projectRepository = mockk(relaxed = true),
+      fileStorageRepository = mockk(relaxed = true),
+      getCurrentUserId = { "currentUser" },
+      connectivityObserver = mockk(relaxed = true)
+    )
+
+    val result = viewModel.getUser("user1").first()
+
+    assertNotNull(result)
+    assertEquals("John", result?.displayName)
+  }
+
+  @Test
+  fun uiState_withMultipleOtherMembersPopulatesOtherMemberNames() = runTest {
+    val mockConversationRepo = mockk<ch.eureka.eurekapp.model.data.conversation.ConversationRepository>()
+    val mockUserRepo = mockk<ch.eureka.eurekapp.model.data.user.UserRepository>()
+    val mockProjectRepo = mockk<ch.eureka.eurekapp.model.data.project.ProjectRepository>()
+
+    val conversation = Conversation(
+      conversationId = "conv1",
+      projectId = "proj1",
+      memberIds = listOf("currentUser", "user1", "user2")
+    )
+
+    every { mockConversationRepo.getConversationById("conv1") } returns flowOf(conversation)
+    every { mockConversationRepo.getMessages("conv1") } returns flowOf(emptyList())
+    every { mockUserRepo.getUserById("user1") } returns flowOf(User("user1", "Alice", "alice@example.com", ""))
+    every { mockUserRepo.getUserById("user2") } returns flowOf(User("user2", "Bob", "bob@example.com", ""))
+    every { mockProjectRepo.getProjectById("proj1") } returns flowOf(Project(projectId = "proj1", name = "Test Project"))
+
+    val viewModel = ConversationDetailViewModel(
+      conversationId = "conv1",
+      conversationRepository = mockConversationRepo,
+      userRepository = mockUserRepo,
+      projectRepository = mockProjectRepo,
+      fileStorageRepository = mockk(relaxed = true),
+      getCurrentUserId = { "currentUser" },
+      connectivityObserver = mockk {
+        every { isConnected } returns flowOf(true)
+      }
+    )
+
+    val state = viewModel.uiState.first { it.otherMemberNames.isNotEmpty() }
+
+    assertEquals(2, state.otherMemberNames.size)
+    assertEquals(listOf("Alice", "Bob"), state.otherMemberNames)
+  }
+
+  @Test
+  fun uiState_withEmptyOtherMembersHandlesGracefully() = runTest {
+    val mockConversationRepo = mockk<ch.eureka.eurekapp.model.data.conversation.ConversationRepository>()
+    val mockUserRepo = mockk<ch.eureka.eurekapp.model.data.user.UserRepository>()
+    val mockProjectRepo = mockk<ch.eureka.eurekapp.model.data.project.ProjectRepository>()
+
+    val conversation = Conversation(
+      conversationId = "conv1",
+      projectId = "proj1",
+      memberIds = listOf("currentUser")
+    )
+
+    every { mockConversationRepo.getConversationById("conv1") } returns flowOf(conversation)
+    every { mockConversationRepo.getMessages("conv1") } returns flowOf(emptyList())
+    every { mockProjectRepo.getProjectById("proj1") } returns flowOf(Project(projectId = "proj1", name = "Test Project"))
+
+    val viewModel = ConversationDetailViewModel(
+      conversationId = "conv1",
+      conversationRepository = mockConversationRepo,
+      userRepository = mockUserRepo,
+      projectRepository = mockProjectRepo,
+      fileStorageRepository = mockk(relaxed = true),
+      getCurrentUserId = { "currentUser" },
+      connectivityObserver = mockk {
+        every { isConnected } returns flowOf(true)
+      }
+    )
+
+    val state = viewModel.uiState.first()
+
+    assertEquals(emptyList<String>(), state.otherMemberNames)
   }
 }

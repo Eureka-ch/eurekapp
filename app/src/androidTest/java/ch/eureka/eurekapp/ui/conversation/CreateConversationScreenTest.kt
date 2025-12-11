@@ -64,7 +64,7 @@ class CreateConversationScreenTest {
     val state =
         CreateConversationState(
             selectedProject = project,
-            selectedMembers = member,
+            selectedMembers = listOf(member),
             members = listOf(member),
             isConnected = true)
 

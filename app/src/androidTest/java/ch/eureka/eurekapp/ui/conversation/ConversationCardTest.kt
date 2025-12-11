@@ -20,7 +20,7 @@ class ConversationCardTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   private fun createDisplayData(
-      otherMemberName: String = "Jane Doe",
+      otherMemberNames: List<String> = listOf("Jane Doe"),
       projectName: String = "Test Project",
       lastMessagePreview: String? = null,
       lastMessageTime: String? = null,
@@ -28,8 +28,8 @@ class ConversationCardTest {
   ) =
       ConversationDisplayData(
           conversation = Conversation(conversationId = "conv1", projectId = "p1"),
-          otherMembers = otherMemberName,
-          otherMembersPhotoUrl = "",
+          otherMembers = otherMemberNames,
+          otherMembersPhotoUrl = listOf(""),
           projectName = projectName,
           lastMessagePreview = lastMessagePreview,
           lastMessageTime = lastMessageTime,
@@ -39,7 +39,7 @@ class ConversationCardTest {
   fun conversationCard_displaysMemberAndProjectName() {
     composeTestRule.setContent {
       ConversationCard(
-          displayData = createDisplayData(otherMemberName = "John", projectName = "Alpha"),
+          displayData = createDisplayData(otherMemberNames = listOf("John"), projectName = "Alpha"),
           onClick = {})
     }
     composeTestRule
@@ -66,7 +66,7 @@ class ConversationCardTest {
   }
 
   @Test
-  fun conversationCard_showsUnreadIndicator_whenHasUnread() {
+  fun conversationCard_showsUnreadIndicatorWhenHasUnread() {
     composeTestRule.setContent {
       ConversationCard(
           displayData = createDisplayData(hasUnread = true, lastMessagePreview = "New"),
@@ -78,7 +78,7 @@ class ConversationCardTest {
   }
 
   @Test
-  fun conversationCard_hidesUnreadIndicator_whenNoUnread() {
+  fun conversationCard_hidesUnreadIndicatorWhenNoUnread() {
     composeTestRule.setContent {
       ConversationCard(
           displayData = createDisplayData(hasUnread = false, lastMessagePreview = "Old"),
@@ -100,7 +100,7 @@ class ConversationCardTest {
   }
 
   @Test
-  fun conversationCard_hidesOptionalFields_whenNull() {
+  fun conversationCard_hidesOptionalFieldsWhenNull() {
     composeTestRule.setContent {
       ConversationCard(
           displayData = createDisplayData(lastMessagePreview = null, lastMessageTime = null),
@@ -113,4 +113,83 @@ class ConversationCardTest {
         .onNodeWithTag(ConversationCardTestTags.LAST_MESSAGE_TIME, useUnmergedTree = true)
         .assertDoesNotExist()
   }
+
+    @Test
+    fun conversationCard_withSingleMemberDisplaysSingleAvatar() {
+        val displayData = ConversationDisplayData(
+            conversation = Conversation("conv1", "proj1"),
+            otherMembers = listOf("Alice"),
+            otherMembersPhotoUrl = listOf("https://example.com/alice.jpg"),
+            projectName = "Project"
+        )
+
+        composeTestRule.setContent {
+                ConversationCard(displayData = displayData, onClick = {})
+        }
+
+        composeTestRule.onNodeWithContentDescription("Profile picture of Alice").assertExists()
+    }
+
+    @Test
+    fun conversationCard_withMultipleMembersDisplaysTwoAvatars() {
+        val displayData = ConversationDisplayData(
+            conversation = Conversation("conv1", "proj1"),
+            otherMembers = listOf("Alice", "Bob", "Charlie"),
+            otherMembersPhotoUrl = listOf("https://example.com/alice.jpg", "https://example.com/bob.jpg", "https://example.com/charlie.jpg"),
+            projectName = "Project"
+        )
+
+        composeTestRule.setContent {
+                ConversationCard(displayData = displayData, onClick = {})
+        }
+
+        composeTestRule.onNodeWithContentDescription("Profile picture of Alice").assertExists()
+        composeTestRule.onNodeWithContentDescription("Profile picture of Bob").assertExists()
+    }
+
+    @Test
+    fun conversationCard_withEmptyMembersHandlesGracefully() {
+        val displayData = ConversationDisplayData(
+            conversation = Conversation("conv1", "proj1"),
+            otherMembers = listOf(),
+            otherMembersPhotoUrl = listOf(),
+            projectName = "Project"
+        )
+
+        composeTestRule.setContent {
+                ConversationCard(displayData = displayData, onClick = {})
+        }
+    }
+
+    @Test
+    fun conversationCard_withNullPhotoUrlUsesFallbackAvatar() {
+        val displayData = ConversationDisplayData(
+            conversation = Conversation("conv1", "proj1"),
+            otherMembers = listOf("Alice"),
+            otherMembersPhotoUrl = listOf(""),
+            projectName = "Project"
+        )
+
+        composeTestRule.setContent {
+                ConversationCard(displayData = displayData, onClick = {})
+        }
+
+        composeTestRule.onNodeWithContentDescription("Member icon").assertExists()
+    }
+
+    @Test
+    fun conversationCard_memberNamesJoinedWithComma() {
+        val displayData = ConversationDisplayData(
+            conversation = Conversation("conv1", "proj1"),
+            otherMembers = listOf("Alice", "Bob"),
+            otherMembersPhotoUrl = listOf("", ""),
+            projectName = "Project"
+        )
+
+        composeTestRule.setContent {
+                ConversationCard(displayData = displayData, onClick = {})
+        }
+
+        composeTestRule.onNodeWithText("Alice, Bob").assertExists()
+    }
 }

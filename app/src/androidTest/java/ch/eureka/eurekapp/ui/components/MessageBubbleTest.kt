@@ -35,7 +35,7 @@ class MessageBubbleTest {
   }
 
   @Test
-  fun messageBubble_sentMessage_isDisplayed() {
+  fun messageBubble_sentMessageIsDisplayed() {
     composeTestRule.setContent {
       MessageBubble(text = "Sent", timestamp = Timestamp.now(), isFromCurrentUser = true)
     }
@@ -43,7 +43,7 @@ class MessageBubbleTest {
   }
 
   @Test
-  fun messageBubble_receivedMessage_isDisplayed() {
+  fun messageBubble_receivedMessageIsDisplayed() {
     composeTestRule.setContent {
       MessageBubble(text = "Received", timestamp = Timestamp.now(), isFromCurrentUser = false)
     }
@@ -51,7 +51,7 @@ class MessageBubbleTest {
   }
 
   @Test
-  fun messageBubble_fileMessage_showsDownloadButton() {
+  fun messageBubble_fileMessageShowsDownloadButton() {
     composeTestRule.setContent {
       MessageBubble(
           text = "File message",
@@ -64,7 +64,7 @@ class MessageBubbleTest {
   }
 
   @Test
-  fun messageBubble_imageFile_showsPreview() {
+  fun messageBubble_imageFileShowsPreview() {
     composeTestRule.setContent {
       MessageBubble(
           text = "Image message",
@@ -78,7 +78,7 @@ class MessageBubbleTest {
   }
 
   @Test
-  fun messageBubble_showsEditedIndicator_whenEditedAtIsSet() {
+  fun messageBubble_showsEditedIndicatorWhenEditedAtIsSet() {
     composeTestRule.setContent {
       MessageBubble(
           text = "Edited message",
@@ -90,10 +90,97 @@ class MessageBubbleTest {
   }
 
   @Test
-  fun messageBubble_doesNotShowEditedIndicator_whenEditedAtIsNull() {
+  fun messageBubble_doesNotShowEditedIndicatorWhenEditedAtIsNull() {
     composeTestRule.setContent {
       MessageBubble(text = "Regular message", timestamp = Timestamp.now(), isFromCurrentUser = true)
     }
     composeTestRule.onNodeWithTag(MessageBubbleTestTags.EDITED_INDICATOR).assertDoesNotExist()
+  }
+
+  @Test
+  fun messageBubble_withSenderPhotoUrlDisplaysAsyncImage() {
+    composeTestRule.setContent {
+        MessageBubble(
+          senderPhotoUrl = "https://example.com/photo.jpg",
+          senderDisplayName = "",
+          text = "Test",
+          timestamp = Timestamp.now(),
+          isFromCurrentUser = false
+        )
+    }
+    composeTestRule.onNodeWithContentDescription("Profile picture of https://example.com/photo.jpg").assertExists()
+  }
+
+  @Test
+  fun messageBubble_withEmptySenderPhotoUrlDoesNotDisplayAsyncImage() {
+    composeTestRule.setContent {
+        MessageBubble(
+          senderPhotoUrl = "",
+          senderDisplayName = "",
+          text = "Test",
+          timestamp = Timestamp.now(),
+          isFromCurrentUser = false
+        )
+    }
+    composeTestRule.onNodeWithContentDescription("Profile picture of ", substring = true).assertDoesNotExist()
+  }
+
+  @Test
+  fun messageBubble_withSenderDisplayNameDisplaysText() {
+    composeTestRule.setContent {
+        MessageBubble(
+          senderPhotoUrl = "",
+          senderDisplayName = "John Doe",
+          text = "Test",
+          timestamp = Timestamp.now(),
+          isFromCurrentUser = false
+        )
+    }
+    composeTestRule.onNodeWithText("John Doe").assertExists()
+  }
+
+  @Test
+  fun messageBubble_fromCurrentUserRendersInCorrectOrder() {
+    composeTestRule.setContent {
+        MessageBubble(
+          senderPhotoUrl = "https://example.com/photo.jpg",
+          senderDisplayName = "Me",
+          text = "My message",
+          timestamp = Timestamp.now(),
+          isFromCurrentUser = true
+        )
+    }
+    composeTestRule.onNodeWithText("Me").assertExists()
+    composeTestRule.onNodeWithText("My message").assertExists()
+  }
+
+  @Test
+  fun messageBubble_notFromCurrentUserRendersInCorrectOrder() {
+    composeTestRule.setContent {
+        MessageBubble(
+          senderPhotoUrl = "https://example.com/photo.jpg",
+          senderDisplayName = "Other",
+          text = "Their message",
+          timestamp = Timestamp.now(),
+          isFromCurrentUser = false
+        )
+    }
+    composeTestRule.onNodeWithText("Other").assertExists()
+    composeTestRule.onNodeWithText("Their message").assertExists()
+  }
+
+  @Test
+  fun messageBubble_withBothPhotoAndDisplayNameRendersBoth() {
+    composeTestRule.setContent {
+        MessageBubble(
+          senderPhotoUrl = "https://example.com/photo.jpg",
+          senderDisplayName = "Complete User",
+          text = "Message",
+          timestamp = Timestamp.now(),
+          isFromCurrentUser = false
+        )
+    }
+    composeTestRule.onNodeWithText("Complete User").assertExists()
+    composeTestRule.onNodeWithContentDescription("Profile picture of https://example.com/photo.jpg").assertExists()
   }
 }
