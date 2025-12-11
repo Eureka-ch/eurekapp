@@ -206,14 +206,8 @@ private fun ActivityDetailContent(
       modifier = modifier.fillMaxSize().padding(horizontal = 16.dp),
       verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item { Spacer(modifier = Modifier.height(8.dp)) }
-
-        // Activity Header
         item { ActivityHeader(activity) }
-
-        // Activity Information Card
         item { ActivityInformationCard(activity) }
-
-        // Entity Navigation Button
         item {
           val hasDetailScreen =
               activity.entityType in
@@ -234,14 +228,8 @@ private fun ActivityDetailContent(
                 }
           }
         }
-
-        // Related Activities Section
         item { RelatedActivitiesSection(relatedActivities) }
-
-        // Action Buttons
         item { ActionButtonsSection(isConnected, onShare, onDelete) }
-
-        // Offline Message
         if (!isConnected) {
           item {
             Text(
@@ -449,7 +437,6 @@ private fun ActionButtonsSection(isConnected: Boolean, onShare: () -> Unit, onDe
   var showDeleteDialog by remember { mutableStateOf(false) }
 
   Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-    // Share Button
     OutlinedButton(
         onClick = onShare,
         modifier =
@@ -462,7 +449,6 @@ private fun ActionButtonsSection(isConnected: Boolean, onShare: () -> Unit, onDe
           Text("Share Activity")
         }
 
-    // Delete Button
     OutlinedButton(
         onClick = { showDeleteDialog = true },
         modifier =
@@ -478,7 +464,6 @@ private fun ActionButtonsSection(isConnected: Boolean, onShare: () -> Unit, onDe
         }
   }
 
-  // Delete Confirmation Dialog
   if (showDeleteDialog) {
     AlertDialog(
         onDismissRequest = { showDeleteDialog = false },

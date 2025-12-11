@@ -75,13 +75,9 @@ class ActivityDetailViewModelTest {
 
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
-
     Thread.sleep(1000)
-
     viewModel.deleteActivity()
-
     Thread.sleep(1000)
-
     assertNotNull("ViewModel should exist", viewModel)
     coEvery { repository.deleteActivity(testActivityId) }
   }
@@ -102,11 +98,8 @@ class ActivityDetailViewModelTest {
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     Thread.sleep(1000)
-
     viewModel.deleteActivity()
-
     Thread.sleep(1000)
-
     assertNotNull("ViewModel should exist", viewModel)
     every { connectivityObserver.isConnected }
   }
@@ -126,11 +119,8 @@ class ActivityDetailViewModelTest {
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     Thread.sleep(1000)
-
     viewModel.markShareSuccess()
-
     Thread.sleep(500)
-
     assertNotNull("ViewModel should exist", viewModel)
   }
 
@@ -254,9 +244,7 @@ class ActivityDetailViewModelTest {
 
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
-
     Thread.sleep(1000)
-
     assertNotNull("ViewModel should exist", viewModel)
   }
 
@@ -273,9 +261,7 @@ class ActivityDetailViewModelTest {
 
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
-
     Thread.sleep(1000)
-
     val shareText = viewModel.getShareText()
 
     assertNotNull("Share text should not be null", shareText)

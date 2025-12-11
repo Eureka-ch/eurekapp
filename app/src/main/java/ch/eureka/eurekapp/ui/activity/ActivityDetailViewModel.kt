@@ -193,11 +193,9 @@ class ActivityDetailViewModel(
       return
     }
 
-    // Batch fetch all user names in a single Firestore request
     val userIds = related.map { it.userId }.toSet()
     val userNames = batchFetchUserNames(userIds)
 
-    // Enrich all activities with the fetched user names
     val enriched =
         related.map { activity ->
           val userName =
@@ -294,16 +292,10 @@ class ActivityDetailViewModel(
     }
   }
 
-  /**
-   * Marks the share operation as successful.
-   *
-   * Used by the UI after successfully copying activity details to clipboard.
-   */
   fun markShareSuccess() {
     _shareSuccess.value = true
   }
 
-  /** Clears the error message. */
   fun clearError() {
     _errorMsg.value = null
   }

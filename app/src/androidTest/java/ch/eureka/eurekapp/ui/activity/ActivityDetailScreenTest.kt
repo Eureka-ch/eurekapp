@@ -33,12 +33,10 @@ class ActivityDetailScreenTest {
   private lateinit var auth: FirebaseAuth
   private lateinit var connectivityObserver: ConnectivityObserver
   private lateinit var viewModel: ActivityDetailViewModel
-
   private val testUserId = "test-user-123"
   private val testActivityId = "activity-456"
   private val testProjectId = "project-789"
   private val testEntityId = "entity-101"
-
   private var navigateBackCalled = false
   private var navigateToEntityCalled = false
   private var lastEntityType: EntityType? = null
@@ -65,7 +63,6 @@ class ActivityDetailScreenTest {
     every { connectivityObserver.isConnected } returns flowOf(true)
   }
 
-  /** Helper to setup standard Firestore user mocking for simple tests. */
   private fun setupSimpleUserMock(displayName: String = "Test User") {
     val userDoc = mockk<DocumentSnapshot>(relaxed = true)
     every { userDoc.getString("displayName") } returns displayName
@@ -307,7 +304,6 @@ class ActivityDetailScreenTest {
       ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
-
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.SHARE_BUTTON).assertIsDisplayed()
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.SHARE_BUTTON).assertIsEnabled()
     composeTestRule.onNodeWithText("Share Activity").assertIsDisplayed()
@@ -328,10 +324,8 @@ class ActivityDetailScreenTest {
       ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
-
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_BUTTON).performClick()
     composeTestRule.waitForIdle()
-
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_DIALOG).assertIsDisplayed()
     composeTestRule.onNodeWithText("Delete Activity?").assertIsDisplayed()
     composeTestRule.onNodeWithText("This action cannot be undone.").assertIsDisplayed()
@@ -352,12 +346,10 @@ class ActivityDetailScreenTest {
       ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
-
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_BUTTON).performClick()
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithText("Cancel").performClick()
     composeTestRule.waitForIdle()
-
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_DIALOG).assertDoesNotExist()
   }
 
@@ -379,18 +371,13 @@ class ActivityDetailScreenTest {
           onNavigateBack = { navigateBackCalled = true })
     }
     composeTestRule.waitForIdle()
-
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_BUTTON).performClick()
     composeTestRule.waitForIdle()
-
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_DIALOG).assertIsDisplayed()
-
     composeTestRule.onNodeWithText("Delete").performClick()
     composeTestRule.waitForIdle()
-
     Thread.sleep(2000)
     composeTestRule.waitForIdle()
-
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_DIALOG).assertDoesNotExist()
   }
 
@@ -433,7 +420,6 @@ class ActivityDetailScreenTest {
       ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
-
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.SHARE_BUTTON).assertIsNotEnabled()
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_BUTTON).assertIsNotEnabled()
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ENTITY_BUTTON).assertIsNotEnabled()
