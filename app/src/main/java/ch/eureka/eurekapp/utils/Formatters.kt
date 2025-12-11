@@ -72,4 +72,15 @@ object Formatters {
       else -> SimpleDateFormat("MMM d", Locale.getDefault()).format(date)
     }
   }
+
+  /**
+   * Format a full timestamp with date and time (e.g., "Jan 15, 2024 at 03:45 PM").
+   *
+   * @param date The date to format.
+   * @return A formatted timestamp string.
+   */
+  fun formatFullTimestamp(date: Date): String {
+    val formatter = SimpleDateFormat("MMM dd, yyyy 'at' hh:mm a", Locale.getDefault())
+    return formatter.format(date)
+  }
 }

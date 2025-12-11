@@ -15,6 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
+import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.model.data.mcp.FirebaseMcpTokenRepository
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
@@ -38,6 +39,7 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
+import ch.eureka.eurekapp.ui.activity.ActivityDetailScreen
 import ch.eureka.eurekapp.ui.activity.ActivityFeedScreen
 import ch.eureka.eurekapp.ui.authentication.TokenEntryScreen
 import ch.eureka.eurekapp.ui.conversation.ConversationDetailScreen
@@ -89,6 +91,10 @@ sealed interface Route {
   @Serializable data object SelfNotes : Route
 
   @Serializable data object ActivityFeed : Route
+
+  sealed interface ActivitySection : Route {
+    @Serializable data class ActivityDetail(val activityId: String) : ActivitySection
+  }
 
   @Serializable data object NotificationPreferences : Route
 
@@ -309,10 +315,36 @@ fun NavigationMenu(
               composable<Route.SelfNotes> { SelfNotesScreen() }
               composable<Route.ActivityFeed> {
                 ActivityFeedScreen(
-                    onActivityClick = { _ ->
-                      // Navigate to entity detail screen based on entity type
-                      // For now, just go back
-                      navigationController.popBackStack()
+                    onActivityClick = { activityId, _ ->
+                      navigationController.navigate(
+                          Route.ActivitySection.ActivityDetail(activityId = activityId))
+                    })
+              }
+              composable<Route.ActivitySection.ActivityDetail> { backStackEntry ->
+                val route = backStackEntry.toRoute<Route.ActivitySection.ActivityDetail>()
+                ActivityDetailScreen(
+                    activityId = route.activityId,
+                    onNavigateBack = { navigationController.popBackStack() },
+                    onNavigateToEntity = { entityType, entityId, projectId ->
+                      when (entityType) {
+                        EntityType.MEETING -> {
+                          navigationController.navigate(
+                              Route.MeetingsSection.MeetingDetail(projectId, entityId))
+                        }
+                        EntityType.TASK -> {
+                          navigationController.navigate(
+                              Route.TasksSection.ViewTask(projectId, entityId))
+                        }
+                        EntityType.MESSAGE -> {
+                          navigationController.navigate(Route.ConversationsSection.Conversations)
+                        }
+                        EntityType.PROJECT -> {
+                          navigationController.navigate(Route.ProjectSelection)
+                        }
+                        else -> {
+                          // FILE and MEMBER types have no detail screen
+                        }
+                      }
                     })
               }
               composable<Route.OverviewProject> { backStackEntry ->
@@ -379,38 +411,6 @@ fun NavigationMenu(
                       navigationController.popBackStack()
                     },
                     viewModel = templateViewModel)
-              }
-
-              // Conversations section
-              composable<Route.ConversationsSection.Conversations> {
-                ConversationListScreen(
-                    onCreateConversation = {
-                      navigationController.navigate(
-                          Route.ConversationsSection.CreateConversation(projectId = testProjectId))
-                    },
-                    onConversationClick = { conversationId ->
-                      navigationController.navigate(
-                          Route.ConversationsSection.ConversationDetail(
-                              conversationId = conversationId))
-                    })
-              }
-
-              composable<Route.ConversationsSection.CreateConversation> {
-                CreateConversationScreen(
-                    onNavigateToConversation = { conversationId ->
-                      navigationController.popBackStack()
-                      navigationController.navigate(
-                          Route.ConversationsSection.ConversationDetail(
-                              conversationId = conversationId))
-                    })
-              }
-
-              composable<Route.ConversationsSection.ConversationDetail> { backStackEntry ->
-                val conversationDetailRoute =
-                    backStackEntry.toRoute<Route.ConversationsSection.ConversationDetail>()
-                ConversationDetailScreen(
-                    conversationId = conversationDetailRoute.conversationId,
-                    onNavigateBack = { navigationController.popBackStack() })
               }
 
               // Meetings section
@@ -629,6 +629,34 @@ fun NavigationMenu(
                           ?.savedStateHandle
                           ?.set("photoUri", uri)
                       navigationController.popBackStack()
+                    })
+              }
+
+              // Conversations section
+              composable<Route.ConversationsSection.Conversations> {
+                ConversationListScreen(
+                    onConversationClick = { conversationId ->
+                      navigationController.navigate(
+                          Route.ConversationsSection.ConversationDetail(conversationId))
+                    },
+                    onCreateConversation = {
+                      navigationController.navigate(
+                          Route.ConversationsSection.CreateConversation(projectId = testProjectId))
+                    })
+              }
+
+              composable<Route.ConversationsSection.ConversationDetail> { backStackEntry ->
+                val route = backStackEntry.toRoute<Route.ConversationsSection.ConversationDetail>()
+                ConversationDetailScreen(
+                    conversationId = route.conversationId,
+                    onNavigateBack = { navigationController.popBackStack() })
+              }
+
+              composable<Route.ConversationsSection.CreateConversation> {
+                CreateConversationScreen(
+                    onNavigateToConversation = { conversationId ->
+                      navigationController.navigate(
+                          Route.ConversationsSection.ConversationDetail(conversationId))
                     })
               }
             }

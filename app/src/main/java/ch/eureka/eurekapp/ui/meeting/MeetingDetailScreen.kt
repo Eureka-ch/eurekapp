@@ -807,7 +807,7 @@ private fun EditableDurationField(config: EditableMeetingInfoCardConfig) {
  * @param testTag The test tag for UI testing.
  */
 @Composable
-private fun InfoRow(
+fun InfoRow(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     value: String,

@@ -51,20 +51,19 @@ import java.util.Locale
  * Activity feed screen. Shows a unified feed of activities for the current user.
  *
  * @param modifier Modifier used in the whole screen.
- * @param onActivityClick Callback executed when an activity is clicked.
+ * @param onActivityClick Callback executed when an activity is clicked (activityId, projectId).
  * @param viewModel The view model associated with that screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActivityFeedScreen(
     modifier: Modifier = Modifier,
-    onActivityClick: (String) -> Unit = {},
+    onActivityClick: (String, String) -> Unit = { _, _ -> },
     viewModel: ActivityFeedViewModel = viewModel()
 ) {
   val uiState by viewModel.uiState.collectAsState()
   var searchExpanded by remember { mutableStateOf(false) }
 
-  // Set compact mode on entry, but don't load activities until filter is selected
   LaunchedEffect(Unit) { viewModel.setCompactMode(false) }
 
   Scaffold(
@@ -78,20 +77,17 @@ fun ActivityFeedScreen(
                   fontWeight = FontWeight.Bold)
             },
             actions = {
-              // Refresh button
               IconButton(
                   onClick = { viewModel.refresh() }, modifier = Modifier.testTag("RefreshButton")) {
                     Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh")
                   }
 
-              // Search toggle button
               IconButton(
                   onClick = { searchExpanded = !searchExpanded },
                   modifier = Modifier.testTag("SearchButton")) {
                     Icon(imageVector = Icons.Default.Search, contentDescription = "Toggle search")
                   }
 
-              // Mark all as read button
               if (uiState.activities.isNotEmpty()) {
                 IconButton(
                     onClick = { viewModel.markAllAsRead() },
@@ -174,7 +170,7 @@ private fun FilterChipsRow(
 @Composable
 private fun ActivityContent(
     uiState: ActivityFeedUIState,
-    onActivityClick: (String) -> Unit,
+    onActivityClick: (String, String) -> Unit,
     onDeleteActivity: (String) -> Unit,
     onMarkAsRead: (String) -> Unit
 ) {
@@ -246,7 +242,7 @@ private fun EmptyState(hasFilters: Boolean = false) {
 private fun ActivitiesList(
     activitiesByDate: Map<Long, List<ch.eureka.eurekapp.model.data.activity.Activity>>,
     readActivityIds: Set<String>,
-    onActivityClick: (String) -> Unit,
+    onActivityClick: (String, String) -> Unit,
     onDeleteActivity: (String) -> Unit,
     onMarkAsRead: (String) -> Unit
 ) {
@@ -270,12 +266,12 @@ private fun ActivitiesList(
                 activity = activity,
                 isRead = isRead,
                 modifier = Modifier.padding(horizontal = Spacing.md),
-                onClick = {
+                onClick = { activityId ->
                   // Mark as read on click
                   if (!isRead) {
-                    onMarkAsRead(activity.activityId)
+                    onMarkAsRead(activityId)
                   }
-                  onActivityClick(activity.activityId)
+                  onActivityClick(activityId, activity.projectId)
                 },
                 onDelete = { onDeleteActivity(activity.activityId) })
           }

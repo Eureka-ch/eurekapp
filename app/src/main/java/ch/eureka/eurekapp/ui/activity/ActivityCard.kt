@@ -70,7 +70,7 @@ fun ActivityCard(
     activity: Activity,
     modifier: Modifier = Modifier,
     isRead: Boolean = false,
-    onClick: () -> Unit = {},
+    onClick: (String) -> Unit = {},
     onDelete: () -> Unit = {}
 ) {
   Card(
@@ -87,7 +87,7 @@ fun ActivityCard(
       modifier =
           modifier
               .fillMaxWidth()
-              .clickable(role = Role.Button, onClick = onClick)
+              .clickable(role = Role.Button, onClick = { onClick(activity.activityId) })
               .testTag("ActivityCard_${activity.activityId}")) {
         Row(
             modifier = Modifier.padding(Spacing.md).fillMaxWidth(),
