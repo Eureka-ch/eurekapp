@@ -1,44 +1,88 @@
 package ch.eureka.eurekapp.model.data.activity
 
-import com.google.android.gms.tasks.Tasks
-import com.google.firebase.firestore.*
-import io.mockk.*
-import kotlinx.coroutines.test.runTest
-import org.junit.Assert.*
+import ch.eureka.eurekapp.utils.FirebaseEmulator
+import ch.eureka.eurekapp.utils.FirestoreRepositoryTest
+import com.google.firebase.Timestamp
+import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertNotNull
+import junit.framework.TestCase.assertNull
+import junit.framework.TestCase.assertTrue
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
 import org.junit.Before
 import org.junit.Test
 
-class FirestoreActivityRepositoryTest {
-  private lateinit var firestore: FirebaseFirestore
+class FirestoreActivityRepositoryTest : FirestoreRepositoryTest() {
   private lateinit var repository: FirestoreActivityRepository
 
+  override fun getCollectionPaths(): List<String> {
+    return listOf("activities")
+  }
+
   @Before
-  fun setup() {
-    firestore = mockk(relaxed = true)
-    repository = FirestoreActivityRepository(firestore)
+  override fun setup() = runBlocking {
+    super.setup()
+    repository = FirestoreActivityRepository(FirebaseEmulator.firestore)
   }
 
   @Test
-  fun createActivity_returnsId() = runTest {
-    val collection = mockk<CollectionReference>(relaxed = true)
-    val doc = mockk<DocumentReference>(relaxed = true)
-    every { firestore.collection("activities") } returns collection
-    every { collection.document() } returns doc
-    every { doc.id } returns "new-id"
-    every { doc.set(any()) } returns Tasks.forResult(null)
-    val result = repository.createActivity(Activity(entityType = EntityType.TASK))
-    assertTrue(result.isSuccess)
-    assertEquals("new-id", result.getOrNull())
+  fun getActivityById_found_returnsActivity() = runBlocking {
+    val activity =
+        Activity(
+            activityId = "activity-1",
+            userId = testUserId,
+            projectId = "test-project-id",
+            entityType = EntityType.TASK,
+            entityId = "task-1",
+            activityType = ActivityType.CREATED,
+            timestamp = Timestamp.now())
+
+    FirebaseEmulator.firestore.collection("activities").document("activity-1").set(activity).await()
+
+    val result = repository.getActivityById("activity-1")
+    assertNotNull(result)
+    assertEquals("activity-1", result?.activityId)
   }
 
   @Test
-  fun deleteActivity_succeeds() = runTest {
-    val collection = mockk<CollectionReference>(relaxed = true)
-    val doc = mockk<DocumentReference>(relaxed = true)
-    every { firestore.collection("activities") } returns collection
-    every { collection.document("test-id") } returns doc
-    every { doc.delete() } returns Tasks.forResult(null)
-    val result = repository.deleteActivity("test-id")
+  fun getActivityById_notFound_returnsNull() = runBlocking {
+    val result = repository.getActivityById("missing")
+    assertNull(result)
+  }
+
+  @Test
+  fun createActivity_returnsId() = runBlocking {
+    val activity =
+        Activity(
+            userId = testUserId,
+            projectId = "test-project-id",
+            entityType = EntityType.TASK,
+            entityId = "task-1",
+            activityType = ActivityType.CREATED,
+            timestamp = Timestamp.now())
+    val result = repository.createActivity(activity)
     assertTrue(result.isSuccess)
+    assertNotNull(result.getOrNull())
+  }
+
+  @Test
+  fun deleteActivity_succeeds() = runBlocking {
+    val activity =
+        Activity(
+            activityId = "activity-2",
+            userId = testUserId,
+            projectId = "test-project-id",
+            entityType = EntityType.TASK,
+            entityId = "task-1",
+            activityType = ActivityType.CREATED,
+            timestamp = Timestamp.now())
+
+    FirebaseEmulator.firestore.collection("activities").document("activity-2").set(activity).await()
+
+    val result = repository.deleteActivity("activity-2")
+    assertTrue(result.isSuccess)
+
+    val deleted = repository.getActivityById("activity-2")
+    assertNull(deleted)
   }
 }
