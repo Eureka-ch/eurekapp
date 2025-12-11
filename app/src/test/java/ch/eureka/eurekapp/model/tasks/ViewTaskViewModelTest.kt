@@ -434,6 +434,7 @@ class ViewTaskViewModelTest {
   @Test
   fun uiState_loadsTemplateWhenTaskHasTemplateId() = runTest {
     val projectId = "project123"
+
     val taskId = "task123"
     val templateId = "template123"
     val template =
