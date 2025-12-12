@@ -27,12 +27,15 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CreateIdeaViewModelTest {
+  companion object {
+    private const val TEST_USER_ID = "test-user-id"
+  }
+
   private val testDispatcher = UnconfinedTestDispatcher()
   private lateinit var mockProjectRepository: MockProjectRepository
   private lateinit var mockUserRepository: MockUserRepository
   private lateinit var mockIdeasRepository: MockIdeasRepository
   private lateinit var viewModel: CreateIdeaViewModel
-  private val currentUserId = "current-user-123"
 
   @Before
   fun setUp() {
@@ -51,7 +54,7 @@ class CreateIdeaViewModelTest {
   }
 
   private fun createViewModel(
-      getCurrentUserId: () -> String? = { currentUserId }
+      getCurrentUserId: () -> String? = { TEST_USER_ID }
   ): CreateIdeaViewModel =
       CreateIdeaViewModel(
           projectRepository = mockProjectRepository,
@@ -125,8 +128,8 @@ class CreateIdeaViewModelTest {
     val createdIdea = mockIdeasRepository.createIdeaCalls[0]
     assertEquals("My Idea", createdIdea.title)
     assertEquals("project-123", createdIdea.projectId)
-    assertEquals(currentUserId, createdIdea.createdBy)
-    assertTrue(createdIdea.participantIds.containsAll(listOf(currentUserId, "user1")))
+    assertEquals(TEST_USER_ID, createdIdea.createdBy)
+    assertTrue(createdIdea.participantIds.containsAll(listOf(TEST_USER_ID, "user1")))
     assertNotNull(viewModel.uiState.first().navigateToIdea)
   }
 

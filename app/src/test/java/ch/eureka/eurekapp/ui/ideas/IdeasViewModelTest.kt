@@ -23,11 +23,14 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class IdeasViewModelTest {
+  companion object {
+    private const val TEST_USER_ID = "test-user-id"
+  }
+
   private val testDispatcher = UnconfinedTestDispatcher()
   private lateinit var mockProjectRepository: MockProjectRepository
   private lateinit var mockIdeasRepository: MockIdeasRepository
   private lateinit var viewModel: IdeasViewModel
-  private val currentUserId = "current-user-123"
 
   @Before
   fun setUp() {
@@ -43,7 +46,7 @@ class IdeasViewModelTest {
     mockIdeasRepository.reset()
   }
 
-  private fun createViewModel(getCurrentUserId: () -> String? = { currentUserId }): IdeasViewModel =
+  private fun createViewModel(getCurrentUserId: () -> String? = { TEST_USER_ID }): IdeasViewModel =
       IdeasViewModel(
           projectRepository = mockProjectRepository,
           ideasRepository = mockIdeasRepository,
@@ -80,7 +83,7 @@ class IdeasViewModelTest {
 
   @Test
   fun selectIdea_updatesSelectedIdea() = runTest {
-    val idea = Idea(ideaId = "idea-123", projectId = "project-123", createdBy = currentUserId)
+    val idea = Idea(ideaId = "idea-123", projectId = "project-123", createdBy = TEST_USER_ID)
     viewModel = createViewModel()
     advanceUntilIdle()
     viewModel.selectIdea(idea)
@@ -97,7 +100,7 @@ class IdeasViewModelTest {
     mockProjectRepository.setCurrentUserProjects(flowOf(listOf(project)))
     viewModel = createViewModel()
     advanceUntilIdle()
-    val idea = Idea(ideaId = "idea-123", projectId = "project-123", createdBy = currentUserId)
+    val idea = Idea(ideaId = "idea-123", projectId = "project-123", createdBy = TEST_USER_ID)
     viewModel.onIdeaCreated(idea)
     advanceUntilIdle()
     val state = viewModel.uiState.first()
