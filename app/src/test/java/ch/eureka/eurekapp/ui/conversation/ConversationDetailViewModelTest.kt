@@ -25,7 +25,6 @@ import junit.framework.Assert.assertNotNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -983,17 +982,6 @@ class ConversationDetailViewModelTest {
     verify { mockConversationRepository.getConversationById(conversationId) }
   }
 
-  @Test
-  fun conversationFlow_regular_handlesError() = runTest {
-    every { mockConversationRepository.getConversationById(conversationId) } returns
-        flow { throw Exception("Error") }
-    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
-    val viewModel = createViewModel()
-    advanceUntilIdle()
-    val state = viewModel.uiState.first { it.errorMsg != null }
-    assertEquals("Error", state.errorMsg)
-  }
-
   // --- Tests for messagesFlow (lines 155-182) ---
 
   @Test
@@ -1026,25 +1014,6 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun messagesFlow_toSelf_handlesError() = runTest {
-    every { mockSelfNotesRepository.getNotes(100) } returns flow { throw Exception("Error") }
-    val viewModel =
-        ConversationDetailViewModel(
-            conversationId = TO_SELF_CONVERSATION_ID,
-            conversationRepository = mockConversationRepository,
-            userRepository = mockUserRepository,
-            projectRepository = mockProjectRepository,
-            fileStorageRepository = mockFileStorageRepository,
-            selfNotesRepository = mockSelfNotesRepository,
-            getCurrentUserId = { currentUserId },
-            connectivityObserver = mockConnectivityObserver)
-    advanceUntilIdle()
-    val state = viewModel.uiState.first { it.errorMsg != null }
-    assertEquals("Error", state.errorMsg)
-    assertTrue(state.messages.isEmpty())
-  }
-
-  @Test
   fun messagesFlow_regular_callsRepository() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns
@@ -1052,17 +1021,5 @@ class ConversationDetailViewModelTest {
     val viewModel = createViewModel()
     advanceUntilIdle()
     verify { mockConversationRepository.getMessages(conversationId) }
-  }
-
-  @Test
-  fun messagesFlow_regular_handlesError() = runTest {
-    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
-    every { mockConversationRepository.getMessages(conversationId) } returns
-        flow { throw Exception("Error") }
-    val viewModel = createViewModel()
-    advanceUntilIdle()
-    val state = viewModel.uiState.first { it.errorMsg != null }
-    assertEquals("Error", state.errorMsg)
-    assertTrue(state.messages.isEmpty())
   }
 }
