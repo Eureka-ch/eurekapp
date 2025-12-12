@@ -39,7 +39,7 @@ class ConversationListViewModelTest {
   private lateinit var mockConversationRepository: ConversationRepository
   private lateinit var mockUserRepository: UserRepository
   private lateinit var mockProjectRepository: ProjectRepository
-  private lateinit var mockSelfNotesRepository: SelfNotesRepository
+  private lateinit var mockSelfNotesRepository: UnifiedSelfNotesRepository
   private lateinit var mockConnectivityObserver: ConnectivityObserver
 
   private val currentUserId = "currentUser123"
@@ -50,11 +50,11 @@ class ConversationListViewModelTest {
     mockConversationRepository = mockk()
     mockUserRepository = mockk()
     mockProjectRepository = mockk()
-    mockSelfNotesRepository = mockk()
+    mockSelfNotesRepository = mockk<UnifiedSelfNotesRepository>(relaxed = true)
     mockConnectivityObserver = mockk()
     every { mockConnectivityObserver.isConnected } returns flowOf(true)
     // Default mock for self notes repository - returns empty list
-    every { mockSelfNotesRepository.getNotes(any()) } returns flowOf(emptyList())
+    every { mockSelfNotesRepository.getNotes(any<Int>()) } returns flowOf(emptyList())
     // Default mock for current user
     every { mockUserRepository.getUserById(currentUserId) } returns
         flowOf(
