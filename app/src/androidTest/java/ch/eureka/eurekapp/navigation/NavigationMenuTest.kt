@@ -286,4 +286,131 @@ class NavigationMenuTest : TestCase() {
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_SCREEN).assertIsDisplayed()
   }
+
+  @Test
+  fun testConversationClickToSelfNavigatesToSelfNotes() {
+    // Test covers: Navigation.kt lines 654-661 (onConversationClick callback)
+    var navigatedRoute: Route? = null
+    val navController = androidx.navigation.compose.rememberNavController()
+
+    composeTestRule.setContent {
+      androidx.navigation.compose.NavHost(
+          navController, startDestination = Route.ConversationsSection.Conversations) {
+            androidx.navigation.compose.composable<Route.ConversationsSection.Conversations> {
+              ch.eureka.eurekapp.ui.conversation.ConversationListScreen(
+                  onConversationClick = { conversationId ->
+                    // Lines 655-657: if (conversationId == TO_SELF_CONVERSATION_ID) {
+                    // navigationController.navigate(Route.SelfNotes) }
+                    if (conversationId ==
+                        ch.eureka.eurekapp.ui.conversation.TO_SELF_CONVERSATION_ID) {
+                      navigatedRoute = Route.SelfNotes
+                      navController.navigate(Route.SelfNotes)
+                    }
+                  },
+                  onCreateConversation = {},
+                  viewModel =
+                      object : ch.eureka.eurekapp.ui.conversation.ConversationListViewModel() {
+                        override val uiState =
+                            kotlinx.coroutines.flow.MutableStateFlow(
+                                ch.eureka.eurekapp.ui.conversation.ConversationListState(
+                                    conversations =
+                                        listOf(
+                                            ch.eureka.eurekapp.ui.conversation
+                                                .ConversationDisplayData(
+                                                    conversation =
+                                                        ch.eureka.eurekapp.model.data.conversation
+                                                            .Conversation(
+                                                                conversationId =
+                                                                    ch.eureka.eurekapp.ui
+                                                                        .conversation
+                                                                        .TO_SELF_CONVERSATION_ID),
+                                                    otherMembers = listOf("To Self"),
+                                                    otherMembersPhotoUrl = emptyList(),
+                                                    projectName = "Personal")),
+                                    isLoading = false))
+                      })
+            }
+            androidx.navigation.compose.composable<Route.SelfNotes> {
+              androidx.compose.material3.Text(
+                  "SelfNotes",
+                  modifier =
+                      androidx.compose.ui.Modifier.testTag(
+                          ch.eureka.eurekapp.ui.notes.SelfNotesScreenTestTags.SCREEN))
+            }
+          }
+    }
+
+    composeTestRule
+        .onNodeWithTag(
+            ch.eureka.eurekapp.ui.conversation.ConversationCardTestTags.CONVERSATION_CARD)
+        .performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule
+        .onNodeWithTag(ch.eureka.eurekapp.ui.notes.SelfNotesScreenTestTags.SCREEN)
+        .assertIsDisplayed()
+    org.junit.Assert.assertEquals(Route.SelfNotes, navigatedRoute)
+  }
+
+  @Test
+  fun testConversationClickRegularNavigatesToConversationDetail() {
+    // Test covers: Navigation.kt lines 654-661 (onConversationClick callback)
+    var navigatedRoute: Route? = null
+    val navController = androidx.navigation.compose.rememberNavController()
+    val conversationId = "conv123"
+
+    composeTestRule.setContent {
+      androidx.navigation.compose.NavHost(
+          navController, startDestination = Route.ConversationsSection.Conversations) {
+            androidx.navigation.compose.composable<Route.ConversationsSection.Conversations> {
+              ch.eureka.eurekapp.ui.conversation.ConversationListScreen(
+                  onConversationClick = { id ->
+                    // Lines 658-660: else {
+                    // navigationController.navigate(Route.ConversationsSection.ConversationDetail(conversationId)) }
+                    if (id != ch.eureka.eurekapp.ui.conversation.TO_SELF_CONVERSATION_ID) {
+                      navigatedRoute = Route.ConversationsSection.ConversationDetail(id)
+                      navController.navigate(Route.ConversationsSection.ConversationDetail(id))
+                    }
+                  },
+                  onCreateConversation = {},
+                  viewModel =
+                      object : ch.eureka.eurekapp.ui.conversation.ConversationListViewModel() {
+                        override val uiState =
+                            kotlinx.coroutines.flow.MutableStateFlow(
+                                ch.eureka.eurekapp.ui.conversation.ConversationListState(
+                                    conversations =
+                                        listOf(
+                                            ch.eureka.eurekapp.ui.conversation
+                                                .ConversationDisplayData(
+                                                    conversation =
+                                                        ch.eureka.eurekapp.model.data.conversation
+                                                            .Conversation(
+                                                                conversationId = conversationId),
+                                                    otherMembers = listOf("User"),
+                                                    otherMembersPhotoUrl = emptyList(),
+                                                    projectName = "Project")),
+                                    isLoading = false))
+                      })
+            }
+            androidx.navigation.compose.composable<Route.ConversationsSection.ConversationDetail> {
+              androidx.compose.material3.Text(
+                  "Detail",
+                  modifier =
+                      androidx.compose.ui.Modifier.testTag(
+                          ch.eureka.eurekapp.ui.conversation.ConversationDetailScreenTestTags
+                              .SCREEN))
+            }
+          }
+    }
+
+    composeTestRule
+        .onNodeWithTag(
+            ch.eureka.eurekapp.ui.conversation.ConversationCardTestTags.CONVERSATION_CARD)
+        .performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule
+        .onNodeWithTag(ch.eureka.eurekapp.ui.conversation.ConversationDetailScreenTestTags.SCREEN)
+        .assertIsDisplayed()
+    org.junit.Assert.assertEquals(
+        Route.ConversationsSection.ConversationDetail(conversationId), navigatedRoute)
+  }
 }

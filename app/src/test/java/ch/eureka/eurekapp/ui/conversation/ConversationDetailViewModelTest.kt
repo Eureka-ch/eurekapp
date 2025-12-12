@@ -4,6 +4,7 @@ import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
+import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.conversation.Conversation
 import ch.eureka.eurekapp.model.data.conversation.ConversationMessage
 import ch.eureka.eurekapp.model.data.conversation.ConversationRepository
@@ -13,6 +14,7 @@ import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
+import com.google.firebase.Timestamp
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -23,6 +25,7 @@ import junit.framework.Assert.assertNotNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -945,5 +948,121 @@ class ConversationDetailViewModelTest {
     val state = viewModel.uiState.first()
 
     assertEquals(emptyList<String>(), state.otherMemberNames)
+  }
+
+  // --- Tests for conversationFlow (lines 139-153) ---
+
+  @Test
+  fun conversationFlow_toSelf_createsFakeConversation() = runTest {
+    every { mockSelfNotesRepository.getNotes(100) } returns flowOf(emptyList())
+    val viewModel =
+        ConversationDetailViewModel(
+            conversationId = TO_SELF_CONVERSATION_ID,
+            conversationRepository = mockConversationRepository,
+            userRepository = mockUserRepository,
+            projectRepository = mockProjectRepository,
+            fileStorageRepository = mockFileStorageRepository,
+            selfNotesRepository = mockSelfNotesRepository,
+            getCurrentUserId = { currentUserId },
+            connectivityObserver = mockConnectivityObserver)
+    advanceUntilIdle()
+    val state = viewModel.uiState.first { !it.isLoading }
+    assertEquals(TO_SELF_CONVERSATION_ID, state.conversation?.conversationId)
+    assertEquals("", state.conversation?.projectId)
+    assertEquals(listOf(currentUserId), state.conversation?.memberIds)
+    assertEquals(currentUserId, state.conversation?.createdBy)
+  }
+
+  @Test
+  fun conversationFlow_regular_callsRepository() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns
+        flowOf(Conversation(conversationId = conversationId))
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+    verify { mockConversationRepository.getConversationById(conversationId) }
+  }
+
+  @Test
+  fun conversationFlow_regular_handlesError() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns
+        flow { throw Exception("Error") }
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+    val state = viewModel.uiState.first { it.errorMsg != null }
+    assertEquals("Error", state.errorMsg)
+  }
+
+  // --- Tests for messagesFlow (lines 155-182) ---
+
+  @Test
+  fun messagesFlow_toSelf_convertsNotesToMessages() = runTest {
+    val note =
+        Message(
+            messageID = "note1",
+            text = "Test",
+            senderId = currentUserId,
+            createdAt = Timestamp.now())
+    every { mockSelfNotesRepository.getNotes(100) } returns flowOf(listOf(note))
+    val viewModel =
+        ConversationDetailViewModel(
+            conversationId = TO_SELF_CONVERSATION_ID,
+            conversationRepository = mockConversationRepository,
+            userRepository = mockUserRepository,
+            projectRepository = mockProjectRepository,
+            fileStorageRepository = mockFileStorageRepository,
+            selfNotesRepository = mockSelfNotesRepository,
+            getCurrentUserId = { currentUserId },
+            connectivityObserver = mockConnectivityObserver)
+    advanceUntilIdle()
+    val state = viewModel.uiState.first { it.messages.isNotEmpty() }
+    assertEquals("note1", state.messages[0].messageId)
+    assertEquals("Test", state.messages[0].text)
+    assertEquals(false, state.messages[0].isFile)
+    assertEquals("", state.messages[0].fileUrl)
+    assertNull(state.messages[0].editedAt)
+    assertEquals(false, state.messages[0].isDeleted)
+  }
+
+  @Test
+  fun messagesFlow_toSelf_handlesError() = runTest {
+    every { mockSelfNotesRepository.getNotes(100) } returns flow { throw Exception("Error") }
+    val viewModel =
+        ConversationDetailViewModel(
+            conversationId = TO_SELF_CONVERSATION_ID,
+            conversationRepository = mockConversationRepository,
+            userRepository = mockUserRepository,
+            projectRepository = mockProjectRepository,
+            fileStorageRepository = mockFileStorageRepository,
+            selfNotesRepository = mockSelfNotesRepository,
+            getCurrentUserId = { currentUserId },
+            connectivityObserver = mockConnectivityObserver)
+    advanceUntilIdle()
+    val state = viewModel.uiState.first { it.errorMsg != null }
+    assertEquals("Error", state.errorMsg)
+    assertTrue(state.messages.isEmpty())
+  }
+
+  @Test
+  fun messagesFlow_regular_callsRepository() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns
+        flowOf(listOf(ConversationMessage(messageId = "msg1", text = "Hello")))
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+    verify { mockConversationRepository.getMessages(conversationId) }
+  }
+
+  @Test
+  fun messagesFlow_regular_handlesError() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns
+        flow { throw Exception("Error") }
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+    val state = viewModel.uiState.first { it.errorMsg != null }
+    assertEquals("Error", state.errorMsg)
+    assertTrue(state.messages.isEmpty())
   }
 }
