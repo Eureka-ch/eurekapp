@@ -322,7 +322,9 @@ fun NavigationMenu(
                 NotificationPreferencesScreen(
                     onFinishedSettingNotifications = { navigationController.popBackStack() })
               }
-              composable<Route.SelfNotes> { SelfNotesScreen() }
+              composable<Route.SelfNotes> {
+                SelfNotesScreen(onNavigateBack = { navigationController.popBackStack() })
+              }
               composable<Route.ActivityFeed> {
                 ActivityFeedScreen(
                     onActivityClick = { activityId, _ ->

@@ -139,60 +139,74 @@ open class ConversationListViewModel(
   fun loadConversations() {
     viewModelScope.launch {
       val currentUserId = getCurrentUserId() ?: ""
-      val currentUserFlow =
-          if (currentUserId.isNotEmpty()) {
-            userRepository.getUserById(currentUserId)
-          } else {
-            flowOf(null)
-          }
+      
+      // Only add "to self" conversation if user is authenticated
+      if (currentUserId.isNotEmpty()) {
+        val currentUserFlow = userRepository.getUserById(currentUserId)
 
-      combine(
-              conversationRepository.getConversationsForCurrentUser(),
-              selfNotesRepository.getNotes(limit = 1),
-              currentUserFlow) { conversations, selfNotes, currentUser ->
-                val displayDataList =
-                    conversations.map { conversation ->
-                      resolveConversationDisplayData(conversation)
-                    }
+        combine(
+                conversationRepository.getConversationsForCurrentUser(),
+                selfNotesRepository.getNotes(limit = 1),
+                currentUserFlow) { conversations, selfNotes, currentUser ->
+                  val displayDataList =
+                      conversations.map { conversation ->
+                        resolveConversationDisplayData(conversation)
+                      }
 
-                // Create "to self" conversation display data (always first, pinned)
-                // Use the current user's own photo for the profile picture
-                val lastSelfNote = selfNotes.firstOrNull()
-                val toSelfConversation =
-                    Conversation(
-                        conversationId = TO_SELF_CONVERSATION_ID,
-                        projectId = "",
-                        memberIds = listOf(currentUserId),
-                        createdBy = currentUserId,
-                        lastMessageAt = lastSelfNote?.createdAt,
-                        lastMessagePreview = lastSelfNote?.text?.take(50),
-                        lastMessageSenderId = currentUserId)
+                  // Create "to self" conversation display data (always first, pinned)
+                  // Use the current user's own photo for the profile picture
+                  val lastSelfNote = selfNotes.firstOrNull()
+                  val toSelfConversation =
+                      Conversation(
+                          conversationId = TO_SELF_CONVERSATION_ID,
+                          projectId = "",
+                          memberIds = listOf(currentUserId),
+                          createdBy = currentUserId,
+                          lastMessageAt = lastSelfNote?.createdAt,
+                          lastMessagePreview = lastSelfNote?.text?.take(50),
+                          lastMessageSenderId = currentUserId)
 
-                val toSelfDisplayData =
-                    ConversationDisplayData(
-                        conversation = toSelfConversation,
-                        otherMembers = listOf("To Self"),
-                        otherMembersPhotoUrl =
-                            listOf(currentUser?.photoUrl ?: ""), // User's own photo
-                        projectName = "Personal",
-                        lastMessagePreview = lastSelfNote?.text?.take(50),
-                        lastMessageTime =
-                            lastSelfNote?.createdAt?.let { timestamp ->
-                              ch.eureka.eurekapp.utils.Formatters.formatRelativeTime(
-                                  timestamp.toDate())
-                            },
-                        hasUnread = false)
+                  val toSelfDisplayData =
+                      ConversationDisplayData(
+                          conversation = toSelfConversation,
+                          otherMembers = listOf("To Self"),
+                          otherMembersPhotoUrl =
+                              listOf(currentUser?.photoUrl ?: ""), // User's own photo
+                          projectName = "Personal",
+                          lastMessagePreview = lastSelfNote?.text?.take(50),
+                          lastMessageTime =
+                              lastSelfNote?.createdAt?.let { timestamp ->
+                                ch.eureka.eurekapp.utils.Formatters.formatRelativeTime(
+                                    timestamp.toDate())
+                              },
+                          hasUnread = false)
 
-                // Always put "to self" first, then other conversations
-                listOf(toSelfDisplayData) + displayDataList
-              }
-          .onStart { _conversationsState.value = ConversationsDataState.Loading }
-          .catch { e ->
-            _conversationsState.value = ConversationsDataState.Error(e.message ?: "Unknown error")
-          }
-          .collect { displayDataList ->
-            _conversationsState.value = ConversationsDataState.Success(displayDataList)
-          }
+                  // Always put "to self" first, then other conversations
+                  listOf(toSelfDisplayData) + displayDataList
+                }
+            .onStart { _conversationsState.value = ConversationsDataState.Loading }
+            .catch { e ->
+              _conversationsState.value =
+                  ConversationsDataState.Error(e.message ?: "Unknown error")
+            }
+            .collect { displayDataList ->
+              _conversationsState.value = ConversationsDataState.Success(displayDataList)
+            }
+      } else {
+        // User not authenticated, just load regular conversations
+        conversationRepository
+            .getConversationsForCurrentUser()
+            .onStart { _conversationsState.value = ConversationsDataState.Loading }
+            .catch { e ->
+              _conversationsState.value =
+                  ConversationsDataState.Error(e.message ?: "Unknown error")
+            }
+            .collect { conversations ->
+              val displayDataList =
+                  conversations.map { conversation -> resolveConversationDisplayData(conversation) }
+              _conversationsState.value = ConversationsDataState.Success(displayDataList)
+            }
+      }
     }
   }
 
