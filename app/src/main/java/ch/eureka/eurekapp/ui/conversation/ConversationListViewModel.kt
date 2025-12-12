@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -139,7 +138,7 @@ open class ConversationListViewModel(
   fun loadConversations() {
     viewModelScope.launch {
       val currentUserId = getCurrentUserId() ?: ""
-      
+
       // Only add "to self" conversation if user is authenticated
       if (currentUserId.isNotEmpty()) {
         val currentUserFlow = userRepository.getUserById(currentUserId)
@@ -186,8 +185,7 @@ open class ConversationListViewModel(
                 }
             .onStart { _conversationsState.value = ConversationsDataState.Loading }
             .catch { e ->
-              _conversationsState.value =
-                  ConversationsDataState.Error(e.message ?: "Unknown error")
+              _conversationsState.value = ConversationsDataState.Error(e.message ?: "Unknown error")
             }
             .collect { displayDataList ->
               _conversationsState.value = ConversationsDataState.Success(displayDataList)
@@ -198,8 +196,7 @@ open class ConversationListViewModel(
             .getConversationsForCurrentUser()
             .onStart { _conversationsState.value = ConversationsDataState.Loading }
             .catch { e ->
-              _conversationsState.value =
-                  ConversationsDataState.Error(e.message ?: "Unknown error")
+              _conversationsState.value = ConversationsDataState.Error(e.message ?: "Unknown error")
             }
             .collect { conversations ->
               val displayDataList =

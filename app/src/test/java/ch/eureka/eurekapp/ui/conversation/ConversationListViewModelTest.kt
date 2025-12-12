@@ -1,7 +1,6 @@
 package ch.eureka.eurekapp.ui.conversation
 
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
-import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.conversation.Conversation
 import ch.eureka.eurekapp.model.data.conversation.ConversationRepository
 import ch.eureka.eurekapp.model.data.notes.UnifiedSelfNotesRepository
@@ -58,7 +57,8 @@ class ConversationListViewModelTest {
     every { mockSelfNotesRepository.getNotes(any()) } returns flowOf(emptyList())
     // Default mock for current user
     every { mockUserRepository.getUserById(currentUserId) } returns
-        flowOf(User(uid = currentUserId, displayName = "Current User", photoUrl = "http://photo.url"))
+        flowOf(
+            User(uid = currentUserId, displayName = "Current User", photoUrl = "http://photo.url"))
   }
 
   @After
@@ -175,7 +175,9 @@ class ConversationListViewModelTest {
     assertFalse(viewModel.uiState.value.isConnected)
     // Should still have "to self" conversation even when offline
     assertTrue(viewModel.uiState.value.conversations.isNotEmpty())
-    assertEquals(TO_SELF_CONVERSATION_ID, viewModel.uiState.value.conversations[0].conversation.conversationId)
+    assertEquals(
+        TO_SELF_CONVERSATION_ID,
+        viewModel.uiState.value.conversations[0].conversation.conversationId)
   }
 
   /**
