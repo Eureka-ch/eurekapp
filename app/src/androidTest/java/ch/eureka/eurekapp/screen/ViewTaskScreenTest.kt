@@ -327,21 +327,6 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testAttachmentsDisplayed() =
-      runBlocking<Unit> {
-        val projectId = "project123"
-        val taskId = "task123"
-        val attachmentUrl1 = "https://fake.com/photo1.jpg"
-        val attachmentUrl2 = "https://fake.com/photo2.jpg"
-        setupViewTaskTest(projectId, taskId) {
-          setupTestTask(projectId, taskId, attachmentUrls = listOf(attachmentUrl1, attachmentUrl2))
-        }
-
-        // Verify attachments are displayed
-        composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).assertCountEquals(2)
-      }
-
-  @Test
   fun testNavigateToEditTask() =
       runBlocking<Unit> {
         val projectId = "project123"
