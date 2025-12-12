@@ -133,54 +133,59 @@ open class ConversationListViewModel(
    * Load all conversations for the current user.
    *
    * Fetches conversations from Firestore and resolves display data (member names, project names)
-   * for each conversation. Results are emitted to [uiState] as they become available.
-   * Always includes a "to self" conversation as the first item with the user's own photo.
+   * for each conversation. Results are emitted to [uiState] as they become available. Always
+   * includes a "to self" conversation as the first item with the user's own photo.
    */
   fun loadConversations() {
     viewModelScope.launch {
       val currentUserId = getCurrentUserId() ?: ""
-      val currentUserFlow = if (currentUserId.isNotEmpty()) {
-        userRepository.getUserById(currentUserId)
-      } else {
-        flowOf(null)
-      }
-      
+      val currentUserFlow =
+          if (currentUserId.isNotEmpty()) {
+            userRepository.getUserById(currentUserId)
+          } else {
+            flowOf(null)
+          }
+
       combine(
-          conversationRepository.getConversationsForCurrentUser(),
-          selfNotesRepository.getNotes(limit = 1),
-          currentUserFlow
-      ) { conversations, selfNotes, currentUser ->
-        val displayDataList =
-            conversations.map { conversation -> resolveConversationDisplayData(conversation) }
-        
-        // Create "to self" conversation display data (always first, pinned)
-        // Use the current user's own photo for the profile picture
-        val lastSelfNote = selfNotes.firstOrNull()
-        val toSelfConversation = Conversation(
-            conversationId = TO_SELF_CONVERSATION_ID,
-            projectId = "",
-            memberIds = listOf(currentUserId),
-            createdBy = currentUserId,
-            lastMessageAt = lastSelfNote?.createdAt,
-            lastMessagePreview = lastSelfNote?.text?.take(50),
-            lastMessageSenderId = currentUserId
-        )
-        
-        val toSelfDisplayData = ConversationDisplayData(
-            conversation = toSelfConversation,
-            otherMembers = listOf("To Self"),
-            otherMembersPhotoUrl = listOf(currentUser?.photoUrl ?: ""), // User's own photo
-            projectName = "Personal",
-            lastMessagePreview = lastSelfNote?.text?.take(50),
-            lastMessageTime = lastSelfNote?.createdAt?.let { timestamp ->
-              ch.eureka.eurekapp.utils.Formatters.formatRelativeTime(timestamp.toDate())
-            },
-            hasUnread = false
-        )
-        
-        // Always put "to self" first, then other conversations
-        listOf(toSelfDisplayData) + displayDataList
-      }
+              conversationRepository.getConversationsForCurrentUser(),
+              selfNotesRepository.getNotes(limit = 1),
+              currentUserFlow) { conversations, selfNotes, currentUser ->
+                val displayDataList =
+                    conversations.map { conversation ->
+                      resolveConversationDisplayData(conversation)
+                    }
+
+                // Create "to self" conversation display data (always first, pinned)
+                // Use the current user's own photo for the profile picture
+                val lastSelfNote = selfNotes.firstOrNull()
+                val toSelfConversation =
+                    Conversation(
+                        conversationId = TO_SELF_CONVERSATION_ID,
+                        projectId = "",
+                        memberIds = listOf(currentUserId),
+                        createdBy = currentUserId,
+                        lastMessageAt = lastSelfNote?.createdAt,
+                        lastMessagePreview = lastSelfNote?.text?.take(50),
+                        lastMessageSenderId = currentUserId)
+
+                val toSelfDisplayData =
+                    ConversationDisplayData(
+                        conversation = toSelfConversation,
+                        otherMembers = listOf("To Self"),
+                        otherMembersPhotoUrl =
+                            listOf(currentUser?.photoUrl ?: ""), // User's own photo
+                        projectName = "Personal",
+                        lastMessagePreview = lastSelfNote?.text?.take(50),
+                        lastMessageTime =
+                            lastSelfNote?.createdAt?.let { timestamp ->
+                              ch.eureka.eurekapp.utils.Formatters.formatRelativeTime(
+                                  timestamp.toDate())
+                            },
+                        hasUnread = false)
+
+                // Always put "to self" first, then other conversations
+                listOf(toSelfDisplayData) + displayDataList
+              }
           .onStart { _conversationsState.value = ConversationsDataState.Loading }
           .catch { e ->
             _conversationsState.value = ConversationsDataState.Error(e.message ?: "Unknown error")

@@ -23,7 +23,6 @@ import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
-import ch.eureka.eurekapp.ui.conversation.TO_SELF_CONVERSATION_ID
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -156,24 +155,27 @@ open class ConversationDetailViewModel(
   private val messagesFlow: Flow<List<ConversationMessage>> =
       if (isToSelfConversation) {
         // Convert self notes (Message) to ConversationMessage
-        selfNotesRepository.getNotes(limit = 100).map { notes ->
-          notes.map { note ->
-            ConversationMessage(
-                messageId = note.messageID,
-                senderId = note.senderId,
-                text = note.text,
-                createdAt = note.createdAt,
-                isFile = false,
-                fileUrl = "",
-                editedAt = null,
-                isDeleted = false)
-          }
-        }.catch { e -> 
-          _errorMsg.value = e.message
-          emit(emptyList())
-        }
+        selfNotesRepository
+            .getNotes(limit = 100)
+            .map { notes ->
+              notes.map { note ->
+                ConversationMessage(
+                    messageId = note.messageID,
+                    senderId = note.senderId,
+                    text = note.text,
+                    createdAt = note.createdAt,
+                    isFile = false,
+                    fileUrl = "",
+                    editedAt = null,
+                    isDeleted = false)
+              }
+            }
+            .catch { e ->
+              _errorMsg.value = e.message
+              emit(emptyList())
+            }
       } else {
-        conversationRepository.getMessages(conversationId).catch { e -> 
+        conversationRepository.getMessages(conversationId).catch { e ->
           _errorMsg.value = e.message
           emit(emptyList())
         }
@@ -291,20 +293,23 @@ open class ConversationDetailViewModel(
     viewModelScope.launch {
       if (isToSelfConversation) {
         val currentUserId = getCurrentUserId() ?: ""
-        val note = Message(
-            messageID = System.currentTimeMillis().toString(),
-            text = text,
-            senderId = currentUserId,
-            createdAt = com.google.firebase.Timestamp.now())
-        selfNotesRepository.createNote(note).fold(
-            onSuccess = {
-              _currentMessage.value = ""
-              _isSending.value = false
-            },
-            onFailure = { error ->
-              _isSending.value = false
-              _errorMsg.value = "Error: ${error.message}"
-            })
+        val note =
+            Message(
+                messageID = System.currentTimeMillis().toString(),
+                text = text,
+                senderId = currentUserId,
+                createdAt = com.google.firebase.Timestamp.now())
+        selfNotesRepository
+            .createNote(note)
+            .fold(
+                onSuccess = {
+                  _currentMessage.value = ""
+                  _isSending.value = false
+                },
+                onFailure = { error ->
+                  _isSending.value = false
+                  _errorMsg.value = "Error: ${error.message}"
+                })
       } else {
         conversationRepository
             .sendMessage(conversationId, text)
@@ -326,7 +331,7 @@ open class ConversationDetailViewModel(
       _errorMsg.value = "File attachments are not supported in 'To Self' notes"
       return
     }
-    
+
     val text = _currentMessage.value.trim()
     val messageText = text.ifEmpty { "File attached" }
 
@@ -514,17 +519,19 @@ open class ConversationDetailViewModel(
 
     viewModelScope.launch {
       if (isToSelfConversation) {
-        selfNotesRepository.updateNote(messageId, newText).fold(
-            onSuccess = {
-              _currentMessage.value = ""
-              _editingMessageId.value = null
-              _isSending.value = false
-              _snackbarMessage.value = "Note updated"
-            },
-            onFailure = { error ->
-              _isSending.value = false
-              _errorMsg.value = "Error: ${error.message}"
-            })
+        selfNotesRepository
+            .updateNote(messageId, newText)
+            .fold(
+                onSuccess = {
+                  _currentMessage.value = ""
+                  _editingMessageId.value = null
+                  _isSending.value = false
+                  _snackbarMessage.value = "Note updated"
+                },
+                onFailure = { error ->
+                  _isSending.value = false
+                  _errorMsg.value = "Error: ${error.message}"
+                })
       } else {
         conversationRepository
             .updateMessage(conversationId, messageId, newText)
@@ -561,11 +568,11 @@ open class ConversationDetailViewModel(
     viewModelScope.launch {
       if (isToSelfConversation) {
         // For "to self", delete note (no file attachments supported)
-        selfNotesRepository.deleteNote(messageId).fold(
-            onSuccess = {
-              _snackbarMessage.value = "Note deleted"
-            },
-            onFailure = { error -> _errorMsg.value = "Error: ${error.message}" })
+        selfNotesRepository
+            .deleteNote(messageId)
+            .fold(
+                onSuccess = { _snackbarMessage.value = "Note deleted" },
+                onFailure = { error -> _errorMsg.value = "Error: ${error.message}" })
       } else {
         // Delete the file from storage if the message has an attachment
         var fileDeleteFailed = false
