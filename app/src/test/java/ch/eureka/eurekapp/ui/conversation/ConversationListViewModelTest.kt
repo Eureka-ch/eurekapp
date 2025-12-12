@@ -284,6 +284,7 @@ class ConversationListViewModelTest {
             conversationRepository = mockConversationRepository,
             userRepository = mockUserRepository,
             projectRepository = mockProjectRepository,
+            selfNotesRepository = mockSelfNotesRepository,
             getCurrentUserId = { currentUserId },
             connectivityObserver = mockConnectivityObserver)
 
