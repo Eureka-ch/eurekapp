@@ -649,8 +649,13 @@ fun NavigationMenu(
               composable<Route.ConversationsSection.Conversations> {
                 ConversationListScreen(
                     onConversationClick = { conversationId ->
-                      navigationController.navigate(
-                          Route.ConversationsSection.ConversationDetail(conversationId))
+                      // If clicking on "To Self" conversation, navigate to SelfNotesScreen
+                      if (conversationId == ch.eureka.eurekapp.ui.conversation.TO_SELF_CONVERSATION_ID) {
+                        navigationController.navigate(Route.SelfNotes)
+                      } else {
+                        navigationController.navigate(
+                            Route.ConversationsSection.ConversationDetail(conversationId))
+                      }
                     },
                     onCreateConversation = {
                       navigationController.navigate(
