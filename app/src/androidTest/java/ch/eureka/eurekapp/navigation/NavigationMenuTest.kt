@@ -289,24 +289,26 @@ class NavigationMenuTest : TestCase() {
   }
 
   @Test
-  fun testNavigationConversationClickToSelf() = runBlocking {
+  fun testNavigationConversationClickToSelf() {
     // Test covers: Navigation.kt lines 655-657
-    val testUserId =
-        FirebaseEmulator.auth.currentUser?.uid ?: throw IllegalStateException("No user")
-    val selfNotesRef =
-        FirebaseEmulator.firestore
-            .collection("users")
-            .document(testUserId)
-            .collection("selfNotes")
-            .document("note1")
-    selfNotesRef
-        .set(
-            ch.eureka.eurekapp.model.data.chat.Message(
-                messageID = "note1",
-                text = "Test",
-                senderId = testUserId,
-                createdAt = Timestamp.now()))
-        .await()
+    runBlocking {
+      val testUserId =
+          FirebaseEmulator.auth.currentUser?.uid ?: throw IllegalStateException("No user")
+      val selfNotesRef =
+          FirebaseEmulator.firestore
+              .collection("users")
+              .document(testUserId)
+              .collection("selfNotes")
+              .document("note1")
+      selfNotesRef
+          .set(
+              ch.eureka.eurekapp.model.data.chat.Message(
+                  messageID = "note1",
+                  text = "Test",
+                  senderId = testUserId,
+                  createdAt = Timestamp.now()))
+          .await()
+    }
     composeTestRule.setContent { NavigationMenu() }
     composeTestRule.waitForIdle()
     composeTestRule
@@ -335,37 +337,39 @@ class NavigationMenuTest : TestCase() {
   }
 
   @Test
-  fun testNavigationConversationClickRegular() = runBlocking {
+  fun testNavigationConversationClickRegular() {
     // Test covers: Navigation.kt lines 658-660
-    val testUserId =
-        FirebaseEmulator.auth.currentUser?.uid ?: throw IllegalStateException("No user")
-    val projectId = "test-proj-nav"
-    val conversationId = "test-conv-nav"
-    val projectRef = FirebaseEmulator.firestore.collection("projects").document(projectId)
-    projectRef
-        .set(
-            Project(
-                projectId = projectId,
-                name = "Test",
-                description = "Test",
-                status = ProjectStatus.OPEN,
-                createdBy = testUserId,
-                memberIds = listOf(testUserId)))
-        .await()
-    projectRef
-        .collection("members")
-        .document(testUserId)
-        .set(Member(userId = testUserId, role = ProjectRole.OWNER))
-        .await()
-    val convRef = FirebaseEmulator.firestore.collection("conversations").document(conversationId)
-    convRef
-        .set(
-            ch.eureka.eurekapp.model.data.conversation.Conversation(
-                conversationId = conversationId,
-                projectId = projectId,
-                memberIds = listOf(testUserId),
-                createdBy = testUserId))
-        .await()
+    runBlocking {
+      val testUserId =
+          FirebaseEmulator.auth.currentUser?.uid ?: throw IllegalStateException("No user")
+      val projectId = "test-proj-nav"
+      val conversationId = "test-conv-nav"
+      val projectRef = FirebaseEmulator.firestore.collection("projects").document(projectId)
+      projectRef
+          .set(
+              Project(
+                  projectId = projectId,
+                  name = "Test",
+                  description = "Test",
+                  status = ProjectStatus.OPEN,
+                  createdBy = testUserId,
+                  memberIds = listOf(testUserId)))
+          .await()
+      projectRef
+          .collection("members")
+          .document(testUserId)
+          .set(Member(userId = testUserId, role = ProjectRole.OWNER))
+          .await()
+      val convRef = FirebaseEmulator.firestore.collection("conversations").document(conversationId)
+      convRef
+          .set(
+              ch.eureka.eurekapp.model.data.conversation.Conversation(
+                  conversationId = conversationId,
+                  projectId = projectId,
+                  memberIds = listOf(testUserId),
+                  createdBy = testUserId))
+          .await()
+    }
     composeTestRule.setContent { NavigationMenu() }
     composeTestRule.waitForIdle()
     composeTestRule
