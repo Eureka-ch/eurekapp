@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import ch.eureka.eurekapp.model.data.mcp.CreateTokenResult
 import ch.eureka.eurekapp.model.data.mcp.McpToken
 import ch.eureka.eurekapp.model.data.mcp.McpTokenRepository
 import com.google.firebase.Timestamp
@@ -20,23 +21,23 @@ class McpTokenScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
+  private fun createTestToken(hash: String, name: String, userId: String = "user-1"): McpToken {
+    return McpToken(
+            userId = userId,
+            name = name,
+            createdAt = Timestamp(Date(1704067200000L)),
+            expiresAt = Timestamp(Date(1706745600000L)))
+        .apply { tokenHash = hash }
+  }
+
   private val testTokens =
       listOf(
-          McpToken(
-              tokenId = "token-123-full-id",
-              name = "Test Token",
-              createdAt = Timestamp(Date(1704067200000L)),
-              expiresAt = Timestamp(Date(1706745600000L))),
-          McpToken(
-              tokenId = "token-456-full-id",
-              name = "Another Token",
-              createdAt = Timestamp(Date(1704153600000L)),
-              expiresAt = Timestamp(Date(1706832000000L))))
+          createTestToken("hash-123", "Test Token"), createTestToken("hash-456", "Another Token"))
 
   private class FakeRepository(
       private var tokens: List<McpToken> = emptyList(),
       private var listTokensError: Exception? = null,
-      private var createTokenResult: McpToken? = null,
+      private var createTokenResult: CreateTokenResult? = null,
       private var createTokenError: Exception? = null,
       private var shouldDelayListTokens: Boolean = false
   ) : McpTokenRepository {
@@ -52,13 +53,17 @@ class McpTokenScreenTest {
       return listTokensError?.let { Result.failure(it) } ?: Result.success(tokens)
     }
 
-    override suspend fun createToken(name: String, ttlDays: Int): Result<McpToken> {
+    override suspend fun createToken(name: String, ttlDays: Int): Result<CreateTokenResult> {
       createTokenCalled = true
       return createTokenError?.let { Result.failure(it) }
-          ?: Result.success(createTokenResult ?: McpToken(tokenId = "new-token", name = name))
+          ?: Result.success(
+              createTokenResult
+                  ?: CreateTokenResult(
+                      McpToken(userId = "user-1", name = name).apply { tokenHash = "new-hash" },
+                      "mcp_raw_token_value"))
     }
 
-    override suspend fun revokeToken(tokenId: String): Result<Unit> {
+    override suspend fun revokeToken(tokenHash: String): Result<Unit> {
       revokeTokenCalled = true
       return Result.success(Unit)
     }
@@ -147,10 +152,12 @@ class McpTokenScreenTest {
 
   @Test
   fun mcpTokenScreen_createDialogConfirmCreatesToken() {
+    val newToken =
+        McpToken(userId = "user-1", name = "New Token").apply { tokenHash = "new-token-hash" }
     val repository =
         FakeRepository(
             tokens = emptyList(),
-            createTokenResult = McpToken(tokenId = "new-token", name = "New Token"))
+            createTokenResult = CreateTokenResult(newToken, "mcp_new_raw_token"))
     val viewModel = McpTokenViewModel(repository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
@@ -168,7 +175,7 @@ class McpTokenScreenTest {
   }
 
   @Test
-  fun mcpTokenScreen_tokenCardDisplaysCopyAndDeleteButtons() {
+  fun mcpTokenScreen_tokenCardDisplaysDeleteButton() {
     val repository = FakeRepository(tokens = testTokens)
     val viewModel = McpTokenViewModel(repository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
@@ -176,10 +183,7 @@ class McpTokenScreenTest {
     composeTestRule.waitForIdle()
 
     composeTestRule
-        .onNodeWithTag("${McpTokenScreenTestTags.COPY_BUTTON}_token-123-full-id")
-        .assertIsDisplayed()
-    composeTestRule
-        .onNodeWithTag("${McpTokenScreenTestTags.DELETE_BUTTON}_token-123-full-id")
+        .onNodeWithTag("${McpTokenScreenTestTags.DELETE_BUTTON}_hash-123")
         .assertIsDisplayed()
   }
 
@@ -191,9 +195,7 @@ class McpTokenScreenTest {
 
     composeTestRule.waitForIdle()
 
-    composeTestRule
-        .onNodeWithTag("${McpTokenScreenTestTags.DELETE_BUTTON}_token-123-full-id")
-        .performClick()
+    composeTestRule.onNodeWithTag("${McpTokenScreenTestTags.DELETE_BUTTON}_hash-123").performClick()
 
     composeTestRule.onNodeWithText("Delete Token").assertIsDisplayed()
     composeTestRule
@@ -218,10 +220,12 @@ class McpTokenScreenTest {
 
   @Test
   fun mcpTokenScreen_tokenCreatedDialogIsDisplayedWhenTokenCreated() {
+    val newToken =
+        McpToken(userId = "user-1", name = "New Token").apply { tokenHash = "new-secret-hash" }
     val repository =
         FakeRepository(
             tokens = emptyList(),
-            createTokenResult = McpToken(tokenId = "new-secret-token-value", name = "New Token"))
+            createTokenResult = CreateTokenResult(newToken, "mcp_secret_raw_token_value"))
     val viewModel = McpTokenViewModel(repository)
     composeTestRule.setContent { McpTokenScreen(viewModel = viewModel, onNavigateBack = {}) }
 
@@ -263,17 +267,17 @@ class McpTokenScreenTest {
     composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithText("Test Token").assertIsDisplayed()
-    composeTestRule.onNodeWithText("ID: token-123-full", substring = true).assertIsDisplayed()
   }
 
   @Test
   fun mcpTokenScreen_tokenCardDisplaysExpiredStatusWhenExpired() {
     val expiredToken =
         McpToken(
-            tokenId = "expired-token",
-            name = "Expired Token",
-            createdAt = Timestamp(Date(1704067200000L)),
-            expiresAt = Timestamp(Date(1706745600000L)))
+                userId = "user-1",
+                name = "Expired Token",
+                createdAt = Timestamp(Date(1704067200000L)),
+                expiresAt = Timestamp(Date(1706745600000L)))
+            .apply { tokenHash = "expired-hash" }
 
     val repository = FakeRepository(tokens = listOf(expiredToken))
     val viewModel = McpTokenViewModel(repository)
