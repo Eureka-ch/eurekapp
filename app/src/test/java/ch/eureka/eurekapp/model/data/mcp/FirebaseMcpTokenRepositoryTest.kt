@@ -1,18 +1,20 @@
 // Co-authored by Claude Code
 package ch.eureka.eurekapp.model.data.mcp
 
-import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.GetTokenResult
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.QuerySnapshot
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.test.StandardTestDispatcher
+import io.mockk.verify
 import kotlinx.coroutines.test.runTest
-import okhttp3.mockwebserver.MockResponse
-import okhttp3.mockwebserver.MockWebServer
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -21,338 +23,207 @@ import org.junit.Test
 
 class FirebaseMcpTokenRepositoryTest {
 
-  private lateinit var mockWebServer: MockWebServer
-  private lateinit var repository: FirebaseMcpTokenRepository
-  private lateinit var mockAuth: FirebaseAuth
+  private lateinit var firestore: FirebaseFirestore
+  private lateinit var auth: FirebaseAuth
   private lateinit var mockUser: FirebaseUser
-  private val testDispatcher = StandardTestDispatcher()
+  private lateinit var repository: FirebaseMcpTokenRepository
+  private lateinit var mockCollection: CollectionReference
+  private lateinit var mockDocumentRef: DocumentReference
 
   @Before
   fun setup() {
-    mockWebServer = MockWebServer()
-    mockWebServer.start()
-
-    mockAuth = mockk()
+    firestore = mockk(relaxed = true)
+    auth = mockk()
     mockUser = mockk()
+    mockCollection = mockk(relaxed = true)
+    mockDocumentRef = mockk(relaxed = true)
 
-    val mockTokenResult = mockk<GetTokenResult>()
-    every { mockTokenResult.token } returns "test-id-token"
+    every { auth.currentUser } returns mockUser
+    every { mockUser.uid } returns "test-user-id"
+    every { firestore.collection(any()) } returns mockCollection
+    every { firestore.document(any()) } returns mockDocumentRef
 
-    val mockTask: Task<GetTokenResult> = Tasks.forResult(mockTokenResult)
-    every { mockUser.getIdToken(any()) } returns mockTask
-    every { mockAuth.currentUser } returns mockUser
-
-    repository =
-        FirebaseMcpTokenRepository(
-            auth = mockAuth,
-            functionsBaseUrl = mockWebServer.url("/").toString().dropLast(1),
-            ioDispatcher = testDispatcher)
-  }
-
-  @After
-  fun tearDown() {
-    mockWebServer.shutdown()
+    repository = FirebaseMcpTokenRepository(firestore, auth)
   }
 
   @Test
-  fun createToken_returnsTokenOnSuccess() =
-      runTest(testDispatcher) {
-        val responseBody =
-            """
-        {
-          "success": true,
-          "data": {
-            "token": "mcp-token-123",
-            "name": "My Token",
-            "expiresAt": "2025-01-01T00:00:00Z"
-          }
-        }
-        """
-                .trimIndent()
-        mockWebServer.enqueue(MockResponse().setBody(responseBody).setResponseCode(200))
+  fun createToken_returnsTokenOnSuccess() = runTest {
+    every { mockDocumentRef.set(any()) } returns Tasks.forResult(null)
 
-        val result = repository.createToken("My Token", 30)
+    val result = repository.createToken("My Token", 30)
 
-        assertTrue(result.isSuccess)
-        val token = result.getOrNull()
-        assertNotNull(token)
-        assertEquals("mcp-token-123", token?.tokenId)
-        assertEquals("My Token", token?.name)
-      }
+    assertTrue(result.isSuccess)
+    val token = result.getOrNull()
+    assertNotNull(token)
+    assertEquals("My Token", token?.name)
+    assertTrue(token?.tokenId?.startsWith("mcp_") == true)
+    assertNotNull(token?.createdAt)
+    assertNotNull(token?.expiresAt)
+  }
 
   @Test
-  fun createToken_returnsFailureOnHttpError() =
-      runTest(testDispatcher) {
-        mockWebServer.enqueue(MockResponse().setBody("Server error").setResponseCode(500))
+  fun createToken_returnsFailureOnFirestoreError() = runTest {
+    val exception =
+        FirebaseFirestoreException("Network error", FirebaseFirestoreException.Code.UNAVAILABLE)
+    every { mockDocumentRef.set(any()) } returns Tasks.forException(exception)
 
-        val result = repository.createToken("My Token", 30)
+    val result = repository.createToken("My Token", 30)
 
-        assertTrue(result.isFailure)
-        assertTrue(result.exceptionOrNull()?.message?.contains("Failed to create token") == true)
-      }
-
-  @Test
-  fun createToken_returnsFailureOnApiError() =
-      runTest(testDispatcher) {
-        val responseBody =
-            """
-        {
-          "success": false,
-          "error": "Token limit exceeded"
-        }
-        """
-                .trimIndent()
-        mockWebServer.enqueue(MockResponse().setBody(responseBody).setResponseCode(200))
-
-        val result = repository.createToken("My Token", 30)
-
-        assertTrue(result.isFailure)
-        assertEquals("Token limit exceeded", result.exceptionOrNull()?.message)
-      }
+    assertTrue(result.isFailure)
+    assertTrue(result.exceptionOrNull()?.message?.contains("Network error") == true)
+  }
 
   @Test
-  fun revokeToken_returnsSuccess() =
-      runTest(testDispatcher) {
-        val responseBody = """{"success": true}"""
-        mockWebServer.enqueue(MockResponse().setBody(responseBody).setResponseCode(200))
+  fun createToken_throwsWhenUserNotAuthenticated() = runTest {
+    every { auth.currentUser } returns null
 
-        val result = repository.revokeToken("token-123")
+    val result = repository.createToken("Test", 30)
 
-        assertTrue(result.isSuccess)
-      }
-
-  @Test
-  fun revokeToken_returnsFailureOnHttpError() =
-      runTest(testDispatcher) {
-        mockWebServer.enqueue(MockResponse().setBody("Not found").setResponseCode(404))
-
-        val result = repository.revokeToken("token-123")
-
-        assertTrue(result.isFailure)
-        assertTrue(result.exceptionOrNull()?.message?.contains("Failed to revoke token") == true)
-      }
+    assertTrue(result.isFailure)
+    assertTrue(result.exceptionOrNull() is IllegalStateException)
+  }
 
   @Test
-  fun revokeToken_returnsFailureOnApiError() =
-      runTest(testDispatcher) {
-        val responseBody =
-            """
-        {
-          "success": false,
-          "error": "Token not found"
-        }
-        """
-                .trimIndent()
-        mockWebServer.enqueue(MockResponse().setBody(responseBody).setResponseCode(200))
+  fun revokeToken_returnsSuccess() = runTest {
+    every { mockDocumentRef.delete() } returns Tasks.forResult(null)
 
-        val result = repository.revokeToken("token-123")
+    val result = repository.revokeToken("token-123")
 
-        assertTrue(result.isFailure)
-        assertEquals("Token not found", result.exceptionOrNull()?.message)
-      }
+    assertTrue(result.isSuccess)
+    verify { mockDocumentRef.delete() }
+  }
 
   @Test
-  fun listTokens_returnsTokensOnSuccess() =
-      runTest(testDispatcher) {
-        val responseBody =
-            """
-        {
-          "success": true,
-          "data": [
-            {
-              "tokenId": "token-1",
-              "name": "Token One",
-              "createdAt": "2025-01-01T00:00:00Z",
-              "expiresAt": "2025-02-01T00:00:00Z"
-            },
-            {
-              "tokenId": "token-2",
-              "name": "Token Two",
-              "createdAt": "2025-01-02T00:00:00Z",
-              "expiresAt": "2025-02-02T00:00:00Z"
-            }
-          ]
-        }
-        """
-                .trimIndent()
-        mockWebServer.enqueue(MockResponse().setBody(responseBody).setResponseCode(200))
+  fun revokeToken_returnsFailureOnFirestoreError() = runTest {
+    val exception =
+        FirebaseFirestoreException("Not found", FirebaseFirestoreException.Code.NOT_FOUND)
+    every { mockDocumentRef.delete() } returns Tasks.forException(exception)
 
-        val result = repository.listTokens()
+    val result = repository.revokeToken("token-123")
 
-        assertTrue(result.isSuccess)
-        val tokens = result.getOrNull()
-        assertNotNull(tokens)
-        assertEquals(2, tokens?.size)
-        assertEquals("token-1", tokens?.get(0)?.tokenId)
-        assertEquals("Token One", tokens?.get(0)?.name)
-        assertEquals("token-2", tokens?.get(1)?.tokenId)
-      }
+    assertTrue(result.isFailure)
+    assertTrue(result.exceptionOrNull()?.message?.contains("Not found") == true)
+  }
 
   @Test
-  fun listTokens_returnsEmptyListWhenNoTokens() =
-      runTest(testDispatcher) {
-        val responseBody =
-            """
-        {
-          "success": true,
-          "data": []
-        }
-        """
-                .trimIndent()
-        mockWebServer.enqueue(MockResponse().setBody(responseBody).setResponseCode(200))
+  fun revokeToken_throwsWhenUserNotAuthenticated() = runTest {
+    every { auth.currentUser } returns null
 
-        val result = repository.listTokens()
+    val result = repository.revokeToken("token-123")
 
-        assertTrue(result.isSuccess)
-        assertEquals(0, result.getOrNull()?.size)
-      }
+    assertTrue(result.isFailure)
+    assertTrue(result.exceptionOrNull() is IllegalStateException)
+  }
 
   @Test
-  fun listTokens_returnsFailureOnHttpError() =
-      runTest(testDispatcher) {
-        mockWebServer.enqueue(MockResponse().setBody("Unauthorized").setResponseCode(401))
+  fun listTokens_returnsTokensOnSuccess() = runTest {
+    val token1 = McpToken(tokenId = "token-1", name = "Token One", createdAt = Timestamp(1000, 0))
+    val token2 = McpToken(tokenId = "token-2", name = "Token Two", createdAt = Timestamp(2000, 0))
 
-        val result = repository.listTokens()
+    val mockSnapshot: QuerySnapshot = mockk(relaxed = true)
+    val mockDoc1: DocumentSnapshot = mockk(relaxed = true)
+    val mockDoc2: DocumentSnapshot = mockk(relaxed = true)
 
-        assertTrue(result.isFailure)
-        assertTrue(result.exceptionOrNull()?.message?.contains("Failed to list tokens") == true)
-      }
+    every { mockDoc1.toObject(McpToken::class.java) } returns token1
+    every { mockDoc2.toObject(McpToken::class.java) } returns token2
+    every { mockSnapshot.documents } returns listOf(mockDoc1, mockDoc2)
+    every { mockCollection.get() } returns Tasks.forResult(mockSnapshot)
 
-  @Test
-  fun listTokens_returnsFailureOnApiError() =
-      runTest(testDispatcher) {
-        val responseBody =
-            """
-        {
-          "success": false,
-          "error": "Permission denied"
-        }
-        """
-                .trimIndent()
-        mockWebServer.enqueue(MockResponse().setBody(responseBody).setResponseCode(200))
+    val result = repository.listTokens()
 
-        val result = repository.listTokens()
-
-        assertTrue(result.isFailure)
-        assertEquals("Permission denied", result.exceptionOrNull()?.message)
-      }
+    assertTrue(result.isSuccess)
+    val tokens = result.getOrNull()
+    assertNotNull(tokens)
+    assertEquals(2, tokens?.size)
+    assertEquals("token-1", tokens?.get(0)?.tokenId)
+    assertEquals("Token One", tokens?.get(0)?.name)
+    assertEquals("token-2", tokens?.get(1)?.tokenId)
+  }
 
   @Test
-  fun listTokens_handlesMissingOptionalFields() =
-      runTest(testDispatcher) {
-        val responseBody =
-            """
-        {
-          "success": true,
-          "data": [
-            {
-              "tokenId": "token-1",
-              "name": ""
-            }
-          ]
-        }
-        """
-                .trimIndent()
-        mockWebServer.enqueue(MockResponse().setBody(responseBody).setResponseCode(200))
+  fun listTokens_returnsEmptyListWhenNoTokens() = runTest {
+    val mockSnapshot: QuerySnapshot = mockk(relaxed = true)
+    every { mockSnapshot.documents } returns emptyList()
+    every { mockCollection.get() } returns Tasks.forResult(mockSnapshot)
 
-        val result = repository.listTokens()
+    val result = repository.listTokens()
 
-        assertTrue(result.isSuccess)
-        val token = result.getOrNull()?.firstOrNull()
-        assertNotNull(token)
-        assertEquals("token-1", token?.tokenId)
-        assertEquals("", token?.name)
-        assertEquals(null, token?.createdAt)
-        assertEquals(null, token?.expiresAt)
-      }
+    assertTrue(result.isSuccess)
+    assertEquals(0, result.getOrNull()?.size)
+  }
 
   @Test
-  fun repository_throwsWhenUserNotAuthenticated() =
-      runTest(testDispatcher) {
-        every { mockAuth.currentUser } returns null
+  fun listTokens_returnsFailureOnFirestoreError() = runTest {
+    val exception =
+        FirebaseFirestoreException(
+            "Permission denied", FirebaseFirestoreException.Code.PERMISSION_DENIED)
+    every { mockCollection.get() } returns Tasks.forException(exception)
 
-        val result = repository.createToken("Test", 30)
+    val result = repository.listTokens()
 
-        assertTrue(result.isFailure)
-        assertTrue(result.exceptionOrNull() is SecurityException)
-      }
-
-  @Test
-  fun repository_throwsWhenIdTokenIsNull() =
-      runTest(testDispatcher) {
-        val mockTokenResult = mockk<GetTokenResult>()
-        every { mockTokenResult.token } returns null
-        val mockTask: Task<GetTokenResult> = Tasks.forResult(mockTokenResult)
-        every { mockUser.getIdToken(any()) } returns mockTask
-
-        val result = repository.createToken("Test", 30)
-
-        assertTrue(result.isFailure)
-        assertTrue(result.exceptionOrNull() is SecurityException)
-      }
+    assertTrue(result.isFailure)
+    assertTrue(result.exceptionOrNull()?.message?.contains("Permission denied") == true)
+  }
 
   @Test
-  fun createToken_sendsCorrectRequestBody() =
-      runTest(testDispatcher) {
-        val responseBody =
-            """
-        {
-          "success": true,
-          "data": {
-            "token": "mcp-token-123",
-            "name": "My Token",
-            "expiresAt": "2025-01-01T00:00:00Z"
-          }
-        }
-        """
-                .trimIndent()
-        mockWebServer.enqueue(MockResponse().setBody(responseBody).setResponseCode(200))
+  fun listTokens_throwsWhenUserNotAuthenticated() = runTest {
+    every { auth.currentUser } returns null
 
-        repository.createToken("My Token", 60)
+    val result = repository.listTokens()
 
-        val request = mockWebServer.takeRequest()
-        assertEquals("POST", request.method)
-        assertTrue(request.path?.contains("mcpCreateToken") == true)
-        assertTrue(request.body.readUtf8().contains("\"name\":\"My Token\""))
-        assertTrue(request.body.readUtf8().contains("\"ttlDays\":60") == false)
-      }
+    assertTrue(result.isFailure)
+    assertTrue(result.exceptionOrNull() is IllegalStateException)
+  }
 
   @Test
-  fun revokeToken_sendsCorrectRequestBody() =
-      runTest(testDispatcher) {
-        val responseBody = """{"success": true}"""
-        mockWebServer.enqueue(MockResponse().setBody(responseBody).setResponseCode(200))
+  fun listTokens_filtersOutNullTokens() = runTest {
+    val token1 = McpToken(tokenId = "token-1", name = "Token One")
 
-        repository.revokeToken("token-to-revoke")
+    val mockSnapshot: QuerySnapshot = mockk(relaxed = true)
+    val mockDoc1: DocumentSnapshot = mockk(relaxed = true)
+    val mockDoc2: DocumentSnapshot = mockk(relaxed = true)
 
-        val request = mockWebServer.takeRequest()
-        assertEquals("POST", request.method)
-        assertTrue(request.path?.contains("mcpRevokeToken") == true)
-        assertTrue(request.body.readUtf8().contains("\"tokenId\":\"token-to-revoke\""))
-      }
+    every { mockDoc1.toObject(McpToken::class.java) } returns token1
+    every { mockDoc2.toObject(McpToken::class.java) } returns null
+    every { mockSnapshot.documents } returns listOf(mockDoc1, mockDoc2)
+    every { mockCollection.get() } returns Tasks.forResult(mockSnapshot)
 
-  @Test
-  fun listTokens_sendsGetRequest() =
-      runTest(testDispatcher) {
-        val responseBody = """{"success": true, "data": []}"""
-        mockWebServer.enqueue(MockResponse().setBody(responseBody).setResponseCode(200))
+    val result = repository.listTokens()
 
-        repository.listTokens()
-
-        val request = mockWebServer.takeRequest()
-        assertEquals("GET", request.method)
-        assertTrue(request.path?.contains("mcpListTokens") == true)
-      }
+    assertTrue(result.isSuccess)
+    assertEquals(1, result.getOrNull()?.size)
+    assertEquals("token-1", result.getOrNull()?.get(0)?.tokenId)
+  }
 
   @Test
-  fun requests_includeAuthorizationHeader() =
-      runTest(testDispatcher) {
-        val responseBody = """{"success": true, "data": []}"""
-        mockWebServer.enqueue(MockResponse().setBody(responseBody).setResponseCode(200))
+  fun createToken_setsCorrectExpirationDate() = runTest {
+    every { mockDocumentRef.set(any()) } returns Tasks.forResult(null)
 
-        repository.listTokens()
+    val result = repository.createToken("My Token", 30)
 
-        val request = mockWebServer.takeRequest()
-        assertEquals("Bearer test-id-token", request.getHeader("Authorization"))
-      }
+    assertTrue(result.isSuccess)
+    val token = result.getOrNull()
+    assertNotNull(token?.createdAt)
+    assertNotNull(token?.expiresAt)
+    val createdMillis = token?.createdAt?.toDate()?.time ?: 0
+    val expiresMillis = token?.expiresAt?.toDate()?.time ?: 0
+    val daysDiff = (expiresMillis - createdMillis) / (24 * 60 * 60 * 1000)
+    assertEquals(30, daysDiff)
+  }
+
+  @Test
+  fun createToken_generatesSecureTokenId() = runTest {
+    every { mockDocumentRef.set(any()) } returns Tasks.forResult(null)
+
+    val result1 = repository.createToken("Token 1", 30)
+    val result2 = repository.createToken("Token 2", 30)
+
+    assertTrue(result1.isSuccess)
+    assertTrue(result2.isSuccess)
+    val tokenId1 = result1.getOrNull()?.tokenId
+    val tokenId2 = result2.getOrNull()?.tokenId
+    assertTrue(tokenId1?.startsWith("mcp_") == true)
+    assertTrue(tokenId2?.startsWith("mcp_") == true)
+    assertTrue(tokenId1 != tokenId2)
+  }
 }
