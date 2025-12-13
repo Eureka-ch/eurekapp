@@ -30,17 +30,20 @@ export async function validateMcpToken(
     );
   }
 
-  const tokenDoc = await admin
+  // Use collection group query to find token across all users' mcpTokens subcollections
+  const tokenSnapshot = await admin
     .firestore()
-    .collection(MCP_TOKENS_COLLECTION)
-    .doc(token)
+    .collectionGroup(MCP_TOKENS_COLLECTION)
+    .where('tokenId', '==', token)
+    .limit(1)
     .get();
 
-  if (!tokenDoc.exists) {
+  if (tokenSnapshot.empty) {
     throw new functions.https.HttpsError('unauthenticated', 'Token not found');
   }
 
-  const tokenData = tokenDoc.data()!;
+  const tokenDoc = tokenSnapshot.docs[0];
+  const tokenData = tokenDoc.data();
   const now = admin.firestore.Timestamp.now();
 
   if (tokenData.expiresAt && tokenData.expiresAt.toMillis() < now.toMillis()) {
@@ -50,10 +53,14 @@ export async function validateMcpToken(
     );
   }
 
+  // Extract userId from the document path: users/{userId}/mcpTokens/{tokenId}
+  const pathParts = tokenDoc.ref.path.split('/');
+  const userId = pathParts[1];
+
   await tokenDoc.ref.update({ lastUsedAt: now });
 
   return {
-    userId: tokenData.userId,
+    userId,
     tokenId: token,
   };
 }
