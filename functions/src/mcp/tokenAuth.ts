@@ -1,12 +1,17 @@
 // Co-authored by Claude Code
 import * as admin from 'firebase-admin';
+import * as crypto from 'crypto';
 import * as functions from 'firebase-functions';
 
 const MCP_TOKENS_COLLECTION = 'mcpTokens';
 
 export interface McpAuthResult {
   userId: string;
-  tokenId: string;
+  tokenHash: string;
+}
+
+function hashToken(token: string): string {
+  return crypto.createHash('sha256').update(token).digest('hex');
 }
 
 export async function validateMcpToken(
@@ -21,29 +26,28 @@ export async function validateMcpToken(
     );
   }
 
-  const token = authHeader.substring(7);
+  const rawToken = authHeader.substring(7);
 
-  if (!token || token.length < 20) {
+  if (!rawToken || !rawToken.startsWith('mcp_') || rawToken.length < 20) {
     throw new functions.https.HttpsError(
       'unauthenticated',
       'Invalid token format'
     );
   }
 
-  // Use collection group query to find token across all users' mcpTokens subcollections
-  const tokenSnapshot = await admin
+  const tokenHash = hashToken(rawToken);
+
+  const tokenDoc = await admin
     .firestore()
-    .collectionGroup(MCP_TOKENS_COLLECTION)
-    .where('tokenId', '==', token)
-    .limit(1)
+    .collection(MCP_TOKENS_COLLECTION)
+    .doc(tokenHash)
     .get();
 
-  if (tokenSnapshot.empty) {
+  if (!tokenDoc.exists) {
     throw new functions.https.HttpsError('unauthenticated', 'Token not found');
   }
 
-  const tokenDoc = tokenSnapshot.docs[0];
-  const tokenData = tokenDoc.data();
+  const tokenData = tokenDoc.data()!;
   const now = admin.firestore.Timestamp.now();
 
   if (tokenData.expiresAt && tokenData.expiresAt.toMillis() < now.toMillis()) {
@@ -53,15 +57,11 @@ export async function validateMcpToken(
     );
   }
 
-  // Extract userId from the document path: users/{userId}/mcpTokens/{tokenId}
-  const pathParts = tokenDoc.ref.path.split('/');
-  const userId = pathParts[1];
-
   await tokenDoc.ref.update({ lastUsedAt: now });
 
   return {
-    userId,
-    tokenId: token,
+    userId: tokenData.userId,
+    tokenHash: tokenHash,
   };
 }
 
