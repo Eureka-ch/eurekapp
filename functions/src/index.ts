@@ -14,11 +14,5 @@ export {
   sendMessageOnMeetingCreation,
 } from './notifications';
 
-// MCP Server functions
-export { mcpCreateToken, mcpRevokeToken, mcpListTokens } from './mcp/tokens';
-export {
-  mcpListProjects,
-  mcpGetProject,
-  mcpListProjectMembers,
-  mcpGetUser,
-} from './mcp/handlers';
+// MCP Protocol Server (called by AI clients like Claude Desktop, Cursor)
+export { mcpServer } from './mcp/server';
