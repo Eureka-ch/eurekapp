@@ -1,12 +1,17 @@
 // Co-authored by Claude Code
 import * as admin from 'firebase-admin';
+import * as crypto from 'crypto';
 import * as functions from 'firebase-functions';
 
 const MCP_TOKENS_COLLECTION = 'mcpTokens';
 
 export interface McpAuthResult {
   userId: string;
-  tokenId: string;
+  tokenHash: string;
+}
+
+function hashToken(token: string): string {
+  return crypto.createHash('sha256').update(token).digest('hex');
 }
 
 export async function validateMcpToken(
@@ -21,19 +26,21 @@ export async function validateMcpToken(
     );
   }
 
-  const token = authHeader.substring(7);
+  const rawToken = authHeader.substring(7);
 
-  if (!token || token.length < 20) {
+  if (!rawToken || !rawToken.startsWith('mcp_') || rawToken.length < 20) {
     throw new functions.https.HttpsError(
       'unauthenticated',
       'Invalid token format'
     );
   }
 
+  const tokenHash = hashToken(rawToken);
+
   const tokenDoc = await admin
     .firestore()
     .collection(MCP_TOKENS_COLLECTION)
-    .doc(token)
+    .doc(tokenHash)
     .get();
 
   if (!tokenDoc.exists) {
@@ -54,7 +61,7 @@ export async function validateMcpToken(
 
   return {
     userId: tokenData.userId,
-    tokenId: token,
+    tokenHash: tokenHash,
   };
 }
 
