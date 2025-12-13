@@ -14,7 +14,7 @@ export {
   sendMessageOnMeetingCreation,
 } from './notifications';
 
-// MCP Server functions
+// MCP token management functions
 export { mcpCreateToken, mcpRevokeToken, mcpListTokens } from './mcp/tokens';
 export {
   mcpListProjects,
@@ -22,3 +22,6 @@ export {
   mcpListProjectMembers,
   mcpGetUser,
 } from './mcp/handlers';
+
+// MCP Protocol Server
+export { mcpServer } from './mcp/server';
