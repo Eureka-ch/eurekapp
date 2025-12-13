@@ -1022,4 +1022,29 @@ class ConversationDetailViewModelTest {
     advanceUntilIdle()
     verify { mockConversationRepository.getMessages(conversationId) }
   }
+
+  // --- Test for sendMessage isToSelfConversation (lines 283-300) ---
+
+  @Test
+  fun sendMessage_toSelf_createsNote() = runTest {
+    every { mockSelfNotesRepository.getNotes(100) } returns flowOf(emptyList())
+    coEvery { mockSelfNotesRepository.createNote(any()) } returns Result.success("note123")
+    val viewModel =
+        ConversationDetailViewModel(
+            conversationId = TO_SELF_CONVERSATION_ID,
+            conversationRepository = mockConversationRepository,
+            userRepository = mockUserRepository,
+            projectRepository = mockProjectRepository,
+            fileStorageRepository = mockFileStorageRepository,
+            selfNotesRepository = mockSelfNotesRepository,
+            getCurrentUserId = { currentUserId },
+            connectivityObserver = mockConnectivityObserver)
+    advanceUntilIdle()
+    viewModel.updateMessage("Test note")
+    viewModel.sendMessage()
+    advanceUntilIdle()
+    assertEquals("", viewModel.uiState.value.currentMessage)
+    assertFalse(viewModel.uiState.value.isSending)
+    coVerify { mockSelfNotesRepository.createNote(any()) }
+  }
 }
