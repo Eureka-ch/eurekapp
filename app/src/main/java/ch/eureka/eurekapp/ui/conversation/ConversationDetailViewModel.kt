@@ -13,10 +13,12 @@ import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.StoragePaths
+import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.conversation.Conversation
 import ch.eureka.eurekapp.model.data.conversation.ConversationMessage
 import ch.eureka.eurekapp.model.data.conversation.ConversationRepository
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
+import ch.eureka.eurekapp.model.data.notes.UnifiedSelfNotesRepository
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.user.User
@@ -27,10 +29,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -94,9 +96,14 @@ open class ConversationDetailViewModel(
     private val userRepository: UserRepository = RepositoriesProvider.userRepository,
     private val projectRepository: ProjectRepository = RepositoriesProvider.projectRepository,
     private val fileStorageRepository: FileStorageRepository = RepositoriesProvider.fileRepository,
+    private val selfNotesRepository: UnifiedSelfNotesRepository =
+        RepositoriesProvider.unifiedSelfNotesRepository,
     private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver
 ) : ViewModel() {
+
+  private val isToSelfConversation: Boolean
+    get() = conversationId == TO_SELF_CONVERSATION_ID
 
   companion object {
     const val MAX_MESSAGE_LENGTH = 5000
@@ -128,13 +135,39 @@ open class ConversationDetailViewModel(
   private val _showDeleteConfirmation = MutableStateFlow(false)
   private val _pendingDeleteFileUrl = MutableStateFlow<String?>(null)
 
-  private val conversationFlow =
-      conversationRepository.getConversationById(conversationId).catch { e ->
-        _errorMsg.value = e.message
+  private val conversationFlow: Flow<Conversation?> =
+      if (isToSelfConversation) {
+        // For "to self", create a fake conversation
+        val currentUserId = getCurrentUserId() ?: ""
+        flowOf(
+            Conversation(
+                conversationId = TO_SELF_CONVERSATION_ID,
+                projectId = "",
+                memberIds = listOf(currentUserId),
+                createdBy = currentUserId))
+      } else {
+        conversationRepository.getConversationById(conversationId)
       }
 
-  private val messagesFlow =
-      conversationRepository.getMessages(conversationId).catch { e -> _errorMsg.value = e.message }
+  private val messagesFlow: Flow<List<ConversationMessage>> =
+      if (isToSelfConversation) {
+        // Convert self notes (Message) to ConversationMessage
+        selfNotesRepository.getNotes(limit = 100).map { notes ->
+          notes.map { note ->
+            ConversationMessage(
+                messageId = note.messageID,
+                senderId = note.senderId,
+                text = note.text,
+                createdAt = note.createdAt,
+                isFile = false,
+                fileUrl = "",
+                editedAt = null,
+                isDeleted = false)
+          }
+        }
+      } else {
+        conversationRepository.getMessages(conversationId)
+      }
 
   private val isConnectedFlow =
       connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
@@ -143,6 +176,9 @@ open class ConversationDetailViewModel(
       conversationFlow.flatMapLatest { conversation ->
         if (conversation == null) {
           flowOf(DisplayData(emptyList(), ""))
+        } else if (isToSelfConversation) {
+          // For "to self", show "To Self" as the other member
+          flowOf(DisplayData(otherMemberNames = listOf("To Self"), projectName = "Personal"))
         } else {
           val currentUserId = getCurrentUserId() ?: ""
           val otherUserIds = conversation.memberIds.filter { id -> id != currentUserId }
@@ -243,21 +279,47 @@ open class ConversationDetailViewModel(
     _isSending.value = true
 
     viewModelScope.launch {
-      conversationRepository
-          .sendMessage(conversationId, text)
-          .fold(
-              onSuccess = {
-                _currentMessage.value = ""
-                _isSending.value = false
-              },
-              onFailure = { error ->
-                _isSending.value = false
-                _errorMsg.value = "Error: ${error.message}"
-              })
+      if (isToSelfConversation) {
+        val currentUserId = getCurrentUserId() ?: ""
+        val note =
+            Message(
+                messageID = System.currentTimeMillis().toString(),
+                text = text,
+                senderId = currentUserId,
+                createdAt = com.google.firebase.Timestamp.now())
+        selfNotesRepository
+            .createNote(note)
+            .fold(
+                onSuccess = {
+                  _currentMessage.value = ""
+                  _isSending.value = false
+                },
+                onFailure = { error ->
+                  _isSending.value = false
+                  _errorMsg.value = "Error: ${error.message}"
+                })
+      } else {
+        conversationRepository
+            .sendMessage(conversationId, text)
+            .fold(
+                onSuccess = {
+                  _currentMessage.value = ""
+                  _isSending.value = false
+                },
+                onFailure = { error ->
+                  _isSending.value = false
+                  _errorMsg.value = "Error: ${error.message}"
+                })
+      }
     }
   }
 
   fun sendFileMessage(fileUri: Uri, context: Context) {
+    if (isToSelfConversation) {
+      _errorMsg.value = "File attachments are not supported in 'To Self' notes"
+      return
+    }
+
     val text = _currentMessage.value.trim()
     val messageText = text.ifEmpty { "File attached" }
 
@@ -388,7 +450,10 @@ open class ConversationDetailViewModel(
   }
 
   fun markAsRead() {
-    viewModelScope.launch { conversationRepository.markMessagesAsRead(conversationId) }
+    if (!isToSelfConversation) {
+      viewModelScope.launch { conversationRepository.markMessagesAsRead(conversationId) }
+    }
+    // For "to self", no need to mark as read
   }
 
   fun clearError() {
@@ -441,19 +506,35 @@ open class ConversationDetailViewModel(
     _isSending.value = true
 
     viewModelScope.launch {
-      conversationRepository
-          .updateMessage(conversationId, messageId, newText)
-          .fold(
-              onSuccess = {
-                _currentMessage.value = ""
-                _editingMessageId.value = null
-                _isSending.value = false
-                _snackbarMessage.value = "Message updated"
-              },
-              onFailure = { error ->
-                _isSending.value = false
-                _errorMsg.value = "Error: ${error.message}"
-              })
+      if (isToSelfConversation) {
+        selfNotesRepository
+            .updateNote(messageId, newText)
+            .fold(
+                onSuccess = {
+                  _currentMessage.value = ""
+                  _editingMessageId.value = null
+                  _isSending.value = false
+                  _snackbarMessage.value = "Note updated"
+                },
+                onFailure = { error ->
+                  _isSending.value = false
+                  _errorMsg.value = "Error: ${error.message}"
+                })
+      } else {
+        conversationRepository
+            .updateMessage(conversationId, messageId, newText)
+            .fold(
+                onSuccess = {
+                  _currentMessage.value = ""
+                  _editingMessageId.value = null
+                  _isSending.value = false
+                  _snackbarMessage.value = "Message updated"
+                },
+                onFailure = { error ->
+                  _isSending.value = false
+                  _errorMsg.value = "Error: ${error.message}"
+                })
+      }
     }
   }
 
@@ -473,21 +554,30 @@ open class ConversationDetailViewModel(
     _pendingDeleteFileUrl.value = null
 
     viewModelScope.launch {
-      // Delete the file from storage if the message has an attachment
-      var fileDeleteFailed = false
-      if (!fileUrl.isNullOrEmpty()) {
-        fileStorageRepository.deleteFile(fileUrl).onFailure { fileDeleteFailed = true }
-      }
+      if (isToSelfConversation) {
+        // For "to self", delete note (no file attachments supported)
+        selfNotesRepository
+            .deleteNote(messageId)
+            .fold(
+                onSuccess = { _snackbarMessage.value = "Note deleted" },
+                onFailure = { error -> _errorMsg.value = "Error: ${error.message}" })
+      } else {
+        // Delete the file from storage if the message has an attachment
+        var fileDeleteFailed = false
+        if (!fileUrl.isNullOrEmpty()) {
+          fileStorageRepository.deleteFile(fileUrl).onFailure { fileDeleteFailed = true }
+        }
 
-      conversationRepository
-          .deleteMessage(conversationId, messageId)
-          .fold(
-              onSuccess = {
-                _snackbarMessage.value =
-                    if (fileDeleteFailed) "Message deleted, but could not delete attachment file"
-                    else "Message deleted"
-              },
-              onFailure = { error -> _errorMsg.value = "Error: ${error.message}" })
+        conversationRepository
+            .deleteMessage(conversationId, messageId)
+            .fold(
+                onSuccess = {
+                  _snackbarMessage.value =
+                      if (fileDeleteFailed) "Message deleted, but could not delete attachment file"
+                      else "Message deleted"
+                },
+                onFailure = { error -> _errorMsg.value = "Error: ${error.message}" })
+      }
     }
   }
 

@@ -41,6 +41,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.MessageInputField
 import ch.eureka.eurekapp.ui.components.help.HelpContext
 import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
@@ -57,7 +58,11 @@ object SelfNotesScreenTestTags {
 }
 
 @Composable
-fun SelfNotesScreen(modifier: Modifier = Modifier, viewModel: SelfNotesViewModel = viewModel()) {
+fun SelfNotesScreen(
+    modifier: Modifier = Modifier,
+    viewModel: SelfNotesViewModel = viewModel(),
+    onNavigateBack: () -> Unit = {}
+) {
   val uiState by viewModel.uiState.collectAsState()
   val snackbarHostState = remember { SnackbarHostState() }
   val listState = rememberLazyListState()
@@ -94,7 +99,8 @@ fun SelfNotesScreen(modifier: Modifier = Modifier, viewModel: SelfNotesViewModel
             },
             onDeleteSelected = viewModel::deleteSelectedNotes,
             onCancelEditing = viewModel::cancelEditing,
-            onToggleStorage = viewModel::toggleStorageMode)
+            onToggleStorage = viewModel::toggleStorageMode,
+            onNavigateBack = onNavigateBack)
       },
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       bottomBar = {
@@ -126,7 +132,8 @@ private fun SelfNotesTopBar(
     onEditSelected: (String) -> Unit,
     onDeleteSelected: () -> Unit,
     onCancelEditing: () -> Unit,
-    onToggleStorage: (Boolean) -> Unit
+    onToggleStorage: (Boolean) -> Unit,
+    onNavigateBack: () -> Unit
 ) {
   if (uiState.isSelectionMode) {
     ContextualSelectionTopBar(
@@ -140,7 +147,8 @@ private fun SelfNotesTopBar(
         isEditing = uiState.editingMessageId != null,
         isCloudEnabled = uiState.isCloudStorageEnabled,
         onCancelEditing = onCancelEditing,
-        onToggleStorage = onToggleStorage)
+        onToggleStorage = onToggleStorage,
+        onNavigateBack = onNavigateBack)
   }
 }
 
@@ -183,7 +191,8 @@ private fun StandardTopBar(
     isEditing: Boolean,
     isCloudEnabled: Boolean,
     onCancelEditing: () -> Unit,
-    onToggleStorage: (Boolean) -> Unit
+    onToggleStorage: (Boolean) -> Unit,
+    onNavigateBack: () -> Unit
 ) {
   TopAppBar(
       title = { Text(if (isEditing) "Editing Note" else "Notes") },
@@ -197,6 +206,8 @@ private fun StandardTopBar(
           IconButton(onClick = onCancelEditing) {
             Icon(Icons.Default.Close, contentDescription = "Cancel Edit")
           }
+        } else {
+          BackButton(onClick = onNavigateBack)
         }
       },
       actions = {

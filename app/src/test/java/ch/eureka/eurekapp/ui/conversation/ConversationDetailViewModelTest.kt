@@ -4,14 +4,17 @@ import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
+import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.conversation.Conversation
 import ch.eureka.eurekapp.model.data.conversation.ConversationMessage
 import ch.eureka.eurekapp.model.data.conversation.ConversationRepository
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
+import ch.eureka.eurekapp.model.data.notes.UnifiedSelfNotesRepository
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
+import com.google.firebase.Timestamp
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -51,6 +54,7 @@ class ConversationDetailViewModelTest {
   private lateinit var mockProjectRepository: ProjectRepository
   private lateinit var mockConnectivityObserver: ConnectivityObserver
   private lateinit var mockFileStorageRepository: FileStorageRepository
+  private lateinit var mockSelfNotesRepository: UnifiedSelfNotesRepository
   private lateinit var mockContext: Context
   private lateinit var mockDownloadManager: DownloadManager
   private val currentUserId = "currentUser123"
@@ -64,6 +68,7 @@ class ConversationDetailViewModelTest {
     mockProjectRepository = mockk()
     mockConnectivityObserver = mockk()
     mockFileStorageRepository = mockk(relaxed = true)
+    mockSelfNotesRepository = mockk(relaxed = true)
     mockContext = mockk(relaxed = true)
     mockDownloadManager = mockk<DownloadManager>(relaxed = true)
     every { mockConnectivityObserver.isConnected } returns flowOf(true)
@@ -82,6 +87,7 @@ class ConversationDetailViewModelTest {
         userRepository = mockUserRepository,
         projectRepository = mockProjectRepository,
         fileStorageRepository = mockFileStorageRepository,
+        selfNotesRepository = mockSelfNotesRepository,
         getCurrentUserId = { currentUserId },
         connectivityObserver = mockConnectivityObserver)
   }
@@ -941,5 +947,104 @@ class ConversationDetailViewModelTest {
     val state = viewModel.uiState.first()
 
     assertEquals(emptyList<String>(), state.otherMemberNames)
+  }
+
+  // --- Tests for conversationFlow (lines 139-153) ---
+
+  @Test
+  fun conversationFlow_toSelf_createsFakeConversation() = runTest {
+    every { mockSelfNotesRepository.getNotes(100) } returns flowOf(emptyList())
+    val viewModel =
+        ConversationDetailViewModel(
+            conversationId = TO_SELF_CONVERSATION_ID,
+            conversationRepository = mockConversationRepository,
+            userRepository = mockUserRepository,
+            projectRepository = mockProjectRepository,
+            fileStorageRepository = mockFileStorageRepository,
+            selfNotesRepository = mockSelfNotesRepository,
+            getCurrentUserId = { currentUserId },
+            connectivityObserver = mockConnectivityObserver)
+    advanceUntilIdle()
+    val state = viewModel.uiState.first { !it.isLoading }
+    assertEquals(TO_SELF_CONVERSATION_ID, state.conversation?.conversationId)
+    assertEquals("", state.conversation?.projectId)
+    assertEquals(listOf(currentUserId), state.conversation?.memberIds)
+    assertEquals(currentUserId, state.conversation?.createdBy)
+  }
+
+  @Test
+  fun conversationFlow_regular_callsRepository() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns
+        flowOf(Conversation(conversationId = conversationId))
+    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+    verify { mockConversationRepository.getConversationById(conversationId) }
+  }
+
+  // --- Tests for messagesFlow (lines 155-182) ---
+
+  @Test
+  fun messagesFlow_toSelf_convertsNotesToMessages() = runTest {
+    val note =
+        Message(
+            messageID = "note1",
+            text = "Test",
+            senderId = currentUserId,
+            createdAt = Timestamp.now())
+    every { mockSelfNotesRepository.getNotes(100) } returns flowOf(listOf(note))
+    val viewModel =
+        ConversationDetailViewModel(
+            conversationId = TO_SELF_CONVERSATION_ID,
+            conversationRepository = mockConversationRepository,
+            userRepository = mockUserRepository,
+            projectRepository = mockProjectRepository,
+            fileStorageRepository = mockFileStorageRepository,
+            selfNotesRepository = mockSelfNotesRepository,
+            getCurrentUserId = { currentUserId },
+            connectivityObserver = mockConnectivityObserver)
+    advanceUntilIdle()
+    val state = viewModel.uiState.first { it.messages.isNotEmpty() }
+    assertEquals("note1", state.messages[0].messageId)
+    assertEquals("Test", state.messages[0].text)
+    assertEquals(false, state.messages[0].isFile)
+    assertEquals("", state.messages[0].fileUrl)
+    assertNull(state.messages[0].editedAt)
+    assertEquals(false, state.messages[0].isDeleted)
+  }
+
+  @Test
+  fun messagesFlow_regular_callsRepository() = runTest {
+    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
+    every { mockConversationRepository.getMessages(conversationId) } returns
+        flowOf(listOf(ConversationMessage(messageId = "msg1", text = "Hello")))
+    val viewModel = createViewModel()
+    advanceUntilIdle()
+    verify { mockConversationRepository.getMessages(conversationId) }
+  }
+
+  // --- Test for sendMessage isToSelfConversation (lines 283-300) ---
+
+  @Test
+  fun sendMessage_toSelf_createsNote() = runTest {
+    every { mockSelfNotesRepository.getNotes(100) } returns flowOf(emptyList())
+    coEvery { mockSelfNotesRepository.createNote(any()) } returns Result.success("note123")
+    val viewModel =
+        ConversationDetailViewModel(
+            conversationId = TO_SELF_CONVERSATION_ID,
+            conversationRepository = mockConversationRepository,
+            userRepository = mockUserRepository,
+            projectRepository = mockProjectRepository,
+            fileStorageRepository = mockFileStorageRepository,
+            selfNotesRepository = mockSelfNotesRepository,
+            getCurrentUserId = { currentUserId },
+            connectivityObserver = mockConnectivityObserver)
+    advanceUntilIdle()
+    viewModel.updateMessage("Test note")
+    viewModel.sendMessage()
+    advanceUntilIdle()
+    assertEquals("", viewModel.uiState.value.currentMessage)
+    assertFalse(viewModel.uiState.value.isSending)
+    coVerify { mockSelfNotesRepository.createNote(any()) }
   }
 }
