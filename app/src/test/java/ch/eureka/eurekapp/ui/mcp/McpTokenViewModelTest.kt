@@ -3,11 +3,12 @@ package ch.eureka.eurekapp.ui.mcp
 
 import ch.eureka.eurekapp.model.data.mcp.McpToken
 import ch.eureka.eurekapp.model.data.mcp.McpTokenRepository
+import com.google.firebase.Timestamp
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import java.time.Instant
+import java.util.Date
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
@@ -31,18 +32,15 @@ class McpTokenViewModelTest {
   private lateinit var repository: McpTokenRepository
   private lateinit var testDispatcher: TestDispatcher
 
+  private val now = Timestamp.now()
+  private val expiresAt = Timestamp(Date(now.toDate().time + 30 * 24 * 60 * 60 * 1000L))
+
   private val testTokens =
       listOf(
           McpToken(
-              tokenId = "token-1",
-              name = "Test Token 1",
-              createdAt = Instant.now(),
-              expiresAt = Instant.now().plusSeconds(86400 * 30)),
+              tokenId = "token-1", name = "Test Token 1", createdAt = now, expiresAt = expiresAt),
           McpToken(
-              tokenId = "token-2",
-              name = "Test Token 2",
-              createdAt = Instant.now(),
-              expiresAt = Instant.now().plusSeconds(86400 * 30)))
+              tokenId = "token-2", name = "Test Token 2", createdAt = now, expiresAt = expiresAt))
 
   @Before
   fun setup() {
@@ -96,11 +94,7 @@ class McpTokenViewModelTest {
 
   @Test
   fun createToken_createsTokenAndRefreshesList() = runTest {
-    val newToken =
-        McpToken(
-            tokenId = "new-token-123",
-            name = "New Token",
-            expiresAt = Instant.now().plusSeconds(86400 * 30))
+    val newToken = McpToken(tokenId = "new-token-123", name = "New Token", expiresAt = expiresAt)
     coEvery { repository.createToken("New Token", 30) } returns Result.success(newToken)
     coEvery { repository.listTokens() } returns Result.success(testTokens + newToken)
 
@@ -133,11 +127,7 @@ class McpTokenViewModelTest {
 
   @Test
   fun createToken_usesDefaultNameWhenBlank() = runTest {
-    val newToken =
-        McpToken(
-            tokenId = "new-token-123",
-            name = "MCP Token",
-            expiresAt = Instant.now().plusSeconds(86400 * 30))
+    val newToken = McpToken(tokenId = "new-token-123", name = "MCP Token", expiresAt = expiresAt)
     coEvery { repository.createToken("MCP Token", 30) } returns Result.success(newToken)
 
     advanceUntilIdle()

@@ -10,7 +10,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import ch.eureka.eurekapp.model.data.mcp.McpToken
 import ch.eureka.eurekapp.model.data.mcp.McpTokenRepository
-import java.time.Instant
+import com.google.firebase.Timestamp
+import java.util.Date
 import kotlinx.coroutines.delay
 import org.junit.Rule
 import org.junit.Test
@@ -24,13 +25,13 @@ class McpTokenScreenTest {
           McpToken(
               tokenId = "token-123-full-id",
               name = "Test Token",
-              createdAt = Instant.parse("2025-01-01T00:00:00Z"),
-              expiresAt = Instant.parse("2025-02-01T00:00:00Z")),
+              createdAt = Timestamp(Date(1704067200000L)),
+              expiresAt = Timestamp(Date(1706745600000L))),
           McpToken(
               tokenId = "token-456-full-id",
               name = "Another Token",
-              createdAt = Instant.parse("2025-01-02T00:00:00Z"),
-              expiresAt = Instant.parse("2025-02-02T00:00:00Z")))
+              createdAt = Timestamp(Date(1704153600000L)),
+              expiresAt = Timestamp(Date(1706832000000L))))
 
   private class FakeRepository(
       private var tokens: List<McpToken> = emptyList(),
@@ -271,8 +272,8 @@ class McpTokenScreenTest {
         McpToken(
             tokenId = "expired-token",
             name = "Expired Token",
-            createdAt = Instant.parse("2024-01-01T00:00:00Z"),
-            expiresAt = Instant.parse("2024-02-01T00:00:00Z"))
+            createdAt = Timestamp(Date(1704067200000L)),
+            expiresAt = Timestamp(Date(1706745600000L)))
 
     val repository = FakeRepository(tokens = listOf(expiredToken))
     val viewModel = McpTokenViewModel(repository)
