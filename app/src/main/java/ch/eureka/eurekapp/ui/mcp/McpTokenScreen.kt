@@ -66,7 +66,6 @@ object McpTokenScreenTestTags {
   const val TOKEN_NAME_FIELD = "mcp_token_name_field"
   const val CONFIRM_CREATE = "mcp_token_confirm_create"
   const val CANCEL_CREATE = "mcp_token_cancel_create"
-  const val COPY_BUTTON = "mcp_token_copy_button"
   const val DELETE_BUTTON = "mcp_token_delete_button"
   const val LOADING_INDICATOR = "mcp_token_loading"
   const val ERROR_TEXT = "mcp_token_error"
@@ -145,11 +144,9 @@ fun McpTokenScreen(viewModel: McpTokenViewModel, onNavigateBack: () -> Unit) {
                               .padding(16.dp)
                               .testTag(McpTokenScreenTestTags.TOKEN_LIST),
                       verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        items(uiState.tokens, key = { it.tokenId }) { token ->
+                        items(uiState.tokens, key = { it.tokenHash }) { token ->
                           TokenCard(
-                              token = token,
-                              onCopy = { copyToClipboard(context, token.tokenId) },
-                              onDelete = { viewModel.revokeToken(token.tokenId) })
+                              token = token, onDelete = { viewModel.revokeToken(token.tokenHash) })
                         }
                       }
                 }
@@ -178,12 +175,13 @@ fun McpTokenScreen(viewModel: McpTokenViewModel, onNavigateBack: () -> Unit) {
 }
 
 @Composable
-private fun TokenCard(token: McpToken, onCopy: () -> Unit, onDelete: () -> Unit) {
+private fun TokenCard(token: McpToken, onDelete: () -> Unit) {
   var showDeleteConfirmation by remember { mutableStateOf(false) }
 
   Card(
       modifier =
-          Modifier.fillMaxWidth().testTag("${McpTokenScreenTestTags.TOKEN_ITEM}_${token.tokenId}"),
+          Modifier.fillMaxWidth()
+              .testTag("${McpTokenScreenTestTags.TOKEN_ITEM}_${token.tokenHash}"),
       elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
         Column(modifier = Modifier.padding(16.dp)) {
           Row(
@@ -193,34 +191,19 @@ private fun TokenCard(token: McpToken, onCopy: () -> Unit, onDelete: () -> Unit)
                 Text(
                     text = token.name.ifBlank { "Unnamed Token" },
                     style = MaterialTheme.typography.titleMedium)
-                Row {
-                  IconButton(
-                      onClick = onCopy,
-                      modifier =
-                          Modifier.testTag(
-                              "${McpTokenScreenTestTags.COPY_BUTTON}_${token.tokenId}")) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = "Copy Token")
-                      }
-                  IconButton(
-                      onClick = { showDeleteConfirmation = true },
-                      modifier =
-                          Modifier.testTag(
-                              "${McpTokenScreenTestTags.DELETE_BUTTON}_${token.tokenId}")) {
-                        Icon(
-                            Icons.Default.Delete,
-                            contentDescription = "Delete Token",
-                            tint = MaterialTheme.colorScheme.error)
-                      }
-                }
+                IconButton(
+                    onClick = { showDeleteConfirmation = true },
+                    modifier =
+                        Modifier.testTag(
+                            "${McpTokenScreenTestTags.DELETE_BUTTON}_${token.tokenHash}")) {
+                      Icon(
+                          Icons.Default.Delete,
+                          contentDescription = "Delete Token",
+                          tint = MaterialTheme.colorScheme.error)
+                    }
               }
 
           Spacer(modifier = Modifier.height(8.dp))
-
-          Text(
-              text = "ID: ${token.tokenId.take(16)}...",
-              style = MaterialTheme.typography.bodySmall,
-              fontFamily = FontFamily.Monospace,
-              color = MaterialTheme.colorScheme.onSurfaceVariant)
 
           token.createdAt?.let { createdAt ->
             Text(

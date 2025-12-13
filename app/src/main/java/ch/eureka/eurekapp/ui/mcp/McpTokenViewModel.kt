@@ -43,8 +43,9 @@ class McpTokenViewModel(private val repository: McpTokenRepository) : ViewModel(
       _uiState.update { it.copy(isLoading = true, error = null) }
       repository
           .createToken(name, ttlDays)
-          .onSuccess { token ->
-            _uiState.update { it.copy(newlyCreatedToken = token.tokenId, isLoading = false) }
+          .onSuccess { result ->
+            // Show the raw token to the user (only time it's visible)
+            _uiState.update { it.copy(newlyCreatedToken = result.rawToken, isLoading = false) }
             loadTokens()
           }
           .onFailure { error ->
@@ -53,11 +54,11 @@ class McpTokenViewModel(private val repository: McpTokenRepository) : ViewModel(
     }
   }
 
-  fun revokeToken(tokenId: String) {
+  fun revokeToken(tokenHash: String) {
     viewModelScope.launch {
       _uiState.update { it.copy(isLoading = true, error = null) }
       repository
-          .revokeToken(tokenId)
+          .revokeToken(tokenHash)
           .onSuccess { loadTokens() }
           .onFailure { error ->
             _uiState.update { it.copy(error = error.message, isLoading = false) }

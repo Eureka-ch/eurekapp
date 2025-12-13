@@ -5,14 +5,17 @@ import ch.eureka.eurekapp.model.data.FirestorePaths
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.Date
 import kotlinx.coroutines.tasks.await
 
-interface McpTokenRepository {
-  suspend fun createToken(name: String, ttlDays: Int = 30): Result<McpToken>
+data class CreateTokenResult(val token: McpToken, val rawToken: String)
 
-  suspend fun revokeToken(tokenId: String): Result<Unit>
+interface McpTokenRepository {
+  suspend fun createToken(name: String, ttlDays: Int = 30): Result<CreateTokenResult>
+
+  suspend fun revokeToken(tokenHash: String): Result<Unit>
 
   suspend fun listTokens(): Result<List<McpToken>>
 }
@@ -27,39 +30,67 @@ class FirebaseMcpTokenRepository(
         ?: throw IllegalStateException("User must be authenticated to manage MCP tokens")
   }
 
-  override suspend fun createToken(name: String, ttlDays: Int): Result<McpToken> = runCatching {
+  override suspend fun createToken(name: String, ttlDays: Int): Result<CreateTokenResult> =
+      runCatching {
+        val userId = getCurrentUserId()
+        val rawToken = generateSecureToken()
+        val tokenHash = hashToken(rawToken)
+        val now = Timestamp.now()
+        val expiresAt = Timestamp(Date(now.toDate().time + ttlDays * 24 * 60 * 60 * 1000L))
+
+        val token =
+            McpToken(
+                userId = userId,
+                name = name,
+                createdAt = now,
+                expiresAt = expiresAt,
+                lastUsedAt = null)
+
+        firestore.document(FirestorePaths.mcpTokenPath(tokenHash)).set(token).await()
+
+        token.tokenHash = tokenHash
+        CreateTokenResult(token, rawToken)
+      }
+
+  override suspend fun revokeToken(tokenHash: String): Result<Unit> = runCatching {
     val userId = getCurrentUserId()
-    val tokenId = generateSecureToken()
-    val now = Timestamp.now()
-    val expiresAt = Timestamp(Date(now.toDate().time + ttlDays * 24 * 60 * 60 * 1000L))
+    val docRef = firestore.document(FirestorePaths.mcpTokenPath(tokenHash))
+    val doc = docRef.get().await()
 
-    val token =
-        McpToken(
-            tokenId = tokenId,
-            name = name,
-            createdAt = now,
-            expiresAt = expiresAt,
-            lastUsedAt = null)
+    if (!doc.exists()) {
+      throw IllegalArgumentException("Token not found")
+    }
 
-    firestore.document(FirestorePaths.mcpTokenPath(userId, tokenId)).set(token).await()
+    val tokenUserId = doc.getString("userId")
+    if (tokenUserId != userId) {
+      throw IllegalAccessException("Cannot revoke another user's token")
+    }
 
-    token
-  }
-
-  override suspend fun revokeToken(tokenId: String): Result<Unit> = runCatching {
-    val userId = getCurrentUserId()
-    firestore.document(FirestorePaths.mcpTokenPath(userId, tokenId)).delete().await()
+    docRef.delete().await()
   }
 
   override suspend fun listTokens(): Result<List<McpToken>> = runCatching {
     val userId = getCurrentUserId()
-    val snapshot = firestore.collection(FirestorePaths.mcpTokensPath(userId)).get().await()
-    snapshot.documents.mapNotNull { it.toObject(McpToken::class.java) }
+    val snapshot =
+        firestore
+            .collection(FirestorePaths.mcpTokensPath())
+            .whereEqualTo("userId", userId)
+            .get()
+            .await()
+    snapshot.documents.mapNotNull { doc ->
+      doc.toObject(McpToken::class.java)?.apply { tokenHash = doc.id }
+    }
   }
 
   private fun generateSecureToken(): String {
     val bytes = ByteArray(32)
     SecureRandom().nextBytes(bytes)
     return "mcp_" + bytes.joinToString("") { "%02x".format(it) }
+  }
+
+  private fun hashToken(token: String): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    val hashBytes = digest.digest(token.toByteArray())
+    return hashBytes.joinToString("") { "%02x".format(it) }
   }
 }
