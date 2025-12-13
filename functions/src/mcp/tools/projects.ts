@@ -1,6 +1,6 @@
 // Co-authored by Claude Code
 import * as admin from 'firebase-admin';
-import { serializeDoc } from '../handlers';
+import { serializeDoc } from '../utils';
 
 export async function listProjectsForUser(userId: string): Promise<object[]> {
   const projectsSnapshot = await admin
