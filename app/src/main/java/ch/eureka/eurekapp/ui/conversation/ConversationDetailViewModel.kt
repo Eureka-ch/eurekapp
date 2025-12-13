@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -147,38 +146,27 @@ open class ConversationDetailViewModel(
                 memberIds = listOf(currentUserId),
                 createdBy = currentUserId))
       } else {
-        conversationRepository.getConversationById(conversationId).catch { e ->
-          _errorMsg.value = e.message
-        }
+        conversationRepository.getConversationById(conversationId)
       }
 
   private val messagesFlow: Flow<List<ConversationMessage>> =
       if (isToSelfConversation) {
         // Convert self notes (Message) to ConversationMessage
-        selfNotesRepository
-            .getNotes(limit = 100)
-            .map { notes ->
-              notes.map { note ->
-                ConversationMessage(
-                    messageId = note.messageID,
-                    senderId = note.senderId,
-                    text = note.text,
-                    createdAt = note.createdAt,
-                    isFile = false,
-                    fileUrl = "",
-                    editedAt = null,
-                    isDeleted = false)
-              }
-            }
-            .catch { e ->
-              _errorMsg.value = e.message
-              emit(emptyList())
-            }
-      } else {
-        conversationRepository.getMessages(conversationId).catch { e ->
-          _errorMsg.value = e.message
-          emit(emptyList())
+        selfNotesRepository.getNotes(limit = 100).map { notes ->
+          notes.map { note ->
+            ConversationMessage(
+                messageId = note.messageID,
+                senderId = note.senderId,
+                text = note.text,
+                createdAt = note.createdAt,
+                isFile = false,
+                fileUrl = "",
+                editedAt = null,
+                isDeleted = false)
+          }
         }
+      } else {
+        conversationRepository.getMessages(conversationId)
       }
 
   private val isConnectedFlow =
