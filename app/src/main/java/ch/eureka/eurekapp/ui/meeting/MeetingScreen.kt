@@ -241,7 +241,8 @@ private fun MeetingScreenContent(
       modifier =
           Modifier.fillMaxSize()
               .padding(padding)
-              .padding(horizontal = 16.dp, vertical = 6.dp)
+              .padding(horizontal = 16.dp, vertical = 4.dp)
+              .background(Color.White)
               .testTag(MeetingScreenTestTags.MEETING_SCREEN)) {
         Text(
             modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_DESCRIPTION),

@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AssignmentTurnedIn
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.outlined.AccountCircle
@@ -190,7 +191,7 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
               Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                 HomeIconButton(
                     modifier =
-                        Modifier.offset(y = (-20).dp)
+                        Modifier.offset(y = (-14).dp)
                             .testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
                     isPressed = isHomeScreenPressed,
                     onClick = { navigateToHome() })
@@ -259,15 +260,15 @@ fun HomeIconButton(modifier: Modifier = Modifier, isPressed: Boolean, onClick: (
       modifier =
           modifier
               .size(56.dp)
-              .shadow(elevation = 8.dp, shape = CircleShape)
+              .shadow(elevation = 6.dp, shape = CircleShape)
               .background(
-                  color = EColors.light.primary, // Rouge vif comme l'app
+                  color = Color(0xFFE53935), // Rouge vif demandé
                   shape = CircleShape)
               .clip(CircleShape),
       contentAlignment = Alignment.Center) {
         IconButton(modifier = Modifier.size(56.dp), onClick = onClick) {
           Icon(
-              Icons.Outlined.Home,
+              Icons.Filled.Home,
               contentDescription = null,
               tint = Color.White,
               modifier = Modifier.size(28.dp))
