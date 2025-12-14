@@ -164,4 +164,50 @@ class CreateIdeaBottomSheetTest {
     composeTestRule.waitForIdle()
     assert(mockViewModel.createIdeaCalled) { "createIdea should be called" }
   }
+
+  @Test
+  fun createIdeaBottomSheet_participantsModal_opensWhenClicked() {
+    setContent(users = testUsers)
+    selectProject()
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)
+        .performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("Select Participants").assertIsDisplayed()
+    composeTestRule.onNodeWithText("OK").assertIsDisplayed()
+  }
+
+  @Test
+  fun createIdeaBottomSheet_participantsModal_displaysUsers() {
+    setContent(users = testUsers)
+    selectProject()
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)
+        .performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("User One").assertIsDisplayed()
+    composeTestRule.onNodeWithText("User Two").assertIsDisplayed()
+  }
+
+  @Test
+  fun createIdeaBottomSheet_participantsModal_okButtonClosesModal() {
+    setContent(users = testUsers)
+    selectProject()
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)
+        .performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("OK").performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("Select Participants").assertDoesNotExist()
+  }
+
+  @Test
+  fun createIdeaBottomSheet_participantsModal_displaysSelectedCount() {
+    val mockViewModel = setContent(users = testUsers)
+    selectProject()
+    mockViewModel.toggleParticipant("user1")
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("1 participant selected").assertIsDisplayed()
+  }
 }
