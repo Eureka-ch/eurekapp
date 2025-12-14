@@ -37,7 +37,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -186,14 +185,16 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
                   iconVector = Icons.Outlined.Folder,
                   pressedIconVector = Icons.Filled.Folder,
                   isPressed = isProjectsScreenPressed)
-              Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                HomeIconButton(
-                    modifier =
-                        Modifier.offset(y = (-14).dp)
-                            .testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
-                    isPressed = isHomeScreenPressed,
-                    onClick = { navigateToHome() })
-              }
+              Box(
+                  modifier = Modifier.weight(1f).padding(vertical = 14.dp),
+                  contentAlignment = Alignment.Center) {
+                    HomeIconButton(
+                        modifier =
+                            Modifier.offset(y = (-14).dp)
+                                .testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
+                        isPressed = isHomeScreenPressed,
+                        onClick = { navigateToHome() })
+                  }
               CustomIconButtonComposable(
                   modifier =
                       Modifier.weight(1f)
@@ -258,8 +259,7 @@ fun HomeIconButton(modifier: Modifier = Modifier, isPressed: Boolean, onClick: (
           modifier
               .size(56.dp)
               .shadow(elevation = 6.dp, shape = CircleShape)
-              .background(color = Color(0xFFE53935), shape = CircleShape)
-              .clip(CircleShape),
+              .background(color = Color(0xFFE53935), shape = CircleShape),
       contentAlignment = Alignment.Center) {
         IconButton(modifier = Modifier.size(56.dp), onClick = onClick) {
           Icon(
