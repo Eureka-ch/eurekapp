@@ -65,7 +65,6 @@ import ch.eureka.eurekapp.ui.components.EurekaTaskCard
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.help.HelpContext
 import ch.eureka.eurekapp.ui.components.help.InteractiveHelpEntryPoint
-import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.home.HOME_ITEMS_LIMIT
 import ch.eureka.eurekapp.ui.home.HomeOverviewUiState
@@ -158,7 +157,9 @@ private fun HomeOverviewScreenContainer(
             })
       }) { padding ->
         HomeOverviewLayout(
-            modifier = Modifier.fillMaxSize().padding(padding), uiState = uiState, actions = actions)
+            modifier = Modifier.fillMaxSize().padding(padding),
+            uiState = uiState,
+            actions = actions)
       }
 }
 

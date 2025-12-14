@@ -1,7 +1,6 @@
 package ch.eureka.eurekapp.navigation
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.outlined.Chat
@@ -148,17 +146,23 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
       }
 
   BottomAppBar(
-      containerColor = Color.Transparent,
+      containerColor = Color.Transparent, // laisse voir le contenu derrière
       modifier =
           Modifier.fillMaxWidth()
               .windowInsetsPadding(WindowInsets.navigationBars)
               .padding(horizontal = 8.dp, vertical = 4.dp),
       tonalElevation = 0.dp,
       actions = {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier =
+                Modifier.fillMaxWidth()
+                    .shadow(elevation = 20.dp, shape = CircleShape)
+                    .background(color = Color(0xFFF5F5F5), shape = CircleShape)
+                    .padding(horizontal = 12.dp, vertical = 8.dp)) {
+              Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.SpaceEvenly,
+                  verticalAlignment = Alignment.CenterVertically) {
                     CustomIconButtonComposable(
                         modifier =
                             Modifier.testTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON),
@@ -185,16 +189,17 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
                         iconVector = Icons.Outlined.Folder,
                         pressedIconVector = Icons.Filled.Folder,
                         isPressed = isProjectsScreenPressed)
-              // Home button elevated and protruding
-              Box(
-                  modifier = Modifier.offset(y = (-28).dp),
-                  contentAlignment = Alignment.Center) {
-                    HomeIconButton(
-                        modifier =
-                            Modifier.testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
-                        isPressed = isHomeScreenPressed,
-                        onClick = { navigateToHome() })
-                  }
+                    // Home button elevated and protruding
+                    Box(
+                        modifier = Modifier.offset(y = (-28).dp),
+                        contentAlignment = Alignment.Center) {
+                          HomeIconButton(
+                              modifier =
+                                  Modifier.testTag(
+                                      BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
+                              isPressed = isHomeScreenPressed,
+                              onClick = { navigateToHome() })
+                        }
                     CustomIconButtonComposable(
                         modifier =
                             Modifier.testTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON),
@@ -211,14 +216,15 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
                         iconVector = Icons.Outlined.Lightbulb,
                         pressedIconVector = Icons.Filled.Lightbulb,
                         isPressed = isIdeasScreenPressed)
-              CustomIconButtonComposable(
-                  modifier =
-                      Modifier.testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON),
-                  "Profile",
-                  onClick = { navigateToTab(Route.Profile) },
-                  iconVector = Icons.Outlined.AccountCircle,
-                  pressedIconVector = Icons.Filled.AccountCircle,
-                  isPressed = isProfileScreenPressed)
+                    CustomIconButtonComposable(
+                        modifier =
+                            Modifier.testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON),
+                        "Profile",
+                        onClick = { navigateToTab(Route.Profile) },
+                        iconVector = Icons.Outlined.AccountCircle,
+                        pressedIconVector = Icons.Filled.AccountCircle,
+                        isPressed = isProfileScreenPressed)
+                  }
             }
       })
 }
