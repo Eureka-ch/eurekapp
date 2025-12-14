@@ -39,7 +39,7 @@ import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.help.HelpContext
-import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
+import ch.eureka.eurekapp.ui.components.help.InteractiveHelpEntryPoint
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.tasks.TaskScreenFilter
 import ch.eureka.eurekapp.ui.tasks.TaskScreenUiState
@@ -352,29 +352,27 @@ fun TasksScreen(
 
   androidx.compose.material3.Scaffold(
       modifier = modifier.fillMaxSize().testTag(TasksScreenTestTags.TASKS_SCREEN_CONTENT),
-      topBar = { EurekaTopBar(title = "Tasks") }) { innerPadding ->
-        // Note: userProvidedName is not passed as TasksScreen doesn't have access to user data.
-        // The help composable will fall back to
-        // FirebaseAuth.getInstance().currentUser?.displayName.
-        ScreenWithHelp(
-            helpContext = HelpContext.TASKS,
-            content = {
-              Column(
-                  modifier =
-                      Modifier.fillMaxSize()
-                          .padding(innerPadding)
-                          .padding(horizontal = Spacing.md)) {
-                    HeaderSection(
-                        onCreateTaskClick, onAutoAssignClick, onFilesManagementClick, isConnected)
-                    FilterBar(uiState, selectedFilter, ::setFilter)
-                    if (uiState.isLoading) {
-                      LoadingState()
-                    } else if (uiState.error != null) {
-                      ErrorState(errorMsg)
-                    } else {
-                      TaskList(tasksAndUsers, viewModel, isConnected, onTaskClick)
-                    }
-                  }
+      topBar = {
+        EurekaTopBar(
+            title = "Tasks",
+            actions = {
+              InteractiveHelpEntryPoint(
+                  helpContext = HelpContext.TASKS, modifier = Modifier.testTag("tasksHelpButton"))
             })
+      }) { innerPadding ->
+        Column(
+            modifier =
+                Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = Spacing.md)) {
+              HeaderSection(
+                  onCreateTaskClick, onAutoAssignClick, onFilesManagementClick, isConnected)
+              FilterBar(uiState, selectedFilter, ::setFilter)
+              if (uiState.isLoading) {
+                LoadingState()
+              } else if (uiState.error != null) {
+                ErrorState(errorMsg)
+              } else {
+                TaskList(tasksAndUsers, viewModel, isConnected, onTaskClick)
+              }
+            }
       }
 }
