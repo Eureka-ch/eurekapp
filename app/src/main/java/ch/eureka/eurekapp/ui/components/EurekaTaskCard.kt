@@ -177,12 +177,13 @@ fun EurekaTaskCard(
                                 Icon(
                                     imageVector = Icons.Default.Person,
                                     contentDescription = null,
-                                    tint = Color(0xFF64748B),
+                                    tint =
+                                        Color(0xFF2563EB), // bleu plus prononcé pour l'assignation
                                     modifier = Modifier.size(16.dp))
                                 Text(
                                     text = assignee,
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = Color(0xFF475569),
+                                    color = Color(0xFF1D4ED8),
                                     fontWeight = FontWeight.Medium)
                               }
                         }
