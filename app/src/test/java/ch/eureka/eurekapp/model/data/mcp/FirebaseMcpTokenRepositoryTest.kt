@@ -62,7 +62,7 @@ class FirebaseMcpTokenRepositoryTest {
     assertEquals("My Token", createResult?.token?.name)
     assertEquals("test-user-id", createResult?.token?.userId)
     assertTrue(createResult?.rawToken?.startsWith("mcp_") == true)
-    assertNotNull(createResult?.token?.createdAt)
+    // createdAt is null here - @ServerTimestamp sets it on write, not in the returned object
     assertNotNull(createResult?.token?.expiresAt)
   }
 
@@ -243,12 +243,13 @@ class FirebaseMcpTokenRepositoryTest {
 
     assertTrue(result.isSuccess)
     val createResult = result.getOrNull()
-    assertNotNull(createResult?.token?.createdAt)
+    // createdAt is null - @ServerTimestamp sets it on server, not in returned object
     assertNotNull(createResult?.token?.expiresAt)
-    val createdMillis = createResult?.token?.createdAt?.toDate()?.time ?: 0
+    // expiresAt should be approximately 30 days from now
+    val nowMillis = System.currentTimeMillis()
     val expiresMillis = createResult?.token?.expiresAt?.toDate()?.time ?: 0
-    val daysDiff = (expiresMillis - createdMillis) / (24 * 60 * 60 * 1000)
-    assertEquals(30, daysDiff)
+    val daysDiff = (expiresMillis - nowMillis) / (24 * 60 * 60 * 1000)
+    assertTrue(daysDiff in 29..30)
   }
 
   @Test
