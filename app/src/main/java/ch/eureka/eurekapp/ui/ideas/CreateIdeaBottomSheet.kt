@@ -1,21 +1,28 @@
 /* Portions of this file were written with the help of GPT-5 Codex and Gemini. */
 package ch.eureka.eurekapp.ui.ideas
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -25,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,9 +43,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import ch.eureka.eurekapp.model.data.ideas.Idea
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.user.User
@@ -87,7 +99,8 @@ fun CreateIdeaBottomSheet(
 
   ModalBottomSheet(
       onDismissRequest = onDismiss,
-      modifier = modifier.testTag(CreateIdeaBottomSheetTestTags.SHEET)) {
+      modifier = modifier.testTag(CreateIdeaBottomSheetTestTags.SHEET),
+      shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)) {
         Box(modifier = Modifier.fillMaxWidth()) {
           Column(
               modifier =
@@ -143,6 +156,7 @@ private fun TitleField(title: String, onTitleChange: (String) -> Unit) {
       placeholder = { Text("Enter a title for your idea...") },
       modifier = Modifier.fillMaxWidth().testTag(CreateIdeaBottomSheetTestTags.TITLE_FIELD),
       singleLine = true,
+      shape = RoundedCornerShape(16.dp),
       colors = EurekaStyles.textFieldColors())
 }
 
@@ -185,6 +199,7 @@ private fun ProjectSelector(
                 modifier =
                     Modifier.fillMaxWidth()
                         .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                shape = RoundedCornerShape(16.dp),
                 colors = EurekaStyles.textFieldColors())
             ExposedDropdownMenu(
                 expanded = projectDropdownExpanded,
@@ -213,8 +228,8 @@ private fun ProjectSelector(
 /**
  * Selector component for choosing participants to share the idea with.
  *
- * Displays a read-only text field that opens a dropdown menu when clicked. Users can
- * select/deselect participants using checkboxes in the dropdown.
+ * Displays a read-only text field that opens a scrollable modal dialog when clicked. Users can
+ * select/deselect participants using checkboxes in the modal.
  *
  * @param availableUsers List of users available in the selected project
  * @param selectedParticipantIds List of user IDs currently selected as participants
@@ -226,7 +241,7 @@ private fun ParticipantsSelector(
     selectedParticipantIds: List<String>,
     onToggleParticipant: (String) -> Unit
 ) {
-  var participantsDropdownExpanded by remember { mutableStateOf(false) }
+  var showParticipantsModal by remember { mutableStateOf(false) }
   val selectedCount = selectedParticipantIds.size
   val displayText =
       when {
@@ -253,7 +268,7 @@ private fun ParticipantsSelector(
       Box(
           modifier =
               Modifier.fillMaxWidth()
-                  .clickable { participantsDropdownExpanded = !participantsDropdownExpanded }
+                  .clickable { showParticipantsModal = true }
                   .testTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)) {
             OutlinedTextField(
                 value = displayText,
@@ -262,32 +277,87 @@ private fun ParticipantsSelector(
                 placeholder = { Text("Select participants to share with") },
                 label = { Text("Participants") },
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
                 colors = EurekaStyles.textFieldColors())
-            DropdownMenu(
-                expanded = participantsDropdownExpanded,
-                onDismissRequest = { participantsDropdownExpanded = false },
-                modifier = Modifier.fillMaxWidth()) {
-                  availableUsers.forEach { user ->
-                    DropdownMenuItem(
-                        text = {
-                          Row(
-                              modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                              horizontalArrangement = Arrangement.SpaceBetween,
-                              verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = user.displayName.ifBlank { user.email },
-                                    style = MaterialTheme.typography.bodyMedium)
-                                Checkbox(
-                                    checked = selectedParticipantIds.contains(user.uid),
-                                    onCheckedChange = { onToggleParticipant(user.uid) })
-                              }
-                        },
-                        onClick = { onToggleParticipant(user.uid) })
-                  }
-                }
           }
     }
   }
+
+  // Participants selection modal
+  if (showParticipantsModal) {
+    ParticipantsSelectionModal(
+        availableUsers = availableUsers,
+        selectedParticipantIds = selectedParticipantIds,
+        onToggleParticipant = onToggleParticipant,
+        onDismiss = { showParticipantsModal = false })
+  }
+}
+
+@Composable
+private fun ParticipantsSelectionModal(
+    availableUsers: List<User>,
+    selectedParticipantIds: List<String>,
+    onToggleParticipant: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+  Dialog(
+      onDismissRequest = onDismiss,
+      properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Card(
+            modifier =
+                Modifier.fillMaxWidth()
+                    .fillMaxHeight(0.7f)
+                    .padding(Spacing.md)
+                    .clip(RoundedCornerShape(24.dp)),
+            shape = RoundedCornerShape(24.dp),
+            colors =
+                CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+              Column(
+                  modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(Spacing.md)) {
+                    // Header
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically) {
+                          Text(
+                              text = "Select Participants",
+                              style = MaterialTheme.typography.titleLarge,
+                              fontWeight = FontWeight.Bold)
+                          Button(
+                              onClick = onDismiss,
+                              colors = EurekaStyles.primaryButtonColors(),
+                              shape = RoundedCornerShape(12.dp)) {
+                                Text("OK")
+                              }
+                        }
+                    Spacer(modifier = Modifier.height(Spacing.md))
+
+                    // Scrollable list of participants
+                    Column(
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .weight(1f)
+                                .verticalScroll(rememberScrollState())) {
+                          availableUsers.forEach { user ->
+                            Row(
+                                modifier =
+                                    Modifier.fillMaxWidth()
+                                        .clickable { onToggleParticipant(user.uid) }
+                                        .padding(vertical = Spacing.sm, horizontal = Spacing.md),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically) {
+                                  Text(
+                                      text = user.displayName.ifBlank { user.email },
+                                      style = MaterialTheme.typography.bodyLarge)
+                                  Checkbox(
+                                      checked = selectedParticipantIds.contains(user.uid),
+                                      onCheckedChange = { onToggleParticipant(user.uid) })
+                                }
+                          }
+                        }
+                  }
+            }
+      }
 }
 
 @Composable
@@ -303,6 +373,7 @@ private fun ActionButtons(
         OutlinedButton(
             onClick = onCancel,
             modifier = Modifier.weight(1f).testTag(CreateIdeaBottomSheetTestTags.CANCEL_BUTTON),
+            shape = RoundedCornerShape(16.dp),
             colors = EurekaStyles.outlinedButtonColors()) {
               Text("Cancel")
             }
@@ -311,12 +382,18 @@ private fun ActionButtons(
             onClick = onCreate,
             enabled = canCreate && !isCreating,
             modifier = Modifier.weight(1f).testTag(CreateIdeaBottomSheetTestTags.CREATE_BUTTON),
-            colors = EurekaStyles.primaryButtonColors()) {
+            shape = RoundedCornerShape(16.dp),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = Color.White,
+                    disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                    disabledContentColor = Color.White.copy(alpha = 0.6f))) {
               if (isCreating) {
                 CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
+                    color = Color.White, strokeWidth = 2.dp)
               } else {
-                Text("Create")
+                Text("Create", fontWeight = FontWeight.Bold)
               }
             }
       }

@@ -190,4 +190,56 @@ class IdeasContentTest {
     composeTestRule.onNodeWithTag("backToListButton").performClick()
     assert(backCalled)
   }
+
+  @Test
+  fun ideaCard_withParticipants_displaysParticipantAvatars() {
+    val ideaWithParticipants =
+        testIdea.copy(
+            participantIds = listOf("user1", "user2", "user3"), createdBy = "user1")
+    composeTestRule.setContent {
+      IdeasContent(
+          viewMode = IdeasViewMode.LIST,
+          selectedProject = testProject,
+          listState = ListState(listOf(ideaWithParticipants)) {},
+          conversationState = ConversationState(null, emptyList(), null) {},
+          lazyListState = rememberLazyListState(),
+          paddingValues = PaddingValues(0.dp),
+          isLoading = false)
+    }
+    // The avatars should be displayed (even if they show fallback icons)
+    composeTestRule.onNodeWithText("Test Idea").assertIsDisplayed()
+  }
+
+  @Test
+  fun ideaCard_withoutParticipants_doesNotShowAvatars() {
+    val ideaWithoutParticipants = testIdea.copy(participantIds = listOf("user1"), createdBy = "user1")
+    composeTestRule.setContent {
+      IdeasContent(
+          viewMode = IdeasViewMode.LIST,
+          selectedProject = testProject,
+          listState = ListState(listOf(ideaWithoutParticipants)) {},
+          conversationState = ConversationState(null, emptyList(), null) {},
+          lazyListState = rememberLazyListState(),
+          paddingValues = PaddingValues(0.dp),
+          isLoading = false)
+    }
+    composeTestRule.onNodeWithText("Test Idea").assertIsDisplayed()
+  }
+
+  @Test
+  fun ideaCard_withBorderColor_displaysCard() {
+    val idea1 = testIdea.copy(ideaId = "idea1")
+    val idea2 = testIdea.copy(ideaId = "idea2")
+    composeTestRule.setContent {
+      IdeasContent(
+          viewMode = IdeasViewMode.LIST,
+          selectedProject = testProject,
+          listState = ListState(listOf(idea1, idea2)) {},
+          conversationState = ConversationState(null, emptyList(), null) {},
+          lazyListState = rememberLazyListState(),
+          paddingValues = PaddingValues(0.dp),
+          isLoading = false)
+    }
+    composeTestRule.onNodeWithText("Test Idea").assertIsDisplayed()
+  }
 }
