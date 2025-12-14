@@ -18,12 +18,10 @@ import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AssignmentTurnedIn
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.AssignmentTurnedIn
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Lightbulb
@@ -61,7 +59,6 @@ object BottomBarNavigationTestTags {
   const val OVERVIEW_SCREEN_BUTTON = "OverviewScreenButton"
   const val MEETINGS_SCREEN_BUTTON = "MeetingsScreenButton"
   const val IDEAS_SCREEN_BUTTON = "IdeasScreenButton"
-  const val NOTES_SCREEN_BUTTON = "NotesScreenButton"
   const val PROFILE_SCREEN_BUTTON = "ProfileScreenButton"
 }
 
@@ -144,13 +141,6 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
         }
       }
 
-  val isNotesScreenPressed by
-      remember(currentDestination) {
-        derivedStateOf {
-          currentDestination?.hierarchy?.any { it.hasRoute(Route.SelfNotes::class) } == true
-        }
-      }
-
   BottomAppBar(
       containerColor = EColors.light.surface,
       modifier =
@@ -215,14 +205,6 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
               iconVector = Icons.Outlined.Lightbulb,
               pressedIconVector = Icons.Filled.Lightbulb,
               isPressed = isIdeasScreenPressed)
-          CustomIconButtonComposable(
-              modifier =
-                  Modifier.weight(1f).testTag(BottomBarNavigationTestTags.NOTES_SCREEN_BUTTON),
-              "Notes",
-              onClick = { navigateToTab(Route.SelfNotes) },
-              iconVector = Icons.Outlined.Edit,
-              pressedIconVector = Icons.Filled.Edit,
-              isPressed = isNotesScreenPressed)
           CustomIconButtonComposable(
               modifier =
                   Modifier.weight(1f).testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON),

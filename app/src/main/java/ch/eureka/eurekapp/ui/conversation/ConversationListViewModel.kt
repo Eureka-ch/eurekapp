@@ -7,6 +7,7 @@ import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.conversation.Conversation
 import ch.eureka.eurekapp.model.data.conversation.ConversationRepository
+import ch.eureka.eurekapp.model.data.notes.UnifiedSelfNotesRepository
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
@@ -26,6 +27,9 @@ import kotlinx.coroutines.launch
 Co-author: GPT-5 Codex
 Co-author: Claude 4.5 Sonnet
 */
+
+/** Special conversation ID for "to self" chat */
+const val TO_SELF_CONVERSATION_ID = "TO_SELF"
 
 /**
  * UI state for the conversation list screen.
@@ -80,6 +84,8 @@ open class ConversationListViewModel(
         RepositoriesProvider.conversationRepository,
     private val userRepository: UserRepository = RepositoriesProvider.userRepository,
     private val projectRepository: ProjectRepository = RepositoriesProvider.projectRepository,
+    private val selfNotesRepository: UnifiedSelfNotesRepository =
+        RepositoriesProvider.unifiedSelfNotesRepository,
     private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
     connectivityObserver: ConnectivityObserver = ConnectivityObserverProvider.connectivityObserver
 ) : ViewModel() {
@@ -126,21 +132,78 @@ open class ConversationListViewModel(
    * Load all conversations for the current user.
    *
    * Fetches conversations from Firestore and resolves display data (member names, project names)
-   * for each conversation. Results are emitted to [uiState] as they become available.
+   * for each conversation. Results are emitted to [uiState] as they become available. Always
+   * includes a "to self" conversation as the first item with the user's own photo.
    */
   fun loadConversations() {
     viewModelScope.launch {
-      conversationRepository
-          .getConversationsForCurrentUser()
-          .onStart { _conversationsState.value = ConversationsDataState.Loading }
-          .catch { e ->
-            _conversationsState.value = ConversationsDataState.Error(e.message ?: "Unknown error")
-          }
-          .collect { conversations ->
-            val displayDataList =
-                conversations.map { conversation -> resolveConversationDisplayData(conversation) }
-            _conversationsState.value = ConversationsDataState.Success(displayDataList)
-          }
+      val currentUserId = getCurrentUserId() ?: ""
+
+      // Only add "to self" conversation if user is authenticated
+      if (currentUserId.isNotEmpty()) {
+        val currentUserFlow = userRepository.getUserById(currentUserId)
+
+        combine(
+                conversationRepository.getConversationsForCurrentUser(),
+                selfNotesRepository.getNotes(limit = 1),
+                currentUserFlow) { conversations, selfNotes, currentUser ->
+                  val displayDataList =
+                      conversations.map { conversation ->
+                        resolveConversationDisplayData(conversation)
+                      }
+
+                  // Create "to self" conversation display data (always first, pinned)
+                  // Use the current user's own photo for the profile picture
+                  val lastSelfNote = selfNotes.firstOrNull()
+                  val toSelfConversation =
+                      Conversation(
+                          conversationId = TO_SELF_CONVERSATION_ID,
+                          projectId = "",
+                          memberIds = listOf(currentUserId),
+                          createdBy = currentUserId,
+                          lastMessageAt = lastSelfNote?.createdAt,
+                          lastMessagePreview = lastSelfNote?.text?.take(50),
+                          lastMessageSenderId = currentUserId)
+
+                  val toSelfDisplayData =
+                      ConversationDisplayData(
+                          conversation = toSelfConversation,
+                          otherMembers = listOf("To Self"),
+                          otherMembersPhotoUrl =
+                              listOf(currentUser?.photoUrl ?: ""), // User's own photo
+                          projectName = "Personal",
+                          lastMessagePreview = lastSelfNote?.text?.take(50),
+                          lastMessageTime =
+                              lastSelfNote?.createdAt?.let { timestamp ->
+                                ch.eureka.eurekapp.utils.Formatters.formatRelativeTime(
+                                    timestamp.toDate())
+                              },
+                          hasUnread = false)
+
+                  // Always put "to self" first, then other conversations
+                  listOf(toSelfDisplayData) + displayDataList
+                }
+            .onStart { _conversationsState.value = ConversationsDataState.Loading }
+            .catch { e ->
+              _conversationsState.value = ConversationsDataState.Error(e.message ?: "Unknown error")
+            }
+            .collect { displayDataList ->
+              _conversationsState.value = ConversationsDataState.Success(displayDataList)
+            }
+      } else {
+        // User not authenticated, just load regular conversations
+        conversationRepository
+            .getConversationsForCurrentUser()
+            .onStart { _conversationsState.value = ConversationsDataState.Loading }
+            .catch { e ->
+              _conversationsState.value = ConversationsDataState.Error(e.message ?: "Unknown error")
+            }
+            .collect { conversations ->
+              val displayDataList =
+                  conversations.map { conversation -> resolveConversationDisplayData(conversation) }
+              _conversationsState.value = ConversationsDataState.Success(displayDataList)
+            }
+      }
     }
   }
 
