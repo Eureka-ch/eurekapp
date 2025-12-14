@@ -13,6 +13,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.Eurekapp
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.navigation.BottomBarNavigationTestTags
 import ch.eureka.eurekapp.ui.authentication.SignInScreenTestTags
 import ch.eureka.eurekapp.ui.components.MessageBubbleTestTags
@@ -68,7 +69,8 @@ class ChatEndToEndTest : TestCase() {
     runBlocking {
       assumeTrue("Firebase Emulator must be running for tests", FirebaseEmulator.isRunning)
 
-      // Initialize ConnectivityObserverProvider for the test
+      // Initialize application singletons used by the app
+      RepositoriesProvider.initialize(ApplicationProvider.getApplicationContext())
       ConnectivityObserverProvider.initialize(ApplicationProvider.getApplicationContext())
 
       // Clear emulators before test
