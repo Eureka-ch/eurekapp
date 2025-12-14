@@ -251,7 +251,7 @@ private fun MeetingScreenContent(
             color = Color(0xFF64748B),
             fontWeight = FontWeight.Medium)
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(4.dp))
 
         if (!uiState.isConnected) {
           Text(
@@ -267,7 +267,7 @@ private fun MeetingScreenContent(
             selectedTab = uiState.selectedTab,
             onTabSelected = { meetingViewModel.selectTab(it) })
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(4.dp))
 
         when (uiState.selectedTab) {
           MeetingTab.UPCOMING ->
