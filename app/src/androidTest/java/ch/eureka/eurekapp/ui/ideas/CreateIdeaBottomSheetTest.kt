@@ -209,6 +209,19 @@ class CreateIdeaBottomSheetTest {
     selectProject()
     mockViewModel.toggleParticipant("user1")
     composeTestRule.waitForIdle()
+    // When a user is selected, it shows the user's name, not "1 participant selected"
+    composeTestRule.onNodeWithText("User One").assertIsDisplayed()
+  }
+
+  @Test
+  fun createIdeaBottomSheet_participantsModal_displaysSelectedCountWhenNoName() {
+    val usersWithoutName =
+        listOf(User(uid = "user1", displayName = "", email = "user1@test.com"))
+    val mockViewModel = setContent(users = usersWithoutName)
+    selectProject()
+    mockViewModel.toggleParticipant("user1")
+    composeTestRule.waitForIdle()
+    // When user has no display name, it shows "1 participant selected"
     composeTestRule.onNodeWithText("1 participant selected").assertIsDisplayed()
   }
 }
