@@ -377,6 +377,39 @@ class ActivityDetailScreenTest {
   }
 
   @Test
+  fun activityDetailScreen_viewMeetingButton_triggersNavigationCallback() {
+    val activity =
+        createActivity(
+            testActivityId, EntityType.MEETING, "Team Sync", ActivityType.CREATED, testEntityId)
+    coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
+
+    setupSimpleUserMock()
+    viewModel =
+        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
+
+    var navigationCalled = false
+    var capturedEntityType: EntityType? = null
+
+    composeTestRule.setContent {
+      ActivityDetailScreen(
+          activityId = testActivityId,
+          viewModel = viewModel,
+          onNavigateToEntity = { entityType, _, _ ->
+            navigationCalled = true
+            capturedEntityType = entityType
+          })
+    }
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithText("View MEETING").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ENTITY_BUTTON).performClick()
+    composeTestRule.waitForIdle()
+
+    assert(navigationCalled) { "Navigation callback should be called" }
+    assert(capturedEntityType == EntityType.MEETING) { "Should navigate to MEETING" }
+  }
+
+  @Test
   fun activityDetailScreen_updatedActivityType_displaysCorrectColor() {
     val activity = createActivity(testActivityId, EntityType.TASK, "Test", ActivityType.UPDATED)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
