@@ -4,8 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
@@ -33,12 +36,13 @@ fun EurekaTopBar(
 ) {
   val gradient = Brush.verticalGradient(listOf(Color(0xFFE53935), Color(0xFFC62828)))
   val barHeight = 52.dp
+  val statusPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
   Box(
       modifier =
           modifier
               .fillMaxWidth()
-              .height(barHeight)
+              .height(barHeight + statusPadding)
               .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
               .background(gradient)) {
         TopAppBar(
@@ -63,6 +67,6 @@ fun EurekaTopBar(
                     actionIconContentColor = Color.White,
                     navigationIconContentColor = Color.White),
             windowInsets = WindowInsets(0, 0, 0, 0),
-            modifier = Modifier.fillMaxWidth().height(barHeight))
+            modifier = Modifier.fillMaxWidth().height(barHeight).padding(top = statusPadding))
       }
 }
