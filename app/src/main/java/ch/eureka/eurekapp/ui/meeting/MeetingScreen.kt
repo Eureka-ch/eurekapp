@@ -240,6 +240,7 @@ private fun MeetingScreenContent(
   Column(
       modifier =
           Modifier.fillMaxSize()
+              .padding(padding)
               .padding(horizontal = 16.dp, vertical = 10.dp)
               .testTag(MeetingScreenTestTags.MEETING_SCREEN)) {
         Text(

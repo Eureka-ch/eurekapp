@@ -152,25 +152,13 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
       modifier =
           Modifier.fillMaxWidth()
               .windowInsetsPadding(WindowInsets.navigationBars)
-              .padding(horizontal = 16.dp, vertical = 8.dp),
+              .padding(horizontal = 8.dp, vertical = 4.dp),
       tonalElevation = 0.dp,
       actions = {
-        Box(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .shadow(elevation = 20.dp, shape = RoundedCornerShape(30.dp))
-                    .background(
-                        color = Color(0xFFF5F5F5), // Gris très clair pour meilleur contraste
-                        shape = RoundedCornerShape(30.dp))
-                    .border(
-                        width = 0.5.dp,
-                        color = Color(0xFFE0E0E0), // Bordure subtile gris clair
-                        shape = RoundedCornerShape(30.dp))
-                    .padding(horizontal = 12.dp, vertical = 8.dp)) {
-              Row(
-                  modifier = Modifier.fillMaxWidth(),
-                  horizontalArrangement = Arrangement.SpaceEvenly,
-                  verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically) {
                     CustomIconButtonComposable(
                         modifier =
                             Modifier.testTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON),
@@ -197,17 +185,16 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
                         iconVector = Icons.Outlined.Folder,
                         pressedIconVector = Icons.Filled.Folder,
                         isPressed = isProjectsScreenPressed)
-                    // Home button elevated and protruding
-                    Box(
-                        modifier = Modifier.offset(y = (-20).dp),
-                        contentAlignment = Alignment.Center) {
-                          HomeIconButton(
-                              modifier =
-                                  Modifier.testTag(
-                                      BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
-                              isPressed = isHomeScreenPressed,
-                              onClick = { navigateToHome() })
-                        }
+              // Home button elevated and protruding
+              Box(
+                  modifier = Modifier.offset(y = (-28).dp),
+                  contentAlignment = Alignment.Center) {
+                    HomeIconButton(
+                        modifier =
+                            Modifier.testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
+                        isPressed = isHomeScreenPressed,
+                        onClick = { navigateToHome() })
+                  }
                     CustomIconButtonComposable(
                         modifier =
                             Modifier.testTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON),
@@ -224,15 +211,14 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
                         iconVector = Icons.Outlined.Lightbulb,
                         pressedIconVector = Icons.Filled.Lightbulb,
                         isPressed = isIdeasScreenPressed)
-                    CustomIconButtonComposable(
-                        modifier =
-                            Modifier.testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON),
-                        "Profile",
-                        onClick = { navigateToTab(Route.Profile) },
-                        iconVector = Icons.Outlined.AccountCircle,
-                        pressedIconVector = Icons.Filled.AccountCircle,
-                        isPressed = isProfileScreenPressed)
-                  }
+              CustomIconButtonComposable(
+                  modifier =
+                      Modifier.testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON),
+                  "Profile",
+                  onClick = { navigateToTab(Route.Profile) },
+                  iconVector = Icons.Outlined.AccountCircle,
+                  pressedIconVector = Icons.Filled.AccountCircle,
+                  isPressed = isProfileScreenPressed)
             }
       })
 }
