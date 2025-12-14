@@ -38,11 +38,12 @@ class FirebaseMcpTokenRepository(
         val now = Timestamp.now()
         val expiresAt = Timestamp(Date(now.toDate().time + ttlDays * 24 * 60 * 60 * 1000L))
 
+        // createdAt is null here - @ServerTimestamp will set it on the server
         val token =
             McpToken(
                 userId = userId,
                 name = name,
-                createdAt = now,
+                createdAt = null,
                 expiresAt = expiresAt,
                 lastUsedAt = null)
 
