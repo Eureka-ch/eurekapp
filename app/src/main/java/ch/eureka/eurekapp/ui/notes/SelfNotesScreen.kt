@@ -164,17 +164,17 @@ private fun ContextualSelectionTopBar(
       title = "$selectionCount Selected",
       navigationIcon = {
         IconButton(onClick = onClearSelection) {
-          Icon(Icons.Default.Close, contentDescription = "Cancel Selection")
+          Icon(Icons.Default.Close, contentDescription = "Cancel Selection", tint = Color.White)
         }
       },
       actions = {
         if (selectionCount == 1) {
           IconButton(onClick = { onEditSelected(selectedIds.first()) }) {
-            Icon(Icons.Default.Edit, contentDescription = "Edit Note")
+            Icon(Icons.Default.Edit, contentDescription = "Edit Note", tint = Color.White)
           }
         }
         IconButton(onClick = onDeleteSelected) {
-          Icon(Icons.Default.Delete, contentDescription = "Delete Selected")
+          Icon(Icons.Default.Delete, contentDescription = "Delete Selected", tint = Color.White)
         }
       })
 }
@@ -193,7 +193,7 @@ private fun StandardTopBar(
       navigationIcon = {
         if (isEditing) {
           IconButton(onClick = onCancelEditing) {
-            Icon(Icons.Default.Close, contentDescription = "Cancel Edit")
+            Icon(Icons.Default.Close, contentDescription = "Cancel Edit", tint = Color.White)
           }
         } else {
           BackButton(onClick = onNavigateBack)
@@ -206,7 +206,7 @@ private fun StandardTopBar(
               Text(
                   text = if (isCloudEnabled) "Cloud" else "Local",
                   style = MaterialTheme.typography.labelMedium,
-                  color = MaterialTheme.colorScheme.onPrimary,
+                  color = Color.White,
                   modifier = Modifier.padding(end = 8.dp))
               Switch(
                   checked = isCloudEnabled,
@@ -214,10 +214,10 @@ private fun StandardTopBar(
                   modifier = Modifier.testTag(SelfNotesScreenTestTags.TOGGLE_SWITCH),
                   colors =
                       SwitchDefaults.colors(
-                          checkedThumbColor = MaterialTheme.colorScheme.primary,
-                          checkedTrackColor = MaterialTheme.colorScheme.onPrimary,
-                          uncheckedThumbColor = Color.LightGray,
-                          uncheckedTrackColor = MaterialTheme.colorScheme.primaryContainer))
+                          checkedThumbColor = Color.White,
+                          checkedTrackColor = Color.White.copy(alpha = 0.5f),
+                          uncheckedThumbColor = Color.White.copy(alpha = 0.8f),
+                          uncheckedTrackColor = Color.White.copy(alpha = 0.3f)))
             }
       })
 }

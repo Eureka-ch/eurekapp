@@ -37,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -74,22 +75,27 @@ fun ActivityFeedScreen(
             actions = {
               IconButton(
                   onClick = { viewModel.refresh() }, modifier = Modifier.testTag("RefreshButton")) {
-                    Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh")
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Refresh",
+                        tint = Color.White)
                   }
-
               IconButton(
                   onClick = { searchExpanded = !searchExpanded },
                   modifier = Modifier.testTag("SearchButton")) {
-                    Icon(imageVector = Icons.Default.Search, contentDescription = "Toggle search")
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Toggle search",
+                        tint = Color.White)
                   }
-
               if (uiState.activities.isNotEmpty()) {
                 IconButton(
                     onClick = { viewModel.markAllAsRead() },
                     modifier = Modifier.testTag("MarkAllReadButton")) {
                       Icon(
                           imageVector = Icons.Default.DoneAll,
-                          contentDescription = "Mark all as read")
+                          contentDescription = "Mark all as read",
+                          tint = Color.White)
                     }
               }
             })

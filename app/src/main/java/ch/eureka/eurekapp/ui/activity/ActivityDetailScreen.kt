@@ -142,7 +142,10 @@ fun ActivityDetailScreen(
             title = "Activity Details",
             navigationIcon = {
               IconButton(onClick = onNavigateBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Navigate back")
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Navigate back",
+                    tint = Color.White)
               }
             })
       }) { paddingValues ->

@@ -21,7 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
-/** Top header bar visible on all screens with compact red gradient. */
+/** Compact red gradient top bar with visible white title/actions. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EurekaTopBar(

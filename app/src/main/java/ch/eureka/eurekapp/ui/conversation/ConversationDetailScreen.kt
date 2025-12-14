@@ -37,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
@@ -141,15 +142,19 @@ fun ConversationDetailScreen(
       modifier = modifier.fillMaxSize().testTag(ConversationDetailScreenTestTags.SCREEN),
       topBar = {
         if (uiState.isEditing) {
-          // Contextual top bar for editing mode - use EurekaTopBar with different styling
+          // Contextual top bar for editing mode
           EurekaTopBar(
               title = "Editing Message",
+              modifier = Modifier.testTag(ConversationDetailScreenTestTags.EDITING_TOP_BAR),
               navigationIcon = {
                 IconButton(
                     onClick = viewModel::cancelEditing,
                     modifier =
                         Modifier.testTag(ConversationDetailScreenTestTags.CANCEL_EDIT_BUTTON)) {
-                      Icon(Icons.Default.Close, contentDescription = "Cancel Edit")
+                      Icon(
+                          Icons.Default.Close,
+                          contentDescription = "Cancel Edit",
+                          tint = Color.White)
                     }
               })
         } else {
