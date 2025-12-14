@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.ui.components.BackButton
@@ -130,10 +131,12 @@ fun IdeasScreen(
                           shape = RoundedCornerShape(20.dp),
                           colors =
                               ButtonDefaults.buttonColors(
-                                  containerColor = MaterialTheme.colorScheme.surface,
-                                  contentColor = MaterialTheme.colorScheme.onSurface)) {
+                                  containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                  contentColor = MaterialTheme.colorScheme.onPrimaryContainer)) {
                             Text(
                                 text = uiState.selectedProject?.name ?: "Select a project",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
                                 modifier = Modifier.padding(horizontal = 8.dp))
                             Icon(
                                 imageVector = Icons.Default.ArrowDropDown,

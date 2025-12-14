@@ -39,6 +39,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
@@ -68,26 +70,37 @@ data class ConversationState(
 data class ListState(val ideas: List<Idea>, val onIdeaClick: (Idea) -> Unit)
 
 /**
- * Generates a consistent color for an idea based on its ID. This ensures the same idea always gets
- * the same color.
+ * Generates a gradient brush for idea card border with rotating effect. Uses vibrant but subtle
+ * colors: electric blue, neon violet, mint green, hot orange, light red.
  */
 @Composable
-private fun getIdeaBorderColor(ideaId: String): Color {
-  val colors =
+private fun getIdeaBorderGradient(ideaId: String): Brush {
+  // Vibrant colors with very light opacity for subtle effect
+  val electricBlue = Color(0xFF00D4FF).copy(alpha = 0.15f) // Bleu électrique
+  val neonViolet = Color(0xFF8B5CF6).copy(alpha = 0.15f) // Violet néon
+  val mintGreen = Color(0xFF00F5A0).copy(alpha = 0.15f) // Vert menthe
+  val hotOrange = Color(0xFFFF6B35).copy(alpha = 0.15f) // Orange chaud
+  val lightRed = Color(0xFFFF6B9D).copy(alpha = 0.15f) // Rouge clair
+
+  val colorSets =
       listOf(
-          Color(0xFFE83E3E), // Red
-          Color(0xFF2563EB), // Blue
-          Color(0xFF22C55E), // Green
-          Color(0xFFFF9500), // Orange
-          Color(0xFF8B5CF6), // Purple
-          Color(0xFFEC4899), // Pink
-          Color(0xFF06B6D4), // Cyan
-          Color(0xFFF59E0B), // Amber
-          Color(0xFF10B981), // Emerald
-          Color(0xFF6366F1) // Indigo
-          )
-  val index = ideaId.hashCode().mod(colors.size)
-  return colors[if (index < 0) -index else index]
+          listOf(electricBlue, neonViolet, mintGreen),
+          listOf(neonViolet, mintGreen, hotOrange),
+          listOf(mintGreen, hotOrange, lightRed),
+          listOf(hotOrange, lightRed, electricBlue),
+          listOf(lightRed, electricBlue, neonViolet),
+          listOf(electricBlue, hotOrange, mintGreen),
+          listOf(neonViolet, lightRed, hotOrange),
+          listOf(mintGreen, electricBlue, lightRed))
+
+  val index = ideaId.hashCode().mod(colorSets.size)
+  val selectedColors = colorSets[if (index < 0) -index else index]
+
+  // Create a linear gradient that gives a rotating effect around the border
+  return Brush.linearGradient(
+      colors = selectedColors,
+      start = androidx.compose.ui.geometry.Offset(0f, 0f),
+      end = androidx.compose.ui.geometry.Offset(1000f, 1000f))
 }
 
 /**
@@ -185,41 +198,54 @@ private fun ParticipantAvatars(
 
 @Composable
 private fun IdeaCard(idea: Idea, onIdeaClick: () -> Unit) {
-  val borderColor = getIdeaBorderColor(idea.ideaId)
+  val borderGradient = getIdeaBorderGradient(idea.ideaId)
 
-  Card(
-      onClick = onIdeaClick,
+  // Outer box with gradient border effect
+  Box(
       modifier =
           Modifier.fillMaxWidth()
-              .border(width = 3.dp, color = borderColor, shape = RoundedCornerShape(20.dp)),
-      shape = RoundedCornerShape(20.dp),
-      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-      elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(Spacing.md),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically) {
-              Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = idea.title ?: "Untitled Idea",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold)
-                if (idea.content != null) {
-                  Text(
-                      text = idea.content,
-                      style = MaterialTheme.typography.bodyMedium,
-                      color = MaterialTheme.colorScheme.onSurfaceVariant,
-                      maxLines = 2,
-                      modifier = Modifier.padding(top = Spacing.xs))
-                }
-              }
+              .shadow(
+                  elevation = 4.dp,
+                  shape = RoundedCornerShape(20.dp),
+                  spotColor = Color.Black.copy(alpha = 0.1f))
+              .background(brush = borderGradient, shape = RoundedCornerShape(20.dp))
+              .padding(1.5.dp)) {
+        // Inner card with white background
+        Card(
+            onClick = onIdeaClick,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(18.5.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)) {
+              Row(
+                  modifier =
+                      Modifier.fillMaxWidth()
+                          .padding(vertical = Spacing.md, horizontal = Spacing.md),
+                  horizontalArrangement = Arrangement.SpaceBetween,
+                  verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.weight(1f)) {
+                      Text(
+                          text = idea.title ?: "Untitled Idea",
+                          style = MaterialTheme.typography.titleMedium,
+                          fontWeight = FontWeight.SemiBold)
+                      if (idea.content != null) {
+                        Text(
+                            text = idea.content,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 2,
+                            modifier = Modifier.padding(top = Spacing.xs))
+                      }
+                    }
 
-              // Participant avatars on the right
-              if (idea.participantIds.isNotEmpty() &&
-                  idea.participantIds.any { it != idea.createdBy }) {
-                Spacer(modifier = Modifier.padding(start = Spacing.sm))
-                ParticipantAvatars(participantIds = idea.participantIds, createdBy = idea.createdBy)
-              }
+                    // Participant avatars on the right
+                    if (idea.participantIds.isNotEmpty() &&
+                        idea.participantIds.any { it != idea.createdBy }) {
+                      Spacer(modifier = Modifier.padding(start = Spacing.sm))
+                      ParticipantAvatars(
+                          participantIds = idea.participantIds, createdBy = idea.createdBy)
+                    }
+                  }
             }
       }
 }

@@ -261,20 +261,16 @@ private fun ParticipantsSelector(
           style = MaterialTheme.typography.bodyMedium,
           color = MaterialTheme.colorScheme.onSurfaceVariant)
     } else {
-      Box(
+      OutlinedButton(
+          onClick = { showParticipantsModal = true },
           modifier =
-              Modifier.fillMaxWidth()
-                  .clickable { showParticipantsModal = true }
-                  .testTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)) {
-            OutlinedTextField(
-                value = displayText,
-                onValueChange = {},
-                readOnly = true,
-                placeholder = { Text("Select participants to share with") },
-                label = { Text("Participants") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = EurekaStyles.textFieldColors())
+              Modifier.fillMaxWidth().testTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN),
+          shape = RoundedCornerShape(16.dp),
+          colors = EurekaStyles.outlinedButtonColors()) {
+            Text(
+                text = displayText,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 8.dp))
           }
     }
   }

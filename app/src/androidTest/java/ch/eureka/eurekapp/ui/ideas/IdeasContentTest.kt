@@ -228,8 +228,8 @@ class IdeasContentTest {
 
   @Test
   fun ideaCard_withBorderColor_displaysCard() {
-    val idea1 = testIdea.copy(ideaId = "idea1")
-    val idea2 = testIdea.copy(ideaId = "idea2")
+    val idea1 = testIdea.copy(ideaId = "idea1", title = "Idea 1")
+    val idea2 = testIdea.copy(ideaId = "idea2", title = "Idea 2")
     composeTestRule.setContent {
       IdeasContent(
           viewMode = IdeasViewMode.LIST,
@@ -240,6 +240,7 @@ class IdeasContentTest {
           paddingValues = PaddingValues(0.dp),
           isLoading = false)
     }
-    composeTestRule.onNodeWithText("Test Idea").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Idea 1").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Idea 2").assertIsDisplayed()
   }
 }
