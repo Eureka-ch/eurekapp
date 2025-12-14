@@ -215,8 +215,7 @@ class CreateIdeaBottomSheetTest {
 
   @Test
   fun createIdeaBottomSheet_participantsModal_displaysSelectedCountWhenNoName() {
-    val usersWithoutName =
-        listOf(User(uid = "user1", displayName = "", email = "user1@test.com"))
+    val usersWithoutName = listOf(User(uid = "user1", displayName = "", email = "user1@test.com"))
     val mockViewModel = setContent(users = usersWithoutName)
     selectProject()
     mockViewModel.toggleParticipant("user1")

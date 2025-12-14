@@ -1,6 +1,7 @@
 /* Portions of this file were written with the help of GPT-5 Codex and Gemini. */
 package ch.eureka.eurekapp.ui.ideas
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,6 +34,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -128,11 +130,22 @@ fun IdeasScreen(
                     modifier = Modifier.testTag(IdeasScreenTestTags.PROJECT_SELECTOR)) {
                       Button(
                           onClick = { projectDropdownExpanded = !projectDropdownExpanded },
+                          modifier =
+                              Modifier.shadow(
+                                      elevation = 6.dp,
+                                      shape = RoundedCornerShape(20.dp),
+                                      spotColor = Color.Black.copy(alpha = 0.2f))
+                                  .border(
+                                      width = 1.5.dp,
+                                      color =
+                                          MaterialTheme.colorScheme.outlineVariant.copy(
+                                              alpha = 0.5f),
+                                      shape = RoundedCornerShape(20.dp)),
                           shape = RoundedCornerShape(20.dp),
                           colors =
                               ButtonDefaults.buttonColors(
-                                  containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                  contentColor = MaterialTheme.colorScheme.onPrimaryContainer)) {
+                                  containerColor = Color.White,
+                                  contentColor = MaterialTheme.colorScheme.onSurface)) {
                             Text(
                                 text = uiState.selectedProject?.name ?: "Select a project",
                                 style = MaterialTheme.typography.titleMedium,

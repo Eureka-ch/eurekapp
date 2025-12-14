@@ -75,12 +75,12 @@ data class ListState(val ideas: List<Idea>, val onIdeaClick: (Idea) -> Unit)
  */
 @Composable
 private fun getIdeaBorderGradient(ideaId: String): Brush {
-  // Vibrant colors with very light opacity for subtle effect
-  val electricBlue = Color(0xFF00D4FF).copy(alpha = 0.15f) // Bleu électrique
-  val neonViolet = Color(0xFF8B5CF6).copy(alpha = 0.15f) // Violet néon
-  val mintGreen = Color(0xFF00F5A0).copy(alpha = 0.15f) // Vert menthe
-  val hotOrange = Color(0xFFFF6B35).copy(alpha = 0.15f) // Orange chaud
-  val lightRed = Color(0xFFFF6B9D).copy(alpha = 0.15f) // Rouge clair
+  // Vibrant colors with light opacity for subtle but visible effect
+  val electricBlue = Color(0xFF00D4FF).copy(alpha = 0.25f) // Bleu électrique
+  val neonViolet = Color(0xFF8B5CF6).copy(alpha = 0.25f) // Violet néon
+  val mintGreen = Color(0xFF00F5A0).copy(alpha = 0.25f) // Vert menthe
+  val hotOrange = Color(0xFFFF6B35).copy(alpha = 0.25f) // Orange chaud
+  val lightRed = Color(0xFFFF6B9D).copy(alpha = 0.25f) // Rouge clair
 
   val colorSets =
       listOf(
@@ -177,20 +177,20 @@ private fun ParticipantAvatars(
         ParticipantAvatar(photoUrl = user?.photoUrl ?: "")
       }
       2 -> {
-        // Two participants - offset second one
+        // Two participants - offset second one (reduced to keep within card)
         val user1 = users.getOrNull(0)
         val user2 = users.getOrNull(1)
         ParticipantAvatar(photoUrl = user1?.photoUrl ?: "")
-        ParticipantAvatar(photoUrl = user2?.photoUrl ?: "", modifier = Modifier.offset(x = 12.dp))
+        ParticipantAvatar(photoUrl = user2?.photoUrl ?: "", modifier = Modifier.offset(x = 10.dp))
       }
       else -> {
-        // Three or more participants - show first 3 with offsets
+        // Three or more participants - show first 3 with reduced offsets to keep within card
         val user1 = users.getOrNull(0)
         val user2 = users.getOrNull(1)
         val user3 = users.getOrNull(2)
         ParticipantAvatar(photoUrl = user1?.photoUrl ?: "")
-        ParticipantAvatar(photoUrl = user2?.photoUrl ?: "", modifier = Modifier.offset(x = 12.dp))
-        ParticipantAvatar(photoUrl = user3?.photoUrl ?: "", modifier = Modifier.offset(x = 24.dp))
+        ParticipantAvatar(photoUrl = user2?.photoUrl ?: "", modifier = Modifier.offset(x = 10.dp))
+        ParticipantAvatar(photoUrl = user3?.photoUrl ?: "", modifier = Modifier.offset(x = 18.dp))
       }
     }
   }
@@ -238,12 +238,14 @@ private fun IdeaCard(idea: Idea, onIdeaClick: () -> Unit) {
                       }
                     }
 
-                    // Participant avatars on the right
+                    // Participant avatars on the right with padding to keep them inside card
                     if (idea.participantIds.isNotEmpty() &&
                         idea.participantIds.any { it != idea.createdBy }) {
                       Spacer(modifier = Modifier.padding(start = Spacing.sm))
-                      ParticipantAvatars(
-                          participantIds = idea.participantIds, createdBy = idea.createdBy)
+                      Box(modifier = Modifier.padding(end = Spacing.xs)) {
+                        ParticipantAvatars(
+                            participantIds = idea.participantIds, createdBy = idea.createdBy)
+                      }
                     }
                   }
             }
