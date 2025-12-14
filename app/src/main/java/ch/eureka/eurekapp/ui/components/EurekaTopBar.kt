@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -61,6 +62,7 @@ fun EurekaTopBar(
                     titleContentColor = Color.White,
                     actionIconContentColor = Color.White,
                     navigationIconContentColor = Color.White),
+            windowInsets = WindowInsets(0, 0, 0, 0),
             modifier = Modifier.fillMaxWidth().height(barHeight))
       }
 }
