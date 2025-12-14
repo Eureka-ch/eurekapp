@@ -241,7 +241,7 @@ private fun MeetingScreenContent(
       modifier =
           Modifier.fillMaxSize()
               .padding(padding)
-              .padding(horizontal = 16.dp, vertical = 10.dp)
+              .padding(horizontal = 16.dp, vertical = 6.dp)
               .testTag(MeetingScreenTestTags.MEETING_SCREEN)) {
         Text(
             modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_DESCRIPTION),
@@ -250,7 +250,7 @@ private fun MeetingScreenContent(
             color = Color(0xFF64748B),
             fontWeight = FontWeight.Medium)
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(8.dp))
 
         if (!uiState.isConnected) {
           Text(
@@ -266,13 +266,13 @@ private fun MeetingScreenContent(
             selectedTab = uiState.selectedTab,
             onTabSelected = { meetingViewModel.selectTab(it) })
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
 
         when (uiState.selectedTab) {
           MeetingTab.UPCOMING ->
               MeetingsList(
                   MeetingsListConfig(
-                      modifier = Modifier.padding(padding),
+                      modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
                       meetings = uiState.upcomingMeetings,
                       tabName = MeetingTab.UPCOMING.name.lowercase(),
                       projectId = config.projectId,
@@ -290,7 +290,7 @@ private fun MeetingScreenContent(
           MeetingTab.PAST ->
               MeetingsList(
                   MeetingsListConfig(
-                      modifier = Modifier.padding(padding),
+                      modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
                       meetings = uiState.pastMeetings,
                       tabName = MeetingTab.PAST.name.lowercase(),
                       projectId = config.projectId,
@@ -490,10 +490,10 @@ fun MeetingCard(
       modifier =
           Modifier.fillMaxWidth()
               .scale(scale)
-              .shadow(elevation = 12.dp, shape = RoundedCornerShape(24.dp))
+              .shadow(elevation = 12.dp, shape = RoundedCornerShape(12.dp))
               .clickable(role = Role.Button, onClick = config.onClick)
               .testTag(MeetingScreenTestTags.MEETING_CARD),
-      shape = RoundedCornerShape(24.dp),
+      shape = RoundedCornerShape(12.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
       colors = CardDefaults.cardColors(containerColor = Color.White)) {
         Box(
@@ -502,7 +502,7 @@ fun MeetingCard(
                     .border(
                         width = 1.5.dp,
                         color = Color(0xFFE2E8F0),
-                        shape = RoundedCornerShape(24.dp))
+                        shape = RoundedCornerShape(12.dp))
                     .background(
                         brush =
                             Brush.linearGradient(

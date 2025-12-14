@@ -37,7 +37,7 @@ fun EurekaTopBar(
   // Gradient colors: from intense red to darker red
   val gradientStart = MaterialTheme.colorScheme.primary // #E83E3E
   val gradientEnd = Color(0xFFC62828) // Darker red for gradient effect
-  val barHeight = 64.dp
+  val barHeight = 48.dp
 
   Box(
       modifier =

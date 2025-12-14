@@ -146,85 +146,81 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
       }
 
   BottomAppBar(
-      containerColor = Color.Transparent, // laisse voir le contenu derrière
+      containerColor = Color.Transparent,
       modifier =
           Modifier.fillMaxWidth()
               .windowInsetsPadding(WindowInsets.navigationBars)
-              .padding(horizontal = 8.dp, vertical = 4.dp),
+              .padding(horizontal = 12.dp, vertical = 6.dp),
       tonalElevation = 0.dp,
       actions = {
-        Box(
+        Row(
             modifier =
                 Modifier.fillMaxWidth()
-                    .shadow(elevation = 20.dp, shape = CircleShape)
-                    .background(color = Color(0xFFF5F5F5), shape = CircleShape)
-                    .padding(horizontal = 12.dp, vertical = 8.dp)) {
-              Row(
-                  modifier = Modifier.fillMaxWidth(),
-                  horizontalArrangement = Arrangement.SpaceEvenly,
-                  verticalAlignment = Alignment.CenterVertically) {
-                    CustomIconButtonComposable(
-                        modifier =
-                            Modifier.testTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON),
-                        "Tasks",
-                        onClick = { navigateToTab(Route.TasksSection.Tasks) },
-                        iconVector = Icons.Outlined.AssignmentTurnedIn,
-                        pressedIconVector = Icons.Filled.AssignmentTurnedIn,
-                        isPressed = isTasksPressed)
-                    // Conversations tab - between Tasks and Project (left of Home)
-                    CustomIconButtonComposable(
-                        modifier =
-                            Modifier.testTag(
-                                BottomBarNavigationTestTags.CONVERSATIONS_SCREEN_BUTTON),
-                        "Chats",
-                        onClick = { navigateToTab(Route.ConversationsSection.Conversations) },
-                        iconVector = Icons.AutoMirrored.Outlined.Chat,
-                        pressedIconVector = Icons.AutoMirrored.Filled.Chat,
-                        isPressed = isConversationsScreenPressed)
-                    CustomIconButtonComposable(
-                        modifier =
-                            Modifier.testTag(BottomBarNavigationTestTags.PROJECTS_SCREEN_BUTTON),
-                        "Project",
-                        onClick = { navigateToTab(Route.ProjectSelection) },
-                        iconVector = Icons.Outlined.Folder,
-                        pressedIconVector = Icons.Filled.Folder,
-                        isPressed = isProjectsScreenPressed)
-                    // Home button elevated and protruding
-                    Box(
-                        modifier = Modifier.offset(y = (-28).dp),
-                        contentAlignment = Alignment.Center) {
-                          HomeIconButton(
-                              modifier =
-                                  Modifier.testTag(
-                                      BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
-                              isPressed = isHomeScreenPressed,
-                              onClick = { navigateToHome() })
-                        }
-                    CustomIconButtonComposable(
-                        modifier =
-                            Modifier.testTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON),
-                        "Meetings",
-                        onClick = { navigateToTab(Route.MeetingsSection.Meetings) },
-                        iconVector = Icons.Default.CalendarToday,
-                        pressedIconVector = Icons.Filled.CalendarToday,
-                        isPressed = isMeetingScreenPressed)
-                    CustomIconButtonComposable(
-                        modifier =
-                            Modifier.testTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON),
-                        "Ideas",
-                        onClick = { navigateToTab(Route.IdeasSection.Ideas()) },
-                        iconVector = Icons.Outlined.Lightbulb,
-                        pressedIconVector = Icons.Filled.Lightbulb,
-                        isPressed = isIdeasScreenPressed)
-                    CustomIconButtonComposable(
-                        modifier =
-                            Modifier.testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON),
-                        "Profile",
-                        onClick = { navigateToTab(Route.Profile) },
-                        iconVector = Icons.Outlined.AccountCircle,
-                        pressedIconVector = Icons.Filled.AccountCircle,
-                        isPressed = isProfileScreenPressed)
-                  }
+                    .shadow(elevation = 3.dp, shape = CircleShape)
+                    .background(color = Color.White.copy(alpha = 0.9f), shape = CircleShape)
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically) {
+              CustomIconButtonComposable(
+                  modifier =
+                      Modifier.weight(1f).testTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON),
+                  "Tasks",
+                  onClick = { navigateToTab(Route.TasksSection.Tasks) },
+                  iconVector = Icons.Outlined.AssignmentTurnedIn,
+                  pressedIconVector = Icons.Filled.AssignmentTurnedIn,
+                  isPressed = isTasksPressed)
+              CustomIconButtonComposable(
+                  modifier =
+                      Modifier.weight(1f)
+                          .testTag(BottomBarNavigationTestTags.CONVERSATIONS_SCREEN_BUTTON),
+                  "Chats",
+                  onClick = { navigateToTab(Route.ConversationsSection.Conversations) },
+                  iconVector = Icons.AutoMirrored.Outlined.Chat,
+                  pressedIconVector = Icons.AutoMirrored.Filled.Chat,
+                  isPressed = isConversationsScreenPressed)
+              CustomIconButtonComposable(
+                  modifier =
+                      Modifier.weight(1f)
+                          .testTag(BottomBarNavigationTestTags.PROJECTS_SCREEN_BUTTON),
+                  "Project",
+                  onClick = { navigateToTab(Route.ProjectSelection) },
+                  iconVector = Icons.Outlined.Folder,
+                  pressedIconVector = Icons.Filled.Folder,
+                  isPressed = isProjectsScreenPressed)
+              Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                HomeIconButton(
+                    modifier =
+                        Modifier.offset(y = (-20).dp)
+                            .testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
+                    isPressed = isHomeScreenPressed,
+                    onClick = { navigateToHome() })
+              }
+              CustomIconButtonComposable(
+                  modifier =
+                      Modifier.weight(1f)
+                          .testTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON),
+                  "Meetings",
+                  onClick = { navigateToTab(Route.MeetingsSection.Meetings) },
+                  iconVector = Icons.Default.CalendarToday,
+                  pressedIconVector = Icons.Filled.CalendarToday,
+                  isPressed = isMeetingScreenPressed)
+              CustomIconButtonComposable(
+                  modifier =
+                      Modifier.weight(1f).testTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON),
+                  "Ideas",
+                  onClick = { navigateToTab(Route.IdeasSection.Ideas()) },
+                  iconVector = Icons.Outlined.Lightbulb,
+                  pressedIconVector = Icons.Filled.Lightbulb,
+                  isPressed = isIdeasScreenPressed)
+              CustomIconButtonComposable(
+                  modifier =
+                      Modifier.weight(1f)
+                          .testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON),
+                  "Profile",
+                  onClick = { navigateToTab(Route.Profile) },
+                  iconVector = Icons.Outlined.AccountCircle,
+                  pressedIconVector = Icons.Filled.AccountCircle,
+                  isPressed = isProfileScreenPressed)
             }
       })
 }
