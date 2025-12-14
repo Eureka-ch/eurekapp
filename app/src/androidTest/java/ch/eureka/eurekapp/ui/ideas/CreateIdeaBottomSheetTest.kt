@@ -220,7 +220,7 @@ class CreateIdeaBottomSheetTest {
     selectProject()
     mockViewModel.toggleParticipant("user1")
     composeTestRule.waitForIdle()
-    // When user has no display name, it shows "1 participant selected"
-    composeTestRule.onNodeWithText("1 participant selected").assertIsDisplayed()
+    // When user has empty displayName, ifBlank returns email, so it shows the email
+    composeTestRule.onNodeWithText("user1@test.com").assertIsDisplayed()
   }
 }
