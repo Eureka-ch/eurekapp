@@ -40,7 +40,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -59,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.R
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import com.google.android.gms.maps.model.ButtCap
 import com.google.android.gms.maps.model.CameraPosition

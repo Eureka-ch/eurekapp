@@ -8,7 +8,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,16 +17,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AssignmentTurnedIn
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -50,6 +51,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.Task
@@ -59,7 +61,6 @@ import ch.eureka.eurekapp.model.data.task.getDaysUntilDue
 import ch.eureka.eurekapp.model.data.task.getDueDateTag
 import ch.eureka.eurekapp.ui.components.EurekaInfoCard
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
-import ch.eureka.eurekapp.ui.components.IconTextRow
 import ch.eureka.eurekapp.ui.components.help.HelpContext
 import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
@@ -68,7 +69,6 @@ import ch.eureka.eurekapp.ui.home.HomeOverviewUiState
 import ch.eureka.eurekapp.ui.home.HomeOverviewViewModel
 import ch.eureka.eurekapp.ui.meeting.MeetingCard
 import ch.eureka.eurekapp.ui.meeting.MeetingCardConfig
-import ch.eureka.eurekapp.ui.tasks.components.TaskSectionHeader
 import com.google.firebase.Timestamp
 
 // Part of this code and documentation were generated with the help of AI (ChatGPT 5.1).
@@ -181,9 +181,9 @@ internal fun HomeOverviewLayout(
         item(key = "header") {
           AnimatedVisibility(
               visible = true,
-              enter = fadeIn(animationSpec = tween(600)) + slideInVertically(
-                  initialOffsetY = { -30 },
-                  animationSpec = tween(600))) {
+              enter =
+                  fadeIn(animationSpec = tween(600)) +
+                      slideInVertically(initialOffsetY = { -30 }, animationSpec = tween(600))) {
                 GreetingHeader(uiState.currentUserName, uiState.isConnected, uiState.error)
                 Spacer(modifier = Modifier.height(Spacing.md))
                 SummaryCardsRow(
@@ -205,25 +205,24 @@ internal fun HomeOverviewLayout(
         if (uiState.upcomingTasks.isEmpty()) {
           item { EmptyState(text = "No tasks assigned yet. Create one to get started.") }
         } else {
-          items(
-              items = uiState.upcomingTasks.take(HOME_ITEMS_LIMIT),
-              key = { it.taskID }) { task ->
-                AnimatedVisibility(
-                    visible = true,
-                    enter = fadeIn(animationSpec = tween(400, delayMillis = 100)) +
+          items(items = uiState.upcomingTasks.take(HOME_ITEMS_LIMIT), key = { it.taskID }) { task ->
+            AnimatedVisibility(
+                visible = true,
+                enter =
+                    fadeIn(animationSpec = tween(400, delayMillis = 100)) +
                         slideInVertically(
                             initialOffsetY = { 30 },
                             animationSpec = tween(400, delayMillis = 100))) {
-                      Box(
-                          modifier =
-                              Modifier.fillMaxWidth()
-                                  .testTag(HomeOverviewTestTags.getTaskItemTestTag(task.taskID))) {
-                            TaskPreviewCard(
-                                task = task,
-                                onTaskClick = { actions.onTaskSelected(task.projectId, task.taskID) })
-                          }
-                    }
-              }
+                  Box(
+                      modifier =
+                          Modifier.fillMaxWidth()
+                              .testTag(HomeOverviewTestTags.getTaskItemTestTag(task.taskID))) {
+                        TaskPreviewCard(
+                            task = task,
+                            onTaskClick = { actions.onTaskSelected(task.projectId, task.taskID) })
+                      }
+                }
+          }
         }
 
         item {
@@ -237,31 +236,33 @@ internal fun HomeOverviewLayout(
         if (uiState.upcomingMeetings.isEmpty()) {
           item { EmptyState(text = "No upcoming meetings. Schedule one to keep your team synced.") }
         } else {
-          items(
-              items = uiState.upcomingMeetings.take(HOME_ITEMS_LIMIT),
-              key = { it.meetingID }) { meeting ->
-                AnimatedVisibility(
-                    visible = true,
-                    enter = fadeIn(animationSpec = tween(400, delayMillis = 150)) +
+          items(items = uiState.upcomingMeetings.take(HOME_ITEMS_LIMIT), key = { it.meetingID }) {
+              meeting ->
+            AnimatedVisibility(
+                visible = true,
+                enter =
+                    fadeIn(animationSpec = tween(400, delayMillis = 150)) +
                         slideInVertically(
                             initialOffsetY = { 30 },
                             animationSpec = tween(400, delayMillis = 150))) {
-                      Box(
-                          modifier =
-                              Modifier.fillMaxWidth()
-                                  .testTag(HomeOverviewTestTags.getMeetingItemTestTag(meeting.meetingID))) {
-                            MeetingCard(
-                                meeting = meeting,
-                                config =
-                                    MeetingCardConfig(
-                                        isCurrentUserId = { false },
-                                        onClick = {
-                                          actions.onMeetingSelected(meeting.projectId, meeting.meetingID)
-                                        },
-                                        isConnected = uiState.isConnected))
-                          }
-                    }
-              }
+                  Box(
+                      modifier =
+                          Modifier.fillMaxWidth()
+                              .testTag(
+                                  HomeOverviewTestTags.getMeetingItemTestTag(meeting.meetingID))) {
+                        MeetingCard(
+                            meeting = meeting,
+                            config =
+                                MeetingCardConfig(
+                                    isCurrentUserId = { false },
+                                    onClick = {
+                                      actions.onMeetingSelected(
+                                          meeting.projectId, meeting.meetingID)
+                                    },
+                                    isConnected = uiState.isConnected))
+                      }
+                }
+          }
         }
 
         item {
@@ -275,12 +276,12 @@ internal fun HomeOverviewLayout(
         if (uiState.recentProjects.isEmpty()) {
           item { EmptyState(text = "No projects yet. Create a project to organize your work.") }
         } else {
-          items(
-              items = uiState.recentProjects.take(HOME_ITEMS_LIMIT),
-              key = { it.projectId }) { project ->
-                AnimatedVisibility(
-                    visible = true,
-                    enter = fadeIn(animationSpec = tween(400, delayMillis = 200)) +
+          items(items = uiState.recentProjects.take(HOME_ITEMS_LIMIT), key = { it.projectId }) {
+              project ->
+            AnimatedVisibility(
+                visible = true,
+                enter =
+                    fadeIn(animationSpec = tween(400, delayMillis = 200)) +
                         slideInVertically(
                             initialOffsetY = { 30 },
                             animationSpec = tween(400, delayMillis = 200))) {
@@ -290,9 +291,10 @@ internal fun HomeOverviewLayout(
                       modifier =
                           Modifier.fillMaxWidth()
                               .padding(vertical = Spacing.xs)
-                              .testTag(HomeOverviewTestTags.getProjectItemTestTag(project.projectId)))
+                              .testTag(
+                                  HomeOverviewTestTags.getProjectItemTestTag(project.projectId)))
                 }
-              }
+          }
         }
       }
 }
@@ -364,11 +366,11 @@ private fun HomeSectionHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically) {
           Column {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Color(0xFF0F172A),
-                    fontWeight = FontWeight.Bold)
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                color = Color(0xFF0F172A),
+                fontWeight = FontWeight.Bold)
             if (count > 0) {
               Text(
                   text = "$count items",
@@ -392,11 +394,7 @@ private fun HomeSectionHeader(
         }
     // Separator line for visual hierarchy
     Spacer(modifier = Modifier.height(16.dp))
-    Box(
-        modifier =
-            Modifier.fillMaxWidth()
-                .height(1.dp)
-                .background(Color(0xFFE2E8F0)))
+    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xFFE2E8F0)))
   }
 }
 
@@ -450,8 +448,8 @@ private fun ProjectSummaryCard(
     modifier: Modifier = Modifier
 ) {
   var isPressed by remember { mutableStateOf(false) }
-  val scale by animateFloatAsState(
-      targetValue = if (isPressed) 0.98f else 1f, animationSpec = tween(150))
+  val scale by
+      animateFloatAsState(targetValue = if (isPressed) 0.98f else 1f, animationSpec = tween(150))
 
   Card(
       modifier =
@@ -470,13 +468,14 @@ private fun ProjectSummaryCard(
                         color = Color(0xFFE2E8F0),
                         shape = RoundedCornerShape(24.dp))
                     .background(
-                        brush = Brush.linearGradient(
-                            colors =
-                                listOf(
-                                    Color.White,
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.03f)),
-                            start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                            end = androidx.compose.ui.geometry.Offset(1000f, 1000f)))
+                        brush =
+                            Brush.linearGradient(
+                                colors =
+                                    listOf(
+                                        Color.White,
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.03f)),
+                                start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                                end = androidx.compose.ui.geometry.Offset(1000f, 1000f)))
                     .clickable(role = Role.Button, onClick = onClick)) {
               Column(modifier = Modifier.padding(24.dp)) {
                 // Header: Title + Status

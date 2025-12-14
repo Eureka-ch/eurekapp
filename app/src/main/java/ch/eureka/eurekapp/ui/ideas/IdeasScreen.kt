@@ -23,7 +23,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -37,6 +36,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.ui.components.BackButton
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 
 /** Test tags for the Ideas Screen. */
 object IdeasScreenTestTags {

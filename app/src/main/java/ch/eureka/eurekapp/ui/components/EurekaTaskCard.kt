@@ -38,11 +38,9 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 // Portions of this code were generated with the help of AI.
 // Portions added by Jiří Gebauer partially generated with the help of Grok.
@@ -64,25 +62,20 @@ fun EurekaTaskCard(
     canToggleCompletion: Boolean = true
 ) {
   var isPressed by remember { mutableStateOf(false) }
-  val scale by animateFloatAsState(
-      targetValue = if (isPressed) 0.98f else 1f, animationSpec = tween(150))
+  val scale by
+      animateFloatAsState(targetValue = if (isPressed) 0.98f else 1f, animationSpec = tween(150))
 
   Card(
       shape = RoundedCornerShape(24.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
       colors =
-          CardDefaults.cardColors(
-              containerColor = Color.White,
-              contentColor = Color(0xFF212121)),
+          CardDefaults.cardColors(containerColor = Color.White, contentColor = Color(0xFF212121)),
       modifier =
           modifier
               .fillMaxWidth()
               .scale(scale)
               .shadow(elevation = 8.dp, shape = RoundedCornerShape(24.dp))
-              .border(
-                  width = 1.dp,
-                  color = Color(0xFFE5E7EB),
-                  shape = RoundedCornerShape(24.dp))
+              .border(width = 1.dp, color = Color(0xFFE5E7EB), shape = RoundedCornerShape(24.dp))
               .clickable(role = Role.Button, onClick = onClick)
               .then(
                   Modifier.clickable(
@@ -131,8 +124,7 @@ fun EurekaTaskCard(
                                   .border(
                                       width = 1.5.dp,
                                       color =
-                                          if (isCompleted)
-                                              MaterialTheme.colorScheme.primary
+                                          if (isCompleted) MaterialTheme.colorScheme.primary
                                           else Color(0xFFE2E8F0),
                                       shape = RoundedCornerShape(12.dp)),
                           contentAlignment = Alignment.Center) {

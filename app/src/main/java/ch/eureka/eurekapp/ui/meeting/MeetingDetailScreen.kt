@@ -49,7 +49,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -73,6 +72,7 @@ import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.LightingBlue
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.theme.LightColorScheme

@@ -25,11 +25,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarToday
@@ -42,12 +40,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -58,12 +56,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -75,9 +76,7 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.help.HelpContext
 import ch.eureka.eurekapp.ui.components.help.InteractiveHelpEntryPoint
-import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
-import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.utils.Formatters
 
 object MeetingScreenTestTags {
@@ -475,8 +474,8 @@ fun MeetingCard(
     config: MeetingCardConfig,
 ) {
   var isPressed by remember { mutableStateOf(false) }
-  val scale by animateFloatAsState(
-      targetValue = if (isPressed) 0.98f else 1f, animationSpec = tween(150))
+  val scale by
+      animateFloatAsState(targetValue = if (isPressed) 0.98f else 1f, animationSpec = tween(150))
 
   val statusColor =
       when (meeting.status) {
@@ -504,10 +503,11 @@ fun MeetingCard(
                         color = Color(0xFFE2E8F0),
                         shape = RoundedCornerShape(24.dp))
                     .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(Color.White, Color(0xFFFAFAFA)),
-                            start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                            end = androidx.compose.ui.geometry.Offset(1000f, 1000f)))) {
+                        brush =
+                            Brush.linearGradient(
+                                colors = listOf(Color.White, Color(0xFFFAFAFA)),
+                                start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                                end = androidx.compose.ui.geometry.Offset(1000f, 1000f)))) {
               Column(modifier = Modifier.padding(20.dp)) {
                 // Header: Title + Status badge
                 Row(
@@ -527,7 +527,9 @@ fun MeetingCard(
                           color = statusColor.copy(alpha = 0.1f),
                           shape = RoundedCornerShape(12.dp)) {
                             Text(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp).testTag(MeetingScreenTestTags.MEETING_STATUS_TEXT),
+                                modifier =
+                                    Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                        .testTag(MeetingScreenTestTags.MEETING_STATUS_TEXT),
                                 text = meeting.status.description,
                                 style = MaterialTheme.typography.labelMedium,
                                 color = statusColor,
@@ -542,43 +544,50 @@ fun MeetingCard(
                   // Datetime/Duration row
                   when (meeting.status) {
                     MeetingStatus.OPEN_TO_VOTES -> {
-                      Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Box(
-                            modifier =
-                                Modifier.size(32.dp)
-                                    .background(
-                                        color = Color(0xFFF1F5F9),
-                                        shape = RoundedCornerShape(8.dp)),
-                            contentAlignment = Alignment.Center) {
-                              Icon(
-                                  imageVector = Icons.Default.HourglassTop,
-                                  contentDescription = "Duration",
-                                  modifier = Modifier.size(16.dp),
-                                  tint = Color(0xFF64748B))
-                            }
-                        Column {
-                          Text(
-                              modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_DURATION),
-                              text = "${meeting.duration} minutes",
-                              style = MaterialTheme.typography.bodyMedium,
-                              color = Color(0xFF0F172A),
-                              fontWeight = FontWeight.SemiBold)
-                          Spacer(modifier = Modifier.height(4.dp))
-                          Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Icon(
-                                imageVector = Icons.Default.HowToVote,
-                                contentDescription = "Vote",
-                                modifier = Modifier.size(14.dp),
-                                tint = Color(0xFF64748B))
-                            Text(
+                      Row(
+                          verticalAlignment = Alignment.CenterVertically,
+                          horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Box(
                                 modifier =
-                                    Modifier.testTag(MeetingScreenTestTags.MEETING_VOTE_FOR_DATETIME_MESSAGE),
-                                text = "Vote for your preferred datetime(s)",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF64748B))
+                                    Modifier.size(32.dp)
+                                        .background(
+                                            color = Color(0xFFF1F5F9),
+                                            shape = RoundedCornerShape(8.dp)),
+                                contentAlignment = Alignment.Center) {
+                                  Icon(
+                                      imageVector = Icons.Default.HourglassTop,
+                                      contentDescription = "Duration",
+                                      modifier = Modifier.size(16.dp),
+                                      tint = Color(0xFF64748B))
+                                }
+                            Column {
+                              Text(
+                                  modifier =
+                                      Modifier.testTag(MeetingScreenTestTags.MEETING_DURATION),
+                                  text = "${meeting.duration} minutes",
+                                  style = MaterialTheme.typography.bodyMedium,
+                                  color = Color(0xFF0F172A),
+                                  fontWeight = FontWeight.SemiBold)
+                              Spacer(modifier = Modifier.height(4.dp))
+                              Row(
+                                  verticalAlignment = Alignment.CenterVertically,
+                                  horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Icon(
+                                        imageVector = Icons.Default.HowToVote,
+                                        contentDescription = "Vote",
+                                        modifier = Modifier.size(14.dp),
+                                        tint = Color(0xFF64748B))
+                                    Text(
+                                        modifier =
+                                            Modifier.testTag(
+                                                MeetingScreenTestTags
+                                                    .MEETING_VOTE_FOR_DATETIME_MESSAGE),
+                                        text = "Vote for your preferred datetime(s)",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color(0xFF64748B))
+                                  }
+                            }
                           }
-                        }
-                      }
                     }
                     MeetingStatus.SCHEDULED,
                     MeetingStatus.IN_PROGRESS,
@@ -586,27 +595,29 @@ fun MeetingCard(
                       checkNotNull(meeting.datetime) {
                         "Datetime should be set if meeting is not open to votes."
                       }
-                      Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Box(
-                            modifier =
-                                Modifier.size(32.dp)
-                                    .background(
-                                        color = Color(0xFFF1F5F9),
-                                        shape = RoundedCornerShape(8.dp)),
-                            contentAlignment = Alignment.Center) {
-                              Icon(
-                                  imageVector = Icons.Default.Schedule,
-                                  contentDescription = "Schedule",
-                                  modifier = Modifier.size(16.dp),
-                                  tint = Color(0xFF64748B))
-                            }
-                        Text(
-                            modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_DATETIME),
-                            text = Formatters.formatDateTime(meeting.datetime.toDate()),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color(0xFF0F172A),
-                            fontWeight = FontWeight.SemiBold)
-                      }
+                      Row(
+                          verticalAlignment = Alignment.CenterVertically,
+                          horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Box(
+                                modifier =
+                                    Modifier.size(32.dp)
+                                        .background(
+                                            color = Color(0xFFF1F5F9),
+                                            shape = RoundedCornerShape(8.dp)),
+                                contentAlignment = Alignment.Center) {
+                                  Icon(
+                                      imageVector = Icons.Default.Schedule,
+                                      contentDescription = "Schedule",
+                                      modifier = Modifier.size(16.dp),
+                                      tint = Color(0xFF64748B))
+                                }
+                            Text(
+                                modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_DATETIME),
+                                text = Formatters.formatDateTime(meeting.datetime.toDate()),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color(0xFF0F172A),
+                                fontWeight = FontWeight.SemiBold)
+                          }
                     }
                   }
 
@@ -619,28 +630,31 @@ fun MeetingCard(
                             throw IllegalStateException(
                                 "Format must not be set if meeting is open to votes.")
                         null -> {
-                          Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Box(
-                                modifier =
-                                    Modifier.size(32.dp)
-                                        .background(
-                                            color = Color(0xFFF1F5F9),
-                                            shape = RoundedCornerShape(8.dp)),
-                                contentAlignment = Alignment.Center) {
-                                  Icon(
-                                      imageVector = Icons.Default.HowToVote,
-                                      contentDescription = "Vote",
-                                      modifier = Modifier.size(16.dp),
-                                      tint = Color(0xFF64748B))
-                                }
-                            Text(
-                                modifier =
-                                    Modifier.testTag(MeetingScreenTestTags.MEETING_VOTE_FOR_FORMAT_MESSAGE),
-                                text = "Vote for your preferred meeting format",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color(0xFF475569),
-                                fontWeight = FontWeight.Medium)
-                          }
+                          Row(
+                              verticalAlignment = Alignment.CenterVertically,
+                              horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Box(
+                                    modifier =
+                                        Modifier.size(32.dp)
+                                            .background(
+                                                color = Color(0xFFF1F5F9),
+                                                shape = RoundedCornerShape(8.dp)),
+                                    contentAlignment = Alignment.Center) {
+                                      Icon(
+                                          imageVector = Icons.Default.HowToVote,
+                                          contentDescription = "Vote",
+                                          modifier = Modifier.size(16.dp),
+                                          tint = Color(0xFF64748B))
+                                    }
+                                Text(
+                                    modifier =
+                                        Modifier.testTag(
+                                            MeetingScreenTestTags.MEETING_VOTE_FOR_FORMAT_MESSAGE),
+                                    text = "Vote for your preferred meeting format",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color(0xFF475569),
+                                    fontWeight = FontWeight.Medium)
+                              }
                         }
                       }
                     }
@@ -649,57 +663,63 @@ fun MeetingCard(
                     MeetingStatus.COMPLETED -> {
                       when (meeting.format) {
                         MeetingFormat.IN_PERSON -> {
-                          Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Box(
-                                modifier =
-                                    Modifier.size(32.dp)
-                                        .background(
-                                            color = Color(0xFFF1F5F9),
-                                            shape = RoundedCornerShape(8.dp)),
-                                contentAlignment = Alignment.Center) {
-                                  Icon(
-                                      imageVector = Icons.Default.Place,
-                                      contentDescription = "Location",
-                                      modifier = Modifier.size(16.dp),
-                                      tint = Color(0xFF64748B))
-                                }
-                            Text(
-                                modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_LOCATION),
-                                text =
-                                    meeting.location?.name
-                                        ?: throw IllegalStateException(
-                                            "Location of in-person meeting closed to votes should exist."),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color(0xFF475569),
-                                fontWeight = FontWeight.Medium)
-                          }
+                          Row(
+                              verticalAlignment = Alignment.CenterVertically,
+                              horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Box(
+                                    modifier =
+                                        Modifier.size(32.dp)
+                                            .background(
+                                                color = Color(0xFFF1F5F9),
+                                                shape = RoundedCornerShape(8.dp)),
+                                    contentAlignment = Alignment.Center) {
+                                      Icon(
+                                          imageVector = Icons.Default.Place,
+                                          contentDescription = "Location",
+                                          modifier = Modifier.size(16.dp),
+                                          tint = Color(0xFF64748B))
+                                    }
+                                Text(
+                                    modifier =
+                                        Modifier.testTag(MeetingScreenTestTags.MEETING_LOCATION),
+                                    text =
+                                        meeting.location?.name
+                                            ?: throw IllegalStateException(
+                                                "Location of in-person meeting closed to votes should exist."),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color(0xFF475569),
+                                    fontWeight = FontWeight.Medium)
+                              }
                         }
                         MeetingFormat.VIRTUAL -> {
                           if (meeting.status != MeetingStatus.COMPLETED) {
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                              Box(
-                                  modifier =
-                                      Modifier.size(32.dp)
-                                          .background(
-                                              color = Color(0xFFF1F5F9),
-                                              shape = RoundedCornerShape(8.dp)),
-                                  contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = Icons.Default.VideoCall,
-                                        contentDescription = "Video call",
-                                        modifier = Modifier.size(16.dp),
-                                        tint = Color(0xFF64748B))
-                                  }
-                              Text(
-                                  modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_LINK),
-                                  text =
-                                      meeting.link
-                                          ?: throw IllegalStateException(
-                                              "Link to scheduled/in progress virtual meeting should exist."),
-                                  style = MaterialTheme.typography.bodyMedium,
-                                  color = Color(0xFF475569),
-                                  fontWeight = FontWeight.Medium)
-                            }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                  Box(
+                                      modifier =
+                                          Modifier.size(32.dp)
+                                              .background(
+                                                  color = Color(0xFFF1F5F9),
+                                                  shape = RoundedCornerShape(8.dp)),
+                                      contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = Icons.Default.VideoCall,
+                                            contentDescription = "Video call",
+                                            modifier = Modifier.size(16.dp),
+                                            tint = Color(0xFF64748B))
+                                      }
+                                  Text(
+                                      modifier =
+                                          Modifier.testTag(MeetingScreenTestTags.MEETING_LINK),
+                                      text =
+                                          meeting.link
+                                              ?: throw IllegalStateException(
+                                                  "Link to scheduled/in progress virtual meeting should exist."),
+                                      style = MaterialTheme.typography.bodyMedium,
+                                      color = Color(0xFF475569),
+                                      fontWeight = FontWeight.Medium)
+                                }
                           }
                         }
                         null ->

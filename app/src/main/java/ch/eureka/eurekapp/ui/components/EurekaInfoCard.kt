@@ -10,10 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AssignmentTurnedIn
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -47,10 +43,11 @@ fun EurekaInfoCard(
             modifier =
                 Modifier.fillMaxWidth()
                     .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(gradientStart, gradientEnd),
-                            start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                            end = androidx.compose.ui.geometry.Offset(1000f, 1000f)))) {
+                        brush =
+                            Brush.linearGradient(
+                                colors = listOf(gradientStart, gradientEnd),
+                                start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                                end = androidx.compose.ui.geometry.Offset(1000f, 1000f)))) {
               Row(
                   modifier = Modifier.padding(Spacing.md),
                   verticalAlignment = Alignment.CenterVertically) {
@@ -60,11 +57,14 @@ fun EurekaInfoCard(
                           modifier =
                               Modifier.size(48.dp)
                                   .background(
-                                      brush = Brush.linearGradient(
-                                          colors =
-                                              listOf(
-                                                  MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                                  MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))),
+                                      brush =
+                                          Brush.linearGradient(
+                                              colors =
+                                                  listOf(
+                                                      MaterialTheme.colorScheme.primary.copy(
+                                                          alpha = 0.2f),
+                                                      MaterialTheme.colorScheme.primary.copy(
+                                                          alpha = 0.1f))),
                                       shape = RoundedCornerShape(12.dp)),
                           contentAlignment = Alignment.Center) {
                             Icon(

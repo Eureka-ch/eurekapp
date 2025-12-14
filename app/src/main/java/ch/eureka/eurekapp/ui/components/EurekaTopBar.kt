@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
@@ -37,52 +36,43 @@ fun EurekaTopBar(
   // Gradient colors: from intense red to darker red
   val gradientStart = MaterialTheme.colorScheme.primary // #E83E3E
   val gradientEnd = Color(0xFFC62828) // Darker red for gradient effect
-  
+
   Box(
-      modifier = modifier
-          .fillMaxWidth()
-          .clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
-          .background(
-              brush = Brush.linearGradient(
-                  colors = listOf(gradientStart, gradientEnd)
-              )
-          )
-  ) {
-    TopAppBar(
-        title = {
-          Text(
-              text = title,
-              style = MaterialTheme.typography.titleLarge.copy(
-                  fontWeight = FontWeight.SemiBold,
-                  fontFamily = FontFamily.SansSerif,
-                  letterSpacing = 0.5.sp
-              ),
-              color = Color.White)
-        },
-        navigationIcon = {
-          // Ensure navigation icon is white
-          if (navigationIcon != null) {
-            CompositionLocalProvider(
-                LocalContentColor provides Color.White
-            ) {
-              navigationIcon()
-            }
-          }
-        },
-        actions = {
-          // Ensure all actions are white
-          CompositionLocalProvider(
-              LocalContentColor provides Color.White
-          ) {
-            actions()
-          }
-        },
-        colors =
-            TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Transparent, // Transparent to show gradient
-                titleContentColor = Color.White,
-                actionIconContentColor = Color.White,
-                navigationIconContentColor = Color.White),
-        modifier = Modifier.fillMaxWidth())
-  }
+      modifier =
+          modifier
+              .fillMaxWidth()
+              .clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
+              .background(
+                  brush = Brush.linearGradient(colors = listOf(gradientStart, gradientEnd)))) {
+        TopAppBar(
+            title = {
+              Text(
+                  text = title,
+                  style =
+                      MaterialTheme.typography.titleLarge.copy(
+                          fontWeight = FontWeight.SemiBold,
+                          fontFamily = FontFamily.SansSerif,
+                          letterSpacing = 0.5.sp),
+                  color = Color.White)
+            },
+            navigationIcon = {
+              // Ensure navigation icon is white
+              if (navigationIcon != null) {
+                CompositionLocalProvider(LocalContentColor provides Color.White) {
+                  navigationIcon()
+                }
+              }
+            },
+            actions = {
+              // Ensure all actions are white
+              CompositionLocalProvider(LocalContentColor provides Color.White) { actions() }
+            },
+            colors =
+                TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent, // Transparent to show gradient
+                    titleContentColor = Color.White,
+                    actionIconContentColor = Color.White,
+                    navigationIconContentColor = Color.White),
+            modifier = Modifier.fillMaxWidth())
+      }
 }

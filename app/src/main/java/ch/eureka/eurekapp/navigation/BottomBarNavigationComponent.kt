@@ -182,7 +182,8 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
                     // Conversations tab - between Tasks and Project (left of Home)
                     CustomIconButtonComposable(
                         modifier =
-                            Modifier.testTag(BottomBarNavigationTestTags.CONVERSATIONS_SCREEN_BUTTON),
+                            Modifier.testTag(
+                                BottomBarNavigationTestTags.CONVERSATIONS_SCREEN_BUTTON),
                         "Chats",
                         onClick = { navigateToTab(Route.ConversationsSection.Conversations) },
                         iconVector = Icons.AutoMirrored.Outlined.Chat,
@@ -202,7 +203,8 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
                         contentAlignment = Alignment.Center) {
                           HomeIconButton(
                               modifier =
-                                  Modifier.testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
+                                  Modifier.testTag(
+                                      BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
                               isPressed = isHomeScreenPressed,
                               onClick = { navigateToHome() })
                         }
@@ -258,8 +260,7 @@ fun CustomIconButtonComposable(
           Text(
               title,
               style = TextStyle(fontSize = 10.sp),
-              color =
-                  if (isPressed) EColors.light.primary else EColors.light.onSurfaceVariant)
+              color = if (isPressed) EColors.light.primary else EColors.light.onSurfaceVariant)
         }
   }
 }
@@ -276,14 +277,12 @@ fun HomeIconButton(modifier: Modifier = Modifier, isPressed: Boolean, onClick: (
                   shape = CircleShape)
               .clip(CircleShape),
       contentAlignment = Alignment.Center) {
-        IconButton(
-            modifier = Modifier.size(56.dp),
-            onClick = onClick) {
-              Icon(
-                  Icons.Outlined.Home,
-                  contentDescription = null,
-                  tint = Color.White,
-                  modifier = Modifier.size(28.dp))
-            }
+        IconButton(modifier = Modifier.size(56.dp), onClick = onClick) {
+          Icon(
+              Icons.Outlined.Home,
+              contentDescription = null,
+              tint = Color.White,
+              modifier = Modifier.size(28.dp))
+        }
       }
 }

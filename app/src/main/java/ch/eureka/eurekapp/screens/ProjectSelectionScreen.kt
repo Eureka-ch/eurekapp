@@ -9,17 +9,14 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -60,10 +57,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -71,7 +65,6 @@ import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectSelectionScreenViewModel
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.data.user.User
-import ch.eureka.eurekapp.ui.components.IconTextRow
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 /** Object holding test tags for UI testing on ProjectSelectionScreen. */
@@ -181,29 +174,27 @@ fun ProjectSelectionScreen(
 
     // Projects list
     if (projectsList.value.isEmpty()) {
-      Box(
-          modifier = Modifier.fillMaxSize(),
-          contentAlignment = Alignment.Center) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                  Text(
-                      "No projects yet",
-                      style = MaterialTheme.typography.titleLarge,
-                      color = Color(0xFF0F172A),
-                      fontWeight = FontWeight.Bold)
-                  Text(
-                      "Create your first project to get started",
-                      style = MaterialTheme.typography.bodyMedium,
-                      color = Color(0xFF64748B))
-                }
-          }
+      Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+              Text(
+                  "No projects yet",
+                  style = MaterialTheme.typography.titleLarge,
+                  color = Color(0xFF0F172A),
+                  fontWeight = FontWeight.Bold)
+              Text(
+                  "Create your first project to get started",
+                  style = MaterialTheme.typography.bodyMedium,
+                  color = Color(0xFF64748B))
+            }
+      }
     } else {
-          LazyColumn(
-              state = listState,
-              modifier = Modifier.fillMaxSize(),
-              contentPadding = PaddingValues(horizontal = Spacing.lg),
-              verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+      LazyColumn(
+          state = listState,
+          modifier = Modifier.fillMaxSize(),
+          contentPadding = PaddingValues(horizontal = Spacing.lg),
+          verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
             items(projectsList.value) { project ->
               ProjectCard(
                   project,
@@ -214,59 +205,6 @@ fun ProjectSelectionScreen(
             }
           }
     }
-  }
-}
-
-/**
- * Custom elevated button composable used across the Project Selection Screen.
- *
- * @param onClick lambda triggered when the button is clicked.
- * @param text the label displayed on the button.
- * @param typography the text style to use for the label.
- * @param buttonColor background color of the button.
- * @param testTag optional test tag for UI testing.
- */
-@Composable
-private fun CustomElevatedButton(
-    onClick: () -> Unit,
-    text: String,
-    typography: TextStyle,
-    buttonColor: Color = LightColorScheme.primary,
-    testTag: String
-) {
-  ElevatedButton(
-      modifier = Modifier.padding(vertical = 10.dp, horizontal = 10.dp).testTag(testTag),
-      onClick = onClick,
-      colors = ButtonDefaults.elevatedButtonColors(containerColor = buttonColor),
-      elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
-  ) {
-    Text(text, style = typography, color = LightColorScheme.surface, textAlign = TextAlign.Center)
-  }
-}
-
-/**
- * Custom icon button composable used across the Project Selection Screen.
- *
- * @param onClick lambda triggered when the button is clicked.
- * @param buttonColor background color of the button.
- * @param testTag optional test tag for UI testing.
- */
-@Composable
-private fun CustomIconButton(
-    onClick: () -> Unit,
-    buttonColor: Color = LightColorScheme.primary,
-    testTag: String
-) {
-  IconButton(
-      modifier = Modifier.padding(vertical = 10.dp, horizontal = 10.dp).testTag(testTag),
-      onClick = onClick,
-      colors = IconButtonDefaults.iconButtonColors(containerColor = buttonColor),
-  ) {
-    Icon(
-        modifier = Modifier.size(20.dp),
-        imageVector = Icons.Default.PersonAdd,
-        contentDescription = null,
-        tint = LightColorScheme.surface)
   }
 }
 
@@ -289,8 +227,8 @@ private fun ProjectCard(
     currentUser: User?
 ) {
   var isPressed by remember { mutableStateOf(false) }
-  val scale by animateFloatAsState(
-      targetValue = if (isPressed) 0.98f else 1f, animationSpec = tween(150))
+  val scale by
+      animateFloatAsState(targetValue = if (isPressed) 0.98f else 1f, animationSpec = tween(150))
 
   val projectUsers =
       projectSelectionScreenViewModel
@@ -313,10 +251,14 @@ private fun ProjectCard(
                         color = Color(0xFFE2E8F0),
                         shape = RoundedCornerShape(24.dp))
                     .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(Color.White, MaterialTheme.colorScheme.primary.copy(alpha = 0.03f)),
-                            start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                            end = androidx.compose.ui.geometry.Offset(1000f, 1000f)))) {
+                        brush =
+                            Brush.linearGradient(
+                                colors =
+                                    listOf(
+                                        Color.White,
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.03f)),
+                                start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                                end = androidx.compose.ui.geometry.Offset(1000f, 1000f)))) {
               Column(modifier = Modifier.padding(24.dp)) {
                 // Header: Title + Status
                 Row(
@@ -430,9 +372,7 @@ private fun ProjectCard(
       }
 }
 
-/**
- * Displays the status of a project in a modern badge style.
- */
+/** Displays the status of a project in a modern badge style. */
 @Composable
 fun ProjectStatusDisplay(projectStatus: ProjectStatus) {
   val (backgroundColor, textColor) =
