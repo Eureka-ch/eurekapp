@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -212,7 +213,8 @@ fun MeetingScreen(
       floatingActionButton = {
         FloatingActionButton(
             onClick = { config.onCreateMeeting(uiState.isConnected) },
-            modifier = Modifier.testTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON),
+            modifier =
+                Modifier.offset(y = (-16).dp).testTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON),
             containerColor =
                 if (uiState.isConnected) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.surfaceVariant) {

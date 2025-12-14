@@ -127,14 +127,8 @@ private fun HeaderSection(
   Column(modifier = Modifier.padding(vertical = Spacing.md)) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically) {
-          Text(
-              text = "Task",
-              style = MaterialTheme.typography.headlineLarge,
-              color = MaterialTheme.colorScheme.onSurface,
-              modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
-
           IconButton(
               onClick = onFilesManagementClick,
               enabled = true,
