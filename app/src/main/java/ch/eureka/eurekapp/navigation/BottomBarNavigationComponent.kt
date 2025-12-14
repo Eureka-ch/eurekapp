@@ -1,14 +1,19 @@
 package ch.eureka.eurekapp.navigation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
@@ -142,78 +148,90 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
       }
 
   BottomAppBar(
-      containerColor = EColors.light.surface,
+      containerColor = Color.Transparent,
       modifier =
           Modifier.fillMaxWidth()
-              .padding(horizontal = 0.dp, vertical = 0.dp)
               .windowInsetsPadding(WindowInsets.navigationBars)
-              .clip(RoundedCornerShape(25.dp)),
-      tonalElevation = 8.dp,
+              .padding(horizontal = 16.dp, vertical = 8.dp),
+      tonalElevation = 0.dp,
       actions = {
-        Row() {
-          CustomIconButtonComposable(
-              modifier =
-                  Modifier.weight(1f).testTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON),
-              "Tasks",
-              onClick = { navigateToTab(Route.TasksSection.Tasks) },
-              iconVector = Icons.Outlined.AssignmentTurnedIn,
-              pressedIconVector = Icons.Filled.AssignmentTurnedIn,
-              isPressed = isTasksPressed)
-          // Conversations tab - between Tasks and Project (left of Home)
-          CustomIconButtonComposable(
-              modifier =
-                  Modifier.weight(1f)
-                      .testTag(BottomBarNavigationTestTags.CONVERSATIONS_SCREEN_BUTTON),
-              "Chats",
-              onClick = { navigateToTab(Route.ConversationsSection.Conversations) },
-              iconVector = Icons.AutoMirrored.Outlined.Chat,
-              pressedIconVector = Icons.AutoMirrored.Filled.Chat,
-              isPressed = isConversationsScreenPressed)
-          CustomIconButtonComposable(
-              modifier =
-                  Modifier.weight(1f).testTag(BottomBarNavigationTestTags.PROJECTS_SCREEN_BUTTON),
-              "Project",
-              onClick = { navigateToTab(Route.ProjectSelection) },
-              iconVector = Icons.Outlined.Folder,
-              pressedIconVector = Icons.Filled.Folder,
-              isPressed = isProjectsScreenPressed)
-          Row(
-              modifier = Modifier.weight(1f),
-              horizontalArrangement = Arrangement.Center,
-              verticalAlignment = Alignment.CenterVertically) {
-                Box() {
-                  HomeIconButton(
-                      modifier =
-                          Modifier.testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
-                      isPressed = isHomeScreenPressed,
-                      onClick = { navigateToHome() })
-                }
-              }
-          CustomIconButtonComposable(
-              modifier =
-                  Modifier.weight(1f).testTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON),
-              "Meetings",
-              onClick = { navigateToTab(Route.MeetingsSection.Meetings) },
-              iconVector = Icons.Default.CalendarToday,
-              pressedIconVector = Icons.Filled.CalendarToday,
-              isPressed = isMeetingScreenPressed)
-          CustomIconButtonComposable(
-              modifier =
-                  Modifier.weight(1f).testTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON),
-              "Ideas",
-              onClick = { navigateToTab(Route.IdeasSection.Ideas()) },
-              iconVector = Icons.Outlined.Lightbulb,
-              pressedIconVector = Icons.Filled.Lightbulb,
-              isPressed = isIdeasScreenPressed)
-          CustomIconButtonComposable(
-              modifier =
-                  Modifier.weight(1f).testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON),
-              "Profile",
-              onClick = { navigateToTab(Route.Profile) },
-              iconVector = Icons.Outlined.AccountCircle,
-              pressedIconVector = Icons.Filled.AccountCircle,
-              isPressed = isProfileScreenPressed)
-        }
+        Box(
+            modifier =
+                Modifier.fillMaxWidth()
+                    .shadow(elevation = 20.dp, shape = RoundedCornerShape(30.dp))
+                    .background(
+                        color = Color(0xFFF5F5F5), // Gris très clair pour meilleur contraste
+                        shape = RoundedCornerShape(30.dp))
+                    .border(
+                        width = 0.5.dp,
+                        color = Color(0xFFE0E0E0), // Bordure subtile gris clair
+                        shape = RoundedCornerShape(30.dp))
+                    .padding(horizontal = 12.dp, vertical = 8.dp)) {
+              Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.SpaceEvenly,
+                  verticalAlignment = Alignment.CenterVertically) {
+                    CustomIconButtonComposable(
+                        modifier =
+                            Modifier.testTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON),
+                        "Tasks",
+                        onClick = { navigateToTab(Route.TasksSection.Tasks) },
+                        iconVector = Icons.Outlined.AssignmentTurnedIn,
+                        pressedIconVector = Icons.Filled.AssignmentTurnedIn,
+                        isPressed = isTasksPressed)
+                    // Conversations tab - between Tasks and Project (left of Home)
+                    CustomIconButtonComposable(
+                        modifier =
+                            Modifier.testTag(BottomBarNavigationTestTags.CONVERSATIONS_SCREEN_BUTTON),
+                        "Chats",
+                        onClick = { navigateToTab(Route.ConversationsSection.Conversations) },
+                        iconVector = Icons.AutoMirrored.Outlined.Chat,
+                        pressedIconVector = Icons.AutoMirrored.Filled.Chat,
+                        isPressed = isConversationsScreenPressed)
+                    CustomIconButtonComposable(
+                        modifier =
+                            Modifier.testTag(BottomBarNavigationTestTags.PROJECTS_SCREEN_BUTTON),
+                        "Project",
+                        onClick = { navigateToTab(Route.ProjectSelection) },
+                        iconVector = Icons.Outlined.Folder,
+                        pressedIconVector = Icons.Filled.Folder,
+                        isPressed = isProjectsScreenPressed)
+                    // Home button elevated and protruding
+                    Box(
+                        modifier = Modifier.offset(y = (-20).dp),
+                        contentAlignment = Alignment.Center) {
+                          HomeIconButton(
+                              modifier =
+                                  Modifier.testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
+                              isPressed = isHomeScreenPressed,
+                              onClick = { navigateToHome() })
+                        }
+                    CustomIconButtonComposable(
+                        modifier =
+                            Modifier.testTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON),
+                        "Meetings",
+                        onClick = { navigateToTab(Route.MeetingsSection.Meetings) },
+                        iconVector = Icons.Default.CalendarToday,
+                        pressedIconVector = Icons.Filled.CalendarToday,
+                        isPressed = isMeetingScreenPressed)
+                    CustomIconButtonComposable(
+                        modifier =
+                            Modifier.testTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON),
+                        "Ideas",
+                        onClick = { navigateToTab(Route.IdeasSection.Ideas()) },
+                        iconVector = Icons.Outlined.Lightbulb,
+                        pressedIconVector = Icons.Filled.Lightbulb,
+                        isPressed = isIdeasScreenPressed)
+                    CustomIconButtonComposable(
+                        modifier =
+                            Modifier.testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON),
+                        "Profile",
+                        onClick = { navigateToTab(Route.Profile) },
+                        iconVector = Icons.Outlined.AccountCircle,
+                        pressedIconVector = Icons.Filled.AccountCircle,
+                        isPressed = isProfileScreenPressed)
+                  }
+            }
       })
 }
 
@@ -226,32 +244,46 @@ fun CustomIconButtonComposable(
     pressedIconVector: ImageVector,
     isPressed: Boolean
 ) {
-  IconButton(onClick = onClick, modifier = modifier.padding(0.dp)) {
+  IconButton(onClick = onClick, modifier = modifier.padding(horizontal = 4.dp, vertical = 4.dp)) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center) {
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.padding(0.dp)) {
           Icon(
               if (isPressed) pressedIconVector else iconVector,
               contentDescription = null,
-              tint = if (isPressed) EColors.light.primary else EColors.light.onSurfaceVariant)
-          Text(title, style = TextStyle(fontSize = 10.sp))
+              tint = if (isPressed) EColors.light.primary else EColors.light.onSurfaceVariant,
+              modifier = Modifier.size(24.dp))
+          Spacer(modifier = Modifier.height(2.dp))
+          Text(
+              title,
+              style = TextStyle(fontSize = 10.sp),
+              color =
+                  if (isPressed) EColors.light.primary else EColors.light.onSurfaceVariant)
         }
   }
 }
 
 @Composable
 fun HomeIconButton(modifier: Modifier = Modifier, isPressed: Boolean, onClick: () -> Unit) {
-  IconButton(
+  Box(
       modifier =
           modifier
-              .padding(0.dp)
+              .size(56.dp)
+              .shadow(elevation = 8.dp, shape = CircleShape)
               .background(
-                  if (isPressed) EColors.light.primary else EColors.light.onSurfaceVariant,
-                  shape = CircleShape),
-      onClick = onClick) {
-        Icon(
-            Icons.Outlined.Home,
-            contentDescription = null,
-            tint = if (isPressed) Color.White else EColors.light.surface)
+                  color = EColors.light.primary, // Rouge vif comme l'app
+                  shape = CircleShape)
+              .clip(CircleShape),
+      contentAlignment = Alignment.Center) {
+        IconButton(
+            modifier = Modifier.size(56.dp),
+            onClick = onClick) {
+              Icon(
+                  Icons.Outlined.Home,
+                  contentDescription = null,
+                  tint = Color.White,
+                  modifier = Modifier.size(28.dp))
+            }
       }
 }

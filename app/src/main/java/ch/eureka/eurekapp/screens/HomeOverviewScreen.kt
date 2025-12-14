@@ -1,6 +1,14 @@
 package ch.eureka.eurekapp.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,21 +20,36 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AssignmentTurnedIn
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.Task
@@ -145,21 +168,30 @@ internal fun HomeOverviewLayout(
     return
   }
 
+  val listState = rememberLazyListState()
+
   LazyColumn(
+      state = listState,
       modifier =
           modifier
               .fillMaxSize()
-              .padding(horizontal = Spacing.lg, vertical = Spacing.md)
+              .padding(horizontal = Spacing.lg, vertical = Spacing.lg)
               .testTag(HomeOverviewTestTags.SCREEN),
-      verticalArrangement = Arrangement.spacedBy(Spacing.lg)) {
-        item {
-          GreetingHeader(uiState.currentUserName, uiState.isConnected, uiState.error)
-          Spacer(modifier = Modifier.height(Spacing.md))
-          SummaryCardsRow(
-              tasksCount = uiState.upcomingTasks.size,
-              meetingsCount = uiState.upcomingMeetings.size,
-              projectsCount = uiState.recentProjects.size,
-          )
+      verticalArrangement = Arrangement.spacedBy(Spacing.xl)) {
+        item(key = "header") {
+          AnimatedVisibility(
+              visible = true,
+              enter = fadeIn(animationSpec = tween(600)) + slideInVertically(
+                  initialOffsetY = { -30 },
+                  animationSpec = tween(600))) {
+                GreetingHeader(uiState.currentUserName, uiState.isConnected, uiState.error)
+                Spacer(modifier = Modifier.height(Spacing.md))
+                SummaryCardsRow(
+                    tasksCount = uiState.upcomingTasks.size,
+                    meetingsCount = uiState.upcomingMeetings.size,
+                    projectsCount = uiState.recentProjects.size,
+                )
+              }
         }
 
         item {
@@ -173,16 +205,25 @@ internal fun HomeOverviewLayout(
         if (uiState.upcomingTasks.isEmpty()) {
           item { EmptyState(text = "No tasks assigned yet. Create one to get started.") }
         } else {
-          items(uiState.upcomingTasks.take(HOME_ITEMS_LIMIT)) { task ->
-            Box(
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .testTag(HomeOverviewTestTags.getTaskItemTestTag(task.taskID))) {
-                  TaskPreviewCard(
-                      task = task,
-                      onTaskClick = { actions.onTaskSelected(task.projectId, task.taskID) })
-                }
-          }
+          items(
+              items = uiState.upcomingTasks.take(HOME_ITEMS_LIMIT),
+              key = { it.taskID }) { task ->
+                AnimatedVisibility(
+                    visible = true,
+                    enter = fadeIn(animationSpec = tween(400, delayMillis = 100)) +
+                        slideInVertically(
+                            initialOffsetY = { 30 },
+                            animationSpec = tween(400, delayMillis = 100))) {
+                      Box(
+                          modifier =
+                              Modifier.fillMaxWidth()
+                                  .testTag(HomeOverviewTestTags.getTaskItemTestTag(task.taskID))) {
+                            TaskPreviewCard(
+                                task = task,
+                                onTaskClick = { actions.onTaskSelected(task.projectId, task.taskID) })
+                          }
+                    }
+              }
         }
 
         item {
@@ -196,22 +237,31 @@ internal fun HomeOverviewLayout(
         if (uiState.upcomingMeetings.isEmpty()) {
           item { EmptyState(text = "No upcoming meetings. Schedule one to keep your team synced.") }
         } else {
-          items(uiState.upcomingMeetings.take(HOME_ITEMS_LIMIT)) { meeting ->
-            Box(
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .testTag(HomeOverviewTestTags.getMeetingItemTestTag(meeting.meetingID))) {
-                  MeetingCard(
-                      meeting = meeting,
-                      config =
-                          MeetingCardConfig(
-                              isCurrentUserId = { false },
-                              onClick = {
-                                actions.onMeetingSelected(meeting.projectId, meeting.meetingID)
-                              },
-                              isConnected = uiState.isConnected))
-                }
-          }
+          items(
+              items = uiState.upcomingMeetings.take(HOME_ITEMS_LIMIT),
+              key = { it.meetingID }) { meeting ->
+                AnimatedVisibility(
+                    visible = true,
+                    enter = fadeIn(animationSpec = tween(400, delayMillis = 150)) +
+                        slideInVertically(
+                            initialOffsetY = { 30 },
+                            animationSpec = tween(400, delayMillis = 150))) {
+                      Box(
+                          modifier =
+                              Modifier.fillMaxWidth()
+                                  .testTag(HomeOverviewTestTags.getMeetingItemTestTag(meeting.meetingID))) {
+                            MeetingCard(
+                                meeting = meeting,
+                                config =
+                                    MeetingCardConfig(
+                                        isCurrentUserId = { false },
+                                        onClick = {
+                                          actions.onMeetingSelected(meeting.projectId, meeting.meetingID)
+                                        },
+                                        isConnected = uiState.isConnected))
+                          }
+                    }
+              }
         }
 
         item {
@@ -225,15 +275,24 @@ internal fun HomeOverviewLayout(
         if (uiState.recentProjects.isEmpty()) {
           item { EmptyState(text = "No projects yet. Create a project to organize your work.") }
         } else {
-          items(uiState.recentProjects.take(HOME_ITEMS_LIMIT)) { project ->
-            ProjectSummaryCard(
-                project = project,
-                onClick = { actions.onProjectSelected(project.projectId) },
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .padding(vertical = Spacing.xs)
-                        .testTag(HomeOverviewTestTags.getProjectItemTestTag(project.projectId)))
-          }
+          items(
+              items = uiState.recentProjects.take(HOME_ITEMS_LIMIT),
+              key = { it.projectId }) { project ->
+                AnimatedVisibility(
+                    visible = true,
+                    enter = fadeIn(animationSpec = tween(400, delayMillis = 200)) +
+                        slideInVertically(
+                            initialOffsetY = { 30 },
+                            animationSpec = tween(400, delayMillis = 200))) {
+                  ProjectSummaryCard(
+                      project = project,
+                      onClick = { actions.onProjectSelected(project.projectId) },
+                      modifier =
+                          Modifier.fillMaxWidth()
+                              .padding(vertical = Spacing.xs)
+                              .testTag(HomeOverviewTestTags.getProjectItemTestTag(project.projectId)))
+                }
+              }
         }
       }
 }
@@ -243,8 +302,9 @@ private fun GreetingHeader(name: String, isConnected: Boolean, error: String?) {
   Column(modifier = Modifier.fillMaxWidth()) {
     Text(
         text = if (name.isNotEmpty()) "Hello $name" else "Welcome back",
-        style = MaterialTheme.typography.headlineSmall,
-        color = MaterialTheme.colorScheme.onSurface)
+        style = MaterialTheme.typography.headlineLarge,
+        color = Color(0xFF0F172A),
+        fontWeight = FontWeight.Bold)
     val statusMessage =
         when {
           !isConnected -> "You are offline. Some data may be outdated."
@@ -265,22 +325,28 @@ private fun GreetingHeader(name: String, isConnected: Boolean, error: String?) {
 
 @Composable
 private fun SummaryCardsRow(tasksCount: Int, meetingsCount: Int, projectsCount: Int) {
-  Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+  Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
     EurekaInfoCard(
         title = "Upcoming tasks",
         primaryValue = "$tasksCount",
         secondaryValue = "Assigned to you",
-        iconText = "✓")
+        icon = Icons.Default.AssignmentTurnedIn,
+        gradientStart = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+        gradientEnd = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f))
     EurekaInfoCard(
         title = "Next meetings",
         primaryValue = "$meetingsCount",
         secondaryValue = "Scheduled",
-        iconText = "🗓")
+        icon = Icons.Default.CalendarToday,
+        gradientStart = MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f),
+        gradientEnd = MaterialTheme.colorScheme.secondary.copy(alpha = 0.05f))
     EurekaInfoCard(
         title = "Recent projects",
         primaryValue = "$projectsCount",
         secondaryValue = "Active teams",
-        iconText = "📁")
+        icon = Icons.Default.Folder,
+        gradientStart = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f),
+        gradientEnd = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.05f))
   }
 }
 
@@ -292,14 +358,46 @@ private fun HomeSectionHeader(
     actionTestTag: String?,
     onActionClick: () -> Unit
 ) {
-  Row(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically) {
-        TaskSectionHeader(modifier = Modifier.weight(1f), title = title, taskCount = count)
-        val buttonModifier = actionTestTag?.let { Modifier.testTag(it) } ?: Modifier
-        TextButton(onClick = onActionClick, modifier = buttonModifier) { Text(actionLabel) }
-      }
+  Column(modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.md)) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically) {
+          Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color(0xFF0F172A),
+                    fontWeight = FontWeight.Bold)
+            if (count > 0) {
+              Text(
+                  text = "$count items",
+                  style = MaterialTheme.typography.bodySmall,
+                  color = Color(0xFF64748B),
+                  modifier = Modifier.padding(top = 4.dp))
+            }
+          }
+          val buttonModifier = actionTestTag?.let { Modifier.testTag(it) } ?: Modifier
+          TextButton(
+              onClick = onActionClick,
+              modifier = buttonModifier,
+              colors =
+                  androidx.compose.material3.ButtonDefaults.textButtonColors(
+                      contentColor = MaterialTheme.colorScheme.primary)) {
+                Text(
+                    actionLabel,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold)
+              }
+        }
+    // Separator line for visual hierarchy
+    Spacer(modifier = Modifier.height(16.dp))
+    Box(
+        modifier =
+            Modifier.fillMaxWidth()
+                .height(1.dp)
+                .background(Color(0xFFE2E8F0)))
+  }
 }
 
 @Composable
@@ -351,41 +449,124 @@ private fun ProjectSummaryCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+  var isPressed by remember { mutableStateOf(false) }
+  val scale by animateFloatAsState(
+      targetValue = if (isPressed) 0.98f else 1f, animationSpec = tween(150))
+
   Card(
-      modifier = modifier,
-      shape = CardDefaults.shape,
-      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-        Column(modifier = Modifier.padding(Spacing.md)) {
-          Text(
-              text = project.name.ifEmpty { "Untitled project" },
-              style = MaterialTheme.typography.titleMedium,
-              color = MaterialTheme.colorScheme.onSurface)
-          Spacer(modifier = Modifier.height(Spacing.xs))
-          IconTextRow(
-              text = project.description.ifEmpty { "No description provided" },
-              iconVector = Icons.Default.Description,
-              iconColor = MaterialTheme.colorScheme.primary)
-          Spacer(modifier = Modifier.height(Spacing.xs))
-          IconTextRow(
-              text = "${project.memberIds.size} members",
-              iconVector = Icons.Default.Person,
-              iconColor = MaterialTheme.colorScheme.secondary)
-          Spacer(modifier = Modifier.height(Spacing.sm))
-          Row(
-              modifier = Modifier.fillMaxWidth(),
-              horizontalArrangement = Arrangement.SpaceBetween,
-              verticalAlignment = Alignment.CenterVertically) {
-                ProjectStatusDisplay(project.status)
-                TextButton(onClick = onClick) { Text("Open project") }
+      modifier =
+          modifier
+              .fillMaxWidth()
+              .scale(scale)
+              .shadow(elevation = 12.dp, shape = RoundedCornerShape(24.dp)),
+      shape = RoundedCornerShape(24.dp),
+      elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+      colors = CardDefaults.cardColors(containerColor = Color.White)) {
+        Box(
+            modifier =
+                Modifier.fillMaxWidth()
+                    .border(
+                        width = 1.5.dp,
+                        color = Color(0xFFE2E8F0),
+                        shape = RoundedCornerShape(24.dp))
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors =
+                                listOf(
+                                    Color.White,
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.03f)),
+                            start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                            end = androidx.compose.ui.geometry.Offset(1000f, 1000f)))
+                    .clickable(role = Role.Button, onClick = onClick)) {
+              Column(modifier = Modifier.padding(24.dp)) {
+                // Header: Title + Status
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top) {
+                      Column(modifier = Modifier.weight(1f)) {
+                        // Title with strong contrast
+                        Text(
+                            text = project.name.ifEmpty { "Untitled project" },
+                            style = MaterialTheme.typography.titleLarge,
+                            color = Color(0xFF0F172A),
+                            fontWeight = FontWeight.Bold)
+                      }
+                      // Status badge
+                      ProjectStatusDisplay(project.status)
+                    }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Description with icon
+                Row(
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.fillMaxWidth()) {
+                      Box(
+                          modifier =
+                              Modifier.size(36.dp)
+                                  .background(
+                                      color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                      shape = RoundedCornerShape(10.dp)),
+                          contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.Description,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp))
+                          }
+                      Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = project.description.ifEmpty { "No description provided" },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFF475569),
+                            fontWeight = FontWeight.Medium)
+                      }
+                    }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Footer: Members + Action
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically) {
+                      // Members with icon
+                      Row(
+                          verticalAlignment = Alignment.CenterVertically,
+                          horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Box(
+                                modifier =
+                                    Modifier.size(32.dp)
+                                        .background(
+                                            color = Color(0xFFF1F5F9),
+                                            shape = RoundedCornerShape(8.dp)),
+                                contentAlignment = Alignment.Center) {
+                                  Icon(
+                                      imageVector = Icons.Default.Person,
+                                      contentDescription = null,
+                                      tint = Color(0xFF64748B),
+                                      modifier = Modifier.size(16.dp))
+                                }
+                            Text(
+                                text = "${project.memberIds.size} members",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color(0xFF475569),
+                                fontWeight = FontWeight.SemiBold)
+                          }
+                      TextButton(
+                          onClick = onClick,
+                          colors =
+                              androidx.compose.material3.ButtonDefaults.textButtonColors(
+                                  contentColor = MaterialTheme.colorScheme.primary)) {
+                            Text(
+                                "Open →",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold)
+                          }
+                    }
               }
-          Text(
-              text = "Go to overview",
-              style = MaterialTheme.typography.bodySmall,
-              color = MaterialTheme.colorScheme.primary,
-              modifier =
-                  Modifier.padding(top = Spacing.xs)
-                      .clickable(onClick = onClick)
-                      .testTag(HomeOverviewTestTags.getProjectLinkTestTag(project.projectId)))
-        }
+            }
       }
 }

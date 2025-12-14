@@ -23,8 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -89,19 +88,13 @@ fun IdeasScreen(
   Scaffold(
       modifier = modifier.fillMaxSize().testTag(IdeasScreenTestTags.SCREEN),
       topBar = {
-        @OptIn(ExperimentalMaterial3Api::class)
-        TopAppBar(
-            title = { Text("Ideas") },
+        EurekaTopBar(
+            title = "Ideas",
             navigationIcon = {
               BackButton(
                   onClick = onNavigateBack,
                   modifier = Modifier.testTag(IdeasScreenTestTags.BACK_BUTTON))
-            },
-            colors =
-                TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary))
+            })
       },
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       floatingActionButton = {

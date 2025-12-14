@@ -47,7 +47,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -138,8 +138,8 @@ fun ActivityDetailScreen(
   Scaffold(
       modifier = Modifier.testTag(ActivityDetailScreenTestTags.ACTIVITY_DETAIL_SCREEN),
       topBar = {
-        TopAppBar(
-            title = { Text("Activity Details") },
+        EurekaTopBar(
+            title = "Activity Details",
             navigationIcon = {
               IconButton(onClick = onNavigateBack) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, "Navigate back")

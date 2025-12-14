@@ -28,7 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -69,13 +69,8 @@ fun ActivityFeedScreen(
   Scaffold(
       modifier = modifier.fillMaxSize().testTag("ActivityFeedScreen"),
       topBar = {
-        TopAppBar(
-            title = {
-              Text(
-                  text = "Activity Feed",
-                  style = MaterialTheme.typography.titleLarge,
-                  fontWeight = FontWeight.Bold)
-            },
+        EurekaTopBar(
+            title = "Activity Feed",
             actions = {
               IconButton(
                   onClick = { viewModel.refresh() }, modifier = Modifier.testTag("RefreshButton")) {

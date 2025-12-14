@@ -49,7 +49,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -202,12 +202,8 @@ fun MeetingDetailScreen(
   Scaffold(
       modifier = Modifier.testTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN),
       topBar = {
-        TopAppBar(
-            title = {
-              Text(
-                  text = uiState.meeting?.title ?: "Meeting",
-                  modifier = Modifier.testTag(MeetingDetailScreenTestTags.MEETING_TITLE))
-            },
+        EurekaTopBar(
+            title = uiState.meeting?.title ?: "Meeting",
             navigationIcon = {
               IconButton(onClick = actionsConfig.onNavigateBack) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Navigate back")

@@ -62,6 +62,7 @@ import ch.eureka.eurekapp.model.calendar.MeetingCalendarViewModel
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.help.HelpContext
 import ch.eureka.eurekapp.ui.components.help.InteractiveHelpEntryPoint
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
@@ -190,6 +191,15 @@ fun MeetingScreen(
   }
 
   Scaffold(
+      topBar = {
+        EurekaTopBar(
+            title = "Meetings",
+            actions = {
+              InteractiveHelpEntryPoint(
+                  helpContext = HelpContext.MEETINGS,
+                  modifier = Modifier.testTag("meetingsHelpButton"))
+            })
+      },
       floatingActionButton = {
         FloatingActionButton(
             onClick = { config.onCreateMeeting(uiState.isConnected) },
@@ -221,20 +231,6 @@ private fun MeetingScreenContent(
   Column(
       modifier =
           Modifier.fillMaxSize().padding(10.dp).testTag(MeetingScreenTestTags.MEETING_SCREEN)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically) {
-              Text(
-                  modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_TITLE),
-                  text = "Meetings",
-                  style = MaterialTheme.typography.headlineSmall,
-                  fontWeight = FontWeight.Bold)
-              InteractiveHelpEntryPoint(
-                  helpContext = HelpContext.MEETINGS,
-                  modifier = Modifier.padding(start = Spacing.md))
-            }
-        Spacer(modifier = Modifier.height(8.dp))
         Text(
             modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_DESCRIPTION),
             text = "Schedule and manage your team meetings",

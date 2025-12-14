@@ -27,8 +27,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -161,13 +160,8 @@ private fun ContextualSelectionTopBar(
     onEditSelected: (String) -> Unit,
     onDeleteSelected: () -> Unit
 ) {
-  TopAppBar(
-      title = { Text("$selectionCount Selected") },
-      colors =
-          TopAppBarDefaults.topAppBarColors(
-              containerColor = MaterialTheme.colorScheme.surfaceVariant,
-              titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-              actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant),
+  EurekaTopBar(
+      title = "$selectionCount Selected",
       navigationIcon = {
         IconButton(onClick = onClearSelection) {
           Icon(Icons.Default.Close, contentDescription = "Cancel Selection")
@@ -194,13 +188,8 @@ private fun StandardTopBar(
     onToggleStorage: (Boolean) -> Unit,
     onNavigateBack: () -> Unit
 ) {
-  TopAppBar(
-      title = { Text(if (isEditing) "Editing Note" else "Notes") },
-      colors =
-          TopAppBarDefaults.topAppBarColors(
-              containerColor = MaterialTheme.colorScheme.primary,
-              titleContentColor = MaterialTheme.colorScheme.onPrimary,
-              actionIconContentColor = MaterialTheme.colorScheme.onPrimary),
+  EurekaTopBar(
+      title = if (isEditing) "Editing Note" else "Notes",
       navigationIcon = {
         if (isEditing) {
           IconButton(onClick = onCancelEditing) {

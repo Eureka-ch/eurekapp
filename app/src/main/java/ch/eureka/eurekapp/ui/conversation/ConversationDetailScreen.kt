@@ -30,8 +30,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -143,14 +141,9 @@ fun ConversationDetailScreen(
       modifier = modifier.fillMaxSize().testTag(ConversationDetailScreenTestTags.SCREEN),
       topBar = {
         if (uiState.isEditing) {
-          // Contextual top bar for editing mode
-          TopAppBar(
-              title = { Text("Editing Message") },
-              modifier = Modifier.testTag(ConversationDetailScreenTestTags.EDITING_TOP_BAR),
-              colors =
-                  TopAppBarDefaults.topAppBarColors(
-                      containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                      titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant),
+          // Contextual top bar for editing mode - use EurekaTopBar with different styling
+          EurekaTopBar(
+              title = "Editing Message",
               navigationIcon = {
                 IconButton(
                     onClick = viewModel::cancelEditing,
