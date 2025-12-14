@@ -5,10 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -151,7 +149,7 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
       modifier =
           Modifier.fillMaxWidth()
               .windowInsetsPadding(WindowInsets.navigationBars)
-              .padding(horizontal = 12.dp, vertical = 6.dp),
+              .padding(horizontal = 12.dp, vertical = 2.dp),
       tonalElevation = 0.dp,
       actions = {
         Row(
@@ -159,7 +157,7 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
                 Modifier.fillMaxWidth()
                     .shadow(elevation = 3.dp, shape = CircleShape)
                     .background(color = Color.White.copy(alpha = 0.9f), shape = CircleShape)
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically) {
               CustomIconButtonComposable(
@@ -245,7 +243,6 @@ fun CustomIconButtonComposable(
               contentDescription = null,
               tint = if (isPressed) EColors.light.primary else EColors.light.onSurfaceVariant,
               modifier = Modifier.size(24.dp))
-          Spacer(modifier = Modifier.height(2.dp))
           Text(
               title,
               style = TextStyle(fontSize = 10.sp),
