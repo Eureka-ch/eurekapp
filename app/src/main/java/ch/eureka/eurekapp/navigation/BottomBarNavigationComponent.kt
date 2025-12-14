@@ -149,7 +149,7 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
       modifier =
           Modifier.fillMaxWidth()
               .windowInsetsPadding(WindowInsets.navigationBars)
-              .padding(horizontal = 12.dp, vertical = 2.dp),
+              .padding(horizontal = 12.dp, vertical = 0.dp),
       tonalElevation = 0.dp,
       actions = {
         Row(
