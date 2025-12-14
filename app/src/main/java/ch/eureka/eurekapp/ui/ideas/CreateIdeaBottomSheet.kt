@@ -1,8 +1,6 @@
 /* Portions of this file were written with the help of GPT-5 Codex and Gemini. */
 package ch.eureka.eurekapp.ui.ideas
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -32,7 +29,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -310,52 +306,48 @@ private fun ParticipantsSelectionModal(
                     .padding(Spacing.md)
                     .clip(RoundedCornerShape(24.dp)),
             shape = RoundedCornerShape(24.dp),
-            colors =
-                CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-              Column(
-                  modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(Spacing.md)) {
-                    // Header
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically) {
-                          Text(
-                              text = "Select Participants",
-                              style = MaterialTheme.typography.titleLarge,
-                              fontWeight = FontWeight.Bold)
-                          Button(
-                              onClick = onDismiss,
-                              colors = EurekaStyles.primaryButtonColors(),
-                              shape = RoundedCornerShape(12.dp)) {
-                                Text("OK")
-                              }
-                        }
-                    Spacer(modifier = Modifier.height(Spacing.md))
-
-                    // Scrollable list of participants
-                    Column(
-                        modifier =
-                            Modifier.fillMaxWidth()
-                                .weight(1f)
-                                .verticalScroll(rememberScrollState())) {
-                          availableUsers.forEach { user ->
-                            Row(
-                                modifier =
-                                    Modifier.fillMaxWidth()
-                                        .clickable { onToggleParticipant(user.uid) }
-                                        .padding(vertical = Spacing.sm, horizontal = Spacing.md),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically) {
-                                  Text(
-                                      text = user.displayName.ifBlank { user.email },
-                                      style = MaterialTheme.typography.bodyLarge)
-                                  Checkbox(
-                                      checked = selectedParticipantIds.contains(user.uid),
-                                      onCheckedChange = { onToggleParticipant(user.uid) })
-                                }
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+              Column(modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(Spacing.md)) {
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically) {
+                      Text(
+                          text = "Select Participants",
+                          style = MaterialTheme.typography.titleLarge,
+                          fontWeight = FontWeight.Bold)
+                      Button(
+                          onClick = onDismiss,
+                          colors = EurekaStyles.primaryButtonColors(),
+                          shape = RoundedCornerShape(12.dp)) {
+                            Text("OK")
                           }
-                        }
-                  }
+                    }
+                Spacer(modifier = Modifier.height(Spacing.md))
+
+                // Scrollable list of participants
+                Column(
+                    modifier =
+                        Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState())) {
+                      availableUsers.forEach { user ->
+                        Row(
+                            modifier =
+                                Modifier.fillMaxWidth()
+                                    .clickable { onToggleParticipant(user.uid) }
+                                    .padding(vertical = Spacing.sm, horizontal = Spacing.md),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically) {
+                              Text(
+                                  text = user.displayName.ifBlank { user.email },
+                                  style = MaterialTheme.typography.bodyLarge)
+                              Checkbox(
+                                  checked = selectedParticipantIds.contains(user.uid),
+                                  onCheckedChange = { onToggleParticipant(user.uid) })
+                            }
+                      }
+                    }
+              }
             }
       }
 }
@@ -390,8 +382,7 @@ private fun ActionButtons(
                     disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
                     disabledContentColor = Color.White.copy(alpha = 0.6f))) {
               if (isCreating) {
-                CircularProgressIndicator(
-                    color = Color.White, strokeWidth = 2.dp)
+                CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
               } else {
                 Text("Create", fontWeight = FontWeight.Bold)
               }

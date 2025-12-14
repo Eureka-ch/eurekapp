@@ -3,7 +3,6 @@ package ch.eureka.eurekapp.ui.ideas
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,15 +46,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
-import ch.eureka.eurekapp.model.data.user.User
-import coil.compose.AsyncImage
-import kotlinx.coroutines.flow.first
 import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.ideas.Idea
 import ch.eureka.eurekapp.model.data.project.Project
+import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.components.MessageBubble
 import ch.eureka.eurekapp.ui.components.MessageBubbleState
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
+import coil.compose.AsyncImage
+import kotlinx.coroutines.flow.first
 
 /** Data class to group conversation-related parameters. */
 data class ConversationState(
@@ -69,30 +68,30 @@ data class ConversationState(
 data class ListState(val ideas: List<Idea>, val onIdeaClick: (Idea) -> Unit)
 
 /**
- * Generates a consistent color for an idea based on its ID.
- * This ensures the same idea always gets the same color.
+ * Generates a consistent color for an idea based on its ID. This ensures the same idea always gets
+ * the same color.
  */
 @Composable
 private fun getIdeaBorderColor(ideaId: String): Color {
-  val colors = listOf(
-      Color(0xFFE83E3E), // Red
-      Color(0xFF2563EB), // Blue
-      Color(0xFF22C55E), // Green
-      Color(0xFFFF9500), // Orange
-      Color(0xFF8B5CF6), // Purple
-      Color(0xFFEC4899), // Pink
-      Color(0xFF06B6D4), // Cyan
-      Color(0xFFF59E0B), // Amber
-      Color(0xFF10B981), // Emerald
-      Color(0xFF6366F1) // Indigo
-  )
+  val colors =
+      listOf(
+          Color(0xFFE83E3E), // Red
+          Color(0xFF2563EB), // Blue
+          Color(0xFF22C55E), // Green
+          Color(0xFFFF9500), // Orange
+          Color(0xFF8B5CF6), // Purple
+          Color(0xFFEC4899), // Pink
+          Color(0xFF06B6D4), // Cyan
+          Color(0xFFF59E0B), // Amber
+          Color(0xFF10B981), // Emerald
+          Color(0xFF6366F1) // Indigo
+          )
   val index = ideaId.hashCode().mod(colors.size)
   return colors[if (index < 0) -index else index]
 }
 
 /**
- * Small avatar component for participant display.
- * Similar to ConversationCard but smaller (24dp).
+ * Small avatar component for participant display. Similar to ConversationCard but smaller (24dp).
  * Has a white border to distinguish overlapping avatars.
  */
 @Composable
@@ -102,14 +101,16 @@ private fun ParticipantAvatar(photoUrl: String, modifier: Modifier = Modifier) {
         model = photoUrl,
         contentDescription = "Participant avatar",
         modifier =
-            modifier.size(24.dp)
+            modifier
+                .size(24.dp)
                 .clip(CircleShape)
                 .border(width = 2.dp, color = Color.White, shape = CircleShape),
         contentScale = ContentScale.Crop)
   } else {
     Box(
         modifier =
-            modifier.size(24.dp)
+            modifier
+                .size(24.dp)
                 .clip(CircleShape)
                 .border(width = 2.dp, color = Color.White, shape = CircleShape)
                 .background(MaterialTheme.colorScheme.primaryContainer),
@@ -124,9 +125,8 @@ private fun ParticipantAvatar(photoUrl: String, modifier: Modifier = Modifier) {
 }
 
 /**
- * Displays participant avatars in a row with overlapping style (like Instagram group chats).
- * Shows up to 3 participants (excluding the creator).
- * Loads user data to get photoUrls.
+ * Displays participant avatars in a row with overlapping style (like Instagram group chats). Shows
+ * up to 3 participants (excluding the creator). Loads user data to get photoUrls.
  */
 @Composable
 private fun ParticipantAvatars(
@@ -136,23 +136,24 @@ private fun ParticipantAvatars(
 ) {
   // Filter out creator and limit to 3 participants
   val otherParticipants = participantIds.filter { it != createdBy }.take(3)
-  
+
   if (otherParticipants.isEmpty()) {
     return
   }
 
   // Load users for participants
   var users by remember(otherParticipants) { mutableStateOf<List<User?>>(emptyList()) }
-  
+
   LaunchedEffect(otherParticipants) {
     val userRepository = RepositoriesProvider.userRepository
-    users = otherParticipants.map { userId ->
-      try {
-        userRepository.getUserById(userId).first()
-      } catch (e: Exception) {
-        null
-      }
-    }
+    users =
+        otherParticipants.map { userId ->
+          try {
+            userRepository.getUserById(userId).first()
+          } catch (e: Exception) {
+            null
+          }
+        }
   }
 
   Box(modifier = modifier) {
@@ -167,9 +168,7 @@ private fun ParticipantAvatars(
         val user1 = users.getOrNull(0)
         val user2 = users.getOrNull(1)
         ParticipantAvatar(photoUrl = user1?.photoUrl ?: "")
-        ParticipantAvatar(
-            photoUrl = user2?.photoUrl ?: "",
-            modifier = Modifier.offset(x = 12.dp))
+        ParticipantAvatar(photoUrl = user2?.photoUrl ?: "", modifier = Modifier.offset(x = 12.dp))
       }
       else -> {
         // Three or more participants - show first 3 with offsets
@@ -177,12 +176,8 @@ private fun ParticipantAvatars(
         val user2 = users.getOrNull(1)
         val user3 = users.getOrNull(2)
         ParticipantAvatar(photoUrl = user1?.photoUrl ?: "")
-        ParticipantAvatar(
-            photoUrl = user2?.photoUrl ?: "",
-            modifier = Modifier.offset(x = 12.dp))
-        ParticipantAvatar(
-            photoUrl = user3?.photoUrl ?: "",
-            modifier = Modifier.offset(x = 24.dp))
+        ParticipantAvatar(photoUrl = user2?.photoUrl ?: "", modifier = Modifier.offset(x = 12.dp))
+        ParticipantAvatar(photoUrl = user3?.photoUrl ?: "", modifier = Modifier.offset(x = 24.dp))
       }
     }
   }
@@ -191,15 +186,12 @@ private fun ParticipantAvatars(
 @Composable
 private fun IdeaCard(idea: Idea, onIdeaClick: () -> Unit) {
   val borderColor = getIdeaBorderColor(idea.ideaId)
-  
+
   Card(
       onClick = onIdeaClick,
       modifier =
           Modifier.fillMaxWidth()
-              .border(
-                  width = 3.dp,
-                  color = borderColor,
-                  shape = RoundedCornerShape(20.dp)),
+              .border(width = 3.dp, color = borderColor, shape = RoundedCornerShape(20.dp)),
       shape = RoundedCornerShape(20.dp),
       colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
       elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
@@ -221,13 +213,12 @@ private fun IdeaCard(idea: Idea, onIdeaClick: () -> Unit) {
                       modifier = Modifier.padding(top = Spacing.xs))
                 }
               }
-              
+
               // Participant avatars on the right
-              if (idea.participantIds.isNotEmpty() && idea.participantIds.any { it != idea.createdBy }) {
+              if (idea.participantIds.isNotEmpty() &&
+                  idea.participantIds.any { it != idea.createdBy }) {
                 Spacer(modifier = Modifier.padding(start = Spacing.sm))
-                ParticipantAvatars(
-                    participantIds = idea.participantIds,
-                    createdBy = idea.createdBy)
+                ParticipantAvatars(participantIds = idea.participantIds, createdBy = idea.createdBy)
               }
             }
       }

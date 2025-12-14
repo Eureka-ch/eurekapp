@@ -1,22 +1,24 @@
 /* Portions of this file were written with the help of GPT-5 Codex and Gemini. */
 package ch.eureka.eurekapp.ui.ideas
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -89,52 +91,7 @@ fun IdeasScreen(
       topBar = {
         @OptIn(ExperimentalMaterial3Api::class)
         TopAppBar(
-            title = {
-              ExposedDropdownMenuBox(
-                  expanded = projectDropdownExpanded,
-                  onExpandedChange = { projectDropdownExpanded = it },
-                  modifier = Modifier.testTag(IdeasScreenTestTags.PROJECT_SELECTOR)) {
-                    OutlinedTextField(
-                        value = uiState.selectedProject?.name ?: "Select a project",
-                        onValueChange = {},
-                        readOnly = true,
-                        placeholder = { Text("Select a project") },
-                        trailingIcon = {
-                          ExposedDropdownMenuDefaults.TrailingIcon(
-                              expanded = projectDropdownExpanded)
-                        },
-                        modifier =
-                            Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
-                        shape = RoundedCornerShape(16.dp),
-                        colors =
-                            OutlinedTextFieldDefaults.colors(
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White,
-                                focusedContainerColor = MaterialTheme.colorScheme.primary,
-                                unfocusedContainerColor = MaterialTheme.colorScheme.primary,
-                                focusedBorderColor = Color.White.copy(alpha = 0.5f),
-                                unfocusedBorderColor = Color.White.copy(alpha = 0.3f)))
-                    ExposedDropdownMenu(
-                        expanded = projectDropdownExpanded,
-                        onDismissRequest = { projectDropdownExpanded = false }) {
-                          if (uiState.availableProjects.isEmpty()) {
-                            DropdownMenuItem(
-                                text = { Text("No projects available") },
-                                onClick = {},
-                                enabled = false)
-                          } else {
-                            uiState.availableProjects.forEach { project ->
-                              DropdownMenuItem(
-                                  text = { Text(project.name) },
-                                  onClick = {
-                                    viewModel.selectProject(project)
-                                    projectDropdownExpanded = false
-                                  })
-                            }
-                          }
-                        }
-                  }
-            },
+            title = { Text("Ideas") },
             navigationIcon = {
               BackButton(
                   onClick = onNavigateBack,
@@ -158,21 +115,70 @@ fun IdeasScreen(
               }
         }
       }) { paddingValues ->
-        IdeasContent(
-            viewMode = uiState.viewMode,
-            selectedProject = uiState.selectedProject,
-            listState =
-                ch.eureka.eurekapp.ui.ideas.ListState(
-                    ideas = uiState.ideas, onIdeaClick = { idea -> viewModel.selectIdea(idea) }),
-            conversationState =
-                ConversationState(
-                    selectedIdea = uiState.selectedIdea,
-                    messages = uiState.messages,
-                    currentUserId = viewModel.getCurrentUserId(),
-                    onBackToList = { viewModel.backToList() }),
-            lazyListState = listState,
-            paddingValues = paddingValues,
-            isLoading = uiState.isLoading)
+        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+          // Project selector button centered below the top bar
+          Box(
+              modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+              contentAlignment = androidx.compose.ui.Alignment.Center) {
+                @OptIn(ExperimentalMaterial3Api::class)
+                ExposedDropdownMenuBox(
+                    expanded = projectDropdownExpanded,
+                    onExpandedChange = { projectDropdownExpanded = it },
+                    modifier = Modifier.testTag(IdeasScreenTestTags.PROJECT_SELECTOR)) {
+                      Button(
+                          onClick = { projectDropdownExpanded = !projectDropdownExpanded },
+                          shape = RoundedCornerShape(20.dp),
+                          colors =
+                              ButtonDefaults.buttonColors(
+                                  containerColor = MaterialTheme.colorScheme.surface,
+                                  contentColor = MaterialTheme.colorScheme.onSurface)) {
+                            Text(
+                                text = uiState.selectedProject?.name ?: "Select a project",
+                                modifier = Modifier.padding(horizontal = 8.dp))
+                            Icon(
+                                imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = "Select project",
+                                modifier = Modifier.padding(start = 4.dp))
+                          }
+                      ExposedDropdownMenu(
+                          expanded = projectDropdownExpanded,
+                          onDismissRequest = { projectDropdownExpanded = false }) {
+                            if (uiState.availableProjects.isEmpty()) {
+                              DropdownMenuItem(
+                                  text = { Text("No projects available") },
+                                  onClick = {},
+                                  enabled = false)
+                            } else {
+                              uiState.availableProjects.forEach { project ->
+                                DropdownMenuItem(
+                                    text = { Text(project.name) },
+                                    onClick = {
+                                      viewModel.selectProject(project)
+                                      projectDropdownExpanded = false
+                                    })
+                              }
+                            }
+                          }
+                    }
+              }
+
+          // Ideas content
+          IdeasContent(
+              viewMode = uiState.viewMode,
+              selectedProject = uiState.selectedProject,
+              listState =
+                  ch.eureka.eurekapp.ui.ideas.ListState(
+                      ideas = uiState.ideas, onIdeaClick = { idea -> viewModel.selectIdea(idea) }),
+              conversationState =
+                  ConversationState(
+                      selectedIdea = uiState.selectedIdea,
+                      messages = uiState.messages,
+                      currentUserId = viewModel.getCurrentUserId(),
+                      onBackToList = { viewModel.backToList() }),
+              lazyListState = listState,
+              paddingValues = androidx.compose.foundation.layout.PaddingValues(0.dp),
+              isLoading = uiState.isLoading)
+        }
       }
 
   if (showCreateIdeaDialog) {

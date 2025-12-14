@@ -194,8 +194,7 @@ class IdeasContentTest {
   @Test
   fun ideaCard_withParticipants_displaysParticipantAvatars() {
     val ideaWithParticipants =
-        testIdea.copy(
-            participantIds = listOf("user1", "user2", "user3"), createdBy = "user1")
+        testIdea.copy(participantIds = listOf("user1", "user2", "user3"), createdBy = "user1")
     composeTestRule.setContent {
       IdeasContent(
           viewMode = IdeasViewMode.LIST,
@@ -212,7 +211,8 @@ class IdeasContentTest {
 
   @Test
   fun ideaCard_withoutParticipants_doesNotShowAvatars() {
-    val ideaWithoutParticipants = testIdea.copy(participantIds = listOf("user1"), createdBy = "user1")
+    val ideaWithoutParticipants =
+        testIdea.copy(participantIds = listOf("user1"), createdBy = "user1")
     composeTestRule.setContent {
       IdeasContent(
           viewMode = IdeasViewMode.LIST,
