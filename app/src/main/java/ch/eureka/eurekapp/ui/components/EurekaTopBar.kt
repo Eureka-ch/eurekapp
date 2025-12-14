@@ -18,14 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
-// Portions of this code were generated with the help of Grok.
-
-/** Top header bar that appears on all screens with gradient red background and rounded corners */
+/** Top header bar visible on all screens with compact red gradient. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EurekaTopBar(
@@ -34,45 +30,34 @@ fun EurekaTopBar(
     navigationIcon: @Composable (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
-  // Gradient colors: from intense red to darker red
-  val gradientStart = MaterialTheme.colorScheme.primary // #E83E3E
-  val gradientEnd = Color(0xFFC62828) // Darker red for gradient effect
-  val barHeight = 48.dp
+  val gradient = Brush.verticalGradient(listOf(Color(0xFFE53935), Color(0xFFC62828)))
+  val barHeight = 52.dp
 
   Box(
       modifier =
           modifier
               .fillMaxWidth()
               .height(barHeight)
-              .clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
-              .background(
-                  brush = Brush.linearGradient(colors = listOf(gradientStart, gradientEnd)))) {
+              .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
+              .background(gradient)) {
         TopAppBar(
             title = {
               Text(
                   text = title,
-                  style =
-                      MaterialTheme.typography.titleLarge.copy(
-                          fontWeight = FontWeight.SemiBold,
-                          fontFamily = FontFamily.SansSerif,
-                          letterSpacing = 0.5.sp),
+                  style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                   color = Color.White)
             },
             navigationIcon = {
-              // Ensure navigation icon is white
-              if (navigationIcon != null) {
-                CompositionLocalProvider(LocalContentColor provides Color.White) {
-                  navigationIcon()
-                }
+              navigationIcon?.let {
+                CompositionLocalProvider(LocalContentColor provides Color.White) { it() }
               }
             },
             actions = {
-              // Ensure all actions are white
               CompositionLocalProvider(LocalContentColor provides Color.White) { actions() }
             },
             colors =
                 TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent, // Transparent to show gradient
+                    containerColor = Color.Transparent,
                     titleContentColor = Color.White,
                     actionIconContentColor = Color.White,
                     navigationIconContentColor = Color.White),

@@ -6,15 +6,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.outlined.Chat
@@ -151,7 +152,11 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
       modifier =
           Modifier.fillMaxWidth()
               .windowInsetsPadding(WindowInsets.navigationBars)
+<<<<<<< HEAD
               .padding(horizontal = 12.dp, vertical = 6.dp),
+=======
+              .padding(horizontal = 12.dp, vertical = 2.dp),
+>>>>>>> 975a3c4b (TopBar titles visibles + navbar flottante propre)
       tonalElevation = 0.dp,
       actions = {
         Row(
@@ -159,7 +164,11 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
                 Modifier.fillMaxWidth()
                     .shadow(elevation = 3.dp, shape = CircleShape)
                     .background(color = Color.White.copy(alpha = 0.9f), shape = CircleShape)
+<<<<<<< HEAD
                     .padding(horizontal = 12.dp, vertical = 6.dp),
+=======
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+>>>>>>> 975a3c4b (TopBar titles visibles + navbar flottante propre)
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically) {
               CustomIconButtonComposable(
@@ -261,9 +270,13 @@ fun HomeIconButton(modifier: Modifier = Modifier, isPressed: Boolean, onClick: (
           modifier
               .size(56.dp)
               .shadow(elevation = 6.dp, shape = CircleShape)
+<<<<<<< HEAD
               .background(
                   color = Color(0xFFE53935), // Rouge vif demandé
                   shape = CircleShape)
+=======
+              .background(color = Color(0xFFE53935), shape = CircleShape)
+>>>>>>> 975a3c4b (TopBar titles visibles + navbar flottante propre)
               .clip(CircleShape),
       contentAlignment = Alignment.Center) {
         IconButton(modifier = Modifier.size(56.dp), onClick = onClick) {
