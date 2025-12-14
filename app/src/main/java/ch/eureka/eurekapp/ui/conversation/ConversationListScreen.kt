@@ -38,6 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 /*
@@ -88,6 +89,7 @@ fun ConversationListScreen(
 
   Scaffold(
       modifier = Modifier.testTag(ConversationListScreenTestTags.SCREEN),
+      topBar = { EurekaTopBar(title = "Conversations") },
       floatingActionButton = {
         // FAB to create new conversation
         FloatingActionButton(
