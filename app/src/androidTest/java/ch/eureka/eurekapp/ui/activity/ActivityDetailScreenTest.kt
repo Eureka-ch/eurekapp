@@ -310,78 +310,6 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun activityDetailScreen_deleteButton_opensConfirmationDialog() {
-    val activity =
-        createActivity(
-            testActivityId, EntityType.PROJECT, "Project", ActivityType.CREATED, testEntityId)
-    coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
-
-    setupSimpleUserMock()
-    viewModel =
-        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
-
-    composeTestRule.setContent {
-      ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
-    }
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_BUTTON).performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_DIALOG).assertIsDisplayed()
-    composeTestRule.onNodeWithText("Delete Activity?").assertIsDisplayed()
-    composeTestRule.onNodeWithText("This action cannot be undone.").assertIsDisplayed()
-  }
-
-  @Test
-  fun activityDetailScreen_deleteDialog_cancelButton_closesDialog() {
-    val activity =
-        createActivity(
-            testActivityId, EntityType.MEETING, "Meeting", ActivityType.CREATED, testEntityId)
-    coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
-
-    setupSimpleUserMock()
-    viewModel =
-        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
-
-    composeTestRule.setContent {
-      ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
-    }
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_BUTTON).performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithText("Cancel").performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_DIALOG).assertDoesNotExist()
-  }
-
-  @Test
-  fun activityDetailScreen_deleteDialog_confirmButton_deletesActivity() {
-    val activity =
-        createActivity(testActivityId, EntityType.TASK, "Task", ActivityType.CREATED, testEntityId)
-    coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
-    coEvery { repository.deleteActivity(testActivityId) } returns Result.success(Unit)
-
-    setupSimpleUserMock()
-    viewModel =
-        ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
-
-    composeTestRule.setContent {
-      ActivityDetailScreen(
-          activityId = testActivityId,
-          viewModel = viewModel,
-          onNavigateBack = { navigateBackCalled = true })
-    }
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_BUTTON).performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_DIALOG).assertIsDisplayed()
-    composeTestRule.onNodeWithText("Delete").performClick()
-    composeTestRule.waitForIdle()
-    Thread.sleep(2000)
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_DIALOG).assertDoesNotExist()
-  }
-
-  @Test
   fun activityDetailScreen_offlineMode_displaysOfflineMessage() {
     every { connectivityObserver.isConnected } returns flowOf(false)
     val activity =
@@ -421,7 +349,6 @@ class ActivityDetailScreenTest {
     }
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.SHARE_BUTTON).assertIsNotEnabled()
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_BUTTON).assertIsNotEnabled()
     composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ENTITY_BUTTON).assertIsNotEnabled()
   }
 

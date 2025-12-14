@@ -26,14 +26,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Title
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -46,13 +43,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -82,8 +76,6 @@ object ActivityDetailScreenTestTags {
   const val ENTITY_BUTTON = "EntityButton"
   const val RELATED_ACTIVITIES_SECTION = "RelatedActivitiesSection"
   const val SHARE_BUTTON = "ShareButton"
-  const val DELETE_BUTTON = "DeleteButton"
-  const val DELETE_DIALOG = "DeleteDialog"
   const val ACTIVITY_TYPE = "ActivityType"
   const val ENTITY_TYPE = "EntityType"
   const val USER_NAME = "UserName"
@@ -127,13 +119,6 @@ fun ActivityDetailScreen(
                   })
   val uiState by vm.uiState.collectAsState()
   val context = LocalContext.current
-
-  LaunchedEffect(uiState.deleteSuccess) {
-    if (uiState.deleteSuccess) {
-      Toast.makeText(context, "Activity deleted", Toast.LENGTH_SHORT).show()
-      onNavigateBack()
-    }
-  }
 
   Scaffold(
       modifier = Modifier.testTag(ActivityDetailScreenTestTags.ACTIVITY_DETAIL_SCREEN),
@@ -179,7 +164,6 @@ fun ActivityDetailScreen(
                     Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
                   }
                 },
-                onDelete = { vm.deleteActivity() },
                 modifier = Modifier.padding(paddingValues))
           }
         }
@@ -198,7 +182,6 @@ private fun ActivityDetailContent(
     isConnected: Boolean,
     onNavigateToEntity: (EntityType, String, String) -> Unit,
     onShare: () -> Unit,
-    onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
   LazyColumn(
@@ -228,7 +211,7 @@ private fun ActivityDetailContent(
           }
         }
         item { RelatedActivitiesSection(relatedActivities) }
-        item { ActionButtonsSection(isConnected, onShare, onDelete) }
+        item { ActionButtonsSection(isConnected, onShare) }
         if (!isConnected) {
           item {
             Text(
@@ -403,57 +386,21 @@ private fun RelatedActivityItem(activity: Activity) {
 /**
  * Action buttons section.
  *
- * Contains Share and Delete buttons.
+ * Contains Share button.
  */
 @Composable
-private fun ActionButtonsSection(isConnected: Boolean, onShare: () -> Unit, onDelete: () -> Unit) {
-  var showDeleteDialog by remember { mutableStateOf(false) }
-
-  Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-    OutlinedButton(
-        onClick = onShare,
-        modifier =
-            Modifier.fillMaxWidth()
-                .alpha(getAlpha(isConnected))
-                .testTag(ActivityDetailScreenTestTags.SHARE_BUTTON),
-        enabled = isConnected) {
-          Icon(Icons.Default.Share, "Share", modifier = Modifier.size(18.dp))
-          Spacer(modifier = Modifier.width(8.dp))
-          Text("Share Activity")
-        }
-
-    OutlinedButton(
-        onClick = { showDeleteDialog = true },
-        modifier =
-            Modifier.fillMaxWidth()
-                .alpha(getAlpha(isConnected))
-                .testTag(ActivityDetailScreenTestTags.DELETE_BUTTON),
-        enabled = isConnected,
-        colors =
-            ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
-          Icon(Icons.Default.Delete, "Delete", modifier = Modifier.size(18.dp))
-          Spacer(modifier = Modifier.width(8.dp))
-          Text("Delete Activity")
-        }
-  }
-
-  if (showDeleteDialog) {
-    AlertDialog(
-        onDismissRequest = { showDeleteDialog = false },
-        title = { Text("Delete Activity?") },
-        text = { Text("This action cannot be undone.") },
-        confirmButton = {
-          TextButton(
-              onClick = {
-                showDeleteDialog = false
-                onDelete()
-              }) {
-                Text("Delete", color = MaterialTheme.colorScheme.error)
-              }
-        },
-        dismissButton = { TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") } },
-        modifier = Modifier.testTag(ActivityDetailScreenTestTags.DELETE_DIALOG))
-  }
+private fun ActionButtonsSection(isConnected: Boolean, onShare: () -> Unit) {
+  OutlinedButton(
+      onClick = onShare,
+      modifier =
+          Modifier.fillMaxWidth()
+              .alpha(getAlpha(isConnected))
+              .testTag(ActivityDetailScreenTestTags.SHARE_BUTTON),
+      enabled = isConnected) {
+        Icon(Icons.Default.Share, "Share", modifier = Modifier.size(18.dp))
+        Spacer(modifier = Modifier.width(8.dp))
+        Text("Share Activity")
+      }
 }
 
 /** Helper function to get color for activity type. */

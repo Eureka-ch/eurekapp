@@ -341,17 +341,41 @@ fun NavigationMenu(
                       when (entityType) {
                         EntityType.MEETING -> {
                           navigationController.navigate(
-                              Route.MeetingsSection.MeetingDetail(projectId, entityId))
+                              Route.MeetingsSection.MeetingDetail(projectId, entityId)) {
+                                popUpTo(navigationController.graph.startDestinationId) {
+                                  saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                              }
                         }
                         EntityType.TASK -> {
                           navigationController.navigate(
-                              Route.TasksSection.ViewTask(projectId, entityId))
+                              Route.TasksSection.ViewTask(projectId, entityId)) {
+                                popUpTo(navigationController.graph.startDestinationId) {
+                                  saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                              }
                         }
                         EntityType.MESSAGE -> {
-                          navigationController.navigate(Route.ConversationsSection.Conversations)
+                          navigationController.navigate(Route.ConversationsSection.Conversations) {
+                            popUpTo(navigationController.graph.startDestinationId) {
+                              saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                          }
                         }
                         EntityType.PROJECT -> {
-                          navigationController.navigate(Route.ProjectSelection)
+                          navigationController.navigate(Route.ProjectSelection) {
+                            popUpTo(navigationController.graph.startDestinationId) {
+                              saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                          }
                         }
                         else -> {
                           // FILE and MEMBER types have no detail screen
