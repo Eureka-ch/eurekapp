@@ -39,6 +39,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -65,6 +66,7 @@ import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectSelectionScreenViewModel
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.data.user.User
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 /** Object holding test tags for UI testing on ProjectSelectionScreen. */
@@ -137,75 +139,81 @@ fun ProjectSelectionScreen(
 
   val listState = rememberLazyListState()
 
-  Column(modifier = Modifier.fillMaxSize().background(Color(0xFFF8FAFC))) {
-    // Header section with action buttons
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(Spacing.lg),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-          Button(
-              onClick = { onCreateProjectRequest() },
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .testTag(ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON),
-              colors =
-                  ButtonDefaults.buttonColors(
-                      containerColor = MaterialTheme.colorScheme.primary,
-                      contentColor = Color.White)) {
-                Text(
-                    "+ Create Project",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold)
-              }
-          OutlinedButton(
-              onClick = { onInputTokenRequest() },
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .testTag(ProjectSelectionScreenTestTags.INPUT_TOKEN_BUTTON),
-              colors =
-                  ButtonDefaults.outlinedButtonColors(
-                      contentColor = MaterialTheme.colorScheme.primary)) {
-                Text(
-                    "Input Project Token",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold)
-              }
-        }
-
-    // Projects list
-    if (projectsList.value.isEmpty()) {
-      Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+  Scaffold(
+      topBar = { EurekaTopBar(title = "Projects") },
+      content = { paddingValues ->
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-              Text(
-                  "No projects yet",
-                  style = MaterialTheme.typography.titleLarge,
-                  color = Color(0xFF0F172A),
-                  fontWeight = FontWeight.Bold)
-              Text(
-                  "Create your first project to get started",
-                  style = MaterialTheme.typography.bodyMedium,
-                  color = Color(0xFF64748B))
+            modifier =
+                Modifier.fillMaxSize().padding(paddingValues).background(Color(0xFFF8FAFC))) {
+              // Header section with action buttons
+              Column(
+                  modifier = Modifier.fillMaxWidth().padding(Spacing.lg),
+                  horizontalAlignment = Alignment.CenterHorizontally,
+                  verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                    Button(
+                        onClick = { onCreateProjectRequest() },
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .testTag(ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON),
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = Color.White)) {
+                          Text(
+                              "+ Create Project",
+                              style = MaterialTheme.typography.titleMedium,
+                              fontWeight = FontWeight.Bold)
+                        }
+                    OutlinedButton(
+                        onClick = { onInputTokenRequest() },
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .testTag(ProjectSelectionScreenTestTags.INPUT_TOKEN_BUTTON),
+                        colors =
+                            ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.primary)) {
+                          Text(
+                              "Input Project Token",
+                              style = MaterialTheme.typography.titleMedium,
+                              fontWeight = FontWeight.SemiBold)
+                        }
+                  }
+
+              // Projects list
+              if (projectsList.value.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                  Column(
+                      horizontalAlignment = Alignment.CenterHorizontally,
+                      verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                        Text(
+                            "No projects yet",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = Color(0xFF0F172A),
+                            fontWeight = FontWeight.Bold)
+                        Text(
+                            "Create your first project to get started",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFF64748B))
+                      }
+                }
+              } else {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = Spacing.lg),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                      items(projectsList.value) { project ->
+                        ProjectCard(
+                            project,
+                            projectSelectionScreenViewModel,
+                            onSeeProjectMembers,
+                            onGenerateInviteRequest,
+                            currentUser.value)
+                      }
+                    }
+              }
             }
-      }
-    } else {
-      LazyColumn(
-          state = listState,
-          modifier = Modifier.fillMaxSize(),
-          contentPadding = PaddingValues(horizontal = Spacing.lg),
-          verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-            items(projectsList.value) { project ->
-              ProjectCard(
-                  project,
-                  projectSelectionScreenViewModel,
-                  onSeeProjectMembers,
-                  onGenerateInviteRequest,
-                  currentUser.value)
-            }
-          }
-    }
-  }
+      })
 }
 
 /**

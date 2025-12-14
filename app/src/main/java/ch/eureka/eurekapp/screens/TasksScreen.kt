@@ -20,7 +20,6 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -38,6 +37,7 @@ import ch.eureka.eurekapp.model.data.task.getDaysUntilDue
 import ch.eureka.eurekapp.model.data.task.getDueDateTag
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.help.HelpContext
 import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
@@ -356,27 +356,31 @@ fun TasksScreen(
     viewModel.setFilter(filter)
   }
 
-  Scaffold(modifier = modifier.fillMaxSize().testTag(TasksScreenTestTags.TASKS_SCREEN_CONTENT)) {
-      innerPadding ->
-    // Note: userProvidedName is not passed as TasksScreen doesn't have access to user data.
-    // The help composable will fall back to FirebaseAuth.getInstance().currentUser?.displayName.
-    ScreenWithHelp(
-        helpContext = HelpContext.TASKS,
-        content = {
-          Column(
-              modifier =
-                  Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = Spacing.md)) {
-                HeaderSection(
-                    onCreateTaskClick, onAutoAssignClick, onFilesManagementClick, isConnected)
-                FilterBar(uiState, selectedFilter, ::setFilter)
-                if (uiState.isLoading) {
-                  LoadingState()
-                } else if (uiState.error != null) {
-                  ErrorState(errorMsg)
-                } else {
-                  TaskList(tasksAndUsers, viewModel, isConnected, onTaskClick)
-                }
-              }
-        })
-  }
+  androidx.compose.material3.Scaffold(
+      modifier = modifier.fillMaxSize().testTag(TasksScreenTestTags.TASKS_SCREEN_CONTENT),
+      topBar = { EurekaTopBar(title = "Tasks") }) { innerPadding ->
+        // Note: userProvidedName is not passed as TasksScreen doesn't have access to user data.
+        // The help composable will fall back to
+        // FirebaseAuth.getInstance().currentUser?.displayName.
+        ScreenWithHelp(
+            helpContext = HelpContext.TASKS,
+            content = {
+              Column(
+                  modifier =
+                      Modifier.fillMaxSize()
+                          .padding(innerPadding)
+                          .padding(horizontal = Spacing.md)) {
+                    HeaderSection(
+                        onCreateTaskClick, onAutoAssignClick, onFilesManagementClick, isConnected)
+                    FilterBar(uiState, selectedFilter, ::setFilter)
+                    if (uiState.isLoading) {
+                      LoadingState()
+                    } else if (uiState.error != null) {
+                      ErrorState(errorMsg)
+                    } else {
+                      TaskList(tasksAndUsers, viewModel, isConnected, onTaskClick)
+                    }
+                  }
+            })
+      }
 }
