@@ -240,7 +240,7 @@ private fun MeetingScreenContent(
   Column(
       modifier =
           Modifier.fillMaxSize()
-              .padding(horizontal = Spacing.lg, vertical = Spacing.md)
+              .padding(horizontal = 16.dp, vertical = 10.dp)
               .testTag(MeetingScreenTestTags.MEETING_SCREEN)) {
         Text(
             modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_DESCRIPTION),
@@ -351,9 +351,9 @@ fun MeetingsList(
 
   if (config.meetings.isNotEmpty()) {
     LazyColumn(
-        contentPadding = PaddingValues(vertical = Spacing.md),
-        modifier = config.modifier.fillMaxWidth().padding(horizontal = Spacing.lg),
-        verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+        contentPadding = PaddingValues(vertical = 8.dp),
+        modifier = config.modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)) {
           items(config.meetings.size) { index ->
             val meeting = config.meetings[index]
             MeetingCard(

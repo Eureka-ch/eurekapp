@@ -34,6 +34,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -61,7 +62,9 @@ import ch.eureka.eurekapp.model.data.task.getDaysUntilDue
 import ch.eureka.eurekapp.model.data.task.getDueDateTag
 import ch.eureka.eurekapp.ui.components.EurekaInfoCard
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.help.HelpContext
+import ch.eureka.eurekapp.ui.components.help.InteractiveHelpEntryPoint
 import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.home.HOME_ITEMS_LIMIT
@@ -143,12 +146,20 @@ private fun HomeOverviewScreenContainer(
     uiState: HomeOverviewUiState,
     actions: HomeOverviewActions
 ) {
-  ScreenWithHelp(
-      helpContext = HelpContext.HOME_OVERVIEW,
-      userProvidedName = uiState.currentUserName,
-      content = {
-        HomeOverviewLayout(modifier = Modifier.fillMaxSize(), uiState = uiState, actions = actions)
-      })
+  Scaffold(
+      modifier = modifier.fillMaxSize(),
+      topBar = {
+        EurekaTopBar(
+            title = "EUREKAP",
+            actions = {
+              InteractiveHelpEntryPoint(
+                  helpContext = HelpContext.HOME_OVERVIEW,
+                  userProvidedName = uiState.currentUserName)
+            })
+      }) { padding ->
+        HomeOverviewLayout(
+            modifier = Modifier.fillMaxSize().padding(padding), uiState = uiState, actions = actions)
+      }
 }
 
 /** Visible-for-testing layout that renders the actual home overview content based on [uiState]. */
@@ -179,19 +190,14 @@ internal fun HomeOverviewLayout(
               .testTag(HomeOverviewTestTags.SCREEN),
       verticalArrangement = Arrangement.spacedBy(Spacing.xl)) {
         item(key = "header") {
-          AnimatedVisibility(
-              visible = true,
-              enter =
-                  fadeIn(animationSpec = tween(600)) +
-                      slideInVertically(initialOffsetY = { -30 }, animationSpec = tween(600))) {
-                GreetingHeader(uiState.currentUserName, uiState.isConnected, uiState.error)
-                Spacer(modifier = Modifier.height(Spacing.md))
-                SummaryCardsRow(
-                    tasksCount = uiState.upcomingTasks.size,
-                    meetingsCount = uiState.upcomingMeetings.size,
-                    projectsCount = uiState.recentProjects.size,
-                )
-              }
+          GreetingHeader(uiState.currentUserName, uiState.isConnected, uiState.error)
+        }
+
+        item(key = "cards") {
+          SummaryCardsRow(
+              tasksCount = uiState.upcomingTasks.size,
+              meetingsCount = uiState.upcomingMeetings.size,
+              projectsCount = uiState.recentProjects.size)
         }
 
         item {
@@ -333,22 +339,22 @@ private fun SummaryCardsRow(tasksCount: Int, meetingsCount: Int, projectsCount: 
         primaryValue = "$tasksCount",
         secondaryValue = "Assigned to you",
         icon = Icons.Default.AssignmentTurnedIn,
-        gradientStart = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-        gradientEnd = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f))
+        gradientStart = Color.White,
+        gradientEnd = Color.White)
     EurekaInfoCard(
         title = "Next meetings",
         primaryValue = "$meetingsCount",
         secondaryValue = "Scheduled",
         icon = Icons.Default.CalendarToday,
-        gradientStart = MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f),
-        gradientEnd = MaterialTheme.colorScheme.secondary.copy(alpha = 0.05f))
+        gradientStart = Color.White,
+        gradientEnd = Color.White)
     EurekaInfoCard(
         title = "Recent projects",
         primaryValue = "$projectsCount",
         secondaryValue = "Active teams",
         icon = Icons.Default.Folder,
-        gradientStart = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f),
-        gradientEnd = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.05f))
+        gradientStart = Color.White,
+        gradientEnd = Color.White)
   }
 }
 
