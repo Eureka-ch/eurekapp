@@ -13,8 +13,10 @@ import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
+import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.Participant
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -75,6 +77,7 @@ class MeetingDetailViewModel(
     private val repository: MeetingRepository = RepositoriesProvider.meetingRepository,
     private val connectivityObserver: ConnectivityObserver =
         ConnectivityObserverProvider.connectivityObserver,
+    private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
 ) : ViewModel() {
 
   private val _deleteSuccess = MutableStateFlow(false)
@@ -396,5 +399,92 @@ class MeetingDetailViewModel(
   /** Clear the update success flag. */
   fun clearUpdateSuccess() {
     _updateSuccess.value = false
+  }
+
+  /**
+   * Starts the meeting by updating its status to IN_PROGRESS.
+   *
+   * @param meeting The meeting to start.
+   * @param isConnected Whether the device is connected to the internet.
+   */
+  fun startMeeting(meeting: Meeting, isConnected: Boolean) {
+    if (isConnected && userId == meeting.createdBy && meeting.status == MeetingStatus.SCHEDULED) {
+      val updatedMeeting = meeting.copy(status = MeetingStatus.IN_PROGRESS)
+      viewModelScope.launch {
+        repository.updateMeeting(updatedMeeting).onFailure { e ->
+          _errorMsg.value = e.message ?: "Failed to start meeting"
+        }
+      }
+    } else if (!isConnected) {
+      _errorMsg.value = "Cannot start meeting while offline"
+    } else if (userId != meeting.createdBy) {
+      _errorMsg.value = "Only the meeting creator can start the meeting"
+    } else {
+      _errorMsg.value = "Meeting can only be started if it is scheduled"
+    }
+  }
+
+  /**
+   * Ends the meeting by updating its status to COMPLETED.
+   *
+   * @param meeting The meeting to end.
+   * @param isConnected Whether the device is connected to the internet.
+   */
+  fun endMeeting(meeting: Meeting, isConnected: Boolean) {
+    if (isConnected && userId == meeting.createdBy && meeting.status == MeetingStatus.IN_PROGRESS) {
+      val updatedMeeting = meeting.copy(status = MeetingStatus.COMPLETED)
+      viewModelScope.launch {
+        repository.updateMeeting(updatedMeeting).onFailure { e ->
+          _errorMsg.value = e.message ?: "Failed to end meeting"
+        }
+      }
+    } else if (!isConnected) {
+      _errorMsg.value = "Cannot end meeting while offline"
+    } else if (userId != meeting.createdBy) {
+      _errorMsg.value = "Only the meeting creator can end the meeting"
+    } else {
+      _errorMsg.value = "Meeting can only be ended if it is in progress"
+    }
+  }
+
+  val userId = getCurrentUserId()
+
+  /**
+   * Checks if the meeting should have already started.
+   *
+   * @param meeting The meeting to check.
+   * @return True if the meeting's start time has passed and it's still SCHEDULED, false otherwise.
+   */
+  fun shouldMeetingBeStarted(meeting: Meeting): Boolean {
+    if (meeting.status != MeetingStatus.SCHEDULED) return false
+    if (meeting.datetime == null) return false
+
+    val meetingDateTime =
+        meeting.datetime
+            .toDate()
+            .toInstant()
+            .atZone(java.time.ZoneId.systemDefault())
+            .toLocalDateTime()
+    return meetingDateTime.isBefore(java.time.LocalDateTime.now())
+  }
+
+  /**
+   * Checks if the meeting should have already ended.
+   *
+   * @param meeting The meeting to check.
+   * @return True if the meeting's end time has passed and it's still IN_PROGRESS, false otherwise.
+   */
+  fun shouldMeetingBeEnded(meeting: Meeting): Boolean {
+    if (meeting.status != MeetingStatus.IN_PROGRESS) return false
+    if (meeting.datetime == null) return false
+
+    val meetingDateTime =
+        meeting.datetime
+            .toDate()
+            .toInstant()
+            .atZone(java.time.ZoneId.systemDefault())
+            .toLocalDateTime()
+    val endDateTime = meetingDateTime.plusMinutes(meeting.duration.toLong())
+    return endDateTime.isBefore(java.time.LocalDateTime.now())
   }
 }

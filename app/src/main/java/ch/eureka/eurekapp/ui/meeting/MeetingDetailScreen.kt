@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.VideoCall
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -129,6 +130,10 @@ object MeetingDetailScreenTestTags {
   const val CONTENT_COLUMN = "ContentColumn"
   const val DOWNLOADING_FILES_PROGRESS_INDICATOR = "DownloadingFilesProgressIndicator"
   const val DOWNLOADING_FILES_BUTTON = "DownloadingFilesButton"
+  const val START_MEETING_BUTTON = "StartMeetingButton"
+  const val END_MEETING_BUTTON = "EndMeetingButton"
+  const val START_MEETING_REMINDER = "StartMeetingReminder"
+  const val END_MEETING_REMINDER = "EndMeetingReminder"
 }
 
 /**
@@ -150,7 +155,7 @@ data class MeetingDetailActionsConfig(
     val onRecordMeeting: (String, String, Boolean) -> Unit = { _, _, _ -> },
     val onViewTranscript: (String, String, Boolean) -> Unit = { _, _, _ -> },
     val onVoteForMeetingProposalClick: (String, String, Boolean) -> Unit = { _, _, _ -> },
-    val onNavigateToMeeting: (Boolean) -> Unit = {},
+    val onNavigateToMeeting: (Boolean) -> Unit = {}
 )
 
 /**
@@ -229,6 +234,7 @@ fun MeetingDetailScreen(
                 meeting = meeting,
                 participants = uiState.participants,
                 attachmentsViewModel = attachmentsViewModel,
+                viewModel = viewModel,
                 editConfig =
                     EditConfig(
                         isEditMode = uiState.isEditMode,
@@ -332,6 +338,9 @@ private fun ErrorScreen(message: String) {
  * @param onUpdateTitle Callback invoked when edit title changes.
  * @param onUpdateDateTime Callback invoked when edit date/time changes.
  * @param onUpdateDuration Callback invoked when edit duration changes.
+ * @param onTouchTitle Callback invoked when title field is first touched.
+ * @param onTouchDateTime Callback invoked when date/time field is first touched.
+ * @param onTouchDuration Callback invoked when duration field is first touched.
  * @param onNavigateToMeeting Callback invoked when user clicks navigate to meeting button.
  */
 data class MeetingDetailContentActionsConfig(
@@ -349,7 +358,7 @@ data class MeetingDetailContentActionsConfig(
     val onTouchTitle: () -> Unit,
     val onTouchDateTime: () -> Unit,
     val onTouchDuration: () -> Unit,
-    val onNavigateToMeeting: (Boolean) -> Unit,
+    val onNavigateToMeeting: (Boolean) -> Unit
 )
 
 /**
@@ -393,7 +402,7 @@ data class ActionButtonsConfig(
     val onDeleteMeeting: () -> Unit,
     val onVoteForMeetingProposals: (Boolean) -> Unit,
     val onEditMeeting: (Boolean) -> Unit,
-    val onNavigateToMeeting: (Boolean) -> Unit,
+    val onNavigateToMeeting: (Boolean) -> Unit
 )
 
 /**
@@ -414,6 +423,7 @@ private fun MeetingDetailContent(
     actionsConfig: MeetingDetailContentActionsConfig,
     modifier: Modifier = Modifier,
     attachmentsViewModel: MeetingAttachmentsViewModel,
+    viewModel: MeetingDetailViewModel,
     isConnected: Boolean = true,
 ) {
   LazyColumn(
@@ -461,6 +471,7 @@ private fun MeetingDetailContent(
           } else {
             ActionButtonsSection(
                 meeting = meeting,
+                viewModel = viewModel,
                 actionsConfig =
                     ActionButtonsConfig(
                         onJoinMeeting = actionsConfig.onJoinMeeting,
@@ -469,8 +480,7 @@ private fun MeetingDetailContent(
                         onDeleteMeeting = actionsConfig.onDeleteMeeting,
                         onVoteForMeetingProposals = actionsConfig.onVoteForMeetingProposals,
                         onEditMeeting = actionsConfig.onEditMeeting,
-                        onNavigateToMeeting = actionsConfig.onNavigateToMeeting,
-                    ),
+                        onNavigateToMeeting = actionsConfig.onNavigateToMeeting),
                 isConnected = isConnected,
             )
           }
@@ -1081,12 +1091,14 @@ fun AttachmentItem(
  * Action buttons section (join, record, transcript, delete, edit).
  *
  * @param meeting The meeting for which to display action buttons.
+ * @param viewModel The view model for handling start meeting action.
  * @param actionsConfig Configuration for action button callbacks.
  * @param isConnected Whether the device is connected to the internet.
  */
 @Composable
 private fun ActionButtonsSection(
     meeting: Meeting,
+    viewModel: MeetingDetailViewModel,
     actionsConfig: ActionButtonsConfig,
     isConnected: Boolean = true,
 ) {
@@ -1103,6 +1115,97 @@ private fun ActionButtonsSection(
         when (meeting.status) {
           MeetingStatus.SCHEDULED,
           MeetingStatus.IN_PROGRESS -> {
+            // Add Start Meeting button if user is creator and meeting is scheduled
+            if (meeting.status == MeetingStatus.SCHEDULED &&
+                viewModel.userId == meeting.createdBy) {
+              // Show reminder if meeting should have already started
+              if (viewModel.shouldMeetingBeStarted(meeting)) {
+                Card(
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .testTag(MeetingDetailScreenTestTags.START_MEETING_REMINDER),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer),
+                    shape = RoundedCornerShape(8.dp)) {
+                      Row(
+                          modifier = Modifier.padding(12.dp),
+                          verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = "Warning",
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text =
+                                    "The scheduled start time has passed. Consider starting the meeting.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer)
+                          }
+                    }
+                Spacer(modifier = Modifier.height(8.dp))
+              }
+
+              Button(
+                  onClick = { viewModel.startMeeting(meeting, isConnected) },
+                  enabled = isConnected,
+                  modifier =
+                      Modifier.fillMaxWidth()
+                          .testTag(MeetingDetailScreenTestTags.START_MEETING_BUTTON)
+                          .alpha(getAlpha(isConnected))) {
+                    Text("Start Meeting")
+                  }
+              Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            // Add End Meeting button if user is creator and meeting is in progress
+            if (meeting.status == MeetingStatus.IN_PROGRESS &&
+                viewModel.userId == meeting.createdBy) {
+              // Show reminder if meeting should have already ended
+              if (viewModel.shouldMeetingBeEnded(meeting)) {
+                Card(
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .testTag(MeetingDetailScreenTestTags.END_MEETING_REMINDER),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer),
+                    shape = RoundedCornerShape(8.dp)) {
+                      Row(
+                          modifier = Modifier.padding(12.dp),
+                          verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = "Warning",
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text =
+                                    "The scheduled end time has passed. Consider ending the meeting.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer)
+                          }
+                    }
+                Spacer(modifier = Modifier.height(8.dp))
+              }
+
+              Button(
+                  onClick = { viewModel.endMeeting(meeting, isConnected) },
+                  enabled = isConnected,
+                  modifier =
+                      Modifier.fillMaxWidth()
+                          .testTag(MeetingDetailScreenTestTags.END_MEETING_BUTTON)
+                          .alpha(getAlpha(isConnected)),
+                  colors =
+                      ButtonDefaults.buttonColors(
+                          containerColor = MaterialTheme.colorScheme.error)) {
+                    Text("End Meeting")
+                  }
+              Spacer(modifier = Modifier.height(8.dp))
+            }
+
             if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
               Button(
                   onClick = { actionsConfig.onJoinMeeting(meeting.link, isConnected) },
