@@ -35,7 +35,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -113,7 +112,7 @@ fun IdeasScreen(
               onClick = { showCreateIdeaDialog = true },
               modifier = Modifier.testTag("createIdeaButton").padding(bottom = 85.dp),
               containerColor = MaterialTheme.colorScheme.primary,
-              contentColor = Color.White) {
+              contentColor = MaterialTheme.colorScheme.onPrimary) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Create new idea")
               }
         }
@@ -134,7 +133,8 @@ fun IdeasScreen(
                               Modifier.shadow(
                                       elevation = 6.dp,
                                       shape = RoundedCornerShape(20.dp),
-                                      spotColor = Color.Black.copy(alpha = 0.2f))
+                                      spotColor =
+                                          MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
                                   .border(
                                       width = 1.5.dp,
                                       color =
@@ -144,7 +144,7 @@ fun IdeasScreen(
                           shape = RoundedCornerShape(20.dp),
                           colors =
                               ButtonDefaults.buttonColors(
-                                  containerColor = Color.White,
+                                  containerColor = MaterialTheme.colorScheme.surface,
                                   contentColor = MaterialTheme.colorScheme.onSurface)) {
                             Text(
                                 text = uiState.selectedProject?.name ?: "Select a project",
