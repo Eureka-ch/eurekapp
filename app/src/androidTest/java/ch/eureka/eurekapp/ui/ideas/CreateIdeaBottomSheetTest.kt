@@ -173,8 +173,21 @@ class CreateIdeaBottomSheetTest {
         .onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)
         .performClick()
     composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithText("Select Participants").assertIsDisplayed()
-    composeTestRule.onNodeWithText("OK").assertIsDisplayed()
+    // Wait for Dialog to be mounted
+    composeTestRule.waitUntil(timeoutMillis = 3000) {
+      try {
+        composeTestRule
+            .onNodeWithTag("SelectParticipantsTitle", useUnmergedTree = true)
+            .assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
+    composeTestRule
+        .onNodeWithTag("SelectParticipantsTitle", useUnmergedTree = true)
+        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag("OKButton", useUnmergedTree = true).assertIsDisplayed()
   }
 
   @Test
@@ -185,8 +198,23 @@ class CreateIdeaBottomSheetTest {
         .onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)
         .performClick()
     composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithText("User One").assertIsDisplayed()
-    composeTestRule.onNodeWithText("User Two").assertIsDisplayed()
+    // Wait for Dialog to be mounted
+    composeTestRule.waitUntil(timeoutMillis = 3000) {
+      try {
+        composeTestRule
+            .onNodeWithTag("ParticipantName_user1", useUnmergedTree = true)
+            .assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
+    composeTestRule
+        .onNodeWithTag("ParticipantName_user1", useUnmergedTree = true)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag("ParticipantName_user2", useUnmergedTree = true)
+        .assertIsDisplayed()
   }
 
   @Test
@@ -197,10 +225,21 @@ class CreateIdeaBottomSheetTest {
         .onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)
         .performClick()
     composeTestRule.waitForIdle()
+    // Wait for Dialog to be mounted
+    composeTestRule.waitUntil(timeoutMillis = 3000) {
+      try {
+        composeTestRule.onNodeWithTag("OKButton", useUnmergedTree = true).assertExists()
+        true
+      } catch (e: AssertionError) {
+        false
+      }
+    }
     // Find button with testTag
-    composeTestRule.onNodeWithTag("OKButton").performClick()
+    composeTestRule.onNodeWithTag("OKButton", useUnmergedTree = true).performClick()
     composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag("SelectParticipantsTitle").assertDoesNotExist()
+    composeTestRule
+        .onNodeWithTag("SelectParticipantsTitle", useUnmergedTree = true)
+        .assertDoesNotExist()
   }
 
   @Test

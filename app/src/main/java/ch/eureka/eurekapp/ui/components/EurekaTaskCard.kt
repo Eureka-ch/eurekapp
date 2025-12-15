@@ -116,10 +116,13 @@ fun EurekaTaskCard(
                       Box(
                           modifier =
                               Modifier.size(40.dp)
-                                  .testTag("checkbox")
-                                  .clickable(
-                                      role = Role.Checkbox,
-                                      onClick = { if (canToggleCompletion) onToggleComplete() })
+                                  .then(
+                                      if (!isCompleted) Modifier.testTag("checkbox") else Modifier)
+                                  .then(
+                                      if (canToggleCompletion && !isCompleted)
+                                          Modifier.clickable(
+                                              role = Role.Checkbox, onClick = onToggleComplete)
+                                      else Modifier)
                                   .background(
                                       color =
                                           if (isCompleted)
