@@ -14,6 +14,7 @@ import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.utils.MeetingLinkValidator
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -36,6 +37,9 @@ import kotlinx.coroutines.launch
  * @property editTitle The title being edited.
  * @property editDateTime The date/time being edited.
  * @property editDuration The duration being edited.
+ * @property editLink The meeting link being edited (for VIRTUAL meetings).
+ * @property linkValidationError The error message for link validation, null if valid.
+ * @property linkValidationWarning The warning message for link validation, null if no warning.
  * @property updateSuccess Whether the meeting was successfully updated.
  * @property isSaving Whether a save operation is in progress.
  * @property isConnected Whether the device is connected to the internet.
@@ -50,11 +54,15 @@ data class MeetingDetailUIState(
     val editTitle: String = "",
     val editDateTime: Timestamp? = null,
     val editDuration: Int = 0,
+    val editLink: String = "",
+    val linkValidationError: String? = null,
+    val linkValidationWarning: String? = null,
     val updateSuccess: Boolean = false,
     val isSaving: Boolean = false,
     val hasTouchedTitle: Boolean = false,
     val hasTouchedDateTime: Boolean = false,
     val hasTouchedDuration: Boolean = false,
+    val hasTouchedLink: Boolean = false,
     val isConnected: Boolean = true
 )
 
@@ -83,11 +91,15 @@ class MeetingDetailViewModel(
   private val _editTitle = MutableStateFlow("")
   private val _editDateTime = MutableStateFlow<Timestamp?>(null)
   private val _editDuration = MutableStateFlow(30)
+  private val _editLink = MutableStateFlow("")
+  private val _linkValidationError = MutableStateFlow<String?>(null)
+  private val _linkValidationWarning = MutableStateFlow<String?>(null)
   private val _updateSuccess = MutableStateFlow(false)
   private val _isSaving = MutableStateFlow(false)
   private val _hasTouchedTitle = MutableStateFlow(false)
   private val _hasTouchedDateTime = MutableStateFlow(false)
   private val _hasTouchedDuration = MutableStateFlow(false)
+  private val _hasTouchedLink = MutableStateFlow(false)
 
   // Add connectivity observer
   private val _isConnected =
@@ -134,11 +146,17 @@ class MeetingDetailViewModel(
    * Internal data class representing the save state of the meeting.
    *
    * @property editDuration The duration being edited.
+   * @property editLink The meeting link being edited.
+   * @property linkValidationError The error message for link validation.
+   * @property linkValidationWarning The warning message for link validation.
    * @property updateSuccess Whether the meeting was successfully updated.
    * @property isSaving Whether a save operation is in progress.
    */
   private data class SaveState(
       val editDuration: Int,
+      val editLink: String,
+      val linkValidationError: String?,
+      val linkValidationWarning: String?,
       val updateSuccess: Boolean,
       val isSaving: Boolean
   )
@@ -149,11 +167,13 @@ class MeetingDetailViewModel(
    * @property hasTouchedTitle Whether the title field has been touched.
    * @property hasTouchedDateTime Whether the date/time field has been touched.
    * @property hasTouchedDuration Whether the duration field has been touched.
+   * @property hasTouchedLink Whether the link field has been touched.
    */
   private data class TouchState(
       val hasTouchedTitle: Boolean,
       val hasTouchedDateTime: Boolean,
-      val hasTouchedDuration: Boolean
+      val hasTouchedDuration: Boolean,
+      val hasTouchedLink: Boolean
   )
 
   /**
@@ -195,15 +215,30 @@ class MeetingDetailViewModel(
                       editDateTime ->
                     EditState(deleteSuccess, errorMsg, isEditMode, editTitle, editDateTime)
                   },
-                  combine(_editDuration, _updateSuccess, _isSaving) { duration, success, saving ->
-                    SaveState(duration, success, saving)
-                  },
-                  combine(_hasTouchedTitle, _hasTouchedDateTime, _hasTouchedDuration) {
-                      title,
-                      dateTime,
-                      duration ->
-                    TouchState(title, dateTime, duration)
-                  }) { meeting, participants, editState, saveState, touchState ->
+                  combine(_editDuration, _editLink, _linkValidationError, _linkValidationWarning) {
+                        duration,
+                        link,
+                        linkError,
+                        linkWarning ->
+                      Pair(duration to link, linkError to linkWarning)
+                    }
+                      .combine(_updateSuccess) { pair, success -> Triple(pair.first, pair.second, success) }
+                      .combine(_isSaving) { triple, saving ->
+                        SaveState(
+                            triple.first.first,
+                            triple.first.second,
+                            triple.second.first,
+                            triple.second.second,
+                            triple.third,
+                            saving)
+                      },
+                  combine(
+                      _hasTouchedTitle,
+                      _hasTouchedDateTime,
+                      _hasTouchedDuration,
+                      _hasTouchedLink) { title, dateTime, duration, link ->
+                        TouchState(title, dateTime, duration, link)
+                      }) { meeting, participants, editState, saveState, touchState ->
                     CombinedState(meeting, participants, editState, saveState, touchState)
                   },
               _isConnected) { combined, isConnected ->
@@ -218,11 +253,15 @@ class MeetingDetailViewModel(
                     editTitle = combined.editState.editTitle,
                     editDateTime = combined.editState.editDateTime,
                     editDuration = combined.saveState.editDuration,
+                    editLink = combined.saveState.editLink,
+                    linkValidationError = combined.saveState.linkValidationError,
+                    linkValidationWarning = combined.saveState.linkValidationWarning,
                     updateSuccess = combined.saveState.updateSuccess,
                     isSaving = combined.saveState.isSaving,
                     hasTouchedTitle = combined.touchState.hasTouchedTitle,
                     hasTouchedDateTime = combined.touchState.hasTouchedDateTime,
                     hasTouchedDuration = combined.touchState.hasTouchedDuration,
+                    hasTouchedLink = combined.touchState.hasTouchedLink,
                     isConnected = isConnected)
               }
           .onStart { emit(MeetingDetailUIState(isLoading = true)) }
@@ -273,16 +312,25 @@ class MeetingDetailViewModel(
         _editTitle.value = ""
         _editDateTime.value = null
         _editDuration.value = 30
+        _editLink.value = ""
+        _linkValidationError.value = null
+        _linkValidationWarning.value = null
         _errorMsg.value = null
         _hasTouchedTitle.value = false
         _hasTouchedDateTime.value = false
         _hasTouchedDuration.value = false
+        _hasTouchedLink.value = false
       } else {
         // Entering edit mode - populate fields with current values
         meeting?.let {
           _editTitle.value = it.title
           _editDateTime.value = it.datetime
           _editDuration.value = it.duration
+          _editLink.value = it.link ?: ""
+          // Validate the existing link
+          val (isValid, message) = MeetingLinkValidator.validateMeetingLink(it.link)
+          _linkValidationError.value = if (!isValid) message else null
+          _linkValidationWarning.value = if (isValid && message != null) message else null
           _isEditMode.value = true
           _errorMsg.value = null
         }
@@ -317,6 +365,18 @@ class MeetingDetailViewModel(
     _editDuration.value = duration
   }
 
+  /**
+   * Update the edit link field and validate it.
+   *
+   * @param link The new meeting link URL.
+   */
+  fun updateEditLink(link: String) {
+    val (isValid, message) = MeetingLinkValidator.validateMeetingLink(link)
+    _editLink.value = link
+    _linkValidationError.value = if (!isValid) message else null
+    _linkValidationWarning.value = if (isValid && message != null) message else null
+  }
+
   /** Mark the title field as touched. */
   fun touchTitle() {
     _hasTouchedTitle.value = true
@@ -332,12 +392,18 @@ class MeetingDetailViewModel(
     _hasTouchedDuration.value = true
   }
 
+  /** Mark the link field as touched. */
+  fun touchLink() {
+    _hasTouchedLink.value = true
+  }
+
   /**
    * Validate edit fields before saving.
    *
+   * @param meetingFormat The format of the meeting being edited.
    * @return Error message if validation fails, null if valid.
    */
-  private fun validateEditFields(): String? {
+  private fun validateEditFields(meetingFormat: MeetingFormat?): String? {
     val editDateTime = _editDateTime.value
     val isDateTimeInPast =
         editDateTime?.let {
@@ -351,6 +417,9 @@ class MeetingDetailViewModel(
       editDateTime == null -> "Date and time must be set"
       isDateTimeInPast -> "Meeting should be scheduled in the future."
       _editDuration.value <= 0 -> "Duration must be greater than 0"
+      meetingFormat == MeetingFormat.VIRTUAL &&
+          (_editLink.value.isBlank() || _linkValidationError.value != null) ->
+          _linkValidationError.value ?: "Meeting link is required for virtual meetings"
       else -> null
     }
   }
@@ -363,7 +432,7 @@ class MeetingDetailViewModel(
    */
   fun saveMeetingChanges(currentMeeting: Meeting, isConnected: Boolean) {
     if (isConnected) {
-      val validationError = validateEditFields()
+      val validationError = validateEditFields(currentMeeting.format)
       if (validationError != null) {
         _errorMsg.value = validationError
         return
@@ -375,7 +444,10 @@ class MeetingDetailViewModel(
             currentMeeting.copy(
                 title = _editTitle.value,
                 datetime = _editDateTime.value,
-                duration = _editDuration.value)
+                duration = _editDuration.value,
+                link =
+                    if (currentMeeting.format == MeetingFormat.VIRTUAL) _editLink.value
+                    else null)
 
         repository
             .updateMeeting(updatedMeeting)

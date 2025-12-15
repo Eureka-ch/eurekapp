@@ -4,7 +4,9 @@ package ch.eureka.eurekapp.ui.meeting
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -694,10 +696,20 @@ fun MeetingCard(
                         }
                       }
                       MeetingFormat.VIRTUAL -> {
+                        val context = LocalContext.current
                         Button(
-                            onClick = { config.onJoinMeeting(config.isConnected) },
+                            onClick = {
+                              // Open link in web browser, not native app
+                              meeting.link?.let { link ->
+                                val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(link)).apply {
+                                  addCategory(Intent.CATEGORY_BROWSABLE)
+                                  flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                }
+                                context.startActivity(browserIntent)
+                              }
+                            },
                             modifier = Modifier.testTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON),
-                            enabled = config.isConnected,
+                            enabled = config.isConnected && meeting.link != null,
                         ) {
                           Text("Join meeting")
                         }

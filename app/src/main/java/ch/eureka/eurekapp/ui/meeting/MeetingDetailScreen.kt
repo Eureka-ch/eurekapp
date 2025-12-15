@@ -1,10 +1,12 @@
 // Portions of this code were generated with the help of Grok, ChatGPT, and Claude.
 package ch.eureka.eurekapp.ui.meeting
 
+import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -27,6 +29,7 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.HowToVote
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Schedule
@@ -77,6 +80,8 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.LightingBlue
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.utils.Formatters
+import ch.eureka.eurekapp.utils.MeetingLinkValidator
+import ch.eureka.eurekapp.utils.MeetingPlatform
 import com.google.firebase.Timestamp
 import java.time.LocalDate
 import java.time.LocalTime
@@ -106,6 +111,7 @@ object MeetingDetailScreenTestTags {
   const val MEETING_FORMAT = "MeetingDetailFormat"
   const val MEETING_LOCATION = "MeetingDetailLocation"
   const val MEETING_LINK = "MeetingDetailLink"
+  const val EDITABLE_LINK_FIELD = "EditableLinkField"
   const val PARTICIPANTS_SECTION = "ParticipantsSection"
   const val PARTICIPANT_ITEM = "ParticipantItem"
   const val PARTICIPANT_NAME = "ParticipantName"
@@ -236,9 +242,13 @@ fun MeetingDetailScreen(
                         editTitle = uiState.editTitle,
                         editDateTime = uiState.editDateTime,
                         editDuration = uiState.editDuration,
+                        editLink = uiState.editLink,
+                        linkValidationError = uiState.linkValidationError,
+                        linkValidationWarning = uiState.linkValidationWarning,
                         hasTouchedTitle = uiState.hasTouchedTitle,
                         hasTouchedDateTime = uiState.hasTouchedDateTime,
-                        hasTouchedDuration = uiState.hasTouchedDuration),
+                        hasTouchedDuration = uiState.hasTouchedDuration,
+                        hasTouchedLink = uiState.hasTouchedLink),
                 actionsConfig =
                     MeetingDetailContentActionsConfig(
                         onJoinMeeting = actionsConfig.onJoinMeeting,
@@ -259,9 +269,11 @@ fun MeetingDetailScreen(
                         onUpdateTitle = viewModel::updateEditTitle,
                         onUpdateDateTime = viewModel::updateEditDateTime,
                         onUpdateDuration = viewModel::updateEditDuration,
+                        onUpdateLink = viewModel::updateEditLink,
                         onTouchTitle = viewModel::touchTitle,
                         onTouchDateTime = viewModel::touchDateTime,
                         onTouchDuration = viewModel::touchDuration,
+                        onTouchLink = viewModel::touchLink,
                         onNavigateToMeeting = actionsConfig.onNavigateToMeeting),
                 isConnected = uiState.isConnected)
           } ?: ErrorScreen(message = uiState.errorMsg ?: "Meeting not found")
@@ -332,6 +344,8 @@ private fun ErrorScreen(message: String) {
  * @param onUpdateTitle Callback invoked when edit title changes.
  * @param onUpdateDateTime Callback invoked when edit date/time changes.
  * @param onUpdateDuration Callback invoked when edit duration changes.
+ * @param onUpdateLink Callback invoked when edit link changes.
+ * @param onTouchLink Callback invoked when link field is first touched.
  * @param onNavigateToMeeting Callback invoked when user clicks navigate to meeting button.
  */
 data class MeetingDetailContentActionsConfig(
@@ -346,9 +360,11 @@ data class MeetingDetailContentActionsConfig(
     val onUpdateTitle: (String) -> Unit,
     val onUpdateDateTime: (Timestamp) -> Unit,
     val onUpdateDuration: (Int) -> Unit,
+    val onUpdateLink: (String) -> Unit,
     val onTouchTitle: () -> Unit,
     val onTouchDateTime: () -> Unit,
     val onTouchDuration: () -> Unit,
+    val onTouchLink: () -> Unit,
     val onNavigateToMeeting: (Boolean) -> Unit,
 )
 
@@ -360,6 +376,10 @@ data class MeetingDetailContentActionsConfig(
  * @param editTitle The title being edited.
  * @param editDateTime The date/time being edited.
  * @param editDuration The duration being edited.
+ * @param editLink The meeting link being edited (for VIRTUAL meetings).
+ * @param linkValidationError The error message for link validation, null if valid.
+ * @param linkValidationWarning The warning message for link validation, null if no warning.
+ * @param hasTouchedLink Whether the link field has been touched.
  */
 data class EditConfig(
     val isEditMode: Boolean,
@@ -367,9 +387,13 @@ data class EditConfig(
     val editTitle: String,
     val editDateTime: Timestamp?,
     val editDuration: Int,
+    val editLink: String,
+    val linkValidationError: String?,
+    val linkValidationWarning: String?,
     val hasTouchedTitle: Boolean,
     val hasTouchedDateTime: Boolean,
     val hasTouchedDuration: Boolean,
+    val hasTouchedLink: Boolean,
 )
 
 /**
@@ -432,16 +456,23 @@ private fun MeetingDetailContent(
                         editTitle = editConfig.editTitle,
                         editDateTime = editConfig.editDateTime,
                         editDuration = editConfig.editDuration,
+                        editLink = editConfig.editLink,
+                        linkValidationError = editConfig.linkValidationError,
+                        linkValidationWarning = editConfig.linkValidationWarning,
+                        meetingFormat = meeting.format ?: MeetingFormat.IN_PERSON,
                         meetingStatus = meeting.status,
                         hasTouchedTitle = editConfig.hasTouchedTitle,
                         hasTouchedDateTime = editConfig.hasTouchedDateTime,
                         hasTouchedDuration = editConfig.hasTouchedDuration,
+                        hasTouchedLink = editConfig.hasTouchedLink,
                         onTitleChange = actionsConfig.onUpdateTitle,
                         onDateTimeChange = actionsConfig.onUpdateDateTime,
                         onDurationChange = actionsConfig.onUpdateDuration,
+                        onLinkChange = actionsConfig.onUpdateLink,
                         onTouchTitle = actionsConfig.onTouchTitle,
                         onTouchDateTime = actionsConfig.onTouchDateTime,
-                        onTouchDuration = actionsConfig.onTouchDuration))
+                        onTouchDuration = actionsConfig.onTouchDuration,
+                        onTouchLink = actionsConfig.onTouchLink))
           } else {
             MeetingInformationCard(meeting = meeting)
           }
@@ -593,50 +624,81 @@ private fun MeetingLocationInfo(meeting: Meeting) {
 @Composable
 private fun MeetingLinkInfo(meeting: Meeting) {
   if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
+    val context = LocalContext.current
+    val platform = MeetingLinkValidator.detectPlatform(meeting.link)
+    val displayText = if (platform != MeetingPlatform.UNKNOWN) {
+      "${platform.displayName} - ${meeting.link}"
+    } else {
+      meeting.link
+    }
+
     InfoRow(
         icon = Icons.Default.VideoCall,
         label = "Meeting Link",
-        value = meeting.link,
-        testTag = MeetingDetailScreenTestTags.MEETING_LINK)
+        value = displayText,
+        testTag = MeetingDetailScreenTestTags.MEETING_LINK,
+        isClickable = true,
+        onClick = {
+          // Open link in web browser, not native app
+          val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(meeting.link)).apply {
+            addCategory(Intent.CATEGORY_BROWSABLE)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+          }
+          context.startActivity(browserIntent)
+        })
   }
 }
 
 /**
  * Holds all editable meeting information fields and their interaction callbacks.
  *
- * This configuration object groups the editable title, date/time, and duration fields along with
+ * This configuration object groups the editable title, date/time, duration, and link fields along with
  * their respective change and touch event handlers. It helps reduce the number of parameters passed
  * to [EditableMeetingInfoCard].
  *
  * @property editTitle The current editable title of the meeting.
  * @property editDateTime The currently selected editable meeting date and time.
  * @property editDuration The editable meeting duration, in minutes.
+ * @property editLink The editable meeting link (for VIRTUAL meetings).
+ * @property linkValidationError The error message for link validation, null if valid.
+ * @property linkValidationWarning The warning message for link validation, null if no warning.
+ * @property meetingFormat The format of the meeting (IN_PERSON or VIRTUAL).
  * @property meetingStatus The current status of the meeting (e.g., scheduled, completed,
  *   cancelled).
  * @property hasTouchedTitle Whether the title field has been interacted with.
  * @property hasTouchedDateTime Whether the date/time field has been interacted with.
  * @property hasTouchedDuration Whether the duration field has been interacted with.
+ * @property hasTouchedLink Whether the link field has been interacted with.
  * @property onTitleChange Callback triggered when the meeting title changes.
  * @property onDateTimeChange Callback triggered when the meeting date or time changes.
  * @property onDurationChange Callback triggered when the meeting duration changes.
+ * @property onLinkChange Callback triggered when the meeting link changes.
  * @property onTouchTitle Callback triggered when the title field is first touched.
  * @property onTouchDateTime Callback triggered when the date/time field is first touched.
  * @property onTouchDuration Callback triggered when the duration field is first touched.
+ * @property onTouchLink Callback triggered when the link field is first touched.
  */
 data class EditableMeetingInfoCardConfig(
     val editTitle: String,
     val editDateTime: Timestamp?,
     val editDuration: Int,
+    val editLink: String,
+    val linkValidationError: String?,
+    val linkValidationWarning: String?,
+    val meetingFormat: MeetingFormat,
     val meetingStatus: MeetingStatus,
     val hasTouchedTitle: Boolean,
     val hasTouchedDateTime: Boolean,
     val hasTouchedDuration: Boolean,
+    val hasTouchedLink: Boolean,
     val onTitleChange: (String) -> Unit,
     val onDateTimeChange: (Timestamp) -> Unit,
     val onDurationChange: (Int) -> Unit,
+    val onLinkChange: (String) -> Unit,
     val onTouchTitle: () -> Unit,
     val onTouchDateTime: () -> Unit,
-    val onTouchDuration: () -> Unit
+    val onTouchDuration: () -> Unit,
+    val onTouchLink: () -> Unit
 )
 
 /**
@@ -681,6 +743,11 @@ private fun EditableMeetingInfoCard(config: EditableMeetingInfoCardConfig) {
               EditableTitleField(config = config)
               EditableDateTimeField(config = config, editDate = editDate, editTime = editTime)
               EditableDurationField(config = config)
+
+              // Show link field only for VIRTUAL meetings
+              if (config.meetingFormat == MeetingFormat.VIRTUAL) {
+                EditableLinkField(config = config)
+              }
             }
       }
 }
@@ -798,6 +865,62 @@ private fun EditableDurationField(config: EditableMeetingInfoCardConfig) {
   }
 }
 
+/** Helper composable for the Link field to reduce complexity. */
+@Composable
+private fun EditableLinkField(config: EditableMeetingInfoCardConfig) {
+  val platform = MeetingLinkValidator.detectPlatform(config.editLink)
+
+  // Link field
+  OutlinedTextField(
+      value = config.editLink,
+      onValueChange = config.onLinkChange,
+      label = { Text("Meeting Link") },
+      placeholder = { Text("https://zoom.us/j/...") },
+      leadingIcon = {
+        Icon(
+            imageVector = when (platform) {
+              MeetingPlatform.ZOOM, MeetingPlatform.GOOGLE_MEET,
+              MeetingPlatform.MICROSOFT_TEAMS, MeetingPlatform.WEBEX -> Icons.Default.VideoCall
+              MeetingPlatform.UNKNOWN -> Icons.Default.Link
+            },
+            contentDescription = "Meeting link icon")
+      },
+      isError = config.linkValidationError != null && config.hasTouchedLink,
+      modifier =
+          Modifier.fillMaxWidth()
+              .testTag(MeetingDetailScreenTestTags.EDITABLE_LINK_FIELD)
+              .onFocusChanged { focusState ->
+                if (focusState.isFocused) {
+                  config.onTouchLink()
+                }
+              })
+
+  // Show error message
+  if (config.linkValidationError != null && config.hasTouchedLink) {
+    Text(
+        text = config.linkValidationError,
+        color = Color.Red,
+        style = MaterialTheme.typography.bodySmall,
+        modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MSG))
+  }
+
+  // Show warning message
+  if (config.linkValidationWarning != null && config.hasTouchedLink) {
+    Text(
+        text = config.linkValidationWarning,
+        color = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+        style = MaterialTheme.typography.bodySmall)
+  }
+
+  // Show detected platform
+  if (platform != MeetingPlatform.UNKNOWN && config.editLink.isNotBlank()) {
+    Text(
+        text = "Platform: ${platform.displayName}",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.primary)
+  }
+}
+
 /**
  * Reusable information row component.
  *
@@ -805,6 +928,8 @@ private fun EditableDurationField(config: EditableMeetingInfoCardConfig) {
  * @param label The label text describing the information.
  * @param value The value text to display.
  * @param testTag The test tag for UI testing.
+ * @param isClickable Whether the row should be clickable.
+ * @param onClick Optional callback when the row is clicked.
  */
 @Composable
 fun InfoRow(
@@ -812,22 +937,37 @@ fun InfoRow(
     label: String,
     value: String,
     testTag: String,
+    isClickable: Boolean = false,
+    onClick: (() -> Unit)? = null
 ) {
-  Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-    Icon(
-        imageVector = icon,
-        contentDescription = label,
-        modifier = Modifier.size(20.dp),
-        tint = MaterialTheme.colorScheme.primary)
-    Spacer(modifier = Modifier.width(8.dp))
-    Column {
-      Text(text = label, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-      Text(
-          text = value,
-          style = MaterialTheme.typography.bodyMedium,
-          modifier = Modifier.testTag(testTag))
-    }
-  }
+  Row(
+      verticalAlignment = Alignment.CenterVertically,
+      modifier =
+          Modifier.fillMaxWidth().then(
+              if (isClickable && onClick != null) {
+                Modifier.clickable(onClick = onClick)
+              } else {
+                Modifier
+              })) {
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            modifier = Modifier.size(20.dp),
+            tint =
+                if (isClickable) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.primary)
+        Spacer(modifier = Modifier.width(8.dp))
+        Column {
+          Text(text = label, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+          Text(
+              text = value,
+              style = MaterialTheme.typography.bodyMedium,
+              color =
+                  if (isClickable) MaterialTheme.colorScheme.primary
+                  else MaterialTheme.colorScheme.onSurface,
+              modifier = Modifier.testTag(testTag))
+        }
+      }
 }
 
 /**
@@ -1104,8 +1244,16 @@ private fun ActionButtonsSection(
           MeetingStatus.SCHEDULED,
           MeetingStatus.IN_PROGRESS -> {
             if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
+              val context = LocalContext.current
               Button(
-                  onClick = { actionsConfig.onJoinMeeting(meeting.link, isConnected) },
+                  onClick = {
+                    // Open link in web browser, not native app
+                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(meeting.link)).apply {
+                      addCategory(Intent.CATEGORY_BROWSABLE)
+                      flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    }
+                    context.startActivity(browserIntent)
+                  },
                   enabled = isConnected,
                   modifier =
                       Modifier.fillMaxWidth()
