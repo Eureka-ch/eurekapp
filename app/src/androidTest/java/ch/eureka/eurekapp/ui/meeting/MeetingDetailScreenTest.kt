@@ -1,5 +1,5 @@
 /*
- * Note: This file was co-authored by Claude Code, Gemini, and Grok
+ * Note: This file was co-authored by Claude Code, Gemini, and Grok and Claude 4.5 Sonnet.
  */
 
 package ch.eureka.eurekapp.ui.meeting
@@ -16,9 +16,9 @@ import androidx.test.platform.app.InstrumentationRegistry
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
-import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
-import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.model.data.user.User
+import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import com.google.firebase.storage.StorageMetadata
@@ -47,7 +47,7 @@ class MeetingDetailScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   private val meetingFlow = MutableStateFlow<Meeting?>(null)
-  private val participantsFlow = MutableStateFlow<List<Participant>>(emptyList())
+  private val userFlow = MutableStateFlow<User?>(null)
   private var deleteResult = Result.success(Unit)
   private lateinit var viewModel: MeetingDetailViewModel
   private lateinit var attachmentsViewModel: MeetingAttachmentsViewModel
@@ -87,15 +87,31 @@ class MeetingDetailScreenTest {
           return meetingFlow
         }
 
-        override fun getParticipants(
-            projectId: String,
-            meetingId: String
-        ): Flow<List<Participant>> {
-          return participantsFlow
-        }
-
         override suspend fun deleteMeeting(projectId: String, meetingId: String): Result<Unit> {
           return deleteResult
+        }
+      }
+
+  private val userRepositoryMock =
+      object : UserRepository {
+        override fun getUserById(userId: String): Flow<User?> {
+          return userFlow
+        }
+
+        override fun getCurrentUser(): Flow<User?> {
+          return flow { emit(null) }
+        }
+
+        override suspend fun saveUser(user: User): Result<Unit> {
+          return Result.success(Unit)
+        }
+
+        override suspend fun updateLastActive(userId: String): Result<Unit> {
+          return Result.success(Unit)
+        }
+
+        override suspend fun updateFcmToken(userId: String, fcmToken: String): Result<Unit> {
+          return Result.success(Unit)
         }
       }
 
@@ -107,7 +123,11 @@ class MeetingDetailScreenTest {
   ) {
     viewModel =
         MeetingDetailViewModel(
-            "test_project", "test_meeting", repositoryMock, mockConnectivityObserver)
+            "test_project",
+            "test_meeting",
+            repositoryMock,
+            userRepositoryMock,
+            mockConnectivityObserver)
     composeTestRule.setContent {
       MeetingDetailScreen(
           attachmentsViewModel =
@@ -132,18 +152,15 @@ class MeetingDetailScreenTest {
           override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> {
             return flow {}
           }
-
-          override fun getParticipants(
-              projectId: String,
-              meetingId: String
-          ): Flow<List<Participant>> {
-            return flow {}
-          }
         }
 
     val viewModel =
         MeetingDetailViewModel(
-            "test_project", "test_meeting", neverEmittingRepository, mockConnectivityObserver)
+            "test_project",
+            "test_meeting",
+            neverEmittingRepository,
+            userRepositoryMock,
+            mockConnectivityObserver)
     composeTestRule.setContent {
       MeetingDetailScreen(
           attachmentsViewModel =
@@ -172,7 +189,7 @@ class MeetingDetailScreenTest {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_scheduled_virtual_02" }
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     setContent()
 
     composeTestRule.waitForIdle()
@@ -194,7 +211,7 @@ class MeetingDetailScreenTest {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_scheduled_inperson_03" }
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     setContent()
 
     composeTestRule.waitForIdle()
@@ -209,7 +226,7 @@ class MeetingDetailScreenTest {
   fun completedMeetingDisplaysCorrectStatus() {
     val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.COMPLETED }
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     setContent()
 
     composeTestRule.waitForIdle()
@@ -222,7 +239,7 @@ class MeetingDetailScreenTest {
   fun inProgressMeetingDisplaysCorrectStatus() {
     val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.IN_PROGRESS }
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     setContent()
 
     composeTestRule.waitForIdle()
@@ -235,7 +252,7 @@ class MeetingDetailScreenTest {
   fun inProgressMeetingHidesDateTime() {
     val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.IN_PROGRESS }
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     setContent()
 
     composeTestRule.waitForIdle()
@@ -244,50 +261,10 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun participantsSectionDisplaysWithNoParticipants() {
-    meetingFlow.value = MeetingProvider.sampleMeetings.first()
-    participantsFlow.value = emptyList()
-    setContent()
-
-    composeTestRule.waitForIdle()
-
-    composeTestRule
-        .onNodeWithTag(MeetingDetailScreenTestTags.PARTICIPANTS_SECTION)
-        .assertIsDisplayed()
-    composeTestRule.onNodeWithText("Participants (0)").assertIsDisplayed()
-    composeTestRule.onNodeWithText("No participants yet").assertIsDisplayed()
-  }
-
-  @Test
-  fun participantsSectionDisplaysParticipantsWithRoles() {
-    val participants =
-        listOf(
-            Participant(userId = "user_anna_1", role = MeetingRole.HOST),
-            Participant(userId = "user_ben_2", role = MeetingRole.PARTICIPANT),
-            Participant(userId = "user_charlie_3", role = MeetingRole.PARTICIPANT))
-
-    meetingFlow.value = MeetingProvider.sampleMeetings.first()
-    participantsFlow.value = participants
-    setContent()
-
-    composeTestRule.waitForIdle()
-
-    composeTestRule
-        .onNodeWithTag(MeetingDetailScreenTestTags.PARTICIPANTS_SECTION)
-        .assertIsDisplayed()
-    composeTestRule.onNodeWithText("Participants (3)").assertIsDisplayed()
-
-    composeTestRule.onNodeWithText("user_anna_1").assertIsDisplayed()
-    composeTestRule.onNodeWithText("user_ben_2").assertIsDisplayed()
-
-    composeTestRule.onNodeWithText("HOST").assertIsDisplayed()
-  }
-
-  @Test
   fun attachmentsSectionDisplaysNoAttachmentsMessage() {
     val meeting = MeetingProvider.sampleMeetings.first { it.attachmentUrls.isEmpty() }
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     setContent()
 
     composeTestRule.waitForIdle()
@@ -306,7 +283,7 @@ class MeetingDetailScreenTest {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_completed_virtual_05" }
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     setContent()
 
     composeTestRule.waitForIdle()
@@ -326,7 +303,7 @@ class MeetingDetailScreenTest {
           it.status == MeetingStatus.SCHEDULED && it.format == MeetingFormat.VIRTUAL
         }
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     setContent()
 
     composeTestRule.waitForIdle()
@@ -343,7 +320,7 @@ class MeetingDetailScreenTest {
   fun inProgressMeetingShowsRecordButton() {
     val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.IN_PROGRESS }
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     setContent()
 
     composeTestRule.waitForIdle()
@@ -355,7 +332,7 @@ class MeetingDetailScreenTest {
   fun completedMeetingShowsViewTranscriptButton() {
     val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.COMPLETED }
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     setContent()
 
     composeTestRule.waitForIdle()
@@ -369,7 +346,7 @@ class MeetingDetailScreenTest {
   fun allMeetingsShowDeleteButton() {
     val meeting = MeetingProvider.sampleMeetings.first()
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     setContent()
 
     composeTestRule.waitForIdle()
@@ -384,7 +361,7 @@ class MeetingDetailScreenTest {
           it.status == MeetingStatus.SCHEDULED && it.format == MeetingFormat.VIRTUAL
         }
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
 
     var joinedLink: String? = null
     setContent(onJoinMeeting = { link, isConnected -> if (isConnected) joinedLink = link })
@@ -402,7 +379,7 @@ class MeetingDetailScreenTest {
   fun recordButtonTriggersCallback() {
     val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.IN_PROGRESS }
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
 
     var recordCalled = false
     setContent(onRecordMeeting = { _, _, isConnected -> if (isConnected) recordCalled = true })
@@ -418,7 +395,7 @@ class MeetingDetailScreenTest {
   fun viewTranscriptButtonTriggersCallback() {
     val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.COMPLETED }
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
 
     var transcriptCalled = false
     setContent(onViewTranscript = { _, _, isConnected -> if (isConnected) transcriptCalled = true })
@@ -434,7 +411,7 @@ class MeetingDetailScreenTest {
   fun deleteButtonShowsConfirmationDialog() {
     val meeting = MeetingProvider.sampleMeetings.first()
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     setContent()
 
     composeTestRule.waitForIdle()
@@ -457,7 +434,7 @@ class MeetingDetailScreenTest {
   fun deleteDialogCancelButtonDismissesDialog() {
     val meeting = MeetingProvider.sampleMeetings.first()
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     setContent()
 
     composeTestRule.waitForIdle()
@@ -475,7 +452,7 @@ class MeetingDetailScreenTest {
   fun deleteDialogConfirmButtonCallsDeleteAndNavigatesBack() {
     val meeting = MeetingProvider.sampleMeetings.first()
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     deleteResult = Result.success(Unit)
 
     var navigateBackCalled = false
@@ -496,7 +473,7 @@ class MeetingDetailScreenTest {
   fun screenUpdatesWhenMeetingDataChanges() {
     val meeting1 = MeetingProvider.sampleMeetings.first()
     meetingFlow.value = meeting1
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     setContent()
 
     composeTestRule.waitForIdle()
@@ -511,26 +488,10 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun screenUpdatesWhenParticipantsChange() {
-    meetingFlow.value = MeetingProvider.sampleMeetings.first()
-    participantsFlow.value = emptyList()
-    setContent()
-
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithText("Participants (0)").assertIsDisplayed()
-
-    participantsFlow.value = listOf(Participant(userId = "user_anna_1", role = MeetingRole.HOST))
-
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithText("Participants (1)").assertIsDisplayed()
-    composeTestRule.onNodeWithText("user_anna_1").assertIsDisplayed()
-  }
-
-  @Test
   fun deleteFailureDoesNotNavigateBack() {
     val meeting = MeetingProvider.sampleMeetings.first()
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     deleteResult = Result.failure(Exception("Failed to delete meeting"))
 
     var navigateBackCalled = false
@@ -549,7 +510,7 @@ class MeetingDetailScreenTest {
   @Test
   fun networkErrorDisplaysCorrectMessage() {
     meetingFlow.value = null
-    participantsFlow.value = emptyList()
+    userFlow.value = null
 
     setContent()
     composeTestRule.waitForIdle()
@@ -560,36 +521,22 @@ class MeetingDetailScreenTest {
   @Test
   fun loadingErrorDoesNotShowMeetingContent() {
     meetingFlow.value = null
-    participantsFlow.value = emptyList()
+    userFlow.value = null
 
     setContent()
     composeTestRule.waitForIdle()
 
-    composeTestRule
-        .onNodeWithTag(MeetingDetailScreenTestTags.PARTICIPANTS_SECTION)
-        .assertDoesNotExist()
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.CREATOR_SECTION).assertDoesNotExist()
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.ACTION_BUTTONS_SECTION)
         .assertDoesNotExist()
   }
 
   @Test
-  fun emptyParticipantsListShowsCorrectMessage() {
-    val meeting = MeetingProvider.sampleMeetings.first()
-    meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
-
-    setContent()
-    composeTestRule.waitForIdle()
-
-    composeTestRule.onNodeWithText("Participants (0)").assertIsDisplayed()
-  }
-
-  @Test
   fun emptyAttachmentsShowsNoAttachmentsMessage() {
     val meeting = MeetingProvider.sampleMeetings.first().copy(attachmentUrls = emptyList())
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
 
     setContent()
     composeTestRule.waitForIdle()
@@ -602,7 +549,7 @@ class MeetingDetailScreenTest {
   @Test
   fun errorRecoveryAfterSuccessfulRetry() {
     meetingFlow.value = null
-    participantsFlow.value = emptyList()
+    userFlow.value = null
 
     setContent()
     composeTestRule.waitForIdle()
@@ -611,7 +558,7 @@ class MeetingDetailScreenTest {
 
     val meeting = MeetingProvider.sampleMeetings.first()
     meetingFlow.value = meeting
-    participantsFlow.value = listOf(Participant(userId = "user1", role = MeetingRole.HOST))
+    userFlow.value = null
 
     composeTestRule.waitForIdle()
 
@@ -626,7 +573,7 @@ class MeetingDetailScreenTest {
   fun editButtonIsDisplayedForScheduledMeeting() {
     val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
 
     setContent()
     composeTestRule.waitForIdle()
@@ -641,7 +588,7 @@ class MeetingDetailScreenTest {
   fun editModeDisplaysSaveAndCancelButtons() {
     val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
 
     setContent()
     composeTestRule.waitForIdle()
@@ -671,7 +618,7 @@ class MeetingDetailScreenTest {
   fun editModeDisplaysEditableFields() {
     val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
 
     setContent()
     composeTestRule.waitForIdle()
@@ -696,7 +643,7 @@ class MeetingDetailScreenTest {
   fun cancelButtonExitsEditModeAndRestoresView() {
     val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
 
     setContent()
     composeTestRule.waitForIdle()
@@ -730,7 +677,7 @@ class MeetingDetailScreenTest {
   fun editModeHidesActionButtons() {
     val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
 
     setContent()
     composeTestRule.waitForIdle()
@@ -755,7 +702,7 @@ class MeetingDetailScreenTest {
   fun editModePreservesOriginalMeetingData() {
     val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
 
     setContent()
     composeTestRule.waitForIdle()
@@ -780,7 +727,7 @@ class MeetingDetailScreenTest {
   fun editModePastDateShowsErrorMessage() {
     val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
 
     setContent()
     composeTestRule.waitForIdle()
@@ -800,7 +747,7 @@ class MeetingDetailScreenTest {
   fun locationIsDisplayedForInPersonMeeting() {
     val meeting = MeetingProvider.sampleMeetings.first { it.format == MeetingFormat.IN_PERSON }
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
 
     setContent()
     composeTestRule.waitForIdle()
@@ -813,7 +760,7 @@ class MeetingDetailScreenTest {
   fun actionButtonsAreHiddenDuringEditMode() {
     val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.SCHEDULED }
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
 
     setContent()
     composeTestRule.waitForIdle()
@@ -823,27 +770,10 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun screenShowsUpdatedParticipantList() {
-    val meeting = MeetingProvider.sampleMeetings.first()
-    meetingFlow.value = meeting
-    participantsFlow.value = listOf(Participant("user1", MeetingRole.HOST))
-    setContent()
-    composeTestRule.waitForIdle()
-
-    participantsFlow.value =
-        listOf(
-            Participant("user1", MeetingRole.HOST), Participant("user2", MeetingRole.PARTICIPANT))
-    composeTestRule.waitForIdle()
-
-    composeTestRule.onNodeWithText("Participants (2)").assertIsDisplayed()
-    composeTestRule.onNodeWithText("user2").assertIsDisplayed()
-  }
-
-  @Test
   fun openToVotesMeetingShowsVoteForProposalButton() {
     val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.OPEN_TO_VOTES }
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     setContent()
 
     composeTestRule.waitForIdle()
@@ -854,5 +784,56 @@ class MeetingDetailScreenTest {
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON)
         .assertIsDisplayed()
+  }
+
+  @Test
+  fun creatorSectionDisplaysWhenUserFound() {
+    val meeting = MeetingProvider.sampleMeetings.first()
+    val creator =
+        User(
+            uid = meeting.createdBy,
+            displayName = "John Doe",
+            photoUrl = "https://example.com/photo.jpg")
+
+    meetingFlow.value = meeting
+    userFlow.value = creator
+    setContent()
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.CREATOR_SECTION).assertIsDisplayed()
+    composeTestRule.onNodeWithText("Creator").assertIsDisplayed()
+    composeTestRule.onNodeWithText("John Doe").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Meeting Creator").assertIsDisplayed()
+  }
+
+  @Test
+  fun creatorSectionDisplaysFallbackWhenUserNotFound() {
+    val meeting = MeetingProvider.sampleMeetings.first()
+
+    meetingFlow.value = meeting
+    userFlow.value = null
+    setContent()
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.CREATOR_SECTION).assertIsDisplayed()
+    composeTestRule.onNodeWithText(meeting.createdBy).assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.CREATOR_AVATAR).assertIsDisplayed()
+  }
+
+  @Test
+  fun creatorSectionDisplaysFallbackIconWhenNoPhotoUrl() {
+    val meeting = MeetingProvider.sampleMeetings.first()
+    val creator = User(uid = meeting.createdBy, displayName = "Jane Smith", photoUrl = "")
+
+    meetingFlow.value = meeting
+    userFlow.value = creator
+    setContent()
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithText("Jane Smith").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.CREATOR_AVATAR).assertIsDisplayed()
   }
 }
