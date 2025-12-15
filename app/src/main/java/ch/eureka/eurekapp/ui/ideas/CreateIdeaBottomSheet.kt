@@ -40,7 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -261,20 +260,16 @@ private fun ParticipantsSelector(
           style = MaterialTheme.typography.bodyMedium,
           color = MaterialTheme.colorScheme.onSurfaceVariant)
     } else {
-      Box(
+      OutlinedButton(
+          onClick = { showParticipantsModal = true },
           modifier =
-              Modifier.fillMaxWidth()
-                  .clickable { showParticipantsModal = true }
-                  .testTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)) {
-            OutlinedTextField(
-                value = displayText,
-                onValueChange = {},
-                readOnly = true,
-                placeholder = { Text("Select participants to share with") },
-                label = { Text("Participants") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = EurekaStyles.textFieldColors())
+              Modifier.fillMaxWidth().testTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN),
+          shape = RoundedCornerShape(16.dp),
+          colors = EurekaStyles.outlinedButtonColors()) {
+            Text(
+                text = displayText,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 8.dp))
           }
     }
   }
@@ -316,13 +311,11 @@ private fun ParticipantsSelectionModal(
                       Text(
                           text = "Select Participants",
                           style = MaterialTheme.typography.titleLarge,
-                          fontWeight = FontWeight.Bold,
-                          modifier = Modifier.testTag("SelectParticipantsTitle"))
+                          fontWeight = FontWeight.Bold)
                       Button(
                           onClick = onDismiss,
                           colors = EurekaStyles.primaryButtonColors(),
-                          shape = RoundedCornerShape(12.dp),
-                          modifier = Modifier.testTag("OKButton")) {
+                          shape = RoundedCornerShape(12.dp)) {
                             Text("OK")
                           }
                     }
@@ -342,8 +335,7 @@ private fun ParticipantsSelectionModal(
                             verticalAlignment = Alignment.CenterVertically) {
                               Text(
                                   text = user.displayName.ifBlank { user.email },
-                                  style = MaterialTheme.typography.bodyLarge,
-                                  modifier = Modifier.testTag("ParticipantName_${user.uid}"))
+                                  style = MaterialTheme.typography.bodyLarge)
                               Checkbox(
                                   checked = selectedParticipantIds.contains(user.uid),
                                   onCheckedChange = { onToggleParticipant(user.uid) })
@@ -381,11 +373,13 @@ private fun ActionButtons(
             colors =
                 ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color.White,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
                     disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
-                    disabledContentColor = Color.White.copy(alpha = 0.6f))) {
+                    disabledContentColor =
+                        MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f))) {
               if (isCreating) {
-                CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
               } else {
                 Text("Create", fontWeight = FontWeight.Bold)
               }
