@@ -82,6 +82,8 @@ class MeetingDetailViewModel(
     private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
 ) : ViewModel() {
 
+  private val userId = getCurrentUserId()
+
   private val _deleteSuccess = MutableStateFlow(false)
   private val _errorMsg = MutableStateFlow<String?>(null)
   private val _isEditMode = MutableStateFlow(false)
@@ -451,8 +453,6 @@ class MeetingDetailViewModel(
       }
     }
   }
-
-  val userId = getCurrentUserId()
 
   /**
    * Checks if the meeting should have already started.
