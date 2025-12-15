@@ -375,6 +375,15 @@ open class ViewTaskScreenTest : TestCase() {
         composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).assert(isReadOnly)
 
         // Verify the original values remain displayed
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          try {
+            composeTestRule.onNodeWithText("Read Only Task").assertExists()
+            true
+          } catch (e: AssertionError) {
+            false
+          }
+        }
+
         composeTestRule.onNodeWithText("Read Only Task").assertIsDisplayed()
         composeTestRule.onNodeWithText("Read Only Description").assertIsDisplayed()
         composeTestRule.onNodeWithText("25/11/2025").assertIsDisplayed()
