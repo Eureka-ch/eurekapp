@@ -28,8 +28,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -48,6 +46,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.project.MembersUiState
 import ch.eureka.eurekapp.model.data.project.ProjectMembersViewModel
 import ch.eureka.eurekapp.model.data.user.User
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.firebase.Timestamp
@@ -92,35 +91,30 @@ fun ProjectMembersScreen(
 
   Scaffold(
       topBar = {
-        TopAppBar(
-            title = {
-              Text(
-                  text =
-                      when (val state = uiState) {
-                        is MembersUiState.Success -> state.projectName
-                        is MembersUiState.Loading,
-                        is MembersUiState.Error -> "Project members"
-                      },
-                  modifier = Modifier.testTag(ProjectMembersScreenTestTags.TITLE))
-            },
+        EurekaTopBar(
+            title =
+                when (val state = uiState) {
+                  is MembersUiState.Success -> state.projectName
+                  is MembersUiState.Loading,
+                  is MembersUiState.Error -> "Project members"
+                },
             navigationIcon = {
               IconButton(
                   onClick = onBackClick,
                   modifier = Modifier.testTag(ProjectMembersScreenTestTags.BACK_BUTTON)) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White)
                   }
             },
             actions = {
               IconButton(
                   onClick = { projectMembersViewModel.loadMembers() },
                   modifier = Modifier.testTag(ProjectMembersScreenTestTags.REFRESH_BUTTON)) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                    Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = Color.White)
                   }
-            },
-            colors =
-                TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface))
+            })
       }) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
           when (val state = uiState) {

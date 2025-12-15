@@ -58,7 +58,7 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.UserAssignmentField
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.help.HelpContext
-import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
+import ch.eureka.eurekapp.ui.components.help.InteractiveHelpEntryPoint
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 const val CREATE_SCREEN_PHOTO_BUTTON_SIZE = 0.3f
@@ -114,40 +114,36 @@ fun CreateTaskScreen(
               BackButton(
                   onClick = { navigationController.popBackStack() },
                   modifier = Modifier.testTag(CommonTaskTestTags.BACK_BUTTON))
+            },
+            actions = {
+              InteractiveHelpEntryPoint(
+                  helpContext = HelpContext.CREATE_TASK,
+                  modifier = Modifier.testTag("createTaskHelpButton"))
             })
       },
       content = { paddingValues ->
-        // Note: userProvidedName is not passed as CreateTaskScreen doesn't have access to user
-        // data.
-        // The help composable will fall back to
-        // FirebaseAuth.getInstance().currentUser?.displayName.
-        ScreenWithHelp(
-            helpContext = HelpContext.CREATE_TASK,
-            helpPadding = PaddingValues(16.dp),
-            content = {
-              CreateTaskContent(
-                  config =
-                      CreateTaskContentConfig(
-                          paddingValues = paddingValues,
-                          scrollState = scrollState,
-                          createTaskState = createTaskState,
-                          createTaskViewModel = createTaskViewModel,
-                          hasTouchedTitle = hasTouchedTitle,
-                          onTitleFocusChanged = { _ -> hasTouchedTitle = true },
-                          hasTouchedDescription = hasTouchedDescription,
-                          onDescriptionFocusChanged = { _ -> hasTouchedDescription = true },
-                          hasTouchedDate = hasTouchedDate,
-                          onDateFocusChanged = { _ -> hasTouchedDate = true },
-                          availableProjects = availableProjects,
-                          projectId = projectId,
-                          availableTasks = availableTasks,
-                          cycleError = cycleError,
-                          navigationController = navigationController,
-                          context = context,
-                          inputValid = inputValid,
-                          filePickerLauncher = filePickerLauncher,
-                          temporaryPhotoUris = createTaskState.temporaryPhotoUris))
-            })
+        CreateTaskContent(
+            config =
+                CreateTaskContentConfig(
+                    paddingValues = paddingValues,
+                    scrollState = scrollState,
+                    createTaskState = createTaskState,
+                    createTaskViewModel = createTaskViewModel,
+                    hasTouchedTitle = hasTouchedTitle,
+                    onTitleFocusChanged = { _ -> hasTouchedTitle = true },
+                    hasTouchedDescription = hasTouchedDescription,
+                    onDescriptionFocusChanged = { _ -> hasTouchedDescription = true },
+                    hasTouchedDate = hasTouchedDate,
+                    onDateFocusChanged = { _ -> hasTouchedDate = true },
+                    availableProjects = availableProjects,
+                    projectId = projectId,
+                    availableTasks = availableTasks,
+                    cycleError = cycleError,
+                    navigationController = navigationController,
+                    context = context,
+                    inputValid = inputValid,
+                    filePickerLauncher = filePickerLauncher,
+                    temporaryPhotoUris = createTaskState.temporaryPhotoUris))
       })
 }
 

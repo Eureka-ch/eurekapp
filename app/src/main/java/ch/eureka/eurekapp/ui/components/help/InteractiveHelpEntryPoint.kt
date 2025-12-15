@@ -12,17 +12,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -85,14 +89,24 @@ fun InteractiveHelpEntryPoint(
 
   val helpContent = remember(resolvedName, helpContext) { helpContext.toHelpContent(resolvedName) }
 
+  val contentColor =
+      if (LocalContentColor.current == Color.White) Color.White
+      else MaterialTheme.colorScheme.onSurface
   AssistChip(
       onClick = { helpViewModel.openDialog() },
-      label = { Text("Guide") },
+      label = {
+        CompositionLocalProvider(LocalContentColor provides contentColor) { Text("Guide") }
+      },
       leadingIcon = {
-        Icon(imageVector = Icons.AutoMirrored.Filled.Help, contentDescription = null)
+        CompositionLocalProvider(LocalContentColor provides contentColor) {
+          Icon(imageVector = Icons.AutoMirrored.Filled.Help, contentDescription = null)
+        }
       },
       modifier = modifier,
-      shape = chipShape)
+      shape = chipShape,
+      colors =
+          AssistChipDefaults.assistChipColors(
+              leadingIconContentColor = contentColor, labelColor = contentColor))
 
   if (isDialogOpen) {
     AlertDialog(
