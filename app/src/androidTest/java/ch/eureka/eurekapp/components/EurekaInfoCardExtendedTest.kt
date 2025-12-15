@@ -48,10 +48,7 @@ class EurekaInfoCardExtendedTest {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaInfoCard(
-            title = "Complete Card",
-            primaryValue = "Main Value",
-            secondaryValue = "Sub Value",
-            iconText = "🎯")
+            title = "Complete Card", primaryValue = "Main Value", secondaryValue = "Sub Value")
       }
     }
 
@@ -130,8 +127,7 @@ class EurekaInfoCardExtendedTest {
         EurekaInfoCard(
             title = "Title with Special Chars: @#$%^&*()",
             primaryValue = "Value with Special Chars: @#$%^&*()",
-            secondaryValue = "Secondary with Special Chars: @#$%^&*()",
-            iconText = "🎯")
+            secondaryValue = "Secondary with Special Chars: @#$%^&*()")
       }
     }
 
