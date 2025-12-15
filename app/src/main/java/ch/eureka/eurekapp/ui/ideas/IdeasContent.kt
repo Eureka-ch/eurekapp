@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,8 +39,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
@@ -69,37 +68,26 @@ data class ConversationState(
 data class ListState(val ideas: List<Idea>, val onIdeaClick: (Idea) -> Unit)
 
 /**
- * Generates a gradient brush for idea card border with rotating effect. Uses vibrant but subtle
- * colors: electric blue, neon violet, mint green, hot orange, light red.
+ * Generates a consistent color for an idea based on its ID. This ensures the same idea always gets
+ * the same color.
  */
 @Composable
-private fun getIdeaBorderGradient(ideaId: String): Brush {
-  // Vibrant colors with light opacity for subtle but visible effect
-  val electricBlue = Color(0xFF00D4FF).copy(alpha = 0.25f) // Bleu électrique
-  val neonViolet = Color(0xFF8B5CF6).copy(alpha = 0.25f) // Violet néon
-  val mintGreen = Color(0xFF00F5A0).copy(alpha = 0.25f) // Vert menthe
-  val hotOrange = Color(0xFFFF6B35).copy(alpha = 0.25f) // Orange chaud
-  val lightRed = Color(0xFFFF6B9D).copy(alpha = 0.25f) // Rouge clair
-
-  val colorSets =
+private fun getIdeaBorderColor(ideaId: String): Color {
+  val colors =
       listOf(
-          listOf(electricBlue, neonViolet, mintGreen),
-          listOf(neonViolet, mintGreen, hotOrange),
-          listOf(mintGreen, hotOrange, lightRed),
-          listOf(hotOrange, lightRed, electricBlue),
-          listOf(lightRed, electricBlue, neonViolet),
-          listOf(electricBlue, hotOrange, mintGreen),
-          listOf(neonViolet, lightRed, hotOrange),
-          listOf(mintGreen, electricBlue, lightRed))
-
-  val index = ideaId.hashCode().mod(colorSets.size)
-  val selectedColors = colorSets[if (index < 0) -index else index]
-
-  // Create a linear gradient that gives a rotating effect around the border
-  return Brush.linearGradient(
-      colors = selectedColors,
-      start = androidx.compose.ui.geometry.Offset(0f, 0f),
-      end = androidx.compose.ui.geometry.Offset(1000f, 1000f))
+          Color(0xFFE83E3E), // Red
+          Color(0xFF2563EB), // Blue
+          Color(0xFF22C55E), // Green
+          Color(0xFFFF9500), // Orange
+          Color(0xFF8B5CF6), // Purple
+          Color(0xFFEC4899), // Pink
+          Color(0xFF06B6D4), // Cyan
+          Color(0xFFF59E0B), // Amber
+          Color(0xFF10B981), // Emerald
+          Color(0xFF6366F1) // Indigo
+          )
+  val index = ideaId.hashCode().mod(colors.size)
+  return colors[if (index < 0) -index else index]
 }
 
 /**
@@ -116,8 +104,7 @@ private fun ParticipantAvatar(photoUrl: String, modifier: Modifier = Modifier) {
             modifier
                 .size(24.dp)
                 .clip(CircleShape)
-                .border(
-                    width = 2.dp, color = MaterialTheme.colorScheme.surface, shape = CircleShape),
+                .border(width = 2.dp, color = Color.White, shape = CircleShape),
         contentScale = ContentScale.Crop)
   } else {
     Box(
@@ -125,8 +112,7 @@ private fun ParticipantAvatar(photoUrl: String, modifier: Modifier = Modifier) {
             modifier
                 .size(24.dp)
                 .clip(CircleShape)
-                .border(
-                    width = 2.dp, color = MaterialTheme.colorScheme.surface, shape = CircleShape)
+                .border(width = 2.dp, color = Color.White, shape = CircleShape)
                 .background(MaterialTheme.colorScheme.primaryContainer),
         contentAlignment = Alignment.Center) {
           Icon(
@@ -178,20 +164,20 @@ private fun ParticipantAvatars(
         ParticipantAvatar(photoUrl = user?.photoUrl ?: "")
       }
       2 -> {
-        // Two participants - offset second one (reduced to keep within card)
+        // Two participants - offset second one
         val user1 = users.getOrNull(0)
         val user2 = users.getOrNull(1)
         ParticipantAvatar(photoUrl = user1?.photoUrl ?: "")
-        ParticipantAvatar(photoUrl = user2?.photoUrl ?: "", modifier = Modifier.offset(x = 10.dp))
+        ParticipantAvatar(photoUrl = user2?.photoUrl ?: "", modifier = Modifier.offset(x = 12.dp))
       }
       else -> {
-        // Three or more participants - show first 3 with reduced offsets to keep within card
+        // Three or more participants - show first 3 with offsets
         val user1 = users.getOrNull(0)
         val user2 = users.getOrNull(1)
         val user3 = users.getOrNull(2)
         ParticipantAvatar(photoUrl = user1?.photoUrl ?: "")
-        ParticipantAvatar(photoUrl = user2?.photoUrl ?: "", modifier = Modifier.offset(x = 10.dp))
-        ParticipantAvatar(photoUrl = user3?.photoUrl ?: "", modifier = Modifier.offset(x = 18.dp))
+        ParticipantAvatar(photoUrl = user2?.photoUrl ?: "", modifier = Modifier.offset(x = 12.dp))
+        ParticipantAvatar(photoUrl = user3?.photoUrl ?: "", modifier = Modifier.offset(x = 24.dp))
       }
     }
   }
@@ -199,56 +185,41 @@ private fun ParticipantAvatars(
 
 @Composable
 private fun IdeaCard(idea: Idea, onIdeaClick: () -> Unit) {
-  val borderGradient = getIdeaBorderGradient(idea.ideaId)
+  val borderColor = getIdeaBorderColor(idea.ideaId)
 
-  // Outer box with gradient border effect
-  Box(
+  Card(
+      onClick = onIdeaClick,
       modifier =
           Modifier.fillMaxWidth()
-              .shadow(
-                  elevation = 4.dp,
-                  shape = RoundedCornerShape(20.dp),
-                  spotColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
-              .background(brush = borderGradient, shape = RoundedCornerShape(20.dp))
-              .padding(1.5.dp)) {
-        // Inner card with white background
-        Card(
-            onClick = onIdeaClick,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(18.5.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)) {
-              Row(
-                  modifier =
-                      Modifier.fillMaxWidth()
-                          .padding(vertical = Spacing.md, horizontal = Spacing.md),
-                  horizontalArrangement = Arrangement.SpaceBetween,
-                  verticalAlignment = Alignment.CenterVertically) {
-                    Column(modifier = Modifier.weight(1f)) {
-                      Text(
-                          text = idea.title ?: "Untitled Idea",
-                          style = MaterialTheme.typography.titleMedium,
-                          fontWeight = FontWeight.SemiBold)
-                      if (idea.content != null) {
-                        Text(
-                            text = idea.content,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 2,
-                            modifier = Modifier.padding(top = Spacing.xs))
-                      }
-                    }
+              .border(width = 3.dp, color = borderColor, shape = RoundedCornerShape(20.dp)),
+      shape = RoundedCornerShape(20.dp),
+      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+      elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(Spacing.md),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically) {
+              Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = idea.title ?: "Untitled Idea",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold)
+                if (idea.content != null) {
+                  Text(
+                      text = idea.content,
+                      style = MaterialTheme.typography.bodyMedium,
+                      color = MaterialTheme.colorScheme.onSurfaceVariant,
+                      maxLines = 2,
+                      modifier = Modifier.padding(top = Spacing.xs))
+                }
+              }
 
-                    // Participant avatars on the right with padding to keep them inside card
-                    if (idea.participantIds.isNotEmpty() &&
-                        idea.participantIds.any { it != idea.createdBy }) {
-                      Spacer(modifier = Modifier.padding(start = Spacing.sm))
-                      Box(modifier = Modifier.padding(end = Spacing.xs)) {
-                        ParticipantAvatars(
-                            participantIds = idea.participantIds, createdBy = idea.createdBy)
-                      }
-                    }
-                  }
+              // Participant avatars on the right
+              if (idea.participantIds.isNotEmpty() &&
+                  idea.participantIds.any { it != idea.createdBy }) {
+                Spacer(modifier = Modifier.padding(start = Spacing.sm))
+                ParticipantAvatars(participantIds = idea.participantIds, createdBy = idea.createdBy)
+              }
             }
       }
 }
@@ -260,9 +231,10 @@ fun IdeasContent(
     listState: ListState,
     conversationState: ConversationState,
     lazyListState: LazyListState,
+    paddingValues: PaddingValues,
     isLoading: Boolean
 ) {
-  Box(modifier = Modifier.fillMaxSize()) {
+  Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
     when {
       isLoading -> {
         CircularProgressIndicator(

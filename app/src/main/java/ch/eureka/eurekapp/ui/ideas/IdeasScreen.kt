@@ -1,11 +1,11 @@
 /* Portions of this file were written with the help of GPT-5 Codex and Gemini. */
 package ch.eureka.eurekapp.ui.ideas
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,8 +24,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -34,12 +32,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.ui.components.BackButton
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 
 /** Test tags for the Ideas Screen. */
 object IdeasScreenTestTags {
@@ -91,28 +89,22 @@ fun IdeasScreen(
   Scaffold(
       modifier = modifier.fillMaxSize().testTag(IdeasScreenTestTags.SCREEN),
       topBar = {
-        @OptIn(ExperimentalMaterial3Api::class)
-        TopAppBar(
-            title = { Text("Ideas") },
+        EurekaTopBar(
+            title = "Ideas",
             navigationIcon = {
               BackButton(
                   onClick = onNavigateBack,
                   modifier = Modifier.testTag(IdeasScreenTestTags.BACK_BUTTON))
-            },
-            colors =
-                TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary))
+            })
       },
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       floatingActionButton = {
         if (uiState.viewMode == IdeasViewMode.LIST) {
           FloatingActionButton(
               onClick = { showCreateIdeaDialog = true },
-              modifier = Modifier.testTag("createIdeaButton").padding(bottom = 85.dp),
+              modifier = Modifier.offset(y = (-32).dp).testTag("createIdeaButton"),
               containerColor = MaterialTheme.colorScheme.primary,
-              contentColor = MaterialTheme.colorScheme.onPrimary) {
+              contentColor = Color.White) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Create new idea")
               }
         }
@@ -129,18 +121,6 @@ fun IdeasScreen(
                     modifier = Modifier.testTag(IdeasScreenTestTags.PROJECT_SELECTOR)) {
                       Button(
                           onClick = { projectDropdownExpanded = !projectDropdownExpanded },
-                          modifier =
-                              Modifier.shadow(
-                                      elevation = 6.dp,
-                                      shape = RoundedCornerShape(20.dp),
-                                      spotColor =
-                                          MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
-                                  .border(
-                                      width = 1.5.dp,
-                                      color =
-                                          MaterialTheme.colorScheme.outlineVariant.copy(
-                                              alpha = 0.5f),
-                                      shape = RoundedCornerShape(20.dp)),
                           shape = RoundedCornerShape(20.dp),
                           colors =
                               ButtonDefaults.buttonColors(
@@ -148,8 +128,6 @@ fun IdeasScreen(
                                   contentColor = MaterialTheme.colorScheme.onSurface)) {
                             Text(
                                 text = uiState.selectedProject?.name ?: "Select a project",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
                                 modifier = Modifier.padding(horizontal = 8.dp))
                             Icon(
                                 imageVector = Icons.Default.ArrowDropDown,
