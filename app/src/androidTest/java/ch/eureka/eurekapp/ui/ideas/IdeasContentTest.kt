@@ -1,13 +1,11 @@
 package ch.eureka.eurekapp.ui.ideas
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.ideas.Idea
 import ch.eureka.eurekapp.model.data.project.Project
@@ -39,7 +37,6 @@ class IdeasContentTest {
           listState = ListState(emptyList()) {},
           conversationState = ConversationState(null, emptyList(), null) {},
           lazyListState = rememberLazyListState(),
-          paddingValues = PaddingValues(0.dp),
           isLoading = true)
     }
     composeTestRule.onNodeWithTag("loadingIndicator").assertIsDisplayed()
@@ -54,7 +51,6 @@ class IdeasContentTest {
           listState = ListState(emptyList()) {},
           conversationState = ConversationState(null, emptyList(), null) {},
           lazyListState = rememberLazyListState(),
-          paddingValues = PaddingValues(0.dp),
           isLoading = false)
     }
     composeTestRule.onNodeWithText("Please select a project to start").assertIsDisplayed()
@@ -69,7 +65,6 @@ class IdeasContentTest {
           listState = ListState(emptyList()) {},
           conversationState = ConversationState(null, emptyList(), null) {},
           lazyListState = rememberLazyListState(),
-          paddingValues = PaddingValues(0.dp),
           isLoading = false)
     }
     composeTestRule.onNodeWithText("No ideas yet for Test Project").assertIsDisplayed()
@@ -85,7 +80,6 @@ class IdeasContentTest {
           listState = ListState(listOf(testIdea)) {},
           conversationState = ConversationState(null, emptyList(), null) {},
           lazyListState = rememberLazyListState(),
-          paddingValues = PaddingValues(0.dp),
           isLoading = false)
     }
     composeTestRule.onNodeWithTag("ideasList").assertIsDisplayed()
@@ -103,7 +97,6 @@ class IdeasContentTest {
           listState = ListState(listOf(ideaWithoutContent)) {},
           conversationState = ConversationState(null, emptyList(), null) {},
           lazyListState = rememberLazyListState(),
-          paddingValues = PaddingValues(0.dp),
           isLoading = false)
     }
     composeTestRule.onNodeWithText("Test Idea").assertIsDisplayed()
@@ -119,7 +112,6 @@ class IdeasContentTest {
           listState = ListState(listOf(ideaWithoutTitle)) {},
           conversationState = ConversationState(null, emptyList(), null) {},
           lazyListState = rememberLazyListState(),
-          paddingValues = PaddingValues(0.dp),
           isLoading = false)
     }
     composeTestRule.onNodeWithText("Untitled Idea").assertIsDisplayed()
@@ -134,7 +126,6 @@ class IdeasContentTest {
           listState = ListState(emptyList()) {},
           conversationState = ConversationState(testIdea, emptyList(), "user1") {},
           lazyListState = rememberLazyListState(),
-          paddingValues = PaddingValues(0.dp),
           isLoading = false)
     }
     composeTestRule.onNodeWithTag("emptyConversation").assertIsDisplayed()
@@ -150,7 +141,6 @@ class IdeasContentTest {
           listState = ListState(emptyList()) {},
           conversationState = ConversationState(testIdea, listOf(testMessage), "user1") {},
           lazyListState = rememberLazyListState(),
-          paddingValues = PaddingValues(0.dp),
           isLoading = false)
     }
     composeTestRule.onNodeWithTag("conversationMessagesList").assertIsDisplayed()
@@ -166,7 +156,6 @@ class IdeasContentTest {
           listState = ListState(emptyList()) {},
           conversationState = ConversationState(testIdea, emptyList(), "user1") {},
           lazyListState = rememberLazyListState(),
-          paddingValues = PaddingValues(0.dp),
           isLoading = false)
     }
     composeTestRule.onNodeWithText("Test Idea").assertIsDisplayed()
@@ -184,7 +173,6 @@ class IdeasContentTest {
           conversationState =
               ConversationState(testIdea, emptyList(), "user1") { backCalled = true },
           lazyListState = rememberLazyListState(),
-          paddingValues = PaddingValues(0.dp),
           isLoading = false)
     }
     composeTestRule.onNodeWithTag("backToListButton").performClick()
@@ -202,7 +190,6 @@ class IdeasContentTest {
           listState = ListState(listOf(ideaWithParticipants)) {},
           conversationState = ConversationState(null, emptyList(), null) {},
           lazyListState = rememberLazyListState(),
-          paddingValues = PaddingValues(0.dp),
           isLoading = false)
     }
     // The avatars should be displayed (even if they show fallback icons)
@@ -220,7 +207,6 @@ class IdeasContentTest {
           listState = ListState(listOf(ideaWithoutParticipants)) {},
           conversationState = ConversationState(null, emptyList(), null) {},
           lazyListState = rememberLazyListState(),
-          paddingValues = PaddingValues(0.dp),
           isLoading = false)
     }
     composeTestRule.onNodeWithText("Test Idea").assertIsDisplayed()
@@ -237,7 +223,6 @@ class IdeasContentTest {
           listState = ListState(listOf(idea1, idea2)) {},
           conversationState = ConversationState(null, emptyList(), null) {},
           lazyListState = rememberLazyListState(),
-          paddingValues = PaddingValues(0.dp),
           isLoading = false)
     }
     composeTestRule.onNodeWithText("Idea 1").assertIsDisplayed()

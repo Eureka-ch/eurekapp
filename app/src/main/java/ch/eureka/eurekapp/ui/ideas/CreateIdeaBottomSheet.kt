@@ -40,7 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -374,11 +373,13 @@ private fun ActionButtons(
             colors =
                 ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color.White,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
                     disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
-                    disabledContentColor = Color.White.copy(alpha = 0.6f))) {
+                    disabledContentColor =
+                        MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f))) {
               if (isCreating) {
-                CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
               } else {
                 Text("Create", fontWeight = FontWeight.Bold)
               }

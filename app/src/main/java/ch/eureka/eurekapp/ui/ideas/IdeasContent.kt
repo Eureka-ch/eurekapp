@@ -6,7 +6,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -117,7 +116,8 @@ private fun ParticipantAvatar(photoUrl: String, modifier: Modifier = Modifier) {
             modifier
                 .size(24.dp)
                 .clip(CircleShape)
-                .border(width = 2.dp, color = Color.White, shape = CircleShape),
+                .border(
+                    width = 2.dp, color = MaterialTheme.colorScheme.surface, shape = CircleShape),
         contentScale = ContentScale.Crop)
   } else {
     Box(
@@ -125,7 +125,8 @@ private fun ParticipantAvatar(photoUrl: String, modifier: Modifier = Modifier) {
             modifier
                 .size(24.dp)
                 .clip(CircleShape)
-                .border(width = 2.dp, color = Color.White, shape = CircleShape)
+                .border(
+                    width = 2.dp, color = MaterialTheme.colorScheme.surface, shape = CircleShape)
                 .background(MaterialTheme.colorScheme.primaryContainer),
         contentAlignment = Alignment.Center) {
           Icon(
@@ -207,7 +208,7 @@ private fun IdeaCard(idea: Idea, onIdeaClick: () -> Unit) {
               .shadow(
                   elevation = 4.dp,
                   shape = RoundedCornerShape(20.dp),
-                  spotColor = Color.Black.copy(alpha = 0.1f))
+                  spotColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
               .background(brush = borderGradient, shape = RoundedCornerShape(20.dp))
               .padding(1.5.dp)) {
         // Inner card with white background
@@ -259,10 +260,9 @@ fun IdeasContent(
     listState: ListState,
     conversationState: ConversationState,
     lazyListState: LazyListState,
-    paddingValues: PaddingValues,
     isLoading: Boolean
 ) {
-  Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+  Box(modifier = Modifier.fillMaxSize()) {
     when {
       isLoading -> {
         CircularProgressIndicator(
