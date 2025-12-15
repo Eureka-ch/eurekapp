@@ -408,19 +408,20 @@ class MeetingDetailViewModel(
    * @param isConnected Whether the device is connected to the internet.
    */
   fun startMeeting(meeting: Meeting, isConnected: Boolean) {
-    if (isConnected && userId == meeting.createdBy && meeting.status == MeetingStatus.SCHEDULED) {
-      val updatedMeeting = meeting.copy(status = MeetingStatus.IN_PROGRESS)
-      viewModelScope.launch {
-        repository.updateMeeting(updatedMeeting).onFailure { e ->
-          _errorMsg.value = e.message ?: "Failed to start meeting"
+    when {
+      !isConnected -> _errorMsg.value = "Cannot start meeting while offline"
+      userId != meeting.createdBy ->
+          _errorMsg.value = "Only the meeting creator can start the meeting"
+      meeting.status != MeetingStatus.SCHEDULED ->
+          _errorMsg.value = "Meeting can only be started if it is scheduled"
+      else -> {
+        val updatedMeeting = meeting.copy(status = MeetingStatus.IN_PROGRESS)
+        viewModelScope.launch {
+          repository.updateMeeting(updatedMeeting).onFailure { e ->
+            _errorMsg.value = e.message ?: "Failed to start meeting"
+          }
         }
       }
-    } else if (!isConnected) {
-      _errorMsg.value = "Cannot start meeting while offline"
-    } else if (userId != meeting.createdBy) {
-      _errorMsg.value = "Only the meeting creator can start the meeting"
-    } else {
-      _errorMsg.value = "Meeting can only be started if it is scheduled"
     }
   }
 
@@ -431,19 +432,20 @@ class MeetingDetailViewModel(
    * @param isConnected Whether the device is connected to the internet.
    */
   fun endMeeting(meeting: Meeting, isConnected: Boolean) {
-    if (isConnected && userId == meeting.createdBy && meeting.status == MeetingStatus.IN_PROGRESS) {
-      val updatedMeeting = meeting.copy(status = MeetingStatus.COMPLETED)
-      viewModelScope.launch {
-        repository.updateMeeting(updatedMeeting).onFailure { e ->
-          _errorMsg.value = e.message ?: "Failed to end meeting"
+    when {
+      !isConnected -> _errorMsg.value = "Cannot end meeting while offline"
+      userId != meeting.createdBy ->
+          _errorMsg.value = "Only the meeting creator can end the meeting"
+      meeting.status != MeetingStatus.IN_PROGRESS ->
+          _errorMsg.value = "Meeting can only be ended if it is in progress"
+      else -> {
+        val updatedMeeting = meeting.copy(status = MeetingStatus.COMPLETED)
+        viewModelScope.launch {
+          repository.updateMeeting(updatedMeeting).onFailure { e ->
+            _errorMsg.value = e.message ?: "Failed to end meeting"
+          }
         }
       }
-    } else if (!isConnected) {
-      _errorMsg.value = "Cannot end meeting while offline"
-    } else if (userId != meeting.createdBy) {
-      _errorMsg.value = "Only the meeting creator can end the meeting"
-    } else {
-      _errorMsg.value = "Meeting can only be ended if it is in progress"
     }
   }
 
