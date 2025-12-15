@@ -63,9 +63,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
+import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.components.ProjectDropdownMenu
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -98,6 +100,7 @@ const val SPACING = 8
  * Data class holding all the action callbacks for the Create Meeting screen. This reduces the
  * number of parameters passed to the content composable.
  *
+ * @property onProjectSelect Callback when project is selected.
  * @property onTitleChange Callback when the title text changes.
  * @property onTitleTouch Callback when the title field is focused/touched.
  * @property onDateSelected Callback when a date is selected.
@@ -112,6 +115,7 @@ const val SPACING = 8
  * @property onSave Callback when the save button is clicked.
  */
 data class CreateMeetingActions(
+    val onProjectSelect: (Project) -> Unit,
     val onTitleChange: (String) -> Unit,
     val onTitleTouch: () -> Unit,
     val onDateSelected: (LocalDate) -> Unit,
@@ -129,7 +133,6 @@ data class CreateMeetingActions(
 /**
  * Composable that displays the create meeting proposal screen.
  *
- * @param projectId The ID of the project on which to create meetings for.
  * @param onDone Function called when meeting proposal was correctly created and saved on the
  *   database.
  * @param onPickLocationOnMap Function called when the user wants to select a location on the map.
@@ -139,7 +142,6 @@ data class CreateMeetingActions(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateMeetingScreen(
-    projectId: String,
     onDone: () -> Unit,
     onPickLocationOnMap: () -> Unit = {},
     onBackClick: () -> Unit = {},
@@ -163,6 +165,7 @@ fun CreateMeetingScreen(
 
   val actions =
       CreateMeetingActions(
+          onProjectSelect = { project -> createMeetingViewModel.setProject(project) },
           onTitleChange = createMeetingViewModel::setTitle,
           onTitleTouch = createMeetingViewModel::touchTitle,
           onDateSelected = createMeetingViewModel::setDate,
@@ -174,7 +177,7 @@ fun CreateMeetingScreen(
           onLocationQueryChange = createMeetingViewModel::setLocationQuery,
           onLocationSelected = createMeetingViewModel::setLocation,
           onPickLocationOnMap = onPickLocationOnMap,
-          onSave = { createMeetingViewModel.createMeeting(projectId) })
+          onSave = { createMeetingViewModel.createMeeting() })
 
   Scaffold(
       topBar = {
@@ -206,10 +209,27 @@ fun CreateMeetingContent(
     uiState: CreateMeetingUIState,
     actions: CreateMeetingActions
 ) {
+
+  var projectDropdownExpanded by remember { mutableStateOf(false) }
+
   Column(modifier = modifier.fillMaxSize().padding(10.dp)) {
     CreateMeetingHeader()
 
     Spacer(Modifier.height((2 * SPACING).dp))
+
+    ProjectDropdownMenu(
+        projectsList = uiState.projects,
+        selectedProject = uiState.project,
+        isLoadingProjects = uiState.isLoadingProjects,
+        projectDropdownExpanded = projectDropdownExpanded,
+        onExpandedChange = { projectDropdownExpanded = it },
+        onProjectSelect = { project ->
+          actions.onProjectSelect(project)
+          projectDropdownExpanded = false
+        },
+    )
+
+    Spacer(Modifier.height(SPACING.dp))
 
     TitleInputSection(
         title = uiState.title,

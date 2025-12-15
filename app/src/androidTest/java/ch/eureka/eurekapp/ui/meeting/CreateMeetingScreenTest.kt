@@ -16,11 +16,15 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
+import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.map.Location
+import ch.eureka.eurekapp.ui.components.ProjectDropDownMenuTestTag
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 import java.util.TimeZone
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
@@ -34,19 +38,28 @@ import org.junit.Test
 /**
  * UI test suite for the [CreateMeetingScreen].
  *
- * Note : some tests were generated with Gemini
+ * Uses mocks defined in CreateMeetingViewModelTest.kt.
  */
 class CreateMeetingScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
   private lateinit var viewModel: CreateMeetingViewModel
-  private lateinit var repositoryMock: MockCreateMeetingRepository
+  private lateinit var repositoryMock: MockMeetingRepository
   private lateinit var locationRepositoryMock: MockLocationRepository
+  private lateinit var projectRepositoryMock: MockProjectRepository
 
   private var onDoneCalled = false
   private var onBackClickCalled = false
+
   private val testProjectId = "project-123"
+
+  private val testProject =
+      Project(
+          projectId = testProjectId,
+          name = "Test Project",
+          description = "Description",
+          createdBy = "owner")
 
   private val futureDate: LocalDate = LocalDate.now().plusDays(1)
   private val pastDate: LocalDate = LocalDate.now().minusDays(1)
@@ -58,18 +71,21 @@ class CreateMeetingScreenTest {
     onDoneCalled = false
     onBackClickCalled = false
 
-    repositoryMock = MockCreateMeetingRepository()
+    repositoryMock = MockMeetingRepository()
     locationRepositoryMock = MockLocationRepository()
+    projectRepositoryMock = MockProjectRepository()
+
+    projectRepositoryMock.emitProjects(listOf(testProject))
 
     viewModel =
         CreateMeetingViewModel(
-            repository = repositoryMock,
+            meetingRepository = repositoryMock,
             locationRepository = locationRepositoryMock,
+            projectRepository = projectRepositoryMock,
             getCurrentUserId = { "test-user-id" })
 
     composeTestRule.setContent {
       CreateMeetingScreen(
-          projectId = testProjectId,
           onDone = { onDoneCalled = true },
           onBackClick = { onBackClickCalled = true },
           createMeetingViewModel = viewModel)
@@ -87,6 +103,10 @@ class CreateMeetingScreenTest {
         .assertIsDisplayed()
     composeTestRule
         .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_SCREEN_DESCRIPTION)
+        .assertIsDisplayed()
+
+    composeTestRule
+        .onNodeWithTag(ProjectDropDownMenuTestTag.PROJECT_DROPDOWN_MENU)
         .assertIsDisplayed()
 
     composeTestRule
@@ -119,6 +139,28 @@ class CreateMeetingScreenTest {
   }
 
   @Test
+  fun projectDropdown_showsProjects_andUpdatesSelection() {
+    composeTestRule.onNodeWithTag(ProjectDropDownMenuTestTag.PROJECT_DROPDOWN_MENU).performClick()
+
+    composeTestRule
+        .onAllNodesWithTag(ProjectDropDownMenuTestTag.DROPDOWN_MENU_ITEM)
+        .onFirst()
+        .assertTextContains("Test Project")
+        .performClick()
+
+    assertEquals(testProject, viewModel.uiState.value.project)
+  }
+
+  @Test
+  fun projectDropdown_showsLoadingIndicator() = runTest {
+    val job = launch { viewModel.loadProjects() }
+
+    testScheduler.advanceUntilIdle()
+
+    job.cancel()
+  }
+
+  @Test
   fun titleInput_onFocusChanged_triggersTouchTitle() {
     assertFalse(viewModel.uiState.value.hasTouchedTitle)
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE).performClick()
@@ -142,6 +184,29 @@ class CreateMeetingScreenTest {
   }
 
   @Test
+  fun saveButton_isDisabled_whenProjectNotSelected() {
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
+        .performTextInput("Valid Meeting Title")
+
+    composeTestRule.runOnIdle {
+      viewModel.setDuration(15)
+      viewModel.setDate(futureDate)
+      viewModel.setFormat(MeetingFormat.VIRTUAL)
+    }
+
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
+        .assertIsNotEnabled()
+
+    composeTestRule.runOnIdle { viewModel.setProject(testProject) }
+
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
+        .assertIsEnabled()
+  }
+
+  @Test
   fun saveButton_isEnabled_whenStateIsValid() {
     composeTestRule
         .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
@@ -152,6 +217,7 @@ class CreateMeetingScreenTest {
         .performTextInput("Valid Meeting Title")
 
     composeTestRule.runOnIdle {
+      viewModel.setProject(testProject)
       viewModel.setDuration(15)
       viewModel.setDate(futureDate)
       viewModel.setFormat(MeetingFormat.VIRTUAL)
@@ -178,6 +244,7 @@ class CreateMeetingScreenTest {
         .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
         .performTextInput("My Successful Meeting")
     composeTestRule.runOnIdle {
+      viewModel.setProject(testProject)
       viewModel.setDuration(15)
       viewModel.setDate(futureDate)
       viewModel.setTime(LocalTime.of(9, 30))
@@ -214,6 +281,7 @@ class CreateMeetingScreenTest {
         .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
         .performTextInput("My Failed Meeting")
     composeTestRule.runOnIdle {
+      viewModel.setProject(testProject)
       viewModel.setDuration(30)
       viewModel.setDate(futureDate)
       viewModel.setTime(LocalTime.of(10, 0))
@@ -352,6 +420,12 @@ class CreateMeetingScreenTest {
     composeTestRule
         .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
         .assertIsNotEnabled()
+
+    composeTestRule.onNodeWithTag(ProjectDropDownMenuTestTag.PROJECT_DROPDOWN_MENU).performClick()
+    composeTestRule
+        .onAllNodesWithTag(ProjectDropDownMenuTestTag.DROPDOWN_MENU_ITEM)
+        .onFirst()
+        .performClick()
 
     composeTestRule.onNodeWithContentDescription("Select duration").performClick()
     composeTestRule.onNodeWithText("30 minutes").performClick()
