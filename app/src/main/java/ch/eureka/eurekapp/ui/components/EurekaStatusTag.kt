@@ -8,7 +8,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -19,29 +18,29 @@ fun EurekaStatusTag(
     text: String,
     type: StatusType = StatusType.INFO
 ) {
+  val (containerColor, textColor) =
+      when (type) {
+        StatusType.SUCCESS ->
+            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f) to
+                MaterialTheme.colorScheme.tertiary
+        StatusType.WARNING ->
+            MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f) to
+                MaterialTheme.colorScheme.secondary
+        StatusType.ERROR ->
+            MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
+        StatusType.INFO ->
+            MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurfaceVariant
+      }
+
   Card(
-      colors =
-          CardDefaults.cardColors(
-              containerColor =
-                  when (type) {
-                    StatusType.SUCCESS -> Color(0xFFF0FDF4) // Light green-tinted background
-                    StatusType.WARNING -> Color(0xFFFFF7ED) // Light orange background
-                    StatusType.ERROR -> Color(0xFFFEF2F2) // Light red background
-                    StatusType.INFO -> Color(0xFFF1F5F9) // Light gray background
-                  }),
+      colors = CardDefaults.cardColors(containerColor = containerColor),
       shape = RoundedCornerShape(8.dp),
       modifier = modifier) {
         Text(
             text = text,
             style = MaterialTheme.typography.labelMedium,
-            color =
-                when (type) {
-                  StatusType.SUCCESS -> Color(0xFF16A34A) // Dark green text
-                  StatusType.WARNING -> Color(0xFFEA580C) // Dark orange text
-                  StatusType.ERROR -> Color(0xFFDC2626) // Dark red text
-                  StatusType.INFO -> Color(0xFF475569) // Dark gray text
-                },
-            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+            color = textColor,
+            fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp))
       }
 }

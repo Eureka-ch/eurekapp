@@ -1,13 +1,10 @@
 package ch.eureka.eurekapp.screens
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,21 +15,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AssignmentTurnedIn
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -40,22 +30,15 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.task.determinePriority
@@ -64,6 +47,7 @@ import ch.eureka.eurekapp.model.data.task.getDueDateTag
 import ch.eureka.eurekapp.ui.components.EurekaInfoCard
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.components.ProjectSummaryCard
 import ch.eureka.eurekapp.ui.components.help.HelpContext
 import ch.eureka.eurekapp.ui.components.help.InteractiveHelpEntryPoint
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
@@ -448,136 +432,4 @@ private fun TaskPreviewCard(task: Task, onTaskClick: () -> Unit) {
       onToggleComplete = {},
       onClick = onTaskClick,
       canToggleCompletion = false)
-}
-
-@Composable
-private fun ProjectSummaryCard(
-    project: Project,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-  var isPressed by remember { mutableStateOf(false) }
-  val scale by
-      animateFloatAsState(targetValue = if (isPressed) 0.98f else 1f, animationSpec = tween(150))
-
-  Card(
-      modifier =
-          modifier
-              .fillMaxWidth()
-              .scale(scale)
-              .shadow(elevation = 12.dp, shape = RoundedCornerShape(24.dp)),
-      shape = RoundedCornerShape(24.dp),
-      elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-      colors = CardDefaults.cardColors(containerColor = Color.White)) {
-        Box(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .border(
-                        width = 1.5.dp,
-                        color = Color(0xFFE2E8F0),
-                        shape = RoundedCornerShape(24.dp))
-                    .background(
-                        brush =
-                            Brush.linearGradient(
-                                colors =
-                                    listOf(
-                                        Color.White,
-                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.03f)),
-                                start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                                end = androidx.compose.ui.geometry.Offset(1000f, 1000f)))
-                    .clickable(role = Role.Button, onClick = onClick)) {
-              Column(modifier = Modifier.padding(24.dp)) {
-                // Header: Title + Status
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top) {
-                      Column(modifier = Modifier.weight(1f)) {
-                        // Title with strong contrast
-                        Text(
-                            text = project.name.ifEmpty { "Untitled project" },
-                            style = MaterialTheme.typography.titleLarge,
-                            color = Color(0xFF0F172A),
-                            fontWeight = FontWeight.Bold)
-                      }
-                      // Status badge
-                      ProjectStatusDisplay(project.status)
-                    }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Description with icon
-                Row(
-                    verticalAlignment = Alignment.Top,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier.fillMaxWidth()) {
-                      Box(
-                          modifier =
-                              Modifier.size(36.dp)
-                                  .background(
-                                      color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                      shape = RoundedCornerShape(10.dp)),
-                          contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.Default.Description,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(18.dp))
-                          }
-                      Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = project.description.ifEmpty { "No description provided" },
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color(0xFF475569),
-                            fontWeight = FontWeight.Medium)
-                      }
-                    }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Footer: Members + Action
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically) {
-                      // Members with icon
-                      Row(
-                          verticalAlignment = Alignment.CenterVertically,
-                          horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Box(
-                                modifier =
-                                    Modifier.size(32.dp)
-                                        .background(
-                                            color = Color(0xFFF1F5F9),
-                                            shape = RoundedCornerShape(8.dp)),
-                                contentAlignment = Alignment.Center) {
-                                  Icon(
-                                      imageVector = Icons.Default.Person,
-                                      contentDescription = null,
-                                      tint = Color(0xFF64748B),
-                                      modifier = Modifier.size(16.dp))
-                                }
-                            Text(
-                                text = "${project.memberIds.size} members",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color(0xFF475569),
-                                fontWeight = FontWeight.SemiBold)
-                          }
-                      TextButton(
-                          onClick = onClick,
-                          modifier =
-                              Modifier.testTag(
-                                  HomeOverviewTestTags.getProjectLinkTestTag(project.projectId)),
-                          colors =
-                              androidx.compose.material3.ButtonDefaults.textButtonColors(
-                                  contentColor = MaterialTheme.colorScheme.primary)) {
-                            Text(
-                                "Open →",
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Bold)
-                          }
-                    }
-              }
-            }
-      }
 }
