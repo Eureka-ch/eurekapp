@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.HttpClientProvider
 import ch.eureka.eurekapp.model.data.IdGenerator
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.meeting.FirestoreMeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
@@ -17,6 +18,8 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingProposalVote
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
+import ch.eureka.eurekapp.model.data.project.Project
+import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.model.map.LocationRepository
 import ch.eureka.eurekapp.model.map.NominatimLocationRepository
@@ -41,24 +44,31 @@ import kotlinx.coroutines.launch
 /**
  * UI state of the screen to create meetings.
  *
- * @param title The title of the meeting to be created.
- * @param date The date of the the meeting to be created.
- * @param time The start time of the the meeting to be created.
- * @param duration The duration of the meeting.
- * @param format The format of the meeting.
- * @param selectedLocation The potential selected location for the meeting.
- * @param locationQuery The location name currently queried.
- * @param locationSuggestions The location suggestions for [locationQuery].
- * @param meetingSaved Marker set to true if the meeting waa successfully saved, false otherwise.
- * @param hasTouchedTitle Marker set to true if the user has already clicked on the title field,
+ * @property project The project selected by the user for the meeting to be created.
+ * @property projects The projects the from which the user can choose a project to link the meeting
+ *   tob created to.
+ * @property isLoadingProjects True if projects are being loaded, false otherwise.
+ * @property title The title of the meeting to be created.
+ * @property date The date of the the meeting to be created.
+ * @property time The start time of the the meeting to be created.
+ * @property duration The duration of the meeting.
+ * @property format The format of the meeting.
+ * @property selectedLocation The potential selected location for the meeting.
+ * @property locationQuery The location name currently queried.
+ * @property locationSuggestions The location suggestions for [locationQuery].
+ * @property meetingSaved Marker set to true if the meeting waa successfully saved, false otherwise.
+ * @property hasTouchedTitle Marker set to true if the user has already clicked on the title field,
  *   false otherwise.
- * @param hasTouchedDate Marker set to true if the user has already clicked on the date field, false
- *   otherwise.
- * @param hasTouchedTime Marker set to true if the user has already clicked on the time field, false
- *   otherwise.
- * @param errorMsg Error message to display.
+ * @property hasTouchedDate Marker set to true if the user has already clicked on the date field,
+ *   false otherwise.
+ * @property hasTouchedTime Marker set to true if the user has already clicked on the time field,
+ *   false otherwise.
+ * @property errorMsg Error message to display.
  */
 data class CreateMeetingUIState(
+    val project: Project? = null,
+    val projects: List<Project> = emptyList(),
+    val isLoadingProjects: Boolean = false,
     val title: String = "",
     val date: LocalDate = LocalDate.now().plusDays(7),
     val time: LocalTime = LocalTime.now(),
@@ -76,7 +86,8 @@ data class CreateMeetingUIState(
   /** States whether the UI is in a state where the meeting can be saved. */
   val isValid: Boolean
     get() =
-        title.isNotBlank() &&
+        project != null &&
+            title.isNotBlank() &&
             duration >= 5 &&
             LocalDateTime.of(date, time).isAfter(LocalDateTime.now()) &&
             (format == MeetingFormat.VIRTUAL || selectedLocation != null)
@@ -85,12 +96,15 @@ data class CreateMeetingUIState(
 /**
  * View model for the screen to create meetings.
  *
- * @param repository The repository to upload the meeting to.
- * @param getCurrentUserId Function to get current user ID.
+ * @property meetingRepository The repository to upload the meeting to.
+ * @property projectRepository The projects repository.
+ * @property locationRepository The repository for the location reverse geo-coding.
+ * @property getCurrentUserId Function to get current user ID.
  */
 @OptIn(FlowPreview::class)
 class CreateMeetingViewModel(
-    private val repository: MeetingRepository = FirestoreMeetingRepository(),
+    private val meetingRepository: MeetingRepository = FirestoreMeetingRepository(),
+    private val projectRepository: ProjectRepository = RepositoriesProvider.projectRepository,
     private val locationRepository: LocationRepository =
         NominatimLocationRepository(HttpClientProvider.client),
     private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
@@ -119,6 +133,7 @@ class CreateMeetingViewModel(
             }
           }
     }
+    viewModelScope.launch { loadProjects() }
   }
 
   /** Clears the error message in the UI state. */
@@ -133,6 +148,31 @@ class CreateMeetingViewModel(
    */
   fun setErrorMsg(msg: String) {
     _uiState.update { it.copy(errorMsg = msg) }
+  }
+
+  /**
+   * Set hte project for the meeting to be created.
+   *
+   * @param project The project of the meeting proposal to be created.
+   */
+  fun setProject(project: Project) {
+    _uiState.update { it.copy(project = project) }
+  }
+
+  /**
+   * Load all the available projects for the current user, And populates the UI state with those
+   * projects.
+   */
+  suspend fun loadProjects() {
+    _uiState.update { it.copy(isLoadingProjects = true) }
+
+    try {
+      projectRepository.getProjectsForCurrentUser(skipCache = false).collect { projects ->
+        _uiState.update { it.copy(isLoadingProjects = false, projects = projects) }
+      }
+    } catch (e: Exception) {
+      _uiState.update { it.copy(isLoadingProjects = false, errorMsg = e.message) }
+    }
   }
 
   /**
@@ -225,12 +265,8 @@ class CreateMeetingViewModel(
     _uiState.update { it.copy(hasTouchedTime = true) }
   }
 
-  /**
-   * Create and upload a meeting proposal to the database for the project ID [projectId].
-   *
-   * @param projectId The ID of the project to which the meeting is created for.
-   */
-  fun createMeeting(projectId: String) {
+  /** Create and upload a meeting proposal to the database. */
+  fun createMeeting() {
     if (!uiState.value.isValid) {
       setErrorMsg("At least one field is not set")
       return
@@ -243,6 +279,13 @@ class CreateMeetingViewModel(
       return
     }
 
+    val selectedProject = uiState.value.project
+
+    if (selectedProject == null) {
+      setErrorMsg("Project not selected")
+      return
+    }
+
     val timeInstant =
         LocalDateTime.of(uiState.value.date, uiState.value.time)
             .atZone(ZoneId.systemDefault())
@@ -251,7 +294,7 @@ class CreateMeetingViewModel(
     val meeting =
         Meeting(
             meetingID = IdGenerator.generateMeetingId(),
-            projectId = projectId,
+            projectId = selectedProject.projectId,
             title = uiState.value.title,
             status = MeetingStatus.OPEN_TO_VOTES,
             duration = uiState.value.duration,
@@ -264,7 +307,7 @@ class CreateMeetingViewModel(
             createdBy = creatorId)
 
     viewModelScope.launch {
-      repository
+      meetingRepository
           .createMeeting(meeting = meeting, creatorId = creatorId, creatorRole = MeetingRole.HOST)
           .onFailure { setErrorMsg("Meeting could not be created.") }
           .onSuccess { setMeetingSaved() }
