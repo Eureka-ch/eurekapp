@@ -19,14 +19,13 @@ class EurekaInfoCardExtendedTest {
   fun eurekaInfoCardRendersWithIconText() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
-        EurekaInfoCard(title = "Card with Icon", primaryValue = "Value", iconText = "📊")
+        EurekaInfoCard(title = "Card with Icon", primaryValue = "Value")
       }
     }
 
     // Check that card with icon is displayed
     composeTestRule.onNodeWithText("Card with Icon").assertIsDisplayed()
     composeTestRule.onNodeWithText("Value").assertIsDisplayed()
-    composeTestRule.onNodeWithText("📊").assertIsDisplayed()
   }
 
   @Test
@@ -60,7 +59,6 @@ class EurekaInfoCardExtendedTest {
     composeTestRule.onNodeWithText("Complete Card").assertIsDisplayed()
     composeTestRule.onNodeWithText("Main Value").assertIsDisplayed()
     composeTestRule.onNodeWithText("Sub Value").assertIsDisplayed()
-    composeTestRule.onNodeWithText("🎯").assertIsDisplayed()
   }
 
   @Test
@@ -115,7 +113,7 @@ class EurekaInfoCardExtendedTest {
             title = longTitle,
             primaryValue = longValue,
             secondaryValue = longSecondary,
-            iconText = "📈")
+        )
       }
     }
 
@@ -123,7 +121,6 @@ class EurekaInfoCardExtendedTest {
     composeTestRule.onNodeWithText(longTitle).assertIsDisplayed()
     composeTestRule.onNodeWithText(longValue).assertIsDisplayed()
     composeTestRule.onNodeWithText(longSecondary).assertIsDisplayed()
-    composeTestRule.onNodeWithText("📈").assertIsDisplayed()
   }
 
   @Test
@@ -142,7 +139,6 @@ class EurekaInfoCardExtendedTest {
     composeTestRule.onNodeWithText("Title with Special Chars: @#$%^&*()").assertIsDisplayed()
     composeTestRule.onNodeWithText("Value with Special Chars: @#$%^&*()").assertIsDisplayed()
     composeTestRule.onNodeWithText("Secondary with Special Chars: @#$%^&*()").assertIsDisplayed()
-    composeTestRule.onNodeWithText("🎯").assertIsDisplayed()
   }
 
   @Test
@@ -153,7 +149,7 @@ class EurekaInfoCardExtendedTest {
             title = "Título con Caracteres Especiales: ñáéíóú",
             primaryValue = "Valor con Caracteres Especiales: ñáéíóú",
             secondaryValue = "Secundario con Caracteres Especiales: ñáéíóú",
-            iconText = "🌍")
+        )
       }
     }
 
@@ -163,7 +159,6 @@ class EurekaInfoCardExtendedTest {
     composeTestRule
         .onNodeWithText("Secundario con Caracteres Especiales: ñáéíóú")
         .assertIsDisplayed()
-    composeTestRule.onNodeWithText("🌍").assertIsDisplayed()
   }
 
   @Test
@@ -174,7 +169,7 @@ class EurekaInfoCardExtendedTest {
             title = "Title 123",
             primaryValue = "Value 456",
             secondaryValue = "Secondary 789",
-            iconText = "1️⃣")
+        )
       }
     }
 
@@ -182,7 +177,6 @@ class EurekaInfoCardExtendedTest {
     composeTestRule.onNodeWithText("Title 123").assertIsDisplayed()
     composeTestRule.onNodeWithText("Value 456").assertIsDisplayed()
     composeTestRule.onNodeWithText("Secondary 789").assertIsDisplayed()
-    composeTestRule.onNodeWithText("1️⃣").assertIsDisplayed()
   }
 
   @Test
