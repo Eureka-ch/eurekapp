@@ -565,6 +565,9 @@ private fun ProjectSummaryCard(
                           }
                       TextButton(
                           onClick = onClick,
+                          modifier =
+                              Modifier.testTag(
+                                  HomeOverviewTestTags.getProjectLinkTestTag(project.projectId)),
                           colors =
                               androidx.compose.material3.ButtonDefaults.textButtonColors(
                                   contentColor = MaterialTheme.colorScheme.primary)) {

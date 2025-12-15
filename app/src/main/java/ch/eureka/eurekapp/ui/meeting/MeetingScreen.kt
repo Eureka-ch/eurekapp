@@ -204,6 +204,7 @@ fun MeetingScreen(
       topBar = {
         EurekaTopBar(
             title = "Meetings",
+            modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_TITLE),
             actions = {
               InteractiveHelpEntryPoint(
                   helpContext = HelpContext.MEETINGS,

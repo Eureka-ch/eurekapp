@@ -38,6 +38,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -115,6 +116,10 @@ fun EurekaTaskCard(
                       Box(
                           modifier =
                               Modifier.size(40.dp)
+                                  .testTag("checkbox")
+                                  .clickable(
+                                      role = Role.Checkbox,
+                                      onClick = { if (canToggleCompletion) onToggleComplete() })
                                   .background(
                                       color =
                                           if (isCompleted)
