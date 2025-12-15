@@ -91,11 +91,7 @@ fun MeetingAudioRecordingScreen(
   val isConnected by connectivityObserver.isConnected.collectAsState(initial = true)
 
   // Navigate back if connection is lost
-  LaunchedEffect(isConnected) {
-    if (!isConnected) {
-      onBackClick()
-    }
-  }
+  HandleConnectionLoss(isConnected, onBackClick)
 
   var microphonePermissionIsGranted by remember {
     mutableStateOf(
@@ -364,5 +360,14 @@ private fun HandleMicrophonePermission(
 private fun HandleExistingTranscript(meeting: Meeting?, onTranscriptFound: () -> Unit) {
   LaunchedEffect(meeting?.transcriptId) {
     if (meeting?.transcriptId?.isNotBlank() == true) onTranscriptFound()
+  }
+}
+
+@Composable
+private fun HandleConnectionLoss(isConnected: Boolean, onBackClick: () -> Unit) {
+  LaunchedEffect(isConnected) {
+    if (!isConnected) {
+      onBackClick()
+    }
   }
 }
