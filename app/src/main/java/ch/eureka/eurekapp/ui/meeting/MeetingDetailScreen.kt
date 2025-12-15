@@ -1,4 +1,5 @@
-// Portions of this code were generated with the help of Grok, ChatGPT, and Claude.
+// Portions of this code were generated with the help of Grok, ChatGPT, and Claude (and Claude 4.5
+// Sonnet).
 package ch.eureka.eurekapp.ui.meeting
 
 import android.net.Uri
@@ -61,8 +62,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -73,11 +76,12 @@ import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
-import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.LightingBlue
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.utils.Formatters
+import coil.compose.AsyncImage
 import com.google.firebase.Timestamp
 import java.time.LocalDate
 import java.time.LocalTime
@@ -107,10 +111,11 @@ object MeetingDetailScreenTestTags {
   const val MEETING_FORMAT = "MeetingDetailFormat"
   const val MEETING_LOCATION = "MeetingDetailLocation"
   const val MEETING_LINK = "MeetingDetailLink"
-  const val PARTICIPANTS_SECTION = "ParticipantsSection"
-  const val PARTICIPANT_ITEM = "ParticipantItem"
-  const val PARTICIPANT_NAME = "ParticipantName"
-  const val PARTICIPANT_ROLE = "ParticipantRole"
+  const val CREATOR_SECTION = "CreatorSection"
+  const val CREATOR_ITEM = "CreatorItem"
+  const val CREATOR_AVATAR = "CreatorAvatar"
+  const val CREATOR_NAME = "CreatorName"
+  const val CREATOR_LABEL = "CreatorLabel"
   const val ATTACHMENTS_SECTION = "AttachmentsSection"
   const val ATTACHMENT_ITEM = "AttachmentItem"
   const val NO_ATTACHMENTS_MESSAGE = "NoAttachmentsMessage"
@@ -233,7 +238,7 @@ fun MeetingDetailScreen(
                 config =
                     MeetingDetailContentConfig(
                         meeting = meeting,
-                        participants = uiState.participants,
+                        creatorUser = uiState.creatorUser,
                         attachmentsViewModel = attachmentsViewModel,
                         editConfig =
                             EditConfig(
@@ -412,7 +417,7 @@ data class ActionButtonsConfig(
  * Configuration for MeetingDetailContent composable.
  *
  * @param meeting The meeting to display.
- * @param participants List of participants in the meeting.
+ * @param creatorUser The user information of the meeting creator.
  * @param editConfig Configuration for edit mode state.
  * @param actionsConfig Actions that can be executed by buttons in the detail content.
  * @param attachmentsViewModel ViewModel for handling attachments.
@@ -421,7 +426,7 @@ data class ActionButtonsConfig(
  */
 data class MeetingDetailContentConfig(
     val meeting: Meeting,
-    val participants: List<Participant>,
+    val creatorUser: User?,
     val editConfig: EditConfig,
     val actionsConfig: MeetingDetailContentActionsConfig,
     val attachmentsViewModel: MeetingAttachmentsViewModel,
@@ -473,7 +478,7 @@ private fun MeetingDetailContent(
           }
         }
 
-        item { ParticipantsSection(participants = config.participants) }
+        item { CreatorSection(creatorUser = config.creatorUser, meeting = config.meeting) }
 
         item {
           AttachmentsSection(
@@ -861,14 +866,15 @@ fun InfoRow(
 }
 
 /**
- * Section displaying meeting participants.
+ * Section displaying the meeting creator.
  *
- * @param participants The list of participants to display.
+ * @param creatorUser The user information of the meeting creator.
+ * @param meeting The meeting containing creator ID.
  */
 @Composable
-private fun ParticipantsSection(participants: List<Participant>) {
+private fun CreatorSection(creatorUser: User?, meeting: Meeting) {
   Card(
-      modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.PARTICIPANTS_SECTION),
+      modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.CREATOR_SECTION),
       shape = RoundedCornerShape(16.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {
         Column(
@@ -876,65 +882,75 @@ private fun ParticipantsSection(participants: List<Participant>) {
               Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Person,
-                    contentDescription = "Participants",
+                    contentDescription = "Creator",
                     tint = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Participants (${participants.size})",
+                    text = "Creator",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold)
               }
 
               HorizontalDivider()
 
-              if (participants.isEmpty()) {
-                Text(
-                    text = "No participants yet",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray)
-              } else {
-                participants.forEach { ParticipantItem(participant = it) }
-              }
+              CreatorItem(creatorUser = creatorUser, creatorId = meeting.createdBy)
             }
       }
 }
 
 /**
- * Individual participant item.
+ * Individual creator item displaying avatar and name.
  *
- * @param participant The participant to display.
+ * @param creatorUser The user information of the creator.
+ * @param creatorId The creator's user ID (fallback if user info not available).
  */
 @Composable
-private fun ParticipantItem(participant: Participant) {
+private fun CreatorItem(creatorUser: User?, creatorId: String) {
   Row(
-      modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.PARTICIPANT_ITEM),
+      modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.CREATOR_ITEM),
       verticalAlignment = Alignment.CenterVertically) {
-        Surface(
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.primaryContainer,
-            modifier = Modifier.size(40.dp)) {
-              Column(
-                  modifier = Modifier.fillMaxSize(),
-                  horizontalAlignment = Alignment.CenterHorizontally,
-                  verticalArrangement = Arrangement.Center) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Participant",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(24.dp))
-                  }
-            }
+        // Avatar (48dp)
+        if (creatorUser?.photoUrl?.isNotEmpty() == true) {
+          AsyncImage(
+              model = creatorUser.photoUrl,
+              contentDescription = "Creator profile picture",
+              modifier =
+                  Modifier.size(48.dp)
+                      .clip(CircleShape)
+                      .testTag(MeetingDetailScreenTestTags.CREATOR_AVATAR),
+              contentScale = ContentScale.Crop)
+        } else {
+          // Fallback icon
+          Surface(
+              shape = CircleShape,
+              color = MaterialTheme.colorScheme.primaryContainer,
+              modifier = Modifier.size(48.dp).testTag(MeetingDetailScreenTestTags.CREATOR_AVATAR)) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center) {
+                      Icon(
+                          imageVector = Icons.Default.Person,
+                          contentDescription = "Creator",
+                          tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                          modifier = Modifier.size(24.dp))
+                    }
+              }
+        }
+
         Spacer(modifier = Modifier.width(12.dp))
+
+        // Display name and label
         Column(modifier = Modifier.weight(1f)) {
           Text(
-              text = participant.userId,
+              text = creatorUser?.displayName?.takeIf { it.isNotEmpty() } ?: creatorId,
               style = MaterialTheme.typography.bodyMedium,
-              modifier = Modifier.testTag(MeetingDetailScreenTestTags.PARTICIPANT_NAME))
+              modifier = Modifier.testTag(MeetingDetailScreenTestTags.CREATOR_NAME))
           Text(
-              text = participant.role.name,
+              text = "Meeting Creator",
               style = MaterialTheme.typography.labelSmall,
               color = Color.Gray,
-              modifier = Modifier.testTag(MeetingDetailScreenTestTags.PARTICIPANT_ROLE))
+              modifier = Modifier.testTag(MeetingDetailScreenTestTags.CREATOR_LABEL))
         }
       }
 }
