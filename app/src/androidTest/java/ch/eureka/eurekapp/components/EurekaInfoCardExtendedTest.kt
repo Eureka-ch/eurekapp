@@ -192,8 +192,7 @@ class EurekaInfoCardExtendedTest {
         EurekaInfoCard(
             title = "Dark Mode Card",
             primaryValue = "Dark Value",
-            secondaryValue = "Dark Secondary",
-            iconText = "🌙")
+            secondaryValue = "Dark Secondary")
       }
     }
 
@@ -201,7 +200,6 @@ class EurekaInfoCardExtendedTest {
     composeTestRule.onNodeWithText("Dark Mode Card").assertIsDisplayed()
     composeTestRule.onNodeWithText("Dark Value").assertIsDisplayed()
     composeTestRule.onNodeWithText("Dark Secondary").assertIsDisplayed()
-    composeTestRule.onNodeWithText("🌙").assertIsDisplayed()
   }
 
   @Test
