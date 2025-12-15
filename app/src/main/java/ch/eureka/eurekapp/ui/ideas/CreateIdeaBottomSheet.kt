@@ -316,11 +316,13 @@ private fun ParticipantsSelectionModal(
                       Text(
                           text = "Select Participants",
                           style = MaterialTheme.typography.titleLarge,
-                          fontWeight = FontWeight.Bold)
+                          fontWeight = FontWeight.Bold,
+                          modifier = Modifier.testTag("SelectParticipantsTitle"))
                       Button(
                           onClick = onDismiss,
                           colors = EurekaStyles.primaryButtonColors(),
-                          shape = RoundedCornerShape(12.dp)) {
+                          shape = RoundedCornerShape(12.dp),
+                          modifier = Modifier.testTag("OKButton")) {
                             Text("OK")
                           }
                     }
@@ -340,7 +342,8 @@ private fun ParticipantsSelectionModal(
                             verticalAlignment = Alignment.CenterVertically) {
                               Text(
                                   text = user.displayName.ifBlank { user.email },
-                                  style = MaterialTheme.typography.bodyLarge)
+                                  style = MaterialTheme.typography.bodyLarge,
+                                  modifier = Modifier.testTag("ParticipantName_${user.uid}"))
                               Checkbox(
                                   checked = selectedParticipantIds.contains(user.uid),
                                   onCheckedChange = { onToggleParticipant(user.uid) })
