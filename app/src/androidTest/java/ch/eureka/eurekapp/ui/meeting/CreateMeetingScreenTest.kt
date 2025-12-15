@@ -15,8 +15,11 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import androidx.test.platform.app.InstrumentationRegistry
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.map.Location
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
@@ -43,6 +46,7 @@ class CreateMeetingScreenTest {
   private lateinit var viewModel: CreateMeetingViewModel
   private lateinit var repositoryMock: MockCreateMeetingRepository
   private lateinit var locationRepositoryMock: MockLocationRepository
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
 
   private var onDoneCalled = false
   private var onBackClickCalled = false
@@ -66,6 +70,18 @@ class CreateMeetingScreenTest {
             repository = repositoryMock,
             locationRepository = locationRepositoryMock,
             getCurrentUserId = { "test-user-id" })
+
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    // Initialize mock connectivity observer for all tests
+    mockConnectivityObserver = MockConnectivityObserver(context)
+    mockConnectivityObserver.setConnected(true)
+
+    // Replace ConnectivityObserverProvider's observer with mock
+    val providerField =
+        ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
+    providerField.isAccessible = true
+    providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
 
     composeTestRule.setContent {
       CreateMeetingScreen(
@@ -527,6 +543,24 @@ class CreateMeetingScreenTest {
         .assertIsDisplayed()
         .performClick()
 
+    composeTestRule.waitUntil(timeoutMillis = 5000) { onBackClickCalled }
+
+    assertTrue("onBackClick should be called", onBackClickCalled)
+  }
+
+  @Test
+  fun createMeetingScreen_navigatesBackWhenConnectionLost() {
+    // Verify we're on CreateMeetingScreen
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_SCREEN_TITLE)
+        .assertIsDisplayed()
+
+    // Simulate connection loss
+    mockConnectivityObserver.setConnected(false)
+
+    composeTestRule.waitForIdle()
+
+    // Verify onBackClick was called
     composeTestRule.waitUntil(timeoutMillis = 5000) { onBackClickCalled }
 
     assertTrue("onBackClick should be called", onBackClickCalled)

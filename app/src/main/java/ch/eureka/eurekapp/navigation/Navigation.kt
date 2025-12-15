@@ -594,7 +594,7 @@ fun NavigationMenu(
                                   createDateTimeFormatMeetingProposalForMeetingVotesRoute
                                       .meetingId))
                     },
-                )
+                    onBackClick = { navigationController.popBackStack() })
               }
 
               composable<Route.MeetingsSection.MeetingNavigation> { backStackEntry ->

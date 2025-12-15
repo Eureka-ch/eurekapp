@@ -24,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -31,12 +32,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.transcription.TranscriptionStatus
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.meeting.TranscriptViewModel
 import ch.eureka.eurekapp.ui.theme.Typography
 
-/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
+/**
+ * Note :This file was partially written by ChatGPT (GPT-5) and Grok Co-author : GPT-5 Co-author :
+ * Grok
+ */
 
 /** Test tags for MeetingTranscriptViewScreen UI elements */
 object TranscriptScreenTestTags {
@@ -176,6 +181,16 @@ fun MeetingTranscriptViewScreen(
     onNavigateBack: () -> Unit
 ) {
   val uiState by viewModel.uiState.collectAsState()
+
+  val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
+  val isConnected by connectivityObserver.isConnected.collectAsState(initial = true)
+
+  // Navigate back if connection is lost
+  LaunchedEffect(isConnected) {
+    if (!isConnected) {
+      onNavigateBack()
+    }
+  }
 
   Scaffold(
       modifier = Modifier.fillMaxSize().testTag(TranscriptScreenTestTags.TRANSCRIPT_SCREEN),

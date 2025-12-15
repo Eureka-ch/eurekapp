@@ -51,6 +51,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingProposal
 import ch.eureka.eurekapp.model.data.meeting.MeetingProposalVote
@@ -103,6 +104,16 @@ fun MeetingProposalVoteScreen(
 
   val context = LocalContext.current
   val uiState by meetingProposalVoteViewModel.uiState.collectAsState()
+
+  val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
+  val isConnected by connectivityObserver.isConnected.collectAsState(initial = true)
+
+  // Navigate back if connection is lost
+  LaunchedEffect(isConnected) {
+    if (!isConnected) {
+      onBackClick()
+    }
+  }
 
   // Show error message if there is any
   LaunchedEffect(uiState.errorMsg) {

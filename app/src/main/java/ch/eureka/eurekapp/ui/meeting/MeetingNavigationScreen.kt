@@ -1,5 +1,5 @@
 /*
-Note: This file was co-authored by Claude Code.
+Note: This file was co-authored by Claude Code and Grok.
 */
 package ch.eureka.eurekapp.ui.meeting
 
@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.R
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import com.google.android.gms.maps.model.ButtCap
 import com.google.android.gms.maps.model.CameraPosition
@@ -176,6 +177,16 @@ fun MeetingNavigationScreen(
 ) {
 
   val uiState by viewModel.uiState.collectAsState()
+
+  val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
+  val isConnected by connectivityObserver.isConnected.collectAsState(initial = true)
+
+  // Navigate back if connection is lost
+  LaunchedEffect(isConnected) {
+    if (!isConnected) {
+      onNavigateBack()
+    }
+  }
 
   // Track selected travel mode
   var selectedTravelMode by remember { mutableStateOf(TravelMode.DRIVING) }

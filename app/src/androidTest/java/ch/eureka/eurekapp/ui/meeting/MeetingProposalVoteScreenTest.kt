@@ -13,11 +13,14 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingProposal
 import ch.eureka.eurekapp.model.data.meeting.MeetingProposalVote
 import ch.eureka.eurekapp.utils.Formatters
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -46,6 +49,7 @@ class MeetingProposalVoteScreenTest {
 
   private lateinit var viewModel: MeetingProposalVoteViewModel
   private lateinit var repositoryMock: MeetingProposalVoteRepositoryMock
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
   private val onDoneCalled = mutableStateOf(false)
   private val onBackClickCalled = mutableStateOf(false)
 
@@ -101,6 +105,18 @@ class MeetingProposalVoteScreenTest {
   fun setUp() {
     onDoneCalled.value = false
     repositoryMock = MeetingProposalVoteRepositoryMock()
+
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    // Initialize mock connectivity observer for all tests
+    mockConnectivityObserver = MockConnectivityObserver(context)
+    mockConnectivityObserver.setConnected(true)
+
+    // Replace ConnectivityObserverProvider's observer with mock
+    val providerField =
+        ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
+    providerField.isAccessible = true
+    providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
   }
 
   /** Helper function to set the Composable content for a test. */
@@ -405,6 +421,31 @@ class MeetingProposalVoteScreenTest {
         .assertIsDisplayed()
         .performClick()
 
+    composeTestRule.waitUntil(timeoutMillis = 5000) { onBackClickCalled.value }
+
+    assertTrue("onBackClick should be called", onBackClickCalled.value)
+  }
+
+  @Test
+  fun meetingProposalVoteScreen_navigatesBackWhenConnectionLost() {
+    repositoryMock.setMeetingToReturn(MOCK_MEETING)
+
+    val onBackClickCalled = mutableStateOf(false)
+    setContent(onBackClick = { onBackClickCalled.value = true })
+
+    composeTestRule.waitForIdle()
+
+    // Verify we're on MeetingProposalVoteScreen
+    composeTestRule
+        .onNodeWithTag(MeetingProposalVoteScreenTestTags.MEETING_PROPOSALS_VOTE_SCREEN)
+        .assertIsDisplayed()
+
+    // Simulate connection loss
+    mockConnectivityObserver.setConnected(false)
+
+    composeTestRule.waitForIdle()
+
+    // Verify onBackClick was called
     composeTestRule.waitUntil(timeoutMillis = 5000) { onBackClickCalled.value }
 
     assertTrue("onBackClick should be called", onBackClickCalled.value)
