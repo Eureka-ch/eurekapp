@@ -235,7 +235,6 @@ fun MeetingDetailScreen(
                         meeting = meeting,
                         participants = uiState.participants,
                         attachmentsViewModel = attachmentsViewModel,
-                        viewModel = viewModel,
                         editConfig =
                             EditConfig(
                                 isEditMode = uiState.isEditMode,
@@ -270,7 +269,9 @@ fun MeetingDetailScreen(
                                 onTouchDateTime = viewModel::touchDateTime,
                                 onTouchDuration = viewModel::touchDuration,
                                 onNavigateToMeeting = actionsConfig.onNavigateToMeeting),
-                        isConnected = uiState.isConnected),
+                        isConnected = uiState.isConnected,
+                        isCreator = uiState.isCreator),
+                viewModel = viewModel,
                 modifier = Modifier.padding(padding))
           } ?: ErrorScreen(message = uiState.errorMsg ?: "Meeting not found")
         }
@@ -415,8 +416,8 @@ data class ActionButtonsConfig(
  * @param editConfig Configuration for edit mode state.
  * @param actionsConfig Actions that can be executed by buttons in the detail content.
  * @param attachmentsViewModel ViewModel for handling attachments.
- * @param viewModel The ViewModel managing the meeting detail state.
  * @param isConnected Whether the device is connected to the internet.
+ * @param isCreator Whether the current user is the creator of the meeting.
  */
 data class MeetingDetailContentConfig(
     val meeting: Meeting,
@@ -424,19 +425,21 @@ data class MeetingDetailContentConfig(
     val editConfig: EditConfig,
     val actionsConfig: MeetingDetailContentActionsConfig,
     val attachmentsViewModel: MeetingAttachmentsViewModel,
-    val viewModel: MeetingDetailViewModel,
-    val isConnected: Boolean = true
+    val isConnected: Boolean = true,
+    val isCreator: Boolean = false
 )
 
 /**
  * Main content displaying meeting details.
  *
  * @param config The configuration containing all necessary data and actions.
+ * @param viewModel The ViewModel managing the meeting detail state.
  * @param modifier Modifier to be applied to the root composable.
  */
 @Composable
 private fun MeetingDetailContent(
     config: MeetingDetailContentConfig,
+    viewModel: MeetingDetailViewModel,
     modifier: Modifier = Modifier,
 ) {
   LazyColumn(
@@ -487,7 +490,7 @@ private fun MeetingDetailContent(
           } else {
             ActionButtonsSection(
                 meeting = config.meeting,
-                viewModel = config.viewModel,
+                viewModel = viewModel,
                 actionsConfig =
                     ActionButtonsConfig(
                         onJoinMeeting = config.actionsConfig.onJoinMeeting,
@@ -498,6 +501,7 @@ private fun MeetingDetailContent(
                         onEditMeeting = config.actionsConfig.onEditMeeting,
                         onNavigateToMeeting = config.actionsConfig.onNavigateToMeeting),
                 isConnected = config.isConnected,
+                isCreator = config.isCreator,
             )
           }
         }
@@ -1110,6 +1114,7 @@ fun AttachmentItem(
  * @param viewModel The view model for handling start meeting action.
  * @param actionsConfig Configuration for action button callbacks.
  * @param isConnected Whether the device is connected to the internet.
+ * @param isCreator Whether the current user is the creator of the meeting.
  */
 @Composable
 private fun ActionButtonsSection(
@@ -1117,6 +1122,7 @@ private fun ActionButtonsSection(
     viewModel: MeetingDetailViewModel,
     actionsConfig: ActionButtonsConfig,
     isConnected: Boolean = true,
+    isCreator: Boolean = false,
 ) {
   Column(
       modifier =
@@ -1130,9 +1136,9 @@ private fun ActionButtonsSection(
         // Status-specific action buttons
         when (meeting.status) {
           MeetingStatus.SCHEDULED ->
-              ScheduledButtons(meeting, viewModel, actionsConfig, isConnected)
+              ScheduledButtons(meeting, viewModel, actionsConfig, isConnected, isCreator)
           MeetingStatus.IN_PROGRESS ->
-              InProgressButtons(meeting, viewModel, actionsConfig, isConnected)
+              InProgressButtons(meeting, viewModel, actionsConfig, isConnected, isCreator)
           MeetingStatus.COMPLETED -> CompletedButtons(meeting, actionsConfig, isConnected)
           MeetingStatus.OPEN_TO_VOTES -> OpenToVotesButtons(actionsConfig, isConnected)
         }
@@ -1210,10 +1216,11 @@ private fun ScheduledButtons(
     meeting: Meeting,
     viewModel: MeetingDetailViewModel,
     actionsConfig: ActionButtonsConfig,
-    isConnected: Boolean
+    isConnected: Boolean,
+    isCreator: Boolean
 ) {
   // Add Start Meeting button if user is creator
-  if (viewModel.userId == meeting.createdBy) {
+  if (isCreator) {
     MeetingActionReminder(
         shouldShow = viewModel.shouldMeetingBeStarted(meeting),
         message = "The scheduled start time has passed. Consider starting the meeting.",
@@ -1242,10 +1249,11 @@ private fun InProgressButtons(
     meeting: Meeting,
     viewModel: MeetingDetailViewModel,
     actionsConfig: ActionButtonsConfig,
-    isConnected: Boolean
+    isConnected: Boolean,
+    isCreator: Boolean
 ) {
   // Add End Meeting button if user is creator
-  if (viewModel.userId == meeting.createdBy) {
+  if (isCreator) {
     MeetingActionReminder(
         shouldShow = viewModel.shouldMeetingBeEnded(meeting),
         message = "The scheduled end time has passed. Consider ending the meeting.",

@@ -41,6 +41,7 @@ import kotlinx.coroutines.launch
  * @property updateSuccess Whether the meeting was successfully updated.
  * @property isSaving Whether a save operation is in progress.
  * @property isConnected Whether the device is connected to the internet.
+ * @property isCreator Whether the current user is the creator of the meeting.
  */
 data class MeetingDetailUIState(
     val meeting: Meeting? = null,
@@ -57,7 +58,8 @@ data class MeetingDetailUIState(
     val hasTouchedTitle: Boolean = false,
     val hasTouchedDateTime: Boolean = false,
     val hasTouchedDuration: Boolean = false,
-    val isConnected: Boolean = true
+    val isConnected: Boolean = true,
+    val isCreator: Boolean = false
 )
 
 /**
@@ -226,7 +228,8 @@ class MeetingDetailViewModel(
                     hasTouchedTitle = combined.touchState.hasTouchedTitle,
                     hasTouchedDateTime = combined.touchState.hasTouchedDateTime,
                     hasTouchedDuration = combined.touchState.hasTouchedDuration,
-                    isConnected = isConnected)
+                    isConnected = isConnected,
+                    isCreator = combined.meeting?.createdBy == userId)
               }
           .onStart { emit(MeetingDetailUIState(isLoading = true)) }
           .catch { e ->
