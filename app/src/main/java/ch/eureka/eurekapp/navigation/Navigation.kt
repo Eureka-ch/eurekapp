@@ -8,14 +8,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
@@ -239,6 +244,19 @@ fun NavigationMenu(
   requireNotNull(currentUser)
 
   UserHeartbeatEffect(userRepository, currentUser)
+  val navBackStackEntry by navigationController.currentBackStackEntryAsState()
+  val currentDestination = navBackStackEntry?.destination
+  val hideBottomBar by derivedStateOf {
+    currentDestination?.hierarchy?.any { destination ->
+      destination.hasRoute(Route.SelfNotes::class) ||
+          destination.hasRoute(Route.ConversationsSection.ConversationDetail::class) ||
+          destination.hasRoute(Route.ConversationsSection.CreateConversation::class) ||
+          destination.hasRoute(Route.TasksSection.CreateTask::class) ||
+          destination.hasRoute(Route.TasksSection.EditTask::class) ||
+          destination.hasRoute(Route.TasksSection.ViewTask::class) ||
+          destination.hasRoute(Route.TasksSection.AutoTaskAssignment::class)
+    } == true
+  }
 
   Scaffold(containerColor = Color.White) { innerPadding ->
     Box(modifier = Modifier.fillMaxSize()) {
@@ -675,9 +693,11 @@ fun NavigationMenu(
             }
           }
     }
-    // Nav bar en overlay flottante
-    Box(modifier = Modifier.fillMaxSize().zIndex(1f), contentAlignment = Alignment.BottomCenter) {
-      BottomBarNavigationComponent(navigationController = navigationController)
+    // Nav bar en overlay flottante (masquée sur certaines pages)
+    if (!hideBottomBar) {
+      Box(modifier = Modifier.fillMaxSize().zIndex(1f), contentAlignment = Alignment.BottomCenter) {
+        BottomBarNavigationComponent(navigationController = navigationController)
+      }
     }
   }
 }
