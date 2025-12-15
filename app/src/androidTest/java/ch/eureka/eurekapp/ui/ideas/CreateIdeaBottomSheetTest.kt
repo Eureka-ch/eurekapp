@@ -197,10 +197,10 @@ class CreateIdeaBottomSheetTest {
         .onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)
         .performClick()
     composeTestRule.waitForIdle()
-    // Find button with "OK" text
-    composeTestRule.onNodeWithText("OK", useUnmergedTree = true).performClick()
+    // Find button with testTag
+    composeTestRule.onNodeWithTag("OKButton").performClick()
     composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithText("Select Participants").assertDoesNotExist()
+    composeTestRule.onNodeWithTag("SelectParticipantsTitle").assertDoesNotExist()
   }
 
   @Test
