@@ -6,11 +6,11 @@
 ## Statut des corrections
 - ✅ EurekaTaskCard : checkbox ajouté avec testTag, emojis retirés du code
 - ✅ Tests EurekaTaskCard : emojis retirés des assertions, "Done" au lieu de "✓"
-- ✅ Tests TasksScreen : emojis retirés des assertions (Alice Smith, Test User, Overdue)
+- ✅ Tests TasksScreen : emojis retirés des assertions (Alice Smith, Test User, Overdue, Due tomorrow, etc.)
 - ✅ HomeOverviewScreen : testTag ajouté sur bouton "Open →"
 - ✅ MeetingScreen : testTag MEETING_SCREEN_TITLE ajouté sur EurekaTopBar
-- ⏳ CreateIdeaBottomSheet : modal participants existe mais tests peuvent avoir besoin de waitForIdle
-- ⏳ Autres tests : EditTaskScreen, ViewTaskScreen (timeouts/assertions)
+- ⏳ CreateIdeaBottomSheet : modal participants existe mais tests peuvent avoir besoin de waitForIdle ou useUnmergedTree
+- ⏳ Autres tests : EditTaskScreen (assertion failed), ViewTaskScreen (timeout), HomeOverviewScreenEmulatorTest (timeout)
 
 ## Tests échoués par catégorie
 
