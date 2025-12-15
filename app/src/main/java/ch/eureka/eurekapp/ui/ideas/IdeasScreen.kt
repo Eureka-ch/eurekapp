@@ -170,6 +170,7 @@ fun IdeasScreen(
                       currentUserId = viewModel.getCurrentUserId(),
                       onBackToList = { viewModel.backToList() }),
               lazyListState = listState,
+              paddingValues = androidx.compose.foundation.layout.PaddingValues(0.dp),
               isLoading = uiState.isLoading)
         }
       }
