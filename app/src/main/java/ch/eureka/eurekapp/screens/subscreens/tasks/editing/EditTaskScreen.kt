@@ -91,11 +91,7 @@ fun EditTaskScreen(
   val isConnected by connectivityObserver.isConnected.collectAsState(initial = true)
 
   // Navigate back if connection is lost
-  LaunchedEffect(isConnected) {
-    if (!isConnected) {
-      navigationController.popBackStack()
-    }
-  }
+  HandleConnectionLoss(isConnected, navigationController)
 
   // File picker launcher for any file type
   val filePickerLauncher =
@@ -250,6 +246,15 @@ fun EditTaskScreen(
         showDeleteDialog = false
         editTaskViewModel.deleteTask(projectId, taskId)
       })
+}
+
+@Composable
+private fun HandleConnectionLoss(isConnected: Boolean, navigationController: NavHostController) {
+  LaunchedEffect(isConnected) {
+    if (!isConnected) {
+      navigationController.popBackStack()
+    }
+  }
 }
 
 @Composable
