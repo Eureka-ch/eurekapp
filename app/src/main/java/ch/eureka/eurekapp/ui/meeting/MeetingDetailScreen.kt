@@ -1141,6 +1141,69 @@ private fun ActionButtonsSection(
       }
 }
 
+/** Common join meeting button for virtual meetings. */
+@Composable
+private fun JoinMeetingButton(
+    meeting: Meeting,
+    actionsConfig: ActionButtonsConfig,
+    isConnected: Boolean
+) {
+  if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
+    Button(
+        onClick = { actionsConfig.onJoinMeeting(meeting.link, isConnected) },
+        enabled = isConnected,
+        modifier =
+            Modifier.fillMaxWidth()
+                .testTag(MeetingDetailScreenTestTags.JOIN_MEETING_BUTTON)
+                .alpha(getAlpha(isConnected))) {
+          Icon(imageVector = Icons.Default.VideoCall, contentDescription = null)
+          Spacer(modifier = Modifier.width(8.dp))
+          Text("Join Meeting")
+        }
+  }
+}
+
+/** Common navigate to location button for in-person meetings. */
+@Composable
+private fun NavigateToLocationButton(
+    meeting: Meeting,
+    actionsConfig: ActionButtonsConfig,
+    isConnected: Boolean
+) {
+  if (meeting.format == MeetingFormat.IN_PERSON && meeting.location != null) {
+    Button(
+        onClick = { actionsConfig.onNavigateToMeeting(isConnected) },
+        enabled = isConnected,
+        modifier = Modifier.fillMaxWidth().alpha(getAlpha(isConnected))) {
+          Icon(
+              imageVector = Icons.Default.Place,
+              contentDescription = stringResource(R.string.location_icon))
+          Spacer(modifier = Modifier.width(8.dp))
+          Text("View Location")
+        }
+  }
+}
+
+/** Common record button. */
+@Composable
+private fun RecordButton(
+    meeting: Meeting,
+    actionsConfig: ActionButtonsConfig,
+    isConnected: Boolean
+) {
+  OutlinedButton(
+      onClick = {
+        actionsConfig.onRecordMeeting(meeting.projectId, meeting.meetingID, isConnected)
+      },
+      enabled = isConnected,
+      modifier =
+          Modifier.fillMaxWidth()
+              .testTag(MeetingDetailScreenTestTags.RECORD_BUTTON)
+              .alpha(getAlpha(isConnected))) {
+        Text("Start Recording")
+      }
+}
+
 /** Buttons for scheduled meetings. */
 @Composable
 private fun ScheduledButtons(
@@ -1166,44 +1229,11 @@ private fun ScheduledButtons(
   }
 
   // Join or Navigate buttons
-  if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
-    Button(
-        onClick = { actionsConfig.onJoinMeeting(meeting.link, isConnected) },
-        enabled = isConnected,
-        modifier =
-            Modifier.fillMaxWidth()
-                .testTag(MeetingDetailScreenTestTags.JOIN_MEETING_BUTTON)
-                .alpha(getAlpha(isConnected))) {
-          Icon(imageVector = Icons.Default.VideoCall, contentDescription = null)
-          Spacer(modifier = Modifier.width(8.dp))
-          Text("Join Meeting")
-        }
-  }
-  if (meeting.format == MeetingFormat.IN_PERSON && meeting.location != null) {
-    Button(
-        onClick = { actionsConfig.onNavigateToMeeting(isConnected) },
-        enabled = isConnected,
-        modifier = Modifier.fillMaxWidth().alpha(getAlpha(isConnected))) {
-          Icon(
-              imageVector = Icons.Default.Place,
-              contentDescription = stringResource(R.string.location_icon))
-          Spacer(modifier = Modifier.width(8.dp))
-          Text("View Location")
-        }
-  }
+  JoinMeetingButton(meeting, actionsConfig, isConnected)
+  NavigateToLocationButton(meeting, actionsConfig, isConnected)
 
   // Record button
-  OutlinedButton(
-      onClick = {
-        actionsConfig.onRecordMeeting(meeting.projectId, meeting.meetingID, isConnected)
-      },
-      enabled = isConnected,
-      modifier =
-          Modifier.fillMaxWidth()
-              .testTag(MeetingDetailScreenTestTags.RECORD_BUTTON)
-              .alpha(getAlpha(isConnected))) {
-        Text("Start Recording")
-      }
+  RecordButton(meeting, actionsConfig, isConnected)
 }
 
 /** Buttons for in-progress meetings. */
@@ -1232,44 +1262,11 @@ private fun InProgressButtons(
   }
 
   // Join or Navigate buttons
-  if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
-    Button(
-        onClick = { actionsConfig.onJoinMeeting(meeting.link, isConnected) },
-        enabled = isConnected,
-        modifier =
-            Modifier.fillMaxWidth()
-                .testTag(MeetingDetailScreenTestTags.JOIN_MEETING_BUTTON)
-                .alpha(getAlpha(isConnected))) {
-          Icon(imageVector = Icons.Default.VideoCall, contentDescription = null)
-          Spacer(modifier = Modifier.width(8.dp))
-          Text("Join Meeting")
-        }
-  }
-  if (meeting.format == MeetingFormat.IN_PERSON && meeting.location != null) {
-    Button(
-        onClick = { actionsConfig.onNavigateToMeeting(isConnected) },
-        enabled = isConnected,
-        modifier = Modifier.fillMaxWidth().alpha(getAlpha(isConnected))) {
-          Icon(
-              imageVector = Icons.Default.Place,
-              contentDescription = stringResource(R.string.location_icon))
-          Spacer(modifier = Modifier.width(8.dp))
-          Text("View Location")
-        }
-  }
+  JoinMeetingButton(meeting, actionsConfig, isConnected)
+  NavigateToLocationButton(meeting, actionsConfig, isConnected)
 
   // Record button
-  OutlinedButton(
-      onClick = {
-        actionsConfig.onRecordMeeting(meeting.projectId, meeting.meetingID, isConnected)
-      },
-      enabled = isConnected,
-      modifier =
-          Modifier.fillMaxWidth()
-              .testTag(MeetingDetailScreenTestTags.RECORD_BUTTON)
-              .alpha(getAlpha(isConnected))) {
-        Text("Start Recording")
-      }
+  RecordButton(meeting, actionsConfig, isConnected)
 }
 
 /** Buttons for completed meetings. */
