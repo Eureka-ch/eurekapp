@@ -23,7 +23,9 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.HourglassTop
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.VideoCall
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
@@ -66,6 +68,7 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.utils.MeetingPlatform
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -84,6 +87,9 @@ object CreateMeetingScreenTestTags {
   const val INPUT_MEETING_TIME = "InputMeetingTime"
   const val INPUT_MEETING_DURATION = "InputMeetingDuration"
   const val INPUT_FORMAT = "InputFormat"
+  const val INPUT_MEETING_LINK = "InputMeetingLink"
+  const val MEETING_LINK_WARNING = "MeetingLinkWarning"
+  const val PLATFORM_ICON = "PlatformIcon"
   const val CREATE_MEETING_BUTTON = "CreateMeetingButton"
   const val INPUT_MEETING_LOCATION = "InputMeetingLocation"
   const val LOCATION_SUGGESTION = "LocationSuggestion"
@@ -106,6 +112,8 @@ const val SPACING = 8
  * @property onTimeTouched Callback when the time field is clicked.
  * @property onDurationSelected Callback when a duration is selected.
  * @property onFormatSelected Callback when a meeting format is selected.
+ * @property onLinkChange Callback when the meeting link text changes.
+ * @property onLinkTouch Callback when the link field is focused/touched.
  * @property onLocationQueryChange Callback when the location search query changes.
  * @property onLocationSelected Callback when a specific location is selected from suggestions.
  * @property onPickLocationOnMap Callback when the user clicks the map icon to pick a location.
@@ -120,6 +128,8 @@ data class CreateMeetingActions(
     val onTimeTouched: () -> Unit,
     val onDurationSelected: (Int) -> Unit,
     val onFormatSelected: (MeetingFormat) -> Unit,
+    val onLinkChange: (String) -> Unit,
+    val onLinkTouch: () -> Unit,
     val onLocationQueryChange: (String) -> Unit,
     val onLocationSelected: (Location) -> Unit,
     val onPickLocationOnMap: () -> Unit,
@@ -171,6 +181,8 @@ fun CreateMeetingScreen(
           onTimeTouched = createMeetingViewModel::touchTime,
           onDurationSelected = createMeetingViewModel::setDuration,
           onFormatSelected = createMeetingViewModel::setFormat,
+          onLinkChange = createMeetingViewModel::setMeetingLink,
+          onLinkTouch = createMeetingViewModel::touchLink,
           onLocationQueryChange = createMeetingViewModel::setLocationQuery,
           onLocationSelected = createMeetingViewModel::setLocation,
           onPickLocationOnMap = onPickLocationOnMap,
@@ -268,6 +280,16 @@ fun CreateMeetingContent(
                 options = listOf(MeetingFormat.IN_PERSON, MeetingFormat.VIRTUAL),
                 tag = CreateMeetingScreenTestTags.INPUT_FORMAT,
                 onOptionSelected = actions.onFormatSelected))
+
+    MeetingLinkInputSection(
+        format = uiState.format,
+        meetingLink = uiState.meetingLink,
+        linkValidationError = uiState.linkValidationError,
+        linkValidationWarning = uiState.linkValidationWarning,
+        hasTouchedLink = uiState.hasTouchedLink,
+        detectedPlatform = uiState.detectedPlatform,
+        onLinkChange = actions.onLinkChange,
+        onLinkTouch = actions.onLinkTouch)
 
     LocationInputSection(
         format = uiState.format,
@@ -377,6 +399,89 @@ fun LocationInputSection(
         selectLocationQuery = onLocationQueryChange,
         selectLocation = onLocationSelected,
         onPickLocationOnMap = onPickLocationOnMap)
+  }
+}
+
+/**
+ * Composable that conditionally displays the meeting link input field if the format is VIRTUAL.
+ *
+ * @param format The currently selected meeting format.
+ * @param meetingLink The current meeting link URL.
+ * @param linkValidationError The validation error message, null if valid.
+ * @param linkValidationWarning The validation warning message, null if no warning.
+ * @param hasTouchedLink Whether the user has interacted with this field.
+ * @param detectedPlatform The detected meeting platform from the link.
+ * @param onLinkChange Callback when the link text changes.
+ * @param onLinkTouch Callback when the field gains focus.
+ */
+@Composable
+fun MeetingLinkInputSection(
+    format: MeetingFormat,
+    meetingLink: String,
+    linkValidationError: String?,
+    linkValidationWarning: String?,
+    hasTouchedLink: Boolean,
+    detectedPlatform: MeetingPlatform,
+    onLinkChange: (String) -> Unit,
+    onLinkTouch: () -> Unit
+) {
+  if (format == MeetingFormat.VIRTUAL) {
+    Spacer(Modifier.height(SPACING.dp))
+
+    OutlinedTextField(
+        value = meetingLink,
+        onValueChange = onLinkChange,
+        label = { Text("Meeting Link") },
+        placeholder = { Text("https://zoom.us/j/...") },
+        leadingIcon = {
+          Icon(
+              imageVector =
+                  when (detectedPlatform) {
+                    MeetingPlatform.ZOOM,
+                    MeetingPlatform.GOOGLE_MEET,
+                    MeetingPlatform.MICROSOFT_TEAMS,
+                    MeetingPlatform.WEBEX -> Icons.Default.VideoCall
+                    MeetingPlatform.UNKNOWN -> Icons.Default.Link
+                  },
+              contentDescription = "Meeting link icon",
+              modifier = Modifier.testTag(CreateMeetingScreenTestTags.PLATFORM_ICON))
+        },
+        isError = linkValidationError != null && hasTouchedLink,
+        modifier =
+            Modifier.fillMaxWidth()
+                .testTag(CreateMeetingScreenTestTags.INPUT_MEETING_LINK)
+                .onFocusChanged { focusState ->
+                  if (focusState.isFocused) {
+                    onLinkTouch()
+                  }
+                })
+
+    // Show error message if validation failed
+    if (linkValidationError != null && hasTouchedLink) {
+      Text(
+          text = linkValidationError,
+          color = Color.Red,
+          style = MaterialTheme.typography.bodySmall,
+          modifier = Modifier.testTag(CreateMeetingScreenTestTags.ERROR_MSG))
+    }
+
+    // Show warning message for non-whitelisted domains
+    if (linkValidationWarning != null && hasTouchedLink && linkValidationError == null) {
+      Text(
+          text = linkValidationWarning,
+          color = MaterialTheme.colorScheme.secondary,
+          style = MaterialTheme.typography.bodySmall,
+          modifier = Modifier.testTag(CreateMeetingScreenTestTags.MEETING_LINK_WARNING))
+    }
+
+    // Show detected platform name
+    if (detectedPlatform != MeetingPlatform.UNKNOWN && meetingLink.isNotBlank()) {
+      Spacer(Modifier.height(4.dp))
+      Text(
+          text = "Platform: ${detectedPlatform.displayName}",
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.primary)
+    }
   }
 }
 
