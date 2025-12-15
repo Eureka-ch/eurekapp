@@ -214,7 +214,7 @@ fun MeetingScreen(
         FloatingActionButton(
             onClick = { config.onCreateMeeting(uiState.isConnected) },
             modifier =
-                Modifier.offset(y = (-32).dp).testTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON),
+                Modifier.offset(y = (-48).dp).testTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON),
             containerColor =
                 if (uiState.isConnected) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.surfaceVariant) {
