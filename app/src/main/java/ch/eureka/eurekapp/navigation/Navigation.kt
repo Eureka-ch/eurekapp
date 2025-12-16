@@ -247,7 +247,7 @@ fun NavigationMenu(
   UserHeartbeatEffect(userRepository, currentUser)
   val navBackStackEntry by navigationController.currentBackStackEntryAsState()
   val currentDestination = navBackStackEntry?.destination
-  val hideBottomBar by remember(currentDestination) {
+  val hideBottomBar by remember {
     derivedStateOf {
       currentDestination?.hierarchy?.any { destination ->
         // Notes / self
