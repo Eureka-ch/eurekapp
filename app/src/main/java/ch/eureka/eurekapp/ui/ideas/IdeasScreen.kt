@@ -3,7 +3,6 @@ package ch.eureka.eurekapp.ui.ideas
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
@@ -171,7 +170,7 @@ fun IdeasScreen(
                       currentUserId = viewModel.getCurrentUserId(),
                       onBackToList = { viewModel.backToList() }),
               lazyListState = listState,
-              paddingValues = PaddingValues(0.dp),
+              paddingValues = androidx.compose.foundation.layout.PaddingValues(0.dp),
               isLoading = uiState.isLoading)
         }
       }
