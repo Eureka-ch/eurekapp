@@ -1,10 +1,10 @@
+/* Portions of this file were written with the help of Claude (Sonnet 4.5) and GPT-5 Codex. */
 package ch.eureka.eurekapp.test_end_to_end
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -29,7 +29,6 @@ import ch.eureka.eurekapp.utils.FakeJwtGenerator
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.google.firebase.auth.GoogleAuthProvider
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
-import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
@@ -38,10 +37,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-
-/*
-Co-author: GPT-5 Codex
-*/
 
 /**
  * End-to-end test for the task creation flow.
@@ -257,8 +252,7 @@ class TaskEndToEndTest : TestCase() {
 
   private val testUserName = "Test User"
   private val testUserEmail = "testuser@example.com"
-  // Use the same project ID as NavigationMenu
-  private val testProjectId = "test-project-${UUID.randomUUID()}"
+  private val testProjectId = "project-id-test"
 
   @OptIn(ExperimentalTestApi::class)
   @Test
@@ -296,6 +290,7 @@ class TaskEndToEndTest : TestCase() {
       projectRef.collection("members").document(testUserId).set(member).await()
 
       // Set up the navigation menu after authentication
+      // NavigationMenu will create the test project automatically
       composeTestRule.setContent { NavigationMenu() }
 
       // Navigate to Meetings tab
@@ -345,10 +340,16 @@ class TaskEndToEndTest : TestCase() {
 
       val meetingTitle = "E2E Test Meeting"
 
-      // Select Project
+      // Select Project (New Step)
       composeTestRule.onNodeWithTag(ProjectDropDownMenuTestTag.PROJECT_DROPDOWN_MENU).performClick()
 
-      composeTestRule.waitForIdle()
+      // FIX: Wait for the dropdown items to load from Firestore and appear in the UI
+      composeTestRule.waitUntil(timeoutMillis = 5_000) {
+        composeTestRule
+            .onAllNodesWithTag(ProjectDropDownMenuTestTag.DROPDOWN_MENU_ITEM)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
 
       // Click the first project in the dropdown
       composeTestRule
@@ -400,12 +401,19 @@ class TaskEndToEndTest : TestCase() {
             .isNotEmpty()
       }
 
-      // Wait for meeting to appear in list
-      composeTestRule.waitUntil(timeoutMillis = 30_000) {
-        composeTestRule.onAllNodesWithText(meetingTitle).fetchSemanticsNodes().isNotEmpty()
+      // CRITICAL FIX: Wait for the meeting to actually appear in Firestore and be rendered
+      // Don't just check the screen exists - wait for the actual data to load
+      composeTestRule.waitUntil(timeoutMillis = 15_000) {
+        try {
+          composeTestRule.onNodeWithText(meetingTitle).assertExists()
+          true
+        } catch (_: Exception) {
+          // Meeting hasn't loaded yet, keep waiting
+          false
+        }
       }
 
-      // Verify meeting is displayed in the list
+      // Now verify meeting is displayed in the list
       composeTestRule.onNodeWithText(meetingTitle).assertIsDisplayed()
 
       // Step 3: View Details - Click on meeting card to open details
