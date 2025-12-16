@@ -23,6 +23,7 @@ import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import com.google.firebase.storage.StorageMetadata
 import java.util.Date
+import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
@@ -52,6 +53,8 @@ class MeetingDetailScreenTest {
   private lateinit var viewModel: MeetingDetailViewModel
   private lateinit var attachmentsViewModel: MeetingAttachmentsViewModel
   private lateinit var mockConnectivityObserver: MockConnectivityObserver
+  private val testProjectId = "testProject123"
+  private val testMeetingId = "testMeeting123"
 
   @Before
   fun setUp() {
@@ -146,7 +149,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun loadingStateDisplaysLoadingIndicator() {
+  fun meetingDetailScreen_loadingStateDisplaysLoadingIndicator() {
     val neverEmittingRepository =
         object : MeetingRepositoryMock() {
           override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> {
@@ -176,7 +179,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun errorStateDisplaysErrorMessage() {
+  fun meetingDetailScreen_errorStateDisplaysErrorMessage() {
     meetingFlow.value = null
     setContent()
 
@@ -185,7 +188,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun scheduledVirtualMeetingDisplaysAllInformation() {
+  fun meetingDetailScreen_scheduledVirtualMeetingDisplaysAllInformation() {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_scheduled_virtual_02" }
     meetingFlow.value = meeting
@@ -207,7 +210,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun scheduledInPersonMeetingDisplaysLocation() {
+  fun meetingDetailScreen_scheduledInPersonMeetingDisplaysLocation() {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_scheduled_inperson_03" }
     meetingFlow.value = meeting
@@ -223,7 +226,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun completedMeetingDisplaysCorrectStatus() {
+  fun meetingDetailScreen_completedMeetingDisplaysCorrectStatus() {
     val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.COMPLETED }
     meetingFlow.value = meeting
     userFlow.value = null
@@ -236,7 +239,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun inProgressMeetingDisplaysCorrectStatus() {
+  fun meetingDetailScreen_inProgressMeetingDisplaysCorrectStatus() {
     val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.IN_PROGRESS }
     meetingFlow.value = meeting
     userFlow.value = null
@@ -249,7 +252,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun inProgressMeetingHidesDateTime() {
+  fun meetingDetailScreen_inProgressMeetingHidesDateTime() {
     val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.IN_PROGRESS }
     meetingFlow.value = meeting
     userFlow.value = null
@@ -279,7 +282,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun attachmentsSectionDisplaysAttachments() {
+  fun meetingDetailScreen_attachmentsSectionDisplaysAttachments() {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_completed_virtual_05" }
     meetingFlow.value = meeting
@@ -297,7 +300,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun scheduledVirtualMeetingShowsJoinButton() {
+  fun meetingDetailScreen_scheduledVirtualMeetingShowsJoinButton() {
     val meeting =
         MeetingProvider.sampleMeetings.first {
           it.status == MeetingStatus.SCHEDULED && it.format == MeetingFormat.VIRTUAL
@@ -317,7 +320,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun inProgressMeetingShowsRecordButton() {
+  fun meetingDetailScreen_inProgressMeetingShowsRecordButton() {
     val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.IN_PROGRESS }
     meetingFlow.value = meeting
     userFlow.value = null
@@ -329,7 +332,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun completedMeetingShowsViewTranscriptButton() {
+  fun meetingDetailScreen_completedMeetingShowsViewTranscriptButton() {
     val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.COMPLETED }
     meetingFlow.value = meeting
     userFlow.value = null
@@ -343,7 +346,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun allMeetingsShowDeleteButton() {
+  fun meetingDetailScreen_allMeetingsShowDeleteButton() {
     val meeting = MeetingProvider.sampleMeetings.first()
     meetingFlow.value = meeting
     userFlow.value = null
@@ -355,7 +358,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun joinMeetingButtonTriggersCallback() {
+  fun meetingDetailScreen_joinMeetingButtonTriggersCallback() {
     val meeting =
         MeetingProvider.sampleMeetings.first {
           it.status == MeetingStatus.SCHEDULED && it.format == MeetingFormat.VIRTUAL
@@ -376,7 +379,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun recordButtonTriggersCallback() {
+  fun meetingDetailScreen_recordButtonTriggersCallback() {
     val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.IN_PROGRESS }
     meetingFlow.value = meeting
     userFlow.value = null
@@ -392,7 +395,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun viewTranscriptButtonTriggersCallback() {
+  fun meetingDetailScreen_viewTranscriptButtonTriggersCallback() {
     val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.COMPLETED }
     meetingFlow.value = meeting
     userFlow.value = null
@@ -408,7 +411,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun deleteButtonShowsConfirmationDialog() {
+  fun meetingDetailScreen_deleteButtonShowsConfirmationDialog() {
     val meeting = MeetingProvider.sampleMeetings.first()
     meetingFlow.value = meeting
     userFlow.value = null
@@ -431,7 +434,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun deleteDialogCancelButtonDismissesDialog() {
+  fun meetingDetailScreen_deleteDialogCancelButtonDismissesDialog() {
     val meeting = MeetingProvider.sampleMeetings.first()
     meetingFlow.value = meeting
     userFlow.value = null
@@ -449,7 +452,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun deleteDialogConfirmButtonCallsDeleteAndNavigatesBack() {
+  fun meetingDetailScreen_deleteDialogConfirmButtonCallsDeleteAndNavigatesBack() {
     val meeting = MeetingProvider.sampleMeetings.first()
     meetingFlow.value = meeting
     userFlow.value = null
@@ -470,7 +473,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun screenUpdatesWhenMeetingDataChanges() {
+  fun meetingDetailScreen_screenUpdatesWhenMeetingDataChanges() {
     val meeting1 = MeetingProvider.sampleMeetings.first()
     meetingFlow.value = meeting1
     userFlow.value = null
@@ -508,7 +511,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun networkErrorDisplaysCorrectMessage() {
+  fun meetingDetailScreen_networkErrorDisplaysCorrectMessage() {
     meetingFlow.value = null
     userFlow.value = null
 
@@ -519,7 +522,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun loadingErrorDoesNotShowMeetingContent() {
+  fun meetingDetailScreen_loadingErrorDoesNotShowMeetingContent() {
     meetingFlow.value = null
     userFlow.value = null
 
@@ -547,7 +550,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun errorRecoveryAfterSuccessfulRetry() {
+  fun meetingDetailScreen_errorRecoveryAfterSuccessfulRetry() {
     meetingFlow.value = null
     userFlow.value = null
 
@@ -570,7 +573,7 @@ class MeetingDetailScreenTest {
   // --- Edit Mode Functionality Tests ---
 
   @Test
-  fun editButtonIsDisplayedForScheduledMeeting() {
+  fun meetingDetailScreen_editButtonIsDisplayedForScheduledMeeting() {
     val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
     meetingFlow.value = meeting
     userFlow.value = null
@@ -585,7 +588,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun editModeDisplaysSaveAndCancelButtons() {
+  fun meetingDetailScreen_editModeDisplaysSaveAndCancelButtons() {
     val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
     meetingFlow.value = meeting
     userFlow.value = null
@@ -615,7 +618,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun editModeDisplaysEditableFields() {
+  fun meetingDetailScreen_editModeDisplaysEditableFields() {
     val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
     meetingFlow.value = meeting
     userFlow.value = null
@@ -640,7 +643,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun cancelButtonExitsEditModeAndRestoresView() {
+  fun meetingDetailScreen_cancelButtonExitsEditModeAndRestoresView() {
     val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
     meetingFlow.value = meeting
     userFlow.value = null
@@ -674,7 +677,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun editModeHidesActionButtons() {
+  fun meetingDetailScreen_editModeHidesActionButtons() {
     val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
     meetingFlow.value = meeting
     userFlow.value = null
@@ -699,7 +702,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun editModePreservesOriginalMeetingData() {
+  fun meetingDetailScreen_editModePreservesOriginalMeetingData() {
     val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
     meetingFlow.value = meeting
     userFlow.value = null
@@ -724,7 +727,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun editModePastDateShowsErrorMessage() {
+  fun meetingDetailScreen_editModePastDateShowsErrorMessage() {
     val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting
     meetingFlow.value = meeting
     userFlow.value = null
@@ -744,7 +747,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun locationIsDisplayedForInPersonMeeting() {
+  fun meetingDetailScreen_locationIsDisplayedForInPersonMeeting() {
     val meeting = MeetingProvider.sampleMeetings.first { it.format == MeetingFormat.IN_PERSON }
     meetingFlow.value = meeting
     userFlow.value = null
@@ -757,7 +760,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun actionButtonsAreHiddenDuringEditMode() {
+  fun meetingDetailScreen_actionButtonsAreHiddenDuringEditMode() {
     val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.SCHEDULED }
     meetingFlow.value = meeting
     userFlow.value = null
@@ -835,5 +838,405 @@ class MeetingDetailScreenTest {
 
     composeTestRule.onNodeWithText("Jane Smith").assertIsDisplayed()
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.CREATOR_AVATAR).assertIsDisplayed()
+  }
+
+  @Test
+  fun meetingDetailScreen_scheduledMeetingShowsStartMeetingButtonForCreator() {
+    val creatorId = "user_creator"
+    val meeting =
+        MeetingProvider.sampleMeetings
+            .first { it.status == MeetingStatus.SCHEDULED }
+            .copy(createdBy = creatorId)
+    meetingFlow.value = meeting
+    userFlow.value = null
+
+    viewModel =
+        MeetingDetailViewModel(
+            testProjectId,
+            testMeetingId,
+            repositoryMock,
+            userRepositoryMock,
+            mockConnectivityObserver,
+            getCurrentUserId = { creatorId })
+
+    composeTestRule.setContent {
+      MeetingDetailScreen(
+          attachmentsViewModel =
+              MeetingAttachmentsViewModel(
+                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver),
+          projectId = testProjectId,
+          meetingId = testMeetingId,
+          viewModel = viewModel)
+    }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.START_MEETING_BUTTON)
+        .assertIsDisplayed()
+  }
+
+  @Test
+  fun meetingDetailScreen_scheduledMeetingDoesNotShowStartMeetingButtonForNonCreator() {
+    val creatorId = "user_creator"
+    val otherUserId = "user_other"
+    val meeting =
+        MeetingProvider.sampleMeetings
+            .first { it.status == MeetingStatus.SCHEDULED }
+            .copy(createdBy = creatorId)
+    meetingFlow.value = meeting
+    userFlow.value = null
+
+    viewModel =
+        MeetingDetailViewModel(
+            testProjectId,
+            testMeetingId,
+            repositoryMock,
+            userRepositoryMock,
+            mockConnectivityObserver,
+            getCurrentUserId = { otherUserId })
+
+    composeTestRule.setContent {
+      MeetingDetailScreen(
+          attachmentsViewModel =
+              MeetingAttachmentsViewModel(
+                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver),
+          projectId = testProjectId,
+          meetingId = testMeetingId,
+          viewModel = viewModel)
+    }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.START_MEETING_BUTTON)
+        .assertDoesNotExist()
+  }
+
+  @Test
+  fun meetingDetailScreen_inProgressMeetingShowsEndMeetingButtonForCreator() {
+    val creatorId = "user_creator"
+    val meeting =
+        MeetingProvider.sampleMeetings
+            .first { it.status == MeetingStatus.IN_PROGRESS }
+            .copy(createdBy = creatorId)
+    meetingFlow.value = meeting
+    userFlow.value = null
+
+    viewModel =
+        MeetingDetailViewModel(
+            testProjectId,
+            testMeetingId,
+            repositoryMock,
+            userRepositoryMock,
+            mockConnectivityObserver,
+            getCurrentUserId = { creatorId })
+
+    composeTestRule.setContent {
+      MeetingDetailScreen(
+          attachmentsViewModel =
+              MeetingAttachmentsViewModel(
+                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver),
+          projectId = testProjectId,
+          meetingId = testMeetingId,
+          viewModel = viewModel)
+    }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.END_MEETING_BUTTON)
+        .assertIsDisplayed()
+  }
+
+  @Test
+  fun meetingDetailScreen_inProgressMeetingDoesNotShowEndMeetingButtonForNonCreator() {
+    val creatorId = "user_creator"
+    val otherUserId = "user_other"
+    val meeting =
+        MeetingProvider.sampleMeetings
+            .first { it.status == MeetingStatus.IN_PROGRESS }
+            .copy(createdBy = creatorId)
+    meetingFlow.value = meeting
+    userFlow.value = null
+
+    viewModel =
+        MeetingDetailViewModel(
+            testProjectId,
+            testMeetingId,
+            repositoryMock,
+            userRepositoryMock,
+            mockConnectivityObserver,
+            getCurrentUserId = { otherUserId })
+
+    composeTestRule.setContent {
+      MeetingDetailScreen(
+          attachmentsViewModel =
+              MeetingAttachmentsViewModel(
+                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver),
+          projectId = testProjectId,
+          meetingId = testMeetingId,
+          viewModel = viewModel)
+    }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.END_MEETING_BUTTON)
+        .assertDoesNotExist()
+  }
+
+  @Test
+  fun meetingDetailScreen_startMeetingButtonClickChangesStatusToInProgress() {
+    val creatorId = "user_creator"
+    val meeting =
+        MeetingProvider.sampleMeetings
+            .first { it.status == MeetingStatus.SCHEDULED }
+            .copy(createdBy = creatorId)
+    meetingFlow.value = meeting
+    userFlow.value = null
+
+    val updatedRepositoryMock =
+        object : MeetingRepositoryMock() {
+          override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> {
+            return meetingFlow
+          }
+
+          override suspend fun updateMeeting(meeting: Meeting): Result<Unit> {
+            meetingFlow.value = meeting
+            return Result.success(Unit)
+          }
+        }
+
+    viewModel =
+        MeetingDetailViewModel(
+            testProjectId,
+            testMeetingId,
+            updatedRepositoryMock,
+            userRepositoryMock,
+            mockConnectivityObserver,
+            getCurrentUserId = { creatorId })
+
+    composeTestRule.setContent {
+      MeetingDetailScreen(
+          attachmentsViewModel =
+              MeetingAttachmentsViewModel(
+                  FileStorageRepositoryMock(), updatedRepositoryMock, mockConnectivityObserver),
+          projectId = testProjectId,
+          meetingId = testMeetingId,
+          viewModel = viewModel)
+    }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.START_MEETING_BUTTON).performClick()
+
+    composeTestRule.waitForIdle()
+
+    assertEquals(MeetingStatus.IN_PROGRESS, meetingFlow.value?.status)
+  }
+
+  @Test
+  fun meetingDetailScreen_endMeetingButtonClickChangesStatusToCompleted() {
+    val creatorId = "user_creator"
+    val meeting =
+        MeetingProvider.sampleMeetings
+            .first { it.status == MeetingStatus.IN_PROGRESS }
+            .copy(createdBy = creatorId)
+    meetingFlow.value = meeting
+    userFlow.value = null
+
+    val updatedRepositoryMock =
+        object : MeetingRepositoryMock() {
+          override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> {
+            return meetingFlow
+          }
+
+          override suspend fun updateMeeting(meeting: Meeting): Result<Unit> {
+            meetingFlow.value = meeting
+            return Result.success(Unit)
+          }
+        }
+
+    viewModel =
+        MeetingDetailViewModel(
+            testProjectId,
+            testMeetingId,
+            updatedRepositoryMock,
+            userRepositoryMock,
+            mockConnectivityObserver,
+            getCurrentUserId = { creatorId })
+
+    composeTestRule.setContent {
+      MeetingDetailScreen(
+          attachmentsViewModel =
+              MeetingAttachmentsViewModel(
+                  FileStorageRepositoryMock(), updatedRepositoryMock, mockConnectivityObserver),
+          projectId = testProjectId,
+          meetingId = testMeetingId,
+          viewModel = viewModel)
+    }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.END_MEETING_BUTTON).performClick()
+
+    composeTestRule.waitForIdle()
+
+    assertEquals(MeetingStatus.COMPLETED, meetingFlow.value?.status)
+  }
+
+  @Test
+  fun meetingDetailScreen_scheduledMeetingPastStartTimeShowsStartReminder() {
+    val creatorId = "user_creator"
+    val pastDateTime = Timestamp(Date(System.currentTimeMillis() - 3600000)) // 1 hour ago
+    val meeting =
+        MeetingProvider.sampleMeetings
+            .first { it.status == MeetingStatus.SCHEDULED }
+            .copy(createdBy = creatorId, datetime = pastDateTime)
+    meetingFlow.value = meeting
+    userFlow.value = null
+
+    viewModel =
+        MeetingDetailViewModel(
+            testProjectId,
+            testMeetingId,
+            repositoryMock,
+            userRepositoryMock,
+            mockConnectivityObserver,
+            getCurrentUserId = { creatorId })
+
+    composeTestRule.setContent {
+      MeetingDetailScreen(
+          attachmentsViewModel =
+              MeetingAttachmentsViewModel(
+                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver),
+          projectId = testProjectId,
+          meetingId = testMeetingId,
+          viewModel = viewModel)
+    }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.START_MEETING_REMINDER)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithText("The scheduled start time has passed. Consider starting the meeting.")
+        .assertIsDisplayed()
+  }
+
+  @Test
+  fun meetingDetailScreen_inProgressMeetingPastEndTimeShowsEndReminder() {
+    val creatorId = "user_creator"
+    val startDateTime = Timestamp(Date(System.currentTimeMillis() - 7200000)) // 2 hours ago
+    val meeting =
+        MeetingProvider.sampleMeetings
+            .first { it.status == MeetingStatus.IN_PROGRESS }
+            .copy(createdBy = creatorId, datetime = startDateTime, duration = 60) // 1 hour duration
+    meetingFlow.value = meeting
+    userFlow.value = null
+
+    viewModel =
+        MeetingDetailViewModel(
+            testProjectId,
+            testMeetingId,
+            repositoryMock,
+            userRepositoryMock,
+            mockConnectivityObserver,
+            getCurrentUserId = { creatorId })
+
+    composeTestRule.setContent {
+      MeetingDetailScreen(
+          attachmentsViewModel =
+              MeetingAttachmentsViewModel(
+                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver),
+          projectId = testProjectId,
+          meetingId = testMeetingId,
+          viewModel = viewModel)
+    }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.END_MEETING_REMINDER)
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithText("The scheduled end time has passed. Consider ending the meeting.")
+        .assertIsDisplayed()
+  }
+
+  @Test
+  fun meetingDetailScreen_scheduledMeetingFutureStartTimeDoesNotShowReminder() {
+    val creatorId = "user_creator"
+    val futureDateTime = Timestamp(Date(System.currentTimeMillis() + 3600000)) // 1 hour from now
+    val meeting =
+        MeetingProvider.sampleMeetings
+            .first { it.status == MeetingStatus.SCHEDULED }
+            .copy(createdBy = creatorId, datetime = futureDateTime)
+    meetingFlow.value = meeting
+    userFlow.value = null
+
+    viewModel =
+        MeetingDetailViewModel(
+            testProjectId,
+            testMeetingId,
+            repositoryMock,
+            userRepositoryMock,
+            mockConnectivityObserver,
+            getCurrentUserId = { creatorId })
+
+    composeTestRule.setContent {
+      MeetingDetailScreen(
+          attachmentsViewModel =
+              MeetingAttachmentsViewModel(
+                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver),
+          projectId = testProjectId,
+          meetingId = testMeetingId,
+          viewModel = viewModel)
+    }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.START_MEETING_REMINDER)
+        .assertDoesNotExist()
+  }
+
+  @Test
+  fun meetingDetailScreen_inProgressMeetingNotPastEndTimeDoesNotShowReminder() {
+    val creatorId = "user_creator"
+    val startDateTime = Timestamp(Date(System.currentTimeMillis() - 1800000)) // 30 min ago
+    val meeting =
+        MeetingProvider.sampleMeetings
+            .first { it.status == MeetingStatus.IN_PROGRESS }
+            .copy(createdBy = creatorId, datetime = startDateTime, duration = 60) // Ends in 30 min
+    meetingFlow.value = meeting
+    userFlow.value = null
+
+    viewModel =
+        MeetingDetailViewModel(
+            testProjectId,
+            testMeetingId,
+            repositoryMock,
+            userRepositoryMock,
+            mockConnectivityObserver,
+            getCurrentUserId = { creatorId })
+
+    composeTestRule.setContent {
+      MeetingDetailScreen(
+          attachmentsViewModel =
+              MeetingAttachmentsViewModel(
+                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver),
+          projectId = testProjectId,
+          meetingId = testMeetingId,
+          viewModel = viewModel)
+    }
+
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.END_MEETING_REMINDER)
+        .assertDoesNotExist()
   }
 }
