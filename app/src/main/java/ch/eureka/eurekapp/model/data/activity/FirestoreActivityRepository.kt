@@ -37,9 +37,8 @@ class FirestoreActivityRepository(
    *
    * The process is:
    * 1. Query the `members` collection group to find all projects where [userId] is a member.
-   * 2. Add the `test-project-id` to this list to ensure visibility of legacy meeting data.
-   * 3. Query the top-level `activities` collection where `projectId` is in the user's project list.
-   * 4. Filter activities by entity-level access (MESSAGE, MEETING, TASK require specific
+   * 2. Query the top-level `activities` collection where `projectId` is in the user's project list.
+   * 3. Filter activities by entity-level access (MESSAGE, MEETING, TASK require specific
    *    permissions).
    *
    * @param userId The unique identifier of the user.
@@ -55,7 +54,6 @@ class FirestoreActivityRepository(
           memberDocs.documents.mapNotNull { doc -> doc.reference.parent.parent?.id }
 
       val targetIds = mutableSetOf<String>()
-      targetIds.add("test-project-id") // for fetching all meetings activity
       targetIds.addAll(userProjectIds)
 
       if (targetIds.isEmpty()) {
