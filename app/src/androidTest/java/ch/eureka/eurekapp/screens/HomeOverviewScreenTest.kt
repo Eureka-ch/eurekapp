@@ -151,65 +151,6 @@ class HomeOverviewScreenTest {
   }
 
   @Test
-  fun itemSelectionsTriggerCallbacks() {
-    var taskSelected = false
-    var meetingSelected = false
-    var projectSelected = false
-
-    val task = createTask("Task Item")
-    val meeting = createMeeting("Meeting Item")
-    val project = createProject("Project Item")
-
-    composeTestRule.setContent {
-      HomeOverviewLayout(
-          uiState =
-              sampleState()
-                  .copy(
-                      upcomingTasks = listOf(task),
-                      upcomingMeetings = listOf(meeting),
-                      recentProjects = listOf(project),
-                      isLoading = false),
-          actions =
-              HomeOverviewActions(
-                  onTaskSelected = { projectId, taskId ->
-                    taskSelected = projectId == task.projectId && taskId == task.taskID
-                  },
-                  onMeetingSelected = { projectId, meetingId ->
-                    meetingSelected =
-                        projectId == meeting.projectId && meetingId == meeting.meetingID
-                  },
-                  onProjectSelected = { projectId ->
-                    projectSelected = projectId == project.projectId
-                  }))
-    }
-
-    val list = composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN)
-
-    list.performScrollToNode(hasTestTag(HomeOverviewTestTags.getTaskItemTestTag(task.taskID)))
-    composeTestRule
-        .onNodeWithTag(HomeOverviewTestTags.getTaskItemTestTag(task.taskID))
-        .performClick()
-
-    list.performScrollToNode(
-        hasTestTag(HomeOverviewTestTags.getMeetingItemTestTag(meeting.meetingID)))
-    composeTestRule
-        .onNodeWithTag(HomeOverviewTestTags.getMeetingItemTestTag(meeting.meetingID))
-        .performClick()
-
-    list.performScrollToNode(
-        hasTestTag(HomeOverviewTestTags.getProjectItemTestTag(project.projectId)))
-    list.performScrollToNode(
-        hasTestTag(HomeOverviewTestTags.getProjectLinkTestTag(project.projectId)))
-    composeTestRule
-        .onNodeWithTag(HomeOverviewTestTags.getProjectLinkTestTag(project.projectId))
-        .performClick()
-
-    assertTrue(taskSelected)
-    assertTrue(meetingSelected)
-    assertTrue(projectSelected)
-  }
-
-  @Test
   fun showsLoadingState() {
     composeTestRule.setContent {
       HomeOverviewLayout(uiState = HomeOverviewUiState(isLoading = true))

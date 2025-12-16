@@ -33,6 +33,19 @@ object EColors {
 
   // Border colors
   val BorderGrayColor = Color(0xFFE5E7EB)
+  val CardBorderColor = Color(0xFFE2E8F0) // Border color for cards
+
+  // Text colors
+  val TitleTextColor = Color(0xFF0F172A) // Dark text for titles
+  val SecondaryTextColor = Color(0xFF475569) // Secondary text color
+
+  // Background colors
+  val IconBackgroundColor = Color(0xFFF1F5F9) // Background for icon containers
+  val GradientLightColor = Color(0xFFFAFAFA) // Light gradient color
+
+  // Status colors
+  val StatusBlue = Color(0xFF3B82F6) // Blue for status indicators
+  val StatusGreen = Color(0xFF16A34A) // Green for status indicators
 
   // Light theme colors from Figma
   val LightBackground = Color.White // Pure white background

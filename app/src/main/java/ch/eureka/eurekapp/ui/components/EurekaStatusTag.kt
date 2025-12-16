@@ -8,7 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 /** Status tag component for showing status, priority, or category information */
@@ -18,29 +18,30 @@ fun EurekaStatusTag(
     text: String,
     type: StatusType = StatusType.INFO
 ) {
+  val (containerColor, textColor) =
+      when (type) {
+        StatusType.SUCCESS ->
+            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f) to
+                MaterialTheme.colorScheme.tertiary
+        StatusType.WARNING ->
+            MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f) to
+                MaterialTheme.colorScheme.secondary
+        StatusType.ERROR ->
+            MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
+        StatusType.INFO ->
+            MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurfaceVariant
+      }
+
   Card(
-      colors =
-          CardDefaults.cardColors(
-              containerColor =
-                  when (type) {
-                    StatusType.SUCCESS -> MaterialTheme.colorScheme.tertiary
-                    StatusType.WARNING -> MaterialTheme.colorScheme.secondary
-                    StatusType.ERROR -> MaterialTheme.colorScheme.error
-                    StatusType.INFO -> Color.White // Blanc pur pour les tags
-                  }),
-      shape = RoundedCornerShape(4.dp),
+      colors = CardDefaults.cardColors(containerColor = containerColor),
+      shape = RoundedCornerShape(8.dp),
       modifier = modifier) {
         Text(
             text = text,
-            style = MaterialTheme.typography.labelSmall,
-            color =
-                when (type) {
-                  StatusType.SUCCESS,
-                  StatusType.WARNING,
-                  StatusType.ERROR -> Color.White
-                  StatusType.INFO -> Color(0xFF212121) // Texte foncé sur fond blanc
-                },
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
+            style = MaterialTheme.typography.labelMedium,
+            color = textColor,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp))
       }
 }
 

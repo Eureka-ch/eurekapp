@@ -1,4 +1,4 @@
-// Portions of this code were generated with the help of Grok, ChatGPT, and Claude.
+/* Portions of this code were generated with the help of Grok, ChatGPT, and Claude (and Claude 4.5 Sonnet). */
 package ch.eureka.eurekapp.ui.meeting
 
 import android.net.Uri
@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.VideoCall
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -61,9 +62,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -74,11 +77,12 @@ import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
-import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.LightingBlue
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.utils.Formatters
+import coil.compose.AsyncImage
 import com.google.firebase.Timestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -110,10 +114,11 @@ object MeetingDetailScreenTestTags {
   const val MEETING_FORMAT = "MeetingDetailFormat"
   const val MEETING_LOCATION = "MeetingDetailLocation"
   const val MEETING_LINK = "MeetingDetailLink"
-  const val PARTICIPANTS_SECTION = "ParticipantsSection"
-  const val PARTICIPANT_ITEM = "ParticipantItem"
-  const val PARTICIPANT_NAME = "ParticipantName"
-  const val PARTICIPANT_ROLE = "ParticipantRole"
+  const val CREATOR_SECTION = "CreatorSection"
+  const val CREATOR_ITEM = "CreatorItem"
+  const val CREATOR_AVATAR = "CreatorAvatar"
+  const val CREATOR_NAME = "CreatorName"
+  const val CREATOR_LABEL = "CreatorLabel"
   const val ATTACHMENTS_SECTION = "AttachmentsSection"
   const val ATTACHMENT_ITEM = "AttachmentItem"
   const val NO_ATTACHMENTS_MESSAGE = "NoAttachmentsMessage"
@@ -133,6 +138,10 @@ object MeetingDetailScreenTestTags {
   const val CONTENT_COLUMN = "ContentColumn"
   const val DOWNLOADING_FILES_PROGRESS_INDICATOR = "DownloadingFilesProgressIndicator"
   const val DOWNLOADING_FILES_BUTTON = "DownloadingFilesButton"
+  const val START_MEETING_BUTTON = "StartMeetingButton"
+  const val END_MEETING_BUTTON = "EndMeetingButton"
+  const val START_MEETING_REMINDER = "StartMeetingReminder"
+  const val END_MEETING_REMINDER = "EndMeetingReminder"
 }
 
 /**
@@ -155,15 +164,15 @@ data class MeetingDetailActionsConfig(
     val onRecordMeeting: (String, String, Boolean) -> Unit = { _, _, _ -> },
     val onViewTranscript: (String, String, Boolean) -> Unit = { _, _, _ -> },
     val onVoteForMeetingProposalClick: (String, String, Boolean) -> Unit = { _, _, _ -> },
-    val onNavigateToMeeting: (Boolean) -> Unit = {},
+    val onNavigateToMeeting: (Boolean) -> Unit = {}
 )
 
 /**
  * Main composable for the meeting detail screen.
  *
  * Displays comprehensive information about a meeting including title, date/time, format,
- * location/link, participants, and attachments. Provides action buttons for joining, recording,
- * viewing transcripts, and deleting the meeting.
+ * location/link and attachments. Provides action buttons for joining, recording, viewing
+ * transcripts, and deleting the meeting.
  *
  * @param projectId The ID of the project containing the meeting.
  * @param meetingId The ID of the meeting to display.
@@ -234,48 +243,50 @@ fun MeetingDetailScreen(
           } else {
             uiState.meeting?.let { meeting ->
               MeetingDetailContent(
-                  modifier = Modifier.padding(padding),
-                  meetingInfo =
-                      MeetingInfo(
+                  config =
+                      MeetingDetailContentConfig(
                           meeting = meeting,
                           meetingProjectName = meetingProjectName,
-                          participants = uiState.participants),
-                  attachmentsViewModel = attachmentsViewModel,
-                  editConfig =
-                      EditConfig(
-                          isEditMode = uiState.isEditMode,
-                          isSaving = uiState.isSaving,
-                          editTitle = uiState.editTitle,
-                          editDateTime = uiState.editDateTime,
-                          editDuration = uiState.editDuration,
-                          hasTouchedTitle = uiState.hasTouchedTitle,
-                          hasTouchedDateTime = uiState.hasTouchedDateTime,
-                          hasTouchedDuration = uiState.hasTouchedDuration),
-                  actionsConfig =
-                      MeetingDetailContentActionsConfig(
-                          onJoinMeeting = actionsConfig.onJoinMeeting,
-                          onRecordMeeting = actionsConfig.onRecordMeeting,
-                          onViewTranscript = actionsConfig.onViewTranscript,
-                          onDeleteMeeting = { showDeleteDialog = true },
-                          onVoteForMeetingProposals = { isConnected ->
-                            actionsConfig.onVoteForMeetingProposalClick(
-                                projectId, meetingId, isConnected)
-                          },
-                          onEditMeeting = { isConnected ->
-                            viewModel.toggleEditMode(meeting, isConnected)
-                          },
-                          onSaveMeeting = { isConnected ->
-                            viewModel.saveMeetingChanges(meeting, isConnected)
-                          },
-                          onCancelEdit = { viewModel.toggleEditMode(null) },
-                          onUpdateTitle = viewModel::updateEditTitle,
-                          onUpdateDateTime = viewModel::updateEditDateTime,
-                          onUpdateDuration = viewModel::updateEditDuration,
-                          onTouchTitle = viewModel::touchTitle,
-                          onTouchDateTime = viewModel::touchDateTime,
-                          onTouchDuration = viewModel::touchDuration,
-                          onNavigateToMeeting = actionsConfig.onNavigateToMeeting),
-                  isConnected = uiState.isConnected)
+                          creatorUser = uiState.creatorUser,
+                          attachmentsViewModel = attachmentsViewModel,
+                          editConfig =
+                              EditConfig(
+                                  isEditMode = uiState.isEditMode,
+                                  isSaving = uiState.isSaving,
+                                  editTitle = uiState.editTitle,
+                                  editDateTime = uiState.editDateTime,
+                                  editDuration = uiState.editDuration,
+                                  hasTouchedTitle = uiState.hasTouchedTitle,
+                                  hasTouchedDateTime = uiState.hasTouchedDateTime,
+                                  hasTouchedDuration = uiState.hasTouchedDuration),
+                          actionsConfig =
+                              MeetingDetailContentActionsConfig(
+                                  onJoinMeeting = actionsConfig.onJoinMeeting,
+                                  onRecordMeeting = actionsConfig.onRecordMeeting,
+                                  onViewTranscript = actionsConfig.onViewTranscript,
+                                  onDeleteMeeting = { showDeleteDialog = true },
+                                  onVoteForMeetingProposals = { isConnected ->
+                                    actionsConfig.onVoteForMeetingProposalClick(
+                                        projectId, meetingId, isConnected)
+                                  },
+                                  onEditMeeting = { isConnected ->
+                                    viewModel.toggleEditMode(meeting, isConnected)
+                                  },
+                                  onSaveMeeting = { isConnected ->
+                                    viewModel.saveMeetingChanges(meeting, isConnected)
+                                  },
+                                  onCancelEdit = { viewModel.toggleEditMode(null) },
+                                  onUpdateTitle = viewModel::updateEditTitle,
+                                  onUpdateDateTime = viewModel::updateEditDateTime,
+                                  onUpdateDuration = viewModel::updateEditDuration,
+                                  onTouchTitle = viewModel::touchTitle,
+                                  onTouchDateTime = viewModel::touchDateTime,
+                                  onTouchDuration = viewModel::touchDuration,
+                                  onNavigateToMeeting = actionsConfig.onNavigateToMeeting),
+                          isConnected = uiState.isConnected,
+                          isCreator = uiState.isCreator),
+                  viewModel = viewModel,
+                  modifier = Modifier.padding(padding))
             } ?: ErrorScreen(message = uiState.errorMsg ?: "Meeting not found")
           }
         }
@@ -345,6 +356,9 @@ private fun ErrorScreen(message: String) {
  * @property onUpdateTitle Callback invoked when edit title changes.
  * @property onUpdateDateTime Callback invoked when edit date/time changes.
  * @property onUpdateDuration Callback invoked when edit duration changes.
+ * @property onTouchTitle Callback invoked when title field is first touched.
+ * @property onTouchDateTime Callback invoked when date/time field is first touched.
+ * @property onTouchDuration Callback invoked when duration field is first touched.
  * @property onNavigateToMeeting Callback invoked when user clicks navigate to meeting button.
  */
 data class MeetingDetailContentActionsConfig(
@@ -362,7 +376,7 @@ data class MeetingDetailContentActionsConfig(
     val onTouchTitle: () -> Unit,
     val onTouchDateTime: () -> Unit,
     val onTouchDuration: () -> Unit,
-    val onNavigateToMeeting: (Boolean) -> Unit,
+    val onNavigateToMeeting: (Boolean) -> Unit
 )
 
 /**
@@ -406,106 +420,112 @@ data class ActionButtonsConfig(
     val onDeleteMeeting: () -> Unit,
     val onVoteForMeetingProposals: (Boolean) -> Unit,
     val onEditMeeting: (Boolean) -> Unit,
-    val onNavigateToMeeting: (Boolean) -> Unit,
+    val onNavigateToMeeting: (Boolean) -> Unit
 )
 
 /**
- * Data class regrouping all information about a meeting that can be displayed.
+ * Configuration for MeetingDetailContent composable.
  *
  * @property meeting The meeting.
  * @property meetingProjectName The name of the project the meeting is into.
- * @property participants The participants of the meeting.
+ * @property creatorUser The user information of the meeting creator.
+ * @property editConfig Configuration for edit mode state.
+ * @property actionsConfig Actions that can be executed by buttons in the detail content.
+ * @property attachmentsViewModel ViewModel for handling attachments.
+ * @property isConnected Whether the device is connected to the internet.
+ * @property isCreator Whether the current user is the creator of the meeting.
  */
-data class MeetingInfo(
+data class MeetingDetailContentConfig(
     val meeting: Meeting,
     val meetingProjectName: String,
-    val participants: List<Participant>
+    val creatorUser: User?,
+    val editConfig: EditConfig,
+    val actionsConfig: MeetingDetailContentActionsConfig,
+    val attachmentsViewModel: MeetingAttachmentsViewModel,
+    val isConnected: Boolean = true,
+    val isCreator: Boolean = false
 )
 
 /**
  * Main content displaying meeting details.
  *
- * @property meetingInfo Information about the meeting.
- * @property editConfig Configuration for edit mode state.
- * @property actionsConfig Actions that can be executed by buttons in the detail content.
- * @property modifier Modifier to be applied to the root composable.
- * @property isConnected Whether the device is connected to the internet.
+ * @param config The configuration containing all necessary data and actions.
+ * @param viewModel The ViewModel managing the meeting detail state.
+ * @param modifier Modifier to be applied to the root composable.
  */
 @Composable
 private fun MeetingDetailContent(
-    meetingInfo: MeetingInfo,
-    editConfig: EditConfig,
-    actionsConfig: MeetingDetailContentActionsConfig,
+    config: MeetingDetailContentConfig,
+    viewModel: MeetingDetailViewModel,
     modifier: Modifier = Modifier,
-    attachmentsViewModel: MeetingAttachmentsViewModel,
-    isConnected: Boolean = true,
 ) {
   LazyColumn(
       modifier =
           Modifier.fillMaxSize().then(modifier).testTag(MeetingDetailScreenTestTags.CONTENT_COLUMN),
       contentPadding = PaddingValues(16.dp),
       verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        item { MeetingHeader(meeting = meetingInfo.meeting) }
+        item { MeetingHeader(meeting = config.meeting) }
 
         item {
-          if (editConfig.isEditMode) {
+          if (config.editConfig.isEditMode) {
             EditableMeetingInfoCard(
                 config =
                     EditableMeetingInfoCardConfig(
-                        editTitle = editConfig.editTitle,
-                        editDateTime = editConfig.editDateTime,
-                        editDuration = editConfig.editDuration,
-                        meetingStatus = meetingInfo.meeting.status,
-                        hasTouchedTitle = editConfig.hasTouchedTitle,
-                        hasTouchedDateTime = editConfig.hasTouchedDateTime,
-                        hasTouchedDuration = editConfig.hasTouchedDuration,
-                        onTitleChange = actionsConfig.onUpdateTitle,
-                        onDateTimeChange = actionsConfig.onUpdateDateTime,
-                        onDurationChange = actionsConfig.onUpdateDuration,
-                        onTouchTitle = actionsConfig.onTouchTitle,
-                        onTouchDateTime = actionsConfig.onTouchDateTime,
-                        onTouchDuration = actionsConfig.onTouchDuration))
+                        editTitle = config.editConfig.editTitle,
+                        editDateTime = config.editConfig.editDateTime,
+                        editDuration = config.editConfig.editDuration,
+                        meetingStatus = config.meeting.status,
+                        hasTouchedTitle = config.editConfig.hasTouchedTitle,
+                        hasTouchedDateTime = config.editConfig.hasTouchedDateTime,
+                        hasTouchedDuration = config.editConfig.hasTouchedDuration,
+                        onTitleChange = config.actionsConfig.onUpdateTitle,
+                        onDateTimeChange = config.actionsConfig.onUpdateDateTime,
+                        onDurationChange = config.actionsConfig.onUpdateDuration,
+                        onTouchTitle = config.actionsConfig.onTouchTitle,
+                        onTouchDateTime = config.actionsConfig.onTouchDateTime,
+                        onTouchDuration = config.actionsConfig.onTouchDuration))
           } else {
             MeetingInformationCard(
-                meeting = meetingInfo.meeting, meetingProjectName = meetingInfo.meetingProjectName)
+                meeting = config.meeting, meetingProjectName = config.meetingProjectName)
           }
         }
 
-        item { ParticipantsSection(participants = meetingInfo.participants) }
+        item { CreatorSection(creatorUser = config.creatorUser, meeting = config.meeting) }
 
         item {
           AttachmentsSection(
-              meeting = meetingInfo.meeting, attachmentsViewModel = attachmentsViewModel)
+              meeting = config.meeting, attachmentsViewModel = config.attachmentsViewModel)
         }
 
         item {
-          if (editConfig.isEditMode) {
+          if (config.editConfig.isEditMode) {
             EditModeButtons(
-                onSave = actionsConfig.onSaveMeeting,
-                onCancel = actionsConfig.onCancelEdit,
-                isSaving = editConfig.isSaving,
-                isConnected = isConnected)
+                onSave = config.actionsConfig.onSaveMeeting,
+                onCancel = config.actionsConfig.onCancelEdit,
+                isSaving = config.editConfig.isSaving,
+                isConnected = config.isConnected)
           } else {
             ActionButtonsSection(
-                meeting = meetingInfo.meeting,
+                meeting = config.meeting,
+                viewModel = viewModel,
                 actionsConfig =
                     ActionButtonsConfig(
-                        onJoinMeeting = actionsConfig.onJoinMeeting,
-                        onRecordMeeting = actionsConfig.onRecordMeeting,
-                        onViewTranscript = actionsConfig.onViewTranscript,
-                        onDeleteMeeting = actionsConfig.onDeleteMeeting,
-                        onVoteForMeetingProposals = actionsConfig.onVoteForMeetingProposals,
-                        onEditMeeting = actionsConfig.onEditMeeting,
-                        onNavigateToMeeting = actionsConfig.onNavigateToMeeting,
+                        onJoinMeeting = config.actionsConfig.onJoinMeeting,
+                        onRecordMeeting = config.actionsConfig.onRecordMeeting,
+                        onViewTranscript = config.actionsConfig.onViewTranscript,
+                        onDeleteMeeting = config.actionsConfig.onDeleteMeeting,
+                        onVoteForMeetingProposals = config.actionsConfig.onVoteForMeetingProposals,
+                        onEditMeeting = config.actionsConfig.onEditMeeting,
+                        onNavigateToMeeting = config.actionsConfig.onNavigateToMeeting,
                     ),
-                isConnected = isConnected,
-            )
+                isConnected = config.isConnected,
+                isCreator = config.isCreator)
           }
         }
 
         item { Spacer(modifier = Modifier.height(16.dp)) }
 
-        if (!isConnected) {
+        if (!config.isConnected) {
           item {
             Text(
                 text =
@@ -856,14 +876,15 @@ fun InfoRow(
 }
 
 /**
- * Section displaying meeting participants.
+ * Section displaying the meeting creator.
  *
- * @param participants The list of participants to display.
+ * @param creatorUser The user information of the meeting creator.
+ * @param meeting The meeting containing creator ID.
  */
 @Composable
-private fun ParticipantsSection(participants: List<Participant>) {
+private fun CreatorSection(creatorUser: User?, meeting: Meeting) {
   Card(
-      modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.PARTICIPANTS_SECTION),
+      modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.CREATOR_SECTION),
       shape = RoundedCornerShape(16.dp),
       elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {
         Column(
@@ -871,65 +892,75 @@ private fun ParticipantsSection(participants: List<Participant>) {
               Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Person,
-                    contentDescription = "Participants",
+                    contentDescription = "Creator",
                     tint = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Participants (${participants.size})",
+                    text = "Creator",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold)
               }
 
               HorizontalDivider()
 
-              if (participants.isEmpty()) {
-                Text(
-                    text = "No participants yet",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray)
-              } else {
-                participants.forEach { ParticipantItem(participant = it) }
-              }
+              CreatorItem(creatorUser = creatorUser, creatorId = meeting.createdBy)
             }
       }
 }
 
 /**
- * Individual participant item.
+ * Individual creator item displaying avatar and name.
  *
- * @param participant The participant to display.
+ * @param creatorUser The user information of the creator.
+ * @param creatorId The creator's user ID (fallback if user info not available).
  */
 @Composable
-private fun ParticipantItem(participant: Participant) {
+private fun CreatorItem(creatorUser: User?, creatorId: String) {
   Row(
-      modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.PARTICIPANT_ITEM),
+      modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.CREATOR_ITEM),
       verticalAlignment = Alignment.CenterVertically) {
-        Surface(
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.primaryContainer,
-            modifier = Modifier.size(40.dp)) {
-              Column(
-                  modifier = Modifier.fillMaxSize(),
-                  horizontalAlignment = Alignment.CenterHorizontally,
-                  verticalArrangement = Arrangement.Center) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Participant",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(24.dp))
-                  }
-            }
+        // Avatar (48dp)
+        if (creatorUser?.photoUrl?.isNotEmpty() == true) {
+          AsyncImage(
+              model = creatorUser.photoUrl,
+              contentDescription = "Creator profile picture",
+              modifier =
+                  Modifier.size(48.dp)
+                      .clip(CircleShape)
+                      .testTag(MeetingDetailScreenTestTags.CREATOR_AVATAR),
+              contentScale = ContentScale.Crop)
+        } else {
+          // Fallback icon
+          Surface(
+              shape = CircleShape,
+              color = MaterialTheme.colorScheme.primaryContainer,
+              modifier = Modifier.size(48.dp).testTag(MeetingDetailScreenTestTags.CREATOR_AVATAR)) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center) {
+                      Icon(
+                          imageVector = Icons.Default.Person,
+                          contentDescription = "Creator",
+                          tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                          modifier = Modifier.size(24.dp))
+                    }
+              }
+        }
+
         Spacer(modifier = Modifier.width(12.dp))
+
+        // Display name and label
         Column(modifier = Modifier.weight(1f)) {
           Text(
-              text = participant.userId,
+              text = creatorUser?.displayName?.takeIf { it.isNotEmpty() } ?: creatorId,
               style = MaterialTheme.typography.bodyMedium,
-              modifier = Modifier.testTag(MeetingDetailScreenTestTags.PARTICIPANT_NAME))
+              modifier = Modifier.testTag(MeetingDetailScreenTestTags.CREATOR_NAME))
           Text(
-              text = participant.role.name,
+              text = "Meeting Creator",
               style = MaterialTheme.typography.labelSmall,
               color = Color.Gray,
-              modifier = Modifier.testTag(MeetingDetailScreenTestTags.PARTICIPANT_ROLE))
+              modifier = Modifier.testTag(MeetingDetailScreenTestTags.CREATOR_LABEL))
         }
       }
 }
@@ -1106,14 +1137,18 @@ fun AttachmentItem(
  * Action buttons section (join, record, transcript, delete, edit).
  *
  * @param meeting The meeting for which to display action buttons.
+ * @param viewModel The view model for handling start meeting action.
  * @param actionsConfig Configuration for action button callbacks.
  * @param isConnected Whether the device is connected to the internet.
+ * @param isCreator Whether the current user is the creator of the meeting.
  */
 @Composable
 private fun ActionButtonsSection(
     meeting: Meeting,
+    viewModel: MeetingDetailViewModel,
     actionsConfig: ActionButtonsConfig,
     isConnected: Boolean = true,
+    isCreator: Boolean = false,
 ) {
   Column(
       modifier =
@@ -1126,103 +1161,275 @@ private fun ActionButtonsSection(
 
         // Status-specific action buttons
         when (meeting.status) {
-          MeetingStatus.SCHEDULED,
-          MeetingStatus.IN_PROGRESS -> {
-            if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
-              Button(
-                  onClick = { actionsConfig.onJoinMeeting(meeting.link, isConnected) },
-                  enabled = isConnected,
-                  modifier =
-                      Modifier.fillMaxWidth()
-                          .testTag(MeetingDetailScreenTestTags.JOIN_MEETING_BUTTON)
-                          .alpha(getAlpha(isConnected))) {
-                    Icon(imageVector = Icons.Default.VideoCall, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Join Meeting")
-                  }
-            }
-            if (meeting.format == MeetingFormat.IN_PERSON && meeting.location != null) {
-              Button(
-                  onClick = { actionsConfig.onNavigateToMeeting(isConnected) },
-                  enabled = isConnected,
-                  modifier = Modifier.fillMaxWidth().alpha(getAlpha(isConnected))) {
-                    Icon(
-                        imageVector = Icons.Default.Place,
-                        contentDescription = stringResource(R.string.location_icon))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("View Location")
-                  }
-            }
-            OutlinedButton(
-                onClick = {
-                  actionsConfig.onRecordMeeting(meeting.projectId, meeting.meetingID, isConnected)
-                },
-                enabled = isConnected,
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .testTag(MeetingDetailScreenTestTags.RECORD_BUTTON)
-                        .alpha(getAlpha(isConnected))) {
-                  Text("Start Recording")
-                }
-          }
-          MeetingStatus.COMPLETED -> {
-            Button(
-                onClick = {
-                  actionsConfig.onViewTranscript(meeting.projectId, meeting.meetingID, isConnected)
-                },
-                enabled = isConnected,
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .testTag(MeetingDetailScreenTestTags.VIEW_TRANSCRIPT_BUTTON)
-                        .alpha(getAlpha(isConnected))) {
-                  Icon(imageVector = Icons.Default.Description, contentDescription = null)
-                  Spacer(modifier = Modifier.width(8.dp))
-                  Text("View Transcript")
-                }
-          }
-          MeetingStatus.OPEN_TO_VOTES -> {
-
-            Button(
-                onClick = { actionsConfig.onVoteForMeetingProposals(isConnected) },
-                enabled = isConnected,
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .testTag(MeetingDetailScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON)
-                        .alpha(getAlpha(isConnected))) {
-                  Icon(
-                      imageVector = Icons.Default.HowToVote,
-                      contentDescription = "Vote for meeting proposal")
-                  Spacer(modifier = Modifier.width(8.dp))
-                  Text("Vote for meeting proposals")
-                }
-          }
+          MeetingStatus.SCHEDULED ->
+              ScheduledButtons(meeting, viewModel, actionsConfig, isConnected, isCreator)
+          MeetingStatus.IN_PROGRESS ->
+              InProgressButtons(meeting, viewModel, actionsConfig, isConnected, isCreator)
+          MeetingStatus.COMPLETED -> CompletedButtons(meeting, actionsConfig, isConnected)
+          MeetingStatus.OPEN_TO_VOTES -> OpenToVotesButtons(actionsConfig, isConnected)
         }
 
-        // Edit button
-        OutlinedButton(
-            onClick = { actionsConfig.onEditMeeting(isConnected) },
-            enabled = isConnected,
-            modifier =
-                Modifier.fillMaxWidth()
-                    .testTag(MeetingDetailScreenTestTags.EDIT_BUTTON)
-                    .alpha(getAlpha(isConnected))) {
-              Text("Edit Meeting")
-            }
+        CommonButtons(actionsConfig, isConnected)
+      }
+}
 
-        OutlinedButton(
-            onClick = { actionsConfig.onDeleteMeeting() },
-            enabled = isConnected,
-            modifier =
-                Modifier.fillMaxWidth()
-                    .testTag(MeetingDetailScreenTestTags.DELETE_BUTTON)
-                    .alpha(getAlpha(isConnected)),
-            colors =
-                ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error)) {
-              Icon(imageVector = Icons.Default.Delete, contentDescription = null)
-              Spacer(modifier = Modifier.width(8.dp))
-              Text("Delete Meeting")
-            }
+/** Common join meeting button for virtual meetings. */
+@Composable
+private fun JoinMeetingButton(
+    meeting: Meeting,
+    actionsConfig: ActionButtonsConfig,
+    isConnected: Boolean
+) {
+  if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
+    Button(
+        onClick = { actionsConfig.onJoinMeeting(meeting.link, isConnected) },
+        enabled = isConnected,
+        modifier =
+            Modifier.fillMaxWidth()
+                .testTag(MeetingDetailScreenTestTags.JOIN_MEETING_BUTTON)
+                .alpha(getAlpha(isConnected))) {
+          Icon(imageVector = Icons.Default.VideoCall, contentDescription = null)
+          Spacer(modifier = Modifier.width(8.dp))
+          Text("Join Meeting")
+        }
+  }
+}
+
+/** Common navigate to location button for in-person meetings. */
+@Composable
+private fun NavigateToLocationButton(
+    meeting: Meeting,
+    actionsConfig: ActionButtonsConfig,
+    isConnected: Boolean
+) {
+  if (meeting.format == MeetingFormat.IN_PERSON && meeting.location != null) {
+    Button(
+        onClick = { actionsConfig.onNavigateToMeeting(isConnected) },
+        enabled = isConnected,
+        modifier = Modifier.fillMaxWidth().alpha(getAlpha(isConnected))) {
+          Icon(
+              imageVector = Icons.Default.Place,
+              contentDescription = stringResource(R.string.location_icon))
+          Spacer(modifier = Modifier.width(8.dp))
+          Text("View Location")
+        }
+  }
+}
+
+/** Common record button. */
+@Composable
+private fun RecordButton(
+    meeting: Meeting,
+    actionsConfig: ActionButtonsConfig,
+    isConnected: Boolean
+) {
+  OutlinedButton(
+      onClick = {
+        actionsConfig.onRecordMeeting(meeting.projectId, meeting.meetingID, isConnected)
+      },
+      enabled = isConnected,
+      modifier =
+          Modifier.fillMaxWidth()
+              .testTag(MeetingDetailScreenTestTags.RECORD_BUTTON)
+              .alpha(getAlpha(isConnected))) {
+        Text("Start Recording")
+      }
+}
+
+/** Buttons for scheduled meetings. */
+@Composable
+private fun ScheduledButtons(
+    meeting: Meeting,
+    viewModel: MeetingDetailViewModel,
+    actionsConfig: ActionButtonsConfig,
+    isConnected: Boolean,
+    isCreator: Boolean
+) {
+  // Add Start Meeting button if user is creator
+  if (isCreator) {
+    MeetingActionReminder(
+        shouldShow = viewModel.shouldMeetingBeStarted(meeting),
+        message = "The scheduled start time has passed. Consider starting the meeting.",
+        testTag = MeetingDetailScreenTestTags.START_MEETING_REMINDER)
+
+    MeetingActionButton(
+        onClick = { viewModel.startMeeting(meeting, isConnected) },
+        text = "Start Meeting",
+        isConnected = isConnected,
+        testTag = MeetingDetailScreenTestTags.START_MEETING_BUTTON)
+
+    Spacer(modifier = Modifier.height(8.dp))
+  }
+
+  // Join or Navigate buttons
+  JoinMeetingButton(meeting, actionsConfig, isConnected)
+  NavigateToLocationButton(meeting, actionsConfig, isConnected)
+
+  // Record button
+  RecordButton(meeting, actionsConfig, isConnected)
+}
+
+/** Buttons for in-progress meetings. */
+@Composable
+private fun InProgressButtons(
+    meeting: Meeting,
+    viewModel: MeetingDetailViewModel,
+    actionsConfig: ActionButtonsConfig,
+    isConnected: Boolean,
+    isCreator: Boolean
+) {
+  // Add End Meeting button if user is creator
+  if (isCreator) {
+    MeetingActionReminder(
+        shouldShow = viewModel.shouldMeetingBeEnded(meeting),
+        message = "The scheduled end time has passed. Consider ending the meeting.",
+        testTag = MeetingDetailScreenTestTags.END_MEETING_REMINDER)
+
+    MeetingActionButton(
+        onClick = { viewModel.endMeeting(meeting, isConnected) },
+        text = "End Meeting",
+        isConnected = isConnected,
+        isError = true,
+        testTag = MeetingDetailScreenTestTags.END_MEETING_BUTTON)
+
+    Spacer(modifier = Modifier.height(8.dp))
+  }
+
+  // Join or Navigate buttons
+  JoinMeetingButton(meeting, actionsConfig, isConnected)
+  NavigateToLocationButton(meeting, actionsConfig, isConnected)
+
+  // Record button
+  RecordButton(meeting, actionsConfig, isConnected)
+}
+
+/** Buttons for completed meetings. */
+@Composable
+private fun CompletedButtons(
+    meeting: Meeting,
+    actionsConfig: ActionButtonsConfig,
+    isConnected: Boolean
+) {
+  Button(
+      onClick = {
+        actionsConfig.onViewTranscript(meeting.projectId, meeting.meetingID, isConnected)
+      },
+      enabled = isConnected,
+      modifier =
+          Modifier.fillMaxWidth()
+              .testTag(MeetingDetailScreenTestTags.VIEW_TRANSCRIPT_BUTTON)
+              .alpha(getAlpha(isConnected))) {
+        Icon(imageVector = Icons.Default.Description, contentDescription = null)
+        Spacer(modifier = Modifier.width(8.dp))
+        Text("View Transcript")
+      }
+}
+
+/** Buttons for meetings open to votes. */
+@Composable
+private fun OpenToVotesButtons(actionsConfig: ActionButtonsConfig, isConnected: Boolean) {
+  Button(
+      onClick = { actionsConfig.onVoteForMeetingProposals(isConnected) },
+      enabled = isConnected,
+      modifier =
+          Modifier.fillMaxWidth()
+              .testTag(MeetingDetailScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON)
+              .alpha(getAlpha(isConnected))) {
+        Icon(
+            imageVector = Icons.Default.HowToVote, contentDescription = "Vote for meeting proposal")
+        Spacer(modifier = Modifier.width(8.dp))
+        Text("Vote for meeting proposals")
+      }
+}
+
+/** Common buttons for all meeting statuses (Edit and Delete). */
+@Composable
+private fun CommonButtons(actionsConfig: ActionButtonsConfig, isConnected: Boolean) {
+  // Edit button
+  OutlinedButton(
+      onClick = { actionsConfig.onEditMeeting(isConnected) },
+      enabled = isConnected,
+      modifier =
+          Modifier.fillMaxWidth()
+              .testTag(MeetingDetailScreenTestTags.EDIT_BUTTON)
+              .alpha(getAlpha(isConnected))) {
+        Text("Edit Meeting")
+      }
+
+  OutlinedButton(
+      onClick = { actionsConfig.onDeleteMeeting() },
+      enabled = isConnected,
+      modifier =
+          Modifier.fillMaxWidth()
+              .testTag(MeetingDetailScreenTestTags.DELETE_BUTTON)
+              .alpha(getAlpha(isConnected)),
+      colors =
+          ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
+        Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+        Spacer(modifier = Modifier.width(8.dp))
+        Text("Delete Meeting")
+      }
+}
+
+/**
+ * Reusable reminder card for meeting actions.
+ *
+ * @param shouldShow Whether to show the reminder.
+ * @param message The message to display in the reminder.
+ * @param testTag The test tag for UI testing.
+ */
+@Composable
+private fun MeetingActionReminder(shouldShow: Boolean, message: String, testTag: String) {
+  if (shouldShow) {
+    Card(
+        modifier = Modifier.fillMaxWidth().testTag(testTag),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+        shape = RoundedCornerShape(8.dp)) {
+          Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = "Warning",
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(20.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onErrorContainer)
+          }
+        }
+    Spacer(modifier = Modifier.height(8.dp))
+  }
+}
+
+/**
+ * Reusable action button for meeting actions.
+ *
+ * @param onClick Callback invoked when button is clicked.
+ * @param text The text to display on the button.
+ * @param isConnected Whether the device is connected to the internet.
+ * @param isError Whether the button should use error styling (red color).
+ * @param testTag The test tag for UI testing.
+ */
+@Composable
+private fun MeetingActionButton(
+    onClick: () -> Unit,
+    text: String,
+    isConnected: Boolean,
+    isError: Boolean = false,
+    testTag: String
+) {
+  Button(
+      onClick = onClick,
+      enabled = isConnected,
+      modifier = Modifier.fillMaxWidth().testTag(testTag).alpha(getAlpha(isConnected)),
+      colors =
+          if (isError) {
+            ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+          } else {
+            ButtonDefaults.buttonColors()
+          }) {
+        Text(text)
       }
 }
 

@@ -1,4 +1,4 @@
-/* Portions of this code were generated with the help of Grok and Gemini. */
+/* Portions of this code were generated with the help of Grok, Gemini and Claude 4.5 Sonnet. */
 package ch.eureka.eurekapp.ui.meeting
 
 import android.net.Uri
@@ -13,12 +13,15 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.Participant
 import ch.eureka.eurekapp.model.data.project.Project
+import ch.eureka.eurekapp.model.data.user.User
+import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import ch.eureka.eurekapp.utils.MockConnectivityObserver
@@ -26,6 +29,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.storage.StorageMetadata
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -38,6 +42,11 @@ class MeetingDetailScreenOfflineTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
+  @get:Rule
+  val permissionRule: GrantPermissionRule =
+      GrantPermissionRule.grant(
+          android.Manifest.permission.READ_CALENDAR, android.Manifest.permission.WRITE_CALENDAR)
+
   private lateinit var mockConnectivityObserver: MockConnectivityObserver
   private lateinit var viewModel: MeetingDetailViewModel
   private lateinit var attachmentsViewModel: MeetingAttachmentsViewModel
@@ -47,6 +56,7 @@ class MeetingDetailScreenOfflineTest {
 
   private val meetingFlow = MutableStateFlow<Meeting?>(null)
   private val participantsFlow = MutableStateFlow<List<Participant>>(emptyList())
+  private val userFlow = MutableStateFlow<User?>(null)
   private val projectFlow = MutableStateFlow<Project?>(Project(name = "Offline Test Project"))
 
   private class FileStorageRepositoryMock : FileStorageRepository {
@@ -84,6 +94,29 @@ class MeetingDetailScreenOfflineTest {
         }
       }
 
+  private val userRepositoryMock =
+      object : UserRepository {
+        override fun getUserById(userId: String): Flow<User?> {
+          return userFlow
+        }
+
+        override fun getCurrentUser(): Flow<User?> {
+          return flow { emit(null) }
+        }
+
+        override suspend fun saveUser(user: User): Result<Unit> {
+          return Result.success(Unit)
+        }
+
+        override suspend fun updateLastActive(userId: String): Result<Unit> {
+          return Result.success(Unit)
+        }
+
+        override suspend fun updateFcmToken(userId: String, fcmToken: String): Result<Unit> {
+          return Result.success(Unit)
+        }
+      }
+
   @Before
   fun setUp() {
     mockConnectivityObserver =
@@ -102,8 +135,8 @@ class MeetingDetailScreenOfflineTest {
             meetingId = testMeetingId,
             repository = repositoryMock,
             projectRepository = projectRepositoryMock,
+            userRepository = userRepositoryMock,
             connectivityObserver = mockConnectivityObserver)
-
     attachmentsViewModel =
         MeetingAttachmentsViewModel(
             fileStorageRepository = FileStorageRepositoryMock(),
@@ -136,7 +169,7 @@ class MeetingDetailScreenOfflineTest {
             createdBy = "user1")
 
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -182,7 +215,7 @@ class MeetingDetailScreenOfflineTest {
             createdBy = "user1")
 
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -222,7 +255,7 @@ class MeetingDetailScreenOfflineTest {
             createdBy = "user1")
 
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -242,6 +275,12 @@ class MeetingDetailScreenOfflineTest {
           .fetchSemanticsNodes()
           .isEmpty()
     }
+
+    // Note: Edit button is part of the action buttons section, which might have different behavior
+    // based on creator status or other logic. Here we just ensure the screen loaded.
+    // If we wanted to test the button enabled state:
+    // composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).assertIsNotEnabled()
+    // But this test body was empty in the input, so I'll leave it as is, just ensuring load.
   }
 
   @Test
@@ -259,7 +298,7 @@ class MeetingDetailScreenOfflineTest {
             createdBy = "user1")
 
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -303,7 +342,7 @@ class MeetingDetailScreenOfflineTest {
             createdBy = "user1")
 
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -346,7 +385,7 @@ class MeetingDetailScreenOfflineTest {
             createdBy = "user1")
 
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -390,7 +429,7 @@ class MeetingDetailScreenOfflineTest {
             transcriptId = "testTranscriptId")
 
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -433,7 +472,7 @@ class MeetingDetailScreenOfflineTest {
             createdBy = "user1")
 
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     mockConnectivityObserver.setConnected(true)
 
     composeTestRule.setContent {
@@ -485,7 +524,7 @@ class MeetingDetailScreenOfflineTest {
             createdBy = "user1")
 
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {

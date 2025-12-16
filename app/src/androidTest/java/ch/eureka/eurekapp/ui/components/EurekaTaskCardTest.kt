@@ -34,7 +34,7 @@ class EurekaTaskCardTest {
 
     // Initially should show checkbox
     composeTestRule.onNodeWithTag("checkbox").assertIsDisplayed()
-    composeTestRule.onNodeWithText("✓").assertIsNotDisplayed()
+    composeTestRule.onNodeWithText("Done").assertIsNotDisplayed()
 
     // Click checkbox
     composeTestRule.onNodeWithTag("checkbox").performClick()
@@ -58,8 +58,8 @@ class EurekaTaskCardTest {
 
     // All content should be visible
     composeTestRule.onNodeWithText("Test Task").assertIsDisplayed()
-    composeTestRule.onNodeWithText("⏰ Today").assertIsDisplayed()
-    composeTestRule.onNodeWithText("👤 John Doe").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Today").assertIsDisplayed()
+    composeTestRule.onNodeWithText("John Doe").assertIsDisplayed()
     composeTestRule.onNodeWithText("75%").assertIsDisplayed()
   }
 
@@ -71,8 +71,8 @@ class EurekaTaskCardTest {
     composeTestRule.onNodeWithText("Minimal Task").assertIsDisplayed()
 
     // Optional content should not be visible
-    composeTestRule.onNodeWithText("⏰ Today").assertIsNotDisplayed()
-    composeTestRule.onNodeWithText("👤 John Doe").assertIsNotDisplayed()
+    composeTestRule.onNodeWithText("Today").assertIsNotDisplayed()
+    composeTestRule.onNodeWithText("John Doe").assertIsNotDisplayed()
     composeTestRule.onNodeWithText("75%").assertIsNotDisplayed()
   }
 
@@ -88,8 +88,8 @@ class EurekaTaskCardTest {
       }
     }
 
-    // Should show checkmark for completed task (not checkbox)
-    composeTestRule.onNodeWithText("✓").assertIsDisplayed()
+    // Should show "Done" tag for completed task (not checkbox)
+    composeTestRule.onNodeWithText("Done").assertIsDisplayed()
 
     // Should not show checkbox when task is already completed
     composeTestRule.onNodeWithTag("checkbox").assertIsNotDisplayed()
