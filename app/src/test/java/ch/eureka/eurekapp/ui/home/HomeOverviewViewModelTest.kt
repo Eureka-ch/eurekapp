@@ -151,6 +151,132 @@ class HomeOverviewViewModelTest {
     assertEquals("Project error", viewModel.uiState.value.error)
   }
 
+  @Test
+  fun upcomingTasksWithAssignees_loadsAssigneeNames() = runTest {
+    val now = System.currentTimeMillis()
+    val projectA = Project(projectId = "proj-a", name = "Project A", lastUpdated = timestamp(now))
+
+    val user1 =
+        User(uid = "user-1", displayName = "Alice", email = "alice@example.com", photoUrl = "")
+    val user2 = User(uid = "user-2", displayName = "Bob", email = "bob@example.com", photoUrl = "")
+
+    val tasks =
+        listOf(
+            Task(
+                taskID = "task-1",
+                projectId = projectA.projectId,
+                title = "Task 1",
+                status = TaskStatus.TODO,
+                assignedUserIds = listOf("user-1"),
+                dueDate = timestamp(now + DAY)),
+            Task(
+                taskID = "task-2",
+                projectId = projectA.projectId,
+                title = "Task 2",
+                status = TaskStatus.TODO,
+                assignedUserIds = listOf("user-1", "user-2"),
+                dueDate = timestamp(now + 2 * DAY)))
+
+    taskRepository.setCurrentUserTasks(flowOf(tasks))
+    userRepository.setCurrentUser(flowOf(User(uid = "user-1", displayName = "Current User")))
+    userRepository.setUser("user-1", flowOf(user1))
+    userRepository.setUser("user-2", flowOf(user2))
+    projectRepository.setCurrentUserProjects(flowOf(listOf(projectA)))
+
+    val viewModel =
+        HomeOverviewViewModel(
+            taskRepository = taskRepository,
+            projectRepository = projectRepository,
+            meetingRepository = meetingRepository,
+            userRepository = userRepository,
+            connectivityFlow = connectivityFlow)
+
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.value
+    assertEquals(2, state.upcomingTasksWithAssignees.size)
+    assertEquals(listOf("Alice"), state.upcomingTasksWithAssignees[0].assigneeNames)
+    assertEquals(listOf("Alice", "Bob"), state.upcomingTasksWithAssignees[1].assigneeNames)
+  }
+
+  @Test
+  fun upcomingTasksWithAssignees_handlesTasksWithNoAssigneeNames() = runTest {
+    val now = System.currentTimeMillis()
+    val projectA = Project(projectId = "proj-a", name = "Project A", lastUpdated = timestamp(now))
+
+    // Task assigned to user-1 but user doesn't exist in repository
+    val task =
+        Task(
+            taskID = "task-1",
+            projectId = projectA.projectId,
+            title = "Task with missing user",
+            status = TaskStatus.TODO,
+            assignedUserIds = listOf("user-missing"),
+            dueDate = timestamp(now + DAY))
+
+    taskRepository.setCurrentUserTasks(flowOf(listOf(task)))
+    userRepository.setCurrentUser(flowOf(User(uid = "user-1", displayName = "Current User")))
+    // Don't set user-missing in repository, so it will return null
+    projectRepository.setCurrentUserProjects(flowOf(listOf(projectA)))
+
+    val viewModel =
+        HomeOverviewViewModel(
+            taskRepository = taskRepository,
+            projectRepository = projectRepository,
+            meetingRepository = meetingRepository,
+            userRepository = userRepository,
+            connectivityFlow = connectivityFlow)
+
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.value
+    // Task should appear but with empty assignee names since user doesn't exist
+    assertEquals(
+        0, state.upcomingTasksWithAssignees.size) // Task is assigned to user-missing, not user-1
+  }
+
+  @Test
+  fun upcomingMeetings_filtersFutureMeetingsOnly() = runTest {
+    val now = System.currentTimeMillis()
+    val projectA = Project(projectId = "proj-a", name = "Project A", lastUpdated = timestamp(now))
+
+    val pastMeeting =
+        Meeting(
+            meetingID = "meeting-past",
+            projectId = projectA.projectId,
+            title = "Past Meeting",
+            status = MeetingStatus.SCHEDULED,
+            datetime = timestamp(now - DAY))
+
+    val futureMeeting =
+        Meeting(
+            meetingID = "meeting-future",
+            projectId = projectA.projectId,
+            title = "Future Meeting",
+            status = MeetingStatus.SCHEDULED,
+            datetime = timestamp(now + DAY))
+
+    meetingRepository.setMeetingsForProject(
+        projectA.projectId, flowOf(listOf(pastMeeting, futureMeeting)))
+    projectRepository.setCurrentUserProjects(flowOf(listOf(projectA)))
+    userRepository.setCurrentUser(flowOf(User(uid = "user-1", displayName = "Current User")))
+    taskRepository.setCurrentUserTasks(flowOf(emptyList()))
+
+    val viewModel =
+        HomeOverviewViewModel(
+            taskRepository = taskRepository,
+            projectRepository = projectRepository,
+            meetingRepository = meetingRepository,
+            userRepository = userRepository,
+            connectivityFlow = connectivityFlow)
+
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.value
+    assertEquals(1, state.upcomingMeetings.size)
+    assertEquals("Future Meeting", state.upcomingMeetings[0].title)
+  }
+
   private fun timestamp(timeMillis: Long) = Timestamp(java.util.Date(timeMillis))
 
   companion object {

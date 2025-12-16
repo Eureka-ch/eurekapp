@@ -194,27 +194,36 @@ internal fun HomeOverviewLayout(
               actionTestTag = HomeOverviewTestTags.CTA_TASKS,
               onActionClick = actions.onOpenTasks)
         }
-        if (uiState.upcomingTasks.isEmpty()) {
+        if (uiState.upcomingTasksWithAssignees.isEmpty()) {
           item { EmptyState(text = "No tasks assigned yet. Create one to get started.") }
         } else {
-          items(items = uiState.upcomingTasks.take(HOME_ITEMS_LIMIT), key = { it.taskID }) { task ->
-            AnimatedVisibility(
-                visible = true,
-                enter =
-                    fadeIn(animationSpec = tween(400, delayMillis = 100)) +
-                        slideInVertically(
-                            initialOffsetY = { 30 },
-                            animationSpec = tween(400, delayMillis = 100))) {
-                  Box(
-                      modifier =
-                          Modifier.fillMaxWidth()
-                              .testTag(HomeOverviewTestTags.getTaskItemTestTag(task.taskID))) {
-                        TaskPreviewCard(
-                            task = task,
-                            onTaskClick = { actions.onTaskSelected(task.projectId, task.taskID) })
-                      }
-                }
-          }
+          items(
+              items = uiState.upcomingTasksWithAssignees.take(HOME_ITEMS_LIMIT),
+              key = { it.task.taskID }) { taskWithAssignees ->
+                AnimatedVisibility(
+                    visible = true,
+                    enter =
+                        fadeIn(animationSpec = tween(400, delayMillis = 100)) +
+                            slideInVertically(
+                                initialOffsetY = { 30 },
+                                animationSpec = tween(400, delayMillis = 100))) {
+                      Box(
+                          modifier =
+                              Modifier.fillMaxWidth()
+                                  .testTag(
+                                      HomeOverviewTestTags.getTaskItemTestTag(
+                                          taskWithAssignees.task.taskID))) {
+                            TaskPreviewCard(
+                                task = taskWithAssignees.task,
+                                assigneeNames = taskWithAssignees.assigneeNames,
+                                onTaskClick = {
+                                  actions.onTaskSelected(
+                                      taskWithAssignees.task.projectId,
+                                      taskWithAssignees.task.taskID)
+                                })
+                          }
+                    }
+              }
         }
 
         item {
@@ -400,7 +409,7 @@ private fun EmptyState(text: String) {
 }
 
 @Composable
-private fun TaskPreviewCard(task: Task, onTaskClick: () -> Unit) {
+private fun TaskPreviewCard(task: Task, assigneeNames: List<String>, onTaskClick: () -> Unit) {
   val now = Timestamp.now()
   val daysUntilDue = getDaysUntilDue(task, now)
   val dueDate = daysUntilDue?.let { formatDueDate(it) } ?: "No due date"
@@ -419,11 +428,18 @@ private fun TaskPreviewCard(task: Task, onTaskClick: () -> Unit) {
         else -> "0%"
       }
 
+  val assigneeText =
+      when {
+        assigneeNames.isEmpty() -> "Unassigned"
+        assigneeNames.size == 1 -> assigneeNames.first()
+        else -> "${assigneeNames.size} assignees"
+      }
+
   EurekaTaskCard(
       title = task.title.ifEmpty { "Untitled task" },
       dueDate = dueDate,
       dueDateTag = dueDateTag,
-      assignee = if (task.assignedUserIds.isNotEmpty()) "Multiple assignees" else "Unassigned",
+      assignee = assigneeText,
       priority = priority,
       progressText = progressText,
       progressValue = progressValue,
