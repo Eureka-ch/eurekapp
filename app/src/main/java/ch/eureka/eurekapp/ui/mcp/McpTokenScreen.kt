@@ -78,7 +78,6 @@ fun McpTokenScreen(viewModel: McpTokenViewModel, onNavigateBack: () -> Unit) {
   val uiState by viewModel.uiState.collectAsState()
   var showCreateDialog by remember { mutableStateOf(false) }
   var tokenName by remember { mutableStateOf("") }
-  val context = LocalContext.current
 
   Scaffold(
       topBar = {
