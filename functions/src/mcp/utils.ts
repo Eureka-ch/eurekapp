@@ -1,6 +1,22 @@
 // Co-authored by Claude Code
 import * as admin from 'firebase-admin';
 
+/** Error thrown when a requested resource is not found */
+export class NotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'NotFoundError';
+  }
+}
+
+/** Error thrown when user lacks permission to access a resource */
+export class ForbiddenError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ForbiddenError';
+  }
+}
+
 export function serializeDoc(doc: admin.firestore.DocumentSnapshot): object {
   if (!doc.exists) return {};
   const data = doc.data()!;
