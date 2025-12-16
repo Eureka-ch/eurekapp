@@ -681,7 +681,34 @@ fun NavigationMenu(
                     })
               }
             }
+<<<<<<< HEAD
       }
+=======
+
+            composable<Route.ConversationsSection.ConversationDetail> { backStackEntry ->
+              val route = backStackEntry.toRoute<Route.ConversationsSection.ConversationDetail>()
+              ConversationDetailScreen(
+                  conversationId = route.conversationId,
+                  onNavigateBack = { navigationController.popBackStack() })
+            }
+
+            composable<Route.ConversationsSection.CreateConversation> {
+              CreateConversationScreen(
+                  onNavigateToConversation = { conversationId ->
+                    navigationController.navigate(
+                        Route.ConversationsSection.ConversationDetail(conversationId))
+                  })
+            }
+          }
+    }
+    // Nav bar en overlay flottante (masquée sur certaines pages)
+    if (!hideBottomBar) {
+      Box(
+          modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter).zIndex(1f),
+          contentAlignment = Alignment.BottomCenter) {
+            BottomBarNavigationComponent(navigationController = navigationController)
+          }
+    }
 }
 
 /**
