@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -246,27 +247,29 @@ fun NavigationMenu(
   UserHeartbeatEffect(userRepository, currentUser)
   val navBackStackEntry by navigationController.currentBackStackEntryAsState()
   val currentDestination = navBackStackEntry?.destination
-  val hideBottomBar by derivedStateOf {
-    currentDestination?.hierarchy?.any { destination ->
-      // Notes / self
-      destination.hasRoute(Route.SelfNotes::class) ||
-          // Conversations detail / create
-          destination.hasRoute(Route.ConversationsSection.ConversationDetail::class) ||
-          destination.hasRoute(Route.ConversationsSection.CreateConversation::class) ||
-          // Tasks detail / create / edit / auto-assign
-          destination.hasRoute(Route.TasksSection.CreateTask::class) ||
-          destination.hasRoute(Route.TasksSection.EditTask::class) ||
-          destination.hasRoute(Route.TasksSection.ViewTask::class) ||
-          destination.hasRoute(Route.TasksSection.AutoTaskAssignment::class) ||
-          // Project creation
-          destination.hasRoute(Route.ProjectSelectionSection.CreateProject::class) ||
-          // Meeting create / vote / proposals / navigation (directions)
-          destination.hasRoute(Route.MeetingsSection.CreateMeeting::class) ||
-          destination.hasRoute(Route.MeetingsSection.MeetingProposalVotes::class) ||
-          destination.hasRoute(
-              Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting::class) ||
-          destination.hasRoute(Route.MeetingsSection.MeetingNavigation::class)
-    } == true
+  val hideBottomBar by remember(currentDestination) {
+    derivedStateOf {
+      currentDestination?.hierarchy?.any { destination ->
+        // Notes / self
+        destination.hasRoute(Route.SelfNotes::class) ||
+            // Conversations detail / create
+            destination.hasRoute(Route.ConversationsSection.ConversationDetail::class) ||
+            destination.hasRoute(Route.ConversationsSection.CreateConversation::class) ||
+            // Tasks detail / create / edit / auto-assign
+            destination.hasRoute(Route.TasksSection.CreateTask::class) ||
+            destination.hasRoute(Route.TasksSection.EditTask::class) ||
+            destination.hasRoute(Route.TasksSection.ViewTask::class) ||
+            destination.hasRoute(Route.TasksSection.AutoTaskAssignment::class) ||
+            // Project creation
+            destination.hasRoute(Route.ProjectSelectionSection.CreateProject::class) ||
+            // Meeting create / vote / proposals / navigation (directions)
+            destination.hasRoute(Route.MeetingsSection.CreateMeeting::class) ||
+            destination.hasRoute(Route.MeetingsSection.MeetingProposalVotes::class) ||
+            destination.hasRoute(
+                Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting::class) ||
+            destination.hasRoute(Route.MeetingsSection.MeetingNavigation::class)
+      } == true
+    }
   }
 
   Scaffold(containerColor = Color.White) { innerPadding ->
