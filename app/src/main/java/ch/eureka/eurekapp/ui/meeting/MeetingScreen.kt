@@ -701,10 +701,11 @@ fun MeetingCard(
                             onClick = {
                               // Open link in web browser, not native app
                               meeting.link?.let { link ->
-                                val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(link)).apply {
-                                  addCategory(Intent.CATEGORY_BROWSABLE)
-                                  flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                }
+                                val browserIntent =
+                                    Intent(Intent.ACTION_VIEW, Uri.parse(link)).apply {
+                                      addCategory(Intent.CATEGORY_BROWSABLE)
+                                      flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                    }
                                 context.startActivity(browserIntent)
                               }
                             },

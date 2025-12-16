@@ -626,11 +626,12 @@ private fun MeetingLinkInfo(meeting: Meeting) {
   if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
     val context = LocalContext.current
     val platform = MeetingLinkValidator.detectPlatform(meeting.link)
-    val displayText = if (platform != MeetingPlatform.UNKNOWN) {
-      "${platform.displayName} - ${meeting.link}"
-    } else {
-      meeting.link
-    }
+    val displayText =
+        if (platform != MeetingPlatform.UNKNOWN) {
+          "${platform.displayName} - ${meeting.link}"
+        } else {
+          meeting.link
+        }
 
     InfoRow(
         icon = Icons.Default.VideoCall,
@@ -640,10 +641,11 @@ private fun MeetingLinkInfo(meeting: Meeting) {
         isClickable = true,
         onClick = {
           // Open link in web browser, not native app
-          val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(meeting.link)).apply {
-            addCategory(Intent.CATEGORY_BROWSABLE)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-          }
+          val browserIntent =
+              Intent(Intent.ACTION_VIEW, Uri.parse(meeting.link)).apply {
+                addCategory(Intent.CATEGORY_BROWSABLE)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+              }
           context.startActivity(browserIntent)
         })
   }
@@ -652,9 +654,9 @@ private fun MeetingLinkInfo(meeting: Meeting) {
 /**
  * Holds all editable meeting information fields and their interaction callbacks.
  *
- * This configuration object groups the editable title, date/time, duration, and link fields along with
- * their respective change and touch event handlers. It helps reduce the number of parameters passed
- * to [EditableMeetingInfoCard].
+ * This configuration object groups the editable title, date/time, duration, and link fields along
+ * with their respective change and touch event handlers. It helps reduce the number of parameters
+ * passed to [EditableMeetingInfoCard].
  *
  * @property editTitle The current editable title of the meeting.
  * @property editDateTime The currently selected editable meeting date and time.
@@ -878,11 +880,14 @@ private fun EditableLinkField(config: EditableMeetingInfoCardConfig) {
       placeholder = { Text("https://zoom.us/j/...") },
       leadingIcon = {
         Icon(
-            imageVector = when (platform) {
-              MeetingPlatform.ZOOM, MeetingPlatform.GOOGLE_MEET,
-              MeetingPlatform.MICROSOFT_TEAMS, MeetingPlatform.WEBEX -> Icons.Default.VideoCall
-              MeetingPlatform.UNKNOWN -> Icons.Default.Link
-            },
+            imageVector =
+                when (platform) {
+                  MeetingPlatform.ZOOM,
+                  MeetingPlatform.GOOGLE_MEET,
+                  MeetingPlatform.MICROSOFT_TEAMS,
+                  MeetingPlatform.WEBEX -> Icons.Default.VideoCall
+                  MeetingPlatform.UNKNOWN -> Icons.Default.Link
+                },
             contentDescription = "Meeting link icon")
       },
       isError = config.linkValidationError != null && config.hasTouchedLink,
@@ -943,12 +948,13 @@ fun InfoRow(
   Row(
       verticalAlignment = Alignment.CenterVertically,
       modifier =
-          Modifier.fillMaxWidth().then(
-              if (isClickable && onClick != null) {
-                Modifier.clickable(onClick = onClick)
-              } else {
-                Modifier
-              })) {
+          Modifier.fillMaxWidth()
+              .then(
+                  if (isClickable && onClick != null) {
+                    Modifier.clickable(onClick = onClick)
+                  } else {
+                    Modifier
+                  })) {
         Icon(
             imageVector = icon,
             contentDescription = label,
@@ -1247,11 +1253,13 @@ private fun ActionButtonsSection(
               val context = LocalContext.current
               Button(
                   onClick = {
+                    actionsConfig.onJoinMeeting(meeting.link, isConnected)
                     // Open link in web browser, not native app
-                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(meeting.link)).apply {
-                      addCategory(Intent.CATEGORY_BROWSABLE)
-                      flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    }
+                    val browserIntent =
+                        Intent(Intent.ACTION_VIEW, Uri.parse(meeting.link)).apply {
+                          addCategory(Intent.CATEGORY_BROWSABLE)
+                          flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        }
                     context.startActivity(browserIntent)
                   },
                   enabled = isConnected,

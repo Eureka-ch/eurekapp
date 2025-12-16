@@ -54,7 +54,8 @@ import kotlinx.coroutines.launch
  * @param meetingLink The video meeting link (for VIRTUAL meetings).
  * @param linkValidationError The error message for link validation, null if valid.
  * @param linkValidationWarning The warning message for link validation, null if no warning.
- * @param hasTouchedLink Marker set to true if the user has already clicked on the link field, false otherwise.
+ * @param hasTouchedLink Marker set to true if the user has already clicked on the link field, false
+ *   otherwise.
  * @param detectedPlatform The detected video meeting platform from the link.
  * @param meetingSaved Marker set to true if the meeting waa successfully saved, false otherwise.
  * @param hasTouchedTitle Marker set to true if the user has already clicked on the title field,
@@ -92,7 +93,9 @@ data class CreateMeetingUIState(
             duration >= 5 &&
             LocalDateTime.of(date, time).isAfter(LocalDateTime.now()) &&
             (format == MeetingFormat.IN_PERSON && selectedLocation != null ||
-                format == MeetingFormat.VIRTUAL && meetingLink.isNotBlank() && linkValidationError == null)
+                format == MeetingFormat.VIRTUAL &&
+                    meetingLink.isNotBlank() &&
+                    linkValidationError == null)
 }
 
 /**
@@ -292,7 +295,9 @@ class CreateMeetingViewModel(
             status = MeetingStatus.OPEN_TO_VOTES,
             duration = uiState.value.duration,
             location = uiState.value.selectedLocation,
-            link = if (uiState.value.format == MeetingFormat.VIRTUAL) uiState.value.meetingLink else null,
+            link =
+                if (uiState.value.format == MeetingFormat.VIRTUAL) uiState.value.meetingLink
+                else null,
             meetingProposals =
                 listOf(
                     MeetingProposal(

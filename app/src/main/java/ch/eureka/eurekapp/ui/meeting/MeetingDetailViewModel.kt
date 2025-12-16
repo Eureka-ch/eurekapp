@@ -216,13 +216,15 @@ class MeetingDetailViewModel(
                     EditState(deleteSuccess, errorMsg, isEditMode, editTitle, editDateTime)
                   },
                   combine(_editDuration, _editLink, _linkValidationError, _linkValidationWarning) {
-                        duration,
-                        link,
-                        linkError,
-                        linkWarning ->
-                      Pair(duration to link, linkError to linkWarning)
-                    }
-                      .combine(_updateSuccess) { pair, success -> Triple(pair.first, pair.second, success) }
+                          duration,
+                          link,
+                          linkError,
+                          linkWarning ->
+                        Pair(duration to link, linkError to linkWarning)
+                      }
+                      .combine(_updateSuccess) { pair, success ->
+                        Triple(pair.first, pair.second, success)
+                      }
                       .combine(_isSaving) { triple, saving ->
                         SaveState(
                             triple.first.first,
@@ -446,8 +448,7 @@ class MeetingDetailViewModel(
                 datetime = _editDateTime.value,
                 duration = _editDuration.value,
                 link =
-                    if (currentMeeting.format == MeetingFormat.VIRTUAL) _editLink.value
-                    else null)
+                    if (currentMeeting.format == MeetingFormat.VIRTUAL) _editLink.value else null)
 
         repository
             .updateMeeting(updatedMeeting)
