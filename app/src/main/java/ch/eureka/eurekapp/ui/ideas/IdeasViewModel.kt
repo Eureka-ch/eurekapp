@@ -177,6 +177,11 @@ constructor(
 
   // Chat functionality (sendMessage, updateMessage, addParticipant) will be in separate PR
 
+  open fun backToList() {
+    _selectedIdea.value = null
+    _viewMode.value = IdeasViewMode.LIST
+  }
+
   open fun clearError() {
     _errorMsg.value = null
   }

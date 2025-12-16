@@ -15,12 +15,15 @@ import org.junit.Test
 
 /** Unit tests for FirestoreIdeasRepository. */
 class FirestoreIdeasRepositoryTest {
+  companion object {
+    private const val TEST_USER_ID = "test-user-id"
+    private const val TEST_PROJECT_ID = "test-project-id"
+    private const val TEST_IDEA_ID = "test-idea-id"
+  }
 
   private lateinit var firestore: FirebaseFirestore
   private lateinit var auth: FirebaseAuth
   private lateinit var repository: FirestoreIdeasRepository
-  private val testUserId = "user-123"
-  private val testProjectId = "project-456"
 
   @Before
   fun setup() {
@@ -28,20 +31,20 @@ class FirestoreIdeasRepositoryTest {
     auth = mockk(relaxed = true)
     val mockUser: FirebaseUser = mockk(relaxed = true)
     every { auth.currentUser } returns mockUser
-    every { mockUser.uid } returns testUserId
+    every { mockUser.uid } returns TEST_USER_ID
     repository = FirestoreIdeasRepository(firestore, auth)
   }
 
   @Test
   fun getIdeasForProject_returnsEmptyListWhenUserNotAuthenticated() = runTest {
     every { auth.currentUser } returns null
-    val result = repository.getIdeasForProject(testProjectId).first()
+    val result = repository.getIdeasForProject(TEST_PROJECT_ID).first()
     assertTrue(result.isEmpty())
   }
 
   @Test
   fun getIdeasForProject_returnsIdeasListWhenSnapshotSucceeds() = runTest {
-    val idea = Idea(ideaId = "idea-1", projectId = testProjectId, createdBy = testUserId)
+    val idea = Idea(ideaId = TEST_IDEA_ID, projectId = TEST_PROJECT_ID, createdBy = TEST_USER_ID)
     val collectionRef = mockk<CollectionReference>(relaxed = true)
     val query = mockk<Query>(relaxed = true)
     val snapshot = mockk<QuerySnapshot>(relaxed = true)
@@ -50,27 +53,27 @@ class FirestoreIdeasRepositoryTest {
     val registration = mockk<ListenerRegistration>(relaxed = true)
 
     every { firestore.collection("projects") } returns collectionRef
-    every { collectionRef.document(testProjectId) } returns mockk(relaxed = true)
-    every { collectionRef.document(testProjectId).collection("ideas") } returns collectionRef
-    every { collectionRef.whereArrayContains("participantIds", testUserId) } returns query
+    every { collectionRef.document(TEST_PROJECT_ID) } returns mockk(relaxed = true)
+    every { collectionRef.document(TEST_PROJECT_ID).collection("ideas") } returns collectionRef
+    every { collectionRef.whereArrayContains("participantIds", TEST_USER_ID) } returns query
     every { query.addSnapshotListener(capture(listenerSlot)) } answers
         {
           listenerSlot.captured.onEvent(snapshot, null)
           registration
         }
     every { snapshot.documents } returns listOf(doc)
-    every { doc.id } returns "idea-1"
+    every { doc.id } returns TEST_IDEA_ID
     every { doc.toObject(Idea::class.java) } returns idea.copy(ideaId = "")
 
-    val result = repository.getIdeasForProject(testProjectId).first()
+    val result = repository.getIdeasForProject(TEST_PROJECT_ID).first()
 
     assertEquals(1, result.size)
-    assertEquals("idea-1", result[0].ideaId)
+    assertEquals(TEST_IDEA_ID, result[0].ideaId)
   }
 
   @Test
   fun createIdea_succeedsWithValidData() = runTest {
-    val idea = Idea(ideaId = "idea-1", projectId = testProjectId, createdBy = testUserId)
+    val idea = Idea(ideaId = TEST_IDEA_ID, projectId = TEST_PROJECT_ID, createdBy = TEST_USER_ID)
     val docRef: DocumentReference = mockk(relaxed = true)
     every { firestore.collection(any()).document(any()).collection(any()).document(any()) } returns
         docRef
@@ -79,12 +82,12 @@ class FirestoreIdeasRepositoryTest {
     val result = repository.createIdea(idea)
 
     assertTrue(result.isSuccess)
-    assertEquals("idea-1", result.getOrNull())
+    assertEquals(TEST_IDEA_ID, result.getOrNull())
   }
 
   @Test
   fun createIdea_failsWhenFirestoreFails() = runTest {
-    val idea = Idea(ideaId = "idea-1", projectId = testProjectId, createdBy = testUserId)
+    val idea = Idea(ideaId = TEST_IDEA_ID, projectId = TEST_PROJECT_ID, createdBy = TEST_USER_ID)
     val docRef: DocumentReference = mockk(relaxed = true)
     val exception = FirebaseFirestoreException("Error", FirebaseFirestoreException.Code.UNAVAILABLE)
     every { firestore.collection(any()).document(any()).collection(any()).document(any()) } returns
@@ -109,7 +112,7 @@ class FirestoreIdeasRepositoryTest {
     every { collectionRef.get() } returns Tasks.forResult(snapshot)
     every { snapshot.documents } returns emptyList()
 
-    val result = repository.deleteIdea(testProjectId, "idea-1")
+    val result = repository.deleteIdea(TEST_PROJECT_ID, TEST_IDEA_ID)
 
     assertTrue(result.isSuccess)
   }
@@ -117,9 +120,9 @@ class FirestoreIdeasRepositoryTest {
   @Test
   fun sendMessage_failsWhenUserNotAuthenticated() = runTest {
     every { auth.currentUser } returns null
-    val message = Message(messageID = "msg-1", senderId = testUserId, text = "Hi")
+    val message = Message(messageID = "msg-1", senderId = TEST_USER_ID, text = "Hi")
 
-    val result = repository.sendMessage(testProjectId, "idea-1", message)
+    val result = repository.sendMessage(TEST_PROJECT_ID, TEST_IDEA_ID, message)
 
     assertTrue(result.isFailure)
     assertTrue(result.exceptionOrNull()?.message?.contains("not authenticated") == true)
@@ -127,7 +130,7 @@ class FirestoreIdeasRepositoryTest {
 
   @Test
   fun sendMessage_sendsMessageSuccessfully() = runTest {
-    val message = Message(messageID = "msg-1", senderId = testUserId, text = "Hello")
+    val message = Message(messageID = "msg-1", senderId = TEST_USER_ID, text = "Hello")
     val docRef = mockk<DocumentReference>(relaxed = true)
     val collectionRef = mockk<CollectionReference>(relaxed = true)
 
@@ -137,7 +140,7 @@ class FirestoreIdeasRepositoryTest {
     every { collectionRef.document(any()) } returns docRef
     every { docRef.set(any()) } returns Tasks.forResult(null)
 
-    val result = repository.sendMessage(testProjectId, "idea-1", message)
+    val result = repository.sendMessage(TEST_PROJECT_ID, TEST_IDEA_ID, message)
 
     assertTrue(result.isSuccess)
   }
@@ -149,7 +152,7 @@ class FirestoreIdeasRepositoryTest {
         docRef
     every { docRef.update(any<String>(), any()) } returns Tasks.forResult(null)
 
-    val result = repository.addParticipant(testProjectId, "idea-1", testUserId)
+    val result = repository.addParticipant(TEST_PROJECT_ID, TEST_IDEA_ID, TEST_USER_ID)
 
     assertTrue(result.isSuccess)
   }
@@ -167,9 +170,9 @@ class FirestoreIdeasRepositoryTest {
     val listenerSlot = slot<EventListener<QuerySnapshot>>()
 
     every { firestore.collection("projects") } returns projectCol
-    every { projectCol.document(testProjectId) } returns projectDoc
+    every { projectCol.document(TEST_PROJECT_ID) } returns projectDoc
     every { projectDoc.collection("ideas") } returns ideasCol
-    every { ideasCol.document("idea-1") } returns ideaDoc
+    every { ideasCol.document(TEST_IDEA_ID) } returns ideaDoc
     every { ideaDoc.collection("messages") } returns messagesCol
     every { messagesCol.orderBy("createdAt") } returns query
     every { query.addSnapshotListener(capture(listenerSlot)) } answers
@@ -179,7 +182,7 @@ class FirestoreIdeasRepositoryTest {
         }
     every { snapshot.documents } returns emptyList()
 
-    val result = repository.getMessagesForIdea(testProjectId, "idea-1").first()
+    val result = repository.getMessagesForIdea(TEST_PROJECT_ID, TEST_IDEA_ID).first()
 
     assertTrue(result.isEmpty())
   }

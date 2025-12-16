@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.ui.conversation
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
 import ch.eureka.eurekapp.model.data.conversation.Conversation
 import ch.eureka.eurekapp.model.data.conversation.ConversationRepository
+import ch.eureka.eurekapp.model.data.notes.UnifiedSelfNotesRepository
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.user.User
@@ -38,6 +39,7 @@ class ConversationListViewModelTest {
   private lateinit var mockConversationRepository: ConversationRepository
   private lateinit var mockUserRepository: UserRepository
   private lateinit var mockProjectRepository: ProjectRepository
+  private lateinit var mockSelfNotesRepository: UnifiedSelfNotesRepository
   private lateinit var mockConnectivityObserver: ConnectivityObserver
 
   private val currentUserId = "currentUser123"
@@ -48,8 +50,15 @@ class ConversationListViewModelTest {
     mockConversationRepository = mockk()
     mockUserRepository = mockk()
     mockProjectRepository = mockk()
+    mockSelfNotesRepository = mockk<UnifiedSelfNotesRepository>(relaxed = true)
     mockConnectivityObserver = mockk()
     every { mockConnectivityObserver.isConnected } returns flowOf(true)
+    // Default mock for self notes repository - returns empty list
+    every { mockSelfNotesRepository.getNotes(any<Int>()) } returns flowOf(emptyList())
+    // Default mock for current user
+    every { mockUserRepository.getUserById(currentUserId) } returns
+        flowOf(
+            User(uid = currentUserId, displayName = "Current User", photoUrl = "http://photo.url"))
   }
 
   @After
@@ -80,6 +89,7 @@ class ConversationListViewModelTest {
             conversationRepository = mockConversationRepository,
             userRepository = mockUserRepository,
             projectRepository = mockProjectRepository,
+            selfNotesRepository = mockSelfNotesRepository,
             getCurrentUserId = { currentUserId },
             connectivityObserver = mockConnectivityObserver)
 
@@ -89,11 +99,17 @@ class ConversationListViewModelTest {
     val state = viewModel.uiState.value
 
     // Assert: Verify display data is correctly resolved
+    // Should have "to self" conversation first, then the regular conversation
     assertFalse(state.isLoading)
-    assertEquals(1, state.conversations.size)
-    assertEquals(listOf("John Doe"), state.conversations[0].otherMembers)
-    assertEquals("Test Project", state.conversations[0].projectName)
-    assertEquals(listOf("http://photo.url"), state.conversations[0].otherMembersPhotoUrl)
+    assertEquals(2, state.conversations.size)
+    // First conversation should be "to self"
+    assertEquals(TO_SELF_CONVERSATION_ID, state.conversations[0].conversation.conversationId)
+    assertEquals(listOf("To Self"), state.conversations[0].otherMembers)
+    assertEquals("Personal", state.conversations[0].projectName)
+    // Second conversation should be the regular one
+    assertEquals(listOf("John Doe"), state.conversations[1].otherMembers)
+    assertEquals("Test Project", state.conversations[1].projectName)
+    assertEquals(listOf("http://photo.url"), state.conversations[1].otherMembersPhotoUrl)
   }
 
   @Test
@@ -117,6 +133,7 @@ class ConversationListViewModelTest {
             conversationRepository = mockConversationRepository,
             userRepository = mockUserRepository,
             projectRepository = mockProjectRepository,
+            selfNotesRepository = mockSelfNotesRepository,
             getCurrentUserId = { currentUserId },
             connectivityObserver = mockConnectivityObserver)
 
@@ -125,9 +142,13 @@ class ConversationListViewModelTest {
 
     val state = viewModel.uiState.value
 
-    // Assert: Fallback values are used for unknown user
-    assertEquals(listOf<String>(), state.conversations[0].otherMembers)
-    assertEquals(listOf<String>(), state.conversations[0].otherMembersPhotoUrl)
+    // Assert: Should have "to self" first, then regular conversation
+    assertEquals(2, state.conversations.size)
+    // First is "to self"
+    assertEquals(TO_SELF_CONVERSATION_ID, state.conversations[0].conversation.conversationId)
+    // Second conversation has fallback values for unknown user
+    assertEquals(listOf<String>(), state.conversations[1].otherMembers)
+    assertEquals(listOf<String>(), state.conversations[1].otherMembersPhotoUrl)
   }
 
   @Test
@@ -143,6 +164,7 @@ class ConversationListViewModelTest {
             conversationRepository = mockConversationRepository,
             userRepository = mockUserRepository,
             projectRepository = mockProjectRepository,
+            selfNotesRepository = mockSelfNotesRepository,
             getCurrentUserId = { currentUserId },
             connectivityObserver = mockConnectivityObserver)
 
@@ -151,6 +173,11 @@ class ConversationListViewModelTest {
 
     // Assert: UI state reflects offline status
     assertFalse(viewModel.uiState.value.isConnected)
+    // Should still have "to self" conversation even when offline
+    assertTrue(viewModel.uiState.value.conversations.isNotEmpty())
+    assertEquals(
+        TO_SELF_CONVERSATION_ID,
+        viewModel.uiState.value.conversations[0].conversation.conversationId)
   }
 
   /**
@@ -178,13 +205,16 @@ class ConversationListViewModelTest {
             conversationRepository = mockConversationRepository,
             userRepository = mockUserRepository,
             projectRepository = mockProjectRepository,
+            selfNotesRepository = mockSelfNotesRepository,
             getCurrentUserId = { currentUserId },
             connectivityObserver = mockConnectivityObserver)
 
     advanceUntilIdle()
 
     val state = viewModel.uiState.value
-    assertEquals("Hello there!", state.conversations[0].lastMessagePreview)
+    // Should have "to self" first, then regular conversation
+    assertEquals(2, state.conversations.size)
+    assertEquals("Hello there!", state.conversations[1].lastMessagePreview)
   }
 
   /**
@@ -213,13 +243,17 @@ class ConversationListViewModelTest {
             conversationRepository = mockConversationRepository,
             userRepository = mockUserRepository,
             projectRepository = mockProjectRepository,
+            selfNotesRepository = mockSelfNotesRepository,
             getCurrentUserId = { currentUserId },
             connectivityObserver = mockConnectivityObserver)
 
     advanceUntilIdle()
 
     val state = viewModel.uiState.value
-    assertTrue(state.conversations[0].hasUnread)
+    // Should have "to self" first (no unread), then regular conversation
+    assertEquals(2, state.conversations.size)
+    assertFalse(state.conversations[0].hasUnread) // "to self" never has unread
+    assertTrue(state.conversations[1].hasUnread)
   }
 
   /**
@@ -250,6 +284,7 @@ class ConversationListViewModelTest {
             conversationRepository = mockConversationRepository,
             userRepository = mockUserRepository,
             projectRepository = mockProjectRepository,
+            selfNotesRepository = mockSelfNotesRepository,
             getCurrentUserId = { currentUserId },
             connectivityObserver = mockConnectivityObserver)
 
@@ -284,13 +319,17 @@ class ConversationListViewModelTest {
             conversationRepository = mockConversationRepository,
             userRepository = mockUserRepository,
             projectRepository = mockProjectRepository,
+            selfNotesRepository = mockSelfNotesRepository,
             getCurrentUserId = { currentUserId },
             connectivityObserver = mockConnectivityObserver)
 
     advanceUntilIdle()
 
     val state = viewModel.uiState.value
-    assertFalse(state.conversations[0].hasUnread)
+    // Should have "to self" first, then regular conversation
+    assertEquals(2, state.conversations.size)
+    assertFalse(state.conversations[0].hasUnread) // "to self" never has unread
+    assertFalse(state.conversations[1].hasUnread)
   }
 
   /**
@@ -318,14 +357,17 @@ class ConversationListViewModelTest {
             conversationRepository = mockConversationRepository,
             userRepository = mockUserRepository,
             projectRepository = mockProjectRepository,
+            selfNotesRepository = mockSelfNotesRepository,
             getCurrentUserId = { currentUserId },
             connectivityObserver = mockConnectivityObserver)
 
     advanceUntilIdle()
 
     val state = viewModel.uiState.value
+    // Should have "to self" first, then regular conversation
+    assertEquals(2, state.conversations.size)
     // Should return "now" since timestamp is very recent
-    assertEquals("now", state.conversations[0].lastMessageTime)
+    assertEquals("now", state.conversations[1].lastMessageTime)
   }
 
   @Test
@@ -350,22 +392,30 @@ class ConversationListViewModelTest {
     every { mockProjectRepo.getProjectById("proj1") } returns
         flowOf(Project(projectId = "proj1", name = "Test Project"))
 
+    val mockSelfNotesRepo = mockk<UnifiedSelfNotesRepository>()
+    every { mockSelfNotesRepo.getNotes(any()) } returns flowOf(emptyList())
+    every { mockUserRepo.getUserById("currentUser") } returns
+        flowOf(User("currentUser", "Current User", "", ""))
+
     val viewModel =
         ConversationListViewModel(
             conversationRepository = mockConversationRepo,
             userRepository = mockUserRepo,
             projectRepository = mockProjectRepo,
+            selfNotesRepository = mockSelfNotesRepo,
             getCurrentUserId = { "currentUser" },
             connectivityObserver = mockk { every { isConnected } returns flowOf(true) })
 
     advanceUntilIdle()
     val state = viewModel.uiState.first { !it.isLoading }
 
-    assertEquals(1, state.conversations.size)
-    assertEquals(listOf("Alice", "Bob"), state.conversations[0].otherMembers)
+    // Should have "to self" first, then regular conversation
+    assertEquals(2, state.conversations.size)
+    assertEquals(TO_SELF_CONVERSATION_ID, state.conversations[0].conversation.conversationId)
+    assertEquals(listOf("Alice", "Bob"), state.conversations[1].otherMembers)
     assertEquals(
         listOf("https://alice.com/photo.jpg", "https://bob.com/photo.jpg"),
-        state.conversations[0].otherMembersPhotoUrl)
+        state.conversations[1].otherMembersPhotoUrl)
   }
 
   @Test
@@ -384,19 +434,28 @@ class ConversationListViewModelTest {
     every { mockProjectRepo.getProjectById("proj1") } returns
         flowOf(Project(projectId = "proj1", name = "Test Project"))
 
+    val mockSelfNotesRepo = mockk<UnifiedSelfNotesRepository>()
+    every { mockSelfNotesRepo.getNotes(any()) } returns flowOf(emptyList())
+    every { mockUserRepo.getUserById("currentUser") } returns
+        flowOf(User("currentUser", "Current User", "", ""))
+
     val viewModel =
         ConversationListViewModel(
             conversationRepository = mockConversationRepo,
             userRepository = mockUserRepo,
             projectRepository = mockProjectRepo,
+            selfNotesRepository = mockSelfNotesRepo,
             getCurrentUserId = { "currentUser" },
             connectivityObserver = mockk { every { isConnected } returns flowOf(true) })
 
     advanceUntilIdle()
     val state = viewModel.uiState.first { !it.isLoading }
 
-    assertEquals(emptyList<String>(), state.conversations[0].otherMembers)
-    assertEquals(emptyList<String>(), state.conversations[0].otherMembersPhotoUrl)
+    // Should have "to self" first, then regular conversation
+    assertEquals(2, state.conversations.size)
+    assertEquals(TO_SELF_CONVERSATION_ID, state.conversations[0].conversation.conversationId)
+    assertEquals(emptyList<String>(), state.conversations[1].otherMembers)
+    assertEquals(emptyList<String>(), state.conversations[1].otherMembersPhotoUrl)
   }
 
   @Test
@@ -420,6 +479,11 @@ class ConversationListViewModelTest {
     every { mockConversationRepo.getConversationsForCurrentUser() } returns
         flowOf(listOf(conversation))
 
+    val mockSelfNotesRepo = mockk<UnifiedSelfNotesRepository>()
+    every { mockSelfNotesRepo.getNotes(any()) } returns flowOf(emptyList())
+    every { mockUserRepo.getUserById("currentUser") } returns
+        flowOf(User("currentUser", "Current User", "", ""))
+
     val viewModel =
         ConversationListViewModel(
             conversationRepository = mockConversationRepo,
@@ -429,12 +493,16 @@ class ConversationListViewModelTest {
                   every { getProjectById("proj1") } returns
                       flowOf(Project(projectId = "proj1", name = "Test"))
                 },
+            selfNotesRepository = mockSelfNotesRepo,
             getCurrentUserId = { "currentUser" },
             connectivityObserver = mockk { every { isConnected } returns flowOf(true) })
 
     advanceUntilIdle()
     val state = viewModel.uiState.first { !it.isLoading }
 
-    assertEquals(2, state.conversations[0].otherMembers.size)
+    // Should have "to self" first, then regular conversation
+    assertEquals(2, state.conversations.size)
+    assertEquals(TO_SELF_CONVERSATION_ID, state.conversations[0].conversation.conversationId)
+    assertEquals(2, state.conversations[1].otherMembers.size)
   }
 }

@@ -6,6 +6,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
+import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.conversation.ConversationMessage
 import ch.eureka.eurekapp.ui.components.DeleteConfirmationDialogTestTags
 import ch.eureka.eurekapp.ui.components.MessageActionMenuTestTags
@@ -39,6 +40,7 @@ class ConversationDetailScreenTest {
   fun setUp() {
     val context = InstrumentationRegistry.getInstrumentation().targetContext
     ConnectivityObserverProvider.initialize(context)
+    RepositoriesProvider.initialize(context)
   }
 
   @Test

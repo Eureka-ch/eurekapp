@@ -278,8 +278,11 @@ class CreateTaskViewModelTest {
     every { mockContext.contentResolver.delete(uri, any(), any()) } throws
         SecurityException("Permission denied")
 
-    val result = viewModel.deletePhoto(mockContext, uri)
-    assertFalse(result)
+    var result: Boolean? = null
+    viewModel.deletePhotoAsync(mockContext, uri) { success -> result = success }
+    advanceUntilIdle()
+
+    assertFalse(result!!)
   }
 
   @Test
@@ -291,8 +294,11 @@ class CreateTaskViewModelTest {
     // Mock context to return 0 rows deleted
     every { mockContext.contentResolver.delete(uri, any(), any()) } returns 0
 
-    val result = viewModel.deletePhoto(mockContext, uri)
-    assertFalse(result)
+    var result: Boolean? = null
+    viewModel.deletePhotoAsync(mockContext, uri) { success -> result = success }
+    advanceUntilIdle()
+
+    assertFalse(result!!)
   }
 
   @Test
@@ -382,8 +388,7 @@ class CreateTaskViewModelTest {
     advanceUntilIdle()
 
     // Verify file was uploaded
-    assertEquals(1, mockFileRepository.uploadFileCalls.size)
-    assertEquals(uri, mockFileRepository.uploadFileCalls[0].second)
+    assertEquals(1, mockFileRepository.uploadFileDescriptorCalls.size)
 
     // Verify task was created
     val state = viewModel.uiState.first()

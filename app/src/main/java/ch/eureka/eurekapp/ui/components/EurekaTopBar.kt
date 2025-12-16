@@ -2,6 +2,7 @@ package ch.eureka.eurekapp.ui.components
 
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -10,6 +11,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 
 // Portions of this code were generated with the help of Grok.
 
@@ -33,5 +35,5 @@ fun EurekaTopBar(
       actions = actions,
       colors =
           TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary),
-      modifier = modifier.fillMaxWidth())
+      modifier = modifier.fillMaxWidth().padding(horizontal = 12.dp))
 }

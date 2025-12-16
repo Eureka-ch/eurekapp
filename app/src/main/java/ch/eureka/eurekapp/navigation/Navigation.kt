@@ -15,6 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
+import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.model.data.mcp.FirebaseMcpTokenRepository
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
@@ -38,11 +39,13 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.TaskDependenciesScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.editing.EditTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreen
+import ch.eureka.eurekapp.ui.activity.ActivityDetailScreen
 import ch.eureka.eurekapp.ui.activity.ActivityFeedScreen
 import ch.eureka.eurekapp.ui.authentication.TokenEntryScreen
 import ch.eureka.eurekapp.ui.conversation.ConversationDetailScreen
 import ch.eureka.eurekapp.ui.conversation.ConversationListScreen
 import ch.eureka.eurekapp.ui.conversation.CreateConversationScreen
+import ch.eureka.eurekapp.ui.ideas.IdeasScreen
 import ch.eureka.eurekapp.ui.map.MeetingLocationSelectionScreen
 import ch.eureka.eurekapp.ui.mcp.McpTokenScreen
 import ch.eureka.eurekapp.ui.mcp.McpTokenViewModel
@@ -56,6 +59,7 @@ import ch.eureka.eurekapp.ui.meeting.MeetingProposalVoteScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreen
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenConfig
 import ch.eureka.eurekapp.ui.notes.SelfNotesScreen
+import ch.eureka.eurekapp.ui.notifications.NotificationPreferencesScreen
 import ch.eureka.eurekapp.ui.profile.ProfileScreen
 import ch.eureka.eurekapp.ui.templates.CreateTemplateScreen
 import ch.eureka.eurekapp.ui.templates.CreateTemplateViewModel
@@ -88,6 +92,12 @@ sealed interface Route {
   @Serializable data object SelfNotes : Route
 
   @Serializable data object ActivityFeed : Route
+
+  sealed interface ActivitySection : Route {
+    @Serializable data class ActivityDetail(val activityId: String) : ActivitySection
+  }
+
+  @Serializable data object NotificationPreferences : Route
 
   sealed interface TasksSection : Route {
     companion object {
@@ -182,6 +192,15 @@ sealed interface Route {
     @Serializable data class ConversationDetail(val conversationId: String) : ConversationsSection
 
     @Serializable data class CreateConversation(val projectId: String) : ConversationsSection
+  }
+
+  sealed interface IdeasSection : Route {
+    companion object {
+      val routes: Set<KClass<out IdeasSection>>
+        get() = IdeasSection::class.sealedSubclasses.toSet()
+    }
+
+    @Serializable data class Ideas(val projectId: String? = null) : IdeasSection
   }
 }
 
@@ -289,21 +308,59 @@ fun NavigationMenu(
                     onNavigateToActivityFeed = {
                       navigationController.navigate(Route.ActivityFeed)
                     },
-                    onNavigateToMcpTokens = { navigationController.navigate(Route.McpTokens) })
+                    onNavigateToMcpTokens = { navigationController.navigate(Route.McpTokens) },
+                    onNavigateToPreferences = {
+                      navigationController.navigate(Route.NotificationPreferences)
+                    })
               }
               composable<Route.McpTokens> {
                 val viewModel = McpTokenViewModel(FirebaseMcpTokenRepository())
                 McpTokenScreen(
                     viewModel = viewModel, onNavigateBack = { navigationController.popBackStack() })
               }
-              composable<Route.SelfNotes> { SelfNotesScreen() }
+              composable<Route.NotificationPreferences> {
+                NotificationPreferencesScreen(
+                    onFinishedSettingNotifications = { navigationController.popBackStack() })
+              }
+              composable<Route.SelfNotes> {
+                SelfNotesScreen(onNavigateBack = { navigationController.popBackStack() })
+              }
               composable<Route.ActivityFeed> {
                 ActivityFeedScreen(
-                    onActivityClick = { _ ->
-                      // Navigate to entity detail screen based on entity type
-                      // For now, just go back
-                      navigationController.popBackStack()
+                    onActivityClick = { activityId, _ ->
+                      navigationController.navigate(
+                          Route.ActivitySection.ActivityDetail(activityId = activityId))
                     })
+              }
+              composable<Route.ActivitySection.ActivityDetail> { backStackEntry ->
+                val route = backStackEntry.toRoute<Route.ActivitySection.ActivityDetail>()
+                ActivityDetailScreen(
+                    activityId = route.activityId,
+                    onNavigateBack = { navigationController.popBackStack() },
+                    onNavigateToEntity = { entityType, entityId, projectId ->
+                      when (entityType) {
+                        EntityType.MEETING -> {
+                          navigationController.navigate(
+                              Route.MeetingsSection.MeetingDetail(projectId, entityId))
+                        }
+                        EntityType.TASK -> {
+                          navigationController.navigate(
+                              Route.TasksSection.ViewTask(projectId, entityId))
+                        }
+                        EntityType.MESSAGE -> {
+                          navigationController.navigate(Route.ConversationsSection.Conversations)
+                        }
+                        EntityType.PROJECT -> {
+                          navigationController.navigate(Route.ProjectSelection)
+                        }
+                        else -> {
+                          // FILE and MEMBER types have no detail screen
+                        }
+                      }
+                    })
+              }
+              composable<Route.IdeasSection.Ideas> {
+                IdeasScreen(onNavigateBack = { navigationController.popBackStack() })
               }
               composable<Route.OverviewProject> { backStackEntry ->
                 val overviewProjectScreenRoute = backStackEntry.toRoute<Route.OverviewProject>()
@@ -369,38 +426,6 @@ fun NavigationMenu(
                       navigationController.popBackStack()
                     },
                     viewModel = templateViewModel)
-              }
-
-              // Conversations section
-              composable<Route.ConversationsSection.Conversations> {
-                ConversationListScreen(
-                    onCreateConversation = {
-                      navigationController.navigate(
-                          Route.ConversationsSection.CreateConversation(projectId = testProjectId))
-                    },
-                    onConversationClick = { conversationId ->
-                      navigationController.navigate(
-                          Route.ConversationsSection.ConversationDetail(
-                              conversationId = conversationId))
-                    })
-              }
-
-              composable<Route.ConversationsSection.CreateConversation> {
-                CreateConversationScreen(
-                    onNavigateToConversation = { conversationId ->
-                      navigationController.popBackStack()
-                      navigationController.navigate(
-                          Route.ConversationsSection.ConversationDetail(
-                              conversationId = conversationId))
-                    })
-              }
-
-              composable<Route.ConversationsSection.ConversationDetail> { backStackEntry ->
-                val conversationDetailRoute =
-                    backStackEntry.toRoute<Route.ConversationsSection.ConversationDetail>()
-                ConversationDetailScreen(
-                    conversationId = conversationDetailRoute.conversationId,
-                    onNavigateBack = { navigationController.popBackStack() })
               }
 
               // Meetings section
@@ -619,6 +644,40 @@ fun NavigationMenu(
                           ?.savedStateHandle
                           ?.set("photoUri", uri)
                       navigationController.popBackStack()
+                    })
+              }
+
+              // Conversations section
+              composable<Route.ConversationsSection.Conversations> {
+                ConversationListScreen(
+                    onConversationClick = { conversationId ->
+                      // If clicking on "To Self" conversation, navigate to SelfNotesScreen
+                      if (conversationId ==
+                          ch.eureka.eurekapp.ui.conversation.TO_SELF_CONVERSATION_ID) {
+                        navigationController.navigate(Route.SelfNotes)
+                      } else {
+                        navigationController.navigate(
+                            Route.ConversationsSection.ConversationDetail(conversationId))
+                      }
+                    },
+                    onCreateConversation = {
+                      navigationController.navigate(
+                          Route.ConversationsSection.CreateConversation(projectId = testProjectId))
+                    })
+              }
+
+              composable<Route.ConversationsSection.ConversationDetail> { backStackEntry ->
+                val route = backStackEntry.toRoute<Route.ConversationsSection.ConversationDetail>()
+                ConversationDetailScreen(
+                    conversationId = route.conversationId,
+                    onNavigateBack = { navigationController.popBackStack() })
+              }
+
+              composable<Route.ConversationsSection.CreateConversation> {
+                CreateConversationScreen(
+                    onNavigateToConversation = { conversationId ->
+                      navigationController.navigate(
+                          Route.ConversationsSection.ConversationDetail(conversationId))
                     })
               }
             }

@@ -5,6 +5,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import androidx.room.Room
 import androidx.work.WorkManager
+import ch.eureka.eurekapp.model.data.activity.ActivityRepository
+import ch.eureka.eurekapp.model.data.activity.FirestoreActivityRepository
 import ch.eureka.eurekapp.model.data.chat.FirestoreChatRepository
 import ch.eureka.eurekapp.model.data.conversation.ConversationRepository
 import ch.eureka.eurekapp.model.data.conversation.FirestoreConversationRepository
@@ -135,6 +137,10 @@ object RepositoriesProvider {
     FirestoreConversationRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
   }
 
+  private val _activityRepository: ActivityRepository by lazy {
+    FirestoreActivityRepository(FirebaseFirestore.getInstance())
+  }
+
   private val _ideasRepository: IdeasRepository by lazy {
     FirestoreIdeasRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
   }
@@ -171,6 +177,9 @@ object RepositoriesProvider {
 
   val conversationRepository: ConversationRepository
     get() = _conversationRepository
+
+  val activityRepository: ActivityRepository
+    get() = _activityRepository
 
   val ideasRepository: IdeasRepository
     get() = _ideasRepository

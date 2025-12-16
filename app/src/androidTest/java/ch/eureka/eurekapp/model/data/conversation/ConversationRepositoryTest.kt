@@ -28,7 +28,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
 
   private lateinit var repository: ConversationRepository
 
-  override fun getCollectionPaths(): List<String> = listOf("conversations")
+  override fun getCollectionPaths(): List<String> = listOf("conversations", "activities", "users")
 
   @Before
   override fun setup() {

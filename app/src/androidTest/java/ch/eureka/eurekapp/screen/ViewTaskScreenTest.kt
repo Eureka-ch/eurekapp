@@ -327,28 +327,6 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testAttachmentsDisplayed() =
-      runBlocking<Unit> {
-        val projectId = "project123"
-        val taskId = "task123"
-        val attachmentUrl1 = "https://fake.com/photo1.jpg"
-        val attachmentUrl2 = "https://fake.com/photo2.jpg"
-        setupViewTaskTest(projectId, taskId) {
-          setupTestTask(projectId, taskId, attachmentUrls = listOf(attachmentUrl1, attachmentUrl2))
-        }
-
-        // Wait for attachments to load from Firestore
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-          try {
-            composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).assertCountEquals(2)
-            true
-          } catch (e: AssertionError) {
-            false
-          }
-        }
-      }
-
-  @Test
   fun testNavigateToEditTask() =
       runBlocking<Unit> {
         val projectId = "project123"
@@ -425,7 +403,7 @@ open class ViewTaskScreenTest : TestCase() {
         }
 
         // Verify no attachments are displayed
-        composeTestRule.onAllNodesWithTag(CommonTaskTestTags.PHOTO).assertCountEquals(0)
+        composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).assertCountEquals(0)
       }
 
   @Test
@@ -887,7 +865,7 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testDownloadButtonDisplayedWhenAttachmentsExist() =
+  fun viewTaskScreen_downloadButtonDisplayedWhenAttachmentsExist() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -901,7 +879,7 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testDownloadButtonNotDisplayedWhenAllAttachmentsDownloaded() =
+  fun viewTaskScreen_downloadButtonNotDisplayedWhenAllAttachmentsDownloaded() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -922,5 +900,40 @@ open class ViewTaskScreenTest : TestCase() {
 
         // Verify download button is not displayed when all attachments are downloaded
         composeTestRule.onNodeWithText("Download All Attachments").assertDoesNotExist()
+      }
+
+  @Test
+  fun viewTaskScreen_attachmentsAreReadOnlyNoDeleteButton() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+        val attachmentUrl = "https://example.com/document.pdf|document.pdf|application/pdf"
+        setupViewTaskTest(projectId, taskId) {
+          setupTestTask(projectId, taskId, attachmentUrls = listOf(attachmentUrl))
+        }
+
+        // Verify attachments are displayed
+        composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).assertCountEquals(1)
+
+        // Verify no delete button is displayed for read-only attachments
+        composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_ATTACHMENT).assertDoesNotExist()
+      }
+
+  @Test
+  fun viewTaskScreen_multipleAttachmentsDisplayedCorrectly() =
+      runBlocking<Unit> {
+        val projectId = "project123"
+        val taskId = "task123"
+        val attachmentUrl1 = "https://example.com/photo.jpg|photo.jpg|image/jpeg"
+        val attachmentUrl2 = "https://example.com/document.pdf|document.pdf|application/pdf"
+        setupViewTaskTest(projectId, taskId) {
+          setupTestTask(projectId, taskId, attachmentUrls = listOf(attachmentUrl1, attachmentUrl2))
+        }
+
+        // Verify both attachments are displayed
+        composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).assertCountEquals(2)
+
+        // Verify no delete buttons for read-only mode
+        composeTestRule.onAllNodesWithTag(CommonTaskTestTags.DELETE_ATTACHMENT).assertCountEquals(0)
       }
 }

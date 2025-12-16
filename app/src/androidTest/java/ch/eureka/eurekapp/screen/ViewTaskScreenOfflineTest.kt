@@ -1,8 +1,10 @@
 // Portions of this code were generated with the help of Grok.
 package ch.eureka.eurekapp.screen
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
@@ -40,6 +42,7 @@ class ViewTaskScreenOfflineTest {
   private var testUserId: String = ""
   private lateinit var context: android.content.Context
   private lateinit var mockConnectivityObserver: MockConnectivityObserver
+  private lateinit var database: AppDatabase
 
   private val projectRepository: ch.eureka.eurekapp.model.data.project.ProjectRepository =
       ch.eureka.eurekapp.model.data.project.FirestoreProjectRepository(
@@ -69,11 +72,16 @@ class ViewTaskScreenOfflineTest {
 
     context = InstrumentationRegistry.getInstrumentation().targetContext
     mockConnectivityObserver = MockConnectivityObserver(context)
+
+    // Clear database before each test
+    database = AppDatabase.getDatabase(context)
+    database.clearAllTables()
   }
 
   @After
   fun tearDown() = runBlocking {
     lastViewModel = null
+    database.clearAllTables()
     FirebaseEmulator.clearFirestoreEmulator()
     FirebaseEmulator.clearAuthEmulator()
   }
@@ -323,6 +331,90 @@ class ViewTaskScreenOfflineTest {
 
       // Verify offline message appears
       composeTestRule.onNodeWithTag(ViewTaskScreenTestTags.OFFLINE_MESSAGE).assertIsDisplayed()
+    }
+  }
+
+  @Test
+  fun viewTaskScreenOffline_noDownloadButton() {
+    runBlocking {
+      val projectId = "project123"
+      val taskId = "task123"
+      val attachmentUrl = "https://example.com/document.pdf|document.pdf|application/pdf"
+
+      setupTestProject(projectId)
+      setupTestTask(projectId, taskId, attachmentUrls = listOf(attachmentUrl))
+
+      mockConnectivityObserver.setConnected(false)
+
+      val viewModel =
+          ViewTaskViewModel(
+              projectId,
+              taskId,
+              AppDatabase.getDatabase(context).downloadedFileDao(),
+              taskRepository,
+              connectivityObserver = mockConnectivityObserver)
+      lastViewModel = viewModel
+
+      composeTestRule.setContent {
+        val navController = rememberNavController()
+        ViewTaskScreen(
+            projectId = projectId,
+            taskId = taskId,
+            navigationController = navController,
+            viewTaskViewModel = viewModel)
+      }
+
+      composeTestRule.waitForIdle()
+
+      // Verify download button is not displayed when offline
+      composeTestRule
+          .onNodeWithTag(ViewTaskScreenTestTags.DOWNLOAD_ALL_ATTACHMENTS)
+          .assertDoesNotExist()
+    }
+  }
+
+  @Test
+  fun viewTaskScreenOffline_downloadedAttachmentDisplayedAsLocal() {
+    runBlocking {
+      val projectId = "project123"
+      val taskId = "task123"
+      val attachmentUrl = "https://example.com/photo.jpg|photo.jpg|image/jpeg"
+
+      setupTestProject(projectId)
+      setupTestTask(projectId, taskId, attachmentUrls = listOf(attachmentUrl))
+
+      // Manually mark the attachment as downloaded in the database
+      val dao = AppDatabase.getDatabase(context).downloadedFileDao()
+      dao.insert(
+          ch.eureka.eurekapp.model.downloads.DownloadedFile(
+              url = attachmentUrl.substringBefore("|"),
+              localPath = "file:///fake/path/photo.jpg",
+              fileName = "photo.jpg"))
+
+      mockConnectivityObserver.setConnected(false)
+
+      val viewModel =
+          ViewTaskViewModel(
+              projectId,
+              taskId,
+              dao,
+              taskRepository,
+              connectivityObserver = mockConnectivityObserver)
+      lastViewModel = viewModel
+
+      composeTestRule.setContent {
+        val navController = rememberNavController()
+        ViewTaskScreen(
+            projectId = projectId,
+            taskId = taskId,
+            navigationController = navController,
+            viewTaskViewModel = viewModel)
+      }
+
+      composeTestRule.waitForIdle()
+
+      // Verify attachment is displayed (as Local when downloaded and offline)
+      composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).assertCountEquals(1)
     }
   }
 }

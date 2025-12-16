@@ -18,13 +18,13 @@ import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AssignmentTurnedIn
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.AssignmentTurnedIn
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -58,7 +58,7 @@ object BottomBarNavigationTestTags {
   const val PROJECTS_SCREEN_BUTTON = "ProjectsScreenButton"
   const val OVERVIEW_SCREEN_BUTTON = "OverviewScreenButton"
   const val MEETINGS_SCREEN_BUTTON = "MeetingsScreenButton"
-  const val NOTES_SCREEN_BUTTON = "NotesScreenButton"
+  const val IDEAS_SCREEN_BUTTON = "IdeasScreenButton"
   const val PROFILE_SCREEN_BUTTON = "ProfileScreenButton"
 }
 
@@ -132,10 +132,12 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
         }
       }
 
-  val isNotesScreenPressed by
+  val isIdeasScreenPressed by
       remember(currentDestination) {
         derivedStateOf {
-          currentDestination?.hierarchy?.any { it.hasRoute(Route.SelfNotes::class) } == true
+          Route.IdeasSection.routes.any { routeClass ->
+            currentDestination?.hierarchy?.any { it.hasRoute(routeClass) } == true
+          }
         }
       }
 
@@ -197,12 +199,12 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
               isPressed = isMeetingScreenPressed)
           CustomIconButtonComposable(
               modifier =
-                  Modifier.weight(1f).testTag(BottomBarNavigationTestTags.NOTES_SCREEN_BUTTON),
-              "Notes",
-              onClick = { navigateToTab(Route.SelfNotes) },
-              iconVector = Icons.Outlined.Edit,
-              pressedIconVector = Icons.Filled.Edit,
-              isPressed = isNotesScreenPressed)
+                  Modifier.weight(1f).testTag(BottomBarNavigationTestTags.IDEAS_SCREEN_BUTTON),
+              "Ideas",
+              onClick = { navigateToTab(Route.IdeasSection.Ideas()) },
+              iconVector = Icons.Outlined.Lightbulb,
+              pressedIconVector = Icons.Filled.Lightbulb,
+              isPressed = isIdeasScreenPressed)
           CustomIconButtonComposable(
               modifier =
                   Modifier.weight(1f).testTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON),

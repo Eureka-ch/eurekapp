@@ -19,6 +19,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.*
 import org.junit.After
@@ -58,6 +59,26 @@ class ActivityFeedViewModelTest {
     every { firestore.collection("users") } returns usersCollection
     every { usersCollection.document(any()) } returns userDocRef
     every { userDocRef.get() } returns Tasks.forResult(userDoc)
+
+    // Mock Firestore conversation access (MESSAGE activity filtering)
+    val conversationDoc = mockk<com.google.firebase.firestore.DocumentSnapshot>(relaxed = true)
+    every { conversationDoc.get("memberIds") } returns listOf(testUserId)
+    val conversationsCollection =
+        mockk<com.google.firebase.firestore.CollectionReference>(relaxed = true)
+    val conversationDocRef = mockk<com.google.firebase.firestore.DocumentReference>(relaxed = true)
+    every { firestore.collection("conversations") } returns conversationsCollection
+    every { conversationsCollection.document(any()) } returns conversationDocRef
+    every { conversationDocRef.get() } returns Tasks.forResult(conversationDoc)
+
+    // Mock Firestore meeting access (MEETING activity filtering)
+    val meetingDoc = mockk<com.google.firebase.firestore.DocumentSnapshot>(relaxed = true)
+    every { meetingDoc.get("participantIds") } returns listOf(testUserId)
+    val meetingsCollection =
+        mockk<com.google.firebase.firestore.CollectionReference>(relaxed = true)
+    val meetingDocRef = mockk<com.google.firebase.firestore.DocumentReference>(relaxed = true)
+    every { firestore.collection("meetings") } returns meetingsCollection
+    every { meetingsCollection.document(any()) } returns meetingDocRef
+    every { meetingDocRef.get() } returns Tasks.forResult(meetingDoc)
 
     viewModel = ActivityFeedViewModel(repository = repository, firestore = firestore, auth = auth)
   }
@@ -261,10 +282,17 @@ class ActivityFeedViewModelTest {
 
   @Test
   fun `deleteActivity removes activity from list`() = runTest {
-    val activities =
-        listOf(createActivity("1", EntityType.PROJECT), createActivity("2", EntityType.MEETING))
-    coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
-    coEvery { repository.deleteActivity("1") } returns Result.success(Unit)
+    val activitiesFlow =
+        MutableStateFlow(
+            listOf(
+                createActivity("1", EntityType.PROJECT), createActivity("2", EntityType.MEETING)))
+    coEvery { repository.getActivities(testUserId) } returns activitiesFlow
+    coEvery { repository.deleteActivity("1") } coAnswers
+        {
+          activitiesFlow.value =
+              activitiesFlow.value.filter { activity -> activity.activityId != "1" }
+          Result.success(Unit)
+        }
 
     viewModel.loadActivities()
     advanceUntilIdle()
@@ -301,13 +329,19 @@ class ActivityFeedViewModelTest {
 
   @Test
   fun `deleteActivity removes from filtered view correctly`() = runTest {
-    val activities =
-        listOf(
-            createActivity("1", EntityType.PROJECT),
-            createActivity("2", EntityType.PROJECT),
-            createActivity("3", EntityType.MEETING))
-    coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
-    coEvery { repository.deleteActivity("1") } returns Result.success(Unit)
+    val activitiesFlow =
+        MutableStateFlow(
+            listOf(
+                createActivity("1", EntityType.PROJECT),
+                createActivity("2", EntityType.PROJECT),
+                createActivity("3", EntityType.MEETING)))
+    coEvery { repository.getActivities(testUserId) } returns activitiesFlow
+    coEvery { repository.deleteActivity("1") } coAnswers
+        {
+          activitiesFlow.value =
+              activitiesFlow.value.filter { activity -> activity.activityId != "1" }
+          Result.success(Unit)
+        }
 
     viewModel.applyEntityTypeFilter(EntityType.PROJECT)
     advanceUntilIdle()
@@ -347,14 +381,22 @@ class ActivityFeedViewModelTest {
       id: String,
       entityType: EntityType,
       activityType: ActivityType = ActivityType.CREATED
-  ) =
-      Activity(
-          activityId = id,
-          projectId = "test-project",
-          activityType = activityType,
-          entityType = entityType,
-          entityId = "entity-$id",
-          userId = testUserId,
-          timestamp = Timestamp.now(),
-          metadata = mapOf("title" to "Test $entityType $id"))
+  ): Activity {
+    val baseMetadata = mapOf("title" to "Test $entityType $id")
+    val metadata =
+        when (entityType) {
+          EntityType.MESSAGE -> baseMetadata + ("conversationId" to "test-conversation-$id")
+          else -> baseMetadata
+        }
+
+    return Activity(
+        activityId = id,
+        projectId = "test-project",
+        activityType = activityType,
+        entityType = entityType,
+        entityId = "entity-$id",
+        userId = testUserId,
+        timestamp = Timestamp.now(),
+        metadata = metadata)
+  }
 }
