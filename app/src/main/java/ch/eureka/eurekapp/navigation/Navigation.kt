@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.navigation
 
 import android.util.Log
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -250,33 +251,30 @@ fun NavigationMenu(
   val currentDestination = navBackStackEntry?.destination
   val hideBottomBar by remember {
     derivedStateOf {
+      val routesToHideBar =
+          listOf(
+              Route.SelfNotes::class,
+              Route.ConversationsSection.ConversationDetail::class,
+              Route.ConversationsSection.CreateConversation::class,
+              Route.TasksSection.CreateTask::class,
+              Route.TasksSection.EditTask::class,
+              Route.TasksSection.ViewTask::class,
+              Route.TasksSection.AutoTaskAssignment::class,
+              Route.ProjectSelectionSection.CreateProject::class,
+              Route.MeetingsSection.CreateMeeting::class,
+              Route.MeetingsSection.MeetingProposalVotes::class,
+              Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting::class,
+              Route.MeetingsSection.MeetingNavigation::class)
       currentDestination?.hierarchy?.any { destination ->
-        // Notes / self
-        destination.hasRoute(Route.SelfNotes::class) ||
-            // Conversations detail / create
-            destination.hasRoute(Route.ConversationsSection.ConversationDetail::class) ||
-            destination.hasRoute(Route.ConversationsSection.CreateConversation::class) ||
-            // Tasks detail / create / edit / auto-assign
-            destination.hasRoute(Route.TasksSection.CreateTask::class) ||
-            destination.hasRoute(Route.TasksSection.EditTask::class) ||
-            destination.hasRoute(Route.TasksSection.ViewTask::class) ||
-            destination.hasRoute(Route.TasksSection.AutoTaskAssignment::class) ||
-            // Project creation
-            destination.hasRoute(Route.ProjectSelectionSection.CreateProject::class) ||
-            // Meeting create / vote / proposals / navigation (directions)
-            destination.hasRoute(Route.MeetingsSection.CreateMeeting::class) ||
-            destination.hasRoute(Route.MeetingsSection.MeetingProposalVotes::class) ||
-            destination.hasRoute(
-                Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting::class) ||
-            destination.hasRoute(Route.MeetingsSection.MeetingNavigation::class)
+        routesToHideBar.any { routeClass -> destination.hasRoute(routeClass) }
       } == true
     }
   }
 
   Scaffold(containerColor = Color.White) { innerPadding ->
-    Box(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize()) {
       NavHost(
-          modifier = Modifier.padding(innerPadding),
+          modifier = Modifier.padding(innerPadding).weight(1f),
           navController = navigationController,
           startDestination = Route.HomeOverview) {
             composable<Route.HomeOverview> {
@@ -707,14 +705,14 @@ fun NavigationMenu(
                   })
             }
           }
-    }
-    // Nav bar en overlay flottante (masquée sur certaines pages)
-    if (!hideBottomBar) {
-      androidx.compose.foundation.layout.Box(
-          modifier = Modifier.fillMaxWidth().zIndex(1f),
-          contentAlignment = Alignment.BottomCenter) {
-            BottomBarNavigationComponent(navigationController = navigationController)
-          }
+      // Nav bar en overlay flottante (masquée sur certaines pages)
+      if (!hideBottomBar) {
+        Box(
+            modifier = Modifier.fillMaxWidth().zIndex(1f),
+            contentAlignment = Alignment.BottomCenter) {
+              BottomBarNavigationComponent(navigationController = navigationController)
+            }
+      }
     }
   }
 }

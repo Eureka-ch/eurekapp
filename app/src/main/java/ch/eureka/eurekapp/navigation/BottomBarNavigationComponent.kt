@@ -192,7 +192,6 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
                         modifier =
                             Modifier.offset(y = (-14).dp)
                                 .testTag(BottomBarNavigationTestTags.OVERVIEW_SCREEN_BUTTON),
-                        isPressed = isHomeScreenPressed,
                         onClick = { navigateToHome() })
                   }
               CustomIconButtonComposable(
@@ -253,7 +252,7 @@ fun CustomIconButtonComposable(
 }
 
 @Composable
-fun HomeIconButton(modifier: Modifier = Modifier, isPressed: Boolean, onClick: () -> Unit) {
+fun HomeIconButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
   Box(
       modifier =
           modifier
