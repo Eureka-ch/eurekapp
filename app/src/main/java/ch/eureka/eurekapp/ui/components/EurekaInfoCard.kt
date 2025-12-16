@@ -48,15 +48,15 @@ fun EurekaInfoCard(
                                 colors = listOf(gradientStart, gradientEnd),
                                 start = androidx.compose.ui.geometry.Offset(0f, 0f),
                                 end = androidx.compose.ui.geometry.Offset(1000f, 1000f)))) {
-        Row(
-            modifier = Modifier.padding(Spacing.md),
-            verticalAlignment = Alignment.CenterVertically) {
+              Row(
+                  modifier = Modifier.padding(Spacing.md),
+                  verticalAlignment = Alignment.CenterVertically) {
                     // Icon container with gradient background
                     if (icon != null) {
-                Box(
-                    modifier =
+                      Box(
+                          modifier =
                               Modifier.size(48.dp)
-                            .background(
+                                  .background(
                                       brush =
                                           Brush.linearGradient(
                                               colors =
@@ -66,35 +66,35 @@ fun EurekaInfoCard(
                                                       MaterialTheme.colorScheme.primary.copy(
                                                           alpha = 0.1f))),
                                       shape = RoundedCornerShape(12.dp)),
-                    contentAlignment = Alignment.Center) {
+                          contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = icon,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(24.dp))
+                          }
+                      Spacer(modifier = Modifier.width(Spacing.md))
                     }
-                Spacer(modifier = Modifier.width(Spacing.md))
-              }
 
-              Column {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Column {
+                      Text(
+                          text = title,
+                          style = MaterialTheme.typography.labelLarge,
+                          color = MaterialTheme.colorScheme.onSurfaceVariant)
                       Spacer(modifier = Modifier.size(4.dp))
-                Text(
-                    text = primaryValue,
+                      Text(
+                          text = primaryValue,
                           style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface)
-                if (secondaryValue.isNotEmpty()) {
+                          color = MaterialTheme.colorScheme.onSurface)
+                      if (secondaryValue.isNotEmpty()) {
                         Spacer(modifier = Modifier.size(2.dp))
-                  Text(
-                      text = secondaryValue,
-                      style = MaterialTheme.typography.bodySmall,
-                      color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            text = secondaryValue,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
                       }
-                }
-              }
+                    }
+                  }
             }
       }
 }
