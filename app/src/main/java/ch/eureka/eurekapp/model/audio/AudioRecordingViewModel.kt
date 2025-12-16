@@ -30,7 +30,6 @@ class AudioRecordingViewModel(
     private val meetingRepository: MeetingRepository = RepositoriesProvider.meetingRepository
 ) : ViewModel() {
   private val _recordingUri: MutableStateFlow<Uri?> = MutableStateFlow(null)
-  val recordingUri = _recordingUri.asStateFlow()
 
   val isRecording: StateFlow<RecordingState> = recordingRepository.getRecordingStateFlow()
 
