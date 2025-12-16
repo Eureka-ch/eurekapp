@@ -34,12 +34,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 /*
@@ -110,7 +110,7 @@ fun ConversationListScreen(
               Text(
                   text = "Chat with your project members",
                   style = MaterialTheme.typography.bodyMedium,
-                  color = Color.Gray,
+                  color = EColors.SecondaryTextColor,
                   modifier = Modifier.testTag(ConversationListScreenTestTags.DESCRIPTION))
 
               Spacer(modifier = Modifier.height(Spacing.md))
@@ -146,14 +146,14 @@ fun ConversationListScreen(
                           Text(
                               text = "No conversations yet",
                               style = MaterialTheme.typography.titleMedium,
-                              color = Color.Gray,
+                              color = EColors.SecondaryTextColor,
                               modifier =
                                   Modifier.testTag(ConversationListScreenTestTags.EMPTY_STATE))
                           Spacer(modifier = Modifier.height(Spacing.xs))
                           Text(
                               text = "Tap + to start a conversation",
                               style = MaterialTheme.typography.bodyMedium,
-                              color = Color.Gray)
+                              color = EColors.SecondaryTextColor)
                         }
                   }
                 }

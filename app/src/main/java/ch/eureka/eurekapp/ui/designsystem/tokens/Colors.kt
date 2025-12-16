@@ -47,6 +47,38 @@ object EColors {
   val StatusBlue = Color(0xFF3B82F6) // Blue for status indicators
   val StatusGreen = Color(0xFF16A34A) // Green for status indicators
 
+  // Top bar gradient colors
+  val TopBarGradientStart = Color(0xFFE53935) // Start color for top bar gradient
+  val TopBarGradientEnd = Color(0xFFC62828) // End color for top bar gradient
+
+  // Meeting status colors
+  val MeetingStatusOpenToVotes = Color(0xFF2196F3) // Blue for open to votes
+  val MeetingStatusScheduled = Color(0xFFF44336) // Red for scheduled
+  val MeetingStatusInProgress = Color(0xFF4CAF50) // Green for in progress
+  val MeetingStatusCompleted = Color(0xFF616161) // Dark gray for completed
+
+  // Error colors
+  val ErrorTextColor = Color(0xFFB3261E) // Error text color
+
+  // Google blue
+  val GoogleBlue = Color(0xFF4285F4) // Google blue color
+
+  // Activity type colors
+  val ActivityCreated = Color(0xFF4CAF50) // Green for created
+  val ActivityUpdated = Color(0xFF2196F3) // Blue for updated
+  val ActivityDeleted = Color(0xFFF44336) // Red for deleted
+  val ActivityUploaded = Color(0xFF9C27B0) // Purple for uploaded
+  val ActivityShared = Color(0xFFFF9800) // Orange for shared
+  val ActivityCommented = Color(0xFF00BCD4) // Cyan for commented
+  val ActivityStatusChanged = Color(0xFFFF5722) // Deep orange for status changed
+  val ActivityJoined = Color(0xFF8BC34A) // Light green for joined
+  val ActivityLeft = Color(0xFF795548) // Brown for left
+  val ActivityAssigned = Color(0xFF3F51B5) // Indigo for assigned
+  val ActivityUnassigned = Color(0xFF607D8B) // Blue grey for unassigned
+  val ActivityRoleChanged = Color(0xFFE91E63) // Pink for role changed
+  val ActivityDownloaded = Color(0xFF673AB7) // Deep purple for downloaded
+  val ActivityDefault = Color(0xFF9E9E9E) // Gray for default/unknown
+
   // Light theme colors from Figma
   val LightBackground = Color.White // Pure white background
   val LightSurface = Color.White // White cards/surfaces

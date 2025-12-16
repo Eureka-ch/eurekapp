@@ -37,12 +37,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -78,7 +78,7 @@ fun ActivityFeedScreen(
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription = "Refresh",
-                        tint = Color.White)
+                        tint = EColors.WhiteTextColor)
                   }
               IconButton(
                   onClick = { searchExpanded = !searchExpanded },
@@ -86,7 +86,7 @@ fun ActivityFeedScreen(
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Toggle search",
-                        tint = Color.White)
+                        tint = EColors.WhiteTextColor)
                   }
               if (uiState.activities.isNotEmpty()) {
                 IconButton(
@@ -95,7 +95,7 @@ fun ActivityFeedScreen(
                       Icon(
                           imageVector = Icons.Default.DoneAll,
                           contentDescription = "Mark all as read",
-                          tint = Color.White)
+                          tint = EColors.WhiteTextColor)
                     }
               }
             })

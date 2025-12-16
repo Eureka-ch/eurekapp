@@ -49,7 +49,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -59,6 +58,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import com.google.android.gms.maps.model.ButtCap
 import com.google.android.gms.maps.model.CameraPosition
@@ -361,7 +361,7 @@ private fun MapView(
 
           Polyline(
               points = latLngPoints,
-              color = Color(0xFF4285F4),
+              color = EColors.GoogleBlue,
               width = 10f,
               jointType = JointType.ROUND,
               startCap = ButtCap(),

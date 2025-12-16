@@ -19,6 +19,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.waitUntil
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -373,6 +374,16 @@ open class ViewTaskScreenTest : TestCase() {
         composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assert(isReadOnly)
         composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).assert(isReadOnly)
         composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).assert(isReadOnly)
+
+        // Wait for data to load from Firestore
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          try {
+            composeTestRule.onNodeWithText("Read Only Task").assertExists()
+            true
+          } catch (e: AssertionError) {
+            false
+          }
+        }
 
         // Verify the original values remain displayed
         composeTestRule.onNodeWithText("Read Only Task").assertIsDisplayed()

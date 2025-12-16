@@ -35,7 +35,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -47,6 +46,7 @@ import ch.eureka.eurekapp.model.data.project.MembersUiState
 import ch.eureka.eurekapp.model.data.project.ProjectMembersViewModel
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.firebase.Timestamp
@@ -105,14 +105,17 @@ fun ProjectMembersScreen(
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
-                        tint = Color.White)
+                        tint = EColors.WhiteTextColor)
                   }
             },
             actions = {
               IconButton(
                   onClick = { projectMembersViewModel.loadMembers() },
                   modifier = Modifier.testTag(ProjectMembersScreenTestTags.REFRESH_BUTTON)) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = Color.White)
+                    Icon(
+                        Icons.Default.Refresh,
+                        contentDescription = "Refresh",
+                        tint = EColors.WhiteTextColor)
                   }
             })
       }) { paddingValues ->
@@ -231,7 +234,7 @@ fun MemberItem(user: User, isUserOnline: (Timestamp) -> Boolean) {
               modifier =
                   Modifier.size(14.dp) // Size of the dot
                       .clip(CircleShape)
-                      .background(if (isOnline) Color.Green else Color.Gray)
+                      .background(if (isOnline) EColors.StatusGreen else EColors.ActivityDefault)
                       .border(2.dp, MaterialTheme.colorScheme.surface, CircleShape))
         }
 

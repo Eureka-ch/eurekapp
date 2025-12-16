@@ -15,7 +15,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 
 /** Compact red gradient top bar avec texte/icônes blancs, sans décalage vertical custom. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -23,10 +25,12 @@ import androidx.compose.ui.text.font.FontWeight
 fun EurekaTopBar(
     modifier: Modifier = Modifier,
     title: String = "EUREKA",
+    titleTestTag: String? = null,
     navigationIcon: @Composable (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
-  val gradient = Brush.verticalGradient(listOf(Color(0xFFE53935), Color(0xFFC62828)))
+  val gradient =
+      Brush.verticalGradient(listOf(EColors.TopBarGradientStart, EColors.TopBarGradientEnd))
 
   Box(modifier = modifier.fillMaxWidth().background(gradient)) {
     TopAppBar(
@@ -34,22 +38,23 @@ fun EurekaTopBar(
           Text(
               text = title,
               style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-              color = Color.White)
+              color = EColors.WhiteTextColor,
+              modifier = titleTestTag?.let { Modifier.testTag(it) } ?: Modifier)
         },
         navigationIcon = {
           navigationIcon?.let {
-            CompositionLocalProvider(LocalContentColor provides Color.White) { it() }
+            CompositionLocalProvider(LocalContentColor provides EColors.WhiteTextColor) { it() }
           }
         },
         actions = {
-          CompositionLocalProvider(LocalContentColor provides Color.White) { actions() }
+          CompositionLocalProvider(LocalContentColor provides EColors.WhiteTextColor) { actions() }
         },
         colors =
             TopAppBarDefaults.topAppBarColors(
                 containerColor = Color.Transparent,
-                titleContentColor = Color.White,
-                actionIconContentColor = Color.White,
-                navigationIconContentColor = Color.White),
+                titleContentColor = EColors.WhiteTextColor,
+                actionIconContentColor = EColors.WhiteTextColor,
+                navigationIconContentColor = EColors.WhiteTextColor),
         modifier = Modifier.fillMaxWidth())
   }
 }

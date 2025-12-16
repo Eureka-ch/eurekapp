@@ -32,7 +32,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -44,6 +43,7 @@ import ch.eureka.eurekapp.model.data.task.getDueDateTag
 import ch.eureka.eurekapp.screens.formatDueDate
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.tasks.AutoAssignResultViewModel
 import ch.eureka.eurekapp.ui.tasks.ProposedAssignment
@@ -73,7 +73,7 @@ fun AutoAssignResultScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = Color.White)
+                    tint = EColors.WhiteTextColor)
               }
             })
       }) { paddingValues ->

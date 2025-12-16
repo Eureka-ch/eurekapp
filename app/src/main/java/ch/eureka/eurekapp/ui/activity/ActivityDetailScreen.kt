@@ -65,6 +65,7 @@ import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.activity.Activity
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.meeting.InfoRow
 import ch.eureka.eurekapp.utils.Formatters
@@ -145,7 +146,7 @@ fun ActivityDetailScreen(
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Navigate back",
-                    tint = Color.White)
+                    tint = EColors.WhiteTextColor)
               }
             })
       }) { paddingValues ->
@@ -265,7 +266,7 @@ private fun ActivityHeader(activity: Activity) {
                   modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                   style = MaterialTheme.typography.labelLarge,
                   fontWeight = FontWeight.Bold,
-                  color = Color.White)
+                  color = EColors.WhiteTextColor)
             }
       }
 }
@@ -352,7 +353,7 @@ private fun RelatedActivitiesSection(relatedActivities: List<Activity>) {
                 Text(
                     text = "No other activities for this entity",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
+                    color = EColors.SecondaryTextColor,
                     modifier = Modifier.testTag(ActivityDetailScreenTestTags.NO_RELATED_ACTIVITIES))
               } else {
                 relatedActivities.forEach { activity -> RelatedActivityItem(activity) }
@@ -382,7 +383,7 @@ private fun RelatedActivityItem(activity: Activity) {
             contentAlignment = Alignment.Center) {
               Text(
                   text = activity.activityType.name.first().toString(),
-                  color = Color.White,
+                  color = EColors.WhiteTextColor,
                   style = MaterialTheme.typography.labelSmall,
                   fontWeight = FontWeight.Bold)
             }
@@ -398,7 +399,7 @@ private fun RelatedActivityItem(activity: Activity) {
           Text(
               text = Formatters.formatRelativeTime(activity.timestamp.toDate()),
               style = MaterialTheme.typography.bodySmall,
-              color = Color.Gray)
+              color = EColors.SecondaryTextColor)
         }
       }
 }
@@ -462,20 +463,20 @@ private fun ActionButtonsSection(isConnected: Boolean, onShare: () -> Unit, onDe
 /** Helper function to get color for activity type. */
 private fun getActivityTypeColor(activityType: String): Color {
   return when (activityType) {
-    "CREATED" -> Color(0xFF4CAF50)
-    "UPDATED" -> Color(0xFF2196F3)
-    "DELETED" -> Color(0xFFF44336)
-    "UPLOADED" -> Color(0xFF9C27B0)
-    "SHARED" -> Color(0xFFFF9800)
-    "COMMENTED" -> Color(0xFF00BCD4)
-    "STATUS_CHANGED" -> Color(0xFFFF5722)
-    "JOINED" -> Color(0xFF8BC34A)
-    "LEFT" -> Color(0xFF795548)
-    "ASSIGNED" -> Color(0xFF3F51B5)
-    "UNASSIGNED" -> Color(0xFF607D8B)
-    "ROLE_CHANGED" -> Color(0xFFE91E63)
-    "DOWNLOADED" -> Color(0xFF673AB7)
-    else -> Color.Gray
+    "CREATED" -> EColors.ActivityCreated
+    "UPDATED" -> EColors.ActivityUpdated
+    "DELETED" -> EColors.ActivityDeleted
+    "UPLOADED" -> EColors.ActivityUploaded
+    "SHARED" -> EColors.ActivityShared
+    "COMMENTED" -> EColors.ActivityCommented
+    "STATUS_CHANGED" -> EColors.ActivityStatusChanged
+    "JOINED" -> EColors.ActivityJoined
+    "LEFT" -> EColors.ActivityLeft
+    "ASSIGNED" -> EColors.ActivityAssigned
+    "UNASSIGNED" -> EColors.ActivityUnassigned
+    "ROLE_CHANGED" -> EColors.ActivityRoleChanged
+    "DOWNLOADED" -> EColors.ActivityDownloaded
+    else -> EColors.ActivityDefault
   }
 }
 

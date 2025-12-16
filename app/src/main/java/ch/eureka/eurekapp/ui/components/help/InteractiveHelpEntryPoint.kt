@@ -26,13 +26,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.user.UserNotificationSettingsKeys
 import ch.eureka.eurekapp.model.data.user.defaultValuesNotificationSettingsKeys
 import ch.eureka.eurekapp.model.notifications.NotificationSettingsViewModel
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 // Partially written using AI.
@@ -90,7 +90,7 @@ fun InteractiveHelpEntryPoint(
   val helpContent = remember(resolvedName, helpContext) { helpContext.toHelpContent(resolvedName) }
 
   val contentColor =
-      if (LocalContentColor.current == Color.White) Color.White
+      if (LocalContentColor.current == EColors.WhiteTextColor) EColors.WhiteTextColor
       else MaterialTheme.colorScheme.onSurface
   AssistChip(
       onClick = { helpViewModel.openDialog() },

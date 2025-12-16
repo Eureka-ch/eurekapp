@@ -26,7 +26,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.task.Task
@@ -39,6 +38,7 @@ import ch.eureka.eurekapp.ui.components.EurekaTaskCard
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.help.HelpContext
 import ch.eureka.eurekapp.ui.components.help.InteractiveHelpEntryPoint
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.tasks.TaskScreenFilter
 import ch.eureka.eurekapp.ui.tasks.TaskScreenUiState
@@ -339,6 +339,7 @@ fun TasksScreen(
       topBar = {
         EurekaTopBar(
             title = "Tasks",
+            titleTestTag = TasksScreenTestTags.TASKS_SCREEN_TEXT,
             actions = {
               IconButton(
                   onClick = onFilesManagementClick,
@@ -346,7 +347,7 @@ fun TasksScreen(
                     Icon(
                         Icons.Filled.Folder,
                         contentDescription = "Manage Files",
-                        tint = Color.White)
+                        tint = EColors.WhiteTextColor)
                   }
               InteractiveHelpEntryPoint(
                   helpContext = HelpContext.TASKS, modifier = Modifier.testTag("tasksHelpButton"))

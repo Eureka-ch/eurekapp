@@ -28,7 +28,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.transcription.TranscriptionStatus
@@ -188,7 +187,7 @@ fun MeetingTranscriptViewScreen(
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = Color.White)
+                    tint = EColors.WhiteTextColor)
               }
             })
       }) { paddingValues ->
