@@ -3,8 +3,10 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import * as functions from 'firebase-functions';
 import express, { Request, Response } from 'express';
+import rateLimit from 'express-rate-limit';
 import { z } from 'zod/v4';
 import { validateMcpToken, McpAuthResult } from './tokenAuth';
+import { NotFoundError, ForbiddenError } from './utils';
 import {
   listProjectsForUser,
   getProjectForUser,
@@ -127,8 +129,19 @@ export function createMcpServer(auth: McpAuthResult): McpServer {
   return server;
 }
 
-const app = express();
+export const app = express();
 app.use(express.json());
+
+// Rate limiting: 30 requests per minute per IP
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: { error: 'Too many requests, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use('/mcp', limiter);
 
 app.post('/mcp', async (req: Request, res: Response) => {
   try {
@@ -144,9 +157,22 @@ app.post('/mcp', async (req: Request, res: Response) => {
     await server.connect(transport);
     await transport.handleRequest(req, res, req.body);
   } catch (error) {
-    functions.logger.error('MCP server error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+
+    functions.logger.error('MCP server error:', {
+      message: errorMessage,
+      stack: errorStack,
+      path: req.path,
+      method: req.method,
+    });
+
     if (error instanceof functions.https.HttpsError) {
       res.status(401).json({ error: error.message });
+    } else if (error instanceof NotFoundError) {
+      res.status(404).json({ error: error.message });
+    } else if (error instanceof ForbiddenError) {
+      res.status(403).json({ error: error.message });
     } else {
       res.status(500).json({ error: 'Internal server error' });
     }

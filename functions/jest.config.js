@@ -8,7 +8,7 @@ module.exports = {
     '^.+\\.tsx?$': 'ts-jest',
   },
   collectCoverageFrom: [
-    'src/mcp/tools/**/*.ts',
+    'src/mcp/**/*.ts',
     '!src/**/*.d.ts',
     '!src/**/*.test.ts',
   ],
