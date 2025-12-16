@@ -422,7 +422,6 @@ fun NavigationMenu(
                 MeetingScreen(
                     config =
                         MeetingScreenConfig(
-                            projectId = testProjectId,
                             onCreateMeeting = { isConnected ->
                               navigateIfConditionSatisfied(isConnected) {
                                 navigationController.navigate(Route.MeetingsSection.CreateMeeting)

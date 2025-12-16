@@ -9,11 +9,15 @@ import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.data.meeting.Meeting
+import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.utils.MockConnectivityObserver
+import com.google.firebase.Timestamp
+import java.util.Date
 import kotlin.collections.filter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,8 +52,13 @@ class MeetingScreenTest {
         var updateMeetingCallCount = 0
         var updatedMeeting: Meeting? = null
 
-        override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> {
+        // We override the new API method to return our test flow
+        override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> {
           return meetingsFlow
+        }
+
+        override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> {
+          return flowOf(emptyList())
         }
 
         override suspend fun updateMeeting(meeting: Meeting): Result<Unit> {
@@ -74,13 +83,12 @@ class MeetingScreenTest {
     val viewModel = MeetingViewModel(repositoryMock, { testUserId }, mockConnectivityObserver)
     composeTestRule.setContent {
       MeetingScreen(
-          meetingViewModel = viewModel,
-          config = MeetingScreenConfig(projectId = "test_project", onCreateMeeting = { _ -> }))
+          meetingViewModel = viewModel, config = MeetingScreenConfig(onCreateMeeting = { _ -> }))
     }
   }
 
   @Test
-  fun screenLoadsAndDisplaysStaticContent() {
+  fun meetingScreen_screenLoadsAndDisplaysStaticContent() {
     setContent()
     composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_SCREEN_TITLE).assertIsDisplayed()
     composeTestRule
@@ -90,7 +98,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun upcomingMeetingsAreDisplayedByDefault() {
+  fun meetingScreen_upcomingMeetingsAreDisplayedByDefault() {
     meetingsFlow.value = MeetingProvider.sampleMeetings
     setContent()
 
@@ -122,7 +130,41 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun clickingPastTabDisplaysPastMeetings() {
+  fun meetingScreen_meetingsFromMultipleProjectsAreAggregated() {
+    val meetingA =
+        Meeting(
+            meetingID = "meetingA",
+            projectId = "projectA",
+            title = "Project A Meeting",
+            status = MeetingStatus.SCHEDULED,
+            datetime = Timestamp(Date(System.currentTimeMillis() + 100000)), // Future
+            format = MeetingFormat.VIRTUAL,
+            link = "link",
+            createdBy = testUserId ?: "user")
+
+    val meetingB =
+        Meeting(
+            meetingID = "meetingB",
+            projectId = "projectB",
+            title = "Project B Meeting",
+            status = MeetingStatus.SCHEDULED,
+            datetime = Timestamp(Date(System.currentTimeMillis() + 200000)), // Future
+            format = MeetingFormat.IN_PERSON,
+            location = Location(name = "Room B"),
+            createdBy = testUserId ?: "user")
+
+    meetingsFlow.value = listOf(meetingA, meetingB)
+    setContent()
+
+    composeTestRule.waitForIdle()
+
+    // Assert both meetings from different projects are displayed
+    composeTestRule.onNodeWithText("Project A Meeting").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Project B Meeting").assertIsDisplayed()
+  }
+
+  @Test
+  fun meetingScreen_clickingPastTabDisplaysPastMeetings() {
     meetingsFlow.value = MeetingProvider.sampleMeetings
     setContent()
 
@@ -137,7 +179,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun displaysNoUpcomingMeetingsMessageWhenListIsEmpty() {
+  fun meetingScreen_displaysNoUpcomingMeetingsMessageWhenListIsEmpty() {
     meetingsFlow.value = emptyList()
     setContent()
 
@@ -150,7 +192,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun displaysNoPastMeetingsMessageWhenListIsEmpty() {
+  fun meetingScreen_displaysNoPastMeetingsMessageWhenListIsEmpty() {
     meetingsFlow.value = emptyList()
     setContent()
 
@@ -165,7 +207,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun meetingCardWhenOpenToVotesDisplaysCorrectElements() {
+  fun meetingScreen_meetingCardWhenOpenToVotesDisplaysCorrectElements() {
     val votingMeeting = MeetingProvider.sampleMeetings.first { it.meetingID == "meet_vote_01" }
     meetingsFlow.value = listOf(votingMeeting)
     setContent()
@@ -201,7 +243,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun meetingCardWhenScheduledAndVirtualDisplaysCorrectElements() {
+  fun meetingScreen_meetingCardWhenScheduledAndVirtualDisplaysCorrectElements() {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_scheduled_virtual_02" }
     meetingsFlow.value = listOf(meeting)
@@ -230,7 +272,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun meetingCardWhenScheduledAndInPersonDisplaysCorrectElements() {
+  fun meetingScreen_meetingCardWhenScheduledAndInPersonDisplaysCorrectElements() {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_scheduled_inperson_03" }
     meetingsFlow.value = listOf(meeting)
@@ -258,7 +300,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun meetingCardWhenInProgressAndVirtualDisplaysCorrectElements() {
+  fun meetingScreen_meetingCardWhenInProgressAndVirtualDisplaysCorrectElements() {
     val meeting = MeetingProvider.sampleMeetings.first { it.meetingID == "meet_inprogress_06" }
     meetingsFlow.value = listOf(meeting)
     setContent()
@@ -279,7 +321,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun meetingCardWhenInProgressAndInPersonDisplaysCorrectElements() {
+  fun meetingScreen_meetingCardWhenInProgressAndInPersonDisplaysCorrectElements() {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_inprogress_inperson_15" }
     meetingsFlow.value = listOf(meeting)
@@ -304,7 +346,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun meetingCardWhenCompletedAndVirtualDisplaysCorrectElements() {
+  fun meetingScreen_meetingCardWhenCompletedAndVirtualDisplaysCorrectElements() {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_completed_virtual_05" }
     meetingsFlow.value = listOf(meeting)
@@ -327,7 +369,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun meetingCardWhenCompletedAndInPersonDisplaysCorrectElements() {
+  fun meetingScreen_meetingCardWhenCompletedAndInPersonDisplaysCorrectElements() {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_completed_inperson_04" }
     meetingsFlow.value = listOf(meeting)
@@ -353,7 +395,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun closeVotesButtonIsDisplayedForCreatorWhenMeetingIsOpenToVotes() {
+  fun meetingScreen_closeVotesButtonIsDisplayedForCreatorWhenMeetingIsOpenToVotes() {
     val votingMeeting =
         MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.OPEN_TO_VOTES }
     testUserId = votingMeeting.createdBy
@@ -364,7 +406,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun closeVotesButtonIsNotDisplayedForNonCreator() {
+  fun meetingScreen_closeVotesButtonIsNotDisplayedForNonCreator() {
     val votingMeeting =
         MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.OPEN_TO_VOTES }
     testUserId = "some_other_user_id"
@@ -375,7 +417,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun closeVotesButtonIsNotDisplayedForScheduledMeetingEvenForCreator() {
+  fun meetingScreen_closeVotesButtonIsNotDisplayedForScheduledMeetingEvenForCreator() {
     val scheduledMeeting =
         MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.SCHEDULED }
     testUserId = scheduledMeeting.createdBy
@@ -386,7 +428,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun clickingCloseVotesButtonCallsViewModel() {
+  fun meetingScreen_clickingCloseVotesButtonCallsViewModel() {
     val votingMeeting = MeetingProvider.sampleMeetings.first { it.meetingID == "meet_vote_01" }
     testUserId = votingMeeting.createdBy
     meetingsFlow.value = listOf(votingMeeting)
@@ -407,14 +449,16 @@ class MeetingScreenTest {
 open class FakeMeetingRepository : MeetingRepository {
   override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> = flowOf(emptyList())
 
-  override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> = flow { null }
+  override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> = flow {
+    emit(null)
+  }
 
   override fun getMeetingsForTask(projectId: String, taskId: String): Flow<List<Meeting>> = flow {
-    emptyList<Meeting>()
+    emit(emptyList())
   }
 
   override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> = flow {
-    emptyList<Meeting>()
+    emit(emptyList())
   }
 
   override suspend fun createMeeting(
@@ -430,7 +474,7 @@ open class FakeMeetingRepository : MeetingRepository {
 
   override fun getParticipants(projectId: String, meetingId: String): Flow<List<Participant>> =
       flow {
-        emptyList<Participant>()
+        emit(emptyList())
       }
 
   override suspend fun addParticipant(

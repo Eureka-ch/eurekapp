@@ -89,15 +89,11 @@ class MeetingViewModel(
     _uiState.update { it.copy(errorMsg = msg) }
   }
 
-  /**
-   * Load all the meetings from the database for the project ID [projectId] into the UI state.
-   *
-   * @param projectId The ID of the project on which to requests the meetings.
-   */
-  fun loadMeetings(projectId: String) {
+  /** Load all the meetings from the database where the current user is in. */
+  fun loadMeetings() {
     viewModelScope.launch {
       repository
-          .getMeetingsInProject(projectId)
+          .getMeetingsForCurrentUser(skipCache = true)
           .onStart { _uiState.update { it.copy(isLoading = true) } }
           .catch { e -> _uiState.update { it.copy(isLoading = false, errorMsg = e.message) } }
           .collect { meetings ->
@@ -198,7 +194,7 @@ class MeetingViewModel(
         repository
             .updateMeeting(meeting = updatedMeeting)
             .onFailure { setErrorMsg("Meeting votes could not be closed.") }
-            .onSuccess { loadMeetings(meeting.projectId) }
+            .onSuccess { loadMeetings() }
       }
     }
   }

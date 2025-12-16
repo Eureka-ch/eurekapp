@@ -58,11 +58,12 @@ class MeetingViewModelTest {
   private fun createDummyMeeting(
       createdBy: String = testCreatorId,
       proposals: List<MeetingProposal> = emptyList(),
-      location: Location? = testLocation
+      location: Location? = testLocation,
+      projectId: String = "p1"
   ): Meeting {
     return Meeting(
         meetingID = "m1",
-        projectId = "p1",
+        projectId = projectId,
         createdBy = createdBy,
         meetingProposals = proposals,
         location = location)
@@ -74,7 +75,7 @@ class MeetingViewModelTest {
   }
 
   @Test
-  fun initialStateIsCorrect() {
+  fun meetingViewModel_initialStateIsCorrect() {
     val uiState = viewModel.uiState.value
     assertTrue(uiState.upcomingMeetings.isEmpty())
     assertTrue(uiState.pastMeetings.isEmpty())
@@ -84,7 +85,7 @@ class MeetingViewModelTest {
   }
 
   @Test
-  fun loadMeetingsCorrectlyFiltersAndSortsMeetings() = runTest {
+  fun meetingViewModel_loadMeetingsCorrectlyFiltersAndSortsMeetings() = runTest {
     val now = Timestamp(Date())
     val older = Timestamp(Date(now.toDate().time - 1000000))
     val newer = Timestamp(Date(now.toDate().time + 1000000))
@@ -107,7 +108,7 @@ class MeetingViewModelTest {
 
     repositoryMock.meetingsToReturn = listOf(meeting1, meeting2, meeting3)
 
-    viewModel.loadMeetings("project123")
+    viewModel.loadMeetings()
     testDispatcher.scheduler.advanceUntilIdle()
 
     val uiState = viewModel.uiState.value
@@ -125,7 +126,7 @@ class MeetingViewModelTest {
   }
 
   @Test
-  fun loadMeetingsSortsByTimeSlotWhenDatetimeIsNull() = runTest {
+  fun meetingViewModel_loadMeetingsSortsByTimeSlotWhenDatetimeIsNull() = runTest {
     val baseTime = Date().time
 
     val meetingWithDatetime =
@@ -152,7 +153,7 @@ class MeetingViewModelTest {
 
     repositoryMock.meetingsToReturn = listOf(meetingWithDatetime, meetingWithTime)
 
-    viewModel.loadMeetings("projectABC")
+    viewModel.loadMeetings()
     testDispatcher.scheduler.advanceUntilIdle()
 
     val uiState = viewModel.uiState.value
@@ -164,9 +165,9 @@ class MeetingViewModelTest {
   }
 
   @Test
-  fun loadMeetingsHandlesLoadingStateCorrectly() = runTest {
+  fun meetingViewModel_loadMeetingsHandlesLoadingStateCorrectly() = runTest {
     repositoryMock.meetingsToReturn = listOf(Meeting(title = "Planning"))
-    viewModel.loadMeetings("any_project_id")
+    viewModel.loadMeetings()
 
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -174,10 +175,10 @@ class MeetingViewModelTest {
   }
 
   @Test
-  fun loadMeetingsHandlesEmptyListFromRepository() = runTest {
+  fun meetingViewModel_loadMeetingsHandlesEmptyListFromRepository() = runTest {
     repositoryMock.meetingsToReturn = emptyList()
 
-    viewModel.loadMeetings("any_project_id")
+    viewModel.loadMeetings()
     testDispatcher.scheduler.advanceUntilIdle()
 
     val uiState = viewModel.uiState.value
@@ -187,12 +188,12 @@ class MeetingViewModelTest {
   }
 
   @Test
-  fun loadMeetingsHandlesRepositoryError() = runTest {
+  fun meetingViewModel_loadMeetingsHandlesRepositoryError() = runTest {
     val errorMessage = "Network Error"
     repositoryMock.shouldThrowError = true
     repositoryMock.errorMessage = errorMessage
 
-    viewModel.loadMeetings("any_project_id")
+    viewModel.loadMeetings()
     testDispatcher.scheduler.advanceUntilIdle()
 
     val uiState = viewModel.uiState.value
@@ -202,7 +203,35 @@ class MeetingViewModelTest {
   }
 
   @Test
-  fun selectTabUpdatesTheSelectedTabInUIState() {
+  fun meetingViewModel_loadMeetingsLoadsMeetingsFromDifferentProjects() = runTest {
+    val meetingProjA =
+        Meeting(
+            meetingID = "1",
+            projectId = "projectA",
+            title = "Project A Meeting",
+            status = MeetingStatus.SCHEDULED,
+            datetime = Timestamp(Date()))
+    val meetingProjB =
+        Meeting(
+            meetingID = "2",
+            projectId = "projectB",
+            title = "Project B Meeting",
+            status = MeetingStatus.SCHEDULED,
+            datetime = Timestamp(Date()))
+
+    repositoryMock.meetingsToReturn = listOf(meetingProjA, meetingProjB)
+
+    viewModel.loadMeetings()
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    val uiState = viewModel.uiState.value
+    assertEquals(2, uiState.upcomingMeetings.size)
+    assertTrue(uiState.upcomingMeetings.any { it.projectId == "projectA" })
+    assertTrue(uiState.upcomingMeetings.any { it.projectId == "projectB" })
+  }
+
+  @Test
+  fun meetingViewModel_selectTabUpdatesTheSelectedTabInUIState() {
     viewModel.selectTab(MeetingTab.PAST)
     assertEquals(MeetingTab.PAST, viewModel.uiState.value.selectedTab)
 
@@ -211,7 +240,7 @@ class MeetingViewModelTest {
   }
 
   @Test
-  fun clearErrorMsgSetsErrorMsgToNull() = runTest {
+  fun meetingViewModel_clearErrorMsgSetsErrorMsgToNull() = runTest {
     viewModel.setErrorMsg("Test Error")
     assertNotNull(viewModel.uiState.value.errorMsg)
 
@@ -220,8 +249,20 @@ class MeetingViewModelTest {
   }
 
   @Test
-  fun closeVotesForMeetingWhenUserIsNotCreatorAndNoVotes() = runTest {
-    currentUserId = "not-the-creator"
+  fun meetingViewModel_closeVotesForMeetingWhenUserIsNotCreatorAndNoVotes() = runTest {
+    // We create a meeting where createdBy is NOT the currentUserId ("test-creator-id")
+    val meeting = createDummyMeeting(createdBy = "other-user", proposals = emptyList())
+    viewModel.closeVotesForMeeting(meeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertEquals(0, repositoryMock.updateMeetingCallCount)
+    assertEquals(
+        "Cannot close votes since you are not the creator of the meeting.",
+        viewModel.uiState.value.errorMsg)
+  }
+
+  @Test
+  fun meetingViewModel_closeVotesForMeetingWhenNoVotesCast() = runTest {
     val meeting = createDummyMeeting(proposals = emptyList())
     viewModel.closeVotesForMeeting(meeting)
     testDispatcher.scheduler.advanceUntilIdle()
@@ -231,17 +272,7 @@ class MeetingViewModelTest {
   }
 
   @Test
-  fun closeVotesForMeetingWhenNoVotesCast() = runTest {
-    val meeting = createDummyMeeting(proposals = emptyList())
-    viewModel.closeVotesForMeeting(meeting)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    assertEquals(0, repositoryMock.updateMeetingCallCount)
-    assertEquals("No votes have been cast for any proposal.", viewModel.uiState.value.errorMsg)
-  }
-
-  @Test
-  fun closeVotesForMeetingWhenWinningProposalHasNoFormatVotes() = runTest {
+  fun meetingViewModel_closeVotesForMeetingWhenWinningProposalHasNoFormatVotes() = runTest {
     val proposals = listOf(MeetingProposal(date1, listOf(voteNoFormat)))
     val meeting = createDummyMeeting(proposals = proposals)
     viewModel.closeVotesForMeeting(meeting)
@@ -253,7 +284,7 @@ class MeetingViewModelTest {
   }
 
   @Test
-  fun closeVotesForMeetingWhenWinnerIsInPersonButNoLocation() = runTest {
+  fun meetingViewModel_closeVotesForMeetingWhenWinnerIsInPersonButNoLocation() = runTest {
     val proposals = listOf(MeetingProposal(date1, listOf(voteInPerson)))
     val meeting = createDummyMeeting(proposals = proposals, location = null)
     viewModel.closeVotesForMeeting(meeting)
@@ -265,7 +296,7 @@ class MeetingViewModelTest {
   }
 
   @Test
-  fun closeVotesForMeetingSuccessVirtual() = runTest {
+  fun meetingViewModel_closeVotesForMeetingSuccessVirtual() = runTest {
     val proposals = listOf(MeetingProposal(date1, listOf(voteVirtual)))
     val meeting = createDummyMeeting(proposals = proposals, location = null)
     viewModel.closeVotesForMeeting(meeting)
@@ -285,7 +316,7 @@ class MeetingViewModelTest {
   }
 
   @Test
-  fun closeVotesForMeetingSuccessInPerson() = runTest {
+  fun meetingViewModel_closeVotesForMeetingSuccessInPerson() = runTest {
     val proposals = listOf(MeetingProposal(date1, listOf(voteInPerson)))
     val meeting = createDummyMeeting(proposals = proposals)
     viewModel.closeVotesForMeeting(meeting)
@@ -305,7 +336,7 @@ class MeetingViewModelTest {
   }
 
   @Test
-  fun closeVotesForMeetingSuccessPicksProposalWithMostVotes() = runTest {
+  fun meetingViewModel_closeVotesForMeetingSuccessPicksProposalWithMostVotes() = runTest {
     val p1 = MeetingProposal(date1, listOf(voteInPerson))
     val p2 = MeetingProposal(date2, listOf(voteVirtual, voteVirtual2))
     val meeting = createDummyMeeting(proposals = listOf(p1, p2))
@@ -322,7 +353,7 @@ class MeetingViewModelTest {
   }
 
   @Test
-  fun closeVotesForMeetingSuccessUsesFormatVoteAsDatetimeTieBreaker() = runTest {
+  fun meetingViewModel_closeVotesForMeetingSuccessUsesFormatVoteAsDatetimeTieBreaker() = runTest {
     val p1 = MeetingProposal(date1, listOf(voteInPerson, voteVirtual))
     val p2 = MeetingProposal(date2, listOf(voteInPerson, voteInPerson2))
     val meeting = createDummyMeeting(proposals = listOf(p1, p2))
@@ -339,7 +370,7 @@ class MeetingViewModelTest {
   }
 
   @Test
-  fun closeVotesForMeetingSuccessPicksFirstOnCompleteTie() = runTest {
+  fun meetingViewModel_closeVotesForMeetingSuccessPicksFirstOnCompleteTie() = runTest {
     val p1 = MeetingProposal(date1, listOf(voteInPerson, voteInPerson2))
     val p2 = MeetingProposal(date2, listOf(voteVirtual, voteVirtual2))
     val meeting = createDummyMeeting(proposals = listOf(p1, p2))
@@ -356,7 +387,7 @@ class MeetingViewModelTest {
   }
 
   @Test
-  fun closeVotesForMeetingWhenRepositoryUpdateFails() = runTest {
+  fun meetingViewModel_closeVotesForMeetingWhenRepositoryUpdateFails() = runTest {
     repositoryMock.updateShouldFail = true
     val proposals = listOf(MeetingProposal(date1, listOf(voteInPerson)))
     val meeting = createDummyMeeting(proposals = proposals)
@@ -379,10 +410,8 @@ class MeetingRepositoryMockViewmodel : MeetingRepository {
   var updateMeetingCallCount = 0
   var loadMeetingsCallCount = 0
 
-  override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> {
-    if (projectId.isNotEmpty()) {
-      loadMeetingsCallCount++
-    }
+  override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> {
+    loadMeetingsCallCount++
     return if (shouldThrowError) {
       flow { throw Exception(errorMessage) }
     } else {
@@ -402,10 +431,9 @@ class MeetingRepositoryMockViewmodel : MeetingRepository {
 
   override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> = flowOf(null)
 
-  override fun getMeetingsForTask(projectId: String, taskId: String): Flow<List<Meeting>> =
-      flowOf(emptyList())
+  override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> = flowOf(emptyList())
 
-  override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> =
+  override fun getMeetingsForTask(projectId: String, taskId: String): Flow<List<Meeting>> =
       flowOf(emptyList())
 
   override suspend fun createMeeting(
