@@ -60,6 +60,9 @@ object FirestorePaths {
   /** Idea messages subcollection name */
   const val IDEA_MESSAGES = "messages"
 
+  /** MCP tokens root collection */
+  const val MCP_TOKENS = "mcpTokens"
+
   fun userPath(userId: String) = "$USERS/$userId"
 
   fun projectPath(projectId: String) = "$PROJECTS/$projectId"
@@ -138,4 +141,8 @@ object FirestorePaths {
       "${ideaMessagesPath(projectId, ideaId)}/$messageId"
 
   fun activitiesPath() = ACTIVITIES
+
+  fun mcpTokensPath() = MCP_TOKENS
+
+  fun mcpTokenPath(tokenHash: String) = "$MCP_TOKENS/$tokenHash"
 }

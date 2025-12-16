@@ -11,6 +11,8 @@ import ch.eureka.eurekapp.model.data.file.FirebaseFileStorageRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,12 +25,14 @@ class AudioRecordingViewModel(
         FirebaseFileStorageRepository(FirebaseStorage.getInstance(), FirebaseAuth.getInstance()),
     val recordingRepository: LocalAudioRecordingRepository =
         AudioRecordingRepositoryProvider.repository,
-    private val meetingRepository: MeetingRepository = RepositoriesProvider.meetingRepository
+    private val meetingRepository: MeetingRepository = RepositoriesProvider.meetingRepository,
 ) : ViewModel() {
   private val _recordingUri: MutableStateFlow<Uri?> = MutableStateFlow(null)
-  val recordingUri = _recordingUri.asStateFlow()
 
   val isRecording: StateFlow<RecordingState> = recordingRepository.getRecordingStateFlow()
+
+  private val _recordingTimeInSeconds: MutableStateFlow<Long> = MutableStateFlow(0L)
+  val recordingTimeInSeconds = _recordingTimeInSeconds.asStateFlow()
 
   fun startRecording(context: Context, fileName: String) {
     val createdRecordingUri = recordingRepository.createRecording(context, fileName)
@@ -36,12 +40,15 @@ class AudioRecordingViewModel(
       return
     }
     _recordingUri.value = createdRecordingUri.getOrNull()
+    addTimeToRecording()
   }
 
   fun resumeRecording() {
-    if (isRecording.value == RecordingState.PAUSED &&
-        recordingRepository.resumeRecording().isFailure) {
-      return
+    if (isRecording.value == RecordingState.PAUSED) {
+      if (recordingRepository.resumeRecording().isFailure) {
+        return
+      }
+      addTimeToRecording()
     }
   }
 
@@ -60,6 +67,7 @@ class AudioRecordingViewModel(
       if (result.isFailure) {
         return
       }
+      resetRecordingTime()
     }
   }
 
@@ -127,6 +135,25 @@ class AudioRecordingViewModel(
             onCompletion()
           }
     }
+  }
+
+  private var recordingTimeJob: Job? = null
+
+  fun addTimeToRecording() {
+    recordingTimeJob?.cancel()
+    recordingTimeJob =
+        viewModelScope.launch {
+          while (isRecording.value == RecordingState.RUNNING) {
+            delay(1000L)
+            if (isRecording.value == RecordingState.RUNNING) {
+              _recordingTimeInSeconds.value += 1
+            }
+          }
+        }
+  }
+
+  fun resetRecordingTime() {
+    _recordingTimeInSeconds.value = 0
   }
 
   override fun onCleared() {

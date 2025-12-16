@@ -4,9 +4,7 @@ package ch.eureka.eurekapp.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -38,8 +36,10 @@ import ch.eureka.eurekapp.model.data.task.getDaysUntilDue
 import ch.eureka.eurekapp.model.data.task.getDueDateTag
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.help.HelpContext
-import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
+import ch.eureka.eurekapp.ui.components.help.InteractiveHelpEntryPoint
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.tasks.TaskScreenFilter
 import ch.eureka.eurekapp.ui.tasks.TaskScreenUiState
@@ -121,31 +121,9 @@ fun formatDueDate(diffInDays: Long): String {
 private fun HeaderSection(
     onCreateTaskClick: () -> Unit,
     onAutoAssignClick: () -> Unit,
-    onFilesManagementClick: () -> Unit,
     isConnected: Boolean
 ) {
   Column(modifier = Modifier.padding(vertical = Spacing.md)) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically) {
-          Text(
-              text = "Task",
-              style = MaterialTheme.typography.headlineLarge,
-              color = MaterialTheme.colorScheme.onSurface,
-              modifier = Modifier.testTag(TasksScreenTestTags.TASKS_SCREEN_TEXT))
-
-          IconButton(
-              onClick = onFilesManagementClick,
-              enabled = true,
-              modifier = Modifier.testTag(TasksScreenTestTags.FILES_MANAGEMENT_BUTTON)) {
-                Icon(
-                    Icons.Filled.Folder,
-                    contentDescription = "Manage Files",
-                    tint = MaterialTheme.colorScheme.primary)
-              }
-        }
-
     Text(
         text = "Manage and track your project tasks",
         style = MaterialTheme.typography.bodyMedium,
@@ -356,27 +334,37 @@ fun TasksScreen(
     viewModel.setFilter(filter)
   }
 
-  Scaffold(modifier = modifier.fillMaxSize().testTag(TasksScreenTestTags.TASKS_SCREEN_CONTENT)) {
-      innerPadding ->
-    // Note: userProvidedName is not passed as TasksScreen doesn't have access to user data.
-    // The help composable will fall back to FirebaseAuth.getInstance().currentUser?.displayName.
-    ScreenWithHelp(
-        helpContext = HelpContext.TASKS,
-        content = {
-          Column(
-              modifier =
-                  Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = Spacing.md)) {
-                HeaderSection(
-                    onCreateTaskClick, onAutoAssignClick, onFilesManagementClick, isConnected)
-                FilterBar(uiState, selectedFilter, ::setFilter)
-                if (uiState.isLoading) {
-                  LoadingState()
-                } else if (uiState.error != null) {
-                  ErrorState(errorMsg)
-                } else {
-                  TaskList(tasksAndUsers, viewModel, isConnected, onTaskClick)
-                }
+  Scaffold(
+      modifier = modifier.fillMaxSize().testTag(TasksScreenTestTags.TASKS_SCREEN_CONTENT),
+      topBar = {
+        EurekaTopBar(
+            title = "Tasks",
+            titleTestTag = TasksScreenTestTags.TASKS_SCREEN_TEXT,
+            actions = {
+              IconButton(
+                  onClick = onFilesManagementClick,
+                  modifier = Modifier.testTag(TasksScreenTestTags.FILES_MANAGEMENT_BUTTON)) {
+                    Icon(
+                        Icons.Filled.Folder,
+                        contentDescription = "Manage Files",
+                        tint = EColors.WhiteTextColor)
+                  }
+              InteractiveHelpEntryPoint(
+                  helpContext = HelpContext.TASKS, modifier = Modifier.testTag("tasksHelpButton"))
+            })
+      }) { innerPadding ->
+        Column(
+            modifier =
+                Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = Spacing.md)) {
+              HeaderSection(onCreateTaskClick, onAutoAssignClick, isConnected)
+              FilterBar(uiState, selectedFilter, ::setFilter)
+              if (uiState.isLoading) {
+                LoadingState()
+              } else if (uiState.error != null) {
+                ErrorState(errorMsg)
+              } else {
+                TaskList(tasksAndUsers, viewModel, isConnected, onTaskClick)
               }
-        })
-  }
+            }
+      }
 }

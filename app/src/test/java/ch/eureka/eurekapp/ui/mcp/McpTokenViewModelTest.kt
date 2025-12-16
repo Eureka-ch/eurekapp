@@ -1,13 +1,15 @@
 // Co-authored by Claude Code
 package ch.eureka.eurekapp.ui.mcp
 
+import ch.eureka.eurekapp.model.data.mcp.CreateTokenResult
 import ch.eureka.eurekapp.model.data.mcp.McpToken
 import ch.eureka.eurekapp.model.data.mcp.McpTokenRepository
+import com.google.firebase.Timestamp
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import java.time.Instant
+import java.util.Date
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
@@ -31,18 +33,15 @@ class McpTokenViewModelTest {
   private lateinit var repository: McpTokenRepository
   private lateinit var testDispatcher: TestDispatcher
 
+  private val now = Timestamp.now()
+  private val expiresAt = Timestamp(Date(now.toDate().time + 30 * 24 * 60 * 60 * 1000L))
+
   private val testTokens =
       listOf(
-          McpToken(
-              tokenId = "token-1",
-              name = "Test Token 1",
-              createdAt = Instant.now(),
-              expiresAt = Instant.now().plusSeconds(86400 * 30)),
-          McpToken(
-              tokenId = "token-2",
-              name = "Test Token 2",
-              createdAt = Instant.now(),
-              expiresAt = Instant.now().plusSeconds(86400 * 30)))
+          McpToken(userId = "user-1", name = "Test Token 1", createdAt = now, expiresAt = expiresAt)
+              .apply { tokenHash = "hash-1" },
+          McpToken(userId = "user-1", name = "Test Token 2", createdAt = now, expiresAt = expiresAt)
+              .apply { tokenHash = "hash-2" })
 
   @Before
   fun setup() {
@@ -78,7 +77,7 @@ class McpTokenViewModelTest {
     val state = viewModel.uiState.value
     assertFalse(state.isLoading)
     assertEquals(2, state.tokens.size)
-    assertEquals("token-1", state.tokens[0].tokenId)
+    assertEquals("hash-1", state.tokens[0].tokenHash)
     assertEquals("Test Token 1", state.tokens[0].name)
   }
 
@@ -97,11 +96,11 @@ class McpTokenViewModelTest {
   @Test
   fun createToken_createsTokenAndRefreshesList() = runTest {
     val newToken =
-        McpToken(
-            tokenId = "new-token-123",
-            name = "New Token",
-            expiresAt = Instant.now().plusSeconds(86400 * 30))
-    coEvery { repository.createToken("New Token", 30) } returns Result.success(newToken)
+        McpToken(userId = "user-1", name = "New Token", expiresAt = expiresAt).apply {
+          tokenHash = "new-hash"
+        }
+    val createResult = CreateTokenResult(newToken, "mcp_raw_token_value")
+    coEvery { repository.createToken("New Token", 30) } returns Result.success(createResult)
     coEvery { repository.listTokens() } returns Result.success(testTokens + newToken)
 
     advanceUntilIdle()
@@ -110,7 +109,7 @@ class McpTokenViewModelTest {
     advanceUntilIdle()
 
     val state = viewModel.uiState.value
-    assertEquals("new-token-123", state.newlyCreatedToken)
+    assertEquals("mcp_raw_token_value", state.newlyCreatedToken)
     assertFalse(state.isLoading)
     coVerify { repository.listTokens() }
   }
@@ -134,11 +133,11 @@ class McpTokenViewModelTest {
   @Test
   fun createToken_usesDefaultNameWhenBlank() = runTest {
     val newToken =
-        McpToken(
-            tokenId = "new-token-123",
-            name = "MCP Token",
-            expiresAt = Instant.now().plusSeconds(86400 * 30))
-    coEvery { repository.createToken("MCP Token", 30) } returns Result.success(newToken)
+        McpToken(userId = "user-1", name = "MCP Token", expiresAt = expiresAt).apply {
+          tokenHash = "new-hash"
+        }
+    val createResult = CreateTokenResult(newToken, "mcp_raw_token")
+    coEvery { repository.createToken("MCP Token", 30) } returns Result.success(createResult)
 
     advanceUntilIdle()
 
@@ -150,17 +149,17 @@ class McpTokenViewModelTest {
 
   @Test
   fun revokeToken_deletesTokenAndRefreshesList() = runTest {
-    coEvery { repository.revokeToken("token-1") } returns Result.success(Unit)
+    coEvery { repository.revokeToken("hash-1") } returns Result.success(Unit)
     coEvery { repository.listTokens() } returns Result.success(listOf(testTokens[1]))
 
     advanceUntilIdle()
 
-    viewModel.revokeToken("token-1")
+    viewModel.revokeToken("hash-1")
     advanceUntilIdle()
 
     val state = viewModel.uiState.value
     assertFalse(state.isLoading)
-    coVerify { repository.revokeToken("token-1") }
+    coVerify { repository.revokeToken("hash-1") }
     coVerify(atLeast = 2) { repository.listTokens() }
   }
 
@@ -170,7 +169,7 @@ class McpTokenViewModelTest {
 
     advanceUntilIdle()
 
-    viewModel.revokeToken("token-1")
+    viewModel.revokeToken("hash-1")
     advanceUntilIdle()
 
     val state = viewModel.uiState.value
@@ -180,14 +179,15 @@ class McpTokenViewModelTest {
 
   @Test
   fun clearNewlyCreatedToken_clearsTheToken() = runTest {
-    val newToken = McpToken(tokenId = "new-token-123", name = "Test")
-    coEvery { repository.createToken(any(), any()) } returns Result.success(newToken)
+    val newToken = McpToken(userId = "user-1", name = "Test").apply { tokenHash = "new-hash" }
+    val createResult = CreateTokenResult(newToken, "mcp_raw_token_123")
+    coEvery { repository.createToken(any(), any()) } returns Result.success(createResult)
 
     advanceUntilIdle()
 
     viewModel.createToken("Test")
     advanceUntilIdle()
-    assertEquals("new-token-123", viewModel.uiState.value.newlyCreatedToken)
+    assertEquals("mcp_raw_token_123", viewModel.uiState.value.newlyCreatedToken)
 
     viewModel.clearNewlyCreatedToken()
     assertNull(viewModel.uiState.value.newlyCreatedToken)

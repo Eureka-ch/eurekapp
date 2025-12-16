@@ -13,7 +13,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -23,6 +22,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.map.Location
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
@@ -60,15 +61,15 @@ fun MeetingLocationSelectionScreen(
 
   Scaffold(
       topBar = {
-        TopAppBar(
-            title = {
-              Text(
-                  "Pick a Location",
-                  modifier = Modifier.testTag(MeetingLocationSelectionTestTags.SCREEN_TITLE))
-            },
+        EurekaTopBar(
+            title = "Pick a Location",
+            titleTestTag = MeetingLocationSelectionTestTags.SCREEN_TITLE,
             navigationIcon = {
               IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = EColors.WhiteTextColor)
               }
             })
       },
