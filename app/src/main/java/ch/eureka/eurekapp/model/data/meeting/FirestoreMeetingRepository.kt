@@ -78,10 +78,7 @@ class FirestoreMeetingRepository(
         awaitClose { listener.remove() }
       }
 
-  override fun getMeetingsForCurrentUser(
-      projectId: String,
-      skipCache: Boolean
-  ): Flow<List<Meeting>> = callbackFlow {
+  override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> = callbackFlow {
     val currentUserId = auth.currentUser?.uid
     if (currentUserId == null) {
       trySend(emptyList())
@@ -91,12 +88,9 @@ class FirestoreMeetingRepository(
 
     val listener =
         firestore
-            .collection(FirestorePaths.PROJECTS)
-            .document(projectId)
-            .collection(FirestorePaths.MEETINGS)
+            .collectionGroup(FirestorePaths.MEETINGS)
             .whereArrayContains("participantIds", currentUserId)
             .addSnapshotListener { snapshot, error ->
-              // Skip cached data if requested to avoid stale results
               if (skipCache && snapshot?.metadata?.isFromCache == true) {
                 return@addSnapshotListener
               }
@@ -117,15 +111,12 @@ class FirestoreMeetingRepository(
       creatorId: String,
       creatorRole: MeetingRole
   ): Result<String> = runCatching {
-    // Add creator to participantIds
-    val meetingWithParticipant = meeting.copy(participantIds = listOf(creatorId))
-
     firestore
         .collection(FirestorePaths.PROJECTS)
         .document(meeting.projectId)
         .collection(FirestorePaths.MEETINGS)
         .document(meeting.meetingID)
-        .set(meetingWithParticipant)
+        .set(meeting)
         .await()
 
     val participant = Participant(userId = creatorId, role = creatorRole)

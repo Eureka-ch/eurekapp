@@ -413,10 +413,9 @@ open class FakeMeetingRepository : MeetingRepository {
     emptyList<Meeting>()
   }
 
-  override fun getMeetingsForCurrentUser(
-      projectId: String,
-      skipCache: Boolean
-  ): Flow<List<Meeting>> = flow { emptyList<Meeting>() }
+  override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> = flow {
+    emptyList<Meeting>()
+  }
 
   override suspend fun createMeeting(
       meeting: Meeting,

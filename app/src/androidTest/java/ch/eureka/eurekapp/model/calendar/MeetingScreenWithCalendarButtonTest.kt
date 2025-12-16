@@ -54,10 +54,7 @@ class MeetingScreenWithCalendarButtonTest {
       TODO("Not yet implemented")
     }
 
-    override fun getMeetingsForCurrentUser(
-        projectId: String,
-        skipCache: Boolean
-    ): Flow<List<Meeting>> {
+    override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> {
       TODO("Not yet implemented")
     }
 

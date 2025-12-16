@@ -1,5 +1,6 @@
+/* Portions of this code were generated with the help of Gemini 3 Pro. */
 package ch.eureka.eurekapp.ui.meeting
-// Portions of this code were generated with the help of Gemini 3 Pro.
+
 import android.content.ContentResolver
 import android.content.Context
 import android.database.Cursor
@@ -144,10 +145,7 @@ class MeetingAttachmentsViewModelTest {
       return flowOf(listOf())
     }
 
-    override fun getMeetingsForCurrentUser(
-        projectId: String,
-        skipCache: Boolean
-    ): Flow<List<Meeting>> {
+    override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> {
       return flowOf(listOf())
     }
 
@@ -288,10 +286,7 @@ class MeetingAttachmentsViewModelTest {
       return flowOf(listOf())
     }
 
-    override fun getMeetingsForCurrentUser(
-        projectId: String,
-        skipCache: Boolean
-    ): Flow<List<Meeting>> {
+    override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> {
       return flowOf(listOf())
     }
 
@@ -422,10 +417,7 @@ class MeetingAttachmentsViewModelTest {
       TODO("Not yet implemented")
     }
 
-    override fun getMeetingsForCurrentUser(
-        projectId: String,
-        skipCache: Boolean
-    ): Flow<List<Meeting>> {
+    override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> {
       TODO("Not yet implemented")
     }
 
