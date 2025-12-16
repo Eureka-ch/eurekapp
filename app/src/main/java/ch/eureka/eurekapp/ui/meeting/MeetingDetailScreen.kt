@@ -227,7 +227,6 @@ fun MeetingDetailScreen(
             MeetingDetailContent(
                 modifier = Modifier.padding(padding),
                 meeting = meeting,
-                participants = uiState.participants,
                 attachmentsViewModel = attachmentsViewModel,
                 editConfig =
                     EditConfig(
@@ -409,7 +408,6 @@ data class ActionButtonsConfig(
 @Composable
 private fun MeetingDetailContent(
     meeting: Meeting,
-    participants: List<Participant>,
     editConfig: EditConfig,
     actionsConfig: MeetingDetailContentActionsConfig,
     modifier: Modifier = Modifier,
@@ -447,7 +445,7 @@ private fun MeetingDetailContent(
           }
         }
 
-        item { ParticipantsSection(participants = participants) }
+        item { ParticipantsSection(participants = emptyList()) }
 
         item { AttachmentsSection(meeting = meeting, attachmentsViewModel = attachmentsViewModel) }
 
