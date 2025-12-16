@@ -98,6 +98,7 @@ fun ProjectMembersScreen(
                   is MembersUiState.Loading,
                   is MembersUiState.Error -> "Project members"
                 },
+            titleTestTag = ProjectMembersScreenTestTags.TITLE,
             navigationIcon = {
               IconButton(
                   onClick = onBackClick,
