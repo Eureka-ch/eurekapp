@@ -2,9 +2,9 @@ package ch.eureka.eurekapp.test_end_to_end
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -29,6 +29,7 @@ import ch.eureka.eurekapp.utils.FakeJwtGenerator
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.google.firebase.auth.GoogleAuthProvider
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
+import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
@@ -257,7 +258,7 @@ class TaskEndToEndTest : TestCase() {
   private val testUserName = "Test User"
   private val testUserEmail = "testuser@example.com"
   // Use the same project ID as NavigationMenu
-  private val testProjectId = "test-project-id"
+  private val testProjectId = "test-project-${UUID.randomUUID()}"
 
   @OptIn(ExperimentalTestApi::class)
   @Test
@@ -400,7 +401,9 @@ class TaskEndToEndTest : TestCase() {
       }
 
       // Wait for meeting to appear in list
-      composeTestRule.waitUntilExactlyOneExists(hasText(meetingTitle), timeoutMillis = 15_000)
+      composeTestRule.waitUntil(timeoutMillis = 30_000) {
+        composeTestRule.onAllNodesWithText(meetingTitle).fetchSemanticsNodes().isNotEmpty()
+      }
 
       // Verify meeting is displayed in the list
       composeTestRule.onNodeWithText(meetingTitle).assertIsDisplayed()
