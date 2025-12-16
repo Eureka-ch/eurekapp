@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 
-class MockProjectRepository : ProjectRepository {
+open class MockProjectRepository : ProjectRepository {
   private val projectsFlow = MutableStateFlow<List<Project>>(emptyList())
   var shouldThrow: Boolean = false
 

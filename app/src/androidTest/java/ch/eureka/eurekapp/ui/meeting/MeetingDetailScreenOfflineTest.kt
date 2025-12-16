@@ -1,4 +1,4 @@
-// Portions of this code were generated with the help of Grok.
+/* Portions of this code were generated with the help of Grok and Gemini. */
 package ch.eureka.eurekapp.ui.meeting
 
 import android.net.Uri
@@ -18,11 +18,13 @@ import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import com.google.firebase.storage.StorageMetadata
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
 import org.junit.Before
@@ -39,11 +41,13 @@ class MeetingDetailScreenOfflineTest {
   private lateinit var mockConnectivityObserver: MockConnectivityObserver
   private lateinit var viewModel: MeetingDetailViewModel
   private lateinit var attachmentsViewModel: MeetingAttachmentsViewModel
+  private lateinit var projectRepositoryMock: MockProjectRepository
   private val testProjectId = "testProject123"
   private val testMeetingId = "testMeeting123"
 
   private val meetingFlow = MutableStateFlow<Meeting?>(null)
   private val participantsFlow = MutableStateFlow<List<Participant>>(emptyList())
+  private val projectFlow = MutableStateFlow<Project?>(Project(name = "Offline Test Project"))
 
   private class FileStorageRepositoryMock : FileStorageRepository {
     override suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String> {
@@ -68,17 +72,14 @@ class MeetingDetailScreenOfflineTest {
 
   private val repositoryMock =
       object : MeetingRepositoryMock() {
-        override fun getMeetingById(
-            projectId: String,
-            meetingId: String
-        ): kotlinx.coroutines.flow.Flow<Meeting?> {
+        override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> {
           return meetingFlow
         }
 
         override fun getParticipants(
             projectId: String,
             meetingId: String
-        ): kotlinx.coroutines.flow.Flow<List<Participant>> {
+        ): Flow<List<Participant>> {
           return participantsFlow
         }
       }
@@ -87,9 +88,22 @@ class MeetingDetailScreenOfflineTest {
   fun setUp() {
     mockConnectivityObserver =
         MockConnectivityObserver(InstrumentationRegistry.getInstrumentation().targetContext)
+
+    // Setup Project Repository Mock to return a project
+    projectRepositoryMock =
+        object : MockProjectRepository() {
+          override fun getProjectById(projectId: String): Flow<Project?> = projectFlow
+        }
+
+    // Initialize ViewModel with all required dependencies
     viewModel =
         MeetingDetailViewModel(
-            testProjectId, testMeetingId, repositoryMock, mockConnectivityObserver)
+            projectId = testProjectId,
+            meetingId = testMeetingId,
+            repository = repositoryMock,
+            projectRepository = projectRepositoryMock,
+            connectivityObserver = mockConnectivityObserver)
+
     attachmentsViewModel =
         MeetingAttachmentsViewModel(
             fileStorageRepository = FileStorageRepositoryMock(),
@@ -99,12 +113,16 @@ class MeetingDetailScreenOfflineTest {
 
   @After
   fun tearDown() {
-    FirebaseEmulator.clearFirestoreEmulator()
-    FirebaseEmulator.clearAuthEmulator()
+    try {
+      FirebaseEmulator.clearFirestoreEmulator()
+      FirebaseEmulator.clearAuthEmulator()
+    } catch (_: Exception) {
+      // Ignore if not initialized
+    }
   }
 
   @Test
-  fun meetingDetailScreenOfflineDisplaysMessage() {
+  fun meetingDetailScreenOffline_displaysMessage() {
     val meeting =
         Meeting(
             meetingID = testMeetingId,
@@ -150,7 +168,7 @@ class MeetingDetailScreenOfflineTest {
   }
 
   @Test
-  fun meetingDetailScreenOfflineStillViewsMeetingDetails() {
+  fun meetingDetailScreenOffline_stillViewsMeetingDetails() {
     val meeting =
         Meeting(
             meetingID = testMeetingId,
@@ -190,7 +208,7 @@ class MeetingDetailScreenOfflineTest {
   }
 
   @Test
-  fun meetingDetailScreenOfflineDisablesEditButton() {
+  fun meetingDetailScreenOffline_disablesEditButton() {
     val meeting =
         Meeting(
             meetingID = testMeetingId,
@@ -227,7 +245,7 @@ class MeetingDetailScreenOfflineTest {
   }
 
   @Test
-  fun meetingDetailScreenOfflineDisablesDeleteButton() {
+  fun meetingDetailScreenOffline_disablesDeleteButton() {
     val meeting =
         Meeting(
             meetingID = testMeetingId,
@@ -271,7 +289,7 @@ class MeetingDetailScreenOfflineTest {
   }
 
   @Test
-  fun meetingDetailScreenOfflineDisablesJoinMeetingButton() {
+  fun meetingDetailScreenOffline_disablesJoinMeetingButton() {
     val meeting =
         Meeting(
             meetingID = testMeetingId,
@@ -314,7 +332,7 @@ class MeetingDetailScreenOfflineTest {
   }
 
   @Test
-  fun meetingDetailScreenOfflineDisablesRecordButton() {
+  fun meetingDetailScreenOffline_disablesRecordButton() {
     val meeting =
         Meeting(
             meetingID = testMeetingId,
@@ -357,7 +375,7 @@ class MeetingDetailScreenOfflineTest {
   }
 
   @Test
-  fun meetingDetailScreenOfflineDisablesViewTranscriptButton() {
+  fun meetingDetailScreenOffline_disablesViewTranscriptButton() {
     val meeting =
         Meeting(
             meetingID = testMeetingId,
@@ -401,7 +419,7 @@ class MeetingDetailScreenOfflineTest {
   }
 
   @Test
-  fun meetingDetailScreenOnlineThenOfflineShowsMessage() {
+  fun meetingDetailScreenOnline_thenOfflineShowsMessage() {
     val meeting =
         Meeting(
             meetingID = testMeetingId,
@@ -456,7 +474,7 @@ class MeetingDetailScreenOfflineTest {
   }
 
   @Test
-  fun meetingDetailScreenOfflineDisablesVoteButton() {
+  fun meetingDetailScreenOffline_disablesVoteButton() {
     val meeting =
         Meeting(
             meetingID = testMeetingId,

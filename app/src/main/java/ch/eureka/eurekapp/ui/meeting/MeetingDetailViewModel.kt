@@ -14,6 +14,7 @@ import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,6 +29,8 @@ import kotlinx.coroutines.launch
  * Data class to represent the UI state of the meeting detail screen.
  *
  * @property meeting The detailed meeting information, or null if loading or not found.
+ * @property meetingProjectName The name of the project in which the meeting was created, or null if
+ *   loading or not found.
  * @property participants List of participants in the meeting.
  * @property errorMsg An error message to display, or null if there is no error.
  * @property isLoading Whether a data loading operation is in progress.
@@ -42,6 +45,7 @@ import kotlinx.coroutines.launch
  */
 data class MeetingDetailUIState(
     val meeting: Meeting? = null,
+    val meetingProjectName: String? = null,
     val participants: List<Participant> = emptyList(),
     val errorMsg: String? = null,
     val isLoading: Boolean = false,
@@ -67,12 +71,14 @@ data class MeetingDetailUIState(
  * @property projectId The ID of the project containing the meeting.
  * @property meetingId The ID of the meeting to display.
  * @property repository The repository for meeting data operations.
+ * @property projectRepository The repository for project data operations.
  * @property connectivityObserver The connectivity observer.
  */
 class MeetingDetailViewModel(
     private val projectId: String,
     private val meetingId: String,
     private val repository: MeetingRepository = RepositoriesProvider.meetingRepository,
+    private val projectRepository: ProjectRepository = RepositoriesProvider.projectRepository,
     private val connectivityObserver: ConnectivityObserver =
         ConnectivityObserverProvider.connectivityObserver,
 ) : ViewModel() {
@@ -161,6 +167,7 @@ class MeetingDetailViewModel(
    *
    * @property meeting The detailed meeting information.
    * @property participants List of participants in the meeting.
+   * @property meetingProjectName The name of the project.
    * @property editState The edit state.
    * @property saveState The save state.
    * @property touchState The touch state.
@@ -168,6 +175,7 @@ class MeetingDetailViewModel(
   private data class CombinedState(
       val meeting: Meeting?,
       val participants: List<Participant>,
+      val meetingProjectName: String?,
       val editState: EditState,
       val saveState: SaveState,
       val touchState: TouchState
@@ -187,44 +195,48 @@ class MeetingDetailViewModel(
               combine(
                   repository.getMeetingById(projectId, meetingId),
                   repository.getParticipants(projectId, meetingId),
-                  combine(_deleteSuccess, _errorMsg, _isEditMode, _editTitle, _editDateTime) {
-                      deleteSuccess,
-                      errorMsg,
-                      isEditMode,
-                      editTitle,
-                      editDateTime ->
-                    EditState(deleteSuccess, errorMsg, isEditMode, editTitle, editDateTime)
+                  projectRepository.getProjectById(projectId)) { meeting, participants, project ->
+                    Triple(meeting, participants, project?.name)
                   },
-                  combine(_editDuration, _updateSuccess, _isSaving) { duration, success, saving ->
-                    SaveState(duration, success, saving)
-                  },
-                  combine(_hasTouchedTitle, _hasTouchedDateTime, _hasTouchedDuration) {
-                      title,
-                      dateTime,
-                      duration ->
-                    TouchState(title, dateTime, duration)
-                  }) { meeting, participants, editState, saveState, touchState ->
-                    CombinedState(meeting, participants, editState, saveState, touchState)
-                  },
-              _isConnected) { combined, isConnected ->
-                val validationError = validateMeeting(combined.meeting)
-                MeetingDetailUIState(
-                    meeting = if (validationError == null) combined.meeting else null,
-                    participants = combined.participants,
-                    isLoading = false,
-                    errorMsg = combined.editState.errorMsg ?: validationError,
-                    deleteSuccess = combined.editState.deleteSuccess,
-                    isEditMode = combined.editState.isEditMode,
-                    editTitle = combined.editState.editTitle,
-                    editDateTime = combined.editState.editDateTime,
-                    editDuration = combined.saveState.editDuration,
-                    updateSuccess = combined.saveState.updateSuccess,
-                    isSaving = combined.saveState.isSaving,
-                    hasTouchedTitle = combined.touchState.hasTouchedTitle,
-                    hasTouchedDateTime = combined.touchState.hasTouchedDateTime,
-                    hasTouchedDuration = combined.touchState.hasTouchedDuration,
-                    isConnected = isConnected)
+              combine(_deleteSuccess, _errorMsg, _isEditMode, _editTitle, _editDateTime) {
+                  deleteSuccess,
+                  errorMsg,
+                  isEditMode,
+                  editTitle,
+                  editDateTime ->
+                EditState(deleteSuccess, errorMsg, isEditMode, editTitle, editDateTime)
+              },
+              combine(_editDuration, _updateSuccess, _isSaving) { duration, success, saving ->
+                SaveState(duration, success, saving)
+              },
+              combine(_hasTouchedTitle, _hasTouchedDateTime, _hasTouchedDuration) {
+                  title,
+                  dateTime,
+                  duration ->
+                TouchState(title, dateTime, duration)
+              }) { data, editState, saveState, touchState ->
+                CombinedState(data.first, data.second, data.third, editState, saveState, touchState)
               }
+          .combine(_isConnected) { combined, isConnected ->
+            val validationError = validateMeeting(combined.meeting)
+            MeetingDetailUIState(
+                meeting = if (validationError == null) combined.meeting else null,
+                meetingProjectName = combined.meetingProjectName,
+                participants = combined.participants,
+                isLoading = false,
+                errorMsg = combined.editState.errorMsg ?: validationError,
+                deleteSuccess = combined.editState.deleteSuccess,
+                isEditMode = combined.editState.isEditMode,
+                editTitle = combined.editState.editTitle,
+                editDateTime = combined.editState.editDateTime,
+                editDuration = combined.saveState.editDuration,
+                updateSuccess = combined.saveState.updateSuccess,
+                isSaving = combined.saveState.isSaving,
+                hasTouchedTitle = combined.touchState.hasTouchedTitle,
+                hasTouchedDateTime = combined.touchState.hasTouchedDateTime,
+                hasTouchedDuration = combined.touchState.hasTouchedDuration,
+                isConnected = isConnected)
+          }
           .onStart { emit(MeetingDetailUIState(isLoading = true)) }
           .catch { e ->
             emit(

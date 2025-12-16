@@ -1,14 +1,20 @@
 /*
- * Note: This file was co-authored by Claude Code and Grok.
+ * Note: This file was co-authored by Claude Code, Gemini and Grok.
  */
 
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.test.platform.app.InstrumentationRegistry
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
-import ch.eureka.eurekapp.model.data.meeting.*
+import ch.eureka.eurekapp.model.data.meeting.Meeting
+import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
+import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
+import ch.eureka.eurekapp.model.data.meeting.MeetingRole
+import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
+import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.model.data.project.Project
 import com.google.firebase.Timestamp
-import java.util.*
+import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -21,7 +27,11 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -35,7 +45,7 @@ import org.junit.Test
  * - Delete meeting functionality (success and failure)
  * - Error message clearing
  *
- * Note: This file was co-authored by Claude Code and Grok.
+ * Note: This file was co-authored by Claude Code, Gemini and Grok.
  */
 @ExperimentalCoroutinesApi
 class MeetingDetailViewModelTest {
@@ -43,8 +53,12 @@ class MeetingDetailViewModelTest {
   private val testDispatcher = StandardTestDispatcher()
   private lateinit var viewModel: MeetingDetailViewModel
   private lateinit var repositoryMock: MeetingDetailRepositoryMock
+  private lateinit var projectRepositoryMock: MockProjectRepository
   private val testProjectId = "project123"
+  private val testProjectName = "Test Project Name"
   private val testMeetingId = "meeting456"
+
+  private val projectFlow = MutableStateFlow<Project?>(null)
 
   private val testMeeting =
       Meeting(
@@ -65,6 +79,14 @@ class MeetingDetailViewModelTest {
   fun setup() {
     Dispatchers.setMain(testDispatcher)
     repositoryMock = MeetingDetailRepositoryMock()
+
+    projectRepositoryMock =
+        object : MockProjectRepository() {
+          override fun getProjectById(projectId: String): Flow<Project?> = projectFlow
+        }
+
+    projectFlow.value = Project(projectId = testProjectId, name = testProjectName)
+
     val context = InstrumentationRegistry.getInstrumentation().targetContext
     ConnectivityObserverProvider.initialize(context)
   }
@@ -75,8 +97,9 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun initialStateIsCorrect() {
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+  fun meetingDetailViewModel_initialStateIsCorrect() {
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
 
     val uiState = viewModel.uiState.value
     assertNull(uiState.meeting)
@@ -84,14 +107,17 @@ class MeetingDetailViewModelTest {
     assertNull(uiState.errorMsg)
     assertTrue(uiState.isLoading)
     assertFalse(uiState.deleteSuccess)
+    assertEquals(null, uiState.meetingProjectName)
   }
 
   @Test
-  fun loadMeetingDetailsSuccessfully() = runTest {
+  fun meetingDetailViewModel_loadMeetingDetailsSuccessfully() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
+    projectFlow.value = Project(projectId = testProjectId, name = testProjectName)
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -104,14 +130,17 @@ class MeetingDetailViewModelTest {
     assertEquals("user1", uiState.participants[0].userId)
     assertEquals(MeetingRole.HOST, uiState.participants[0].role)
     assertNull(uiState.errorMsg)
+
+    assertEquals(testProjectName, uiState.meetingProjectName)
   }
 
   @Test
-  fun loadMeetingDetailsHandlesNullMeeting() = runTest {
+  fun meetingDetailViewModel_loadMeetingDetailsHandlesNullMeeting() = runTest {
     repositoryMock.meetingToReturn.value = null
     repositoryMock.participantsToReturn.value = emptyList()
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -123,12 +152,13 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun loadMeetingDetailsHandlesError() = runTest {
+  fun meetingDetailViewModel_loadMeetingDetailsHandlesError() = runTest {
     val errorMessage = "Network error loading meeting"
     repositoryMock.shouldThrowMeetingError = true
     repositoryMock.meetingErrorMessage = errorMessage
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -139,12 +169,13 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun loadMeetingDetailsRejectsInvalidTitle() = runTest {
+  fun meetingDetailViewModel_loadMeetingDetailsRejectsInvalidTitle() = runTest {
     val invalidMeeting = testMeeting.copy(title = "")
     repositoryMock.meetingToReturn.value = invalidMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -155,12 +186,13 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun loadMeetingDetailsRejectsInPersonMeetingWithoutLocation() = runTest {
+  fun meetingDetailViewModel_loadMeetingDetailsRejectsInPersonMeetingWithoutLocation() = runTest {
     val invalidMeeting = testMeeting.copy(format = MeetingFormat.IN_PERSON, location = null)
     repositoryMock.meetingToReturn.value = invalidMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -171,12 +203,13 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun loadMeetingDetailsRejectsVirtualMeetingWithoutLink() = runTest {
+  fun meetingDetailViewModel_loadMeetingDetailsRejectsVirtualMeetingWithoutLink() = runTest {
     val invalidMeeting = testMeeting.copy(format = MeetingFormat.VIRTUAL, link = null)
     repositoryMock.meetingToReturn.value = invalidMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -187,13 +220,14 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun loadMeetingDetailsHandlesParticipantsError() = runTest {
+  fun meetingDetailViewModel_loadMeetingDetailsHandlesParticipantsError() = runTest {
     val errorMessage = "Error loading participants"
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.shouldThrowParticipantsError = true
     repositoryMock.participantsErrorMessage = errorMessage
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -204,11 +238,12 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun loadMeetingDetailsUpdatesWhenDataChanges() = runTest {
+  fun meetingDetailViewModel_loadMeetingDetailsUpdatesWhenDataChanges() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -233,12 +268,13 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun deleteMeetingSuccessfully() = runTest {
+  fun meetingDetailViewModel_deleteMeetingSuccessfully() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
     repositoryMock.deleteResult = Result.success(Unit)
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -252,11 +288,12 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun deleteMeetingHandlesFailure() = runTest {
+  fun meetingDetailViewModel_deleteMeetingHandlesFailure() = runTest {
     val errorMessage = "Failed to delete meeting"
     repositoryMock.deleteResult = Result.failure(Exception(errorMessage))
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     viewModel.deleteMeeting(testProjectId, testMeetingId, true)
     testDispatcher.scheduler.advanceUntilIdle()
@@ -269,10 +306,11 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun deleteMeetingResetsLoadingStateAfterCompletion() = runTest {
+  fun meetingDetailViewModel_deleteMeetingResetsLoadingStateAfterCompletion() = runTest {
     repositoryMock.deleteResult = Result.success(Unit)
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     viewModel.deleteMeeting(testProjectId, testMeetingId, true)
     testDispatcher.scheduler.advanceUntilIdle()
@@ -283,11 +321,12 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun clearErrorMsgSetsErrorMsgToNull() = runTest {
+  fun meetingDetailViewModel_clearErrorMsgSetsErrorMsgToNull() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -306,11 +345,12 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun clearErrorMsgDoesNotAffectOtherStateProperties() = runTest {
+  fun meetingDetailViewModel_clearErrorMsgDoesNotAffectOtherStateProperties() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -333,11 +373,12 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun deleteSuccessPreservedAcrossFlowUpdates() = runTest {
+  fun meetingDetailViewModel_deleteSuccessPreservedAcrossFlowUpdates() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -354,11 +395,12 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun toggleEditModeEntersEditMode() = runTest {
+  fun meetingDetailViewModel_toggleEditModeEntersEditMode() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -375,11 +417,12 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun toggleEditModeExitsEditModeAndResetsFields() = runTest {
+  fun meetingDetailViewModel_toggleEditModeExitsEditModeAndResetsFields() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -398,11 +441,12 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun updateEditTitleUpdatesState() = runTest {
+  fun meetingDetailViewModel_updateEditTitleUpdatesState() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -417,11 +461,12 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun updateEditDateTimeUpdatesState() = runTest {
+  fun meetingDetailViewModel_updateEditDateTimeUpdatesState() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -436,11 +481,12 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun updateEditDurationUpdatesState() = runTest {
+  fun meetingDetailViewModel_updateEditDurationUpdatesState() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -455,12 +501,13 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun saveMeetingChangesSuccessfully() = runTest {
+  fun meetingDetailViewModel_saveMeetingChangesSuccessfully() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
     repositoryMock.updateResult = Result.success(Unit)
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -482,13 +529,14 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun saveMeetingChangesHandlesFailure() = runTest {
+  fun meetingDetailViewModel_saveMeetingChangesHandlesFailure() = runTest {
     val errorMessage = "Failed to update meeting"
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
     repositoryMock.updateResult = Result.failure(Exception(errorMessage))
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -507,11 +555,12 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun saveMeetingChangesRejectsBlankTitle() = runTest {
+  fun meetingDetailViewModel_saveMeetingChangesRejectsBlankTitle() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -528,11 +577,12 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun saveMeetingChangesRejectsNullDateTime() = runTest {
+  fun meetingDetailViewModel_saveMeetingChangesRejectsNullDateTime() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -549,11 +599,12 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun saveMeetingChangesRejectsNegativeDuration() = runTest {
+  fun meetingDetailViewModel_saveMeetingChangesRejectsNegativeDuration() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -570,11 +621,12 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun saveMeetingChangesRejectsPastDateTime() = runTest {
+  fun meetingDetailViewModel_saveMeetingChangesRejectsPastDateTime() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -592,12 +644,13 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun clearUpdateSuccessSetsUpdateSuccessToFalse() = runTest {
+  fun meetingDetailViewModel_clearUpdateSuccessSetsUpdateSuccessToFalse() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     repositoryMock.participantsToReturn.value = testParticipants
     repositoryMock.updateResult = Result.success(Unit)
 
-    viewModel = MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock)
+    viewModel =
+        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, projectRepositoryMock)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
