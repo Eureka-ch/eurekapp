@@ -213,6 +213,8 @@ fun MeetingDetailScreen(
     }
   }
 
+  val meetingProjectName = uiState.meetingProjectName
+
   Scaffold(
       modifier = Modifier.testTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN),
       topBar = {
@@ -236,59 +238,56 @@ fun MeetingDetailScreen(
               modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MESSAGE),
               text =
                   "There was an error while loading meetings : ${uiState.errorMsg ?: throw IllegalStateException("Error message should not be null if meeting is null.")}")
+        } else if (meetingProjectName == null) {
+          ErrorScreen(message = uiState.errorMsg ?: "Meeting project name not found")
         } else {
-          val meetingProjectName = uiState.meetingProjectName
-          if (meetingProjectName == null) {
-            ErrorScreen(message = uiState.errorMsg ?: "Meeting project name not found")
-          } else {
-            uiState.meeting?.let { meeting ->
-              MeetingDetailContent(
-                  config =
-                      MeetingDetailContentConfig(
-                          meeting = meeting,
-                          meetingProjectName = meetingProjectName,
-                          creatorUser = uiState.creatorUser,
-                          attachmentsViewModel = attachmentsViewModel,
-                          editConfig =
-                              EditConfig(
-                                  isEditMode = uiState.isEditMode,
-                                  isSaving = uiState.isSaving,
-                                  editTitle = uiState.editTitle,
-                                  editDateTime = uiState.editDateTime,
-                                  editDuration = uiState.editDuration,
-                                  hasTouchedTitle = uiState.hasTouchedTitle,
-                                  hasTouchedDateTime = uiState.hasTouchedDateTime,
-                                  hasTouchedDuration = uiState.hasTouchedDuration),
-                          actionsConfig =
-                              MeetingDetailContentActionsConfig(
-                                  onJoinMeeting = actionsConfig.onJoinMeeting,
-                                  onRecordMeeting = actionsConfig.onRecordMeeting,
-                                  onViewTranscript = actionsConfig.onViewTranscript,
-                                  onDeleteMeeting = { showDeleteDialog = true },
-                                  onVoteForMeetingProposals = { isConnected ->
-                                    actionsConfig.onVoteForMeetingProposalClick(
-                                        projectId, meetingId, isConnected)
-                                  },
-                                  onEditMeeting = { isConnected ->
-                                    viewModel.toggleEditMode(meeting, isConnected)
-                                  },
-                                  onSaveMeeting = { isConnected ->
-                                    viewModel.saveMeetingChanges(meeting, isConnected)
-                                  },
-                                  onCancelEdit = { viewModel.toggleEditMode(null) },
-                                  onUpdateTitle = viewModel::updateEditTitle,
-                                  onUpdateDateTime = viewModel::updateEditDateTime,
-                                  onUpdateDuration = viewModel::updateEditDuration,
-                                  onTouchTitle = viewModel::touchTitle,
-                                  onTouchDateTime = viewModel::touchDateTime,
-                                  onTouchDuration = viewModel::touchDuration,
-                                  onNavigateToMeeting = actionsConfig.onNavigateToMeeting),
-                          isConnected = uiState.isConnected,
-                          isCreator = uiState.isCreator),
-                  viewModel = viewModel,
-                  modifier = Modifier.padding(padding))
-            } ?: ErrorScreen(message = uiState.errorMsg ?: "Meeting not found")
-          }
+          uiState.meeting?.let { meeting ->
+            MeetingDetailContent(
+                config =
+                    MeetingDetailContentConfig(
+                        meeting = meeting,
+                        meetingProjectName = meetingProjectName,
+                        creatorUser = uiState.creatorUser,
+                        attachmentsViewModel = attachmentsViewModel,
+                        editConfig =
+                            EditConfig(
+                                isEditMode = uiState.isEditMode,
+                                isSaving = uiState.isSaving,
+                                editTitle = uiState.editTitle,
+                                editDateTime = uiState.editDateTime,
+                                editDuration = uiState.editDuration,
+                                hasTouchedTitle = uiState.hasTouchedTitle,
+                                hasTouchedDateTime = uiState.hasTouchedDateTime,
+                                hasTouchedDuration = uiState.hasTouchedDuration),
+                        actionsConfig =
+                            MeetingDetailContentActionsConfig(
+                                onJoinMeeting = actionsConfig.onJoinMeeting,
+                                onRecordMeeting = actionsConfig.onRecordMeeting,
+                                onViewTranscript = actionsConfig.onViewTranscript,
+                                onDeleteMeeting = { showDeleteDialog = true },
+                                onVoteForMeetingProposals = { isConnected ->
+                                  actionsConfig.onVoteForMeetingProposalClick(
+                                      projectId, meetingId, isConnected)
+                                },
+                                onEditMeeting = { isConnected ->
+                                  viewModel.toggleEditMode(meeting, isConnected)
+                                },
+                                onSaveMeeting = { isConnected ->
+                                  viewModel.saveMeetingChanges(meeting, isConnected)
+                                },
+                                onCancelEdit = { viewModel.toggleEditMode(null) },
+                                onUpdateTitle = viewModel::updateEditTitle,
+                                onUpdateDateTime = viewModel::updateEditDateTime,
+                                onUpdateDuration = viewModel::updateEditDuration,
+                                onTouchTitle = viewModel::touchTitle,
+                                onTouchDateTime = viewModel::touchDateTime,
+                                onTouchDuration = viewModel::touchDuration,
+                                onNavigateToMeeting = actionsConfig.onNavigateToMeeting),
+                        isConnected = uiState.isConnected,
+                        isCreator = uiState.isCreator),
+                viewModel = viewModel,
+                modifier = Modifier.padding(padding))
+          } ?: ErrorScreen(message = uiState.errorMsg ?: "Meeting not found")
         }
       })
 
