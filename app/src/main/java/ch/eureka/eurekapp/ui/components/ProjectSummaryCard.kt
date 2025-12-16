@@ -41,6 +41,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.screens.ProjectStatusDisplay
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
+
+private const val PRESSED_SCALE = 0.98f
+private const val NORMAL_SCALE = 1f
+private const val ANIMATION_DURATION_MS = 150
 
 /**
  * Reusable project card component used in HomeOverviewScreen and ProjectSelectionScreen.
@@ -74,7 +79,9 @@ fun ProjectSummaryCard(
 ) {
   var isPressed by remember { mutableStateOf(false) }
   val scale by
-      animateFloatAsState(targetValue = if (isPressed) 0.98f else 1f, animationSpec = tween(150))
+      animateFloatAsState(
+          targetValue = if (isPressed) PRESSED_SCALE else NORMAL_SCALE,
+          animationSpec = tween(ANIMATION_DURATION_MS))
 
   Card(
       modifier =
@@ -90,7 +97,7 @@ fun ProjectSummaryCard(
                 Modifier.fillMaxWidth()
                     .border(
                         width = 1.5.dp,
-                        color = Color(0xFFE2E8F0),
+                        color = EColors.CardBorderColor,
                         shape = RoundedCornerShape(24.dp))
                     .background(
                         brush =
@@ -112,7 +119,7 @@ fun ProjectSummaryCard(
                         Text(
                             text = project.name.ifEmpty { "Untitled project" },
                             style = MaterialTheme.typography.titleLarge,
-                            color = Color(0xFF0F172A),
+                            color = EColors.TitleTextColor,
                             fontWeight = FontWeight.Bold)
                       }
                       // Status badge
@@ -143,7 +150,7 @@ fun ProjectSummaryCard(
                         Text(
                             text = project.description.ifEmpty { "No description provided" },
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color(0xFF475569),
+                            color = EColors.SecondaryTextColor,
                             fontWeight = FontWeight.Medium)
                       }
                     }
@@ -163,19 +170,19 @@ fun ProjectSummaryCard(
                                 modifier =
                                     Modifier.size(32.dp)
                                         .background(
-                                            color = Color(0xFFF1F5F9),
+                                            color = EColors.IconBackgroundColor,
                                             shape = RoundedCornerShape(8.dp)),
                                 contentAlignment = Alignment.Center) {
                                   Icon(
                                       imageVector = Icons.Default.Person,
                                       contentDescription = null,
-                                      tint = Color(0xFF64748B),
+                                      tint = EColors.GrayTextColor2,
                                       modifier = Modifier.size(16.dp))
                                 }
                             Text(
                                 text = "$memberCount members",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = Color(0xFF475569),
+                                color = EColors.SecondaryTextColor,
                                 fontWeight = FontWeight.SemiBold)
                           }
                       // Action button (can be customized)
