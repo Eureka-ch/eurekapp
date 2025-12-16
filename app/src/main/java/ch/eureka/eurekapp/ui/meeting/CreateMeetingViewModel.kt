@@ -304,7 +304,8 @@ class CreateMeetingViewModel(
                     MeetingProposal(
                         Timestamp(timeInstant),
                         listOf(MeetingProposalVote(creatorId, listOf(uiState.value.format))))),
-            createdBy = creatorId)
+            createdBy = creatorId,
+            participantIds = selectedProject.memberIds)
 
     viewModelScope.launch {
       meetingRepository

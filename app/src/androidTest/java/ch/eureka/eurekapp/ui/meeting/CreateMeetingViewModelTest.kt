@@ -67,6 +67,8 @@ class CreateMeetingViewModelTest {
     // Setup mock project behavior
     every { testProject.projectId } returns "project-123"
     every { testProject.name } returns "Test Project"
+    // Mock members: current user + one other
+    every { testProject.memberIds } returns listOf("test-user-id", "other-user")
 
     mockkStatic(Log::class)
     every { Log.e(any(), any(), any()) } returns 0
@@ -86,8 +88,6 @@ class CreateMeetingViewModelTest {
     Dispatchers.resetMain()
   }
 
-  // --- State Validation Tests ---
-
   @Test
   fun createMeetingViewModel_uiStateIsValidLogicIsCorrect() {
     var state =
@@ -101,16 +101,12 @@ class CreateMeetingViewModelTest {
     state = state.copy(format = MeetingFormat.VIRTUAL)
     assertTrue("State should be valid", state.isValid)
 
-    // Invalid: No Project
     assertFalse("State invalid without project", state.copy(project = null).isValid)
 
-    // Invalid: Empty Title
     assertFalse("State invalid with empty title", state.copy(title = "").isValid)
 
-    // Invalid: Bad Duration
     assertFalse("State invalid with 0 duration", state.copy(duration = 0).isValid)
 
-    // Invalid: Past Date
     state = state.copy(date = pastDateTime.toLocalDate(), time = pastDateTime.toLocalTime())
     assertFalse("State invalid in past", state.isValid)
   }
@@ -135,8 +131,6 @@ class CreateMeetingViewModelTest {
     assertTrue(uiState.locationSuggestions.isEmpty())
     assertNull(uiState.selectedLocation)
   }
-
-  // --- Simple Setter Tests ---
 
   @Test
   fun createMeetingViewModel_clearErrorMsgSetsErrorMsgToNull() {
@@ -227,8 +221,6 @@ class CreateMeetingViewModelTest {
     assertEquals(location, viewModel.uiState.value.selectedLocation)
   }
 
-  // --- Project Loading Tests ---
-
   @Test
   fun createMeetingViewModel_loadProjectsPopulatesListOnSuccess() = runTest {
     val projects = listOf(testProject, mockk(relaxed = true))
@@ -255,8 +247,6 @@ class CreateMeetingViewModelTest {
     assertFalse(viewModel.uiState.value.isLoadingProjects)
     assertEquals("Mock project error", viewModel.uiState.value.errorMsg)
   }
-
-  // --- Create Meeting Logic Tests ---
 
   @Test
   fun createMeetingViewModel_createMeetingWhenStateIsInvalidSetsErrorAndReturns() {
@@ -366,6 +356,8 @@ class CreateMeetingViewModelTest {
     assertNotNull(createdMeeting.meetingID)
     assertEquals(location, createdMeeting.location)
 
+    assertEquals(listOf("test-user-id", "other-user"), createdMeeting.participantIds)
+
     assertEquals(1, createdMeeting.meetingProposals.size)
     val proposal = createdMeeting.meetingProposals[0]
 
@@ -391,8 +383,6 @@ class CreateMeetingViewModelTest {
     assertFalse(viewModel.uiState.value.meetingSaved)
     assertEquals("Meeting could not be created.", viewModel.uiState.value.errorMsg)
   }
-
-  // --- Location Search Tests ---
 
   @Test
   fun createMeetingViewModel_uiStateIsValidWithInPersonFormatRequiresLocation() {
@@ -508,10 +498,7 @@ class MockMeetingRepository : MeetingRepository {
 
   override fun getMeetingsForTask(projectId: String, taskId: String): Flow<List<Meeting>> = flow {}
 
-  override fun getMeetingsForCurrentUser(
-      projectId: String,
-      skipCache: Boolean
-  ): Flow<List<Meeting>> = flow {}
+  override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> = flow {}
 
   override suspend fun createMeeting(
       meeting: Meeting,
