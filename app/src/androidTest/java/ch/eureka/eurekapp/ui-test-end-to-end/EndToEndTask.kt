@@ -20,6 +20,7 @@ import ch.eureka.eurekapp.navigation.NavigationMenu
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.ui.authentication.SignInScreenTestTags
+import ch.eureka.eurekapp.ui.components.ProjectDropDownMenuTestTag
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
@@ -121,7 +122,7 @@ class TaskEndToEndTest : TestCase() {
             .onNodeWithTag(SignInScreenTestTags.SIGN_IN_WITH_GOOGLE_BUTTON)
             .assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -197,7 +198,7 @@ class TaskEndToEndTest : TestCase() {
             .onNodeWithTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON)
             .assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -212,7 +213,7 @@ class TaskEndToEndTest : TestCase() {
       try {
         composeTestRule.onNodeWithTag(TasksScreenTestTags.CREATE_TASK_BUTTON).assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -224,7 +225,7 @@ class TaskEndToEndTest : TestCase() {
       try {
         composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -245,7 +246,7 @@ class TaskEndToEndTest : TestCase() {
       try {
         composeTestRule.onNodeWithText("End-to-End Test Task").assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -268,8 +269,32 @@ class TaskEndToEndTest : TestCase() {
       val authResult = FirebaseEmulator.auth.signInWithCredential(firebaseCred).await()
       testUserId = authResult.user?.uid ?: throw IllegalStateException("Failed to sign in")
 
+      val userRef = FirebaseEmulator.firestore.collection("users").document(testUserId)
+      val userProfile =
+          mapOf(
+              "uid" to testUserId,
+              "displayName" to testUserName,
+              "email" to testUserEmail,
+              "photoUrl" to "")
+      userRef.set(userProfile).await()
+
+      val projectRef = FirebaseEmulator.firestore.collection("projects").document(testProjectId)
+      val project =
+          ch.eureka.eurekapp.model.data.project.Project(
+              projectId = testProjectId,
+              name = "Test Project",
+              description = "Auto-created by test",
+              status = ch.eureka.eurekapp.model.data.project.ProjectStatus.OPEN,
+              createdBy = testUserId,
+              memberIds = listOf(testUserId))
+      projectRef.set(project).await()
+
+      val member =
+          ch.eureka.eurekapp.model.data.project.Member(
+              userId = testUserId, role = ch.eureka.eurekapp.model.data.project.ProjectRole.OWNER)
+      projectRef.collection("members").document(testUserId).set(member).await()
+
       // Set up the navigation menu after authentication
-      // NavigationMenu will create the test project automatically
       composeTestRule.setContent { NavigationMenu() }
 
       // Navigate to Meetings tab
@@ -318,6 +343,18 @@ class TaskEndToEndTest : TestCase() {
       }
 
       val meetingTitle = "E2E Test Meeting"
+
+      // Select Project
+      composeTestRule.onNodeWithTag(ProjectDropDownMenuTestTag.PROJECT_DROPDOWN_MENU).performClick()
+
+      composeTestRule.waitForIdle()
+
+      // Click the first project in the dropdown
+      composeTestRule
+          .onAllNodesWithTag(ProjectDropDownMenuTestTag.DROPDOWN_MENU_ITEM)[0]
+          .performClick()
+
+      composeTestRule.waitForIdle()
 
       // Title input
       composeTestRule
