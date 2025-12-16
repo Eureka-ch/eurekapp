@@ -31,6 +31,9 @@ object EColors {
   val BlackTextColor = Color.Black
   val LightingBlue = Color(0xFF2563EB)
 
+  // Transparent color
+  val Transparent = Color.Transparent
+
   // Border colors
   val BorderGrayColor = Color(0xFFE5E7EB)
   val CardBorderColor = Color(0xFFE2E8F0) // Border color for cards

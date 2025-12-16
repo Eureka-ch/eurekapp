@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
@@ -51,7 +50,7 @@ fun EurekaTopBar(
         },
         colors =
             TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Transparent,
+                containerColor = EColors.Transparent,
                 titleContentColor = EColors.WhiteTextColor,
                 actionIconContentColor = EColors.WhiteTextColor,
                 navigationIconContentColor = EColors.WhiteTextColor),
