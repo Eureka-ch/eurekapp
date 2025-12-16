@@ -65,6 +65,7 @@ const val CREATE_SCREEN_PHOTO_BUTTON_SIZE = 0.3f
 
 object CreateTaskScreenTestTags {
   const val ADD_FILE = "add_file"
+  const val HELP_BUTTON = "createTaskHelpButton"
 }
 
 @Composable
@@ -118,7 +119,7 @@ fun CreateTaskScreen(
             actions = {
               InteractiveHelpEntryPoint(
                   helpContext = HelpContext.CREATE_TASK,
-                  modifier = Modifier.testTag("createTaskHelpButton"))
+                  modifier = Modifier.testTag(CreateTaskScreenTestTags.HELP_BUTTON))
             })
       },
       content = { paddingValues ->

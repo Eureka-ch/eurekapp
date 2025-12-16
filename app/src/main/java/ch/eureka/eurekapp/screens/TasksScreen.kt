@@ -18,6 +18,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -120,7 +121,6 @@ fun formatDueDate(diffInDays: Long): String {
 private fun HeaderSection(
     onCreateTaskClick: () -> Unit,
     onAutoAssignClick: () -> Unit,
-    onFilesManagementClick: () -> Unit,
     isConnected: Boolean
 ) {
   Column(modifier = Modifier.padding(vertical = Spacing.md)) {
@@ -334,7 +334,7 @@ fun TasksScreen(
     viewModel.setFilter(filter)
   }
 
-  androidx.compose.material3.Scaffold(
+  Scaffold(
       modifier = modifier.fillMaxSize().testTag(TasksScreenTestTags.TASKS_SCREEN_CONTENT),
       topBar = {
         EurekaTopBar(
@@ -356,8 +356,7 @@ fun TasksScreen(
         Column(
             modifier =
                 Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = Spacing.md)) {
-              HeaderSection(
-                  onCreateTaskClick, onAutoAssignClick, onFilesManagementClick, isConnected)
+              HeaderSection(onCreateTaskClick, onAutoAssignClick, isConnected)
               FilterBar(uiState, selectedFilter, ::setFilter)
               if (uiState.isLoading) {
                 LoadingState()
