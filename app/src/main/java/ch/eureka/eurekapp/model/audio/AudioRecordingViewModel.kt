@@ -47,10 +47,10 @@ class AudioRecordingViewModel(
 
   fun resumeRecording() {
     if (isRecording.value == RecordingState.PAUSED) {
-        if(recordingRepository.resumeRecording().isFailure){
-            return
-        }
-        addTimeToRecording()
+      if (recordingRepository.resumeRecording().isFailure) {
+        return
+      }
+      addTimeToRecording()
     }
   }
 
@@ -140,23 +140,25 @@ class AudioRecordingViewModel(
   }
 
   private var recordingTimeJob: Job? = null
-  fun addTimeToRecording(){
-      recordingTimeJob?.cancel()
-      recordingTimeJob = viewModelScope.launch {
-        withContext(Dispatchers.IO){
-            while(isRecording.value == RecordingState.RUNNING){
-                delay(1000L)
-                if(isRecording.value == RecordingState.RUNNING){
-                    _recordingTimeInSeconds.value += 1
-                }
+
+  fun addTimeToRecording() {
+    recordingTimeJob?.cancel()
+    recordingTimeJob =
+        viewModelScope.launch {
+          withContext(Dispatchers.IO) {
+            while (isRecording.value == RecordingState.RUNNING) {
+              delay(1000L)
+              if (isRecording.value == RecordingState.RUNNING) {
+                _recordingTimeInSeconds.value += 1
+              }
             }
+          }
         }
-    }
   }
 
-    fun resetRecordingTime(){
-        _recordingTimeInSeconds.value = 0
-    }
+  fun resetRecordingTime() {
+    _recordingTimeInSeconds.value = 0
+  }
 
   override fun onCleared() {
     super.onCleared()
