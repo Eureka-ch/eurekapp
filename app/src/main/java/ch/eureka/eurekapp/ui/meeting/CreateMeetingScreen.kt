@@ -212,7 +212,7 @@ fun CreateMeetingContent(
 
   var projectDropdownExpanded by remember { mutableStateOf(false) }
 
-  Column(modifier = modifier.fillMaxSize().padding(10.dp)) {
+  Column(modifier = modifier.fillMaxSize().padding(10.dp).verticalScroll(rememberScrollState())) {
     CreateMeetingHeader()
 
     Spacer(Modifier.height((2 * SPACING).dp))
