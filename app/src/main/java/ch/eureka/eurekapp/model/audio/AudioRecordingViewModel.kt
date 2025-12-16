@@ -11,8 +11,6 @@ import ch.eureka.eurekapp.model.data.file.FirebaseFileStorageRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +18,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
 class AudioRecordingViewModel(
@@ -29,7 +26,6 @@ class AudioRecordingViewModel(
     val recordingRepository: LocalAudioRecordingRepository =
         AudioRecordingRepositoryProvider.repository,
     private val meetingRepository: MeetingRepository = RepositoriesProvider.meetingRepository,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
   private val _recordingUri: MutableStateFlow<Uri?> = MutableStateFlow(null)
 
@@ -147,12 +143,10 @@ class AudioRecordingViewModel(
     recordingTimeJob?.cancel()
     recordingTimeJob =
         viewModelScope.launch {
-          withContext(ioDispatcher) {
-            while (isRecording.value == RecordingState.RUNNING) {
-              delay(1000L)
-              if (isRecording.value == RecordingState.RUNNING) {
-                _recordingTimeInSeconds.value += 1
-              }
+          while (isRecording.value == RecordingState.RUNNING) {
+            delay(1000L)
+            if (isRecording.value == RecordingState.RUNNING) {
+              _recordingTimeInSeconds.value += 1
             }
           }
         }

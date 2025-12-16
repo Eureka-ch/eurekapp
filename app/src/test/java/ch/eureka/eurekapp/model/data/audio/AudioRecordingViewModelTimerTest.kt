@@ -41,8 +41,7 @@ class AudioRecordingViewModelTimerTest {
             fileStorageRepository = fileStorageRepository,
             recordingRepository = recordingRepository,
             meetingRepository = meetingRepository,
-            ioDispatcher = testDispatcher // Injecting the test dispatcher
-            )
+        )
   }
 
   @After
