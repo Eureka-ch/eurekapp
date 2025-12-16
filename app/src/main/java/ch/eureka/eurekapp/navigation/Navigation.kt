@@ -189,7 +189,7 @@ sealed interface Route {
 
     @Serializable data class ConversationDetail(val conversationId: String) : ConversationsSection
 
-    @Serializable data class CreateConversation(val projectId: String) : ConversationsSection
+    @Serializable data object CreateConversation : ConversationsSection
   }
 
   sealed interface IdeasSection : Route {
@@ -209,7 +209,6 @@ fun NavigationMenu(
     notificationProjectId: String? = null,
 ) {
   val navigationController = rememberNavController()
-  val testProjectId = "test-project-id"
 
   HandleNotificationNavigation(
       notificationType = notificationType,
@@ -644,8 +643,7 @@ fun NavigationMenu(
                       }
                     },
                     onCreateConversation = {
-                      navigationController.navigate(
-                          Route.ConversationsSection.CreateConversation(projectId = testProjectId))
+                      navigationController.navigate(Route.ConversationsSection.CreateConversation)
                     })
               }
 
