@@ -76,14 +76,8 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.help.HelpContext
 import ch.eureka.eurekapp.ui.components.help.InteractiveHelpEntryPoint
-import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.utils.Formatters
-
-private const val PRESSED_SCALE = 0.98f
-private const val NORMAL_SCALE = 1f
-private const val ANIMATION_DURATION_MS = 150
-private val CardGradientColors = listOf(Color.White, EColors.GradientLightColor)
 
 object MeetingScreenTestTags {
   const val MEETING_SCREEN = "MeetingScreen"
@@ -256,7 +250,7 @@ private fun MeetingScreenContent(
             modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_DESCRIPTION),
             text = "Schedule and manage your team meetings",
             style = MaterialTheme.typography.bodyLarge,
-            color = EColors.GrayTextColor2,
+            color = Color(0xFF64748B),
             fontWeight = FontWeight.Medium)
 
         Spacer(Modifier.height(4.dp))
@@ -485,16 +479,14 @@ fun MeetingCard(
 ) {
   var isPressed by remember { mutableStateOf(false) }
   val scale by
-      animateFloatAsState(
-          targetValue = if (isPressed) PRESSED_SCALE else NORMAL_SCALE,
-          animationSpec = tween(ANIMATION_DURATION_MS))
+      animateFloatAsState(targetValue = if (isPressed) 0.98f else 1f, animationSpec = tween(150))
 
   val statusColor =
       when (meeting.status) {
-        MeetingStatus.OPEN_TO_VOTES -> EColors.StatusBlue
-        MeetingStatus.SCHEDULED -> EColors.GrayTextColor2
-        MeetingStatus.COMPLETED -> EColors.SecondaryTextColor
-        MeetingStatus.IN_PROGRESS -> EColors.StatusGreen
+        MeetingStatus.OPEN_TO_VOTES -> Color(0xFF3B82F6) // Blue
+        MeetingStatus.SCHEDULED -> Color(0xFF64748B) // Gray instead of red
+        MeetingStatus.COMPLETED -> Color(0xFF475569) // Dark gray
+        MeetingStatus.IN_PROGRESS -> Color(0xFF16A34A) // Green
       }
 
   Card(
@@ -512,12 +504,12 @@ fun MeetingCard(
                 Modifier.fillMaxWidth()
                     .border(
                         width = 1.5.dp,
-                        color = EColors.CardBorderColor,
+                        color = Color(0xFFE2E8F0),
                         shape = RoundedCornerShape(12.dp))
                     .background(
                         brush =
                             Brush.linearGradient(
-                                colors = CardGradientColors,
+                                colors = listOf(Color.White, Color(0xFFFAFAFA)),
                                 start = androidx.compose.ui.geometry.Offset(0f, 0f),
                                 end = androidx.compose.ui.geometry.Offset(1000f, 1000f)))) {
               Column(modifier = Modifier.padding(20.dp)) {
@@ -530,7 +522,7 @@ fun MeetingCard(
                         Text(
                             text = meeting.title,
                             style = MaterialTheme.typography.titleLarge,
-                            color = EColors.TitleTextColor,
+                            color = Color(0xFF0F172A),
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_TITLE))
                       }
@@ -563,14 +555,14 @@ fun MeetingCard(
                                 modifier =
                                     Modifier.size(32.dp)
                                         .background(
-                                            color = EColors.IconBackgroundColor,
+                                            color = Color(0xFFF1F5F9),
                                             shape = RoundedCornerShape(8.dp)),
                                 contentAlignment = Alignment.Center) {
                                   Icon(
                                       imageVector = Icons.Default.HourglassTop,
                                       contentDescription = "Duration",
                                       modifier = Modifier.size(16.dp),
-                                      tint = EColors.GrayTextColor2)
+                                      tint = Color(0xFF64748B))
                                 }
                             Column {
                               Text(
@@ -578,7 +570,7 @@ fun MeetingCard(
                                       Modifier.testTag(MeetingScreenTestTags.MEETING_DURATION),
                                   text = "${meeting.duration} minutes",
                                   style = MaterialTheme.typography.bodyMedium,
-                                  color = EColors.TitleTextColor,
+                                  color = Color(0xFF0F172A),
                                   fontWeight = FontWeight.SemiBold)
                               Spacer(modifier = Modifier.height(4.dp))
                               Row(
@@ -588,7 +580,7 @@ fun MeetingCard(
                                         imageVector = Icons.Default.HowToVote,
                                         contentDescription = "Vote",
                                         modifier = Modifier.size(14.dp),
-                                        tint = EColors.GrayTextColor2)
+                                        tint = Color(0xFF64748B))
                                     Text(
                                         modifier =
                                             Modifier.testTag(
@@ -596,7 +588,7 @@ fun MeetingCard(
                                                     .MEETING_VOTE_FOR_DATETIME_MESSAGE),
                                         text = "Vote for your preferred datetime(s)",
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = EColors.GrayTextColor2)
+                                        color = Color(0xFF64748B))
                                   }
                             }
                           }
@@ -614,20 +606,20 @@ fun MeetingCard(
                                 modifier =
                                     Modifier.size(32.dp)
                                         .background(
-                                            color = EColors.IconBackgroundColor,
+                                            color = Color(0xFFF1F5F9),
                                             shape = RoundedCornerShape(8.dp)),
                                 contentAlignment = Alignment.Center) {
                                   Icon(
                                       imageVector = Icons.Default.Schedule,
                                       contentDescription = "Schedule",
                                       modifier = Modifier.size(16.dp),
-                                      tint = EColors.GrayTextColor2)
+                                      tint = Color(0xFF64748B))
                                 }
                             Text(
                                 modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_DATETIME),
                                 text = Formatters.formatDateTime(meeting.datetime.toDate()),
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = EColors.TitleTextColor,
+                                color = Color(0xFF0F172A),
                                 fontWeight = FontWeight.SemiBold)
                           }
                     }
@@ -649,14 +641,14 @@ fun MeetingCard(
                                     modifier =
                                         Modifier.size(32.dp)
                                             .background(
-                                                color = EColors.IconBackgroundColor,
+                                                color = Color(0xFFF1F5F9),
                                                 shape = RoundedCornerShape(8.dp)),
                                     contentAlignment = Alignment.Center) {
                                       Icon(
                                           imageVector = Icons.Default.HowToVote,
                                           contentDescription = "Vote",
                                           modifier = Modifier.size(16.dp),
-                                          tint = EColors.GrayTextColor2)
+                                          tint = Color(0xFF64748B))
                                     }
                                 Text(
                                     modifier =
@@ -664,7 +656,7 @@ fun MeetingCard(
                                             MeetingScreenTestTags.MEETING_VOTE_FOR_FORMAT_MESSAGE),
                                     text = "Vote for your preferred meeting format",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = EColors.SecondaryTextColor,
+                                    color = Color(0xFF475569),
                                     fontWeight = FontWeight.Medium)
                               }
                         }
@@ -682,14 +674,14 @@ fun MeetingCard(
                                     modifier =
                                         Modifier.size(32.dp)
                                             .background(
-                                                color = EColors.IconBackgroundColor,
+                                                color = Color(0xFFF1F5F9),
                                                 shape = RoundedCornerShape(8.dp)),
                                     contentAlignment = Alignment.Center) {
                                       Icon(
                                           imageVector = Icons.Default.Place,
                                           contentDescription = "Location",
                                           modifier = Modifier.size(16.dp),
-                                          tint = EColors.GrayTextColor2)
+                                          tint = Color(0xFF64748B))
                                     }
                                 Text(
                                     modifier =
@@ -699,7 +691,7 @@ fun MeetingCard(
                                             ?: throw IllegalStateException(
                                                 "Location of in-person meeting closed to votes should exist."),
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = EColors.SecondaryTextColor,
+                                    color = Color(0xFF475569),
                                     fontWeight = FontWeight.Medium)
                               }
                         }
@@ -712,14 +704,14 @@ fun MeetingCard(
                                       modifier =
                                           Modifier.size(32.dp)
                                               .background(
-                                                  color = EColors.IconBackgroundColor,
+                                                  color = Color(0xFFF1F5F9),
                                                   shape = RoundedCornerShape(8.dp)),
                                       contentAlignment = Alignment.Center) {
                                         Icon(
                                             imageVector = Icons.Default.VideoCall,
                                             contentDescription = "Video call",
                                             modifier = Modifier.size(16.dp),
-                                            tint = EColors.GrayTextColor2)
+                                            tint = Color(0xFF64748B))
                                       }
                                   Text(
                                       modifier =
@@ -729,7 +721,7 @@ fun MeetingCard(
                                               ?: throw IllegalStateException(
                                                   "Link to scheduled/in progress virtual meeting should exist."),
                                       style = MaterialTheme.typography.bodyMedium,
-                                      color = EColors.SecondaryTextColor,
+                                      color = Color(0xFF475569),
                                       fontWeight = FontWeight.Medium)
                                 }
                           }

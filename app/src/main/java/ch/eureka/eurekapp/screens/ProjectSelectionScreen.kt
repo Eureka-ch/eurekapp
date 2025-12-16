@@ -50,7 +50,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectSelectionScreenViewModel
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
@@ -89,43 +88,6 @@ fun ProjectSelectionScreen(
     onSeeProjectMembers: (String) -> Unit = {},
     projectSelectionScreenViewModel: ProjectSelectionScreenViewModel = viewModel()
 ) {
-  handleNotificationsPermission()
-
-  val currentUser =
-      remember { projectSelectionScreenViewModel.getCurrentUser() }.collectAsState(null)
-
-  val projectsList =
-      remember { projectSelectionScreenViewModel.getProjectsForUser() }.collectAsState(listOf())
-
-  val listState = rememberLazyListState()
-
-  Scaffold(
-      topBar = { EurekaTopBar(title = "Projects") },
-      content = { paddingValues ->
-        Column(
-            modifier =
-                Modifier.fillMaxSize().padding(paddingValues).background(Color(0xFFF8FAFC))) {
-              ProjectSelectionHeader(
-                  onCreateProjectRequest = onCreateProjectRequest,
-                  onInputTokenRequest = onInputTokenRequest)
-
-              if (projectsList.value.isEmpty()) {
-                EmptyProjectsState()
-              } else {
-                ProjectsList(
-                    projects = projectsList.value,
-                    currentUserId = currentUser.value?.uid,
-                    onSeeProjectMembers = onSeeProjectMembers,
-                    onGenerateInviteRequest = onGenerateInviteRequest,
-                    projectSelectionScreenViewModel = projectSelectionScreenViewModel,
-                    listState = listState)
-              }
-            }
-      })
-}
-
-@Composable
-private fun handleNotificationsPermission() {
   val context = LocalContext.current
   var hasNotificationsPermission by remember {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -136,6 +98,12 @@ private fun handleNotificationsPermission() {
       mutableStateOf(true)
     }
   }
+
+  val currentUser =
+      remember { projectSelectionScreenViewModel.getCurrentUser() }.collectAsState(null)
+
+  val projectsList =
+      remember { projectSelectionScreenViewModel.getProjectsForUser() }.collectAsState(listOf())
 
   val launcher =
       rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
@@ -155,136 +123,122 @@ private fun handleNotificationsPermission() {
       launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
   }
-}
 
-@Composable
-private fun ProjectSelectionHeader(
-    onCreateProjectRequest: () -> Unit,
-    onInputTokenRequest: () -> Unit
-) {
-  Column(
-      modifier = Modifier.fillMaxWidth().padding(Spacing.lg),
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-        Button(
-            onClick = { onCreateProjectRequest() },
+  val listState = rememberLazyListState()
+
+  Scaffold(
+      topBar = { EurekaTopBar(title = "Projects") },
+      content = { paddingValues ->
+        Column(
             modifier =
-                Modifier.fillMaxWidth()
-                    .testTag(ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON),
-            colors =
-                ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color.White)) {
-              Text(
-                  "+ Create Project",
-                  style = MaterialTheme.typography.titleMedium,
-                  fontWeight = FontWeight.Bold)
-            }
-        OutlinedButton(
-            onClick = { onInputTokenRequest() },
-            modifier =
-                Modifier.fillMaxWidth().testTag(ProjectSelectionScreenTestTags.INPUT_TOKEN_BUTTON),
-            colors =
-                ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.primary)) {
-              Text(
-                  "Input Project Token",
-                  style = MaterialTheme.typography.titleMedium,
-                  fontWeight = FontWeight.SemiBold)
-            }
-      }
-}
+                Modifier.fillMaxSize().padding(paddingValues).background(Color(0xFFF8FAFC))) {
+              // Header section with action buttons
+              Column(
+                  modifier = Modifier.fillMaxWidth().padding(Spacing.lg),
+                  horizontalAlignment = Alignment.CenterHorizontally,
+                  verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                    Button(
+                        onClick = { onCreateProjectRequest() },
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .testTag(ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON),
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = Color.White)) {
+                          Text(
+                              "+ Create Project",
+                              style = MaterialTheme.typography.titleMedium,
+                              fontWeight = FontWeight.Bold)
+                        }
+                    OutlinedButton(
+                        onClick = { onInputTokenRequest() },
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .testTag(ProjectSelectionScreenTestTags.INPUT_TOKEN_BUTTON),
+                        colors =
+                            ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.primary)) {
+                          Text(
+                              "Input Project Token",
+                              style = MaterialTheme.typography.titleMedium,
+                              fontWeight = FontWeight.SemiBold)
+                        }
+                  }
 
-@Composable
-private fun EmptyProjectsState() {
-  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-          Text(
-              "No projects yet",
-              style = MaterialTheme.typography.titleLarge,
-              color = Color(0xFF0F172A),
-              fontWeight = FontWeight.Bold)
-          Text(
-              "Create your first project to get started",
-              style = MaterialTheme.typography.bodyMedium,
-              color = Color(0xFF64748B))
-        }
-  }
-}
-
-@Composable
-private fun ProjectsList(
-    projects: List<Project>,
-    currentUserId: String?,
-    onSeeProjectMembers: (String) -> Unit,
-    onGenerateInviteRequest: (String) -> Unit,
-    projectSelectionScreenViewModel: ProjectSelectionScreenViewModel,
-    listState: androidx.compose.foundation.lazy.LazyListState
-) {
-  LazyColumn(
-      state = listState,
-      modifier = Modifier.fillMaxSize(),
-      contentPadding = PaddingValues(horizontal = Spacing.lg),
-      verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-        items(projects) { project ->
-          val projectUsers =
-              projectSelectionScreenViewModel
-                  .getProjectUsersInformation(project.projectId)
-                  .collectAsState(listOf())
-          ProjectSummaryCard(
-              project = project,
-              onClick = { onSeeProjectMembers(project.projectId) },
-              memberCount = projectUsers.value.size,
-              actionButton = {
-                ProjectActionButtons(
-                    project = project,
-                    currentUserId = currentUserId,
-                    onSeeProjectMembers = onSeeProjectMembers,
-                    onGenerateInviteRequest = onGenerateInviteRequest)
-              })
-        }
-      }
-}
-
-@Composable
-private fun ProjectActionButtons(
-    project: Project,
-    currentUserId: String?,
-    onSeeProjectMembers: (String) -> Unit,
-    onGenerateInviteRequest: (String) -> Unit
-) {
-  Row(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically) {
-        TextButton(
-            onClick = { onSeeProjectMembers(project.projectId) },
-            modifier =
-                Modifier.testTag(
-                    ProjectSelectionScreenTestTags.getShowMembersButtonTestTag(project.projectId)),
-            colors =
-                ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)) {
-              Text(
-                  "View Members",
-                  style = MaterialTheme.typography.labelLarge,
-                  fontWeight = FontWeight.SemiBold)
-            }
-        if (currentUserId.equals(project.createdBy)) {
-          IconButton(
-              onClick = { onGenerateInviteRequest(project.projectId) },
-              modifier =
-                  Modifier.testTag(
-                      ProjectSelectionScreenTestTags.getInviteButtonTestTag(project.projectId))) {
-                Icon(
-                    imageVector = Icons.Default.PersonAdd,
-                    contentDescription = "Generate Invite",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp))
+              // Projects list
+              if (projectsList.value.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                  Column(
+                      horizontalAlignment = Alignment.CenterHorizontally,
+                      verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                        Text(
+                            "No projects yet",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = Color(0xFF0F172A),
+                            fontWeight = FontWeight.Bold)
+                        Text(
+                            "Create your first project to get started",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFF64748B))
+                      }
+                }
+              } else {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = Spacing.lg),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                      items(projectsList.value) { project ->
+                        val projectUsers =
+                            projectSelectionScreenViewModel
+                                .getProjectUsersInformation(project.projectId)
+                                .collectAsState(listOf())
+                        ProjectSummaryCard(
+                            project = project,
+                            onClick = { onSeeProjectMembers(project.projectId) },
+                            memberCount = projectUsers.value.size,
+                            actionButton = {
+                              Row(
+                                  modifier = Modifier.fillMaxWidth(),
+                                  horizontalArrangement = Arrangement.SpaceBetween,
+                                  verticalAlignment = Alignment.CenterVertically) {
+                                    TextButton(
+                                        onClick = { onSeeProjectMembers(project.projectId) },
+                                        modifier =
+                                            Modifier.testTag(
+                                                ProjectSelectionScreenTestTags
+                                                    .getShowMembersButtonTestTag(
+                                                        project.projectId)),
+                                        colors =
+                                            ButtonDefaults.textButtonColors(
+                                                contentColor = MaterialTheme.colorScheme.primary)) {
+                                          Text(
+                                              "View Members",
+                                              style = MaterialTheme.typography.labelLarge,
+                                              fontWeight = FontWeight.SemiBold)
+                                        }
+                                    if (currentUser.value?.uid.equals(project.createdBy)) {
+                                      IconButton(
+                                          onClick = { onGenerateInviteRequest(project.projectId) },
+                                          modifier =
+                                              Modifier.testTag(
+                                                  ProjectSelectionScreenTestTags
+                                                      .getInviteButtonTestTag(project.projectId))) {
+                                            Icon(
+                                                imageVector = Icons.Default.PersonAdd,
+                                                contentDescription = "Generate Invite",
+                                                tint = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.size(24.dp))
+                                          }
+                                    }
+                                  }
+                            })
+                      }
+                    }
               }
-        }
-      }
+            }
+      })
 }
 
 /** Displays the status of a project in a modern badge style. */

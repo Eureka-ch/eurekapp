@@ -341,6 +341,13 @@ class CreateTaskScreenTests : TestCase() {
 
     // Delete the photo
     composeTestRule.onNodeWithTag(CommonTaskTestTags.DELETE_ATTACHMENT).performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.waitUntil(timeoutMillis = 3000) {
+      composeTestRule
+          .onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT)
+          .fetchSemanticsNodes()
+          .isEmpty()
+    }
     composeTestRule.onNodeWithTag(CommonTaskTestTags.ATTACHMENT).assertIsNotDisplayed()
   }
 

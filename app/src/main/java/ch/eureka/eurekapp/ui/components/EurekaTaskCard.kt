@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
@@ -44,10 +45,6 @@ import androidx.compose.ui.unit.dp
 // Portions of this code were generated with the help of AI.
 // Portions added by Jiří Gebauer partially generated with the help of Grok.
 
-private const val PRESSED_SCALE = 0.98f
-private const val NORMAL_SCALE = 1f
-private const val ANIMATION_DURATION_MS = 150
-
 /** Task card component used on tasks and project screens */
 @Composable
 fun EurekaTaskCard(
@@ -66,9 +63,7 @@ fun EurekaTaskCard(
 ) {
   var isPressed by remember { mutableStateOf(false) }
   val scale by
-      animateFloatAsState(
-          targetValue = if (isPressed) PRESSED_SCALE else NORMAL_SCALE,
-          animationSpec = tween(ANIMATION_DURATION_MS))
+      animateFloatAsState(targetValue = if (isPressed) 0.98f else 1f, animationSpec = tween(150))
 
   Card(
       shape = RoundedCornerShape(24.dp),
@@ -106,15 +101,15 @@ fun EurekaTaskCard(
                 // Header: Title + Status Icon
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+              horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically) {
                       // Title with strong contrast
-                      Text(
-                          text = title,
+                Text(
+                    text = title,
                           style = MaterialTheme.typography.titleLarge,
                           color = if (isCompleted) Color(0xFF64748B) else Color(0xFF0F172A),
-                          fontWeight = FontWeight.Bold,
-                          modifier = Modifier.weight(1f))
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f))
 
                       // Status icon with border
                       Box(
@@ -147,8 +142,8 @@ fun EurekaTaskCard(
                                   tint = MaterialTheme.colorScheme.primary,
                                   modifier = Modifier.size(20.dp))
                             } else {
-                              Box(
-                                  modifier =
+                Box(
+                    modifier =
                                       Modifier.size(16.dp)
                                           .background(
                                               color = Color(0xFFCBD5E1),
@@ -160,29 +155,29 @@ fun EurekaTaskCard(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Metadata row with icons
-                if (dueDate.isNotEmpty() || assignee.isNotEmpty()) {
+          if (dueDate.isNotEmpty() || assignee.isNotEmpty()) {
                   Row(
                       modifier = Modifier.fillMaxWidth(),
                       horizontalArrangement = Arrangement.spacedBy(16.dp),
                       verticalAlignment = Alignment.CenterVertically) {
                         if (dueDate.isNotEmpty()) {
-                          Row(
-                              verticalAlignment = Alignment.CenterVertically,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                               horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                 Icon(
                                     imageVector = Icons.Default.AccessTime,
                                     contentDescription = null,
                                     tint = Color(0xFF64748B),
                                     modifier = Modifier.size(16.dp))
-                                Text(
+                      Text(
                                     text = dueDate,
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = Color(0xFF475569),
                                     fontWeight = FontWeight.Medium)
-                              }
-                        }
+                    }
+                  }
 
-                        if (assignee.isNotEmpty()) {
+                  if (assignee.isNotEmpty()) {
                           Row(
                               verticalAlignment = Alignment.CenterVertically,
                               horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -192,7 +187,7 @@ fun EurekaTaskCard(
                                     tint =
                                         Color(0xFF2563EB), // bleu plus prononcé pour l'assignation
                                     modifier = Modifier.size(16.dp))
-                                Text(
+                      Text(
                                     text = assignee,
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = Color(0xFF1D4ED8),
@@ -204,7 +199,7 @@ fun EurekaTaskCard(
                 }
 
                 // Tags row
-                if (dueDateTag != null && !isCompleted) {
+          if (dueDateTag != null && !isCompleted) {
                   val tagType =
                       when {
                         dueDateTag.contains("Overdue") -> StatusType.ERROR
@@ -213,33 +208,33 @@ fun EurekaTaskCard(
                       }
                   EurekaStatusTag(text = dueDateTag, type = tagType)
                   Spacer(modifier = Modifier.height(8.dp))
-                }
+          }
 
-                if (isCompleted) {
+          if (isCompleted) {
                   EurekaStatusTag(text = "Done", type = StatusType.SUCCESS)
                   Spacer(modifier = Modifier.height(8.dp))
-                } else if (priority.isNotEmpty()) {
+          } else if (priority.isNotEmpty()) {
                   EurekaStatusTag(text = priority, type = StatusType.INFO)
                   Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 // Progress bar
-                if (progressText.isNotEmpty() || progressValue > 0f) {
+          if (progressText.isNotEmpty() || progressValue > 0f) {
                   Column {
-                    Row(
+            Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically) {
-                          Text(
+                  Text(
                               text = "Progress",
                               style = MaterialTheme.typography.labelLarge,
                               color = Color(0xFF64748B),
                               fontWeight = FontWeight.SemiBold)
-                          Text(
-                              text = if (isCompleted) "100%" else progressText,
+                  Text(
+                      text = if (isCompleted) "100%" else progressText,
                               style = MaterialTheme.typography.labelLarge,
                               color = Color(0xFF0F172A),
-                              fontWeight = FontWeight.Bold)
+                      fontWeight = FontWeight.Bold)
                         }
                     Spacer(modifier = Modifier.height(8.dp))
                     LinearProgressIndicator(
@@ -249,7 +244,7 @@ fun EurekaTaskCard(
                         trackColor = Color(0xFFE2E8F0))
                   }
                 }
-              }
-            }
+          }
+        }
       }
 }
