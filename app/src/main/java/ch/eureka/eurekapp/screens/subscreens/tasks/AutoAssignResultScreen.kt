@@ -26,7 +26,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -43,6 +42,8 @@ import ch.eureka.eurekapp.model.data.task.getDaysUntilDue
 import ch.eureka.eurekapp.model.data.task.getDueDateTag
 import ch.eureka.eurekapp.screens.formatDueDate
 import ch.eureka.eurekapp.ui.components.EurekaTaskCard
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import ch.eureka.eurekapp.ui.tasks.AutoAssignResultViewModel
 import ch.eureka.eurekapp.ui.tasks.ProposedAssignment
@@ -65,11 +66,14 @@ fun AutoAssignResultScreen(
 
   Scaffold(
       topBar = {
-        TopAppBar(
-            title = { Text("Auto-Assign Results", fontWeight = FontWeight.Bold) },
+        EurekaTopBar(
+            title = "Auto-Assign Results",
             navigationIcon = {
               IconButton(onClick = { navigationController.popBackStack() }) {
-                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = EColors.WhiteTextColor)
               }
             })
       }) { paddingValues ->
