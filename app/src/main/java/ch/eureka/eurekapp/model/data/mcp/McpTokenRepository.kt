@@ -58,9 +58,7 @@ class FirebaseMcpTokenRepository(
     val docRef = firestore.document(FirestorePaths.mcpTokenPath(tokenHash))
     val doc = docRef.get().await()
 
-    if (!doc.exists()) {
-      throw IllegalArgumentException("Token not found")
-    }
+    require(doc.exists()) { "Token not found" }
 
     val tokenUserId = doc.getString("userId")
     if (tokenUserId != userId) {
