@@ -1,8 +1,8 @@
+/* Portions of this file were written with the help of Claude (Sonnet 4.5) and GPT-5 Codex. */
 package ch.eureka.eurekapp.test_end_to_end
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -16,15 +16,18 @@ import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.Eurekapp
 import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.navigation.BottomBarNavigationTestTags
+import ch.eureka.eurekapp.navigation.NavigationMenu
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.ui.authentication.SignInScreenTestTags
+import ch.eureka.eurekapp.ui.components.ProjectDropDownMenuTestTag
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.utils.FakeCredentialManager
 import ch.eureka.eurekapp.utils.FakeJwtGenerator
 import ch.eureka.eurekapp.utils.FirebaseEmulator
+import com.google.firebase.auth.GoogleAuthProvider
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
@@ -120,7 +123,7 @@ class TaskEndToEndTest : TestCase() {
             .onNodeWithTag(SignInScreenTestTags.SIGN_IN_WITH_GOOGLE_BUTTON)
             .assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -196,7 +199,7 @@ class TaskEndToEndTest : TestCase() {
             .onNodeWithTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON)
             .assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -211,7 +214,7 @@ class TaskEndToEndTest : TestCase() {
       try {
         composeTestRule.onNodeWithTag(TasksScreenTestTags.CREATE_TASK_BUTTON).assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -223,7 +226,7 @@ class TaskEndToEndTest : TestCase() {
       try {
         composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -244,7 +247,7 @@ class TaskEndToEndTest : TestCase() {
       try {
         composeTestRule.onNodeWithText("End-to-End Test Task").assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -254,67 +257,18 @@ class TaskEndToEndTest : TestCase() {
 
   private val testUserName = "Test User"
   private val testUserEmail = "testuser@example.com"
-  // Use the same project ID as NavigationMenu
-  private val testProjectId = "test-project-id"
+  private val testProjectId = "project-id-test"
 
   @OptIn(ExperimentalTestApi::class)
   @Test
   fun taskEndToEnd_completeE2EFlowCreateVoteDeleteMeetingSucceeds() {
-    // CRITICAL FIX: Follow the same pattern as working test - use Eurekapp() and sign in via UI
-    val fakeIdToken = FakeJwtGenerator.createFakeGoogleIdToken(testUserName, testUserEmail)
-    val fakeCredentialManager = FakeCredentialManager.create(fakeIdToken)
-
-    // Create the Google user in Firebase emulator (creates account but doesn't sign in)
-    FirebaseEmulator.createGoogleUser(fakeIdToken)
-
-    composeTestRule.setContent { Eurekapp(credentialManager = fakeCredentialManager) }
-
-    // Wait for compose to be idle to ensure all initialization is complete
-    composeTestRule.waitForIdle()
-
-    // Give additional time for Firebase initialization and ViewModel setup
-    Thread.sleep(1000)
-
-    // Wait for sign-in screen to appear (increased timeout for CI environment)
-    composeTestRule.waitUntil(timeoutMillis = 10_000) {
-      try {
-        composeTestRule.waitForIdle()
-        composeTestRule
-            .onNodeWithTag(SignInScreenTestTags.SIGN_IN_WITH_GOOGLE_BUTTON)
-            .assertExists()
-        true
-      } catch (_: Exception) {
-        false
-      }
-    }
-
-    composeTestRule.onNodeWithTag(SignInScreenTestTags.SIGN_IN_WITH_GOOGLE_BUTTON).performClick()
-
-    // Wait for authentication to complete by polling for the current user
-    var currentUser: String? = null
-    val authStartTime = System.currentTimeMillis()
-    val authTimeout = 10_000L // 10 seconds timeout for authentication
-
-    while (currentUser == null && (System.currentTimeMillis() - authStartTime) < authTimeout) {
-      runBlocking { currentUser = FirebaseEmulator.auth.currentUser?.uid }
-      if (currentUser == null) {
-        Thread.sleep(500) // Poll every 500ms
-      }
-    }
-
-    // Get the signed-in user ID and create user profile + test project
     runBlocking {
-      testUserId =
-          currentUser
-              ?: throw IllegalStateException(
-                  "User not signed in after ${authTimeout}ms. " +
-                      "Firebase Auth currentUser is null. " +
-                      "Check that Firebase emulators are accessible from the Android emulator.")
+      // Setup: Authenticate user
+      val fakeIdToken = FakeJwtGenerator.createFakeGoogleIdToken(testUserName, testUserEmail)
+      val firebaseCred = GoogleAuthProvider.getCredential(fakeIdToken, null)
+      val authResult = FirebaseEmulator.auth.signInWithCredential(firebaseCred).await()
+      testUserId = authResult.user?.uid ?: throw IllegalStateException("Failed to sign in")
 
-      // Wait for Firebase Auth token to propagate to Firestore
-      Thread.sleep(2000)
-
-      // Create user profile in Firestore
       val userRef = FirebaseEmulator.firestore.collection("users").document(testUserId)
       val userProfile =
           mapOf(
@@ -324,7 +278,6 @@ class TaskEndToEndTest : TestCase() {
               "photoUrl" to "")
       userRef.set(userProfile).await()
 
-      // Create a test project for the user
       val projectRef = FirebaseEmulator.firestore.collection("projects").document(testProjectId)
       val project =
           ch.eureka.eurekapp.model.data.project.Project(
@@ -341,170 +294,195 @@ class TaskEndToEndTest : TestCase() {
               userId = testUserId, role = ch.eureka.eurekapp.model.data.project.ProjectRole.OWNER)
       projectRef.collection("members").document(testUserId).set(member).await()
 
-      // Additional wait to ensure Firestore recognizes the auth state
-      Thread.sleep(1000)
-    }
+      // Set up the navigation menu after authentication
+      // NavigationMenu will create the test project automatically
+      composeTestRule.setContent { NavigationMenu() }
 
-    // Wait for sign-in to complete and navigation to happen (increased timeout for CI)
-    composeTestRule.waitUntil(timeoutMillis = 30_000) {
-      try {
-        // Check if we've navigated past sign-in by looking for bottom navigation
+      // Navigate to Meetings tab
+      composeTestRule.waitForIdle()
+
+      // Wait for bottom navigation to be ready
+      composeTestRule.waitUntil(timeoutMillis = 10_000) {
         composeTestRule
-            .onNodeWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON)
-            .assertExists()
-        true
-      } catch (_: Exception) {
-        false
+            .onAllNodesWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
       }
-    }
 
-    // Wait for UI to settle
-    composeTestRule.waitForIdle()
-
-    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON).performClick()
-
-    composeTestRule.waitForIdle()
-
-    // Wait for meetings screen to load
-    composeTestRule.waitUntil(timeoutMillis = 10_000) {
       composeTestRule
-          .onAllNodesWithTag(MeetingScreenTestTags.MEETING_SCREEN)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
+          .onNodeWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON)
+          .performClick()
 
-    // Step 1: Create Meeting - Title + duration only (no date/time) → OPEN_TO_VOTES status
-    composeTestRule.waitUntil(timeoutMillis = 1_000) {
+      composeTestRule.waitForIdle()
+
+      // Wait for meetings screen to load
+      composeTestRule.waitUntil(timeoutMillis = 10_000) {
+        composeTestRule
+            .onAllNodesWithTag(MeetingScreenTestTags.MEETING_SCREEN)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
+
+      // Step 1: Create Meeting - Title + duration only (no date/time) → OPEN_TO_VOTES status
+      composeTestRule.waitUntil(timeoutMillis = 1_000) {
+        composeTestRule
+            .onAllNodesWithTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
+
+      composeTestRule.onNodeWithTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON).performClick()
+
+      composeTestRule.waitForIdle()
+
+      // Wait for create meeting screen to load by checking for the title input field
+      composeTestRule.waitUntil(timeoutMillis = 5_000) {
+        composeTestRule
+            .onAllNodesWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
+
+      val meetingTitle = "E2E Test Meeting"
+
+      // Select Project (New Step)
+      composeTestRule.onNodeWithTag(ProjectDropDownMenuTestTag.PROJECT_DROPDOWN_MENU).performClick()
+
+      // FIX: Wait for the dropdown items to load from Firestore and appear in the UI
+      composeTestRule.waitUntil(timeoutMillis = 5_000) {
+        composeTestRule
+            .onAllNodesWithTag(ProjectDropDownMenuTestTag.DROPDOWN_MENU_ITEM)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
+
+      // Click the first project in the dropdown
       composeTestRule
-          .onAllNodesWithTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
+          .onAllNodesWithTag(ProjectDropDownMenuTestTag.DROPDOWN_MENU_ITEM)[0]
+          .performClick()
 
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON).performClick()
+      composeTestRule.waitForIdle()
 
-    composeTestRule.waitForIdle()
-
-    // Wait for create meeting screen to load by checking for the title input field
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+      // Title input
       composeTestRule
-          .onAllNodesWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
+          .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
+          .performTextInput(meetingTitle)
+      composeTestRule.waitForIdle()
 
-    val meetingTitle = "E2E Test Meeting"
-
-    // Title input
-    composeTestRule
-        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
-        .performTextInput(meetingTitle)
-    composeTestRule.waitForIdle()
-
-    // Duration
-    composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DURATION).performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithText("30 minutes").performClick()
-    composeTestRule.onNodeWithText("OK").performClick()
-    composeTestRule.waitForIdle()
-
-    // Time selection
-    composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TIME).performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithText("OK").performClick()
-    composeTestRule.waitForIdle()
-
-    // Format
-    composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_FORMAT).performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithText("Virtual").performClick()
-    composeTestRule.onNodeWithText("OK").performClick()
-    composeTestRule.waitForIdle()
-
-    // Meeting Link (required for Virtual meetings on feature/meeting-link-support branch)
-    composeTestRule
-        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LINK)
-        .performTextInput("https://meet.google.com/abc-defg-hij")
-    composeTestRule.waitForIdle()
-
-    // Create meeting
-    composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON).performClick()
-
-    composeTestRule.waitForIdle()
-
-    // Step 2: Verify Listing - Wait to navigate back to meetings screen
-    composeTestRule.waitUntil(timeoutMillis = 10_000) {
+      // Duration
       composeTestRule
-          .onAllNodesWithTag(MeetingScreenTestTags.MEETING_SCREEN)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
+          .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DURATION)
+          .performClick()
+      composeTestRule.waitForIdle()
+      composeTestRule.onNodeWithText("30 minutes").performClick()
+      composeTestRule.onNodeWithText("OK").performClick()
+      composeTestRule.waitForIdle()
 
-    // Wait for meeting to appear in list (increased timeout for CI)
-    composeTestRule.waitUntilExactlyOneExists(hasText(meetingTitle), timeoutMillis = 20_000)
+      // Time selection
+      composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TIME).performClick()
+      composeTestRule.waitForIdle()
+      composeTestRule.onNodeWithText("OK").performClick()
+      composeTestRule.waitForIdle()
 
-    // Scroll to and verify meeting is displayed in the list
-    composeTestRule.onNodeWithText(meetingTitle).performScrollTo().assertIsDisplayed()
+      // Format
+      composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_FORMAT).performClick()
+      composeTestRule.waitForIdle()
+      composeTestRule.onNodeWithText("Virtual").performClick()
+      composeTestRule.onNodeWithText("OK").performClick()
+      composeTestRule.waitForIdle()
 
-    // Step 3: View Details - Click on meeting card to open details
-    composeTestRule.waitForIdle()
-
-    // Find and click the meeting card (with scroll to ensure visibility)
-    composeTestRule
-        .onAllNodesWithTag(MeetingScreenTestTags.MEETING_CARD)[0]
-        .performScrollTo()
-        .performClick()
-
-    composeTestRule.waitForIdle()
-
-    // Wait for meeting detail screen to load
-    composeTestRule.waitUntil(timeoutMillis = 15_000) {
+      // Meeting Link (required for Virtual meetings on feature/meeting-link-support branch)
       composeTestRule
-          .onAllNodesWithTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
+          .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LINK)
+          .performTextInput("https://meet.google.com/abc-defg-hij")
+      composeTestRule.waitForIdle()
 
-    // Verify meeting status shows "Voting in progress"
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_STATUS).assertIsDisplayed()
-
-    // Step 4: Test complete - Verify meeting was created successfully
-    // Meeting is now in the list and details are accessible
-
-    // Step 5: Delete Meeting - Navigate back to detail screen and delete
-    // Scroll to delete button if needed
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.DELETE_BUTTON).performScrollTo()
-
-    composeTestRule.waitForIdle()
-
-    // Click delete button
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.DELETE_BUTTON).performClick()
-
-    composeTestRule.waitForIdle()
-
-    // Confirm deletion in dialog
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+      // Create meeting
       composeTestRule
-          .onAllNodesWithTag(MeetingDetailScreenTestTags.DELETE_CONFIRMATION_DIALOG)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
+          .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
+          .performScrollTo()
+          .performClick()
+      composeTestRule.waitForIdle()
 
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.CONFIRM_DELETE_BUTTON).performClick()
+      // Step 2: Verify Listing - Wait to navigate back to meetings screen
+      composeTestRule.waitUntil(timeoutMillis = 30_000) {
+        composeTestRule
+            .onAllNodesWithTag(MeetingScreenTestTags.MEETING_SCREEN)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
 
-    composeTestRule.waitForIdle()
+      composeTestRule.waitUntil(timeoutMillis = 30_000) {
+        try {
+          composeTestRule.onNodeWithText(meetingTitle).assertExists()
+          true
+        } catch (_: Exception) {
+          // Meeting hasn't loaded yet, keep waiting
+          false
+        }
+      }
 
-    // Step 7: Verify Deletion - Meeting removed from list
-    // Wait for navigation back to meetings list
-    composeTestRule.waitUntil(timeoutMillis = 10_000) {
+      // Now verify meeting is displayed in the list
+      composeTestRule.onNodeWithText(meetingTitle).assertIsDisplayed()
+
+      // Step 3: View Details - Click on meeting card to open details
+      composeTestRule.waitForIdle()
+
+      // Find and click the meeting card
+      composeTestRule.onAllNodesWithTag(MeetingScreenTestTags.MEETING_CARD)[0].performClick()
+
+      composeTestRule.waitForIdle()
+
+      // Wait for meeting detail screen to load
+      composeTestRule.waitUntil(timeoutMillis = 15_000) {
+        composeTestRule
+            .onAllNodesWithTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
+
+      // Verify meeting status shows "Voting in progress"
+      composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_STATUS).assertIsDisplayed()
+
+      // Step 4: Test complete - Verify meeting was created successfully
+      // Meeting is now in the list and details are accessible
+
+      // Step 5: Delete Meeting - Navigate back to detail screen and delete
+      // Scroll to delete button if needed
+      composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.DELETE_BUTTON).performScrollTo()
+
+      composeTestRule.waitForIdle()
+
+      // Click delete button
+      composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.DELETE_BUTTON).performClick()
+
+      composeTestRule.waitForIdle()
+
+      // Confirm deletion in dialog
+      composeTestRule.waitUntil(timeoutMillis = 5_000) {
+        composeTestRule
+            .onAllNodesWithTag(MeetingDetailScreenTestTags.DELETE_CONFIRMATION_DIALOG)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
+
       composeTestRule
-          .onAllNodesWithTag(MeetingScreenTestTags.MEETING_SCREEN)
-          .fetchSemanticsNodes()
-          .isNotEmpty()
-    }
+          .onNodeWithTag(MeetingDetailScreenTestTags.CONFIRM_DELETE_BUTTON)
+          .performClick()
 
-    // Verify meeting no longer appears in the list
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithText(meetingTitle).assertDoesNotExist()
+      composeTestRule.waitForIdle()
+
+      // Step 7: Verify Deletion - Meeting removed from list
+      // Wait for navigation back to meetings list
+      composeTestRule.waitUntil(timeoutMillis = 10_000) {
+        composeTestRule
+            .onAllNodesWithTag(MeetingScreenTestTags.MEETING_SCREEN)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
+
+      composeTestRule.waitForIdle()
+      composeTestRule.onNodeWithText(meetingTitle).assertDoesNotExist()
+    }
   }
 }

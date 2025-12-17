@@ -24,8 +24,10 @@ import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.viewing.ViewTaskScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
 import ch.eureka.eurekapp.ui.profile.ProfileScreenTestTags
+import ch.eureka.eurekapp.utils.FakeJwtGenerator
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.GoogleAuthProvider
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -103,9 +105,7 @@ class NavigationMenuTest : TestCase() {
     composeTestRule.setContent { NavigationMenu() }
 
     // Verify HomeOverview is the start destination
-    composeTestRule
-        .onNodeWithTag(ch.eureka.eurekapp.screens.HomeOverviewTestTags.SCREEN)
-        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertIsDisplayed()
 
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON).performClick()
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.PROFILE_SCREEN).assertIsDisplayed()
@@ -191,7 +191,7 @@ class NavigationMenuTest : TestCase() {
       try {
         composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).assertExists()
         true
-      } catch (e: AssertionError) {
+      } catch (_: AssertionError) {
         false
       }
     }
@@ -282,10 +282,45 @@ class NavigationMenuTest : TestCase() {
 
   @Test
   fun navigationMenu_testMeetingScreenCreatesNavigationCallbacks() {
-    composeTestRule.setContent { NavigationMenu() }
-    composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON).performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_SCREEN).assertIsDisplayed()
+    runBlocking {
+      val testUserName = "user test"
+      val testUserEmail = "user-test"
+      val testProjectId = "project-test"
+
+      val fakeIdToken = FakeJwtGenerator.createFakeGoogleIdToken(testUserName, testUserEmail)
+      val firebaseCred = GoogleAuthProvider.getCredential(fakeIdToken, null)
+      val authResult = FirebaseEmulator.auth.signInWithCredential(firebaseCred).await()
+      val testUserId = authResult.user?.uid ?: throw IllegalStateException("Failed to sign in")
+
+      val userRef = FirebaseEmulator.firestore.collection("users").document(testUserId)
+      val userProfile =
+          mapOf(
+              "uid" to testUserId,
+              "displayName" to testUserName,
+              "email" to testUserEmail,
+              "photoUrl" to "")
+      userRef.set(userProfile).await()
+
+      val projectRef = FirebaseEmulator.firestore.collection("projects").document(testProjectId)
+      val project =
+          Project(
+              projectId = testProjectId,
+              name = "Test",
+              description = "Auto-created by test",
+              status = ProjectStatus.OPEN,
+              createdBy = testUserId,
+              memberIds = listOf(testUserId))
+      projectRef.set(project).await()
+
+      val member = Member(userId = testUserId, role = ProjectRole.OWNER)
+      projectRef.collection("members").document(testUserId).set(member).await()
+      composeTestRule.setContent { NavigationMenu() }
+      composeTestRule
+          .onNodeWithTag(BottomBarNavigationTestTags.MEETINGS_SCREEN_BUTTON)
+          .performClick()
+      composeTestRule.waitForIdle()
+      composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_SCREEN).assertIsDisplayed()
+    }
   }
 
   @Test
@@ -322,7 +357,7 @@ class NavigationMenuTest : TestCase() {
                 ch.eureka.eurekapp.ui.conversation.ConversationCardTestTags.CONVERSATION_CARD)
             .assertExists()
         true
-      } catch (e: AssertionError) {
+      } catch (_: AssertionError) {
         false
       }
     }
@@ -384,7 +419,7 @@ class NavigationMenuTest : TestCase() {
             .fetchSemanticsNodes()
             .size > 1
         true
-      } catch (e: AssertionError) {
+      } catch (_: AssertionError) {
         false
       }
     }

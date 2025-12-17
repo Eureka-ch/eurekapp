@@ -1,3 +1,4 @@
+/* Portions of this code and documentation were generated with the help of AI (ChatGPT 5.1) and Gemini. */
 package ch.eureka.eurekapp.ui.home
 
 import ch.eureka.eurekapp.model.data.meeting.Meeting
@@ -5,9 +6,9 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.Participant
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 
-// portions of this code and documentation were generated with the help of AI (ChatGPT 5.1).
 /**
  * Simple configurable implementation of [MeetingRepository] for unit tests.
  *
@@ -16,13 +17,10 @@ import kotlinx.coroutines.flow.flowOf
 class MockMeetingRepository : MeetingRepository {
   private val meetingsByProject = mutableMapOf<String, Flow<List<Meeting>>>()
   private val meetingsById = mutableMapOf<Pair<String, String>, Meeting?>()
+  private val userMeetings = MutableStateFlow<List<Meeting>>(emptyList())
 
-  fun setMeetingsForProject(projectId: String, flow: Flow<List<Meeting>>) {
-    meetingsByProject[projectId] = flow
-  }
-
-  fun setMeeting(projectId: String, meetingId: String, meeting: Meeting?) {
-    meetingsById[projectId to meetingId] = meeting
+  fun setMeetingsForCurrentUser(meetings: List<Meeting>) {
+    userMeetings.value = meetings
   }
 
   override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> {
@@ -36,10 +34,7 @@ class MockMeetingRepository : MeetingRepository {
   override fun getMeetingsForTask(projectId: String, taskId: String): Flow<List<Meeting>> =
       flowOf(emptyList())
 
-  override fun getMeetingsForCurrentUser(
-      projectId: String,
-      skipCache: Boolean
-  ): Flow<List<Meeting>> = getMeetingsInProject(projectId)
+  override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> = userMeetings
 
   override suspend fun createMeeting(
       meeting: Meeting,

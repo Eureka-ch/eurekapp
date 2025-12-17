@@ -18,6 +18,7 @@ import ch.eureka.eurekapp.navigation.BottomBarNavigationTestTags
 import ch.eureka.eurekapp.ui.authentication.SignInScreenTestTags
 import ch.eureka.eurekapp.ui.components.MessageBubbleTestTags
 import ch.eureka.eurekapp.ui.components.MessageInputFieldTestTags
+import ch.eureka.eurekapp.ui.components.ProjectDropDownMenuTestTag
 import ch.eureka.eurekapp.ui.conversation.ConversationDetailScreenTestTags
 import ch.eureka.eurekapp.ui.conversation.ConversationListScreenTestTags
 import ch.eureka.eurekapp.ui.conversation.CreateConversationScreenTestTags
@@ -124,7 +125,7 @@ class ChatEndToEndTest : TestCase() {
             .onNodeWithTag(SignInScreenTestTags.SIGN_IN_WITH_GOOGLE_BUTTON)
             .assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -217,7 +218,7 @@ class ChatEndToEndTest : TestCase() {
             .onNodeWithTag(BottomBarNavigationTestTags.CONVERSATIONS_SCREEN_BUTTON)
             .assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -235,7 +236,7 @@ class ChatEndToEndTest : TestCase() {
       try {
         composeTestRule.onNodeWithTag(ConversationListScreenTestTags.CREATE_BUTTON).assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -249,10 +250,10 @@ class ChatEndToEndTest : TestCase() {
     composeTestRule.waitUntil(timeoutMillis = 10_000) {
       try {
         composeTestRule
-            .onNodeWithTag(CreateConversationScreenTestTags.PROJECT_DROPDOWN)
+            .onNodeWithTag(ProjectDropDownMenuTestTag.PROJECT_DROPDOWN_MENU)
             .assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -260,7 +261,7 @@ class ChatEndToEndTest : TestCase() {
     composeTestRule.waitForIdle()
 
     // Select the test project from the dropdown
-    composeTestRule.onNodeWithTag(CreateConversationScreenTestTags.PROJECT_DROPDOWN).performClick()
+    composeTestRule.onNodeWithTag(ProjectDropDownMenuTestTag.PROJECT_DROPDOWN_MENU).performClick()
 
     composeTestRule.waitForIdle()
 
@@ -269,7 +270,7 @@ class ChatEndToEndTest : TestCase() {
       try {
         composeTestRule.onNodeWithText("End-to-End Chat Project").assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -285,7 +286,7 @@ class ChatEndToEndTest : TestCase() {
             .onNodeWithTag(CreateConversationScreenTestTags.MEMBER_DROPDOWN)
             .assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -302,7 +303,7 @@ class ChatEndToEndTest : TestCase() {
       try {
         composeTestRule.onNodeWithText("Chat Partner").assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -321,7 +322,7 @@ class ChatEndToEndTest : TestCase() {
       try {
         composeTestRule.onNodeWithTag(CreateConversationScreenTestTags.CREATE_BUTTON).assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -340,7 +341,7 @@ class ChatEndToEndTest : TestCase() {
       try {
         composeTestRule.onNodeWithTag(ConversationDetailScreenTestTags.SCREEN).assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -352,7 +353,7 @@ class ChatEndToEndTest : TestCase() {
       try {
         composeTestRule.onNodeWithTag(MessageInputFieldTestTags.INPUT_FIELD).assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -384,7 +385,7 @@ class ChatEndToEndTest : TestCase() {
             .onAllNodesWithTag(MessageBubbleTestTags.BUBBLE)
             .fetchSemanticsNodes()
             .isNotEmpty()
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }

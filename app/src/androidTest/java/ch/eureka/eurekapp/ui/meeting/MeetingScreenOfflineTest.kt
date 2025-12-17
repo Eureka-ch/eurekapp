@@ -1,4 +1,4 @@
-// Portions of this code were generated with the help of Grok.
+/* Portions of this code were generated with the help of Grok and Gemini. */
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -14,13 +14,8 @@ import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.map.Location
-import ch.eureka.eurekapp.utils.FirebaseEmulator
 import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
-import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.tasks.await
-import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -45,29 +40,17 @@ class MeetingScreenOfflineTest {
 
   @Before
   fun setUp() {
-    runBlocking {
-      try {
-        FirebaseAuth.getInstance().signInAnonymously().await()
-      } catch (e: Exception) {
-        // Ignore if already signed in
-      }
-    }
-
     mockConnectivityObserver =
         MockConnectivityObserver(InstrumentationRegistry.getInstrumentation().targetContext)
     mockRepository = MeetingRepositoryMock()
     viewModel =
         MeetingViewModel(
-            repository = mockRepository,
+            repository = mockRepository, // Fixed parameter name
             getCurrentUserId = { testUserId },
             connectivityObserver = mockConnectivityObserver)
   }
 
-  @After
-  fun tearDown() {
-    FirebaseEmulator.clearFirestoreEmulator()
-    FirebaseEmulator.clearAuthEmulator()
-  }
+  // No tearDown needed as we aren't using the Emulator
 
   @Test
   fun meetingScreenOffline_displaysMessage() {
@@ -75,11 +58,7 @@ class MeetingScreenOfflineTest {
 
     composeTestRule.setContent {
       MeetingScreen(
-          config =
-              MeetingScreenConfig(
-                  projectId = testProjectId,
-                  onCreateMeeting = { _ -> },
-                  onMeetingClick = { _, _ -> }),
+          config = MeetingScreenConfig(onCreateMeeting = { _ -> }, onMeetingClick = { _, _ -> }),
           meetingViewModel = viewModel)
     }
 
@@ -98,7 +77,6 @@ class MeetingScreenOfflineTest {
       MeetingScreen(
           config =
               MeetingScreenConfig(
-                  projectId = testProjectId,
                   onCreateMeeting = { isConnected ->
                     if (isConnected) {
                       createMeetingClicked = true
@@ -138,11 +116,7 @@ class MeetingScreenOfflineTest {
 
     composeTestRule.setContent {
       MeetingScreen(
-          config =
-              MeetingScreenConfig(
-                  projectId = testProjectId,
-                  onCreateMeeting = { _ -> },
-                  onMeetingClick = { _, _ -> }),
+          config = MeetingScreenConfig(onCreateMeeting = { _ -> }, onMeetingClick = { _, _ -> }),
           meetingViewModel = viewModel)
     }
 
@@ -158,11 +132,7 @@ class MeetingScreenOfflineTest {
 
     composeTestRule.setContent {
       MeetingScreen(
-          config =
-              MeetingScreenConfig(
-                  projectId = testProjectId,
-                  onCreateMeeting = { _ -> },
-                  onMeetingClick = { _, _ -> }),
+          config = MeetingScreenConfig(onCreateMeeting = { _ -> }, onMeetingClick = { _, _ -> }),
           meetingViewModel = viewModel)
     }
 
@@ -186,11 +156,7 @@ class MeetingScreenOfflineTest {
 
     composeTestRule.setContent {
       MeetingScreen(
-          config =
-              MeetingScreenConfig(
-                  projectId = testProjectId,
-                  onCreateMeeting = { _ -> },
-                  onMeetingClick = { _, _ -> }),
+          config = MeetingScreenConfig(onCreateMeeting = { _ -> }, onMeetingClick = { _, _ -> }),
           meetingViewModel = viewModel)
     }
 
@@ -224,11 +190,7 @@ class MeetingScreenOfflineTest {
 
     composeTestRule.setContent {
       MeetingScreen(
-          config =
-              MeetingScreenConfig(
-                  projectId = testProjectId,
-                  onCreateMeeting = { _ -> },
-                  onMeetingClick = { _, _ -> }),
+          config = MeetingScreenConfig(onCreateMeeting = { _ -> }, onMeetingClick = { _, _ -> }),
           meetingViewModel = viewModel)
     }
 
@@ -268,7 +230,6 @@ class MeetingScreenOfflineTest {
       MeetingScreen(
           config =
               MeetingScreenConfig(
-                  projectId = testProjectId,
                   onCreateMeeting = { _ -> },
                   onMeetingClick = { projectId, meetingId ->
                     navigatedProjectId = projectId

@@ -9,11 +9,15 @@ import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import ch.eureka.eurekapp.model.data.meeting.Meeting
+import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.utils.MockConnectivityObserver
+import com.google.firebase.Timestamp
+import java.util.Date
 import kotlin.collections.filter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,8 +52,13 @@ class MeetingScreenTest {
         var updateMeetingCallCount = 0
         var updatedMeeting: Meeting? = null
 
-        override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> {
+        // We override the new API method to return our test flow
+        override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> {
           return meetingsFlow
+        }
+
+        override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> {
+          return flowOf(emptyList())
         }
 
         override suspend fun updateMeeting(meeting: Meeting): Result<Unit> {
@@ -74,8 +83,7 @@ class MeetingScreenTest {
     val viewModel = MeetingViewModel(repositoryMock, { testUserId }, mockConnectivityObserver)
     composeTestRule.setContent {
       MeetingScreen(
-          meetingViewModel = viewModel,
-          config = MeetingScreenConfig(projectId = "test_project", onCreateMeeting = { _ -> }))
+          meetingViewModel = viewModel, config = MeetingScreenConfig(onCreateMeeting = { _ -> }))
     }
   }
 
@@ -119,6 +127,40 @@ class MeetingScreenTest {
             .reversed()
             .first { it.status == MeetingStatus.COMPLETED }
     composeTestRule.onNodeWithText(pastMeeting.title).assertDoesNotExist()
+  }
+
+  @Test
+  fun meetingScreen_meetingsFromMultipleProjectsAreAggregated() {
+    val meetingA =
+        Meeting(
+            meetingID = "meetingA",
+            projectId = "projectA",
+            title = "Project A Meeting",
+            status = MeetingStatus.SCHEDULED,
+            datetime = Timestamp(Date(System.currentTimeMillis() + 100000)), // Future
+            format = MeetingFormat.VIRTUAL,
+            link = "link",
+            createdBy = testUserId ?: "user")
+
+    val meetingB =
+        Meeting(
+            meetingID = "meetingB",
+            projectId = "projectB",
+            title = "Project B Meeting",
+            status = MeetingStatus.SCHEDULED,
+            datetime = Timestamp(Date(System.currentTimeMillis() + 200000)), // Future
+            format = MeetingFormat.IN_PERSON,
+            location = Location(name = "Room B"),
+            createdBy = testUserId ?: "user")
+
+    meetingsFlow.value = listOf(meetingA, meetingB)
+    setContent()
+
+    composeTestRule.waitForIdle()
+
+    // Assert both meetings from different projects are displayed
+    composeTestRule.onNodeWithText("Project A Meeting").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Project B Meeting").assertIsDisplayed()
   }
 
   @Test
@@ -388,8 +430,16 @@ class MeetingScreenTest {
   @Test
   fun meetingScreen_clickingCloseVotesButtonCallsViewModel() {
     val votingMeeting = MeetingProvider.sampleMeetings.first { it.meetingID == "meet_vote_01" }
-    testUserId = votingMeeting.createdBy
-    meetingsFlow.value = listOf(votingMeeting)
+
+    // FIX: Provide a version of the meeting that satisfies validation logic.
+    // If the vote results in Virtual, we need a link. If In-Person, a location.
+    // Providing both makes it safe regardless of which vote wins in the sample data.
+    val validVotingMeeting =
+        votingMeeting.copy(
+            link = "https://meet.google.com/test", location = Location(name = "Test Room"))
+
+    testUserId = validVotingMeeting.createdBy
+    meetingsFlow.value = listOf(validVotingMeeting)
     setContent()
 
     assertEquals(0, repositoryMock.updateMeetingCallCount)
@@ -400,23 +450,24 @@ class MeetingScreenTest {
 
     assertEquals(1, repositoryMock.updateMeetingCallCount)
     assertEquals(MeetingStatus.SCHEDULED, repositoryMock.updatedMeeting?.status)
-    assertEquals(votingMeeting.meetingID, repositoryMock.updatedMeeting?.meetingID)
+    assertEquals(validVotingMeeting.meetingID, repositoryMock.updatedMeeting?.meetingID)
   }
 }
 
 open class FakeMeetingRepository : MeetingRepository {
   override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> = flowOf(emptyList())
 
-  override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> = flow { null }
-
-  override fun getMeetingsForTask(projectId: String, taskId: String): Flow<List<Meeting>> = flow {
-    emptyList<Meeting>()
+  override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> = flow {
+    emit(null)
   }
 
-  override fun getMeetingsForCurrentUser(
-      projectId: String,
-      skipCache: Boolean
-  ): Flow<List<Meeting>> = flow { emptyList<Meeting>() }
+  override fun getMeetingsForTask(projectId: String, taskId: String): Flow<List<Meeting>> = flow {
+    emit(emptyList())
+  }
+
+  override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> = flow {
+    emit(emptyList())
+  }
 
   override suspend fun createMeeting(
       meeting: Meeting,
@@ -431,7 +482,7 @@ open class FakeMeetingRepository : MeetingRepository {
 
   override fun getParticipants(projectId: String, meetingId: String): Flow<List<Participant>> =
       flow {
-        emptyList<Participant>()
+        emit(emptyList())
       }
 
   override suspend fun addParticipant(
