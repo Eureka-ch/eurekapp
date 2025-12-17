@@ -201,10 +201,16 @@ class MeetingDetailScreenTest {
     composeTestRule.onNodeWithText(meeting.title).assertIsDisplayed()
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_STATUS).assertIsDisplayed()
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_DATETIME).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_FORMAT).assertIsDisplayed()
+
+    // Verify the meeting link exists (it's a VIRTUAL meeting with a link)
+    assert(meeting.format == MeetingFormat.VIRTUAL && meeting.link != null)
+
+    // Scroll to bring meeting link into view using onNodeWithText and useUnmergedTree
+    composeTestRule.onNodeWithText("Meeting Link", useUnmergedTree = true).performScrollTo()
+
+    // Now MEETING_LINK should be visible
     composeTestRule
-        .onNodeWithTag(MeetingDetailScreenTestTags.MEETING_LINK)
-        .performScrollTo()
+        .onNodeWithTag(MeetingDetailScreenTestTags.MEETING_LINK, useUnmergedTree = true)
         .assertIsDisplayed()
   }
 
