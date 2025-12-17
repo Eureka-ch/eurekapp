@@ -68,6 +68,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -222,7 +223,9 @@ fun MeetingScreen(
         FloatingActionButton(
             onClick = { config.onCreateMeeting(uiState.isConnected) },
             modifier =
-                Modifier.offset(y = (-72).dp).testTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON),
+                Modifier.offset(y = (-72).dp)
+                    .zIndex(2f)
+                    .testTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON),
             containerColor =
                 if (uiState.isConnected) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.surfaceVariant) {

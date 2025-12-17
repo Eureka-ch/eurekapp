@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -655,6 +656,7 @@ fun NavigationMenu(
           }
     }
     // Nav bar en overlay flottante (masquée sur certaines pages)
+    // zIndex(1f) pour être au-dessus du contenu mais sous les FABs (zIndex 2f)
     if (!hideBottomBar) {
       androidx.compose.foundation.layout.Box(
           modifier =
