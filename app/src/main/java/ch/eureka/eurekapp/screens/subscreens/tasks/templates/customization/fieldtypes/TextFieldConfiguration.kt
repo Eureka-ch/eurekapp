@@ -15,8 +15,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
@@ -43,7 +45,7 @@ fun TextFieldConfiguration(
             // Invalid state, don't update
           }
         },
-        label = { Text("Max Length") },
+        label = { Text(stringResource(R.string.text_max_length_label)) },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier.fillMaxWidth().testTag(TextFieldConfigurationTestTags.MAX_LENGTH),
@@ -60,7 +62,7 @@ fun TextFieldConfiguration(
             // Invalid state, don't update
           }
         },
-        label = { Text("Min Length") },
+        label = { Text(stringResource(R.string.text_min_length_label)) },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier.fillMaxWidth().testTag(TextFieldConfigurationTestTags.MIN_LENGTH),
@@ -71,7 +73,7 @@ fun TextFieldConfiguration(
     OutlinedTextField(
         value = fieldType.placeholder ?: "",
         onValueChange = { onUpdate(fieldType.copy(placeholder = it.ifBlank { null })) },
-        label = { Text("Placeholder") },
+        label = { Text(stringResource(R.string.text_placeholder_label)) },
         enabled = enabled,
         modifier = Modifier.fillMaxWidth().testTag(TextFieldConfigurationTestTags.PLACEHOLDER),
         colors = EurekaStyles.textFieldColors())
@@ -81,7 +83,7 @@ fun TextFieldConfiguration(
     if (minLength != null && maxLength != null && minLength > maxLength) {
       Spacer(modifier = Modifier.height(4.dp))
       Text(
-          text = "Minimum length must be less than or equal to maximum length",
+          text = stringResource(R.string.text_validation_error),
           color = MaterialTheme.colorScheme.error,
           style = MaterialTheme.typography.bodySmall)
     }

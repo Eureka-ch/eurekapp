@@ -22,9 +22,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.downloads.AppDatabase
 import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
@@ -91,7 +93,7 @@ fun ViewTaskScreen(
   Scaffold(
       topBar = {
         EurekaTopBar(
-            title = "View Task",
+            title = stringResource(R.string.view_task_title),
             navigationIcon = {
               BackButton(
                   onClick = { navigationController.popBackStack() },
@@ -135,7 +137,7 @@ fun ViewTaskScreen(
                         readOnly = true)
 
                     Text(
-                        text = "Status: ${viewTaskState.status.name.replace("_", " ")}",
+                        text = stringResource(R.string.view_task_status_label, viewTaskState.status.name.replace("_", " ")),
                         modifier = Modifier.testTag(ViewTaskScreenTestTags.TASK_STATUS))
 
                     if (viewTaskState.selectedTemplate != null) {
@@ -148,7 +150,7 @@ fun ViewTaskScreen(
 
                     if (!isConnected) {
                       Text(
-                          text = "You are offline. Editing tasks is unavailable.",
+                          text = stringResource(R.string.view_task_offline_message),
                           style = MaterialTheme.typography.bodyMedium,
                           color = MaterialTheme.colorScheme.error,
                           modifier =
@@ -171,7 +173,7 @@ fun ViewTaskScreen(
                               Route.TasksSection.TaskDependence(projectId, taskId))
                         },
                         modifier = Modifier.testTag(ViewTaskScreenTestTags.VIEW_DEPENDENCIES)) {
-                          Text("View Dependencies")
+                          Text(stringResource(R.string.view_task_dependencies_button))
                         }
 
                     AttachmentsList(
@@ -201,7 +203,7 @@ private fun AssignedUsersSection(assignedUsers: List<User>) {
   if (assignedUsers.isNotEmpty()) {
     Column(modifier = Modifier.testTag(ViewTaskScreenTestTags.ASSIGNED_USERS_SECTION)) {
       Text(
-          text = "Assigned Users:",
+          text = stringResource(R.string.view_task_assigned_users_label),
           style = androidx.compose.material3.MaterialTheme.typography.titleMedium)
       assignedUsers.forEachIndexed { index, user ->
         Text(
@@ -221,7 +223,7 @@ private fun EditButton(isConnected: Boolean, onClick: () -> Unit, modifier: Modi
       modifier =
           modifier.testTag(ViewTaskScreenTestTags.EDIT_TASK).alpha(if (isConnected) 1f else 0.6f),
       colors = EurekaStyles.primaryButtonColors()) {
-        Text("Edit Task")
+        Text(stringResource(R.string.view_task_edit_button))
       }
 }
 
@@ -236,12 +238,12 @@ private fun DownloadSection(
 ) {
   if (urlsToDownload.isNotEmpty() && isConnected) {
     Text(
-        text = "Download Attachments:",
+        text = stringResource(R.string.view_task_download_attachments_label),
         style = MaterialTheme.typography.titleMedium,
         modifier = Modifier.padding(top = 16.dp))
     if (isDownloading) {
       Text(
-          text = "Downloading attachments... $downloadedCount / $totalToDownload",
+          text = stringResource(R.string.view_task_downloading_progress, downloadedCount, totalToDownload),
           style = MaterialTheme.typography.bodyMedium)
       LinearProgressIndicator(
           progress = {
@@ -254,7 +256,7 @@ private fun DownloadSection(
           modifier =
               Modifier.padding(vertical = 4.dp)
                   .testTag(ViewTaskScreenTestTags.DOWNLOAD_ALL_ATTACHMENTS)) {
-            Text("Download All Attachments")
+            Text(stringResource(R.string.view_task_download_all_button))
           }
     }
   }

@@ -39,9 +39,11 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.project.MembersUiState
 import ch.eureka.eurekapp.model.data.project.ProjectMembersViewModel
 import ch.eureka.eurekapp.model.data.user.User
@@ -96,7 +98,7 @@ fun ProjectMembersScreen(
                 when (val state = uiState) {
                   is MembersUiState.Success -> state.projectName
                   is MembersUiState.Loading,
-                  is MembersUiState.Error -> "Project members"
+                  is MembersUiState.Error -> stringResource(R.string.project_members_title)
                 },
             titleTestTag = ProjectMembersScreenTestTags.TITLE,
             navigationIcon = {
@@ -105,7 +107,7 @@ fun ProjectMembersScreen(
                   modifier = Modifier.testTag(ProjectMembersScreenTestTags.BACK_BUTTON)) {
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.back),
                         tint = EColors.WhiteTextColor)
                   }
             },
@@ -115,7 +117,7 @@ fun ProjectMembersScreen(
                   modifier = Modifier.testTag(ProjectMembersScreenTestTags.REFRESH_BUTTON)) {
                     Icon(
                         Icons.Default.Refresh,
-                        contentDescription = "Refresh",
+                        contentDescription = stringResource(R.string.refresh),
                         tint = EColors.WhiteTextColor)
                   }
             })
@@ -138,7 +140,7 @@ fun ProjectMembersScreen(
             is MembersUiState.Success -> {
               if (state.members.isEmpty()) {
                 Text(
-                    text = "No members found in this project.",
+                    text = stringResource(R.string.no_members_found),
                     modifier =
                         Modifier.align(Alignment.Center)
                             .testTag(ProjectMembersScreenTestTags.EMPTY_STATE))
@@ -166,7 +168,7 @@ fun MembersList(members: List<User>, isUserOnline: (Timestamp) -> Boolean) {
   LazyColumn(modifier = Modifier.fillMaxSize().testTag(ProjectMembersScreenTestTags.MEMBERS_LIST)) {
     item {
       Text(
-          text = "Members — ${members.size}",
+          text = stringResource(R.string.members_header, members.size),
           style = MaterialTheme.typography.labelLarge,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp))
@@ -206,7 +208,7 @@ fun MemberItem(user: User, isUserOnline: (Timestamp) -> Boolean) {
                         .data(user.photoUrl)
                         .crossfade(true)
                         .build(),
-                contentDescription = "Profile picture of ${user.displayName}",
+                contentDescription = stringResource(R.string.profile_picture_of, user.displayName),
                 error = fallbackPainter,
                 placeholder = fallbackPainter,
                 fallback = fallbackPainter,
@@ -225,7 +227,7 @@ fun MemberItem(user: User, isUserOnline: (Timestamp) -> Boolean) {
                 contentAlignment = Alignment.Center) {
                   Icon(
                       Icons.Default.Person,
-                      contentDescription = "Default person",
+                      contentDescription = stringResource(R.string.default_person),
                       tint = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
           }
@@ -265,10 +267,11 @@ fun MemberItem(user: User, isUserOnline: (Timestamp) -> Boolean) {
  * @param isOnline Boolean indicating if the user is currently considered online.
  * @return A string representing the user's status.
  */
+@Composable
 fun getStatusText(lastActive: Timestamp, isOnline: Boolean): String {
-  if (isOnline) return "Online"
+  if (isOnline) return stringResource(R.string.online)
 
-  if (lastActive == Timestamp(0, 0)) return "Never active"
+  if (lastActive == Timestamp(0, 0)) return stringResource(R.string.never_active)
 
   val now = System.currentTimeMillis()
   val time = lastActive.toDate().time

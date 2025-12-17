@@ -15,8 +15,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
@@ -45,7 +47,7 @@ fun NumberFieldConfiguration(
             // Invalid state, don't update
           }
         },
-        label = { Text("Min") },
+        label = { Text(stringResource(R.string.number_min_label)) },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         modifier = Modifier.fillMaxWidth().testTag(NumberFieldConfigurationTestTags.MIN),
@@ -62,7 +64,7 @@ fun NumberFieldConfiguration(
             // Invalid state, don't update
           }
         },
-        label = { Text("Max") },
+        label = { Text(stringResource(R.string.number_max_label)) },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         modifier = Modifier.fillMaxWidth().testTag(NumberFieldConfigurationTestTags.MAX),
@@ -73,7 +75,7 @@ fun NumberFieldConfiguration(
     OutlinedTextField(
         value = fieldType.step?.toString() ?: "",
         onValueChange = { onUpdate(fieldType.copy(step = it.toDoubleOrNull())) },
-        label = { Text("Step") },
+        label = { Text(stringResource(R.string.number_step_label)) },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         modifier = Modifier.fillMaxWidth().testTag(NumberFieldConfigurationTestTags.STEP),
@@ -84,7 +86,7 @@ fun NumberFieldConfiguration(
     OutlinedTextField(
         value = fieldType.decimals?.toString() ?: "",
         onValueChange = { onUpdate(fieldType.copy(decimals = it.trim().toIntOrNull() ?: 0)) },
-        label = { Text("Decimals") },
+        label = { Text(stringResource(R.string.number_decimals_label)) },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier.fillMaxWidth().testTag(NumberFieldConfigurationTestTags.DECIMALS),
@@ -95,7 +97,7 @@ fun NumberFieldConfiguration(
     OutlinedTextField(
         value = fieldType.unit ?: "",
         onValueChange = { onUpdate(fieldType.copy(unit = it.trim().ifBlank { null })) },
-        label = { Text("Unit (e.g., kg, m/s)") },
+        label = { Text(stringResource(R.string.number_unit_label)) },
         enabled = enabled,
         modifier = Modifier.fillMaxWidth().testTag(NumberFieldConfigurationTestTags.UNIT),
         colors = EurekaStyles.textFieldColors())
@@ -105,7 +107,7 @@ fun NumberFieldConfiguration(
     if (min != null && max != null && min > max) {
       Spacer(modifier = Modifier.height(4.dp))
       Text(
-          text = "Minimum value must be less than or equal to maximum value",
+          text = stringResource(R.string.number_validation_error),
           color = MaterialTheme.colorScheme.error,
           style = MaterialTheme.typography.bodySmall)
     }

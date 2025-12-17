@@ -38,7 +38,9 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.tasks.Attachment
@@ -120,8 +122,8 @@ fun TaskTitleField(
   OutlinedTextField(
       value = value,
       onValueChange = onValueChange,
-      label = { Text("Title") },
-      placeholder = { Text("Name the task") },
+      label = { Text(stringResource(R.string.task_title_label)) },
+      placeholder = { Text(stringResource(R.string.task_title_placeholder)) },
       readOnly = readOnly,
       modifier =
           modifier
@@ -134,7 +136,7 @@ fun TaskTitleField(
               .testTag(CommonTaskTestTags.TITLE))
   if (shouldShowError(readOnly, value, hasTouched)) {
     Text(
-        text = "Title cannot be empty",
+        text = stringResource(R.string.task_title_error),
         color = Color.Red,
         style = MaterialTheme.typography.bodySmall,
         modifier = Modifier.testTag(CommonTaskTestTags.ERROR_MSG))
@@ -153,8 +155,8 @@ fun TaskDescriptionField(
   OutlinedTextField(
       value = value,
       onValueChange = onValueChange,
-      label = { Text("Description") },
-      placeholder = { Text("Describe the task") },
+      label = { Text(stringResource(R.string.task_description_label)) },
+      placeholder = { Text(stringResource(R.string.task_description_placeholder)) },
       readOnly = readOnly,
       modifier =
           modifier
@@ -167,7 +169,7 @@ fun TaskDescriptionField(
               .testTag(CommonTaskTestTags.DESCRIPTION))
   if (shouldShowError(readOnly, value, hasTouched)) {
     Text(
-        text = "Description cannot be empty",
+        text = stringResource(R.string.task_description_error),
         color = Color.Red,
         style = MaterialTheme.typography.bodySmall,
         modifier = Modifier.testTag(CommonTaskTestTags.ERROR_MSG))
@@ -187,8 +189,8 @@ fun TaskDueDateField(
   OutlinedTextField(
       value = value,
       onValueChange = onValueChange,
-      label = { Text("Due date") },
-      placeholder = { Text("01/01/1970") },
+      label = { Text(stringResource(R.string.task_due_date_label)) },
+      placeholder = { Text(stringResource(R.string.task_due_date_placeholder)) },
       readOnly = readOnly,
       modifier =
           modifier
@@ -201,13 +203,13 @@ fun TaskDueDateField(
               .testTag(CommonTaskTestTags.DUE_DATE))
   if (shouldShowError(readOnly, value, hasTouched)) {
     Text(
-        text = "Due date cannot be empty",
+        text = stringResource(R.string.task_due_date_error),
         color = Color.Red,
         style = MaterialTheme.typography.bodySmall,
         modifier = Modifier.testTag(CommonTaskTestTags.ERROR_MSG))
   } else if (shouldShowDateFormatError(readOnly, value, dateRegex, hasTouched)) {
     Text(
-        text = "Invalid format (must be dd/MM/yyyy)",
+        text = stringResource(R.string.task_due_date_format_error),
         color = Color.Red,
         style = MaterialTheme.typography.bodySmall,
         modifier = Modifier.testTag(CommonTaskTestTags.ERROR_MSG))
@@ -223,13 +225,13 @@ fun TaskReminderField(
   OutlinedTextField(
       value = value,
       onValueChange = onValueChange,
-      label = { Text("Reminder time") },
-      placeholder = { Text("HH:mm") },
+      label = { Text(stringResource(R.string.task_reminder_label)) },
+      placeholder = { Text(stringResource(R.string.task_reminder_placeholder)) },
       modifier = modifier.fillMaxWidth().testTag(CommonTaskTestTags.REMINDER_TIME))
 
   if (value.isNotBlank() && !Formatters.timeRegex.matches(value)) {
     Text(
-        text = "Invalid format (must be HH:mm)",
+        text = stringResource(R.string.task_reminder_format_error),
         color = Color.Red,
         style = MaterialTheme.typography.bodySmall,
         modifier = Modifier.testTag(CommonTaskTestTags.ERROR_MSG))
@@ -282,12 +284,14 @@ private fun AttachmentItem(
 
             if (isOffline) {
               Text(
-                  "Attachment $attachmentIndex: Not downloaded",
+                  stringResource(R.string.task_attachment_not_downloaded, attachmentIndex),
                   modifier =
                       Modifier.testTag(CommonTaskTestTags.ATTACHMENT_OFFLINE_MESSAGE).weight(1f))
             } else {
               Column(modifier = Modifier.weight(1f)) {
-                Text("Attachment $attachmentIndex", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    stringResource(R.string.task_attachment_label, attachmentIndex),
+                    style = MaterialTheme.typography.bodyMedium)
                 AttachmentPreview(
                     attachment.url,
                     null,
@@ -298,7 +302,9 @@ private fun AttachmentItem(
                 IconButton(
                     onClick = { onDelete(index) },
                     modifier = Modifier.testTag(CommonTaskTestTags.DELETE_ATTACHMENT)) {
-                      Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
+                      Icon(
+                          imageVector = Icons.Filled.Delete,
+                          contentDescription = stringResource(R.string.task_delete_attachment))
                     }
               }
             }
@@ -308,7 +314,7 @@ private fun AttachmentItem(
             val mimeType = context.contentResolver.getType(attachment.uri)
             Column(modifier = Modifier.weight(1f)) {
               Text(
-                  "Attachment $attachmentIndex: $fileName",
+                  stringResource(R.string.task_attachment_with_filename, attachmentIndex, fileName),
                   style = MaterialTheme.typography.bodyMedium)
               AttachmentPreview(
                   null,
@@ -320,7 +326,9 @@ private fun AttachmentItem(
               IconButton(
                   onClick = { onDelete(index) },
                   modifier = Modifier.testTag(CommonTaskTestTags.DELETE_ATTACHMENT)) {
-                    Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete file")
+                    Icon(
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = stringResource(R.string.task_delete_attachment))
                   }
             }
           }
@@ -335,7 +343,6 @@ private fun AttachmentPreview(
     mimeType: String?,
     modifier: Modifier = Modifier
 ) {
-  // Convert model to String for consistent handling in PhotoViewer
   val model = uri?.toString() ?: urlString ?: ""
 
   when {
@@ -345,21 +352,21 @@ private fun AttachmentPreview(
     mimeType?.startsWith("video/") == true -> {
       Icon(
           imageVector = Icons.Filled.VideoLibrary,
-          contentDescription = "Video file",
+          contentDescription = stringResource(R.string.attachment_video_description),
           modifier = modifier,
           tint = MaterialTheme.colorScheme.primary)
     }
     mimeType == "application/pdf" -> {
       Icon(
           imageVector = Icons.Filled.PictureAsPdf,
-          contentDescription = "PDF file",
+          contentDescription = stringResource(R.string.attachment_pdf_description),
           modifier = modifier,
           tint = MaterialTheme.colorScheme.error)
     }
     else -> {
       Icon(
           imageVector = Icons.Filled.Description,
-          contentDescription = "Document file",
+          contentDescription = stringResource(R.string.attachment_document_description),
           modifier = modifier,
           tint = MaterialTheme.colorScheme.secondary)
     }
@@ -395,14 +402,14 @@ fun ProjectSelectionField(
 ) {
   var expanded by remember { mutableStateOf(false) }
   val selectedProject = projects.firstOrNull { it.projectId == selectedProjectId }
-  val selectedProjectName = selectedProject?.name ?: "No project selected yet"
+  val selectedProjectName = selectedProject?.name ?: stringResource(R.string.task_project_placeholder)
 
   Column(modifier = modifier) {
-    Text(text = "Select Project", style = MaterialTheme.typography.titleMedium)
+    Text(text = stringResource(R.string.task_project_selection_label), style = MaterialTheme.typography.titleMedium)
 
     if (projects.isEmpty()) {
       Text(
-          text = "No projects available",
+          text = stringResource(R.string.task_project_no_projects),
           style = MaterialTheme.typography.bodyMedium,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           modifier = Modifier.testTag(CommonTaskTestTags.NO_PROJECTS_AVAILABLE))
@@ -412,7 +419,7 @@ fun ProjectSelectionField(
             value = selectedProjectName,
             onValueChange = {},
             readOnly = true,
-            placeholder = { Text("No project selected yet") },
+            placeholder = { Text(stringResource(R.string.task_project_placeholder)) },
             modifier = Modifier.fillMaxWidth().testTag(CommonTaskTestTags.PROJECT_SELECTION_TITLE),
             enabled = false)
 
@@ -437,7 +444,7 @@ fun ProjectSelectionField(
 
     if (projects.isNotEmpty() && selectedProjectId.isEmpty()) {
       Text(
-          text = "Please select a project",
+          text = stringResource(R.string.task_project_selection_error),
           color = Color.Red,
           style = MaterialTheme.typography.bodySmall,
           modifier = Modifier.testTag(CommonTaskTestTags.PROJECT_SELECTION_ERROR))
@@ -458,20 +465,20 @@ fun UserAssignmentField(
   val selectedCount = selectedUserIds.size
   val displayText =
       when {
-        selectedCount == 0 -> "No users assigned"
+        selectedCount == 0 -> stringResource(R.string.task_user_no_assignment)
         selectedCount == 1 -> {
           val user = availableUsers.firstOrNull { it.uid == selectedUserIds.first() }
-          user?.displayName?.ifBlank { user.email } ?: "1 user assigned"
+          stringResource(R.string.task_user_single_assigned, user?.displayName?.ifBlank { user.email } ?: "")
         }
-        else -> "$selectedCount users assigned"
+        else -> stringResource(R.string.task_user_multiple_assigned, selectedCount)
       }
 
   Column(modifier = modifier) {
-    Text(text = "Assign Users", style = MaterialTheme.typography.titleMedium)
+    Text(text = stringResource(R.string.task_user_assignment_label), style = MaterialTheme.typography.titleMedium)
 
     if (availableUsers.isEmpty()) {
       Text(
-          text = "No users available in this project",
+          text = stringResource(R.string.task_user_no_users),
           style = MaterialTheme.typography.bodyMedium,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           modifier = Modifier.testTag(CommonTaskTestTags.NO_USERS_AVAILABLE))
@@ -483,7 +490,7 @@ fun UserAssignmentField(
                 value = displayText,
                 onValueChange = {},
                 readOnly = true,
-                placeholder = { Text("Select users to assign") },
+                placeholder = { Text(stringResource(R.string.task_user_assignment_placeholder)) },
                 modifier =
                     Modifier.fillMaxWidth().testTag(CommonTaskTestTags.USER_ASSIGNMENT_TITLE),
                 enabled = false)
@@ -534,7 +541,7 @@ fun TaskDependenciesSelectionField(
       }
 
   Column(modifier = modifier) {
-    Text(text = "Task Dependencies", style = MaterialTheme.typography.titleMedium)
+    Text(text = stringResource(R.string.task_dependencies_label), style = MaterialTheme.typography.titleMedium)
     DependencyList(
         selectedDependencyIds = selectedDependencyIds,
         availableTasks = availableTasks,
@@ -580,7 +587,9 @@ private fun DependencyList(
                 onClick = { onDependencyRemoved(dependencyId) },
                 modifier =
                     Modifier.testTag("${CommonTaskTestTags.REMOVE_DEPENDENCY}_$dependencyId")) {
-                  Icon(imageVector = Icons.Filled.Delete, contentDescription = "Remove dependency")
+                  Icon(
+                      imageVector = Icons.Filled.Delete,
+                      contentDescription = stringResource(R.string.task_dependencies_remove))
                 }
           }
     }
@@ -604,7 +613,7 @@ private fun DependencyPicker(
         OutlinedButton(
             onClick = { expanded = !expanded },
             modifier = Modifier.fillMaxWidth().testTag(CommonTaskTestTags.ADD_DEPENDENCY_BUTTON)) {
-              Text("Add Dependency")
+              Text(stringResource(R.string.task_dependencies_add_button))
             }
         DropdownMenu(
             expanded = expanded,
@@ -632,14 +641,14 @@ private fun DependencyPicker(
     }
     hasProjectTasks -> {
       Text(
-          text = "No other tasks in this project can be added as dependencies.",
+          text = stringResource(R.string.task_dependencies_no_other_tasks),
           style = MaterialTheme.typography.bodyMedium,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           modifier = Modifier.fillMaxWidth())
     }
     !hasProjectTasks -> {
       Text(
-          text = "No tasks available in this project",
+          text = stringResource(R.string.task_dependencies_no_tasks),
           style = MaterialTheme.typography.bodyMedium,
           color = MaterialTheme.colorScheme.onSurfaceVariant)
     }

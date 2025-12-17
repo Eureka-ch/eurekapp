@@ -28,11 +28,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.tasks.EditTaskState
@@ -106,7 +108,7 @@ fun EditTaskScreen(
   Scaffold(
       topBar = {
         EurekaTopBar(
-            title = "Edit Task",
+            title = stringResource(R.string.edit_task_title),
             navigationIcon = {
               BackButton(
                   onClick = { navigationController.popBackStack() },
@@ -177,7 +179,7 @@ fun EditTaskScreen(
                         modifier =
                             Modifier.weight(EDIT_SCREEN_EQUAL_WEIGHT)
                                 .testTag(CommonTaskTestTags.ADD_PHOTO)) {
-                          Text("Add Photo")
+                          Text(stringResource(R.string.edit_task_button_add_photo))
                         }
 
                     OutlinedButton(
@@ -186,7 +188,7 @@ fun EditTaskScreen(
                         modifier =
                             Modifier.weight(EDIT_SCREEN_EQUAL_WEIGHT)
                                 .testTag(EditTaskScreenTestTags.ADD_FILE)) {
-                          Text("Add File")
+                          Text(stringResource(R.string.edit_task_button_add_file))
                         }
                   }
 
@@ -219,7 +221,10 @@ fun EditTaskScreen(
                             Modifier.fillMaxWidth(EDIT_SCREEN_SMALL_BUTTON_SIZE)
                                 .testTag(EditTaskScreenTestTags.DELETE_TASK),
                         colors = EurekaStyles.outlinedButtonColors()) {
-                          Text(if (editTaskState.isDeleting) "Deleting..." else "Delete Task")
+                          Text(
+                              if (editTaskState.isDeleting)
+                                  stringResource(R.string.edit_task_button_deleting)
+                              else stringResource(R.string.edit_task_button_delete))
                         }
 
                     Button(
@@ -228,7 +233,10 @@ fun EditTaskScreen(
                             inputValid && !editTaskState.isSaving && !editTaskState.isDeleting,
                         modifier = Modifier.fillMaxWidth().testTag(CommonTaskTestTags.SAVE_TASK),
                         colors = EurekaStyles.primaryButtonColors()) {
-                          Text(if (editTaskState.isSaving) "Saving..." else "Save")
+                          Text(
+                              if (editTaskState.isSaving)
+                                  stringResource(R.string.edit_task_button_saving)
+                              else stringResource(R.string.edit_task_button_save))
                         }
                   }
             }
@@ -253,20 +261,20 @@ private fun DeleteConfirmationDialog(
 
   androidx.compose.material3.AlertDialog(
       onDismissRequest = onDismiss,
-      title = { Text("Confirm Deletion") },
-      text = { Text("Are you sure you want to delete the task?") },
+      title = { Text(stringResource(R.string.edit_task_confirm_deletion_title)) },
+      text = { Text(stringResource(R.string.edit_task_confirm_deletion_message)) },
       confirmButton = {
         Button(
             onClick = onConfirm,
             modifier = Modifier.testTag(EditTaskScreenTestTags.CONFIRM_DELETE)) {
-              Text("Yes")
+              Text(stringResource(R.string.edit_task_confirm_yes))
             }
       },
       dismissButton = {
         OutlinedButton(
             onClick = onDismiss,
             modifier = Modifier.testTag(EditTaskScreenTestTags.CANCEL_DELETE)) {
-              Text("No")
+              Text(stringResource(R.string.edit_task_confirm_no))
             }
       })
 }

@@ -32,11 +32,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.tasks.Attachment
@@ -110,7 +112,7 @@ fun CreateTaskScreen(
   Scaffold(
       topBar = {
         EurekaTopBar(
-            title = "Create Task",
+            title = stringResource(R.string.task_create_title),
             navigationIcon = {
               BackButton(
                   onClick = { navigationController.popBackStack() },
@@ -340,14 +342,14 @@ private fun CreateTaskContent(config: CreateTaskContentConfig) {
                   onClick = { config.navigationController.navigate(Route.Camera) },
                   colors = EurekaStyles.outlinedButtonColors(),
                   modifier = Modifier.weight(1f).testTag(CommonTaskTestTags.ADD_PHOTO)) {
-                    Text("Add Photo")
+                    Text(stringResource(R.string.task_create_button_add_photo))
                   }
 
               OutlinedButton(
                   onClick = { config.filePickerLauncher.launch("*/*") },
                   colors = EurekaStyles.outlinedButtonColors(),
                   modifier = Modifier.weight(1f).testTag(CreateTaskScreenTestTags.ADD_FILE)) {
-                    Text("Add File")
+                    Text(stringResource(R.string.task_create_button_add_file))
                   }
             }
 
@@ -364,7 +366,10 @@ private fun CreateTaskContent(config: CreateTaskContentConfig) {
             enabled = config.inputValid && !config.createTaskState.isSaving,
             modifier = Modifier.fillMaxWidth().testTag(CommonTaskTestTags.SAVE_TASK),
             colors = EurekaStyles.primaryButtonColors()) {
-              Text(if (config.createTaskState.isSaving) "Saving..." else "Save")
+              Text(
+                  if (config.createTaskState.isSaving)
+                      stringResource(R.string.task_create_button_saving)
+                  else stringResource(R.string.task_create_button_save))
             }
       }
 }

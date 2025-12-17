@@ -15,7 +15,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.FieldValue
@@ -50,7 +52,7 @@ fun CommonFieldConfiguration(
             // Don't update if label would be invalid (blank)
           }
         },
-        label = { Text("Label *") },
+        label = { Text(stringResource(R.string.field_label_input_label)) },
         enabled = enabled,
         modifier = Modifier.fillMaxWidth().testTag(CommonFieldConfigurationTestTags.LABEL_INPUT),
         colors = EurekaStyles.textFieldColors())
@@ -60,7 +62,7 @@ fun CommonFieldConfiguration(
     OutlinedTextField(
         value = field.description ?: "",
         onValueChange = { onFieldUpdate(field.copy(description = it.ifBlank { null })) },
-        label = { Text("Description") },
+        label = { Text(stringResource(R.string.field_description_label)) },
         enabled = enabled,
         modifier =
             Modifier.fillMaxWidth().testTag(CommonFieldConfigurationTestTags.DESCRIPTION_INPUT),
@@ -74,7 +76,7 @@ fun CommonFieldConfiguration(
           onCheckedChange = { onFieldUpdate(field.copy(required = it)) },
           enabled = enabled,
           modifier = Modifier.testTag(CommonFieldConfigurationTestTags.REQUIRED_CHECKBOX))
-      Text("Required")
+      Text(stringResource(R.string.field_required_label))
     }
   }
 }
@@ -87,7 +89,7 @@ fun DefaultValueInput(
     modifier: Modifier = Modifier
 ) {
   Column(modifier = modifier.fillMaxWidth()) {
-    Text("Default Value", style = MaterialTheme.typography.labelLarge)
+    Text(stringResource(R.string.field_default_value_label), style = MaterialTheme.typography.labelLarge)
     Spacer(modifier = Modifier.height(4.dp))
 
     val mode = if (enabled) FieldInteractionMode.EditOnly else FieldInteractionMode.ViewOnly

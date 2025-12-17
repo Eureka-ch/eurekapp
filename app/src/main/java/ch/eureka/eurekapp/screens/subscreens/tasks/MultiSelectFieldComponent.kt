@@ -24,7 +24,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.FieldValue
@@ -189,7 +191,7 @@ private fun CustomValueInput(
         OutlinedTextField(
             value = customText,
             onValueChange = onCustomTextChange,
-            label = { Text("Custom value") },
+            label = { Text(stringResource(R.string.multi_select_custom_value_label)) },
             singleLine = true,
             modifier =
                 Modifier.weight(1f)
@@ -203,7 +205,7 @@ private fun CustomValueInput(
             },
             enabled = customText.isNotBlank(),
             modifier = Modifier.testTag(MultiSelectFieldTestTags.customAdd(fieldDefinition.id))) {
-              Text("Add")
+              Text(stringResource(R.string.multi_select_add_button))
             }
       }
 }
@@ -217,7 +219,7 @@ private fun MultiSelectViewMode(
 ) {
   if (selectedValues.isEmpty()) {
     Text(
-        text = "None",
+        text = stringResource(R.string.multi_select_none),
         style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.testTag(MultiSelectFieldTestTags.value(fieldDefinition.id)))

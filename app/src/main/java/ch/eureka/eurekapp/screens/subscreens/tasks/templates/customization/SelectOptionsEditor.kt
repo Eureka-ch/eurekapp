@@ -21,7 +21,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.template.field.SelectOption
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
@@ -41,7 +43,7 @@ fun SelectOptionsEditor(
     modifier: Modifier = Modifier
 ) {
   Column(modifier = modifier.fillMaxWidth()) {
-    Text("Options (minimum 2)", style = MaterialTheme.typography.labelLarge)
+    Text(stringResource(R.string.select_options_header), style = MaterialTheme.typography.labelLarge)
     Spacer(modifier = Modifier.height(8.dp))
 
     options.forEachIndexed { index, option ->
@@ -57,7 +59,7 @@ fun SelectOptionsEditor(
                   updated[index] = option.copy(label = newLabel, value = uniqueValue)
                   onOptionsChange(updated)
                 },
-                label = { Text("Label") },
+                label = { Text(stringResource(R.string.select_option_label)) },
                 enabled = enabled,
                 modifier =
                     Modifier.weight(1f)
@@ -75,7 +77,7 @@ fun SelectOptionsEditor(
                 enabled = enabled && options.size > 2,
                 modifier =
                     Modifier.testTag(SelectOptionsEditorTestTags.optionDelete(option.value))) {
-                  Icon(Icons.Default.Delete, "Delete option")
+                  Icon(Icons.Default.Delete, stringResource(R.string.select_option_delete_button))
                 }
           }
     }
@@ -88,7 +90,7 @@ fun SelectOptionsEditor(
         },
         enabled = enabled,
         modifier = Modifier.testTag(SelectOptionsEditorTestTags.ADD_OPTION_BUTTON)) {
-          Text("Add Option")
+          Text(stringResource(R.string.select_option_add_button))
         }
   }
 }

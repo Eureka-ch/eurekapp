@@ -20,6 +20,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.FieldValue
@@ -134,10 +136,12 @@ private fun DatePickerDialogContent(
                 onDateSelected(date)
               }
             }) {
-              Text("OK")
+              Text(stringResource(R.string.date_picker_ok))
             }
       },
-      dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+      dismissButton = {
+        TextButton(onClick = onDismiss) { Text(stringResource(R.string.date_picker_cancel)) }
+      },
       modifier = Modifier.testTag(DateFieldTestTags.DATE_PICKER_DIALOG)) {
         DatePicker(state = datePickerState)
       }
@@ -154,10 +158,12 @@ private fun TimePickerDialogContent(
       onDismissRequest = onDismiss,
       confirmButton = {
         TextButton(onClick = { onTimeSelected(timePickerState.hour, timePickerState.minute) }) {
-          Text("OK")
+          Text(stringResource(R.string.date_picker_ok))
         }
       },
-      dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+      dismissButton = {
+        TextButton(onClick = onDismiss) { Text(stringResource(R.string.date_picker_cancel)) }
+      },
       modifier = Modifier.testTag(DateFieldTestTags.TIME_PICKER_DIALOG)) {
         TimePicker(state = timePickerState)
       }

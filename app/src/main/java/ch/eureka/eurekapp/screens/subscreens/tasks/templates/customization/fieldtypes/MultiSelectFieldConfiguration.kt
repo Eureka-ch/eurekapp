@@ -18,8 +18,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.SelectOptionsEditor
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
@@ -54,7 +56,7 @@ fun MultiSelectFieldConfiguration(
             // Invalid state, don't update
           }
         },
-        label = { Text("Min Selections") },
+        label = { Text(stringResource(R.string.multi_select_min_label)) },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier.fillMaxWidth().testTag(MultiSelectFieldConfigurationTestTags.MIN),
@@ -71,7 +73,7 @@ fun MultiSelectFieldConfiguration(
             // Invalid state, don't update
           }
         },
-        label = { Text("Max Selections") },
+        label = { Text(stringResource(R.string.multi_select_max_label)) },
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier.fillMaxWidth().testTag(MultiSelectFieldConfigurationTestTags.MAX),
@@ -85,7 +87,7 @@ fun MultiSelectFieldConfiguration(
           onCheckedChange = { onUpdate(fieldType.copy(allowCustom = it)) },
           enabled = enabled,
           modifier = Modifier.testTag(MultiSelectFieldConfigurationTestTags.ALLOW_CUSTOM))
-      Text("Allow Custom Values")
+      Text(stringResource(R.string.multi_select_allow_custom))
     }
 
     val minSelections = fieldType.minSelections
@@ -93,7 +95,7 @@ fun MultiSelectFieldConfiguration(
     if (minSelections != null && maxSelections != null && minSelections > maxSelections) {
       Spacer(modifier = Modifier.height(4.dp))
       Text(
-          text = "Minimum selections must be less than or equal to maximum selections",
+          text = stringResource(R.string.multi_select_validation_error),
           color = MaterialTheme.colorScheme.error,
           style = MaterialTheme.typography.bodySmall)
     }

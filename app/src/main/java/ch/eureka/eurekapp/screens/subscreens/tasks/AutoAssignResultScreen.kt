@@ -32,10 +32,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.task.determinePriority
 import ch.eureka.eurekapp.model.data.task.getDaysUntilDue
@@ -67,12 +69,12 @@ fun AutoAssignResultScreen(
   Scaffold(
       topBar = {
         EurekaTopBar(
-            title = "Auto-Assign Results",
+            title = stringResource(R.string.auto_assign_title),
             navigationIcon = {
               IconButton(onClick = { navigationController.popBackStack() }) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
+                    contentDescription = stringResource(R.string.navigate_back),
                     tint = EColors.WhiteTextColor)
               }
             })
@@ -92,12 +94,12 @@ fun AutoAssignResultScreen(
                   // Header with summary and actions
                   Column(modifier = Modifier.padding(vertical = Spacing.md)) {
                     Text(
-                        text = "Review Assignments",
+                        text = stringResource(R.string.auto_assign_review_label),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(Spacing.xs))
                     Text(
-                        text = "$acceptedCount of $totalCount assignments selected",
+                        text = stringResource(R.string.auto_assign_summary, acceptedCount, totalCount),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
 
@@ -109,11 +111,11 @@ fun AutoAssignResultScreen(
                         horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                           OutlinedButton(
                               onClick = { viewModel.acceptAll() }, modifier = Modifier.weight(1f)) {
-                                Text("Accept All")
+                                Text(stringResource(R.string.auto_assign_accept_all_button))
                               }
                           OutlinedButton(
                               onClick = { viewModel.rejectAll() }, modifier = Modifier.weight(1f)) {
-                                Text("Reject All")
+                                Text(stringResource(R.string.auto_assign_reject_all_button))
                               }
                         }
                   }
@@ -143,9 +145,9 @@ fun AutoAssignResultScreen(
                               modifier = Modifier.size(16.dp),
                               color = MaterialTheme.colorScheme.onPrimary)
                           Spacer(modifier = Modifier.width(Spacing.sm))
-                          Text("Applying...")
+                          Text(stringResource(R.string.auto_assign_applying_button))
                         } else {
-                          Text("Apply Selected Assignments ($acceptedCount)")
+                          Text(stringResource(R.string.auto_assign_apply_button, acceptedCount))
                         }
                       }
 
@@ -157,7 +159,7 @@ fun AutoAssignResultScreen(
                       navigationController.popBackStack()
                     }
                     Text(
-                        text = "✓ ${uiState.appliedCount} assignments applied successfully!",
+                        text = stringResource(R.string.auto_assign_success_message, uiState.appliedCount),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(bottom = Spacing.md))
@@ -189,7 +191,7 @@ internal fun LoadingState() {
       CircularProgressIndicator()
       Spacer(modifier = Modifier.height(Spacing.md))
       Text(
-          text = "Calculating assignments...",
+          text = stringResource(R.string.auto_assign_loading_message),
           style = MaterialTheme.typography.bodyMedium,
           color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
@@ -203,16 +205,18 @@ private fun ErrorState(error: String?, navigationController: NavHostController) 
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.padding(Spacing.lg)) {
           Text(
-              text = "Error",
+              text = stringResource(R.string.auto_assign_error_title),
               style = MaterialTheme.typography.headlineSmall,
               color = MaterialTheme.colorScheme.error)
           Spacer(modifier = Modifier.height(Spacing.md))
           Text(
-              text = error ?: "Unknown error",
+              text = error ?: stringResource(R.string.auto_assign_error_message),
               style = MaterialTheme.typography.bodyMedium,
               color = MaterialTheme.colorScheme.onSurfaceVariant)
           Spacer(modifier = Modifier.height(Spacing.lg))
-          OutlinedButton(onClick = { navigationController.popBackStack() }) { Text("Go Back") }
+          OutlinedButton(onClick = { navigationController.popBackStack() }) {
+            Text(stringResource(R.string.auto_assign_go_back_button))
+          }
         }
   }
 }
@@ -228,16 +232,18 @@ internal fun EmptyState(navigationController: NavHostController) {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.padding(Spacing.lg)) {
           Text(
-              text = "No assignments to review",
+              text = stringResource(R.string.auto_assign_empty_title),
               style = MaterialTheme.typography.headlineSmall,
               color = MaterialTheme.colorScheme.onSurfaceVariant)
           Spacer(modifier = Modifier.height(Spacing.md))
           Text(
-              text = "All tasks are already assigned or no unassigned tasks found.",
+              text = stringResource(R.string.auto_assign_empty_message),
               style = MaterialTheme.typography.bodyMedium,
               color = MaterialTheme.colorScheme.onSurfaceVariant)
           Spacer(modifier = Modifier.height(Spacing.lg))
-          OutlinedButton(onClick = { navigationController.popBackStack() }) { Text("Go Back") }
+          OutlinedButton(onClick = { navigationController.popBackStack() }) {
+            Text(stringResource(R.string.auto_assign_go_back_button))
+          }
         }
   }
 }
@@ -292,13 +298,17 @@ private fun ProposedAssignmentCard(
                           } else {
                             MaterialTheme.colorScheme.primary
                           })) {
-                Text(if (assignment.isAccepted) "Accepted" else "Accept")
+                Text(
+                    if (assignment.isAccepted) stringResource(R.string.auto_assign_accepted_button)
+                    else stringResource(R.string.auto_assign_accept_button))
               }
           OutlinedButton(
               onClick = onReject,
               enabled = !assignment.isAccepted && !assignment.isRejected,
               modifier = Modifier.weight(1f)) {
-                Text(if (assignment.isRejected) "Rejected" else "Reject")
+                Text(
+                    if (assignment.isRejected) stringResource(R.string.auto_assign_rejected_button)
+                    else stringResource(R.string.auto_assign_reject_button))
               }
         }
   }

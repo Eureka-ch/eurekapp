@@ -56,4 +56,172 @@
     <string name="create_invitation_button">Create invitation</string>
     <string name="copy_to_clipboard_button">Copy to clipboard</string>
     <string name="copied_to_clipboard">Copied to clipboard!</string>
+
+    <!-- Project Members Screen -->
+    <string name="project_members_title">Project members</string>
+    <string name="refresh">Refresh</string>
+    <string name="no_members_found">No members found in this project.</string>
+    <string name="members_header">Members — %1$d</string>
+    <string name="profile_picture_of">Profile picture of %1$s</string>
+    <string name="default_person">Default person</string>
+    <string name="online">Online</string>
+    <string name="never_active">Never active</string>
+
+    <!-- Create Task Screen -->
+    <string name="task_create_title">Create Task</string>
+    <string name="task_create_button_add_photo">Add Photo</string>
+    <string name="task_create_button_add_file">Add File</string>
+    <string name="task_create_button_save">Save</string>
+    <string name="task_create_button_saving">Saving…</string>
+
+    <!-- Edit Task Screen -->
+    <string name="edit_task_title">Edit Task</string>
+    <string name="edit_task_button_add_photo">Add Photo</string>
+    <string name="edit_task_button_add_file">Add File</string>
+    <string name="edit_task_button_save">Save</string>
+    <string name="edit_task_button_saving">Saving…</string>
+    <string name="edit_task_button_delete">Delete Task</string>
+    <string name="edit_task_button_deleting">Deleting…</string>
+    <string name="edit_task_confirm_deletion_title">Confirm Deletion</string>
+    <string name="edit_task_confirm_deletion_message">Are you sure you want to delete the task?</string>
+    <string name="edit_task_confirm_yes">Yes</string>
+    <string name="edit_task_confirm_no">No</string>
+
+    <!-- Date Field Configuration -->
+    <string name="date_field_min_date_label">Min Date (YYYY-MM-DD)</string>
+    <string name="date_field_max_date_label">Max Date (YYYY-MM-DD)</string>
+    <string name="date_field_include_time">Include Time</string>
+    <string name="date_field_format_label">Format</string>
+    <string name="date_field_format_default">yyyy-MM-dd</string>
+    <string name="date_field_invalid_format">Invalid date format pattern</string>
+
+    <!-- Multi Select Field Configuration -->
+    <string name="multi_select_min_label">Min Selections</string>
+    <string name="multi_select_max_label">Max Selections</string>
+    <string name="multi_select_allow_custom">Allow Custom Values</string>
+    <string name="multi_select_validation_error">Minimum selections must be less than or equal to maximum selections</string>
+
+    <!-- Number Field Configuration -->
+    <string name="number_min_label">Min</string>
+    <string name="number_max_label">Max</string>
+    <string name="number_step_label">Step</string>
+    <string name="number_decimals_label">Decimals</string>
+    <string name="number_unit_label">Unit (e.g., kg, m/s)</string>
+    <string name="number_validation_error">Minimum value must be less than or equal to maximum value</string>
+
+    <!-- Single Select Field Configuration -->
+    <string name="single_select_allow_custom">Allow Custom Values</string>
+
+    <!-- Text Field Configuration -->
+    <string name="text_max_length_label">Max Length</string>
+    <string name="text_min_length_label">Min Length</string>
+    <string name="text_placeholder_label">Placeholder</string>
+    <string name="text_validation_error">Minimum length must be less than or equal to maximum length</string>
+
+    <!-- Common Field Configuration -->
+    <string name="field_label_input_label">Label *</string>
+    <string name="field_description_label">Description</string>
+    <string name="field_required_label">Required</string>
+    <string name="field_default_value_label">Default Value</string>
+
+    <!-- Select Options Editor -->
+    <string name="select_options_header">Options (minimum 2)</string>
+    <string name="select_option_label">Label</string>
+    <string name="select_option_delete_button">Delete option</string>
+    <string name="select_option_add_button">Add Option</string>
+
+    <!-- View Task Screen -->
+    <string name="view_task_title">View Task</string>
+    <string name="view_task_status_label">Status: %1$s</string>
+    <string name="view_task_offline_message">You are offline. Editing tasks is unavailable.</string>
+    <string name="view_task_assigned_users_label">Assigned Users:</string>
+    <string name="view_task_edit_button">Edit Task</string>
+    <string name="view_task_dependencies_button">View Dependencies</string>
+    <string name="view_task_download_attachments_label">Download Attachments:</string>
+    <string name="view_task_downloading_progress">Downloading attachments… %1$d / %2$d</string>
+    <string name="view_task_download_all_button">Download All Attachments</string>
+
+    <!-- Auto-Assign Result Screen -->
+    <string name="auto_assign_title">Auto-Assign Results</string>
+    <string name="auto_assign_review_label">Review Assignments</string>
+    <string name="auto_assign_summary">%1$d of %2$d assignments selected</string>
+    <string name="auto_assign_accept_all_button">Accept All</string>
+    <string name="auto_assign_reject_all_button">Reject All</string>
+    <string name="auto_assign_apply_button">Apply Selected Assignments (%1$d)</string>
+    <string name="auto_assign_applying_button">Applying…</string>
+    <string name="auto_assign_success_message">✓ %1$d assignments applied successfully!</string>
+    <string name="auto_assign_loading_message">Calculating assignments…</string>
+    <string name="auto_assign_error_title">Error</string>
+    <string name="auto_assign_error_message">Unknown error</string>
+    <string name="auto_assign_empty_title">No assignments to review</string>
+    <string name="auto_assign_empty_message">All tasks are already assigned or no unassigned tasks found.</string>
+    <string name="auto_assign_go_back_button">Go Back</string>
+    <string name="auto_assign_accepted_button">Accepted</string>
+    <string name="auto_assign_accept_button">Accept</string>
+    <string name="auto_assign_rejected_button">Rejected</string>
+    <string name="auto_assign_reject_button">Reject</string>
+
+    <!-- Base Field Component -->
+    <string name="field_save_changes">Save changes</string>
+    <string name="field_cancel_changes">Cancel changes</string>
+    <string name="field_edit_mode">Switch to edit mode</string>
+    <string name="field_required_indicator"> *</string>
+
+    <!-- Common Task Components -->
+    <string name="task_title_label">Title</string>
+    <string name="task_title_placeholder">Name the task</string>
+    <string name="task_title_error">Title cannot be empty</string>
+    <string name="task_description_label">Description</string>
+    <string name="task_description_placeholder">Describe the task</string>
+    <string name="task_description_error">Description cannot be empty</string>
+    <string name="task_due_date_label">Due date</string>
+    <string name="task_due_date_placeholder">01/01/1970</string>
+    <string name="task_due_date_error">Due date cannot be empty</string>
+    <string name="task_due_date_format_error">Invalid format (must be dd/MM/yyyy)</string>
+    <string name="task_reminder_label">Reminder time</string>
+    <string name="task_reminder_placeholder">HH:mm</string>
+    <string name="task_reminder_format_error">Invalid format (must be HH:mm)</string>
+    <string name="task_attachment_label">Attachment %1$d</string>
+    <string name="task_attachment_not_downloaded">Attachment %1$d: Not downloaded</string>
+    <string name="task_attachment_with_filename">Attachment %1$d: %2$s</string>
+    <string name="task_delete_attachment">Delete file</string>
+    <string name="task_project_selection_label">Select Project</string>
+    <string name="task_project_no_projects">No projects available</string>
+    <string name="task_project_placeholder">No project selected yet</string>
+    <string name="task_project_selection_error">Please select a project</string>
+    <string name="task_user_assignment_label">Assign Users</string>
+    <string name="task_user_no_users">No users available in this project</string>
+    <string name="task_user_assignment_placeholder">Select users to assign</string>
+    <string name="task_user_no_assignment">No users assigned</string>
+    <string name="task_user_single_assigned">%1$s</string>
+    <string name="task_user_multiple_assigned">%1$d users assigned</string>
+    <string name="task_dependencies_label">Task Dependencies</string>
+    <string name="task_dependencies_add_button">Add Dependency</string>
+    <string name="task_dependencies_no_other_tasks">No other tasks in this project can be added as dependencies.</string>
+    <string name="task_dependencies_no_tasks">No tasks available in this project</string>
+    <string name="task_dependencies_remove">Remove dependency</string>
+
+    <!-- Attachment Content Descriptions -->
+    <string name="attachment_video_description">Video file</string>
+    <string name="attachment_pdf_description">PDF file</string>
+    <string name="attachment_document_description">Document file</string>
+
+    <!-- Date Field Component -->
+    <string name="date_field_select_date">Select Date</string>
+    <string name="date_field_select_date_time">Select Date &amp; Time</string>
+    <string name="date_picker_ok">OK</string>
+    <string name="date_picker_cancel">Cancel</string>
+
+    <!-- Multi-Select Field Component -->
+    <string name="multi_select_custom_value_label">Custom value</string>
+    <string name="multi_select_add_button">Add</string>
+    <string name="multi_select_none">None</string>
+
+    <!-- Number Field Component -->
+    <!-- (No additional strings needed - uses existing ones) -->
+
+    <!-- Single Select Field Component -->
+    <string name="single_select_enter_custom_value">Enter custom value</string>
+    <string name="single_select_select_option">Select option</string>
+    <string name="single_select_custom_value">Custom value</string>
 </resources>

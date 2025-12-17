@@ -26,7 +26,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.model.data.template.field.FieldValue
@@ -163,7 +165,7 @@ fun <T : FieldType, V : FieldValue> BaseFieldComponent(
                     buildString {
                       append(fieldDefinition.label)
                       if (fieldDefinition.required) {
-                        append(" *")
+                        append(stringResource(R.string.field_required_indicator))
                       }
                     },
                 style = MaterialTheme.typography.labelLarge,
@@ -235,7 +237,7 @@ private fun <V : FieldValue> SaveButton(
       modifier = Modifier.testTag(BaseFieldTestTags.save(fieldDefinition.id))) {
         Icon(
             imageVector = Icons.Filled.Check,
-            contentDescription = "Save changes",
+            contentDescription = stringResource(R.string.field_save_changes),
             tint = MaterialTheme.colorScheme.primary)
       }
 }
@@ -256,7 +258,7 @@ private fun <V : FieldValue> CancelButton(
       modifier = Modifier.testTag(BaseFieldTestTags.cancel(fieldDefinition.id))) {
         Icon(
             imageVector = Icons.Filled.Close,
-            contentDescription = "Cancel changes",
+            contentDescription = stringResource(R.string.field_cancel_changes),
             tint = MaterialTheme.colorScheme.error)
       }
 }
@@ -268,7 +270,7 @@ private fun EditButton(fieldDefinition: FieldDefinition, callbacks: FieldCallbac
       modifier = Modifier.testTag(BaseFieldTestTags.toggle(fieldDefinition.id))) {
         Icon(
             imageVector = Icons.Filled.Edit,
-            contentDescription = "Switch to edit mode",
+            contentDescription = stringResource(R.string.field_edit_mode),
             tint = MaterialTheme.colorScheme.onSurfaceVariant)
       }
 }

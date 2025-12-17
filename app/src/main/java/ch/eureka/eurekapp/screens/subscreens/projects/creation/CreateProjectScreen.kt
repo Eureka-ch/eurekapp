@@ -385,8 +385,7 @@ fun CreateProjectScreen(
                                           projectFormStatus,
                                           createProjectViewModel,
                                           onProjectCreated,
-                                          failedToCreateProjectText,
-                                          failedToCreateProjectMessage)
+                                          failedToCreateProjectText)
                                     },
                                     colors =
                                         ButtonDefaults.filledTonalButtonColors(
