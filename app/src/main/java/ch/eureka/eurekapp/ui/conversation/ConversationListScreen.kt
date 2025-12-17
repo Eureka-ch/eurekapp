@@ -97,7 +97,7 @@ fun ConversationListScreen(
         FloatingActionButton(
             onClick = onCreateConversation,
             modifier =
-                Modifier.offset(y = (-88).dp)
+                Modifier.offset(y = (-96).dp)
                     .zIndex(2f)
                     .testTag(ConversationListScreenTestTags.CREATE_BUTTON),
             containerColor =
