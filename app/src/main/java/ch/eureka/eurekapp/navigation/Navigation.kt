@@ -2,23 +2,34 @@
 package ch.eureka.eurekapp.navigation
 
 import android.util.Log
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.model.data.mcp.FirebaseMcpTokenRepository
-import ch.eureka.eurekapp.model.data.project.Project
-import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.model.notifications.NotificationType
@@ -76,6 +87,21 @@ import kotlinx.serialization.Serializable
  * The duration in milliseconds between two ping of the app to firestore for last active tracking.
  */
 const val HEARTBEAT_DURATION = 180000L // 3 minutes
+
+private val ROUTES_HIDE_BOTTOM_BAR =
+    setOf(
+        Route.SelfNotes::class,
+        Route.ConversationsSection.ConversationDetail::class,
+        Route.ConversationsSection.CreateConversation::class,
+        Route.TasksSection.CreateTask::class,
+        Route.TasksSection.EditTask::class,
+        Route.TasksSection.ViewTask::class,
+        Route.TasksSection.AutoTaskAssignment::class,
+        Route.ProjectSelectionSection.CreateProject::class,
+        Route.MeetingsSection.CreateMeeting::class,
+        Route.MeetingsSection.MeetingProposalVotes::class,
+        Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting::class,
+        Route.MeetingsSection.MeetingNavigation::class)
 
 sealed interface Route {
   // Main screens
@@ -212,161 +238,137 @@ fun NavigationMenu(
 ) {
   val navigationController = rememberNavController()
   val testProjectId = "test-project-id"
+  val hideBottomBar by
+      setupNavigationState(
+          navigationController, notificationType, notificationId, notificationProjectId)
 
-  HandleNotificationNavigation(
-      notificationType = notificationType,
-      notificationId = notificationId,
-      notificationProjectId = notificationProjectId,
-      navigationController = navigationController)
+  Scaffold(containerColor = Color.White) { innerPadding ->
+    Box(modifier = Modifier.fillMaxSize()) {
+      NavHost(
+          modifier = Modifier.padding(innerPadding),
+          navController = navigationController,
+          startDestination = Route.HomeOverview) {
+            composable<Route.HomeOverview> {
+              HomeOverviewScreen(
+                  actions =
+                      HomeOverviewActions(
+                          onOpenProjects = {
+                            navigationController.navigate(Route.ProjectSelection)
+                          },
+                          onOpenTasks = { navigationController.navigate(Route.TasksSection.Tasks) },
+                          onOpenMeetings = {
+                            navigationController.navigate(Route.MeetingsSection.Meetings)
+                          },
+                          onTaskSelected = { projectId, taskId ->
+                            navigationController.navigate(
+                                Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
+                          },
+                          onMeetingSelected = { projectId, meetingId ->
+                            navigationController.navigate(
+                                Route.MeetingsSection.MeetingDetail(
+                                    projectId = projectId, meetingId = meetingId))
+                          },
+                          onProjectSelected = { projectId ->
+                            navigationController.navigate(
+                                Route.OverviewProject(projectId = projectId))
+                          }))
+            }
+            // Main screens
+            composable<Route.ProjectSelection> {
+              ProjectSelectionScreen(
+                  onCreateProjectRequest = {
+                    navigationController.navigate(Route.ProjectSelectionSection.CreateProject)
+                  },
+                  onInputTokenRequest = {
+                    navigationController.navigate(Route.OverviewProjectSection.TokenEntry)
+                  },
+                  onGenerateInviteRequest = { projectId ->
+                    navigationController.navigate(
+                        Route.OverviewProjectSection.CreateInvitation(projectId = projectId))
+                  },
+                  onSeeProjectMembers = { projectId ->
+                    navigationController.navigate(
+                        Route.OverviewProjectSection.ProjectMembers(projectId = projectId))
+                  })
+            }
+            composable<Route.OverviewProjectSection.TokenEntry> {
+              TokenEntryScreen(
+                  onTokenValidated = { navigationController.navigate(Route.ProjectSelection) },
+                  onBackClick = { navigationController.popBackStack() })
+            }
 
-  RepositoriesProvider.projectRepository
-  val auth = Firebase.auth
-  Project(
-      projectId = testProjectId,
-      name = "Test Project",
-      description = "This is a test project",
-      status = ProjectStatus.OPEN,
-      createdBy = auth.currentUser?.uid ?: "unknown",
-      memberIds = listOf(auth.currentUser?.uid ?: "unknown"),
-  )
+            composable<Route.OverviewProjectSection.ProjectMembers> { backStackEntry ->
+              val route = backStackEntry.toRoute<Route.OverviewProjectSection.ProjectMembers>()
+              ProjectMembersScreen(
+                  projectId = route.projectId,
+                  onBackClick = { navigationController.popBackStack() })
+            }
 
-  val userRepository = RepositoriesProvider.userRepository
-  val currentUser = auth.currentUser
-  requireNotNull(currentUser)
+            composable<Route.Profile> {
+              ProfileScreen(
+                  onNavigateToActivityFeed = { navigationController.navigate(Route.ActivityFeed) },
+                  onNavigateToMcpTokens = { navigationController.navigate(Route.McpTokens) },
+                  onNavigateToPreferences = {
+                    navigationController.navigate(Route.NotificationPreferences)
+                  })
+            }
+            composable<Route.McpTokens> {
+              val viewModel = McpTokenViewModel(FirebaseMcpTokenRepository())
+              McpTokenScreen(
+                  viewModel = viewModel, onNavigateBack = { navigationController.popBackStack() })
+            }
+            composable<Route.NotificationPreferences> {
+              NotificationPreferencesScreen(
+                  onFinishedSettingNotifications = { navigationController.popBackStack() })
+            }
+            composable<Route.SelfNotes> {
+              SelfNotesScreen(onNavigateBack = { navigationController.popBackStack() })
+            }
+            composable<Route.ActivityFeed> {
+              ActivityFeedScreen(
+                  onActivityClick = { activityId, _ ->
+                    navigationController.navigate(
+                        Route.ActivitySection.ActivityDetail(activityId = activityId))
+                  })
+            }
+            composable<Route.ActivitySection.ActivityDetail> { backStackEntry ->
+              val route = backStackEntry.toRoute<Route.ActivitySection.ActivityDetail>()
+              ActivityDetailScreen(
+                  activityId = route.activityId,
+                  onNavigateBack = { navigationController.popBackStack() },
+                  onNavigateToEntity = { entityType, entityId, projectId ->
+                    navigateToEntityDetail(navigationController, entityType, entityId, projectId)
+                  })
+            }
+            composable<Route.IdeasSection.Ideas> {
+              IdeasScreen(onNavigateBack = { navigationController.popBackStack() })
+            }
+            composable<Route.OverviewProject> { backStackEntry ->
+              val overviewProjectScreenRoute = backStackEntry.toRoute<Route.OverviewProject>()
+              OverviewProjectScreen(projectId = overviewProjectScreenRoute.projectId)
+            }
 
-  UserHeartbeatEffect(userRepository, currentUser)
-
-  Scaffold(
-      containerColor = Color.White,
-      bottomBar = { BottomBarNavigationComponent(navigationController = navigationController) }) {
-          innerPadding ->
-        NavHost(
-            modifier = Modifier.padding(innerPadding),
-            navController = navigationController,
-            startDestination = Route.HomeOverview) {
-              composable<Route.HomeOverview> {
-                HomeOverviewScreen(
-                    actions =
-                        HomeOverviewActions(
-                            onOpenProjects = {
-                              navigationController.navigate(Route.ProjectSelection)
-                            },
-                            onOpenTasks = {
-                              navigationController.navigate(Route.TasksSection.Tasks)
-                            },
-                            onOpenMeetings = {
-                              navigationController.navigate(Route.MeetingsSection.Meetings)
-                            },
-                            onTaskSelected = { projectId, taskId ->
-                              navigationController.navigate(
-                                  Route.TasksSection.ViewTask(
-                                      projectId = projectId, taskId = taskId))
-                            },
-                            onMeetingSelected = { projectId, meetingId ->
-                              navigationController.navigate(
-                                  Route.MeetingsSection.MeetingDetail(
-                                      projectId = projectId, meetingId = meetingId))
-                            },
-                            onProjectSelected = { projectId ->
-                              navigationController.navigate(
-                                  Route.OverviewProject(projectId = projectId))
-                            }))
-              }
-              // Main screens
-              composable<Route.ProjectSelection> {
-                ProjectSelectionScreen(
-                    onCreateProjectRequest = {
-                      navigationController.navigate(Route.ProjectSelectionSection.CreateProject)
-                    },
-                    onInputTokenRequest = {
-                      navigationController.navigate(Route.OverviewProjectSection.TokenEntry)
-                    },
-                    onGenerateInviteRequest = { projectId ->
-                      navigationController.navigate(
-                          Route.OverviewProjectSection.CreateInvitation(projectId = projectId))
-                    },
-                    onSeeProjectMembers = { projectId ->
-                      navigationController.navigate(
-                          Route.OverviewProjectSection.ProjectMembers(projectId = projectId))
-                    })
-              }
-              composable<Route.OverviewProjectSection.TokenEntry> {
-                TokenEntryScreen(
-                    onTokenValidated = { navigationController.navigate(Route.ProjectSelection) },
-                    onBackClick = { navigationController.popBackStack() })
-              }
-
-              composable<Route.OverviewProjectSection.ProjectMembers> { backStackEntry ->
-                val route = backStackEntry.toRoute<Route.OverviewProjectSection.ProjectMembers>()
-                ProjectMembersScreen(
-                    projectId = route.projectId,
-                    onBackClick = { navigationController.popBackStack() })
-              }
-
-              composable<Route.Profile> {
-                ProfileScreen(
-                    onNavigateToActivityFeed = {
-                      navigationController.navigate(Route.ActivityFeed)
-                    },
-                    onNavigateToMcpTokens = { navigationController.navigate(Route.McpTokens) },
-                    onNavigateToPreferences = {
-                      navigationController.navigate(Route.NotificationPreferences)
-                    })
-              }
-              composable<Route.McpTokens> {
-                val viewModel = McpTokenViewModel(FirebaseMcpTokenRepository())
-                McpTokenScreen(
-                    viewModel = viewModel, onNavigateBack = { navigationController.popBackStack() })
-              }
-              composable<Route.NotificationPreferences> {
-                NotificationPreferencesScreen(
-                    onFinishedSettingNotifications = { navigationController.popBackStack() })
-              }
-              composable<Route.SelfNotes> {
-                SelfNotesScreen(onNavigateBack = { navigationController.popBackStack() })
-              }
-              composable<Route.ActivityFeed> {
-                ActivityFeedScreen(
-                    onActivityClick = { activityId, _ ->
-                      navigationController.navigate(
-                          Route.ActivitySection.ActivityDetail(activityId = activityId))
-                    })
-              }
-              composable<Route.ActivitySection.ActivityDetail> { backStackEntry ->
-                val route = backStackEntry.toRoute<Route.ActivitySection.ActivityDetail>()
-                ActivityDetailScreen(
-                    activityId = route.activityId,
-                    onNavigateBack = { navigationController.popBackStack() },
-                    onNavigateToEntity = { entityType, entityId, projectId ->
-                      when (entityType) {
-                        EntityType.MEETING -> {
-                          navigationController.navigate(
-                              Route.MeetingsSection.MeetingDetail(projectId, entityId))
-                        }
-                        EntityType.TASK -> {
-                          navigationController.navigate(
-                              Route.TasksSection.ViewTask(projectId, entityId))
-                        }
-                        EntityType.MESSAGE -> {
-                          navigationController.navigate(Route.ConversationsSection.Conversations)
-                        }
-                        EntityType.PROJECT -> {
-                          navigationController.navigate(Route.ProjectSelection)
-                        }
-                        else -> {
-                          // FILE and MEMBER types have no detail screen
-                        }
-                      }
-                    })
-              }
-              composable<Route.IdeasSection.Ideas> {
-                IdeasScreen(onNavigateBack = { navigationController.popBackStack() })
-              }
-              composable<Route.OverviewProject> { backStackEntry ->
-                val overviewProjectScreenRoute = backStackEntry.toRoute<Route.OverviewProject>()
-                OverviewProjectScreen(projectId = overviewProjectScreenRoute.projectId)
-              }
-
+            // Tasks section
+            composable<Route.TasksSection.Tasks> {
+              TasksScreen(
+                  onCreateTaskClick = {
+                    navigationController.navigate(Route.TasksSection.CreateTask)
+                  },
+                  onAutoAssignClick = {
+                    navigationController.navigate(Route.TasksSection.AutoTaskAssignment)
+                  },
+                  onTaskClick = { taskId, projectId ->
+                    navigationController.navigate(
+                        Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
+                  },
+                  onFilesManagementClick = {
+                    navigationController.navigate(Route.FilesManagement)
+                  })
+            }
+            composable<Route.TasksSection.CreateTask> { CreateTaskScreen(navigationController) }
+            composable<Route.TasksSection.AutoTaskAssignment> {
+              AutoAssignResultScreen(navigationController)
+            }
               // Tasks section
               composable<Route.TasksSection.Tasks> {
                 TasksScreen(
@@ -389,11 +391,19 @@ fun NavigationMenu(
                 AutoAssignResultScreen(navigationController)
               }
 
-              composable<Route.TasksSection.EditTask> { backStackEntry ->
-                val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.EditTask>()
-                EditTaskScreen(editTaskRoute.projectId, editTaskRoute.taskId, navigationController)
-              }
+            composable<Route.TasksSection.EditTask> { backStackEntry ->
+              val editTaskRoute = backStackEntry.toRoute<Route.TasksSection.EditTask>()
+              EditTaskScreen(editTaskRoute.projectId, editTaskRoute.taskId, navigationController)
+            }
 
+            composable<Route.TasksSection.ViewTask> { backStackEntry ->
+              val taskDetailRoute = backStackEntry.toRoute<Route.TasksSection.ViewTask>()
+              ViewTaskScreen(
+                  taskDetailRoute.projectId, taskDetailRoute.taskId, navigationController)
+            }
+            composable<Route.FilesManagement> {
+              FilesManagementScreen(onBackClick = { navigationController.popBackStack() })
+            }
               composable<Route.TasksSection.ViewTask> { backStackEntry ->
                 val taskDetailRoute = backStackEntry.toRoute<Route.TasksSection.ViewTask>()
                 ViewTaskScreen(
@@ -403,31 +413,77 @@ fun NavigationMenu(
                 FilesManagementScreen(onBackClick = { navigationController.popBackStack() })
               }
 
-              composable<Route.TasksSection.TaskDependence> { backStackEntry ->
-                val dependenceRoute = backStackEntry.toRoute<Route.TasksSection.TaskDependence>()
-                TaskDependenciesScreen(
-                    projectId = dependenceRoute.projectId,
-                    taskId = dependenceRoute.taskId,
-                    navigationController = navigationController)
-              }
+            composable<Route.TasksSection.TaskDependence> { backStackEntry ->
+              val dependenceRoute = backStackEntry.toRoute<Route.TasksSection.TaskDependence>()
+              TaskDependenciesScreen(
+                  projectId = dependenceRoute.projectId,
+                  taskId = dependenceRoute.taskId,
+                  navigationController = navigationController)
+            }
 
-              composable<Route.TasksSection.CreateTemplate> { backStackEntry ->
-                val route = backStackEntry.toRoute<Route.TasksSection.CreateTemplate>()
-                val templateViewModel =
-                    CreateTemplateViewModel(
-                        repository = RepositoriesProvider.taskTemplateRepository,
-                        initialProjectId = route.projectId)
-                CreateTemplateScreen(
-                    onNavigateBack = { navigationController.popBackStack() },
-                    onTemplateCreated = { templateId ->
-                      navigationController.previousBackStackEntry
-                          ?.savedStateHandle
-                          ?.set("createdTemplateId", templateId)
-                      navigationController.popBackStack()
-                    },
-                    viewModel = templateViewModel)
-              }
+            composable<Route.TasksSection.CreateTemplate> { backStackEntry ->
+              val route = backStackEntry.toRoute<Route.TasksSection.CreateTemplate>()
+              val templateViewModel =
+                  CreateTemplateViewModel(
+                      repository = RepositoriesProvider.taskTemplateRepository,
+                      initialProjectId = route.projectId)
+              CreateTemplateScreen(
+                  onNavigateBack = { navigationController.popBackStack() },
+                  onTemplateCreated = { templateId ->
+                    navigationController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("createdTemplateId", templateId)
+                    navigationController.popBackStack()
+                  },
+                  viewModel = templateViewModel)
+            }
 
+            // Meetings section
+            composable<Route.MeetingsSection.Meetings> {
+              MeetingScreen(
+                  config =
+                      MeetingScreenConfig(
+                          projectId = testProjectId,
+                          onCreateMeeting = { isConnected ->
+                            navigateIfConditionSatisfied(isConnected) {
+                              navigationController.navigate(
+                                  Route.MeetingsSection.CreateMeeting(testProjectId))
+                            }
+                          },
+                          onMeetingClick = { projectId, meetingId ->
+                            navigationController.navigate(
+                                Route.MeetingsSection.MeetingDetail(
+                                    projectId = projectId, meetingId = meetingId))
+                          },
+                          onVoteForMeetingProposalClick = { projectId, meetingId, isConnected ->
+                            navigateIfConditionSatisfied(isConnected) {
+                              navigationController.navigate(
+                                  Route.MeetingsSection.MeetingProposalVotes(
+                                      projectId = projectId, meetingId = meetingId))
+                            }
+                          },
+                          onNavigateToMeeting = { projectId, meetingId, isConnected ->
+                            navigateIfConditionSatisfied(isConnected) {
+                              navigationController.navigate(
+                                  Route.MeetingsSection.MeetingNavigation(
+                                      projectId = projectId, meetingId = meetingId))
+                            }
+                          },
+                          onViewTranscript = { projectId, meetingId, isConnected ->
+                            navigateIfConditionSatisfied(isConnected) {
+                              navigationController.navigate(
+                                  Route.MeetingsSection.AudioTranscript(
+                                      projectId = projectId, meetingId = meetingId))
+                            }
+                          },
+                          onRecord = { projectId, meetingId, isConnected ->
+                            navigateIfConditionSatisfied(isConnected) {
+                              navigationController.navigate(
+                                  Route.MeetingsSection.AudioRecording(
+                                      projectId = projectId, meetingId = meetingId))
+                            }
+                          }))
+            }
               // Meetings section
               composable<Route.MeetingsSection.Meetings> {
                 MeetingScreen(
@@ -521,173 +577,242 @@ fun NavigationMenu(
                             }),
                 )
               }
-
-              // Project selection section
-              composable<Route.ProjectSelectionSection.CreateProject> {
-                CreateProjectScreen(
-                    onProjectCreated = { navigationController.navigate(Route.ProjectSelection) },
-                    onBackClick = { navigationController.popBackStack() })
-              }
-
-              composable<Route.MeetingsSection.CreateMeeting> { backStackEntry ->
-                val createMeetingRoute =
-                    backStackEntry.toRoute<Route.MeetingsSection.CreateMeeting>()
-
-                val viewModel = viewModel<CreateMeetingViewModel>()
-
-                val selectedLocation: Location? =
-                    backStackEntry.savedStateHandle["selected_location"]
-
-                if (selectedLocation != null) {
-                  viewModel.setLocation(selectedLocation)
-                  viewModel.setLocationQuery(selectedLocation.name)
-                  backStackEntry.savedStateHandle.remove<Location>("selected_location")
-                }
-
-                CreateMeetingScreen(
-                    projectId = createMeetingRoute.projectId,
-                    onDone = { navigationController.navigate(Route.MeetingsSection.Meetings) },
-                    createMeetingViewModel = viewModel,
-                    onPickLocationOnMap = {
-                      navigationController.navigate(Route.MeetingsSection.MeetingLocationSelection)
-                    },
-                    onBackClick = { navigationController.popBackStack() })
-              }
-
-              composable<Route.MeetingsSection.MeetingLocationSelection> {
-                MeetingLocationSelectionScreen(
-                    onLocationSelected = { location ->
-                      navigationController.previousBackStackEntry
-                          ?.savedStateHandle
-                          ?.set("selected_location", location)
-
-                      navigationController.popBackStack()
-                    },
-                    onBack = { navigationController.popBackStack() })
-              }
-
-              composable<Route.MeetingsSection.MeetingProposalVotes> { backStackEntry ->
-                val meetingProposalVotesRoute =
-                    backStackEntry.toRoute<Route.MeetingsSection.MeetingProposalVotes>()
-                MeetingProposalVoteScreen(
-                    projectId = meetingProposalVotesRoute.projectId,
-                    meetingId = meetingProposalVotesRoute.meetingId,
-                    onDone = { navigationController.navigate(Route.MeetingsSection.Meetings) },
-                    onBackClick = { navigationController.popBackStack() },
-                    onCreateDateTimeFormatProposalForMeeting = {
-                      navigationController.navigate(
-                          Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting(
-                              projectId = meetingProposalVotesRoute.projectId,
-                              meetingId = meetingProposalVotesRoute.meetingId))
-                    },
-                )
-              }
-
-              composable<Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting> {
-                  backStackEntry ->
-                val createDateTimeFormatMeetingProposalForMeetingVotesRoute =
-                    backStackEntry.toRoute<
-                        Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting>()
-                CreateDateTimeFormatProposalForMeetingScreen(
-                    projectId = createDateTimeFormatMeetingProposalForMeetingVotesRoute.projectId,
-                    meetingId = createDateTimeFormatMeetingProposalForMeetingVotesRoute.meetingId,
-                    onDone = {
-                      navigationController.navigate(
-                          Route.MeetingsSection.MeetingProposalVotes(
-                              projectId =
-                                  createDateTimeFormatMeetingProposalForMeetingVotesRoute.projectId,
-                              meetingId =
-                                  createDateTimeFormatMeetingProposalForMeetingVotesRoute
-                                      .meetingId))
-                    },
-                )
-              }
-
-              composable<Route.MeetingsSection.MeetingNavigation> { backStackEntry ->
-                val meetingNavigationRoute =
-                    backStackEntry.toRoute<Route.MeetingsSection.MeetingNavigation>()
-                MeetingNavigationScreen(
-                    projectId = meetingNavigationRoute.projectId,
-                    meetingId = meetingNavigationRoute.meetingId,
-                    onNavigateBack = { navigationController.popBackStack() })
-              }
-
-              composable<Route.MeetingsSection.AudioRecording> { backStackEntry ->
-                val audioRecordingRoute =
-                    backStackEntry.toRoute<Route.MeetingsSection.AudioRecording>()
-                MeetingAudioRecordingScreen(
-                    projectId = audioRecordingRoute.projectId,
-                    meetingId = audioRecordingRoute.meetingId,
-                    onNavigateToTranscript = { projectId, meetingId ->
-                      navigationController.navigate(
-                          Route.MeetingsSection.AudioTranscript(
-                              projectId = projectId, meetingId = meetingId))
-                    },
-                    onBackClick = { navigationController.popBackStack() })
-              }
-
-              composable<Route.MeetingsSection.AudioTranscript> { backStackEntry ->
-                val audioTranscriptRoute =
-                    backStackEntry.toRoute<Route.MeetingsSection.AudioTranscript>()
-                MeetingTranscriptViewScreen(
-                    projectId = audioTranscriptRoute.projectId,
-                    meetingId = audioTranscriptRoute.meetingId,
-                    onNavigateBack = { navigationController.popBackStack() })
-              }
-
-              composable<Route.OverviewProjectSection.CreateInvitation> { backStackEntry ->
-                val createInvitationRoute =
-                    backStackEntry.toRoute<Route.OverviewProjectSection.CreateInvitation>()
-                CreateInvitationSubscreen(
-                    projectId = createInvitationRoute.projectId, onInvitationCreate = {})
-              }
-
-              composable<Route.Camera> {
-                Camera(
-                    onBackClick = { navigationController.popBackStack() },
-                    onPhotoSaved = { uri ->
-                      navigationController.previousBackStackEntry
-                          ?.savedStateHandle
-                          ?.set("photoUri", uri)
-                      navigationController.popBackStack()
-                    })
-              }
-
-              // Conversations section
-              composable<Route.ConversationsSection.Conversations> {
-                ConversationListScreen(
-                    onConversationClick = { conversationId ->
-                      // If clicking on "To Self" conversation, navigate to SelfNotesScreen
-                      if (conversationId ==
-                          ch.eureka.eurekapp.ui.conversation.TO_SELF_CONVERSATION_ID) {
-                        navigationController.navigate(Route.SelfNotes)
-                      } else {
-                        navigationController.navigate(
-                            Route.ConversationsSection.ConversationDetail(conversationId))
-                      }
-                    },
-                    onCreateConversation = {
-                      navigationController.navigate(
-                          Route.ConversationsSection.CreateConversation(projectId = testProjectId))
-                    })
-              }
-
-              composable<Route.ConversationsSection.ConversationDetail> { backStackEntry ->
-                val route = backStackEntry.toRoute<Route.ConversationsSection.ConversationDetail>()
-                ConversationDetailScreen(
-                    conversationId = route.conversationId,
-                    onNavigateBack = { navigationController.popBackStack() })
-              }
-
-              composable<Route.ConversationsSection.CreateConversation> {
-                CreateConversationScreen(
-                    onNavigateToConversation = { conversationId ->
-                      navigationController.navigate(
-                          Route.ConversationsSection.ConversationDetail(conversationId))
-                    })
-              }
+            composable<Route.MeetingsSection.MeetingDetail> { backStackEntry ->
+              val meetingDetailRoute = backStackEntry.toRoute<Route.MeetingsSection.MeetingDetail>()
+              MeetingDetailScreen(
+                  projectId = meetingDetailRoute.projectId,
+                  meetingId = meetingDetailRoute.meetingId,
+                  actionsConfig =
+                      MeetingDetailActionsConfig(
+                          onNavigateBack = { navigationController.popBackStack() },
+                          onRecordMeeting = { projectId, meetingId, isConnected ->
+                            navigateIfConditionSatisfied(isConnected) {
+                              navigationController.navigate(
+                                  Route.MeetingsSection.AudioRecording(
+                                      projectId = projectId, meetingId = meetingId))
+                            }
+                          },
+                          onViewTranscript = { projectId, meetingId, isConnected ->
+                            navigateIfConditionSatisfied(isConnected) {
+                              navigationController.navigate(
+                                  Route.MeetingsSection.AudioTranscript(
+                                      projectId = projectId, meetingId = meetingId))
+                            }
+                          },
+                          onNavigateToMeeting = { isConnected ->
+                            navigateIfConditionSatisfied(isConnected) {
+                              navigationController.navigate(
+                                  Route.MeetingsSection.MeetingNavigation(
+                                      projectId = meetingDetailRoute.projectId,
+                                      meetingId = meetingDetailRoute.meetingId))
+                            }
+                          },
+                          onVoteForMeetingProposalClick = { projectId, meetingId, isConnected ->
+                            navigateIfConditionSatisfied(isConnected) {
+                              navigationController.navigate(
+                                  Route.MeetingsSection.MeetingProposalVotes(
+                                      projectId = projectId, meetingId = meetingId))
+                            }
+                          }),
+              )
             }
-      }
+
+            // Project selection section
+            composable<Route.ProjectSelectionSection.CreateProject> {
+              CreateProjectScreen(
+                  onProjectCreated = { navigationController.navigate(Route.ProjectSelection) },
+                  onBackClick = { navigationController.popBackStack() })
+            }
+
+            composable<Route.MeetingsSection.CreateMeeting> { backStackEntry ->
+              val createMeetingRoute = backStackEntry.toRoute<Route.MeetingsSection.CreateMeeting>()
+
+              val viewModel = viewModel<CreateMeetingViewModel>()
+
+              val selectedLocation: Location? = backStackEntry.savedStateHandle["selected_location"]
+
+              if (selectedLocation != null) {
+                viewModel.setLocation(selectedLocation)
+                viewModel.setLocationQuery(selectedLocation.name)
+                backStackEntry.savedStateHandle.remove<Location>("selected_location")
+              }
+
+              CreateMeetingScreen(
+                  projectId = createMeetingRoute.projectId,
+                  onDone = { navigationController.navigate(Route.MeetingsSection.Meetings) },
+                  createMeetingViewModel = viewModel,
+                  onPickLocationOnMap = {
+                    navigationController.navigate(Route.MeetingsSection.MeetingLocationSelection)
+                  },
+                  onBackClick = { navigationController.popBackStack() })
+            }
+
+            composable<Route.MeetingsSection.MeetingLocationSelection> {
+              MeetingLocationSelectionScreen(
+                  onLocationSelected = { location ->
+                    navigationController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("selected_location", location)
+
+                    navigationController.popBackStack()
+                  },
+                  onBack = { navigationController.popBackStack() })
+            }
+
+            composable<Route.MeetingsSection.MeetingProposalVotes> { backStackEntry ->
+              val meetingProposalVotesRoute =
+                  backStackEntry.toRoute<Route.MeetingsSection.MeetingProposalVotes>()
+              MeetingProposalVoteScreen(
+                  projectId = meetingProposalVotesRoute.projectId,
+                  meetingId = meetingProposalVotesRoute.meetingId,
+                  onDone = { navigationController.navigate(Route.MeetingsSection.Meetings) },
+                  onBackClick = { navigationController.popBackStack() },
+                  onCreateDateTimeFormatProposalForMeeting = {
+                    navigationController.navigate(
+                        Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting(
+                            projectId = meetingProposalVotesRoute.projectId,
+                            meetingId = meetingProposalVotesRoute.meetingId))
+                  },
+              )
+            }
+
+            composable<Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting> {
+                backStackEntry ->
+              val createDateTimeFormatMeetingProposalForMeetingVotesRoute =
+                  backStackEntry.toRoute<
+                      Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting>()
+              CreateDateTimeFormatProposalForMeetingScreen(
+                  projectId = createDateTimeFormatMeetingProposalForMeetingVotesRoute.projectId,
+                  meetingId = createDateTimeFormatMeetingProposalForMeetingVotesRoute.meetingId,
+                  onDone = {
+                    navigationController.navigate(
+                        Route.MeetingsSection.MeetingProposalVotes(
+                            projectId =
+                                createDateTimeFormatMeetingProposalForMeetingVotesRoute.projectId,
+                            meetingId =
+                                createDateTimeFormatMeetingProposalForMeetingVotesRoute.meetingId))
+                  },
+              )
+            }
+
+            composable<Route.MeetingsSection.MeetingNavigation> { backStackEntry ->
+              val meetingNavigationRoute =
+                  backStackEntry.toRoute<Route.MeetingsSection.MeetingNavigation>()
+              MeetingNavigationScreen(
+                  projectId = meetingNavigationRoute.projectId,
+                  meetingId = meetingNavigationRoute.meetingId,
+                  onNavigateBack = { navigationController.popBackStack() })
+            }
+
+            composable<Route.MeetingsSection.AudioRecording> { backStackEntry ->
+              val audioRecordingRoute =
+                  backStackEntry.toRoute<Route.MeetingsSection.AudioRecording>()
+              MeetingAudioRecordingScreen(
+                  projectId = audioRecordingRoute.projectId,
+                  meetingId = audioRecordingRoute.meetingId,
+                  onNavigateToTranscript = { projectId, meetingId ->
+                    navigationController.navigate(
+                        Route.MeetingsSection.AudioTranscript(
+                            projectId = projectId, meetingId = meetingId))
+                  },
+                  onBackClick = { navigationController.popBackStack() })
+            }
+
+            composable<Route.MeetingsSection.AudioTranscript> { backStackEntry ->
+              val audioTranscriptRoute =
+                  backStackEntry.toRoute<Route.MeetingsSection.AudioTranscript>()
+              MeetingTranscriptViewScreen(
+                  projectId = audioTranscriptRoute.projectId,
+                  meetingId = audioTranscriptRoute.meetingId,
+                  onNavigateBack = { navigationController.popBackStack() })
+            }
+
+            composable<Route.OverviewProjectSection.CreateInvitation> { backStackEntry ->
+              val createInvitationRoute =
+                  backStackEntry.toRoute<Route.OverviewProjectSection.CreateInvitation>()
+              CreateInvitationSubscreen(
+                  projectId = createInvitationRoute.projectId, onInvitationCreate = {})
+            }
+
+            composable<Route.Camera> {
+              Camera(
+                  onBackClick = { navigationController.popBackStack() },
+                  onPhotoSaved = { uri ->
+                    navigationController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("photoUri", uri)
+                    navigationController.popBackStack()
+                  })
+            }
+
+            // Conversations section
+            composable<Route.ConversationsSection.Conversations> {
+              ConversationListScreen(
+                  onConversationClick = { conversationId ->
+                    navigateToConversation(navigationController, conversationId)
+                  },
+                  onCreateConversation = {
+                    navigationController.navigate(
+                        Route.ConversationsSection.CreateConversation(projectId = testProjectId))
+                  })
+            }
+
+            composable<Route.ConversationsSection.ConversationDetail> { backStackEntry ->
+              val route = backStackEntry.toRoute<Route.ConversationsSection.ConversationDetail>()
+              ConversationDetailScreen(
+                  conversationId = route.conversationId,
+                  onNavigateBack = { navigationController.popBackStack() })
+            }
+
+            composable<Route.ConversationsSection.CreateConversation> {
+              CreateConversationScreen(
+                  onNavigateToConversation = { conversationId ->
+                    navigationController.navigate(
+                        Route.ConversationsSection.ConversationDetail(conversationId))
+                  })
+            }
+          }
+    }
+    // Nav bar en overlay flottante (masquée sur certaines pages)
+    if (!hideBottomBar) {
+      androidx.compose.foundation.layout.Box(
+          modifier = Modifier.fillMaxWidth().zIndex(1f),
+          contentAlignment = Alignment.BottomCenter) {
+            BottomBarNavigationComponent(navigationController = navigationController)
+          }
+    }
+  }
+}
+
+private fun shouldHideBottomBar(currentDestination: NavDestination?): Boolean {
+  val destination = currentDestination ?: return false
+  return destination.hierarchy.any { dest -> ROUTES_HIDE_BOTTOM_BAR.any { dest.hasRoute(it) } }
+}
+
+/** Helper function to setup navigation state and return bottom bar visibility state. */
+@Composable
+private fun setupNavigationState(
+    navigationController: NavHostController,
+    notificationType: String?,
+    notificationId: String?,
+    notificationProjectId: String?
+): State<Boolean> {
+  HandleNotificationNavigation(
+      notificationType = notificationType,
+      notificationId = notificationId,
+      notificationProjectId = notificationProjectId,
+      navigationController = navigationController)
+
+  RepositoriesProvider.projectRepository
+  val auth = Firebase.auth
+  val userRepository = RepositoriesProvider.userRepository
+  val currentUser = auth.currentUser
+  requireNotNull(currentUser)
+
+  UserHeartbeatEffect(userRepository, currentUser)
+  val navBackStackEntry by navigationController.currentBackStackEntryAsState()
+  val currentDestination = navBackStackEntry?.destination
+  return remember(currentDestination) { derivedStateOf { shouldHideBottomBar(currentDestination) } }
 }
 
 /**
@@ -747,6 +872,56 @@ private fun UserHeartbeatEffect(userRepository: UserRepository, currentUser: Fir
       // Wait before the next ping
       delay(HEARTBEAT_DURATION)
     }
+  }
+}
+
+/**
+ * Helper function to navigate to entity details based on entity type.
+ *
+ * @param navigationController The navigation controller for navigation actions.
+ * @param entityType The type of entity to navigate to.
+ * @param entityId The ID of the entity.
+ * @param projectId The project ID associated with the entity.
+ */
+private fun navigateToEntityDetail(
+    navigationController: NavHostController,
+    entityType: EntityType,
+    entityId: String,
+    projectId: String
+) {
+  when (entityType) {
+    EntityType.MEETING -> {
+      navigationController.navigate(Route.MeetingsSection.MeetingDetail(projectId, entityId))
+    }
+    EntityType.TASK -> {
+      navigationController.navigate(Route.TasksSection.ViewTask(projectId, entityId))
+    }
+    EntityType.MESSAGE -> {
+      navigationController.navigate(Route.ConversationsSection.Conversations)
+    }
+    EntityType.PROJECT -> {
+      navigationController.navigate(Route.ProjectSelection)
+    }
+    else -> {
+      // FILE and MEMBER types have no detail screen
+    }
+  }
+}
+
+/**
+ * Helper function to navigate to a conversation or self notes.
+ *
+ * @param navigationController The navigation controller for navigation actions.
+ * @param conversationId The ID of the conversation to navigate to.
+ */
+private fun navigateToConversation(
+    navigationController: NavHostController,
+    conversationId: String
+) {
+  if (conversationId == ch.eureka.eurekapp.ui.conversation.TO_SELF_CONVERSATION_ID) {
+    navigationController.navigate(Route.SelfNotes)
+  } else {
+    navigationController.navigate(Route.ConversationsSection.ConversationDetail(conversationId))
   }
 }
 
