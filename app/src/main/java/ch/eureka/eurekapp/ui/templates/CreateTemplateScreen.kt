@@ -3,6 +3,8 @@ package ch.eureka.eurekapp.ui.templates
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
+import ch.eureka.eurekapp.R
 
 @Composable
 fun CreateTemplateScreen(
@@ -13,7 +15,7 @@ fun CreateTemplateScreen(
   val state by viewModel.state.collectAsState()
 
   TemplateEditorContent(
-      config = TemplateEditorConfig(title = "Create Template"),
+      config = TemplateEditorConfig(title = stringResource(R.string.template_editor_title_create)),
       state = state,
       onNavigateBack = onNavigateBack,
       onSave = { onSuccess, onFailure ->

@@ -11,6 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import ch.eureka.eurekapp.R
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
@@ -41,7 +43,7 @@ fun TemplateBasicInfoSection(
     OutlinedTextField(
         value = title,
         onValueChange = onTitleChange,
-        label = { Text("Template Title") },
+        label = { Text(stringResource(R.string.template_basic_title_label)) },
         isError = titleError != null,
         supportingText = titleError?.let { { Text(it) } },
         singleLine = true,
@@ -51,7 +53,7 @@ fun TemplateBasicInfoSection(
     OutlinedTextField(
         value = description,
         onValueChange = onDescriptionChange,
-        label = { Text("Description (optional)") },
+        label = { Text(stringResource(R.string.template_basic_description_label)) },
         minLines = 3,
         modifier =
             Modifier.fillMaxWidth().testTag(TemplateBasicInfoSectionTestTags.DESCRIPTION_INPUT),

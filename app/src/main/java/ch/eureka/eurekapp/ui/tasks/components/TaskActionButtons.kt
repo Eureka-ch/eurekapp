@@ -12,7 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
@@ -44,7 +46,7 @@ fun TaskActionButtons(
                     containerColor = MaterialTheme.colorScheme.surface,
                     contentColor = MaterialTheme.colorScheme.onSurface)) {
               Text(
-                  text = "+ New Task",
+                  text = stringResource(R.string.task_action_new_task),
                   style = MaterialTheme.typography.labelMedium,
                   fontWeight = FontWeight.Medium)
             }
@@ -59,7 +61,7 @@ fun TaskActionButtons(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary)) {
               Text(
-                  text = "Auto-assign",
+                  text = stringResource(R.string.task_action_auto_assign),
                   style = MaterialTheme.typography.labelMedium,
                   fontWeight = FontWeight.Medium)
             }

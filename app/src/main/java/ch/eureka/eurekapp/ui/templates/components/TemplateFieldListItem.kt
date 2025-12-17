@@ -16,6 +16,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import ch.eureka.eurekapp.R
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import ch.eureka.eurekapp.model.data.template.field.FieldType
@@ -101,13 +103,13 @@ private fun FieldListItemHeader(
         Column(modifier = Modifier.weight(1f)) {
           Row {
             Text(field.label, style = MaterialTheme.typography.bodyLarge)
-            if (field.required) Text(" *", color = MaterialTheme.colorScheme.error)
+            if (field.required) Text(stringResource(R.string.field_required_indicator), color = MaterialTheme.colorScheme.error)
           }
-          Text(field.type.name, style = MaterialTheme.typography.bodySmall)
+          Text(fieldTypeName(field.type), style = MaterialTheme.typography.bodySmall)
         }
 
-        if (hasError) Icon(Icons.Default.Warning, "Error", tint = MaterialTheme.colorScheme.error)
-        if (!isExpanded) Icon(Icons.Default.ExpandMore, "Expand")
+        if (hasError) Icon(Icons.Default.Warning, contentDescription = stringResource(R.string.action_error), tint = MaterialTheme.colorScheme.error)
+        if (!isExpanded) Icon(Icons.Default.ExpandMore, contentDescription = stringResource(R.string.action_expand))
       }
 }
 
@@ -165,16 +167,29 @@ private fun FieldItemActionButtons(
 ) {
   Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
     IconButton(onClick = onSave) {
-      Icon(Icons.Default.Check, "Save", tint = MaterialTheme.colorScheme.primary)
+      Icon(Icons.Default.Check, contentDescription = stringResource(R.string.action_save), tint = MaterialTheme.colorScheme.primary)
     }
-    IconButton(onClick = onCancel) { Icon(Icons.Default.Close, "Cancel") }
+    IconButton(onClick = onCancel) { Icon(Icons.Default.Close, contentDescription = stringResource(R.string.action_cancel)) }
     Spacer(Modifier.weight(1f))
-    IconButton(onClick = onDuplicate) { Icon(Icons.Default.ContentCopy, "Duplicate") }
+    IconButton(onClick = onDuplicate) { Icon(Icons.Default.ContentCopy, contentDescription = stringResource(R.string.action_duplicate)) }
     IconButton(onClick = onDelete) {
-      Icon(Icons.Default.Delete, "Delete", tint = MaterialTheme.colorScheme.error)
+      Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.action_delete), tint = MaterialTheme.colorScheme.error)
     }
   }
 }
+
+/**
+ * Helper to return localized name for a FieldType (must be @Composable to use stringResource).
+ */
+@Composable
+private fun fieldTypeName(type: FieldType): String =
+    when (type) {
+      is FieldType.Text -> stringResource(R.string.field_type_text)
+      is FieldType.Number -> stringResource(R.string.field_type_number)
+      is FieldType.Date -> stringResource(R.string.field_type_date)
+      is FieldType.SingleSelect -> stringResource(R.string.field_type_single_select)
+      is FieldType.MultiSelect -> stringResource(R.string.field_type_multi_select)
+    }
 
 private val FieldType.icon
   get() =
@@ -184,14 +199,4 @@ private val FieldType.icon
         is FieldType.Date -> Icons.Default.CalendarToday
         is FieldType.SingleSelect -> Icons.Default.RadioButtonChecked
         is FieldType.MultiSelect -> Icons.Default.CheckBox
-      }
-
-private val FieldType.name
-  get() =
-      when (this) {
-        is FieldType.Text -> "Text"
-        is FieldType.Number -> "Number"
-        is FieldType.Date -> "Date"
-        is FieldType.SingleSelect -> "Single Select"
-        is FieldType.MultiSelect -> "Multi Select"
       }

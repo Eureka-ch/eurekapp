@@ -3,6 +3,8 @@ package ch.eureka.eurekapp.ui.templates
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
+import ch.eureka.eurekapp.R
 
 @Composable
 fun EditTemplateScreen(
@@ -17,7 +19,9 @@ fun EditTemplateScreen(
   TemplateEditorContent(
       config =
           TemplateEditorConfig(
-              title = "Edit Template", isLoading = isLoading, loadError = loadError),
+              title = stringResource(R.string.template_editor_title_edit),
+              isLoading = isLoading,
+              loadError = loadError),
       state = state,
       onNavigateBack = onNavigateBack,
       onSave = { onSuccess, onFailure -> viewModel.save(onSuccess, onFailure) },

@@ -45,8 +45,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.ui.components.EurekaInfoCard
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import coil.compose.AsyncImage
@@ -99,14 +101,14 @@ fun ProfileScreen(
   Scaffold(
       topBar = {
         EurekaTopBar(
-            title = "Profile",
+            title = stringResource(R.string.profile_title),
             actions = {
               IconButton(
                   onClick = onNavigateToMcpTokens,
                   modifier = Modifier.testTag(ProfileScreenTestTags.MCP_TOKENS_BUTTON)) {
                     Icon(
                         imageVector = Icons.Default.Key,
-                        contentDescription = "MCP Tokens",
+                        contentDescription = stringResource(R.string.profile_mcp_tokens_desc),
                         tint = MaterialTheme.colorScheme.onPrimary)
                   }
               IconButton(
@@ -114,7 +116,7 @@ fun ProfileScreen(
                   modifier = Modifier.testTag(ProfileScreenTestTags.SETTINGS_BUTTON)) {
                     Icon(
                         imageVector = Icons.Default.Settings,
-                        contentDescription = "Settings",
+                        contentDescription = stringResource(R.string.profile_settings_desc),
                         tint = MaterialTheme.colorScheme.onPrimary)
                   }
             })
@@ -137,7 +139,7 @@ fun ProfileScreen(
                       if (user.photoUrl.isNotEmpty()) {
                         AsyncImage(
                             model = user.photoUrl,
-                            contentDescription = "Profile Picture",
+                            contentDescription = stringResource(R.string.profile_picture_description),
                             modifier =
                                 Modifier.size(120.dp)
                                     .clip(CircleShape)
@@ -146,7 +148,7 @@ fun ProfileScreen(
                       } else {
                         Icon(
                             imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Profile Picture",
+                            contentDescription = stringResource(R.string.profile_picture_description),
                             modifier =
                                 Modifier.size(120.dp)
                                     .testTag(ProfileScreenTestTags.PROFILE_PICTURE),
@@ -163,7 +165,7 @@ fun ProfileScreen(
                                 editedDisplayName = it
                               }
                             },
-                            label = { Text("Display Name") },
+                            label = { Text(stringResource(R.string.profile_display_name_label)) },
                             supportingText = { Text("${editedDisplayName.length}/50") },
                             singleLine = true,
                             modifier =
@@ -178,14 +180,14 @@ fun ProfileScreen(
                         IconButton(
                             onClick = { viewModel.setEditing(true) },
                             modifier = Modifier.testTag(ProfileScreenTestTags.EDIT_BUTTON)) {
-                              Icon(Icons.Default.Edit, contentDescription = "Edit Name")
+                              Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.profile_edit_name_desc))
                             }
                       }
 
                       Spacer(modifier = Modifier.height(16.dp))
 
                       EurekaInfoCard(
-                          title = "Email",
+                          title = stringResource(R.string.profile_email_title),
                           primaryValue = user.email,
                           modifier = Modifier.testTag(ProfileScreenTestTags.EMAIL_TEXT))
 
@@ -194,7 +196,7 @@ fun ProfileScreen(
                       val dateFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
                       val lastActiveDate = user.lastActive.toDate()
                       EurekaInfoCard(
-                          title = "Last Active",
+                          title = stringResource(R.string.profile_last_active_title),
                           primaryValue = dateFormat.format(lastActiveDate),
                           modifier = Modifier.testTag(ProfileScreenTestTags.LAST_ACTIVE_TEXT))
 
@@ -207,7 +209,7 @@ fun ProfileScreen(
                               ButtonDefaults.buttonColors(
                                   containerColor = MaterialTheme.colorScheme.primaryContainer,
                                   contentColor = MaterialTheme.colorScheme.onPrimaryContainer)) {
-                            Text("View Activity Feed")
+                            Text(stringResource(R.string.profile_view_activity_feed))
                           }
 
                       if (!uiState.isEditing) {
@@ -223,7 +225,7 @@ fun ProfileScreen(
                                     contentColor = MaterialTheme.colorScheme.onError)) {
                               Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null)
                               Spacer(modifier = Modifier.size(8.dp))
-                              Text("Sign Out")
+                              Text(stringResource(R.string.profile_sign_out))
                             }
                       }
 
@@ -236,7 +238,7 @@ fun ProfileScreen(
                             modifier =
                                 Modifier.fillMaxWidth()
                                     .testTag(ProfileScreenTestTags.SAVE_BUTTON)) {
-                              Text("Save")
+                              Text(stringResource(R.string.profile_save))
                             }
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -249,13 +251,13 @@ fun ProfileScreen(
                             modifier =
                                 Modifier.fillMaxWidth()
                                     .testTag(ProfileScreenTestTags.CANCEL_BUTTON)) {
-                              Text("Cancel")
+                              Text(stringResource(R.string.profile_cancel))
                             }
                       }
                     }
                         ?: run {
                           Text(
-                              text = "No user data available",
+                              text = stringResource(R.string.profile_no_user_data),
                               modifier = Modifier.testTag(ProfileScreenTestTags.ERROR_TEXT))
                         }
                   }

@@ -7,7 +7,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 @Composable
@@ -22,9 +24,9 @@ fun TaskSectionHeader(modifier: Modifier = Modifier, title: String, taskCount: I
     if (taskCount != null) {
       val taskText =
           when (taskCount) {
-            0 -> "No tasks"
-            1 -> "Task"
-            else -> "Tasks"
+            0 -> stringResource(R.string.task_section_no_tasks)
+            1 -> stringResource(R.string.task_section_task_singular)
+            else -> stringResource(R.string.task_section_task_plural)
           }
       Text(
           text = "$taskCount $taskText",

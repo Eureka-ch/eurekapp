@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import ch.eureka.eurekapp.R
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.IdGenerator
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
@@ -31,6 +33,8 @@ fun AddFieldBottomSheet(
   var selectedType by remember { mutableStateOf<FieldType?>(null) }
   var currentField by remember { mutableStateOf<FieldDefinition?>(null) }
 
+  val defaultLabel = stringResource(R.string.template_field_new_label)
+
   ModalBottomSheet(onDismissRequest = onDismiss, modifier = modifier) {
     Column(modifier = Modifier.padding(16.dp)) {
       selectedType?.let { _ -> currentField?.let { FieldEditor(it, onDismiss, onFieldCreated) } }
@@ -38,8 +42,8 @@ fun AddFieldBottomSheet(
             selectedType = type
             currentField =
                 FieldDefinition(
-                    id = IdGenerator.generateFieldId("New Field"),
-                    label = "New Field",
+                    id = IdGenerator.generateFieldId(defaultLabel),
+                    label = defaultLabel,
                     type = type,
                     required = false)
           }
@@ -50,16 +54,18 @@ fun AddFieldBottomSheet(
 @Composable
 private fun FieldTypeSelector(onTypeSelected: (FieldType) -> Unit) {
   Text(
-      "Select Field Type",
+      text = stringResource(R.string.template_field_select_type_title),
       style = MaterialTheme.typography.headlineSmall,
       modifier = Modifier.padding(bottom = 16.dp))
 
   listOf(
-          "Text" to FieldType.Text(),
-          "Number" to FieldType.Number(),
-          "Date" to FieldType.Date(),
-          "Single Select" to FieldType.SingleSelect(listOf(SelectOption("option1", "Option 1"))),
-          "Multi Select" to FieldType.MultiSelect(listOf(SelectOption("option1", "Option 1"))))
+          stringResource(R.string.field_type_text) to FieldType.Text(),
+          stringResource(R.string.field_type_number) to FieldType.Number(),
+          stringResource(R.string.field_type_date) to FieldType.Date(),
+          stringResource(R.string.field_type_single_select) to
+              FieldType.SingleSelect(listOf(SelectOption("option1", stringResource(R.string.template_select_option_1)))),
+          stringResource(R.string.field_type_multi_select) to
+              FieldType.MultiSelect(listOf(SelectOption("option1", stringResource(R.string.template_select_option_1)))))
       .forEach { (name, type) ->
         Card(
             onClick = { onTypeSelected(type) },
@@ -78,7 +84,7 @@ private fun ColumnScope.FieldEditor(
   var editingField by remember { mutableStateOf(field) }
 
   Text(
-      "Configure Field",
+      text = stringResource(R.string.template_field_configure_title),
       style = MaterialTheme.typography.headlineSmall,
       modifier = Modifier.padding(bottom = 16.dp))
 
@@ -107,14 +113,16 @@ private fun ColumnScope.FieldEditor(
   Row(
       Modifier.fillMaxWidth().padding(top = 16.dp),
       horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        OutlinedButton(onClick = onDismiss, modifier = Modifier.weight(1f)) { Text("Cancel") }
+        OutlinedButton(onClick = onDismiss, modifier = Modifier.weight(1f)) {
+          Text(stringResource(R.string.template_field_cancel_button))
+        }
         Button(
             onClick = {
               onFieldCreated(editingField)
               onDismiss()
             },
             modifier = Modifier.weight(1f)) {
-              Text("Add")
+              Text(stringResource(R.string.template_field_add_button))
             }
       }
 }

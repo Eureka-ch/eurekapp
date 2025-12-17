@@ -14,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.screens.subscreens.tasks.*
@@ -39,7 +41,7 @@ fun TemplatePreview(
         if (fields.isEmpty()) {
           item {
             Box(Modifier.fillMaxWidth().padding(32.dp), Alignment.Center) {
-              Text("No fields to preview")
+              Text(stringResource(R.string.template_preview_no_fields))
             }
           }
         } else {

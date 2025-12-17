@@ -17,8 +17,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.user.UserNotificationSettingsKeys
 import ch.eureka.eurekapp.model.data.user.defaultValuesNotificationSettingsKeys
 import ch.eureka.eurekapp.model.notifications.NotificationSettingsViewModel
@@ -50,7 +52,7 @@ fun NotificationPreferencesScreen(
   Scaffold(
       topBar = {
         EurekaTopBar(
-            title = "Preferences",
+            title = stringResource(R.string.notification_preferences_title),
             navigationIcon = {
               BackButton(
                   onClick = onFinishedSettingNotifications,
@@ -64,7 +66,7 @@ fun NotificationPreferencesScreen(
                     .padding(paddingValues)
                     .testTag(NotificationPreferencesTestTags.SCREEN)) {
               NotificationOptionsCategory(
-                  title = "Meeting Notifications:",
+                  title = stringResource(R.string.notification_category_meeting),
                   optionsList =
                       UserNotificationSettingsKeys.entries
                           .filter { entry ->
@@ -75,7 +77,7 @@ fun NotificationPreferencesScreen(
                                 entry, notificationSettingsViewModel)
                           })
               NotificationOptionsCategory(
-                  title = "Message Notifications:",
+                  title = stringResource(R.string.notification_category_message),
                   optionsList =
                       UserNotificationSettingsKeys.entries
                           .filter { entry ->
@@ -86,7 +88,7 @@ fun NotificationPreferencesScreen(
                                 entry, notificationSettingsViewModel)
                           })
               NotificationOptionsCategory(
-                  title = "General Notifications:",
+                  title = stringResource(R.string.notification_category_general),
                   optionsList =
                       UserNotificationSettingsKeys.entries
                           .filter { entry ->

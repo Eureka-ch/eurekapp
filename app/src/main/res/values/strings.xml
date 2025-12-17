@@ -823,5 +823,78 @@
     <string name="selfnotes_edit_placeholder">Edit your note...</string>
     <string name="selfnotes_message_placeholder">Write a note to yourself...</string>
     <string name="selfnotes_empty_state">No notes yet. Start writing!</string>
+
+    <!-- Notification Preferences -->
+    <string name="notification_preferences_title">Preferences</string>
+    <string name="notification_category_meeting">Meeting Notifications:</string>
+    <string name="notification_category_message">Message Notifications:</string>
+    <string name="notification_category_general">General Notifications:</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_mcp_tokens_desc">MCP Tokens</string>
+    <string name="profile_settings_desc">Settings</string>
+    <string name="profile_picture_description">Profile Picture</string>
+    <string name="profile_display_name_label">Display Name</string>
+    <string name="profile_edit_name_desc">Edit Name</string>
+    <string name="profile_email_title">Email</string>
+    <string name="profile_last_active_title">Last Active</string>
+    <string name="profile_view_activity_feed">View Activity Feed</string>
+    <string name="profile_sign_out">Sign Out</string>
+    <string name="profile_save">Save</string>
+    <string name="profile_cancel">Cancel</string>
+    <string name="profile_no_user_data">No user data available</string>
+
+    <!-- Task action buttons -->
+    <string name="task_action_new_task">+ New Task</string>
+    <string name="task_action_auto_assign">Auto-assign</string>
+
+    <!-- Task section header -->
+    <string name="task_section_no_tasks">No tasks</string>
+    <string name="task_section_task_singular">Task</string>
+    <string name="task_section_task_plural">Tasks</string>
+
+    <!-- Template fields / editor -->
+    <string name="template_field_new_label">New Field</string>
+    <string name="template_field_select_type_title">Select Field Type</string>
+    <string name="field_type_text">Text</string>
+    <string name="field_type_number">Number</string>
+    <string name="field_type_date">Date</string>
+    <string name="field_type_single_select">Single Select</string>
+    <string name="field_type_multi_select">Multi Select</string>
+    <string name="template_select_option_1">Option 1</string>
+    <string name="template_field_configure_title">Configure Field</string>
+    <string name="template_field_cancel_button">Cancel</string>
+    <string name="template_field_add_button">Add</string>
+
+    <!-- Template basic info -->
+    <string name="template_basic_title_label">Template Title</string>
+    <string name="template_basic_description_label">Description (optional)</string>
+
+    <!-- Template field list / empty state -->
+    <string name="template_add_field_cd">Add field</string>
+    <string name="template_no_fields_yet_title">No fields yet</string>
+    <string name="template_no_fields_yet_hint">Tap + to add your first field</string>
+    <string name="template_reorder_description">Reorder</string>
+
+    <!-- Action labels / content descriptions -->
+    <string name="action_error">Error</string>
+    <string name="action_expand">Expand</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_duplicate">Duplicate</string>
+    <string name="action_delete">Delete</string>
+
+    <!-- Template preview -->
+    <string name="template_preview_no_fields">No fields to preview</string>
+    <string name="template_edit_field_cd">Edit field</string>
+
+    <!-- Template Editor -->
+    <string name="template_editor_title_create">Create Template</string>
+    <string name="template_editor_title_edit">Edit Template</string>
+    <string name="template_editor_save">Save</string>
+    <string name="template_add_field_button">Add Field</string>
+    <string name="template_tab_configure">Configure</string>
+    <string name="template_tab_preview">Preview</string>
 </resources>
 

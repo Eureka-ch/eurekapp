@@ -12,6 +12,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import ch.eureka.eurekapp.R
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
@@ -100,7 +102,7 @@ private fun SaveButton(isSaving: Boolean, canSave: Boolean, onSave: () -> Unit) 
           color = MaterialTheme.colorScheme.onPrimary)
     } else {
       Text(
-          "Save",
+          stringResource(R.string.template_editor_save),
           color =
               if (canSave) MaterialTheme.colorScheme.onPrimary
               else MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f))
@@ -113,8 +115,8 @@ private fun AddFieldFab(isVisible: Boolean, onClick: () -> Unit) {
   if (isVisible) {
     ExtendedFloatingActionButton(
         onClick = onClick,
-        icon = { Icon(Icons.Default.Add, contentDescription = "Add field") },
-        text = { Text("Add Field") },
+        icon = { Icon(Icons.Default.Add, contentDescription = stringResource(R.string.template_add_field_cd)) },
+        text = { Text(stringResource(R.string.template_add_field_button)) },
         modifier = Modifier.testTag("add_field_button"))
   }
 }
@@ -166,7 +168,7 @@ private fun EditorContent(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier.semantics(mergeDescendants = false) {}) {
-                  Text("Configure")
+                  Text(stringResource(R.string.template_tab_configure))
                   if (state.errorCount > 0)
                       Badge(modifier = Modifier.testTag("badge")) { Text("${state.errorCount}") }
                 }
@@ -174,7 +176,7 @@ private fun EditorContent(
       Tab(
           pagerState.currentPage == 1,
           onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
-          text = { Text("Preview") })
+          text = { Text(stringResource(R.string.template_tab_preview)) })
     }
 
     HorizontalPager(pagerState, Modifier.fillMaxSize()) { page ->
