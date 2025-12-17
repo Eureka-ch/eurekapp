@@ -337,25 +337,7 @@ fun NavigationMenu(
                   activityId = route.activityId,
                   onNavigateBack = { navigationController.popBackStack() },
                   onNavigateToEntity = { entityType, entityId, projectId ->
-                    when (entityType) {
-                      EntityType.MEETING -> {
-                        navigationController.navigate(
-                            Route.MeetingsSection.MeetingDetail(projectId, entityId))
-                      }
-                      EntityType.TASK -> {
-                        navigationController.navigate(
-                            Route.TasksSection.ViewTask(projectId, entityId))
-                      }
-                      EntityType.MESSAGE -> {
-                        navigationController.navigate(Route.ConversationsSection.Conversations)
-                      }
-                      EntityType.PROJECT -> {
-                        navigationController.navigate(Route.ProjectSelection)
-                      }
-                      else -> {
-                        // FILE and MEMBER types have no detail screen
-                      }
-                    }
+                    navigateToEntityDetail(navigationController, entityType, entityId, projectId)
                   })
             }
             composable<Route.IdeasSection.Ideas> {
@@ -646,14 +628,7 @@ fun NavigationMenu(
             composable<Route.ConversationsSection.Conversations> {
               ConversationListScreen(
                   onConversationClick = { conversationId ->
-                    // If clicking on "To Self" conversation, navigate to SelfNotesScreen
-                    if (conversationId ==
-                        ch.eureka.eurekapp.ui.conversation.TO_SELF_CONVERSATION_ID) {
-                      navigationController.navigate(Route.SelfNotes)
-                    } else {
-                      navigationController.navigate(
-                          Route.ConversationsSection.ConversationDetail(conversationId))
-                    }
+                    navigateToConversation(navigationController, conversationId)
                   },
                   onCreateConversation = {
                     navigationController.navigate(
@@ -776,6 +751,56 @@ private fun UserHeartbeatEffect(userRepository: UserRepository, currentUser: Fir
       // Wait before the next ping
       delay(HEARTBEAT_DURATION)
     }
+  }
+}
+
+/**
+ * Helper function to navigate to entity details based on entity type.
+ *
+ * @param navigationController The navigation controller for navigation actions.
+ * @param entityType The type of entity to navigate to.
+ * @param entityId The ID of the entity.
+ * @param projectId The project ID associated with the entity.
+ */
+private fun navigateToEntityDetail(
+    navigationController: NavHostController,
+    entityType: EntityType,
+    entityId: String,
+    projectId: String
+) {
+  when (entityType) {
+    EntityType.MEETING -> {
+      navigationController.navigate(Route.MeetingsSection.MeetingDetail(projectId, entityId))
+    }
+    EntityType.TASK -> {
+      navigationController.navigate(Route.TasksSection.ViewTask(projectId, entityId))
+    }
+    EntityType.MESSAGE -> {
+      navigationController.navigate(Route.ConversationsSection.Conversations)
+    }
+    EntityType.PROJECT -> {
+      navigationController.navigate(Route.ProjectSelection)
+    }
+    else -> {
+      // FILE and MEMBER types have no detail screen
+    }
+  }
+}
+
+/**
+ * Helper function to navigate to a conversation or self notes.
+ *
+ * @param navigationController The navigation controller for navigation actions.
+ * @param conversationId The ID of the conversation to navigate to.
+ */
+private fun navigateToConversation(
+    navigationController: NavHostController,
+    conversationId: String
+) {
+  if (conversationId == ch.eureka.eurekapp.ui.conversation.TO_SELF_CONVERSATION_ID) {
+    navigationController.navigate(Route.SelfNotes)
+  } else {
+    navigationController.navigate(Route.ConversationsSection.ConversationDetail(conversationId))
   }
 }
 
