@@ -22,7 +22,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -32,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.transcription.TranscriptionStatus
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.meeting.TranscriptViewModel
 import ch.eureka.eurekapp.ui.theme.Typography
@@ -180,11 +180,14 @@ fun MeetingTranscriptViewScreen(
   Scaffold(
       modifier = Modifier.fillMaxSize().testTag(TranscriptScreenTestTags.TRANSCRIPT_SCREEN),
       topBar = {
-        TopAppBar(
-            title = { Text("Transcript") },
+        EurekaTopBar(
+            title = "Transcript",
             navigationIcon = {
               IconButton(onClick = onNavigateBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = EColors.WhiteTextColor)
               }
             })
       }) { paddingValues ->
