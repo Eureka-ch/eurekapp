@@ -93,7 +93,7 @@ class MeetingViewModel(
   fun loadMeetings() {
     viewModelScope.launch {
       repository
-          .getMeetingsForCurrentUser(skipCache = true)
+          .getMeetingsForCurrentUser(skipCache = false)
           .onStart { _uiState.update { it.copy(isLoading = true) } }
           .catch { e -> _uiState.update { it.copy(isLoading = false, errorMsg = e.message) } }
           .collect { meetings ->

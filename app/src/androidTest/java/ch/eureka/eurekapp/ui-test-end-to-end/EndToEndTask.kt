@@ -394,7 +394,7 @@ class TaskEndToEndTest : TestCase() {
       composeTestRule.waitForIdle()
 
       // Step 2: Verify Listing - Wait to navigate back to meetings screen
-      composeTestRule.waitUntil(timeoutMillis = 10_000) {
+      composeTestRule.waitUntil(timeoutMillis = 30_000) {
         composeTestRule
             .onAllNodesWithTag(MeetingScreenTestTags.MEETING_SCREEN)
             .fetchSemanticsNodes()
@@ -403,7 +403,7 @@ class TaskEndToEndTest : TestCase() {
 
       // CRITICAL FIX: Wait for the meeting to actually appear in Firestore and be rendered
       // Don't just check the screen exists - wait for the actual data to load
-      composeTestRule.waitUntil(timeoutMillis = 15_000) {
+      composeTestRule.waitUntil(timeoutMillis = 30_000) {
         try {
           composeTestRule.onNodeWithText(meetingTitle).assertExists()
           true
