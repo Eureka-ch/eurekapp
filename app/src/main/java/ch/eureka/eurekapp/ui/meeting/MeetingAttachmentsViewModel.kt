@@ -203,7 +203,7 @@ class MeetingAttachmentsViewModel(
     }
   }
 
-  suspend fun getFileNameFromDownloadURLSuspending(downloadUrl: String): String? {
+  private suspend fun getFileNameFromDownloadURLSuspending(downloadUrl: String): String? {
     val storageRef = FirebaseStorage.getInstance().reference
     val linkReference = storageRef.storage.getReferenceFromUrl(downloadUrl)
     _attachmentUrlsToFileNames.value += downloadUrl to linkReference.name
