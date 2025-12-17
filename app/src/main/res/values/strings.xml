@@ -321,4 +321,233 @@
     <string name="tasks_screen_status_due_tomorrow">Due tomorrow</string>
     <string name="tasks_screen_status_due_days">Due in %1$d days</string>
     <string name="tasks_screen_status_due_week">Due in more than a week</string>
+
+    <!-- Activity Card -->
+    <string name="activity_card_delete_content_description">Delete activity</string>
+
+    <!-- Activity Detail Screen -->
+    <string name="activity_detail_screen_title">Activity Details</string>
+    <string name="activity_detail_navigate_back">Navigate back</string>
+    <string name="activity_detail_deleted_toast">Activity deleted</string>
+    <string name="activity_detail_information_title">Activity Information</string>
+    <string name="activity_detail_activity_type_label">Activity Type</string>
+    <string name="activity_detail_entity_type_label">Entity Type</string>
+    <string name="activity_detail_user_label">User</string>
+    <string name="activity_detail_timestamp_label">Timestamp</string>
+    <string name="activity_detail_entity_label">Entity</string>
+    <string name="activity_detail_unknown_user">Unknown User</string>
+    <string name="activity_detail_untitled_entity">Untitled</string>
+    <string name="activity_detail_view_entity_button">View %1$s</string>
+    <string name="activity_detail_related_activities_title">Related Activities (%1$d)</string>
+    <string name="activity_detail_no_related_activities">No other activities for this entity</string>
+    <string name="activity_detail_share_button">Share Activity</string>
+    <string name="activity_detail_delete_button">Delete Activity</string>
+    <string name="activity_detail_delete_dialog_title">Delete Activity?</string>
+    <string name="activity_detail_delete_dialog_message">This action cannot be undone.</string>
+    <string name="activity_detail_delete_confirm">Delete</string>
+    <string name="activity_detail_delete_cancel">Cancel</string>
+    <string name="activity_detail_offline_message">You are offline. Some actions are unavailable.</string>
+
+    <!-- Activity Feed Screen -->
+    <string name="activity_feed_title">Activity Feed</string>
+    <string name="activity_feed_refresh_button">Refresh</string>
+    <string name="activity_feed_search_button">Toggle search</string>
+    <string name="activity_feed_mark_all_read_button">Mark all as read</string>
+    <string name="activity_feed_loading">Loading activities…</string>
+    <string name="activity_feed_empty_no_filters">Select a filter to view activities</string>
+    <string name="activity_feed_empty_with_filters">No activities match your filters</string>
+    <string name="activity_feed_empty_hint_no_filters">Choose Projects, Meetings, Messages, Files, or Tasks above</string>
+    <string name="activity_feed_empty_hint_with_filters">Try adjusting your filters or search query</string>
+    <string name="activity_feed_error_prefix">Error: </string>
+    <string name="activity_feed_date_today">Today</string>
+    <string name="activity_feed_date_yesterday">Yesterday</string>
+
+    <!-- Activity Search Bar -->
+    <string name="activity_search_placeholder">Search activities…</string>
+    <string name="activity_search_icon">Search</string>
+    <string name="activity_search_clear_icon">Clear search</string>
+
+    <!-- Activity Type Filter Chips -->
+    <string name="activity_filter_projects">Projects</string>
+    <string name="activity_filter_meetings">Meetings</string>
+    <string name="activity_filter_messages">Messages</string>
+    <string name="activity_filter_files">Files</string>
+    <string name="activity_filter_tasks">Tasks</string>
+    <string name="activity_filter_members">Members</string>
+
+    <!-- Activity Types -->
+    <string name="activity_type_created">Created</string>
+    <string name="activity_type_updated">Updated</string>
+    <string name="activity_type_deleted">Deleted</string>
+    <string name="activity_type_uploaded">Uploaded</string>
+    <string name="activity_type_shared">Shared</string>
+    <string name="activity_type_commented">Commented</string>
+    <string name="activity_type_status_changed">Status Changed</string>
+    <string name="activity_type_joined">Joined</string>
+    <string name="activity_type_left">Left</string>
+    <string name="activity_type_assigned">Assigned</string>
+    <string name="activity_type_unassigned">Unassigned</string>
+    <string name="activity_type_role_changed">Role Changed</string>
+    <string name="activity_type_downloaded">Downloaded</string>
+
+    <!-- Sign In Screen -->
+    <string name="signin_screen_title">Eureka</string>
+    <string name="signin_button_text">Sign in with Google</string>
+    <string name="signin_button_logo_description">Google Logo</string>
+    <string name="signin_success_toast">Login successful</string>
+
+    <!-- Token Entry Screen -->
+    <string name="token_entry_greeting">Hello %1$s 👋</string>
+    <string name="token_entry_title">Enter Access Token</string>
+    <string name="token_entry_subtitle">Paste the token you received to join a group or unlock features.</string>
+    <string name="token_entry_token_label">Token</string>
+    <string name="token_entry_token_placeholder">Ex: 7F4A-93KD-XX12</string>
+    <string name="token_entry_validate_button">Validate</string>
+    <string name="token_entry_help_prefix">Need help? </string>
+    <string name="token_entry_help_link">How to get a token</string>
+    <string name="token_entry_success_toast">Welcome to the project!</string>
+
+    <!-- Photo Viewer -->
+    <string name="photo_viewer_content_description">Remote Photo</string>
+    <string name="photo_viewer_failed_to_load">Failed to load image</string>
+
+    <!-- Back Button -->
+    <string name="back_button_content_description">Navigate back</string>
+
+    <!-- Delete Confirmation Dialog -->
+    <string name="delete_confirmation_title">Delete Message</string>
+    <string name="delete_confirmation_message">Are you sure you want to delete this message? This cannot be undone.</string>
+    <string name="delete_confirmation_confirm">Delete</string>
+    <string name="delete_confirmation_cancel">Cancel</string>
+
+    <!-- Eureka Bottom Nav -->
+    <!-- (No additional strings needed - uses dynamic label from data) -->
+
+    <!-- Eureka Filter Bar -->
+    <!-- (No additional strings needed - uses dynamic label from data) -->
+
+    <!-- Interactive Help Entry Point -->
+    <string name="help_guide_button">Guide</string>
+    <string name="help_dialog_confirm">Got it!</string>
+    <string name="help_dialog_disable_info">You can disable this help from Preferences &gt; Notifications.</string>
+    <string name="help_home_overview_title">Welcome %1$s 👋</string>
+    <string name="help_home_overview_intro">Hey %1$s, let\'s take a quick tour of the important overview.</string>
+    <string name="help_home_overview_step1_highlight">Summary cards</string>
+    <string name="help_home_overview_step1_detail">The three cards at the top give you a quick glance at your tasks, meetings, and active projects.</string>
+    <string name="help_home_overview_step2_highlight">Quick actions</string>
+    <string name="help_home_overview_step2_detail">Use the \'View all\' buttons to open the full sections (Tasks, Meetings, Projects).</string>
+    <string name="help_home_overview_step3_highlight">Interactive sections</string>
+    <string name="help_home_overview_step3_detail">Tap on a task, meeting, or project card to open the detailed view directly.</string>
+    <string name="help_tasks_title">Task management</string>
+    <string name="help_tasks_intro">Hello %1$s! Here\'s how to master your tasks quickly.</string>
+    <string name="help_tasks_step1_highlight">Filter bar</string>
+    <string name="help_tasks_step1_detail">The chips at the top let you switch from \'My tasks\' to \'Team\', \'Today\', etc.</string>
+    <string name="help_tasks_step2_highlight">Action buttons</string>
+    <string name="help_tasks_step2_detail">The \'Create task\' and \'Auto assign\' buttons help you start or distribute work.</string>
+    <string name="help_tasks_step3_highlight">Interactive cards</string>
+    <string name="help_tasks_step3_detail">Tap on a card to open the task; use the folder icon to manage files.</string>
+    <string name="help_meetings_title">Mastering meetings</string>
+    <string name="help_meetings_intro">%1$s, let\'s review what you can do here.</string>
+    <string name="help_meetings_step1_highlight">Upcoming/Past tabs</string>
+    <string name="help_meetings_step1_detail">Navigate between your upcoming and past meetings to stay on track.</string>
+    <string name="help_meetings_step2_highlight">Meeting card</string>
+    <string name="help_meetings_step2_detail">Each card provides access to voting, directions, and follow-up actions.</string>
+    <string name="help_meetings_step3_highlight">+ Button</string>
+    <string name="help_meetings_step3_detail">The floating \'Add\' button instantly creates a new meeting (if you\'re online).</string>
+    <string name="help_meetings_step4_highlight">File attachments</string>
+    <string name="help_meetings_step4_detail">Upload files and documents to meetings. Use the \'Pick a File\' button in the meeting details to attach relevant files that participants can view and download.</string>
+    <string name="help_projects_title">Project view</string>
+    <string name="help_projects_intro">Hello %1$s, here\'s how to make the most of the project overview.</string>
+    <string name="help_projects_step1_highlight">Project context</string>
+    <string name="help_projects_step1_detail">The view displays key information about the selected project to help you stay focused.</string>
+    <string name="help_projects_step2_highlight">Quick navigation</string>
+    <string name="help_projects_step2_detail">You can launch the camera or other project-specific actions from this page.</string>
+    <string name="help_projects_step3_highlight">Back to home</string>
+    <string name="help_projects_step3_detail">Use the bottom bar to quickly return to associated tasks or meetings.</string>
+    <string name="help_create_task_title">Guided creation</string>
+    <string name="help_create_task_intro">%1$s, let\'s go step by step to create your task.</string>
+    <string name="help_create_task_step1_highlight">Essential fields</string>
+    <string name="help_create_task_step1_detail">Start with the title, description, and due date to provide context.</string>
+    <string name="help_create_task_step2_highlight">Project &amp; team</string>
+    <string name="help_create_task_step2_detail">Choose a project and assign members. Once a project is selected, you can assign users.</string>
+    <string name="help_create_task_step3_highlight">Task templates</string>
+    <string name="help_create_task_step3_detail">Use templates to speed up task creation. Select a template from the dropdown to automatically add custom fields (text, numbers, dates, selections). You can also create new templates with the \'+ Create Template\' button to standardize your workflow.</string>
+    <string name="help_create_task_step4_highlight">Task dependencies</string>
+    <string name="help_create_task_step4_detail">Dependencies allow you to define the execution order: this task cannot start until its dependent tasks are completed. Select them from the list after choosing a project. The app automatically detects forbidden cycles.</string>
+    <string name="help_files_management_title">File management</string>
+    <string name="help_files_management_intro">Hello %1$s! Here\'s how to manage your downloaded files.</string>
+    <string name="help_files_management_step1_highlight">View files</string>
+    <string name="help_files_management_step1_detail">All your downloaded files are listed here. Images show a preview, other files show their name.</string>
+    <string name="help_files_management_step2_highlight">Open files</string>
+    <string name="help_files_management_step2_detail">Tap the \'Open\' button to open a file with an appropriate app on your device.</string>
+    <string name="help_files_management_step3_highlight">Delete files</string>
+    <string name="help_files_management_step3_detail">Use the \'Delete\' button to remove files you no longer need. You\'ll be asked to confirm before deletion.</string>
+    <string name="help_meeting_votes_title">Meeting proposals voting</string>
+    <string name="help_meeting_votes_intro">%1$s, let\'s learn how to vote on meeting proposals.</string>
+    <string name="help_meeting_votes_step1_highlight">View proposals</string>
+    <string name="help_meeting_votes_step1_detail">Each card shows a date/time and format proposal. Review all options before voting.</string>
+    <string name="help_meeting_votes_step2_highlight">Select preferences</string>
+    <string name="help_meeting_votes_step2_detail">Check the boxes for the proposals that work for you. You can select multiple options.</string>
+    <string name="help_meeting_votes_step3_highlight">Add new proposal</string>
+    <string name="help_meeting_votes_step3_detail">Use the \'+\' button to propose a new date/time or format if none of the existing options suit you.</string>
+    <string name="help_meeting_votes_step4_highlight">Confirm votes</string>
+    <string name="help_meeting_votes_step4_detail">Once you\'ve made your selections, tap the checkmark button to save your votes.</string>
+    <string name="help_token_entry_title">Join with token</string>
+    <string name="help_token_entry_intro">Welcome %1$s! Here\'s how to join a project using an invitation token.</string>
+    <string name="help_token_entry_step1_highlight">Get your token</string>
+    <string name="help_token_entry_step1_detail">Ask your project administrator for an invitation token. It usually looks like: 7F4A-93KD-XX12</string>
+    <string name="help_token_entry_step2_highlight">Enter token</string>
+    <string name="help_token_entry_step2_detail">Paste or type the token in the field above. Make sure there are no extra spaces.</string>
+    <string name="help_token_entry_step3_highlight">Validate</string>
+    <string name="help_token_entry_step3_detail">Tap the \'Validate\' button to join the project. You\'ll be redirected once the token is accepted.</string>
+    <string name="help_view_task_title">Viewing task details</string>
+    <string name="help_view_task_intro">%1$s, here\'s what you can do on this task detail screen.</string>
+    <string name="help_view_task_step1_highlight">Task information</string>
+    <string name="help_view_task_step1_detail">View all task details including title, description, due date, assignees, and status.</string>
+    <string name="help_view_task_step2_highlight">Edit task</string>
+    <string name="help_view_task_step2_detail">Use the \'Edit\' button to modify task details, change assignees, or update dependencies.</string>
+    <string name="help_view_task_step3_highlight">View dependencies</string>
+    <string name="help_view_task_step3_detail">Tap \'View Dependencies\' to see which tasks depend on this one and which tasks this one depends on.</string>
+    <string name="help_view_task_step4_highlight">Attachments</string>
+    <string name="help_view_task_step4_detail">View and download any files or photos attached to this task.</string>
+    <string name="help_notes_title">Personal notes</string>
+    <string name="help_notes_intro">Hello %1$s! Here\'s how to use your personal notes.</string>
+    <string name="help_notes_step1_highlight">Cloud vs Local</string>
+    <string name="help_notes_step1_detail">Toggle the switch at the top to choose between cloud storage (syncs across devices) or local-only storage. In cloud mode, your notes are saved locally first and automatically synchronized when you\'re online. Even without internet, all your notes are safe and will sync once connection is restored.</string>
+    <string name="help_notes_step2_highlight">Add notes</string>
+    <string name="help_notes_step2_detail">Type your note in the input field at the bottom and send it. Notes appear in a chat-like interface.</string>
+    <string name="help_notes_step3_highlight">View history</string>
+    <string name="help_notes_step3_detail">Scroll through your notes to see your previous entries. The most recent notes appear at the bottom.</string>
+    <string name="create_invitation_copied_to_clipboard">Copied to clipboard!</string>
+
+    <!-- Eureka Status Tag -->
+    <string name="status_tag_done">Done</string>
+
+    <!-- Eureka Task Card -->
+    <string name="task_card_progress_label">Progress</string>
+    <string name="task_card_completed_progress">100%</string>
+    <string name="task_card_completed_description">Completed</string>
+
+    <!-- Eureka Top Bar -->
+    <string name="top_bar_default_title">EUREKA</string>
+
+    <!-- Message Action Menu -->
+    <string name="message_action_edit">Edit</string>
+    <string name="message_action_edit_description">Edit message</string>
+    <string name="message_action_remove_attachment">Remove Attachment</string>
+    <string name="message_action_remove_attachment_description">Remove attachment</string>
+    <string name="message_action_delete">Delete</string>
+    <string name="message_action_delete_description">Delete message</string>
+
+    <!-- Message Bubble -->
+    <string name="message_profile_picture_description">Profile picture of %1$s</string>
+    <string name="message_edited_indicator">(edited)</string>
+    <string name="message_file_attachment_description">File attachment</string>
+    <string name="message_download_file">Download file</string>
+    <string name="message_sending_status">Sending…</string>
+
+    <!-- Message Input Field -->
+    <string name="message_input_placeholder">Write a message…</string>
+    <string name="message_input_send_button">Send</string>
 </resources>
+

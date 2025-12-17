@@ -16,7 +16,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
@@ -53,7 +55,7 @@ fun MessageInputField(
     onSend: () -> Unit,
     isSending: Boolean,
     modifier: Modifier = Modifier,
-    placeholder: String = "Write a message...",
+    placeholder: String = stringResource(R.string.message_input_placeholder),
     canSend: Boolean = message.isNotBlank()
 ) {
   Row(
@@ -78,7 +80,7 @@ fun MessageInputField(
                     .testTag(MessageInputFieldTestTags.SEND_BUTTON)) {
               Icon(
                   imageVector = Icons.AutoMirrored.Filled.Send,
-                  contentDescription = "Send",
+                  contentDescription = stringResource(R.string.message_input_send_button),
                   tint =
                       if (canSend && !isSending) MaterialTheme.colorScheme.primary
                       else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f))

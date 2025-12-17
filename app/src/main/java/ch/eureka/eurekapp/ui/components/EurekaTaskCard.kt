@@ -37,9 +37,11 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 
 // Portions of this code were generated with the help of AI.
 // Portions added by Jiří Gebauer partially generated with the help of Grok.
@@ -143,7 +145,7 @@ fun EurekaTaskCard(
                             if (isCompleted) {
                               Icon(
                                   imageVector = Icons.Default.CheckCircle,
-                                  contentDescription = "Completed",
+                                  contentDescription = stringResource(R.string.task_card_completed_description),
                                   tint = MaterialTheme.colorScheme.primary,
                                   modifier = Modifier.size(20.dp))
                             } else {
@@ -216,7 +218,7 @@ fun EurekaTaskCard(
                 }
 
                 if (isCompleted) {
-                  EurekaStatusTag(text = "Done", type = StatusType.SUCCESS)
+                  EurekaStatusTag(text = stringResource(R.string.status_tag_done), type = StatusType.SUCCESS)
                   Spacer(modifier = Modifier.height(8.dp))
                 } else if (priority.isNotEmpty()) {
                   EurekaStatusTag(text = priority, type = StatusType.INFO)
@@ -231,12 +233,12 @@ fun EurekaTaskCard(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically) {
                           Text(
-                              text = "Progress",
+                              text = stringResource(R.string.task_card_progress_label),
                               style = MaterialTheme.typography.labelLarge,
                               color = Color(0xFF64748B),
                               fontWeight = FontWeight.SemiBold)
                           Text(
-                              text = if (isCompleted) "100%" else progressText,
+                              text = if (isCompleted) stringResource(R.string.task_card_completed_progress) else progressText,
                               style = MaterialTheme.typography.labelLarge,
                               color = Color(0xFF0F172A),
                               fontWeight = FontWeight.Bold)

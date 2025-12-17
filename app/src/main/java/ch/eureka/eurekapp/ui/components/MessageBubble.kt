@@ -27,11 +27,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.ui.camera.PhotoViewer
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
@@ -200,7 +202,7 @@ private fun MessageDisplay(messageDisplayState: MessageDisplayState) {
                         modifier = Modifier.testTag(MessageBubbleTestTags.TIMESTAMP))
                     if (messageDisplayState.editedAt != null) {
                       Text(
-                          text = "(edited)",
+                          text = stringResource(R.string.message_edited_indicator),
                           style = MaterialTheme.typography.labelSmall,
                           color = messageDisplayState.contentColor.copy(alpha = 0.5f),
                           modifier = Modifier.testTag(MessageBubbleTestTags.EDITED_INDICATOR))
@@ -235,7 +237,7 @@ private fun ProfileIcon(senderPhotoUrl: String) {
         verticalAlignment = Alignment.CenterVertically) {
           AsyncImage(
               model = senderPhotoUrl,
-              contentDescription = "Profile picture of $senderPhotoUrl",
+              contentDescription = stringResource(R.string.message_profile_picture_description, senderPhotoUrl),
               modifier = Modifier.size(48.dp).clip(CircleShape),
               contentScale = ContentScale.Crop)
         }
@@ -318,7 +320,7 @@ private fun FileAttachment(fileAttachment: MessageBubbleFileAttachment, contentC
         } else {
           Icon(
               imageVector = Icons.Default.AttachFile,
-              contentDescription = "File attachment",
+              contentDescription = stringResource(R.string.message_file_attachment_description),
               tint = contentColor,
               modifier = Modifier.size(24.dp))
           // Remove timestamp from display name (format: name_timestamp.ext)
@@ -333,7 +335,7 @@ private fun FileAttachment(fileAttachment: MessageBubbleFileAttachment, contentC
         IconButton(onClick = { fileAttachment.onDownloadClick(fileAttachment.fileUrl) }) {
           Icon(
               imageVector = Icons.Default.Download,
-              contentDescription = "Download file",
+              contentDescription = stringResource(R.string.message_download_file),
               tint = contentColor)
         }
       }

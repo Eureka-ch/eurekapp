@@ -17,7 +17,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 
 /**
  * A collapsible search bar for filtering activities.
@@ -46,12 +48,12 @@ fun ActivitySearchBar(
             value = query,
             onValueChange = onQueryChange,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-            placeholder = { Text("Search activities...") },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+            placeholder = { Text(stringResource(R.string.activity_search_placeholder)) },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = stringResource(R.string.activity_search_icon)) },
             trailingIcon = {
               if (query.isNotEmpty()) {
                 IconButton(onClick = { onQueryChange("") }) {
-                  Icon(Icons.Default.Clear, contentDescription = "Clear search")
+                  Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.activity_search_clear_icon))
                 }
               }
             },

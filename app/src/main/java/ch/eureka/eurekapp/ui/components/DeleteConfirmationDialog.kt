@@ -6,6 +6,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import ch.eureka.eurekapp.R
 
 /*
 Co-author: Claude 4.5 Sonnet
@@ -28,20 +30,20 @@ fun DeleteConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
   AlertDialog(
       onDismissRequest = onDismiss,
       modifier = Modifier.testTag(DeleteConfirmationDialogTestTags.DIALOG),
-      title = { Text("Delete Message") },
-      text = { Text("Are you sure you want to delete this message? This cannot be undone.") },
+      title = { Text(stringResource(R.string.delete_confirmation_title)) },
+      text = { Text(stringResource(R.string.delete_confirmation_message)) },
       confirmButton = {
         TextButton(
             onClick = onConfirm,
             modifier = Modifier.testTag(DeleteConfirmationDialogTestTags.CONFIRM_BUTTON)) {
-              Text("Delete")
+              Text(stringResource(R.string.delete_confirmation_confirm))
             }
       },
       dismissButton = {
         TextButton(
             onClick = onDismiss,
             modifier = Modifier.testTag(DeleteConfirmationDialogTestTags.CANCEL_BUTTON)) {
-              Text("Cancel")
+              Text(stringResource(R.string.delete_confirmation_cancel))
             }
       })
 }

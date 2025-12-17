@@ -38,8 +38,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
@@ -71,13 +73,13 @@ fun ActivityFeedScreen(
       modifier = modifier.fillMaxSize().testTag("ActivityFeedScreen"),
       topBar = {
         EurekaTopBar(
-            title = "Activity Feed",
+            title = stringResource(R.string.activity_feed_title),
             actions = {
               IconButton(
                   onClick = { viewModel.refresh() }, modifier = Modifier.testTag("RefreshButton")) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
-                        contentDescription = "Refresh",
+                        contentDescription = stringResource(R.string.activity_feed_refresh_button),
                         tint = EColors.WhiteTextColor)
                   }
               IconButton(
@@ -85,7 +87,7 @@ fun ActivityFeedScreen(
                   modifier = Modifier.testTag("SearchButton")) {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = "Toggle search",
+                        contentDescription = stringResource(R.string.activity_feed_search_button),
                         tint = EColors.WhiteTextColor)
                   }
               if (uiState.activities.isNotEmpty()) {
@@ -94,7 +96,7 @@ fun ActivityFeedScreen(
                     modifier = Modifier.testTag("MarkAllReadButton")) {
                       Icon(
                           imageVector = Icons.Default.DoneAll,
-                          contentDescription = "Mark all as read",
+                          contentDescription = stringResource(R.string.activity_feed_mark_all_read_button),
                           tint = EColors.WhiteTextColor)
                     }
               }
@@ -137,31 +139,31 @@ private fun FilterChipsRow(
               .padding(horizontal = Spacing.md, vertical = Spacing.sm),
       horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         ActivityTypeFilterChip(
-            label = EntityType.PROJECT.toDisplayString(),
+            label = stringResource(R.string.activity_filter_projects),
             selected = currentEntityFilter == EntityType.PROJECT,
             onClick = { onEntityFilterClick(EntityType.PROJECT) },
             modifier = Modifier.testTag("ProjectsFilterChip"))
 
         ActivityTypeFilterChip(
-            label = EntityType.MEETING.toDisplayString(),
+            label = stringResource(R.string.activity_filter_meetings),
             selected = currentEntityFilter == EntityType.MEETING,
             onClick = { onEntityFilterClick(EntityType.MEETING) },
             modifier = Modifier.testTag("MeetingsFilterChip"))
 
         ActivityTypeFilterChip(
-            label = EntityType.MESSAGE.toDisplayString(),
+            label = stringResource(R.string.activity_filter_messages),
             selected = currentEntityFilter == EntityType.MESSAGE,
             onClick = { onEntityFilterClick(EntityType.MESSAGE) },
             modifier = Modifier.testTag("MessagesFilterChip"))
 
         ActivityTypeFilterChip(
-            label = EntityType.FILE.toDisplayString(),
+            label = stringResource(R.string.activity_filter_files),
             selected = currentEntityFilter == EntityType.FILE,
             onClick = { onEntityFilterClick(EntityType.FILE) },
             modifier = Modifier.testTag("FilesFilterChip"))
 
         ActivityTypeFilterChip(
-            label = EntityType.TASK.toDisplayString(),
+            label = stringResource(R.string.activity_filter_tasks),
             selected = currentEntityFilter == EntityType.TASK,
             onClick = { onEntityFilterClick(EntityType.TASK) },
             modifier = Modifier.testTag("TasksFilterChip"))
@@ -205,7 +207,7 @@ private fun LoadingState() {
       horizontalAlignment = Alignment.CenterHorizontally) {
         CircularProgressIndicator(modifier = Modifier.testTag("LoadingIndicator"))
         Spacer(modifier = Modifier.height(Spacing.md))
-        Text("Loading activities...")
+        Text(stringResource(R.string.activity_feed_loading))
       }
 }
 
@@ -217,8 +219,8 @@ private fun EmptyState(hasFilters: Boolean = false) {
       horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text =
-                if (hasFilters) "No activities match your filters"
-                else "Select a filter to view activities",
+                if (hasFilters) stringResource(R.string.activity_feed_empty_with_filters)
+                else stringResource(R.string.activity_feed_empty_no_filters),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.testTag("EmptyState"))
@@ -226,13 +228,13 @@ private fun EmptyState(hasFilters: Boolean = false) {
         if (hasFilters) {
           Spacer(modifier = Modifier.height(Spacing.sm))
           Text(
-              text = "Try adjusting your filters or search query",
+              text = stringResource(R.string.activity_feed_empty_hint_with_filters),
               style = MaterialTheme.typography.bodyMedium,
               color = MaterialTheme.colorScheme.onSurfaceVariant)
         } else {
           Spacer(modifier = Modifier.height(Spacing.sm))
           Text(
-              text = "Choose Projects, Meetings, Messages, Files, or Tasks above",
+              text = stringResource(R.string.activity_feed_empty_hint_no_filters),
               style = MaterialTheme.typography.bodyMedium,
               color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -283,7 +285,7 @@ private fun ActivitiesList(
 @Composable
 private fun ErrorMessage(error: String, modifier: Modifier = Modifier) {
   Box(modifier = modifier.fillMaxWidth().padding(Spacing.md)) {
-    Text("Error: $error", color = MaterialTheme.colorScheme.error)
+    Text(stringResource(R.string.activity_feed_error_prefix) + error, color = MaterialTheme.colorScheme.error)
   }
 }
 

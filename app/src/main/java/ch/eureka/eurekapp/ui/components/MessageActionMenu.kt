@@ -11,6 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import ch.eureka.eurekapp.R
 
 /*
 Co-author: Claude 4.5 Sonnet
@@ -48,34 +50,34 @@ fun MessageActionMenu(
       onDismissRequest = onDismiss,
       modifier = Modifier.testTag(MessageActionMenuTestTags.MENU)) {
         DropdownMenuItem(
-            text = { Text("Edit") },
+            text = { Text(stringResource(R.string.message_action_edit)) },
             onClick = {
               onDismiss()
               onEdit()
             },
-            leadingIcon = { Icon(Icons.Default.Edit, contentDescription = "Edit message") },
+            leadingIcon = { Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.message_action_edit_description)) },
             modifier = Modifier.testTag(MessageActionMenuTestTags.EDIT_OPTION))
 
         if (hasAttachment && onRemoveAttachment != null) {
           DropdownMenuItem(
-              text = { Text("Remove Attachment") },
+              text = { Text(stringResource(R.string.message_action_remove_attachment)) },
               onClick = {
                 onDismiss()
                 onRemoveAttachment()
               },
               leadingIcon = {
-                Icon(Icons.Default.RemoveCircleOutline, contentDescription = "Remove attachment")
+                Icon(Icons.Default.RemoveCircleOutline, contentDescription = stringResource(R.string.message_action_remove_attachment_description))
               },
               modifier = Modifier.testTag(MessageActionMenuTestTags.REMOVE_ATTACHMENT_OPTION))
         }
 
         DropdownMenuItem(
-            text = { Text("Delete") },
+            text = { Text(stringResource(R.string.message_action_delete)) },
             onClick = {
               onDismiss()
               onDelete()
             },
-            leadingIcon = { Icon(Icons.Default.Delete, contentDescription = "Delete message") },
+            leadingIcon = { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.message_action_delete_description)) },
             modifier = Modifier.testTag(MessageActionMenuTestTags.DELETE_OPTION))
       }
 }

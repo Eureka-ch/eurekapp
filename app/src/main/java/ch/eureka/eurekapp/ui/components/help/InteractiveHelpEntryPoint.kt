@@ -27,8 +27,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.user.UserNotificationSettingsKeys
 import ch.eureka.eurekapp.model.data.user.defaultValuesNotificationSettingsKeys
 import ch.eureka.eurekapp.model.notifications.NotificationSettingsViewModel
@@ -95,7 +97,7 @@ fun InteractiveHelpEntryPoint(
   AssistChip(
       onClick = { helpViewModel.openDialog() },
       label = {
-        CompositionLocalProvider(LocalContentColor provides contentColor) { Text("Guide") }
+        CompositionLocalProvider(LocalContentColor provides contentColor) { Text(stringResource(R.string.help_guide_button)) }
       },
       leadingIcon = {
         CompositionLocalProvider(LocalContentColor provides contentColor) {
@@ -112,7 +114,7 @@ fun InteractiveHelpEntryPoint(
     AlertDialog(
         onDismissRequest = { helpViewModel.closeDialog() },
         confirmButton = {
-          TextButton(onClick = { helpViewModel.closeDialog() }) { Text("Got it!") }
+          TextButton(onClick = { helpViewModel.closeDialog() }) { Text(stringResource(R.string.help_dialog_confirm)) }
         },
         title = { Text(helpContent.title) },
         text = {
@@ -133,7 +135,7 @@ fun InteractiveHelpEntryPoint(
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "You can disable this help from Preferences > Notifications.",
+                text = stringResource(R.string.help_dialog_disable_info),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
           }

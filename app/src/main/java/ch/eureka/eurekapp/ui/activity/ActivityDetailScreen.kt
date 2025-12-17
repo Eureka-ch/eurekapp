@@ -60,8 +60,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.activity.Activity
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
@@ -140,12 +142,12 @@ fun ActivityDetailScreen(
       modifier = Modifier.testTag(ActivityDetailScreenTestTags.ACTIVITY_DETAIL_SCREEN),
       topBar = {
         EurekaTopBar(
-            title = "Activity Details",
+            title = stringResource(R.string.activity_detail_screen_title),
             navigationIcon = {
               IconButton(onClick = onNavigateBack) {
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Navigate back",
+                    contentDescription = stringResource(R.string.activity_detail_navigate_back),
                     tint = EColors.WhiteTextColor)
               }
             })
@@ -180,7 +182,7 @@ fun ActivityDetailScreen(
                   if (shareText != null) {
                     shareToClipboard(context, shareText)
                     vm.markShareSuccess()
-                    Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Copied to clipboard!", Toast.LENGTH_SHORT).show()
                   }
                 },
                 onDelete = { vm.deleteActivity() },
@@ -227,7 +229,7 @@ private fun ActivityDetailContent(
                         .alpha(getAlpha(isConnected))
                         .testTag(ActivityDetailScreenTestTags.ENTITY_BUTTON),
                 enabled = isConnected) {
-                  Text("View ${activity.entityType.name}")
+                  Text(stringResource(R.string.activity_detail_view_entity_button, activity.entityType.name))
                 }
           }
         }
@@ -236,7 +238,7 @@ private fun ActivityDetailContent(
         if (!isConnected) {
           item {
             Text(
-                text = "You are offline. Some actions are unavailable.",
+                text = stringResource(R.string.activity_detail_offline_message),
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.testTag(ActivityDetailScreenTestTags.OFFLINE_MESSAGE))
@@ -288,7 +290,7 @@ private fun ActivityInformationCard(activity: Activity) {
         Column(
             modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
               Text(
-                  text = "Activity Information",
+                  text = stringResource(R.string.activity_detail_information_title),
                   style = MaterialTheme.typography.titleMedium,
                   fontWeight = FontWeight.SemiBold)
 
@@ -296,33 +298,33 @@ private fun ActivityInformationCard(activity: Activity) {
 
               InfoRow(
                   icon = Icons.Default.Category,
-                  label = "Activity Type",
+                  label = stringResource(R.string.activity_detail_activity_type_label),
                   value = activity.activityType.name,
                   testTag = ActivityDetailScreenTestTags.ACTIVITY_TYPE)
 
               InfoRow(
                   icon = Icons.Default.Description,
-                  label = "Entity Type",
+                  label = stringResource(R.string.activity_detail_entity_type_label),
                   value = activity.entityType.name,
                   testTag = ActivityDetailScreenTestTags.ENTITY_TYPE)
 
               InfoRow(
                   icon = Icons.Default.Person,
-                  label = "User",
-                  value = activity.metadata["userName"]?.toString() ?: "Unknown User",
+                  label = stringResource(R.string.activity_detail_user_label),
+                  value = activity.metadata["userName"]?.toString() ?: stringResource(R.string.activity_detail_unknown_user),
                   testTag = ActivityDetailScreenTestTags.USER_NAME)
 
               InfoRow(
                   icon = Icons.Default.AccessTime,
-                  label = "Timestamp",
+                  label = stringResource(R.string.activity_detail_timestamp_label),
                   value = formattedTimestamp,
                   testTag = ActivityDetailScreenTestTags.TIMESTAMP)
 
               if (activity.metadata.containsKey("title")) {
                 InfoRow(
                     icon = Icons.Default.Title,
-                    label = "Entity",
-                    value = activity.metadata["title"]?.toString() ?: "Untitled",
+                    label = stringResource(R.string.activity_detail_entity_label),
+                    value = activity.metadata["title"]?.toString() ?: stringResource(R.string.activity_detail_untitled_entity),
                     testTag = ActivityDetailScreenTestTags.ENTITY_TITLE)
               }
             }
@@ -343,7 +345,7 @@ private fun RelatedActivitiesSection(relatedActivities: List<Activity>) {
         Column(
             modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
               Text(
-                  text = "Related Activities (${relatedActivities.size})",
+                  text = stringResource(R.string.activity_detail_related_activities_title, relatedActivities.size),
                   style = MaterialTheme.typography.titleMedium,
                   fontWeight = FontWeight.SemiBold)
 
@@ -351,7 +353,7 @@ private fun RelatedActivitiesSection(relatedActivities: List<Activity>) {
 
               if (relatedActivities.isEmpty()) {
                 Text(
-                    text = "No other activities for this entity",
+                    text = stringResource(R.string.activity_detail_no_related_activities),
                     style = MaterialTheme.typography.bodyMedium,
                     color = EColors.SecondaryTextColor,
                     modifier = Modifier.testTag(ActivityDetailScreenTestTags.NO_RELATED_ACTIVITIES))
@@ -421,9 +423,9 @@ private fun ActionButtonsSection(isConnected: Boolean, onShare: () -> Unit, onDe
                 .alpha(getAlpha(isConnected))
                 .testTag(ActivityDetailScreenTestTags.SHARE_BUTTON),
         enabled = isConnected) {
-          Icon(Icons.Default.Share, "Share", modifier = Modifier.size(18.dp))
+          Icon(Icons.Default.Share, stringResource(R.string.activity_detail_share_button), modifier = Modifier.size(18.dp))
           Spacer(modifier = Modifier.width(8.dp))
-          Text("Share Activity")
+          Text(stringResource(R.string.activity_detail_share_button))
         }
 
     OutlinedButton(
@@ -435,27 +437,27 @@ private fun ActionButtonsSection(isConnected: Boolean, onShare: () -> Unit, onDe
         enabled = isConnected,
         colors =
             ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
-          Icon(Icons.Default.Delete, "Delete", modifier = Modifier.size(18.dp))
+          Icon(Icons.Default.Delete, stringResource(R.string.activity_detail_delete_button), modifier = Modifier.size(18.dp))
           Spacer(modifier = Modifier.width(8.dp))
-          Text("Delete Activity")
+          Text(stringResource(R.string.activity_detail_delete_button))
         }
   }
 
   if (showDeleteDialog) {
     AlertDialog(
         onDismissRequest = { showDeleteDialog = false },
-        title = { Text("Delete Activity?") },
-        text = { Text("This action cannot be undone.") },
+        title = { Text(stringResource(R.string.activity_detail_delete_dialog_title)) },
+        text = { Text(stringResource(R.string.activity_detail_delete_dialog_message)) },
         confirmButton = {
           TextButton(
               onClick = {
                 showDeleteDialog = false
                 onDelete()
               }) {
-                Text("Delete", color = MaterialTheme.colorScheme.error)
+                Text(stringResource(R.string.activity_detail_delete_confirm), color = MaterialTheme.colorScheme.error)
               }
         },
-        dismissButton = { TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") } },
+        dismissButton = { TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.activity_detail_delete_cancel)) } },
         modifier = Modifier.testTag(ActivityDetailScreenTestTags.DELETE_DIALOG))
   }
 }

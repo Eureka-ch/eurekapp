@@ -31,12 +31,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 
 /** Test tags used by UI tests. */
 object SignInScreenTestTags {
@@ -80,7 +82,7 @@ fun SignInScreen(
         verticalArrangement = Arrangement.Center) {
           Text(
               modifier = Modifier.testTag(SignInScreenTestTags.SIGN_IN_TITLE),
-              text = "Eureka",
+              text = stringResource(R.string.signin_screen_title),
               style =
                   MaterialTheme.typography.headlineLarge.copy(fontSize = 57.sp, lineHeight = 64.sp),
               fontWeight = FontWeight.Bold,
@@ -113,12 +115,12 @@ fun SignInWithGoogleButton(onSignInClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center) {
               Image(
-                  painter = painterResource(id = ch.eureka.eurekapp.R.drawable.google_logo),
-                  contentDescription = "Google Logo",
+                  painter = painterResource(id = R.drawable.google_logo),
+                  contentDescription = stringResource(R.string.signin_button_logo_description),
                   modifier = Modifier.size(30.dp).padding(end = 8.dp))
 
               Text(
-                  text = "Sign in with Google",
+                  text = stringResource(R.string.signin_button_text),
                   color = MaterialTheme.colorScheme.onSurface,
                   fontSize = 16.sp,
                   fontWeight = FontWeight.Medium)

@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -22,6 +23,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.help.HelpContext
@@ -96,7 +98,7 @@ fun TokenEntryScreen(
               verticalArrangement = Arrangement.spacedBy(24.dp)) {
                 // Greeting
                 Text(
-                    text = "Hello ${uiState.userName} 👋",
+                    text = stringResource(R.string.token_entry_greeting, uiState.userName),
                     style =
                         MaterialTheme.typography.headlineMedium.copy(
                             fontSize = 28.sp, fontWeight = FontWeight.Bold),
@@ -107,14 +109,14 @@ fun TokenEntryScreen(
 
                 // Instructions
                 Text(
-                    text = "Enter Access Token",
+                    text = stringResource(R.string.token_entry_title),
                     style =
                         MaterialTheme.typography.titleLarge.copy(
                             fontSize = 20.sp, fontWeight = FontWeight.SemiBold),
                     color = MaterialTheme.colorScheme.onBackground)
 
                 Text(
-                    text = "Paste the token you received to join a group or unlock features.",
+                    text = stringResource(R.string.token_entry_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Start)
@@ -125,8 +127,8 @@ fun TokenEntryScreen(
                 OutlinedTextField(
                     value = uiState.token,
                     onValueChange = { tokenEntryViewModel.updateToken(it) },
-                    label = { Text("Token") },
-                    placeholder = { Text("Ex: 7F4A-93KD-XX12") },
+                    label = { Text(stringResource(R.string.token_entry_token_label)) },
+                    placeholder = { Text(stringResource(R.string.token_entry_token_placeholder)) },
                     singleLine = true,
                     enabled = !uiState.isLoading,
                     modifier =
@@ -155,7 +157,7 @@ fun TokenEntryScreen(
                             modifier = Modifier.size(24.dp))
                       } else {
                         Text(
-                            text = "Validate",
+                            text = stringResource(R.string.token_entry_validate_button),
                             style =
                                 MaterialTheme.typography.labelLarge.copy(
                                     fontSize = 16.sp, fontWeight = FontWeight.Medium))
@@ -173,12 +175,12 @@ fun TokenEntryScreen(
 @Composable
 private fun HelpLink(modifier: Modifier = Modifier) {
   val annotatedString = buildAnnotatedString {
-    append("Need help? ")
+    append(stringResource(R.string.token_entry_help_prefix))
     pushStringAnnotation(tag = "HELP", annotation = "help")
     withStyle(
         style =
             SpanStyle(color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)) {
-          append("How to get a token")
+          append(stringResource(R.string.token_entry_help_link))
         }
     pop()
   }

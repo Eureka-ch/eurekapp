@@ -15,7 +15,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 
 /** Compact red gradient top bar avec texte/icônes blancs, sans décalage vertical custom. */
@@ -23,7 +25,7 @@ import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 @Composable
 fun EurekaTopBar(
     modifier: Modifier = Modifier,
-    title: String = "EUREKA",
+    title: String = stringResource(R.string.top_bar_default_title),
     titleTestTag: String? = null,
     navigationIcon: @Composable (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},

@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -43,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.activity.Activity
 import ch.eureka.eurekapp.model.data.activity.ActivityType
 import ch.eureka.eurekapp.model.data.activity.EntityType
@@ -145,7 +147,7 @@ fun ActivityCard(
                           .testTag("DeleteButton_${activity.activityId}")) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete activity",
+                        contentDescription = stringResource(R.string.activity_card_delete_content_description),
                         tint = MaterialTheme.colorScheme.error)
                   }
             }

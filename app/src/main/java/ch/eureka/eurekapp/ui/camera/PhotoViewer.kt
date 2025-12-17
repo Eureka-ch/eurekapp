@@ -8,6 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
+import ch.eureka.eurekapp.R
 import coil.compose.SubcomposeAsyncImage
 
 // Portions of this code were generated with the help of Grok.
@@ -15,7 +17,7 @@ import coil.compose.SubcomposeAsyncImage
 fun PhotoViewer(image: Any, modifier: Modifier = Modifier) {
   SubcomposeAsyncImage(
       model = image,
-      contentDescription = "Remote Photo",
+      contentDescription = stringResource(R.string.photo_viewer_content_description),
       contentScale = ContentScale.Fit,
       modifier = modifier,
       loading = {
@@ -25,7 +27,7 @@ fun PhotoViewer(image: Any, modifier: Modifier = Modifier) {
       },
       error = {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-          Text("Failed to load image")
+          Text(stringResource(R.string.photo_viewer_failed_to_load))
         }
       })
 }
