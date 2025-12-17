@@ -21,11 +21,13 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.model.downloads.AppDatabase
+import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import com.google.firebase.storage.StorageMetadata
+import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
 import org.junit.Before
@@ -42,6 +44,7 @@ class MeetingDetailScreenOfflineTest {
   private lateinit var mockConnectivityObserver: MockConnectivityObserver
   private lateinit var viewModel: MeetingDetailViewModel
   private lateinit var attachmentsViewModel: MeetingAttachmentsViewModel
+  private lateinit var fileDatabase: DownloadedFileDao
   private val testProjectId = "testProject123"
   private val testMeetingId = "testMeeting123"
 
@@ -104,6 +107,7 @@ class MeetingDetailScreenOfflineTest {
 
   @Before
   fun setUp() {
+    fileDatabase = mockk(relaxed = true)
     mockConnectivityObserver =
         MockConnectivityObserver(InstrumentationRegistry.getInstrumentation().targetContext)
     viewModel =
@@ -145,7 +149,7 @@ class MeetingDetailScreenOfflineTest {
               fileStorageRepository = FileStorageRepositoryMock(),
               meetingsRepository = repositoryMock,
               connectivityObserver = mockConnectivityObserver,
-              downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
+              downloadedFileDao = fileDatabase)
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -197,7 +201,7 @@ class MeetingDetailScreenOfflineTest {
               fileStorageRepository = FileStorageRepositoryMock(),
               meetingsRepository = repositoryMock,
               connectivityObserver = mockConnectivityObserver,
-              downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
+              downloadedFileDao = fileDatabase)
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -243,7 +247,7 @@ class MeetingDetailScreenOfflineTest {
               fileStorageRepository = FileStorageRepositoryMock(),
               meetingsRepository = repositoryMock,
               connectivityObserver = mockConnectivityObserver,
-              downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
+              downloadedFileDao = fileDatabase)
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -286,7 +290,7 @@ class MeetingDetailScreenOfflineTest {
               fileStorageRepository = FileStorageRepositoryMock(),
               meetingsRepository = repositoryMock,
               connectivityObserver = mockConnectivityObserver,
-              downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
+              downloadedFileDao = fileDatabase)
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -336,7 +340,7 @@ class MeetingDetailScreenOfflineTest {
               fileStorageRepository = FileStorageRepositoryMock(),
               meetingsRepository = repositoryMock,
               connectivityObserver = mockConnectivityObserver,
-              downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
+              downloadedFileDao = fileDatabase)
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -385,7 +389,7 @@ class MeetingDetailScreenOfflineTest {
               fileStorageRepository = FileStorageRepositoryMock(),
               meetingsRepository = repositoryMock,
               connectivityObserver = mockConnectivityObserver,
-              downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
+              downloadedFileDao = fileDatabase)
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -435,7 +439,7 @@ class MeetingDetailScreenOfflineTest {
               fileStorageRepository = FileStorageRepositoryMock(),
               meetingsRepository = repositoryMock,
               connectivityObserver = mockConnectivityObserver,
-              downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
+              downloadedFileDao = fileDatabase)
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -484,7 +488,7 @@ class MeetingDetailScreenOfflineTest {
               fileStorageRepository = FileStorageRepositoryMock(),
               meetingsRepository = repositoryMock,
               connectivityObserver = mockConnectivityObserver,
-              downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
+              downloadedFileDao = fileDatabase)
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -542,7 +546,7 @@ class MeetingDetailScreenOfflineTest {
               fileStorageRepository = FileStorageRepositoryMock(),
               meetingsRepository = repositoryMock,
               connectivityObserver = mockConnectivityObserver,
-              downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
+              downloadedFileDao = fileDatabase)
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
