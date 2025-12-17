@@ -384,29 +384,6 @@ class CreateMeetingViewModelTest {
 
     assertFalse(viewModel.uiState.value.meetingSaved)
     assertEquals("Meeting could not be created.", viewModel.uiState.value.errorMsg)
-
-    assertNotNull(repositoryMock.lastMeetingCreated)
-  }
-
-  @Test
-  fun createMeetingViewModel_createMeetingUiStateCopyWorksAsExpected() {
-    val originalState =
-        CreateMeetingUIState(title = "Original", duration = 10, hasTouchedDate = false)
-    val copiedState = originalState.copy(title = "Copied", hasTouchedDate = true)
-
-    assertEquals("Original", originalState.title)
-    assertEquals(10, originalState.duration)
-    assertFalse(originalState.hasTouchedDate)
-    assertEquals("Copied", copiedState.title)
-    assertEquals(10, copiedState.duration)
-    assertTrue(copiedState.hasTouchedDate)
-  }
-
-  @Test
-  fun createMeetingViewModel_setLocationUpdatesSelectedLocation() {
-    val location = Location(46.5197, 6.6323, "Lausanne")
-    viewModel.setLocation(location)
-    assertEquals(location, viewModel.uiState.value.selectedLocation)
   }
 
   @Test

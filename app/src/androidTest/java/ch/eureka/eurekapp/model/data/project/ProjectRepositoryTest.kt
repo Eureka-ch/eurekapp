@@ -30,6 +30,7 @@ import org.junit.Test
 class ProjectRepositoryTest : FirestoreRepositoryTest() {
 
   private lateinit var repository: ProjectRepository
+  private val projectId = "test_project_id"
 
   override fun getCollectionPaths(): List<String> {
     return listOf("projects")
