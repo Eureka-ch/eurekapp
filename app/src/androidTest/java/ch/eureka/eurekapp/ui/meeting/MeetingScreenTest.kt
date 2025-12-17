@@ -430,8 +430,16 @@ class MeetingScreenTest {
   @Test
   fun meetingScreen_clickingCloseVotesButtonCallsViewModel() {
     val votingMeeting = MeetingProvider.sampleMeetings.first { it.meetingID == "meet_vote_01" }
-    testUserId = votingMeeting.createdBy
-    meetingsFlow.value = listOf(votingMeeting)
+
+    // FIX: Provide a version of the meeting that satisfies validation logic.
+    // If the vote results in Virtual, we need a link. If In-Person, a location.
+    // Providing both makes it safe regardless of which vote wins in the sample data.
+    val validVotingMeeting =
+        votingMeeting.copy(
+            link = "https://meet.google.com/test", location = Location(name = "Test Room"))
+
+    testUserId = validVotingMeeting.createdBy
+    meetingsFlow.value = listOf(validVotingMeeting)
     setContent()
 
     assertEquals(0, repositoryMock.updateMeetingCallCount)
@@ -442,7 +450,7 @@ class MeetingScreenTest {
 
     assertEquals(1, repositoryMock.updateMeetingCallCount)
     assertEquals(MeetingStatus.SCHEDULED, repositoryMock.updatedMeeting?.status)
-    assertEquals(votingMeeting.meetingID, repositoryMock.updatedMeeting?.meetingID)
+    assertEquals(validVotingMeeting.meetingID, repositoryMock.updatedMeeting?.meetingID)
   }
 }
 
