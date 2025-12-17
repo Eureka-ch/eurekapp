@@ -217,14 +217,14 @@ fun MeetingScreen(
               InteractiveHelpEntryPoint(
                   helpContext = HelpContext.MEETINGS,
                   modifier = Modifier.testTag("meetingsHelpButton"))
-                IconButton(
-                    onClick = config.onFileManagementScreenClick,
-                    modifier = Modifier.testTag(TasksScreenTestTags.FILES_MANAGEMENT_BUTTON)) {
+              IconButton(
+                  onClick = config.onFileManagementScreenClick,
+                  modifier = Modifier.testTag(TasksScreenTestTags.FILES_MANAGEMENT_BUTTON)) {
                     Icon(
                         Icons.Filled.Folder,
                         contentDescription = "Manage Files",
                         tint = EColors.WhiteTextColor)
-                }
+                  }
             })
       },
       floatingActionButton = {

@@ -37,11 +37,9 @@ class MeetingAttachmentsViewModel(
 ) : ViewModel() {
 
   val downloadedFiles =
-    downloadedFileDao
-      .getAll()
-      .stateIn(viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        emptyList())
+      downloadedFileDao
+          .getAll()
+          .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
   private val _isUploadingFile = MutableStateFlow(false)
   val isUploadingFile = _isUploadingFile.asStateFlow()
@@ -53,8 +51,7 @@ class MeetingAttachmentsViewModel(
       MutableStateFlow(mapOf())
   val attachmentUrlsToFileNames = _attachmentUrlsToFileNames.asStateFlow()
 
-  private val _downloadingFileStateUrlToBoolean = MutableStateFlow<Map<String, Boolean>>(
-    mapOf())
+  private val _downloadingFileStateUrlToBoolean = MutableStateFlow<Map<String, Boolean>>(mapOf())
   val downloadingFileStateUrlToBoolean = _downloadingFileStateUrlToBoolean.asStateFlow()
 
   fun uploadMeetingFileToFirestore(
@@ -85,8 +82,7 @@ class MeetingAttachmentsViewModel(
 
             val uploadResult =
                 fileStorageRepository.uploadFile(
-                    StoragePaths.meetingAttachmentPath(projectId, meetingId,
-                      fileName), uri)
+                    StoragePaths.meetingAttachmentPath(projectId, meetingId, fileName), uri)
 
             val downloadUrl = uploadResult.getOrNull()
             if (!(uploadResult.isSuccess && downloadUrl != null)) {
@@ -138,7 +134,12 @@ class MeetingAttachmentsViewModel(
     return null
   }
 
-  fun downloadFileToPhone(url: String, context: Context, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+  fun downloadFileToPhone(
+      url: String,
+      context: Context,
+      onSuccess: () -> Unit,
+      onFailure: (String) -> Unit
+  ) {
     viewModelScope.launch {
       if (downloadedFileDao.isDownloaded(url)) {
         return@launch
@@ -146,17 +147,20 @@ class MeetingAttachmentsViewModel(
       val displayName = getFileNameFromDownloadURLSuspending(url)
       _downloadingFileStateUrlToBoolean.value += url to true
       val downloadService = DownloadService(context)
-      val actualDisplayName = if(displayName == null || displayName.isBlank())
-        url.substringAfterLast("/") else displayName
+      val actualDisplayName =
+          if (displayName == null || displayName.isBlank()) url.substringAfterLast("/")
+          else displayName
       val result = downloadService.downloadFile(url, actualDisplayName)
-      result.onSuccess { uri ->
-        downloadedFileDao.insert(
-          DownloadedFile(url = url, localPath = uri.toString(), fileName = actualDisplayName))
-        _downloadingFileStateUrlToBoolean.value += url to false
-      }.onFailure {
-        _downloadingFileStateUrlToBoolean.value += url to false
-        onFailure("Failed to download file unexpected error")
-      }
+      result
+          .onSuccess { uri ->
+            downloadedFileDao.insert(
+                DownloadedFile(url = url, localPath = uri.toString(), fileName = actualDisplayName))
+            _downloadingFileStateUrlToBoolean.value += url to false
+          }
+          .onFailure {
+            _downloadingFileStateUrlToBoolean.value += url to false
+            onFailure("Failed to download file unexpected error")
+          }
     }
   }
 

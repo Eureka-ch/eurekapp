@@ -140,12 +140,12 @@ class MeetingDetailScreenOfflineTest {
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
-        attachmentsViewModel =
-            MeetingAttachmentsViewModel(
-                fileStorageRepository = FileStorageRepositoryMock(),
-                meetingsRepository = repositoryMock,
-                connectivityObserver = mockConnectivityObserver,
-                downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
+      attachmentsViewModel =
+          MeetingAttachmentsViewModel(
+              fileStorageRepository = FileStorageRepositoryMock(),
+              meetingsRepository = repositoryMock,
+              connectivityObserver = mockConnectivityObserver,
+              downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -192,12 +192,12 @@ class MeetingDetailScreenOfflineTest {
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
-        attachmentsViewModel =
-            MeetingAttachmentsViewModel(
-                fileStorageRepository = FileStorageRepositoryMock(),
-                meetingsRepository = repositoryMock,
-                connectivityObserver = mockConnectivityObserver,
-                downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
+      attachmentsViewModel =
+          MeetingAttachmentsViewModel(
+              fileStorageRepository = FileStorageRepositoryMock(),
+              meetingsRepository = repositoryMock,
+              connectivityObserver = mockConnectivityObserver,
+              downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -238,12 +238,12 @@ class MeetingDetailScreenOfflineTest {
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
-        attachmentsViewModel =
-            MeetingAttachmentsViewModel(
-                fileStorageRepository = FileStorageRepositoryMock(),
-                meetingsRepository = repositoryMock,
-                connectivityObserver = mockConnectivityObserver,
-                downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
+      attachmentsViewModel =
+          MeetingAttachmentsViewModel(
+              fileStorageRepository = FileStorageRepositoryMock(),
+              meetingsRepository = repositoryMock,
+              connectivityObserver = mockConnectivityObserver,
+              downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -281,12 +281,12 @@ class MeetingDetailScreenOfflineTest {
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
-        attachmentsViewModel =
-            MeetingAttachmentsViewModel(
-                fileStorageRepository = FileStorageRepositoryMock(),
-                meetingsRepository = repositoryMock,
-                connectivityObserver = mockConnectivityObserver,
-                downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
+      attachmentsViewModel =
+          MeetingAttachmentsViewModel(
+              fileStorageRepository = FileStorageRepositoryMock(),
+              meetingsRepository = repositoryMock,
+              connectivityObserver = mockConnectivityObserver,
+              downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -331,12 +331,12 @@ class MeetingDetailScreenOfflineTest {
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
-        attachmentsViewModel =
-            MeetingAttachmentsViewModel(
-                fileStorageRepository = FileStorageRepositoryMock(),
-                meetingsRepository = repositoryMock,
-                connectivityObserver = mockConnectivityObserver,
-                downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
+      attachmentsViewModel =
+          MeetingAttachmentsViewModel(
+              fileStorageRepository = FileStorageRepositoryMock(),
+              meetingsRepository = repositoryMock,
+              connectivityObserver = mockConnectivityObserver,
+              downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -380,12 +380,12 @@ class MeetingDetailScreenOfflineTest {
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
-        attachmentsViewModel =
-            MeetingAttachmentsViewModel(
-                fileStorageRepository = FileStorageRepositoryMock(),
-                meetingsRepository = repositoryMock,
-                connectivityObserver = mockConnectivityObserver,
-                downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
+      attachmentsViewModel =
+          MeetingAttachmentsViewModel(
+              fileStorageRepository = FileStorageRepositoryMock(),
+              meetingsRepository = repositoryMock,
+              connectivityObserver = mockConnectivityObserver,
+              downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -430,12 +430,12 @@ class MeetingDetailScreenOfflineTest {
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
-        attachmentsViewModel =
-            MeetingAttachmentsViewModel(
-                fileStorageRepository = FileStorageRepositoryMock(),
-                meetingsRepository = repositoryMock,
-                connectivityObserver = mockConnectivityObserver,
-                downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
+      attachmentsViewModel =
+          MeetingAttachmentsViewModel(
+              fileStorageRepository = FileStorageRepositoryMock(),
+              meetingsRepository = repositoryMock,
+              connectivityObserver = mockConnectivityObserver,
+              downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -479,12 +479,12 @@ class MeetingDetailScreenOfflineTest {
     mockConnectivityObserver.setConnected(true)
 
     composeTestRule.setContent {
-        attachmentsViewModel =
-            MeetingAttachmentsViewModel(
-                fileStorageRepository = FileStorageRepositoryMock(),
-                meetingsRepository = repositoryMock,
-                connectivityObserver = mockConnectivityObserver,
-                downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
+      attachmentsViewModel =
+          MeetingAttachmentsViewModel(
+              fileStorageRepository = FileStorageRepositoryMock(),
+              meetingsRepository = repositoryMock,
+              connectivityObserver = mockConnectivityObserver,
+              downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,
@@ -537,12 +537,12 @@ class MeetingDetailScreenOfflineTest {
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
-        attachmentsViewModel =
-            MeetingAttachmentsViewModel(
-                fileStorageRepository = FileStorageRepositoryMock(),
-                meetingsRepository = repositoryMock,
-                connectivityObserver = mockConnectivityObserver,
-                downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
+      attachmentsViewModel =
+          MeetingAttachmentsViewModel(
+              fileStorageRepository = FileStorageRepositoryMock(),
+              meetingsRepository = repositoryMock,
+              connectivityObserver = mockConnectivityObserver,
+              downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao())
       MeetingDetailScreen(
           projectId = testProjectId,
           meetingId = testMeetingId,

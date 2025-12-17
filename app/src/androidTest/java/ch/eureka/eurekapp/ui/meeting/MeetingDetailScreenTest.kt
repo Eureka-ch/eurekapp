@@ -137,7 +137,11 @@ class MeetingDetailScreenTest {
       MeetingDetailScreen(
           attachmentsViewModel =
               MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver, downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
+                  FileStorageRepositoryMock(),
+                  repositoryMock,
+                  mockConnectivityObserver,
+                  downloadedFileDao =
+                      AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
           projectId = "test_project",
           meetingId = "test_meeting",
           viewModel = viewModel,
@@ -170,7 +174,11 @@ class MeetingDetailScreenTest {
       MeetingDetailScreen(
           attachmentsViewModel =
               MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver, downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
+                  FileStorageRepositoryMock(),
+                  repositoryMock,
+                  mockConnectivityObserver,
+                  downloadedFileDao =
+                      AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
           projectId = "test_project",
           meetingId = "test_meeting",
           viewModel = viewModel)
@@ -865,7 +873,11 @@ class MeetingDetailScreenTest {
       MeetingDetailScreen(
           attachmentsViewModel =
               MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver, downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
+                  FileStorageRepositoryMock(),
+                  repositoryMock,
+                  mockConnectivityObserver,
+                  downloadedFileDao =
+                      AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
           projectId = testProjectId,
           meetingId = testMeetingId,
           viewModel = viewModel)
@@ -902,7 +914,11 @@ class MeetingDetailScreenTest {
       MeetingDetailScreen(
           attachmentsViewModel =
               MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver, downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
+                  FileStorageRepositoryMock(),
+                  repositoryMock,
+                  mockConnectivityObserver,
+                  downloadedFileDao =
+                      AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
           projectId = testProjectId,
           meetingId = testMeetingId,
           viewModel = viewModel)
@@ -938,7 +954,11 @@ class MeetingDetailScreenTest {
       MeetingDetailScreen(
           attachmentsViewModel =
               MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver, downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
+                  FileStorageRepositoryMock(),
+                  repositoryMock,
+                  mockConnectivityObserver,
+                  downloadedFileDao =
+                      AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
           projectId = testProjectId,
           meetingId = testMeetingId,
           viewModel = viewModel)
@@ -975,7 +995,11 @@ class MeetingDetailScreenTest {
       MeetingDetailScreen(
           attachmentsViewModel =
               MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver, downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
+                  FileStorageRepositoryMock(),
+                  repositoryMock,
+                  mockConnectivityObserver,
+                  downloadedFileDao =
+                      AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
           projectId = testProjectId,
           meetingId = testMeetingId,
           viewModel = viewModel)
@@ -1023,7 +1047,11 @@ class MeetingDetailScreenTest {
       MeetingDetailScreen(
           attachmentsViewModel =
               MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(), updatedRepositoryMock, mockConnectivityObserver, downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
+                  FileStorageRepositoryMock(),
+                  updatedRepositoryMock,
+                  mockConnectivityObserver,
+                  downloadedFileDao =
+                      AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
           projectId = testProjectId,
           meetingId = testMeetingId,
           viewModel = viewModel)
@@ -1073,7 +1101,11 @@ class MeetingDetailScreenTest {
       MeetingDetailScreen(
           attachmentsViewModel =
               MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(), updatedRepositoryMock, mockConnectivityObserver, downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
+                  FileStorageRepositoryMock(),
+                  updatedRepositoryMock,
+                  mockConnectivityObserver,
+                  downloadedFileDao =
+                      AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
           projectId = testProjectId,
           meetingId = testMeetingId,
           viewModel = viewModel)
@@ -1112,7 +1144,11 @@ class MeetingDetailScreenTest {
       MeetingDetailScreen(
           attachmentsViewModel =
               MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver, downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
+                  FileStorageRepositoryMock(),
+                  repositoryMock,
+                  mockConnectivityObserver,
+                  downloadedFileDao =
+                      AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
           projectId = testProjectId,
           meetingId = testMeetingId,
           viewModel = viewModel)
@@ -1152,7 +1188,11 @@ class MeetingDetailScreenTest {
       MeetingDetailScreen(
           attachmentsViewModel =
               MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver, downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
+                  FileStorageRepositoryMock(),
+                  repositoryMock,
+                  mockConnectivityObserver,
+                  downloadedFileDao =
+                      AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
           projectId = testProjectId,
           meetingId = testMeetingId,
           viewModel = viewModel)
@@ -1192,7 +1232,11 @@ class MeetingDetailScreenTest {
       MeetingDetailScreen(
           attachmentsViewModel =
               MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver, downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
+                  FileStorageRepositoryMock(),
+                  repositoryMock,
+                  mockConnectivityObserver,
+                  downloadedFileDao =
+                      AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
           projectId = testProjectId,
           meetingId = testMeetingId,
           viewModel = viewModel)
@@ -1229,7 +1273,11 @@ class MeetingDetailScreenTest {
       MeetingDetailScreen(
           attachmentsViewModel =
               MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(), repositoryMock, mockConnectivityObserver, downloadedFileDao = AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
+                  FileStorageRepositoryMock(),
+                  repositoryMock,
+                  mockConnectivityObserver,
+                  downloadedFileDao =
+                      AppDatabase.getDatabase(LocalContext.current).downloadedFileDao()),
           projectId = testProjectId,
           meetingId = testMeetingId,
           viewModel = viewModel)

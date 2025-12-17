@@ -87,10 +87,10 @@ import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.utils.Formatters
 import coil.compose.AsyncImage
 import com.google.firebase.Timestamp
-import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
+import kotlinx.coroutines.flow.map
 
 /**
  * Helper function to get alpha value based on connection status. Returns 1f if connected, 0.6f if
@@ -192,9 +192,7 @@ fun MeetingDetailScreen(
     downloadedFileDao: DownloadedFileDao =
         AppDatabase.getDatabase(LocalContext.current).downloadedFileDao(),
     attachmentsViewModel: MeetingAttachmentsViewModel = viewModel {
-        MeetingAttachmentsViewModel(
-            downloadedFileDao = downloadedFileDao
-        )
+      MeetingAttachmentsViewModel(downloadedFileDao = downloadedFileDao)
     },
     actionsConfig: MeetingDetailActionsConfig = MeetingDetailActionsConfig(),
 ) {
@@ -235,16 +233,15 @@ fun MeetingDetailScreen(
               }
             },
             actions = {
-                IconButton(
-                    onClick = actionsConfig.onFileManagementScreenClick,
-                    modifier = Modifier.testTag(TasksScreenTestTags.FILES_MANAGEMENT_BUTTON)) {
+              IconButton(
+                  onClick = actionsConfig.onFileManagementScreenClick,
+                  modifier = Modifier.testTag(TasksScreenTestTags.FILES_MANAGEMENT_BUTTON)) {
                     Icon(
                         Icons.Filled.Folder,
                         contentDescription = "Manage Files",
                         tint = EColors.WhiteTextColor)
-                }
-            }
-            )
+                  }
+            })
       },
       content = { padding ->
         if (uiState.isLoading) {
@@ -1068,8 +1065,13 @@ fun AttachmentItem(
     attachmentsViewModel: MeetingAttachmentsViewModel
 ) {
   val context = LocalContext.current
-  val downloadingFilesSet = remember { attachmentsViewModel.downloadingFileStateUrlToBoolean }.collectAsState()
-  val downloadedFiles = remember { attachmentsViewModel.downloadedFiles.map { list -> list.map { file -> file.url } } }.collectAsState(listOf())
+  val downloadingFilesSet =
+      remember { attachmentsViewModel.downloadingFileStateUrlToBoolean }.collectAsState()
+  val downloadedFiles =
+      remember {
+            attachmentsViewModel.downloadedFiles.map { list -> list.map { file -> file.url } }
+          }
+          .collectAsState(listOf())
   val fileNames = remember { attachmentsViewModel.attachmentUrlsToFileNames }.collectAsState()
   LaunchedEffect(Unit) { attachmentsViewModel.getFilenameFromDownloadURL(attachmentUrl) }
   Row(
@@ -1116,7 +1118,7 @@ fun AttachmentItem(
                         contentDescription = null)
                   }
               Spacer(modifier = Modifier.width(12.dp))
-              if (downloadingFilesSet.value.getOrElse(attachmentUrl, {false})) {
+              if (downloadingFilesSet.value.getOrElse(attachmentUrl, { false })) {
                 CircularProgressIndicator(
                     modifier =
                         Modifier.testTag(

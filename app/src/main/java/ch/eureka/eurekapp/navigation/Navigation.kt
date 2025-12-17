@@ -474,11 +474,8 @@ fun NavigationMenu(
                               }
                             },
                             onFileManagementScreenClick = {
-                                navigationController.navigate(
-                                    Route.FilesManagement)
-                            }
-                        )
-                )
+                              navigationController.navigate(Route.FilesManagement)
+                            }))
               }
 
               composable<Route.MeetingsSection.MeetingDetail> { backStackEntry ->
@@ -520,9 +517,8 @@ fun NavigationMenu(
                               }
                             },
                             onFileManagementScreenClick = {
-                                navigationController.navigate(Route.FilesManagement)
-                            }
-                        ),
+                              navigationController.navigate(Route.FilesManagement)
+                            }),
                 )
               }
 
