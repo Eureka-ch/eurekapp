@@ -13,7 +13,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.task.TaskCustomData
 import ch.eureka.eurekapp.model.data.template.TaskTemplate
 import ch.eureka.eurekapp.model.data.template.field.FieldType
@@ -40,7 +42,7 @@ fun TemplateFieldsSection(
 
   Column(modifier = modifier.fillMaxWidth().testTag(TemplateFieldsSectionTestTags.SECTION)) {
     Text(
-        text = "Template Fields",
+        text = stringResource(R.string.template_fields_section_title),
         style = MaterialTheme.typography.titleMedium,
         modifier = Modifier.testTag(TemplateFieldsSectionTestTags.SECTION_TITLE))
 

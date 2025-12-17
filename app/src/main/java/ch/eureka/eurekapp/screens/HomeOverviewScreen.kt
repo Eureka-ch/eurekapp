@@ -29,15 +29,16 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.task.determinePriority
@@ -123,7 +124,6 @@ fun HomeOverviewScreen(
   }
 }
 
-@Preview
 @Composable
 private fun HomeOverviewScreenContainer(
     modifier: Modifier,
@@ -134,7 +134,7 @@ private fun HomeOverviewScreenContainer(
       modifier = modifier.fillMaxSize(),
       topBar = {
         EurekaTopBar(
-            title = "EUREKAP",
+            title = stringResource(R.string.home_overview_title),
             actions = {
               InteractiveHelpEntryPoint(
                   helpContext = HelpContext.HOME_OVERVIEW,
@@ -188,14 +188,14 @@ internal fun HomeOverviewLayout(
 
         item {
           HomeSectionHeader(
-              title = "Upcoming tasks",
+              title = stringResource(R.string.home_overview_section_upcoming_tasks),
               count = uiState.upcomingTasks.size,
-              actionLabel = "View all",
+              actionLabel = stringResource(R.string.home_overview_section_view_all),
               actionTestTag = HomeOverviewTestTags.CTA_TASKS,
               onActionClick = actions.onOpenTasks)
         }
         if (uiState.upcomingTasks.isEmpty()) {
-          item { EmptyState(text = "No tasks assigned yet. Create one to get started.") }
+          item { EmptyState(text = stringResource(R.string.home_overview_empty_tasks)) }
         } else {
           items(items = uiState.upcomingTasks.take(HOME_ITEMS_LIMIT), key = { it.taskID }) { task ->
             AnimatedVisibility(
@@ -219,14 +219,14 @@ internal fun HomeOverviewLayout(
 
         item {
           HomeSectionHeader(
-              title = "Next meetings",
+              title = stringResource(R.string.home_overview_section_next_meetings),
               count = uiState.upcomingMeetings.size,
-              actionLabel = "Open meetings",
+              actionLabel = stringResource(R.string.home_overview_section_open_meetings),
               actionTestTag = HomeOverviewTestTags.CTA_MEETINGS,
               onActionClick = actions.onOpenMeetings)
         }
         if (uiState.upcomingMeetings.isEmpty()) {
-          item { EmptyState(text = "No upcoming meetings. Schedule one to keep your team synced.") }
+          item { EmptyState(text = stringResource(R.string.home_overview_empty_meetings)) }
         } else {
           items(items = uiState.upcomingMeetings.take(HOME_ITEMS_LIMIT), key = { it.meetingID }) {
               meeting ->
@@ -259,14 +259,14 @@ internal fun HomeOverviewLayout(
 
         item {
           HomeSectionHeader(
-              title = "Recent projects",
+              title = stringResource(R.string.home_overview_section_recent_projects),
               count = uiState.recentProjects.size,
-              actionLabel = "Browse projects",
+              actionLabel = stringResource(R.string.home_overview_section_browse_projects),
               actionTestTag = HomeOverviewTestTags.CTA_PROJECTS,
               onActionClick = actions.onOpenProjects)
         }
         if (uiState.recentProjects.isEmpty()) {
-          item { EmptyState(text = "No projects yet. Create a project to organize your work.") }
+          item { EmptyState(text = stringResource(R.string.home_overview_empty_projects)) }
         } else {
           items(items = uiState.recentProjects.take(HOME_ITEMS_LIMIT), key = { it.projectId }) {
               project ->
@@ -297,13 +297,13 @@ internal fun HomeOverviewLayout(
 private fun GreetingHeader(name: String, isConnected: Boolean, error: String?) {
   Column(modifier = Modifier.fillMaxWidth()) {
     Text(
-        text = if (name.isNotEmpty()) "Hello $name" else "Welcome back",
+        text = if (name.isNotEmpty()) stringResource(R.string.home_overview_greeting_hello, name) else stringResource(R.string.home_overview_greeting_welcome),
         style = MaterialTheme.typography.headlineLarge,
         color = Color(0xFF0F172A),
         fontWeight = FontWeight.Bold)
     val statusMessage =
         when {
-          !isConnected -> "You are offline. Some data may be outdated."
+          !isConnected -> stringResource(R.string.home_overview_offline_message)
           error != null -> error
           else -> null
         }
@@ -323,23 +323,23 @@ private fun GreetingHeader(name: String, isConnected: Boolean, error: String?) {
 private fun SummaryCardsRow(tasksCount: Int, meetingsCount: Int, projectsCount: Int) {
   Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
     EurekaInfoCard(
-        title = "Upcoming tasks",
+        title = stringResource(R.string.home_overview_upcoming_tasks_title),
         primaryValue = "$tasksCount",
-        secondaryValue = "Assigned to you",
+        secondaryValue = stringResource(R.string.home_overview_upcoming_tasks_subtitle),
         icon = Icons.Default.AssignmentTurnedIn,
         gradientStart = Color.White,
         gradientEnd = Color.White)
     EurekaInfoCard(
-        title = "Next meetings",
+        title = stringResource(R.string.home_overview_upcoming_meetings_title),
         primaryValue = "$meetingsCount",
-        secondaryValue = "Scheduled",
+        secondaryValue = stringResource(R.string.home_overview_upcoming_meetings_subtitle),
         icon = Icons.Default.CalendarToday,
         gradientStart = Color.White,
         gradientEnd = Color.White)
     EurekaInfoCard(
-        title = "Recent projects",
+        title = stringResource(R.string.home_overview_recent_projects_title),
         primaryValue = "$projectsCount",
-        secondaryValue = "Active teams",
+        secondaryValue = stringResource(R.string.home_overview_recent_projects_subtitle),
         icon = Icons.Default.Folder,
         gradientStart = Color.White,
         gradientEnd = Color.White)
@@ -367,7 +367,7 @@ private fun HomeSectionHeader(
                 fontWeight = FontWeight.Bold)
             if (count > 0) {
               Text(
-                  text = "$count items",
+                  text = stringResource(R.string.home_overview_items_count, count),
                   style = MaterialTheme.typography.bodySmall,
                   color = Color(0xFF64748B),
                   modifier = Modifier.padding(top = 4.dp))
@@ -386,7 +386,6 @@ private fun HomeSectionHeader(
                     fontWeight = FontWeight.SemiBold)
               }
         }
-    // Separator line for visual hierarchy
     Spacer(modifier = Modifier.height(16.dp))
     Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xFFE2E8F0)))
   }
@@ -405,7 +404,7 @@ private fun EmptyState(text: String) {
 private fun TaskPreviewCard(task: Task, onTaskClick: () -> Unit) {
   val now = Timestamp.now()
   val daysUntilDue = getDaysUntilDue(task, now)
-  val dueDate = daysUntilDue?.let { formatDueDate(it) } ?: "No due date"
+  val dueDate = daysUntilDue?.let { formatDueDate(it) } ?: stringResource(R.string.home_overview_task_due_no_date)
   val dueDateTag = getDueDateTag(task, now)
   val priority = determinePriority(task, now)
   val progressValue =
@@ -416,16 +415,16 @@ private fun TaskPreviewCard(task: Task, onTaskClick: () -> Unit) {
       }
   val progressText =
       when (task.status) {
-        TaskStatus.COMPLETED -> "100%"
-        TaskStatus.IN_PROGRESS -> "50%"
-        else -> "0%"
+        TaskStatus.COMPLETED -> stringResource(R.string.home_overview_task_progress_100)
+        TaskStatus.IN_PROGRESS -> stringResource(R.string.home_overview_task_progress_50)
+        else -> stringResource(R.string.home_overview_task_progress_0)
       }
 
   EurekaTaskCard(
-      title = task.title.ifEmpty { "Untitled task" },
+      title = task.title.ifEmpty { stringResource(R.string.home_overview_task_untitled) },
       dueDate = dueDate,
       dueDateTag = dueDateTag,
-      assignee = if (task.assignedUserIds.isNotEmpty()) "Multiple assignees" else "Unassigned",
+      assignee = if (task.assignedUserIds.isNotEmpty()) stringResource(R.string.home_overview_task_multiple_assignees) else stringResource(R.string.home_overview_task_unassigned),
       priority = priority,
       progressText = progressText,
       progressValue = progressValue,

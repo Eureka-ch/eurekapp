@@ -26,7 +26,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.downloads.AppDatabase
 import ch.eureka.eurekapp.model.downloads.FileItem
 import ch.eureka.eurekapp.model.downloads.FilesManagementViewModel
@@ -57,7 +59,7 @@ fun FilesManagementContent(
   Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
     if (files.isEmpty()) {
       Text(
-          "No downloaded files.",
+          stringResource(R.string.files_management_no_files),
           style = MaterialTheme.typography.bodyLarge,
           modifier = Modifier.testTag(FilesManagementScreenTestTags.NO_FILES_MESSAGE))
     } else {
@@ -94,12 +96,12 @@ fun FileItemRow(
       Button(
           onClick = { onOpenFile(fileItem) },
           modifier = Modifier.testTag(FilesManagementScreenTestTags.OPEN_BUTTON)) {
-            Text("Open")
+            Text(stringResource(R.string.files_management_open_button))
           }
       Button(
           onClick = { onDeleteFile(fileItem) },
           modifier = Modifier.testTag(FilesManagementScreenTestTags.DELETE_BUTTON)) {
-            Text("Delete")
+            Text(stringResource(R.string.files_management_delete_button))
           }
     }
   }
@@ -116,26 +118,26 @@ fun DeleteConfirmationDialog(
         onDismissRequest = onDismiss,
         title = {
           Text(
-              "Confirm Deletion",
+              stringResource(R.string.files_management_delete_dialog_title),
               modifier = Modifier.testTag(FilesManagementScreenTestTags.DELETE_DIALOG_TITLE))
         },
         text = {
           Text(
-              "Are you sure you want to delete '${fileToDelete.displayName}'?",
+              stringResource(R.string.files_management_delete_dialog_message, fileToDelete.displayName),
               modifier = Modifier.testTag(FilesManagementScreenTestTags.DELETE_DIALOG_TEXT))
         },
         confirmButton = {
           TextButton(
               onClick = onConfirm,
               modifier = Modifier.testTag(FilesManagementScreenTestTags.CONFIRM_DELETE_BUTTON)) {
-                Text("Delete")
+                Text(stringResource(R.string.files_management_delete_confirm))
               }
         },
         dismissButton = {
           TextButton(
               onClick = onDismiss,
               modifier = Modifier.testTag(FilesManagementScreenTestTags.CANCEL_DELETE_BUTTON)) {
-                Text("Cancel")
+                Text(stringResource(R.string.files_management_delete_cancel))
               }
         })
   }
@@ -179,15 +181,11 @@ fun FilesManagementScreen(
   Scaffold(
       topBar = {
         EurekaTopBar(
-            title = "Downloaded Files",
+            title = stringResource(R.string.files_management_title),
             navigationIcon = { BackButton(onClick = onBackClick) },
             modifier = Modifier.testTag(FilesManagementScreenTestTags.TOP_BAR_TITLE))
       },
       content = { padding ->
-        // Note: userProvidedName is not passed as FilesManagementScreen doesn't have access to user
-        // data.
-        // The help composable will fall back to
-        // FirebaseAuth.getInstance().currentUser?.displayName.
         ScreenWithHelp(
             helpContext = HelpContext.FILES_MANAGEMENT,
             content = {

@@ -28,7 +28,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.task.determinePriority
@@ -125,7 +127,7 @@ private fun HeaderSection(
 ) {
   Column(modifier = Modifier.padding(vertical = Spacing.md)) {
     Text(
-        text = "Manage and track your project tasks",
+        text = stringResource(R.string.tasks_screen_description),
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(top = Spacing.xs))
@@ -194,7 +196,7 @@ private fun LoadingState() {
         CircularProgressIndicator(
             modifier = Modifier.testTag(TasksScreenTestTags.LOADING_INDICATOR))
         Text(
-            text = "Loading tasks...",
+            text = stringResource(R.string.tasks_screen_loading),
             modifier = Modifier.padding(top = Spacing.md),
             color = MaterialTheme.colorScheme.onSurfaceVariant)
       }
@@ -227,7 +229,7 @@ private fun TaskList(
 
   // Task count
   Text(
-      text = "${currentTaskAndUsers.size} tasks",
+      text = stringResource(R.string.tasks_screen_count, currentTaskAndUsers.size),
       style = MaterialTheme.typography.bodySmall,
       color = MaterialTheme.colorScheme.onSurfaceVariant,
       modifier = Modifier.padding(bottom = Spacing.md))
@@ -239,7 +241,7 @@ private fun TaskList(
         if (!isConnected) {
           item {
             Text(
-                text = "You are offline. Some features may be unavailable.",
+                text = stringResource(R.string.tasks_screen_offline_message),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.error,
                 modifier =
@@ -266,13 +268,13 @@ private fun TaskList(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center) {
                   Text(
-                      text = "No tasks found",
+                      text = stringResource(R.string.tasks_screen_no_tasks_found),
                       style = MaterialTheme.typography.bodyLarge,
                       color = MaterialTheme.colorScheme.onSurfaceVariant,
                       modifier =
                           Modifier.padding(Spacing.lg).testTag(TasksScreenTestTags.EMPTY_STATE))
                   Text(
-                      text = "Tasks will appear here when repository is connected",
+                      text = stringResource(R.string.tasks_screen_no_tasks_subtitle),
                       style = MaterialTheme.typography.bodySmall,
                       color = MaterialTheme.colorScheme.onSurfaceVariant,
                       modifier = Modifier.padding(Spacing.sm))
@@ -338,7 +340,7 @@ fun TasksScreen(
       modifier = modifier.fillMaxSize().testTag(TasksScreenTestTags.TASKS_SCREEN_CONTENT),
       topBar = {
         EurekaTopBar(
-            title = "Tasks",
+            title = stringResource(R.string.tasks_screen_title),
             titleTestTag = TasksScreenTestTags.TASKS_SCREEN_TEXT,
             actions = {
               IconButton(
@@ -346,7 +348,7 @@ fun TasksScreen(
                   modifier = Modifier.testTag(TasksScreenTestTags.FILES_MANAGEMENT_BUTTON)) {
                     Icon(
                         Icons.Filled.Folder,
-                        contentDescription = "Manage Files",
+                        contentDescription = stringResource(R.string.tasks_screen_files_management),
                         tint = EColors.WhiteTextColor)
                   }
               InteractiveHelpEntryPoint(

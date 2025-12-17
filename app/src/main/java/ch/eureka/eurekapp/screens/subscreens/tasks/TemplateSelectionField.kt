@@ -22,7 +22,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.template.TaskTemplate
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
@@ -37,7 +39,6 @@ object TemplateSelectionTestTags {
   fun templateOptionTag(templateId: String) = "$TEMPLATE_OPTION_PREFIX$templateId"
 }
 
-private const val NO_TEMPLATE_TEXT = "No template"
 
 @Composable
 fun TemplateSelectionField(
@@ -49,10 +50,13 @@ fun TemplateSelectionField(
 ) {
   var expanded by remember { mutableStateOf(false) }
   val selectedTemplate = templates.find { it.templateID == selectedTemplateId }
-  val displayText = selectedTemplate?.title ?: NO_TEMPLATE_TEXT
+  val displayText =
+      selectedTemplate?.title ?: stringResource(R.string.template_selection_no_template)
 
   Column(modifier = modifier) {
-    Text(text = "Use Template", style = MaterialTheme.typography.titleMedium)
+    Text(
+        text = stringResource(R.string.template_selection_label),
+        style = MaterialTheme.typography.titleMedium)
 
     if (templates.isNotEmpty()) {
       Spacer(modifier = Modifier.height(8.dp))
@@ -62,7 +66,7 @@ fun TemplateSelectionField(
             value = displayText,
             onValueChange = {},
             readOnly = true,
-            placeholder = { Text(NO_TEMPLATE_TEXT) },
+            placeholder = { Text(stringResource(R.string.template_selection_no_template)) },
             modifier = Modifier.fillMaxWidth().testTag(TemplateSelectionTestTags.DROPDOWN),
             enabled = false)
 
@@ -71,7 +75,7 @@ fun TemplateSelectionField(
             onDismissRequest = { expanded = false },
             modifier = Modifier.testTag(TemplateSelectionTestTags.DROPDOWN_MENU)) {
               DropdownMenuItem(
-                  text = { Text(NO_TEMPLATE_TEXT) },
+                  text = { Text(stringResource(R.string.template_selection_no_template)) },
                   onClick = {
                     onTemplateSelected(null)
                     expanded = false
@@ -99,7 +103,7 @@ fun TemplateSelectionField(
         onClick = onCreateTemplate,
         colors = EurekaStyles.outlinedButtonColors(),
         modifier = Modifier.testTag(TemplateSelectionTestTags.CREATE_BUTTON)) {
-          Text("+ Create Template")
+          Text(stringResource(R.string.template_selection_create_button))
         }
   }
 }

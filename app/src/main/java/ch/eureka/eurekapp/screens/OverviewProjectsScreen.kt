@@ -7,6 +7,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.ui.components.help.HelpContext
 import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
@@ -30,7 +32,7 @@ fun OverviewProjectScreen(projectId: String) {
       content = {
         Column(modifier = Modifier.fillMaxSize().padding(Spacing.md)) {
           Text(
-              "Overview Projects Screen: $projectId",
+              stringResource(R.string.overview_projects_screen_title, projectId),
               modifier =
                   Modifier.testTag(OverviewProjectsScreenTestTags.OVERVIEW_PROJECTS_SCREEN_TEXT))
           Camera()

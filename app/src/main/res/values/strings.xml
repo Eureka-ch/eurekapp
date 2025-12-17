@@ -1,3 +1,4 @@
+<!-- Portions of this file were co-authored by Claude Haiku 4.5-->
 <resources>
     <string name="app_name">Eurekapp</string>
     <string name="title_activity_main">MainActivity</string>
@@ -224,4 +225,100 @@
     <string name="single_select_enter_custom_value">Enter custom value</string>
     <string name="single_select_select_option">Select option</string>
     <string name="single_select_custom_value">Custom value</string>
+
+    <!-- Task Dependencies Screen -->
+    <string name="task_dependencies_screen_title">Dependencies</string>
+    <string name="task_dependencies_screen_subtitle">Visualise order and detect blocking</string>
+    <string name="task_dependencies_filtering_title">Filtering</string>
+    <string name="task_dependencies_section_title">Dependencies</string>
+    <string name="task_dependencies_filter_all">All</string>
+
+    <!-- Template Fields Section -->
+    <string name="template_fields_section_title">Template Fields</string>
+
+    <!-- Template Selection Field -->
+    <string name="template_selection_label">Use Template</string>
+    <string name="template_selection_no_template">No template</string>
+    <string name="template_selection_create_button">+ Create Template</string>
+
+    <!-- Camera Screen -->
+    <string name="camera_screen_title">Camera</string>
+    <string name="camera_permission_required">Camera permission is required.</string>
+    <string name="camera_grant_permission">Grant permission</string>
+    <string name="camera_take_photo">Take photo</string>
+    <string name="camera_delete_photo">Delete photo</string>
+    <string name="camera_save_photo">Save photo</string>
+
+    <!-- Files Management Screen -->
+    <string name="files_management_title">Downloaded Files</string>
+    <string name="files_management_no_files">No downloaded files.</string>
+    <string name="files_management_open_button">Open</string>
+    <string name="files_management_delete_button">Delete</string>
+    <string name="files_management_delete_dialog_title">Confirm Deletion</string>
+    <string name="files_management_delete_dialog_message">Are you sure you want to delete \'%1$s\'?</string>
+    <string name="files_management_delete_confirm">Delete</string>
+    <string name="files_management_delete_cancel">Cancel</string>
+    <string name="files_management_open_with_chooser">Open with</string>
+    <string name="files_management_no_app_found">No app found to open this file</string>
+    <string name="files_management_delete_failed">Failed to delete file</string>
+
+    <!-- Home Overview Screen -->
+    <string name="home_overview_title">EUREKAP</string>
+    <string name="home_overview_greeting_hello">Hello %1$s</string>
+    <string name="home_overview_greeting_welcome">Welcome back</string>
+    <string name="home_overview_offline_message">You are offline. Some data may be outdated.</string>
+    <string name="home_overview_upcoming_tasks_title">Upcoming tasks</string>
+    <string name="home_overview_upcoming_tasks_subtitle">Assigned to you</string>
+    <string name="home_overview_upcoming_meetings_title">Next meetings</string>
+    <string name="home_overview_upcoming_meetings_subtitle">Scheduled</string>
+    <string name="home_overview_recent_projects_title">Recent projects</string>
+    <string name="home_overview_recent_projects_subtitle">Active teams</string>
+    <string name="home_overview_section_upcoming_tasks">Upcoming tasks</string>
+    <string name="home_overview_section_view_all">View all</string>
+    <string name="home_overview_section_next_meetings">Next meetings</string>
+    <string name="home_overview_section_open_meetings">Open meetings</string>
+    <string name="home_overview_section_recent_projects">Recent projects</string>
+    <string name="home_overview_section_browse_projects">Browse projects</string>
+    <string name="home_overview_items_count">%1$d items</string>
+    <string name="home_overview_empty_tasks">No tasks assigned yet. Create one to get started.</string>
+    <string name="home_overview_empty_meetings">No upcoming meetings. Schedule one to keep your team synced.</string>
+    <string name="home_overview_empty_projects">No projects yet. Create a project to organize your work.</string>
+    <string name="home_overview_task_untitled">Untitled task</string>
+    <string name="home_overview_task_multiple_assignees">Multiple assignees</string>
+    <string name="home_overview_task_unassigned">Unassigned</string>
+    <string name="home_overview_task_progress_100">100%</string>
+    <string name="home_overview_task_progress_50">50%</string>
+    <string name="home_overview_task_progress_0">0%</string>
+    <string name="home_overview_task_due_no_date">No due date</string>
+
+    <!-- Overview Projects Screen -->
+    <string name="overview_projects_screen_title">Overview Projects Screen: %1$s</string>
+
+    <!-- Project Selection Screen -->
+    <string name="project_selection_title">Projects</string>
+    <string name="project_selection_create_button">+ Create Project</string>
+    <string name="project_selection_input_token_button">Input Project Token</string>
+    <string name="project_selection_empty_title">No projects yet</string>
+    <string name="project_selection_empty_subtitle">Create your first project to get started</string>
+    <string name="project_selection_view_members">View Members</string>
+    <string name="project_selection_generate_invite">Generate Invite</string>
+    <string name="project_selection_notifications_granted">Notifications permission granted!</string>
+    <string name="project_selection_notifications_denied">You will not be able to receive notifications!</string>
+
+    <!-- Tasks Screen -->
+    <string name="tasks_screen_title">Tasks</string>
+    <string name="tasks_screen_description">Manage and track your project tasks</string>
+    <string name="tasks_screen_loading">Loading tasks…</string>
+    <string name="tasks_screen_no_tasks_found">No tasks found</string>
+    <string name="tasks_screen_no_tasks_subtitle">Tasks will appear here when repository is connected</string>
+    <string name="tasks_screen_offline_message">You are offline. Some features may be unavailable.</string>
+    <string name="tasks_screen_current_tasks">Current Tasks</string>
+    <string name="tasks_screen_recently_completed">Recently Completed</string>
+    <string name="tasks_screen_count">%1$d tasks</string>
+    <string name="tasks_screen_files_management">Manage Files</string>
+    <string name="tasks_screen_status_overdue">Overdue</string>
+    <string name="tasks_screen_status_due_today">Due today</string>
+    <string name="tasks_screen_status_due_tomorrow">Due tomorrow</string>
+    <string name="tasks_screen_status_due_days">Due in %1$d days</string>
+    <string name="tasks_screen_status_due_week">Due in more than a week</string>
 </resources>

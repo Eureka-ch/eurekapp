@@ -46,10 +46,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectSelectionScreenViewModel
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
@@ -100,7 +102,7 @@ fun ProjectSelectionScreen(
   val listState = rememberLazyListState()
 
   Scaffold(
-      topBar = { EurekaTopBar(title = "Projects") },
+      topBar = { EurekaTopBar(title = stringResource(R.string.project_selection_title)) },
       content = { paddingValues ->
         Column(
             modifier =
@@ -176,7 +178,7 @@ private fun ProjectSelectionHeader(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = Color.White)) {
               Text(
-                  "+ Create Project",
+                  stringResource(R.string.project_selection_create_button),
                   style = MaterialTheme.typography.titleMedium,
                   fontWeight = FontWeight.Bold)
             }
@@ -188,7 +190,7 @@ private fun ProjectSelectionHeader(
                 ButtonDefaults.outlinedButtonColors(
                     contentColor = MaterialTheme.colorScheme.primary)) {
               Text(
-                  "Input Project Token",
+                  stringResource(R.string.project_selection_input_token_button),
                   style = MaterialTheme.typography.titleMedium,
                   fontWeight = FontWeight.SemiBold)
             }
@@ -202,12 +204,12 @@ private fun EmptyProjectsState() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
           Text(
-              "No projects yet",
+              stringResource(R.string.project_selection_empty_title),
               style = MaterialTheme.typography.titleLarge,
               color = Color(0xFF0F172A),
               fontWeight = FontWeight.Bold)
           Text(
-              "Create your first project to get started",
+              stringResource(R.string.project_selection_empty_subtitle),
               style = MaterialTheme.typography.bodyMedium,
               color = Color(0xFF64748B))
         }
@@ -267,7 +269,7 @@ private fun ProjectActionButtons(
             colors =
                 ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)) {
               Text(
-                  "View Members",
+                  stringResource(R.string.project_selection_view_members),
                   style = MaterialTheme.typography.labelLarge,
                   fontWeight = FontWeight.SemiBold)
             }
@@ -279,7 +281,7 @@ private fun ProjectActionButtons(
                       ProjectSelectionScreenTestTags.getInviteButtonTestTag(project.projectId))) {
                 Icon(
                     imageVector = Icons.Default.PersonAdd,
-                    contentDescription = "Generate Invite",
+                    contentDescription = stringResource(R.string.project_selection_generate_invite),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp))
               }

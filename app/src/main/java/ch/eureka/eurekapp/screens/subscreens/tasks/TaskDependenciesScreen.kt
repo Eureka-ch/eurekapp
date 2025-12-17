@@ -32,12 +32,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.user.User
@@ -106,16 +108,20 @@ fun TaskDependenciesScreen(
         Filter section
         **/
         SurfaceComposable(
-            title = "Filtering",
+            title = stringResource(R.string.task_dependencies_filtering_title),
             composable = {
               FlowRow(
                   modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
                   horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     FilterButton(
-                        user = allUser, onClick = { nameFilter = "All" }, nameFilter = nameFilter)
+                        user = allUser,
+                        onClick = { nameFilter = "All" },
+                        nameFilter = nameFilter)
                     projectUsers.value.filterNotNull().map { user ->
                       FilterButton(
-                          user = user, onClick = { nameFilter = user.uid }, nameFilter = nameFilter)
+                          user = user,
+                          onClick = { nameFilter = user.uid },
+                          nameFilter = nameFilter)
                     }
                   }
             })
@@ -126,7 +132,7 @@ fun TaskDependenciesScreen(
         Dependencies screen
         **/
         SurfaceComposable(
-            title = "Dependencies",
+            title = stringResource(R.string.task_dependencies_section_title),
             composable = {
               if (task.value != null) {
                 Row(
@@ -181,9 +187,12 @@ private fun ScreenTitle() {
       modifier = Modifier.fillMaxWidth(),
       horizontalAlignment = Alignment.Start,
   ) {
-    Text(text = "Dependencies", style = Typography.titleLarge, fontWeight = FontWeight(600))
     Text(
-        text = "Visualise order and detect blocking",
+        text = stringResource(R.string.task_dependencies_screen_title),
+        style = Typography.titleLarge,
+        fontWeight = FontWeight(600))
+    Text(
+        text = stringResource(R.string.task_dependencies_screen_subtitle),
         style = Typography.titleMedium,
         color = GrayTextColor2)
   }

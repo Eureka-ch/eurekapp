@@ -26,11 +26,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.camera.CameraViewModel
 import ch.eureka.eurekapp.ui.camera.PhotoViewer
 import ch.eureka.eurekapp.ui.components.BackButton
@@ -76,7 +78,7 @@ fun CameraScreen(
   Scaffold(
       topBar = {
         EurekaTopBar(
-            title = "Camera",
+            title = stringResource(R.string.camera_screen_title),
             navigationIcon = {
               BackButton(
                   onClick = onBackClick,
@@ -97,7 +99,7 @@ fun CameraScreen(
                   modifier =
                       Modifier.align(Alignment.BottomStart)
                           .testTag(CameraScreenTestTags.DELETE_PHOTO)) {
-                    Text(text = "Delete photo")
+                    Text(text = stringResource(R.string.camera_delete_photo))
                   }
               Button(
                   onClick = { onPhotoSaved(cameraState.picture.toString()) },
@@ -105,7 +107,7 @@ fun CameraScreen(
                   modifier =
                       Modifier.align(Alignment.BottomEnd)
                           .testTag(CameraScreenTestTags.SAVE_PHOTO)) {
-                    Text(text = "Save photo")
+                    Text(text = stringResource(R.string.camera_save_photo))
                   }
             } else if (cameraPreview != null) {
               AndroidView(
@@ -119,7 +121,7 @@ fun CameraScreen(
                   modifier =
                       Modifier.align(Alignment.BottomCenter)
                           .testTag(CameraScreenTestTags.TAKE_PHOTO)) {
-                    Text(text = "Take photo")
+                    Text(text = stringResource(R.string.camera_take_photo))
                   }
             }
           }
@@ -136,14 +138,14 @@ fun CameraScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)) {
                       Text(
-                          text = "Camera permission is required.",
+                          text = stringResource(R.string.camera_permission_required),
                           style = MaterialTheme.typography.bodyLarge,
                           modifier = Modifier.testTag(CameraScreenTestTags.NO_PERMISSION))
                       Button(
                           onClick = { launcher.launch(Manifest.permission.CAMERA) },
                           colors = EurekaStyles.primaryButtonColors(),
                           modifier = Modifier.testTag(CameraScreenTestTags.GRANT_PERMISSION)) {
-                            Text("Grant permission")
+                            Text(stringResource(R.string.camera_grant_permission))
                           }
                     }
               }
