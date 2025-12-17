@@ -30,7 +30,6 @@ import kotlinx.coroutines.tasks.await
  * @property relatedActivities List of activities related to the same entity.
  * @property errorMsg An error message to display, or null if there is no error.
  * @property isLoading Whether a data loading operation is in progress.
- * @property deleteSuccess Whether the activity was successfully deleted.
  * @property shareSuccess Whether the activity was successfully shared.
  * @property isConnected Whether the device is connected to the internet.
  */
@@ -39,7 +38,6 @@ data class ActivityDetailUIState(
     val relatedActivities: List<Activity> = emptyList(),
     val errorMsg: String? = null,
     val isLoading: Boolean = false,
-    val deleteSuccess: Boolean = false,
     val shareSuccess: Boolean = false,
     val isConnected: Boolean = true
 )
@@ -65,7 +63,6 @@ class ActivityDetailViewModel(
 
   private val _activity = MutableStateFlow<Activity?>(null)
   private val _relatedActivities = MutableStateFlow<List<Activity>>(emptyList())
-  private val _deleteSuccess = MutableStateFlow(false)
   private val _shareSuccess = MutableStateFlow(false)
   private val _errorMsg = MutableStateFlow<String?>(null)
 
@@ -85,29 +82,22 @@ class ActivityDetailViewModel(
    * lifecycle management.
    */
   val uiState: StateFlow<ActivityDetailUIState> =
-      combine(
-              _activity,
-              _relatedActivities,
-              _deleteSuccess,
-              _shareSuccess,
-              _errorMsg,
-              _isConnected) { flows: Array<Any?> ->
-                @Suppress("UNCHECKED_CAST") val activity = flows[0] as Activity?
-                @Suppress("UNCHECKED_CAST") val relatedActivities = flows[1] as List<Activity>
-                val deleteSuccess = flows[2] as Boolean
-                val shareSuccess = flows[3] as Boolean
-                val errorMsg = flows[4] as String?
-                val isConnected = flows[5] as Boolean
+      combine(_activity, _relatedActivities, _shareSuccess, _errorMsg, _isConnected) {
+              flows: Array<Any?> ->
+            @Suppress("UNCHECKED_CAST") val activity = flows[0] as Activity?
+            @Suppress("UNCHECKED_CAST") val relatedActivities = flows[1] as List<Activity>
+            val shareSuccess = flows[2] as Boolean
+            val errorMsg = flows[3] as String?
+            val isConnected = flows[4] as Boolean
 
-                ActivityDetailUIState(
-                    activity = activity,
-                    relatedActivities = relatedActivities,
-                    isLoading = false,
-                    deleteSuccess = deleteSuccess,
-                    shareSuccess = shareSuccess,
-                    errorMsg = errorMsg,
-                    isConnected = isConnected)
-              }
+            ActivityDetailUIState(
+                activity = activity,
+                relatedActivities = relatedActivities,
+                isLoading = false,
+                shareSuccess = shareSuccess,
+                errorMsg = errorMsg,
+                isConnected = isConnected)
+          }
           .onStart { emit(ActivityDetailUIState(isLoading = true)) }
           .catch { e -> emit(ActivityDetailUIState(errorMsg = e.message, isLoading = false)) }
           .stateIn(
@@ -239,29 +229,6 @@ class ActivityDetailViewModel(
     } catch (e: Exception) {
       android.util.Log.e("ActivityDetailViewModel", "Failed to batch fetch user names", e)
       throw e
-    }
-  }
-
-  /**
-   * Deletes the activity.
-   *
-   * Checks connectivity before attempting deletion. Sets error message if offline.
-   */
-  fun deleteActivity() {
-    if (!_isConnected.value) {
-      _errorMsg.value = "Cannot delete activity while offline"
-      return
-    }
-
-    viewModelScope.launch {
-      try {
-        val result = repository.deleteActivity(activityId)
-        result.fold(
-            onSuccess = { _deleteSuccess.value = true },
-            onFailure = { e -> _errorMsg.value = "Failed to delete activity: ${e.message}" })
-      } catch (e: Exception) {
-        _errorMsg.value = "Failed to delete activity: ${e.message}"
-      }
     }
   }
 

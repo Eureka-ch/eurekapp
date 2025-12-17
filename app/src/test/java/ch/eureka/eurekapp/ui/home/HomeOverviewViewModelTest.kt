@@ -1,3 +1,4 @@
+/* Portions of this code and documentation were generated with the help of AI (ChatGPT 5.1). */
 package ch.eureka.eurekapp.ui.home
 
 import ch.eureka.eurekapp.model.data.meeting.Meeting
@@ -27,7 +28,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
-// portions of this code and documentation were generated with the help of AI (ChatGPT 5.1).
 /**
  * Tests for [HomeOverviewViewModel] verifying that it aggregates data from repositories correctly.
  */
@@ -55,13 +55,10 @@ class HomeOverviewViewModelTest {
   @After
   fun tearDown() {
     Dispatchers.resetMain()
-    taskRepository.reset()
-    projectRepository.reset()
-    userRepository.reset()
   }
 
   @Test
-  fun aggregatesTasksMeetingsAndProjects() = runTest {
+  fun homeOverviewViewModel_aggregatesTasksMeetingsAndProjects() = runTest {
     val now = System.currentTimeMillis()
     val projectA =
         Project(projectId = "proj-a", name = "Project A", lastUpdated = timestamp(now - 1000))
@@ -90,11 +87,8 @@ class HomeOverviewViewModelTest {
               status = MeetingStatus.SCHEDULED,
               datetime = timestamp(now + index * DAY))
         }
-    meetingRepository.setMeetingsForProject(
-        projectA.projectId, flowOf(meetings.filter { it.projectId == projectA.projectId }))
-    meetingRepository.setMeetingsForProject(
-        projectB.projectId, flowOf(meetings.filter { it.projectId == projectB.projectId }))
 
+    meetingRepository.setMeetingsForCurrentUser(meetings)
     projectRepository.setCurrentUserProjects(flowOf(listOf(projectA, projectB)))
     userRepository.setCurrentUser(flowOf(User(uid = "user-1", displayName = "Eureka User")))
 
@@ -112,14 +106,17 @@ class HomeOverviewViewModelTest {
     assertFalse(state.isLoading)
     assertEquals("Eureka User", state.currentUserName)
     assertEquals(listOf("Task 1", "Task 2", "Task 3"), state.upcomingTasks.map { it.title })
+
+    // Verify meetings are aggregated and sorted correctly
     assertEquals(3, state.upcomingMeetings.size)
     assertTrue(state.upcomingMeetings.all { it.status != MeetingStatus.COMPLETED })
+
     // Projects should be sorted by lastUpdated descending => Project B first
     assertEquals("Project B", state.recentProjects.first().name)
   }
 
   @Test
-  fun propagatesErrorsAndConnectivity() = runTest {
+  fun homeOverviewViewModel_propagatesErrorsAndConnectivity() = runTest {
     taskRepository.setCurrentUserTasks(flow { throw IllegalStateException("Task failure") })
     projectRepository.setCurrentUserProjects(flowOf(emptyList()))
     userRepository.setCurrentUser(flowOf(null))
@@ -149,6 +146,7 @@ class HomeOverviewViewModelTest {
     val viewModel =
         HomeOverviewViewModel(
             taskRepository, projectRepository, meetingRepository, userRepository, connectivityFlow)
+
     advanceUntilIdle()
     assertEquals("Project error", viewModel.uiState.value.error)
   }

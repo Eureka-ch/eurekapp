@@ -2,12 +2,16 @@
 package ch.eureka.eurekapp.ui.meeting
 
 import android.util.Log
+import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
+import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
+import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.map.Location
-import ch.eureka.eurekapp.model.map.LocationRepository
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -15,6 +19,9 @@ import java.time.LocalTime
 import java.time.ZoneId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -39,26 +46,37 @@ class CreateMeetingViewModelTest {
 
   private val testDispatcher = StandardTestDispatcher()
   private lateinit var viewModel: CreateMeetingViewModel
-  private lateinit var repositoryMock: MockCreateMeetingRepository
+  private lateinit var repositoryMock: MockMeetingRepository
   private lateinit var locationRepositoryMock: MockLocationRepository
+  private lateinit var projectRepositoryMock: MockProjectRepository
 
   private var currentUserId: String? = "test-user-id"
-
   private val futureDateTime: LocalDateTime = LocalDateTime.now().plusDays(1)
   private val pastDateTime: LocalDateTime = LocalDateTime.now().minusDays(1)
+
+  // Dummy project for testing
+  private val testProject = mockk<Project>(relaxed = true)
 
   @Before
   fun setup() {
     Dispatchers.setMain(testDispatcher)
-    repositoryMock = MockCreateMeetingRepository()
+    repositoryMock = MockMeetingRepository()
     locationRepositoryMock = MockLocationRepository()
+    projectRepositoryMock = MockProjectRepository()
+
+    // Setup mock project behavior
+    every { testProject.projectId } returns "project-123"
+    every { testProject.name } returns "Test Project"
+    // Mock members: current user + one other
+    every { testProject.memberIds } returns listOf("test-user-id", "other-user")
 
     mockkStatic(Log::class)
     every { Log.e(any(), any(), any()) } returns 0
 
     viewModel =
         CreateMeetingViewModel(
-            repository = repositoryMock,
+            meetingRepository = repositoryMock,
+            projectRepository = projectRepositoryMock,
             locationRepository = locationRepositoryMock,
             getCurrentUserId = { currentUserId })
 
@@ -71,9 +89,10 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun uiStateIsValidLogicIsCorrect() {
+  fun createMeetingViewModel_uiStateIsValidLogicIsCorrect() {
     var state =
         CreateMeetingUIState(
+            project = testProject,
             title = "Valid Title",
             duration = 10,
             date = futureDateTime.toLocalDate(),
@@ -82,37 +101,23 @@ class CreateMeetingViewModelTest {
     state =
         state.copy(
             format = MeetingFormat.VIRTUAL, meetingLink = "https://meet.google.com/abc-defg-hij")
+    assertTrue("State should be valid", state.isValid)
 
-    assertTrue(state.isValid)
+    assertFalse("State invalid without project", state.copy(project = null).isValid)
 
-    state = state.copy(title = "")
-    assertFalse(state.isValid)
-    state = state.copy(title = " ")
-    assertFalse(state.isValid)
+    assertFalse("State invalid with empty title", state.copy(title = "").isValid)
 
-    state = state.copy(title = "Valid Title", duration = 0)
-    assertFalse(state.isValid)
-    state = state.copy(duration = 4)
-    assertFalse(state.isValid)
+    assertFalse("State invalid with 0 duration", state.copy(duration = 0).isValid)
 
-    state =
-        state.copy(
-            duration = 10, date = pastDateTime.toLocalDate(), time = pastDateTime.toLocalTime())
-    assertFalse(state.isValid)
-
-    state =
-        state.copy(
-            title = "",
-            duration = 0,
-            date = pastDateTime.toLocalDate(),
-            time = pastDateTime.toLocalTime())
-    assertFalse(state.isValid)
+    state = state.copy(date = pastDateTime.toLocalDate(), time = pastDateTime.toLocalTime())
+    assertFalse("State invalid in past", state.isValid)
   }
 
   @Test
-  fun initialStateIsCorrect() {
+  fun createMeetingViewModel_initialStateIsCorrect() {
     val uiState = viewModel.uiState.value
 
+    assertNull(uiState.project)
     assertEquals("", uiState.title)
     assertEquals(LocalDate.now().plusDays(7), uiState.date)
     assertNotNull(uiState.time)
@@ -130,7 +135,7 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun clearErrorMsgSetsErrorMsgToNull() {
+  fun createMeetingViewModel_clearErrorMsgSetsErrorMsgToNull() {
     viewModel.setErrorMsg("An error")
     assertNotNull(viewModel.uiState.value.errorMsg)
 
@@ -139,77 +144,119 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun setErrorMsgUpdatesErrorMsg() {
+  fun createMeetingViewModel_setErrorMsgUpdatesErrorMsg() {
     val errorMessage = "This is a test error"
     viewModel.setErrorMsg(errorMessage)
     assertEquals(errorMessage, viewModel.uiState.value.errorMsg)
   }
 
   @Test
-  fun setTitleUpdatesTitle() {
+  fun createMeetingViewModel_setProjectUpdatesProject() {
+    assertNull(viewModel.uiState.value.project)
+    viewModel.setProject(testProject)
+    assertEquals(testProject, viewModel.uiState.value.project)
+  }
+
+  @Test
+  fun createMeetingViewModel_setTitleUpdatesTitle() {
     val newTitle = "My Meeting Title"
     viewModel.setTitle(newTitle)
     assertEquals(newTitle, viewModel.uiState.value.title)
   }
 
   @Test
-  fun setDateUpdatesDate() {
+  fun createMeetingViewModel_setDateUpdatesDate() {
     val newDate = LocalDate.of(2025, 10, 28)
     viewModel.setDate(newDate)
     assertEquals(newDate, viewModel.uiState.value.date)
   }
 
   @Test
-  fun setTimeUpdatesTime() {
+  fun createMeetingViewModel_setTimeUpdatesTime() {
     val newTime = LocalTime.of(14, 30)
     viewModel.setTime(newTime)
     assertEquals(newTime, viewModel.uiState.value.time)
   }
 
   @Test
-  fun setDurationUpdatesDuration() {
+  fun createMeetingViewModel_setDurationUpdatesDuration() {
     val newDuration = 45
     viewModel.setDuration(newDuration)
     assertEquals(newDuration, viewModel.uiState.value.duration)
   }
 
   @Test
-  fun setFormatUpdatesFormat() {
+  fun createMeetingViewModel_setFormatUpdatesFormat() {
     val newFormat = MeetingFormat.VIRTUAL
     viewModel.setFormat(newFormat)
     assertEquals(newFormat, viewModel.uiState.value.format)
   }
 
   @Test
-  fun setMeetingSavedUpdatesMeetingSaved() {
+  fun createMeetingViewModel_setMeetingSavedUpdatesMeetingSaved() {
     viewModel.setMeetingSaved()
     assertTrue(viewModel.uiState.value.meetingSaved)
   }
 
   @Test
-  fun touchTitleUpdatesHasTouchedTitle() {
+  fun createMeetingViewModel_touchTitleUpdatesHasTouchedTitle() {
     viewModel.touchTitle()
     assertTrue(viewModel.uiState.value.hasTouchedTitle)
   }
 
   @Test
-  fun touchDateUpdatesHasTouchedDate() {
+  fun createMeetingViewModel_touchDateUpdatesHasTouchedDate() {
     viewModel.touchDate()
     assertTrue(viewModel.uiState.value.hasTouchedDate)
   }
 
   @Test
-  fun touchTimeUpdatesHasTouchedTime() {
+  fun createMeetingViewModel_touchTimeUpdatesHasTouchedTime() {
     viewModel.touchTime()
     assertTrue(viewModel.uiState.value.hasTouchedTime)
   }
 
   @Test
-  fun createMeetingWhenStateIsInvalidSetsErrorAndReturns() {
-    viewModel.setTitle("")
+  fun createMeetingViewModel_setLocationUpdatesSelectedLocation() {
+    val location = Location(46.5197, 6.6323, "Lausanne")
+    viewModel.setLocation(location)
+    assertEquals(location, viewModel.uiState.value.selectedLocation)
+  }
+
+  @Test
+  fun createMeetingViewModel_loadProjectsPopulatesListOnSuccess() = runTest {
+    val projects = listOf(testProject, mockk(relaxed = true))
+    projectRepositoryMock.emitProjects(projects)
+
+    val job = launch { viewModel.loadProjects() }
+
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertFalse(viewModel.uiState.value.isLoadingProjects)
+    assertEquals(projects, viewModel.uiState.value.projects)
+    assertNull(viewModel.uiState.value.errorMsg)
+
+    job.cancel()
+  }
+
+  @Test
+  fun createMeetingViewModel_loadProjectsSetsErrorOnFailure() = runTest {
+    projectRepositoryMock.shouldThrow = true
+
+    viewModel.loadProjects()
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertFalse(viewModel.uiState.value.isLoadingProjects)
+    assertEquals("Mock project error", viewModel.uiState.value.errorMsg)
+  }
+
+  @Test
+  fun createMeetingViewModel_createMeetingWhenStateIsInvalidSetsErrorAndReturns() {
+    viewModel.setTitle("") // Invalid title
+    viewModel.setProject(testProject)
     assertFalse(viewModel.uiState.value.isValid)
 
-    viewModel.createMeeting("project-123")
+    viewModel.createMeeting()
 
     assertEquals("At least one field is not set", viewModel.uiState.value.errorMsg)
     assertFalse(viewModel.uiState.value.meetingSaved)
@@ -217,7 +264,8 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun createMeetingWhenTimeIsInPastSetsErrorAndReturns() {
+  fun createMeetingViewModel_createMeetingWhenTimeIsInPastSetsErrorAndReturns() {
+    viewModel.setProject(testProject)
     viewModel.setTitle("Valid Title")
     viewModel.setDuration(30)
     viewModel.setDate(pastDateTime.toLocalDate())
@@ -225,7 +273,7 @@ class CreateMeetingViewModelTest {
 
     assertFalse(viewModel.uiState.value.isValid)
 
-    viewModel.createMeeting("project-123")
+    viewModel.createMeeting()
 
     assertEquals("At least one field is not set", viewModel.uiState.value.errorMsg)
     assertFalse(viewModel.uiState.value.meetingSaved)
@@ -233,7 +281,8 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun createMeetingWhenUserNotLoggedInSetsErrorAndReturns() {
+  fun createMeetingViewModel_createMeetingWhenUserNotLoggedInSetsErrorAndReturns() {
+    viewModel.setProject(testProject)
     viewModel.setTitle("Valid Title")
     viewModel.setDuration(30)
     viewModel.setDate(futureDateTime.toLocalDate())
@@ -244,7 +293,7 @@ class CreateMeetingViewModelTest {
 
     currentUserId = null
 
-    viewModel.createMeeting("project-123")
+    viewModel.createMeeting()
 
     assertEquals("Not logged in", viewModel.uiState.value.errorMsg)
     assertFalse(viewModel.uiState.value.meetingSaved)
@@ -252,18 +301,33 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun createMeetingWhenValidRepositorySuccessSetsMeetingSaved() = runTest {
+  fun createMeetingViewModel_createMeetingWhenProjectNotSelectedSetsErrorAndReturns() {
+    viewModel.setTitle("Valid Title")
+    viewModel.setDuration(30)
+    viewModel.setDate(futureDateTime.toLocalDate())
+    viewModel.setTime(futureDateTime.toLocalTime())
+    viewModel.setFormat(MeetingFormat.VIRTUAL)
+
+    // Ensure project is null
+    assertNull(viewModel.uiState.value.project)
+
+    viewModel.createMeeting()
+    assertEquals("At least one field is not set", viewModel.uiState.value.errorMsg)
+  }
+
+  @Test
+  fun createMeetingViewModel_createMeetingWhenValidRepositorySuccessSetsMeetingSaved() = runTest {
     val title = "Successful Meeting"
     val date = futureDateTime.toLocalDate()
     val time = futureDateTime.toLocalTime()
     val duration = 60
-    val projectId = "project-success"
     val userId = "test-user-id"
     val meetingFormat = MeetingFormat.IN_PERSON
     val location = Location(1.0, 1.0, "Loc")
 
     val expectedInstant = LocalDateTime.of(date, time).atZone(ZoneId.systemDefault()).toInstant()
 
+    viewModel.setProject(testProject)
     viewModel.setTitle(title)
     viewModel.setDate(date)
     viewModel.setTime(time)
@@ -272,13 +336,11 @@ class CreateMeetingViewModelTest {
     viewModel.setLocation(location)
 
     assertTrue(viewModel.uiState.value.isValid)
-
     assertEquals(userId, currentUserId)
 
     repositoryMock.shouldSucceed = true
 
-    viewModel.createMeeting(projectId)
-
+    viewModel.createMeeting()
     testDispatcher.scheduler.advanceUntilIdle()
 
     assertTrue(viewModel.uiState.value.meetingSaved)
@@ -289,29 +351,25 @@ class CreateMeetingViewModelTest {
 
     val createdMeeting = repositoryMock.lastMeetingCreated
     assertNotNull(createdMeeting)
-    assertEquals(projectId, createdMeeting!!.projectId)
+    assertEquals(testProject.projectId, createdMeeting!!.projectId)
     assertEquals(title, createdMeeting.title)
     assertEquals(duration, createdMeeting.duration)
     assertEquals(MeetingStatus.OPEN_TO_VOTES, createdMeeting.status)
     assertEquals(userId, createdMeeting.createdBy)
     assertNotNull(createdMeeting.meetingID)
-    assertFalse(createdMeeting.meetingID.isBlank())
     assertEquals(location, createdMeeting.location)
+
+    assertEquals(listOf("test-user-id", "other-user"), createdMeeting.participantIds)
 
     assertEquals(1, createdMeeting.meetingProposals.size)
     val proposal = createdMeeting.meetingProposals[0]
 
     assertEquals(expectedInstant.epochSecond, proposal.dateTime.seconds)
-
-    assertEquals(1, proposal.votes.size)
-    val proposalVote = proposal.votes[0]
-
-    assertEquals(userId, proposalVote.userId)
-    assertEquals(listOf(meetingFormat), proposalVote.formatPreferences)
   }
 
   @Test
-  fun createMeetingWhenValidRepositoryFailureSetsErrorMsg() = runTest {
+  fun createMeetingViewModel_createMeetingWhenValidRepositoryFailureSetsErrorMsg() = runTest {
+    viewModel.setProject(testProject)
     viewModel.setTitle("Failed Meeting")
     viewModel.setDuration(15)
     viewModel.setDate(futureDateTime.toLocalDate())
@@ -320,45 +378,19 @@ class CreateMeetingViewModelTest {
     viewModel.setMeetingLink("https://meet.google.com/abc-defg-hij")
 
     assertTrue(viewModel.uiState.value.isValid)
-
-    assertEquals("test-user-id", currentUserId)
-
     repositoryMock.shouldSucceed = false
     repositoryMock.failureException = Exception("Database is down")
 
-    viewModel.createMeeting("project-fail")
-
+    viewModel.createMeeting()
     testDispatcher.scheduler.advanceUntilIdle()
 
     assertFalse(viewModel.uiState.value.meetingSaved)
     assertEquals("Meeting could not be created.", viewModel.uiState.value.errorMsg)
-
-    assertNotNull(repositoryMock.lastMeetingCreated)
   }
 
   @Test
-  fun createMeetingUiStateCopyWorksAsExpected() {
-    val originalState =
-        CreateMeetingUIState(title = "Original", duration = 10, hasTouchedDate = false)
-    val copiedState = originalState.copy(title = "Copied", hasTouchedDate = true)
-
-    assertEquals("Original", originalState.title)
-    assertEquals(10, originalState.duration)
-    assertFalse(originalState.hasTouchedDate)
-    assertEquals("Copied", copiedState.title)
-    assertEquals(10, copiedState.duration)
-    assertTrue(copiedState.hasTouchedDate)
-  }
-
-  @Test
-  fun setLocationUpdatesSelectedLocation() {
-    val location = Location(46.5197, 6.6323, "Lausanne")
-    viewModel.setLocation(location)
-    assertEquals(location, viewModel.uiState.value.selectedLocation)
-  }
-
-  @Test
-  fun uiStateIsValidWithInPersonFormatRequiresLocation() {
+  fun createMeetingViewModel_uiStateIsValidWithInPersonFormatRequiresLocation() {
+    viewModel.setProject(testProject)
     viewModel.setTitle("Meeting")
     viewModel.setDuration(30)
     viewModel.setDate(futureDateTime.toLocalDate())
@@ -374,7 +406,8 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun uiStateIsValidWithVirtualFormatDoesNotRequireLocation() {
+  fun createMeetingViewModel_uiStateIsValidWithVirtualFormatDoesNotRequireLocation() {
+    viewModel.setProject(testProject)
     viewModel.setTitle("Meeting")
     viewModel.setDuration(30)
     viewModel.setDate(futureDateTime.toLocalDate())
@@ -389,7 +422,7 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun setLocationQueryUpdatesQueryAndFetchesSuggestions() = runTest {
+  fun createMeetingViewModel_setLocationQueryUpdatesQueryAndFetchesSuggestions() = runTest {
     val query = "Geneva"
     val expectedSuggestions = listOf(Location(46.2, 6.1, "Geneva"))
     locationRepositoryMock.searchResults = expectedSuggestions
@@ -405,7 +438,7 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun setLocationQueryWithEmptyStringClearsSuggestions() = runTest {
+  fun createMeetingViewModel_setLocationQueryWithEmptyStringClearsSuggestions() = runTest {
     locationRepositoryMock.searchResults = listOf(Location(0.0, 0.0, "Old"))
 
     viewModel.setLocationQuery("Old")
@@ -415,7 +448,6 @@ class CreateMeetingViewModelTest {
     assertFalse(viewModel.uiState.value.locationSuggestions.isEmpty())
 
     viewModel.setLocationQuery("")
-
     testDispatcher.scheduler.runCurrent()
 
     assertEquals("", viewModel.uiState.value.locationQuery)
@@ -425,7 +457,7 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun setLocationQueryHandlesRepositoryException() = runTest {
+  fun createMeetingViewModel_setLocationQueryHandlesRepositoryException() = runTest {
     locationRepositoryMock.shouldThrow = true
 
     viewModel.setLocationQuery("Error City")
@@ -437,9 +469,10 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun createMeetingPassesLocationToRepository() = runTest {
+  fun createMeetingViewModel_createMeetingPassesLocationToRepository() = runTest {
     val location = Location(40.7, -74.0, "New York")
 
+    viewModel.setProject(testProject)
     viewModel.setTitle("Location Meeting")
     viewModel.setDuration(60)
     viewModel.setDate(futureDateTime.toLocalDate())
@@ -448,26 +481,70 @@ class CreateMeetingViewModelTest {
     viewModel.setLocation(location)
     repositoryMock.shouldSucceed = true
 
-    viewModel.createMeeting("proj-loc")
+    viewModel.createMeeting()
     testDispatcher.scheduler.advanceUntilIdle()
 
     assertTrue(viewModel.uiState.value.meetingSaved)
-
     val createdMeeting = repositoryMock.lastMeetingCreated
-    assertNotNull(createdMeeting)
     assertEquals(location, createdMeeting?.location)
   }
 }
 
-/** Mock implementation of LocationRepository for testing. */
-class MockLocationRepository : LocationRepository {
-  var searchResults: List<Location> = emptyList()
-  var shouldThrow: Boolean = false
+class MockMeetingRepository : MeetingRepository {
+  var lastMeetingCreated: Meeting? = null
+  var lastCreatorId: String? = null
+  var lastCreatorRole: MeetingRole? = null
+  var shouldSucceed = true
+  var failureException = Exception("Mock failure")
 
-  override suspend fun search(query: String): List<Location> {
-    if (shouldThrow) {
-      throw Exception("Mock location error")
+  override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> = flow {}
+
+  override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> = flow {}
+
+  override fun getMeetingsForTask(projectId: String, taskId: String): Flow<List<Meeting>> = flow {}
+
+  override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> = flow {}
+
+  override suspend fun createMeeting(
+      meeting: Meeting,
+      creatorId: String,
+      creatorRole: MeetingRole
+  ): Result<String> {
+    lastMeetingCreated = meeting
+    lastCreatorId = creatorId
+    lastCreatorRole = creatorRole
+    return if (shouldSucceed) {
+      Result.success("mock-meeting-id")
+    } else {
+      Result.failure(failureException)
     }
-    return searchResults
   }
+
+  override suspend fun updateMeeting(meeting: Meeting): Result<Unit> = Result.success(Unit)
+
+  override suspend fun deleteMeeting(projectId: String, meetingId: String): Result<Unit> =
+      Result.success(Unit)
+
+  override fun getParticipants(projectId: String, meetingId: String): Flow<List<Participant>> =
+      flow {}
+
+  override suspend fun addParticipant(
+      projectId: String,
+      meetingId: String,
+      userId: String,
+      role: MeetingRole
+  ): Result<Unit> = Result.success(Unit)
+
+  override suspend fun removeParticipant(
+      projectId: String,
+      meetingId: String,
+      userId: String
+  ): Result<Unit> = Result.success(Unit)
+
+  override suspend fun updateParticipantRole(
+      projectId: String,
+      meetingId: String,
+      userId: String,
+      role: MeetingRole
+  ): Result<Unit> = Result.success(Unit)
 }

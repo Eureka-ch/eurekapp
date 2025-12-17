@@ -1,5 +1,4 @@
-// Portions of this code were generated with the help of Grok, ChatGPT, and Claude (and Claude 4.5
-// Sonnet).
+/* Portions of this code were generated with the help of Grok, ChatGPT, and Claude (and Claude 4.5 Sonnet). */
 package ch.eureka.eurekapp.ui.meeting
 
 import android.content.Intent
@@ -34,6 +33,7 @@ import androidx.compose.material.icons.filled.HowToVote
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.VideoCall
 import androidx.compose.material.icons.filled.Warning
@@ -68,6 +68,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -95,6 +96,7 @@ import ch.eureka.eurekapp.utils.MeetingPlatform
 import coil.compose.AsyncImage
 import com.google.firebase.Timestamp
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import kotlinx.coroutines.flow.map
@@ -109,7 +111,7 @@ private fun getAlpha(isConnected: Boolean): Float = if (isConnected) 1f else 0.6
  * Test tags for MeetingDetailScreen composable.
  *
  * Provides semantic identifiers for UI testing with Compose UI Test framework. Each constant
- * represents a unique testTag applied to composables in MeetingDetailScreen, enabling reliable and
+ * represents a unique testTag applied to composable in MeetingDetailScreen, enabling reliable and
  * maintainable UI test assertions.
  */
 object MeetingDetailScreenTestTags {
@@ -119,6 +121,7 @@ object MeetingDetailScreenTestTags {
   const val ERROR_MSG = "ErrorMsg"
   const val MEETING_TITLE = "MeetingDetailTitle"
   const val MEETING_STATUS = "MeetingDetailStatus"
+  const val MEETING_PROJECT_NAME = "MeetingProjectName"
   const val MEETING_DATETIME = "MeetingDetailDateTime"
   const val MEETING_FORMAT = "MeetingDetailFormat"
   const val MEETING_LOCATION = "MeetingDetailLocation"
@@ -129,10 +132,6 @@ object MeetingDetailScreenTestTags {
   const val CREATOR_AVATAR = "CreatorAvatar"
   const val CREATOR_NAME = "CreatorName"
   const val CREATOR_LABEL = "CreatorLabel"
-  const val PARTICIPANTS_SECTION = "ParticipantsSection"
-  const val PARTICIPANT_ITEM = "ParticipantItem"
-  const val PARTICIPANT_NAME = "ParticipantName"
-  const val PARTICIPANT_ROLE = "ParticipantRole"
   const val ATTACHMENTS_SECTION = "AttachmentsSection"
   const val ATTACHMENT_ITEM = "AttachmentItem"
   const val NO_ATTACHMENTS_MESSAGE = "NoAttachmentsMessage"
@@ -162,14 +161,15 @@ object MeetingDetailScreenTestTags {
  * Data class representing all the actions than can be executed by buttons on the meeting detail
  * screen.
  *
- * @param onNavigateBack Callback to navigate back to the previous screen.
- * @param onJoinMeeting Callback when user clicks join meeting button.
- * @param onVoteForMeetingProposalClick Callback when the "Vote for meeting proposals" button is
+ * @property onNavigateBack Callback to navigate back to the previous screen.
+ * @property onJoinMeeting Callback when user clicks join meeting button.
+ * @property onVoteForMeetingProposalClick Callback when the "Vote for meeting proposals" button is
  *   clicked.
- * @param onRecordMeeting Callback when user clicks record button, receives projectId and meetingId.
- * @param onViewTranscript Callback when user clicks view transcript button, receives projectId and
+ * @property onRecordMeeting Callback when user clicks record button, receives projectId and
  *   meetingId.
- * @param onNavigateToMeeting Callback when user clicks navigate to meeting button.
+ * @property onViewTranscript Callback when user clicks view transcript button, receives projectId
+ *   and meetingId.
+ * @property onNavigateToMeeting Callback when user clicks navigate to meeting button.
  */
 data class MeetingDetailActionsConfig(
     val onNavigateBack: () -> Unit = {},
@@ -185,8 +185,8 @@ data class MeetingDetailActionsConfig(
  * Main composable for the meeting detail screen.
  *
  * Displays comprehensive information about a meeting including title, date/time, format,
- * location/link, participants, and attachments. Provides action buttons for joining, recording,
- * viewing transcripts, and deleting the meeting.
+ * location/link and attachments. Provides action buttons for joining, recording, viewing
+ * transcripts, and deleting the meeting.
  *
  * @param projectId The ID of the project containing the meeting.
  * @param meetingId The ID of the meeting to display.
@@ -233,6 +233,8 @@ fun MeetingDetailScreen(
     }
   }
 
+  val meetingProjectName = uiState.meetingProjectName
+
   Scaffold(
       modifier = Modifier.testTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN),
       topBar = {
@@ -256,66 +258,74 @@ fun MeetingDetailScreen(
             })
       },
       content = { padding ->
-        if (uiState.isLoading) {
-          LoadingScreen()
-        } else if (uiState.meeting == null) {
-          Text(
-              modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MESSAGE),
-              text =
-                  "There was an error while loading meetings : ${uiState.errorMsg ?: throw IllegalStateException("Error message should not be null if meeting is null.")}")
-        } else {
-          uiState.meeting?.let { meeting ->
-            MeetingDetailContent(
-                config =
-                    MeetingDetailContentConfig(
-                        meeting = meeting,
-                        creatorUser = uiState.creatorUser,
-                        attachmentsViewModel = attachmentsViewModel,
-                        editConfig =
-                            EditConfig(
-                                isEditMode = uiState.isEditMode,
-                                isSaving = uiState.isSaving,
-                                editTitle = uiState.editTitle,
-                                editDateTime = uiState.editDateTime,
-                                editDuration = uiState.editDuration,
-                                editLink = uiState.editLink,
-                                linkValidationError = uiState.linkValidationError,
-                                linkValidationWarning = uiState.linkValidationWarning,
-                                hasTouchedTitle = uiState.hasTouchedTitle,
-                                hasTouchedDateTime = uiState.hasTouchedDateTime,
-                                hasTouchedDuration = uiState.hasTouchedDuration,
-                                hasTouchedLink = uiState.hasTouchedLink),
-                        actionsConfig =
-                            MeetingDetailContentActionsConfig(
-                                onJoinMeeting = actionsConfig.onJoinMeeting,
-                                onRecordMeeting = actionsConfig.onRecordMeeting,
-                                onViewTranscript = actionsConfig.onViewTranscript,
-                                onDeleteMeeting = { showDeleteDialog = true },
-                                onVoteForMeetingProposals = { isConnected ->
-                                  actionsConfig.onVoteForMeetingProposalClick(
-                                      projectId, meetingId, isConnected)
-                                },
-                                onEditMeeting = { isConnected ->
-                                  viewModel.toggleEditMode(meeting, isConnected)
-                                },
-                                onSaveMeeting = { isConnected ->
-                                  viewModel.saveMeetingChanges(meeting, isConnected)
-                                },
-                                onCancelEdit = { viewModel.toggleEditMode(null) },
-                                onUpdateTitle = viewModel::updateEditTitle,
-                                onUpdateDateTime = viewModel::updateEditDateTime,
-                                onUpdateDuration = viewModel::updateEditDuration,
-                                onUpdateLink = viewModel::updateEditLink,
-                                onTouchTitle = viewModel::touchTitle,
-                                onTouchDateTime = viewModel::touchDateTime,
-                                onTouchDuration = viewModel::touchDuration,
-                                onTouchLink = viewModel::touchLink,
-                                onNavigateToMeeting = actionsConfig.onNavigateToMeeting),
-                        isConnected = uiState.isConnected,
-                        isCreator = uiState.isCreator),
-                viewModel = viewModel,
-                modifier = Modifier.padding(padding))
-          } ?: ErrorScreen(message = uiState.errorMsg ?: "Meeting not found")
+        when {
+          uiState.isLoading -> {
+            LoadingScreen()
+          }
+          uiState.meeting == null -> {
+            Text(
+                modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MESSAGE),
+                text =
+                    "There was an error while loading meetings : ${uiState.errorMsg ?: throw IllegalStateException("Error message should not be null if meeting is null.")}")
+          }
+          meetingProjectName == null -> {
+            ErrorScreen(message = uiState.errorMsg ?: "Meeting project name not found")
+          }
+          else -> {
+            uiState.meeting?.let { meeting ->
+              MeetingDetailContent(
+                  config =
+                      MeetingDetailContentConfig(
+                          meeting = meeting,
+                          meetingProjectName = meetingProjectName,
+                          creatorUser = uiState.creatorUser,
+                          attachmentsViewModel = attachmentsViewModel,
+                          editConfig =
+                              EditConfig(
+                                  isEditMode = uiState.isEditMode,
+                                  isSaving = uiState.isSaving,
+                                  editTitle = uiState.editTitle,
+                                  editDateTime = uiState.editDateTime,
+                                  editDuration = uiState.editDuration,
+                                  editLink = uiState.editLink,
+                                  linkValidationError = uiState.linkValidationError,
+                                  linkValidationWarning = uiState.linkValidationWarning,
+                                  hasTouchedTitle = uiState.hasTouchedTitle,
+                                  hasTouchedDateTime = uiState.hasTouchedDateTime,
+                                  hasTouchedDuration = uiState.hasTouchedDuration,
+                                  hasTouchedLink = uiState.hasTouchedLink),
+                          actionsConfig =
+                              MeetingDetailContentActionsConfig(
+                                  onJoinMeeting = actionsConfig.onJoinMeeting,
+                                  onRecordMeeting = actionsConfig.onRecordMeeting,
+                                  onViewTranscript = actionsConfig.onViewTranscript,
+                                  onDeleteMeeting = { showDeleteDialog = true },
+                                  onVoteForMeetingProposals = { isConnected ->
+                                    actionsConfig.onVoteForMeetingProposalClick(
+                                        projectId, meetingId, isConnected)
+                                  },
+                                  onEditMeeting = { isConnected ->
+                                    viewModel.toggleEditMode(meeting, isConnected)
+                                  },
+                                  onSaveMeeting = { isConnected ->
+                                    viewModel.saveMeetingChanges(meeting, isConnected)
+                                  },
+                                  onCancelEdit = { viewModel.toggleEditMode(null) },
+                                  onUpdateTitle = viewModel::updateEditTitle,
+                                  onUpdateDateTime = viewModel::updateEditDateTime,
+                                  onUpdateDuration = viewModel::updateEditDuration,
+                                  onUpdateLink = viewModel::updateEditLink,
+                                  onTouchTitle = viewModel::touchTitle,
+                                  onTouchDateTime = viewModel::touchDateTime,
+                                  onTouchDuration = viewModel::touchDuration,
+                                  onTouchLink = viewModel::touchLink,
+                                  onNavigateToMeeting = actionsConfig.onNavigateToMeeting),
+                          isConnected = uiState.isConnected,
+                          isCreator = uiState.isCreator),
+                  viewModel = viewModel,
+                  modifier = Modifier.padding(padding))
+            } ?: ErrorScreen(message = uiState.errorMsg ?: "Meeting not found")
+          }
         }
       })
 
@@ -368,27 +378,27 @@ private fun ErrorScreen(message: String) {
  * Data class representing all the actions that can be executed by the buttons in the detail
  * content.
  *
- * @param onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
+ * @property onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
  *   link.
- * @param onRecordMeeting Callback invoked when user clicks record meeting button, receives
+ * @property onRecordMeeting Callback invoked when user clicks record meeting button, receives
  *   projectId and meetingId.
- * @param onViewTranscript Callback invoked when user clicks view transcript button, receives
+ * @property onViewTranscript Callback invoked when user clicks view transcript button, receives
  *   projectId and meetingId.
- * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
- * @param onVoteForMeetingProposals Callback invoked when user votes for meeting proposals.
- * @param onEditMeeting Callback invoked when user clicks edit meeting button.
- * @param onSaveMeeting Callback invoked when user saves meeting changes, receives connectivity
+ * @property onDeleteMeeting Callback invoked when user clicks delete meeting button.
+ * @property onVoteForMeetingProposals Callback invoked when user votes for meeting proposals.
+ * @property onEditMeeting Callback invoked when user clicks edit meeting button.
+ * @property onSaveMeeting Callback invoked when user saves meeting changes, receives connectivity
  *   status.
- * @param onCancelEdit Callback invoked when user cancels edit mode.
- * @param onUpdateTitle Callback invoked when edit title changes.
- * @param onUpdateDateTime Callback invoked when edit date/time changes.
- * @param onUpdateDuration Callback invoked when edit duration changes.
- * @param onUpdateLink Callback invoked when edit link changes.
- * @param onTouchTitle Callback invoked when title field is first touched.
- * @param onTouchDateTime Callback invoked when date/time field is first touched.
- * @param onTouchDuration Callback invoked when duration field is first touched.
- * @param onTouchLink Callback invoked when link field is first touched.
- * @param onNavigateToMeeting Callback invoked when user clicks navigate to meeting button.
+ * @property onCancelEdit Callback invoked when user cancels edit mode.
+ * @property onUpdateTitle Callback invoked when edit title changes.
+ * @property onUpdateDateTime Callback invoked when edit date/time changes.
+ * @property onUpdateDuration Callback invoked when edit duration changes.
+ * @property onUpdateLink Callback invoked when edit link changes.
+ * @property onTouchTitle Callback invoked when title field is first touched.
+ * @property onTouchDateTime Callback invoked when date/time field is first touched.
+ * @property onTouchDuration Callback invoked when duration field is first touched.
+ * @property onTouchLink Callback invoked when link field is first touched.
+ * @property onNavigateToMeeting Callback invoked when user clicks navigate to meeting button.
  */
 data class MeetingDetailContentActionsConfig(
     val onJoinMeeting: (String, Boolean) -> Unit,
@@ -413,15 +423,15 @@ data class MeetingDetailContentActionsConfig(
 /**
  * Configuration for edit mode state.
  *
- * @param isEditMode Whether the screen is in edit mode.
- * @param isSaving Whether a save operation is in progress.
- * @param editTitle The title being edited.
- * @param editDateTime The date/time being edited.
- * @param editDuration The duration being edited.
- * @param editLink The meeting link being edited (for VIRTUAL meetings).
- * @param linkValidationError The error message for link validation, null if valid.
- * @param linkValidationWarning The warning message for link validation, null if no warning.
- * @param hasTouchedLink Whether the link field has been touched.
+ * @property isEditMode Whether the screen is in edit mode.
+ * @property isSaving Whether a save operation is in progress.
+ * @property editTitle The title being edited.
+ * @property editDateTime The date/time being edited.
+ * @property editDuration The duration being edited.
+ * @property editLink The meeting link being edited (for VIRTUAL meetings).
+ * @property linkValidationError The error message for link validation, null if valid.
+ * @property linkValidationWarning The warning message for link validation, null if no warning.
+ * @property hasTouchedLink Whether the link field has been touched.
  */
 data class EditConfig(
     val isEditMode: Boolean,
@@ -441,16 +451,16 @@ data class EditConfig(
 /**
  * Configuration for action button callbacks.
  *
- * @param onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
+ * @property onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
  *   link.
- * @param onRecordMeeting Callback invoked when user clicks record meeting button, receives
+ * @property onRecordMeeting Callback invoked when user clicks record meeting button, receives
  *   projectId and meetingId.
- * @param onViewTranscript Callback invoked when user clicks view transcript button, receives
+ * @property onViewTranscript Callback invoked when user clicks view transcript button, receives
  *   projectId and meetingId.
- * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
- * @param onVoteForMeetingProposals Callback invoked when user votes for meeting proposals.
- * @param onEditMeeting Callback invoked when user clicks edit meeting button.
- * @param onNavigateToMeeting Callback invoked when user clicks navigate to meeting button.
+ * @property onDeleteMeeting Callback invoked when user clicks delete meeting button.
+ * @property onVoteForMeetingProposals Callback invoked when user votes for meeting proposals.
+ * @property onEditMeeting Callback invoked when user clicks edit meeting button.
+ * @property onNavigateToMeeting Callback invoked when user clicks navigate to meeting button.
  */
 data class ActionButtonsConfig(
     val onJoinMeeting: (String, Boolean) -> Unit,
@@ -465,16 +475,18 @@ data class ActionButtonsConfig(
 /**
  * Configuration for MeetingDetailContent composable.
  *
- * @param meeting The meeting to display.
- * @param creatorUser The user information of the meeting creator.
- * @param editConfig Configuration for edit mode state.
- * @param actionsConfig Actions that can be executed by buttons in the detail content.
- * @param attachmentsViewModel ViewModel for handling attachments.
- * @param isConnected Whether the device is connected to the internet.
- * @param isCreator Whether the current user is the creator of the meeting.
+ * @property meeting The meeting.
+ * @property meetingProjectName The name of the project the meeting is into.
+ * @property creatorUser The user information of the meeting creator.
+ * @property editConfig Configuration for edit mode state.
+ * @property actionsConfig Actions that can be executed by buttons in the detail content.
+ * @property attachmentsViewModel ViewModel for handling attachments.
+ * @property isConnected Whether the device is connected to the internet.
+ * @property isCreator Whether the current user is the creator of the meeting.
  */
 data class MeetingDetailContentConfig(
     val meeting: Meeting,
+    val meetingProjectName: String,
     val creatorUser: User?,
     val editConfig: EditConfig,
     val actionsConfig: MeetingDetailContentActionsConfig,
@@ -505,7 +517,6 @@ private fun MeetingDetailContent(
 
         item {
           if (config.editConfig.isEditMode) {
-            // ppbbbb
             EditableMeetingInfoCard(
                 config =
                     EditableMeetingInfoCardConfig(
@@ -530,7 +541,8 @@ private fun MeetingDetailContent(
                         onTouchDuration = config.actionsConfig.onTouchDuration,
                         onTouchLink = config.actionsConfig.onTouchLink))
           } else {
-            MeetingInformationCard(meeting = config.meeting)
+            MeetingInformationCard(
+                meeting = config.meeting, meetingProjectName = config.meetingProjectName)
           }
         }
 
@@ -560,10 +572,10 @@ private fun MeetingDetailContent(
                         onDeleteMeeting = config.actionsConfig.onDeleteMeeting,
                         onVoteForMeetingProposals = config.actionsConfig.onVoteForMeetingProposals,
                         onEditMeeting = config.actionsConfig.onEditMeeting,
-                        onNavigateToMeeting = config.actionsConfig.onNavigateToMeeting),
+                        onNavigateToMeeting = config.actionsConfig.onNavigateToMeeting,
+                    ),
                 isConnected = config.isConnected,
-                isCreator = config.isCreator,
-            )
+                isCreator = config.isCreator)
           }
         }
 
@@ -620,9 +632,10 @@ private fun MeetingHeader(meeting: Meeting) {
  * Card displaying meeting information (date, time, format, location/link).
  *
  * @param meeting The meeting to display information for.
+ * @param meetingProjectName The name of the project in which the meeting is.
  */
 @Composable
-private fun MeetingInformationCard(meeting: Meeting) {
+private fun MeetingInformationCard(meeting: Meeting, meetingProjectName: String) {
   Card(
       modifier = Modifier.fillMaxWidth(),
       shape = RoundedCornerShape(16.dp),
@@ -636,12 +649,22 @@ private fun MeetingInformationCard(meeting: Meeting) {
 
               HorizontalDivider()
 
+              MeetingProjectNameInfo(projectName = meetingProjectName)
               MeetingDateTimeInfo(meeting)
               MeetingFormatInfo(meeting)
               MeetingLocationInfo(meeting)
               MeetingLinkInfo(meeting)
             }
       }
+}
+
+@Composable
+private fun MeetingProjectNameInfo(projectName: String) {
+  InfoRow(
+      icon = Icons.Default.RocketLaunch,
+      label = "Project",
+      value = projectName,
+      testTag = MeetingDetailScreenTestTags.MEETING_PROJECT_NAME)
 }
 
 @Composable
@@ -772,15 +795,6 @@ data class EditableMeetingInfoCardConfig(
  * @param config The configuration containing editable field values, state flags, and callbacks for
  *   change and touch events.
  */
-/**
- * Editable card displaying meeting information in edit mode.
- *
- * Provides editable input fields for meeting title, date/time, and duration, using configuration
- * data supplied through [EditableMeetingInfoCardConfig].
- *
- * @param config The configuration containing editable field values, state flags, and callbacks for
- *   change and touch events.
- */
 @Composable
 private fun EditableMeetingInfoCard(config: EditableMeetingInfoCardConfig) {
   // Convert Timestamp to LocalDate and LocalTime
@@ -855,9 +869,7 @@ private fun EditableDateTimeField(
         tag = "EditMeetingDate",
         onDateSelected = { newDate ->
           val newDateTime =
-              java.time.LocalDateTime.of(newDate, editTime)
-                  .atZone(ZoneId.systemDefault())
-                  .toInstant()
+              LocalDateTime.of(newDate, editTime).atZone(ZoneId.systemDefault()).toInstant()
           config.onDateTimeChange(Timestamp(newDateTime.epochSecond, newDateTime.nano))
         },
         onDateTouched = { config.onTouchDateTime() })
@@ -870,9 +882,7 @@ private fun EditableDateTimeField(
         tag = "EditMeetingTime",
         onTimeSelected = { newTime ->
           val newDateTime =
-              java.time.LocalDateTime.of(editDate, newTime)
-                  .atZone(ZoneId.systemDefault())
-                  .toInstant()
+              LocalDateTime.of(editDate, newTime).atZone(ZoneId.systemDefault()).toInstant()
           config.onDateTimeChange(Timestamp(newDateTime.epochSecond, newDateTime.nano))
         },
         onTimeTouched = { config.onTouchDateTime() })
@@ -887,7 +897,7 @@ private fun EditableDateTimeField(
 
     if (config.editDateTime != null &&
         config.hasTouchedDateTime &&
-        java.time.LocalDateTime.of(editDate, editTime).isBefore(java.time.LocalDateTime.now())) {
+        LocalDateTime.of(editDate, editTime).isBefore(LocalDateTime.now())) {
       Text(
           text = "Meeting should be scheduled in the future.",
           color = MaterialTheme.colorScheme.error,
@@ -998,7 +1008,7 @@ private fun EditableLinkField(config: EditableMeetingInfoCardConfig) {
  */
 @Composable
 fun InfoRow(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     label: String,
     value: String,
     testTag: String,

@@ -1,6 +1,5 @@
 /*
-Note: This file was co-authored by Claude Code and Claude 4.5 Sonnet.
-Note: This file was co-authored by Grok.
+Note: This file was co-authored by Claude Code, Claude 4.5 Sonnet, Gemini and Grok.
 Portions of the code in this file are inspired by the Bootcamp solution B3 provided by the SwEnt staff.
 */
 package ch.eureka.eurekapp.ui.meeting
@@ -14,11 +13,13 @@ import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
+import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.utils.MeetingLinkValidator
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -35,6 +36,8 @@ import kotlinx.coroutines.launch
  * Data class to represent the UI state of the meeting detail screen.
  *
  * @property meeting The detailed meeting information, or null if loading or not found.
+ * @property meetingProjectName The name of the project in which the meeting was created, or null if
+ *   loading or not found.
  * @property creatorUser User information of the meeting creator, or null if not found.
  * @property errorMsg An error message to display, or null if there is no error.
  * @property isLoading Whether a data loading operation is in progress.
@@ -53,6 +56,7 @@ import kotlinx.coroutines.launch
  */
 data class MeetingDetailUIState(
     val meeting: Meeting? = null,
+    val meetingProjectName: String? = null,
     val creatorUser: User? = null,
     val errorMsg: String? = null,
     val isLoading: Boolean = false,
@@ -83,6 +87,7 @@ data class MeetingDetailUIState(
  * @property projectId The ID of the project containing the meeting.
  * @property meetingId The ID of the meeting to display.
  * @property repository The repository for meeting data operations.
+ * @property projectRepository The repository for project data operations.
  * @property userRepository The repository for user data operations.
  * @property connectivityObserver The connectivity observer.
  */
@@ -90,10 +95,11 @@ class MeetingDetailViewModel(
     private val projectId: String,
     private val meetingId: String,
     private val repository: MeetingRepository = RepositoriesProvider.meetingRepository,
+    private val projectRepository: ProjectRepository = RepositoriesProvider.projectRepository,
     private val userRepository: UserRepository = RepositoriesProvider.userRepository,
     private val connectivityObserver: ConnectivityObserver =
         ConnectivityObserverProvider.connectivityObserver,
-    private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
+    getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
 ) : ViewModel() {
 
   private val userId = getCurrentUserId()
@@ -194,6 +200,7 @@ class MeetingDetailViewModel(
    *
    * @property meeting The detailed meeting information.
    * @property creatorUser User information of the meeting creator.
+   * @property meetingProjectName The name of the project.
    * @property editState The edit state.
    * @property saveState The save state.
    * @property touchState The touch state.
@@ -201,6 +208,7 @@ class MeetingDetailViewModel(
   private data class CombinedState(
       val meeting: Meeting?,
       val creatorUser: User?,
+      val meetingProjectName: String?,
       val editState: EditState,
       val saveState: SaveState,
       val touchState: TouchState
@@ -215,6 +223,7 @@ class MeetingDetailViewModel(
    * Validates all meeting fields before displaying - if any required field is invalid, shows an
    * error message instead of displaying potentially corrupted data.
    */
+  @OptIn(ExperimentalCoroutinesApi::class)
   val uiState: StateFlow<MeetingDetailUIState> =
       combine(
               combine(
@@ -225,6 +234,7 @@ class MeetingDetailViewModel(
                       flowOf(meeting to null)
                     }
                   },
+                  projectRepository.getProjectById(projectId),
                   combine(_deleteSuccess, _errorMsg, _isEditMode, _editTitle, _editDateTime) {
                       deleteSuccess,
                       errorMsg,
@@ -258,18 +268,21 @@ class MeetingDetailViewModel(
                       _hasTouchedDuration,
                       _hasTouchedLink) { title, dateTime, duration, link ->
                         TouchState(title, dateTime, duration, link)
-                      }) { meetingWithCreator, editState, saveState, touchState ->
+                      }) { meetingWithCreator, project, editState, saveState, touchState ->
                     CombinedState(
-                        meetingWithCreator.first,
-                        meetingWithCreator.second,
-                        editState,
-                        saveState,
-                        touchState)
+                        meeting = meetingWithCreator.first,
+                        creatorUser = meetingWithCreator.second,
+                        meetingProjectName = project?.name,
+                        editState = editState,
+                        saveState = saveState,
+                        touchState = touchState)
                   },
               _isConnected) { combined, isConnected ->
                 val validationError = validateMeeting(combined.meeting)
                 MeetingDetailUIState(
                     meeting = if (validationError == null) combined.meeting else null,
+                    meetingProjectName =
+                        if (validationError == null) combined.meetingProjectName else null,
                     creatorUser = combined.creatorUser,
                     isLoading = false,
                     errorMsg = combined.editState.errorMsg ?: validationError,

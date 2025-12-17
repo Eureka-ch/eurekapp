@@ -28,15 +28,8 @@ open class MeetingRepositoryMock : MeetingRepository {
     return flow { emit(listOf(meeting)) }
   }
 
-  override fun getMeetingsForCurrentUser(
-      projectId: String,
-      skipCache: Boolean
-  ): Flow<List<Meeting>> {
-    val meeting =
-        Meeting(
-            projectId = projectId,
-        )
-    return flow { emit(listOf(meeting)) }
+  override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> {
+    return _meetings
   }
 
   override suspend fun createMeeting(
