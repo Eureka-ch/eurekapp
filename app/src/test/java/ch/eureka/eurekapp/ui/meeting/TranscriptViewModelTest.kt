@@ -58,7 +58,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `initial state is loading`() = runTest {
+  fun transcriptViewModel_initialStateIsLoading() = runTest {
     val meeting = createTestMeeting(audioUrl = audioUrl)
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
 
@@ -75,7 +75,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `shows error when meeting not found`() = runTest {
+  fun transcriptViewModel_showsErrorWhenMeetingNotFound() = runTest {
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(null)
 
     viewModel =
@@ -93,7 +93,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `shows error when no audio recording found`() = runTest {
+  fun transcriptViewModel_showsErrorWhenNoAudioRecordingFound() = runTest {
     val meeting = createTestMeeting(audioUrl = null)
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
 
@@ -112,7 +112,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `loads meeting with audio successfully`() = runTest {
+  fun transcriptViewModel_loadsMeetingWithAudioSuccessfully() = runTest {
     val meeting = createTestMeeting(audioUrl = audioUrl)
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
 
@@ -133,7 +133,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `loads meeting with transcript successfully`() = runTest {
+  fun transcriptViewModel_loadsMeetingWithTranscriptSuccessfully() = runTest {
     val meeting = createTestMeeting(audioUrl = audioUrl, transcriptId = transcriptId)
     val transcript =
         AudioTranscription(
@@ -165,7 +165,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `clearErrorMsg clears error message`() = runTest {
+  fun transcriptViewModel_clearErrorMsgClearsErrorMessage() = runTest {
     val meeting = createTestMeeting(audioUrl = null)
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
 
@@ -190,7 +190,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `generateTranscript fails when no audio url available`() = runTest {
+  fun transcriptViewModel_generateTranscriptFailsWhenNoAudioUrlAvailable() = runTest {
     val meeting = createTestMeeting(audioUrl = null)
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
 
@@ -211,7 +211,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `generateTranscript with valid audio url does not throw`() = runTest {
+  fun transcriptViewModel_generateTranscriptWithValidAudioUrlDoesNotThrow() = runTest {
     val meeting = createTestMeeting(audioUrl = audioUrl)
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
     coEvery { speechToTextRepository.transcribeAudio(any(), any(), any(), any()) } returns
@@ -233,7 +233,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `generateTranscript with failure does not update meeting`() = runTest {
+  fun transcriptViewModel_generateTranscriptWithFailureDoesNotUpdateMeeting() = runTest {
     val meeting = createTestMeeting(audioUrl = audioUrl)
     var updateCalled = false
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
@@ -262,7 +262,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `generateSummary with no transcript does not call chatbot`() = runTest {
+  fun transcriptViewModel_generateSummaryWithNoTranscriptDoesNotCallChatbot() = runTest {
     val meeting = createTestMeeting(audioUrl = audioUrl)
     var chatbotCalled = false
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
@@ -289,7 +289,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `generateSummary with transcript text does not throw`() = runTest {
+  fun transcriptViewModel_generateSummaryWithTranscriptTextDoesNotThrow() = runTest {
     val meeting = createTestMeeting(audioUrl = audioUrl, transcriptId = transcriptId)
     val transcript =
         AudioTranscription(
@@ -321,7 +321,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `transcript with pending status does not show text`() = runTest {
+  fun transcriptViewModel_transcriptWithPendingStatusDoesNotShowText() = runTest {
     val meeting = createTestMeeting(audioUrl = audioUrl, transcriptId = transcriptId)
     val transcript =
         AudioTranscription(
@@ -352,7 +352,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `transcript with failed status shows error`() = runTest {
+  fun transcriptViewModel_transcriptWithFailedStatusShowsError() = runTest {
     val meeting = createTestMeeting(audioUrl = audioUrl, transcriptId = transcriptId)
     val transcript =
         AudioTranscription(

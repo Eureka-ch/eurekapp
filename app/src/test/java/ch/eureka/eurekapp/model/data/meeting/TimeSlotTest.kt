@@ -12,7 +12,7 @@ import org.junit.Test
 class TimeSlotTest {
 
   @Test
-  fun testDefaultConstructorValues() {
+  fun timeSlot_defaultConstructorValues() {
     val slot = TimeSlot()
 
     assertNotNull(slot.startTime)
@@ -20,7 +20,7 @@ class TimeSlotTest {
   }
 
   @Test
-  fun testFullConstructorAndProperties() {
+  fun timeSlot_fullConstructorAndProperties() {
     val start = Timestamp.now()
     val end = Timestamp(start.seconds + 3600, start.nanoseconds) // 1 hour later
 
@@ -31,7 +31,7 @@ class TimeSlotTest {
   }
 
   @Test
-  fun testCopyAndEquality() {
+  fun timeSlot_copyAndEquality() {
     val start = Timestamp.now()
     val end = Timestamp(start.seconds + 1800, start.nanoseconds)
     val slot1 = TimeSlot(start, end)
@@ -45,7 +45,7 @@ class TimeSlotTest {
   }
 
   @Test
-  fun testToStringAndComponents() {
+  fun timeSlot_toStringAndComponents() {
     val start = Timestamp.now()
     val end = Timestamp(start.seconds + 3600, start.nanoseconds)
     val slot = TimeSlot(start, end)
@@ -59,7 +59,7 @@ class TimeSlotTest {
   }
 
   @Test
-  fun testFormatTimeSlot() {
+  fun timeSlot_formatTimeSlot() {
     val start = Timestamp.now()
     val end = Timestamp(start.seconds + 3600, start.nanoseconds) // 1 hour later
     val slot = TimeSlot(start, end)

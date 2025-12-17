@@ -139,7 +139,7 @@ class HomeOverviewViewModelTest {
   }
 
   @Test
-  fun projectsFlow_catchBlock_handlesError() = runTest {
+  fun homeOverviewViewModel_projectsFlowCatchBlockHandlesError() = runTest {
     projectRepository.setCurrentUserProjects(flow { throw IllegalStateException("Project error") })
     userRepository.setCurrentUser(flowOf(null))
     taskRepository.setCurrentUserTasks(flowOf(emptyList()))

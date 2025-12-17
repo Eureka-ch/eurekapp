@@ -24,7 +24,7 @@ class MeetingProposalVoteTest {
   }
 
   @Test
-  fun testDefaultConstructorValues() {
+  fun meetingProposalVote_defaultConstructorValues() {
     val defaultVote = MeetingProposalVote()
 
     assertEquals("User ID should be an empty string by default", "", defaultVote.userId)
@@ -34,13 +34,13 @@ class MeetingProposalVoteTest {
   }
 
   @Test
-  fun testParameterizedConstructorAndGetters() {
+  fun meetingProposalVote_parameterizedConstructorAndGetters() {
     assertEquals(testUserId, vote.userId)
     assertEquals(testPreferences, vote.formatPreferences)
   }
 
   @Test
-  fun testEqualsForIdenticalObjects() {
+  fun meetingProposalVote_equalsForIdenticalObjects() {
     val vote1 = MeetingProposalVote(testUserId, testPreferences)
     val vote2 = MeetingProposalVote(testUserId, testPreferences)
 
@@ -48,7 +48,7 @@ class MeetingProposalVoteTest {
   }
 
   @Test
-  fun testEqualsForDifferentObjects() {
+  fun meetingProposalVote_equalsForDifferentObjects() {
     val differentVoteId = MeetingProposalVote("user-456", testPreferences)
     val differentVotePrefs = MeetingProposalVote(testUserId, listOf(MeetingFormat.VIRTUAL))
 
@@ -58,7 +58,7 @@ class MeetingProposalVoteTest {
   }
 
   @Test
-  fun testHashCodeForEqualObjects() {
+  fun meetingProposalVote_hashCodeForEqualObjects() {
     val vote1 = MeetingProposalVote(testUserId, testPreferences)
     val vote2 = MeetingProposalVote(testUserId, testPreferences)
 
@@ -67,7 +67,7 @@ class MeetingProposalVoteTest {
   }
 
   @Test
-  fun testHashCodeForUnequalObjects() {
+  fun meetingProposalVote_hashCodeForUnequalObjects() {
     val differentVote = MeetingProposalVote("user-456", testPreferences)
 
     assertNotEquals(
@@ -77,7 +77,7 @@ class MeetingProposalVoteTest {
   }
 
   @Test
-  fun testToStringFormatting() {
+  fun meetingProposalVote_toStringFormatting() {
     val voteString = vote.toString()
 
     assertTrue(voteString.startsWith("MeetingProposalVote("))
@@ -87,7 +87,7 @@ class MeetingProposalVoteTest {
   }
 
   @Test
-  fun testCopyWithNoChanges() {
+  fun meetingProposalVote_copyWithNoChanges() {
     val copiedVote = vote.copy()
 
     assertEquals("Copied object should be equal to the original", vote, copiedVote)
@@ -95,7 +95,7 @@ class MeetingProposalVoteTest {
   }
 
   @Test
-  fun testCopyWithModifiedUserId() {
+  fun meetingProposalVote_copyWithModifiedUserId() {
     val newUserId = "new-user-789"
     val copiedVote = vote.copy(userId = newUserId)
 
@@ -104,7 +104,7 @@ class MeetingProposalVoteTest {
   }
 
   @Test
-  fun testCopyWithModifiedFormatPreferences() {
+  fun meetingProposalVote_copyWithModifiedFormatPreferences() {
     val newPrefs = listOf(MeetingFormat.IN_PERSON)
     val copiedVote = vote.copy(formatPreferences = newPrefs)
 
@@ -113,7 +113,7 @@ class MeetingProposalVoteTest {
   }
 
   @Test
-  fun testDestructuringDeclarations() {
+  fun meetingProposalVote_destructuringDeclarations() {
     val (id, prefs) = vote
 
     assertEquals("component1() should return userId", testUserId, id)

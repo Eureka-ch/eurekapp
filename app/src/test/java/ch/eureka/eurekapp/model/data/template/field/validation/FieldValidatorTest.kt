@@ -13,7 +13,7 @@ import org.junit.Test
 class FieldValidatorTest {
 
   @Test
-  fun `text value within constraints is valid`() {
+  fun fieldValidator_textValueWithinConstraintsIsValid() {
     val fieldDef = FieldDefinition("text", "Text", FieldType.Text(maxLength = 10, minLength = 2))
     val value = FieldValue.TextValue("hello")
 
@@ -22,7 +22,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `text value exceeding maxLength is invalid`() {
+  fun fieldValidator_textValueExceedingMaxLengthIsInvalid() {
     val fieldDef = FieldDefinition("text", "Text", FieldType.Text(maxLength = 5))
     val value = FieldValue.TextValue("too long text")
 
@@ -33,7 +33,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `text value below minLength is invalid`() {
+  fun fieldValidator_textValueBelowMinLengthIsInvalid() {
     val fieldDef = FieldDefinition("text", "Text", FieldType.Text(minLength = 10))
     val value = FieldValue.TextValue("short")
 
@@ -44,7 +44,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `text value matching pattern is valid`() {
+  fun fieldValidator_textValueMatchingPatternIsValid() {
     val fieldDef = FieldDefinition("email", "Email", FieldType.Text(pattern = ".*@.*\\..*"))
     val value = FieldValue.TextValue("test@example.com")
 
@@ -53,7 +53,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `text value not matching pattern is invalid`() {
+  fun fieldValidator_textValueNotMatchingPatternIsInvalid() {
     val fieldDef = FieldDefinition("email", "Email", FieldType.Text(pattern = ".*@.*\\..*"))
     val value = FieldValue.TextValue("invalid-email")
 
@@ -64,7 +64,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `text value without constraints is valid`() {
+  fun fieldValidator_textValueWithoutConstraintsIsValid() {
     val fieldDef = FieldDefinition("text", "Text", FieldType.Text())
     val value = FieldValue.TextValue("any text of any length")
 
@@ -73,7 +73,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `number value within range is valid`() {
+  fun fieldValidator_numberValueWithinRangeIsValid() {
     val fieldDef = FieldDefinition("number", "Number", FieldType.Number(min = 0.0, max = 100.0))
     val value = FieldValue.NumberValue(50.0)
 
@@ -82,7 +82,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `number value below min is invalid`() {
+  fun fieldValidator_numberValueBelowMinIsInvalid() {
     val fieldDef = FieldDefinition("number", "Number", FieldType.Number(min = 10.0))
     val value = FieldValue.NumberValue(5.0)
 
@@ -93,7 +93,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `number value above max is invalid`() {
+  fun fieldValidator_numberValueAboveMaxIsInvalid() {
     val fieldDef = FieldDefinition("number", "Number", FieldType.Number(max = 100.0))
     val value = FieldValue.NumberValue(150.0)
 
@@ -104,7 +104,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `number value without constraints is valid`() {
+  fun fieldValidator_numberValueWithoutConstraintsIsValid() {
     val fieldDef = FieldDefinition("number", "Number", FieldType.Number())
     val value = FieldValue.NumberValue(-999.999)
 
@@ -113,7 +113,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `date value is valid`() {
+  fun fieldValidator_dateValueIsValid() {
     val fieldDef = FieldDefinition("date", "Date", FieldType.Date())
     val value = FieldValue.DateValue("2024-01-15")
 
@@ -122,7 +122,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `single select value in options is valid`() {
+  fun fieldValidator_singleSelectValueInOptionsIsValid() {
     val options = listOf(SelectOption("low", "Low"), SelectOption("high", "High"))
     val fieldDef =
         FieldDefinition(
@@ -134,7 +134,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `single select value not in options is invalid when custom not allowed`() {
+  fun fieldValidator_singleSelectValueNotInOptionsIsInvalidWhenCustomNotAllowed() {
     val options = listOf(SelectOption("low", "Low"), SelectOption("high", "High"))
     val fieldDef =
         FieldDefinition(
@@ -148,7 +148,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `single select value not in options is valid when custom allowed`() {
+  fun fieldValidator_singleSelectValueNotInOptionsIsValidWhenCustomAllowed() {
     val options = listOf(SelectOption("low", "Low"), SelectOption("high", "High"))
     val fieldDef =
         FieldDefinition("priority", "Priority", FieldType.SingleSelect(options, allowCustom = true))
@@ -159,7 +159,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `multi select values in options are valid`() {
+  fun fieldValidator_multiSelectValuesInOptionsAreValid() {
     val options =
         listOf(
             SelectOption("tag1", "Tag 1"),
@@ -174,7 +174,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `multi select values not in options are invalid when custom not allowed`() {
+  fun fieldValidator_multiSelectValuesNotInOptionsAreInvalidWhenCustomNotAllowed() {
     val options = listOf(SelectOption("tag1", "Tag 1"), SelectOption("tag2", "Tag 2"))
     val fieldDef =
         FieldDefinition("tags", "Tags", FieldType.MultiSelect(options, allowCustom = false))
@@ -187,7 +187,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `multi select values not in options are valid when custom allowed`() {
+  fun fieldValidator_multiSelectValuesNotInOptionsAreValidWhenCustomAllowed() {
     val options = listOf(SelectOption("tag1", "Tag 1"))
     val fieldDef =
         FieldDefinition("tags", "Tags", FieldType.MultiSelect(options, allowCustom = true))
@@ -198,7 +198,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `multi select below minSelections is invalid`() {
+  fun fieldValidator_multiSelectBelowMinSelectionsIsInvalid() {
     val options =
         listOf(
             SelectOption("tag1", "Tag 1"),
@@ -215,7 +215,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `multi select above maxSelections is invalid`() {
+  fun fieldValidator_multiSelectAboveMaxSelectionsIsInvalid() {
     val options =
         listOf(
             SelectOption("tag1", "Tag 1"),
@@ -232,7 +232,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `multi select within selection constraints is valid`() {
+  fun fieldValidator_multiSelectWithinSelectionConstraintsIsValid() {
     val options =
         listOf(
             SelectOption("tag1", "Tag 1"),
@@ -248,7 +248,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `type mismatch is invalid`() {
+  fun fieldValidator_typeMismatchIsInvalid() {
     val fieldDef = FieldDefinition("number", "Number", FieldType.Number())
     val value = FieldValue.TextValue("not a number")
 
@@ -259,7 +259,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `multiple validation errors are collected`() {
+  fun fieldValidator_multipleValidationErrorsAreCollected() {
     val fieldDef =
         FieldDefinition(
             "text", "Text", FieldType.Text(maxLength = 5, minLength = 3, pattern = "^[0-9]+$"))
@@ -272,8 +272,7 @@ class FieldValidatorTest {
   }
 
   @Test
-  fun `null NumberValue is valid regardless of required status`() {
-    // FieldValidator doesn't check required fields - that's done at the UI layer
+  fun fieldValidator_nullNumberValueIsValidRegardlessOfRequiredStatus() {
     val requiredFieldDef = FieldDefinition("number", "Number", FieldType.Number(), required = true)
     val optionalFieldDef = FieldDefinition("number", "Number", FieldType.Number(), required = false)
     val value = FieldValue.NumberValue(null)
@@ -281,13 +280,12 @@ class FieldValidatorTest {
     val requiredResult = FieldValidator.validate(value, requiredFieldDef)
     val optionalResult = FieldValidator.validate(value, optionalFieldDef)
 
-    // Both should be valid - FieldValidator only checks type-specific constraints
     assertTrue(requiredResult is FieldValidationResult.Valid)
     assertTrue(optionalResult is FieldValidationResult.Valid)
   }
 
   @Test
-  fun `null NumberValue vs zero are distinct in validation`() {
+  fun fieldValidator_nullNumberValueVsZeroAreDistinctInValidation() {
     val fieldDef = FieldDefinition("number", "Number", FieldType.Number(min = 1.0))
 
     val nullValue = FieldValue.NumberValue(null)
@@ -296,20 +294,17 @@ class FieldValidatorTest {
     val nullResult = FieldValidator.validate(nullValue, fieldDef)
     val zeroResult = FieldValidator.validate(zeroValue, fieldDef)
 
-    // Null is valid (no value to validate against min constraint)
     assertTrue(nullResult is FieldValidationResult.Valid)
 
-    // Zero is invalid (less than min of 1.0)
     assertTrue(zeroResult is FieldValidationResult.Invalid)
   }
 
   @Test
-  fun `null NumberValue ignores min and max constraints`() {
+  fun fieldValidator_nullNumberValueIgnoresMinAndMaxConstraints() {
     val fieldDef = FieldDefinition("number", "Number", FieldType.Number(min = 10.0, max = 100.0))
     val value = FieldValue.NumberValue(null)
 
     val result = FieldValidator.validate(value, fieldDef)
-    // Null value bypasses constraint checks
     assertTrue(result is FieldValidationResult.Valid)
   }
 }

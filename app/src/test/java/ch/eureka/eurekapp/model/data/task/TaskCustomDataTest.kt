@@ -45,13 +45,13 @@ class TaskCustomDataTest {
   }
 
   @Test
-  fun `empty data is valid`() {
+  fun taskCustomData_emptyDataIsValid() {
     val customData = TaskCustomData()
     assertEquals(0, customData.data.size)
   }
 
   @Test
-  fun `data with values stores them correctly`() {
+  fun taskCustomData_dataWithValuesStoresThemCorrectly() {
     val customData =
         TaskCustomData(
             mapOf(
@@ -64,35 +64,35 @@ class TaskCustomDataTest {
   }
 
   @Test
-  fun `getValue returns correct value`() {
+  fun taskCustomData_getValueReturnsCorrectValue() {
     val customData = TaskCustomData(mapOf("title" to FieldValue.TextValue("My Task")))
 
     assertEquals(FieldValue.TextValue("My Task"), customData.getValue("title"))
   }
 
   @Test
-  fun `getValue returns null for non-existent field`() {
+  fun taskCustomData_getValueReturnsNullForNonExistentField() {
     val customData = TaskCustomData(mapOf("title" to FieldValue.TextValue("My Task")))
 
     assertNull(customData.getValue("non_existent"))
   }
 
   @Test
-  fun `hasValue returns true for existing field`() {
+  fun taskCustomData_hasValueReturnsTrueForExistingField() {
     val customData = TaskCustomData(mapOf("title" to FieldValue.TextValue("My Task")))
 
     assertTrue(customData.hasValue("title"))
   }
 
   @Test
-  fun `hasValue returns false for non-existent field`() {
+  fun taskCustomData_hasValueReturnsFalseForNonExistentField() {
     val customData = TaskCustomData(mapOf("title" to FieldValue.TextValue("My Task")))
 
     assertFalse(customData.hasValue("non_existent"))
   }
 
   @Test
-  fun `setValue adds new value`() {
+  fun taskCustomData_setValueAddsNewValue() {
     val customData = TaskCustomData(mapOf("title" to FieldValue.TextValue("My Task")))
 
     val newData = customData.setValue("priority", FieldValue.NumberValue(5.0))
@@ -103,7 +103,7 @@ class TaskCustomDataTest {
   }
 
   @Test
-  fun `setValue replaces existing value`() {
+  fun taskCustomData_setValueReplacesExistingValue() {
     val customData = TaskCustomData(mapOf("title" to FieldValue.TextValue("My Task")))
 
     val newData = customData.setValue("title", FieldValue.TextValue("Updated Task"))
@@ -113,7 +113,7 @@ class TaskCustomDataTest {
   }
 
   @Test
-  fun `setValue is immutable`() {
+  fun taskCustomData_setValueIsImmutable() {
     val customData = TaskCustomData(mapOf("title" to FieldValue.TextValue("My Task")))
 
     val newData = customData.setValue("priority", FieldValue.NumberValue(5.0))
@@ -123,7 +123,7 @@ class TaskCustomDataTest {
   }
 
   @Test
-  fun `removeValue removes existing value`() {
+  fun taskCustomData_removeValueRemovesExistingValue() {
     val customData =
         TaskCustomData(
             mapOf(
@@ -138,7 +138,7 @@ class TaskCustomDataTest {
   }
 
   @Test
-  fun `removeValue with non-existent field does nothing`() {
+  fun taskCustomData_removeValueWithNonExistentFieldDoesNothing() {
     val customData = TaskCustomData(mapOf("title" to FieldValue.TextValue("My Task")))
 
     val newData = customData.removeValue("non_existent")
@@ -148,7 +148,7 @@ class TaskCustomDataTest {
   }
 
   @Test
-  fun `removeValue is immutable`() {
+  fun taskCustomData_removeValueIsImmutable() {
     val customData = TaskCustomData(mapOf("title" to FieldValue.TextValue("My Task")))
 
     val newData = customData.removeValue("title")
@@ -158,7 +158,7 @@ class TaskCustomDataTest {
   }
 
   @Test
-  fun `validate returns success for valid data`() {
+  fun taskCustomData_validateReturnsSuccessForValidData() {
     val schema =
         createSchema(
             textField("title", "Title", required = true), numberField("priority", "Priority"))
@@ -167,14 +167,14 @@ class TaskCustomDataTest {
   }
 
   @Test
-  fun `validate returns failure for missing required field`() {
+  fun taskCustomData_validateReturnsFailureForMissingRequiredField() {
     val schema = createSchema(textField("title", "Title", required = true))
     val customData = TaskCustomData()
     assertValidationFailure(customData, schema, 1, "Required field 'title' is missing")
   }
 
   @Test
-  fun `validate returns failure for undefined field`() {
+  fun taskCustomData_validateReturnsFailureForUndefinedField() {
     val schema = createSchema(textField("title", "Title"))
     val customData = TaskCustomData(mapOf("undefined_field" to FieldValue.TextValue("Some value")))
     assertValidationFailure(
@@ -182,14 +182,14 @@ class TaskCustomDataTest {
   }
 
   @Test
-  fun `validate returns failure for type mismatch`() {
+  fun taskCustomData_validateReturnsFailureForTypeMismatch() {
     val schema = createSchema(numberField("priority", "Priority"))
     val customData = TaskCustomData(mapOf("priority" to FieldValue.TextValue("high")))
     assertValidationFailure(customData, schema, 1, "has incorrect type")
   }
 
   @Test
-  fun `validate returns multiple errors`() {
+  fun taskCustomData_validateReturnsMultipleErrors() {
     val schema =
         createSchema(
             textField("title", "Title", required = true),
@@ -203,7 +203,7 @@ class TaskCustomDataTest {
   }
 
   @Test
-  fun `validate succeeds with all field types`() {
+  fun taskCustomData_validateSucceedsWithAllFieldTypes() {
     val schema =
         createSchema(
             textField("text", "Text"),
@@ -227,7 +227,7 @@ class TaskCustomDataTest {
   }
 
   @Test
-  fun `validate succeeds with empty data and no required fields`() {
+  fun taskCustomData_validateSucceedsWithEmptyDataAndNoRequiredFields() {
     val schema = createSchema(textField("title", "Title", required = false))
     val customData = TaskCustomData()
     assertValidationSuccess(customData, schema)

@@ -80,7 +80,7 @@ class SignInViewModelTest {
   }
 
   @Test
-  fun `signIn with new user creates user in database`() = runTest {
+  fun signInViewModel_signInWithNewUserCreatesUserInDatabase() = runTest {
     // Given
     val credential = mockk<Credential>()
     val credentialResponse = mockk<GetCredentialResponse>()
@@ -109,7 +109,7 @@ class SignInViewModelTest {
   }
 
   @Test
-  fun `signIn with existing user updates photoUrl and lastActive`() = runTest {
+  fun signInViewModel_signInWithExistingUserUpdatesPhotoUrlAndLastActive() = runTest {
     // Given
     val credential = mockk<Credential>()
     val credentialResponse = mockk<GetCredentialResponse>()
@@ -145,7 +145,7 @@ class SignInViewModelTest {
   }
 
   @Test
-  fun `signIn with existing user preserves displayName and email`() = runTest {
+  fun signInViewModel_signInWithExistingUserPreservesDisplayNameAndEmail() = runTest {
     // Given
     val credential = mockk<Credential>()
     val credentialResponse = mockk<GetCredentialResponse>()
@@ -169,7 +169,7 @@ class SignInViewModelTest {
   }
 
   @Test
-  fun `signIn handles user save failure`() = runTest {
+  fun signInViewModel_signInHandlesUserSaveFailure() = runTest {
     // Given
     val credential = mockk<Credential>()
     val credentialResponse = mockk<GetCredentialResponse>()
@@ -190,7 +190,7 @@ class SignInViewModelTest {
   }
 
   @Test
-  fun `signIn with null Firebase photoUrl uses empty string for new user`() = runTest {
+  fun signInViewModel_signInWithNullFirebasePhotoUrlUsesEmptyStringForNewUser() = runTest {
     // Given
     val credential = mockk<Credential>()
     val credentialResponse = mockk<GetCredentialResponse>()
@@ -212,7 +212,7 @@ class SignInViewModelTest {
   }
 
   @Test
-  fun `signIn with null Firebase photoUrl preserves existing photoUrl for existing user`() =
+  fun signInViewModel_signInWithNullFirebasePhotoUrlPreservesExistingPhotoUrlForExistingUser() =
       runTest {
         // Given
         val credential = mockk<Credential>()
@@ -236,7 +236,7 @@ class SignInViewModelTest {
       }
 
   @Test
-  fun `signIn with null displayName uses empty string`() = runTest {
+  fun signInViewModel_signInWithNullDisplayNameUsesEmptyString() = runTest {
     // Given
     val credential = mockk<Credential>()
     val credentialResponse = mockk<GetCredentialResponse>()
@@ -258,7 +258,7 @@ class SignInViewModelTest {
   }
 
   @Test
-  fun `signIn with null email uses empty string`() = runTest {
+  fun signInViewModel_signInWithNullEmailUsesEmptyString() = runTest {
     // Given
     val credential = mockk<Credential>()
     val credentialResponse = mockk<GetCredentialResponse>()
@@ -280,7 +280,7 @@ class SignInViewModelTest {
   }
 
   @Test
-  fun `signIn updates lastActive timestamp for existing user`() = runTest {
+  fun signInViewModel_signInUpdatesLastActiveTimestampForExistingUser() = runTest {
     // Given
     val credential = mockk<Credential>()
     val credentialResponse = mockk<GetCredentialResponse>()

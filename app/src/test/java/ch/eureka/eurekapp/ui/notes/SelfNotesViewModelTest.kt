@@ -90,7 +90,7 @@ class SelfNotesViewModelTest {
   }
 
   @Test
-  fun `loadNotes loads notes and preferences successfully`() = runTest {
+  fun selfNotesViewModel_loadsNotesAndPreferencesSuccessfully() = runTest {
     every { userPrefs.isCloudStorageEnabled } returns flowOf(true)
     viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
     val job = launch { viewModel.uiState.collect {} }
@@ -104,7 +104,7 @@ class SelfNotesViewModelTest {
   }
 
   @Test
-  fun `loadNotes handles repository exception`() = runTest {
+  fun selfNotesViewModel_handlesRepositoryException() = runTest {
     every { repository.getNotes(any()) } returns flow { throw Exception("Database error") }
     viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
     val job = launch { viewModel.uiState.collect {} }
@@ -116,21 +116,22 @@ class SelfNotesViewModelTest {
   }
 
   @Test
-  fun `toggleStorageMode(true) calls repository and updates status with Upserts`() = runTest {
-    // Return SyncStats instead of Int
-    coEvery { repository.setStorageMode(true) } returns SyncStats(upserts = 5, deletes = 0)
-    viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
-    val job = launch { viewModel.uiState.collect {} }
-    viewModel.toggleStorageMode(true)
-    testDispatcher.scheduler.advanceUntilIdle()
-    coVerify { repository.setStorageMode(true) }
-    // Check formatted string
-    assertEquals("Switched to Cloud: Synced: 5 sent", viewModel.uiState.value.errorMsg)
-    job.cancel()
-  }
+  fun selfNotesViewModel_toggleStorageModeToCloudCallsRepositoryAndUpdatesStatusWithUpserts() =
+      runTest {
+        // Return SyncStats instead of Int
+        coEvery { repository.setStorageMode(true) } returns SyncStats(upserts = 5, deletes = 0)
+        viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
+        val job = launch { viewModel.uiState.collect {} }
+        viewModel.toggleStorageMode(true)
+        testDispatcher.scheduler.advanceUntilIdle()
+        coVerify { repository.setStorageMode(true) }
+        // Check formatted string
+        assertEquals("Switched to Cloud: Synced: 5 sent", viewModel.uiState.value.errorMsg)
+        job.cancel()
+      }
 
   @Test
-  fun `toggleStorageMode(true) shows generic message if 0 synced`() = runTest {
+  fun selfNotesViewModel_toggleStorageModeToCloudShowsGenericMessageIfZeroSynced() = runTest {
     coEvery { repository.setStorageMode(true) } returns SyncStats(0, 0)
     viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
     val job = launch { viewModel.uiState.collect {} }
@@ -141,7 +142,7 @@ class SelfNotesViewModelTest {
   }
 
   @Test
-  fun `toggleStorageMode(false) shows local message`() = runTest {
+  fun selfNotesViewModel_toggleStorageModeToLocalShowsLocalMessage() = runTest {
     coEvery { repository.setStorageMode(false) } returns SyncStats(0, 0)
     viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
     val job = launch { viewModel.uiState.collect {} }
@@ -152,7 +153,7 @@ class SelfNotesViewModelTest {
   }
 
   @Test
-  fun `connectivity change to ONLINE triggers sync and reports Mixed Stats`() = runTest {
+  fun selfNotesViewModel_connectivityChangeToOnlinetriggersSyncAndReportsMixedStats() = runTest {
     coEvery { repository.syncPendingNotes() } returns SyncStats(upserts = 2, deletes = 1)
     isOnlineFlow.value = false
     viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
@@ -168,7 +169,7 @@ class SelfNotesViewModelTest {
   }
 
   @Test
-  fun `connectivity change to OFFLINE does nothing`() = runTest {
+  fun selfNotesViewModel_connectivityChangeToOfflineDoesNothing() = runTest {
     isOnlineFlow.value = true
     viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
     testDispatcher.scheduler.advanceUntilIdle()
@@ -181,7 +182,7 @@ class SelfNotesViewModelTest {
   // --- CREATE ---
 
   @Test
-  fun `sendNote(Create) sends message successfully and schedules worker`() = runTest {
+  fun selfNotesViewModel_sendNoteCreateSendsMessageSuccessfullyAndSchedulesWorker() = runTest {
     every { userPrefs.isCloudStorageEnabled } returns flowOf(true)
     coEvery { repository.createNote(any()) } returns Result.success("new-note-id")
     viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
@@ -202,7 +203,7 @@ class SelfNotesViewModelTest {
   }
 
   @Test
-  fun `sendNote(Create) sends message but does NOT schedule worker IF cloud is disabled`() =
+  fun selfNotesViewModel_sendNoteCreateSendsMessageButDoesNotScheduleWorkerIfCloudIsDisabled() =
       runTest {
         every { userPrefs.isCloudStorageEnabled } returns flowOf(false)
         coEvery { repository.createNote(any()) } returns Result.success("new-note-id")
@@ -222,7 +223,7 @@ class SelfNotesViewModelTest {
       }
 
   @Test
-  fun `sendNote(Create) handles failure`() = runTest {
+  fun selfNotesViewModel_sendNoteCreateHandlesFailure() = runTest {
     coEvery { repository.createNote(any()) } returns Result.failure(Exception("DB Error"))
     viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
     val job = launch { viewModel.uiState.collect {} }
@@ -241,7 +242,7 @@ class SelfNotesViewModelTest {
   // --- EDIT ---
 
   @Test
-  fun `startEditing populates fields and clears selection`() = runTest {
+  fun selfNotesViewModel_startEditingPopulatesFieldsAndClearsSelection() = runTest {
     viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
     val job = launch { viewModel.uiState.collect {} }
 
@@ -260,7 +261,7 @@ class SelfNotesViewModelTest {
   }
 
   @Test
-  fun `cancelEditing clears editing state`() = runTest {
+  fun selfNotesViewModel_cancelEditingClearsEditingState() = runTest {
     viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
     val job = launch { viewModel.uiState.collect {} }
 
@@ -277,7 +278,7 @@ class SelfNotesViewModelTest {
   }
 
   @Test
-  fun `sendNote(Update) calls updateNote on repository`() = runTest {
+  fun selfNotesViewModel_sendNoteUpdateCallsUpdateNoteOnRepository() = runTest {
     coEvery { repository.updateNote(any(), any()) } returns Result.success(Unit)
     every { userPrefs.isCloudStorageEnabled } returns flowOf(true)
 
@@ -303,7 +304,7 @@ class SelfNotesViewModelTest {
   // --- SELECTION & DELETE ---
 
   @Test
-  fun `toggleSelection adds and removes ids`() = runTest {
+  fun selfNotesViewModel_toggleSelectionAddsAndRemovesIds() = runTest {
     viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
     val job = launch { viewModel.uiState.collect {} }
 
@@ -323,7 +324,7 @@ class SelfNotesViewModelTest {
   }
 
   @Test
-  fun `clearSelection empties the set`() = runTest {
+  fun selfNotesViewModel_clearSelectionEmptiesTheSet() = runTest {
     viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
     val job = launch { viewModel.uiState.collect {} }
 
@@ -338,7 +339,7 @@ class SelfNotesViewModelTest {
   }
 
   @Test
-  fun `deleteSelectedNotes calls repository for each id and clears selection`() = runTest {
+  fun selfNotesViewModel_deleteSelectedNotesCallsRepositoryForEachIdAndClearsSelection() = runTest {
     coEvery { repository.deleteNote(any()) } returns Result.success(Unit)
 
     viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
@@ -359,7 +360,7 @@ class SelfNotesViewModelTest {
   }
 
   @Test
-  fun `sendNote ignores empty or whitespace`() = runTest {
+  fun selfNotesViewModel_sendNoteIgnoresEmptyOrWhitespace() = runTest {
     viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
     viewModel.updateMessage("   ")
     viewModel.sendNote()
@@ -368,7 +369,7 @@ class SelfNotesViewModelTest {
   }
 
   @Test
-  fun `clearError clears error message`() = runTest {
+  fun selfNotesViewModel_clearErrorClearsErrorMessage() = runTest {
     coEvery { repository.createNote(any()) } returns Result.failure(Exception("Error"))
     viewModel = SelfNotesViewModel(repository, userPrefs, workManager, testDispatcher)
     val job = launch { viewModel.uiState.collect {} }

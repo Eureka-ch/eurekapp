@@ -16,7 +16,7 @@ import org.junit.Test
 class MessageEntityTest {
 
   @Test
-  fun `default constructor creates object with expected default values`() {
+  fun messageEntity_defaultConstructorCreatesObjectWithExpectedDefaultValues() {
     val entity =
         MessageEntity(
             messageId = "msg_123", text = "Test Note", senderId = "user_1", createdAtMillis = 1000L)
@@ -31,7 +31,7 @@ class MessageEntityTest {
   }
 
   @Test
-  fun `constructor with all arguments creates object correctly`() {
+  fun messageEntity_constructorWithAllArgumentsCreatesObjectCorrectly() {
     val entity =
         MessageEntity(
             localId = 55,
@@ -53,7 +53,7 @@ class MessageEntityTest {
   }
 
   @Test
-  fun `equals and hashCode contract works correctly`() {
+  fun messageEntity_equalsAndHashCodeContractWorksCorrectly() {
     val entity1 =
         MessageEntity(
             localId = 1,
@@ -96,7 +96,7 @@ class MessageEntityTest {
   }
 
   @Test
-  fun `copy creates new instance with modified values`() {
+  fun messageEntity_copyCreatesNewInstanceWithModifiedValues() {
     val original =
         MessageEntity(
             messageId = "original_id",

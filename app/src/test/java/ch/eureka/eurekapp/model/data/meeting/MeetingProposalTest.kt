@@ -22,7 +22,7 @@ class MeetingProposalTest {
   private val testVoteList = listOf(testVote1, testVote2)
 
   @Test
-  fun meetingProposalDefaultConstructor() {
+  fun meetingProposal_defaultConstructor() {
     val proposal = MeetingProposal()
 
     assertNotNull(proposal.dateTime)
@@ -31,7 +31,7 @@ class MeetingProposalTest {
   }
 
   @Test
-  fun meetingProposalWithParameters() {
+  fun meetingProposal_withParameters() {
     val timestamp = Timestamp(Date(123456789L))
     val proposal = MeetingProposal(dateTime = timestamp, votes = testVoteList)
 
@@ -41,7 +41,7 @@ class MeetingProposalTest {
   }
 
   @Test
-  fun meetingProposalCopy() {
+  fun meetingProposal_copy() {
     val timestamp = Timestamp(Date(0L))
     val initialVotes = listOf(testVote1)
     val proposal1 = MeetingProposal(dateTime = timestamp, votes = initialVotes)
@@ -56,7 +56,7 @@ class MeetingProposalTest {
   }
 
   @Test
-  fun meetingProposalEquals() {
+  fun meetingProposal_equals() {
     val timestamp = Timestamp(Date(1000L))
     val proposal1 = MeetingProposal(dateTime = timestamp, votes = listOf(testVote1))
     val proposal2 = MeetingProposal(dateTime = timestamp, votes = listOf(testVote1))
@@ -67,7 +67,7 @@ class MeetingProposalTest {
   }
 
   @Test
-  fun meetingProposalHashCode() {
+  fun meetingProposal_hashCode() {
     val timestamp = Timestamp(Date(1000L))
     val proposal1 = MeetingProposal(dateTime = timestamp, votes = listOf(testVote1))
     val proposal2 = MeetingProposal(dateTime = timestamp, votes = listOf(testVote1))
@@ -76,7 +76,7 @@ class MeetingProposalTest {
   }
 
   @Test
-  fun meetingProposalToString() {
+  fun meetingProposal_toString() {
     val timestamp = Timestamp(Date(0L))
     val proposal = MeetingProposal(dateTime = timestamp, votes = testVoteList)
     val proposalString = proposal.toString()
@@ -86,7 +86,7 @@ class MeetingProposalTest {
   }
 
   @Test
-  fun meetingProposalComponents() {
+  fun meetingProposal_components() {
     val timestamp = Timestamp.now()
     val proposal = MeetingProposal(dateTime = timestamp, votes = testVoteList)
 

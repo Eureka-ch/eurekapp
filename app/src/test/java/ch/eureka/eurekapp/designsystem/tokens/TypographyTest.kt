@@ -9,70 +9,70 @@ import org.junit.Test
 class TypographyTest {
 
   @Test
-  fun `displayLarge has correct size`() {
+  fun displayLarge_hasCorrectSize() {
     val displayLarge = ETypography.value.displayLarge
     assertNotNull("DisplayLarge should be defined", displayLarge)
     assertEquals("DisplayLarge should be 28sp", 28.sp, displayLarge.fontSize)
   }
 
   @Test
-  fun `displayMedium has correct size`() {
+  fun displayMedium_hasCorrectSize() {
     val displayMedium = ETypography.value.displayMedium
     assertNotNull("DisplayMedium should be defined", displayMedium)
     assertEquals("DisplayMedium should be 24sp", 24.sp, displayMedium.fontSize)
   }
 
   @Test
-  fun `displaySmall has correct size`() {
+  fun displaySmall_hasCorrectSize() {
     val displaySmall = ETypography.value.displaySmall
     assertNotNull("DisplaySmall should be defined", displaySmall)
     assertEquals("DisplaySmall should be 22sp", 22.sp, displaySmall.fontSize)
   }
 
   @Test
-  fun `titleLarge has correct size`() {
+  fun titleLarge_hasCorrectSize() {
     val titleLarge = ETypography.value.titleLarge
     assertNotNull("TitleLarge should be defined", titleLarge)
     assertEquals("TitleLarge should be 22sp", 22.sp, titleLarge.fontSize)
   }
 
   @Test
-  fun `titleMedium has correct size`() {
+  fun titleMedium_hasCorrectSize() {
     val titleMedium = ETypography.value.titleMedium
     assertNotNull("TitleMedium should be defined", titleMedium)
     assertEquals("TitleMedium should be 16sp", 16.sp, titleMedium.fontSize)
   }
 
   @Test
-  fun `bodyLarge has correct size`() {
+  fun bodyLarge_hasCorrectSize() {
     val bodyLarge = ETypography.value.bodyLarge
     assertNotNull("BodyLarge should be defined", bodyLarge)
     assertEquals("BodyLarge should be 16sp", 16.sp, bodyLarge.fontSize)
   }
 
   @Test
-  fun `bodyMedium has correct size`() {
+  fun bodyMedium_hasCorrectSize() {
     val bodyMedium = ETypography.value.bodyMedium
     assertNotNull("BodyMedium should be defined", bodyMedium)
     assertEquals("BodyMedium should be 14sp", 14.sp, bodyMedium.fontSize)
   }
 
   @Test
-  fun `labelLarge has correct size`() {
+  fun labelLarge_hasCorrectSize() {
     val labelLarge = ETypography.value.labelLarge
     assertNotNull("LabelLarge should be defined", labelLarge)
     assertEquals("LabelLarge should be 14sp", 14.sp, labelLarge.fontSize)
   }
 
   @Test
-  fun `labelMedium has correct size`() {
+  fun labelMedium_hasCorrectSize() {
     val labelMedium = ETypography.value.labelMedium
     assertNotNull("LabelMedium should be defined", labelMedium)
     assertEquals("LabelMedium should be 13sp", 13.sp, labelMedium.fontSize)
   }
 
   @Test
-  fun `labelSmall has correct size`() {
+  fun labelSmall_hasCorrectSize() {
     val labelSmall = ETypography.value.labelSmall
     assertNotNull("LabelSmall should be defined", labelSmall)
     assertEquals("LabelSmall should be 11sp", 11.sp, labelSmall.fontSize)

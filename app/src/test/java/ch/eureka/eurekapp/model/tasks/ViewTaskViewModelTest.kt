@@ -72,7 +72,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun viewModelWithValidTaskEmitsCorrectState() = runTest {
+  fun viewTaskViewModel_withValidTaskEmitsCorrectState() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val task =
@@ -114,7 +114,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun viewModelWithNullTaskEmitsErrorState() = runTest {
+  fun viewTaskViewModel_withNullTaskEmitsErrorState() = runTest {
     val projectId = "project123"
     val taskId = "task123"
 
@@ -144,7 +144,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun viewModelWithExceptionEmitsErrorState() = runTest {
+  fun viewTaskViewModel_withExceptionEmitsErrorState() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val exception = Exception("Network error")
@@ -179,7 +179,7 @@ class ViewTaskViewModelTest {
   // It seems to me like the cleanest solution for this case.
   // The main goal of this test is to ensure that the ViewModel won't crash or misbehave.
   @Test
-  fun viewModelWithTaskWithoutDueDateEmitsEmptyDueDate() = runTest {
+  fun viewTaskViewModel_withTaskWithoutDueDateEmitsEmptyDueDate() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val task =
@@ -213,7 +213,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun viewModelWithSingleAssignedUserLoadsUserCorrectly() = runTest {
+  fun viewTaskViewModel_withSingleAssignedUserLoadsUserCorrectly() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val userId = "user1"
@@ -256,7 +256,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun viewModelWithMultipleAssignedUsersLoadsAllUsersCorrectly() = runTest {
+  fun viewTaskViewModel_withMultipleAssignedUsersLoadsAllUsersCorrectly() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val user1Id = "user1"
@@ -310,7 +310,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun viewModelWithNullUserFiltersOutNulls() = runTest {
+  fun viewTaskViewModel_withNullUserFiltersOutNulls() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val user1Id = "user1"
@@ -354,7 +354,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun downloadFile_alreadyDownloaded_skipsInsert() = runTest {
+  fun viewTaskViewModel_downloadFileAlreadyDownloadedSkipsInsert() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val task =
@@ -393,7 +393,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun uiState_offlineMode_withDownloadedFiles_setsDownloadedUrls() = runTest {
+  fun viewTaskViewModel_uiStateOfflineModeWithDownloadedFilesSetsDownloadedUrls() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val task =
@@ -435,7 +435,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun uiState_loadsTemplateWhenTaskHasTemplateId() = runTest {
+  fun viewTaskViewModel_uiStateLoadsTemplateWhenTaskHasTemplateId() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val templateId = "template123"
@@ -482,7 +482,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun uiState_onlineMode_showsRemoteAttachments() = runTest {
+  fun viewTaskViewModel_uiStateOnlineModeShowsRemoteAttachments() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val task =
@@ -519,7 +519,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun downloadAllAttachments_downloadsMultipleFiles() = runTest {
+  fun viewTaskViewModel_downloadAllAttachmentsDownloadsMultipleFiles() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val url1 = "http://example.com/file1.pdf"
@@ -579,7 +579,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun downloadAllAttachments_skipsAlreadyDownloadedFiles() = runTest {
+  fun viewTaskViewModel_downloadAllAttachmentsSkipsAlreadyDownloadedFiles() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val url1 = "http://example.com/file1.pdf"
@@ -632,7 +632,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun downloadAllAttachments_extractsDisplayNameFromMetadata() = runTest {
+  fun viewTaskViewModel_downloadAllAttachmentsExtractsDisplayNameFromMetadata() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val url = "http://example.com/file.pdf"
@@ -684,7 +684,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun downloadAllAttachments_usesUrlFilenameWhenNoMetadata() = runTest {
+  fun viewTaskViewModel_downloadAllAttachmentsUsesUrlFilenameWhenNoMetadata() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val url = "http://example.com/document.pdf"
@@ -735,7 +735,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun downloadAllAttachments_updatesProgressCorrectly() = runTest {
+  fun viewTaskViewModel_downloadAllAttachmentsUpdatesProgressCorrectly() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val url1 = "http://example.com/file1.pdf"

@@ -44,7 +44,7 @@ class ConnectivityObserverTest {
   }
 
   @Test
-  fun initialStateEmitsTrueWhenConnected() = runBlocking {
+  fun connectivityObserver_initialStateEmitsTrueWhenConnected() = runBlocking {
     `when`(connectivityManager.activeNetwork).thenReturn(network)
     `when`(connectivityManager.getNetworkCapabilities(network)).thenReturn(networkCapabilities)
     `when`(networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET))
@@ -56,7 +56,7 @@ class ConnectivityObserverTest {
   }
 
   @Test
-  fun initialStateEmitsFalseWhenNotConnected() = runBlocking {
+  fun connectivityObserver_initialStateEmitsFalseWhenNotConnected() = runBlocking {
     `when`(connectivityManager.activeNetwork).thenReturn(null)
 
     connectivityObserver = ConnectivityObserver(context)
@@ -65,7 +65,7 @@ class ConnectivityObserverTest {
   }
 
   @Test
-  fun onUnavailableEmitsFalse() =
+  fun connectivityObserver_onUnavailableEmitsFalse() =
       runTest(UnconfinedTestDispatcher()) {
         `when`(connectivityManager.activeNetwork).thenReturn(network)
         `when`(connectivityManager.getNetworkCapabilities(network)).thenReturn(networkCapabilities)
@@ -89,7 +89,7 @@ class ConnectivityObserverTest {
       }
 
   @Test
-  fun onLostEmitsFalseWhenNoNetwork() =
+  fun connectivityObserver_onLostEmitsFalseWhenNoNetwork() =
       runTest(UnconfinedTestDispatcher()) {
         `when`(connectivityManager.activeNetwork).thenReturn(network)
         `when`(connectivityManager.getNetworkCapabilities(network)).thenReturn(networkCapabilities)

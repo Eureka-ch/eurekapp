@@ -484,7 +484,7 @@ class ConversationDetailViewModelTest {
           fileUrl = "https://storage.example.com/file.pdf")
 
   @Test
-  fun `selectMessage sets selectedMessageId`() = runTest {
+  fun conversationDetailViewModel_selectMessageSetsSelectedMessageId() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
 
@@ -498,7 +498,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `selectMessage with null clears selection`() = runTest {
+  fun conversationDetailViewModel_selectMessageWithNullClearsSelection() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
 
@@ -515,7 +515,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `clearMessageSelection clears selectedMessageId`() = runTest {
+  fun conversationDetailViewModel_clearMessageSelectionClearsSelectedMessageId() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
 
@@ -532,23 +532,25 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `startEditing populates editingMessageId and currentMessage`() = runTest {
-    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
-    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+  fun conversationDetailViewModel_startEditingPopulatesEditingMessageIdAndCurrentMessage() =
+      runTest {
+        every { mockConversationRepository.getConversationById(conversationId) } returns
+            flowOf(null)
+        every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
 
-    val viewModel = createViewModel()
-    advanceUntilIdle()
+        val viewModel = createViewModel()
+        advanceUntilIdle()
 
-    viewModel.startEditing(testMessage)
+        viewModel.startEditing(testMessage)
 
-    val state = viewModel.uiState.first { it.editingMessageId == "msg-1" }
-    assertEquals("msg-1", state.editingMessageId)
-    assertEquals("Test message", state.currentMessage)
-    assertTrue(state.isEditing)
-  }
+        val state = viewModel.uiState.first { it.editingMessageId == "msg-1" }
+        assertEquals("msg-1", state.editingMessageId)
+        assertEquals("Test message", state.currentMessage)
+        assertTrue(state.isEditing)
+      }
 
   @Test
-  fun `startEditing clears selectedMessageId`() = runTest {
+  fun conversationDetailViewModel_startEditingClearsSelectedMessageId() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
 
@@ -565,7 +567,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `cancelEditing clears editing state`() = runTest {
+  fun conversationDetailViewModel_cancelEditingClearsEditingState() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
 
@@ -584,30 +586,34 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `saveEditedMessage calls repository and clears editing state`() = runTest {
-    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
-    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
-    coEvery { mockConversationRepository.updateMessage(any(), any(), any()) } returns
-        Result.success(Unit)
+  fun conversationDetailViewModel_saveEditedMessageCallsRepositoryAndClearsEditingState() =
+      runTest {
+        every { mockConversationRepository.getConversationById(conversationId) } returns
+            flowOf(null)
+        every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+        coEvery { mockConversationRepository.updateMessage(any(), any(), any()) } returns
+            Result.success(Unit)
 
-    val viewModel = createViewModel()
-    advanceUntilIdle()
+        val viewModel = createViewModel()
+        advanceUntilIdle()
 
-    viewModel.startEditing(testMessage)
-    viewModel.uiState.first { it.editingMessageId == "msg-1" }
+        viewModel.startEditing(testMessage)
+        viewModel.uiState.first { it.editingMessageId == "msg-1" }
 
-    viewModel.updateMessage("Updated text")
-    viewModel.saveEditedMessage()
+        viewModel.updateMessage("Updated text")
+        viewModel.saveEditedMessage()
 
-    val state = viewModel.uiState.first { it.editingMessageId == null && !it.isSending }
-    coVerify { mockConversationRepository.updateMessage(conversationId, "msg-1", "Updated text") }
-    assertNull(state.editingMessageId)
-    assertEquals("", state.currentMessage)
-    assertFalse(state.isSending)
-  }
+        val state = viewModel.uiState.first { it.editingMessageId == null && !it.isSending }
+        coVerify {
+          mockConversationRepository.updateMessage(conversationId, "msg-1", "Updated text")
+        }
+        assertNull(state.editingMessageId)
+        assertEquals("", state.currentMessage)
+        assertFalse(state.isSending)
+      }
 
   @Test
-  fun `saveEditedMessage shows error for empty message`() = runTest {
+  fun conversationDetailViewModel_saveEditedMessageShowsErrorForEmptyMessage() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
 
@@ -626,7 +632,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `saveEditedMessage shows error for too long message`() = runTest {
+  fun conversationDetailViewModel_saveEditedMessageShowsErrorForTooLongMessage() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
 
@@ -645,7 +651,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `saveEditedMessage handles repository failure`() = runTest {
+  fun conversationDetailViewModel_saveEditedMessageHandlesRepositoryFailure() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
     coEvery { mockConversationRepository.updateMessage(any(), any(), any()) } returns
@@ -665,7 +671,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `requestDeleteMessage shows confirmation dialog`() = runTest {
+  fun conversationDetailViewModel_requestDeleteMessageShowsConfirmationDialog() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
 
@@ -680,7 +686,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `confirmDeleteMessage calls repository and clears state`() = runTest {
+  fun conversationDetailViewModel_confirmDeleteMessageCallsRepositoryAndClearsState() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
     coEvery { mockConversationRepository.deleteMessage(any(), any()) } returns Result.success(Unit)
@@ -700,27 +706,30 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `confirmDeleteMessage deletes file from storage for attachment messages`() = runTest {
-    every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
-    every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
-    coEvery { mockFileStorageRepository.deleteFile(any()) } returns Result.success(Unit)
-    coEvery { mockConversationRepository.deleteMessage(any(), any()) } returns Result.success(Unit)
+  fun conversationDetailViewModel_confirmDeleteMessageDeletesFileFromStorageForAttachmentMessages() =
+      runTest {
+        every { mockConversationRepository.getConversationById(conversationId) } returns
+            flowOf(null)
+        every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
+        coEvery { mockFileStorageRepository.deleteFile(any()) } returns Result.success(Unit)
+        coEvery { mockConversationRepository.deleteMessage(any(), any()) } returns
+            Result.success(Unit)
 
-    val viewModel = createViewModel()
-    advanceUntilIdle()
+        val viewModel = createViewModel()
+        advanceUntilIdle()
 
-    viewModel.requestDeleteMessage("msg-2", "https://storage.example.com/file.pdf")
-    viewModel.uiState.first { it.showDeleteConfirmation }
+        viewModel.requestDeleteMessage("msg-2", "https://storage.example.com/file.pdf")
+        viewModel.uiState.first { it.showDeleteConfirmation }
 
-    viewModel.confirmDeleteMessage()
-    viewModel.uiState.first { !it.showDeleteConfirmation }
+        viewModel.confirmDeleteMessage()
+        viewModel.uiState.first { !it.showDeleteConfirmation }
 
-    coVerify { mockFileStorageRepository.deleteFile("https://storage.example.com/file.pdf") }
-    coVerify { mockConversationRepository.deleteMessage(conversationId, "msg-2") }
-  }
+        coVerify { mockFileStorageRepository.deleteFile("https://storage.example.com/file.pdf") }
+        coVerify { mockConversationRepository.deleteMessage(conversationId, "msg-2") }
+      }
 
   @Test
-  fun `confirmDeleteMessage proceeds even if file deletion fails`() = runTest {
+  fun conversationDetailViewModel_confirmDeleteMessageProceedsEvenIfFileDeletionFails() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
     coEvery { mockFileStorageRepository.deleteFile(any()) } returns
@@ -741,7 +750,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `confirmDeleteMessage handles repository failure`() = runTest {
+  fun conversationDetailViewModel_confirmDeleteMessageHandlesRepositoryFailure() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
     coEvery { mockConversationRepository.deleteMessage(any(), any()) } returns
@@ -759,7 +768,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `cancelDeleteMessage hides confirmation dialog`() = runTest {
+  fun conversationDetailViewModel_cancelDeleteMessageHidesConfirmationDialog() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
 
@@ -777,7 +786,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `removeAttachment removes reference then deletes file`() = runTest {
+  fun conversationDetailViewModel_removeAttachmentRemovesReferenceThenDeletesFile() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
     coEvery { mockConversationRepository.removeAttachment(any(), any()) } returns
@@ -796,7 +805,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `removeAttachment shows snackbar if file deletion fails but still removes reference`() =
+  fun conversationDetailViewModel_removeAttachmentShowsSnackbarIfFileDeletionFailsButStillRemovesReference() =
       runTest {
         every { mockConversationRepository.getConversationById(conversationId) } returns
             flowOf(null)
@@ -821,7 +830,7 @@ class ConversationDetailViewModelTest {
       }
 
   @Test
-  fun `removeAttachment clears selectedMessageId`() = runTest {
+  fun conversationDetailViewModel_removeAttachmentClearsSelectedMessageId() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
     coEvery { mockFileStorageRepository.deleteFile(any()) } returns Result.success(Unit)
@@ -841,7 +850,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun `isEditing returns true when editingMessageId is set`() = runTest {
+  fun conversationDetailViewModel_isEditingReturnsTrueWhenEditingMessageIdIsSet() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
 
@@ -857,7 +866,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun getUser_returnsUserFlow() = runTest {
+  fun conversationDetailViewModel_getUserReturnsUserFlow() = runTest {
     val mockUserRepo = mockk<ch.eureka.eurekapp.model.data.user.UserRepository>()
     val mockUser =
         User(uid = "user1", displayName = "John", email = "john@example.com", photoUrl = "")
@@ -881,45 +890,46 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun uiState_withMultipleOtherMembersPopulatesOtherMemberNames() = runTest {
-    val mockConversationRepo =
-        mockk<ch.eureka.eurekapp.model.data.conversation.ConversationRepository>()
-    val mockUserRepo = mockk<ch.eureka.eurekapp.model.data.user.UserRepository>()
-    val mockProjectRepo = mockk<ch.eureka.eurekapp.model.data.project.ProjectRepository>()
+  fun conversationDetailViewModel_uiStateWithMultipleOtherMembersPopulatesOtherMemberNames() =
+      runTest {
+        val mockConversationRepo =
+            mockk<ch.eureka.eurekapp.model.data.conversation.ConversationRepository>()
+        val mockUserRepo = mockk<ch.eureka.eurekapp.model.data.user.UserRepository>()
+        val mockProjectRepo = mockk<ch.eureka.eurekapp.model.data.project.ProjectRepository>()
 
-    val conversation =
-        Conversation(
-            conversationId = "conv1",
-            projectId = "proj1",
-            memberIds = listOf("currentUser", "user1", "user2"))
+        val conversation =
+            Conversation(
+                conversationId = "conv1",
+                projectId = "proj1",
+                memberIds = listOf("currentUser", "user1", "user2"))
 
-    every { mockConversationRepo.getConversationById("conv1") } returns flowOf(conversation)
-    every { mockConversationRepo.getMessages("conv1") } returns flowOf(emptyList())
-    every { mockUserRepo.getUserById("user1") } returns
-        flowOf(User("user1", "Alice", "alice@example.com", ""))
-    every { mockUserRepo.getUserById("user2") } returns
-        flowOf(User("user2", "Bob", "bob@example.com", ""))
-    every { mockProjectRepo.getProjectById("proj1") } returns
-        flowOf(Project(projectId = "proj1", name = "Test Project"))
+        every { mockConversationRepo.getConversationById("conv1") } returns flowOf(conversation)
+        every { mockConversationRepo.getMessages("conv1") } returns flowOf(emptyList())
+        every { mockUserRepo.getUserById("user1") } returns
+            flowOf(User("user1", "Alice", "alice@example.com", ""))
+        every { mockUserRepo.getUserById("user2") } returns
+            flowOf(User("user2", "Bob", "bob@example.com", ""))
+        every { mockProjectRepo.getProjectById("proj1") } returns
+            flowOf(Project(projectId = "proj1", name = "Test Project"))
 
-    val viewModel =
-        ConversationDetailViewModel(
-            conversationId = "conv1",
-            conversationRepository = mockConversationRepo,
-            userRepository = mockUserRepo,
-            projectRepository = mockProjectRepo,
-            fileStorageRepository = mockk(relaxed = true),
-            getCurrentUserId = { "currentUser" },
-            connectivityObserver = mockk { every { isConnected } returns flowOf(true) })
+        val viewModel =
+            ConversationDetailViewModel(
+                conversationId = "conv1",
+                conversationRepository = mockConversationRepo,
+                userRepository = mockUserRepo,
+                projectRepository = mockProjectRepo,
+                fileStorageRepository = mockk(relaxed = true),
+                getCurrentUserId = { "currentUser" },
+                connectivityObserver = mockk { every { isConnected } returns flowOf(true) })
 
-    val state = viewModel.uiState.first { it.otherMemberNames.isNotEmpty() }
+        val state = viewModel.uiState.first { it.otherMemberNames.isNotEmpty() }
 
-    assertEquals(2, state.otherMemberNames.size)
-    assertEquals(listOf("Alice", "Bob"), state.otherMemberNames)
-  }
+        assertEquals(2, state.otherMemberNames.size)
+        assertEquals(listOf("Alice", "Bob"), state.otherMemberNames)
+      }
 
   @Test
-  fun uiState_withEmptyOtherMembersHandlesGracefully() = runTest {
+  fun conversationDetailViewModel_uiStateWithEmptyOtherMembersHandlesGracefully() = runTest {
     val mockConversationRepo =
         mockk<ch.eureka.eurekapp.model.data.conversation.ConversationRepository>()
     val mockUserRepo = mockk<ch.eureka.eurekapp.model.data.user.UserRepository>()
@@ -952,7 +962,7 @@ class ConversationDetailViewModelTest {
   // --- Tests for conversationFlow (lines 139-153) ---
 
   @Test
-  fun conversationFlow_toSelf_createsFakeConversation() = runTest {
+  fun conversationDetailViewModel_conversationFlowToSelfCreatesFakeConversation() = runTest {
     every { mockSelfNotesRepository.getNotes(100) } returns flowOf(emptyList())
     val viewModel =
         ConversationDetailViewModel(
@@ -973,7 +983,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun conversationFlow_regular_callsRepository() = runTest {
+  fun conversationDetailViewModel_conversationFlowRegularCallsRepository() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns
         flowOf(Conversation(conversationId = conversationId))
     every { mockConversationRepository.getMessages(conversationId) } returns flowOf(emptyList())
@@ -985,7 +995,7 @@ class ConversationDetailViewModelTest {
   // --- Tests for messagesFlow (lines 155-182) ---
 
   @Test
-  fun messagesFlow_toSelf_convertsNotesToMessages() = runTest {
+  fun conversationDetailViewModel_messagesFlowToSelfConvertsNotesToMessages() = runTest {
     val note =
         Message(
             messageID = "note1",
@@ -1014,7 +1024,7 @@ class ConversationDetailViewModelTest {
   }
 
   @Test
-  fun messagesFlow_regular_callsRepository() = runTest {
+  fun conversationDetailViewModel_messagesFlowRegularCallsRepository() = runTest {
     every { mockConversationRepository.getConversationById(conversationId) } returns flowOf(null)
     every { mockConversationRepository.getMessages(conversationId) } returns
         flowOf(listOf(ConversationMessage(messageId = "msg1", text = "Hello")))
@@ -1026,7 +1036,7 @@ class ConversationDetailViewModelTest {
   // --- Test for sendMessage isToSelfConversation (lines 283-300) ---
 
   @Test
-  fun sendMessage_toSelf_createsNote() = runTest {
+  fun conversationDetailViewModel_sendMessageToSelfCreatesNote() = runTest {
     every { mockSelfNotesRepository.getNotes(100) } returns flowOf(emptyList())
     coEvery { mockSelfNotesRepository.createNote(any()) } returns Result.success("note123")
     val viewModel =

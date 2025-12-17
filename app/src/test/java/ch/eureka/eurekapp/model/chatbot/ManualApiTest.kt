@@ -26,7 +26,7 @@ class ManualApiTest {
   }
 
   @Test
-  fun testDeterminantQuestion() =
+  fun manualApi_determinantQuestion() =
       runTest(timeout = 90.seconds) {
         println("API Key present: ${BuildConfig.DEEPSEEK_API_KEY.isNotBlank()}")
 

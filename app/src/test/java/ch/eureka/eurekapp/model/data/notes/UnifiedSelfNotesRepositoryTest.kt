@@ -109,7 +109,7 @@ class UnifiedSelfNotesRepositoryTest {
   }
 
   @Test
-  fun `getNotes maps local entities to domain models`() =
+  fun unifiedSelfNotesRepository_getNotesMapsLocalEntitiesToDomainModels() =
       runTest(testDispatcher) {
         val entity =
             MessageEntity(messageId = "m1", text = "Hi", senderId = "u1", createdAtMillis = 1000)
@@ -121,7 +121,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `createNote fails if user is not logged in`() =
+  fun unifiedSelfNotesRepository_createNoteFailsIfUserIsNotLoggedIn() =
       runTest(testDispatcher) {
         every { auth.currentUser } returns null
         val result = repository.createNote(Message(messageID = "1"))
@@ -130,7 +130,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `createNote saves locally as Private when Cloud is DISABLED`() =
+  fun unifiedSelfNotesRepository_createNoteSavesLocallyAsPrivateWhenCloudIsDisabled() =
       runTest(testDispatcher) {
         mockNetwork(true)
         isCloudEnabledFlow.value = false
@@ -149,7 +149,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `createNote saves locally Pending Sync when Cloud is ENABLED but OFFLINE`() =
+  fun unifiedSelfNotesRepository_createNoteSavesLocallyPendingSyncWhenCloudIsEnabledButOffline() =
       runTest(testDispatcher) {
         mockNetwork(false)
         isCloudEnabledFlow.value = true
@@ -168,7 +168,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `createNote uploads immediately when Cloud is ENABLED and ONLINE`() =
+  fun unifiedSelfNotesRepository_createNoteUploadsImmediatelyWhenCloudIsEnabledAndOnline() =
       runTest(testDispatcher) {
         mockNetwork(true)
         isCloudEnabledFlow.value = true
@@ -183,7 +183,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `createNote rolls back cloud upload if markAsSynced fails`() =
+  fun unifiedSelfNotesRepository_createNoteRollsBackCloudUploadIfMarkAsSyncedFails() =
       runTest(testDispatcher) {
         mockNetwork(true)
         isCloudEnabledFlow.value = true
@@ -200,7 +200,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `updateNote updates local only if note is Private`() =
+  fun unifiedSelfNotesRepository_updateNoteUpdatesLocalOnlyIfNoteIsPrivate() =
       runTest(testDispatcher) {
         mockNetwork(true)
         val entity =
@@ -223,7 +223,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `updateNote updates local and cloud if note is Cloud and Online`() =
+  fun unifiedSelfNotesRepository_updateNoteUpdatesLocalAndCloudIfNoteIsCloudAndOnline() =
       runTest(testDispatcher) {
         mockNetwork(true)
         val entity =
@@ -250,7 +250,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `updateNote schedules worker if Cloud note update fails`() =
+  fun unifiedSelfNotesRepository_updateNoteSchedulesWorkerIfCloudNoteUpdateFails() =
       runTest(testDispatcher) {
         mockNetwork(true)
         val entity =
@@ -273,7 +273,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `updateNote updates local and schedules worker if OFFLINE`() =
+  fun unifiedSelfNotesRepository_updateNoteUpdatesLocalAndSchedulesWorkerIfOffline() =
       runTest(testDispatcher) {
         mockNetwork(false)
         val entity =
@@ -298,7 +298,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `deleteNote performs immediate hard delete if note is Private`() =
+  fun unifiedSelfNotesRepository_deleteNotePerformsImmediateHardDeleteIfNoteIsPrivate() =
       runTest(testDispatcher) {
         mockNetwork(true)
         val entity =
@@ -319,7 +319,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `deleteNote performs Soft Delete then Cloud Delete if Online`() =
+  fun unifiedSelfNotesRepository_deleteNotePerformsSoftDeleteThenCloudDeleteIfOnline() =
       runTest(testDispatcher) {
         mockNetwork(true)
         val entity =
@@ -346,7 +346,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `deleteNote schedules worker if Cloud Delete fails`() =
+  fun unifiedSelfNotesRepository_deleteNoteSchedulesWorkerIfCloudDeleteFails() =
       runTest(testDispatcher) {
         mockNetwork(true)
         val entity =
@@ -372,7 +372,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `deleteNote performs Soft Delete and schedules worker if OFFLINE`() =
+  fun unifiedSelfNotesRepository_deleteNotePerformsSoftDeleteAndSchedulesWorkerIfOffline() =
       runTest(testDispatcher) {
         mockNetwork(false)
         val entity =
@@ -394,7 +394,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `setStorageMode(false) disables cloud, wipes cloud notes, and makes local private`() =
+  fun unifiedSelfNotesRepository_setStorageModeFalseDisablesCloudWipesCloudNotesAndMakesLocalPrivate() =
       runTest(testDispatcher) {
         mockNetwork(true)
         coEvery { userPreferences.setCloudStorageEnabled(false) } returns Unit
@@ -432,7 +432,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `setStorageMode(true) enables cloud, makes notes public, and syncs if online`() =
+  fun unifiedSelfNotesRepository_setStorageModeTrueEnablesCloudMakesNotesPublicAndSyncsIfOnline() =
       runTest(testDispatcher) {
         mockNetwork(true)
         coEvery { userPreferences.setCloudStorageEnabled(true) } returns Unit
@@ -449,7 +449,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `syncPendingNotes returns empty stats if offline`() =
+  fun unifiedSelfNotesRepository_syncPendingNotesReturnsEmptyStatsIfOffline() =
       runTest(testDispatcher) {
         mockNetwork(false)
         val stats = repository.syncPendingNotes()
@@ -458,7 +458,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `syncPendingNotes processes Deletes and Upserts correctly`() =
+  fun unifiedSelfNotesRepository_syncPendingNotesProcessesDeletesAndUpsertsCorrectly() =
       runTest(testDispatcher) {
         mockNetwork(true)
         val deleteEntity =
@@ -502,7 +502,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `syncPendingNotes handles partial failures`() =
+  fun unifiedSelfNotesRepository_syncPendingNotesHandlesPartialFailures() =
       runTest(testDispatcher) {
         mockNetwork(true)
         // p1: Create Note (Success)
@@ -545,7 +545,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `observing remote notes saves them locally, ignoring pending edits`() =
+  fun unifiedSelfNotesRepository_observingRemoteNotesSavesThemLocallyIgnoringPendingEdits() =
       runTest(testDispatcher) {
         mockNetwork(true)
 

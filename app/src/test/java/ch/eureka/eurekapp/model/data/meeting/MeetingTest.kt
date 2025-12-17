@@ -18,7 +18,7 @@ import org.junit.Test
 class MeetingTest {
 
   @Test
-  fun meetingDefaultConstructor() {
+  fun meeting_defaultConstructor() {
     val meeting = Meeting()
 
     assertEquals("", meeting.meetingID)
@@ -40,7 +40,7 @@ class MeetingTest {
   }
 
   @Test
-  fun meetingWithParameters() {
+  fun meeting_withParameters() {
     val attachments = listOf("url1", "url2")
     val testTimestamp = Timestamp.now()
     val testDuration = 60
@@ -67,7 +67,7 @@ class MeetingTest {
   }
 
   @Test
-  fun meetingWithoutTaskId() {
+  fun meeting_withoutTaskId() {
     val meeting =
         Meeting(
             meetingID = "mtg123",
@@ -79,7 +79,7 @@ class MeetingTest {
   }
 
   @Test
-  fun meetingCopy() {
+  fun meeting_copy() {
     val meeting =
         Meeting(
             meetingID = "mtg123",
@@ -97,7 +97,7 @@ class MeetingTest {
   }
 
   @Test
-  fun meetingEquals() {
+  fun meeting_equals() {
     val fixedTimestamp = Timestamp(Date(0))
     val fixedDuration = 60
     val meeting1 =
@@ -133,7 +133,7 @@ class MeetingTest {
   }
 
   @Test
-  fun meetingHashCode() {
+  fun meeting_hashCode() {
     val fixedTimestamp = Timestamp(Date(0))
     val fixedDuration = 60
     val meeting1 =
@@ -159,7 +159,7 @@ class MeetingTest {
   }
 
   @Test
-  fun meetingToString() {
+  fun meeting_toString() {
     val meeting =
         Meeting(
             meetingID = "mtg123",
@@ -178,7 +178,7 @@ class MeetingTest {
   }
 
   @Test
-  fun testFullConstructorAndPropertyValues() {
+  fun meeting_fullConstructorAndPropertyValues() {
     val timestamp = Timestamp.now()
     val location = Location(latitude = 46.0, longitude = 7.0)
     val duration = 90
@@ -229,7 +229,7 @@ class MeetingTest {
   }
 
   @Test
-  fun testCopyAndEquality() {
+  fun meeting_copyAndEquality() {
     val m1 = Meeting(meetingID = "id1", title = "A")
     val m2 = m1.copy(title = "B")
 
@@ -241,7 +241,7 @@ class MeetingTest {
   }
 
   @Test
-  fun testToStringAndComponents() {
+  fun meeting_toStringAndComponents() {
     val meeting = Meeting(meetingID = "id123", projectId = "proj1", title = "Kickoff")
 
     val str = meeting.toString()

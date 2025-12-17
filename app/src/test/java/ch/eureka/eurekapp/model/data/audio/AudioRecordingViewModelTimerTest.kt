@@ -54,7 +54,7 @@ class AudioRecordingViewModelTimerTest {
   }
 
   @Test
-  fun `startRecording initiates timer and increments seconds`() =
+  fun audioRecordingViewModelTimer_startRecordingInitiatesTimerAndIncrementsSeconds() =
       runTest(testDispatcher) {
         recordingStateFlow.value = RecordingState.RUNNING
         every { recordingRepository.createRecording(any(), any()) } returns Result.success(mockk())
@@ -71,7 +71,7 @@ class AudioRecordingViewModelTimerTest {
       }
 
   @Test
-  fun `resumeRecording starts timer if state is PAUSED and resume succeeds`() =
+  fun audioRecordingViewModelTimer_resumeRecordingStartsTimerIfStateIsPausedAndResumeSucceeds() =
       runTest(testDispatcher) {
         recordingStateFlow.value = RecordingState.PAUSED
         every { recordingRepository.resumeRecording() } returns Result.success(Unit)
@@ -89,7 +89,7 @@ class AudioRecordingViewModelTimerTest {
       }
 
   @Test
-  fun `stopRecording resets timer to zero`() =
+  fun audioRecordingViewModelTimer_stopRecordingResetsTimerToZero() =
       runTest(testDispatcher) {
         recordingStateFlow.value = RecordingState.RUNNING
         every { recordingRepository.createRecording(any(), any()) } returns Result.success(mockk())
@@ -108,7 +108,7 @@ class AudioRecordingViewModelTimerTest {
       }
 
   @Test
-  fun `timer loop stops when RecordingState is no longer RUNNING`() =
+  fun audioRecordingViewModelTimer_timerLoopStopsWhenRecordingStateIsNoLongerRunning() =
       runTest(testDispatcher) {
         recordingStateFlow.value = RecordingState.RUNNING
         every { recordingRepository.createRecording(any(), any()) } returns Result.success(mockk())

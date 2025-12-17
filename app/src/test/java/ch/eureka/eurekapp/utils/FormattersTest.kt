@@ -13,7 +13,7 @@ import org.junit.Test
 class FormattersTest {
 
   @Test
-  fun testFormatDateTime() {
+  fun formatters_formatDateTimeReturnsCorrectFormat() {
     // Create a fixed date
     val calendar = Calendar.getInstance()
     calendar.set(2025, Calendar.OCTOBER, 15, 14, 30, 0)
@@ -41,7 +41,7 @@ class FormattersTest {
    * for very recent messages.
    */
   @Test
-  fun testFormatRelativeTime_now() {
+  fun formatters_formatRelativeTimeReturnsNowForRecentTimes() {
     // Arrange: Date 30 seconds ago (within 1 minute threshold)
     val date = Date(System.currentTimeMillis() - 30 * 1000)
 
@@ -57,7 +57,7 @@ class FormattersTest {
    * of minutes.
    */
   @Test
-  fun testFormatRelativeTime_minutes() {
+  fun formatters_formatRelativeTimeReturnsMinutesForLessThanOneHour() {
     // Arrange: Date 5 minutes ago
     val date = Date(System.currentTimeMillis() - 5 * 60 * 1000)
 
@@ -73,7 +73,7 @@ class FormattersTest {
    * hours.
    */
   @Test
-  fun testFormatRelativeTime_hours() {
+  fun formatters_formatRelativeTimeReturnsHoursForLessThanOneDay() {
     // Arrange: Date 3 hours ago
     val date = Date(System.currentTimeMillis() - 3 * 60 * 60 * 1000)
 
@@ -89,7 +89,7 @@ class FormattersTest {
    * language indicator for recent past days.
    */
   @Test
-  fun testFormatRelativeTime_yesterday() {
+  fun formatters_formatRelativeTimeReturnsYesterdayForOneToDayOld() {
     // Arrange: Date 1.5 days ago (36 hours, within 2-day threshold)
     val date = Date(System.currentTimeMillis() - 36 * 60 * 60 * 1000)
 
@@ -105,7 +105,7 @@ class FormattersTest {
    * like "Mon", "Tue", "Wed", etc.
    */
   @Test
-  fun testFormatRelativeTime_withinWeek() {
+  fun formatters_formatRelativeTimeReturnsDayNameForWithinWeek() {
     // Arrange: Date 4 days ago
     val date = Date(System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000)
 
@@ -121,7 +121,7 @@ class FormattersTest {
    * Verifies that times older than a week display as month and day. Format: "MMM d" like "Nov 18".
    */
   @Test
-  fun testFormatRelativeTime_olderThanWeek() {
+  fun formatters_formatRelativeTimeReturnsMonthDayForOlderThanWeek() {
     // Arrange: Date 10 days ago
     val date = Date(System.currentTimeMillis() - 10 * 24 * 60 * 60 * 1000)
 
@@ -138,7 +138,7 @@ class FormattersTest {
    * under 1 minute).
    */
   @Test
-  fun testFormatRelativeTime_exactlyOneMinute() {
+  fun formatters_formatRelativeTimeReturnsOneMinuteForExactlyOneMinute() {
     // Arrange: Date exactly 1 minute ago
     val date = Date(System.currentTimeMillis() - 60 * 1000)
 
@@ -151,7 +151,7 @@ class FormattersTest {
 
   /** Verifies the boundary case of exactly 1 hour ago. Should display "1h" not minutes. */
   @Test
-  fun testFormatRelativeTime_exactlyOneHour() {
+  fun formatters_formatRelativeTimeReturnsOneHourForExactlyOneHour() {
     // Arrange: Date exactly 1 hour ago
     val date = Date(System.currentTimeMillis() - 60 * 60 * 1000)
 

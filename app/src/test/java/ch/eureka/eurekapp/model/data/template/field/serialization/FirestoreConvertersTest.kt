@@ -15,7 +15,7 @@ import org.junit.Test
 class FirestoreConvertersTest {
 
   @Test
-  fun `empty schema round-trip conversion`() {
+  fun firestoreConverters_emptySchemaRoundTripConversion() {
     val schema = TaskTemplateSchema()
     val map = FirestoreConverters.schemaToMap(schema)
     val converted = FirestoreConverters.mapToSchema(map)
@@ -24,7 +24,7 @@ class FirestoreConvertersTest {
   }
 
   @Test
-  fun `schema with text field round-trip conversion`() {
+  fun firestoreConverters_schemaWithTextFieldRoundTripConversion() {
     val field =
         FieldDefinition(
             id = "title",
@@ -51,7 +51,7 @@ class FirestoreConvertersTest {
   }
 
   @Test
-  fun `schema with number field round-trip conversion`() {
+  fun firestoreConverters_schemaWithNumberFieldRoundTripConversion() {
     val field =
         FieldDefinition(
             id = "hours",
@@ -73,7 +73,7 @@ class FirestoreConvertersTest {
   }
 
   @Test
-  fun `schema with date field round-trip conversion`() {
+  fun firestoreConverters_schemaWithDateFieldRoundTripConversion() {
     val field =
         FieldDefinition(
             id = "due_date",
@@ -98,7 +98,7 @@ class FirestoreConvertersTest {
   }
 
   @Test
-  fun `schema with single select field round-trip conversion`() {
+  fun firestoreConverters_schemaWithSingleSelectFieldRoundTripConversion() {
     val options =
         listOf(
             SelectOption("low", "Low", "Low priority"),
@@ -124,7 +124,7 @@ class FirestoreConvertersTest {
   }
 
   @Test
-  fun `schema with multi select field round-trip conversion`() {
+  fun firestoreConverters_schemaWithMultiSelectFieldRoundTripConversion() {
     val options = listOf(SelectOption("tag1", "Tag 1"), SelectOption("tag2", "Tag 2"))
     val field =
         FieldDefinition(
@@ -147,7 +147,7 @@ class FirestoreConvertersTest {
   }
 
   @Test
-  fun `schema with multiple fields round-trip conversion`() {
+  fun firestoreConverters_schemaWithMultipleFieldsRoundTripConversion() {
     val fields =
         listOf(
             FieldDefinition("title", "Title", FieldType.Text(), required = true),
@@ -166,7 +166,7 @@ class FirestoreConvertersTest {
   }
 
   @Test
-  fun `schema with default value round-trip conversion`() {
+  fun firestoreConverters_schemaWithDefaultValueRoundTripConversion() {
     val field =
         FieldDefinition(
             id = "priority",
@@ -183,7 +183,7 @@ class FirestoreConvertersTest {
   }
 
   @Test
-  fun `empty customData round-trip conversion`() {
+  fun firestoreConverters_emptyCustomDataRoundTripConversion() {
     val customData = TaskCustomData()
     val map = FirestoreConverters.customDataToMap(customData)
     val converted = FirestoreConverters.mapToCustomData(map)
@@ -192,7 +192,7 @@ class FirestoreConvertersTest {
   }
 
   @Test
-  fun `customData with text value round-trip conversion`() {
+  fun firestoreConverters_customDataWithTextValueRoundTripConversion() {
     val customData = TaskCustomData(mapOf("title" to FieldValue.TextValue("My Task")))
 
     val map = FirestoreConverters.customDataToMap(customData)
@@ -203,7 +203,7 @@ class FirestoreConvertersTest {
   }
 
   @Test
-  fun `customData with number value round-trip conversion`() {
+  fun firestoreConverters_customDataWithNumberValueRoundTripConversion() {
     val customData = TaskCustomData(mapOf("hours" to FieldValue.NumberValue(42.5)))
 
     val map = FirestoreConverters.customDataToMap(customData)
@@ -213,7 +213,7 @@ class FirestoreConvertersTest {
   }
 
   @Test
-  fun `customData with date value round-trip conversion`() {
+  fun firestoreConverters_customDataWithDateValueRoundTripConversion() {
     val customData = TaskCustomData(mapOf("due_date" to FieldValue.DateValue("2024-01-15")))
 
     val map = FirestoreConverters.customDataToMap(customData)
@@ -223,7 +223,7 @@ class FirestoreConvertersTest {
   }
 
   @Test
-  fun `customData with single select value round-trip conversion`() {
+  fun firestoreConverters_customDataWithSingleSelectValueRoundTripConversion() {
     val customData = TaskCustomData(mapOf("priority" to FieldValue.SingleSelectValue("high")))
 
     val map = FirestoreConverters.customDataToMap(customData)
@@ -233,7 +233,7 @@ class FirestoreConvertersTest {
   }
 
   @Test
-  fun `customData with multi select value round-trip conversion`() {
+  fun firestoreConverters_customDataWithMultiSelectValueRoundTripConversion() {
     val customData =
         TaskCustomData(mapOf("tags" to FieldValue.MultiSelectValue(listOf("tag1", "tag2"))))
 
@@ -247,7 +247,7 @@ class FirestoreConvertersTest {
   }
 
   @Test
-  fun `customData with all field types round-trip conversion`() {
+  fun firestoreConverters_customDataWithAllFieldTypesRoundTripConversion() {
     val customData =
         TaskCustomData(
             mapOf(
@@ -271,7 +271,7 @@ class FirestoreConvertersTest {
   }
 
   @Test
-  fun `field type with minimal properties round-trip conversion`() {
+  fun firestoreConverters_fieldTypeWithMinimalPropertiesRoundTripConversion() {
     val field = FieldDefinition(id = "simple", label = "Simple", type = FieldType.Text())
     val schema = TaskTemplateSchema(listOf(field))
 

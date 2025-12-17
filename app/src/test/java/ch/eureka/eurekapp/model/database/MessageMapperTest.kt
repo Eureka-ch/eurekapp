@@ -19,7 +19,7 @@ import org.junit.Test
 class MessageMapperTest {
 
   @Test
-  fun `toDomainModel maps fields correctly`() {
+  fun messageMapper_toDomainModelMapsFieldsCorrectly() {
     val entity =
         MessageEntity(
             localId = 123,
@@ -39,7 +39,7 @@ class MessageMapperTest {
   }
 
   @Test
-  fun `toEntity maps fields correctly`() {
+  fun messageMapper_toEntityMapsFieldsCorrectly() {
     val timestamp = Timestamp(1700000000L, 0)
     val message =
         Message(

@@ -14,7 +14,7 @@ Co-author: Claude 4.5 Sonnet
 class ConversationMessageTest {
 
   @Test
-  fun `default constructor creates message with empty values`() {
+  fun conversationMessage_defaultConstructorCreatesMessageWithEmptyValues() {
     val message = ConversationMessage()
     assertEquals("", message.messageId)
     assertEquals("", message.senderId)
@@ -25,7 +25,7 @@ class ConversationMessageTest {
   }
 
   @Test
-  fun `constructor with all parameters sets values correctly`() {
+  fun conversationMessage_constructorWithAllParametersSetsValuesCorrectly() {
     val timestamp = Timestamp.now()
     val editedTimestamp = Timestamp.now()
     val message =
@@ -46,7 +46,7 @@ class ConversationMessageTest {
   }
 
   @Test
-  fun `equals and hashCode work correctly`() {
+  fun conversationMessage_equalsAndHashCodeWorkCorrectly() {
     val timestamp = Timestamp.now()
     val message1 = ConversationMessage(messageId = "msg1", text = "Test", createdAt = timestamp)
     val message2 = ConversationMessage(messageId = "msg1", text = "Test", createdAt = timestamp)

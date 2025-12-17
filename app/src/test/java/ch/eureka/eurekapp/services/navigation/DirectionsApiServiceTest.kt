@@ -46,7 +46,7 @@ class DirectionsApiServiceTest {
   }
 
   @Test
-  fun `getDirections returns successful response with valid data`() = runTest {
+  fun directionsApiService_getDirectionsReturnsSuccessfulResponseWithValidData() = runTest {
     val mockResponse =
         """
             {
@@ -105,7 +105,7 @@ class DirectionsApiServiceTest {
   }
 
   @Test
-  fun `getDirections handles error response`() = runTest {
+  fun directionsApiService_getDirectionsHandlesErrorResponse() = runTest {
     val mockResponse =
         """
             {
@@ -128,7 +128,7 @@ class DirectionsApiServiceTest {
   }
 
   @Test
-  fun `decodePolyline correctly decodes Google polyline format`() {
+  fun directionsApiService_decodePolylineCorrectlyDecodesGooglePolylineFormat() {
     val encoded = "_p~iF~ps|U_ulLnnqC_mqNvxq`@"
     val decoded = DirectionsUtils.decodePolyline(encoded)
 
@@ -142,25 +142,25 @@ class DirectionsApiServiceTest {
   }
 
   @Test
-  fun `decodePolyline handles empty string`() {
+  fun directionsApiService_decodePolylineHandlesEmptyString() {
     val decoded = DirectionsUtils.decodePolyline("")
     assertTrue(decoded.isEmpty())
   }
 
   @Test
-  fun `formatLocation creates correct parameter string`() {
+  fun directionsApiService_formatLocationCreatesCorrectParameterString() {
     val result = DirectionsUtils.formatLocation(46.5197, 6.6323)
     assertEquals("46.5197,6.6323", result)
   }
 
   @Test
-  fun `formatLocation handles negative coordinates`() {
+  fun directionsApiService_formatLocationHandlesNegativeCoordinates() {
     val result = DirectionsUtils.formatLocation(-34.6037, -58.3816)
     assertEquals("-34.6037,-58.3816", result)
   }
 
   @Test
-  fun `formatTravelMode converts to lowercase`() {
+  fun directionsApiService_formatTravelModeConvertsToLowercase() {
     assertEquals("driving", DirectionsUtils.formatTravelMode("DRIVING"))
     assertEquals("walking", DirectionsUtils.formatTravelMode("WALKING"))
     assertEquals("bicycling", DirectionsUtils.formatTravelMode("BICYCLING"))
@@ -168,34 +168,34 @@ class DirectionsApiServiceTest {
   }
 
   @Test
-  fun `stripHtmlTags removes HTML from instructions`() {
+  fun directionsApiService_stripHtmlTagsRemovesHtmlFromInstructions() {
     val html = "Turn <b>right</b> onto <div>Main St</div>"
     val result = DirectionsUtils.stripHtmlTags(html)
     assertEquals("Turn right onto Main St", result)
   }
 
   @Test
-  fun `stripHtmlTags handles plain text`() {
+  fun directionsApiService_stripHtmlTagsHandlesPlainText() {
     val plain = "Continue straight"
     val result = DirectionsUtils.stripHtmlTags(plain)
     assertEquals("Continue straight", result)
   }
 
   @Test
-  fun `stripHtmlTags handles complex HTML`() {
+  fun directionsApiService_stripHtmlTagsHandlesComplexHtml() {
     val html = "Turn <b>left</b> <div style='color:red'>at the <span>traffic light</span></div>"
     val result = DirectionsUtils.stripHtmlTags(html)
     assertEquals("Turn left at the traffic light", result)
   }
 
   @Test
-  fun `DirectionsApiServiceFactory creates service successfully`() {
+  fun directionsApiService_directionsApiServiceFactoryCreatesServiceSuccessfully() {
     val service = DirectionsApiServiceFactory.create()
     assertNotNull(service)
   }
 
   @Test
-  fun `service handles multiple waypoints in legs`() = runTest {
+  fun directionsApiService_serviceHandlesMultipleWaypointsInLegs() = runTest {
     val mockResponse =
         """
             {
@@ -243,34 +243,34 @@ class DirectionsApiServiceTest {
   }
 
   @Test
-  fun `DirectionsUtils formatLocation formats correctly`() {
+  fun directionsApiService_directionsUtilsFormatLocationFormatsCorrectly() {
     val result = DirectionsUtils.formatLocation(46.5197, 6.5659)
     assertEquals("46.5197,6.5659", result)
   }
 
   @Test
-  fun `DirectionsUtils formatTravelMode converts to lowercase`() {
+  fun directionsApiService_directionsUtilsFormatTravelModeConvertsToLowercase() {
     assertEquals("driving", DirectionsUtils.formatTravelMode("DRIVING"))
     assertEquals("walking", DirectionsUtils.formatTravelMode("Walking"))
     assertEquals("bicycling", DirectionsUtils.formatTravelMode("BICYCLING"))
   }
 
   @Test
-  fun `DirectionsUtils stripHtmlTags removes all HTML`() {
+  fun directionsApiService_directionsUtilsStripHtmlTagsRemovesAllHtml() {
     val html = "<b>Turn left</b> onto <div style='color:red'>Main Street</div>"
     val result = DirectionsUtils.stripHtmlTags(html)
     assertEquals("Turn left onto Main Street", result)
   }
 
   @Test
-  fun `DirectionsUtils stripHtmlTags handles plain text`() {
+  fun directionsApiService_directionsUtilsStripHtmlTagsHandlesPlainText() {
     val plainText = "Continue straight"
     val result = DirectionsUtils.stripHtmlTags(plainText)
     assertEquals("Continue straight", result)
   }
 
   @Test
-  fun `DirectionsUtils decodePolyline decodes simple polyline`() {
+  fun directionsApiService_directionsUtilsDecodePolylineDecodesSimplePolyline() {
     // Encoded polyline for a simple 2-point line
     val encoded = "_p~iF~ps|U_ulLnnqC"
     val decoded = DirectionsUtils.decodePolyline(encoded)
@@ -280,7 +280,7 @@ class DirectionsApiServiceTest {
   }
 
   @Test
-  fun `DirectionsUtils decodePolyline handles empty string`() {
+  fun directionsApiService_directionsUtilsDecodePolylineHandlesEmptyString() {
     val decoded = DirectionsUtils.decodePolyline("")
     assertTrue(decoded.isEmpty())
   }
@@ -294,7 +294,7 @@ class DirectionsApiServiceTest {
   // using hardcoded IP addresses (142.250.185.3, 142.250.185.35) as fallback.
 
   @Test
-  fun `DirectionsResponse serialization handles all fields`() {
+  fun directionsApiService_directionsResponseSerializationHandlesAllFields() {
     val json =
         """
       {
@@ -317,7 +317,7 @@ class DirectionsApiServiceTest {
   }
 
   @Test
-  fun `Route serialization handles all fields`() {
+  fun directionsApiService_routeSerializationHandlesAllFields() {
     val json =
         """
       {
@@ -342,7 +342,7 @@ class DirectionsApiServiceTest {
   }
 
   @Test
-  fun `Leg serialization handles all fields`() {
+  fun directionsApiService_legSerializationHandlesAllFields() {
     val json =
         """
       {
@@ -374,7 +374,7 @@ class DirectionsApiServiceTest {
   }
 
   @Test
-  fun `Step serialization handles all fields including optional maneuver`() {
+  fun directionsApiService_stepSerializationHandlesAllFieldsIncludingOptionalManeuver() {
     val jsonWithManeuver =
         """
       {
@@ -403,7 +403,7 @@ class DirectionsApiServiceTest {
   }
 
   @Test
-  fun `Step serialization handles null maneuver`() {
+  fun directionsApiService_stepSerializationHandlesNullManeuver() {
     val jsonWithoutManeuver =
         """
       {
@@ -430,7 +430,7 @@ class DirectionsApiServiceTest {
   }
 
   @Test
-  fun `TextValue serialization handles both text and value`() {
+  fun directionsApiService_textValueSerializationHandlesBothTextAndValue() {
     val json = """{"text": "5.2 km", "value": 5200}"""
 
     val jsonParser = Json {
@@ -444,7 +444,7 @@ class DirectionsApiServiceTest {
   }
 
   @Test
-  fun `LocationData serialization handles lat lng fields`() {
+  fun directionsApiService_locationDataSerializationHandlesLatLngFields() {
     val json = """{"lat": 46.5197, "lng": 6.6323}"""
 
     val jsonParser = Json {
@@ -458,7 +458,7 @@ class DirectionsApiServiceTest {
   }
 
   @Test
-  fun `PolylineData serialization handles points field`() {
+  fun directionsApiService_polylineDataSerializationHandlesPointsField() {
     val json = """{"points": "_p~iF~ps|U_ulLnnqC"}"""
 
     val jsonParser = Json {

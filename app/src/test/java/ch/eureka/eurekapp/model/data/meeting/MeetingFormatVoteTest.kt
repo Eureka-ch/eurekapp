@@ -10,7 +10,7 @@ import junit.framework.TestCase.*
 class MeetingFormatVoteTest {
 
   @org.junit.Test
-  fun testDefaultConstructorValues() {
+  fun meetingFormatVote_defaultConstructorValues() {
     val vote = MeetingFormatVote()
 
     assertEquals("", vote.userId)
@@ -18,7 +18,7 @@ class MeetingFormatVoteTest {
   }
 
   @org.junit.Test
-  fun testFullConstructorAndProperties() {
+  fun meetingFormatVote_fullConstructorAndProperties() {
     val vote = MeetingFormatVote("user123", MeetingFormat.VIRTUAL)
 
     assertEquals("user123", vote.userId)
@@ -26,7 +26,7 @@ class MeetingFormatVoteTest {
   }
 
   @org.junit.Test
-  fun testCopyAndEquality() {
+  fun meetingFormatVote_copyAndEquality() {
     val v1 = MeetingFormatVote("u1", MeetingFormat.IN_PERSON)
     val v2 = v1.copy(vote = MeetingFormat.VIRTUAL)
 
@@ -38,7 +38,7 @@ class MeetingFormatVoteTest {
   }
 
   @org.junit.Test
-  fun testToStringAndComponents() {
+  fun meetingFormatVote_toStringAndComponents() {
     val v = MeetingFormatVote("u5", MeetingFormat.VIRTUAL)
 
     val str = v.toString()

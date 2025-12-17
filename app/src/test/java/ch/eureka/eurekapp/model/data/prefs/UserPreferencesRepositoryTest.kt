@@ -35,14 +35,14 @@ class UserPreferencesRepositoryTest {
   }
 
   @Test
-  fun `isCloudStorageEnabled returns false by default`() = runTest {
+  fun userPreferencesRepository_isCloudStorageEnabledReturnsFalseByDefault() = runTest {
     val isEnabled = repository.isCloudStorageEnabled.first()
 
     assertFalse("Default value should be false (Local only)", isEnabled)
   }
 
   @Test
-  fun `setCloudStorageEnabled to true updates flow`() = runTest {
+  fun userPreferencesRepository_setCloudStorageEnabledToTrueUpdatesFlow() = runTest {
     repository.setCloudStorageEnabled(true)
     val isEnabled = repository.isCloudStorageEnabled.first()
 
@@ -50,7 +50,7 @@ class UserPreferencesRepositoryTest {
   }
 
   @Test
-  fun `setCloudStorageEnabled toggles value correctly`() = runTest {
+  fun userPreferencesRepository_setCloudStorageEnabledTogglesValueCorrectly() = runTest {
     repository.setCloudStorageEnabled(true)
     assertTrue(repository.isCloudStorageEnabled.first())
 

@@ -61,47 +61,49 @@ class FirestoreInvitationRepositoryTest {
   // ========================================
 
   @Test
-  fun `createInvitation should successfully save invitation to Firestore`() = runTest {
-    // Given
-    val invitation = Invitation(token = "TOKEN123", projectId = "project_1", isUsed = false)
-    val successTask: Task<Void> = Tasks.forResult(null)
+  fun firestoreInvitationRepository_createInvitationSuccessfullySavesInvitationToFirestore() =
+      runTest {
+        // Given
+        val invitation = Invitation(token = "TOKEN123", projectId = "project_1", isUsed = false)
+        val successTask: Task<Void> = Tasks.forResult(null)
 
-    every { mockDocumentRef.set(invitation) } returns successTask
+        every { mockDocumentRef.set(invitation) } returns successTask
 
-    // When
-    val result = repository.createInvitation(invitation)
+        // When
+        val result = repository.createInvitation(invitation)
 
-    // Then
-    assertTrue("Result should be success", result.isSuccess)
-    verify { mockDocumentRef.set(invitation) }
-  }
+        // Then
+        assertTrue("Result should be success", result.isSuccess)
+        verify { mockDocumentRef.set(invitation) }
+      }
 
   @Test
-  fun `createInvitation should return failure when Firestore operation fails`() = runTest {
-    // Given
-    val invitation = Invitation(token = "TOKEN123", projectId = "project_1", isUsed = false)
-    val exception =
-        FirebaseFirestoreException("Network error", FirebaseFirestoreException.Code.UNAVAILABLE)
-    val failureTask: Task<Void> = Tasks.forException(exception)
+  fun firestoreInvitationRepository_createInvitationReturnsFailureWhenFirestoreOperationFails() =
+      runTest {
+        // Given
+        val invitation = Invitation(token = "TOKEN123", projectId = "project_1", isUsed = false)
+        val exception =
+            FirebaseFirestoreException("Network error", FirebaseFirestoreException.Code.UNAVAILABLE)
+        val failureTask: Task<Void> = Tasks.forException(exception)
 
-    every { mockDocumentRef.set(invitation) } returns failureTask
+        every { mockDocumentRef.set(invitation) } returns failureTask
 
-    // When
-    val result = repository.createInvitation(invitation)
+        // When
+        val result = repository.createInvitation(invitation)
 
-    // Then
-    assertTrue("Result should be failure", result.isFailure)
-    assertTrue(
-        "Exception should contain 'Network error'",
-        result.exceptionOrNull()?.message?.contains("Network error") == true)
-  }
+        // Then
+        assertTrue("Result should be failure", result.isFailure)
+        assertTrue(
+            "Exception should contain 'Network error'",
+            result.exceptionOrNull()?.message?.contains("Network error") == true)
+      }
 
   // ========================================
   // Get Invitation By Token Tests
   // ========================================
 
   @Test
-  fun `getInvitationByToken should emit invitation when it exists`() = runTest {
+  fun firestoreInvitationRepository_getInvitationByTokenEmitsInvitationWhenItExists() = runTest {
     // Given
     val testToken = "TOKEN123"
     val invitation = Invitation(token = testToken, projectId = "project_1", isUsed = false)
@@ -128,69 +130,72 @@ class FirestoreInvitationRepositoryTest {
   }
 
   @Test
-  fun `getInvitationByToken should emit null when invitation does not exist`() = runTest {
-    // Given
-    val testToken = "NONEXISTENT"
-    val mockSnapshot: DocumentSnapshot = mockk(relaxed = true)
-    val listenerSlot = slot<EventListener<DocumentSnapshot>>()
-    val mockRegistration: ListenerRegistration = mockk(relaxed = true)
+  fun firestoreInvitationRepository_getInvitationByTokenEmitsNullWhenInvitationDoesNotExist() =
+      runTest {
+        // Given
+        val testToken = "NONEXISTENT"
+        val mockSnapshot: DocumentSnapshot = mockk(relaxed = true)
+        val listenerSlot = slot<EventListener<DocumentSnapshot>>()
+        val mockRegistration: ListenerRegistration = mockk(relaxed = true)
 
-    every { mockSnapshot.toObject(Invitation::class.java) } returns null
-    every { mockDocumentRef.addSnapshotListener(capture(listenerSlot)) } answers
-        {
-          listenerSlot.captured.onEvent(mockSnapshot, null)
-          mockRegistration
-        }
+        every { mockSnapshot.toObject(Invitation::class.java) } returns null
+        every { mockDocumentRef.addSnapshotListener(capture(listenerSlot)) } answers
+            {
+              listenerSlot.captured.onEvent(mockSnapshot, null)
+              mockRegistration
+            }
 
-    // When
-    val flow = repository.getInvitationByToken(testToken)
-    val result = flow.first()
+        // When
+        val flow = repository.getInvitationByToken(testToken)
+        val result = flow.first()
 
-    // Then
-    assertNull("Result should be null for non-existent token", result)
-  }
-
-  @Test
-  fun `getInvitationByToken should emit updates when invitation changes`() = runBlocking {
-    // Given
-    val testToken = "TOKEN123"
-    val unusedInvitation = Invitation(token = testToken, projectId = "project_1", isUsed = false)
-    val usedInvitation =
-        unusedInvitation.copy(isUsed = true, usedBy = "user_1", usedAt = Timestamp.now())
-
-    val mockSnapshot1: DocumentSnapshot = mockk(relaxed = true)
-    val mockSnapshot2: DocumentSnapshot = mockk(relaxed = true)
-    val listenerSlot = slot<EventListener<DocumentSnapshot>>()
-    val mockRegistration: ListenerRegistration = mockk(relaxed = true)
-
-    every { mockSnapshot1.toObject(Invitation::class.java) } returns unusedInvitation
-    every { mockSnapshot2.toObject(Invitation::class.java) } returns usedInvitation
-
-    var capturedListener: EventListener<DocumentSnapshot>? = null
-    every { mockDocumentRef.addSnapshotListener(capture(listenerSlot)) } answers
-        {
-          capturedListener = listenerSlot.captured
-          capturedListener?.onEvent(mockSnapshot1, null)
-          mockRegistration
-        }
-
-    // When
-    val flow = repository.getInvitationByToken(testToken)
-
-    // Collect first emission
-    val firstEmission = flow.first()
-
-    // Then verify first emission
-    assertNotNull("First emission should not be null", firstEmission)
-    assertFalse("First emission should be unused", firstEmission?.isUsed ?: true)
-
-    // Note: Testing reactive flow updates requires more complex setup with Flow test utilities
-    // For unit tests, we verify the initial state works correctly
-    // Full reactive behavior is better tested in integration tests
-  }
+        // Then
+        assertNull("Result should be null for non-existent token", result)
+      }
 
   @Test
-  fun `getInvitationByToken should close flow on Firestore error`() = runTest {
+  fun firestoreInvitationRepository_getInvitationByTokenEmitsUpdatesWhenInvitationChanges() =
+      runBlocking {
+        // Given
+        val testToken = "TOKEN123"
+        val unusedInvitation =
+            Invitation(token = testToken, projectId = "project_1", isUsed = false)
+        val usedInvitation =
+            unusedInvitation.copy(isUsed = true, usedBy = "user_1", usedAt = Timestamp.now())
+
+        val mockSnapshot1: DocumentSnapshot = mockk(relaxed = true)
+        val mockSnapshot2: DocumentSnapshot = mockk(relaxed = true)
+        val listenerSlot = slot<EventListener<DocumentSnapshot>>()
+        val mockRegistration: ListenerRegistration = mockk(relaxed = true)
+
+        every { mockSnapshot1.toObject(Invitation::class.java) } returns unusedInvitation
+        every { mockSnapshot2.toObject(Invitation::class.java) } returns usedInvitation
+
+        var capturedListener: EventListener<DocumentSnapshot>? = null
+        every { mockDocumentRef.addSnapshotListener(capture(listenerSlot)) } answers
+            {
+              capturedListener = listenerSlot.captured
+              capturedListener?.onEvent(mockSnapshot1, null)
+              mockRegistration
+            }
+
+        // When
+        val flow = repository.getInvitationByToken(testToken)
+
+        // Collect first emission
+        val firstEmission = flow.first()
+
+        // Then verify first emission
+        assertNotNull("First emission should not be null", firstEmission)
+        assertFalse("First emission should be unused", firstEmission?.isUsed ?: true)
+
+        // Note: Testing reactive flow updates requires more complex setup with Flow test utilities
+        // For unit tests, we verify the initial state works correctly
+        // Full reactive behavior is better tested in integration tests
+      }
+
+  @Test
+  fun firestoreInvitationRepository_getInvitationByTokenClosesFlowOnFirestoreError() = runTest {
     // Given
     val testToken = "TOKEN123"
     val exception =
@@ -222,7 +227,7 @@ class FirestoreInvitationRepositoryTest {
   // ========================================
 
   @Test
-  fun `getProjectInvitations should emit all invitations for project`() = runTest {
+  fun firestoreInvitationRepository_getProjectInvitationsEmitsAllInvitationsForProject() = runTest {
     // Given
     val projectId = "project_1"
     val invitation1 = Invitation(token = "TOKEN1", projectId = projectId, isUsed = false)
@@ -255,31 +260,32 @@ class FirestoreInvitationRepositoryTest {
   }
 
   @Test
-  fun `getProjectInvitations should emit empty list when no invitations exist`() = runTest {
-    // Given
-    val projectId = "empty_project"
-    val mockSnapshot: QuerySnapshot = mockk(relaxed = true)
-    val listenerSlot = slot<EventListener<QuerySnapshot>>()
-    val mockRegistration: ListenerRegistration = mockk(relaxed = true)
+  fun firestoreInvitationRepository_getProjectInvitationsEmitsEmptyListWhenNoInvitationsExist() =
+      runTest {
+        // Given
+        val projectId = "empty_project"
+        val mockSnapshot: QuerySnapshot = mockk(relaxed = true)
+        val listenerSlot = slot<EventListener<QuerySnapshot>>()
+        val mockRegistration: ListenerRegistration = mockk(relaxed = true)
 
-    every { invitationsCollection.whereEqualTo("projectId", projectId) } returns mockQuery
-    every { mockSnapshot.documents } returns emptyList()
-    every { mockQuery.addSnapshotListener(capture(listenerSlot)) } answers
-        {
-          listenerSlot.captured.onEvent(mockSnapshot, null)
-          mockRegistration
-        }
+        every { invitationsCollection.whereEqualTo("projectId", projectId) } returns mockQuery
+        every { mockSnapshot.documents } returns emptyList()
+        every { mockQuery.addSnapshotListener(capture(listenerSlot)) } answers
+            {
+              listenerSlot.captured.onEvent(mockSnapshot, null)
+              mockRegistration
+            }
 
-    // When
-    val flow = repository.getProjectInvitations(projectId)
-    val result = flow.first()
+        // When
+        val flow = repository.getProjectInvitations(projectId)
+        val result = flow.first()
 
-    // Then
-    assertTrue("Should return empty list", result.isEmpty())
-  }
+        // Then
+        assertTrue("Should return empty list", result.isEmpty())
+      }
 
   @Test
-  fun `getProjectInvitations should filter out null invitations`() = runTest {
+  fun firestoreInvitationRepository_getProjectInvitationsFiltersOutNullInvitations() = runTest {
     // Given
     val projectId = "project_1"
     val invitation = Invitation(token = "TOKEN1", projectId = projectId, isUsed = false)
@@ -314,71 +320,73 @@ class FirestoreInvitationRepositoryTest {
   // ========================================
 
   @Test
-  fun `markInvitationAsUsed should successfully mark unused invitation`() = runTest {
-    // Given
-    val token = "TOKEN123"
-    val userId = "user_1"
-    val unusedInvitation = Invitation(token = token, projectId = "project_1", isUsed = false)
+  fun firestoreInvitationRepository_markInvitationAsUsedSuccessfullyMarksUnusedInvitation() =
+      runTest {
+        // Given
+        val token = "TOKEN123"
+        val userId = "user_1"
+        val unusedInvitation = Invitation(token = token, projectId = "project_1", isUsed = false)
 
-    val mockTransaction: Transaction = mockk(relaxed = true)
-    val mockSnapshot: DocumentSnapshot = mockk(relaxed = true)
-    val successTask: Task<Void> = Tasks.forResult(null)
+        val mockTransaction: Transaction = mockk(relaxed = true)
+        val mockSnapshot: DocumentSnapshot = mockk(relaxed = true)
+        val successTask: Task<Void> = Tasks.forResult(null)
 
-    every { mockSnapshot.exists() } returns true
-    every { mockSnapshot.toObject(Invitation::class.java) } returns unusedInvitation
-    every { mockTransaction.get(mockDocumentRef) } returns mockSnapshot
-    every { mockTransaction.set(mockDocumentRef, any()) } returns mockTransaction
+        every { mockSnapshot.exists() } returns true
+        every { mockSnapshot.toObject(Invitation::class.java) } returns unusedInvitation
+        every { mockTransaction.get(mockDocumentRef) } returns mockSnapshot
+        every { mockTransaction.set(mockDocumentRef, any()) } returns mockTransaction
 
-    coEvery { firestore.runTransaction<Void>(any()) } coAnswers
-        {
-          val transactionFunction = firstArg<Transaction.Function<Void>>()
-          transactionFunction.apply(mockTransaction)
-          successTask
-        }
+        coEvery { firestore.runTransaction<Void>(any()) } coAnswers
+            {
+              val transactionFunction = firstArg<Transaction.Function<Void>>()
+              transactionFunction.apply(mockTransaction)
+              successTask
+            }
 
-    // When
-    val result = repository.markInvitationAsUsed(token, userId)
+        // When
+        val result = repository.markInvitationAsUsed(token, userId)
 
-    // Then
-    assertTrue("Result should be success", result.isSuccess)
-    verify { mockTransaction.set(mockDocumentRef, any()) }
-  }
-
-  @Test
-  fun `markInvitationAsUsed should fail when invitation does not exist`() = runTest {
-    // Given
-    val token = "NONEXISTENT"
-    val userId = "user_1"
-
-    val mockTransaction: Transaction = mockk(relaxed = true)
-    val mockSnapshot: DocumentSnapshot = mockk(relaxed = true)
-
-    every { mockSnapshot.exists() } returns false
-    every { mockTransaction.get(mockDocumentRef) } returns mockSnapshot
-
-    coEvery { firestore.runTransaction<Void>(any()) } coAnswers
-        {
-          val transactionFunction = firstArg<Transaction.Function<Void>>()
-          try {
-            transactionFunction.apply(mockTransaction)
-            Tasks.forResult(null)
-          } catch (e: Exception) {
-            Tasks.forException(e)
-          }
-        }
-
-    // When
-    val result = repository.markInvitationAsUsed(token, userId)
-
-    // Then
-    assertTrue("Result should be failure", result.isFailure)
-    assertTrue(
-        "Error should mention 'not found'",
-        result.exceptionOrNull()?.message?.contains("not found") == true)
-  }
+        // Then
+        assertTrue("Result should be success", result.isSuccess)
+        verify { mockTransaction.set(mockDocumentRef, any()) }
+      }
 
   @Test
-  fun `markInvitationAsUsed should fail when invitation already used`() = runTest {
+  fun firestoreInvitationRepository_markInvitationAsUsedFailsWhenInvitationDoesNotExist() =
+      runTest {
+        // Given
+        val token = "NONEXISTENT"
+        val userId = "user_1"
+
+        val mockTransaction: Transaction = mockk(relaxed = true)
+        val mockSnapshot: DocumentSnapshot = mockk(relaxed = true)
+
+        every { mockSnapshot.exists() } returns false
+        every { mockTransaction.get(mockDocumentRef) } returns mockSnapshot
+
+        coEvery { firestore.runTransaction<Void>(any()) } coAnswers
+            {
+              val transactionFunction = firstArg<Transaction.Function<Void>>()
+              try {
+                transactionFunction.apply(mockTransaction)
+                Tasks.forResult(null)
+              } catch (e: Exception) {
+                Tasks.forException(e)
+              }
+            }
+
+        // When
+        val result = repository.markInvitationAsUsed(token, userId)
+
+        // Then
+        assertTrue("Result should be failure", result.isFailure)
+        assertTrue(
+            "Error should mention 'not found'",
+            result.exceptionOrNull()?.message?.contains("not found") == true)
+      }
+
+  @Test
+  fun firestoreInvitationRepository_markInvitationAsUsedFailsWhenInvitationAlreadyUsed() = runTest {
     // Given
     val token = "USED_TOKEN"
     val userId = "user_2"
@@ -419,28 +427,30 @@ class FirestoreInvitationRepositoryTest {
   }
 
   @Test
-  fun `markInvitationAsUsed should handle Firestore transaction failure`() = runTest {
-    // Given
-    val token = "TOKEN123"
-    val userId = "user_1"
-    val exception =
-        FirebaseFirestoreException("Transaction failed", FirebaseFirestoreException.Code.ABORTED)
-    val failureTask: Task<Void> = Tasks.forException(exception)
+  fun firestoreInvitationRepository_markInvitationAsUsedHandlesFirestoreTransactionFailure() =
+      runTest {
+        // Given
+        val token = "TOKEN123"
+        val userId = "user_1"
+        val exception =
+            FirebaseFirestoreException(
+                "Transaction failed", FirebaseFirestoreException.Code.ABORTED)
+        val failureTask: Task<Void> = Tasks.forException(exception)
 
-    coEvery { firestore.runTransaction<Void>(any()) } returns failureTask
+        coEvery { firestore.runTransaction<Void>(any()) } returns failureTask
 
-    // When
-    val result = repository.markInvitationAsUsed(token, userId)
+        // When
+        val result = repository.markInvitationAsUsed(token, userId)
 
-    // Then
-    assertTrue("Result should be failure", result.isFailure)
-    assertTrue(
-        "Error should mention 'Transaction failed'",
-        result.exceptionOrNull()?.message?.contains("Transaction failed") == true)
-  }
+        // Then
+        assertTrue("Result should be failure", result.isFailure)
+        assertTrue(
+            "Error should mention 'Transaction failed'",
+            result.exceptionOrNull()?.message?.contains("Transaction failed") == true)
+      }
 
   @Test
-  fun `markInvitationAsUsed should set timestamp when marking as used`() = runTest {
+  fun firestoreInvitationRepository_markInvitationAsUsedSetsTimestampWhenMarkingAsUsed() = runTest {
     // Given
     val token = "TOKEN123"
     val userId = "user_1"
