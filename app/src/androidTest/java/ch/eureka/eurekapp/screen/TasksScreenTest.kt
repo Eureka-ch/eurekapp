@@ -179,12 +179,12 @@ class TasksScreenTest {
         .performScrollToNode(hasText("Implement Login Feature"))
 
     composeTestRule.onNodeWithText("Implement Login Feature").assertIsDisplayed()
-    composeTestRule.onNodeWithText("👤 Alice Smith").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Alice Smith").assertIsDisplayed()
     composeTestRule.onNodeWithText("50%").assertIsDisplayed()
 
     // Wait for the due date to be calculated and displayed
     composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithText("⏰ Due tomorrow").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Due tomorrow").assertIsDisplayed()
   }
 
   @Test
@@ -395,24 +395,24 @@ class TasksScreenTest {
     taskList.performScrollToNode(hasText(tasks[0].title))
     composeTestRule.waitUntilExactlyOneExists(hasText(tasks[0].title), 3000)
     composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithText("⏰ Overdue").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Overdue").assertIsDisplayed()
 
     // Verify tomorrow task - scroll to the task card first, then verify the date
-    taskList.performScrollToNode(hasText("⏰ Due tomorrow"))
-    composeTestRule.waitUntilExactlyOneExists(hasText("⏰ Due tomorrow"), 3000)
+    taskList.performScrollToNode(hasText("Due tomorrow"))
+    composeTestRule.waitUntilExactlyOneExists(hasText("Due tomorrow"), 3000)
     composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithText("⏰ Due tomorrow").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Due tomorrow").assertIsDisplayed()
 
     // Verify two weeks away task
     taskList.performScrollToNode(hasText(tasks[2].title))
     composeTestRule.waitUntilExactlyOneExists(hasText(tasks[2].title), 3000)
-    taskList.performScrollToNode(hasText("⏰ Due in more than a week"))
-    composeTestRule.onNodeWithText("⏰ Due in more than a week").assertIsDisplayed()
+    taskList.performScrollToNode(hasText("Due in more than a week"))
+    composeTestRule.onNodeWithText("Due in more than a week").assertIsDisplayed()
 
     // Verify no due date task
     taskList.performScrollToNode(hasText(tasks[3].title))
     composeTestRule.waitUntilExactlyOneExists(hasText(tasks[3].title), 3000)
-    composeTestRule.onNodeWithText("⏰ No due date").assertIsDisplayed()
+    composeTestRule.onNodeWithText("No due date").assertIsDisplayed()
   }
 
   @Test

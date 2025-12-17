@@ -51,7 +51,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -64,7 +63,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -79,6 +77,8 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.downloads.AppDatabase
 import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.LightingBlue
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.theme.LightColorScheme
@@ -223,12 +223,9 @@ fun MeetingDetailScreen(
   Scaffold(
       modifier = Modifier.testTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN),
       topBar = {
-        TopAppBar(
-            title = {
-              Text(
-                  text = uiState.meeting?.title ?: "Meeting",
-                  modifier = Modifier.testTag(MeetingDetailScreenTestTags.MEETING_TITLE))
-            },
+        EurekaTopBar(
+            title = uiState.meeting?.title ?: "Meeting",
+            titleTestTag = MeetingDetailScreenTestTags.MEETING_TITLE,
             navigationIcon = {
               IconButton(onClick = actionsConfig.onNavigateBack) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Navigate back")
@@ -561,10 +558,10 @@ private fun MeetingHeader(meeting: Meeting) {
               style = MaterialTheme.typography.labelMedium,
               color =
                   when (meeting.status) {
-                    MeetingStatus.OPEN_TO_VOTES -> Color.Blue
-                    MeetingStatus.SCHEDULED -> Color.Red
-                    MeetingStatus.IN_PROGRESS -> Color.Green
-                    MeetingStatus.COMPLETED -> Color.DarkGray
+                    MeetingStatus.OPEN_TO_VOTES -> EColors.MeetingStatusOpenToVotes
+                    MeetingStatus.SCHEDULED -> EColors.MeetingStatusScheduled
+                    MeetingStatus.IN_PROGRESS -> EColors.MeetingStatusInProgress
+                    MeetingStatus.COMPLETED -> EColors.MeetingStatusCompleted
                   },
               modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp))
         }
@@ -749,7 +746,7 @@ private fun EditableTitleField(config: EditableMeetingInfoCardConfig) {
   if (config.editTitle.isBlank() && config.hasTouchedTitle) {
     Text(
         text = "Title cannot be empty",
-        color = Color.Red,
+        color = MaterialTheme.colorScheme.error,
         style = MaterialTheme.typography.bodySmall,
         modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MSG))
   }
@@ -797,7 +794,7 @@ private fun EditableDateTimeField(
     if (config.editDateTime == null && config.hasTouchedDateTime) {
       Text(
           text = "Date and time must be set",
-          color = Color.Red,
+          color = MaterialTheme.colorScheme.error,
           style = MaterialTheme.typography.bodySmall,
           modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MSG))
     }
@@ -807,7 +804,7 @@ private fun EditableDateTimeField(
         java.time.LocalDateTime.of(editDate, editTime).isBefore(java.time.LocalDateTime.now())) {
       Text(
           text = "Meeting should be scheduled in the future.",
-          color = Color.Red,
+          color = MaterialTheme.colorScheme.error,
           style = MaterialTheme.typography.bodySmall,
           modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MSG))
     }
@@ -838,7 +835,7 @@ private fun EditableDurationField(config: EditableMeetingInfoCardConfig) {
   if (config.editDuration <= 0 && config.hasTouchedDuration) {
     Text(
         text = "Duration must be greater than 0",
-        color = Color.Red,
+        color = MaterialTheme.colorScheme.error,
         style = MaterialTheme.typography.bodySmall,
         modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MSG))
   }
@@ -867,7 +864,10 @@ fun InfoRow(
         tint = MaterialTheme.colorScheme.primary)
     Spacer(modifier = Modifier.width(8.dp))
     Column {
-      Text(text = label, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+      Text(
+          text = label,
+          style = MaterialTheme.typography.labelSmall,
+          color = EColors.SecondaryTextColor)
       Text(
           text = value,
           style = MaterialTheme.typography.bodyMedium,
@@ -960,7 +960,7 @@ private fun CreatorItem(creatorUser: User?, creatorId: String) {
           Text(
               text = "Meeting Creator",
               style = MaterialTheme.typography.labelSmall,
-              color = Color.Gray,
+              color = EColors.SecondaryTextColor,
               modifier = Modifier.testTag(MeetingDetailScreenTestTags.CREATOR_LABEL))
         }
       }
@@ -1007,7 +1007,7 @@ fun AttachmentsSection(
                       Text(
                           text = "No attachments",
                           style = MaterialTheme.typography.bodyMedium,
-                          color = Color.Gray,
+                          color = EColors.SecondaryTextColor,
                           modifier =
                               Modifier.testTag(MeetingDetailScreenTestTags.NO_ATTACHMENTS_MESSAGE))
                     } else {
@@ -1098,7 +1098,7 @@ fun AttachmentItem(
                           containerColor = LightColorScheme.primary)) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        tint = Color.White,
+                        tint = EColors.WhiteTextColor,
                         contentDescription = null)
                   }
               Spacer(modifier = Modifier.width(12.dp))
@@ -1128,7 +1128,7 @@ fun AttachmentItem(
                     colors = IconButtonDefaults.iconButtonColors(containerColor = LightingBlue)) {
                       Icon(
                           imageVector = Icons.Default.Download,
-                          tint = Color.White,
+                          tint = EColors.WhiteTextColor,
                           contentDescription = null)
                     }
               }

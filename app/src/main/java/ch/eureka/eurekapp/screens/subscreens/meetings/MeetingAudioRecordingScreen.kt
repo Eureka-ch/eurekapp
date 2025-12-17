@@ -35,7 +35,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -108,7 +107,7 @@ fun MeetingAudioRecordingScreen(
 
   HandleMicrophonePermission(microphonePermissionIsGranted, launcher)
 
-  var timeInSeconds by remember { mutableLongStateOf(0L) }
+  var timeInSeconds = remember { audioRecordingViewModel.recordingTimeInSeconds }.collectAsState()
 
   var errorText by remember { mutableStateOf<String>("") }
   var uploadText by remember { mutableStateOf<String>("") }
@@ -117,8 +116,6 @@ fun MeetingAudioRecordingScreen(
   // If a transcript already exists for this meeting, show the View Transcript button
   HandleExistingTranscript(
       meetingState.value, onTranscriptFound = { canShowAITranscriptButton = true })
-
-  TrackRecordingTime(recordingStatus.value) { timeInSeconds++ }
 
   LaunchedEffect(uploadText) {
     if (uploadText != "") {
@@ -146,7 +143,7 @@ fun MeetingAudioRecordingScreen(
       },
       content = { padding ->
         Column(
-            modifier = Modifier.padding(padding),
+            modifier = Modifier.padding(padding).fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center) {
               Row(
@@ -179,7 +176,7 @@ fun MeetingAudioRecordingScreen(
                               horizontalArrangement = Arrangement.Center,
                               verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    Formatters.formatTime(timeInSeconds),
+                                    Formatters.formatTime(timeInSeconds.value),
                                     modifier = Modifier.padding(10.dp),
                                     style = Typography.titleMedium,
                                     color = DarkColorScheme.background)
@@ -195,7 +192,6 @@ fun MeetingAudioRecordingScreen(
                                         onClick = {
                                           audioRecordingViewModel.stopRecording()
                                           audioRecordingViewModel.deleteLocalRecording()
-                                          timeInSeconds = 0
                                         },
                                         testTag = MeetingAudioScreenTestTags.STOP_RECORDING_BUTTON)
                                     PlayButton(
@@ -226,7 +222,6 @@ fun MeetingAudioRecordingScreen(
                                           audioRecordingViewModel.startRecording(
                                               context, "${projectId}_${meetingId}.mp4")
                                           canPressUploadButton = true
-                                          timeInSeconds = 0
                                         },
                                         testTag = MeetingAudioScreenTestTags.START_RECORDING_BUTTON)
                                   }
@@ -351,16 +346,6 @@ private fun HandleMicrophonePermission(
 ) {
   LaunchedEffect(permissionGranted) {
     if (!permissionGranted) launcher.launch(Manifest.permission.RECORD_AUDIO)
-  }
-}
-
-@Composable
-private fun TrackRecordingTime(recordingState: RecordingState, onTick: () -> Unit) {
-  LaunchedEffect(recordingState) {
-    while (recordingState == RecordingState.RUNNING) {
-      delay(1000)
-      onTick()
-    }
   }
 }
 

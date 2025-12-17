@@ -1,138 +1,95 @@
 // Co-authored by Claude Code
 package ch.eureka.eurekapp.model.data.mcp
 
+import ch.eureka.eurekapp.model.data.FirestorePaths
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
-import java.time.Instant
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
+import com.google.firebase.firestore.FirebaseFirestore
+import java.security.MessageDigest
+import java.security.SecureRandom
+import java.util.Date
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONArray
-import org.json.JSONObject
+
+data class CreateTokenResult(val token: McpToken, val rawToken: String)
 
 interface McpTokenRepository {
-  suspend fun createToken(name: String, ttlDays: Int = 30): Result<McpToken>
+  suspend fun createToken(name: String, ttlDays: Int = 30): Result<CreateTokenResult>
 
-  suspend fun revokeToken(tokenId: String): Result<Unit>
+  suspend fun revokeToken(tokenHash: String): Result<Unit>
 
   suspend fun listTokens(): Result<List<McpToken>>
 }
 
 class FirebaseMcpTokenRepository(
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
-    private val httpClient: OkHttpClient = OkHttpClient(),
-    private val functionsBaseUrl: String = "https://us-central1-eureka-app-ch.cloudfunctions.net",
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 ) : McpTokenRepository {
 
-  companion object {
-    private const val DEFAULT_ERROR = "Unknown error"
+  private fun getCurrentUserId(): String {
+    return auth.currentUser?.uid
+        ?: throw IllegalStateException("User must be authenticated to manage MCP tokens")
   }
 
-  private suspend fun getIdToken(): String {
-    val user = auth.currentUser ?: throw SecurityException("User must be authenticated")
-    return user.getIdToken(false).await().token ?: throw SecurityException("Failed to get ID token")
-  }
+  override suspend fun createToken(name: String, ttlDays: Int): Result<CreateTokenResult> =
+      runCatching {
+        val userId = getCurrentUserId()
+        val rawToken = generateSecureToken()
+        val tokenHash = hashToken(rawToken)
+        val now = Timestamp.now()
+        val expiresAt = Timestamp(Date(now.toDate().time + ttlDays * 24 * 60 * 60 * 1000L))
 
-  override suspend fun createToken(name: String, ttlDays: Int): Result<McpToken> = runCatching {
-    withContext(ioDispatcher) {
-      val idToken = getIdToken()
-      val body = JSONObject().put("name", name).put("ttlDays", ttlDays).toString()
+        // createdAt is null here - @ServerTimestamp will set it on the server
+        val token =
+            McpToken(
+                userId = userId,
+                name = name,
+                createdAt = null,
+                expiresAt = expiresAt,
+                lastUsedAt = null)
 
-      val request =
-          Request.Builder()
-              .url("$functionsBaseUrl/mcpCreateToken")
-              .post(body.toRequestBody("application/json".toMediaType()))
-              .addHeader("Authorization", "Bearer $idToken")
-              .build()
+        firestore.document(FirestorePaths.mcpTokenPath(tokenHash)).set(token).await()
 
-      val response = httpClient.newCall(request).execute()
-      if (!response.isSuccessful) {
-        val errorBody = response.body?.string() ?: DEFAULT_ERROR
-        throw Exception("Failed to create token: $errorBody")
+        token.tokenHash = tokenHash
+        CreateTokenResult(token, rawToken)
       }
 
-      val responseJson = JSONObject(response.body?.string() ?: "{}")
-      if (!responseJson.optBoolean("success", false)) {
-        throw Exception(responseJson.optString("error", DEFAULT_ERROR))
-      }
+  override suspend fun revokeToken(tokenHash: String): Result<Unit> = runCatching {
+    val userId = getCurrentUserId()
+    val docRef = firestore.document(FirestorePaths.mcpTokenPath(tokenHash))
+    val doc = docRef.get().await()
 
-      val data = responseJson.getJSONObject("data")
-      McpToken(
-          tokenId = data.getString("token"),
-          name = data.getString("name"),
-          expiresAt = Instant.parse(data.getString("expiresAt")))
+    require(doc.exists()) { "Token not found" }
+
+    val tokenUserId = doc.getString("userId")
+    if (tokenUserId != userId) {
+      throw IllegalAccessException("Cannot revoke another user's token")
     }
-  }
 
-  override suspend fun revokeToken(tokenId: String): Result<Unit> = runCatching {
-    withContext(ioDispatcher) {
-      val idToken = getIdToken()
-      val body = JSONObject().put("tokenId", tokenId).toString()
-
-      val request =
-          Request.Builder()
-              .url("$functionsBaseUrl/mcpRevokeToken")
-              .post(body.toRequestBody("application/json".toMediaType()))
-              .addHeader("Authorization", "Bearer $idToken")
-              .build()
-
-      val response = httpClient.newCall(request).execute()
-      if (!response.isSuccessful) {
-        val errorBody = response.body?.string() ?: DEFAULT_ERROR
-        throw Exception("Failed to revoke token: $errorBody")
-      }
-
-      val responseJson = JSONObject(response.body?.string() ?: "{}")
-      if (!responseJson.optBoolean("success", false)) {
-        throw Exception(responseJson.optString("error", DEFAULT_ERROR))
-      }
-    }
+    docRef.delete().await()
   }
 
   override suspend fun listTokens(): Result<List<McpToken>> = runCatching {
-    withContext(ioDispatcher) {
-      val idToken = getIdToken()
-
-      val request =
-          Request.Builder()
-              .url("$functionsBaseUrl/mcpListTokens")
-              .get()
-              .addHeader("Authorization", "Bearer $idToken")
-              .build()
-
-      val response = httpClient.newCall(request).execute()
-      if (!response.isSuccessful) {
-        val errorBody = response.body?.string() ?: DEFAULT_ERROR
-        throw Exception("Failed to list tokens: $errorBody")
-      }
-
-      val responseJson = JSONObject(response.body?.string() ?: "{}")
-      if (!responseJson.optBoolean("success", false)) {
-        throw Exception(responseJson.optString("error", DEFAULT_ERROR))
-      }
-
-      val dataArray = responseJson.getJSONArray("data")
-      parseTokenList(dataArray)
+    val userId = getCurrentUserId()
+    val snapshot =
+        firestore
+            .collection(FirestorePaths.mcpTokensPath())
+            .whereEqualTo("userId", userId)
+            .get()
+            .await()
+    snapshot.documents.mapNotNull { doc ->
+      doc.toObject(McpToken::class.java)?.apply { tokenHash = doc.id }
     }
   }
 
-  private fun parseTokenList(dataArray: JSONArray): List<McpToken> {
-    return (0 until dataArray.length()).map { i ->
-      val item = dataArray.getJSONObject(i)
-      McpToken(
-          tokenId = item.getString("tokenId"),
-          name = item.optString("name", ""),
-          createdAt =
-              item.optString("createdAt").takeIf { it.isNotEmpty() }?.let { Instant.parse(it) },
-          expiresAt =
-              item.optString("expiresAt").takeIf { it.isNotEmpty() }?.let { Instant.parse(it) },
-          lastUsedAt =
-              item.optString("lastUsedAt").takeIf { it.isNotEmpty() }?.let { Instant.parse(it) })
-    }
+  private fun generateSecureToken(): String {
+    val bytes = ByteArray(32)
+    SecureRandom().nextBytes(bytes)
+    return "mcp_" + bytes.joinToString("") { "%02x".format(it) }
+  }
+
+  private fun hashToken(token: String): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    val hashBytes = digest.digest(token.toByteArray())
+    return hashBytes.joinToString("") { "%02x".format(it) }
   }
 }
