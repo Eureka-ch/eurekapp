@@ -284,9 +284,7 @@ internal fun HomeOverviewLayout(
                           Modifier.fillMaxWidth()
                               .padding(vertical = Spacing.xs)
                               .testTag(
-                                  HomeOverviewTestTags.getProjectItemTestTag(project.projectId)),
-                      actionButtonTestTag =
-                          HomeOverviewTestTags.getProjectLinkTestTag(project.projectId))
+                                  HomeOverviewTestTags.getProjectItemTestTag(project.projectId)))
                 }
           }
         }
