@@ -9,4 +9,51 @@
     <string name="loading_meeting_location">Loading meeting location…</string>
     <string name="navigate_back">Navigate back</string>
     <string name="location_icon">Location icon</string>
+
+    <!-- Meeting Audio Recording Screen -->
+    <string name="audio_recording_title">Audio Recording</string>
+    <string name="audio_recording_title_with_emoji">\uD83C\uDFA4 Audio Recording</string>
+    <string name="uploaded_successfully">Uploaded successfully!</string>
+    <string name="view_transcript">View Transcript</string>
+
+    <!-- Meeting Transcript Screen -->
+    <string name="transcript_title">Transcript</string>
+    <string name="back">Back</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="generate_transcript">Generate transcript</string>
+    <string name="generating_transcript">Generating transcript…</string>
+    <string name="transcription_failed">Transcription failed</string>
+    <string name="generate_summary">Generate summary</string>
+    <string name="generating_summary">Generating summary…</string>
+
+    <!-- Create Project Screen -->
+    <string name="create_project_title">Create Project</string>
+    <string name="create_new_project">Create New Project</string>
+    <string name="create_project_description">Define the core details. You can link Google Workspace and Github now or later.</string>
+    <string name="project_name">Project name</string>
+    <string name="placeholder_project_name">Ex: SwEnt - Sprint Manager</string>
+    <string name="project_name_error">Project name cannot be empty!</string>
+    <string name="description_label">Description</string>
+    <string name="placeholder_description">Short context and objectives...</string>
+    <string name="description_error">Description cannot be empty!</string>
+    <string name="start_label">Start</string>
+    <string name="end_label">End (optional)</string>
+    <string name="placeholder_date">dd/MM/yyyy</string>
+    <string name="date_format_error">Date should be of the format dd/MM/yyyy</string>
+    <string name="integrations_label">Integrations</string>
+    <string name="enable_google_drive">Enable Google Drive Folder</string>
+    <string name="link_github">Link Github Repository</string>
+    <string name="create_project_button">Create Project</string>
+    <string name="github_url_title">Github URL (optional)</string>
+    <string name="github_url_placeholder">https://github.com/org/repo</string>
+    <string name="failed_to_create_project">Failed to create the project...</string>
+    <string name="select_date">Select date</string>
+    <string name="project_status_label">Project Status</string>
+
+    <!-- Create Invitation Screen -->
+    <string name="create_invitation_title">Create Invitation Token</string>
+    <string name="create_invitation_description">Invite collaborators with a role, permissions and expiration rules.</string>
+    <string name="create_invitation_button">Create invitation</string>
+    <string name="copy_to_clipboard_button">Copy to clipboard</string>
+    <string name="copied_to_clipboard">Copied to clipboard!</string>
 </resources>

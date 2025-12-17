@@ -52,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -60,6 +61,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.project.CreateProjectViewModel
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
@@ -180,10 +182,13 @@ fun CreateProjectScreen(
 
   val failedToCreateProjectText = remember { mutableStateOf("") }
 
+  // capture localized strings used inside non-composable lambdas
+  val failedToCreateProjectMessage = stringResource(id = R.string.failed_to_create_project)
+
   Scaffold(
       topBar = {
         EurekaTopBar(
-            title = "Create Project",
+            title = stringResource(id = R.string.create_project_title),
             navigationIcon = {
               BackButton(
                   onClick = onBackClick,
@@ -200,12 +205,11 @@ fun CreateProjectScreen(
             verticalArrangement = Arrangement.SpaceEvenly) {
               Column(modifier = Modifier.padding(vertical = 2.dp, horizontal = 10.dp)) {
                 Text(
-                    text = "Create New Project",
+                    text = stringResource(id = R.string.create_new_project),
                     style = Typography.titleLarge,
                     fontWeight = FontWeight(600))
                 Text(
-                    text =
-                        "Define the core details. You can link Google Workspace and Github now or later.",
+                    text = stringResource(id = R.string.create_project_description),
                     style = Typography.titleMedium,
                     color = GrayTextColor2)
               }
@@ -232,11 +236,11 @@ fun CreateProjectScreen(
                               horizontalArrangement = Arrangement.Center,
                               verticalAlignment = Alignment.CenterVertically) {
                                 CreateProjectTextField(
-                                    title = "Project name",
-                                    placeHolderText = "Ex: SwEnt - Sprint Manager",
+                                    title = stringResource(id = R.string.project_name),
+                                    placeHolderText = stringResource(id = R.string.placeholder_project_name),
                                     textValue = projectName,
                                     inputIsError = { input -> Utils.stringIsEmptyOrBlank(input) },
-                                    errorText = "Project name cannot be empty!",
+                                    errorText = stringResource(id = R.string.project_name_error),
                                     isErrorState = projectNameError,
                                     testTag =
                                         CreateProjectScreenTestTags
@@ -247,11 +251,11 @@ fun CreateProjectScreen(
                               horizontalArrangement = Arrangement.Center,
                               verticalAlignment = Alignment.CenterVertically) {
                                 CreateProjectTextField(
-                                    title = "Description",
-                                    placeHolderText = "Short context and objectives...",
+                                    title = stringResource(id = R.string.description_label),
+                                    placeHolderText = stringResource(id = R.string.placeholder_description),
                                     textValue = projectDescription,
                                     inputIsError = { input -> Utils.stringIsEmptyOrBlank(input) },
-                                    errorText = "Description cannot be empty!",
+                                    errorText = stringResource(id = R.string.description_error),
                                     minLine = 4,
                                     isErrorState = projectDescriptionError,
                                     testTag =
@@ -267,14 +271,14 @@ fun CreateProjectScreen(
                                     horizontalArrangement = Arrangement.Center,
                                     verticalAlignment = Alignment.CenterVertically) {
                                       CreateProjectTextField(
-                                          title = "Start",
-                                          placeHolderText = "dd/MM/yyyy",
+                                          title = stringResource(id = R.string.start_label),
+                                          placeHolderText = stringResource(id = R.string.placeholder_date),
                                           isDatePicker = true,
                                           textValue = startDate,
                                           inputIsError = { input ->
                                             !Utils.isDateParseableToStandardAppPattern(input)
                                           },
-                                          errorText = "Date should be of the format dd/MM/yyyy",
+                                          errorText = stringResource(id = R.string.date_format_error),
                                           isErrorState = startDateError,
                                           testTag = CreateProjectScreenTestTags.START_DATE_TEST_TAG,
                                           datePickerButtonTag =
@@ -286,15 +290,15 @@ fun CreateProjectScreen(
                                     horizontalArrangement = Arrangement.Center,
                                     verticalAlignment = Alignment.CenterVertically) {
                                       CreateProjectTextField(
-                                          title = "End (optional)",
-                                          placeHolderText = "dd/MM/yyyy",
+                                          title = stringResource(id = R.string.end_label),
+                                          placeHolderText = stringResource(id = R.string.placeholder_date),
                                           isDatePicker = true,
                                           textValue = endDate,
                                           inputIsError = { input ->
                                             !Utils.stringIsEmptyOrBlank(input) &&
                                                 !Utils.isDateParseableToStandardAppPattern(input)
                                           },
-                                          errorText = "Date should be of the format dd/MM/yyyy",
+                                          errorText = stringResource(id = R.string.date_format_error),
                                           isErrorState = endDateError,
                                           testTag = CreateProjectScreenTestTags.END_DATE_TEST_TAG,
                                           datePickerButtonTag =
@@ -320,16 +324,16 @@ fun CreateProjectScreen(
                                       .padding(horizontal = 15.dp, vertical = 5.dp),
                               horizontalAlignment = Alignment.Start) {
                                 Text(
-                                    "Integrations",
+                                    stringResource(id = R.string.integrations_label),
                                     style = Typography.titleMedium,
                                     fontWeight = FontWeight(600))
                                 CheckboxOptionComponent(
-                                    "Enable Google Drive Folder",
+                                    stringResource(id = R.string.enable_google_drive),
                                     enableGoogleDriveFolderChecked,
                                     CreateProjectScreenTestTags
                                         .CHECKBOX_ENABLE_GOOGLE_DRIVE_FOLDER_TEST_TAG)
                                 CheckboxOptionComponent(
-                                    "Link Github Repository",
+                                    stringResource(id = R.string.link_github),
                                     linkGithubRepository,
                                     CreateProjectScreenTestTags.CHECKBOX_LINK_GITHUB_REPOSITORY)
 
@@ -381,13 +385,14 @@ fun CreateProjectScreen(
                                           projectFormStatus,
                                           createProjectViewModel,
                                           onProjectCreated,
-                                          failedToCreateProjectText)
+                                          failedToCreateProjectText,
+                                          failedToCreateProjectMessage)
                                     },
                                     colors =
                                         ButtonDefaults.filledTonalButtonColors(
                                             containerColor = LightingBlue)) {
                                       Text(
-                                          text = "Create Project",
+                                          text = stringResource(id = R.string.create_project_button),
                                           color = WhiteTextColor,
                                           fontWeight = FontWeight(500),
                                           style = Typography.titleSmall)
@@ -407,12 +412,12 @@ private fun GithubUrlField(isEnabled: Boolean, githubUrl: MutableState<String>) 
   if (isEnabled) {
     Row {
       CreateProjectTextField(
-          title = "Github URL (optional)",
-          placeHolderText = "https://github.com/org/repo",
-          textValue = githubUrl,
-          inputIsError = { _ -> false },
-          errorText = "",
-          testTag = CreateProjectScreenTestTags.GITHUB_URL_TEST_TAG)
+          title = stringResource(id = R.string.github_url_title),
+          placeHolderText = stringResource(id = R.string.github_url_placeholder),
+           textValue = githubUrl,
+           inputIsError = { _ -> false },
+           errorText = "",
+           testTag = CreateProjectScreenTestTags.GITHUB_URL_TEST_TAG)
     }
   }
 }
@@ -549,7 +554,7 @@ fun CreateProjectTextField(
                           onClick = { showDatePicker = !showDatePicker }) {
                             Icon(
                                 imageVector = Icons.Default.DateRange,
-                                contentDescription = "Select date")
+                                contentDescription = stringResource(id = R.string.select_date))
                           }
                     }
                   },
@@ -618,7 +623,7 @@ private fun ProjectStateSelectionMenu(projectStatus: MutableState<ProjectStatus>
         var expanded by remember { mutableStateOf(false) }
         Text(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
-            text = "Project Status",
+            text = stringResource(id = R.string.project_status_label),
             style = titleTypography,
             color = GrayTextColor2,
             textAlign = TextAlign.Start)

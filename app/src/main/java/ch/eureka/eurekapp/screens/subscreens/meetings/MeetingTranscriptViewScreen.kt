@@ -29,7 +29,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.transcription.TranscriptionStatus
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
@@ -63,7 +65,7 @@ private fun ErrorMessageDisplay(errorMsg: String?, onDismiss: (() -> Unit)? = nu
         color = MaterialTheme.colorScheme.error,
         modifier = Modifier.testTag(TranscriptScreenTestTags.ERROR_MESSAGE))
     Spacer(modifier = Modifier.height(8.dp))
-    onDismiss?.let { Button(onClick = it) { Text("Dismiss") } }
+    onDismiss?.let { Button(onClick = it) { Text(stringResource(id = R.string.dismiss)) } }
   }
 }
 
@@ -85,8 +87,8 @@ private fun TranscriptSection(
           modifier =
               Modifier.fillMaxWidth()
                   .testTag(TranscriptScreenTestTags.GENERATE_TRANSCRIPT_BUTTON)) {
-            Text("Generate Transcript")
-          }
+        Text(stringResource(id = R.string.generate_transcript))
+      }
     }
     isGeneratingTranscript || transcriptionStatus == TranscriptionStatus.PENDING -> {
       Row(
@@ -97,7 +99,7 @@ private fun TranscriptSection(
                 modifier =
                     Modifier.size(20.dp).testTag(TranscriptScreenTestTags.TRANSCRIPTION_LOADING))
             Spacer(modifier = Modifier.size(12.dp))
-            Text("Generating transcript...")
+            Text(stringResource(id = R.string.generating_transcript))
           }
     }
     transcriptionStatus == TranscriptionStatus.COMPLETED -> {
@@ -108,7 +110,7 @@ private fun TranscriptSection(
     }
     transcriptionStatus == TranscriptionStatus.FAILED -> {
       Text(
-          text = errorMsg ?: "Transcription failed",
+          text = errorMsg ?: stringResource(id = R.string.transcription_failed),
           color = MaterialTheme.colorScheme.error,
           modifier = Modifier.testTag(TranscriptScreenTestTags.TRANSCRIPTION_ERROR))
     }
@@ -135,7 +137,7 @@ private fun SummarySection(
               CircularProgressIndicator(
                   modifier = Modifier.size(20.dp).testTag(TranscriptScreenTestTags.SUMMARY_LOADING))
               Spacer(modifier = Modifier.size(12.dp))
-              Text("Generating summary...")
+              Text(stringResource(id = R.string.generating_summary))
             }
       }
       summary != null -> {
@@ -150,8 +152,8 @@ private fun SummarySection(
             onClick = onGenerateSummary,
             modifier =
                 Modifier.fillMaxWidth().testTag(TranscriptScreenTestTags.GENERATE_SUMMARY_BUTTON)) {
-              Text("Generate Summary")
-            }
+          Text(stringResource(id = R.string.generate_summary))
+        }
       }
     }
   }
@@ -181,12 +183,12 @@ fun MeetingTranscriptViewScreen(
       modifier = Modifier.fillMaxSize().testTag(TranscriptScreenTestTags.TRANSCRIPT_SCREEN),
       topBar = {
         EurekaTopBar(
-            title = "Transcript",
+            title = stringResource(id = R.string.transcript_title),
             navigationIcon = {
               IconButton(onClick = onNavigateBack) {
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
+                    contentDescription = stringResource(id = R.string.back),
                     tint = EColors.WhiteTextColor)
               }
             })

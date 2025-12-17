@@ -30,10 +30,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.IdGenerator
 import ch.eureka.eurekapp.model.data.invitation.CreateInvitationViewModel
 import ch.eureka.eurekapp.model.data.invitation.Invitation
@@ -68,11 +70,11 @@ fun CreateInvitationSubscreen(
       verticalArrangement = Arrangement.Top) {
         Column(modifier = Modifier.padding(vertical = 5.dp, horizontal = 10.dp).weight(2f)) {
           Text(
-              text = "Create Invitation Token",
+              text = stringResource(id = R.string.create_invitation_title),
               style = Typography.titleLarge,
               fontWeight = FontWeight(600))
           Text(
-              text = "Invite collaborators with a role, permissions and expiration rules.",
+              text = stringResource(id = R.string.create_invitation_description),
               style = Typography.titleMedium,
               color = GrayTextColor2)
         }
@@ -139,7 +141,7 @@ fun CreateInvitationSubscreen(
                                       })
                                 }) {
                                   Text(
-                                      "Create invitation",
+                                      stringResource(id = R.string.create_invitation_button),
                                       style = Typography.titleSmall,
                                       fontWeight = FontWeight(500),
                                       color = LightColorScheme.surface,
@@ -161,12 +163,14 @@ fun CreateInvitationSubscreen(
                                   if (createInvitationToken.value != null) {
                                     copyToClipboard(context, createInvitationToken.value!!.token)
                                     Toast.makeText(
-                                            context, "Copied to clipboard!", Toast.LENGTH_SHORT)
+                                            context,
+                                            context.getString(R.string.copied_to_clipboard),
+                                            Toast.LENGTH_SHORT)
                                         .show()
                                   }
                                 }) {
                                   Text(
-                                      "Copy to clipboard",
+                                      stringResource(id = R.string.copy_to_clipboard_button),
                                       style = Typography.titleSmall,
                                       fontWeight = FontWeight(500),
                                       color = LightColorScheme.surface,

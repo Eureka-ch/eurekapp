@@ -44,10 +44,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.audio.AudioRecordingViewModel
 import ch.eureka.eurekapp.model.audio.RecordingState
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
@@ -105,9 +107,11 @@ fun MeetingAudioRecordingScreen(
 
   var canShowAITranscriptButton by remember { mutableStateOf(false) }
 
+  // HandleMicrophonePermission(microphonePermissionIsGranted, launcher)
+
   HandleMicrophonePermission(microphonePermissionIsGranted, launcher)
 
-  var timeInSeconds = remember { audioRecordingViewModel.recordingTimeInSeconds }.collectAsState()
+  val timeInSeconds = remember { audioRecordingViewModel.recordingTimeInSeconds }.collectAsState()
 
   var errorText by remember { mutableStateOf<String>("") }
   var uploadText by remember { mutableStateOf<String>("") }
@@ -134,7 +138,7 @@ fun MeetingAudioRecordingScreen(
   Scaffold(
       topBar = {
         EurekaTopBar(
-            title = "Audio Recording",
+            title = stringResource(id = R.string.audio_recording_title),
             navigationIcon = {
               BackButton(
                   onClick = onBackClick,
@@ -151,7 +155,7 @@ fun MeetingAudioRecordingScreen(
                   horizontalArrangement = Arrangement.Center,
                   verticalAlignment = Alignment.Top) {
                     Text(
-                        "\uD83C\uDFA4 Audio Recording",
+                        stringResource(id = R.string.audio_recording_title_with_emoji),
                         modifier = Modifier.padding(10.dp),
                         style = Typography.titleLarge,
                         color = DarkColorScheme.background)
@@ -205,11 +209,12 @@ fun MeetingAudioRecordingScreen(
                                               projectId,
                                               meetingId,
                                               onSuccesfulUpload = {
-                                                uploadText = "Uploaded successfully!"
+                                                // use context to obtain string here because this callback is not executed during composition
+                                                uploadText = context.getString(R.string.uploaded_successfully)
                                                 canShowAITranscriptButton = true
                                               },
                                               onFailureUpload = { exception ->
-                                                errorText = exception.message?.toString() ?: ""
+                                                errorText = exception.message ?: ""
                                               },
                                               onCompletion = { canPressUploadButton = true })
                                         },
@@ -266,7 +271,7 @@ fun MeetingAudioRecordingScreen(
                                                       .GENERATE_AI_TRANSCRIPT_BUTTON),
                                       onClick = { onNavigateToTranscript(projectId, meetingId) }) {
                                         Row() {
-                                          Text("View Transcript", style = Typography.titleMedium)
+                                          Text(stringResource(id = R.string.view_transcript), style = Typography.titleMedium)
                                         }
                                       }
                                 }
