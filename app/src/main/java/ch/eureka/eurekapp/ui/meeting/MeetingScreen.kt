@@ -240,7 +240,9 @@ fun MeetingScreen(
             containerColor =
                 if (uiState.isConnected) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.surfaceVariant) {
-              Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(R.string.meeting_create_meeting))
+              Icon(
+                  imageVector = Icons.Default.Add,
+                  contentDescription = stringResource(R.string.meeting_create_meeting))
             }
       },
       content = { padding ->
@@ -432,14 +434,16 @@ fun MeetingsList(
                               onSuccess = {
                                 Toast.makeText(
                                         context,
-                                        context.getString(R.string.meeting_saved_to_calendar_success),
+                                        context.getString(
+                                            R.string.meeting_saved_to_calendar_success),
                                         Toast.LENGTH_SHORT)
                                     .show()
                               },
                               onFailure = {
                                 Toast.makeText(
                                         context,
-                                        context.getString(R.string.meeting_saved_to_calendar_failure),
+                                        context.getString(
+                                            R.string.meeting_saved_to_calendar_failure),
                                         Toast.LENGTH_SHORT)
                                     .show()
                               })
@@ -604,7 +608,8 @@ fun MeetingCard(
                                 contentAlignment = Alignment.Center) {
                                   Icon(
                                       imageVector = Icons.Default.HourglassTop,
-                                      contentDescription = stringResource(R.string.meeting_icon_duration),
+                                      contentDescription =
+                                          stringResource(R.string.meeting_icon_duration),
                                       modifier = Modifier.size(16.dp),
                                       tint = EColors.GrayTextColor2)
                                 }
@@ -623,7 +628,8 @@ fun MeetingCard(
                                   horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                     Icon(
                                         imageVector = Icons.Default.HowToVote,
-                                        contentDescription = stringResource(R.string.meeting_icon_vote),
+                                        contentDescription =
+                                            stringResource(R.string.meeting_icon_vote),
                                         modifier = Modifier.size(14.dp),
                                         tint = EColors.GrayTextColor2)
                                     Text(
@@ -631,7 +637,8 @@ fun MeetingCard(
                                             Modifier.testTag(
                                                 MeetingScreenTestTags
                                                     .MEETING_VOTE_FOR_DATETIME_MESSAGE),
-                                        text = stringResource(R.string.meeting_vote_datetime_message),
+                                        text =
+                                            stringResource(R.string.meeting_vote_datetime_message),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = EColors.GrayTextColor2)
                                   }
@@ -656,7 +663,8 @@ fun MeetingCard(
                                 contentAlignment = Alignment.Center) {
                                   Icon(
                                       imageVector = Icons.Default.Schedule,
-                                      contentDescription = stringResource(R.string.meeting_icon_schedule),
+                                      contentDescription =
+                                          stringResource(R.string.meeting_icon_schedule),
                                       modifier = Modifier.size(16.dp),
                                       tint = EColors.GrayTextColor2)
                                 }
@@ -691,7 +699,8 @@ fun MeetingCard(
                                     contentAlignment = Alignment.Center) {
                                       Icon(
                                           imageVector = Icons.Default.HowToVote,
-                                          contentDescription = stringResource(R.string.meeting_icon_vote),
+                                          contentDescription =
+                                              stringResource(R.string.meeting_icon_vote),
                                           modifier = Modifier.size(16.dp),
                                           tint = EColors.GrayTextColor2)
                                     }
@@ -724,7 +733,8 @@ fun MeetingCard(
                                     contentAlignment = Alignment.Center) {
                                       Icon(
                                           imageVector = Icons.Default.Place,
-                                          contentDescription = stringResource(R.string.meeting_icon_location),
+                                          contentDescription =
+                                              stringResource(R.string.meeting_icon_location),
                                           modifier = Modifier.size(16.dp),
                                           tint = EColors.GrayTextColor2)
                                     }
@@ -754,7 +764,8 @@ fun MeetingCard(
                                       contentAlignment = Alignment.Center) {
                                         Icon(
                                             imageVector = Icons.Default.VideoCall,
-                                            contentDescription = stringResource(R.string.meeting_icon_video_call),
+                                            contentDescription =
+                                                stringResource(R.string.meeting_icon_video_call),
                                             modifier = Modifier.size(16.dp),
                                             tint = EColors.GrayTextColor2)
                                       }
@@ -864,7 +875,8 @@ fun MeetingCard(
                                     onClick = { config.onAddMeetingToCalendar(meeting) }) {
                                       Icon(
                                           imageVector = Icons.Default.CalendarToday,
-                                          contentDescription = stringResource(R.string.meeting_add_to_calendar),
+                                          contentDescription =
+                                              stringResource(R.string.meeting_add_to_calendar),
                                           tint = MaterialTheme.colorScheme.primary,
                                           modifier = Modifier.size(24.dp))
                                     }
@@ -931,22 +943,20 @@ fun RoundedTabRow(
     selectedTab: MeetingTab,
     onTabSelected: (MeetingTab) -> Unit
 ) {
-    Surface(
-        shape = RoundedCornerShape(24.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        tonalElevation = 2.dp,
-        modifier =
-            Modifier.padding(horizontal = 8.dp)
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .testTag(MeetingScreenTestTags.MEETING_TABS)
-    ) {
+  Surface(
+      shape = RoundedCornerShape(24.dp),
+      color = MaterialTheme.colorScheme.surfaceVariant,
+      tonalElevation = 2.dp,
+      modifier =
+          Modifier.padding(horizontal = 8.dp)
+              .fillMaxWidth()
+              .wrapContentHeight()
+              .testTag(MeetingScreenTestTags.MEETING_TABS)) {
         Row(
             modifier = Modifier.padding(6.dp).fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            tabs.forEach { tab ->
+            verticalAlignment = Alignment.CenterVertically) {
+              tabs.forEach { tab ->
                 val isSelected = tab == selectedTab
                 Surface(
                     shape = RoundedCornerShape(20.dp),
@@ -958,22 +968,20 @@ fun RoundedTabRow(
                             .padding(horizontal = 4.dp)
                             .testTag(
                                 if (tab.ordinal == 0) MeetingScreenTestTags.MEETING_TAB_UPCOMING
-                                else MeetingScreenTestTags.MEETING_TAB_PAST
-                            )
+                                else MeetingScreenTestTags.MEETING_TAB_PAST)
                             .clickable { onTabSelected(tab) },
                 ) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = tab.name,
-                            color =
-                                if (isSelected) MaterialTheme.colorScheme.onPrimary
-                                else MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                        )
-                    }
+                  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = tab.name,
+                        color =
+                            if (isSelected) MaterialTheme.colorScheme.onPrimary
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
+                  }
                 }
+              }
             }
-        }
-    }
+      }
 }

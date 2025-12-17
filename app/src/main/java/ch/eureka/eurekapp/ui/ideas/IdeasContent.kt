@@ -293,7 +293,9 @@ private fun IdeasListContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center) {
           Text(
-              text = stringResource(R.string.ideas_empty_state_message, selectedProject?.name ?: "this project"),
+              text =
+                  stringResource(
+                      R.string.ideas_empty_state_message, selectedProject?.name ?: "this project"),
               style = MaterialTheme.typography.bodyLarge,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
               textAlign = TextAlign.Center)
@@ -361,7 +363,10 @@ private fun IdeaConversationContent(
     } else {
       LazyColumn(
           state = listState,
-          modifier = Modifier.weight(1f).fillMaxWidth().testTag(stringResource(R.string.idea_conversation_messages_list)),
+          modifier =
+              Modifier.weight(1f)
+                  .fillMaxWidth()
+                  .testTag(stringResource(R.string.idea_conversation_messages_list)),
           reverseLayout = true,
           verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             items(items = messages, key = { it.messageID }) { message ->

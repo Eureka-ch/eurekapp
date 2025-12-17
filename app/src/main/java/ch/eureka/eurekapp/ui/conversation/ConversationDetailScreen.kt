@@ -155,14 +155,18 @@ fun ConversationDetailScreen(
                         Modifier.testTag(ConversationDetailScreenTestTags.CANCEL_EDIT_BUTTON)) {
                       Icon(
                           Icons.Default.Close,
-                          contentDescription = stringResource(R.string.conversation_detail_cancel_edit_description),
+                          contentDescription =
+                              stringResource(R.string.conversation_detail_cancel_edit_description),
                           tint = EColors.WhiteTextColor)
                     }
               })
         } else {
           // Standard top bar
           EurekaTopBar(
-              title = uiState.otherMemberNames.joinToString(", ").ifEmpty { stringResource(R.string.conversation_detail_chat_default_title) },
+              title =
+                  uiState.otherMemberNames.joinToString(", ").ifEmpty {
+                    stringResource(R.string.conversation_detail_chat_default_title)
+                  },
               navigationIcon = {
                 BackButton(
                     onClick = onNavigateBack,
@@ -262,14 +266,17 @@ private fun SelectedFileIndicator(
         modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.xs),
         verticalAlignment = Alignment.CenterVertically) {
           Text(
-              text = stringResource(R.string.conversation_detail_selected_file_prefix) + selectedFileName,
+              text =
+                  stringResource(R.string.conversation_detail_selected_file_prefix) +
+                      selectedFileName,
               style = MaterialTheme.typography.bodySmall,
               modifier =
                   Modifier.weight(1f).testTag(ConversationDetailScreenTestTags.SELECTED_FILE_TEXT))
           IconButton(onClick = onClearSelectedFile) {
             Icon(
                 Icons.Default.Close,
-                contentDescription = stringResource(R.string.conversation_detail_remove_file_description))
+                contentDescription =
+                    stringResource(R.string.conversation_detail_remove_file_description))
           }
         }
   }
@@ -299,7 +306,8 @@ private fun MessageInputRow(
       IconButton(onClick = onAttachFile) {
         Icon(
             Icons.Default.AttachFile,
-            contentDescription = stringResource(R.string.conversation_detail_attach_file_description))
+            contentDescription =
+                stringResource(R.string.conversation_detail_attach_file_description))
       }
     }
     MessageInputField(
@@ -307,7 +315,9 @@ private fun MessageInputRow(
         onMessageChange = onMessageChange,
         onSend = onSend,
         isSending = uiState.isSending,
-        placeholder = if (uiState.isEditing) stringResource(R.string.conversation_detail_edit_placeholder) else stringResource(R.string.conversation_detail_message_placeholder),
+        placeholder =
+            if (uiState.isEditing) stringResource(R.string.conversation_detail_edit_placeholder)
+            else stringResource(R.string.conversation_detail_message_placeholder),
         canSend =
             uiState.currentMessage.isNotBlank() ||
                 (!uiState.isEditing && uiState.selectedFileUri != null))

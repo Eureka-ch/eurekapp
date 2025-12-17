@@ -209,8 +209,11 @@ fun MeetingAudioRecordingScreen(
                                               projectId,
                                               meetingId,
                                               onSuccesfulUpload = {
-                                                // use context to obtain string here because this callback is not executed during composition
-                                                uploadText = context.getString(R.string.uploaded_successfully)
+                                                // use context to obtain string here because this
+                                                // callback is not executed during composition
+                                                uploadText =
+                                                    context.getString(
+                                                        R.string.uploaded_successfully)
                                                 canShowAITranscriptButton = true
                                               },
                                               onFailureUpload = { exception ->
@@ -271,7 +274,9 @@ fun MeetingAudioRecordingScreen(
                                                       .GENERATE_AI_TRANSCRIPT_BUTTON),
                                       onClick = { onNavigateToTranscript(projectId, meetingId) }) {
                                         Row() {
-                                          Text(stringResource(id = R.string.view_transcript), style = Typography.titleMedium)
+                                          Text(
+                                              stringResource(id = R.string.view_transcript),
+                                              style = Typography.titleMedium)
                                         }
                                       }
                                 }

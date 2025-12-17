@@ -39,7 +39,6 @@ object TemplateSelectionTestTags {
   fun templateOptionTag(templateId: String) = "$TEMPLATE_OPTION_PREFIX$templateId"
 }
 
-
 @Composable
 fun TemplateSelectionField(
     templates: List<TaskTemplate>,

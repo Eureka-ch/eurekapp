@@ -241,7 +241,9 @@ fun MeetingDetailScreen(
             titleTestTag = MeetingDetailScreenTestTags.MEETING_TITLE,
             navigationIcon = {
               IconButton(onClick = actionsConfig.onNavigateBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.navigate_back))
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.navigate_back))
               }
             },
             actions = {
@@ -259,7 +261,10 @@ fun MeetingDetailScreen(
         if (uiState.isLoading) {
           LoadingScreen()
         } else if (uiState.meeting == null) {
-          val err = uiState.errorMsg ?: throw IllegalStateException("Error message should not be null if meeting is null.")
+          val err =
+              uiState.errorMsg
+                  ?: throw IllegalStateException(
+                      "Error message should not be null if meeting is null.")
           Text(
               modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MESSAGE),
               text = stringResource(R.string.meeting_detail_error_loading, err))
@@ -341,7 +346,9 @@ private fun LoadingScreen() {
       verticalArrangement = Arrangement.Center) {
         CircularProgressIndicator()
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = stringResource(R.string.meeting_loading_details), style = MaterialTheme.typography.bodyMedium)
+        Text(
+            text = stringResource(R.string.meeting_loading_details),
+            style = MaterialTheme.typography.bodyMedium)
       }
 }
 
@@ -1507,7 +1514,8 @@ private fun OpenToVotesButtons(actionsConfig: ActionButtonsConfig, isConnected: 
               .testTag(MeetingDetailScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON)
               .alpha(getAlpha(isConnected))) {
         Icon(
-            imageVector = Icons.Default.HowToVote, contentDescription = stringResource(R.string.meeting_vote_for_proposals))
+            imageVector = Icons.Default.HowToVote,
+            contentDescription = stringResource(R.string.meeting_vote_for_proposals))
         Spacer(modifier = Modifier.width(8.dp))
         Text(stringResource(R.string.meeting_vote_for_proposals))
       }
@@ -1657,14 +1665,14 @@ private fun DeleteConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Uni
   AlertDialog(
       onDismissRequest = onDismiss,
       title = { Text(stringResource(R.string.meeting_delete_confirmation_title)) },
-      text = {
-        Text(stringResource(R.string.meeting_delete_confirmation_message))
-      },
+      text = { Text(stringResource(R.string.meeting_delete_confirmation_message)) },
       confirmButton = {
         TextButton(
             onClick = onConfirm,
             modifier = Modifier.testTag(MeetingDetailScreenTestTags.CONFIRM_DELETE_BUTTON)) {
-              Text(stringResource(R.string.delete_confirmation_confirm), color = MaterialTheme.colorScheme.error)
+              Text(
+                  stringResource(R.string.delete_confirmation_confirm),
+                  color = MaterialTheme.colorScheme.error)
             }
       },
       dismissButton = {

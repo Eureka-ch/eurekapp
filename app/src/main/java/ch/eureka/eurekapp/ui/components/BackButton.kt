@@ -20,6 +20,8 @@ import ch.eureka.eurekapp.R
 @Composable
 fun BackButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
   IconButton(onClick = onClick, modifier = modifier) {
-    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back_button_content_description))
+    Icon(
+        Icons.AutoMirrored.Filled.ArrowBack,
+        contentDescription = stringResource(R.string.back_button_content_description))
   }
 }

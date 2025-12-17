@@ -55,7 +55,11 @@ fun MessageActionMenu(
               onDismiss()
               onEdit()
             },
-            leadingIcon = { Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.message_action_edit_description)) },
+            leadingIcon = {
+              Icon(
+                  Icons.Default.Edit,
+                  contentDescription = stringResource(R.string.message_action_edit_description))
+            },
             modifier = Modifier.testTag(MessageActionMenuTestTags.EDIT_OPTION))
 
         if (hasAttachment && onRemoveAttachment != null) {
@@ -66,7 +70,10 @@ fun MessageActionMenu(
                 onRemoveAttachment()
               },
               leadingIcon = {
-                Icon(Icons.Default.RemoveCircleOutline, contentDescription = stringResource(R.string.message_action_remove_attachment_description))
+                Icon(
+                    Icons.Default.RemoveCircleOutline,
+                    contentDescription =
+                        stringResource(R.string.message_action_remove_attachment_description))
               },
               modifier = Modifier.testTag(MessageActionMenuTestTags.REMOVE_ATTACHMENT_OPTION))
         }
@@ -77,7 +84,11 @@ fun MessageActionMenu(
               onDismiss()
               onDelete()
             },
-            leadingIcon = { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.message_action_delete_description)) },
+            leadingIcon = {
+              Icon(
+                  Icons.Default.Delete,
+                  contentDescription = stringResource(R.string.message_action_delete_description))
+            },
             modifier = Modifier.testTag(MessageActionMenuTestTags.DELETE_OPTION))
       }
 }

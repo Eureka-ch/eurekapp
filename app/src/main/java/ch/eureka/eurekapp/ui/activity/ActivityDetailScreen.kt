@@ -229,7 +229,9 @@ private fun ActivityDetailContent(
                         .alpha(getAlpha(isConnected))
                         .testTag(ActivityDetailScreenTestTags.ENTITY_BUTTON),
                 enabled = isConnected) {
-                  Text(stringResource(R.string.activity_detail_view_entity_button, activity.entityType.name))
+                  Text(
+                      stringResource(
+                          R.string.activity_detail_view_entity_button, activity.entityType.name))
                 }
           }
         }
@@ -311,7 +313,9 @@ private fun ActivityInformationCard(activity: Activity) {
               InfoRow(
                   icon = Icons.Default.Person,
                   label = stringResource(R.string.activity_detail_user_label),
-                  value = activity.metadata["userName"]?.toString() ?: stringResource(R.string.activity_detail_unknown_user),
+                  value =
+                      activity.metadata["userName"]?.toString()
+                          ?: stringResource(R.string.activity_detail_unknown_user),
                   testTag = ActivityDetailScreenTestTags.USER_NAME)
 
               InfoRow(
@@ -324,7 +328,9 @@ private fun ActivityInformationCard(activity: Activity) {
                 InfoRow(
                     icon = Icons.Default.Title,
                     label = stringResource(R.string.activity_detail_entity_label),
-                    value = activity.metadata["title"]?.toString() ?: stringResource(R.string.activity_detail_untitled_entity),
+                    value =
+                        activity.metadata["title"]?.toString()
+                            ?: stringResource(R.string.activity_detail_untitled_entity),
                     testTag = ActivityDetailScreenTestTags.ENTITY_TITLE)
               }
             }
@@ -345,7 +351,10 @@ private fun RelatedActivitiesSection(relatedActivities: List<Activity>) {
         Column(
             modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
               Text(
-                  text = stringResource(R.string.activity_detail_related_activities_title, relatedActivities.size),
+                  text =
+                      stringResource(
+                          R.string.activity_detail_related_activities_title,
+                          relatedActivities.size),
                   style = MaterialTheme.typography.titleMedium,
                   fontWeight = FontWeight.SemiBold)
 
@@ -423,7 +432,10 @@ private fun ActionButtonsSection(isConnected: Boolean, onShare: () -> Unit, onDe
                 .alpha(getAlpha(isConnected))
                 .testTag(ActivityDetailScreenTestTags.SHARE_BUTTON),
         enabled = isConnected) {
-          Icon(Icons.Default.Share, stringResource(R.string.activity_detail_share_button), modifier = Modifier.size(18.dp))
+          Icon(
+              Icons.Default.Share,
+              stringResource(R.string.activity_detail_share_button),
+              modifier = Modifier.size(18.dp))
           Spacer(modifier = Modifier.width(8.dp))
           Text(stringResource(R.string.activity_detail_share_button))
         }
@@ -437,7 +449,10 @@ private fun ActionButtonsSection(isConnected: Boolean, onShare: () -> Unit, onDe
         enabled = isConnected,
         colors =
             ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
-          Icon(Icons.Default.Delete, stringResource(R.string.activity_detail_delete_button), modifier = Modifier.size(18.dp))
+          Icon(
+              Icons.Default.Delete,
+              stringResource(R.string.activity_detail_delete_button),
+              modifier = Modifier.size(18.dp))
           Spacer(modifier = Modifier.width(8.dp))
           Text(stringResource(R.string.activity_detail_delete_button))
         }
@@ -454,10 +469,16 @@ private fun ActionButtonsSection(isConnected: Boolean, onShare: () -> Unit, onDe
                 showDeleteDialog = false
                 onDelete()
               }) {
-                Text(stringResource(R.string.activity_detail_delete_confirm), color = MaterialTheme.colorScheme.error)
+                Text(
+                    stringResource(R.string.activity_detail_delete_confirm),
+                    color = MaterialTheme.colorScheme.error)
               }
         },
-        dismissButton = { TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.activity_detail_delete_cancel)) } },
+        dismissButton = {
+          TextButton(onClick = { showDeleteDialog = false }) {
+            Text(stringResource(R.string.activity_detail_delete_cancel))
+          }
+        },
         modifier = Modifier.testTag(ActivityDetailScreenTestTags.DELETE_DIALOG))
   }
 }

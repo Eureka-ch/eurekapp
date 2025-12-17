@@ -89,7 +89,9 @@ fun DefaultValueInput(
     modifier: Modifier = Modifier
 ) {
   Column(modifier = modifier.fillMaxWidth()) {
-    Text(stringResource(R.string.field_default_value_label), style = MaterialTheme.typography.labelLarge)
+    Text(
+        stringResource(R.string.field_default_value_label),
+        style = MaterialTheme.typography.labelLarge)
     Spacer(modifier = Modifier.height(4.dp))
 
     val mode = if (enabled) FieldInteractionMode.EditOnly else FieldInteractionMode.ViewOnly

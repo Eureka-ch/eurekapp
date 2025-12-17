@@ -349,7 +349,9 @@ private fun MapView(
 
         // User location marker
         userLocation?.let {
-          Marker(state = rememberMarkerState(position = it), title = stringResource(R.string.meeting_your_location))
+          Marker(
+              state = rememberMarkerState(position = it),
+              title = stringResource(R.string.meeting_your_location))
         }
 
         // Draw route polyline if available
@@ -472,7 +474,9 @@ private fun LocationPermissionSection(
       Text(stringResource(R.string.meeting_enable_location_button))
     }
   } else {
-    Button(onClick = onGetLocation, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.meeting_get_my_location)) }
+    Button(onClick = onGetLocation, modifier = Modifier.fillMaxWidth()) {
+      Text(stringResource(R.string.meeting_get_my_location))
+    }
   }
 }
 
@@ -683,4 +687,3 @@ private fun DirectionsPanel(
         }
       }
 }
-

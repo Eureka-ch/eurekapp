@@ -43,7 +43,8 @@ fun SelectOptionsEditor(
     modifier: Modifier = Modifier
 ) {
   Column(modifier = modifier.fillMaxWidth()) {
-    Text(stringResource(R.string.select_options_header), style = MaterialTheme.typography.labelLarge)
+    Text(
+        stringResource(R.string.select_options_header), style = MaterialTheme.typography.labelLarge)
     Spacer(modifier = Modifier.height(8.dp))
 
     options.forEachIndexed { index, option ->

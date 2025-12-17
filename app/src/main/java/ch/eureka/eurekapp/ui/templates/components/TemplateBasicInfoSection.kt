@@ -12,8 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import ch.eureka.eurekapp.R
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 
 object TemplateBasicInfoSectionTestTags {

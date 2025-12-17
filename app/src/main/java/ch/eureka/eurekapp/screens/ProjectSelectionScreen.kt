@@ -92,16 +92,16 @@ fun ProjectSelectionScreen(
     projectSelectionScreenViewModel: ProjectSelectionScreenViewModel = viewModel()
 ) {
 
-    val context = LocalContext.current
-    var hasNotificationsPermission by remember {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            mutableStateOf(
-                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
-                        PackageManager.PERMISSION_GRANTED)
-        } else {
-            mutableStateOf(true)
-        }
+  val context = LocalContext.current
+  var hasNotificationsPermission by remember {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      mutableStateOf(
+          ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
+              PackageManager.PERMISSION_GRANTED)
+    } else {
+      mutableStateOf(true)
     }
+  }
 
   val currentUser =
       remember { projectSelectionScreenViewModel.getCurrentUser() }.collectAsState(null)
@@ -111,24 +111,24 @@ fun ProjectSelectionScreen(
 
   val listState = rememberLazyListState()
 
-    val launcher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
-                isGranted ->
-            hasNotificationsPermission = isGranted
-            if (isGranted) {
-                Toast.makeText(context, "Notifications permission granted!", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(
-                    context, "You will not be able to receive notifications!", Toast.LENGTH_SHORT)
-                    .show()
-            }
+  val launcher =
+      rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
+          isGranted ->
+        hasNotificationsPermission = isGranted
+        if (isGranted) {
+          Toast.makeText(context, "Notifications permission granted!", Toast.LENGTH_SHORT).show()
+        } else {
+          Toast.makeText(
+                  context, "You will not be able to receive notifications!", Toast.LENGTH_SHORT)
+              .show()
         }
+      }
 
-    LaunchedEffect(Unit) {
-        if (!hasNotificationsPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
+  LaunchedEffect(Unit) {
+    if (!hasNotificationsPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
+  }
 
   Scaffold(
       topBar = { EurekaTopBar(title = stringResource(R.string.project_selection_title)) },
@@ -154,7 +154,6 @@ fun ProjectSelectionScreen(
             }
       })
 }
-
 
 /** Data class to group project selection actions and reduce parameter count. */
 data class ProjectSelectionActions(

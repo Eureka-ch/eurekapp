@@ -96,7 +96,8 @@ fun ActivityFeedScreen(
                     modifier = Modifier.testTag("MarkAllReadButton")) {
                       Icon(
                           imageVector = Icons.Default.DoneAll,
-                          contentDescription = stringResource(R.string.activity_feed_mark_all_read_button),
+                          contentDescription =
+                              stringResource(R.string.activity_feed_mark_all_read_button),
                           tint = EColors.WhiteTextColor)
                     }
               }
@@ -285,7 +286,9 @@ private fun ActivitiesList(
 @Composable
 private fun ErrorMessage(error: String, modifier: Modifier = Modifier) {
   Box(modifier = modifier.fillMaxWidth().padding(Spacing.md)) {
-    Text(stringResource(R.string.activity_feed_error_prefix) + error, color = MaterialTheme.colorScheme.error)
+    Text(
+        stringResource(R.string.activity_feed_error_prefix) + error,
+        color = MaterialTheme.colorScheme.error)
   }
 }
 

@@ -176,7 +176,9 @@ private fun ContextualSelectionTopBar(
         if (selectionCount == 1) {
           IconButton(onClick = { onEditSelected(selectedIds.first()) }) {
             Icon(
-                Icons.Default.Edit, contentDescription = stringResource(R.string.edit_note_desc), tint = EColors.WhiteTextColor)
+                Icons.Default.Edit,
+                contentDescription = stringResource(R.string.edit_note_desc),
+                tint = EColors.WhiteTextColor)
           }
         }
         IconButton(onClick = onDeleteSelected) {
@@ -198,7 +200,9 @@ private fun StandardTopBar(
     onNavigateBack: () -> Unit
 ) {
   EurekaTopBar(
-      title = if (isEditing) stringResource(R.string.selfnotes_editing_title) else stringResource(R.string.selfnotes_title),
+      title =
+          if (isEditing) stringResource(R.string.selfnotes_editing_title)
+          else stringResource(R.string.selfnotes_title),
       navigationIcon = {
         if (isEditing) {
           IconButton(onClick = onCancelEditing) {
@@ -216,7 +220,9 @@ private fun StandardTopBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(end = 8.dp)) {
               Text(
-                  text = if (isCloudEnabled) stringResource(R.string.selfnotes_storage_cloud) else stringResource(R.string.selfnotes_storage_local),
+                  text =
+                      if (isCloudEnabled) stringResource(R.string.selfnotes_storage_cloud)
+                      else stringResource(R.string.selfnotes_storage_local),
                   style = MaterialTheme.typography.labelMedium,
                   color = EColors.WhiteTextColor,
                   modifier = Modifier.padding(end = 8.dp))
@@ -247,7 +253,8 @@ private fun SelfNotesBottomBar(
         onSend = onSend,
         isSending = uiState.isSending,
         placeholder =
-            if (uiState.editingMessageId != null) stringResource(R.string.selfnotes_edit_placeholder)
+            if (uiState.editingMessageId != null)
+                stringResource(R.string.selfnotes_edit_placeholder)
             else stringResource(R.string.selfnotes_message_placeholder))
   }
 }

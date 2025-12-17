@@ -8,8 +8,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import ch.eureka.eurekapp.R
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.IdGenerator
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import ch.eureka.eurekapp.model.data.template.field.FieldType
@@ -63,9 +63,13 @@ private fun FieldTypeSelector(onTypeSelected: (FieldType) -> Unit) {
           stringResource(R.string.field_type_number) to FieldType.Number(),
           stringResource(R.string.field_type_date) to FieldType.Date(),
           stringResource(R.string.field_type_single_select) to
-              FieldType.SingleSelect(listOf(SelectOption("option1", stringResource(R.string.template_select_option_1)))),
+              FieldType.SingleSelect(
+                  listOf(
+                      SelectOption("option1", stringResource(R.string.template_select_option_1)))),
           stringResource(R.string.field_type_multi_select) to
-              FieldType.MultiSelect(listOf(SelectOption("option1", stringResource(R.string.template_select_option_1)))))
+              FieldType.MultiSelect(
+                  listOf(
+                      SelectOption("option1", stringResource(R.string.template_select_option_1)))))
       .forEach { (name, type) ->
         Card(
             onClick = { onTypeSelected(type) },

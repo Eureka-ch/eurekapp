@@ -87,8 +87,8 @@ private fun TranscriptSection(
           modifier =
               Modifier.fillMaxWidth()
                   .testTag(TranscriptScreenTestTags.GENERATE_TRANSCRIPT_BUTTON)) {
-        Text(stringResource(id = R.string.generate_transcript))
-      }
+            Text(stringResource(id = R.string.generate_transcript))
+          }
     }
     isGeneratingTranscript || transcriptionStatus == TranscriptionStatus.PENDING -> {
       Row(
@@ -152,8 +152,8 @@ private fun SummarySection(
             onClick = onGenerateSummary,
             modifier =
                 Modifier.fillMaxWidth().testTag(TranscriptScreenTestTags.GENERATE_SUMMARY_BUTTON)) {
-          Text(stringResource(id = R.string.generate_summary))
-        }
+              Text(stringResource(id = R.string.generate_summary))
+            }
       }
     }
   }

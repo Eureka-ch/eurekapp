@@ -189,7 +189,9 @@ private fun ProjectDropdown(
             value = uiState.selectedProject?.name ?: "",
             onValueChange = {},
             readOnly = true,
-            placeholder = { Text(stringResource(R.string.create_conversation_project_placeholder)) },
+            placeholder = {
+              Text(stringResource(R.string.create_conversation_project_placeholder))
+            },
             trailingIcon = {
               if (uiState.isLoadingProjects) {
                 CircularProgressIndicator(
@@ -250,10 +252,15 @@ private fun MemberSelection(
           onExpandedChange = onExpandedChange,
           modifier = Modifier.testTag(CreateConversationScreenTestTags.MEMBER_DROPDOWN)) {
             OutlinedTextField(
-                value = stringResource(R.string.create_conversation_members_selected, uiState.selectedMembers.size),
+                value =
+                    stringResource(
+                        R.string.create_conversation_members_selected,
+                        uiState.selectedMembers.size),
                 onValueChange = {},
                 readOnly = true,
-                placeholder = { Text(stringResource(R.string.create_conversation_member_placeholder)) },
+                placeholder = {
+                  Text(stringResource(R.string.create_conversation_member_placeholder))
+                },
                 trailingIcon = {
                   ExposedDropdownMenuDefaults.TrailingIcon(expanded = memberDropdownExpanded)
                 },

@@ -139,7 +139,8 @@ fun ProfileScreen(
                       if (user.photoUrl.isNotEmpty()) {
                         AsyncImage(
                             model = user.photoUrl,
-                            contentDescription = stringResource(R.string.profile_picture_description),
+                            contentDescription =
+                                stringResource(R.string.profile_picture_description),
                             modifier =
                                 Modifier.size(120.dp)
                                     .clip(CircleShape)
@@ -148,7 +149,8 @@ fun ProfileScreen(
                       } else {
                         Icon(
                             imageVector = Icons.Default.AccountCircle,
-                            contentDescription = stringResource(R.string.profile_picture_description),
+                            contentDescription =
+                                stringResource(R.string.profile_picture_description),
                             modifier =
                                 Modifier.size(120.dp)
                                     .testTag(ProfileScreenTestTags.PROFILE_PICTURE),
@@ -180,7 +182,10 @@ fun ProfileScreen(
                         IconButton(
                             onClick = { viewModel.setEditing(true) },
                             modifier = Modifier.testTag(ProfileScreenTestTags.EDIT_BUTTON)) {
-                              Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.profile_edit_name_desc))
+                              Icon(
+                                  Icons.Default.Edit,
+                                  contentDescription =
+                                      stringResource(R.string.profile_edit_name_desc))
                             }
                       }
 

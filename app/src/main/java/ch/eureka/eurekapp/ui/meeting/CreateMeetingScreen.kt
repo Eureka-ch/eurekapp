@@ -62,10 +62,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.ui.components.BackButton
@@ -78,8 +80,6 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.FlowPreview
-import ch.eureka.eurekapp.R
-import androidx.compose.ui.res.stringResource
 
 /** Test tags for the create meeting screen. */
 object CreateMeetingScreenTestTags {
@@ -335,7 +335,7 @@ fun CreateMeetingContent(
           modifier =
               Modifier.fillMaxWidth().testTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON),
           enabled = uiState.isValid) {
-          Text(stringResource(R.string.create_meeting_save_button))
+            Text(stringResource(R.string.create_meeting_save_button))
           }
     }
   }
@@ -594,7 +594,9 @@ fun DateInputField(
               onDateTouched()
             },
             modifier = Modifier.testTag(tag)) {
-              Icon(Icons.Default.DateRange, contentDescription = stringResource(R.string.create_meeting_date_placeholder))
+              Icon(
+                  Icons.Default.DateRange,
+                  contentDescription = stringResource(R.string.create_meeting_date_placeholder))
             }
       },
       modifier =
@@ -619,7 +621,11 @@ fun DateInputField(
                 Text(stringResource(R.string.date_picker_ok))
               }
         },
-        dismissButton = { TextButton(onClick = { showDialog = false }) { Text(stringResource(R.string.date_picker_cancel)) } }) {
+        dismissButton = {
+          TextButton(onClick = { showDialog = false }) {
+            Text(stringResource(R.string.date_picker_cancel))
+          }
+        }) {
           DatePicker(
               state = datePickerState, modifier = Modifier.verticalScroll(rememberScrollState()))
         }
@@ -691,7 +697,11 @@ fun TimeInputField(
                 Text(stringResource(R.string.time_picker_ok))
               }
         },
-        dismissButton = { TextButton(onClick = { showDialog = false }) { Text(stringResource(R.string.time_picker_cancel)) } }) {
+        dismissButton = {
+          TextButton(onClick = { showDialog = false }) {
+            Text(stringResource(R.string.time_picker_cancel))
+          }
+        }) {
           TimePicker(
               state = timePickerState,
           )
@@ -786,7 +796,11 @@ fun <T> SingleChoiceInputField(config: SingleChoiceInputFieldConfig<T>) {
                 Text(stringResource(R.string.date_picker_ok))
               }
         },
-        dismissButton = { TextButton(onClick = { showDialog = false }) { Text(stringResource(R.string.date_picker_cancel)) } })
+        dismissButton = {
+          TextButton(onClick = { showDialog = false }) {
+            Text(stringResource(R.string.date_picker_cancel))
+          }
+        })
   }
 }
 
@@ -832,7 +846,8 @@ fun LocationInputField(
                   modifier = Modifier.testTag(CreateMeetingScreenTestTags.PICK_LOCATION)) {
                     Icon(
                         imageVector = Icons.Default.LocationOn,
-                        contentDescription = stringResource(R.string.create_meeting_location_pick_icon))
+                        contentDescription =
+                            stringResource(R.string.create_meeting_location_pick_icon))
                   }
             },
             modifier =
@@ -864,7 +879,9 @@ fun LocationInputField(
 
               if (locationSuggestions.size > 3) {
                 DropdownMenuItem(
-                    text = { Text(stringResource(R.string.create_meeting_location_more)) }, onClick = {}, modifier = Modifier.padding(8.dp))
+                    text = { Text(stringResource(R.string.create_meeting_location_more)) },
+                    onClick = {},
+                    modifier = Modifier.padding(8.dp))
               }
             }
       }

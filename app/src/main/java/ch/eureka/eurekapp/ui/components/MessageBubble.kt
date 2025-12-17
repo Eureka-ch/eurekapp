@@ -237,7 +237,8 @@ private fun ProfileIcon(senderPhotoUrl: String) {
         verticalAlignment = Alignment.CenterVertically) {
           AsyncImage(
               model = senderPhotoUrl,
-              contentDescription = stringResource(R.string.message_profile_picture_description, senderPhotoUrl),
+              contentDescription =
+                  stringResource(R.string.message_profile_picture_description, senderPhotoUrl),
               modifier = Modifier.size(48.dp).clip(CircleShape),
               contentScale = ContentScale.Crop)
         }

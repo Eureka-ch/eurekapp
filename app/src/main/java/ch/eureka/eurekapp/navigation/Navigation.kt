@@ -361,9 +361,7 @@ fun NavigationMenu(
                     navigationController.navigate(
                         Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
                   },
-                  onFilesManagementClick = {
-                    navigationController.navigate(Route.FilesManagement)
-                  })
+                  onFilesManagementClick = { navigationController.navigate(Route.FilesManagement) })
             }
             composable<Route.TasksSection.CreateTask> { CreateTaskScreen(navigationController) }
             composable<Route.TasksSection.AutoTaskAssignment> {
@@ -454,10 +452,10 @@ fun NavigationMenu(
                                       projectId = projectId, meetingId = meetingId))
                             }
                           },
-                            onFileManagementScreenClick = {
-                              navigationController.navigate(Route.FilesManagement)
-                            }))
-              }
+                          onFileManagementScreenClick = {
+                            navigationController.navigate(Route.FilesManagement)
+                          }))
+            }
 
             composable<Route.MeetingsSection.MeetingDetail> { backStackEntry ->
               val meetingDetailRoute = backStackEntry.toRoute<Route.MeetingsSection.MeetingDetail>()
@@ -496,11 +494,11 @@ fun NavigationMenu(
                                       projectId = projectId, meetingId = meetingId))
                             }
                           },
-                            onFileManagementScreenClick = {
-                              navigationController.navigate(Route.FilesManagement)
-                            }),
-                )
-              }
+                          onFileManagementScreenClick = {
+                            navigationController.navigate(Route.FilesManagement)
+                          }),
+              )
+            }
 
             // Project selection section
             composable<Route.ProjectSelectionSection.CreateProject> {

@@ -49,11 +49,17 @@ fun ActivitySearchBar(
             onValueChange = onQueryChange,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             placeholder = { Text(stringResource(R.string.activity_search_placeholder)) },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = stringResource(R.string.activity_search_icon)) },
+            leadingIcon = {
+              Icon(
+                  Icons.Default.Search,
+                  contentDescription = stringResource(R.string.activity_search_icon))
+            },
             trailingIcon = {
               if (query.isNotEmpty()) {
                 IconButton(onClick = { onQueryChange("") }) {
-                  Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.activity_search_clear_icon))
+                  Icon(
+                      Icons.Default.Clear,
+                      contentDescription = stringResource(R.string.activity_search_clear_icon))
                 }
               }
             },

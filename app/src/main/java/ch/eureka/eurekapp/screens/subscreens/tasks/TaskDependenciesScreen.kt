@@ -114,14 +114,10 @@ fun TaskDependenciesScreen(
                   modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
                   horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     FilterButton(
-                        user = allUser,
-                        onClick = { nameFilter = "All" },
-                        nameFilter = nameFilter)
+                        user = allUser, onClick = { nameFilter = "All" }, nameFilter = nameFilter)
                     projectUsers.value.filterNotNull().map { user ->
                       FilterButton(
-                          user = user,
-                          onClick = { nameFilter = user.uid },
-                          nameFilter = nameFilter)
+                          user = user, onClick = { nameFilter = user.uid }, nameFilter = nameFilter)
                     }
                   }
             })

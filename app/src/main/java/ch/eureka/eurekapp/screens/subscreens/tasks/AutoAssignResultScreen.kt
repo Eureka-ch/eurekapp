@@ -99,7 +99,8 @@ fun AutoAssignResultScreen(
                         fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(Spacing.xs))
                     Text(
-                        text = stringResource(R.string.auto_assign_summary, acceptedCount, totalCount),
+                        text =
+                            stringResource(R.string.auto_assign_summary, acceptedCount, totalCount),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
 
@@ -159,7 +160,9 @@ fun AutoAssignResultScreen(
                       navigationController.popBackStack()
                     }
                     Text(
-                        text = stringResource(R.string.auto_assign_success_message, uiState.appliedCount),
+                        text =
+                            stringResource(
+                                R.string.auto_assign_success_message, uiState.appliedCount),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(bottom = Spacing.md))

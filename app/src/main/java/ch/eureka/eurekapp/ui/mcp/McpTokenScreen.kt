@@ -95,7 +95,9 @@ fun McpTokenScreen(viewModel: McpTokenViewModel, onNavigateBack: () -> Unit) {
             onClick = { showCreateDialog = true },
             modifier = Modifier.testTag(McpTokenScreenTestTags.CREATE_BUTTON),
             containerColor = MaterialTheme.colorScheme.primary) {
-              Icon(Icons.Default.Add, contentDescription = stringResource(R.string.mcp_token_create_button))
+              Icon(
+                  Icons.Default.Add,
+                  contentDescription = stringResource(R.string.mcp_token_create_button))
             }
       },
       containerColor = Color.White) { paddingValues ->
@@ -120,7 +122,9 @@ fun McpTokenScreen(viewModel: McpTokenViewModel, onNavigateBack: () -> Unit) {
                             color = MaterialTheme.colorScheme.error,
                             modifier = Modifier.testTag(McpTokenScreenTestTags.ERROR_TEXT))
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.loadTokens() }) { Text(stringResource(R.string.mcp_token_retry_button)) }
+                        Button(onClick = { viewModel.loadTokens() }) {
+                          Text(stringResource(R.string.mcp_token_retry_button))
+                        }
                       }
                 }
                 uiState.tokens.isEmpty() -> {
@@ -199,7 +203,8 @@ private fun TokenCard(token: McpToken, onDelete: () -> Unit) {
                             "${McpTokenScreenTestTags.DELETE_BUTTON}_${token.tokenHash}")) {
                       Icon(
                           Icons.Default.Delete,
-                          contentDescription = stringResource(R.string.mcp_token_delete_dialog_title),
+                          contentDescription =
+                              stringResource(R.string.mcp_token_delete_dialog_title),
                           tint = MaterialTheme.colorScheme.error)
                     }
               }
@@ -208,7 +213,8 @@ private fun TokenCard(token: McpToken, onDelete: () -> Unit) {
 
           token.createdAt?.let { createdAt ->
             Text(
-                text = stringResource(R.string.mcp_token_created_prefix) + formatTimestamp(createdAt),
+                text =
+                    stringResource(R.string.mcp_token_created_prefix) + formatTimestamp(createdAt),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
           }
@@ -217,8 +223,12 @@ private fun TokenCard(token: McpToken, onDelete: () -> Unit) {
             val isExpired = expiresAt.toDate().before(Date())
             Text(
                 text =
-                    if (isExpired) stringResource(R.string.mcp_token_expired_prefix) + formatTimestamp(expiresAt)
-                    else stringResource(R.string.mcp_token_expires_prefix) + formatTimestamp(expiresAt),
+                    if (isExpired)
+                        stringResource(R.string.mcp_token_expired_prefix) +
+                            formatTimestamp(expiresAt)
+                    else
+                        stringResource(R.string.mcp_token_expires_prefix) +
+                            formatTimestamp(expiresAt),
                 style = MaterialTheme.typography.bodySmall,
                 color =
                     if (isExpired) MaterialTheme.colorScheme.error
@@ -227,7 +237,9 @@ private fun TokenCard(token: McpToken, onDelete: () -> Unit) {
 
           token.lastUsedAt?.let { lastUsedAt ->
             Text(
-                text = stringResource(R.string.mcp_token_last_used_prefix) + formatTimestamp(lastUsedAt),
+                text =
+                    stringResource(R.string.mcp_token_last_used_prefix) +
+                        formatTimestamp(lastUsedAt),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
           }
@@ -238,10 +250,7 @@ private fun TokenCard(token: McpToken, onDelete: () -> Unit) {
     AlertDialog(
         onDismissRequest = { showDeleteConfirmation = false },
         title = { Text(stringResource(R.string.mcp_token_delete_dialog_title)) },
-        text = {
-          Text(
-              stringResource(R.string.mcp_token_delete_confirmation))
-        },
+        text = { Text(stringResource(R.string.mcp_token_delete_confirmation)) },
         confirmButton = {
           TextButton(
               onClick = {
@@ -254,7 +263,9 @@ private fun TokenCard(token: McpToken, onDelete: () -> Unit) {
               }
         },
         dismissButton = {
-          TextButton(onClick = { showDeleteConfirmation = false }) { Text(stringResource(R.string.delete_confirmation_cancel)) }
+          TextButton(onClick = { showDeleteConfirmation = false }) {
+            Text(stringResource(R.string.delete_confirmation_cancel))
+          }
         })
   }
 }
@@ -309,8 +320,7 @@ private fun TokenCreatedDialog(token: String, onDismiss: () -> Unit) {
       title = { Text(stringResource(R.string.mcp_token_created_dialog_title)) },
       text = {
         Column {
-          Text(
-              stringResource(R.string.mcp_token_created_dialog_message))
+          Text(stringResource(R.string.mcp_token_created_dialog_message))
           Spacer(modifier = Modifier.height(16.dp))
           Card(
               colors =
@@ -330,14 +340,17 @@ private fun TokenCreatedDialog(token: String, onDismiss: () -> Unit) {
                           modifier = Modifier.size(32.dp)) {
                             Icon(
                                 Icons.Default.ContentCopy,
-                                contentDescription = stringResource(R.string.mcp_token_copy_description),
+                                contentDescription =
+                                    stringResource(R.string.mcp_token_copy_description),
                                 modifier = Modifier.size(20.dp))
                           }
                     }
               }
         }
       },
-      confirmButton = { Button(onClick = onDismiss) { Text(stringResource(R.string.help_dialog_confirm)) } })
+      confirmButton = {
+        Button(onClick = onDismiss) { Text(stringResource(R.string.help_dialog_confirm)) }
+      })
 }
 
 private fun copyToClipboard(context: Context, text: String) {

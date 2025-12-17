@@ -131,11 +131,15 @@ fun IdeasScreen(
                                   containerColor = MaterialTheme.colorScheme.surface,
                                   contentColor = MaterialTheme.colorScheme.onSurface)) {
                             Text(
-                                text = uiState.selectedProject?.name ?: stringResource(R.string.ideas_project_selector_placeholder),
+                                text =
+                                    uiState.selectedProject?.name
+                                        ?: stringResource(
+                                            R.string.ideas_project_selector_placeholder),
                                 modifier = Modifier.padding(horizontal = 8.dp))
                             Icon(
                                 imageVector = Icons.Default.ArrowDropDown,
-                                contentDescription = stringResource(R.string.ideas_project_selector_placeholder),
+                                contentDescription =
+                                    stringResource(R.string.ideas_project_selector_placeholder),
                                 modifier = Modifier.padding(start = 4.dp))
                           }
                       ExposedDropdownMenu(
@@ -143,7 +147,9 @@ fun IdeasScreen(
                           onDismissRequest = { projectDropdownExpanded = false }) {
                             if (uiState.availableProjects.isEmpty()) {
                               DropdownMenuItem(
-                                  text = { Text(stringResource(R.string.ideas_no_projects_available)) },
+                                  text = {
+                                    Text(stringResource(R.string.ideas_no_projects_available))
+                                  },
                                   onClick = {},
                                   enabled = false)
                             } else {

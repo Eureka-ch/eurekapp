@@ -123,7 +123,8 @@ fun DeleteConfirmationDialog(
         },
         text = {
           Text(
-              stringResource(R.string.files_management_delete_dialog_message, fileToDelete.displayName),
+              stringResource(
+                  R.string.files_management_delete_dialog_message, fileToDelete.displayName),
               modifier = Modifier.testTag(FilesManagementScreenTestTags.DELETE_DIALOG_TEXT))
         },
         confirmButton = {

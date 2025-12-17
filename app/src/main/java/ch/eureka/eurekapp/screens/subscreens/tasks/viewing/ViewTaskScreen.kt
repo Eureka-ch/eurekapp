@@ -137,7 +137,10 @@ fun ViewTaskScreen(
                         readOnly = true)
 
                     Text(
-                        text = stringResource(R.string.view_task_status_label, viewTaskState.status.name.replace("_", " ")),
+                        text =
+                            stringResource(
+                                R.string.view_task_status_label,
+                                viewTaskState.status.name.replace("_", " ")),
                         modifier = Modifier.testTag(ViewTaskScreenTestTags.TASK_STATUS))
 
                     if (viewTaskState.selectedTemplate != null) {
@@ -243,7 +246,9 @@ private fun DownloadSection(
         modifier = Modifier.padding(top = 16.dp))
     if (isDownloading) {
       Text(
-          text = stringResource(R.string.view_task_downloading_progress, downloadedCount, totalToDownload),
+          text =
+              stringResource(
+                  R.string.view_task_downloading_progress, downloadedCount, totalToDownload),
           style = MaterialTheme.typography.bodyMedium)
       LinearProgressIndicator(
           progress = {

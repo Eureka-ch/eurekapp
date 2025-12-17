@@ -237,7 +237,8 @@ fun CreateProjectScreen(
                               verticalAlignment = Alignment.CenterVertically) {
                                 CreateProjectTextField(
                                     title = stringResource(id = R.string.project_name),
-                                    placeHolderText = stringResource(id = R.string.placeholder_project_name),
+                                    placeHolderText =
+                                        stringResource(id = R.string.placeholder_project_name),
                                     textValue = projectName,
                                     inputIsError = { input -> Utils.stringIsEmptyOrBlank(input) },
                                     errorText = stringResource(id = R.string.project_name_error),
@@ -252,7 +253,8 @@ fun CreateProjectScreen(
                               verticalAlignment = Alignment.CenterVertically) {
                                 CreateProjectTextField(
                                     title = stringResource(id = R.string.description_label),
-                                    placeHolderText = stringResource(id = R.string.placeholder_description),
+                                    placeHolderText =
+                                        stringResource(id = R.string.placeholder_description),
                                     textValue = projectDescription,
                                     inputIsError = { input -> Utils.stringIsEmptyOrBlank(input) },
                                     errorText = stringResource(id = R.string.description_error),
@@ -272,13 +274,15 @@ fun CreateProjectScreen(
                                     verticalAlignment = Alignment.CenterVertically) {
                                       CreateProjectTextField(
                                           title = stringResource(id = R.string.start_label),
-                                          placeHolderText = stringResource(id = R.string.placeholder_date),
+                                          placeHolderText =
+                                              stringResource(id = R.string.placeholder_date),
                                           isDatePicker = true,
                                           textValue = startDate,
                                           inputIsError = { input ->
                                             !Utils.isDateParseableToStandardAppPattern(input)
                                           },
-                                          errorText = stringResource(id = R.string.date_format_error),
+                                          errorText =
+                                              stringResource(id = R.string.date_format_error),
                                           isErrorState = startDateError,
                                           testTag = CreateProjectScreenTestTags.START_DATE_TEST_TAG,
                                           datePickerButtonTag =
@@ -291,14 +295,16 @@ fun CreateProjectScreen(
                                     verticalAlignment = Alignment.CenterVertically) {
                                       CreateProjectTextField(
                                           title = stringResource(id = R.string.end_label),
-                                          placeHolderText = stringResource(id = R.string.placeholder_date),
+                                          placeHolderText =
+                                              stringResource(id = R.string.placeholder_date),
                                           isDatePicker = true,
                                           textValue = endDate,
                                           inputIsError = { input ->
                                             !Utils.stringIsEmptyOrBlank(input) &&
                                                 !Utils.isDateParseableToStandardAppPattern(input)
                                           },
-                                          errorText = stringResource(id = R.string.date_format_error),
+                                          errorText =
+                                              stringResource(id = R.string.date_format_error),
                                           isErrorState = endDateError,
                                           testTag = CreateProjectScreenTestTags.END_DATE_TEST_TAG,
                                           datePickerButtonTag =
@@ -391,7 +397,8 @@ fun CreateProjectScreen(
                                         ButtonDefaults.filledTonalButtonColors(
                                             containerColor = LightingBlue)) {
                                       Text(
-                                          text = stringResource(id = R.string.create_project_button),
+                                          text =
+                                              stringResource(id = R.string.create_project_button),
                                           color = WhiteTextColor,
                                           fontWeight = FontWeight(500),
                                           style = Typography.titleSmall)
@@ -413,10 +420,10 @@ private fun GithubUrlField(isEnabled: Boolean, githubUrl: MutableState<String>) 
       CreateProjectTextField(
           title = stringResource(id = R.string.github_url_title),
           placeHolderText = stringResource(id = R.string.github_url_placeholder),
-           textValue = githubUrl,
-           inputIsError = { _ -> false },
-           errorText = "",
-           testTag = CreateProjectScreenTestTags.GITHUB_URL_TEST_TAG)
+          textValue = githubUrl,
+          inputIsError = { _ -> false },
+          errorText = "",
+          testTag = CreateProjectScreenTestTags.GITHUB_URL_TEST_TAG)
     }
   }
 }

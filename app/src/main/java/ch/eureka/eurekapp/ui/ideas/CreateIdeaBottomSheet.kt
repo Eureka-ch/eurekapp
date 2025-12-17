@@ -245,7 +245,8 @@ private fun ParticipantsSelector(
         selectedCount == 0 -> stringResource(R.string.create_idea_no_participants_selected)
         selectedCount == 1 -> {
           val user = availableUsers.firstOrNull { it.uid == selectedParticipantIds.first() }
-          user?.displayName?.ifBlank { user.email } ?: stringResource(R.string.create_idea_single_participant_selected, "1")
+          user?.displayName?.ifBlank { user.email }
+              ?: stringResource(R.string.create_idea_single_participant_selected, "1")
         }
         else -> stringResource(R.string.create_idea_multiple_participants_selected, selectedCount)
       }
@@ -383,7 +384,9 @@ private fun ActionButtons(
                 CircularProgressIndicator(
                     color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
               } else {
-                Text(stringResource(R.string.create_idea_create_button), fontWeight = FontWeight.Bold)
+                Text(
+                    stringResource(R.string.create_idea_create_button),
+                    fontWeight = FontWeight.Bold)
               }
             }
       }

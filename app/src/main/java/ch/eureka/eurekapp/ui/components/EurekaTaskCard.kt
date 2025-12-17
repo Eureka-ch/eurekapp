@@ -145,7 +145,8 @@ fun EurekaTaskCard(
                             if (isCompleted) {
                               Icon(
                                   imageVector = Icons.Default.CheckCircle,
-                                  contentDescription = stringResource(R.string.task_card_completed_description),
+                                  contentDescription =
+                                      stringResource(R.string.task_card_completed_description),
                                   tint = MaterialTheme.colorScheme.primary,
                                   modifier = Modifier.size(20.dp))
                             } else {
@@ -218,7 +219,8 @@ fun EurekaTaskCard(
                 }
 
                 if (isCompleted) {
-                  EurekaStatusTag(text = stringResource(R.string.status_tag_done), type = StatusType.SUCCESS)
+                  EurekaStatusTag(
+                      text = stringResource(R.string.status_tag_done), type = StatusType.SUCCESS)
                   Spacer(modifier = Modifier.height(8.dp))
                 } else if (priority.isNotEmpty()) {
                   EurekaStatusTag(text = priority, type = StatusType.INFO)
@@ -238,7 +240,10 @@ fun EurekaTaskCard(
                               color = Color(0xFF64748B),
                               fontWeight = FontWeight.SemiBold)
                           Text(
-                              text = if (isCompleted) stringResource(R.string.task_card_completed_progress) else progressText,
+                              text =
+                                  if (isCompleted)
+                                      stringResource(R.string.task_card_completed_progress)
+                                  else progressText,
                               style = MaterialTheme.typography.labelLarge,
                               color = Color(0xFF0F172A),
                               fontWeight = FontWeight.Bold)

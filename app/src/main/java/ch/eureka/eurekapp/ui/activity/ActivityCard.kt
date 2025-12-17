@@ -147,7 +147,8 @@ fun ActivityCard(
                           .testTag("DeleteButton_${activity.activityId}")) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = stringResource(R.string.activity_card_delete_content_description),
+                        contentDescription =
+                            stringResource(R.string.activity_card_delete_content_description),
                         tint = MaterialTheme.colorScheme.error)
                   }
             }

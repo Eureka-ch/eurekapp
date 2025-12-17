@@ -130,10 +130,13 @@ fun CreateDateTimeFormatProposalForMeetingScreen(
                       currentValue = uiState.format,
                       displayValue = { f -> f.description },
                       label = stringResource(R.string.create_datetime_proposal_format_label),
-                      placeholder = stringResource(R.string.create_datetime_proposal_format_placeholder),
+                      placeholder =
+                          stringResource(R.string.create_datetime_proposal_format_placeholder),
                       icon = Icons.Default.Description,
-                      iconDescription = stringResource(R.string.create_datetime_proposal_format_placeholder),
-                      alertDialogTitle = stringResource(R.string.create_datetime_proposal_format_dialog_title),
+                      iconDescription =
+                          stringResource(R.string.create_datetime_proposal_format_placeholder),
+                      alertDialogTitle =
+                          stringResource(R.string.create_datetime_proposal_format_dialog_title),
                       options = listOf(MeetingFormat.IN_PERSON, MeetingFormat.VIRTUAL),
                       tag = CreateDateTimeFormatMeetingProposalScreenTestTags.INPUT_FORMAT,
                       onOptionSelected = { createMeetingProposalViewModel.setFormat(it) }))

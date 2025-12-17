@@ -97,7 +97,9 @@ fun InteractiveHelpEntryPoint(
   AssistChip(
       onClick = { helpViewModel.openDialog() },
       label = {
-        CompositionLocalProvider(LocalContentColor provides contentColor) { Text(stringResource(R.string.help_guide_button)) }
+        CompositionLocalProvider(LocalContentColor provides contentColor) {
+          Text(stringResource(R.string.help_guide_button))
+        }
       },
       leadingIcon = {
         CompositionLocalProvider(LocalContentColor provides contentColor) {
@@ -114,7 +116,9 @@ fun InteractiveHelpEntryPoint(
     AlertDialog(
         onDismissRequest = { helpViewModel.closeDialog() },
         confirmButton = {
-          TextButton(onClick = { helpViewModel.closeDialog() }) { Text(stringResource(R.string.help_dialog_confirm)) }
+          TextButton(onClick = { helpViewModel.closeDialog() }) {
+            Text(stringResource(R.string.help_dialog_confirm))
+          }
         },
         title = { Text(helpContent.title) },
         text = {

@@ -25,7 +25,7 @@ import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import com.google.firebase.storage.StorageMetadata
 import java.util.Date
-import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertEqualsgit 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow

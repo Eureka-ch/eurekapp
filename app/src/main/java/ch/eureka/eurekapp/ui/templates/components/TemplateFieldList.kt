@@ -16,8 +16,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
-import ch.eureka.eurekapp.R
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import sh.calvin.reorderable.*
 
@@ -103,9 +103,7 @@ fun TemplateFieldList(
           item(key = "basic_info") { TemplateFieldListHeader(headerConfig) }
         }
         if (fields.isEmpty()) {
-          item(key = "empty_placeholder") {
-            EmptyFieldsPlaceholderContent()
-          }
+          item(key = "empty_placeholder") { EmptyFieldsPlaceholderContent() }
         } else {
           items(fields, key = { it.id }) { field ->
             ReorderableItem(reorderableState, key = field.id) { isDragging ->
@@ -123,7 +121,10 @@ fun TemplateFieldList(
                           onDelete = { callbacks.onFieldDelete(field.id) },
                           onDuplicate = { callbacks.onFieldDuplicate(field.id) })) {
                     IconButton(onClick = {}, modifier = Modifier.draggableHandle()) {
-                      Icon(Icons.Default.DragHandle, contentDescription = stringResource(R.string.template_reorder_description))
+                      Icon(
+                          Icons.Default.DragHandle,
+                          contentDescription =
+                              stringResource(R.string.template_reorder_description))
                     }
                   }
             }
@@ -164,10 +165,17 @@ private fun TemplateFieldListHeader(config: TemplateHeaderConfig) {
 private fun EmptyFieldsPlaceholderContent() {
   Box(modifier = Modifier.fillMaxWidth().height(400.dp), contentAlignment = Alignment.Center) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-      Icon(Icons.Default.Add, contentDescription = stringResource(R.string.template_add_field_cd), modifier = Modifier.size(64.dp))
+      Icon(
+          Icons.Default.Add,
+          contentDescription = stringResource(R.string.template_add_field_cd),
+          modifier = Modifier.size(64.dp))
       Spacer(Modifier.height(16.dp))
-      Text(stringResource(R.string.template_no_fields_yet_title), style = MaterialTheme.typography.bodyLarge)
-      Text(stringResource(R.string.template_no_fields_yet_hint), style = MaterialTheme.typography.bodySmall)
+      Text(
+          stringResource(R.string.template_no_fields_yet_title),
+          style = MaterialTheme.typography.bodyLarge)
+      Text(
+          stringResource(R.string.template_no_fields_yet_hint),
+          style = MaterialTheme.typography.bodySmall)
     }
   }
 }

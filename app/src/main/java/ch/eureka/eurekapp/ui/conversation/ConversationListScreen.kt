@@ -104,7 +104,8 @@ fun ConversationListScreen(
                 else MaterialTheme.colorScheme.surfaceVariant) {
               Icon(
                   imageVector = Icons.Default.Add,
-                  contentDescription = stringResource(R.string.conversation_list_create_button_description))
+                  contentDescription =
+                      stringResource(R.string.conversation_list_create_button_description))
             }
       }) { padding ->
         Column(

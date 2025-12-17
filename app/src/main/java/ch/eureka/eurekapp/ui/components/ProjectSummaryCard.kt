@@ -121,7 +121,10 @@ fun ProjectSummaryCard(
                     verticalAlignment = Alignment.Top) {
                       Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = project.name.ifEmpty { stringResource(R.string.project_summary_card_untitled) },
+                            text =
+                                project.name.ifEmpty {
+                                  stringResource(R.string.project_summary_card_untitled)
+                                },
                             style = MaterialTheme.typography.titleLarge,
                             color = EColors.TitleTextColor,
                             fontWeight = FontWeight.Bold)
@@ -152,7 +155,10 @@ fun ProjectSummaryCard(
                           }
                       Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = project.description.ifEmpty { stringResource(R.string.project_summary_card_no_description) },
+                            text =
+                                project.description.ifEmpty {
+                                  stringResource(R.string.project_summary_card_no_description)
+                                },
                             style = MaterialTheme.typography.bodyMedium,
                             color = EColors.SecondaryTextColor,
                             fontWeight = FontWeight.Medium)
@@ -184,7 +190,9 @@ fun ProjectSummaryCard(
                                       modifier = Modifier.size(16.dp))
                                 }
                             Text(
-                                text = stringResource(R.string.project_summary_card_members_count, memberCount),
+                                text =
+                                    stringResource(
+                                        R.string.project_summary_card_members_count, memberCount),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = EColors.SecondaryTextColor,
                                 fontWeight = FontWeight.SemiBold)

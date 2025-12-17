@@ -35,7 +35,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.R
@@ -295,7 +294,9 @@ internal fun HomeOverviewLayout(
 private fun GreetingHeader(name: String, isConnected: Boolean, error: String?) {
   Column(modifier = Modifier.fillMaxWidth()) {
     Text(
-        text = if (name.isNotEmpty()) stringResource(R.string.home_overview_greeting_hello, name) else stringResource(R.string.home_overview_greeting_welcome),
+        text =
+            if (name.isNotEmpty()) stringResource(R.string.home_overview_greeting_hello, name)
+            else stringResource(R.string.home_overview_greeting_welcome),
         style = MaterialTheme.typography.headlineLarge,
         color = Color(0xFF0F172A),
         fontWeight = FontWeight.Bold)
@@ -402,7 +403,9 @@ private fun EmptyState(text: String) {
 private fun TaskPreviewCard(task: Task, onTaskClick: () -> Unit) {
   val now = Timestamp.now()
   val daysUntilDue = getDaysUntilDue(task, now)
-  val dueDate = daysUntilDue?.let { formatDueDate(it) } ?: stringResource(R.string.home_overview_task_due_no_date)
+  val dueDate =
+      daysUntilDue?.let { formatDueDate(it) }
+          ?: stringResource(R.string.home_overview_task_due_no_date)
   val dueDateTag = getDueDateTag(task, now)
   val priority = determinePriority(task, now)
   val progressValue =
@@ -422,7 +425,10 @@ private fun TaskPreviewCard(task: Task, onTaskClick: () -> Unit) {
       title = task.title.ifEmpty { stringResource(R.string.home_overview_task_untitled) },
       dueDate = dueDate,
       dueDateTag = dueDateTag,
-      assignee = if (task.assignedUserIds.isNotEmpty()) stringResource(R.string.home_overview_task_multiple_assignees) else stringResource(R.string.home_overview_task_unassigned),
+      assignee =
+          if (task.assignedUserIds.isNotEmpty())
+              stringResource(R.string.home_overview_task_multiple_assignees)
+          else stringResource(R.string.home_overview_task_unassigned),
       priority = priority,
       progressText = progressText,
       progressValue = progressValue,

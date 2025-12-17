@@ -13,9 +13,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import ch.eureka.eurekapp.R
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
@@ -115,7 +115,11 @@ private fun AddFieldFab(isVisible: Boolean, onClick: () -> Unit) {
   if (isVisible) {
     ExtendedFloatingActionButton(
         onClick = onClick,
-        icon = { Icon(Icons.Default.Add, contentDescription = stringResource(R.string.template_add_field_cd)) },
+        icon = {
+          Icon(
+              Icons.Default.Add,
+              contentDescription = stringResource(R.string.template_add_field_cd))
+        },
         text = { Text(stringResource(R.string.template_add_field_button)) },
         modifier = Modifier.testTag("add_field_button"))
   }

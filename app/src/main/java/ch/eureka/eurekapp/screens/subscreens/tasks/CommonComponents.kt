@@ -402,10 +402,13 @@ fun ProjectSelectionField(
 ) {
   var expanded by remember { mutableStateOf(false) }
   val selectedProject = projects.firstOrNull { it.projectId == selectedProjectId }
-  val selectedProjectName = selectedProject?.name ?: stringResource(R.string.task_project_placeholder)
+  val selectedProjectName =
+      selectedProject?.name ?: stringResource(R.string.task_project_placeholder)
 
   Column(modifier = modifier) {
-    Text(text = stringResource(R.string.task_project_selection_label), style = MaterialTheme.typography.titleMedium)
+    Text(
+        text = stringResource(R.string.task_project_selection_label),
+        style = MaterialTheme.typography.titleMedium)
 
     if (projects.isEmpty()) {
       Text(
@@ -468,13 +471,16 @@ fun UserAssignmentField(
         selectedCount == 0 -> stringResource(R.string.task_user_no_assignment)
         selectedCount == 1 -> {
           val user = availableUsers.firstOrNull { it.uid == selectedUserIds.first() }
-          stringResource(R.string.task_user_single_assigned, user?.displayName?.ifBlank { user.email } ?: "")
+          stringResource(
+              R.string.task_user_single_assigned, user?.displayName?.ifBlank { user.email } ?: "")
         }
         else -> stringResource(R.string.task_user_multiple_assigned, selectedCount)
       }
 
   Column(modifier = modifier) {
-    Text(text = stringResource(R.string.task_user_assignment_label), style = MaterialTheme.typography.titleMedium)
+    Text(
+        text = stringResource(R.string.task_user_assignment_label),
+        style = MaterialTheme.typography.titleMedium)
 
     if (availableUsers.isEmpty()) {
       Text(
@@ -541,7 +547,9 @@ fun TaskDependenciesSelectionField(
       }
 
   Column(modifier = modifier) {
-    Text(text = stringResource(R.string.task_dependencies_label), style = MaterialTheme.typography.titleMedium)
+    Text(
+        text = stringResource(R.string.task_dependencies_label),
+        style = MaterialTheme.typography.titleMedium)
     DependencyList(
         selectedDependencyIds = selectedDependencyIds,
         availableTasks = availableTasks,

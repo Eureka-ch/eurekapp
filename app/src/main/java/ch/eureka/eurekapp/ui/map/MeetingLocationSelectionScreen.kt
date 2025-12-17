@@ -91,7 +91,10 @@ fun MeetingLocationSelectionScreen(
                               com.google.android.gms.maps.model.LatLng(
                                   location.latitude, location.longitude)),
                   title = location.name,
-                  snippet = if (location.name.contains(",")) stringResource(R.string.meeting_location_coordinates_snippet) else stringResource(R.string.meeting_location_poi_snippet),
+                  snippet =
+                      if (location.name.contains(","))
+                          stringResource(R.string.meeting_location_coordinates_snippet)
+                      else stringResource(R.string.meeting_location_poi_snippet),
                   tag = MeetingLocationSelectionTestTags.MARKER)
             }
           }

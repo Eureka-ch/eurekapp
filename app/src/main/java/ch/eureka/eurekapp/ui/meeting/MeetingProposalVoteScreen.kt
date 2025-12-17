@@ -47,10 +47,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingProposal
 import ch.eureka.eurekapp.model.data.meeting.MeetingProposalVote
@@ -60,8 +62,6 @@ import ch.eureka.eurekapp.ui.components.help.HelpContext
 import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.utils.Formatters
-import androidx.compose.ui.res.stringResource
-import ch.eureka.eurekapp.R
 
 /** Test tags for the datetime vote screen. */
 object MeetingProposalVoteScreenTestTags {
@@ -123,8 +123,8 @@ fun MeetingProposalVoteScreen(
   }
 
   LaunchedEffect(meetingProposalVoteViewModel.userId) {
-      meetingProposalVoteViewModel.setErrorMsg("Not logged in")
-    }
+    meetingProposalVoteViewModel.setErrorMsg("Not logged in")
+  }
 
   Scaffold(
       topBar = {
@@ -154,7 +154,9 @@ fun MeetingProposalVoteScreen(
               modifier =
                   Modifier.testTag(
                       MeetingProposalVoteScreenTestTags.CONFIRM_MEETING_PROPOSALS_VOTES)) {
-                Icon(imageVector = Icons.Default.Check, contentDescription = stringResource(R.string.meeting_confirm_votes))
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = stringResource(R.string.meeting_confirm_votes))
               }
         }
       },
