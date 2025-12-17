@@ -248,27 +248,25 @@ fun NavigationMenu(
   UserHeartbeatEffect(userRepository, currentUser)
   val navBackStackEntry by navigationController.currentBackStackEntryAsState()
   val currentDestination = navBackStackEntry?.destination
+  val routesToHideBar = remember {
+    setOf(
+        Route.SelfNotes::class,
+        Route.ConversationsSection.ConversationDetail::class,
+        Route.ConversationsSection.CreateConversation::class,
+        Route.TasksSection.CreateTask::class,
+        Route.TasksSection.EditTask::class,
+        Route.TasksSection.ViewTask::class,
+        Route.TasksSection.AutoTaskAssignment::class,
+        Route.ProjectSelectionSection.CreateProject::class,
+        Route.MeetingsSection.CreateMeeting::class,
+        Route.MeetingsSection.MeetingProposalVotes::class,
+        Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting::class,
+        Route.MeetingsSection.MeetingNavigation::class)
+  }
   val hideBottomBar by remember {
     derivedStateOf {
       currentDestination?.hierarchy?.any { destination ->
-        // Notes / self
-        destination.hasRoute(Route.SelfNotes::class) ||
-            // Conversations detail / create
-            destination.hasRoute(Route.ConversationsSection.ConversationDetail::class) ||
-            destination.hasRoute(Route.ConversationsSection.CreateConversation::class) ||
-            // Tasks detail / create / edit / auto-assign
-            destination.hasRoute(Route.TasksSection.CreateTask::class) ||
-            destination.hasRoute(Route.TasksSection.EditTask::class) ||
-            destination.hasRoute(Route.TasksSection.ViewTask::class) ||
-            destination.hasRoute(Route.TasksSection.AutoTaskAssignment::class) ||
-            // Project creation
-            destination.hasRoute(Route.ProjectSelectionSection.CreateProject::class) ||
-            // Meeting create / vote / proposals / navigation (directions)
-            destination.hasRoute(Route.MeetingsSection.CreateMeeting::class) ||
-            destination.hasRoute(Route.MeetingsSection.MeetingProposalVotes::class) ||
-            destination.hasRoute(
-                Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting::class) ||
-            destination.hasRoute(Route.MeetingsSection.MeetingNavigation::class)
+        routesToHideBar.any { routeClass -> destination.hasRoute(routeClass) }
       } == true
     }
   }

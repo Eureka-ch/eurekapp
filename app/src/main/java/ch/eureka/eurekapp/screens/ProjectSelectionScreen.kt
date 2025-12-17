@@ -132,57 +132,13 @@ fun ProjectSelectionScreen(
         Column(
             modifier =
                 Modifier.fillMaxSize().padding(paddingValues).background(Color(0xFFF8FAFC))) {
-              // Header section with action buttons
-              Column(
-                  modifier = Modifier.fillMaxWidth().padding(Spacing.lg),
-                  horizontalAlignment = Alignment.CenterHorizontally,
-                  verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-                    Button(
-                        onClick = { onCreateProjectRequest() },
-                        modifier =
-                            Modifier.fillMaxWidth()
-                                .testTag(ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON),
-                        colors =
-                            ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = Color.White)) {
-                          Text(
-                              "+ Create Project",
-                              style = MaterialTheme.typography.titleMedium,
-                              fontWeight = FontWeight.Bold)
-                        }
-                    OutlinedButton(
-                        onClick = { onInputTokenRequest() },
-                        modifier =
-                            Modifier.fillMaxWidth()
-                                .testTag(ProjectSelectionScreenTestTags.INPUT_TOKEN_BUTTON),
-                        colors =
-                            ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.primary)) {
-                          Text(
-                              "Input Project Token",
-                              style = MaterialTheme.typography.titleMedium,
-                              fontWeight = FontWeight.SemiBold)
-                        }
-                  }
+              ProjectSelectionHeader(
+                  onCreateProjectRequest = onCreateProjectRequest,
+                  onInputTokenRequest = onInputTokenRequest)
 
               // Projects list
               if (projectsList.value.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                  Column(
-                      horizontalAlignment = Alignment.CenterHorizontally,
-                      verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                        Text(
-                            "No projects yet",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = Color(0xFF0F172A),
-                            fontWeight = FontWeight.Bold)
-                        Text(
-                            "Create your first project to get started",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color(0xFF64748B))
-                      }
-                }
+                EmptyProjectsState()
               } else {
                 LazyColumn(
                     state = listState,
@@ -239,6 +195,63 @@ fun ProjectSelectionScreen(
               }
             }
       })
+}
+
+@Composable
+private fun ProjectSelectionHeader(
+    onCreateProjectRequest: () -> Unit,
+    onInputTokenRequest: () -> Unit,
+) {
+  Column(
+      modifier = Modifier.fillMaxWidth().padding(Spacing.lg),
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+        Button(
+            onClick = { onCreateProjectRequest() },
+            modifier =
+                Modifier.fillMaxWidth()
+                    .testTag(ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = Color.White)) {
+              Text(
+                  "+ Create Project",
+                  style = MaterialTheme.typography.titleMedium,
+                  fontWeight = FontWeight.Bold)
+            }
+        OutlinedButton(
+            onClick = { onInputTokenRequest() },
+            modifier =
+                Modifier.fillMaxWidth().testTag(ProjectSelectionScreenTestTags.INPUT_TOKEN_BUTTON),
+            colors =
+                ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.primary)) {
+              Text(
+                  "Input Project Token",
+                  style = MaterialTheme.typography.titleMedium,
+                  fontWeight = FontWeight.SemiBold)
+            }
+      }
+}
+
+@Composable
+private fun EmptyProjectsState() {
+  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+          Text(
+              "No projects yet",
+              style = MaterialTheme.typography.titleLarge,
+              color = Color(0xFF0F172A),
+              fontWeight = FontWeight.Bold)
+          Text(
+              "Create your first project to get started",
+              style = MaterialTheme.typography.bodyMedium,
+              color = Color(0xFF64748B))
+        }
+  }
 }
 
 /** Displays the status of a project in a modern badge style. */
