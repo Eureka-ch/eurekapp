@@ -75,7 +75,7 @@ data class CreateMeetingUIState(
     val selectedLocation: Location? = null,
     val locationQuery: String = "",
     val locationSuggestions: List<Location> = emptyList(),
-    val meetingLink: String = "",
+    val meetingLink: String? = null,
     val linkValidationError: String? = null,
     val linkValidationWarning: String? = null,
     val hasTouchedLink: Boolean = false,
@@ -94,7 +94,7 @@ data class CreateMeetingUIState(
             LocalDateTime.of(date, time).isAfter(LocalDateTime.now()) &&
             (format == MeetingFormat.IN_PERSON && selectedLocation != null ||
                 format == MeetingFormat.VIRTUAL &&
-                    meetingLink.isNotBlank() &&
+                    !meetingLink.isNullOrBlank() &&
                     linkValidationError == null)
 }
 
@@ -295,9 +295,7 @@ class CreateMeetingViewModel(
             status = MeetingStatus.OPEN_TO_VOTES,
             duration = uiState.value.duration,
             location = uiState.value.selectedLocation,
-            link =
-                if (uiState.value.format == MeetingFormat.VIRTUAL) uiState.value.meetingLink
-                else null,
+            link = uiState.value.meetingLink,
             meetingProposals =
                 listOf(
                     MeetingProposal(

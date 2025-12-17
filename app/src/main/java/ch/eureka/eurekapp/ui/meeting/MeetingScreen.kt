@@ -4,6 +4,7 @@ package ch.eureka.eurekapp.ui.meeting
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -68,6 +69,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.calendar.MeetingCalendarViewModel
 import ch.eureka.eurekapp.model.data.meeting.Meeting
@@ -372,6 +374,19 @@ fun MeetingsList(
                     MeetingCardConfig(
                         isCurrentUserId = config.isCurrentUserId,
                         onClick = { config.onMeetingClick(config.projectId, meeting.meetingID) },
+                        onJoinMeeting = { _ ->
+                          if (!meeting.link.isNullOrBlank()) {
+                            val browserIntent =
+                                Intent(Intent.ACTION_VIEW, meeting.link.toUri()).apply {
+                                  addCategory(Intent.CATEGORY_BROWSABLE)
+                                  flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                }
+                            context.startActivity(browserIntent)
+                          } else {
+                            Toast.makeText(context, "No meeting link available", Toast.LENGTH_SHORT)
+                                .show()
+                          }
+                        },
                         onVoteForMeetingProposals = { isConnected ->
                           config.onVoteForMeetingProposalClick(
                               config.projectId, meeting.meetingID, isConnected)

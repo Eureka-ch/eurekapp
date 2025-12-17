@@ -73,6 +73,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.meeting.Meeting
@@ -679,7 +680,7 @@ private fun MeetingLinkInfo(meeting: Meeting) {
         onClick = {
           // Open link in web browser, not native app
           val browserIntent =
-              Intent(Intent.ACTION_VIEW, Uri.parse(meeting.link)).apply {
+              Intent(Intent.ACTION_VIEW, meeting.link.toUri()).apply {
                 addCategory(Intent.CATEGORY_BROWSABLE)
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
               }
