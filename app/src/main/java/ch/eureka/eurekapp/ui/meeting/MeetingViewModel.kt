@@ -91,6 +91,9 @@ class MeetingViewModel(
 
   /** Load all the meetings from the database where the current user is in. */
   fun loadMeetings() {
+    _uiState.update {
+      it.copy(isLoading = true, upcomingMeetings = emptyList(), pastMeetings = emptyList())
+    }
     viewModelScope.launch {
       repository
           .getMeetingsForCurrentUser(skipCache = false)

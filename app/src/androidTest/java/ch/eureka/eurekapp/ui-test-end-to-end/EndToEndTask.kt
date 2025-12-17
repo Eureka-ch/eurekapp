@@ -5,7 +5,6 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -402,8 +401,6 @@ class TaskEndToEndTest : TestCase() {
             .isNotEmpty()
       }
 
-      // CRITICAL FIX: Wait for the meeting to actually appear in Firestore and be rendered
-      // Don't just check the screen exists - wait for the actual data to load
       composeTestRule.waitUntil(timeoutMillis = 30_000) {
         try {
           composeTestRule.onNodeWithText(meetingTitle).assertExists()
@@ -474,9 +471,7 @@ class TaskEndToEndTest : TestCase() {
             .isNotEmpty()
       }
 
-      composeTestRule.waitUntil(timeoutMillis = 30_000) {
-        composeTestRule.onAllNodesWithText(meetingTitle).fetchSemanticsNodes().isEmpty()
-      }
+      composeTestRule.waitForIdle()
 
       composeTestRule.onNodeWithText(meetingTitle).assertDoesNotExist()
     }
