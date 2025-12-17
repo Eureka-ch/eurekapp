@@ -95,7 +95,9 @@ class CreateMeetingViewModelTest {
             date = futureDateTime.toLocalDate(),
             time = futureDateTime.toLocalTime())
 
-    state = state.copy(format = MeetingFormat.VIRTUAL)
+    state =
+        state.copy(
+            format = MeetingFormat.VIRTUAL, meetingLink = "https://meet.google.com/abc-defg-hij")
 
     assertTrue(state.isValid)
 
@@ -253,6 +255,7 @@ class CreateMeetingViewModelTest {
     viewModel.setDate(futureDateTime.toLocalDate())
     viewModel.setTime(futureDateTime.toLocalTime())
     viewModel.setFormat(MeetingFormat.VIRTUAL)
+    viewModel.setMeetingLink("https://meet.google.com/abc-defg-hij")
     assertTrue(viewModel.uiState.value.isValid)
 
     currentUserId = null
@@ -330,6 +333,7 @@ class CreateMeetingViewModelTest {
     viewModel.setDate(futureDateTime.toLocalDate())
     viewModel.setTime(futureDateTime.toLocalTime())
     viewModel.setFormat(MeetingFormat.VIRTUAL)
+    viewModel.setMeetingLink("https://meet.google.com/abc-defg-hij")
 
     assertTrue(viewModel.uiState.value.isValid)
 
@@ -392,6 +396,7 @@ class CreateMeetingViewModelTest {
     viewModel.setDate(futureDateTime.toLocalDate())
     viewModel.setTime(futureDateTime.toLocalTime())
     viewModel.setFormat(MeetingFormat.VIRTUAL)
+    viewModel.setMeetingLink("https://meet.google.com/abc-defg-hij")
 
     viewModel.setLocationQuery("")
 
