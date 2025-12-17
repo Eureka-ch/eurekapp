@@ -102,7 +102,7 @@ fun IdeasScreen(
         if (uiState.viewMode == IdeasViewMode.LIST) {
           FloatingActionButton(
               onClick = { showCreateIdeaDialog = true },
-              modifier = Modifier.offset(y = (-80).dp).testTag("createIdeaButton"),
+              modifier = Modifier.offset(y = (-64).dp).testTag("createIdeaButton"),
               containerColor = MaterialTheme.colorScheme.primary,
               contentColor = Color.White) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Create new idea")

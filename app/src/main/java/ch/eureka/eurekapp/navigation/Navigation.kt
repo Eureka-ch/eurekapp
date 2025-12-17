@@ -3,8 +3,11 @@ package ch.eureka.eurekapp.navigation
 
 import android.util.Log
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -654,7 +657,8 @@ fun NavigationMenu(
     // Nav bar en overlay flottante (masquée sur certaines pages)
     if (!hideBottomBar) {
       androidx.compose.foundation.layout.Box(
-          modifier = Modifier.fillMaxSize().padding(innerPadding).zIndex(1f),
+          modifier =
+              Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.navigationBars).zIndex(1f),
           contentAlignment = Alignment.BottomCenter) {
             BottomBarNavigationComponent(navigationController = navigationController)
           }
