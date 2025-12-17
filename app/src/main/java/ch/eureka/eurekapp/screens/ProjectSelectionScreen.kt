@@ -129,72 +129,100 @@ fun ProjectSelectionScreen(
   Scaffold(
       topBar = { EurekaTopBar(title = "Projects") },
       content = { paddingValues ->
-        Column(
-            modifier =
-                Modifier.fillMaxSize().padding(paddingValues).background(Color(0xFFF8FAFC))) {
-              ProjectSelectionHeader(
-                  onCreateProjectRequest = onCreateProjectRequest,
-                  onInputTokenRequest = onInputTokenRequest)
-
-              // Projects list
-              if (projectsList.value.isEmpty()) {
-                EmptyProjectsState()
-              } else {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = Spacing.lg),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-                      items(projectsList.value) { project ->
-                        val projectUsers =
-                            projectSelectionScreenViewModel
-                                .getProjectUsersInformation(project.projectId)
-                                .collectAsState(listOf())
-                        ProjectSummaryCard(
-                            project = project,
-                            onClick = { onSeeProjectMembers(project.projectId) },
-                            memberCount = projectUsers.value.size,
-                            actionButton = {
-                              Row(
-                                  modifier = Modifier.fillMaxWidth(),
-                                  horizontalArrangement = Arrangement.SpaceBetween,
-                                  verticalAlignment = Alignment.CenterVertically) {
-                                    TextButton(
-                                        onClick = { onSeeProjectMembers(project.projectId) },
-                                        modifier =
-                                            Modifier.testTag(
-                                                ProjectSelectionScreenTestTags
-                                                    .getShowMembersButtonTestTag(
-                                                        project.projectId)),
-                                        colors =
-                                            ButtonDefaults.textButtonColors(
-                                                contentColor = MaterialTheme.colorScheme.primary)) {
-                                          Text(
-                                              "View Members",
-                                              style = MaterialTheme.typography.labelLarge,
-                                              fontWeight = FontWeight.SemiBold)
-                                        }
-                                    if (currentUser.value?.uid.equals(project.createdBy)) {
-                                      IconButton(
-                                          onClick = { onGenerateInviteRequest(project.projectId) },
-                                          modifier =
-                                              Modifier.testTag(
-                                                  ProjectSelectionScreenTestTags
-                                                      .getInviteButtonTestTag(project.projectId))) {
-                                            Icon(
-                                                imageVector = Icons.Default.PersonAdd,
-                                                contentDescription = "Generate Invite",
-                                                tint = MaterialTheme.colorScheme.primary,
-                                                modifier = Modifier.size(24.dp))
-                                          }
-                                    }
-                                  }
-                            })
-                      }
-                    }
-              }
-            }
+        ProjectSelectionContent(
+            paddingValues = paddingValues,
+            projects = projectsList.value,
+            currentUserId = currentUser.value?.uid,
+            listState = listState,
+            onCreateProjectRequest = onCreateProjectRequest,
+            onInputTokenRequest = onInputTokenRequest,
+            onGenerateInviteRequest = onGenerateInviteRequest,
+            onSeeProjectMembers = onSeeProjectMembers,
+            viewModel = projectSelectionScreenViewModel)
       })
+}
+
+@Composable
+private fun ProjectSelectionContent(
+    paddingValues: PaddingValues,
+    projects: List<ProjectSelectionScreenViewModel.ProjectWithUsers>,
+    currentUserId: String?,
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    onCreateProjectRequest: () -> Unit,
+    onInputTokenRequest: () -> Unit,
+    onGenerateInviteRequest: (String) -> Unit,
+    onSeeProjectMembers: (String) -> Unit,
+    viewModel: ProjectSelectionScreenViewModel
+) {
+  Column(modifier = Modifier.fillMaxSize().padding(paddingValues).background(Color(0xFFF8FAFC))) {
+    ProjectSelectionHeader(
+        onCreateProjectRequest = onCreateProjectRequest, onInputTokenRequest = onInputTokenRequest)
+
+    if (projects.isEmpty()) {
+      EmptyProjectsState()
+    } else {
+      LazyColumn(
+          state = listState,
+          modifier = Modifier.fillMaxSize(),
+          contentPadding = PaddingValues(horizontal = Spacing.lg),
+          verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+            items(projects) { project ->
+              val projectUsers =
+                  viewModel.getProjectUsersInformation(project.projectId).collectAsState(listOf())
+              ProjectSummaryCard(
+                  project = project,
+                  onClick = { onSeeProjectMembers(project.projectId) },
+                  memberCount = projectUsers.value.size,
+                  actionButton = {
+                    ProjectCardActions(
+                        projectId = project.projectId,
+                        isOwner = currentUserId == project.createdBy,
+                        onSeeProjectMembers = onSeeProjectMembers,
+                        onGenerateInviteRequest = onGenerateInviteRequest)
+                  })
+            }
+          }
+    }
+  }
+}
+
+@Composable
+private fun ProjectCardActions(
+    projectId: String,
+    isOwner: Boolean,
+    onSeeProjectMembers: (String) -> Unit,
+    onGenerateInviteRequest: (String) -> Unit
+) {
+  Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically) {
+        TextButton(
+            onClick = { onSeeProjectMembers(projectId) },
+            modifier =
+                Modifier.testTag(
+                    ProjectSelectionScreenTestTags.getShowMembersButtonTestTag(projectId)),
+            colors =
+                ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)) {
+              Text(
+                  "View Members",
+                  style = MaterialTheme.typography.labelLarge,
+                  fontWeight = FontWeight.SemiBold)
+            }
+        if (isOwner) {
+          IconButton(
+              onClick = { onGenerateInviteRequest(projectId) },
+              modifier =
+                  Modifier.testTag(
+                      ProjectSelectionScreenTestTags.getInviteButtonTestTag(projectId))) {
+                Icon(
+                    imageVector = Icons.Default.PersonAdd,
+                    contentDescription = "Generate Invite",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp))
+              }
+        }
+      }
 }
 
 @Composable
