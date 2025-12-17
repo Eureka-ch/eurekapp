@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.screens.subscreens.meetings
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -50,7 +51,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.audio.AudioRecordingViewModel
 import ch.eureka.eurekapp.model.audio.RecordingState
-import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
@@ -86,12 +86,10 @@ fun MeetingAudioRecordingScreen(
     onNavigateToTranscript: (String, String) -> Unit = { _, _ -> },
     onBackClick: () -> Unit = {}
 ) {
-
-  val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
-  val isConnected by connectivityObserver.isConnected.collectAsState(initial = true)
+  val isConnected by audioRecordingViewModel.isConnected.collectAsState()
 
   // Navigate back if connection is lost
-  HandleConnectionLoss(isConnected, onBackClick)
+  HandleConnectionLoss(isConnected, onBackClick, context)
 
   var microphonePermissionIsGranted by remember {
     mutableStateOf(
@@ -364,9 +362,11 @@ private fun HandleExistingTranscript(meeting: Meeting?, onTranscriptFound: () ->
 }
 
 @Composable
-private fun HandleConnectionLoss(isConnected: Boolean, onBackClick: () -> Unit) {
+private fun HandleConnectionLoss(isConnected: Boolean, onBackClick: () -> Unit, context: Context) {
   LaunchedEffect(isConnected) {
     if (!isConnected) {
+      Toast.makeText(context, "Connection lost. Returning to previous screen.", Toast.LENGTH_SHORT)
+          .show()
       onBackClick()
     }
   }

@@ -1,5 +1,6 @@
 package ch.eureka.eurekapp.screens.subscreens.meetings
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,9 +30,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.transcription.TranscriptionStatus
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
@@ -181,13 +182,15 @@ fun MeetingTranscriptViewScreen(
     onNavigateBack: () -> Unit
 ) {
   val uiState by viewModel.uiState.collectAsState()
+  val isConnected by viewModel.isConnected.collectAsState()
 
-  val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
-  val isConnected by connectivityObserver.isConnected.collectAsState(initial = true)
+  val context = LocalContext.current
 
   // Navigate back if connection is lost
   LaunchedEffect(isConnected) {
     if (!isConnected) {
+      Toast.makeText(context, "Connection lost. Returning to previous screen.", Toast.LENGTH_SHORT)
+          .show()
       onNavigateBack()
     }
   }

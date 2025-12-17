@@ -62,7 +62,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.ui.components.BackButton
@@ -149,12 +148,13 @@ fun CreateMeetingScreen(
   val context = LocalContext.current
   val uiState by createMeetingViewModel.uiState.collectAsState()
 
-  val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
-  val isConnected by connectivityObserver.isConnected.collectAsState(initial = true)
+  val isConnected by createMeetingViewModel.isConnected.collectAsState()
 
   // Navigate back if connection is lost
   LaunchedEffect(isConnected) {
     if (!isConnected) {
+      Toast.makeText(context, "Connection lost. Returning to previous screen.", Toast.LENGTH_SHORT)
+          .show()
       onBackClick()
     }
   }

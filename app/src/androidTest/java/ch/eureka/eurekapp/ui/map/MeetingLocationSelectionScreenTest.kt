@@ -37,7 +37,6 @@ class MeetingLocationSelectionScreenTest {
 
   @Before
   fun setup() {
-    viewModel = MeetingLocationSelectionViewModel()
     savedLocation = null
     onBackCalled = false
 
@@ -52,6 +51,9 @@ class MeetingLocationSelectionScreenTest {
         ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
     providerField.isAccessible = true
     providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
+
+    // NOW create the ViewModel after the mock is set
+    viewModel = MeetingLocationSelectionViewModel()
 
     composeTestRule.setContent {
       MeetingLocationSelectionScreen(

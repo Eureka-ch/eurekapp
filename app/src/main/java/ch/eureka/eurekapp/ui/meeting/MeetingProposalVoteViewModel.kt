@@ -5,6 +5,7 @@ package ch.eureka.eurekapp.ui.meeting
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.FirestoreMeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
@@ -13,9 +14,11 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingProposalVote
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -53,6 +56,10 @@ class MeetingProposalVoteViewModel(
   private val _uiState = MutableStateFlow(MeetingProposalVoteUIState())
   val uiState: StateFlow<MeetingProposalVoteUIState> = _uiState
   val userId = getCurrentUserId()
+
+  private val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
+  val isConnected =
+      connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
   /** Clears the error message in the UI state. */
   fun clearErrorMsg() {

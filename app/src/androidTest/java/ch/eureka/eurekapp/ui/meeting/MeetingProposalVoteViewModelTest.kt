@@ -1,10 +1,13 @@
 /* Portions of this file were written with the help of Gemini.*/
 package ch.eureka.eurekapp.ui.meeting
 
+import androidx.test.platform.app.InstrumentationRegistry
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingProposal
 import ch.eureka.eurekapp.model.data.meeting.MeetingProposalVote
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import java.util.Date
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +32,7 @@ class MeetingProposalVoteViewModelTest {
   private val testDispatcher = StandardTestDispatcher()
   private lateinit var viewModel: MeetingProposalVoteViewModel
   private lateinit var repositoryMock: MeetingProposalVoteRepositoryMock
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
 
   private var currentUserId: String? = "test-user-id"
 
@@ -85,6 +89,18 @@ class MeetingProposalVoteViewModelTest {
   fun setup() {
     Dispatchers.setMain(testDispatcher)
     repositoryMock = MeetingProposalVoteRepositoryMock()
+
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    // Initialize mock connectivity observer
+    mockConnectivityObserver = MockConnectivityObserver(context)
+    mockConnectivityObserver.setConnected(true)
+
+    // Replace ConnectivityObserverProvider's observer with mock
+    val providerField =
+        ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
+    providerField.isAccessible = true
+    providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
   }
 
   private fun createViewModel(userId: String? = currentUserId) {

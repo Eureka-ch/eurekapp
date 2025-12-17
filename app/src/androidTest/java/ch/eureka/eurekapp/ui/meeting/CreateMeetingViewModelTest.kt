@@ -2,11 +2,14 @@
 package ch.eureka.eurekapp.ui.meeting
 
 import android.util.Log
+import androidx.test.platform.app.InstrumentationRegistry
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.model.map.LocationRepository
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import io.mockk.every
 import io.mockk.mockkStatic
 import java.time.LocalDate
@@ -41,6 +44,7 @@ class CreateMeetingViewModelTest {
   private lateinit var viewModel: CreateMeetingViewModel
   private lateinit var repositoryMock: MockCreateMeetingRepository
   private lateinit var locationRepositoryMock: MockLocationRepository
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
 
   private var currentUserId: String? = "test-user-id"
 
@@ -52,6 +56,18 @@ class CreateMeetingViewModelTest {
     Dispatchers.setMain(testDispatcher)
     repositoryMock = MockCreateMeetingRepository()
     locationRepositoryMock = MockLocationRepository()
+
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    // Initialize mock connectivity observer
+    mockConnectivityObserver = MockConnectivityObserver(context)
+    mockConnectivityObserver.setConnected(true)
+
+    // Replace ConnectivityObserverProvider's observer with mock
+    val providerField =
+        ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
+    providerField.isAccessible = true
+    providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
 
     mockkStatic(Log::class)
     every { Log.e(any(), any(), any()) } returns 0
