@@ -320,10 +320,7 @@ private class MockCreateMeetingProposalRepository : MeetingRepository {
     return flowOf(emptyList())
   }
 
-  override fun getMeetingsForCurrentUser(
-      projectId: String,
-      skipCache: Boolean
-  ): Flow<List<Meeting>> {
+  override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> {
     return flowOf(emptyList())
   }
 
