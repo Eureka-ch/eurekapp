@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
@@ -87,6 +88,21 @@ import kotlinx.serialization.Serializable
  * The duration in milliseconds between two ping of the app to firestore for last active tracking.
  */
 const val HEARTBEAT_DURATION = 180000L // 3 minutes
+
+private val ROUTES_HIDE_BOTTOM_BAR =
+    setOf(
+        Route.SelfNotes::class,
+        Route.ConversationsSection.ConversationDetail::class,
+        Route.ConversationsSection.CreateConversation::class,
+        Route.TasksSection.CreateTask::class,
+        Route.TasksSection.EditTask::class,
+        Route.TasksSection.ViewTask::class,
+        Route.TasksSection.AutoTaskAssignment::class,
+        Route.ProjectSelectionSection.CreateProject::class,
+        Route.MeetingsSection.CreateMeeting::class,
+        Route.MeetingsSection.MeetingProposalVotes::class,
+        Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting::class,
+        Route.MeetingsSection.MeetingNavigation::class)
 
 sealed interface Route {
   // Main screens
@@ -248,28 +264,8 @@ fun NavigationMenu(
   UserHeartbeatEffect(userRepository, currentUser)
   val navBackStackEntry by navigationController.currentBackStackEntryAsState()
   val currentDestination = navBackStackEntry?.destination
-  val routesToHideBar = remember {
-    setOf(
-        Route.SelfNotes::class,
-        Route.ConversationsSection.ConversationDetail::class,
-        Route.ConversationsSection.CreateConversation::class,
-        Route.TasksSection.CreateTask::class,
-        Route.TasksSection.EditTask::class,
-        Route.TasksSection.ViewTask::class,
-        Route.TasksSection.AutoTaskAssignment::class,
-        Route.ProjectSelectionSection.CreateProject::class,
-        Route.MeetingsSection.CreateMeeting::class,
-        Route.MeetingsSection.MeetingProposalVotes::class,
-        Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting::class,
-        Route.MeetingsSection.MeetingNavigation::class)
-  }
-  val hideBottomBar by remember {
-    derivedStateOf {
-      currentDestination?.hierarchy?.any { destination ->
-        routesToHideBar.any { routeClass -> destination.hasRoute(routeClass) }
-      } == true
-    }
-  }
+  val hideBottomBar by
+      remember(currentDestination) { derivedStateOf { shouldHideBottomBar(currentDestination) } }
 
   Scaffold(containerColor = Color.White) { innerPadding ->
     Box(modifier = Modifier.fillMaxSize()) {
@@ -715,6 +711,11 @@ fun NavigationMenu(
           }
     }
   }
+}
+
+private fun shouldHideBottomBar(currentDestination: NavDestination?): Boolean {
+  val destination = currentDestination ?: return false
+  return destination.hierarchy.any { dest -> ROUTES_HIDE_BOTTOM_BAR.any { dest.hasRoute(it) } }
 }
 
 /**
