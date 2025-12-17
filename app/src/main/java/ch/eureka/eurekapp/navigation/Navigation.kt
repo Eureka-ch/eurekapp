@@ -655,7 +655,7 @@ fun NavigationMenu(
     // Nav bar en overlay flottante (masquée sur certaines pages)
     if (!hideBottomBar) {
       androidx.compose.foundation.layout.Box(
-          modifier = Modifier.fillMaxWidth().zIndex(1f),
+          modifier = Modifier.fillMaxSize().padding(innerPadding).zIndex(1f),
           contentAlignment = Alignment.BottomCenter) {
             BottomBarNavigationComponent(navigationController = navigationController)
           }
