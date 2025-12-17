@@ -998,7 +998,7 @@ fun InfoRow(
             modifier = Modifier.size(20.dp),
             tint =
                 if (isClickable) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.primary)
+                else MaterialTheme.colorScheme.onSurface)
         Spacer(modifier = Modifier.width(8.dp))
         Column {
           Text(
