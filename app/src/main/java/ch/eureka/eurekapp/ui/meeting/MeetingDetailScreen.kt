@@ -77,12 +77,15 @@ import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.user.User
+import ch.eureka.eurekapp.model.downloads.AppDatabase
+import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.LightingBlue
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.utils.Formatters
 import coil.compose.AsyncImage
 import com.google.firebase.Timestamp
+import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
@@ -173,6 +176,8 @@ data class MeetingDetailActionsConfig(
  * @param projectId The ID of the project containing the meeting.
  * @param meetingId The ID of the meeting to display.
  * @param viewModel The ViewModel managing the meeting detail state.
+ * @param downloadedFileDao the downloaded files database
+ * @param attachmentsViewModel the View model handling the meeting attachments
  * @param actionsConfig The actions that can be executed with buttons on the detail meeting screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -181,7 +186,13 @@ fun MeetingDetailScreen(
     projectId: String,
     meetingId: String,
     viewModel: MeetingDetailViewModel = viewModel { MeetingDetailViewModel(projectId, meetingId) },
-    attachmentsViewModel: MeetingAttachmentsViewModel = viewModel(),
+    downloadedFileDao: DownloadedFileDao =
+        AppDatabase.getDatabase(LocalContext.current).downloadedFileDao(),
+    attachmentsViewModel: MeetingAttachmentsViewModel = viewModel {
+        MeetingAttachmentsViewModel(
+            downloadedFileDao = downloadedFileDao
+        )
+    },
     actionsConfig: MeetingDetailActionsConfig = MeetingDetailActionsConfig()
 ) {
   val context = LocalContext.current
@@ -1043,7 +1054,8 @@ fun AttachmentItem(
     attachmentsViewModel: MeetingAttachmentsViewModel
 ) {
   val context = LocalContext.current
-  val downloadingFilesSet = remember { attachmentsViewModel.downloadingFilesSet }.collectAsState()
+  val downloadingFilesSet = remember { attachmentsViewModel.downloadingFileStateUrlToBoolean }.collectAsState()
+  val downloadedFiles = remember { attachmentsViewModel.downloadedFiles.map { list -> list.map { file -> file.url } } }.collectAsState(listOf())
   val fileNames = remember { attachmentsViewModel.attachmentUrlsToFileNames }.collectAsState()
   LaunchedEffect(Unit) { attachmentsViewModel.getFilenameFromDownloadURL(attachmentUrl) }
   Row(
@@ -1090,7 +1102,7 @@ fun AttachmentItem(
                         contentDescription = null)
                   }
               Spacer(modifier = Modifier.width(12.dp))
-              if (downloadingFilesSet.value.contains(attachmentUrl)) {
+              if (downloadingFilesSet.value.getOrElse(attachmentUrl, {false})) {
                 CircularProgressIndicator(
                     modifier =
                         Modifier.testTag(
@@ -1100,13 +1112,14 @@ fun AttachmentItem(
                     strokeWidth = 4.dp)
               } else {
                 IconButton(
+                    enabled = !downloadedFiles.value.contains(attachmentUrl),
                     modifier =
                         Modifier.testTag(
                             AttachmentItemTestTags.downloadButtonAttachmentTestTag(attachmentUrl)),
                     onClick = {
                       attachmentsViewModel.downloadFileToPhone(
-                          context,
                           attachmentUrl,
+                          context,
                           {},
                           { message ->
                             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
