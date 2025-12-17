@@ -312,6 +312,7 @@ class ActivityDetailScreenTest {
 
   @Test
   fun activityDetailScreen_deleteButtonOpensConfirmationDialog() {
+    every { connectivityObserver.isConnected } returns flowOf(false)
     val activity =
         createActivity(
             testActivityId, EntityType.PROJECT, "Project", ActivityType.CREATED, testEntityId)
@@ -325,15 +326,16 @@ class ActivityDetailScreenTest {
       ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_BUTTON).performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_DIALOG).assertIsDisplayed()
-    composeTestRule.onNodeWithText("Delete Activity?").assertIsDisplayed()
-    composeTestRule.onNodeWithText("This action cannot be undone.").assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.OFFLINE_MESSAGE).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithText("You are offline. Some actions are unavailable.")
+        .assertIsDisplayed()
   }
 
   @Test
   fun activityDetailScreen_deleteDialogCancelButtonClosesDialog() {
+    every { connectivityObserver.isConnected } returns flowOf(false)
     val activity =
         createActivity(
             testActivityId, EntityType.MEETING, "Meeting", ActivityType.CREATED, testEntityId)
@@ -347,11 +349,8 @@ class ActivityDetailScreenTest {
       ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
     }
     composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_BUTTON).performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithText("Cancel").performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.DELETE_DIALOG).assertDoesNotExist()
+    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.SHARE_BUTTON).assertIsNotEnabled()
+    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ENTITY_BUTTON).assertIsNotEnabled()
   }
 
   @Test
@@ -359,7 +358,6 @@ class ActivityDetailScreenTest {
     val activity =
         createActivity(testActivityId, EntityType.TASK, "Task", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
-    coEvery { repository.deleteActivity(testActivityId) } returns Result.success(Unit)
 
     setupSimpleUserMock()
     viewModel =
@@ -395,7 +393,10 @@ class ActivityDetailScreenTest {
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
 
     composeTestRule.setContent {
-      ActivityDetailScreen(activityId = testActivityId, viewModel = viewModel)
+      ActivityDetailScreen(
+          activityId = testActivityId,
+          viewModel = viewModel,
+          onNavigateBack = { navigateBackCalled = true })
     }
     composeTestRule.waitForIdle()
 
@@ -403,6 +404,11 @@ class ActivityDetailScreenTest {
     composeTestRule
         .onNodeWithText("You are offline. Some actions are unavailable.")
         .assertIsDisplayed()
+
+    composeTestRule.onNodeWithContentDescription("Navigate back").performClick()
+    composeTestRule.waitForIdle()
+
+    assert(navigateBackCalled)
   }
 
   @Test
@@ -410,7 +416,7 @@ class ActivityDetailScreenTest {
     every { connectivityObserver.isConnected } returns flowOf(false)
     val activity =
         createActivity(
-            testActivityId, EntityType.MEETING, "Meeting", ActivityType.CREATED, testEntityId)
+            testActivityId, EntityType.MEETING, "Team Sync", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
 
     setupSimpleUserMock()
@@ -435,19 +441,26 @@ class ActivityDetailScreenTest {
     setupSimpleUserMock()
     viewModel =
         ActivityDetailViewModel(testActivityId, repository, connectivityObserver, firestore, auth)
+    var navigationCalled = false
+    var capturedEntityType: EntityType? = null
 
     composeTestRule.setContent {
       ActivityDetailScreen(
           activityId = testActivityId,
           viewModel = viewModel,
-          onNavigateBack = { navigateBackCalled = true })
+          onNavigateToEntity = { entityType, _, _ ->
+            navigationCalled = true
+            capturedEntityType = entityType
+          })
     }
     composeTestRule.waitForIdle()
 
-    composeTestRule.onNodeWithContentDescription("Navigate back").performClick()
+    composeTestRule.onNodeWithText("View MEETING").assertIsDisplayed()
+    composeTestRule.onNodeWithTag(ActivityDetailScreenTestTags.ENTITY_BUTTON).performClick()
     composeTestRule.waitForIdle()
 
-    assert(navigateBackCalled)
+    assert(navigationCalled) { "Navigation callback should be called" }
+    assert(capturedEntityType == EntityType.MEETING) { "Should navigate to MEETING" }
   }
 
   @Test
