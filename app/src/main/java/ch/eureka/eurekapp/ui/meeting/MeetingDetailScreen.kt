@@ -1,5 +1,4 @@
-// Portions of this code were generated with the help of Grok, ChatGPT, and Claude (and Claude 4.5
-// Sonnet).
+/* Portions of this code were generated with the help of Grok, ChatGPT, and Claude (and Claude 4.5 Sonnet). */
 package ch.eureka.eurekapp.ui.meeting
 
 import android.content.Intent
@@ -28,12 +27,12 @@ import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.HowToVote
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.VideoCall
 import androidx.compose.material.icons.filled.Warning
@@ -68,6 +67,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -81,9 +81,6 @@ import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.user.User
-import ch.eureka.eurekapp.model.downloads.AppDatabase
-import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
-import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.LightingBlue
@@ -95,9 +92,9 @@ import ch.eureka.eurekapp.utils.MeetingPlatform
 import coil.compose.AsyncImage
 import com.google.firebase.Timestamp
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
-import kotlinx.coroutines.flow.map
 
 /**
  * Helper function to get alpha value based on connection status. Returns 1f if connected, 0.6f if
@@ -109,7 +106,7 @@ private fun getAlpha(isConnected: Boolean): Float = if (isConnected) 1f else 0.6
  * Test tags for MeetingDetailScreen composable.
  *
  * Provides semantic identifiers for UI testing with Compose UI Test framework. Each constant
- * represents a unique testTag applied to composables in MeetingDetailScreen, enabling reliable and
+ * represents a unique testTag applied to composable in MeetingDetailScreen, enabling reliable and
  * maintainable UI test assertions.
  */
 object MeetingDetailScreenTestTags {
@@ -119,6 +116,7 @@ object MeetingDetailScreenTestTags {
   const val ERROR_MSG = "ErrorMsg"
   const val MEETING_TITLE = "MeetingDetailTitle"
   const val MEETING_STATUS = "MeetingDetailStatus"
+  const val MEETING_PROJECT_NAME = "MeetingProjectName"
   const val MEETING_DATETIME = "MeetingDetailDateTime"
   const val MEETING_FORMAT = "MeetingDetailFormat"
   const val MEETING_LOCATION = "MeetingDetailLocation"
@@ -129,10 +127,6 @@ object MeetingDetailScreenTestTags {
   const val CREATOR_AVATAR = "CreatorAvatar"
   const val CREATOR_NAME = "CreatorName"
   const val CREATOR_LABEL = "CreatorLabel"
-  const val PARTICIPANTS_SECTION = "ParticipantsSection"
-  const val PARTICIPANT_ITEM = "ParticipantItem"
-  const val PARTICIPANT_NAME = "ParticipantName"
-  const val PARTICIPANT_ROLE = "ParticipantRole"
   const val ATTACHMENTS_SECTION = "AttachmentsSection"
   const val ATTACHMENT_ITEM = "AttachmentItem"
   const val NO_ATTACHMENTS_MESSAGE = "NoAttachmentsMessage"
@@ -162,14 +156,15 @@ object MeetingDetailScreenTestTags {
  * Data class representing all the actions than can be executed by buttons on the meeting detail
  * screen.
  *
- * @param onNavigateBack Callback to navigate back to the previous screen.
- * @param onJoinMeeting Callback when user clicks join meeting button.
- * @param onVoteForMeetingProposalClick Callback when the "Vote for meeting proposals" button is
+ * @property onNavigateBack Callback to navigate back to the previous screen.
+ * @property onJoinMeeting Callback when user clicks join meeting button.
+ * @property onVoteForMeetingProposalClick Callback when the "Vote for meeting proposals" button is
  *   clicked.
- * @param onRecordMeeting Callback when user clicks record button, receives projectId and meetingId.
- * @param onViewTranscript Callback when user clicks view transcript button, receives projectId and
+ * @property onRecordMeeting Callback when user clicks record button, receives projectId and
  *   meetingId.
- * @param onNavigateToMeeting Callback when user clicks navigate to meeting button.
+ * @property onViewTranscript Callback when user clicks view transcript button, receives projectId
+ *   and meetingId.
+ * @property onNavigateToMeeting Callback when user clicks navigate to meeting button.
  */
 data class MeetingDetailActionsConfig(
     val onNavigateBack: () -> Unit = {},
@@ -177,22 +172,19 @@ data class MeetingDetailActionsConfig(
     val onRecordMeeting: (String, String, Boolean) -> Unit = { _, _, _ -> },
     val onViewTranscript: (String, String, Boolean) -> Unit = { _, _, _ -> },
     val onVoteForMeetingProposalClick: (String, String, Boolean) -> Unit = { _, _, _ -> },
-    val onNavigateToMeeting: (Boolean) -> Unit = {},
-    val onFileManagementScreenClick: () -> Unit = {}
+    val onNavigateToMeeting: (Boolean) -> Unit = {}
 )
 
 /**
  * Main composable for the meeting detail screen.
  *
  * Displays comprehensive information about a meeting including title, date/time, format,
- * location/link, participants, and attachments. Provides action buttons for joining, recording,
- * viewing transcripts, and deleting the meeting.
+ * location/link and attachments. Provides action buttons for joining, recording, viewing
+ * transcripts, and deleting the meeting.
  *
  * @param projectId The ID of the project containing the meeting.
  * @param meetingId The ID of the meeting to display.
  * @param viewModel The ViewModel managing the meeting detail state.
- * @param downloadedFileDao the downloaded files database
- * @param attachmentsViewModel the View model handling the meeting attachments
  * @param actionsConfig The actions that can be executed with buttons on the detail meeting screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -201,12 +193,8 @@ fun MeetingDetailScreen(
     projectId: String,
     meetingId: String,
     viewModel: MeetingDetailViewModel = viewModel { MeetingDetailViewModel(projectId, meetingId) },
-    downloadedFileDao: DownloadedFileDao =
-        AppDatabase.getDatabase(LocalContext.current).downloadedFileDao(),
-    attachmentsViewModel: MeetingAttachmentsViewModel = viewModel {
-      MeetingAttachmentsViewModel(downloadedFileDao = downloadedFileDao)
-    },
-    actionsConfig: MeetingDetailActionsConfig = MeetingDetailActionsConfig(),
+    attachmentsViewModel: MeetingAttachmentsViewModel = viewModel(),
+    actionsConfig: MeetingDetailActionsConfig = MeetingDetailActionsConfig()
 ) {
   val context = LocalContext.current
   val uiState by viewModel.uiState.collectAsState()
@@ -233,94 +221,89 @@ fun MeetingDetailScreen(
     }
   }
 
+  val meetingProjectName = uiState.meetingProjectName
+
   Scaffold(
       modifier = Modifier.testTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN),
       topBar = {
         EurekaTopBar(
-            title = uiState.meeting?.title ?: stringResource(R.string.meeting_detail_default_title),
+            title = uiState.meeting?.title ?: "Meeting",
             titleTestTag = MeetingDetailScreenTestTags.MEETING_TITLE,
             navigationIcon = {
               IconButton(onClick = actionsConfig.onNavigateBack) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.navigate_back))
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Navigate back")
               }
-            },
-            actions = {
-              IconButton(
-                  onClick = actionsConfig.onFileManagementScreenClick,
-                  modifier = Modifier.testTag(TasksScreenTestTags.FILES_MANAGEMENT_BUTTON)) {
-                    Icon(
-                        Icons.Filled.Folder,
-                        contentDescription = stringResource(R.string.meeting_manage_files),
-                        tint = EColors.WhiteTextColor)
-                  }
             })
       },
       content = { padding ->
-        if (uiState.isLoading) {
-          LoadingScreen()
-        } else if (uiState.meeting == null) {
-          val err =
-              uiState.errorMsg
-                  ?: throw IllegalStateException(
-                      "Error message should not be null if meeting is null.")
-          Text(
-              modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MESSAGE),
-              text = stringResource(R.string.meeting_detail_error_loading, err))
-        } else {
-          uiState.meeting?.let { meeting ->
-            MeetingDetailContent(
-                config =
-                    MeetingDetailContentConfig(
-                        meeting = meeting,
-                        creatorUser = uiState.creatorUser,
-                        attachmentsViewModel = attachmentsViewModel,
-                        editConfig =
-                            EditConfig(
-                                isEditMode = uiState.isEditMode,
-                                isSaving = uiState.isSaving,
-                                editTitle = uiState.editTitle,
-                                editDateTime = uiState.editDateTime,
-                                editDuration = uiState.editDuration,
-                                editLink = uiState.editLink,
-                                linkValidationError = uiState.linkValidationError,
-                                linkValidationWarning = uiState.linkValidationWarning,
-                                hasTouchedTitle = uiState.hasTouchedTitle,
-                                hasTouchedDateTime = uiState.hasTouchedDateTime,
-                                hasTouchedDuration = uiState.hasTouchedDuration,
-                                hasTouchedLink = uiState.hasTouchedLink),
-                        actionsConfig =
-                            MeetingDetailContentActionsConfig(
-                                onJoinMeeting = actionsConfig.onJoinMeeting,
-                                onRecordMeeting = actionsConfig.onRecordMeeting,
-                                onViewTranscript = actionsConfig.onViewTranscript,
-                                onDeleteMeeting = { showDeleteDialog = true },
-                                onVoteForMeetingProposals = { isConnected ->
-                                  actionsConfig.onVoteForMeetingProposalClick(
-                                      projectId, meetingId, isConnected)
-                                },
-                                onEditMeeting = { isConnected ->
-                                  viewModel.toggleEditMode(meeting, isConnected)
-                                },
-                                onSaveMeeting = { isConnected ->
-                                  viewModel.saveMeetingChanges(meeting, isConnected)
-                                },
-                                onCancelEdit = { viewModel.toggleEditMode(null) },
-                                onUpdateTitle = viewModel::updateEditTitle,
-                                onUpdateDateTime = viewModel::updateEditDateTime,
-                                onUpdateDuration = viewModel::updateEditDuration,
-                                onUpdateLink = viewModel::updateEditLink,
-                                onTouchTitle = viewModel::touchTitle,
-                                onTouchDateTime = viewModel::touchDateTime,
-                                onTouchDuration = viewModel::touchDuration,
-                                onTouchLink = viewModel::touchLink,
-                                onNavigateToMeeting = actionsConfig.onNavigateToMeeting),
-                        isConnected = uiState.isConnected,
-                        isCreator = uiState.isCreator),
-                viewModel = viewModel,
-                modifier = Modifier.padding(padding))
-          } ?: ErrorScreen(message = uiState.errorMsg ?: "Meeting not found")
+        when {
+          uiState.isLoading -> {
+            LoadingScreen()
+          }
+          uiState.meeting == null -> {
+            Text(
+                modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MESSAGE),
+                text =
+                    "There was an error while loading meetings : ${uiState.errorMsg ?: throw IllegalStateException("Error message should not be null if meeting is null.")}")
+          }
+          meetingProjectName == null -> {
+            ErrorScreen(message = uiState.errorMsg ?: "Meeting project name not found")
+          }
+          else -> {
+            uiState.meeting?.let { meeting ->
+              MeetingDetailContent(
+                  config =
+                      MeetingDetailContentConfig(
+                          meeting = meeting,
+                          meetingProjectName = meetingProjectName,
+                          creatorUser = uiState.creatorUser,
+                          attachmentsViewModel = attachmentsViewModel,
+                          editConfig =
+                              EditConfig(
+                                  isEditMode = uiState.isEditMode,
+                                  isSaving = uiState.isSaving,
+                                  editTitle = uiState.editTitle,
+                                  editDateTime = uiState.editDateTime,
+                                  editDuration = uiState.editDuration,
+                                  editLink = uiState.editLink,
+                                  linkValidationError = uiState.linkValidationError,
+                                  linkValidationWarning = uiState.linkValidationWarning,
+                                  hasTouchedTitle = uiState.hasTouchedTitle,
+                                  hasTouchedDateTime = uiState.hasTouchedDateTime,
+                                  hasTouchedDuration = uiState.hasTouchedDuration,
+                                  hasTouchedLink = uiState.hasTouchedLink),
+                          actionsConfig =
+                              MeetingDetailContentActionsConfig(
+                                  onJoinMeeting = actionsConfig.onJoinMeeting,
+                                  onRecordMeeting = actionsConfig.onRecordMeeting,
+                                  onViewTranscript = actionsConfig.onViewTranscript,
+                                  onDeleteMeeting = { showDeleteDialog = true },
+                                  onVoteForMeetingProposals = { isConnected ->
+                                    actionsConfig.onVoteForMeetingProposalClick(
+                                        projectId, meetingId, isConnected)
+                                  },
+                                  onEditMeeting = { isConnected ->
+                                    viewModel.toggleEditMode(meeting, isConnected)
+                                  },
+                                  onSaveMeeting = { isConnected ->
+                                    viewModel.saveMeetingChanges(meeting, isConnected)
+                                  },
+                                  onCancelEdit = { viewModel.toggleEditMode(null) },
+                                  onUpdateTitle = viewModel::updateEditTitle,
+                                  onUpdateDateTime = viewModel::updateEditDateTime,
+                                  onUpdateDuration = viewModel::updateEditDuration,
+                                  onUpdateLink = viewModel::updateEditLink,
+                                  onTouchTitle = viewModel::touchTitle,
+                                  onTouchDateTime = viewModel::touchDateTime,
+                                  onTouchDuration = viewModel::touchDuration,
+                                  onTouchLink = viewModel::touchLink,
+                                  onNavigateToMeeting = actionsConfig.onNavigateToMeeting),
+                          isConnected = uiState.isConnected,
+                          isCreator = uiState.isCreator),
+                  viewModel = viewModel,
+                  modifier = Modifier.padding(padding))
+            } ?: ErrorScreen(message = uiState.errorMsg ?: "Meeting not found")
+          }
         }
       })
 
@@ -346,9 +329,7 @@ private fun LoadingScreen() {
       verticalArrangement = Arrangement.Center) {
         CircularProgressIndicator()
         Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = stringResource(R.string.meeting_loading_details),
-            style = MaterialTheme.typography.bodyMedium)
+        Text(text = "Loading meeting details...", style = MaterialTheme.typography.bodyMedium)
       }
 }
 
@@ -375,27 +356,27 @@ private fun ErrorScreen(message: String) {
  * Data class representing all the actions that can be executed by the buttons in the detail
  * content.
  *
- * @param onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
+ * @property onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
  *   link.
- * @param onRecordMeeting Callback invoked when user clicks record meeting button, receives
+ * @property onRecordMeeting Callback invoked when user clicks record meeting button, receives
  *   projectId and meetingId.
- * @param onViewTranscript Callback invoked when user clicks view transcript button, receives
+ * @property onViewTranscript Callback invoked when user clicks view transcript button, receives
  *   projectId and meetingId.
- * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
- * @param onVoteForMeetingProposals Callback invoked when user votes for meeting proposals.
- * @param onEditMeeting Callback invoked when user clicks edit meeting button.
- * @param onSaveMeeting Callback invoked when user saves meeting changes, receives connectivity
+ * @property onDeleteMeeting Callback invoked when user clicks delete meeting button.
+ * @property onVoteForMeetingProposals Callback invoked when user votes for meeting proposals.
+ * @property onEditMeeting Callback invoked when user clicks edit meeting button.
+ * @property onSaveMeeting Callback invoked when user saves meeting changes, receives connectivity
  *   status.
- * @param onCancelEdit Callback invoked when user cancels edit mode.
- * @param onUpdateTitle Callback invoked when edit title changes.
- * @param onUpdateDateTime Callback invoked when edit date/time changes.
- * @param onUpdateDuration Callback invoked when edit duration changes.
- * @param onUpdateLink Callback invoked when edit link changes.
- * @param onTouchTitle Callback invoked when title field is first touched.
- * @param onTouchDateTime Callback invoked when date/time field is first touched.
- * @param onTouchDuration Callback invoked when duration field is first touched.
- * @param onTouchLink Callback invoked when link field is first touched.
- * @param onNavigateToMeeting Callback invoked when user clicks navigate to meeting button.
+ * @property onCancelEdit Callback invoked when user cancels edit mode.
+ * @property onUpdateTitle Callback invoked when edit title changes.
+ * @property onUpdateDateTime Callback invoked when edit date/time changes.
+ * @property onUpdateDuration Callback invoked when edit duration changes.
+ * @property onUpdateLink Callback invoked when edit link changes.
+ * @property onTouchTitle Callback invoked when title field is first touched.
+ * @property onTouchDateTime Callback invoked when date/time field is first touched.
+ * @property onTouchDuration Callback invoked when duration field is first touched.
+ * @property onTouchLink Callback invoked when link field is first touched.
+ * @property onNavigateToMeeting Callback invoked when user clicks navigate to meeting button.
  */
 data class MeetingDetailContentActionsConfig(
     val onJoinMeeting: (String, Boolean) -> Unit,
@@ -420,15 +401,15 @@ data class MeetingDetailContentActionsConfig(
 /**
  * Configuration for edit mode state.
  *
- * @param isEditMode Whether the screen is in edit mode.
- * @param isSaving Whether a save operation is in progress.
- * @param editTitle The title being edited.
- * @param editDateTime The date/time being edited.
- * @param editDuration The duration being edited.
- * @param editLink The meeting link being edited (for VIRTUAL meetings).
- * @param linkValidationError The error message for link validation, null if valid.
- * @param linkValidationWarning The warning message for link validation, null if no warning.
- * @param hasTouchedLink Whether the link field has been touched.
+ * @property isEditMode Whether the screen is in edit mode.
+ * @property isSaving Whether a save operation is in progress.
+ * @property editTitle The title being edited.
+ * @property editDateTime The date/time being edited.
+ * @property editDuration The duration being edited.
+ * @property editLink The meeting link being edited (for VIRTUAL meetings).
+ * @property linkValidationError The error message for link validation, null if valid.
+ * @property linkValidationWarning The warning message for link validation, null if no warning.
+ * @property hasTouchedLink Whether the link field has been touched.
  */
 data class EditConfig(
     val isEditMode: Boolean,
@@ -448,16 +429,16 @@ data class EditConfig(
 /**
  * Configuration for action button callbacks.
  *
- * @param onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
+ * @property onJoinMeeting Callback invoked when user clicks join meeting button, receives meeting
  *   link.
- * @param onRecordMeeting Callback invoked when user clicks record meeting button, receives
+ * @property onRecordMeeting Callback invoked when user clicks record meeting button, receives
  *   projectId and meetingId.
- * @param onViewTranscript Callback invoked when user clicks view transcript button, receives
+ * @property onViewTranscript Callback invoked when user clicks view transcript button, receives
  *   projectId and meetingId.
- * @param onDeleteMeeting Callback invoked when user clicks delete meeting button.
- * @param onVoteForMeetingProposals Callback invoked when user votes for meeting proposals.
- * @param onEditMeeting Callback invoked when user clicks edit meeting button.
- * @param onNavigateToMeeting Callback invoked when user clicks navigate to meeting button.
+ * @property onDeleteMeeting Callback invoked when user clicks delete meeting button.
+ * @property onVoteForMeetingProposals Callback invoked when user votes for meeting proposals.
+ * @property onEditMeeting Callback invoked when user clicks edit meeting button.
+ * @property onNavigateToMeeting Callback invoked when user clicks navigate to meeting button.
  */
 data class ActionButtonsConfig(
     val onJoinMeeting: (String, Boolean) -> Unit,
@@ -472,16 +453,18 @@ data class ActionButtonsConfig(
 /**
  * Configuration for MeetingDetailContent composable.
  *
- * @param meeting The meeting to display.
- * @param creatorUser The user information of the meeting creator.
- * @param editConfig Configuration for edit mode state.
- * @param actionsConfig Actions that can be executed by buttons in the detail content.
- * @param attachmentsViewModel ViewModel for handling attachments.
- * @param isConnected Whether the device is connected to the internet.
- * @param isCreator Whether the current user is the creator of the meeting.
+ * @property meeting The meeting.
+ * @property meetingProjectName The name of the project the meeting is into.
+ * @property creatorUser The user information of the meeting creator.
+ * @property editConfig Configuration for edit mode state.
+ * @property actionsConfig Actions that can be executed by buttons in the detail content.
+ * @property attachmentsViewModel ViewModel for handling attachments.
+ * @property isConnected Whether the device is connected to the internet.
+ * @property isCreator Whether the current user is the creator of the meeting.
  */
 data class MeetingDetailContentConfig(
     val meeting: Meeting,
+    val meetingProjectName: String,
     val creatorUser: User?,
     val editConfig: EditConfig,
     val actionsConfig: MeetingDetailContentActionsConfig,
@@ -512,7 +495,6 @@ private fun MeetingDetailContent(
 
         item {
           if (config.editConfig.isEditMode) {
-            // ppbbbb
             EditableMeetingInfoCard(
                 config =
                     EditableMeetingInfoCardConfig(
@@ -537,7 +519,8 @@ private fun MeetingDetailContent(
                         onTouchDuration = config.actionsConfig.onTouchDuration,
                         onTouchLink = config.actionsConfig.onTouchLink))
           } else {
-            MeetingInformationCard(meeting = config.meeting)
+            MeetingInformationCard(
+                meeting = config.meeting, meetingProjectName = config.meetingProjectName)
           }
         }
 
@@ -567,10 +550,10 @@ private fun MeetingDetailContent(
                         onDeleteMeeting = config.actionsConfig.onDeleteMeeting,
                         onVoteForMeetingProposals = config.actionsConfig.onVoteForMeetingProposals,
                         onEditMeeting = config.actionsConfig.onEditMeeting,
-                        onNavigateToMeeting = config.actionsConfig.onNavigateToMeeting),
+                        onNavigateToMeeting = config.actionsConfig.onNavigateToMeeting,
+                    ),
                 isConnected = config.isConnected,
-                isCreator = config.isCreator,
-            )
+                isCreator = config.isCreator)
           }
         }
 
@@ -627,9 +610,10 @@ private fun MeetingHeader(meeting: Meeting) {
  * Card displaying meeting information (date, time, format, location/link).
  *
  * @param meeting The meeting to display information for.
+ * @param meetingProjectName The name of the project in which the meeting is.
  */
 @Composable
-private fun MeetingInformationCard(meeting: Meeting) {
+private fun MeetingInformationCard(meeting: Meeting, meetingProjectName: String) {
   Card(
       modifier = Modifier.fillMaxWidth(),
       shape = RoundedCornerShape(16.dp),
@@ -637,12 +621,13 @@ private fun MeetingInformationCard(meeting: Meeting) {
         Column(
             modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
               Text(
-                  text = stringResource(R.string.meeting_information_title),
+                  text = "Meeting Information",
                   style = MaterialTheme.typography.titleMedium,
                   fontWeight = FontWeight.SemiBold)
 
               HorizontalDivider()
 
+              MeetingProjectNameInfo(projectName = meetingProjectName)
               MeetingDateTimeInfo(meeting)
               MeetingFormatInfo(meeting)
               MeetingLocationInfo(meeting)
@@ -652,11 +637,20 @@ private fun MeetingInformationCard(meeting: Meeting) {
 }
 
 @Composable
+private fun MeetingProjectNameInfo(projectName: String) {
+  InfoRow(
+      icon = Icons.Default.RocketLaunch,
+      label = "Project",
+      value = projectName,
+      testTag = MeetingDetailScreenTestTags.MEETING_PROJECT_NAME)
+}
+
+@Composable
 private fun MeetingDateTimeInfo(meeting: Meeting) {
   if (meeting.datetime != null && meeting.status != MeetingStatus.IN_PROGRESS) {
     InfoRow(
         icon = Icons.Default.Schedule,
-        label = stringResource(R.string.meeting_label_date_time),
+        label = "Date & Time",
         value = Formatters.formatDateTime(meeting.datetime.toDate()),
         testTag = MeetingDetailScreenTestTags.MEETING_DATETIME)
   }
@@ -671,7 +665,7 @@ private fun MeetingFormatInfo(meeting: Meeting) {
               MeetingFormat.VIRTUAL -> Icons.Default.VideoCall
               MeetingFormat.IN_PERSON -> Icons.Default.Place
             },
-        label = stringResource(R.string.meeting_label_format),
+        label = "Format",
         value = format.description,
         testTag = MeetingDetailScreenTestTags.MEETING_FORMAT)
   }
@@ -682,7 +676,7 @@ private fun MeetingLocationInfo(meeting: Meeting) {
   if (meeting.format == MeetingFormat.IN_PERSON && meeting.location != null) {
     InfoRow(
         icon = Icons.Default.Place,
-        label = stringResource(R.string.create_meeting_location_label),
+        label = "Location",
         value = meeting.location.name,
         testTag = MeetingDetailScreenTestTags.MEETING_LOCATION)
   }
@@ -702,7 +696,7 @@ private fun MeetingLinkInfo(meeting: Meeting) {
 
     InfoRow(
         icon = Icons.Default.VideoCall,
-        label = stringResource(R.string.meeting_label_meeting_link),
+        label = "Meeting Link",
         value = displayText,
         testTag = MeetingDetailScreenTestTags.MEETING_LINK,
         isClickable = true,
@@ -779,15 +773,6 @@ data class EditableMeetingInfoCardConfig(
  * @param config The configuration containing editable field values, state flags, and callbacks for
  *   change and touch events.
  */
-/**
- * Editable card displaying meeting information in edit mode.
- *
- * Provides editable input fields for meeting title, date/time, and duration, using configuration
- * data supplied through [EditableMeetingInfoCardConfig].
- *
- * @param config The configuration containing editable field values, state flags, and callbacks for
- *   change and touch events.
- */
 @Composable
 private fun EditableMeetingInfoCard(config: EditableMeetingInfoCardConfig) {
   // Convert Timestamp to LocalDate and LocalTime
@@ -803,7 +788,7 @@ private fun EditableMeetingInfoCard(config: EditableMeetingInfoCardConfig) {
         Column(
             modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
               Text(
-                  text = stringResource(R.string.meeting_edit_information_title),
+                  text = "Edit Meeting Information",
                   style = MaterialTheme.typography.titleMedium,
                   fontWeight = FontWeight.SemiBold)
 
@@ -828,8 +813,8 @@ private fun EditableTitleField(config: EditableMeetingInfoCardConfig) {
   OutlinedTextField(
       value = config.editTitle,
       onValueChange = config.onTitleChange,
-      label = { Text(stringResource(R.string.meeting_edit_title_label)) },
-      placeholder = { Text(stringResource(R.string.meeting_edit_title_placeholder)) },
+      label = { Text("Title") },
+      placeholder = { Text("Meeting title") },
       modifier =
           Modifier.fillMaxWidth().onFocusChanged { focusState ->
             if (focusState.isFocused) {
@@ -838,7 +823,7 @@ private fun EditableTitleField(config: EditableMeetingInfoCardConfig) {
           })
   if (config.editTitle.isBlank() && config.hasTouchedTitle) {
     Text(
-        text = stringResource(R.string.meeting_title_empty_error),
+        text = "Title cannot be empty",
         color = MaterialTheme.colorScheme.error,
         style = MaterialTheme.typography.bodySmall,
         modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MSG))
@@ -857,14 +842,12 @@ private fun EditableDateTimeField(
     // Date field
     DateInputField(
         selectedDate = editDate,
-        label = stringResource(R.string.create_datetime_proposal_date_label),
-        placeHolder = stringResource(R.string.create_datetime_proposal_date_placeholder),
+        label = "Date",
+        placeHolder = "Select date",
         tag = "EditMeetingDate",
         onDateSelected = { newDate ->
           val newDateTime =
-              java.time.LocalDateTime.of(newDate, editTime)
-                  .atZone(ZoneId.systemDefault())
-                  .toInstant()
+              LocalDateTime.of(newDate, editTime).atZone(ZoneId.systemDefault()).toInstant()
           config.onDateTimeChange(Timestamp(newDateTime.epochSecond, newDateTime.nano))
         },
         onDateTouched = { config.onTouchDateTime() })
@@ -872,21 +855,19 @@ private fun EditableDateTimeField(
     // Time field
     TimeInputField(
         selectedTime = editTime,
-        label = stringResource(R.string.create_datetime_proposal_time_label),
-        placeHolder = stringResource(R.string.create_datetime_proposal_time_placeholder),
+        label = "Time",
+        placeHolder = "Select time",
         tag = "EditMeetingTime",
         onTimeSelected = { newTime ->
           val newDateTime =
-              java.time.LocalDateTime.of(editDate, newTime)
-                  .atZone(ZoneId.systemDefault())
-                  .toInstant()
+              LocalDateTime.of(editDate, newTime).atZone(ZoneId.systemDefault()).toInstant()
           config.onDateTimeChange(Timestamp(newDateTime.epochSecond, newDateTime.nano))
         },
         onTimeTouched = { config.onTouchDateTime() })
 
     if (config.editDateTime == null && config.hasTouchedDateTime) {
       Text(
-          text = stringResource(R.string.meeting_error_date_time_set),
+          text = "Date and time must be set",
           color = MaterialTheme.colorScheme.error,
           style = MaterialTheme.typography.bodySmall,
           modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MSG))
@@ -894,9 +875,9 @@ private fun EditableDateTimeField(
 
     if (config.editDateTime != null &&
         config.hasTouchedDateTime &&
-        java.time.LocalDateTime.of(editDate, editTime).isBefore(java.time.LocalDateTime.now())) {
+        LocalDateTime.of(editDate, editTime).isBefore(LocalDateTime.now())) {
       Text(
-          text = stringResource(R.string.create_datetime_proposal_future_validation_error),
+          text = "Meeting should be scheduled in the future.",
           color = MaterialTheme.colorScheme.error,
           style = MaterialTheme.typography.bodySmall,
           modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MSG))
@@ -913,12 +894,12 @@ private fun EditableDurationField(config: EditableMeetingInfoCardConfig) {
       config =
           SingleChoiceInputFieldConfig(
               currentValue = config.editDuration,
-              displayValue = { d -> "${d} minutes" },
-              label = stringResource(R.string.create_meeting_duration_label),
-              placeholder = stringResource(R.string.create_meeting_duration_placeholder),
+              displayValue = { d -> "$d minutes" },
+              label = "Duration",
+              placeholder = "Select duration",
               icon = Icons.Default.HourglassTop,
-              iconDescription = stringResource(R.string.create_meeting_duration_placeholder),
-              alertDialogTitle = stringResource(R.string.create_meeting_duration_dialog_title),
+              iconDescription = "Select duration",
+              alertDialogTitle = "Select a duration",
               options = listOf(5, 10, 15, 20, 30, 45, 60),
               tag = "EditMeetingDuration",
               onOptionSelected = { duration ->
@@ -927,7 +908,7 @@ private fun EditableDurationField(config: EditableMeetingInfoCardConfig) {
               }))
   if (config.editDuration <= 0 && config.hasTouchedDuration) {
     Text(
-        text = stringResource(R.string.meeting_duration_validation_error),
+        text = "Duration must be greater than 0",
         color = MaterialTheme.colorScheme.error,
         style = MaterialTheme.typography.bodySmall,
         modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MSG))
@@ -1005,7 +986,7 @@ private fun EditableLinkField(config: EditableMeetingInfoCardConfig) {
  */
 @Composable
 fun InfoRow(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     label: String,
     value: String,
     testTag: String,
@@ -1063,11 +1044,11 @@ private fun CreatorSection(creatorUser: User?, meeting: Meeting) {
               Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Person,
-                    contentDescription = stringResource(R.string.meeting_creator_icon),
+                    contentDescription = "Creator",
                     tint = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = stringResource(R.string.meeting_creator_title),
+                    text = "Creator",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold)
               }
@@ -1157,11 +1138,11 @@ fun AttachmentsSection(
               Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.AttachFile,
-                    contentDescription = stringResource(R.string.meeting_attachments_icon),
+                    contentDescription = "Attachments",
                     tint = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = stringResource(R.string.meeting_attachments_title, attachments.size),
+                    text = "Attachments (${attachments.size})",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold)
               }
@@ -1175,7 +1156,7 @@ fun AttachmentsSection(
                         meeting.projectId, meeting.meetingID, attachmentsViewModel)
                     if (attachments.isEmpty()) {
                       Text(
-                          text = stringResource(R.string.meeting_no_attachments),
+                          text = "No attachments",
                           style = MaterialTheme.typography.bodyMedium,
                           color = EColors.SecondaryTextColor,
                           modifier =
@@ -1224,13 +1205,7 @@ fun AttachmentItem(
     attachmentsViewModel: MeetingAttachmentsViewModel
 ) {
   val context = LocalContext.current
-  val downloadingFilesSet =
-      remember { attachmentsViewModel.downloadingFileStateUrlToBoolean }.collectAsState()
-  val downloadedFiles =
-      remember {
-            attachmentsViewModel.downloadedFiles.map { list -> list.map { file -> file.url } }
-          }
-          .collectAsState(listOf())
+  val downloadingFilesSet = remember { attachmentsViewModel.downloadingFilesSet }.collectAsState()
   val fileNames = remember { attachmentsViewModel.attachmentUrlsToFileNames }.collectAsState()
   LaunchedEffect(Unit) { attachmentsViewModel.getFilenameFromDownloadURL(attachmentUrl) }
   Row(
@@ -1242,7 +1217,7 @@ fun AttachmentItem(
             verticalAlignment = Alignment.CenterVertically) {
               Icon(
                   imageVector = Icons.Default.Description,
-                  contentDescription = stringResource(R.string.meeting_attachment_icon_description),
+                  contentDescription = "Attachment",
                   tint = MaterialTheme.colorScheme.primary,
                   modifier = Modifier.size(24.dp))
               Spacer(modifier = Modifier.width(12.dp))
@@ -1277,7 +1252,7 @@ fun AttachmentItem(
                         contentDescription = null)
                   }
               Spacer(modifier = Modifier.width(12.dp))
-              if (downloadingFilesSet.value.getOrElse(attachmentUrl, { false })) {
+              if (downloadingFilesSet.value.contains(attachmentUrl)) {
                 CircularProgressIndicator(
                     modifier =
                         Modifier.testTag(
@@ -1287,14 +1262,13 @@ fun AttachmentItem(
                     strokeWidth = 4.dp)
               } else {
                 IconButton(
-                    enabled = !downloadedFiles.value.contains(attachmentUrl),
                     modifier =
                         Modifier.testTag(
                             AttachmentItemTestTags.downloadButtonAttachmentTestTag(attachmentUrl)),
                     onClick = {
                       attachmentsViewModel.downloadFileToPhone(
-                          attachmentUrl,
                           context,
+                          attachmentUrl,
                           {},
                           { message ->
                             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
@@ -1333,7 +1307,7 @@ private fun ActionButtonsSection(
           Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.ACTION_BUTTONS_SECTION),
       verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
-            text = stringResource(R.string.meeting_actions_title),
+            text = "Actions",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold)
 
@@ -1368,7 +1342,7 @@ private fun JoinMeetingButton(
                 .alpha(getAlpha(isConnected))) {
           Icon(imageVector = Icons.Default.VideoCall, contentDescription = null)
           Spacer(modifier = Modifier.width(8.dp))
-          Text(stringResource(R.string.meeting_join_button))
+          Text("Join Meeting")
         }
   }
 }
@@ -1389,7 +1363,7 @@ private fun NavigateToLocationButton(
               imageVector = Icons.Default.Place,
               contentDescription = stringResource(R.string.location_icon))
           Spacer(modifier = Modifier.width(8.dp))
-          Text(stringResource(R.string.meeting_view_location))
+          Text("View Location")
         }
   }
 }
@@ -1410,7 +1384,7 @@ private fun RecordButton(
           Modifier.fillMaxWidth()
               .testTag(MeetingDetailScreenTestTags.RECORD_BUTTON)
               .alpha(getAlpha(isConnected))) {
-        Text(stringResource(R.string.meeting_start_recording))
+        Text("Start Recording")
       }
 }
 
@@ -1427,12 +1401,12 @@ private fun ScheduledButtons(
   if (isCreator) {
     MeetingActionReminder(
         shouldShow = viewModel.shouldMeetingBeStarted(meeting),
-        message = stringResource(R.string.meeting_start_time_passed_reminder),
+        message = "The scheduled start time has passed. Consider starting the meeting.",
         testTag = MeetingDetailScreenTestTags.START_MEETING_REMINDER)
 
     MeetingActionButton(
         onClick = { viewModel.startMeeting(meeting, isConnected) },
-        text = stringResource(R.string.meeting_start_meeting),
+        text = "Start Meeting",
         isConnected = isConnected,
         testTag = MeetingDetailScreenTestTags.START_MEETING_BUTTON)
 
@@ -1460,12 +1434,12 @@ private fun InProgressButtons(
   if (isCreator) {
     MeetingActionReminder(
         shouldShow = viewModel.shouldMeetingBeEnded(meeting),
-        message = stringResource(R.string.meeting_end_time_passed_reminder),
+        message = "The scheduled end time has passed. Consider ending the meeting.",
         testTag = MeetingDetailScreenTestTags.END_MEETING_REMINDER)
 
     MeetingActionButton(
         onClick = { viewModel.endMeeting(meeting, isConnected) },
-        text = stringResource(R.string.meeting_end_meeting),
+        text = "End Meeting",
         isConnected = isConnected,
         isError = true,
         testTag = MeetingDetailScreenTestTags.END_MEETING_BUTTON)
@@ -1499,7 +1473,7 @@ private fun CompletedButtons(
               .alpha(getAlpha(isConnected))) {
         Icon(imageVector = Icons.Default.Description, contentDescription = null)
         Spacer(modifier = Modifier.width(8.dp))
-        Text(stringResource(R.string.view_transcript))
+        Text("View Transcript")
       }
 }
 
@@ -1514,10 +1488,9 @@ private fun OpenToVotesButtons(actionsConfig: ActionButtonsConfig, isConnected: 
               .testTag(MeetingDetailScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON)
               .alpha(getAlpha(isConnected))) {
         Icon(
-            imageVector = Icons.Default.HowToVote,
-            contentDescription = stringResource(R.string.meeting_vote_for_proposals))
+            imageVector = Icons.Default.HowToVote, contentDescription = "Vote for meeting proposal")
         Spacer(modifier = Modifier.width(8.dp))
-        Text(stringResource(R.string.meeting_vote_for_proposals))
+        Text("Vote for meeting proposals")
       }
 }
 
@@ -1532,7 +1505,7 @@ private fun CommonButtons(actionsConfig: ActionButtonsConfig, isConnected: Boole
           Modifier.fillMaxWidth()
               .testTag(MeetingDetailScreenTestTags.EDIT_BUTTON)
               .alpha(getAlpha(isConnected))) {
-        Text(stringResource(R.string.meeting_edit_meeting))
+        Text("Edit Meeting")
       }
 
   OutlinedButton(
@@ -1546,7 +1519,7 @@ private fun CommonButtons(actionsConfig: ActionButtonsConfig, isConnected: Boole
           ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
         Icon(imageVector = Icons.Default.Delete, contentDescription = null)
         Spacer(modifier = Modifier.width(8.dp))
-        Text(stringResource(R.string.meeting_delete_meeting))
+        Text("Delete Meeting")
       }
 }
 
@@ -1567,7 +1540,7 @@ private fun MeetingActionReminder(shouldShow: Boolean, message: String, testTag:
           Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = Icons.Default.Warning,
-                contentDescription = stringResource(R.string.meeting_creator_icon),
+                contentDescription = "Warning",
                 tint = MaterialTheme.colorScheme.error,
                 modifier = Modifier.size(20.dp))
             Spacer(modifier = Modifier.width(8.dp))
@@ -1629,7 +1602,7 @@ private fun EditModeButtons(
 ) {
   Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
     Text(
-        text = stringResource(R.string.meeting_edit_mode_title),
+        text = "Edit Mode",
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.SemiBold)
 
@@ -1641,7 +1614,7 @@ private fun EditModeButtons(
             CircularProgressIndicator(
                 modifier = Modifier.size(20.dp), color = MaterialTheme.colorScheme.onPrimary)
           } else {
-            Text(stringResource(R.string.meeting_save_changes))
+            Text("Save Changes")
           }
         }
 
@@ -1649,7 +1622,7 @@ private fun EditModeButtons(
         onClick = onCancel,
         modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.CANCEL_EDIT_BUTTON),
         enabled = !isSaving) {
-          Text(stringResource(R.string.meeting_cancel))
+          Text("Cancel")
         }
   }
 }
@@ -1664,22 +1637,22 @@ private fun EditModeButtons(
 private fun DeleteConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
   AlertDialog(
       onDismissRequest = onDismiss,
-      title = { Text(stringResource(R.string.meeting_delete_confirmation_title)) },
-      text = { Text(stringResource(R.string.meeting_delete_confirmation_message)) },
+      title = { Text("Delete Meeting") },
+      text = {
+        Text("Are you sure you want to delete this meeting? This action cannot be undone.")
+      },
       confirmButton = {
         TextButton(
             onClick = onConfirm,
             modifier = Modifier.testTag(MeetingDetailScreenTestTags.CONFIRM_DELETE_BUTTON)) {
-              Text(
-                  stringResource(R.string.delete_confirmation_confirm),
-                  color = MaterialTheme.colorScheme.error)
+              Text("Delete", color = MaterialTheme.colorScheme.error)
             }
       },
       dismissButton = {
         TextButton(
             onClick = onDismiss,
             modifier = Modifier.testTag(MeetingDetailScreenTestTags.CANCEL_DELETE_BUTTON)) {
-              Text(stringResource(R.string.meeting_cancel))
+              Text("Cancel")
             }
       },
       modifier = Modifier.testTag(MeetingDetailScreenTestTags.DELETE_CONFIRMATION_DIALOG))
@@ -1716,7 +1689,7 @@ private fun MeetingAttachmentFilePicker(
           Button(
               modifier = Modifier.testTag(MeetingDetailScreenTestTags.DOWNLOADING_FILES_BUTTON),
               onClick = { filePickerLauncher.launch("*/*") }) {
-                Text(stringResource(R.string.meeting_pick_a_file))
+                Text("Pick a File")
               }
         } else {
           CircularProgressIndicator(

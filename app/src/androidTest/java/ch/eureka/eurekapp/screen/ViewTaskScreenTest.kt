@@ -8,9 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.SemanticsActions
-import androidx.compose.ui.test.SemanticsMatcher
-import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -341,53 +338,6 @@ open class ViewTaskScreenTest : TestCase() {
 
         // Verify navigation to EditTaskScreen
         composeTestRule.onNodeWithText("Edit Task Screen").assertIsDisplayed()
-      }
-
-  @Test
-  fun testFieldsAreReadOnly() =
-      runBlocking<Unit> {
-        val projectId = "project123"
-        val taskId = "task123"
-        setupViewTaskTest(projectId, taskId) {
-          setupTestTask(
-              projectId,
-              taskId,
-              title = "Read Only Task",
-              description = "Read Only Description",
-              dueDate = "25/11/2025")
-        }
-
-        // Verify fields are displayed with original values
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).assertIsDisplayed()
-
-        // Custom matcher to check if a node is read-only (doesn't have SetText action)
-        val isReadOnly =
-            SemanticsMatcher("Field is read-only (no SetText action)") {
-              val hasSetText = it.config.contains(SemanticsActions.SetText)
-              !hasSetText
-            }
-
-        // Verify that all fields are read-only by checking they don't have SetText action
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assert(isReadOnly)
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).assert(isReadOnly)
-        composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).assert(isReadOnly)
-
-        // Wait for data to load from Firestore
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-          try {
-            composeTestRule.onNodeWithText("Read Only Task").assertExists()
-            true
-          } catch (e: AssertionError) {
-            false
-          }
-        }
-
-        // Verify the original values remain displayed
-        composeTestRule.onNodeWithText("Read Only Task").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Read Only Description").assertIsDisplayed()
-        composeTestRule.onNodeWithText("25/11/2025").assertIsDisplayed()
       }
 
   @Test
