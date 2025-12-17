@@ -626,5 +626,162 @@
     <string name="idea_conversation_empty_state">No messages yet. Start the conversation!</string>
     <string name="idea_conversation_messages_list">conversationMessagesList</string>
 
+    <!-- Meeting Location Selection Screen -->
+    <string name="meeting_location_pick_title">Pick a Location</string>
+    <string name="meeting_location_back">Back</string>
+    <string name="meeting_location_save_button">Save Location</string>
+    <string name="meeting_location_poi_snippet">Point of Interest</string>
+    <string name="meeting_location_coordinates_snippet">Coordinates</string>
+
+    <!-- Create Meeting Screen -->
+    <string name="create_meeting_title">Create Meeting</string>
+    <string name="create_meeting_description">Create a team meeting proposal</string>
+    <string name="create_meeting_title_label">Title</string>
+    <string name="create_meeting_title_placeholder">Title of the meeting</string>
+    <string name="create_meeting_title_error">Title cannot be empty</string>
+    <string name="create_meeting_date_label">Date</string>
+    <string name="create_meeting_date_placeholder">Select date</string>
+    <string name="create_meeting_time_label">Time</string>
+    <string name="create_meeting_time_placeholder">Select time</string>
+    <string name="create_meeting_duration_label">Duration</string>
+    <string name="create_meeting_duration_placeholder">Select duration</string>
+    <string name="create_meeting_duration_option">%1$d minutes</string>
+    <string name="create_meeting_duration_dialog_title">Select a duration</string>
+    <string name="create_meeting_format_label">Format</string>
+    <string name="create_meeting_format_placeholder">Select format</string>
+    <string name="create_meeting_format_dialog_title">Select a format</string>
+    <string name="create_meeting_location_label">Location</string>
+    <string name="create_meeting_location_placeholder">Enter an Address or Location</string>
+    <string name="create_meeting_location_pick_icon">Pick location</string>
+    <string name="create_meeting_location_more">More...</string>
+    <string name="create_meeting_future_validation_error">Meeting should be scheduled in the future.</string>
+    <string name="create_meeting_save_button">Save</string>
+    <string name="date_picker_ok">OK</string>
+    <string name="date_picker_cancel">Cancel</string>
+    <string name="time_picker_title">Select time</string>
+    <string name="time_picker_ok">OK</string>
+    <string name="time_picker_cancel">Cancel</string>
+
+    <!-- Create DateTime Format Proposal Screen -->
+    <string name="create_datetime_proposal_title">Create Meeting Proposal</string>
+    <string name="create_datetime_proposal_description">Create a team meeting proposal for datetime/format of a meeting</string>
+    <string name="create_datetime_proposal_date_label">Date</string>
+    <string name="create_datetime_proposal_date_placeholder">Select date</string>
+    <string name="create_datetime_proposal_time_label">Time</string>
+    <string name="create_datetime_proposal_time_placeholder">Select time</string>
+    <string name="create_datetime_proposal_format_label">Format</string>
+    <string name="create_datetime_proposal_format_placeholder">Select format</string>
+    <string name="create_datetime_proposal_format_dialog_title">Select a format</string>
+    <string name="create_datetime_proposal_future_validation_error">Meeting should be scheduled in the future.</string>
+    <string name="create_datetime_proposal_save_button">Save</string>
+
+    <!-- MCP Token Screen -->
+    <string name="mcp_tokens_title">MCP Tokens</string>
+    <string name="mcp_token_create_button">Create Token</string>
+    <string name="mcp_token_empty_state_title">No MCP tokens yet</string>
+    <string name="mcp_token_empty_state_subtitle">Create a token to use with the MCP server</string>
+    <string name="mcp_token_unnamed">Unnamed Token</string>
+    <string name="mcp_token_delete_dialog_title">Delete Token</string>
+    <string name="mcp_token_delete_confirmation">Are you sure you want to delete this token? Any MCP server using it will stop working.</string>
+    <string name="mcp_token_created_prefix">Created: </string>
+    <string name="mcp_token_expired_prefix">Expired: </string>
+    <string name="mcp_token_expires_prefix">Expires: </string>
+    <string name="mcp_token_last_used_prefix">Last used: </string>
+    <string name="mcp_token_create_dialog_title">Create MCP Token</string>
+    <string name="mcp_token_create_dialog_description">Create a token for the MCP server to access your data.</string>
+    <string name="mcp_token_name_label">Token Name (optional)</string>
+    <string name="mcp_token_name_placeholder">e.g., MacBook Pro</string>
+    <string name="mcp_token_created_dialog_title">Token Created</string>
+    <string name="mcp_token_created_dialog_message">Your MCP token has been created. Copy it now - you won\'t be able to see the full token again.</string>
+    <string name="mcp_token_copy_description">Copy</string>
+    <string name="mcp_token_copied_to_clipboard">Token copied to clipboard</string>
+    <string name="mcp_token_retry_button">Retry</string>
+
+    <!-- Meeting Detail / Meeting actions -->
+    <string name="meeting_detail_default_title">Meeting</string>
+    <string name="meeting_deleted_success">Meeting deleted successfully</string>
+    <string name="meeting_updated_success">Meeting updated successfully</string>
+    <string name="meeting_manage_files">Manage Files</string>
+    <string name="meeting_loading_details">Loading meeting details…</string>
+    <string name="meeting_detail_error_loading">There was an error while loading meetings: %1$s</string>
+
+    <string name="meeting_information_title">Meeting Information</string>
+    <string name="meeting_label_date_time">Date &amp; Time</string>
+    <string name="meeting_label_format">Format</string>
+    <string name="meeting_label_meeting_link">Meeting Link</string>
+
+    <string name="meeting_creator_title">Creator</string>
+    <string name="meeting_creator_label">Meeting Creator</string>
+    <string name="meeting_creator_icon">Creator</string>
+    <string name="meeting_creator_profile_picture">Creator profile picture</string>
+
+    <string name="meeting_attachments_title">Attachments (%1$d)</string>
+    <string name="meeting_attachments_icon">Attachments</string>
+    <string name="meeting_no_attachments">No attachments</string>
+    <string name="meeting_attachment_icon_description">Attachment</string>
+
+    <string name="meeting_actions_title">Actions</string>
+    <string name="meeting_offline_editing_unavailable">You are offline. Editing meetings is unavailable to prevent sync conflicts.</string>
+
+    <string name="meeting_edit_information_title">Edit Meeting Information</string>
+    <string name="meeting_edit_title_label">Title</string>
+    <string name="meeting_edit_title_placeholder">Meeting title</string>
+    <string name="meeting_title_empty_error">Title cannot be empty</string>
+
+    <string name="meeting_error_date_time_set">Date and time must be set</string>
+    <string name="meeting_duration_validation_error">Duration must be greater than 0</string>
+
+    <string name="meeting_join_button">Join Meeting</string>
+    <string name="meeting_view_location">View Location</string>
+    <string name="meeting_start_recording">Start Recording</string>
+
+    <string name="meeting_start_time_passed_reminder">The scheduled start time has passed. Consider starting the meeting.</string>
+    <string name="meeting_end_time_passed_reminder">The scheduled end time has passed. Consider ending the meeting.</string>
+
+    <string name="meeting_start_meeting">Start Meeting</string>
+    <string name="meeting_end_meeting">End Meeting</string>
+
+    <string name="meeting_vote_for_proposals">Vote for meeting proposals</string>
+    <string name="meeting_edit_meeting">Edit Meeting</string>
+    <string name="meeting_delete_meeting">Delete Meeting</string>
+
+    <string name="meeting_edit_mode_title">Edit Mode</string>
+    <string name="meeting_save_changes">Save Changes</string>
+    <string name="meeting_cancel">Cancel</string>
+
+    <string name="meeting_delete_confirmation_title">Delete Meeting</string>
+    <string name="meeting_delete_confirmation_message">Are you sure you want to delete this meeting? This action cannot be undone.</string>
+
+    <string name="meeting_pick_a_file">Pick a File</string>
+
+    <!-- Map / Navigation / Directions -->
+    <string name="meeting_your_location">Your Location</string>
+    <string name="meeting_turn_by_turn_directions">Turn-by-Turn Directions</string>
+    <string name="meeting_close_directions">Close directions</string>
+    <string name="meeting_enable_location_to_see_route">Enable location to see route</string>
+    <string name="meeting_enable_location_button">Enable Location</string>
+    <string name="meeting_get_my_location">Get My Location</string>
+    <string name="meeting_select_transport_mode">Select transport mode:</string>
+    <string name="meeting_loading_text">Loading…</string>
+    <string name="meeting_get_directions">Get Directions</string>
+    <string name="meeting_show_directions">Show Directions</string>
+
+    <!-- Travel mode labels -->
+    <string name="travel_mode_drive">Drive</string>
+    <string name="travel_mode_transit">Transit</string>
+    <string name="travel_mode_bike">Bike</string>
+    <string name="travel_mode_walk">Walk</string>
+
+    <!-- Meeting proposal / vote screen -->
+    <string name="meeting_vote_screen_title">Vote for Meeting Proposal</string>
+    <string name="meeting_vote_screen_description">Vote for existing meeting proposal or propose your own</string>
+    <string name="meeting_propose_new_proposal">Propose new meeting proposal</string>
+    <string name="meeting_confirm_votes">Confirm votes</string>
+    <string name="error_not_logged_in">Not logged in</string>
+    <string name="meeting_select_formats_title">Select format(s)</string>
+
+    <string name="meeting_votes_in_person">In-person votes</string>
+    <string name="meeting_votes_virtual">Virtual votes</string>
+    <string name="meeting_votes_total">Total votes</string>
 </resources>
 

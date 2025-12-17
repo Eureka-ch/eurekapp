@@ -345,11 +345,11 @@ private fun MapView(
         Marker(
             state = rememberMarkerState(position = meetingLocation),
             title = meetingName,
-            snippet = "Meeting Location")
+            snippet = stringResource(R.string.meeting_location_title))
 
         // User location marker
         userLocation?.let {
-          Marker(state = rememberMarkerState(position = it), title = "Your Location")
+          Marker(state = rememberMarkerState(position = it), title = stringResource(R.string.meeting_your_location))
         }
 
         // Draw route polyline if available
@@ -435,7 +435,7 @@ private fun LocationHeader(locationName: String) {
   Row(verticalAlignment = Alignment.CenterVertically) {
     Icon(
         imageVector = Icons.Filled.Place,
-        contentDescription = "Location",
+        contentDescription = stringResource(R.string.location_icon),
         modifier = Modifier.size(24.dp),
         tint = MaterialTheme.colorScheme.primary)
     Spacer(modifier = Modifier.width(8.dp))
@@ -461,7 +461,7 @@ private fun LocationPermissionSection(
 ) {
   Spacer(modifier = Modifier.height(12.dp))
   Text(
-      text = "Enable location to see route",
+      text = stringResource(R.string.meeting_enable_location_to_see_route),
       style = MaterialTheme.typography.bodyMedium,
       color = MaterialTheme.colorScheme.secondary)
 
@@ -469,10 +469,10 @@ private fun LocationPermissionSection(
 
   if (!hasLocationPermission) {
     Button(onClick = onRequestPermission, modifier = Modifier.fillMaxWidth()) {
-      Text("Enable Location")
+      Text(stringResource(R.string.meeting_enable_location_button))
     }
   } else {
-    Button(onClick = onGetLocation, modifier = Modifier.fillMaxWidth()) { Text("Get My Location") }
+    Button(onClick = onGetLocation, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.meeting_get_my_location)) }
   }
 }
 
@@ -505,7 +505,7 @@ private fun NavigationControlsSection(routeState: RouteState, routeActions: Rout
 private fun TravelModeSelector(selectedMode: TravelMode, onModeChange: (TravelMode) -> Unit) {
   Spacer(modifier = Modifier.height(16.dp))
   Text(
-      text = "Select transport mode:",
+      text = stringResource(R.string.meeting_select_transport_mode),
       style = MaterialTheme.typography.labelMedium,
       fontWeight = FontWeight.Medium)
 
@@ -513,7 +513,7 @@ private fun TravelModeSelector(selectedMode: TravelMode, onModeChange: (TravelMo
   Row(
       modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
       horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        TravelMode.entries.forEach { mode ->
+        TravelMode.values().forEach { mode ->
           FilterChip(
               selected = selectedMode == mode,
               onClick = { onModeChange(mode) },
@@ -552,9 +552,9 @@ private fun DirectionsButton(isLoading: Boolean, onFetchDirections: () -> Unit) 
     if (isLoading) {
       CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
       Spacer(modifier = Modifier.width(8.dp))
-      Text("Loading...")
+      Text(stringResource(R.string.meeting_loading_text))
     } else {
-      Text("Get Directions")
+      Text(stringResource(R.string.meeting_get_directions))
     }
   }
 }
@@ -683,3 +683,4 @@ private fun DirectionsPanel(
         }
       }
 }
+

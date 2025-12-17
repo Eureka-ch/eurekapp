@@ -225,11 +225,11 @@ fun MeetingDetailScreen(
       modifier = Modifier.testTag(MeetingDetailScreenTestTags.MEETING_DETAIL_SCREEN),
       topBar = {
         EurekaTopBar(
-            title = uiState.meeting?.title ?: "Meeting",
+            title = uiState.meeting?.title ?: stringResource(R.string.meeting_detail_default_title),
             titleTestTag = MeetingDetailScreenTestTags.MEETING_TITLE,
             navigationIcon = {
               IconButton(onClick = actionsConfig.onNavigateBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Navigate back")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.navigate_back))
               }
             },
             actions = {
@@ -238,7 +238,7 @@ fun MeetingDetailScreen(
                   modifier = Modifier.testTag(TasksScreenTestTags.FILES_MANAGEMENT_BUTTON)) {
                     Icon(
                         Icons.Filled.Folder,
-                        contentDescription = "Manage Files",
+                        contentDescription = stringResource(R.string.meeting_manage_files),
                         tint = EColors.WhiteTextColor)
                   }
             })
@@ -247,10 +247,10 @@ fun MeetingDetailScreen(
         if (uiState.isLoading) {
           LoadingScreen()
         } else if (uiState.meeting == null) {
+          val err = uiState.errorMsg ?: throw IllegalStateException("Error message should not be null if meeting is null.")
           Text(
               modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MESSAGE),
-              text =
-                  "There was an error while loading meetings : ${uiState.errorMsg ?: throw IllegalStateException("Error message should not be null if meeting is null.")}")
+              text = stringResource(R.string.meeting_detail_error_loading, err))
         } else {
           uiState.meeting?.let { meeting ->
             MeetingDetailContent(
@@ -323,7 +323,7 @@ private fun LoadingScreen() {
       verticalArrangement = Arrangement.Center) {
         CircularProgressIndicator()
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Loading meeting details...", style = MaterialTheme.typography.bodyMedium)
+        Text(text = stringResource(R.string.meeting_loading_details), style = MaterialTheme.typography.bodyMedium)
       }
 }
 
@@ -593,7 +593,7 @@ private fun MeetingInformationCard(meeting: Meeting) {
         Column(
             modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
               Text(
-                  text = "Meeting Information",
+                  text = stringResource(R.string.meeting_information_title),
                   style = MaterialTheme.typography.titleMedium,
                   fontWeight = FontWeight.SemiBold)
 
@@ -612,7 +612,7 @@ private fun MeetingDateTimeInfo(meeting: Meeting) {
   if (meeting.datetime != null && meeting.status != MeetingStatus.IN_PROGRESS) {
     InfoRow(
         icon = Icons.Default.Schedule,
-        label = "Date & Time",
+        label = stringResource(R.string.meeting_label_date_time),
         value = Formatters.formatDateTime(meeting.datetime.toDate()),
         testTag = MeetingDetailScreenTestTags.MEETING_DATETIME)
   }
@@ -627,7 +627,7 @@ private fun MeetingFormatInfo(meeting: Meeting) {
               MeetingFormat.VIRTUAL -> Icons.Default.VideoCall
               MeetingFormat.IN_PERSON -> Icons.Default.Place
             },
-        label = "Format",
+        label = stringResource(R.string.meeting_label_format),
         value = format.description,
         testTag = MeetingDetailScreenTestTags.MEETING_FORMAT)
   }
@@ -638,7 +638,7 @@ private fun MeetingLocationInfo(meeting: Meeting) {
   if (meeting.format == MeetingFormat.IN_PERSON && meeting.location != null) {
     InfoRow(
         icon = Icons.Default.Place,
-        label = "Location",
+        label = stringResource(R.string.create_meeting_location_label),
         value = meeting.location.name,
         testTag = MeetingDetailScreenTestTags.MEETING_LOCATION)
   }
@@ -649,7 +649,7 @@ private fun MeetingLinkInfo(meeting: Meeting) {
   if (meeting.format == MeetingFormat.VIRTUAL && meeting.link != null) {
     InfoRow(
         icon = Icons.Default.VideoCall,
-        label = "Meeting Link",
+        label = stringResource(R.string.meeting_label_meeting_link),
         value = meeting.link,
         testTag = MeetingDetailScreenTestTags.MEETING_LINK)
   }
@@ -726,7 +726,7 @@ private fun EditableMeetingInfoCard(config: EditableMeetingInfoCardConfig) {
         Column(
             modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
               Text(
-                  text = "Edit Meeting Information",
+                  text = stringResource(R.string.meeting_edit_information_title),
                   style = MaterialTheme.typography.titleMedium,
                   fontWeight = FontWeight.SemiBold)
 
@@ -746,8 +746,8 @@ private fun EditableTitleField(config: EditableMeetingInfoCardConfig) {
   OutlinedTextField(
       value = config.editTitle,
       onValueChange = config.onTitleChange,
-      label = { Text("Title") },
-      placeholder = { Text("Meeting title") },
+      label = { Text(stringResource(R.string.meeting_edit_title_label)) },
+      placeholder = { Text(stringResource(R.string.meeting_edit_title_placeholder)) },
       modifier =
           Modifier.fillMaxWidth().onFocusChanged { focusState ->
             if (focusState.isFocused) {
@@ -756,7 +756,7 @@ private fun EditableTitleField(config: EditableMeetingInfoCardConfig) {
           })
   if (config.editTitle.isBlank() && config.hasTouchedTitle) {
     Text(
-        text = "Title cannot be empty",
+        text = stringResource(R.string.meeting_title_empty_error),
         color = MaterialTheme.colorScheme.error,
         style = MaterialTheme.typography.bodySmall,
         modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MSG))
@@ -775,8 +775,8 @@ private fun EditableDateTimeField(
     // Date field
     DateInputField(
         selectedDate = editDate,
-        label = "Date",
-        placeHolder = "Select date",
+        label = stringResource(R.string.create_datetime_proposal_date_label),
+        placeHolder = stringResource(R.string.create_datetime_proposal_date_placeholder),
         tag = "EditMeetingDate",
         onDateSelected = { newDate ->
           val newDateTime =
@@ -790,8 +790,8 @@ private fun EditableDateTimeField(
     // Time field
     TimeInputField(
         selectedTime = editTime,
-        label = "Time",
-        placeHolder = "Select time",
+        label = stringResource(R.string.create_datetime_proposal_time_label),
+        placeHolder = stringResource(R.string.create_datetime_proposal_time_placeholder),
         tag = "EditMeetingTime",
         onTimeSelected = { newTime ->
           val newDateTime =
@@ -804,7 +804,7 @@ private fun EditableDateTimeField(
 
     if (config.editDateTime == null && config.hasTouchedDateTime) {
       Text(
-          text = "Date and time must be set",
+          text = stringResource(R.string.meeting_error_date_time_set),
           color = MaterialTheme.colorScheme.error,
           style = MaterialTheme.typography.bodySmall,
           modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MSG))
@@ -814,7 +814,7 @@ private fun EditableDateTimeField(
         config.hasTouchedDateTime &&
         java.time.LocalDateTime.of(editDate, editTime).isBefore(java.time.LocalDateTime.now())) {
       Text(
-          text = "Meeting should be scheduled in the future.",
+          text = stringResource(R.string.create_datetime_proposal_future_validation_error),
           color = MaterialTheme.colorScheme.error,
           style = MaterialTheme.typography.bodySmall,
           modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MSG))
@@ -831,12 +831,12 @@ private fun EditableDurationField(config: EditableMeetingInfoCardConfig) {
       config =
           SingleChoiceInputFieldConfig(
               currentValue = config.editDuration,
-              displayValue = { d -> "$d minutes" },
-              label = "Duration",
-              placeholder = "Select duration",
+              displayValue = { d -> "${d} minutes" },
+              label = stringResource(R.string.create_meeting_duration_label),
+              placeholder = stringResource(R.string.create_meeting_duration_placeholder),
               icon = Icons.Default.HourglassTop,
-              iconDescription = "Select duration",
-              alertDialogTitle = "Select a duration",
+              iconDescription = stringResource(R.string.create_meeting_duration_placeholder),
+              alertDialogTitle = stringResource(R.string.create_meeting_duration_dialog_title),
               options = listOf(5, 10, 15, 20, 30, 45, 60),
               tag = "EditMeetingDuration",
               onOptionSelected = { duration ->
@@ -845,7 +845,7 @@ private fun EditableDurationField(config: EditableMeetingInfoCardConfig) {
               }))
   if (config.editDuration <= 0 && config.hasTouchedDuration) {
     Text(
-        text = "Duration must be greater than 0",
+        text = stringResource(R.string.meeting_duration_validation_error),
         color = MaterialTheme.colorScheme.error,
         style = MaterialTheme.typography.bodySmall,
         modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MSG))
@@ -904,11 +904,11 @@ private fun CreatorSection(creatorUser: User?, meeting: Meeting) {
               Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Person,
-                    contentDescription = "Creator",
+                    contentDescription = stringResource(R.string.meeting_creator_icon),
                     tint = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Creator",
+                    text = stringResource(R.string.meeting_creator_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold)
               }
@@ -998,11 +998,11 @@ fun AttachmentsSection(
               Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.AttachFile,
-                    contentDescription = "Attachments",
+                    contentDescription = stringResource(R.string.meeting_attachments_icon),
                     tint = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Attachments (${attachments.size})",
+                    text = stringResource(R.string.meeting_attachments_title, attachments.size),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold)
               }
@@ -1016,7 +1016,7 @@ fun AttachmentsSection(
                         meeting.projectId, meeting.meetingID, attachmentsViewModel)
                     if (attachments.isEmpty()) {
                       Text(
-                          text = "No attachments",
+                          text = stringResource(R.string.meeting_no_attachments),
                           style = MaterialTheme.typography.bodyMedium,
                           color = EColors.SecondaryTextColor,
                           modifier =
@@ -1083,7 +1083,7 @@ fun AttachmentItem(
             verticalAlignment = Alignment.CenterVertically) {
               Icon(
                   imageVector = Icons.Default.Description,
-                  contentDescription = "Attachment",
+                  contentDescription = stringResource(R.string.meeting_attachment_icon_description),
                   tint = MaterialTheme.colorScheme.primary,
                   modifier = Modifier.size(24.dp))
               Spacer(modifier = Modifier.width(12.dp))
@@ -1174,7 +1174,7 @@ private fun ActionButtonsSection(
           Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.ACTION_BUTTONS_SECTION),
       verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
-            text = "Actions",
+            text = stringResource(R.string.meeting_actions_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold)
 
@@ -1209,7 +1209,7 @@ private fun JoinMeetingButton(
                 .alpha(getAlpha(isConnected))) {
           Icon(imageVector = Icons.Default.VideoCall, contentDescription = null)
           Spacer(modifier = Modifier.width(8.dp))
-          Text("Join Meeting")
+          Text(stringResource(R.string.meeting_join_button))
         }
   }
 }
@@ -1230,7 +1230,7 @@ private fun NavigateToLocationButton(
               imageVector = Icons.Default.Place,
               contentDescription = stringResource(R.string.location_icon))
           Spacer(modifier = Modifier.width(8.dp))
-          Text("View Location")
+          Text(stringResource(R.string.meeting_view_location))
         }
   }
 }
@@ -1251,7 +1251,7 @@ private fun RecordButton(
           Modifier.fillMaxWidth()
               .testTag(MeetingDetailScreenTestTags.RECORD_BUTTON)
               .alpha(getAlpha(isConnected))) {
-        Text("Start Recording")
+        Text(stringResource(R.string.meeting_start_recording))
       }
 }
 
@@ -1268,12 +1268,12 @@ private fun ScheduledButtons(
   if (isCreator) {
     MeetingActionReminder(
         shouldShow = viewModel.shouldMeetingBeStarted(meeting),
-        message = "The scheduled start time has passed. Consider starting the meeting.",
+        message = stringResource(R.string.meeting_start_time_passed_reminder),
         testTag = MeetingDetailScreenTestTags.START_MEETING_REMINDER)
 
     MeetingActionButton(
         onClick = { viewModel.startMeeting(meeting, isConnected) },
-        text = "Start Meeting",
+        text = stringResource(R.string.meeting_start_meeting),
         isConnected = isConnected,
         testTag = MeetingDetailScreenTestTags.START_MEETING_BUTTON)
 
@@ -1301,12 +1301,12 @@ private fun InProgressButtons(
   if (isCreator) {
     MeetingActionReminder(
         shouldShow = viewModel.shouldMeetingBeEnded(meeting),
-        message = "The scheduled end time has passed. Consider ending the meeting.",
+        message = stringResource(R.string.meeting_end_time_passed_reminder),
         testTag = MeetingDetailScreenTestTags.END_MEETING_REMINDER)
 
     MeetingActionButton(
         onClick = { viewModel.endMeeting(meeting, isConnected) },
-        text = "End Meeting",
+        text = stringResource(R.string.meeting_end_meeting),
         isConnected = isConnected,
         isError = true,
         testTag = MeetingDetailScreenTestTags.END_MEETING_BUTTON)
@@ -1340,7 +1340,7 @@ private fun CompletedButtons(
               .alpha(getAlpha(isConnected))) {
         Icon(imageVector = Icons.Default.Description, contentDescription = null)
         Spacer(modifier = Modifier.width(8.dp))
-        Text("View Transcript")
+        Text(stringResource(R.string.view_transcript))
       }
 }
 
@@ -1355,9 +1355,9 @@ private fun OpenToVotesButtons(actionsConfig: ActionButtonsConfig, isConnected: 
               .testTag(MeetingDetailScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON)
               .alpha(getAlpha(isConnected))) {
         Icon(
-            imageVector = Icons.Default.HowToVote, contentDescription = "Vote for meeting proposal")
+            imageVector = Icons.Default.HowToVote, contentDescription = stringResource(R.string.meeting_vote_for_proposals))
         Spacer(modifier = Modifier.width(8.dp))
-        Text("Vote for meeting proposals")
+        Text(stringResource(R.string.meeting_vote_for_proposals))
       }
 }
 
@@ -1372,7 +1372,7 @@ private fun CommonButtons(actionsConfig: ActionButtonsConfig, isConnected: Boole
           Modifier.fillMaxWidth()
               .testTag(MeetingDetailScreenTestTags.EDIT_BUTTON)
               .alpha(getAlpha(isConnected))) {
-        Text("Edit Meeting")
+        Text(stringResource(R.string.meeting_edit_meeting))
       }
 
   OutlinedButton(
@@ -1386,7 +1386,7 @@ private fun CommonButtons(actionsConfig: ActionButtonsConfig, isConnected: Boole
           ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
         Icon(imageVector = Icons.Default.Delete, contentDescription = null)
         Spacer(modifier = Modifier.width(8.dp))
-        Text("Delete Meeting")
+        Text(stringResource(R.string.meeting_delete_meeting))
       }
 }
 
@@ -1407,7 +1407,7 @@ private fun MeetingActionReminder(shouldShow: Boolean, message: String, testTag:
           Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = Icons.Default.Warning,
-                contentDescription = "Warning",
+                contentDescription = stringResource(R.string.meeting_creator_icon),
                 tint = MaterialTheme.colorScheme.error,
                 modifier = Modifier.size(20.dp))
             Spacer(modifier = Modifier.width(8.dp))
@@ -1469,7 +1469,7 @@ private fun EditModeButtons(
 ) {
   Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
     Text(
-        text = "Edit Mode",
+        text = stringResource(R.string.meeting_edit_mode_title),
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.SemiBold)
 
@@ -1481,7 +1481,7 @@ private fun EditModeButtons(
             CircularProgressIndicator(
                 modifier = Modifier.size(20.dp), color = MaterialTheme.colorScheme.onPrimary)
           } else {
-            Text("Save Changes")
+            Text(stringResource(R.string.meeting_save_changes))
           }
         }
 
@@ -1489,7 +1489,7 @@ private fun EditModeButtons(
         onClick = onCancel,
         modifier = Modifier.fillMaxWidth().testTag(MeetingDetailScreenTestTags.CANCEL_EDIT_BUTTON),
         enabled = !isSaving) {
-          Text("Cancel")
+          Text(stringResource(R.string.meeting_cancel))
         }
   }
 }
@@ -1504,22 +1504,22 @@ private fun EditModeButtons(
 private fun DeleteConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
   AlertDialog(
       onDismissRequest = onDismiss,
-      title = { Text("Delete Meeting") },
+      title = { Text(stringResource(R.string.meeting_delete_confirmation_title)) },
       text = {
-        Text("Are you sure you want to delete this meeting? This action cannot be undone.")
+        Text(stringResource(R.string.meeting_delete_confirmation_message))
       },
       confirmButton = {
         TextButton(
             onClick = onConfirm,
             modifier = Modifier.testTag(MeetingDetailScreenTestTags.CONFIRM_DELETE_BUTTON)) {
-              Text("Delete", color = MaterialTheme.colorScheme.error)
+              Text(stringResource(R.string.delete_confirmation_confirm), color = MaterialTheme.colorScheme.error)
             }
       },
       dismissButton = {
         TextButton(
             onClick = onDismiss,
             modifier = Modifier.testTag(MeetingDetailScreenTestTags.CANCEL_DELETE_BUTTON)) {
-              Text("Cancel")
+              Text(stringResource(R.string.meeting_cancel))
             }
       },
       modifier = Modifier.testTag(MeetingDetailScreenTestTags.DELETE_CONFIRMATION_DIALOG))
@@ -1556,7 +1556,7 @@ private fun MeetingAttachmentFilePicker(
           Button(
               modifier = Modifier.testTag(MeetingDetailScreenTestTags.DOWNLOADING_FILES_BUTTON),
               onClick = { filePickerLauncher.launch("*/*") }) {
-                Text("Pick a File")
+                Text(stringResource(R.string.meeting_pick_a_file))
               }
         } else {
           CircularProgressIndicator(

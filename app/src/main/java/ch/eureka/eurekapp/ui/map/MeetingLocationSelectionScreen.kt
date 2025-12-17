@@ -19,8 +19,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
@@ -62,13 +64,13 @@ fun MeetingLocationSelectionScreen(
   Scaffold(
       topBar = {
         EurekaTopBar(
-            title = "Pick a Location",
+            title = stringResource(R.string.meeting_location_pick_title),
             titleTestTag = MeetingLocationSelectionTestTags.SCREEN_TITLE,
             navigationIcon = {
               IconButton(onClick = onBack) {
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
+                    contentDescription = stringResource(R.string.meeting_location_back),
                     tint = EColors.WhiteTextColor)
               }
             })
@@ -89,7 +91,7 @@ fun MeetingLocationSelectionScreen(
                               com.google.android.gms.maps.model.LatLng(
                                   location.latitude, location.longitude)),
                   title = location.name,
-                  snippet = if (location.name.contains(",")) "Coordinates" else "Point of Interest",
+                  snippet = if (location.name.contains(",")) stringResource(R.string.meeting_location_coordinates_snippet) else stringResource(R.string.meeting_location_poi_snippet),
                   tag = MeetingLocationSelectionTestTags.MARKER)
             }
           }
@@ -102,7 +104,7 @@ fun MeetingLocationSelectionScreen(
                   .fillMaxWidth()
                   .padding(16.dp)
                   .testTag(MeetingLocationSelectionTestTags.SAVE_BUTTON)) {
-            Text("Save Location")
+            Text(stringResource(R.string.meeting_location_save_button))
           }
     }
   }

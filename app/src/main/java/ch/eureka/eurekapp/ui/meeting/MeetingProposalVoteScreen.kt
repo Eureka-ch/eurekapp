@@ -60,6 +60,8 @@ import ch.eureka.eurekapp.ui.components.help.HelpContext
 import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.utils.Formatters
+import androidx.compose.ui.res.stringResource
+import ch.eureka.eurekapp.R
 
 /** Test tags for the datetime vote screen. */
 object MeetingProposalVoteScreenTestTags {
@@ -121,15 +123,13 @@ fun MeetingProposalVoteScreen(
   }
 
   LaunchedEffect(meetingProposalVoteViewModel.userId) {
-    if (meetingProposalVoteViewModel.userId == null) {
       meetingProposalVoteViewModel.setErrorMsg("Not logged in")
     }
-  }
 
   Scaffold(
       topBar = {
         EurekaTopBar(
-            title = "Vote for Meeting Proposal",
+            title = stringResource(R.string.meeting_vote_screen_title),
             navigationIcon = {
               BackButton(
                   onClick = onBackClick,
@@ -144,7 +144,7 @@ fun MeetingProposalVoteScreen(
                   Modifier.testTag(MeetingProposalVoteScreenTestTags.ADD_MEETING_PROPOSALS)) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Propose new meeting proposal")
+                    contentDescription = stringResource(R.string.meeting_propose_new_proposal))
               }
 
           Spacer(modifier = Modifier.height(16.dp))
@@ -154,7 +154,7 @@ fun MeetingProposalVoteScreen(
               modifier =
                   Modifier.testTag(
                       MeetingProposalVoteScreenTestTags.CONFIRM_MEETING_PROPOSALS_VOTES)) {
-                Icon(imageVector = Icons.Default.Check, contentDescription = "Confirm votes")
+                Icon(imageVector = Icons.Default.Check, contentDescription = stringResource(R.string.meeting_confirm_votes))
               }
         }
       },
@@ -173,7 +173,7 @@ fun MeetingProposalVoteScreen(
                             Modifier.testTag(
                                 MeetingProposalVoteScreenTestTags
                                     .MEETING_PROPOSALS_VOTE_SCREEN_TITLE),
-                        text = "Vote for meeting proposal",
+                        text = stringResource(R.string.meeting_vote_screen_title),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(8.dp))
@@ -182,7 +182,7 @@ fun MeetingProposalVoteScreen(
                             Modifier.testTag(
                                 MeetingProposalVoteScreenTestTags
                                     .MEETING_PROPOSALS_VOTE_SCREEN_DESCRIPTION),
-                        text = "Vote for existing meeting proposal or propose your own",
+                        text = stringResource(R.string.meeting_vote_screen_description),
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.Gray)
 
@@ -297,7 +297,7 @@ private fun MeetingFormatVoteDialog(
 
   AlertDialog(
       onDismissRequest = onDismissRequest,
-      title = { Text("Select format(s)") },
+      title = { Text(stringResource(R.string.meeting_select_formats_title)) },
       text = {
         Column {
           FormatCheckboxRow(
@@ -333,7 +333,7 @@ private fun MeetingFormatVoteDialog(
                 Modifier.testTag(MeetingProposalVoteScreenTestTags.MEETING_FORMAT_POPUP_VALIDATE),
             onClick = { onConfirm(selectedFormats) },
             enabled = selectedFormats.isNotEmpty()) {
-              Text("OK")
+              Text(stringResource(R.string.date_picker_ok))
             }
       },
       dismissButton = {
@@ -341,7 +341,7 @@ private fun MeetingFormatVoteDialog(
             modifier =
                 Modifier.testTag(MeetingProposalVoteScreenTestTags.MEETING_FORMAT_POPUP_CANCEL),
             onClick = { onDismissRequest() }) {
-              Text("Cancel")
+              Text(stringResource(R.string.date_picker_cancel))
             }
       })
 }
@@ -415,7 +415,7 @@ fun MeetingProposalVoteCard(
                             .filter { it.formatPreferences.contains(MeetingFormat.IN_PERSON) }
                             .size,
                     icon = Icons.Default.LocationOn,
-                    iconDescription = "In-person votes",
+                    iconDescription = stringResource(R.string.meeting_votes_in_person),
                     tag = MeetingProposalVoteScreenTestTags.IN_PERSON_BUTTON)
 
                 VotingScoreButton(
@@ -429,7 +429,7 @@ fun MeetingProposalVoteCard(
                             .filter { it.formatPreferences.contains(MeetingFormat.VIRTUAL) }
                             .size,
                     icon = Icons.Default.VideoCall,
-                    iconDescription = "Virtual votes",
+                    iconDescription = stringResource(R.string.meeting_votes_virtual),
                     tag = MeetingProposalVoteScreenTestTags.VIRTUAL_BUTTON)
               }
 
@@ -442,7 +442,7 @@ fun MeetingProposalVoteCard(
                   retractVote = { voteActions.removeVote(meetingProposal) },
                   numberOfVotes = meetingProposal.votes.size,
                   icon = Icons.Default.People,
-                  iconDescription = "Total votes",
+                  iconDescription = stringResource(R.string.meeting_votes_total),
                   tag = MeetingProposalVoteScreenTestTags.MEETING_PROPOSALS_VOTE_BUTTON,
               )
             }

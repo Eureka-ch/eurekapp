@@ -26,9 +26,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 
 /** Test tags for the create meeting proposal for datetime/format screen. */
@@ -87,7 +89,7 @@ fun CreateDateTimeFormatProposalForMeetingScreen(
                   Modifier.testTag(
                       CreateDateTimeFormatMeetingProposalScreenTestTags
                           .CREATE_MEETING_PROPOSAL_SCREEN_TITLE),
-              text = "Create Meeting Proposal",
+              text = stringResource(R.string.create_datetime_proposal_title),
               style = MaterialTheme.typography.headlineSmall,
               fontWeight = FontWeight.Bold)
           Spacer(modifier = Modifier.height(SPACING.dp))
@@ -96,7 +98,7 @@ fun CreateDateTimeFormatProposalForMeetingScreen(
                   Modifier.testTag(
                       CreateDateTimeFormatMeetingProposalScreenTestTags
                           .CREATE_MEETING_PROPOSAL_SCREEN_DESCRIPTION),
-              text = "Create a team meeting proposal for datetime/format of a meeting",
+              text = stringResource(R.string.create_datetime_proposal_description),
               style = MaterialTheme.typography.bodyMedium,
               color = Color.Gray)
 
@@ -104,8 +106,8 @@ fun CreateDateTimeFormatProposalForMeetingScreen(
 
           DateInputField(
               selectedDate = uiState.date,
-              label = "Date",
-              placeHolder = "Select date",
+              label = stringResource(R.string.create_datetime_proposal_date_label),
+              placeHolder = stringResource(R.string.create_datetime_proposal_date_placeholder),
               tag = CreateDateTimeFormatMeetingProposalScreenTestTags.INPUT_MEETING_DATE,
               onDateSelected = { createMeetingProposalViewModel.setDate(it) },
               onDateTouched = { createMeetingProposalViewModel.touchDate() })
@@ -114,8 +116,8 @@ fun CreateDateTimeFormatProposalForMeetingScreen(
 
           TimeInputField(
               selectedTime = uiState.time,
-              label = "Time",
-              placeHolder = "Select time",
+              label = stringResource(R.string.create_datetime_proposal_time_label),
+              placeHolder = stringResource(R.string.create_datetime_proposal_time_placeholder),
               tag = CreateDateTimeFormatMeetingProposalScreenTestTags.INPUT_MEETING_TIME,
               onTimeSelected = { createMeetingProposalViewModel.setTime(it) },
               onTimeTouched = { createMeetingProposalViewModel.touchTime() })
@@ -127,11 +129,11 @@ fun CreateDateTimeFormatProposalForMeetingScreen(
                   SingleChoiceInputFieldConfig(
                       currentValue = uiState.format,
                       displayValue = { f -> f.description },
-                      label = "Format",
-                      placeholder = "Select format",
+                      label = stringResource(R.string.create_datetime_proposal_format_label),
+                      placeholder = stringResource(R.string.create_datetime_proposal_format_placeholder),
                       icon = Icons.Default.Description,
-                      iconDescription = "Select format",
-                      alertDialogTitle = "Select a format",
+                      iconDescription = stringResource(R.string.create_datetime_proposal_format_placeholder),
+                      alertDialogTitle = stringResource(R.string.create_datetime_proposal_format_dialog_title),
                       options = listOf(MeetingFormat.IN_PERSON, MeetingFormat.VIRTUAL),
                       tag = CreateDateTimeFormatMeetingProposalScreenTestTags.INPUT_FORMAT,
                       onOptionSelected = { createMeetingProposalViewModel.setFormat(it) }))
@@ -140,7 +142,7 @@ fun CreateDateTimeFormatProposalForMeetingScreen(
 
           if (uiState.hasTouchedDate && uiState.hasTouchedTime && !uiState.isValid) {
             Text(
-                text = "Meeting should be scheduled in the future.",
+                text = stringResource(R.string.create_datetime_proposal_future_validation_error),
                 color = Color.Red,
                 style = MaterialTheme.typography.bodySmall,
                 modifier =
@@ -154,7 +156,7 @@ fun CreateDateTimeFormatProposalForMeetingScreen(
                           CreateDateTimeFormatMeetingProposalScreenTestTags
                               .CREATE_MEETING_PROPOSAL_BUTTON),
               enabled = uiState.isValid) {
-                Text("Save")
+                Text(stringResource(R.string.create_datetime_proposal_save_button))
               }
         }
       })
