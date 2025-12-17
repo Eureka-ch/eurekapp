@@ -35,7 +35,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
@@ -103,7 +102,7 @@ fun IdeasScreen(
         if (uiState.viewMode == IdeasViewMode.LIST) {
           FloatingActionButton(
               onClick = { showCreateIdeaDialog = true },
-              modifier = Modifier.offset(y = (-96).dp).zIndex(2f).testTag("createIdeaButton"),
+              modifier = Modifier.offset(y = (-16).dp).testTag("createIdeaButton"),
               containerColor = MaterialTheme.colorScheme.primary,
               contentColor = Color.White) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Create new idea")
