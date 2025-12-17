@@ -5,6 +5,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -473,8 +474,10 @@ class TaskEndToEndTest : TestCase() {
             .isNotEmpty()
       }
 
-      // Verify meeting no longer appears in the list
-      composeTestRule.waitForIdle()
+      composeTestRule.waitUntil(timeoutMillis = 30_000) {
+        composeTestRule.onAllNodesWithText(meetingTitle).fetchSemanticsNodes().isEmpty()
+      }
+
       composeTestRule.onNodeWithText(meetingTitle).assertDoesNotExist()
     }
   }
