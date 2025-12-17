@@ -133,7 +133,7 @@ class CreateMeetingViewModel(
             }
           }
     }
-    viewModelScope.launch { loadProjects() }
+    loadProjects()
   }
 
   /** Clears the error message in the UI state. */
@@ -163,15 +163,17 @@ class CreateMeetingViewModel(
    * Load all the available projects for the current user, And populates the UI state with those
    * projects.
    */
-  suspend fun loadProjects() {
-    _uiState.update { it.copy(isLoadingProjects = true) }
+  fun loadProjects() {
+    viewModelScope.launch {
+      _uiState.update { it.copy(isLoadingProjects = true) }
 
-    try {
-      projectRepository.getProjectsForCurrentUser(skipCache = false).collect { projects ->
-        _uiState.update { it.copy(isLoadingProjects = false, projects = projects) }
+      try {
+        projectRepository.getProjectsForCurrentUser(skipCache = false).collect { projects ->
+          _uiState.update { it.copy(isLoadingProjects = false, projects = projects) }
+        }
+      } catch (e: Exception) {
+        _uiState.update { it.copy(isLoadingProjects = false, errorMsg = e.message) }
       }
-    } catch (e: Exception) {
-      _uiState.update { it.copy(isLoadingProjects = false, errorMsg = e.message) }
     }
   }
 

@@ -198,9 +198,8 @@ class FirestoreProjectRepository(
             batch.update(meetingDoc.reference, "participantIds", FieldValue.arrayUnion(userId))
 
             val meetingParticipant = Participant(userId = userId, role = MeetingRole.PARTICIPANT)
-            batch.set(
-                meetingDoc.reference.collection("participants").document(userId),
-                meetingParticipant)
+            batch[meetingDoc.reference.collection("participants").document(userId)] =
+                meetingParticipant
           }
         }
         .await()
