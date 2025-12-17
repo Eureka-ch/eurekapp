@@ -93,6 +93,8 @@ sealed interface Route {
 
   @Serializable data object ActivityFeed : Route
 
+  @Serializable data object FilesManagement : TasksSection
+
   sealed interface ActivitySection : Route {
     @Serializable data class ActivityDetail(val activityId: String) : ActivitySection
   }
@@ -114,8 +116,6 @@ sealed interface Route {
     @Serializable data class EditTask(val projectId: String, val taskId: String) : TasksSection
 
     @Serializable data object AutoTaskAssignment : TasksSection
-
-    @Serializable data object FilesManagement : TasksSection
 
     @Serializable
     data class TaskDependence(val projectId: String, val taskId: String) : TasksSection
@@ -381,7 +381,7 @@ fun NavigationMenu(
                           Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
                     },
                     onFilesManagementClick = {
-                      navigationController.navigate(Route.TasksSection.FilesManagement)
+                      navigationController.navigate(Route.FilesManagement)
                     })
               }
               composable<Route.TasksSection.CreateTask> { CreateTaskScreen(navigationController) }
@@ -399,7 +399,7 @@ fun NavigationMenu(
                 ViewTaskScreen(
                     taskDetailRoute.projectId, taskDetailRoute.taskId, navigationController)
               }
-              composable<Route.TasksSection.FilesManagement> {
+              composable<Route.FilesManagement> {
                 FilesManagementScreen(onBackClick = { navigationController.popBackStack() })
               }
 
@@ -472,7 +472,13 @@ fun NavigationMenu(
                                     Route.MeetingsSection.AudioRecording(
                                         projectId = projectId, meetingId = meetingId))
                               }
-                            }))
+                            },
+                            onFileManagementScreenClick = {
+                                navigationController.navigate(
+                                    Route.FilesManagement)
+                            }
+                        )
+                )
               }
 
               composable<Route.MeetingsSection.MeetingDetail> { backStackEntry ->
@@ -512,7 +518,11 @@ fun NavigationMenu(
                                     Route.MeetingsSection.MeetingProposalVotes(
                                         projectId = projectId, meetingId = meetingId))
                               }
-                            }),
+                            },
+                            onFileManagementScreenClick = {
+                                navigationController.navigate(Route.FilesManagement)
+                            }
+                        ),
                 )
               }
 

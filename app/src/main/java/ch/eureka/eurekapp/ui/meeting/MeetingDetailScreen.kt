@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.HowToVote
 import androidx.compose.material.icons.filled.Person
@@ -77,6 +78,7 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.downloads.AppDatabase
 import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
+import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.LightingBlue
@@ -163,7 +165,8 @@ data class MeetingDetailActionsConfig(
     val onRecordMeeting: (String, String, Boolean) -> Unit = { _, _, _ -> },
     val onViewTranscript: (String, String, Boolean) -> Unit = { _, _, _ -> },
     val onVoteForMeetingProposalClick: (String, String, Boolean) -> Unit = { _, _, _ -> },
-    val onNavigateToMeeting: (Boolean) -> Unit = {}
+    val onNavigateToMeeting: (Boolean) -> Unit = {},
+    val onFileManagementScreenClick: () -> Unit = {}
 )
 
 /**
@@ -193,7 +196,7 @@ fun MeetingDetailScreen(
             downloadedFileDao = downloadedFileDao
         )
     },
-    actionsConfig: MeetingDetailActionsConfig = MeetingDetailActionsConfig()
+    actionsConfig: MeetingDetailActionsConfig = MeetingDetailActionsConfig(),
 ) {
   val context = LocalContext.current
   val uiState by viewModel.uiState.collectAsState()
@@ -230,7 +233,18 @@ fun MeetingDetailScreen(
               IconButton(onClick = actionsConfig.onNavigateBack) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Navigate back")
               }
-            })
+            },
+            actions = {
+                IconButton(
+                    onClick = actionsConfig.onFileManagementScreenClick,
+                    modifier = Modifier.testTag(TasksScreenTestTags.FILES_MANAGEMENT_BUTTON)) {
+                    Icon(
+                        Icons.Filled.Folder,
+                        contentDescription = "Manage Files",
+                        tint = EColors.WhiteTextColor)
+                }
+            }
+            )
       },
       content = { padding ->
         if (uiState.isLoading) {
