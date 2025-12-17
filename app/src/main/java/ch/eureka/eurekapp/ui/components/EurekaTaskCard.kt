@@ -44,6 +44,10 @@ import androidx.compose.ui.unit.dp
 // Portions of this code were generated with the help of AI.
 // Portions added by Jiří Gebauer partially generated with the help of Grok.
 
+private const val PRESSED_SCALE = 0.98f
+private const val NORMAL_SCALE = 1f
+private const val ANIMATION_DURATION_MS = 150
+
 /** Task card component used on tasks and project screens */
 @Composable
 fun EurekaTaskCard(
@@ -62,7 +66,9 @@ fun EurekaTaskCard(
 ) {
   var isPressed by remember { mutableStateOf(false) }
   val scale by
-      animateFloatAsState(targetValue = if (isPressed) 0.98f else 1f, animationSpec = tween(150))
+      animateFloatAsState(
+          targetValue = if (isPressed) PRESSED_SCALE else NORMAL_SCALE,
+          animationSpec = tween(ANIMATION_DURATION_MS))
 
   Card(
       shape = RoundedCornerShape(24.dp),

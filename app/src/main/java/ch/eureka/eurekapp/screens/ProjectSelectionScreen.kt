@@ -50,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectSelectionScreenViewModel
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
@@ -145,7 +146,7 @@ fun ProjectSelectionScreen(
 @Composable
 private fun ProjectSelectionContent(
     paddingValues: PaddingValues,
-    projects: List<ProjectSelectionScreenViewModel.ProjectWithUsers>,
+    projects: List<Project>,
     currentUserId: String?,
     listState: androidx.compose.foundation.lazy.LazyListState,
     onCreateProjectRequest: () -> Unit,
