@@ -41,7 +41,7 @@ class TaskRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun createTask_shouldCreateTaskInFirestore() = runBlocking {
+  fun taskRepository_shouldCreateTaskInFirestore() = runBlocking {
     val projectId = "project_task_1"
     setupTestProject(projectId)
 
@@ -76,7 +76,7 @@ class TaskRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getTaskById_shouldReturnTaskWhenExists() = runBlocking {
+  fun taskRepository_shouldReturnTaskWhenExists() = runBlocking {
     val projectId = "project_task_2"
     setupTestProject(projectId)
 
@@ -99,7 +99,7 @@ class TaskRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getTaskById_shouldReturnNullWhenTaskDoesNotExist() = runBlocking {
+  fun taskRepository_shouldReturnNullWhenTaskDoesNotExist() = runBlocking {
     val projectId = "project_task_3"
     setupTestProject(projectId)
 
@@ -110,7 +110,7 @@ class TaskRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getTasksInProject_shouldReturnAllTasksInProject() = runBlocking {
+  fun taskRepository_shouldReturnAllTasksInProject() = runBlocking {
     val projectId = "project_task_4"
     setupTestProject(projectId)
 
@@ -142,7 +142,7 @@ class TaskRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getTasksInProject_shouldReturnEmptyListWhenNoTasks() = runBlocking {
+  fun taskRepository_shouldReturnEmptyListWhenNoTasks() = runBlocking {
     val projectId = "project_task_5"
     setupTestProject(projectId)
 
@@ -153,7 +153,7 @@ class TaskRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getTasksForCurrentUser_shouldReturnAllTasksInMemberProjects() = runBlocking {
+  fun taskRepository_shouldReturnAllTasksInMemberProjects() = runBlocking {
     val projectId = "project_task_6"
     setupTestProject(projectId)
 
@@ -204,7 +204,7 @@ class TaskRepositoryTest : FirestoreRepositoryTest() {
   */
 
   @Test
-  fun updateTask_shouldUpdateTaskDetails() = runBlocking {
+  fun taskRepository_shouldUpdateTaskDetails() = runBlocking {
     val projectId = "project_task_8"
     setupTestProject(projectId)
 
@@ -241,7 +241,7 @@ class TaskRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun deleteTask_shouldDeleteTaskFromFirestore() = runBlocking {
+  fun taskRepository_shouldDeleteTaskFromFirestore() = runBlocking {
     val projectId = "project_task_9"
     setupTestProject(projectId)
 
@@ -273,7 +273,7 @@ class TaskRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun assignUser_shouldAddUserToTaskAssignedUserIds() = runBlocking {
+  fun taskRepository_shouldAddUserToTaskAssignedUserIds() = runBlocking {
     val projectId = "project_task_10"
     setupTestProject(projectId)
 
@@ -306,7 +306,7 @@ class TaskRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun unassignUser_shouldRemoveUserFromTaskAssignedUserIds() = runBlocking {
+  fun taskRepository_shouldRemoveUserFromTaskAssignedUserIds() = runBlocking {
     val projectId = "project_task_11"
     setupTestProject(projectId)
 

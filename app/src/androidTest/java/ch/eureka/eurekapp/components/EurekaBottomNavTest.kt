@@ -19,7 +19,7 @@ class EurekaBottomNavTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun eurekaBottomNavRendersDefaultItems() {
+  fun eurekaBottomNav_rendersDefaultItems() {
     var clickedRoute: String? = null
 
     composeTestRule.setContent {
@@ -39,7 +39,7 @@ class EurekaBottomNavTest {
   }
 
   @Test
-  fun eurekaBottomNavShowsSelectedState() {
+  fun eurekaBottomNav_showsSelectedState() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaBottomNav(
@@ -55,7 +55,7 @@ class EurekaBottomNavTest {
   }
 
   @Test
-  fun eurekaBottomNavHandlesClickEvents() {
+  fun eurekaBottomNav_handlesClickEvents() {
     var clickedRoute: String? = null
 
     composeTestRule.setContent {
@@ -76,7 +76,7 @@ class EurekaBottomNavTest {
   }
 
   @Test
-  fun eurekaBottomNavWorksWithCustomNavItems() {
+  fun eurekaBottomNav_worksWithCustomNavItems() {
     val customItems = listOf(NavItem("Custom1", null), NavItem("Custom2", null))
 
     composeTestRule.setContent {
@@ -94,7 +94,7 @@ class EurekaBottomNavTest {
   }
 
   @Test
-  fun eurekaBottomNavWorksInDarkMode() {
+  fun eurekaBottomNav_worksInDarkMode() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = true) {
         EurekaBottomNav(
@@ -111,7 +111,7 @@ class EurekaBottomNavTest {
   }
 
   @Test
-  fun eurekaBottomNavShowsFirstLetterAsIcon() {
+  fun eurekaBottomNav_showsFirstLetterAsIcon() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaBottomNav(

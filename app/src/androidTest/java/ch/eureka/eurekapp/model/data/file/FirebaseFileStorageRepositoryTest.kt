@@ -96,7 +96,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun uploadFile_shouldUploadAndReturnDownloadUrl() = runBlocking {
+  fun firebaseFileStorageRepository_shouldUploadAndReturnDownloadUrlViaUri() = runBlocking {
     val projectId = "test_project_1"
     setupTestProject(projectId)
 
@@ -127,7 +127,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun uploadFile_shouldFailWhenNotAuthenticated() = runBlocking {
+  fun firebaseFileStorageRepository_shouldFailWhenNotAuthenticatedForUpload() = runBlocking {
     // Sign out to test unauthenticated access
     FirebaseEmulator.auth.signOut()
 
@@ -142,7 +142,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun deleteFile_shouldDeleteFileSuccessfully() = runBlocking {
+  fun firebaseFileStorageRepository_shouldDeleteFileSuccessfully() = runBlocking {
     val projectId = "test_project_2"
     setupTestProject(projectId)
 
@@ -178,7 +178,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun deleteFile_shouldFailForInvalidUrl() = runBlocking {
+  fun firebaseFileStorageRepository_shouldFailForInvalidUrl() = runBlocking {
     val invalidUrl = "https://invalid-url.com/file.txt"
 
     val result = repository.deleteFile(invalidUrl)
@@ -187,7 +187,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getFileMetadata_shouldReturnMetadataForExistingFile() = runBlocking {
+  fun firebaseFileStorageRepository_shouldReturnMetadataForExistingFile() = runBlocking {
     val projectId = "test_project_3"
     setupTestProject(projectId)
 
@@ -221,7 +221,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getFileMetadata_shouldFailForNonExistentFile() = runBlocking {
+  fun firebaseFileStorageRepository_shouldFailForNonExistentFile() = runBlocking {
     // Use a valid-looking but non-existent URL
     val fakeUrl =
         "https://firebasestorage.googleapis.com/v0/b/test.appspot.com/o/nonexistent.txt?alt=media"
@@ -232,7 +232,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getFileMetadata_shouldFailWhenNotAuthenticated() = runBlocking {
+  fun firebaseFileStorageRepository_shouldFailWhenNotAuthenticatedForMetadata() = runBlocking {
     val projectId = "test_project_metadata_unauth"
     setupTestProject(projectId)
 
@@ -258,7 +258,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun uploadFile_shouldHandleDifferentFileTypes() = runBlocking {
+  fun firebaseFileStorageRepository_shouldHandleDifferentFileTypes() = runBlocking {
     val projectId = "test_project_7"
     setupTestProject(projectId)
 
@@ -291,7 +291,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun uploadFile_shouldHandleSpecialCharactersInFilename() = runBlocking {
+  fun firebaseFileStorageRepository_shouldHandleSpecialCharactersInFilename() = runBlocking {
     val projectId = "test_project_8"
     setupTestProject(projectId)
 
@@ -308,7 +308,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun uploadAndDelete_multipleFiles_shouldWork() = runBlocking {
+  fun firebaseFileStorageRepository_shouldWork() = runBlocking {
     val projectId = "test_project_9"
     setupTestProject(projectId)
 
@@ -345,7 +345,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun uploadProfilePhoto_ownerCanUpload() = runBlocking {
+  fun firebaseFileStorageRepository_ownerCanUpload() = runBlocking {
     val userId = FirebaseEmulator.auth.currentUser!!.uid
     val fileUri = createTempFile("profile", "jpg", "Profile photo content")
 
@@ -363,7 +363,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun deleteProfilePhoto_ownerCanDelete() = runBlocking {
+  fun firebaseFileStorageRepository_ownerCanDelete() = runBlocking {
     val userId = FirebaseEmulator.auth.currentUser!!.uid
     val fileUri = createTempFile("profile_delete", "jpg", "Profile photo to delete")
 
@@ -384,7 +384,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun profilePhoto_authenticatedReadAccess() = runBlocking {
+  fun firebaseFileStorageRepository_authenticatedReadAccess() = runBlocking {
     val currentUserId = FirebaseEmulator.auth.currentUser!!.uid
     val differentUserId = "different_user_id_12345"
 
@@ -398,7 +398,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun uploadFile_withFileDescriptor_shouldUploadAndReturnDownloadUrl() = runBlocking {
+  fun firebaseFileStorageRepository_shouldUploadAndReturnDownloadUrlViaDescriptor() = runBlocking {
     val projectId = "test_project_fd_1"
     setupTestProject(projectId)
 
@@ -418,7 +418,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
     // Verify URL format
     assertTrue(
         "Expected storage URL but got: $downloadUrl",
-        downloadUrl!!.startsWith("http://10.0.2.2:9199/v0/b/eureka-app-ch.firebasestorage.app/o/"))
+        downloadUrl!!.startsWith("http://10.0.2.2:9199/v0/b/eureka/eurekapp/o/"))
 
     // Verify storage path is correct
     val storagePath = getStoragePath(downloadUrl)
@@ -433,7 +433,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun uploadFile_withFileDescriptor_shouldFailWhenNotAuthenticated() = runBlocking {
+  fun firebaseFileStorageRepository_shouldFailWhenNotAuthenticatedForDescriptor() = runBlocking {
     // Sign out to test unauthenticated access
     FirebaseEmulator.auth.signOut()
 
@@ -453,7 +453,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun uploadFile_withFileDescriptor_shouldHandleDifferentFileTypes() = runBlocking {
+  fun firebaseFileStorageRepository_shouldHandleDifferentFileTypesViaDescriptor() = runBlocking {
     val projectId = "test_project_fd_2"
     setupTestProject(projectId)
 

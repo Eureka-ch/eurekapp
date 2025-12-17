@@ -24,7 +24,7 @@ class AudioRepositoryTest {
       GrantPermissionRule.grant(android.Manifest.permission.RECORD_AUDIO)
 
   @Test
-  fun testCreateRecordingWorks() {
+  fun audioRepository_createRecordingWorks() {
     val context: Context = ApplicationProvider.getApplicationContext()
     composeTestRule.setContent {
       val context = LocalContext.current
@@ -48,7 +48,7 @@ class AudioRepositoryTest {
   }
 
   @Test
-  fun testPauseAndResumeRecordingWorks() {
+  fun audioRepository_pauseAndResumeRecordingWorks() {
     val context: Context = ApplicationProvider.getApplicationContext()
     val repo = LocalAudioRecordingRepository()
 
@@ -69,7 +69,7 @@ class AudioRepositoryTest {
   }
 
   @Test
-  fun completelyStopAndDeleteRecording() {
+  fun audioRepository_completelyStopAndDeleteRecording() {
     val context: Context = ApplicationProvider.getApplicationContext()
     val repo = LocalAudioRecordingRepository()
 
@@ -91,7 +91,7 @@ class AudioRepositoryTest {
   }
 
   @Test
-  fun testNotAllowedStatesActuallyWork() {
+  fun audioRepository_notAllowedStatesActuallyWork() {
     val context: Context = ApplicationProvider.getApplicationContext()
     val repo = LocalAudioRecordingRepository()
 

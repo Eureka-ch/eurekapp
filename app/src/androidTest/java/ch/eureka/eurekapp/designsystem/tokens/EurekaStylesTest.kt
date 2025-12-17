@@ -18,7 +18,7 @@ class EurekaStylesTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun eurekaStylesPrimaryButtonColorsWork() {
+  fun eurekaStyles_primaryButtonColorsWork() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.material3.Button(
@@ -33,7 +33,7 @@ class EurekaStylesTest {
   }
 
   @Test
-  fun eurekaStylesOutlinedButtonColorsWork() {
+  fun eurekaStyles_outlinedButtonColorsWork() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.material3.OutlinedButton(
@@ -48,7 +48,7 @@ class EurekaStylesTest {
   }
 
   @Test
-  fun eurekaStylesTextFieldColorsWork() {
+  fun eurekaStyles_textFieldColorsWork() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.material3.OutlinedTextField(
@@ -61,7 +61,7 @@ class EurekaStylesTest {
   }
 
   @Test
-  fun eurekaStylesHighPriorityTagColorsWork() {
+  fun eurekaStyles_highPriorityTagColorsWork() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.material3.Card(colors = EurekaStyles.highPriorityTagColors()) {
@@ -75,7 +75,7 @@ class EurekaStylesTest {
   }
 
   @Test
-  fun eurekaStylesNormalTagColorsWork() {
+  fun eurekaStyles_normalTagColorsWork() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.material3.Card(colors = EurekaStyles.normalTagColors()) {
@@ -89,7 +89,7 @@ class EurekaStylesTest {
   }
 
   @Test
-  fun eurekaStylesOutlinedButtonBorderWorks() {
+  fun eurekaStyles_outlinedButtonBorderWorks() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.material3.OutlinedButton(
@@ -104,21 +104,21 @@ class EurekaStylesTest {
   }
 
   @Test
-  fun eurekaStylesCardShapeIsAccessible() {
+  fun eurekaStyles_cardShapeIsAccessible() {
     // Test that card shape constant is accessible
     val cardShape = EurekaStyles.CardShape
     assert(cardShape != null)
   }
 
   @Test
-  fun eurekaStylesCardElevationIsAccessible() {
+  fun eurekaStyles_cardElevationIsAccessible() {
     // Test that card elevation constant is accessible
     val cardElevation = EurekaStyles.CardElevation
     assert(cardElevation != null)
   }
 
   @Test
-  fun eurekaStylesWorkInDarkMode() {
+  fun eurekaStyles_workInDarkMode() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = true) {
         androidx.compose.material3.Button(
@@ -133,7 +133,7 @@ class EurekaStylesTest {
   }
 
   @Test
-  fun eurekaStylesWorkWithStatusTag() {
+  fun eurekaStyles_workWithStatusTag() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaStatusTag(text = "Styled Tag", type = StatusType.SUCCESS)
@@ -145,7 +145,7 @@ class EurekaStylesTest {
   }
 
   @Test
-  fun eurekaStylesCardShapeWorks() {
+  fun eurekaStyles_cardShapeWorks() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.material3.Card(shape = EurekaStyles.CardShape) {
@@ -159,7 +159,7 @@ class EurekaStylesTest {
   }
 
   @Test
-  fun eurekaStylesCardElevationWorks() {
+  fun eurekaStyles_cardElevationWorks() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.material3.Card(
@@ -176,7 +176,7 @@ class EurekaStylesTest {
   }
 
   @Test
-  fun eurekaStylesAllButtonTypesWork() {
+  fun eurekaStyles_allButtonTypesWork() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.foundation.layout.Column {

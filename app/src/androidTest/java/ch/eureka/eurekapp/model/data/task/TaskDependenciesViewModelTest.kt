@@ -137,7 +137,7 @@ class TaskDependenciesViewModelTest {
   }
 
   @Test
-  fun testGetDependentTasksForTaskWorks() = runBlocking {
+  fun taskDependenciesViewModel_getDependentTasksForTaskWorks() = runBlocking {
     val viewModel =
         TaskDependenciesViewModel(
             tasksRepository = TasksFakeRepository(),
@@ -157,7 +157,7 @@ class TaskDependenciesViewModelTest {
   }
 
   @Test
-  fun getProjectUsersWorks() = runBlocking {
+  fun taskDependenciesViewModel_getProjectUsersWorks() = runBlocking {
     val viewModel =
         TaskDependenciesViewModel(
             tasksRepository = TasksFakeRepository(),
@@ -168,7 +168,7 @@ class TaskDependenciesViewModelTest {
   }
 
   @Test
-  fun getTaskFromRepositoryWorks() = runBlocking {
+  fun taskDependenciesViewModel_getTaskFromRepositoryWorks() = runBlocking {
     val viewModel =
         TaskDependenciesViewModel(
             tasksRepository = TasksFakeRepository(),

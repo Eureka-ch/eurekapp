@@ -72,7 +72,7 @@ class NotificationSettingsViewModelTest {
   }
 
   @Test
-  fun saveUserSettingFailureUserNull() =
+  fun notificationSettingsViewModel_saveUserSettingFailureUserNull() =
       runTest(testDispatcher) {
         coEvery { userRepository.getCurrentUser() } returns flowOf(null)
 
@@ -88,7 +88,7 @@ class NotificationSettingsViewModelTest {
       }
 
   @Test
-  fun saveUserSettingSuccess() =
+  fun notificationSettingsViewModel_saveUserSettingSuccess() =
       runTest(testDispatcher) {
         val newViewModel = NotificationSettingsViewModel(MockedUserRepository())
 
@@ -105,7 +105,7 @@ class NotificationSettingsViewModelTest {
       }
 
   @Test
-  fun getUserSettingFound() =
+  fun notificationSettingsViewModel_getUserSettingFound() =
       runTest(testDispatcher) {
         val key = UserNotificationSettingsKeys.ON_MEETING_SCHEDULED_NOTIFY
         // Create a specific user state for this test
@@ -118,7 +118,7 @@ class NotificationSettingsViewModelTest {
       }
 
   @Test
-  fun getUserSettingDefault() =
+  fun notificationSettingsViewModel_getUserSettingDefault() =
       runTest(testDispatcher) {
         val key = UserNotificationSettingsKeys.ON_MEETING_SCHEDULED_NOTIFY
         // Use the default user (empty map)

@@ -35,7 +35,7 @@ class UserRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun saveUser_shouldSaveUserToFirestore() = runBlocking {
+  fun userRepository_shouldSaveUserToFirestore() = runBlocking {
     val user =
         User(
             uid = testUserId,
@@ -64,7 +64,7 @@ class UserRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getUserById_shouldReturnUserWhenExists() = runBlocking {
+  fun userRepository_shouldReturnUserWhenExists() = runBlocking {
     val user =
         User(
             uid = testUserId,
@@ -85,7 +85,7 @@ class UserRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getUserById_shouldReturnNullWhenUserDoesNotExist() = runBlocking {
+  fun userRepository_shouldReturnNullWhenUserDoesNotExist() = runBlocking {
     val flow = repository.getUserById("non_existent_user")
     val retrievedUser = flow.first()
 
@@ -93,7 +93,7 @@ class UserRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getCurrentUser_shouldReturnCurrentUserWhenSignedIn() = runBlocking {
+  fun userRepository_shouldReturnCurrentUserWhenSignedIn() = runBlocking {
     val user =
         User(
             uid = testUserId,
@@ -113,7 +113,7 @@ class UserRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun updateLastActive_shouldUpdateTimestamp() = runBlocking {
+  fun userRepository_shouldUpdateTimestamp() = runBlocking {
     val user =
         User(
             uid = testUserId,
@@ -151,7 +151,7 @@ class UserRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun saveUser_shouldUpdateExistingUser() = runBlocking {
+  fun userRepository_shouldUpdateExistingUser() = runBlocking {
     val user =
         User(
             uid = testUserId,
@@ -180,7 +180,7 @@ class UserRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getUserById_shouldReactToChanges() = runBlocking {
+  fun userRepository_shouldReactToChangesByUserId() = runBlocking {
     val user =
         User(
             uid = testUserId,
@@ -207,7 +207,7 @@ class UserRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getCurrentUser_shouldReactToChanges() = runBlocking {
+  fun userRepository_shouldReactToChangesForCurrentUser() = runBlocking {
     val user =
         User(
             uid = testUserId,

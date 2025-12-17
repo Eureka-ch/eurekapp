@@ -7,35 +7,35 @@ import org.junit.Test
 class NotificationTypeTest {
 
   @Test
-  fun testAllNotificationTypesExist() {
+  fun notificationType_testAllNotificationTypesExist() {
     val types = NotificationType.entries
     assertTrue(types.isNotEmpty())
     assertTrue(types.size >= 3)
   }
 
   @Test
-  fun testGeneralNotificationProperties() {
+  fun notificationType_testGeneralNotificationProperties() {
     val general = NotificationType.GENERAL_NOTIFICATION
     assertEquals("General", general.displayString)
     assertEquals("general", general.backendTypeString)
   }
 
   @Test
-  fun testMeetingNotificationProperties() {
+  fun notificationType_testMeetingNotificationProperties() {
     val meeting = NotificationType.MEETING_NOTIFICATION
     assertEquals("Meetings", meeting.displayString)
     assertEquals("meeting", meeting.backendTypeString)
   }
 
   @Test
-  fun testMessageNotificationProperties() {
+  fun notificationType_testMessageNotificationProperties() {
     val message = NotificationType.MESSAGE_NOTIFICATION
     assertEquals("Message", message.displayString)
     assertEquals("message", message.backendTypeString)
   }
 
   @Test
-  fun testEnumValuesMethod() {
+  fun notificationType_testEnumValuesMethod() {
     val values = NotificationType.entries.toTypedArray()
     assertTrue(values.contains(NotificationType.GENERAL_NOTIFICATION))
     assertTrue(values.contains(NotificationType.MEETING_NOTIFICATION))
@@ -43,7 +43,7 @@ class NotificationTypeTest {
   }
 
   @Test
-  fun testEnumValueOfMethod() {
+  fun notificationType_testEnumValueOfMethod() {
     assertEquals(
         NotificationType.GENERAL_NOTIFICATION, NotificationType.valueOf("GENERAL_NOTIFICATION"))
     assertEquals(
@@ -53,13 +53,13 @@ class NotificationTypeTest {
   }
 
   @Test
-  fun testAllDisplayStringsAreUnique() {
+  fun notificationType_testAllDisplayStringsAreUnique() {
     val displayStrings = NotificationType.entries.map { it.displayString }
     assertEquals(displayStrings.size, displayStrings.toSet().size)
   }
 
   @Test
-  fun testAllBackendTypeStringsAreUnique() {
+  fun notificationType_testAllBackendTypeStringsAreUnique() {
     val backendStrings = NotificationType.entries.map { it.backendTypeString }
     assertEquals(backendStrings.size, backendStrings.toSet().size)
   }

@@ -45,7 +45,7 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun createNote_shouldCreateNoteInFirestore() = runBlocking {
+  fun selfNotesRepository_shouldCreateNoteInFirestore() = runBlocking {
     val message =
         Message(
             messageID = "note1",
@@ -75,7 +75,7 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getNotes_shouldReturnAllNotes() = runBlocking {
+  fun selfNotesRepository_shouldReturnAllNotes() = runBlocking {
     val noteId1 = "return_all_note1_${System.currentTimeMillis()}"
     val noteId2 = "return_all_note2_${System.currentTimeMillis()}"
     val message1 =
@@ -105,7 +105,7 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getNotes_shouldOrderByCreatedAtDescending() = runBlocking {
+  fun selfNotesRepository_shouldOrderByCreatedAtDescending() = runBlocking {
     val message1 =
         Message(
             messageID = "note6",
@@ -134,7 +134,7 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getNotes_shouldRespectLimit() = runBlocking {
+  fun selfNotesRepository_shouldRespectLimit() = runBlocking {
     // Create 5 notes
     for (i in 1..5) {
       val message =
@@ -154,7 +154,7 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun updateNote_shouldUpdateTextInFirestore() = runBlocking {
+  fun selfNotesRepository_shouldUpdateTextInFirestore() = runBlocking {
     val message =
         Message(
             messageID = "note_to_update",
@@ -185,7 +185,7 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun updateNote_shouldFailIfNoteDoesNotExist() = runBlocking {
+  fun selfNotesRepository_shouldFailIfNoteDoesNotExist() = runBlocking {
     val result = repository.updateNote("non_existent_note_update", "New text")
 
     // Firestore update fails (throws NOT_FOUND) if document does not exist,
@@ -194,7 +194,7 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun deleteNote_shouldRemoveNoteFromFirestore() = runBlocking {
+  fun selfNotesRepository_shouldRemoveNoteFromFirestore() = runBlocking {
     val message =
         Message(
             messageID = "note_to_delete",
@@ -221,7 +221,7 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun deleteNote_shouldSucceedEvenIfNoteDoesNotExist() = runBlocking {
+  fun selfNotesRepository_shouldSucceedEvenIfNoteDoesNotExist() = runBlocking {
     val result = repository.deleteNote("non_existent_note")
 
     // Firestore delete is idempotent
@@ -229,7 +229,7 @@ class SelfNotesRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun createNote_shouldPreserveTimestamp() = runBlocking {
+  fun selfNotesRepository_shouldPreserveTimestamp() = runBlocking {
     // Firestore truncates nanoseconds to microsecond precision (last 3 digits become 000)
     val specificTimestamp = Timestamp(1234567890, 123456000)
     val message =

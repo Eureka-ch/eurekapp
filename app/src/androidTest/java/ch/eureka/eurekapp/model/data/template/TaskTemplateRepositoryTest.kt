@@ -38,7 +38,7 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun createTemplate_shouldCreateTemplateInFirestore() = runBlocking {
+  fun taskTemplateRepository_shouldCreateTemplateInFirestore() = runBlocking {
     val projectId = "project_template_1"
     setupTestProject(projectId)
 
@@ -78,7 +78,7 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getTemplateById_shouldReturnTemplateWhenExists() = runBlocking {
+  fun taskTemplateRepository_shouldReturnTemplateWhenExists() = runBlocking {
     val projectId = "project_template_2"
     setupTestProject(projectId)
 
@@ -101,7 +101,7 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getTemplateById_shouldReturnNullWhenTemplateDoesNotExist() = runBlocking {
+  fun taskTemplateRepository_shouldReturnNullWhenTemplateDoesNotExist() = runBlocking {
     val projectId = "project_template_3"
     setupTestProject(projectId)
 
@@ -112,7 +112,7 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getTemplatesInProject_shouldReturnAllTemplates() = runBlocking {
+  fun taskTemplateRepository_shouldReturnAllTemplates() = runBlocking {
     val projectId = "project_template_4"
     setupTestProject(projectId)
 
@@ -144,7 +144,7 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getTemplatesInProject_shouldReturnEmptyListWhenNoTemplates() = runBlocking {
+  fun taskTemplateRepository_shouldReturnEmptyListWhenNoTemplates() = runBlocking {
     val projectId = "project_template_5"
     setupTestProject(projectId)
 
@@ -155,7 +155,7 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun updateTemplate_shouldUpdateTemplateDetails() = runBlocking {
+  fun taskTemplateRepository_shouldUpdateTemplateDetails() = runBlocking {
     val projectId = "project_template_6"
     setupTestProject(projectId)
 
@@ -198,7 +198,7 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun deleteTemplate_shouldDeleteTemplateFromFirestore() = runBlocking {
+  fun taskTemplateRepository_shouldDeleteTemplateFromFirestore() = runBlocking {
     val projectId = "project_template_7"
     setupTestProject(projectId)
 

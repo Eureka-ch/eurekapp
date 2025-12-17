@@ -35,7 +35,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun createMeeting_shouldCreateMeetingInFirestore() = runBlocking {
+  fun meetingRepository_shouldCreateMeetingInFirestore() = runBlocking {
     val projectId = "project_meeting_1"
     setupTestProject(projectId)
 
@@ -76,7 +76,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getMeetingById_shouldReturnMeetingWhenExists() = runBlocking {
+  fun meetingRepository_shouldReturnMeetingWhenExists() = runBlocking {
     val projectId = "project_meeting_2"
     setupTestProject(projectId)
 
@@ -100,7 +100,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getMeetingById_shouldReturnNullWhenMeetingDoesNotExist() = runBlocking {
+  fun meetingRepository_shouldReturnNullWhenMeetingDoesNotExist() = runBlocking {
     val projectId = "project_meeting_3"
     setupTestProject(projectId)
 
@@ -111,7 +111,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getMeetingsInProject_shouldReturnAllMeetings() = runBlocking {
+  fun meetingRepository_shouldReturnAllMeetings() = runBlocking {
     val projectId = "project_meeting_4"
     setupTestProject(projectId)
 
@@ -145,7 +145,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getMeetingsInProject_shouldReturnEmptyListWhenNoMeetings() = runBlocking {
+  fun meetingRepository_shouldReturnEmptyListWhenNoMeetings() = runBlocking {
     val projectId = "project_meeting_5"
     setupTestProject(projectId)
 
@@ -156,7 +156,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getMeetingsForTask_shouldReturnMeetingsForSpecificTask() = runBlocking {
+  fun meetingRepository_shouldReturnMeetingsForSpecificTask() = runBlocking {
     val projectId = "project_meeting_6"
     setupTestProject(projectId)
 
@@ -190,7 +190,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getMeetingsForCurrentUser_shouldReturnMeetingsWhereUserIsParticipant() = runBlocking {
+  fun meetingRepository_shouldReturnMeetingsWhereUserIsParticipant() = runBlocking {
     val projectId = "project_meeting_7"
     setupTestProject(projectId)
 
@@ -247,7 +247,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }*/
 
   @Test
-  fun updateMeeting_shouldUpdateMeetingDetails() = runBlocking {
+  fun meetingRepository_shouldUpdateMeetingDetails() = runBlocking {
     val projectId = "project_meeting_9"
     setupTestProject(projectId)
 
@@ -283,7 +283,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun deleteMeeting_shouldDeleteMeetingFromFirestore() = runBlocking {
+  fun meetingRepository_shouldDeleteMeetingFromFirestore() = runBlocking {
     val projectId = "project_meeting_10"
     setupTestProject(projectId)
 
@@ -316,7 +316,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun addParticipant_shouldAddParticipantToMeeting() = runBlocking {
+  fun meetingRepository_shouldAddParticipantToMeeting() = runBlocking {
     val projectId = "project_meeting_11"
     setupTestProject(projectId)
 
@@ -344,7 +344,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun removeParticipant_shouldRemoveParticipantFromMeeting() = runBlocking {
+  fun meetingRepository_shouldRemoveParticipantFromMeeting() = runBlocking {
     val projectId = "project_meeting_12"
     setupTestProject(projectId)
 
@@ -371,7 +371,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun updateParticipantRole_shouldUpdateRole() = runBlocking {
+  fun meetingRepository_shouldUpdateRole() = runBlocking {
     val projectId = "project_meeting_13"
     setupTestProject(projectId)
 
@@ -400,7 +400,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun createMeeting_shouldUseDefaultHostRole() = runBlocking {
+  fun meetingRepository_shouldUseDefaultHostRole() = runBlocking {
     val projectId = "project_meeting_14"
     setupTestProject(projectId)
 

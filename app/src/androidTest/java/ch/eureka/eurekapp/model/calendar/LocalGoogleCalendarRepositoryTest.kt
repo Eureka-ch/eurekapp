@@ -30,7 +30,7 @@ class LocalGoogleCalendarRepositoryTest {
   @get:Rule val composeRule = createComposeRule()
 
   @Test
-  fun testCreateCalendarEventWorks() = runBlocking {
+  fun localGoogleCalendarRepository_createCalendarEventWorks() = runBlocking {
     val contentResolver = mockk<ContentResolver>()
 
     every { contentResolver.insert(any<Uri>(), any()) } returns Uri.parse("content://fake/1")
@@ -64,7 +64,7 @@ class LocalGoogleCalendarRepositoryTest {
   }
 
   @Test
-  fun testGetCalendarEventWorks() = runBlocking {
+  fun localGoogleCalendarRepository_getCalendarEventWorks() = runBlocking {
     var counter = 0
     val fakeCursor = mockk<Cursor>()
 

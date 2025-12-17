@@ -16,7 +16,7 @@ class EurekaInfoCardExtendedTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun eurekaInfoCardRendersWithIconText() {
+  fun eurekaInfoCard_rendersWithIconText() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaInfoCard(title = "Card with Icon", primaryValue = "Value")
@@ -29,7 +29,7 @@ class EurekaInfoCardExtendedTest {
   }
 
   @Test
-  fun eurekaInfoCardRendersWithSecondaryValue() {
+  fun eurekaInfoCard_rendersWithSecondaryValue() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaInfoCard(
@@ -44,7 +44,7 @@ class EurekaInfoCardExtendedTest {
   }
 
   @Test
-  fun eurekaInfoCardRendersWithAllFields() {
+  fun eurekaInfoCard_rendersWithAllFields() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaInfoCard(
@@ -59,7 +59,7 @@ class EurekaInfoCardExtendedTest {
   }
 
   @Test
-  fun eurekaInfoCardRendersWithoutIconText() {
+  fun eurekaInfoCard_rendersWithoutIconText() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaInfoCard(title = "Card without Icon", primaryValue = "Value")
@@ -72,7 +72,7 @@ class EurekaInfoCardExtendedTest {
   }
 
   @Test
-  fun eurekaInfoCardRendersWithoutSecondaryValue() {
+  fun eurekaInfoCard_rendersWithoutSecondaryValue() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaInfoCard(title = "Card without Secondary", primaryValue = "Value")
@@ -85,7 +85,7 @@ class EurekaInfoCardExtendedTest {
   }
 
   @Test
-  fun eurekaInfoCardRendersEmptyStrings() {
+  fun eurekaInfoCard_rendersEmptyStrings() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaInfoCard(title = "Empty Test", primaryValue = "Empty Value")
@@ -98,7 +98,7 @@ class EurekaInfoCardExtendedTest {
   }
 
   @Test
-  fun eurekaInfoCardRendersLongText() {
+  fun eurekaInfoCard_rendersLongText() {
     val longTitle = "This is a very long title that should still be displayed correctly"
     val longValue = "This is a very long primary value that should still be displayed correctly"
     val longSecondary =
@@ -121,7 +121,7 @@ class EurekaInfoCardExtendedTest {
   }
 
   @Test
-  fun eurekaInfoCardRendersSpecialCharacters() {
+  fun eurekaInfoCard_rendersSpecialCharacters() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaInfoCard(
@@ -138,7 +138,7 @@ class EurekaInfoCardExtendedTest {
   }
 
   @Test
-  fun eurekaInfoCardRendersUnicodeCharacters() {
+  fun eurekaInfoCard_rendersUnicodeCharacters() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaInfoCard(
@@ -158,7 +158,7 @@ class EurekaInfoCardExtendedTest {
   }
 
   @Test
-  fun eurekaInfoCardRendersNumbers() {
+  fun eurekaInfoCard_rendersNumbers() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaInfoCard(
@@ -176,7 +176,7 @@ class EurekaInfoCardExtendedTest {
   }
 
   @Test
-  fun eurekaInfoCardWorksInDarkMode() {
+  fun eurekaInfoCard_worksInDarkMode() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = true) {
         EurekaInfoCard(
@@ -193,7 +193,7 @@ class EurekaInfoCardExtendedTest {
   }
 
   @Test
-  fun eurekaInfoCardRendersMultipleInstances() {
+  fun eurekaInfoCard_rendersMultipleInstances() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.foundation.layout.Column {

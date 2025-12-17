@@ -47,7 +47,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun createConversation_shouldCreateConversationInFirestore() = runBlocking {
+  fun conversationRepository_shouldCreateConversationInFirestore() = runBlocking {
     // Arrange: Create a conversation between two users
     val conversation =
         Conversation(
@@ -73,7 +73,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getConversationsForCurrentUser_shouldReturnUserConversations() = runBlocking {
+  fun conversationRepository_shouldReturnUserConversations() = runBlocking {
     // Arrange: Create two conversations where current user is a member
     val conv1 =
         Conversation(
@@ -93,7 +93,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun findExistingConversation_shouldFindDuplicate() = runBlocking {
+  fun conversationRepository_shouldFindDuplicate() = runBlocking {
     // Arrange: Create a conversation between two users
     val conversation =
         Conversation(
@@ -112,7 +112,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun findExistingConversation_shouldReturnNullWhenNotExists() = runBlocking {
+  fun conversationRepository_shouldReturnNullWhenNotExists() = runBlocking {
     // Act: Try to find a conversation that doesn't exist
     val existing = repository.findExistingConversation("project1", testUserId, "nonExistentUser")
 
@@ -121,7 +121,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun deleteConversation_shouldRemoveFromFirestore() = runBlocking {
+  fun conversationRepository_shouldRemoveFromFirestore() = runBlocking {
     // Arrange: Create a conversation first
     val conversation =
         Conversation(
@@ -142,7 +142,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun sendFileMessage_shouldCreateFileMessageInFirestore() = runBlocking {
+  fun conversationRepository_shouldCreateFileMessageInFirestore() = runBlocking {
     // Arrange: Create a conversation first
     val conversation =
         Conversation(
@@ -168,7 +168,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun sendFileMessage_shouldUpdateConversationMetadata() = runBlocking {
+  fun conversationRepository_shouldUpdateConversationMetadata() = runBlocking {
     // Arrange: Create a conversation
     val conversation =
         Conversation(
@@ -195,7 +195,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun sendFileMessage_shouldAppearInMessagesList() = runBlocking {
+  fun conversationRepository_shouldAppearInMessagesList() = runBlocking {
     // Arrange: Create a conversation
     val conversation =
         Conversation(
@@ -225,7 +225,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun sendFileMessage_withLongText_shouldTruncatePreview() = runBlocking {
+  fun conversationRepository_withLongText_shouldTruncatePreview() = runBlocking {
     // Arrange: Create a conversation
     val conversation =
         Conversation(
@@ -252,7 +252,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   // ==================== updateMessage Tests ====================
 
   @Test
-  fun updateMessage_shouldUpdateMessageText() = runBlocking {
+  fun conversationRepository_shouldUpdateMessageText() = runBlocking {
     // Arrange: Create conversation and send a message
     val conversation =
         Conversation(
@@ -283,7 +283,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun updateMessage_shouldSetEditedAtTimestamp() = runBlocking {
+  fun conversationRepository_shouldSetEditedAtTimestampAfterMessageUpdate() = runBlocking {
     // Arrange: Create conversation and send a message
     val conversation =
         Conversation(
@@ -312,7 +312,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   // ==================== deleteMessage Tests ====================
 
   @Test
-  fun deleteMessage_shouldSoftDeleteMessage() = runBlocking {
+  fun conversationRepository_shouldSoftDeleteMessage() = runBlocking {
     // Arrange: Create conversation and send a message
     val conversation =
         Conversation(
@@ -340,7 +340,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun deleteMessage_shouldNotAffectOtherMessages() = runBlocking {
+  fun conversationRepository_shouldNotAffectOtherMessages() = runBlocking {
     // Arrange: Create conversation and send multiple messages
     val conversation =
         Conversation(
@@ -371,7 +371,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   // ==================== removeAttachment Tests ====================
 
   @Test
-  fun removeAttachment_shouldClearFileFieldsFromMessage() = runBlocking {
+  fun conversationRepository_shouldClearFileFieldsFromMessage() = runBlocking {
     // Arrange: Create conversation and send a file message
     val conversation =
         Conversation(
@@ -402,7 +402,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun removeAttachment_shouldSetEditedAtTimestamp() = runBlocking {
+  fun conversationRepository_shouldSetEditedAtTimestampAfterAttachmentRemoval() = runBlocking {
     // Arrange: Create conversation and send a file message
     val conversation =
         Conversation(
@@ -430,7 +430,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun removeAttachment_shouldPreserveMessageText() = runBlocking {
+  fun conversationRepository_shouldPreserveMessageText() = runBlocking {
     // Arrange: Create conversation and send a file message with text
     val conversation =
         Conversation(
@@ -461,7 +461,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   // ==================== markMessagesAsRead Tests ====================
 
   @Test
-  fun markMessagesAsRead_shouldUpdateLastReadTimestamp() = runBlocking {
+  fun conversationRepository_shouldUpdateLastReadTimestamp() = runBlocking {
     // Arrange: Create conversation
     val conversation =
         Conversation(
@@ -484,7 +484,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   // ==================== getConversationsInProject Tests ====================
 
   @Test
-  fun getConversationsInProject_shouldReturnOnlyProjectConversations() = runBlocking {
+  fun conversationRepository_shouldReturnOnlyProjectConversations() = runBlocking {
     // Arrange: Create conversations in different projects
     val conv1 =
         Conversation(
@@ -511,7 +511,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   // ==================== sendMessage Tests ====================
 
   @Test
-  fun sendMessage_shouldCreateMessageWithCorrectSender() = runBlocking {
+  fun conversationRepository_shouldCreateMessageWithCorrectSender() = runBlocking {
     // Arrange: Create conversation
     val conversation =
         Conversation(
@@ -535,7 +535,34 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun sendMessage_shouldUpdateConversationMetadata() = runBlocking {
+  fun conversationRepository_shouldUpdateConversationMetadataAfterFileMessage() = runBlocking {
+    // Arrange: Create a conversation
+    val conversation =
+        Conversation(
+            projectId = "project1",
+            memberIds = listOf(testUserId, "otherUser"),
+            createdBy = testUserId)
+    val createResult = repository.createConversation(conversation)
+    val conversationId = createResult.getOrNull()!!
+
+    // Act: Send a file message
+    val messageText = "Important file"
+    val fileUrl = "https://storage.example.com/files/document.pdf"
+    repository.sendFileMessage(conversationId, messageText, fileUrl)
+
+    // Wait a bit for metadata to update
+    kotlinx.coroutines.delay(500)
+
+    // Assert: Conversation metadata should be updated
+    val updatedConversation = repository.getConversationById(conversationId).first()
+    assertNotNull(updatedConversation)
+    assertNotNull(updatedConversation?.lastMessageAt)
+    assertEquals(messageText, updatedConversation?.lastMessagePreview)
+    assertEquals(testUserId, updatedConversation?.lastMessageSenderId)
+  }
+
+  @Test
+  fun conversationRepository_shouldUpdateConversationMetadataAfterTextMessage() = runBlocking {
     // Arrange: Create conversation
     val conversation =
         Conversation(
@@ -561,7 +588,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   // ==================== getMessages Tests ====================
 
   @Test
-  fun getMessages_shouldReturnMessagesInChronologicalOrder() = runBlocking {
+  fun conversationRepository_shouldReturnMessagesInChronologicalOrder() = runBlocking {
     // Arrange: Create conversation and send messages
     val conversation =
         Conversation(
@@ -590,7 +617,7 @@ class ConversationRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getMessages_shouldRespectLimit() = runBlocking {
+  fun conversationRepository_shouldRespectLimit() = runBlocking {
     // Arrange: Create conversation and send many messages
     val conversation =
         Conversation(

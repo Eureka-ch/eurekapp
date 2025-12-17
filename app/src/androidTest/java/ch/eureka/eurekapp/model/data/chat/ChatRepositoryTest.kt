@@ -36,7 +36,7 @@ class ChatRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun createChannel_shouldCreateChannelInFirestore() = runBlocking {
+  fun chatRepository_shouldCreateChannelInFirestore() = runBlocking {
     val projectId = "project_chat_1"
     setupTestProject(projectId)
 
@@ -65,7 +65,7 @@ class ChatRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getChannelById_shouldReturnChannelWhenExists() = runBlocking {
+  fun chatRepository_shouldReturnChannelWhenExists() = runBlocking {
     val projectId = "project_chat_2"
     setupTestProject(projectId)
 
@@ -83,7 +83,7 @@ class ChatRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getChannelById_shouldReturnNullWhenChannelDoesNotExist() = runBlocking {
+  fun chatRepository_shouldReturnNullWhenChannelDoesNotExist() = runBlocking {
     val projectId = "project_chat_3"
     setupTestProject(projectId)
 
@@ -94,7 +94,7 @@ class ChatRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getChannelsInProject_shouldReturnAllChannels() = runBlocking {
+  fun chatRepository_shouldReturnAllChannels() = runBlocking {
     val projectId = "project_chat_4"
     setupTestProject(projectId)
 
@@ -116,7 +116,7 @@ class ChatRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getChannelsInProject_shouldReturnEmptyListWhenNoChannels() = runBlocking {
+  fun chatRepository_shouldReturnEmptyListWhenNoChannels() = runBlocking {
     val projectId = "project_chat_5"
     setupTestProject(projectId)
 
@@ -127,7 +127,7 @@ class ChatRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun updateChannel_shouldUpdateChannelDetails() = runBlocking {
+  fun chatRepository_shouldUpdateChannelDetails() = runBlocking {
     val projectId = "project_chat_6"
     setupTestProject(projectId)
 
@@ -159,7 +159,7 @@ class ChatRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun deleteChannel_shouldDeleteChannelFromFirestore() = runBlocking {
+  fun chatRepository_shouldDeleteChannelFromFirestore() = runBlocking {
     val projectId = "project_chat_7"
     setupTestProject(projectId)
 
@@ -189,7 +189,7 @@ class ChatRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun sendMessage_shouldCreateMessageInChannel() = runBlocking {
+  fun chatRepository_shouldCreateMessageInChannel() = runBlocking {
     val projectId = "project_chat_8"
     setupTestProject(projectId)
 
@@ -233,7 +233,7 @@ class ChatRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getMessagesInChannel_shouldReturnAllMessages() = runBlocking {
+  fun chatRepository_shouldReturnAllMessages() = runBlocking {
     val projectId = "project_chat_9"
     setupTestProject(projectId)
 
@@ -271,7 +271,7 @@ class ChatRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun updateMessage_shouldUpdateMessageText() = runBlocking {
+  fun chatRepository_shouldUpdateMessageText() = runBlocking {
     val projectId = "project_chat_10"
     setupTestProject(projectId)
 
@@ -314,7 +314,7 @@ class ChatRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun deleteMessage_shouldDeleteMessageFromChannel() = runBlocking {
+  fun chatRepository_shouldDeleteMessageFromChannel() = runBlocking {
     val projectId = "project_chat_11"
     setupTestProject(projectId)
 

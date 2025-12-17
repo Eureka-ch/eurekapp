@@ -118,7 +118,7 @@ class MeetingScreenWithCalendarButtonTest {
   @get:Rule val composeRule = createComposeRule()
 
   @Test
-  fun checkCalendarButtonAppearsAndIsClickableForScheduledMeeting() {
+  fun meetingScreenWithCalendarButton_calendarButtonAppearsAndIsClickableForScheduledMeeting() {
     val context: Context = ApplicationProvider.getApplicationContext()
     val contentResolver: ContentResolver = context.contentResolver
 

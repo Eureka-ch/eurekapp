@@ -7,7 +7,7 @@ import org.junit.Test
 class AuthRepositoryProviderTest {
 
   @Test
-  fun repositoryIsInitializedAndIsAuthRepositoryType() {
+  fun authRepositoryProvider_isInitializedAndIsAuthRepositoryType() {
     val instance: AuthRepository = AuthRepositoryProvider.repository
 
     TestCase.assertNotNull(instance)
@@ -17,7 +17,7 @@ class AuthRepositoryProviderTest {
   }
 
   @Test
-  fun getUserLoggedInId() {
+  fun authRepositoryProvider_getUserLoggedInId() {
     val instance: AuthRepository = AuthRepositoryProvider.repository
     val userId = instance.getUserId()
     assertTrue(userId.isFailure) // no logged in user
