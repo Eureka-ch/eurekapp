@@ -227,10 +227,18 @@ private fun <V : FieldValue> SaveButton(
   IconButton(
       onClick = {
         if (editingValue != null) {
-          onValueChange(editingValue)
-          callbacks.onSave()
+          // Validate before saving
+          val validationResult = FieldValidator.validate(editingValue, fieldDefinition)
+          if (validationResult is FieldValidationResult.Valid) {
+            onValueChange(editingValue)
+            callbacks.onSave()
+            callbacks.onModeToggle()
+          }
+          // If invalid, don't save - errors will be shown via showValidationErrors
+        } else {
+          // No value to save, just toggle mode
+          callbacks.onModeToggle()
         }
-        callbacks.onModeToggle()
       },
       modifier = Modifier.testTag(BaseFieldTestTags.save(fieldDefinition.id))) {
         Icon(

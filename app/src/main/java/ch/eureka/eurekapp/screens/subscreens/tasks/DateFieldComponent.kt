@@ -64,7 +64,7 @@ fun DateFieldComponent(
     showValidationErrors: Boolean = false,
     showHeader: Boolean = true
 ) {
-  val fieldType = fieldDefinition.type as FieldType.Date
+  val fieldType = fieldDefinition.type as? FieldType.Date ?: return
 
   BaseFieldComponent(
       fieldDefinition = fieldDefinition,
@@ -100,11 +100,12 @@ fun DateFieldComponent(
                 })
           }
 
-          if (showTimePicker && selectedDate != null) {
+          val dateForTimePicker = selectedDate
+          if (showTimePicker && dateForTimePicker != null) {
             TimePickerDialogContent(
                 onDismiss = { showTimePicker = false },
                 onTimeSelected = { hour, minute ->
-                  handleTimeSelection(selectedDate!!, hour, minute, onChange)
+                  handleTimeSelection(dateForTimePicker, hour, minute, onChange)
                   showTimePicker = false
                 })
           }
