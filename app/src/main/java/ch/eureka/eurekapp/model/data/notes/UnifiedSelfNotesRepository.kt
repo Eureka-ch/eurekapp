@@ -205,6 +205,6 @@ class UnifiedSelfNotesRepository(
    *   (Room).
    */
   suspend fun setStorageMode(enableCloud: Boolean) {
-    withContext(dispatcher) { userPreferences.setCloudStorageEnabled(enableCloud) }
+    userPreferences.setCloudStorageEnabled(enableCloud)
   }
 }
