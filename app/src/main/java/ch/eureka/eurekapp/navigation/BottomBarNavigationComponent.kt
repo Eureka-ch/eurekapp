@@ -150,7 +150,7 @@ fun BottomBarNavigationComponent(navigationController: NavController) {
               .clip(RoundedCornerShape(25.dp)),
       tonalElevation = 8.dp,
       actions = {
-        Row() {
+        Row(modifier = Modifier.padding(vertical = 2.dp)) {
           CustomIconButtonComposable(
               modifier =
                   Modifier.weight(1f).testTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON),
