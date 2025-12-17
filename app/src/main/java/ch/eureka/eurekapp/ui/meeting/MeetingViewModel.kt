@@ -89,15 +89,14 @@ class MeetingViewModel(
     _uiState.update { it.copy(errorMsg = msg) }
   }
 
-  /**
-   * Load all the meetings from the database for the project ID [projectId] into the UI state.
-   *
-   * @param projectId The ID of the project on which to requests the meetings.
-   */
-  fun loadMeetings(projectId: String) {
+  /** Load all the meetings from the database where the current user is in. */
+  fun loadMeetings() {
+    _uiState.update {
+      it.copy(isLoading = true, upcomingMeetings = emptyList(), pastMeetings = emptyList())
+    }
     viewModelScope.launch {
       repository
-          .getMeetingsInProject(projectId)
+          .getMeetingsForCurrentUser(skipCache = false)
           .onStart { _uiState.update { it.copy(isLoading = true) } }
           .catch { e -> _uiState.update { it.copy(isLoading = false, errorMsg = e.message) } }
           .collect { meetings ->
@@ -184,21 +183,24 @@ class MeetingViewModel(
         return
       }
 
+      if (winningFormat == MeetingFormat.VIRTUAL && meeting.link == null) {
+        setErrorMsg("Cannot close votes, virtual meeting has no location.")
+        return
+      }
+
       val updatedMeeting =
           meeting.copy(
               status = MeetingStatus.SCHEDULED,
               datetime = winningProposal.dateTime,
               format = winningFormat,
-              link =
-                  if (winningFormat == MeetingFormat.VIRTUAL) "https://meet.google.com/1234"
-                  else null, // change later
+              link = meeting.link,
               meetingProposals = emptyList())
 
       viewModelScope.launch {
         repository
             .updateMeeting(meeting = updatedMeeting)
             .onFailure { setErrorMsg("Meeting votes could not be closed.") }
-            .onSuccess { loadMeetings(meeting.projectId) }
+            .onSuccess { loadMeetings() }
       }
     }
   }

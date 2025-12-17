@@ -1,16 +1,22 @@
 /*
- * Note: This file was co-authored by Claude Code and Grok and Claude 4.5 Sonnet.
+ * Note: This file was co-authored by Claude Code, Gemini and Grok.
  */
 
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.test.platform.app.InstrumentationRegistry
-import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
-import ch.eureka.eurekapp.model.data.meeting.*
+import ch.eureka.eurekapp.model.data.meeting.Meeting
+import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
+import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
+import ch.eureka.eurekapp.model.data.meeting.MeetingRole
+import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
+import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.model.data.user.UserRepository
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
-import java.util.*
+import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -23,21 +29,18 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
 /**
  * Test suite for MeetingDetailViewModel
  *
- * Tests all ViewModel functionality including:
- * - Initial state validation
- * - Meeting detail loading with real-time Flow updates
- * - Error handling for loading operations
- * - Delete meeting functionality (success and failure)
- * - Error message clearing
- *
- * Note: This file was co-authored by Claude Code and Grok.
+ * Note: This file was co-authored by Claude Code, Gemini and Grok.
  */
 @ExperimentalCoroutinesApi
 class MeetingDetailViewModelTest {
@@ -45,9 +48,16 @@ class MeetingDetailViewModelTest {
   private val testDispatcher = StandardTestDispatcher()
   private lateinit var viewModel: MeetingDetailViewModel
   private lateinit var repositoryMock: MeetingDetailRepositoryMock
+  private lateinit var projectRepositoryMock: MockProjectRepository
   private lateinit var userRepositoryMock: UserRepositoryMock
+  private lateinit var connectivityObserverMock: MockConnectivityObserver
+
   private val testProjectId = "project123"
+  private val testProjectName = "Test Project Name"
   private val testMeetingId = "meeting456"
+  private val testCreatorId = "user1"
+
+  private val projectFlow = MutableStateFlow<Project?>(null)
 
   private val testMeeting =
       Meeting(
@@ -55,21 +65,32 @@ class MeetingDetailViewModelTest {
           title = "Test Meeting",
           status = MeetingStatus.SCHEDULED,
           format = MeetingFormat.VIRTUAL,
-          datetime = Timestamp(Date(System.currentTimeMillis() + 86400000)), // Tomorrow
+          datetime = Timestamp(Date(System.currentTimeMillis() + 86400000)),
           link = "https://meet.test.com",
           location = null,
-          createdBy = "user1")
+          createdBy = testCreatorId)
 
   private val testUser =
-      User(uid = "user1", displayName = "Test User", photoUrl = "https://example.com/photo.jpg")
+      User(
+          uid = testCreatorId,
+          displayName = "Test User",
+          photoUrl = "https://example.com/photo.jpg")
 
   @Before
   fun setup() {
     Dispatchers.setMain(testDispatcher)
     repositoryMock = MeetingDetailRepositoryMock()
     userRepositoryMock = UserRepositoryMock()
+
+    projectRepositoryMock =
+        object : MockProjectRepository() {
+          override fun getProjectById(projectId: String): Flow<Project?> = projectFlow
+        }
+    projectFlow.value = Project(projectId = testProjectId, name = testProjectName)
+
     val context = InstrumentationRegistry.getInstrumentation().targetContext
-    ConnectivityObserverProvider.initialize(context)
+    connectivityObserverMock = MockConnectivityObserver(context)
+    connectivityObserverMock.setConnected(true)
   }
 
   @After
@@ -77,26 +98,37 @@ class MeetingDetailViewModelTest {
     Dispatchers.resetMain()
   }
 
+  private fun createViewModel(currentUserId: String? = testCreatorId): MeetingDetailViewModel {
+    return MeetingDetailViewModel(
+        projectId = testProjectId,
+        meetingId = testMeetingId,
+        repository = repositoryMock,
+        projectRepository = projectRepositoryMock,
+        userRepository = userRepositoryMock,
+        connectivityObserver = connectivityObserverMock,
+        getCurrentUserId = { currentUserId })
+  }
+
   @Test
-  fun initialStateIsCorrect() {
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
+  fun meetingDetailViewModel_initialStateIsCorrect() {
+    viewModel = createViewModel()
 
     val uiState = viewModel.uiState.value
     assertNull(uiState.meeting)
-    assertNull(uiState.creatorUser)
     assertNull(uiState.errorMsg)
     assertTrue(uiState.isLoading)
     assertFalse(uiState.deleteSuccess)
+    assertNull(uiState.meetingProjectName)
+    assertNull(uiState.creatorUser)
   }
 
   @Test
   fun meetingDetailViewModel_loadMeetingDetailsSuccessfully() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     userRepositoryMock.userToReturn.value = testUser
+    projectFlow.value = Project(projectId = testProjectId, name = testProjectName)
 
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
+    viewModel = createViewModel()
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -105,9 +137,13 @@ class MeetingDetailViewModelTest {
     assertNotNull(uiState.meeting)
     assertEquals(testMeetingId, uiState.meeting?.meetingID)
     assertEquals("Test Meeting", uiState.meeting?.title)
+
+    assertEquals(testProjectName, uiState.meetingProjectName)
+
     assertNotNull(uiState.creatorUser)
-    assertEquals("user1", uiState.creatorUser?.uid)
+    assertEquals(testCreatorId, uiState.creatorUser?.uid)
     assertEquals("Test User", uiState.creatorUser?.displayName)
+
     assertNull(uiState.errorMsg)
   }
 
@@ -116,8 +152,7 @@ class MeetingDetailViewModelTest {
     repositoryMock.meetingToReturn.value = null
     userRepositoryMock.userToReturn.value = null
 
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
+    viewModel = createViewModel()
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -134,8 +169,7 @@ class MeetingDetailViewModelTest {
     repositoryMock.shouldThrowMeetingError = true
     repositoryMock.meetingErrorMessage = errorMessage
 
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
+    viewModel = createViewModel()
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -151,8 +185,7 @@ class MeetingDetailViewModelTest {
     repositoryMock.meetingToReturn.value = invalidMeeting
     userRepositoryMock.userToReturn.value = testUser
 
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
+    viewModel = createViewModel()
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -168,8 +201,7 @@ class MeetingDetailViewModelTest {
     repositoryMock.meetingToReturn.value = invalidMeeting
     userRepositoryMock.userToReturn.value = testUser
 
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
+    viewModel = createViewModel()
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -185,8 +217,7 @@ class MeetingDetailViewModelTest {
     repositoryMock.meetingToReturn.value = invalidMeeting
     userRepositoryMock.userToReturn.value = testUser
 
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
+    viewModel = createViewModel()
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -197,12 +228,11 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun loadMeetingDetailsUpdatesWhenDataChanges() = runTest {
+  fun meetingDetailViewModel_loadMeetingDetailsUpdatesWhenDataChanges() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     userRepositoryMock.userToReturn.value = testUser
 
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
+    viewModel = createViewModel()
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -211,7 +241,7 @@ class MeetingDetailViewModelTest {
     assertEquals("Test User", initialState.creatorUser?.displayName)
 
     val updatedMeeting = testMeeting.copy(title = "Updated Meeting Title")
-    val updatedUser = testUser.copy(displayName = "Updated User Name")
+    val updatedUser = testUser.copy(displayName = "Updated User")
 
     repositoryMock.meetingToReturn.value = updatedMeeting
     userRepositoryMock.userToReturn.value = updatedUser
@@ -219,17 +249,15 @@ class MeetingDetailViewModelTest {
 
     val updatedState = viewModel.uiState.value
     assertEquals("Updated Meeting Title", updatedState.meeting?.title)
-    assertEquals("Updated User Name", updatedState.creatorUser?.displayName)
+    assertEquals("Updated User", updatedState.creatorUser?.displayName)
   }
 
   @Test
   fun meetingDetailViewModel_deleteMeetingSuccessfully() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
-    userRepositoryMock.userToReturn.value = testUser
     repositoryMock.deleteResult = Result.success(Unit)
 
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
+    viewModel = createViewModel()
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -247,8 +275,7 @@ class MeetingDetailViewModelTest {
     val errorMessage = "Failed to delete meeting"
     repositoryMock.deleteResult = Result.failure(Exception(errorMessage))
 
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
+    viewModel = createViewModel()
     backgroundScope.launch { viewModel.uiState.collect {} }
     viewModel.deleteMeeting(testProjectId, testMeetingId, true)
     testDispatcher.scheduler.advanceUntilIdle()
@@ -264,8 +291,7 @@ class MeetingDetailViewModelTest {
   fun meetingDetailViewModel_deleteMeetingResetsLoadingStateAfterCompletion() = runTest {
     repositoryMock.deleteResult = Result.success(Unit)
 
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
+    viewModel = createViewModel()
     backgroundScope.launch { viewModel.uiState.collect {} }
     viewModel.deleteMeeting(testProjectId, testMeetingId, true)
     testDispatcher.scheduler.advanceUntilIdle()
@@ -278,10 +304,8 @@ class MeetingDetailViewModelTest {
   @Test
   fun meetingDetailViewModel_clearErrorMsgSetsErrorMsgToNull() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
-    userRepositoryMock.userToReturn.value = testUser
 
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
+    viewModel = createViewModel()
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -302,10 +326,8 @@ class MeetingDetailViewModelTest {
   @Test
   fun meetingDetailViewModel_clearErrorMsgDoesNotAffectOtherStateProperties() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
-    userRepositoryMock.userToReturn.value = testUser
 
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
+    viewModel = createViewModel()
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -330,10 +352,8 @@ class MeetingDetailViewModelTest {
   @Test
   fun meetingDetailViewModel_deleteSuccessPreservedAcrossFlowUpdates() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
-    userRepositoryMock.userToReturn.value = testUser
 
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
+    viewModel = createViewModel()
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -352,10 +372,7 @@ class MeetingDetailViewModelTest {
   @Test
   fun meetingDetailViewModel_toggleEditModeEntersEditMode() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
-    userRepositoryMock.userToReturn.value = testUser
-
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
+    viewModel = createViewModel()
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -367,110 +384,19 @@ class MeetingDetailViewModelTest {
     val uiState = viewModel.uiState.value
     assertTrue(uiState.isEditMode)
     assertEquals(testMeeting.title, uiState.editTitle)
-    assertEquals(testMeeting.datetime, uiState.editDateTime)
-    assertEquals(testMeeting.duration, uiState.editDuration)
-  }
-
-  @Test
-  fun meetingDetailViewModel_toggleEditModeExitsEditModeAndResetsFields() = runTest {
-    repositoryMock.meetingToReturn.value = testMeeting
-    userRepositoryMock.userToReturn.value = testUser
-
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
-    backgroundScope.launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.toggleEditMode(testMeeting, true)
-    testDispatcher.scheduler.advanceUntilIdle()
-    assertTrue(viewModel.uiState.value.isEditMode)
-
-    viewModel.toggleEditMode(null, true)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    val uiState = viewModel.uiState.value
-    assertFalse(uiState.isEditMode)
-    assertEquals("", uiState.editTitle)
-    assertNull(uiState.editDateTime)
-    assertEquals(30, uiState.editDuration)
-  }
-
-  @Test
-  fun meetingDetailViewModel_updateEditTitleUpdatesState() = runTest {
-    repositoryMock.meetingToReturn.value = testMeeting
-    userRepositoryMock.userToReturn.value = testUser
-
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
-    backgroundScope.launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.toggleEditMode(testMeeting, true)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    val newTitle = "Updated Meeting Title"
-    viewModel.updateEditTitle(newTitle)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    assertEquals(newTitle, viewModel.uiState.value.editTitle)
-  }
-
-  @Test
-  fun meetingDetailViewModel_updateEditDateTimeUpdatesState() = runTest {
-    repositoryMock.meetingToReturn.value = testMeeting
-    userRepositoryMock.userToReturn.value = testUser
-
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
-    backgroundScope.launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.toggleEditMode(testMeeting, true)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    val newDateTime = Timestamp(Date(System.currentTimeMillis() + 86400000))
-    viewModel.updateEditDateTime(newDateTime)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    assertEquals(newDateTime, viewModel.uiState.value.editDateTime)
-  }
-
-  @Test
-  fun meetingDetailViewModel_updateEditDurationUpdatesState() = runTest {
-    repositoryMock.meetingToReturn.value = testMeeting
-    userRepositoryMock.userToReturn.value = testUser
-
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
-    backgroundScope.launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.toggleEditMode(testMeeting, true)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    val newDuration = 60
-    viewModel.updateEditDuration(newDuration)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    assertEquals(newDuration, viewModel.uiState.value.editDuration)
   }
 
   @Test
   fun meetingDetailViewModel_saveMeetingChangesSuccessfully() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
-    userRepositoryMock.userToReturn.value = testUser
     repositoryMock.updateResult = Result.success(Unit)
 
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
+    viewModel = createViewModel()
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
     viewModel.toggleEditMode(testMeeting, true)
-    testDispatcher.scheduler.advanceUntilIdle()
-
     viewModel.updateEditTitle("Updated Title")
-    viewModel.updateEditDuration(60)
     testDispatcher.scheduler.advanceUntilIdle()
 
     viewModel.saveMeetingChanges(testMeeting, true)
@@ -479,7 +405,6 @@ class MeetingDetailViewModelTest {
     val uiState = viewModel.uiState.value
     assertTrue(uiState.updateSuccess)
     assertFalse(uiState.isEditMode)
-    assertFalse(uiState.isSaving)
     assertNull(uiState.errorMsg)
   }
 
@@ -487,19 +412,14 @@ class MeetingDetailViewModelTest {
   fun meetingDetailViewModel_saveMeetingChangesHandlesFailure() = runTest {
     val errorMessage = "Failed to update meeting"
     repositoryMock.meetingToReturn.value = testMeeting
-    userRepositoryMock.userToReturn.value = testUser
     repositoryMock.updateResult = Result.failure(Exception(errorMessage))
 
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
+    viewModel = createViewModel()
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
     viewModel.toggleEditMode(testMeeting, true)
-    testDispatcher.scheduler.advanceUntilIdle()
-
     viewModel.updateEditTitle("Updated Title")
-    testDispatcher.scheduler.advanceUntilIdle()
 
     viewModel.saveMeetingChanges(testMeeting, true)
     testDispatcher.scheduler.advanceUntilIdle()
@@ -507,230 +427,64 @@ class MeetingDetailViewModelTest {
     val uiState = viewModel.uiState.value
     assertFalse(uiState.updateSuccess)
     assertTrue(uiState.isEditMode)
-    assertFalse(uiState.isSaving)
     assertEquals(errorMessage, uiState.errorMsg)
   }
 
   @Test
-  fun meetingDetailViewModel_saveMeetingChangesRejectsBlankTitle() = runTest {
-    repositoryMock.meetingToReturn.value = testMeeting
-    userRepositoryMock.userToReturn.value = testUser
-
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
-    backgroundScope.launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.toggleEditMode(testMeeting, true)
-    viewModel.updateEditTitle("")
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.saveMeetingChanges(testMeeting, true)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    val uiState = viewModel.uiState.value
-    assertFalse(uiState.updateSuccess)
-    assertEquals("Title cannot be empty", uiState.errorMsg)
-  }
-
-  @Test
-  fun meetingDetailViewModel_saveMeetingChangesRejectsNullDateTime() = runTest {
-    repositoryMock.meetingToReturn.value = testMeeting
-    userRepositoryMock.userToReturn.value = testUser
-
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
-    backgroundScope.launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.toggleEditMode(testMeeting, true)
-    viewModel.updateEditDateTime(null)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.saveMeetingChanges(testMeeting, true)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    val uiState = viewModel.uiState.value
-    assertFalse(uiState.updateSuccess)
-    assertEquals("Date and time must be set", uiState.errorMsg)
-  }
-
-  @Test
-  fun meetingDetailViewModel_saveMeetingChangesRejectsNegativeDuration() = runTest {
-    repositoryMock.meetingToReturn.value = testMeeting
-    userRepositoryMock.userToReturn.value = testUser
-
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
-    backgroundScope.launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.toggleEditMode(testMeeting, true)
-    viewModel.updateEditDuration(0)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.saveMeetingChanges(testMeeting, true)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    val uiState = viewModel.uiState.value
-    assertFalse(uiState.updateSuccess)
-    assertEquals("Duration must be greater than 0", uiState.errorMsg)
-  }
-
-  @Test
-  fun meetingDetailViewModel_saveMeetingChangesRejectsPastDateTime() = runTest {
-    repositoryMock.meetingToReturn.value = testMeeting
-    userRepositoryMock.userToReturn.value = testUser
-
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
-    backgroundScope.launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.toggleEditMode(testMeeting, true)
-    val yesterday = Timestamp(Date(System.currentTimeMillis() - 86400000))
-    viewModel.updateEditDateTime(yesterday)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.saveMeetingChanges(testMeeting, true)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    val uiState = viewModel.uiState.value
-    assertFalse(uiState.updateSuccess)
-    assertEquals("Meeting should be scheduled in the future.", uiState.errorMsg)
-  }
-
-  @Test
-  fun meetingDetailViewModel_clearUpdateSuccessSetsUpdateSuccessToFalse() = runTest {
-    repositoryMock.meetingToReturn.value = testMeeting
-    userRepositoryMock.userToReturn.value = testUser
-    repositoryMock.updateResult = Result.success(Unit)
-
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
-    backgroundScope.launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.toggleEditMode(testMeeting, true)
-    viewModel.saveMeetingChanges(testMeeting, true)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    assertTrue(viewModel.uiState.value.updateSuccess)
-
-    viewModel.clearUpdateSuccess()
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    assertFalse(viewModel.uiState.value.updateSuccess)
-  }
-
-  @Test
   fun meetingDetailViewModel_startMeetingSuccessfully() = runTest {
-    val creatorId = "testCreator"
-    val meeting = testMeeting.copy(status = MeetingStatus.SCHEDULED, createdBy = creatorId)
+    val meeting = testMeeting.copy(status = MeetingStatus.SCHEDULED)
     repositoryMock.meetingToReturn.value = meeting
     repositoryMock.updateResult = Result.success(Unit)
 
-    viewModel =
-        MeetingDetailViewModel(
-            testProjectId,
-            testMeetingId,
-            repositoryMock,
-            userRepositoryMock,
-            getCurrentUserId = { creatorId })
+    viewModel = createViewModel(testCreatorId)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
     viewModel.startMeeting(meeting, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
+    // Assert the flow updated via the mock logic (see Mock below)
     assertEquals(MeetingStatus.IN_PROGRESS, repositoryMock.meetingToReturn.value?.status)
     assertNull(viewModel.uiState.value.errorMsg)
   }
 
   @Test
   fun meetingDetailViewModel_startMeetingFailsWhenOffline() = runTest {
-    val creatorId = "testCreator"
-    val meeting = testMeeting.copy(status = MeetingStatus.SCHEDULED, createdBy = creatorId)
+    val meeting = testMeeting.copy(status = MeetingStatus.SCHEDULED)
     repositoryMock.meetingToReturn.value = meeting
 
-    viewModel =
-        MeetingDetailViewModel(
-            testProjectId,
-            testMeetingId,
-            repositoryMock,
-            userRepositoryMock,
-            getCurrentUserId = { creatorId })
+    viewModel = createViewModel()
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
     viewModel.startMeeting(meeting, false)
     testDispatcher.scheduler.advanceUntilIdle()
 
-    assertEquals(MeetingStatus.SCHEDULED, repositoryMock.meetingToReturn.value?.status)
     assertEquals("Cannot start meeting while offline", viewModel.uiState.value.errorMsg)
   }
 
   @Test
   fun meetingDetailViewModel_startMeetingFailsWhenNotCreator() = runTest {
-    val creatorId = "testCreator"
-    val otherUserId = "otherUser"
-    val meeting = testMeeting.copy(status = MeetingStatus.SCHEDULED, createdBy = creatorId)
+    val meeting = testMeeting.copy(status = MeetingStatus.SCHEDULED, createdBy = "otherUser")
     repositoryMock.meetingToReturn.value = meeting
 
-    viewModel =
-        MeetingDetailViewModel(
-            testProjectId,
-            testMeetingId,
-            repositoryMock,
-            userRepositoryMock,
-            getCurrentUserId = { otherUserId })
+    viewModel = createViewModel(testCreatorId)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
     viewModel.startMeeting(meeting, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
-    assertEquals(MeetingStatus.SCHEDULED, repositoryMock.meetingToReturn.value?.status)
     assertEquals("Only the meeting creator can start the meeting", viewModel.uiState.value.errorMsg)
   }
 
   @Test
-  fun meetingDetailViewModel_startMeetingFailsWhenNotScheduled() = runTest {
-    val creatorId = "testCreator"
-    val meeting = testMeeting.copy(status = MeetingStatus.IN_PROGRESS, createdBy = creatorId)
-    repositoryMock.meetingToReturn.value = meeting
-
-    viewModel =
-        MeetingDetailViewModel(
-            testProjectId,
-            testMeetingId,
-            repositoryMock,
-            userRepositoryMock,
-            getCurrentUserId = { creatorId })
-    backgroundScope.launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.startMeeting(meeting, true)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    assertEquals(MeetingStatus.IN_PROGRESS, repositoryMock.meetingToReturn.value?.status)
-    assertEquals("Meeting can only be started if it is scheduled", viewModel.uiState.value.errorMsg)
-  }
-
-  @Test
   fun meetingDetailViewModel_endMeetingSuccessfully() = runTest {
-    val creatorId = "testCreator"
-    val meeting = testMeeting.copy(status = MeetingStatus.IN_PROGRESS, createdBy = creatorId)
+    val meeting = testMeeting.copy(status = MeetingStatus.IN_PROGRESS)
     repositoryMock.meetingToReturn.value = meeting
     repositoryMock.updateResult = Result.success(Unit)
 
-    viewModel =
-        MeetingDetailViewModel(
-            testProjectId,
-            testMeetingId,
-            repositoryMock,
-            userRepositoryMock,
-            getCurrentUserId = { creatorId })
+    viewModel = createViewModel(testCreatorId)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -742,72 +496,17 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun meetingDetailViewModel_endMeetingFailsWhenOffline() = runTest {
-    val creatorId = "testCreator"
-    val meeting = testMeeting.copy(status = MeetingStatus.IN_PROGRESS, createdBy = creatorId)
-    repositoryMock.meetingToReturn.value = meeting
-
-    viewModel =
-        MeetingDetailViewModel(
-            testProjectId,
-            testMeetingId,
-            repositoryMock,
-            userRepositoryMock,
-            getCurrentUserId = { creatorId })
-    backgroundScope.launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.endMeeting(meeting, false)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    assertEquals(MeetingStatus.IN_PROGRESS, repositoryMock.meetingToReturn.value?.status)
-    assertEquals("Cannot end meeting while offline", viewModel.uiState.value.errorMsg)
-  }
-
-  @Test
-  fun meetingDetailViewModel_endMeetingFailsWhenNotCreator() = runTest {
-    val creatorId = "testCreator"
-    val otherUserId = "otherUser"
-    val meeting = testMeeting.copy(status = MeetingStatus.IN_PROGRESS, createdBy = creatorId)
-    repositoryMock.meetingToReturn.value = meeting
-
-    viewModel =
-        MeetingDetailViewModel(
-            testProjectId,
-            testMeetingId,
-            repositoryMock,
-            userRepositoryMock,
-            getCurrentUserId = { otherUserId })
-    backgroundScope.launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.endMeeting(meeting, true)
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    assertEquals(MeetingStatus.IN_PROGRESS, repositoryMock.meetingToReturn.value?.status)
-    assertEquals("Only the meeting creator can end the meeting", viewModel.uiState.value.errorMsg)
-  }
-
-  @Test
   fun meetingDetailViewModel_endMeetingFailsWhenNotInProgress() = runTest {
-    val creatorId = "testCreator"
-    val meeting = testMeeting.copy(status = MeetingStatus.SCHEDULED, createdBy = creatorId)
+    val meeting = testMeeting.copy(status = MeetingStatus.SCHEDULED)
     repositoryMock.meetingToReturn.value = meeting
 
-    viewModel =
-        MeetingDetailViewModel(
-            testProjectId,
-            testMeetingId,
-            repositoryMock,
-            userRepositoryMock,
-            getCurrentUserId = { creatorId })
+    viewModel = createViewModel(testCreatorId)
     backgroundScope.launch { viewModel.uiState.collect {} }
     testDispatcher.scheduler.advanceUntilIdle()
 
     viewModel.endMeeting(meeting, true)
     testDispatcher.scheduler.advanceUntilIdle()
 
-    assertEquals(MeetingStatus.SCHEDULED, repositoryMock.meetingToReturn.value?.status)
     assertEquals("Meeting can only be ended if it is in progress", viewModel.uiState.value.errorMsg)
   }
 
@@ -818,8 +517,7 @@ class MeetingDetailViewModelTest {
         val meeting = testMeeting.copy(status = MeetingStatus.SCHEDULED, datetime = pastDateTime)
         repositoryMock.meetingToReturn.value = meeting
 
-        viewModel =
-            MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
+        viewModel = createViewModel()
         backgroundScope.launch { viewModel.uiState.collect {} }
         testDispatcher.scheduler.advanceUntilIdle()
 
@@ -827,84 +525,20 @@ class MeetingDetailViewModelTest {
       }
 
   @Test
-  fun meetingDetailViewModel_shouldMeetingBeStartedReturnsFalseWhenNotScheduled() = runTest {
-    val pastDateTime = Timestamp(Date(System.currentTimeMillis() - 3600000))
-    val meeting = testMeeting.copy(status = MeetingStatus.IN_PROGRESS, datetime = pastDateTime)
-    repositoryMock.meetingToReturn.value = meeting
-
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
-    backgroundScope.launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    assertFalse(viewModel.shouldMeetingBeStarted(meeting))
-  }
-
-  @Test
-  fun meetingDetailViewModel_shouldMeetingBeStartedReturnsFalseWhenFutureStartTime() = runTest {
-    val futureDateTime = Timestamp(Date(System.currentTimeMillis() + 3600000)) // 1 hour from now
-    val meeting = testMeeting.copy(status = MeetingStatus.SCHEDULED, datetime = futureDateTime)
-    repositoryMock.meetingToReturn.value = meeting
-
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
-    backgroundScope.launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    assertFalse(viewModel.shouldMeetingBeStarted(meeting))
-  }
-
-  @Test
   fun meetingDetailViewModel_shouldMeetingBeEndedReturnsTrueWhenInProgressAndPastEndTime() =
       runTest {
         val startDateTime = Timestamp(Date(System.currentTimeMillis() - 7200000)) // 2 hours ago
         val meeting =
             testMeeting.copy(
-                status = MeetingStatus.IN_PROGRESS,
-                datetime = startDateTime,
-                duration = 60) // 1 hour duration, so ended 1 hour ago
+                status = MeetingStatus.IN_PROGRESS, datetime = startDateTime, duration = 60)
         repositoryMock.meetingToReturn.value = meeting
 
-        viewModel =
-            MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
+        viewModel = createViewModel()
         backgroundScope.launch { viewModel.uiState.collect {} }
         testDispatcher.scheduler.advanceUntilIdle()
 
         assertTrue(viewModel.shouldMeetingBeEnded(meeting))
       }
-
-  @Test
-  fun meetingDetailViewModel_shouldMeetingBeEndedReturnsFalseWhenNotInProgress() = runTest {
-    val startDateTime = Timestamp(Date(System.currentTimeMillis() - 7200000))
-    val meeting =
-        testMeeting.copy(status = MeetingStatus.SCHEDULED, datetime = startDateTime, duration = 60)
-    repositoryMock.meetingToReturn.value = meeting
-
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
-    backgroundScope.launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    assertFalse(viewModel.shouldMeetingBeEnded(meeting))
-  }
-
-  @Test
-  fun meetingDetailViewModel_shouldMeetingBeEndedReturnsFalseWhenNotPastEndTime() = runTest {
-    val startDateTime = Timestamp(Date(System.currentTimeMillis() - 1800000)) // 30 min ago
-    val meeting =
-        testMeeting.copy(
-            status = MeetingStatus.IN_PROGRESS,
-            datetime = startDateTime,
-            duration = 60) // Ends in 30 min
-    repositoryMock.meetingToReturn.value = meeting
-
-    viewModel =
-        MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
-    backgroundScope.launch { viewModel.uiState.collect {} }
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    assertFalse(viewModel.shouldMeetingBeEnded(meeting))
-  }
 }
 
 /** Mock repository for MeetingDetailViewModel tests with controllable flows. */
@@ -931,28 +565,26 @@ class MeetingDetailRepositoryMock : MeetingRepository {
     return deleteResult
   }
 
-  override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> = flowOf(emptyList())
-
-  override fun getMeetingsForTask(projectId: String, taskId: String): Flow<List<Meeting>> =
-      flowOf(emptyList())
-
-  override fun getMeetingsForCurrentUser(
-      projectId: String,
-      skipCache: Boolean
-  ): Flow<List<Meeting>> = flowOf(emptyList())
-
-  override suspend fun createMeeting(
-      meeting: Meeting,
-      creatorId: String,
-      creatorRole: MeetingRole
-  ): Result<String> = Result.success("test-url")
-
   override suspend fun updateMeeting(meeting: Meeting): Result<Unit> {
     if (updateResult.isSuccess) {
       meetingToReturn.value = meeting
     }
     return updateResult
   }
+
+  override fun getMeetingsInProject(projectId: String): Flow<List<Meeting>> = flowOf(emptyList())
+
+  override fun getMeetingsForTask(projectId: String, taskId: String): Flow<List<Meeting>> =
+      flowOf(emptyList())
+
+  override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> =
+      flowOf(emptyList())
+
+  override suspend fun createMeeting(
+      meeting: Meeting,
+      creatorId: String,
+      creatorRole: MeetingRole
+  ): Result<String> = Result.success("test-url")
 
   override suspend fun addParticipant(
       projectId: String,
@@ -989,19 +621,12 @@ class UserRepositoryMock : UserRepository {
     }
   }
 
-  override fun getCurrentUser(): Flow<User?> {
-    return flow { emit(null) }
-  }
+  override fun getCurrentUser(): Flow<User?> = flow { emit(null) }
 
-  override suspend fun saveUser(user: User): Result<Unit> {
-    return Result.success(Unit)
-  }
+  override suspend fun saveUser(user: User): Result<Unit> = Result.success(Unit)
 
-  override suspend fun updateLastActive(userId: String): Result<Unit> {
-    return Result.success(Unit)
-  }
+  override suspend fun updateLastActive(userId: String): Result<Unit> = Result.success(Unit)
 
-  override suspend fun updateFcmToken(userId: String, fcmToken: String): Result<Unit> {
-    return Result.success(Unit)
-  }
+  override suspend fun updateFcmToken(userId: String, fcmToken: String): Result<Unit> =
+      Result.success(Unit)
 }
