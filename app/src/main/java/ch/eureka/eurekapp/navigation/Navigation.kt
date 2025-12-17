@@ -920,7 +920,7 @@ private fun navigateToConversation(
   }
 }
 
-private inline fun navigateIfConditionSatisfied(condition: Boolean, navigate: () -> Unit) {
+inline fun navigateIfConditionSatisfied(condition: Boolean, navigate: () -> Unit) {
   if (condition) {
     navigate()
   }
