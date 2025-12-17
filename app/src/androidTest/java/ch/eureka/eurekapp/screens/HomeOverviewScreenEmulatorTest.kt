@@ -339,10 +339,13 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
         }
       }
 
-      // Test navigation to Tasks screen
-      composeTestRule.onNodeWithText("View all").performClick()
+      // Test navigation to Tasks screen - scroll to button first
+      val list = composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN)
+      list.performScrollToNode(hasTestTag(HomeOverviewTestTags.CTA_TASKS))
       composeTestRule.waitForIdle()
-      composeTestRule.waitUntil(timeoutMillis = 3000) {
+      composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_TASKS).performClick()
+      composeTestRule.waitForIdle()
+      composeTestRule.waitUntil(timeoutMillis = 5000) {
         try {
           composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertExists()
           true
@@ -365,10 +368,12 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
         }
       }
 
-      // Test navigation to Meetings screen
-      composeTestRule.onNodeWithText("Open meetings").performClick()
+      // Test navigation to Meetings screen - scroll to button first
+      list.performScrollToNode(hasTestTag(HomeOverviewTestTags.CTA_MEETINGS))
       composeTestRule.waitForIdle()
-      composeTestRule.waitUntil(timeoutMillis = 3000) {
+      composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_MEETINGS).performClick()
+      composeTestRule.waitForIdle()
+      composeTestRule.waitUntil(timeoutMillis = 5000) {
         try {
           composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_SCREEN).assertExists()
           true
@@ -392,18 +397,12 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
         }
       }
 
-      // Test navigation to Projects screen - wait for button to be available
-      composeTestRule.waitUntil(timeoutMillis = 5000) {
-        try {
-          composeTestRule.onNodeWithText("Browse projects").assertExists()
-          true
-        } catch (e: AssertionError) {
-          false
-        }
-      }
-      composeTestRule.onNodeWithText("Browse projects").performClick()
+      // Test navigation to Projects screen - scroll to button first
+      list.performScrollToNode(hasTestTag(HomeOverviewTestTags.CTA_PROJECTS))
       composeTestRule.waitForIdle()
-      composeTestRule.waitUntil(timeoutMillis = 3000) {
+      composeTestRule.onNodeWithTag(HomeOverviewTestTags.CTA_PROJECTS).performClick()
+      composeTestRule.waitForIdle()
+      composeTestRule.waitUntil(timeoutMillis = 5000) {
         try {
           composeTestRule.onNodeWithTag("projectSelectionScreen").assertExists()
           true

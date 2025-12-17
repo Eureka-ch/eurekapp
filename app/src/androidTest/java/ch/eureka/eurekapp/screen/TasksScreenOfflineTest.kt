@@ -144,7 +144,7 @@ class TasksScreenOfflineTest {
 
     composeTestRule.waitUntilExactlyOneExists(hasText("Offline Task"), 3000)
     composeTestRule.onNodeWithText("Offline Task").assertIsDisplayed()
-    composeTestRule.onNodeWithText("👤 Test User").assertIsDisplayed()
+    composeTestRule.onNodeWithText("Test User").assertIsDisplayed()
     composeTestRule.onNodeWithText("50%").assertIsDisplayed()
   }
 

@@ -1,5 +1,5 @@
 /*
-Note: This file was co-authored by Claude Code.
+Note: This file was co-authored by Claude Code and Claude 4.5 Sonnet.
 Note: This file was co-authored by Grok.
 Portions of the code in this file are inspired by the Bootcamp solution B3 provided by the SwEnt staff.
 */
@@ -13,14 +13,21 @@ import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
+import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.model.data.user.User
+import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.utils.MeetingLinkValidator
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -29,7 +36,7 @@ import kotlinx.coroutines.launch
  * Data class to represent the UI state of the meeting detail screen.
  *
  * @property meeting The detailed meeting information, or null if loading or not found.
- * @property participants List of participants in the meeting.
+ * @property creatorUser User information of the meeting creator, or null if not found.
  * @property errorMsg An error message to display, or null if there is no error.
  * @property isLoading Whether a data loading operation is in progress.
  * @property deleteSuccess Whether the meeting was successfully deleted.
@@ -43,10 +50,11 @@ import kotlinx.coroutines.launch
  * @property updateSuccess Whether the meeting was successfully updated.
  * @property isSaving Whether a save operation is in progress.
  * @property isConnected Whether the device is connected to the internet.
+ * @property isCreator Whether the current user is the creator of the meeting.
  */
 data class MeetingDetailUIState(
     val meeting: Meeting? = null,
-    val participants: List<Participant> = emptyList(),
+    val creatorUser: User? = null,
     val errorMsg: String? = null,
     val isLoading: Boolean = false,
     val deleteSuccess: Boolean = false,
@@ -63,27 +71,33 @@ data class MeetingDetailUIState(
     val hasTouchedDateTime: Boolean = false,
     val hasTouchedDuration: Boolean = false,
     val hasTouchedLink: Boolean = false,
-    val isConnected: Boolean = true
+    val isConnected: Boolean = true,
+    val isCreator: Boolean = false
 )
 
 /**
  * ViewModel for the meeting detail screen.
  *
  * Manages the state and business logic for displaying detailed meeting information, including
- * real-time updates of meeting data and participants list.
+ * real-time updates of meeting data and creator user information.
  *
  * @property projectId The ID of the project containing the meeting.
  * @property meetingId The ID of the meeting to display.
  * @property repository The repository for meeting data operations.
+ * @property userRepository The repository for user data operations.
  * @property connectivityObserver The connectivity observer.
  */
 class MeetingDetailViewModel(
     private val projectId: String,
     private val meetingId: String,
     private val repository: MeetingRepository = RepositoriesProvider.meetingRepository,
+    private val userRepository: UserRepository = RepositoriesProvider.userRepository,
     private val connectivityObserver: ConnectivityObserver =
         ConnectivityObserverProvider.connectivityObserver,
+    private val getCurrentUserId: () -> String? = { FirebaseAuth.getInstance().currentUser?.uid },
 ) : ViewModel() {
+
+  private val userId = getCurrentUserId()
 
   private val _deleteSuccess = MutableStateFlow(false)
   private val _errorMsg = MutableStateFlow<String?>(null)
@@ -180,21 +194,21 @@ class MeetingDetailViewModel(
    * Internal data class representing the combined state for UI flow.
    *
    * @property meeting The detailed meeting information.
-   * @property participants List of participants in the meeting.
+   * @property creatorUser User information of the meeting creator.
    * @property editState The edit state.
    * @property saveState The save state.
    * @property touchState The touch state.
    */
   private data class CombinedState(
       val meeting: Meeting?,
-      val participants: List<Participant>,
+      val creatorUser: User?,
       val editState: EditState,
       val saveState: SaveState,
       val touchState: TouchState
   )
 
   /**
-   * UI state combining meeting data, participants, and operation states.
+   * UI state combining meeting data, creator user, and operation states.
    *
    * Follows the project's Flow pattern: declarative state initialization in init block using
    * stateIn() with WhileSubscribed strategy for automatic lifecycle management.
@@ -205,8 +219,13 @@ class MeetingDetailViewModel(
   val uiState: StateFlow<MeetingDetailUIState> =
       combine(
               combine(
-                  repository.getMeetingById(projectId, meetingId),
-                  repository.getParticipants(projectId, meetingId),
+                  repository.getMeetingById(projectId, meetingId).flatMapLatest { meeting ->
+                    if (meeting?.createdBy?.isNotEmpty() == true) {
+                      userRepository.getUserById(meeting.createdBy).map { user -> meeting to user }
+                    } else {
+                      flowOf(meeting to null)
+                    }
+                  },
                   combine(_deleteSuccess, _errorMsg, _isEditMode, _editTitle, _editDateTime) {
                       deleteSuccess,
                       errorMsg,
@@ -240,14 +259,19 @@ class MeetingDetailViewModel(
                       _hasTouchedDuration,
                       _hasTouchedLink) { title, dateTime, duration, link ->
                         TouchState(title, dateTime, duration, link)
-                      }) { meeting, participants, editState, saveState, touchState ->
-                    CombinedState(meeting, participants, editState, saveState, touchState)
+                      }) { meetingWithCreator, editState, saveState, touchState ->
+                    CombinedState(
+                        meetingWithCreator.first,
+                        meetingWithCreator.second,
+                        editState,
+                        saveState,
+                        touchState)
                   },
               _isConnected) { combined, isConnected ->
                 val validationError = validateMeeting(combined.meeting)
                 MeetingDetailUIState(
                     meeting = if (validationError == null) combined.meeting else null,
-                    participants = combined.participants,
+                    creatorUser = combined.creatorUser,
                     isLoading = false,
                     errorMsg = combined.editState.errorMsg ?: validationError,
                     deleteSuccess = combined.editState.deleteSuccess,
@@ -264,7 +288,8 @@ class MeetingDetailViewModel(
                     hasTouchedDateTime = combined.touchState.hasTouchedDateTime,
                     hasTouchedDuration = combined.touchState.hasTouchedDuration,
                     hasTouchedLink = combined.touchState.hasTouchedLink,
-                    isConnected = isConnected)
+                    isConnected = isConnected,
+                    isCreator = combined.meeting?.createdBy == userId)
               }
           .onStart { emit(MeetingDetailUIState(isLoading = true)) }
           .catch { e ->
@@ -469,5 +494,92 @@ class MeetingDetailViewModel(
   /** Clear the update success flag. */
   fun clearUpdateSuccess() {
     _updateSuccess.value = false
+  }
+
+  /**
+   * Starts the meeting by updating its status to IN_PROGRESS.
+   *
+   * @param meeting The meeting to start.
+   * @param isConnected Whether the device is connected to the internet.
+   */
+  fun startMeeting(meeting: Meeting, isConnected: Boolean) {
+    when {
+      !isConnected -> _errorMsg.value = "Cannot start meeting while offline"
+      userId != meeting.createdBy ->
+          _errorMsg.value = "Only the meeting creator can start the meeting"
+      meeting.status != MeetingStatus.SCHEDULED ->
+          _errorMsg.value = "Meeting can only be started if it is scheduled"
+      else -> {
+        val updatedMeeting = meeting.copy(status = MeetingStatus.IN_PROGRESS)
+        viewModelScope.launch {
+          repository.updateMeeting(updatedMeeting).onFailure { e ->
+            _errorMsg.value = e.message ?: "Failed to start meeting"
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Ends the meeting by updating its status to COMPLETED.
+   *
+   * @param meeting The meeting to end.
+   * @param isConnected Whether the device is connected to the internet.
+   */
+  fun endMeeting(meeting: Meeting, isConnected: Boolean) {
+    when {
+      !isConnected -> _errorMsg.value = "Cannot end meeting while offline"
+      userId != meeting.createdBy ->
+          _errorMsg.value = "Only the meeting creator can end the meeting"
+      meeting.status != MeetingStatus.IN_PROGRESS ->
+          _errorMsg.value = "Meeting can only be ended if it is in progress"
+      else -> {
+        val updatedMeeting = meeting.copy(status = MeetingStatus.COMPLETED)
+        viewModelScope.launch {
+          repository.updateMeeting(updatedMeeting).onFailure { e ->
+            _errorMsg.value = e.message ?: "Failed to end meeting"
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Checks if the meeting should have already started.
+   *
+   * @param meeting The meeting to check.
+   * @return True if the meeting's start time has passed and it's still SCHEDULED, false otherwise.
+   */
+  fun shouldMeetingBeStarted(meeting: Meeting): Boolean {
+    if (meeting.status != MeetingStatus.SCHEDULED) return false
+    if (meeting.datetime == null) return false
+
+    val meetingDateTime =
+        meeting.datetime
+            .toDate()
+            .toInstant()
+            .atZone(java.time.ZoneId.systemDefault())
+            .toLocalDateTime()
+    return meetingDateTime.isBefore(java.time.LocalDateTime.now())
+  }
+
+  /**
+   * Checks if the meeting should have already ended.
+   *
+   * @param meeting The meeting to check.
+   * @return True if the meeting's end time has passed and it's still IN_PROGRESS, false otherwise.
+   */
+  fun shouldMeetingBeEnded(meeting: Meeting): Boolean {
+    if (meeting.status != MeetingStatus.IN_PROGRESS) return false
+    if (meeting.datetime == null) return false
+
+    val meetingDateTime =
+        meeting.datetime
+            .toDate()
+            .toInstant()
+            .atZone(java.time.ZoneId.systemDefault())
+            .toLocalDateTime()
+    val endDateTime = meetingDateTime.plusMinutes(meeting.duration.toLong())
+    return endDateTime.isBefore(java.time.LocalDateTime.now())
   }
 }
