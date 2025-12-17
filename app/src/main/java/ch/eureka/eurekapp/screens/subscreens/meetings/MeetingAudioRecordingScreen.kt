@@ -201,6 +201,8 @@ fun MeetingAudioRecordingScreen(
                                     PlayButton(
                                         onClick = { audioRecordingViewModel.resumeRecording() },
                                         testTag = MeetingAudioScreenTestTags.START_RECORDING_BUTTON)
+                                    val uploadedSuccessfully =
+                                        stringResource(R.string.uploaded_successfully)
                                     SaveButton(
                                         enabled = canPressUploadButton,
                                         onClick = {
@@ -211,9 +213,7 @@ fun MeetingAudioRecordingScreen(
                                               onSuccesfulUpload = {
                                                 // use context to obtain string here because this
                                                 // callback is not executed during composition
-                                                uploadText =
-                                                    context.getString(
-                                                        R.string.uploaded_successfully)
+                                                uploadText = uploadedSuccessfully
                                                 canShowAITranscriptButton = true
                                               },
                                               onFailureUpload = { exception ->

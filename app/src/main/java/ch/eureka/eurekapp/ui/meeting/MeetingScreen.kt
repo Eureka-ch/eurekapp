@@ -206,10 +206,11 @@ fun MeetingScreen(
 
   LaunchedEffect(Unit) { meetingViewModel.loadMeetings(config.projectId) }
 
+  val errorNotLoggedIn = stringResource(R.string.error_not_logged_in)
   LaunchedEffect(meetingViewModel.userId) {
     if (meetingViewModel.userId == null) {
       // use localized resource for the error
-      meetingViewModel.setErrorMsg(context.getString(R.string.error_not_logged_in))
+      meetingViewModel.setErrorMsg(errorNotLoggedIn)
     }
   }
 
@@ -403,6 +404,10 @@ fun MeetingsList(
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
           items(config.meetings.size) { index ->
             val meeting = config.meetings[index]
+            val meetingSavedToCalendarSuccess =
+                stringResource(R.string.meeting_saved_to_calendar_success)
+            val meetingSavedToCalendarFailure =
+                stringResource(R.string.meeting_saved_to_calendar_failure)
             MeetingCard(
                 meeting = meeting,
                 config =
@@ -433,18 +438,12 @@ fun MeetingsList(
                               meeting,
                               onSuccess = {
                                 Toast.makeText(
-                                        context,
-                                        context.getString(
-                                            R.string.meeting_saved_to_calendar_success),
-                                        Toast.LENGTH_SHORT)
+                                        context, meetingSavedToCalendarSuccess, Toast.LENGTH_SHORT)
                                     .show()
                               },
                               onFailure = {
                                 Toast.makeText(
-                                        context,
-                                        context.getString(
-                                            R.string.meeting_saved_to_calendar_failure),
-                                        Toast.LENGTH_SHORT)
+                                        context, meetingSavedToCalendarFailure, Toast.LENGTH_SHORT)
                                     .show()
                               })
                         },

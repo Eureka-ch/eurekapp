@@ -148,6 +148,7 @@ fun CreateInvitationSubscreen(
                                       textAlign = TextAlign.Center)
                                 }
 
+                            val copiedToClipBoard = stringResource(R.string.copied_to_clipboard)
                             FilledTonalButton(
                                 modifier =
                                     Modifier.width(190.dp)
@@ -162,10 +163,7 @@ fun CreateInvitationSubscreen(
                                 onClick = {
                                   if (createInvitationToken.value != null) {
                                     copyToClipboard(context, createInvitationToken.value!!.token)
-                                    Toast.makeText(
-                                            context,
-                                            context.getString(R.string.copied_to_clipboard),
-                                            Toast.LENGTH_SHORT)
+                                    Toast.makeText(context, copiedToClipBoard, Toast.LENGTH_SHORT)
                                         .show()
                                   }
                                 }) {
