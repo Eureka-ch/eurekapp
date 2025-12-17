@@ -27,8 +27,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -36,15 +34,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.ui.components.BackButton
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.MessageInputField
 import ch.eureka.eurekapp.ui.components.help.HelpContext
 import ch.eureka.eurekapp.ui.components.help.ScreenWithHelp
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 /** Test tags for the Self Notes Screen. */
@@ -161,26 +160,28 @@ private fun ContextualSelectionTopBar(
     onEditSelected: (String) -> Unit,
     onDeleteSelected: () -> Unit
 ) {
-  TopAppBar(
-      title = { Text("$selectionCount Selected") },
-      colors =
-          TopAppBarDefaults.topAppBarColors(
-              containerColor = MaterialTheme.colorScheme.surfaceVariant,
-              titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-              actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant),
+  EurekaTopBar(
+      title = "$selectionCount Selected",
       navigationIcon = {
         IconButton(onClick = onClearSelection) {
-          Icon(Icons.Default.Close, contentDescription = "Cancel Selection")
+          Icon(
+              Icons.Default.Close,
+              contentDescription = "Cancel Selection",
+              tint = EColors.WhiteTextColor)
         }
       },
       actions = {
         if (selectionCount == 1) {
           IconButton(onClick = { onEditSelected(selectedIds.first()) }) {
-            Icon(Icons.Default.Edit, contentDescription = "Edit Note")
+            Icon(
+                Icons.Default.Edit, contentDescription = "Edit Note", tint = EColors.WhiteTextColor)
           }
         }
         IconButton(onClick = onDeleteSelected) {
-          Icon(Icons.Default.Delete, contentDescription = "Delete Selected")
+          Icon(
+              Icons.Default.Delete,
+              contentDescription = "Delete Selected",
+              tint = EColors.WhiteTextColor)
         }
       })
 }
@@ -194,17 +195,15 @@ private fun StandardTopBar(
     onToggleStorage: (Boolean) -> Unit,
     onNavigateBack: () -> Unit
 ) {
-  TopAppBar(
-      title = { Text(if (isEditing) "Editing Note" else "Notes") },
-      colors =
-          TopAppBarDefaults.topAppBarColors(
-              containerColor = MaterialTheme.colorScheme.primary,
-              titleContentColor = MaterialTheme.colorScheme.onPrimary,
-              actionIconContentColor = MaterialTheme.colorScheme.onPrimary),
+  EurekaTopBar(
+      title = if (isEditing) "Editing Note" else "Notes",
       navigationIcon = {
         if (isEditing) {
           IconButton(onClick = onCancelEditing) {
-            Icon(Icons.Default.Close, contentDescription = "Cancel Edit")
+            Icon(
+                Icons.Default.Close,
+                contentDescription = "Cancel Edit",
+                tint = EColors.WhiteTextColor)
           }
         } else {
           BackButton(onClick = onNavigateBack)
@@ -217,7 +216,7 @@ private fun StandardTopBar(
               Text(
                   text = if (isCloudEnabled) "Cloud" else "Local",
                   style = MaterialTheme.typography.labelMedium,
-                  color = MaterialTheme.colorScheme.onPrimary,
+                  color = EColors.WhiteTextColor,
                   modifier = Modifier.padding(end = 8.dp))
               Switch(
                   checked = isCloudEnabled,
@@ -225,10 +224,10 @@ private fun StandardTopBar(
                   modifier = Modifier.testTag(SelfNotesScreenTestTags.TOGGLE_SWITCH),
                   colors =
                       SwitchDefaults.colors(
-                          checkedThumbColor = MaterialTheme.colorScheme.primary,
-                          checkedTrackColor = MaterialTheme.colorScheme.onPrimary,
-                          uncheckedThumbColor = Color.LightGray,
-                          uncheckedTrackColor = MaterialTheme.colorScheme.primaryContainer))
+                          checkedThumbColor = EColors.WhiteTextColor,
+                          checkedTrackColor = EColors.WhiteTextColor.copy(alpha = 0.5f),
+                          uncheckedThumbColor = EColors.WhiteTextColor.copy(alpha = 0.8f),
+                          uncheckedTrackColor = EColors.WhiteTextColor.copy(alpha = 0.3f)))
             }
       })
 }

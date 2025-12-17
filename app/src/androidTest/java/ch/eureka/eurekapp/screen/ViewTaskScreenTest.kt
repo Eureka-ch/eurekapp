@@ -374,6 +374,16 @@ open class ViewTaskScreenTest : TestCase() {
         composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).assert(isReadOnly)
         composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).assert(isReadOnly)
 
+        // Wait for data to load from Firestore
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+          try {
+            composeTestRule.onNodeWithText("Read Only Task").assertExists()
+            true
+          } catch (e: AssertionError) {
+            false
+          }
+        }
+
         // Verify the original values remain displayed
         composeTestRule.onNodeWithText("Read Only Task").assertIsDisplayed()
         composeTestRule.onNodeWithText("Read Only Description").assertIsDisplayed()
