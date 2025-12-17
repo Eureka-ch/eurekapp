@@ -355,44 +355,48 @@ fun NavigationMenu(
                 OverviewProjectScreen(projectId = overviewProjectScreenRoute.projectId)
               }
 
-            // Tasks section
-            composable<Route.TasksSection.Tasks> {
-              TasksScreen(
-                  onCreateTaskClick = {
-                    navigationController.navigate(Route.TasksSection.CreateTask)
-                  },
-                  onAutoAssignClick = {
-                    navigationController.navigate(Route.TasksSection.AutoTaskAssignment)
-                  },
-                  onTaskClick = { taskId, projectId ->
-                    navigationController.navigate(
-                        Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
-                  },
-                  onFilesManagementClick = { navigationController.navigate(Route.FilesManagement) })
-            }
-            composable<Route.TasksSection.CreateTask> { CreateTaskScreen(navigationController) }
-            composable<Route.TasksSection.AutoTaskAssignment> {
-              AutoAssignResultScreen(navigationController)
-            }
-            // Tasks section
-            composable<Route.TasksSection.Tasks> {
-              TasksScreen(
-                  onCreateTaskClick = {
-                    navigationController.navigate(Route.TasksSection.CreateTask)
-                  },
-                  onAutoAssignClick = {
-                    navigationController.navigate(Route.TasksSection.AutoTaskAssignment)
-                  },
-                  onTaskClick = { taskId, projectId ->
-                    navigationController.navigate(
-                        Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
-                  },
-                  onFilesManagementClick = { navigationController.navigate(Route.FilesManagement) })
-            }
-            composable<Route.TasksSection.CreateTask> { CreateTaskScreen(navigationController) }
-            composable<Route.TasksSection.AutoTaskAssignment> {
-              AutoAssignResultScreen(navigationController)
-            }
+              // Tasks section
+              composable<Route.TasksSection.Tasks> {
+                TasksScreen(
+                    onCreateTaskClick = {
+                      navigationController.navigate(Route.TasksSection.CreateTask)
+                    },
+                    onAutoAssignClick = {
+                      navigationController.navigate(Route.TasksSection.AutoTaskAssignment)
+                    },
+                    onTaskClick = { taskId, projectId ->
+                      navigationController.navigate(
+                          Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
+                    },
+                    onFilesManagementClick = {
+                      navigationController.navigate(Route.FilesManagement)
+                    })
+              }
+              composable<Route.TasksSection.CreateTask> { CreateTaskScreen(navigationController) }
+              composable<Route.TasksSection.AutoTaskAssignment> {
+                AutoAssignResultScreen(navigationController)
+              }
+              // Tasks section
+              composable<Route.TasksSection.Tasks> {
+                TasksScreen(
+                    onCreateTaskClick = {
+                      navigationController.navigate(Route.TasksSection.CreateTask)
+                    },
+                    onAutoAssignClick = {
+                      navigationController.navigate(Route.TasksSection.AutoTaskAssignment)
+                    },
+                    onTaskClick = { taskId, projectId ->
+                      navigationController.navigate(
+                          Route.TasksSection.ViewTask(projectId = projectId, taskId = taskId))
+                    },
+                    onFilesManagementClick = {
+                      navigationController.navigate(Route.FilesManagement)
+                    })
+              }
+              composable<Route.TasksSection.CreateTask> { CreateTaskScreen(navigationController) }
+              composable<Route.TasksSection.AutoTaskAssignment> {
+                AutoAssignResultScreen(navigationController)
+              }
               // Tasks section
               composable<Route.TasksSection.Tasks> {
                 TasksScreen(
@@ -428,22 +432,22 @@ fun NavigationMenu(
               composable<Route.FilesManagement> {
                 FilesManagementScreen(onBackClick = { navigationController.popBackStack() })
               }
-            composable<Route.TasksSection.ViewTask> { backStackEntry ->
-              val taskDetailRoute = backStackEntry.toRoute<Route.TasksSection.ViewTask>()
-              ViewTaskScreen(
-                  taskDetailRoute.projectId, taskDetailRoute.taskId, navigationController)
-            }
-            composable<Route.FilesManagement> {
-              FilesManagementScreen(onBackClick = { navigationController.popBackStack() })
-            }
-            composable<Route.TasksSection.ViewTask> { backStackEntry ->
-              val taskDetailRoute = backStackEntry.toRoute<Route.TasksSection.ViewTask>()
-              ViewTaskScreen(
-                  taskDetailRoute.projectId, taskDetailRoute.taskId, navigationController)
-            }
-            composable<Route.FilesManagement> {
-              FilesManagementScreen(onBackClick = { navigationController.popBackStack() })
-            }
+              composable<Route.TasksSection.ViewTask> { backStackEntry ->
+                val taskDetailRoute = backStackEntry.toRoute<Route.TasksSection.ViewTask>()
+                ViewTaskScreen(
+                    taskDetailRoute.projectId, taskDetailRoute.taskId, navigationController)
+              }
+              composable<Route.FilesManagement> {
+                FilesManagementScreen(onBackClick = { navigationController.popBackStack() })
+              }
+              composable<Route.TasksSection.ViewTask> { backStackEntry ->
+                val taskDetailRoute = backStackEntry.toRoute<Route.TasksSection.ViewTask>()
+                ViewTaskScreen(
+                    taskDetailRoute.projectId, taskDetailRoute.taskId, navigationController)
+              }
+              composable<Route.FilesManagement> {
+                FilesManagementScreen(onBackClick = { navigationController.popBackStack() })
+              }
 
               composable<Route.TasksSection.TaskDependence> { backStackEntry ->
                 val dependenceRoute = backStackEntry.toRoute<Route.TasksSection.TaskDependence>()
@@ -514,54 +518,53 @@ fun NavigationMenu(
                               }
                             }))
               }
-            // Meetings section
-            composable<Route.MeetingsSection.Meetings> {
-              MeetingScreen(
-                  config =
-                      MeetingScreenConfig(
-                          onCreateMeeting = { isConnected ->
-                            navigateIfConditionSatisfied(isConnected) {
+              // Meetings section
+              composable<Route.MeetingsSection.Meetings> {
+                MeetingScreen(
+                    config =
+                        MeetingScreenConfig(
+                            onCreateMeeting = { isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(Route.MeetingsSection.CreateMeeting)
+                              }
+                            },
+                            onMeetingClick = { projectId, meetingId ->
                               navigationController.navigate(
-                                  Route.MeetingsSection.CreateMeeting(testProjectId))
-                            }
-                          },
-                          onMeetingClick = { projectId, meetingId ->
-                            navigationController.navigate(
-                                Route.MeetingsSection.MeetingDetail(
-                                    projectId = projectId, meetingId = meetingId))
-                          },
-                          onVoteForMeetingProposalClick = { projectId, meetingId, isConnected ->
-                            navigateIfConditionSatisfied(isConnected) {
-                              navigationController.navigate(
-                                  Route.MeetingsSection.MeetingProposalVotes(
+                                  Route.MeetingsSection.MeetingDetail(
                                       projectId = projectId, meetingId = meetingId))
-                            }
-                          },
-                          onNavigateToMeeting = { projectId, meetingId, isConnected ->
-                            navigateIfConditionSatisfied(isConnected) {
-                              navigationController.navigate(
-                                  Route.MeetingsSection.MeetingNavigation(
-                                      projectId = projectId, meetingId = meetingId))
-                            }
-                          },
-                          onViewTranscript = { projectId, meetingId, isConnected ->
-                            navigateIfConditionSatisfied(isConnected) {
-                              navigationController.navigate(
-                                  Route.MeetingsSection.AudioTranscript(
-                                      projectId = projectId, meetingId = meetingId))
-                            }
-                          },
-                          onRecord = { projectId, meetingId, isConnected ->
-                            navigateIfConditionSatisfied(isConnected) {
-                              navigationController.navigate(
-                                  Route.MeetingsSection.AudioRecording(
-                                      projectId = projectId, meetingId = meetingId))
-                            }
-                          },
-                          onFileManagementScreenClick = {
-                            navigationController.navigate(Route.FilesManagement)
-                          }))
-            }
+                            },
+                            onVoteForMeetingProposalClick = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.MeetingProposalVotes(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
+                            },
+                            onNavigateToMeeting = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.MeetingNavigation(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
+                            },
+                            onViewTranscript = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.AudioTranscript(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
+                            },
+                            onRecord = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.AudioRecording(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
+                            },
+                            onFileManagementScreenClick = {
+                              navigationController.navigate(Route.FilesManagement)
+                            }))
+              }
 
               composable<Route.MeetingsSection.MeetingDetail> { backStackEntry ->
                 val meetingDetailRoute =
@@ -603,87 +606,89 @@ fun NavigationMenu(
                             }),
                 )
               }
-            composable<Route.MeetingsSection.MeetingDetail> { backStackEntry ->
-              val meetingDetailRoute = backStackEntry.toRoute<Route.MeetingsSection.MeetingDetail>()
-              MeetingDetailScreen(
-                  projectId = meetingDetailRoute.projectId,
-                  meetingId = meetingDetailRoute.meetingId,
-                  actionsConfig =
-                      MeetingDetailActionsConfig(
-                          onNavigateBack = { navigationController.popBackStack() },
-                          onRecordMeeting = { projectId, meetingId, isConnected ->
-                            navigateIfConditionSatisfied(isConnected) {
-                              navigationController.navigate(
-                                  Route.MeetingsSection.AudioRecording(
-                                      projectId = projectId, meetingId = meetingId))
-                            }
-                          },
-                          onViewTranscript = { projectId, meetingId, isConnected ->
-                            navigateIfConditionSatisfied(isConnected) {
-                              navigationController.navigate(
-                                  Route.MeetingsSection.AudioTranscript(
-                                      projectId = projectId, meetingId = meetingId))
-                            }
-                          },
-                          onNavigateToMeeting = { isConnected ->
-                            navigateIfConditionSatisfied(isConnected) {
-                              navigationController.navigate(
-                                  Route.MeetingsSection.MeetingNavigation(
-                                      projectId = meetingDetailRoute.projectId,
-                                      meetingId = meetingDetailRoute.meetingId))
-                            }
-                          },
-                          onVoteForMeetingProposalClick = { projectId, meetingId, isConnected ->
-                            navigateIfConditionSatisfied(isConnected) {
-                              navigationController.navigate(
-                                  Route.MeetingsSection.MeetingProposalVotes(
-                                      projectId = projectId, meetingId = meetingId))
-                            }
-                          },
-                          onFileManagementScreenClick = {
-                            navigationController.navigate(Route.FilesManagement)
-                          }),
-              )
-            }
-            composable<Route.MeetingsSection.MeetingDetail> { backStackEntry ->
-              val meetingDetailRoute = backStackEntry.toRoute<Route.MeetingsSection.MeetingDetail>()
-              MeetingDetailScreen(
-                  projectId = meetingDetailRoute.projectId,
-                  meetingId = meetingDetailRoute.meetingId,
-                  actionsConfig =
-                      MeetingDetailActionsConfig(
-                          onNavigateBack = { navigationController.popBackStack() },
-                          onRecordMeeting = { projectId, meetingId, isConnected ->
-                            navigateIfConditionSatisfied(isConnected) {
-                              navigationController.navigate(
-                                  Route.MeetingsSection.AudioRecording(
-                                      projectId = projectId, meetingId = meetingId))
-                            }
-                          },
-                          onViewTranscript = { projectId, meetingId, isConnected ->
-                            navigateIfConditionSatisfied(isConnected) {
-                              navigationController.navigate(
-                                  Route.MeetingsSection.AudioTranscript(
-                                      projectId = projectId, meetingId = meetingId))
-                            }
-                          },
-                          onNavigateToMeeting = { isConnected ->
-                            navigateIfConditionSatisfied(isConnected) {
-                              navigationController.navigate(
-                                  Route.MeetingsSection.MeetingNavigation(
-                                      projectId = meetingDetailRoute.projectId,
-                                      meetingId = meetingDetailRoute.meetingId))
-                            }
-                          },
-                          onVoteForMeetingProposalClick = { projectId, meetingId, isConnected ->
-                            navigateIfConditionSatisfied(isConnected) {
-                              navigationController.navigate(
-                                  Route.MeetingsSection.MeetingProposalVotes(
-                                      projectId = projectId, meetingId = meetingId))
-                            }
-                          }),
-              )
-            }
+              composable<Route.MeetingsSection.MeetingDetail> { backStackEntry ->
+                val meetingDetailRoute =
+                    backStackEntry.toRoute<Route.MeetingsSection.MeetingDetail>()
+                MeetingDetailScreen(
+                    projectId = meetingDetailRoute.projectId,
+                    meetingId = meetingDetailRoute.meetingId,
+                    actionsConfig =
+                        MeetingDetailActionsConfig(
+                            onNavigateBack = { navigationController.popBackStack() },
+                            onRecordMeeting = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.AudioRecording(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
+                            },
+                            onViewTranscript = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.AudioTranscript(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
+                            },
+                            onNavigateToMeeting = { isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.MeetingNavigation(
+                                        projectId = meetingDetailRoute.projectId,
+                                        meetingId = meetingDetailRoute.meetingId))
+                              }
+                            },
+                            onVoteForMeetingProposalClick = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.MeetingProposalVotes(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
+                            },
+                            onFileManagementScreenClick = {
+                              navigationController.navigate(Route.FilesManagement)
+                            }),
+                )
+              }
+              composable<Route.MeetingsSection.MeetingDetail> { backStackEntry ->
+                val meetingDetailRoute =
+                    backStackEntry.toRoute<Route.MeetingsSection.MeetingDetail>()
+                MeetingDetailScreen(
+                    projectId = meetingDetailRoute.projectId,
+                    meetingId = meetingDetailRoute.meetingId,
+                    actionsConfig =
+                        MeetingDetailActionsConfig(
+                            onNavigateBack = { navigationController.popBackStack() },
+                            onRecordMeeting = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.AudioRecording(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
+                            },
+                            onViewTranscript = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.AudioTranscript(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
+                            },
+                            onNavigateToMeeting = { isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.MeetingNavigation(
+                                        projectId = meetingDetailRoute.projectId,
+                                        meetingId = meetingDetailRoute.meetingId))
+                              }
+                            },
+                            onVoteForMeetingProposalClick = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.MeetingProposalVotes(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
+                            }),
+                )
+              }
 
               // Project selection section
               composable<Route.ProjectSelectionSection.CreateProject> {
@@ -959,7 +964,7 @@ private fun navigateToConversation(
 }
 
 inline fun navigateIfConditionSatisfied(condition: Boolean, navigate: () -> Unit) {
-    if (condition) {
-        navigate()
-    }
+  if (condition) {
+    navigate()
+  }
 }

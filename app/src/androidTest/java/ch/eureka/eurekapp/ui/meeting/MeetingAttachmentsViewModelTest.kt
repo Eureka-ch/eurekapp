@@ -1,5 +1,6 @@
 /* Portions of this code were generated with the help of Gemini 3 Pro. */
 package ch.eureka.eurekapp.ui.meeting
+
 import android.content.ContentResolver
 import android.content.Context
 import android.database.Cursor
@@ -132,7 +133,7 @@ class MeetingAttachmentsViewModelTest {
       return flowOf(listOf())
     }
 
-      override suspend fun createMeeting(
+    override suspend fun createMeeting(
         meeting: Meeting,
         creatorId: String,
         creatorRole: MeetingRole
@@ -148,40 +149,37 @@ class MeetingAttachmentsViewModelTest {
       return Result.success(Unit)
     }
 
-      override fun getParticipants(
-          projectId: String,
-          meetingId: String
-      ): Flow<List<Participant>> {
-          TODO("Not yet implemented")
-      }
+    override fun getParticipants(projectId: String, meetingId: String): Flow<List<Participant>> {
+      TODO("Not yet implemented")
+    }
 
-      override suspend fun addParticipant(
-          projectId: String,
-          meetingId: String,
-          userId: String,
-          role: MeetingRole
-      ): Result<Unit> {
-          TODO("Not yet implemented")
-      }
+    override suspend fun addParticipant(
+        projectId: String,
+        meetingId: String,
+        userId: String,
+        role: MeetingRole
+    ): Result<Unit> {
+      TODO("Not yet implemented")
+    }
 
-      override suspend fun removeParticipant(
-          projectId: String,
-          meetingId: String,
-          userId: String
-      ): Result<Unit> {
-          TODO("Not yet implemented")
-      }
+    override suspend fun removeParticipant(
+        projectId: String,
+        meetingId: String,
+        userId: String
+    ): Result<Unit> {
+      TODO("Not yet implemented")
+    }
 
-      override suspend fun updateParticipantRole(
-          projectId: String,
-          meetingId: String,
-          userId: String,
-          role: MeetingRole
-      ): Result<Unit> {
-          TODO("Not yet implemented")
-      }
+    override suspend fun updateParticipantRole(
+        projectId: String,
+        meetingId: String,
+        userId: String,
+        role: MeetingRole
+    ): Result<Unit> {
+      TODO("Not yet implemented")
+    }
 
-      suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
+    suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
       return Result.failure(Exception("Dummy exception"))
     }
   }

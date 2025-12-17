@@ -906,28 +906,6 @@ class MeetingDetailScreenTest {
     projectFlow.value = Project(name = "My Test Project")
 
     setContent(currentUserId = creatorId)
-    viewModel =
-        MeetingDetailViewModel(
-            testProjectId,
-            testMeetingId,
-            repositoryMock,
-            projectRepositoryMock,
-            userRepositoryMock,
-            mockConnectivityObserver,
-            getCurrentUserId = { creatorId })
-
-    composeTestRule.setContent {
-      MeetingDetailScreen(
-          attachmentsViewModel =
-              MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(),
-                  repositoryMock,
-                  mockConnectivityObserver,
-                  downloadedFileDao = fileDatabase),
-          projectId = testProjectId,
-          meetingId = testMeetingId,
-          viewModel = viewModel)
-    }
 
     composeTestRule.waitForIdle()
 
@@ -950,28 +928,6 @@ class MeetingDetailScreenTest {
     projectFlow.value = Project(name = "My Test Project")
 
     setContent(currentUserId = otherUserId)
-    viewModel =
-        MeetingDetailViewModel(
-            testProjectId,
-            testMeetingId,
-            repositoryMock,
-            projectRepositoryMock,
-            userRepositoryMock,
-            mockConnectivityObserver,
-            getCurrentUserId = { otherUserId })
-
-    composeTestRule.setContent {
-      MeetingDetailScreen(
-          attachmentsViewModel =
-              MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(),
-                  repositoryMock,
-                  mockConnectivityObserver,
-                  downloadedFileDao = fileDatabase),
-          projectId = testProjectId,
-          meetingId = testMeetingId,
-          viewModel = viewModel)
-    }
 
     composeTestRule.waitForIdle()
 
@@ -990,29 +946,6 @@ class MeetingDetailScreenTest {
     meetingFlow.value = meeting
     userFlow.value = null
     projectFlow.value = Project(name = "My Test Project")
-
-    viewModel =
-        MeetingDetailViewModel(
-            testProjectId,
-            testMeetingId,
-            repositoryMock,
-            projectRepositoryMock,
-            userRepositoryMock,
-            mockConnectivityObserver,
-            getCurrentUserId = { creatorId })
-
-    composeTestRule.setContent {
-      MeetingDetailScreen(
-          attachmentsViewModel =
-              MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(),
-                  repositoryMock,
-                  mockConnectivityObserver,
-                  downloadedFileDao = fileDatabase),
-          projectId = testProjectId,
-          meetingId = testMeetingId,
-          viewModel = viewModel)
-    }
     setContent(currentUserId = creatorId)
 
     composeTestRule.waitForIdle()
@@ -1035,28 +968,6 @@ class MeetingDetailScreenTest {
     userFlow.value = null
     projectFlow.value = Project(name = "My Test Project")
 
-    viewModel =
-        MeetingDetailViewModel(
-            testProjectId,
-            testMeetingId,
-            repositoryMock,
-            projectRepositoryMock,
-            userRepositoryMock,
-            mockConnectivityObserver,
-            getCurrentUserId = { otherUserId })
-
-    composeTestRule.setContent {
-      MeetingDetailScreen(
-          attachmentsViewModel =
-              MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(),
-                  repositoryMock,
-                  mockConnectivityObserver,
-                  downloadedFileDao = fileDatabase),
-          projectId = testProjectId,
-          meetingId = testMeetingId,
-          viewModel = viewModel)
-    }
     setContent(currentUserId = otherUserId)
 
     composeTestRule.waitForIdle()
@@ -1196,28 +1107,6 @@ class MeetingDetailScreenTest {
     projectFlow.value = Project(name = "My Test Project")
 
     setContent(currentUserId = creatorId)
-    viewModel =
-        MeetingDetailViewModel(
-            testProjectId,
-            testMeetingId,
-            repositoryMock,
-            projectRepositoryMock,
-            userRepositoryMock,
-            mockConnectivityObserver,
-            getCurrentUserId = { creatorId })
-
-    composeTestRule.setContent {
-      MeetingDetailScreen(
-          attachmentsViewModel =
-              MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(),
-                  repositoryMock,
-                  mockConnectivityObserver,
-                  downloadedFileDao = fileDatabase),
-          projectId = testProjectId,
-          meetingId = testMeetingId,
-          viewModel = viewModel)
-    }
 
     composeTestRule.waitForIdle()
 
@@ -1241,28 +1130,6 @@ class MeetingDetailScreenTest {
     userFlow.value = null
     projectFlow.value = Project(name = "My Test Project")
 
-    viewModel =
-        MeetingDetailViewModel(
-            testProjectId,
-            testMeetingId,
-            repositoryMock,
-            projectRepositoryMock,
-            userRepositoryMock,
-            mockConnectivityObserver,
-            getCurrentUserId = { creatorId })
-
-    composeTestRule.setContent {
-      MeetingDetailScreen(
-          attachmentsViewModel =
-              MeetingAttachmentsViewModel(
-                  FileStorageRepositoryMock(),
-                  repositoryMock,
-                  mockConnectivityObserver,
-                  downloadedFileDao = fileDatabase),
-          projectId = testProjectId,
-          meetingId = testMeetingId,
-          viewModel = viewModel)
-    }
     setContent(currentUserId = creatorId)
 
     composeTestRule.waitForIdle()

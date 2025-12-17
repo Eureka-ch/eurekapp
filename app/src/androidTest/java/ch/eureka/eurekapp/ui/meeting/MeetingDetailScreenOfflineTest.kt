@@ -28,8 +28,8 @@ import ch.eureka.eurekapp.utils.FirebaseEmulator
 import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import com.google.firebase.storage.StorageMetadata
-import kotlinx.coroutines.flow.Flow
 import io.mockk.mockk
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import org.junit.After
@@ -140,11 +140,8 @@ class MeetingDetailScreenOfflineTest {
             repositoryMock,
             projectRepositoryMock,
             userRepositoryMock,
-            mockConnectivityObserver,
-        attachmentsViewModel = MeetingAttachmentsViewModel(
-            fileStorageRepository = FileStorageRepositoryMock(),
-            meetingsRepository = repositoryMock,
-            connectivityObserver = mockConnectivityObserver))}
+            mockConnectivityObserver)
+  }
 
   @After
   fun tearDown() {
