@@ -2,11 +2,18 @@
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.test.platform.app.InstrumentationRegistry
-import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
-import ch.eureka.eurekapp.model.data.meeting.*
+import ch.eureka.eurekapp.model.data.meeting.Meeting
+import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
+import ch.eureka.eurekapp.model.data.meeting.MeetingProposal
+import ch.eureka.eurekapp.model.data.meeting.MeetingProposalVote
+import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
+import ch.eureka.eurekapp.model.data.meeting.MeetingRole
+import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
+import ch.eureka.eurekapp.model.data.meeting.Participant
 import ch.eureka.eurekapp.model.map.Location
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
-import java.util.*
+import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -17,7 +24,11 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -49,24 +60,35 @@ class MeetingViewModelTest {
   @Before
   fun setup() {
     Dispatchers.setMain(testDispatcher)
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
-    ConnectivityObserverProvider.initialize(context)
     repositoryMock = MeetingRepositoryMockViewmodel()
-    viewModel = MeetingViewModel(repositoryMock, { currentUserId })
+
+    // Use MockConnectivityObserver with context to satisfy constructor requirements
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+    val mockConnectivity = MockConnectivityObserver(context)
+    mockConnectivity.setConnected(true)
+
+    viewModel =
+        MeetingViewModel(
+            repository = repositoryMock,
+            getCurrentUserId = { currentUserId },
+            connectivityObserver = mockConnectivity)
   }
 
+  // UPDATED: Added link parameter to support Virtual meeting tests
   private fun createDummyMeeting(
       createdBy: String = testCreatorId,
       proposals: List<MeetingProposal> = emptyList(),
       location: Location? = testLocation,
-      projectId: String = "p1"
+      projectId: String = "p1",
+      link: String? = null
   ): Meeting {
     return Meeting(
         meetingID = "m1",
         projectId = projectId,
         createdBy = createdBy,
         meetingProposals = proposals,
-        location = location)
+        location = location,
+        link = link)
   }
 
   @After
@@ -298,7 +320,10 @@ class MeetingViewModelTest {
   @Test
   fun meetingViewModel_closeVotesForMeetingSuccessVirtual() = runTest {
     val proposals = listOf(MeetingProposal(date1, listOf(voteVirtual)))
-    val meeting = createDummyMeeting(proposals = proposals, location = null)
+    // FIX: Provide a link because new logic checks for it for virtual meetings
+    val meeting =
+        createDummyMeeting(
+            proposals = proposals, location = null, link = "https://meet.google.com/test")
     viewModel.closeVotesForMeeting(meeting)
     testDispatcher.scheduler.advanceUntilIdle()
 
@@ -313,6 +338,22 @@ class MeetingViewModelTest {
     assertEquals(date1, updatedMeeting.datetime)
     assertNotNull(updatedMeeting.link)
     assertTrue(updatedMeeting.meetingProposals.isEmpty())
+  }
+
+  @Test
+  fun meetingViewModel_closeVotesForMeetingWhenWinnerIsVirtualButNoLink() = runTest {
+    // NEW TEST: Verify error when link is missing for virtual meeting
+    val proposals = listOf(MeetingProposal(date1, listOf(voteVirtual)))
+    // No link provided
+    val meeting = createDummyMeeting(proposals = proposals, location = null, link = null)
+
+    viewModel.closeVotesForMeeting(meeting)
+    testDispatcher.scheduler.advanceUntilIdle()
+
+    assertEquals(0, repositoryMock.updateMeetingCallCount)
+    // Matches the string in MeetingViewModel.kt
+    assertEquals(
+        "Cannot close votes, virtual meeting has no location.", viewModel.uiState.value.errorMsg)
   }
 
   @Test
@@ -331,6 +372,7 @@ class MeetingViewModelTest {
     assertEquals(MeetingStatus.SCHEDULED, updatedMeeting!!.status)
     assertEquals(MeetingFormat.IN_PERSON, updatedMeeting.format)
     assertEquals(date1, updatedMeeting.datetime)
+    // Link can be null for in-person
     assertNull(updatedMeeting.link)
     assertTrue(updatedMeeting.meetingProposals.isEmpty())
   }
@@ -339,7 +381,9 @@ class MeetingViewModelTest {
   fun meetingViewModel_closeVotesForMeetingSuccessPicksProposalWithMostVotes() = runTest {
     val p1 = MeetingProposal(date1, listOf(voteInPerson))
     val p2 = MeetingProposal(date2, listOf(voteVirtual, voteVirtual2))
-    val meeting = createDummyMeeting(proposals = listOf(p1, p2))
+    // FIX: Provide a link because the winner (p2) is Virtual
+    val meeting =
+        createDummyMeeting(proposals = listOf(p1, p2), link = "https://meet.google.com/test")
     viewModel.closeVotesForMeeting(meeting)
     testDispatcher.scheduler.advanceUntilIdle()
 

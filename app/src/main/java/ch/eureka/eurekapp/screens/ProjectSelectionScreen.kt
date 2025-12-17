@@ -89,43 +89,6 @@ fun ProjectSelectionScreen(
     onSeeProjectMembers: (String) -> Unit = {},
     projectSelectionScreenViewModel: ProjectSelectionScreenViewModel = viewModel()
 ) {
-  handleNotificationsPermission()
-
-  val currentUser =
-      remember { projectSelectionScreenViewModel.getCurrentUser() }.collectAsState(null)
-
-  val projectsList =
-      remember { projectSelectionScreenViewModel.getProjectsForUser() }.collectAsState(listOf())
-
-  val listState = rememberLazyListState()
-
-  Scaffold(
-      topBar = { EurekaTopBar(title = "Projects") },
-      content = { paddingValues ->
-        Column(
-            modifier =
-                Modifier.fillMaxSize().padding(paddingValues).background(Color(0xFFF8FAFC))) {
-              ProjectSelectionHeader(
-                  onCreateProjectRequest = onCreateProjectRequest,
-                  onInputTokenRequest = onInputTokenRequest)
-
-              if (projectsList.value.isEmpty()) {
-                EmptyProjectsState()
-              } else {
-                ProjectsList(
-                    projects = projectsList.value,
-                    currentUserId = currentUser.value?.uid,
-                    onSeeProjectMembers = onSeeProjectMembers,
-                    onGenerateInviteRequest = onGenerateInviteRequest,
-                    projectSelectionScreenViewModel = projectSelectionScreenViewModel,
-                    listState = listState)
-              }
-            }
-      })
-}
-
-@Composable
-private fun handleNotificationsPermission() {
   val context = LocalContext.current
   var hasNotificationsPermission by remember {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -136,6 +99,12 @@ private fun handleNotificationsPermission() {
       mutableStateOf(true)
     }
   }
+
+  val currentUser =
+      remember { projectSelectionScreenViewModel.getCurrentUser() }.collectAsState(null)
+
+  val projectsList =
+      remember { projectSelectionScreenViewModel.getProjectsForUser() }.collectAsState(listOf())
 
   val launcher =
       rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
@@ -155,12 +124,120 @@ private fun handleNotificationsPermission() {
       launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
   }
+
+  val listState = rememberLazyListState()
+
+  Scaffold(
+      topBar = { EurekaTopBar(title = "Projects") },
+      content = { paddingValues ->
+        ProjectSelectionContent(
+            paddingValues = paddingValues,
+            projects = projectsList.value,
+            currentUserId = currentUser.value?.uid,
+            listState = listState,
+            actions =
+                ProjectSelectionActions(
+                    onCreateProjectRequest = onCreateProjectRequest,
+                    onInputTokenRequest = onInputTokenRequest,
+                    onGenerateInviteRequest = onGenerateInviteRequest,
+                    onSeeProjectMembers = onSeeProjectMembers),
+            viewModel = projectSelectionScreenViewModel)
+      })
+}
+
+/** Data class to group project selection actions and reduce parameter count. */
+data class ProjectSelectionActions(
+    val onCreateProjectRequest: () -> Unit,
+    val onInputTokenRequest: () -> Unit,
+    val onGenerateInviteRequest: (String) -> Unit,
+    val onSeeProjectMembers: (String) -> Unit
+)
+
+@Composable
+private fun ProjectSelectionContent(
+    paddingValues: PaddingValues,
+    projects: List<Project>,
+    currentUserId: String?,
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    actions: ProjectSelectionActions,
+    viewModel: ProjectSelectionScreenViewModel
+) {
+  Column(modifier = Modifier.fillMaxSize().padding(paddingValues).background(Color(0xFFF8FAFC))) {
+    ProjectSelectionHeader(
+        onCreateProjectRequest = actions.onCreateProjectRequest,
+        onInputTokenRequest = actions.onInputTokenRequest)
+
+    if (projects.isEmpty()) {
+      EmptyProjectsState()
+    } else {
+      LazyColumn(
+          state = listState,
+          modifier = Modifier.fillMaxSize(),
+          contentPadding = PaddingValues(horizontal = Spacing.lg),
+          verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+            items(projects) { project ->
+              val projectUsers =
+                  viewModel.getProjectUsersInformation(project.projectId).collectAsState(listOf())
+              ProjectSummaryCard(
+                  project = project,
+                  onClick = { actions.onSeeProjectMembers(project.projectId) },
+                  memberCount = projectUsers.value.size,
+                  actionButton = {
+                    ProjectCardActions(
+                        projectId = project.projectId,
+                        isOwner = currentUserId == project.createdBy,
+                        onSeeProjectMembers = actions.onSeeProjectMembers,
+                        onGenerateInviteRequest = actions.onGenerateInviteRequest)
+                  })
+            }
+          }
+    }
+  }
+}
+
+@Composable
+private fun ProjectCardActions(
+    projectId: String,
+    isOwner: Boolean,
+    onSeeProjectMembers: (String) -> Unit,
+    onGenerateInviteRequest: (String) -> Unit
+) {
+  Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically) {
+        TextButton(
+            onClick = { onSeeProjectMembers(projectId) },
+            modifier =
+                Modifier.testTag(
+                    ProjectSelectionScreenTestTags.getShowMembersButtonTestTag(projectId)),
+            colors =
+                ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)) {
+              Text(
+                  "View Members",
+                  style = MaterialTheme.typography.labelLarge,
+                  fontWeight = FontWeight.SemiBold)
+            }
+        if (isOwner) {
+          IconButton(
+              onClick = { onGenerateInviteRequest(projectId) },
+              modifier =
+                  Modifier.testTag(
+                      ProjectSelectionScreenTestTags.getInviteButtonTestTag(projectId))) {
+                Icon(
+                    imageVector = Icons.Default.PersonAdd,
+                    contentDescription = "Generate Invite",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp))
+              }
+        }
+      }
 }
 
 @Composable
 private fun ProjectSelectionHeader(
     onCreateProjectRequest: () -> Unit,
-    onInputTokenRequest: () -> Unit
+    onInputTokenRequest: () -> Unit,
 ) {
   Column(
       modifier = Modifier.fillMaxWidth().padding(Spacing.lg),
@@ -212,79 +289,6 @@ private fun EmptyProjectsState() {
               color = Color(0xFF64748B))
         }
   }
-}
-
-@Composable
-private fun ProjectsList(
-    projects: List<Project>,
-    currentUserId: String?,
-    onSeeProjectMembers: (String) -> Unit,
-    onGenerateInviteRequest: (String) -> Unit,
-    projectSelectionScreenViewModel: ProjectSelectionScreenViewModel,
-    listState: androidx.compose.foundation.lazy.LazyListState
-) {
-  LazyColumn(
-      state = listState,
-      modifier = Modifier.fillMaxSize(),
-      contentPadding = PaddingValues(horizontal = Spacing.lg),
-      verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-        items(projects) { project ->
-          val projectUsers =
-              projectSelectionScreenViewModel
-                  .getProjectUsersInformation(project.projectId)
-                  .collectAsState(listOf())
-          ProjectSummaryCard(
-              project = project,
-              onClick = { onSeeProjectMembers(project.projectId) },
-              memberCount = projectUsers.value.size,
-              actionButton = {
-                ProjectActionButtons(
-                    project = project,
-                    currentUserId = currentUserId,
-                    onSeeProjectMembers = onSeeProjectMembers,
-                    onGenerateInviteRequest = onGenerateInviteRequest)
-              })
-        }
-      }
-}
-
-@Composable
-private fun ProjectActionButtons(
-    project: Project,
-    currentUserId: String?,
-    onSeeProjectMembers: (String) -> Unit,
-    onGenerateInviteRequest: (String) -> Unit
-) {
-  Row(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically) {
-        TextButton(
-            onClick = { onSeeProjectMembers(project.projectId) },
-            modifier =
-                Modifier.testTag(
-                    ProjectSelectionScreenTestTags.getShowMembersButtonTestTag(project.projectId)),
-            colors =
-                ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)) {
-              Text(
-                  "View Members",
-                  style = MaterialTheme.typography.labelLarge,
-                  fontWeight = FontWeight.SemiBold)
-            }
-        if (currentUserId.equals(project.createdBy)) {
-          IconButton(
-              onClick = { onGenerateInviteRequest(project.projectId) },
-              modifier =
-                  Modifier.testTag(
-                      ProjectSelectionScreenTestTags.getInviteButtonTestTag(project.projectId))) {
-                Icon(
-                    imageVector = Icons.Default.PersonAdd,
-                    contentDescription = "Generate Invite",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp))
-              }
-        }
-      }
 }
 
 /** Displays the status of a project in a modern badge style. */

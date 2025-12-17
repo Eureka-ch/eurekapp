@@ -98,7 +98,9 @@ class CreateMeetingViewModelTest {
             date = futureDateTime.toLocalDate(),
             time = futureDateTime.toLocalTime())
 
-    state = state.copy(format = MeetingFormat.VIRTUAL)
+    state =
+        state.copy(
+            format = MeetingFormat.VIRTUAL, meetingLink = "https://meet.google.com/abc-defg-hij")
     assertTrue("State should be valid", state.isValid)
 
     assertFalse("State invalid without project", state.copy(project = null).isValid)
@@ -286,6 +288,7 @@ class CreateMeetingViewModelTest {
     viewModel.setDate(futureDateTime.toLocalDate())
     viewModel.setTime(futureDateTime.toLocalTime())
     viewModel.setFormat(MeetingFormat.VIRTUAL)
+    viewModel.setMeetingLink("https://meet.google.com/abc-defg-hij")
     assertTrue(viewModel.uiState.value.isValid)
 
     currentUserId = null
@@ -372,6 +375,7 @@ class CreateMeetingViewModelTest {
     viewModel.setDate(futureDateTime.toLocalDate())
     viewModel.setTime(futureDateTime.toLocalTime())
     viewModel.setFormat(MeetingFormat.VIRTUAL)
+    viewModel.setMeetingLink("https://meet.google.com/abc-defg-hij")
 
     assertTrue(viewModel.uiState.value.isValid)
     repositoryMock.shouldSucceed = false
@@ -409,6 +413,7 @@ class CreateMeetingViewModelTest {
     viewModel.setDate(futureDateTime.toLocalDate())
     viewModel.setTime(futureDateTime.toLocalTime())
     viewModel.setFormat(MeetingFormat.VIRTUAL)
+    viewModel.setMeetingLink("https://meet.google.com/abc-defg-hij")
 
     viewModel.setLocationQuery("")
 

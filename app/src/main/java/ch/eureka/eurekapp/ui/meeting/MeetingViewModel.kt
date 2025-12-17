@@ -183,14 +183,17 @@ class MeetingViewModel(
         return
       }
 
+      if (winningFormat == MeetingFormat.VIRTUAL && meeting.link == null) {
+        setErrorMsg("Cannot close votes, virtual meeting has no location.")
+        return
+      }
+
       val updatedMeeting =
           meeting.copy(
               status = MeetingStatus.SCHEDULED,
               datetime = winningProposal.dateTime,
               format = winningFormat,
-              link =
-                  if (winningFormat == MeetingFormat.VIRTUAL) "https://meet.google.com/1234"
-                  else null, // change later
+              link = meeting.link,
               meetingProposals = emptyList())
 
       viewModelScope.launch {

@@ -386,11 +386,17 @@ class TaskEndToEndTest : TestCase() {
       composeTestRule.onNodeWithText("OK").performClick()
       composeTestRule.waitForIdle()
 
+      // Meeting Link (required for Virtual meetings on feature/meeting-link-support branch)
+      composeTestRule
+          .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LINK)
+          .performTextInput("https://meet.google.com/abc-defg-hij")
+      composeTestRule.waitForIdle()
+
       // Create meeting
       composeTestRule
           .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
+          .performScrollTo()
           .performClick()
-
       composeTestRule.waitForIdle()
 
       // Step 2: Verify Listing - Wait to navigate back to meetings screen
@@ -415,7 +421,6 @@ class TaskEndToEndTest : TestCase() {
       composeTestRule.onNodeWithText(meetingTitle).assertIsDisplayed()
 
       // Step 3: View Details - Click on meeting card to open details
-      // Use meeting card tag instead of text to ensure we click the right element
       composeTestRule.waitForIdle()
 
       // Find and click the meeting card
@@ -472,7 +477,6 @@ class TaskEndToEndTest : TestCase() {
       }
 
       composeTestRule.waitForIdle()
-
       composeTestRule.onNodeWithText(meetingTitle).assertDoesNotExist()
     }
   }

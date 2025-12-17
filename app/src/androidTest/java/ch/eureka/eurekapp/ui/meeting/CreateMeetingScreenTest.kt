@@ -203,6 +203,16 @@ class CreateMeetingScreenTest {
 
     composeTestRule
         .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
+        .assertIsNotEnabled()
+
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LINK)
+        .performClick()
+        .performTextInput("https://zoom.us/j/1234567890")
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
         .assertIsEnabled()
   }
 
@@ -220,7 +230,8 @@ class CreateMeetingScreenTest {
       viewModel.setProject(testProject)
       viewModel.setDuration(15)
       viewModel.setDate(futureDate)
-      viewModel.setFormat(MeetingFormat.VIRTUAL)
+      viewModel.setFormat(MeetingFormat.IN_PERSON)
+      viewModel.setLocation(Location(46.5, 6.6, "EPFL Lausanne"))
     }
 
     composeTestRule
@@ -248,7 +259,8 @@ class CreateMeetingScreenTest {
       viewModel.setDuration(15)
       viewModel.setDate(futureDate)
       viewModel.setTime(LocalTime.of(9, 30))
-      viewModel.setFormat(MeetingFormat.VIRTUAL)
+      viewModel.setFormat(MeetingFormat.IN_PERSON)
+      viewModel.setLocation(Location(46.5, 6.6, "EPFL Lausanne"))
     }
 
     composeTestRule
@@ -263,7 +275,7 @@ class CreateMeetingScreenTest {
     assertEquals("My Successful Meeting", repositoryMock.lastMeetingCreated?.title)
     assertEquals(testProjectId, repositoryMock.lastMeetingCreated?.projectId)
     assertEquals(
-        MeetingFormat.VIRTUAL,
+        MeetingFormat.IN_PERSON,
         repositoryMock.lastMeetingCreated
             ?.meetingProposals
             ?.first()
@@ -285,7 +297,8 @@ class CreateMeetingScreenTest {
       viewModel.setDuration(30)
       viewModel.setDate(futureDate)
       viewModel.setTime(LocalTime.of(10, 0))
-      viewModel.setFormat(MeetingFormat.VIRTUAL)
+      viewModel.setFormat(MeetingFormat.IN_PERSON)
+      viewModel.setLocation(Location(46.5, 6.6, "EPFL Lausanne"))
     }
 
     composeTestRule
@@ -437,7 +450,8 @@ class CreateMeetingScreenTest {
 
     composeTestRule.runOnIdle {
       viewModel.setDate(futureDate)
-      viewModel.setFormat(MeetingFormat.VIRTUAL)
+      viewModel.setFormat(MeetingFormat.IN_PERSON)
+      viewModel.setLocation(Location(46.5, 6.6, "EPFL Lausanne"))
     }
 
     composeTestRule
@@ -604,5 +618,117 @@ class CreateMeetingScreenTest {
     composeTestRule.waitUntil(timeoutMillis = 5000) { onBackClickCalled }
 
     assertTrue("onBackClick should be called", onBackClickCalled)
+  }
+
+  // ========== Meeting Link Tests ==========
+
+  @Test
+  fun meetingLinkInput_isDisplayed_onlyWhenFormatIsVirtual() {
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LINK)
+        .assertDoesNotExist()
+
+    composeTestRule.runOnIdle { viewModel.setFormat(MeetingFormat.VIRTUAL) }
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LINK)
+        .assertIsDisplayed()
+  }
+
+  @Test
+  fun meetingLinkInput_validatesAndDetectsPlatforms() {
+    composeTestRule.runOnIdle { viewModel.setFormat(MeetingFormat.VIRTUAL) }
+    composeTestRule.waitForIdle()
+
+    // Test invalid URL
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LINK)
+        .performClick()
+        .performTextInput("invalid-url")
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("Invalid URL format").assertIsDisplayed()
+
+    // Test valid Zoom URL with platform detection
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LINK)
+        .performTextClearance()
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LINK)
+        .performTextInput("https://zoom.us/j/1234567890")
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("Invalid URL format").assertDoesNotExist()
+    composeTestRule.onNodeWithText("Platform: Zoom").assertIsDisplayed()
+    composeTestRule.runOnIdle {
+      assertEquals(
+          ch.eureka.eurekapp.utils.MeetingPlatform.ZOOM, viewModel.uiState.value.detectedPlatform)
+    }
+  }
+
+  @Test
+  fun meetingLinkInput_showsWarningForNonWhitelistedDomains() {
+    composeTestRule.runOnIdle { viewModel.setFormat(MeetingFormat.VIRTUAL) }
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LINK)
+        .performClick()
+        .performTextInput("https://jitsi.org/meeting123")
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithText("Warning: This link is not from a trusted platform")
+        .assertIsDisplayed()
+    composeTestRule.runOnIdle { assertNull(viewModel.uiState.value.linkValidationError) }
+  }
+
+  @Test
+  fun meetingLinkInput_errorWarningDisplayControlledByHasTouchedLink() {
+    composeTestRule.runOnIdle { viewModel.setFormat(MeetingFormat.VIRTUAL) }
+    composeTestRule.waitForIdle()
+
+    // Set invalid link WITHOUT touching - error should NOT show
+    composeTestRule.runOnIdle { viewModel.setMeetingLink("invalid-url") }
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("Invalid URL format").assertDoesNotExist()
+    composeTestRule.runOnIdle { assertFalse(viewModel.uiState.value.hasTouchedLink) }
+
+    // Touch field - error should NOW show
+    composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LINK).performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("Invalid URL format").assertIsDisplayed()
+    composeTestRule.runOnIdle { assertTrue(viewModel.uiState.value.hasTouchedLink) }
+  }
+
+  @Test
+  fun createButton_enabledOnlyWithValidLinkForVirtualFormat() {
+    composeTestRule.runOnIdle {
+      viewModel.setTitle("Test Meeting")
+      viewModel.setDate(futureDate)
+      viewModel.setTime(LocalTime.now().plusHours(1).truncatedTo(ChronoUnit.MINUTES))
+      viewModel.setDuration(30)
+      viewModel.setFormat(MeetingFormat.VIRTUAL)
+    }
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
+        .assertIsNotEnabled()
+
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LINK)
+        .performClick()
+        .performTextInput("https://zoom.us/j/1234567890")
+    composeTestRule.waitForIdle()
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
+        .assertIsNotEnabled()
+
+    composeTestRule.runOnIdle { viewModel.setProject(testProject) }
+
+    composeTestRule.waitForIdle()
+    composeTestRule
+        .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
+        .assertIsEnabled()
   }
 }

@@ -23,6 +23,8 @@ import ch.eureka.eurekapp.model.data.project.ProjectRepository
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.model.map.LocationRepository
 import ch.eureka.eurekapp.model.map.NominatimLocationRepository
+import ch.eureka.eurekapp.utils.MeetingLinkValidator
+import ch.eureka.eurekapp.utils.MeetingPlatform
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import java.time.LocalDate
@@ -56,6 +58,12 @@ import kotlinx.coroutines.launch
  * @property selectedLocation The potential selected location for the meeting.
  * @property locationQuery The location name currently queried.
  * @property locationSuggestions The location suggestions for [locationQuery].
+ * @property meetingLink The video meeting link (for VIRTUAL meetings).
+ * @property linkValidationError The error message for link validation, null if valid.
+ * @property linkValidationWarning The warning message for link validation, null if no warning.
+ * @property hasTouchedLink Marker set to true if the user has already clicked on the link field,
+ *   false otherwise.
+ * @property detectedPlatform The detected video meeting platform from the link.
  * @property meetingSaved Marker set to true if the meeting waa successfully saved, false otherwise.
  * @property hasTouchedTitle Marker set to true if the user has already clicked on the title field,
  *   false otherwise.
@@ -77,6 +85,11 @@ data class CreateMeetingUIState(
     val selectedLocation: Location? = null,
     val locationQuery: String = "",
     val locationSuggestions: List<Location> = emptyList(),
+    val meetingLink: String? = null,
+    val linkValidationError: String? = null,
+    val linkValidationWarning: String? = null,
+    val hasTouchedLink: Boolean = false,
+    val detectedPlatform: MeetingPlatform = MeetingPlatform.UNKNOWN,
     val meetingSaved: Boolean = false,
     val hasTouchedTitle: Boolean = false,
     val hasTouchedDate: Boolean = false,
@@ -90,7 +103,10 @@ data class CreateMeetingUIState(
             title.isNotBlank() &&
             duration >= 5 &&
             LocalDateTime.of(date, time).isAfter(LocalDateTime.now()) &&
-            (format == MeetingFormat.VIRTUAL || selectedLocation != null)
+            (format == MeetingFormat.IN_PERSON && selectedLocation != null ||
+                format == MeetingFormat.VIRTUAL &&
+                    !meetingLink.isNullOrBlank() &&
+                    linkValidationError == null)
 }
 
 /**
@@ -267,6 +283,29 @@ class CreateMeetingViewModel(
     _uiState.update { it.copy(hasTouchedTime = true) }
   }
 
+  /**
+   * Set the meeting link and validate it.
+   *
+   * @param link The meeting link URL.
+   */
+  fun setMeetingLink(link: String) {
+    val (isValid, message) = MeetingLinkValidator.validateMeetingLink(link)
+    val platform = MeetingLinkValidator.detectPlatform(link)
+
+    _uiState.update {
+      it.copy(
+          meetingLink = link,
+          linkValidationError = if (!isValid) message else null,
+          linkValidationWarning = if (isValid && message != null) message else null,
+          detectedPlatform = platform)
+    }
+  }
+
+  /** Mark the link field as touched. */
+  fun touchLink() {
+    _uiState.update { it.copy(hasTouchedLink = true) }
+  }
+
   /** Create and upload a meeting proposal to the database. */
   fun createMeeting() {
     if (!uiState.value.isValid) {
@@ -301,6 +340,7 @@ class CreateMeetingViewModel(
             status = MeetingStatus.OPEN_TO_VOTES,
             duration = uiState.value.duration,
             location = uiState.value.selectedLocation,
+            link = uiState.value.meetingLink,
             meetingProposals =
                 listOf(
                     MeetingProposal(
