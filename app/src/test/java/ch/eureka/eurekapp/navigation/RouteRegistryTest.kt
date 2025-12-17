@@ -191,7 +191,8 @@ class RouteRegistryTest {
   fun createDateTimeFormatMeetingProposalRoute_createsWithCorrectParameters() {
     val projectId = "proj-789"
     val meetingId = "meet-012"
-    val route = Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting(projectId, meetingId)
+    val route =
+        Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting(projectId, meetingId)
 
     assertEquals("Project ID should match", projectId, route.projectId)
     assertEquals("Meeting ID should match", meetingId, route.meetingId)
@@ -224,7 +225,9 @@ class RouteRegistryTest {
 
     // Test all route types can be created
     val proposalVotes = Route.MeetingsSection.MeetingProposalVotes(testProjectId, testMeetingId)
-    val dateTimeProposal = Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting(testProjectId, testMeetingId)
+    val dateTimeProposal =
+        Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting(
+            testProjectId, testMeetingId)
     val meetingDetail = Route.MeetingsSection.MeetingDetail(testProjectId, testMeetingId)
     val audioRecording = Route.MeetingsSection.AudioRecording(testProjectId, testMeetingId)
     val audioTranscript = Route.MeetingsSection.AudioTranscript(testProjectId, testMeetingId)
@@ -251,7 +254,8 @@ class RouteRegistryTest {
     val projectIdWithSpecialChars = "proj-123_test@domain"
     val meetingIdWithSpecialChars = "meet-456_special#id"
 
-    val route = Route.MeetingsSection.MeetingDetail(projectIdWithSpecialChars, meetingIdWithSpecialChars)
+    val route =
+        Route.MeetingsSection.MeetingDetail(projectIdWithSpecialChars, meetingIdWithSpecialChars)
 
     assertEquals(projectIdWithSpecialChars, route.projectId)
     assertEquals(meetingIdWithSpecialChars, route.meetingId)
