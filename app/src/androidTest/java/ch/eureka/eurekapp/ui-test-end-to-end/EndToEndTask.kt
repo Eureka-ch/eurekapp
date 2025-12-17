@@ -39,6 +39,7 @@ import org.junit.runner.RunWith
 
 /*
 Co-author: GPT-5 Codex
+Co-author: Grok
 */
 
 /**
@@ -95,7 +96,7 @@ class TaskEndToEndTest : TestCase() {
   }
 
   @Test
-  fun endToEnd_signInNavigateToTasksAndCreateTask() {
+  fun taskEndToEnd_signInNavigateToTasksAndCreateTask() {
     val fakeName = "Test User"
     val fakeEmail = "testuser@eureka.com"
     val fakeIdToken = FakeJwtGenerator.createFakeGoogleIdToken(fakeName, fakeEmail)
@@ -260,7 +261,7 @@ class TaskEndToEndTest : TestCase() {
 
   @OptIn(ExperimentalTestApi::class)
   @Test
-  fun completeE2EFlow_createVoteDeleteMeeting_succeeds() {
+  fun taskEndToEnd_completeE2EFlowCreateVoteDeleteMeetingSucceeds() {
     runBlocking {
       // Setup: Authenticate user
       val fakeIdToken = FakeJwtGenerator.createFakeGoogleIdToken(testUserName, testUserEmail)

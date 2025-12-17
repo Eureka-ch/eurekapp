@@ -1,5 +1,6 @@
 /*
  * This file was co-authored by Claude Code.
+ * This file was co-authored by Grok.
  */
 package ch.eureka.eurekapp.ui.activity
 
@@ -13,7 +14,7 @@ class ActivitySearchBarTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun searchBar_notExpanded_notVisible() {
+  fun activitySearchBar_searchBarNotExpandedNotVisible() {
     composeTestRule.setContent {
       ActivitySearchBar(query = "", onQueryChange = {}, expanded = false)
     }
@@ -22,7 +23,7 @@ class ActivitySearchBarTest {
   }
 
   @Test
-  fun searchBar_expanded_displaysSearchField() {
+  fun activitySearchBar_searchBarExpandedDisplaysSearchField() {
     composeTestRule.setContent {
       ActivitySearchBar(query = "", onQueryChange = {}, expanded = true)
     }
@@ -31,7 +32,7 @@ class ActivitySearchBarTest {
   }
 
   @Test
-  fun searchBar_emptyQuery_noClearButton() {
+  fun activitySearchBar_searchBarEmptyQueryNoClearButton() {
     composeTestRule.setContent {
       ActivitySearchBar(query = "", onQueryChange = {}, expanded = true)
     }
@@ -40,7 +41,7 @@ class ActivitySearchBarTest {
   }
 
   @Test
-  fun searchBar_withQuery_showsClearButton() {
+  fun activitySearchBar_searchBarWithQueryShowsClearButton() {
     composeTestRule.setContent {
       ActivitySearchBar(query = "test query", onQueryChange = {}, expanded = true)
     }
@@ -49,7 +50,7 @@ class ActivitySearchBarTest {
   }
 
   @Test
-  fun searchBar_textInput_triggersCallback() {
+  fun activitySearchBar_searchBarTextInputTriggersCallback() {
     var capturedQuery = ""
     composeTestRule.setContent {
       ActivitySearchBar(query = "", onQueryChange = { capturedQuery = it }, expanded = true)
@@ -61,7 +62,7 @@ class ActivitySearchBarTest {
   }
 
   @Test
-  fun searchBar_clearButton_clearsQuery() {
+  fun activitySearchBar_searchBarClearButtonClearsQuery() {
     var currentQuery = "test query"
     composeTestRule.setContent {
       ActivitySearchBar(
@@ -74,7 +75,7 @@ class ActivitySearchBarTest {
   }
 
   @Test
-  fun searchBar_singleLine_doesNotWrap() {
+  fun activitySearchBar_searchBarSingleLineDoesNotWrap() {
     composeTestRule.setContent {
       ActivitySearchBar(
           query = "This is a very long query that should not wrap to multiple lines",

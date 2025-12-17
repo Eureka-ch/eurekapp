@@ -40,7 +40,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-// Part of this code and documentation were generated with the help of AI (ChatGPT 5.1).
+// Part of this code and documentation were generated with the help of AI (ChatGPT 5.1, and Grok).
 
 /**
  * Emulator-based integration tests for HomeOverviewScreen.
@@ -191,7 +191,7 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
   }
 
   @Test
-  fun homeOverview_displaysRealDataFromFirebase() {
+  fun homeOverviewScreenEmulator_displaysRealDataFromFirebase() {
     runBlocking {
       // Setup test data
       setupTestUser(testUserId, displayName = "Eureka User")
@@ -278,7 +278,7 @@ class HomeOverviewScreenEmulatorTest : TestCase() {
   }
 
   @Test
-  fun homeOverview_navigationButtonsWorkCorrectly() {
+  fun homeOverviewScreenEmulator_navigationButtonsWorkCorrectly() {
     runBlocking {
       // Setup minimal test data
       setupTestUser(testUserId, displayName = "Test User")

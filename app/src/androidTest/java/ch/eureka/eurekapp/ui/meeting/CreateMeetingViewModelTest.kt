@@ -1,4 +1,4 @@
-/* Portions of this file were written with the help of Gemini.*/
+/* Portions of this file were written with the help of Gemini, nad Grok*/
 package ch.eureka.eurekapp.ui.meeting
 
 import android.util.Log
@@ -31,8 +31,6 @@ import org.junit.Test
 /**
  * Test suite for CreateMeetingViewModel. This suite aims for 100% test coverage of the ViewModel
  * and its UIState.
- *
- * Note : some tests were generated with Gemini
  */
 @ExperimentalCoroutinesApi
 class CreateMeetingViewModelTest {
@@ -71,7 +69,7 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun uiStateIsValidLogicIsCorrect() {
+  fun createMeetingViewModel_uiStateIsValidLogicIsCorrect() {
     var state =
         CreateMeetingUIState(
             title = "Valid Title",
@@ -108,7 +106,7 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun initialStateIsCorrect() {
+  fun createMeetingViewModel_initialStateIsCorrect() {
     val uiState = viewModel.uiState.value
 
     assertEquals("", uiState.title)
@@ -128,7 +126,7 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun clearErrorMsgSetsErrorMsgToNull() {
+  fun createMeetingViewModel_clearErrorMsgSetsErrorMsgToNull() {
     viewModel.setErrorMsg("An error")
     assertNotNull(viewModel.uiState.value.errorMsg)
 
@@ -137,73 +135,73 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun setErrorMsgUpdatesErrorMsg() {
+  fun createMeetingViewModel_setErrorMsgUpdatesErrorMsg() {
     val errorMessage = "This is a test error"
     viewModel.setErrorMsg(errorMessage)
     assertEquals(errorMessage, viewModel.uiState.value.errorMsg)
   }
 
   @Test
-  fun setTitleUpdatesTitle() {
+  fun createMeetingViewModel_setTitleUpdatesTitle() {
     val newTitle = "My Meeting Title"
     viewModel.setTitle(newTitle)
     assertEquals(newTitle, viewModel.uiState.value.title)
   }
 
   @Test
-  fun setDateUpdatesDate() {
+  fun createMeetingViewModel_setDateUpdatesDate() {
     val newDate = LocalDate.of(2025, 10, 28)
     viewModel.setDate(newDate)
     assertEquals(newDate, viewModel.uiState.value.date)
   }
 
   @Test
-  fun setTimeUpdatesTime() {
+  fun createMeetingViewModel_setTimeUpdatesTime() {
     val newTime = LocalTime.of(14, 30)
     viewModel.setTime(newTime)
     assertEquals(newTime, viewModel.uiState.value.time)
   }
 
   @Test
-  fun setDurationUpdatesDuration() {
+  fun createMeetingViewModel_setDurationUpdatesDuration() {
     val newDuration = 45
     viewModel.setDuration(newDuration)
     assertEquals(newDuration, viewModel.uiState.value.duration)
   }
 
   @Test
-  fun setFormatUpdatesFormat() {
+  fun createMeetingViewModel_setFormatUpdatesFormat() {
     val newFormat = MeetingFormat.VIRTUAL
     viewModel.setFormat(newFormat)
     assertEquals(newFormat, viewModel.uiState.value.format)
   }
 
   @Test
-  fun setMeetingSavedUpdatesMeetingSaved() {
+  fun createMeetingViewModel_setMeetingSavedUpdatesMeetingSaved() {
     viewModel.setMeetingSaved()
     assertTrue(viewModel.uiState.value.meetingSaved)
   }
 
   @Test
-  fun touchTitleUpdatesHasTouchedTitle() {
+  fun createMeetingViewModel_touchTitleUpdatesHasTouchedTitle() {
     viewModel.touchTitle()
     assertTrue(viewModel.uiState.value.hasTouchedTitle)
   }
 
   @Test
-  fun touchDateUpdatesHasTouchedDate() {
+  fun createMeetingViewModel_touchDateUpdatesHasTouchedDate() {
     viewModel.touchDate()
     assertTrue(viewModel.uiState.value.hasTouchedDate)
   }
 
   @Test
-  fun touchTimeUpdatesHasTouchedTime() {
+  fun createMeetingViewModel_touchTimeUpdatesHasTouchedTime() {
     viewModel.touchTime()
     assertTrue(viewModel.uiState.value.hasTouchedTime)
   }
 
   @Test
-  fun createMeetingWhenStateIsInvalidSetsErrorAndReturns() {
+  fun createMeetingViewModel_createMeetingWhenStateIsInvalidSetsErrorAndReturns() {
     viewModel.setTitle("")
     assertFalse(viewModel.uiState.value.isValid)
 
@@ -215,7 +213,7 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun createMeetingWhenTimeIsInPastSetsErrorAndReturns() {
+  fun createMeetingViewModel_createMeetingWhenTimeIsInPastSetsErrorAndReturns() {
     viewModel.setTitle("Valid Title")
     viewModel.setDuration(30)
     viewModel.setDate(pastDateTime.toLocalDate())
@@ -231,7 +229,7 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun createMeetingWhenUserNotLoggedInSetsErrorAndReturns() {
+  fun createMeetingViewModel_createMeetingWhenUserNotLoggedInSetsErrorAndReturns() {
     viewModel.setTitle("Valid Title")
     viewModel.setDuration(30)
     viewModel.setDate(futureDateTime.toLocalDate())
@@ -249,7 +247,7 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun createMeetingWhenValidRepositorySuccessSetsMeetingSaved() = runTest {
+  fun createMeetingViewModel_createMeetingWhenValidRepositorySuccessSetsMeetingSaved() = runTest {
     val title = "Successful Meeting"
     val date = futureDateTime.toLocalDate()
     val time = futureDateTime.toLocalTime()
@@ -308,7 +306,7 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun createMeetingWhenValidRepositoryFailureSetsErrorMsg() = runTest {
+  fun createMeetingViewModel_createMeetingWhenValidRepositoryFailureSetsErrorMsg() = runTest {
     viewModel.setTitle("Failed Meeting")
     viewModel.setDuration(15)
     viewModel.setDate(futureDateTime.toLocalDate())
@@ -333,7 +331,7 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun createMeetingUiStateCopyWorksAsExpected() {
+  fun createMeetingViewModel_createMeetingUiStateCopyWorksAsExpected() {
     val originalState =
         CreateMeetingUIState(title = "Original", duration = 10, hasTouchedDate = false)
     val copiedState = originalState.copy(title = "Copied", hasTouchedDate = true)
@@ -347,14 +345,14 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun setLocationUpdatesSelectedLocation() {
+  fun createMeetingViewModel_setLocationUpdatesSelectedLocation() {
     val location = Location(46.5197, 6.6323, "Lausanne")
     viewModel.setLocation(location)
     assertEquals(location, viewModel.uiState.value.selectedLocation)
   }
 
   @Test
-  fun uiStateIsValidWithInPersonFormatRequiresLocation() {
+  fun createMeetingViewModel_uiStateIsValidWithInPersonFormatRequiresLocation() {
     viewModel.setTitle("Meeting")
     viewModel.setDuration(30)
     viewModel.setDate(futureDateTime.toLocalDate())
@@ -370,7 +368,7 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun uiStateIsValidWithVirtualFormatDoesNotRequireLocation() {
+  fun createMeetingViewModel_uiStateIsValidWithVirtualFormatDoesNotRequireLocation() {
     viewModel.setTitle("Meeting")
     viewModel.setDuration(30)
     viewModel.setDate(futureDateTime.toLocalDate())
@@ -384,7 +382,7 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun setLocationQueryUpdatesQueryAndFetchesSuggestions() = runTest {
+  fun createMeetingViewModel_setLocationQueryUpdatesQueryAndFetchesSuggestions() = runTest {
     val query = "Geneva"
     val expectedSuggestions = listOf(Location(46.2, 6.1, "Geneva"))
     locationRepositoryMock.searchResults = expectedSuggestions
@@ -400,7 +398,7 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun setLocationQueryWithEmptyStringClearsSuggestions() = runTest {
+  fun createMeetingViewModel_setLocationQueryWithEmptyStringClearsSuggestions() = runTest {
     locationRepositoryMock.searchResults = listOf(Location(0.0, 0.0, "Old"))
 
     viewModel.setLocationQuery("Old")
@@ -420,7 +418,7 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun setLocationQueryHandlesRepositoryException() = runTest {
+  fun createMeetingViewModel_setLocationQueryHandlesRepositoryException() = runTest {
     locationRepositoryMock.shouldThrow = true
 
     viewModel.setLocationQuery("Error City")
@@ -432,7 +430,7 @@ class CreateMeetingViewModelTest {
   }
 
   @Test
-  fun createMeetingPassesLocationToRepository() = runTest {
+  fun createMeetingViewModel_createMeetingPassesLocationToRepository() = runTest {
     val location = Location(40.7, -74.0, "New York")
 
     viewModel.setTitle("Location Meeting")

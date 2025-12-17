@@ -30,7 +30,7 @@ class MeetingAudioRecordingScreenTest {
       GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO)
 
   @Test
-  fun recordingWorks() {
+  fun meetingAudioRecordingScreen_recordingWorks() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     composeTestRule.setContent {
       MeetingAudioRecordingScreen(
@@ -91,7 +91,7 @@ class MeetingAudioRecordingScreenTest {
   }
 
   @Test
-  fun viewTranscriptButtonAppearsAfterSuccessfulUpload() {
+  fun meetingAudioRecordingScreen_viewTranscriptButtonAppearsAfterSuccessfulUpload() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val mockMeetingRepository =
         object : ch.eureka.eurekapp.ui.meeting.MeetingRepositoryMock() {
@@ -126,7 +126,7 @@ class MeetingAudioRecordingScreenTest {
   }
 
   @Test
-  fun viewTranscriptButtonNavigatesToTranscriptScreen() {
+  fun meetingAudioRecordingScreen_viewTranscriptButtonNavigatesToTranscriptScreen() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val mockMeetingRepository =
         object : ch.eureka.eurekapp.ui.meeting.MeetingRepositoryMock() {
@@ -173,7 +173,7 @@ class MeetingAudioRecordingScreenTest {
   }
 
   @Test
-  fun test_backButton_isDisplayed_andCallsOnBackClick() {
+  fun meetingAudioRecordingScreen_testBackButtonIsDisplayedAndCallsOnBackClick() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val onBackClickCalled = mutableStateOf(false)
     composeTestRule.setContent {

@@ -35,6 +35,7 @@ import org.junit.runner.RunWith
 /*
 Co-author: GPT-5 Codex
 Co-author: Claude 4.5 Sonnet
+Co-author: Grok
 */
 
 /**
@@ -94,7 +95,7 @@ class TemplateEndToEndTest : TestCase() {
 
   @OptIn(ExperimentalTestApi::class)
   @Test
-  fun endToEnd_createTemplateAndApplyToTask() {
+  fun templateEndToEnd_createTemplateAndApplyToTask() {
     val fakeName = "Test User"
     val fakeEmail = "testuser@eureka.com"
     val fakeIdToken = FakeJwtGenerator.createFakeGoogleIdToken(fakeName, fakeEmail)

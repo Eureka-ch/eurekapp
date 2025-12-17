@@ -18,7 +18,7 @@ import org.junit.Test
 /**
  * Test suite for TaskTemplateRepository implementation.
  *
- * Note: Some of these tests were co-authored by Claude Code.
+ * Note: Some of these tests were co-authored by Claude Code, and Grok.
  */
 class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
 

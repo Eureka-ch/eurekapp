@@ -70,7 +70,7 @@ class MeetingScreenOfflineTest {
   }
 
   @Test
-  fun meetingScreenOfflineDisplaysMessage() {
+  fun meetingScreenOffline_displaysMessage() {
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -89,7 +89,7 @@ class MeetingScreenOfflineTest {
   }
 
   @Test
-  fun meetingScreenOfflineDisablesCreateButton() {
+  fun meetingScreenOffline_disablesCreateButton() {
     mockConnectivityObserver.setConnected(false)
 
     var createMeetingClicked = false
@@ -120,7 +120,7 @@ class MeetingScreenOfflineTest {
   }
 
   @Test
-  fun meetingScreenOfflineViewsExistingMeetings() {
+  fun meetingScreenOffline_viewsExistingMeetings() {
     val meeting =
         Meeting(
             meetingID = "meeting1",
@@ -153,7 +153,7 @@ class MeetingScreenOfflineTest {
   }
 
   @Test
-  fun meetingScreenGoesOfflineUpdatesUI() {
+  fun meetingScreenOffline_goesOfflineUpdatesUI() {
     mockConnectivityObserver.setConnected(true)
 
     composeTestRule.setContent {
@@ -181,7 +181,7 @@ class MeetingScreenOfflineTest {
   }
 
   @Test
-  fun meetingScreenComesBackOnlineUpdatesUI() {
+  fun meetingScreenOffline_comesBackOnlineUpdatesUI() {
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -209,7 +209,7 @@ class MeetingScreenOfflineTest {
   }
 
   @Test
-  fun meetingScreenOfflineDisablesVoteButtons() {
+  fun meetingScreenOffline_disablesVoteButtons() {
     val meeting =
         Meeting(
             meetingID = "meeting1",
@@ -245,7 +245,7 @@ class MeetingScreenOfflineTest {
   }
 
   @Test
-  fun meetingScreenOfflineAllowsNavigationToDetail() {
+  fun meetingScreenOffline_allowsNavigationToDetail() {
     val meeting =
         Meeting(
             meetingID = "meeting1",

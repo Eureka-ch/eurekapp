@@ -1,3 +1,4 @@
+// Portions of this file were written with the help of Grok.
 package ch.eureka.eurekapp.model.data.task
 
 import ch.eureka.eurekapp.model.data.project.Member

@@ -17,8 +17,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /*
-Note: This file was partially written by GPT-5 Codex
+Note: This file was partially written by GPT-5 Codex, and Grok
 Co-author : GPT-5
+Co-author : Grok
 */
 
 /**
@@ -57,7 +58,7 @@ class UserAssignmentFieldTest {
           lastActive = Timestamp.now())
 
   @Test
-  fun userAssignmentFieldDisplaysNoUsersMessageWhenEmptyList() {
+  fun userAssignmentField_displaysNoUsersMessageWhenEmptyList() {
     composeTestRule.setContent {
       EurekappTheme {
         UserAssignmentField(
@@ -73,7 +74,7 @@ class UserAssignmentFieldTest {
   }
 
   @Test
-  fun userAssignmentFieldDisplaysNoUsersAssignedWhenSelectionEmpty() {
+  fun userAssignmentField_displaysNoUsersAssignedWhenSelectionEmpty() {
     composeTestRule.setContent {
       EurekappTheme {
         UserAssignmentField(
@@ -89,7 +90,7 @@ class UserAssignmentFieldTest {
   }
 
   @Test
-  fun userAssignmentFieldDisplaysSingleUserNameWhenOneSelected() {
+  fun userAssignmentField_displaysSingleUserNameWhenOneSelected() {
     composeTestRule.setContent {
       EurekappTheme {
         UserAssignmentField(
@@ -104,7 +105,7 @@ class UserAssignmentFieldTest {
   }
 
   @Test
-  fun userAssignmentFieldDisplaysUserEmailWhenDisplayNameBlank() {
+  fun userAssignmentField_displaysUserEmailWhenDisplayNameBlank() {
     composeTestRule.setContent {
       EurekappTheme {
         UserAssignmentField(
@@ -119,7 +120,7 @@ class UserAssignmentFieldTest {
   }
 
   @Test
-  fun userAssignmentFieldDisplaysUserCountWhenMultipleSelected() {
+  fun userAssignmentField_displaysUserCountWhenMultipleSelected() {
     composeTestRule.setContent {
       EurekappTheme {
         UserAssignmentField(
@@ -134,7 +135,7 @@ class UserAssignmentFieldTest {
   }
 
   @Test
-  fun userAssignmentFieldOpensDropdownMenuWhenClicked() {
+  fun userAssignmentField_opensDropdownMenuWhenClicked() {
     composeTestRule.setContent {
       EurekappTheme {
         UserAssignmentField(
@@ -151,7 +152,7 @@ class UserAssignmentFieldTest {
   }
 
   @Test
-  fun userAssignmentFieldCallsOnUserToggledWhenUserItemClicked() {
+  fun userAssignmentField_callsOnUserToggledWhenUserItemClicked() {
     var toggledUserId: String? = null
     composeTestRule.setContent {
       EurekappTheme {
@@ -170,7 +171,7 @@ class UserAssignmentFieldTest {
   }
 
   @Test
-  fun userAssignmentFieldDoesNotOpenDropdownWhenDisabled() {
+  fun userAssignmentField_doesNotOpenDropdownWhenDisabled() {
     composeTestRule.setContent {
       EurekappTheme {
         UserAssignmentField(

@@ -1,4 +1,4 @@
-// Portions of this code were generated with the help of Claude Sonnet 4.5
+// Portions of this code were generated with the help of Claude Sonnet 4.5, and Grok.
 package ch.eureka.eurekapp.ui.notifications
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -43,7 +43,7 @@ class NotificationPreferencesScreenTest {
   }
 
   @Test
-  fun notificationPreferencesScreenDisplaysCorrectly() {
+  fun notificationPreferencesScreen_displaysCorrectly() {
     composeTestRule.setContent {
       NotificationPreferencesScreen(
           notificationSettingsViewModel = viewModel, onFinishedSettingNotifications = {})
@@ -53,7 +53,7 @@ class NotificationPreferencesScreenTest {
   }
 
   @Test
-  fun notificationPreferencesScreenBackButtonWorks() {
+  fun notificationPreferencesScreen_backButtonWorks() {
     var backClicked = false
 
     composeTestRule.setContent {
@@ -67,7 +67,7 @@ class NotificationPreferencesScreenTest {
   }
 
   @Test
-  fun notificationPreferencesScreenDisplaysMeetingCategory() {
+  fun notificationPreferencesScreen_displaysMeetingCategory() {
     composeTestRule.setContent {
       NotificationPreferencesScreen(
           notificationSettingsViewModel = viewModel, onFinishedSettingNotifications = {})
@@ -77,7 +77,7 @@ class NotificationPreferencesScreenTest {
   }
 
   @Test
-  fun notificationPreferencesScreenDisplaysMessageCategory() {
+  fun notificationPreferencesScreen_displaysMessageCategory() {
     composeTestRule.setContent {
       NotificationPreferencesScreen(
           notificationSettingsViewModel = viewModel, onFinishedSettingNotifications = {})
@@ -87,7 +87,7 @@ class NotificationPreferencesScreenTest {
   }
 
   @Test
-  fun notificationPreferencesScreenDisplaysGeneralCategory() {
+  fun notificationPreferencesScreen_displaysGeneralCategory() {
     composeTestRule.setContent {
       NotificationPreferencesScreen(
           notificationSettingsViewModel = viewModel, onFinishedSettingNotifications = {})
@@ -97,7 +97,7 @@ class NotificationPreferencesScreenTest {
   }
 
   @Test
-  fun notificationOptionsCategoryDisplaysTitle() {
+  fun notificationPreferencesScreen_notificationOptionsCategoryDisplaysTitle() {
     composeTestRule.setContent {
       NotificationOptionsCategory(title = "Test Category", optionsList = emptyList())
     }
@@ -106,7 +106,7 @@ class NotificationPreferencesScreenTest {
   }
 
   @Test
-  fun notificationOptionsCategoryDisplaysOptions() {
+  fun notificationPreferencesScreen_notificationOptionsCategoryDisplaysOptions() {
     val options =
         listOf(
             NotificationSettingState(
@@ -122,7 +122,7 @@ class NotificationPreferencesScreenTest {
   }
 
   @Test
-  fun optionBooleanSwitchDisplaysTitle() {
+  fun notificationPreferencesScreen_optionBooleanSwitchDisplaysTitle() {
     composeTestRule.setContent {
       OptionBooleanSwitch(value = true, title = "Test Option", onValueChange = {})
     }
@@ -131,7 +131,7 @@ class NotificationPreferencesScreenTest {
   }
 
   @Test
-  fun optionBooleanSwitchIsDisplayed() {
+  fun notificationPreferencesScreen_optionBooleanSwitchIsDisplayed() {
     composeTestRule.setContent {
       OptionBooleanSwitch(value = false, title = "Test Switch", onValueChange = {})
     }
@@ -142,7 +142,7 @@ class NotificationPreferencesScreenTest {
   }
 
   @Test
-  fun optionBooleanSwitchCanBeToggled() {
+  fun notificationPreferencesScreen_optionBooleanSwitchCanBeToggled() {
     var switchValue = false
 
     composeTestRule.setContent {
@@ -158,7 +158,7 @@ class NotificationPreferencesScreenTest {
   }
 
   @Test
-  fun notificationSettingStateDataClassWorks() {
+  fun notificationPreferencesScreen_notificationSettingStateDataClassWorks() {
     val state =
         NotificationSettingState(UserNotificationSettingsKeys.ON_NEW_MESSAGE_NOTIFY, true, {})
 
@@ -167,7 +167,7 @@ class NotificationPreferencesScreenTest {
   }
 
   @Test
-  fun notificationPreferencesScreenAllNotificationKeysDisplayed() {
+  fun notificationPreferencesScreen_allNotificationKeysDisplayed() {
     composeTestRule.setContent {
       NotificationPreferencesScreen(
           notificationSettingsViewModel = viewModel, onFinishedSettingNotifications = {})

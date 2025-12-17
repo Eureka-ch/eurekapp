@@ -10,7 +10,7 @@ import ch.eureka.eurekapp.model.data.project.Project
 import org.junit.Rule
 import org.junit.Test
 
-// Portions of this file were written with the help of GPT-5 Codex and Gemini.
+// Portions of this file were written with the help of GPT-5 Codex, Gemini, and Grok.
 class IdeasScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -48,32 +48,32 @@ class IdeasScreenTest {
   }
 
   @Test
-  fun ideasScreen_projectSelector_showsSelectedProject() {
+  fun ideasScreen_projectSelectorShowsSelectedProject() {
     setContentWithMockViewModel(selectedProject = testProject)
     composeTestRule.onNodeWithText("Test Project").assertIsDisplayed()
   }
 
   @Test
-  fun ideasScreen_projectSelector_showsPlaceholderWhenNoSelection() {
+  fun ideasScreen_projectSelectorShowsPlaceholderWhenNoSelection() {
     setContentWithMockViewModel(selectedProject = null)
     composeTestRule.onNodeWithText("Select a project").assertIsDisplayed()
   }
 
   @Test
-  fun ideasScreen_fabDisplayed_inListMode() {
+  fun ideasScreen_fabDisplayedInListMode() {
     setContentWithMockViewModel(selectedProject = testProject, viewMode = IdeasViewMode.LIST)
     composeTestRule.onNodeWithTag("createIdeaButton").assertIsDisplayed()
   }
 
   @Test
-  fun ideasScreen_fabNotDisplayed_inConversationMode() {
+  fun ideasScreen_fabNotDisplayedInConversationMode() {
     setContentWithMockViewModel(
         selectedProject = testProject, viewMode = IdeasViewMode.CONVERSATION)
     composeTestRule.onNodeWithTag("createIdeaButton").assertDoesNotExist()
   }
 
   @Test
-  fun ideasScreen_fabClick_opensCreateDialog() {
+  fun ideasScreen_fabClickOpensCreateDialog() {
     setContentWithMockViewModel(selectedProject = testProject, viewMode = IdeasViewMode.LIST)
     composeTestRule.onNodeWithTag("createIdeaButton").performClick()
     composeTestRule.waitForIdle()
@@ -81,7 +81,7 @@ class IdeasScreenTest {
   }
 
   @Test
-  fun ideasScreen_projectDropdown_displaysProjects() {
+  fun ideasScreen_projectDropdownDisplaysProjects() {
     val projects =
         listOf(
             Project(projectId = "p1", name = "Project 1"),
@@ -95,7 +95,7 @@ class IdeasScreenTest {
   }
 
   @Test
-  fun ideasScreen_projectDropdown_withNoProjects_showsMessage() {
+  fun ideasScreen_projectDropdownWithNoProjectsShowsMessage() {
     setContentWithMockViewModel(projects = emptyList())
     composeTestRule.onNodeWithTag(IdeasScreenTestTags.PROJECT_SELECTOR).performClick()
     composeTestRule.waitForIdle()
@@ -103,13 +103,13 @@ class IdeasScreenTest {
   }
 
   @Test
-  fun ideasScreen_loading_showsLoadingIndicator() {
+  fun ideasScreen_loadingShowsLoadingIndicator() {
     setContentWithMockViewModel(selectedProject = testProject, isLoading = true)
     composeTestRule.onNodeWithTag("loadingIndicator").assertIsDisplayed()
   }
 
   @Test
-  fun ideasScreen_withIdeas_displaysIdeasList() {
+  fun ideasScreen_withIdeasDisplaysIdeasList() {
     setContentWithMockViewModel(
         selectedProject = testProject, ideas = listOf(testIdea), viewMode = IdeasViewMode.LIST)
     composeTestRule.onNodeWithTag("ideasList").assertIsDisplayed()

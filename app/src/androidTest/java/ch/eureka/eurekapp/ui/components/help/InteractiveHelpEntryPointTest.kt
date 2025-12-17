@@ -16,7 +16,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-// Portions of this code were generated with the help of AI(chatGPT) and Claude Sonnet 4.5
+// Portions of this code were generated with the help of AI(chatGPT, Claude Sonnet 4.5, and Grok)
 @RunWith(AndroidJUnit4::class)
 class InteractiveHelpEntryPointTest {
 
@@ -47,7 +47,7 @@ class InteractiveHelpEntryPointTest {
   }
 
   @Test
-  fun helpChipIsDisplayedWhenHelpIsEnabled() {
+  fun interactiveHelpEntryPoint_helpChipIsDisplayedWhenHelpIsEnabled() {
     composeTestRule.setContent {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.HOME_OVERVIEW,
@@ -60,7 +60,7 @@ class InteractiveHelpEntryPointTest {
   }
 
   @Test
-  fun helpDialogOpensWhenChipIsClicked() {
+  fun interactiveHelpEntryPoint_helpDialogOpensWhenChipIsClicked() {
     composeTestRule.setContent {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.HOME_OVERVIEW,
@@ -92,7 +92,7 @@ class InteractiveHelpEntryPointTest {
   }
 
   @Test
-  fun createTaskContextDisplaysDependenciesExplanation() {
+  fun interactiveHelpEntryPoint_createTaskContextDisplaysDependenciesExplanation() {
     composeTestRule.setContent {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.CREATE_TASK,
@@ -118,7 +118,7 @@ class InteractiveHelpEntryPointTest {
   }
 
   @Test
-  fun helpChipIsNotDisplayedWhenHelpIsDisabled() {
+  fun interactiveHelpEntryPoint_helpChipIsNotDisplayedWhenHelpIsDisabled() {
     val userWithHelpDisabled =
         mockUser.copy(
             notificationSettings =
@@ -140,7 +140,7 @@ class InteractiveHelpEntryPointTest {
   }
 
   @Test
-  fun homeOverviewContextDisplaysCorrectContent() {
+  fun interactiveHelpEntryPoint_homeOverviewContextDisplaysCorrectContent() {
     composeTestRule.setContent {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.HOME_OVERVIEW,
@@ -154,7 +154,7 @@ class InteractiveHelpEntryPointTest {
   }
 
   @Test
-  fun tasksContextDisplaysCorrectContent() {
+  fun interactiveHelpEntryPoint_tasksContextDisplaysCorrectContent() {
     composeTestRule.setContent {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.TASKS,
@@ -168,7 +168,7 @@ class InteractiveHelpEntryPointTest {
   }
 
   @Test
-  fun meetingsContextDisplaysCorrectContent() {
+  fun interactiveHelpEntryPoint_meetingsContextDisplaysCorrectContent() {
     composeTestRule.setContent {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.MEETINGS,
@@ -183,7 +183,7 @@ class InteractiveHelpEntryPointTest {
   }
 
   @Test
-  fun projectsContextDisplaysCorrectContent() {
+  fun interactiveHelpEntryPoint_projectsContextDisplaysCorrectContent() {
     composeTestRule.setContent {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.PROJECTS,
@@ -197,7 +197,7 @@ class InteractiveHelpEntryPointTest {
   }
 
   @Test
-  fun createTaskContextDisplaysCorrectContent() {
+  fun interactiveHelpEntryPoint_createTaskContextDisplaysCorrectContent() {
     composeTestRule.setContent {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.CREATE_TASK,
@@ -211,7 +211,7 @@ class InteractiveHelpEntryPointTest {
   }
 
   @Test
-  fun filesManagementContextDisplaysCorrectContent() {
+  fun interactiveHelpEntryPoint_filesManagementContextDisplaysCorrectContent() {
     composeTestRule.setContent {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.FILES_MANAGEMENT,
@@ -228,7 +228,7 @@ class InteractiveHelpEntryPointTest {
   }
 
   @Test
-  fun meetingVotesContextDisplaysCorrectContent() {
+  fun interactiveHelpEntryPoint_meetingVotesContextDisplaysCorrectContent() {
     composeTestRule.setContent {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.MEETING_VOTES,
@@ -244,7 +244,7 @@ class InteractiveHelpEntryPointTest {
   }
 
   @Test
-  fun tokenEntryContextDisplaysCorrectContent() {
+  fun interactiveHelpEntryPoint_tokenEntryContextDisplaysCorrectContent() {
     composeTestRule.setContent {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.TOKEN_ENTRY,
@@ -263,7 +263,7 @@ class InteractiveHelpEntryPointTest {
   }
 
   @Test
-  fun viewTaskContextDisplaysCorrectContent() {
+  fun interactiveHelpEntryPoint_viewTaskContextDisplaysCorrectContent() {
     composeTestRule.setContent {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.VIEW_TASK,
@@ -279,7 +279,7 @@ class InteractiveHelpEntryPointTest {
   }
 
   @Test
-  fun notesContextDisplaysCorrectContent() {
+  fun interactiveHelpEntryPoint_notesContextDisplaysCorrectContent() {
     composeTestRule.setContent {
       InteractiveHelpEntryPoint(
           helpContext = HelpContext.NOTES,

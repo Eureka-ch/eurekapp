@@ -130,7 +130,7 @@ class ViewTaskScreenOfflineTest {
   }
 
   @Test
-  fun viewTaskScreenOfflineDisplaysMessage() {
+  fun viewTaskScreenOffline_displaysMessage() {
     runBlocking {
       val projectId = "project123"
       val taskId = "task123"
@@ -166,7 +166,7 @@ class ViewTaskScreenOfflineTest {
   }
 
   @Test
-  fun viewTaskScreenOfflineStillViewsTaskDetails() {
+  fun viewTaskScreenOffline_stillViewsTaskDetails() {
     runBlocking {
       val projectId = "project123"
       val taskId = "task123"
@@ -211,7 +211,7 @@ class ViewTaskScreenOfflineTest {
   }
 
   @Test
-  fun viewTaskScreenOfflineButtonDoesNotNavigate() {
+  fun viewTaskScreenOffline_buttonDoesNotNavigate() {
     runBlocking {
       val projectId = "project123"
       val taskId = "task123"
@@ -253,7 +253,7 @@ class ViewTaskScreenOfflineTest {
   }
 
   @Test
-  fun viewTaskScreenOfflineAttachmentsShowMessage() {
+  fun viewTaskScreenOffline_attachmentsShowMessage() {
     runBlocking {
       val projectId = "project123"
       val taskId = "task123"
@@ -292,7 +292,7 @@ class ViewTaskScreenOfflineTest {
   }
 
   @Test
-  fun viewTaskScreenOnlineThenOfflineShowsMessage() {
+  fun viewTaskScreenOffline_onlineThenOfflineShowsMessage() {
     runBlocking {
       val projectId = "project123"
       val taskId = "task123"

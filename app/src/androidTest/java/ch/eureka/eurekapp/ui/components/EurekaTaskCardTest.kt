@@ -1,3 +1,4 @@
+// Portions of this file were written with the help of Grok.
 package ch.eureka.eurekapp.ui.components
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -22,7 +23,7 @@ class EurekaTaskCardTest {
   @get:Rule val composeTestRule = createAndroidComposeRule<androidx.activity.ComponentActivity>()
 
   @Test
-  fun taskCompletionToggleChangesUIStateCorrectly() {
+  fun eurekaTaskCard_taskCompletionToggleChangesUIStateCorrectly() {
     var toggleCallCount = 0
 
     composeTestRule.setContent {
@@ -44,7 +45,7 @@ class EurekaTaskCardTest {
   }
 
   @Test
-  fun taskCardShowsConditionalContentBasedOnDataAvailability() {
+  fun eurekaTaskCard_showsConditionalContentBasedOnDataAvailability() {
     composeTestRule.setContent {
       EurekappTheme {
         EurekaTaskCard(
@@ -64,7 +65,7 @@ class EurekaTaskCardTest {
   }
 
   @Test
-  fun taskCardHidesOptionalContentWhenNotProvided() {
+  fun eurekaTaskCard_hidesOptionalContentWhenNotProvided() {
     composeTestRule.setContent { EurekappTheme { EurekaTaskCard(title = "Minimal Task") } }
 
     // Only title should be visible
@@ -77,7 +78,7 @@ class EurekaTaskCardTest {
   }
 
   @Test
-  fun completedTaskShows100PercentProgressRegardlessOfInput() {
+  fun eurekaTaskCard_completedTaskShows100PercentProgressRegardlessOfInput() {
     composeTestRule.setContent {
       EurekappTheme {
         EurekaTaskCard(
@@ -96,7 +97,7 @@ class EurekaTaskCardTest {
   }
 
   @Test
-  fun taskCardHandlesMultipleRapidClicksCorrectly() {
+  fun eurekaTaskCard_handlesMultipleRapidClicksCorrectly() {
     var clickCount = 0
 
     composeTestRule.setContent {
@@ -114,7 +115,7 @@ class EurekaTaskCardTest {
   }
 
   @Test
-  fun taskCardDisplaysDueDateTagWhenProvided() {
+  fun eurekaTaskCard_displaysDueDateTagWhenProvided() {
     composeTestRule.setContent {
       EurekappTheme {
         EurekaTaskCard(
@@ -132,7 +133,7 @@ class EurekaTaskCardTest {
   }
 
   @Test
-  fun taskCardHidesDueDateTagWhenNotProvided() {
+  fun eurekaTaskCard_hidesDueDateTagWhenNotProvided() {
     composeTestRule.setContent {
       EurekappTheme {
         EurekaTaskCard(

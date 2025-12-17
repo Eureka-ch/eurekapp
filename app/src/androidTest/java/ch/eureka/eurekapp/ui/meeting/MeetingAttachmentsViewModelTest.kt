@@ -1,5 +1,5 @@
 package ch.eureka.eurekapp.ui.meeting
-// Portions of this code were generated with the help of Gemini 3 Pro.
+// Portions of this code were generated with the help of Gemini 3 Pro, and Grok.
 import android.content.ContentResolver
 import android.content.Context
 import android.database.Cursor
@@ -199,7 +199,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun uploadMeetingFileToFirestoreSuccess() = runTest {
+  fun meetingAttachmentsViewModel_uploadMeetingFileToFirestoreSuccess() = runTest {
     val projectId = "proj1"
     val meetingId = "meet1"
 
@@ -232,7 +232,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun uploadMeetingFileToFirestoreFailsWhenOffline() = runTest {
+  fun meetingAttachmentsViewModel_uploadMeetingFileToFirestoreFailsWhenOffline() = runTest {
     isConnectedFlow.value = false
     advanceUntilIdle() // Process the state emission
 
@@ -244,7 +244,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun uploadMeetingFileToFirestoreFailsWhenFileTooBig() = runTest {
+  fun meetingAttachmentsViewModel_uploadMeetingFileToFirestoreFailsWhenFileTooBig() = runTest {
     val hugeSize = 51 * 1024 * 1024L // 51MB
     every { contentResolver.query(uri, null, null, null, null) } returns cursor
     every { cursor.moveToFirst() } returns true
@@ -261,19 +261,20 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun uploadMeetingFileToFirestoreFailsWhenSizeIndexNotFound() = runTest {
-    every { contentResolver.query(uri, null, null, null, null) } returns cursor
-    every { cursor.moveToFirst() } returns true
-    every { cursor.getColumnIndex(OpenableColumns.SIZE) } returns -1 // Size index not found
-    every { cursor.close() } returns Unit
+  fun meetingAttachmentsViewModel_uploadMeetingFileToFirestoreFailsWhenSizeIndexNotFound() =
+      runTest {
+        every { contentResolver.query(uri, null, null, null, null) } returns cursor
+        every { cursor.moveToFirst() } returns true
+        every { cursor.getColumnIndex(OpenableColumns.SIZE) } returns -1 // Size index not found
+        every { cursor.close() } returns Unit
 
-    var errorMsg = ""
-    viewModel.uploadMeetingFileToFirestore(
-        contentResolver, uri, "p", "m", {}, { msg -> errorMsg = msg })
+        var errorMsg = ""
+        viewModel.uploadMeetingFileToFirestore(
+            contentResolver, uri, "p", "m", {}, { msg -> errorMsg = msg })
 
-    advanceUntilIdle()
-    assertEquals("Failed to get the size of the file!", errorMsg)
-  }
+        advanceUntilIdle()
+        assertEquals("Failed to get the size of the file!", errorMsg)
+      }
 
   private class MockedMeetingRepositoryForFailsWhenMeetingDoesNotExist : MeetingRepository {
     override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> {
@@ -364,50 +365,51 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun uploadMeetingFileToFirestoreFailsWhenMeetingNoLongerExists() = runTest {
-    val downloadUrl = "http://fake.url/file.pdf"
+  fun meetingAttachmentsViewModel_uploadMeetingFileToFirestoreFailsWhenMeetingNoLongerExists() =
+      runTest {
+        val downloadUrl = "http://fake.url/file.pdf"
 
-    every { contentResolver.query(uri, null, null, null, null) } returns cursor
-    every { cursor.moveToFirst() } returns true
-    every { cursor.getColumnIndex(OpenableColumns.SIZE) } returns 0
-    every { cursor.getLong(0) } returns 1024L
-    every { cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME) } returns 1
-    every { cursor.getString(1) } returns "test.pdf"
-    every { cursor.close() } returns Unit
+        every { contentResolver.query(uri, null, null, null, null) } returns cursor
+        every { cursor.moveToFirst() } returns true
+        every { cursor.getColumnIndex(OpenableColumns.SIZE) } returns 0
+        every { cursor.getLong(0) } returns 1024L
+        every { cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME) } returns 1
+        every { cursor.getString(1) } returns "test.pdf"
+        every { cursor.close() } returns Unit
 
-    coEvery { meetingRepository.getMeetingById(any(), any()) } returns
-        flowOf(null) // Meeting doesn't exist
+        coEvery { meetingRepository.getMeetingById(any(), any()) } returns
+            flowOf(null) // Meeting doesn't exist
 
-    var errorMsg: Any? = null
-    var failureCalled = false
-    val newViewModel =
-        MeetingAttachmentsViewModel(
-            MockedFileStorageRepositoryForFailsWhenMeetingDoesNotExist(),
-            MockedMeetingRepositoryForFailsWhenMeetingDoesNotExist(),
-            connectivityObserver)
-    newViewModel.uploadMeetingFileToFirestore(
-        contentResolver,
-        uri,
-        "p",
-        "m",
-        onSuccess = {},
-        onFailure = { msg ->
-          errorMsg = msg
-          failureCalled = true
-        })
+        var errorMsg: Any? = null
+        var failureCalled = false
+        val newViewModel =
+            MeetingAttachmentsViewModel(
+                MockedFileStorageRepositoryForFailsWhenMeetingDoesNotExist(),
+                MockedMeetingRepositoryForFailsWhenMeetingDoesNotExist(),
+                connectivityObserver)
+        newViewModel.uploadMeetingFileToFirestore(
+            contentResolver,
+            uri,
+            "p",
+            "m",
+            onSuccess = {},
+            onFailure = { msg ->
+              errorMsg = msg
+              failureCalled = true
+            })
 
-    advanceUntilIdle()
+        advanceUntilIdle()
 
-    // Check that failure was called
-    assertTrue("Expected onFailure to be called", failureCalled)
-    assertTrue("Expected an error message but got: '$errorMsg'", errorMsg != null)
+        // Check that failure was called
+        assertTrue("Expected onFailure to be called", failureCalled)
+        assertTrue("Expected an error message but got: '$errorMsg'", errorMsg != null)
 
-    // Convert to string for checking
-    val errorString = errorMsg.toString()
-    assertTrue(
-        "Expected message about meeting not existing, got: '$errorString'",
-        errorString.contains("no longer exists") || errorString.contains("attachment"))
-  }
+        // Convert to string for checking
+        val errorString = errorMsg.toString()
+        assertTrue(
+            "Expected message about meeting not existing, got: '$errorString'",
+            errorString.contains("no longer exists") || errorString.contains("attachment"))
+      }
 
   private class MockedMeetingRepositoryForFailsWhenUpdateFails : MeetingRepository {
     override fun getMeetingById(projectId: String, meetingId: String): Flow<Meeting?> {
@@ -477,7 +479,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun uploadMeetingFileToFirestoreFailsWhenUpdateFails() = runTest {
+  fun meetingAttachmentsViewModel_uploadMeetingFileToFirestoreFailsWhenUpdateFails() = runTest {
     val downloadUrl = "http://fake.url/file.pdf"
     val existingMeeting = Meeting(meetingID = "m", projectId = "p", attachmentUrls = emptyList())
 
@@ -555,7 +557,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun uploadMeetingFileToFirestore_FailsWhenUploadFails() = runTest {
+  fun meetingAttachmentsViewModel_uploadMeetingFileToFirestoreFailsWhenUploadFails() = runTest {
     every { contentResolver.query(uri, null, null, null, null) } returns cursor
     every { cursor.moveToFirst() } returns true
     every { cursor.getColumnIndex(OpenableColumns.SIZE) } returns 0
@@ -578,7 +580,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun uploadMeetingFileToFirestore_HandlesGenericException() = runTest {
+  fun meetingAttachmentsViewModel_uploadMeetingFileToFirestoreHandlesGenericException() = runTest {
     every { contentResolver.query(uri, null, null, null, null) } throws
         RuntimeException("Query failed")
 
@@ -591,32 +593,34 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun uploadMeetingFileToFirestore_SetsUploadingStateCorrectly() = runTest {
-    val downloadUrl = "http://fake.url/file.pdf"
-    val existingMeeting = Meeting(meetingID = "m", projectId = "p", attachmentUrls = emptyList())
+  fun meetingAttachmentsViewModel_uploadMeetingFileToFirestoreSetsUploadingStateCorrectly() =
+      runTest {
+        val downloadUrl = "http://fake.url/file.pdf"
+        val existingMeeting =
+            Meeting(meetingID = "m", projectId = "p", attachmentUrls = emptyList())
 
-    every { contentResolver.query(uri, null, null, null, null) } returns cursor
-    every { cursor.moveToFirst() } returns true
-    every { cursor.getColumnIndex(OpenableColumns.SIZE) } returns 0
-    every { cursor.getLong(0) } returns 1024L
-    every { cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME) } returns 1
-    every { cursor.getString(1) } returns "test.pdf"
-    every { cursor.close() } returns Unit
+        every { contentResolver.query(uri, null, null, null, null) } returns cursor
+        every { cursor.moveToFirst() } returns true
+        every { cursor.getColumnIndex(OpenableColumns.SIZE) } returns 0
+        every { cursor.getLong(0) } returns 1024L
+        every { cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME) } returns 1
+        every { cursor.getString(1) } returns "test.pdf"
+        every { cursor.close() } returns Unit
 
-    coEvery { fileStorageRepository.uploadFile(any(), uri) } returns Result.success(downloadUrl)
-    coEvery { meetingRepository.getMeetingById(any(), any()) } returns flowOf(existingMeeting)
-    coEvery { meetingRepository.updateMeeting(any()) } returns Result.success(Unit)
+        coEvery { fileStorageRepository.uploadFile(any(), uri) } returns Result.success(downloadUrl)
+        coEvery { meetingRepository.getMeetingById(any(), any()) } returns flowOf(existingMeeting)
+        coEvery { meetingRepository.updateMeeting(any()) } returns Result.success(Unit)
 
-    assertEquals(false, viewModel.isUploadingFile.value)
+        assertEquals(false, viewModel.isUploadingFile.value)
 
-    viewModel.uploadMeetingFileToFirestore(contentResolver, uri, "p", "m", {}, {})
+        viewModel.uploadMeetingFileToFirestore(contentResolver, uri, "p", "m", {}, {})
 
-    advanceUntilIdle()
-    assertEquals(false, viewModel.isUploadingFile.value)
-  }
+        advanceUntilIdle()
+        assertEquals(false, viewModel.isUploadingFile.value)
+      }
 
   @Test
-  fun deleteFileFromMeetingAttachmentsSuccess() = runTest {
+  fun meetingAttachmentsViewModel_deleteFileFromMeetingAttachmentsSuccess() = runTest {
     val projectId = "proj1"
     val meetingId = "meet1"
     val urlToDelete = "http://url.com/delete_me"
@@ -634,7 +638,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun deleteFileFromMeetingAttachmentsFailsOffline() = runTest {
+  fun meetingAttachmentsViewModel_deleteFileFromMeetingAttachmentsFailsOffline() = runTest {
     isConnectedFlow.value = false
     advanceUntilIdle()
 
@@ -645,20 +649,21 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun deleteFileFromMeetingAttachments_WhenMeetingDoesNotExist() = runTest {
-    coEvery { fileStorageRepository.deleteFile(any()) } returns Result.success(Unit)
-    coEvery { meetingRepository.getMeetingById(any(), any()) } returns flowOf(null)
+  fun meetingAttachmentsViewModel_deleteFileFromMeetingAttachmentsWhenMeetingDoesNotExist() =
+      runTest {
+        coEvery { fileStorageRepository.deleteFile(any()) } returns Result.success(Unit)
+        coEvery { meetingRepository.getMeetingById(any(), any()) } returns flowOf(null)
 
-    viewModel.deleteFileFromMeetingAttachments("p", "m", "url")
+        viewModel.deleteFileFromMeetingAttachments("p", "m", "url")
 
-    advanceUntilIdle()
+        advanceUntilIdle()
 
-    // Should still delete the file
-    coVerify { fileStorageRepository.deleteFile("url") }
-  }
+        // Should still delete the file
+        coVerify { fileStorageRepository.deleteFile("url") }
+      }
 
   @Test
-  fun downloadFileToPhoneSuccess() = runTest {
+  fun meetingAttachmentsViewModel_downloadFileToPhoneSuccess() = runTest {
     // Setup test dispatcher
     val testDispatcher = StandardTestDispatcher(testScheduler)
     Dispatchers.setMain(testDispatcher)
@@ -785,7 +790,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun downloadFileToPhone_TracksDownloadingState() = runTest {
+  fun meetingAttachmentsViewModel_downloadFileToPhoneTracksDownloadingState() = runTest {
     val downloadUrl = "https://test.com/file.pdf"
 
     // Initially empty
@@ -793,7 +798,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun getFilenameFromDownloadURLParsesCorrectly() = runTest {
+  fun meetingAttachmentsViewModel_getFilenameFromDownloadURLParsesCorrectly() = runTest {
     val url = "https://firebasestorage.googleapis.com/b/bucket/o/folder%2FMyFile.pdf"
     val expectedName = "MyFile.pdf"
     every { storageReference.name } returns expectedName

@@ -1,4 +1,4 @@
-/* Portions of the code in this file were written with the help of Gemini. */
+/* Portions of the code in this file were written with the help of Gemini, and Grok. */
 package ch.eureka.eurekapp.ui.map
 
 import ch.eureka.eurekapp.model.map.Location
@@ -24,7 +24,7 @@ class MeetingLocationSelectionViewModelTest {
   }
 
   @Test
-  fun initialStateIsCorrect() {
+  fun meetingLocationSelectionViewModel_initialStateIsCorrect() {
     val state = viewModel.uiState.value
 
     assertNull(state.selectedLocation)
@@ -32,7 +32,7 @@ class MeetingLocationSelectionViewModelTest {
   }
 
   @Test
-  fun selectLocationWithNameUpdatesStateWithPoiName() {
+  fun meetingLocationSelectionViewModel_selectLocationWithNameUpdatesStateWithPoiName() {
     val latLng = LatLng(40.7128, -74.0060)
     val poiName = "Empire State Building"
 
@@ -46,7 +46,7 @@ class MeetingLocationSelectionViewModelTest {
   }
 
   @Test
-  fun selectLocationWithoutNameFormatsCoordinatesCorrectly() {
+  fun meetingLocationSelectionViewModel_selectLocationWithoutNameFormatsCoordinatesCorrectly() {
     val latLng = LatLng(46.519655, 6.632273)
 
     viewModel.selectLocation(latLng, null)
@@ -61,7 +61,7 @@ class MeetingLocationSelectionViewModelTest {
   }
 
   @Test
-  fun uiStateCopyWorksAsExpected() {
+  fun meetingLocationSelectionViewModel_uiStateCopyWorksAsExpected() {
     val latLng = LatLng(0.0, 0.0)
     val state =
         MeetingLocationSelectionUIState(selectedLocation = null, initialCameraPosition = latLng)

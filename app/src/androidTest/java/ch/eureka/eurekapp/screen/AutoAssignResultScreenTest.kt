@@ -1,3 +1,5 @@
+// portions of this code and documentation were generated with the help of AI.
+// Portions added by Jiří Gebauer were partially generated with the help of Grok.
 package ch.eureka.eurekapp.screen
 
 import androidx.compose.material3.Text
@@ -39,7 +41,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-// portions of this code and documentation were generated with the help of AI.
 /**
  * Android instrumentation tests for AutoAssignResultScreen.
  *

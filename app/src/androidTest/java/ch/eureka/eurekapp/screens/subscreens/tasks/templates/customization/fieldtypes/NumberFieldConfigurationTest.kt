@@ -1,6 +1,6 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fieldtypes
 
-/* Portions of this code were generated with the help of Claude Sonnet 4.5. */
+/* Portions of this code were generated with the help of Claude Sonnet 4.5., and Grok */
 
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.utils.BaseFieldConfigurationTest
@@ -216,7 +216,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfigurationWithInitialUnitDisplays() {
+  fun numberFieldConfiguration_withInitialUnitDisplays() {
     utils.testDisplaysAllFields(
         composeTestRule,
         content = {
@@ -227,7 +227,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfigurationDecimalsInputUpdatesType() {
+  fun numberFieldConfiguration_decimalsInputUpdatesType() {
     val updates = mutableListOf<FieldType.Number>()
 
     utils.testInputUpdate(
@@ -244,7 +244,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfigurationBlankUnitSetsToNull() {
+  fun numberFieldConfiguration_blankUnitSetsToNull() {
     val updates = mutableListOf<FieldType.Number>()
     this.composeTestRule.setContent {
       NumberFieldConfiguration(
@@ -256,7 +256,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfigurationEmptyMinSetsToNull() {
+  fun numberFieldConfiguration_emptyMinSetsToNull() {
     val updates = mutableListOf<FieldType.Number>()
     this.composeTestRule.setContent {
       NumberFieldConfiguration(

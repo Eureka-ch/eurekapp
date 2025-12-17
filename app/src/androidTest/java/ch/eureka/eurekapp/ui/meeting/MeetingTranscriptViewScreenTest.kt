@@ -1,4 +1,4 @@
-/* Portions of this file were written with the help of Gemini.*/
+/* Portions of this file were written with the help of Gemini, and Grok*/
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.compose.ui.test.*
@@ -32,7 +32,7 @@ class MeetingTranscriptViewScreenTest {
       }
 
   @Test
-  fun loadingState_displaysLoadingIndicator() {
+  fun meetingTranscriptViewScreen_loadingStateDisplaysLoadingIndicator() {
     // Use a repository that never emits to keep the screen in loading state
     val neverEmittingRepository =
         object : MeetingRepositoryMock() {
@@ -61,7 +61,7 @@ class MeetingTranscriptViewScreenTest {
   }
 
   @Test
-  fun errorState_meetingNotFound_displaysErrorMessage() {
+  fun meetingTranscriptViewScreen_errorStateMeetingNotFoundDisplaysErrorMessage() {
     meetingFlow.value = null
 
     val viewModel =
@@ -87,7 +87,7 @@ class MeetingTranscriptViewScreenTest {
   }
 
   @Test
-  fun errorState_noAudioRecording_displaysErrorMessage() {
+  fun meetingTranscriptViewScreen_errorStateNoAudioRecordingDisplaysErrorMessage() {
     val meeting =
         Meeting(
             meetingID = "test-meeting",
@@ -122,7 +122,7 @@ class MeetingTranscriptViewScreenTest {
   }
 
   @Test
-  fun meetingWithAudio_displaysGenerateTranscriptButton() {
+  fun meetingTranscriptViewScreen_meetingWithAudioDisplaysGenerateTranscriptButton() {
     val meeting =
         Meeting(
             meetingID = "test-meeting",
@@ -160,7 +160,7 @@ class MeetingTranscriptViewScreenTest {
   }
 
   @Test
-  fun screenDisplaysCorrectly() {
+  fun meetingTranscriptViewScreen_screenDisplaysCorrectly() {
     val meeting =
         Meeting(
             meetingID = "test-meeting",
@@ -193,7 +193,7 @@ class MeetingTranscriptViewScreenTest {
   }
 
   @Test
-  fun dismissButton_clearsErrorMessage() {
+  fun meetingTranscriptViewScreen_dismissButtonClearsErrorMessage() {
     meetingFlow.value = null
 
     val viewModel =
@@ -222,7 +222,7 @@ class MeetingTranscriptViewScreenTest {
   }
 
   @Test
-  fun navigationIcon_callsOnNavigateBack() {
+  fun meetingTranscriptViewScreen_navigationIconCallsOnNavigateBack() {
     val meeting =
         Meeting(
             meetingID = "test-meeting",
@@ -258,7 +258,7 @@ class MeetingTranscriptViewScreenTest {
   }
 
   @Test
-  fun transcriptGenerating_displaysLoadingIndicator() {
+  fun meetingTranscriptViewScreen_transcriptGeneratingDisplaysLoadingIndicator() {
     val meeting =
         Meeting(
             meetingID = "test-meeting",
@@ -308,7 +308,7 @@ class MeetingTranscriptViewScreenTest {
   }
 
   @Test
-  fun transcriptCompleted_displaysTranscriptText() {
+  fun meetingTranscriptViewScreen_transcriptCompletedDisplaysTranscriptText() {
     val transcriptText = "This is the completed transcript text."
     val meeting =
         Meeting(
@@ -359,7 +359,7 @@ class MeetingTranscriptViewScreenTest {
   }
 
   @Test
-  fun transcriptFailed_displaysErrorMessage() {
+  fun meetingTranscriptViewScreen_transcriptFailedDisplaysErrorMessage() {
     val meeting =
         Meeting(
             meetingID = "test-meeting",
@@ -410,7 +410,7 @@ class MeetingTranscriptViewScreenTest {
   }
 
   @Test
-  fun transcriptCompleted_displaysSummarySection() {
+  fun meetingTranscriptViewScreen_transcriptCompletedDisplaysSummarySection() {
     val meeting =
         Meeting(
             meetingID = "test-meeting",
@@ -461,7 +461,7 @@ class MeetingTranscriptViewScreenTest {
   }
 
   @Test
-  fun summaryGenerating_displaysLoadingIndicator() {
+  fun meetingTranscriptViewScreen_summaryGeneratingDisplaysLoadingIndicator() {
     val meeting =
         Meeting(
             meetingID = "test-meeting",
@@ -526,7 +526,7 @@ class MeetingTranscriptViewScreenTest {
   }
 
   @Test
-  fun summaryCompleted_displaysSummaryText() {
+  fun meetingTranscriptViewScreen_summaryCompletedDisplaysSummaryText() {
     val summaryText = "This is a summary of the meeting."
     val meeting =
         Meeting(
@@ -587,7 +587,7 @@ class MeetingTranscriptViewScreenTest {
   }
 
   @Test
-  fun errorMessageWithTranscript_displaysError() {
+  fun meetingTranscriptViewScreen_errorMessageWithTranscriptDisplaysError() {
     val meeting =
         Meeting(
             meetingID = "test-meeting",

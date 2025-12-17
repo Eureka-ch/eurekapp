@@ -1,3 +1,4 @@
+// Portions of this file were written with the help of Grok.
 package ch.eureka.eurekapp.screen
 
 import androidx.compose.ui.test.assertIsDisplayed

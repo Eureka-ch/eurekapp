@@ -125,7 +125,7 @@ class MeetingDetailScreenOfflineTest {
   }
 
   @Test
-  fun meetingDetailScreenOfflineDisplaysMessage() {
+  fun meetingDetailScreenOffline_displaysMessage() {
     val meeting =
         Meeting(
             meetingID = testMeetingId,
@@ -171,7 +171,7 @@ class MeetingDetailScreenOfflineTest {
   }
 
   @Test
-  fun meetingDetailScreenOfflineStillViewsMeetingDetails() {
+  fun meetingDetailScreenOffline_stillViewsMeetingDetails() {
     val meeting =
         Meeting(
             meetingID = testMeetingId,
@@ -211,7 +211,7 @@ class MeetingDetailScreenOfflineTest {
   }
 
   @Test
-  fun meetingDetailScreenOfflineDisablesEditButton() {
+  fun meetingDetailScreenOffline_disablesEditButton() {
     val meeting =
         Meeting(
             meetingID = testMeetingId,
@@ -248,7 +248,7 @@ class MeetingDetailScreenOfflineTest {
   }
 
   @Test
-  fun meetingDetailScreenOfflineDisablesDeleteButton() {
+  fun meetingDetailScreenOffline_disablesDeleteButton() {
     val meeting =
         Meeting(
             meetingID = testMeetingId,
@@ -292,7 +292,7 @@ class MeetingDetailScreenOfflineTest {
   }
 
   @Test
-  fun meetingDetailScreenOfflineDisablesJoinMeetingButton() {
+  fun meetingDetailScreenOffline_disablesJoinMeetingButton() {
     val meeting =
         Meeting(
             meetingID = testMeetingId,
@@ -335,7 +335,7 @@ class MeetingDetailScreenOfflineTest {
   }
 
   @Test
-  fun meetingDetailScreenOfflineDisablesRecordButton() {
+  fun meetingDetailScreenOffline_disablesRecordButton() {
     val meeting =
         Meeting(
             meetingID = testMeetingId,
@@ -378,7 +378,7 @@ class MeetingDetailScreenOfflineTest {
   }
 
   @Test
-  fun meetingDetailScreenOfflineDisablesViewTranscriptButton() {
+  fun meetingDetailScreenOffline_disablesViewTranscriptButton() {
     val meeting =
         Meeting(
             meetingID = testMeetingId,
@@ -422,7 +422,7 @@ class MeetingDetailScreenOfflineTest {
   }
 
   @Test
-  fun meetingDetailScreenOnlineThenOfflineShowsMessage() {
+  fun meetingDetailScreenOffline_onlineThenOfflineShowsMessage() {
     val meeting =
         Meeting(
             meetingID = testMeetingId,
@@ -477,7 +477,7 @@ class MeetingDetailScreenOfflineTest {
   }
 
   @Test
-  fun meetingDetailScreenOfflineDisablesVoteButton() {
+  fun meetingDetailScreenOffline_disablesVoteButton() {
     val meeting =
         Meeting(
             meetingID = testMeetingId,

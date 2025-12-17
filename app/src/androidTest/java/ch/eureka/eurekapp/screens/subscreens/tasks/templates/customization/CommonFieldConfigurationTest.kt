@@ -1,6 +1,6 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization
 
-/* Portions of this code were generated with the help of Claude Sonnet 4.5. */
+/* Portions of this code were generated with the help of Claude Sonnet 4.5, and Grok. */
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithText
@@ -104,7 +104,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun defaultValueInput_textFieldDisplays() {
+  fun commonFieldConfiguration_defaultValueInputTextFieldDisplays() {
     this.composeTestRule.setContent {
       DefaultValueInput(
           field = testFieldDefinition.copy(type = FieldType.Text()),
@@ -117,7 +117,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun defaultValueInput_numberFieldDisplays() {
+  fun commonFieldConfiguration_defaultValueInputNumberFieldDisplays() {
     this.composeTestRule.setContent {
       DefaultValueInput(
           field = testFieldDefinition.copy(type = FieldType.Number()),
@@ -129,7 +129,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun defaultValueInput_dateFieldDisplays() {
+  fun commonFieldConfiguration_defaultValueInputDateFieldDisplays() {
     this.composeTestRule.setContent {
       DefaultValueInput(
           field = testFieldDefinition.copy(type = FieldType.Date()),
@@ -141,7 +141,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun defaultValueInput_singleSelectFieldDisplays() {
+  fun commonFieldConfiguration_defaultValueInputSingleSelectFieldDisplays() {
     val options = listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2"))
     this.composeTestRule.setContent {
       DefaultValueInput(
@@ -155,7 +155,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun defaultValueInput_multiSelectFieldDisplays() {
+  fun commonFieldConfiguration_defaultValueInputMultiSelectFieldDisplays() {
     val options = listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2"))
     this.composeTestRule.setContent {
       DefaultValueInput(
@@ -169,7 +169,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun defaultValueInput_disabledShowsViewMode() {
+  fun commonFieldConfiguration_defaultValueInputDisabledShowsViewMode() {
     this.composeTestRule.setContent {
       DefaultValueInput(
           field = testFieldDefinition.copy(type = FieldType.Text()),
@@ -181,7 +181,7 @@ class CommonFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun defaultValueInput_textFieldWithoutDefaultDisplays() {
+  fun commonFieldConfiguration_defaultValueInputTextFieldWithoutDefaultDisplays() {
     this.composeTestRule.setContent {
       DefaultValueInput(
           field = testFieldDefinition.copy(type = FieldType.Text(), defaultValue = null),

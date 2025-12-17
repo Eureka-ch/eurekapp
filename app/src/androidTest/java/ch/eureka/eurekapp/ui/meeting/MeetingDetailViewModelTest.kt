@@ -78,7 +78,7 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun initialStateIsCorrect() {
+  fun meetingDetailViewModel_initialStateIsCorrect() {
     viewModel =
         MeetingDetailViewModel(testProjectId, testMeetingId, repositoryMock, userRepositoryMock)
 
@@ -197,7 +197,7 @@ class MeetingDetailViewModelTest {
   }
 
   @Test
-  fun loadMeetingDetailsUpdatesWhenDataChanges() = runTest {
+  fun meetingDetailViewModel_loadMeetingDetailsUpdatesWhenDataChanges() = runTest {
     repositoryMock.meetingToReturn.value = testMeeting
     userRepositoryMock.userToReturn.value = testUser
 

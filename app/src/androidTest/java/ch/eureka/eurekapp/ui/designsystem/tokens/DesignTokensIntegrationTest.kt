@@ -1,3 +1,4 @@
+// Portions of this file were written with the help of Grok.
 package ch.eureka.eurekapp.ui.designsystem.tokens
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -16,7 +17,7 @@ class DesignTokensIntegrationTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun eurekaThemeAppliesAllDesignTokensCorrectly() {
+  fun designTokensIntegration_eurekaThemeAppliesAllDesignTokensCorrectly() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         // Test que le thème applique tous les tokens
@@ -39,7 +40,7 @@ class DesignTokensIntegrationTest {
   }
 
   @Test
-  fun designTokensWorkInLightTheme() {
+  fun designTokensIntegration_designTokensWorkInLightTheme() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.material3.Text(
@@ -51,7 +52,7 @@ class DesignTokensIntegrationTest {
   }
 
   @Test
-  fun designTokensWorkInDarkTheme() {
+  fun designTokensIntegration_designTokensWorkInDarkTheme() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = true) {
         androidx.compose.material3.Text(

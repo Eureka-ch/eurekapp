@@ -1,3 +1,4 @@
+// Portions of this file were written with the help of Grok.
 package ch.eureka.eurekapp.ui.meeting.calendar
 
 import android.content.ContentResolver
@@ -70,7 +71,7 @@ class MeetingCalendarViewModelTest {
 
   @OptIn(ExperimentalCoroutinesApi::class)
   @Test
-  fun checkIsMeetingRegisteredInCalendarWorks() = runTest {
+  fun meetingCalendarViewModel_checkIsMeetingRegisteredInCalendarWorks() = runTest {
     val context: Context = ApplicationProvider.getApplicationContext()
     val contentResolver: ContentResolver = context.contentResolver
 
@@ -96,7 +97,7 @@ class MeetingCalendarViewModelTest {
   }
 
   @Test
-  fun checkAddMeetingToCalendarWorks() {
+  fun meetingCalendarViewModel_checkAddMeetingToCalendarWorks() {
     val context: Context = ApplicationProvider.getApplicationContext()
     val contentResolver: ContentResolver = context.contentResolver
 
@@ -127,7 +128,7 @@ class MeetingCalendarViewModelTest {
   }
 
   @Test
-  fun checkAddMeetingToCalendarDoesNotWork() {
+  fun meetingCalendarViewModel_checkAddMeetingToCalendarDoesNotWork() {
     val context: Context = ApplicationProvider.getApplicationContext()
     val contentResolver: ContentResolver = context.contentResolver
 

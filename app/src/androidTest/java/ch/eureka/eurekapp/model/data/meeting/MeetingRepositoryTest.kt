@@ -15,7 +15,7 @@ import org.junit.Test
 /**
  * Test suite for MeetingRepository implementation.
  *
- * Note: Some of these tests were co-authored by Claude Code.
+ * Note: Some of these tests were co-authored by Claude Code, and Grok.
  */
 class MeetingRepositoryTest : FirestoreRepositoryTest() {
 

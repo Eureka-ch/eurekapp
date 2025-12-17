@@ -1,3 +1,4 @@
+// Portions of this file were written with the help of Grok.
 package ch.eureka.eurekapp.ui.templates
 
 import androidx.compose.ui.test.*
@@ -58,7 +59,7 @@ class EditTemplateScreenTest {
   }
 
   @Test
-  fun editTemplateScreen_showsLoadingOrError_whenNoTemplate() {
+  fun editTemplateScreen_showsLoadingOrErrorWhenNoTemplate() {
     val viewModel = EditTemplateViewModel(createFakeRepository(null), "p1", "t1")
 
     composeTestRule.setContent {

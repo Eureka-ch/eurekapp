@@ -1,5 +1,6 @@
 /*
  * This file was co-authored by Claude Code.
+ * This file was co-authored by Grok.
  */
 package ch.eureka.eurekapp.ui.activity
 
@@ -15,7 +16,7 @@ class ActivityTypeFilterChipTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun filterChip_notSelected_displaysCorrectly() {
+  fun activityTypeFilterChip_filterChipNotSelectedDisplaysCorrectly() {
     composeTestRule.setContent {
       ActivityTypeFilterChip(label = "Projects", selected = false, onClick = {})
     }
@@ -25,7 +26,7 @@ class ActivityTypeFilterChipTest {
   }
 
   @Test
-  fun filterChip_selected_displaysCorrectly() {
+  fun activityTypeFilterChip_filterChipSelectedDisplaysCorrectly() {
     composeTestRule.setContent {
       ActivityTypeFilterChip(label = "Meetings", selected = true, onClick = {})
     }
@@ -35,7 +36,7 @@ class ActivityTypeFilterChipTest {
   }
 
   @Test
-  fun filterChip_click_triggersCallback() {
+  fun activityTypeFilterChip_filterChipClickTriggersCallback() {
     var clicked = false
     composeTestRule.setContent {
       ActivityTypeFilterChip(label = "Tasks", selected = false, onClick = { clicked = true })
@@ -47,7 +48,7 @@ class ActivityTypeFilterChipTest {
   }
 
   @Test
-  fun entityType_toDisplayString_convertsCorrectly() {
+  fun activityTypeFilterChip_entityTypeToDisplayStringConvertsCorrectly() {
     assert(EntityType.MEETING.toDisplayString() == "Meetings")
     assert(EntityType.MESSAGE.toDisplayString() == "Messages")
     assert(EntityType.FILE.toDisplayString() == "Files")
@@ -57,7 +58,7 @@ class ActivityTypeFilterChipTest {
   }
 
   @Test
-  fun activityType_toDisplayString_convertsCorrectly() {
+  fun activityTypeFilterChip_activityTypeToDisplayStringConvertsCorrectly() {
     assert(ActivityType.CREATED.toDisplayString() == "Created")
     assert(ActivityType.UPDATED.toDisplayString() == "Updated")
     assert(ActivityType.DELETED.toDisplayString() == "Deleted")

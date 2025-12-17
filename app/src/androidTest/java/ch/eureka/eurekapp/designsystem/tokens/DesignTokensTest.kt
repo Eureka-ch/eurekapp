@@ -1,3 +1,4 @@
+// Portions of this file were written with the help of Grok.
 package ch.eureka.eurekapp.designsystem.tokens
 
 import androidx.compose.foundation.layout.padding

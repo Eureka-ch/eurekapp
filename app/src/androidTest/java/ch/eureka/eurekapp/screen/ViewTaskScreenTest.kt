@@ -261,7 +261,7 @@ open class ViewTaskScreenTest : TestCase() {
 
   @Test
   @Ignore("Flaky and redundant test - to be fixed")
-  fun testTaskLoadedCorrectly() =
+  fun viewTaskScreen_taskLoadedCorrectly() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -300,7 +300,7 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testNavigateToTaskDependencies() =
+  fun viewTaskScreen_navigateToTaskDependencies() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -315,7 +315,7 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testTaskNotFound() =
+  fun viewTaskScreen_taskNotFound() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "nonexistent"
@@ -327,7 +327,7 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testNavigateToEditTask() =
+  fun viewTaskScreen_navigateToEditTask() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -344,7 +344,7 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testFieldsAreReadOnly() =
+  fun viewTaskScreen_fieldsAreReadOnly() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -381,7 +381,7 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testStatusDisplayed() =
+  fun viewTaskScreen_statusDisplayed() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -394,7 +394,7 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testNoAttachmentsDisplayed() =
+  fun viewTaskScreen_noAttachmentsDisplayed() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -407,7 +407,7 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testNavigationToEditTaskAndSaveModifications() =
+  fun viewTaskScreen_navigationToEditTaskAndSaveModifications() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -472,7 +472,7 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testAssignedUsersDisplayedWithDisplayName() =
+  fun viewTaskScreen_assignedUsersDisplayedWithDisplayName() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -520,7 +520,7 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testAssignedUsersDisplayedWithEmailWhenNoDisplayName() =
+  fun viewTaskScreen_assignedUsersDisplayedWithEmailWhenNoDisplayName() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -554,7 +554,7 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testNoAssignedUsersNotDisplayed() =
+  fun viewTaskScreen_noAssignedUsersNotDisplayed() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -571,7 +571,7 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testMultipleAssignedUsersDisplayed() =
+  fun viewTaskScreen_multipleAssignedUsersDisplayed() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -622,7 +622,7 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testBackButtonNavigatesBack() {
+  fun viewTaskScreen_backButtonNavigatesBack() {
     runBlocking {
       val projectId = "project123"
       val taskId = "task123"
@@ -786,7 +786,7 @@ open class ViewTaskScreenTest : TestCase() {
   }
 
   @Test
-  fun testTemplateFieldsDisplayedWhenTaskHasTemplate() =
+  fun viewTaskScreen_templateFieldsDisplayedWhenTaskHasTemplate() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -849,7 +849,7 @@ open class ViewTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testTemplateFieldsNotDisplayedWhenNoTemplate() =
+  fun viewTaskScreen_templateFieldsNotDisplayedWhenNoTemplate() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"

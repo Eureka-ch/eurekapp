@@ -1,3 +1,4 @@
+// Portions of this file were written with the help of Grok.
 package ch.eureka.eurekapp.ui.components
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -16,7 +17,7 @@ class EurekaBottomNavComposeTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun eurekaBottomNavRendersWithDefaultItems() {
+  fun eurekaBottomNavCompose_rendersWithDefaultItems() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaBottomNav(
@@ -33,7 +34,7 @@ class EurekaBottomNavComposeTest {
   }
 
   @Test
-  fun eurekaBottomNavShowsSelectedState() {
+  fun eurekaBottomNavCompose_showsSelectedState() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaBottomNav(

@@ -1,3 +1,4 @@
+// Portions of this file were written with the help of Grok.
 package ch.eureka.eurekapp.ui.authentication
 
 import ch.eureka.eurekapp.model.data.invitation.FirestoreInvitationRepository
@@ -81,43 +82,44 @@ class TokenEntryViewModelFirestoreTest {
   // ========================================
 
   @Test
-  fun firestore_validToken_successfullyValidatesAndMarksAsUsed() = runBlocking {
-    // Setup: Create invitation in Firestore
-    val invitation =
-        Invitation(token = "FIRESTORE-TOKEN-1", projectId = "project_1", isUsed = false)
-    FirebaseEmulator.firestore
-        .collection("invitations")
-        .document(invitation.token)
-        .set(invitation)
-        .await()
-
-    // Act: Validate token
-    viewModel.updateToken("FIRESTORE-TOKEN-1")
-    viewModel.validateToken()
-    waitForValidationComplete()
-
-    // Assert: Success
-    assertTrue(viewModel.uiState.value.validationSuccess)
-    assertNull(viewModel.uiState.value.errorMessage)
-    assertFalse(viewModel.uiState.value.isLoading)
-
-    // Verify in Firestore that token is marked as used
-    val doc =
+  fun tokenEntryViewModelFirestore_firestoreValidTokenSuccessfullyValidatesAndMarksAsUsed() =
+      runBlocking {
+        // Setup: Create invitation in Firestore
+        val invitation =
+            Invitation(token = "FIRESTORE-TOKEN-1", projectId = "project_1", isUsed = false)
         FirebaseEmulator.firestore
             .collection("invitations")
-            .document("FIRESTORE-TOKEN-1")
-            .get()
+            .document(invitation.token)
+            .set(invitation)
             .await()
 
-    val updatedInvitation = doc.toObject(Invitation::class.java)
-    assertNotNull(updatedInvitation)
-    assertTrue(updatedInvitation!!.isUsed)
-    assertEquals(testUserId, updatedInvitation.usedBy)
-    assertNotNull(updatedInvitation.usedAt)
-  }
+        // Act: Validate token
+        viewModel.updateToken("FIRESTORE-TOKEN-1")
+        viewModel.validateToken()
+        waitForValidationComplete()
+
+        // Assert: Success
+        assertTrue(viewModel.uiState.value.validationSuccess)
+        assertNull(viewModel.uiState.value.errorMessage)
+        assertFalse(viewModel.uiState.value.isLoading)
+
+        // Verify in Firestore that token is marked as used
+        val doc =
+            FirebaseEmulator.firestore
+                .collection("invitations")
+                .document("FIRESTORE-TOKEN-1")
+                .get()
+                .await()
+
+        val updatedInvitation = doc.toObject(Invitation::class.java)
+        assertNotNull(updatedInvitation)
+        assertTrue(updatedInvitation!!.isUsed)
+        assertEquals(testUserId, updatedInvitation.usedBy)
+        assertNotNull(updatedInvitation.usedAt)
+      }
 
   @Test
-  fun firestore_invalidToken_returnsError() = runBlocking {
+  fun tokenEntryViewModelFirestore_firestoreInvalidTokenReturnsError() = runBlocking {
     // Act: Try to validate non-existent token
     viewModel.updateToken("NONEXISTENT-TOKEN")
     viewModel.validateToken()
@@ -129,7 +131,7 @@ class TokenEntryViewModelFirestoreTest {
   }
 
   @Test
-  fun firestore_alreadyUsedToken_returnsError() = runBlocking {
+  fun tokenEntryViewModelFirestore_firestoreAlreadyUsedTokenReturnsError() = runBlocking {
     // Setup: Create already-used invitation
     val usedInvitation =
         Invitation(
@@ -166,76 +168,78 @@ class TokenEntryViewModelFirestoreTest {
   }
 
   @Test
-  fun firestore_tokenWithSpecialCharacters_handlesCorrectly() = runBlocking {
-    // Setup: Create token with special characters (Firestore allows most chars in doc IDs)
-    val specialToken = "TOKEN-123_TEST"
-    val invitation = Invitation(token = specialToken, projectId = "project_1", isUsed = false)
-    FirebaseEmulator.firestore
-        .collection("invitations")
-        .document(specialToken)
-        .set(invitation)
-        .await()
+  fun tokenEntryViewModelFirestore_firestoreTokenWithSpecialCharactersHandlesCorrectly() =
+      runBlocking {
+        // Setup: Create token with special characters (Firestore allows most chars in doc IDs)
+        val specialToken = "TOKEN-123_TEST"
+        val invitation = Invitation(token = specialToken, projectId = "project_1", isUsed = false)
+        FirebaseEmulator.firestore
+            .collection("invitations")
+            .document(specialToken)
+            .set(invitation)
+            .await()
 
-    // Act
-    viewModel.updateToken(specialToken)
-    viewModel.validateToken()
-    waitForValidationComplete()
+        // Act
+        viewModel.updateToken(specialToken)
+        viewModel.validateToken()
+        waitForValidationComplete()
 
-    // Assert
-    assertTrue(viewModel.uiState.value.validationSuccess)
-  }
-
-  @Test
-  fun firestore_multipleSequentialValidations_workCorrectly() = runBlocking {
-    // Setup: Create multiple invitations
-    val invitation1 = Invitation(token = "TOKEN-1", projectId = "project_1", isUsed = false)
-    val invitation2 = Invitation(token = "TOKEN-2", projectId = "project_1", isUsed = false)
-
-    FirebaseEmulator.firestore
-        .collection("invitations")
-        .document("TOKEN-1")
-        .set(invitation1)
-        .await()
-    FirebaseEmulator.firestore
-        .collection("invitations")
-        .document("TOKEN-2")
-        .set(invitation2)
-        .await()
-
-    // Act: Validate first token
-    viewModel.updateToken("TOKEN-1")
-    viewModel.validateToken()
-    waitForValidationComplete()
-
-    assertTrue(viewModel.uiState.value.validationSuccess)
-
-    // Create new ViewModel for second validation (simulating different session)
-    val viewModel2 =
-        TokenEntryViewModel(
-            repository = repository,
-            projectRepository = mockProjectRepository,
-            auth = FirebaseEmulator.auth)
-
-    // Act: Validate second token
-    viewModel2.updateToken("TOKEN-2")
-    viewModel2.validateToken()
-    waitForValidationComplete(viewModel2)
-
-    // Assert: Both succeeded
-    assertTrue(viewModel2.uiState.value.validationSuccess)
-
-    // Verify both marked as used in Firestore
-    val doc1 =
-        FirebaseEmulator.firestore.collection("invitations").document("TOKEN-1").get().await()
-    val doc2 =
-        FirebaseEmulator.firestore.collection("invitations").document("TOKEN-2").get().await()
-
-    assertTrue(doc1.toObject(Invitation::class.java)?.isUsed == true)
-    assertTrue(doc2.toObject(Invitation::class.java)?.isUsed == true)
-  }
+        // Assert
+        assertTrue(viewModel.uiState.value.validationSuccess)
+      }
 
   @Test
-  fun firestore_raceCondition_onlyOneUserCanUseToken() = runBlocking {
+  fun tokenEntryViewModelFirestore_firestoreMultipleSequentialValidationsWorkCorrectly() =
+      runBlocking {
+        // Setup: Create multiple invitations
+        val invitation1 = Invitation(token = "TOKEN-1", projectId = "project_1", isUsed = false)
+        val invitation2 = Invitation(token = "TOKEN-2", projectId = "project_1", isUsed = false)
+
+        FirebaseEmulator.firestore
+            .collection("invitations")
+            .document("TOKEN-1")
+            .set(invitation1)
+            .await()
+        FirebaseEmulator.firestore
+            .collection("invitations")
+            .document("TOKEN-2")
+            .set(invitation2)
+            .await()
+
+        // Act: Validate first token
+        viewModel.updateToken("TOKEN-1")
+        viewModel.validateToken()
+        waitForValidationComplete()
+
+        assertTrue(viewModel.uiState.value.validationSuccess)
+
+        // Create new ViewModel for second validation (simulating different session)
+        val viewModel2 =
+            TokenEntryViewModel(
+                repository = repository,
+                projectRepository = mockProjectRepository,
+                auth = FirebaseEmulator.auth)
+
+        // Act: Validate second token
+        viewModel2.updateToken("TOKEN-2")
+        viewModel2.validateToken()
+        waitForValidationComplete(viewModel2)
+
+        // Assert: Both succeeded
+        assertTrue(viewModel2.uiState.value.validationSuccess)
+
+        // Verify both marked as used in Firestore
+        val doc1 =
+            FirebaseEmulator.firestore.collection("invitations").document("TOKEN-1").get().await()
+        val doc2 =
+            FirebaseEmulator.firestore.collection("invitations").document("TOKEN-2").get().await()
+
+        assertTrue(doc1.toObject(Invitation::class.java)?.isUsed == true)
+        assertTrue(doc2.toObject(Invitation::class.java)?.isUsed == true)
+      }
+
+  @Test
+  fun tokenEntryViewModelFirestore_firestoreRaceConditionOnlyOneUserCanUseToken() = runBlocking {
     // Setup: Create invitation
     val invitation = Invitation(token = "RACE-TOKEN", projectId = "project_1", isUsed = false)
     FirebaseEmulator.firestore
@@ -262,30 +266,28 @@ class TokenEntryViewModelFirestoreTest {
   }
 
   @Test
-  fun firestore_orphanedInvitation_validatesSuccessfully() = runBlocking {
-    // Setup: Create invitation for non-existent project (orphaned)
-    val orphanedInvitation =
-        Invitation(token = "ORPHANED-TOKEN", projectId = "nonexistent_project", isUsed = false)
-    FirebaseEmulator.firestore
-        .collection("invitations")
-        .document("ORPHANED-TOKEN")
-        .set(orphanedInvitation)
-        .await()
+  fun tokenEntryViewModelFirestore_firestoreOrphanedInvitationValidatesSuccessfully() =
+      runBlocking {
+        // Setup: Create invitation for non-existent project (orphaned)
+        val orphanedInvitation =
+            Invitation(token = "ORPHANED-TOKEN", projectId = "nonexistent_project", isUsed = false)
+        FirebaseEmulator.firestore
+            .collection("invitations")
+            .document("ORPHANED-TOKEN")
+            .set(orphanedInvitation)
+            .await()
 
-    // Act: Validate orphaned invitation
-    viewModel.updateToken("ORPHANED-TOKEN")
-    viewModel.validateToken()
-    waitForValidationComplete()
+        // Act: Validate orphaned invitation
+        viewModel.updateToken("ORPHANED-TOKEN")
+        viewModel.validateToken()
+        waitForValidationComplete()
 
-    // Assert: Validation succeeds (ViewModel doesn't check if project exists)
-    assertTrue(viewModel.uiState.value.validationSuccess)
-  }
-
-  // Note: Real-time update test removed due to timing issues with Firestore snapshot listeners
-  // The already-used token detection is already tested in firestore_alreadyUsedToken_returnsError
+        // Assert: Validation succeeds (ViewModel doesn't check if project exists)
+        assertTrue(viewModel.uiState.value.validationSuccess)
+      }
 
   @Test
-  fun firestore_tokenTrimming_findsToken() = runBlocking {
+  fun tokenEntryViewModelFirestore_firestoreTokenTrimmingFindsToken() = runBlocking {
     // Setup: Create invitation with specific token
     val invitation = Invitation(token = "TRIM-TOKEN", projectId = "project_1", isUsed = false)
     FirebaseEmulator.firestore
@@ -304,7 +306,7 @@ class TokenEntryViewModelFirestoreTest {
   }
 
   @Test
-  fun firestore_clearData_verifyCleanState() = runBlocking {
+  fun tokenEntryViewModelFirestore_firestoreClearDataVerifyCleanState() = runBlocking {
     // Setup: Add some invitations
     val invitation1 = Invitation(token = "CLEAR-1", projectId = "project_1", isUsed = false)
     val invitation2 = Invitation(token = "CLEAR-2", projectId = "project_1", isUsed = false)

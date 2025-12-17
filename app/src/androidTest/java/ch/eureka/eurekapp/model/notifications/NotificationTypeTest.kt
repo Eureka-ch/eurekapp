@@ -1,4 +1,4 @@
-// Portions of this code were generated with the help of Claude Sonnet 4.5
+// Portions of this code were generated with the help of Claude Sonnet 4.5, and Grok
 package ch.eureka.eurekapp.model.notifications
 
 import org.junit.Assert.*

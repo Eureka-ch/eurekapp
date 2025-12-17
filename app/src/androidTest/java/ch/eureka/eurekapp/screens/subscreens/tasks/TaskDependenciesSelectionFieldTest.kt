@@ -1,3 +1,4 @@
+// Portions of this file were written with the help of Grok.
 package ch.eureka.eurekapp.screens.subscreens.tasks
 
 import androidx.compose.ui.test.assertCountEquals
@@ -15,7 +16,7 @@ class TaskDependenciesSelectionFieldTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun showsMessageWhenProjectHasTasksButNoSelectableDependencies() {
+  fun taskDependenciesSelectionField_showsMessageWhenProjectHasTasksButNoSelectableDependencies() {
     val currentTaskId = "task-123"
     val availableTasks = listOf(Task(taskID = currentTaskId, title = "Current task"))
 

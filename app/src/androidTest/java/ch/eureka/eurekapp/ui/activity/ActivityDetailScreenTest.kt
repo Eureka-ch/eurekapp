@@ -1,5 +1,6 @@
 /*
  * Co-Authored-By: Claude Sonnet 4.5
+ * Co-Authored-By: Grok
  */
 package ch.eureka.eurekapp.ui.activity
 
@@ -70,7 +71,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun activityDetailScreen_errorState_displaysErrorMessage() {
+  fun activityDetailScreen_errorStateDisplaysErrorMessage() {
     coEvery { repository.getActivities(testUserId) } returns flowOf(emptyList())
     setupSimpleUserMock()
     viewModel =
@@ -86,7 +87,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun activityDetailScreen_activityDetails_displayedCorrectly() {
+  fun activityDetailScreen_activityDetailsDisplayedCorrectly() {
     val activity =
         createActivity(
             testActivityId, EntityType.MEETING, "Team Meeting", ActivityType.CREATED, testEntityId)
@@ -120,7 +121,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun activityDetailScreen_entityButton_displayedForSupportedEntities() {
+  fun activityDetailScreen_entityButtonDisplayedForSupportedEntities() {
     val activity =
         createActivity(
             testActivityId,
@@ -144,7 +145,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun activityDetailScreen_entityButton_notDisplayedForFileEntity() {
+  fun activityDetailScreen_entityButtonNotDisplayedForFileEntity() {
     val activity =
         createActivity(
             testActivityId, EntityType.FILE, "document.pdf", ActivityType.UPLOADED, testEntityId)
@@ -163,7 +164,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun activityDetailScreen_entityButton_navigatesToCorrectScreen() {
+  fun activityDetailScreen_entityButtonNavigatesToCorrectScreen() {
     val activity =
         createActivity(
             testActivityId, EntityType.TASK, "Fix bug", ActivityType.UPDATED, testEntityId)
@@ -196,7 +197,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun activityDetailScreen_relatedActivities_displayedCorrectly() {
+  fun activityDetailScreen_relatedActivitiesDisplayedCorrectly() {
     val mainActivity =
         createActivity(
             testActivityId,
@@ -264,7 +265,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun activityDetailScreen_noRelatedActivities_displaysMessage() {
+  fun activityDetailScreen_noRelatedActivitiesDisplaysMessage() {
     val activity =
         createActivity(
             testActivityId, EntityType.MESSAGE, "Hello", ActivityType.CREATED, testEntityId)
@@ -290,7 +291,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun activityDetailScreen_shareButton_clickable() {
+  fun activityDetailScreen_shareButtonClickable() {
     val activity =
         createActivity(
             testActivityId, EntityType.TASK, "Task 1", ActivityType.CREATED, testEntityId)
@@ -310,7 +311,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun activityDetailScreen_deleteButton_opensConfirmationDialog() {
+  fun activityDetailScreen_deleteButtonOpensConfirmationDialog() {
     val activity =
         createActivity(
             testActivityId, EntityType.PROJECT, "Project", ActivityType.CREATED, testEntityId)
@@ -332,7 +333,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun activityDetailScreen_deleteDialog_cancelButton_closesDialog() {
+  fun activityDetailScreen_deleteDialogCancelButtonClosesDialog() {
     val activity =
         createActivity(
             testActivityId, EntityType.MEETING, "Meeting", ActivityType.CREATED, testEntityId)
@@ -354,7 +355,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun activityDetailScreen_deleteDialog_confirmButton_deletesActivity() {
+  fun activityDetailScreen_deleteDialogConfirmButtonDeletesActivity() {
     val activity =
         createActivity(testActivityId, EntityType.TASK, "Task", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
@@ -382,7 +383,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun activityDetailScreen_offlineMode_displaysOfflineMessage() {
+  fun activityDetailScreen_offlineModeDisplaysOfflineMessage() {
     every { connectivityObserver.isConnected } returns flowOf(false)
     val activity =
         createActivity(
@@ -405,7 +406,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun activityDetailScreen_offlineMode_disablesActionButtons() {
+  fun activityDetailScreen_offlineModeDisablesActionButtons() {
     every { connectivityObserver.isConnected } returns flowOf(false)
     val activity =
         createActivity(
@@ -426,7 +427,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun activityDetailScreen_backButton_navigatesBack() {
+  fun activityDetailScreen_backButtonNavigatesBack() {
     val activity =
         createActivity(testActivityId, EntityType.TASK, "Task", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
@@ -450,7 +451,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun activityDetailScreen_updatedActivityType_displaysCorrectColor() {
+  fun activityDetailScreen_updatedActivityTypeDisplaysCorrectColor() {
     val activity = createActivity(testActivityId, EntityType.TASK, "Test", ActivityType.UPDATED)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
     setupSimpleUserMock()
@@ -469,7 +470,7 @@ class ActivityDetailScreenTest {
   }
 
   @Test
-  fun activityDetailScreen_activityWithoutTitle_doesNotDisplayEntityTitle() {
+  fun activityDetailScreen_activityWithoutTitleDoesNotDisplayEntityTitle() {
     val activityNoTitle =
         Activity(
             activityId = testActivityId,

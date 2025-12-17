@@ -1,3 +1,4 @@
+// Portions of this file were written with the help of Grok.
 package ch.eureka.eurekapp.screens.subscreens.tasks
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -18,7 +19,7 @@ class TemplateFieldsSectionTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun returnsEarlyWhenTemplateIsNull() {
+  fun templateFieldsSection_returnsEarlyWhenTemplateIsNull() {
     composeTestRule.setContent {
       TemplateFieldsSection(
           template = null, customData = TaskCustomData(), onFieldValueChange = { _, _ -> })
@@ -28,7 +29,7 @@ class TemplateFieldsSectionTest {
   }
 
   @Test
-  fun returnsEarlyWhenFieldsEmpty() {
+  fun templateFieldsSection_returnsEarlyWhenFieldsEmpty() {
     val template =
         TaskTemplate(
             templateID = "t1",
@@ -44,7 +45,7 @@ class TemplateFieldsSectionTest {
   }
 
   @Test
-  fun displaysSectionTitleWhenTemplateHasFields() {
+  fun templateFieldsSection_displaysSectionTitleWhenTemplateHasFields() {
     val template = createTemplateWithTextField()
 
     composeTestRule.setContent {
@@ -57,7 +58,7 @@ class TemplateFieldsSectionTest {
   }
 
   @Test
-  fun rendersTextFieldCorrectly() {
+  fun templateFieldsSection_rendersTextFieldCorrectly() {
     val template = createTemplateWithTextField()
 
     composeTestRule.setContent {
@@ -72,7 +73,7 @@ class TemplateFieldsSectionTest {
   }
 
   @Test
-  fun rendersNumberFieldCorrectly() {
+  fun templateFieldsSection_rendersNumberFieldCorrectly() {
     val template =
         TaskTemplate(
             templateID = "t1",
@@ -97,7 +98,7 @@ class TemplateFieldsSectionTest {
   }
 
   @Test
-  fun rendersDateFieldCorrectly() {
+  fun templateFieldsSection_rendersDateFieldCorrectly() {
     val template =
         TaskTemplate(
             templateID = "t1",
@@ -120,7 +121,7 @@ class TemplateFieldsSectionTest {
   }
 
   @Test
-  fun rendersSingleSelectCorrectly() {
+  fun templateFieldsSection_rendersSingleSelectCorrectly() {
     val template =
         TaskTemplate(
             templateID = "t1",
@@ -150,7 +151,7 @@ class TemplateFieldsSectionTest {
   }
 
   @Test
-  fun rendersMultiSelectCorrectly() {
+  fun templateFieldsSection_rendersMultiSelectCorrectly() {
     val template =
         TaskTemplate(
             templateID = "t1",

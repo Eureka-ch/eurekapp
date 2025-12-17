@@ -1,3 +1,4 @@
+// Portions of this file were written with the help of Grok.
 package ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -33,7 +34,7 @@ class FieldTypeConfigurationsTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun textFieldConfiguration_displaysAllFields() {
+  fun fieldTypeConfigurations_textFieldConfigurationDisplaysAllFields() {
     composeTestRule.setContent {
       TextFieldConfiguration(fieldType = FieldType.Text(), onUpdate = {}, enabled = true)
     }
@@ -44,7 +45,7 @@ class FieldTypeConfigurationsTest {
   }
 
   @Test
-  fun textFieldConfiguration_maxLengthInputUpdatesType() {
+  fun fieldTypeConfigurations_textFieldConfigurationMaxLengthInputUpdatesType() {
     var updatedType: FieldType.Text? = null
     composeTestRule.setContent {
       TextFieldConfiguration(
@@ -57,7 +58,7 @@ class FieldTypeConfigurationsTest {
   }
 
   @Test
-  fun numberFieldConfiguration_displaysAllFields() {
+  fun fieldTypeConfigurations_numberFieldConfigurationDisplaysAllFields() {
     composeTestRule.setContent {
       NumberFieldConfiguration(fieldType = FieldType.Number(), onUpdate = {}, enabled = true)
     }
@@ -70,7 +71,7 @@ class FieldTypeConfigurationsTest {
   }
 
   @Test
-  fun numberFieldConfiguration_minInputUpdatesType() {
+  fun fieldTypeConfigurations_numberFieldConfigurationMinInputUpdatesType() {
     var updatedType: FieldType.Number? = null
     composeTestRule.setContent {
       NumberFieldConfiguration(
@@ -83,7 +84,7 @@ class FieldTypeConfigurationsTest {
   }
 
   @Test
-  fun dateFieldConfiguration_displaysAllFields() {
+  fun fieldTypeConfigurations_dateFieldConfigurationDisplaysAllFields() {
     composeTestRule.setContent {
       DateFieldConfiguration(fieldType = FieldType.Date(), onUpdate = {}, enabled = true)
     }
@@ -93,7 +94,7 @@ class FieldTypeConfigurationsTest {
   }
 
   @Test
-  fun dateFieldConfiguration_includeTimeCheckboxUpdatesType() {
+  fun fieldTypeConfigurations_dateFieldConfigurationIncludeTimeCheckboxUpdatesType() {
     var updatedType: FieldType.Date? = null
     composeTestRule.setContent {
       DateFieldConfiguration(
@@ -108,7 +109,7 @@ class FieldTypeConfigurationsTest {
   }
 
   @Test
-  fun singleSelectFieldConfiguration_displaysAllowCustomCheckbox() {
+  fun fieldTypeConfigurations_singleSelectFieldConfigurationDisplaysAllowCustomCheckbox() {
     val options = listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2"))
     composeTestRule.setContent {
       SingleSelectFieldConfiguration(
@@ -122,7 +123,7 @@ class FieldTypeConfigurationsTest {
   }
 
   @Test
-  fun singleSelectFieldConfiguration_allowCustomCheckboxUpdatesType() {
+  fun fieldTypeConfigurations_singleSelectFieldConfigurationAllowCustomCheckboxUpdatesType() {
     val options = listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2"))
     var updatedType: FieldType.SingleSelect? = null
     composeTestRule.setContent {
@@ -140,7 +141,7 @@ class FieldTypeConfigurationsTest {
   }
 
   @Test
-  fun multiSelectFieldConfiguration_displaysAllFields() {
+  fun fieldTypeConfigurations_multiSelectFieldConfigurationDisplaysAllFields() {
     val options = listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2"))
     composeTestRule.setContent {
       MultiSelectFieldConfiguration(
@@ -156,7 +157,7 @@ class FieldTypeConfigurationsTest {
   }
 
   @Test
-  fun multiSelectFieldConfiguration_minSelectionsInputUpdatesType() {
+  fun fieldTypeConfigurations_multiSelectFieldConfigurationMinSelectionsInputUpdatesType() {
     val options = listOf(SelectOption("opt1", "Option 1"), SelectOption("opt2", "Option 2"))
     var updatedType: FieldType.MultiSelect? = null
     composeTestRule.setContent {

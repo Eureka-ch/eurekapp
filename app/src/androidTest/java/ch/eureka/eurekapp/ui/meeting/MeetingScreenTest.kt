@@ -80,7 +80,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun screenLoadsAndDisplaysStaticContent() {
+  fun meetingScreen_screenLoadsAndDisplaysStaticContent() {
     setContent()
     composeTestRule.onNodeWithTag(MeetingScreenTestTags.MEETING_SCREEN_TITLE).assertIsDisplayed()
     composeTestRule
@@ -90,7 +90,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun upcomingMeetingsAreDisplayedByDefault() {
+  fun meetingScreen_upcomingMeetingsAreDisplayedByDefault() {
     meetingsFlow.value = MeetingProvider.sampleMeetings
     setContent()
 
@@ -122,7 +122,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun clickingPastTabDisplaysPastMeetings() {
+  fun meetingScreen_clickingPastTabDisplaysPastMeetings() {
     meetingsFlow.value = MeetingProvider.sampleMeetings
     setContent()
 
@@ -137,7 +137,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun displaysNoUpcomingMeetingsMessageWhenListIsEmpty() {
+  fun meetingScreen_displaysNoUpcomingMeetingsMessageWhenListIsEmpty() {
     meetingsFlow.value = emptyList()
     setContent()
 
@@ -150,7 +150,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun displaysNoPastMeetingsMessageWhenListIsEmpty() {
+  fun meetingScreen_displaysNoPastMeetingsMessageWhenListIsEmpty() {
     meetingsFlow.value = emptyList()
     setContent()
 
@@ -165,7 +165,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun meetingCardWhenOpenToVotesDisplaysCorrectElements() {
+  fun meetingScreen_meetingCardWhenOpenToVotesDisplaysCorrectElements() {
     val votingMeeting = MeetingProvider.sampleMeetings.first { it.meetingID == "meet_vote_01" }
     meetingsFlow.value = listOf(votingMeeting)
     setContent()
@@ -201,7 +201,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun meetingCardWhenScheduledAndVirtualDisplaysCorrectElements() {
+  fun meetingScreen_meetingCardWhenScheduledAndVirtualDisplaysCorrectElements() {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_scheduled_virtual_02" }
     meetingsFlow.value = listOf(meeting)
@@ -230,7 +230,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun meetingCardWhenScheduledAndInPersonDisplaysCorrectElements() {
+  fun meetingScreen_meetingCardWhenScheduledAndInPersonDisplaysCorrectElements() {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_scheduled_inperson_03" }
     meetingsFlow.value = listOf(meeting)
@@ -258,7 +258,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun meetingCardWhenInProgressAndVirtualDisplaysCorrectElements() {
+  fun meetingScreen_meetingCardWhenInProgressAndVirtualDisplaysCorrectElements() {
     val meeting = MeetingProvider.sampleMeetings.first { it.meetingID == "meet_inprogress_06" }
     meetingsFlow.value = listOf(meeting)
     setContent()
@@ -279,7 +279,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun meetingCardWhenInProgressAndInPersonDisplaysCorrectElements() {
+  fun meetingScreen_meetingCardWhenInProgressAndInPersonDisplaysCorrectElements() {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_inprogress_inperson_15" }
     meetingsFlow.value = listOf(meeting)
@@ -304,7 +304,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun meetingCardWhenCompletedAndVirtualDisplaysCorrectElements() {
+  fun meetingScreen_meetingCardWhenCompletedAndVirtualDisplaysCorrectElements() {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_completed_virtual_05" }
     meetingsFlow.value = listOf(meeting)
@@ -327,7 +327,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun meetingCardWhenCompletedAndInPersonDisplaysCorrectElements() {
+  fun meetingScreen_meetingCardWhenCompletedAndInPersonDisplaysCorrectElements() {
     val meeting =
         MeetingProvider.sampleMeetings.first { it.meetingID == "meet_completed_inperson_04" }
     meetingsFlow.value = listOf(meeting)
@@ -353,7 +353,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun closeVotesButtonIsDisplayedForCreatorWhenMeetingIsOpenToVotes() {
+  fun meetingScreen_closeVotesButtonIsDisplayedForCreatorWhenMeetingIsOpenToVotes() {
     val votingMeeting =
         MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.OPEN_TO_VOTES }
     testUserId = votingMeeting.createdBy
@@ -364,7 +364,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun closeVotesButtonIsNotDisplayedForNonCreator() {
+  fun meetingScreen_closeVotesButtonIsNotDisplayedForNonCreator() {
     val votingMeeting =
         MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.OPEN_TO_VOTES }
     testUserId = "some_other_user_id"
@@ -375,7 +375,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun closeVotesButtonIsNotDisplayedForScheduledMeetingEvenForCreator() {
+  fun meetingScreen_closeVotesButtonIsNotDisplayedForScheduledMeetingEvenForCreator() {
     val scheduledMeeting =
         MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.SCHEDULED }
     testUserId = scheduledMeeting.createdBy
@@ -386,7 +386,7 @@ class MeetingScreenTest {
   }
 
   @Test
-  fun clickingCloseVotesButtonCallsViewModel() {
+  fun meetingScreen_clickingCloseVotesButtonCallsViewModel() {
     val votingMeeting = MeetingProvider.sampleMeetings.first { it.meetingID == "meet_vote_01" }
     testUserId = votingMeeting.createdBy
     meetingsFlow.value = listOf(votingMeeting)

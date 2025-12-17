@@ -1,4 +1,4 @@
-/* Portions of this code were generated with the help of Gemini and chatGPT (GPT-5). */
+/* Portions of this code were generated with the help of Gemini, chatGPT (GPT-5), and Grok. */
 package ch.eureka.eurekapp.screen
 
 import androidx.compose.ui.test.junit4.createComposeRule

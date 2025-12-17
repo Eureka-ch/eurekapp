@@ -1,4 +1,4 @@
-// Portions of this code were generated with the help of Claude Sonnet 4.5 in Claude Code
+// Portions of this code were generated with the help of Claude Sonnet 4.5, and Grok.
 
 package ch.eureka.eurekapp.ui.templates.components
 
@@ -35,7 +35,7 @@ class TemplateFieldListTest {
               required = false))
 
   @Test
-  fun emptyFieldList_displaysPlaceholder() {
+  fun templateFieldList_emptyFieldListDisplaysPlaceholder() {
     composeTestRule.setContent {
       TemplateFieldList(
           fields = emptyList(),
@@ -57,7 +57,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun nonEmptyFieldList_displaysAllFields() {
+  fun templateFieldList_nonEmptyFieldListDisplaysAllFields() {
     composeTestRule.setContent {
       TemplateFieldList(
           fields = testFields,
@@ -80,7 +80,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun nonEmptyFieldList_doesNotDisplayPlaceholder() {
+  fun templateFieldList_nonEmptyFieldListDoesNotDisplayPlaceholder() {
     composeTestRule.setContent {
       TemplateFieldList(
           fields = testFields,
@@ -100,7 +100,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun fieldList_displaysFieldTypes() {
+  fun templateFieldList_fieldListDisplaysFieldTypes() {
     composeTestRule.setContent {
       TemplateFieldList(
           fields = testFields,
@@ -123,7 +123,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun fieldList_displaysRequiredIndicator() {
+  fun templateFieldList_fieldListDisplaysRequiredIndicator() {
     composeTestRule.setContent {
       TemplateFieldList(
           fields = testFields,
@@ -144,7 +144,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun fieldList_displaysReorderHandles() {
+  fun templateFieldList_fieldListDisplaysReorderHandles() {
     composeTestRule.setContent {
       TemplateFieldList(
           fields = testFields,
@@ -165,7 +165,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun expandedField_showsEditingControls() {
+  fun templateFieldList_expandedFieldShowsEditingControls() {
     composeTestRule.setContent {
       TemplateFieldList(
           fields = testFields,
@@ -188,7 +188,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun collapsedField_doesNotShowEditingControls() {
+  fun templateFieldList_collapsedFieldDoesNotShowEditingControls() {
     composeTestRule.setContent {
       TemplateFieldList(
           fields = testFields,
@@ -211,7 +211,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun clickingField_triggersOnFieldEdit() {
+  fun templateFieldList_clickingFieldTriggersOnFieldEdit() {
     var editedFieldId: String? = null
 
     composeTestRule.setContent {
@@ -235,7 +235,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun fieldWithError_displaysWarningIcon() {
+  fun templateFieldList_fieldWithErrorDisplaysWarningIcon() {
     composeTestRule.setContent {
       TemplateFieldList(
           fields = testFields,
@@ -255,7 +255,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun reorderCallback_receivesCorrectIndices() {
+  fun templateFieldList_reorderCallbackReceivesCorrectIndices() {
     var fromIndex: Int? = null
     var toIndex: Int? = null
 
@@ -279,7 +279,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun singleField_displaysCorrectly() {
+  fun templateFieldList_singleFieldDisplaysCorrectly() {
     val singleField =
         listOf(FieldDefinition(id = "only", label = "Only Field", type = FieldType.Text()))
 
@@ -303,7 +303,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun deleteButton_callsOnFieldDelete() {
+  fun templateFieldList_deleteButtonCallsOnFieldDelete() {
     var deletedFieldId: String? = null
 
     composeTestRule.setContent {
@@ -327,7 +327,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun duplicateButton_callsOnFieldDuplicate() {
+  fun templateFieldList_duplicateButtonCallsOnFieldDuplicate() {
     var duplicatedFieldId: String? = null
 
     composeTestRule.setContent {
@@ -351,7 +351,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun cancelButton_callsOnFieldCancel() {
+  fun templateFieldList_cancelButtonCallsOnFieldCancel() {
     var cancelledFieldId: String? = null
 
     composeTestRule.setContent {
@@ -375,7 +375,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun expandedField_displaysCommonConfiguration() {
+  fun templateFieldList_expandedFieldDisplaysCommonConfiguration() {
     composeTestRule.setContent {
       TemplateFieldList(
           fields = testFields,
@@ -395,7 +395,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun multipleFieldsWithErrors_displaysMultipleWarnings() {
+  fun templateFieldList_multipleFieldsWithErrorsDisplaysMultipleWarnings() {
     composeTestRule.setContent {
       TemplateFieldList(
           fields = testFields,
@@ -416,7 +416,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun basicInfoSection_displaysWhenHeaderConfigProvided() {
+  fun templateFieldList_basicInfoSectionDisplaysWhenHeaderConfigProvided() {
     composeTestRule.setContent {
       TemplateFieldList(
           fields = testFields,
@@ -443,7 +443,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun basicInfoSection_titleChangeCallback_invoked() {
+  fun templateFieldList_basicInfoSectionTitleChangeCallbackInvoked() {
     var capturedTitle = ""
 
     composeTestRule.setContent {
@@ -473,7 +473,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun basicInfoSection_descriptionChangeCallback_invoked() {
+  fun templateFieldList_basicInfoSectionDescriptionChangeCallbackInvoked() {
     var capturedDescription = ""
 
     composeTestRule.setContent {
@@ -504,7 +504,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun basicInfoSection_titleError_displayed() {
+  fun templateFieldList_basicInfoSectionTitleErrorDisplayed() {
     composeTestRule.setContent {
       TemplateFieldList(
           fields = testFields,
@@ -530,7 +530,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun basicInfoSection_notDisplayed_whenHeaderConfigNull() {
+  fun templateFieldList_basicInfoSectionNotDisplayedWhenHeaderConfigNull() {
     composeTestRule.setContent {
       TemplateFieldList(
           fields = testFields,
@@ -552,7 +552,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun fieldList_withHeaderConfig_displaysFieldsAfterHeader() {
+  fun templateFieldList_fieldListWithHeaderConfigDisplaysFieldsAfterHeader() {
     composeTestRule.setContent {
       TemplateFieldList(
           fields = testFields,

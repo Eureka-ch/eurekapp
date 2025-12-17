@@ -418,7 +418,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
     // Verify URL format
     assertTrue(
         "Expected storage URL but got: $downloadUrl",
-        downloadUrl!!.startsWith("http://10.0.2.2:9199/v0/b/eureka/eurekapp/o/"))
+        downloadUrl!!.startsWith("http://10.0.2.2:9199/v0/b/eureka-app-ch.firebasestorage.app/o/"))
 
     // Verify storage path is correct
     val storagePath = getStoragePath(downloadUrl)

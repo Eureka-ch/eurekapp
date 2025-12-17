@@ -14,6 +14,7 @@ import org.junit.runner.RunWith
 
 /*
 Co-author: GPT-5 Codex
+Co-author: Grok
 */
 
 @RunWith(AndroidJUnit4::class)
@@ -22,7 +23,7 @@ class MessageInputFieldTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun messageInputFieldDisplaysCustomPlaceholder() {
+  fun messageInputField_displaysCustomPlaceholder() {
     composeTestRule.setContent {
       MessageInputField(
           message = "",
@@ -36,7 +37,7 @@ class MessageInputFieldTest {
   }
 
   @Test
-  fun messageInputFieldSendButtonDisabledWhenMessageEmpty() {
+  fun messageInputField_sendButtonDisabledWhenMessageEmpty() {
     composeTestRule.setContent {
       MessageInputField(message = "", onMessageChange = {}, onSend = {}, isSending = false)
     }
@@ -45,7 +46,7 @@ class MessageInputFieldTest {
   }
 
   @Test
-  fun messageInputFieldSendButtonEnabledWhenMessageNotEmpty() {
+  fun messageInputField_sendButtonEnabledWhenMessageNotEmpty() {
     composeTestRule.setContent {
       MessageInputField(message = "Hello", onMessageChange = {}, onSend = {}, isSending = false)
     }
@@ -54,7 +55,7 @@ class MessageInputFieldTest {
   }
 
   @Test
-  fun messageInputFieldCallsOnMessageChangeWhenTextEntered() {
+  fun messageInputField_callsOnMessageChangeWhenTextEntered() {
     var changedText = ""
 
     composeTestRule.setContent {
@@ -67,7 +68,7 @@ class MessageInputFieldTest {
   }
 
   @Test
-  fun messageInputFieldCallsOnSendWhenSendButtonClicked() {
+  fun messageInputField_callsOnSendWhenSendButtonClicked() {
     var sendCalled = false
 
     composeTestRule.setContent {
@@ -83,7 +84,7 @@ class MessageInputFieldTest {
   }
 
   @Test
-  fun messageInputFieldStateChangesWorkCorrectly() {
+  fun messageInputField_stateChangesWorkCorrectly() {
     var message by mutableStateOf("")
     var sendCalled = false
 

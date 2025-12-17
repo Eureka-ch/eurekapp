@@ -1,4 +1,4 @@
-/* Portions of this file were written with the help of Gemini. */
+/* Portions of this file were written with the help of Gemini, and Grok. */
 package ch.eureka.eurekapp.model.data.project
 
 import ch.eureka.eurekapp.model.data.user.User

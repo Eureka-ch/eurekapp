@@ -1,4 +1,4 @@
-// Portions of this code were generated with the help of Gemini Pro 3
+// Portions of this code were generated with the help of Gemini Pro 3, and Grok
 package ch.eureka.eurekapp.model.notifications
 
 import android.app.NotificationManager

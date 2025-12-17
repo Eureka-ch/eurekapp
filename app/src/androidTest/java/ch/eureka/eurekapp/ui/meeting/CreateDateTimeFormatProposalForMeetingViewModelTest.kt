@@ -1,4 +1,4 @@
-/* Portions of this file were written with the help of Gemini.*/
+/* Portions of this file were written with the help of Gemini, and Grok.*/
 package ch.eureka.eurekapp.ui.meeting
 
 import ch.eureka.eurekapp.model.data.meeting.Meeting
@@ -87,7 +87,7 @@ class CreateDateTimeFormatProposalForMeetingViewModelTest {
   }
 
   @Test
-  fun uiStateIsValidLogicIsCorrect() {
+  fun createDateTimeFormatProposalForMeetingViewModel_uiStateIsValidLogicIsCorrect() {
     var state =
         CreateDateTimeFormatProposalForMeetingUIState(
             date = futureDateTime.toLocalDate(), time = futureDateTime.toLocalTime())
@@ -101,7 +101,7 @@ class CreateDateTimeFormatProposalForMeetingViewModelTest {
   }
 
   @Test
-  fun initialStateIsCorrect() {
+  fun createDateTimeFormatProposalForMeetingViewModel_initialStateIsCorrect() {
     val uiState = viewModel.uiState.value
 
     assertEquals(initialDate, uiState.date)
@@ -118,7 +118,7 @@ class CreateDateTimeFormatProposalForMeetingViewModelTest {
   }
 
   @Test
-  fun clearErrorMsgSetsErrorMsgToNull() {
+  fun createDateTimeFormatProposalForMeetingViewModel_clearErrorMsgSetsErrorMsgToNull() {
     viewModel.setErrorMsg("An error")
     assertNotNull(viewModel.uiState.value.errorMsg)
 
@@ -127,53 +127,53 @@ class CreateDateTimeFormatProposalForMeetingViewModelTest {
   }
 
   @Test
-  fun setErrorMsgUpdatesErrorMsg() {
+  fun createDateTimeFormatProposalForMeetingViewModel_setErrorMsgUpdatesErrorMsg() {
     val errorMessage = "This is a test error"
     viewModel.setErrorMsg(errorMessage)
     assertEquals(errorMessage, viewModel.uiState.value.errorMsg)
   }
 
   @Test
-  fun setDateUpdatesDate() {
+  fun createDateTimeFormatProposalForMeetingViewModel_setDateUpdatesDate() {
     val newDate = LocalDate.of(2025, 10, 28)
     viewModel.setDate(newDate)
     assertEquals(newDate, viewModel.uiState.value.date)
   }
 
   @Test
-  fun setTimeUpdatesTime() {
+  fun createDateTimeFormatProposalForMeetingViewModel_setTimeUpdatesTime() {
     val newTime = LocalTime.of(14, 30)
     viewModel.setTime(newTime)
     assertEquals(newTime, viewModel.uiState.value.time)
   }
 
   @Test
-  fun setFormatUpdatesFormat() {
+  fun createDateTimeFormatProposalForMeetingViewModel_setFormatUpdatesFormat() {
     val newFormat = MeetingFormat.VIRTUAL
     viewModel.setFormat(newFormat)
     assertEquals(newFormat, viewModel.uiState.value.format)
   }
 
   @Test
-  fun setSavedUpdatesSaved() {
+  fun createDateTimeFormatProposalForMeetingViewModel_setSavedUpdatesSaved() {
     viewModel.setSaved()
     assertTrue(viewModel.uiState.value.saved)
   }
 
   @Test
-  fun touchDateUpdatesHasTouchedDate() {
+  fun createDateTimeFormatProposalForMeetingViewModel_touchDateUpdatesHasTouchedDate() {
     viewModel.touchDate()
     assertTrue(viewModel.uiState.value.hasTouchedDate)
   }
 
   @Test
-  fun touchTimeUpdatesHasTouchedTime() {
+  fun createDateTimeFormatProposalForMeetingViewModel_touchTimeUpdatesHasTouchedTime() {
     viewModel.touchTime()
     assertTrue(viewModel.uiState.value.hasTouchedTime)
   }
 
   @Test
-  fun createDateTimeFormatProposalWhenStateIsInvalid() {
+  fun createDateTimeFormatProposalForMeetingViewModel_createDateTimeFormatProposalWhenStateIsInvalid() {
     viewModel.setDate(pastDateTime.toLocalDate())
     viewModel.setTime(pastDateTime.toLocalTime())
     assertFalse(viewModel.uiState.value.isValid)
@@ -186,7 +186,7 @@ class CreateDateTimeFormatProposalForMeetingViewModelTest {
   }
 
   @Test
-  fun createDateTimeFormatProposalWhenUserNotLoggedIn() {
+  fun createDateTimeFormatProposalForMeetingViewModel_createDateTimeFormatProposalWhenUserNotLoggedIn() {
     viewModel.setDate(futureDateTime.toLocalDate())
     viewModel.setTime(futureDateTime.toLocalTime())
     assertTrue(viewModel.uiState.value.isValid)
@@ -201,64 +201,67 @@ class CreateDateTimeFormatProposalForMeetingViewModelTest {
   }
 
   @Test
-  fun createDateTimeFormatProposalSuccess() = runTest {
-    repositoryMock.meetingToReturn = baseMeeting
-    viewModel.loadMeeting()
-    testDispatcher.scheduler.advanceUntilIdle()
+  fun createDateTimeFormatProposalForMeetingViewModel_createDateTimeFormatProposalSuccess() =
+      runTest {
+        repositoryMock.meetingToReturn = baseMeeting
+        viewModel.loadMeeting()
+        testDispatcher.scheduler.advanceUntilIdle()
 
-    val newDate = futureDateTime.toLocalDate()
-    val newTime = futureDateTime.toLocalTime()
-    val newFormat = MeetingFormat.VIRTUAL
-    viewModel.setDate(newDate)
-    viewModel.setTime(newTime)
-    viewModel.setFormat(newFormat)
-    assertTrue(viewModel.uiState.value.isValid)
+        val newDate = futureDateTime.toLocalDate()
+        val newTime = futureDateTime.toLocalTime()
+        val newFormat = MeetingFormat.VIRTUAL
+        viewModel.setDate(newDate)
+        viewModel.setTime(newTime)
+        viewModel.setFormat(newFormat)
+        assertTrue(viewModel.uiState.value.isValid)
 
-    repositoryMock.shouldUpdateSucceed = true
+        repositoryMock.shouldUpdateSucceed = true
 
-    viewModel.createDateTimeFormatProposalForMeeting()
-    testDispatcher.scheduler.advanceUntilIdle()
+        viewModel.createDateTimeFormatProposalForMeeting()
+        testDispatcher.scheduler.advanceUntilIdle()
 
-    assertTrue(viewModel.uiState.value.saved)
-    assertNull(viewModel.uiState.value.errorMsg)
+        assertTrue(viewModel.uiState.value.saved)
+        assertNull(viewModel.uiState.value.errorMsg)
 
-    val updatedMeeting = repositoryMock.lastUpdatedMeeting
-    assertNotNull(updatedMeeting)
-    assertEquals(2, updatedMeeting!!.meetingProposals.size)
+        val updatedMeeting = repositoryMock.lastUpdatedMeeting
+        assertNotNull(updatedMeeting)
+        assertEquals(2, updatedMeeting!!.meetingProposals.size)
 
-    val newProposal = updatedMeeting.meetingProposals.last()
-    val expectedInstant =
-        LocalDateTime.of(newDate, newTime).atZone(ZoneId.systemDefault()).toInstant()
+        val newProposal = updatedMeeting.meetingProposals.last()
+        val expectedInstant =
+            LocalDateTime.of(newDate, newTime).atZone(ZoneId.systemDefault()).toInstant()
 
-    assertEquals(expectedInstant.epochSecond, newProposal.dateTime.seconds)
-    assertEquals(1, newProposal.votes.size)
-    assertEquals(currentUserId, newProposal.votes[0].userId)
-    assertEquals(listOf(newFormat), newProposal.votes[0].formatPreferences)
-  }
-
-  @Test
-  fun createDateTimeFormatProposalRepositoryFailure() = runTest {
-    repositoryMock.meetingToReturn = baseMeeting
-    viewModel.loadMeeting()
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    viewModel.setDate(futureDateTime.toLocalDate())
-    viewModel.setTime(futureDateTime.toLocalTime())
-    assertTrue(viewModel.uiState.value.isValid)
-
-    repositoryMock.shouldUpdateSucceed = false
-
-    viewModel.createDateTimeFormatProposalForMeeting()
-    testDispatcher.scheduler.advanceUntilIdle()
-
-    assertFalse(viewModel.uiState.value.saved)
-    assertEquals(
-        "Datetime/format meeting proposal could not be created.", viewModel.uiState.value.errorMsg)
-    assertNotNull(repositoryMock.lastUpdatedMeeting)
-  }
+        assertEquals(expectedInstant.epochSecond, newProposal.dateTime.seconds)
+        assertEquals(1, newProposal.votes.size)
+        assertEquals(currentUserId, newProposal.votes[0].userId)
+        assertEquals(listOf(newFormat), newProposal.votes[0].formatPreferences)
+      }
 
   @Test
-  fun uiStateCopyWorks() {
+  fun createDateTimeFormatProposalForMeetingViewModel_createDateTimeFormatProposalRepositoryFailure() =
+      runTest {
+        repositoryMock.meetingToReturn = baseMeeting
+        viewModel.loadMeeting()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.setDate(futureDateTime.toLocalDate())
+        viewModel.setTime(futureDateTime.toLocalTime())
+        assertTrue(viewModel.uiState.value.isValid)
+
+        repositoryMock.shouldUpdateSucceed = false
+
+        viewModel.createDateTimeFormatProposalForMeeting()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.saved)
+        assertEquals(
+            "Datetime/format meeting proposal could not be created.",
+            viewModel.uiState.value.errorMsg)
+        assertNotNull(repositoryMock.lastUpdatedMeeting)
+      }
+
+  @Test
+  fun createDateTimeFormatProposalForMeetingViewModel_uiStateCopyWorks() {
     val originalState =
         CreateDateTimeFormatProposalForMeetingUIState(saved = false, hasTouchedDate = false)
     val copiedState = originalState.copy(saved = true, hasTouchedDate = true)

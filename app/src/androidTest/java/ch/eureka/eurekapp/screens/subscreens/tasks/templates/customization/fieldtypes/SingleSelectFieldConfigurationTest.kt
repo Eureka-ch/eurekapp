@@ -1,6 +1,6 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fieldtypes
 
-/* Portions of this code were generated with the help of Claude Sonnet 4.5. */
+/* Portions of this code were generated with the help of Claude Sonnet 4.5., and Grok */
 
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
@@ -19,7 +19,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   private val testOptions = utils.createTestOptions()
 
   @Test
-  fun singleSelectFieldConfigurationDisplaysAllFields() {
+  fun singleSelectFieldConfiguration_displaysAllFields() {
     utils.testDisplaysAllFields(
         composeTestRule,
         content = {
@@ -30,7 +30,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun singleSelectFieldConfigurationAllowCustomCheckboxTogglesToTrue() {
+  fun singleSelectFieldConfiguration_allowCustomCheckboxTogglesToTrue() {
     val updates = mutableListOf<FieldType.SingleSelect>()
 
     utils.testCheckboxToggle(
@@ -48,7 +48,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun singleSelectFieldConfigurationAllowCustomCheckboxTogglesToFalse() {
+  fun singleSelectFieldConfiguration_allowCustomCheckboxTogglesToFalse() {
     val updates = mutableListOf<FieldType.SingleSelect>()
 
     utils.testCheckboxToggle(
@@ -66,7 +66,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun singleSelectFieldConfigurationDisabledCheckboxDisabled() {
+  fun singleSelectFieldConfiguration_disabledCheckboxDisabled() {
     utils.testDisabledState(
         composeTestRule,
         content = {
@@ -77,7 +77,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun singleSelectFieldConfigurationAllowCustomTrueCheckboxChecked() {
+  fun singleSelectFieldConfiguration_allowCustomTrueCheckboxChecked() {
     this.composeTestRule.setContent {
       SingleSelectFieldConfiguration(
           fieldType = FieldType.SingleSelect(testOptions, allowCustom = true),
@@ -89,7 +89,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun singleSelectFieldConfigurationAllowCustomFalseCheckboxUnchecked() {
+  fun singleSelectFieldConfiguration_allowCustomFalseCheckboxUnchecked() {
     this.composeTestRule.setContent {
       SingleSelectFieldConfiguration(
           fieldType = FieldType.SingleSelect(testOptions, allowCustom = false),
@@ -101,7 +101,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun singleSelectFieldConfigurationWithManyOptionsDisplays() {
+  fun singleSelectFieldConfiguration_withManyOptionsDisplays() {
     val manyOptions = utils.createTestOptions(10)
     utils.testDisplaysAllFields(
         composeTestRule,
@@ -113,7 +113,7 @@ class SingleSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun singleSelectFieldConfigurationPreservesOptionsAfterToggle() {
+  fun singleSelectFieldConfiguration_preservesOptionsAfterToggle() {
     val updates = mutableListOf<FieldType.SingleSelect>()
 
     utils.testCheckboxToggle(

@@ -62,7 +62,7 @@ class SignInScreenTest {
   }
 
   @Test
-  fun successfulSignIn_triggersOnSignedInCallback() {
+  fun signInScreen_successfulSignInTriggersOnSignedInCallback() {
     val fakeName = "Ada Lovelace"
     val fakeEmail = "ada.lovelace@example.com"
     val fakeIdToken = FakeJwtGenerator.createFakeGoogleIdToken(fakeName, fakeEmail)
@@ -86,7 +86,7 @@ class SignInScreenTest {
   }
 
   @Test
-  fun canSignInWithExistingAccount() {
+  fun signInScreen_canSignInWithExistingAccount() {
     val email = "existing@test.com"
     val fakeIdToken =
         FakeJwtGenerator.createFakeGoogleIdToken(name = "Existing User", email = email)
@@ -112,7 +112,7 @@ class SignInScreenTest {
   }
 
   @Test
-  fun autoSignInOnline() {
+  fun signInScreen_autoSignInOnline() {
     val fakeEmail = "auto.login@example.com"
     val fakeIdToken = FakeJwtGenerator.createFakeGoogleIdToken("Auto User", fakeEmail)
 
@@ -138,7 +138,7 @@ class SignInScreenTest {
   }
 
   @Test
-  fun autoSignInOffline() {
+  fun signInScreen_autoSignInOffline() {
     val fakeEmail = "offline.auto@example.com"
     val fakeIdToken = FakeJwtGenerator.createFakeGoogleIdToken("Offline User", fakeEmail)
 

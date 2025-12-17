@@ -1,3 +1,4 @@
+// Portions of this file were written with the help of Grok.
 package ch.eureka.eurekapp.ui.components
 
 import androidx.compose.ui.Modifier
@@ -19,7 +20,7 @@ class UIComponentsIntegrationTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun allUIComponentsRenderWithEurekaTheme() {
+  fun uiComponentsIntegration_allUIComponentsRenderWithEurekaTheme() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         // Test que tous les composants principaux se rendent
@@ -47,7 +48,7 @@ class UIComponentsIntegrationTest {
   }
 
   @Test
-  fun componentsWorkInDarkTheme() {
+  fun uiComponentsIntegration_componentsWorkInDarkTheme() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = true) {
         EurekaTopBar(modifier = Modifier, title = "Dark Theme Test")
@@ -63,7 +64,7 @@ class UIComponentsIntegrationTest {
   }
 
   @Test
-  fun statusTagRendersAllStatusTypes() {
+  fun uiComponentsIntegration_statusTagRendersAllStatusTypes() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         EurekaStatusTag(text = "Success", type = StatusType.SUCCESS)

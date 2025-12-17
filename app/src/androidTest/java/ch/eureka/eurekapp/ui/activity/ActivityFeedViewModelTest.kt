@@ -1,5 +1,6 @@
 /*
  * This file was co-authored by Claude Code.
+ * This file was co-authored by Grok.
  */
 package ch.eureka.eurekapp.ui.activity
 
@@ -67,7 +68,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun loadActivities_success_updatesUIState() = runTest {
+  fun loadActivities_successUpdatesUIState() = runTest {
     // Arrange
     val activities =
         listOf(
@@ -87,7 +88,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun applyEntityTypeFilter_projects_filtersCorrectly() = runTest {
+  fun applyEntityTypeFilter_projectsFiltersCorrectly() = runTest {
     // Arrange
     val activities =
         listOf(
@@ -111,7 +112,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun applyEntityTypeFilter_meetings_filtersCorrectly() = runTest {
+  fun applyEntityTypeFilter_meetingsFiltersCorrectly() = runTest {
     // Arrange
     val activities =
         listOf(
@@ -133,7 +134,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun applyActivityTypeFilter_created_filtersCorrectly() = runTest {
+  fun applyActivityTypeFilter_createdFiltersCorrectly() = runTest {
     // Arrange
     val activities =
         listOf(
@@ -277,7 +278,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun deleteActivity_success_removesFromList() = runTest {
+  fun deleteActivity_successRemovesFromList() = runTest {
     // Arrange
     val activities =
         listOf(

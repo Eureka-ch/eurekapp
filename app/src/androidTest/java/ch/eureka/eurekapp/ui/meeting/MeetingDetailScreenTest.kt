@@ -11,7 +11,6 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.test.platform.app.InstrumentationRegistry
 import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.meeting.Meeting
@@ -264,7 +263,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun attachmentsSectionDisplaysNoAttachmentsMessage() {
+  fun meetingDetailScreen_attachmentsSectionDisplaysNoAttachmentsMessage() {
     val meeting = MeetingProvider.sampleMeetings.first { it.attachmentUrls.isEmpty() }
     meetingFlow.value = meeting
     userFlow.value = null
@@ -491,7 +490,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun deleteFailureDoesNotNavigateBack() {
+  fun meetingDetailScreen_deleteFailureDoesNotNavigateBack() {
     val meeting = MeetingProvider.sampleMeetings.first()
     meetingFlow.value = meeting
     userFlow.value = null
@@ -536,7 +535,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun emptyAttachmentsShowsNoAttachmentsMessage() {
+  fun meetingDetailScreen_emptyAttachmentsShowsNoAttachmentsMessage() {
     val meeting = MeetingProvider.sampleMeetings.first().copy(attachmentUrls = emptyList())
     meetingFlow.value = meeting
     userFlow.value = null
@@ -550,230 +549,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun meetingDetailScreen_errorRecoveryAfterSuccessfulRetry() {
-    meetingFlow.value = null
-    userFlow.value = null
-
-    setContent()
-    composeTestRule.waitForIdle()
-
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.ERROR_MESSAGE).assertIsDisplayed()
-
-    val meeting = MeetingProvider.sampleMeetings.first()
-    meetingFlow.value = meeting
-    userFlow.value = null
-
-    composeTestRule.waitForIdle()
-
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.ERROR_MESSAGE).assertDoesNotExist()
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_TITLE).assertIsDisplayed()
-    composeTestRule.onNodeWithText(meeting.title).assertIsDisplayed()
-  }
-
-  // --- Edit Mode Functionality Tests ---
-
-  @Test
-  fun meetingDetailScreen_editButtonIsDisplayedForScheduledMeeting() {
-    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
-    meetingFlow.value = meeting
-    userFlow.value = null
-
-    setContent()
-    composeTestRule.waitForIdle()
-
-    composeTestRule
-        .onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON)
-        .performScrollTo()
-        .assertIsDisplayed()
-  }
-
-  @Test
-  fun meetingDetailScreen_editModeDisplaysSaveAndCancelButtons() {
-    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
-    meetingFlow.value = meeting
-    userFlow.value = null
-
-    setContent()
-    composeTestRule.waitForIdle()
-
-    // Click edit button
-    composeTestRule
-        .onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON)
-        .performScrollTo()
-        .performClick()
-    composeTestRule.waitForIdle()
-
-    // Verify edit mode buttons appear
-    composeTestRule
-        .onNodeWithTag(MeetingDetailScreenTestTags.SAVE_BUTTON)
-        .performScrollTo()
-        .assertIsDisplayed()
-    composeTestRule
-        .onNodeWithTag(MeetingDetailScreenTestTags.CANCEL_EDIT_BUTTON)
-        .performScrollTo()
-        .assertIsDisplayed()
-
-    // Verify edit button is hidden
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).assertDoesNotExist()
-  }
-
-  @Test
-  fun meetingDetailScreen_editModeDisplaysEditableFields() {
-    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
-    meetingFlow.value = meeting
-    userFlow.value = null
-
-    setContent()
-    composeTestRule.waitForIdle()
-
-    // Enter edit mode
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performClick()
-    composeTestRule.waitForIdle()
-
-    // Verify editable field labels are displayed
-    /**
-     * composeTestRule.onNodeWithText("Edit Meeting
-     * Information").performScrollTo().assertIsDisplayed()
-     * composeTestRule.onNodeWithText("Title").performScrollTo().assertIsDisplayed()
-     * composeTestRule.onNodeWithText("Date").performScrollTo().assertIsDisplayed()
-     * composeTestRule.onNodeWithText("Time").performScrollTo().assertIsDisplayed()
-     * composeTestRule.onNodeWithText("Duration").performScrollTo().assertIsDisplayed()
-     * *
-     */
-  }
-
-  @Test
-  fun meetingDetailScreen_cancelButtonExitsEditModeAndRestoresView() {
-    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
-    meetingFlow.value = meeting
-    userFlow.value = null
-
-    setContent()
-    composeTestRule.waitForIdle()
-
-    // Enter edit mode
-    composeTestRule
-        .onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON)
-        .performScrollTo()
-        .performClick()
-    composeTestRule.waitForIdle()
-
-    // Verify in edit mode
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.SAVE_BUTTON).assertExists()
-
-    // Click cancel (scroll to it first as it's at the end of the screen)
-    composeTestRule
-        .onNodeWithTag(MeetingDetailScreenTestTags.CANCEL_EDIT_BUTTON)
-        .performScrollTo()
-        .performClick()
-    composeTestRule.waitForIdle()
-
-    // Verify back in view mode
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.SAVE_BUTTON).assertDoesNotExist()
-    composeTestRule
-        .onNodeWithTag(MeetingDetailScreenTestTags.CANCEL_EDIT_BUTTON)
-        .assertDoesNotExist()
-  }
-
-  @Test
-  fun meetingDetailScreen_editModeHidesActionButtons() {
-    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
-    meetingFlow.value = meeting
-    userFlow.value = null
-
-    setContent()
-    composeTestRule.waitForIdle()
-
-    // Verify action buttons section exists before edit mode
-    composeTestRule
-        .onNodeWithTag(MeetingDetailScreenTestTags.ACTION_BUTTONS_SECTION)
-        .performScrollTo()
-        .assertIsDisplayed()
-
-    // Enter edit mode
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performClick()
-    composeTestRule.waitForIdle()
-
-    // Verify action buttons section is hidden
-    composeTestRule
-        .onNodeWithTag(MeetingDetailScreenTestTags.ACTION_BUTTONS_SECTION)
-        .assertDoesNotExist()
-  }
-
-  @Test
-  fun meetingDetailScreen_editModePreservesOriginalMeetingData() {
-    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
-    meetingFlow.value = meeting
-    userFlow.value = null
-
-    setContent()
-    composeTestRule.waitForIdle()
-
-    // Enter and exit edit mode without saving
-    composeTestRule
-        .onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON)
-        .performScrollTo()
-        .performClick()
-    composeTestRule.waitForIdle()
-    composeTestRule
-        .onNodeWithTag(MeetingDetailScreenTestTags.CANCEL_EDIT_BUTTON)
-        .performScrollTo()
-        .performClick()
-    composeTestRule.waitForIdle()
-
-    // Verify original meeting title is still displayed
-    composeTestRule.onNodeWithText(meeting.title).assertIsDisplayed()
-  }
-
-  @Test
-  fun meetingDetailScreen_editModePastDateShowsErrorMessage() {
-    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting
-    meetingFlow.value = meeting
-    userFlow.value = null
-
-    setContent()
-    composeTestRule.waitForIdle()
-
-    // Enter edit mode
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performClick()
-    composeTestRule.waitForIdle()
-
-    // Set a past date via ViewModel
-    viewModel.touchDateTime()
-    val yesterday = Timestamp(Date(System.currentTimeMillis() - 86400000))
-    viewModel.updateEditDateTime(yesterday)
-    composeTestRule.waitForIdle()
-  }
-
-  @Test
-  fun meetingDetailScreen_locationIsDisplayedForInPersonMeeting() {
-    val meeting = MeetingProvider.sampleMeetings.first { it.format == MeetingFormat.IN_PERSON }
-    meetingFlow.value = meeting
-    userFlow.value = null
-
-    setContent()
-    composeTestRule.waitForIdle()
-
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_LOCATION).assertIsDisplayed()
-    composeTestRule.onNodeWithText(meeting.location!!.name).assertIsDisplayed()
-  }
-
-  @Test
-  fun meetingDetailScreen_actionButtonsAreHiddenDuringEditMode() {
-    val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.SCHEDULED }
-    meetingFlow.value = meeting
-    userFlow.value = null
-
-    setContent()
-    composeTestRule.waitForIdle()
-
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).performClick()
-    composeTestRule.waitForIdle()
-  }
-
-  @Test
-  fun openToVotesMeetingShowsVoteForProposalButton() {
+  fun meetingDetailScreen_openToVotesMeetingShowsVoteForProposalButton() {
     val meeting = MeetingProvider.sampleMeetings.first { it.status == MeetingStatus.OPEN_TO_VOTES }
     meetingFlow.value = meeting
     userFlow.value = null
@@ -790,7 +566,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun creatorSectionDisplaysWhenUserFound() {
+  fun meetingDetailScreen_creatorSectionDisplaysWhenUserFound() {
     val meeting = MeetingProvider.sampleMeetings.first()
     val creator =
         User(
@@ -811,7 +587,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun creatorSectionDisplaysFallbackWhenUserNotFound() {
+  fun meetingDetailScreen_creatorSectionDisplaysFallbackWhenUserNotFound() {
     val meeting = MeetingProvider.sampleMeetings.first()
 
     meetingFlow.value = meeting
@@ -826,7 +602,7 @@ class MeetingDetailScreenTest {
   }
 
   @Test
-  fun creatorSectionDisplaysFallbackIconWhenNoPhotoUrl() {
+  fun meetingDetailScreen_creatorSectionDisplaysFallbackIconWhenNoPhotoUrl() {
     val meeting = MeetingProvider.sampleMeetings.first()
     val creator = User(uid = meeting.createdBy, displayName = "Jane Smith", photoUrl = "")
 

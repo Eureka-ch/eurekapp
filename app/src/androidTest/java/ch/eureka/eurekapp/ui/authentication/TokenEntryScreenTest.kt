@@ -83,7 +83,7 @@ class TokenEntryScreenTest {
   // ========================================
 
   @Test
-  fun screenDisplays_topBarIsVisible() {
+  fun tokenEntryScreen_screenDisplaysTopBarIsVisible() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Top bar should be visible (EurekaTopBar is displayed)
@@ -92,7 +92,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun screenDisplays_greetingTextWithUserName() {
+  fun tokenEntryScreen_screenDisplaysGreetingTextWithUserName() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Greeting should show user's name (Guest for anonymous auth) with waving emoji
@@ -105,7 +105,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun screenDisplays_instructionsTitle() {
+  fun tokenEntryScreen_screenDisplaysInstructionsTitle() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Instructions title should be displayed
@@ -113,7 +113,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun screenDisplays_instructionsDescription() {
+  fun tokenEntryScreen_screenDisplaysInstructionsDescription() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Instructions description should be displayed
@@ -123,7 +123,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun screenDisplays_tokenInputField() {
+  fun tokenEntryScreen_screenDisplaysTokenInputField() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Token input field should be visible
@@ -131,19 +131,15 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun tokenInputField_hasCorrectLabel() {
+  fun tokenEntryScreen_tokenInputFieldHasCorrectLabel() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Token field should have label
     composeTestRule.onNodeWithText("Token").assertIsDisplayed()
   }
 
-  // Note: Placeholder test removed because OutlinedTextField placeholder is not reliably
-  // accessible via semantics tree when the field is empty. The placeholder is tested indirectly
-  // through user interaction tests.
-
   @Test
-  fun tokenInputField_isSingleLine() {
+  fun tokenEntryScreen_tokenInputFieldIsSingleLine() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Token field should be single line (text input accepts input)
@@ -155,7 +151,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun validateButton_isDisplayed() {
+  fun tokenEntryScreen_validateButtonIsDisplayed() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Validate button should be visible
@@ -163,7 +159,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun validateButton_showsCorrectText() {
+  fun tokenEntryScreen_validateButtonShowsCorrectText() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Button should show "Validate"
@@ -171,7 +167,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun validateButton_isDisabledWhenTokenEmpty() {
+  fun tokenEntryScreen_validateButtonIsDisabledWhenTokenEmpty() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Button should be disabled when token is empty
@@ -179,7 +175,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun validateButton_isEnabledWhenTokenNotEmpty() {
+  fun tokenEntryScreen_validateButtonIsEnabledWhenTokenNotEmpty() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Enter token
@@ -192,7 +188,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun helpLink_isDisplayed() {
+  fun tokenEntryScreen_helpLinkIsDisplayed() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Help link should be visible
@@ -200,7 +196,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun helpLink_hasCorrectText() {
+  fun tokenEntryScreen_helpLinkHasCorrectText() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Help link should have correct text
@@ -208,7 +204,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun helpLink_isClickable() {
+  fun tokenEntryScreen_helpLinkIsClickable() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Help link should be clickable
@@ -219,7 +215,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun backButton_isDisplayed() {
+  fun tokenEntryScreen_backButtonIsDisplayed() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Back button should be displayed
@@ -227,7 +223,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun backButton_clickInvokesCallback() {
+  fun tokenEntryScreen_backButtonClickInvokesCallback() {
     var backClicked = false
     composeTestRule.setContent {
       TokenEntryScreen(tokenEntryViewModel = viewModel, onBackClick = { backClicked = true })
@@ -245,7 +241,7 @@ class TokenEntryScreenTest {
   // ========================================
 
   @Test
-  fun loadingState_tokenInputDisabled() {
+  fun tokenEntryScreen_loadingStateTokenInputDisabled() {
     // Setup: Add valid invitation
     val invitation = Invitation(token = "LOAD-TOKEN", projectId = "project_1", isUsed = false)
     mockRepository.addInvitation(invitation)
@@ -264,7 +260,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun loadingState_validateButtonDisabled() {
+  fun tokenEntryScreen_loadingStateValidateButtonDisabled() {
     // Setup: Add valid invitation but make repository slow
     val invitation = Invitation(token = "SLOW-TOKEN", projectId = "project_1", isUsed = false)
     mockRepository.addInvitation(invitation)
@@ -281,7 +277,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun loadingState_showsCircularProgressIndicator() {
+  fun tokenEntryScreen_loadingStateShowsCircularProgressIndicator() {
     // Setup: Add valid invitation
     val invitation = Invitation(token = "PROGRESS-TOKEN", projectId = "project_1", isUsed = false)
     mockRepository.addInvitation(invitation)
@@ -305,7 +301,7 @@ class TokenEntryScreenTest {
   // ========================================
 
   @Test
-  fun userInput_tokenFieldAcceptsText() {
+  fun tokenEntryScreen_userInputTokenFieldAcceptsText() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Type in token field
@@ -318,7 +314,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun userInput_tokenFieldTrimming() {
+  fun tokenEntryScreen_userInputTokenFieldTrimming() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Type token with whitespace
@@ -331,7 +327,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun userInput_tokenFieldClearAndRetype() {
+  fun tokenEntryScreen_userInputTokenFieldClearAndRetype() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Type token
@@ -349,7 +345,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun userInput_validateButtonClickWhenDisabled() {
+  fun tokenEntryScreen_userInputValidateButtonClickWhenDisabled() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Try to click disabled button (should do nothing)
@@ -365,7 +361,7 @@ class TokenEntryScreenTest {
   // ========================================
 
   @Test
-  fun userFlow_validToken_successfulValidation() {
+  fun tokenEntryScreen_userFlowValidTokenSuccessfulValidation() {
     // Setup: Add valid invitation
     val invitation = Invitation(token = "VALID-FLOW-TOKEN", projectId = "project_1", isUsed = false)
     mockRepository.addInvitation(invitation)
@@ -392,7 +388,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun userFlow_validToken_navigationTriggered() {
+  fun tokenEntryScreen_userFlowValidTokenNavigationTriggered() {
     // Setup: Add valid invitation
     val invitation = Invitation(token = "NAV-TOKEN", projectId = "project_1", isUsed = false)
     mockRepository.addInvitation(invitation)
@@ -420,7 +416,7 @@ class TokenEntryScreenTest {
   // ========================================
 
   @Test
-  fun userFlow_invalidToken_noNavigation() {
+  fun tokenEntryScreen_userFlowInvalidTokenNoNavigation() {
     var callbackInvoked = false
     composeTestRule.setContent {
       TokenEntryScreen(
@@ -442,11 +438,8 @@ class TokenEntryScreenTest {
     assert(!callbackInvoked)
   }
 
-  // Note: Test removed as it's redundant with validateButton_isDisabledWhenTokenEmpty
-  // and was causing timeout issues
-
   @Test
-  fun userFlow_alreadyUsedToken_noNavigation() {
+  fun tokenEntryScreen_userFlowAlreadyUsedTokenNoNavigation() {
     // Setup: Add already used invitation
     val usedInvitation =
         Invitation(
@@ -482,7 +475,7 @@ class TokenEntryScreenTest {
   // ========================================
 
   @Test
-  fun edgeCase_veryLongToken() {
+  fun tokenEntryScreen_edgeCaseVeryLongToken() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Enter very long token
@@ -497,7 +490,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun edgeCase_specialCharactersInToken() {
+  fun tokenEntryScreen_edgeCaseSpecialCharactersInToken() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Enter token with special characters
@@ -511,7 +504,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun edgeCase_unicodeCharacters() {
+  fun tokenEntryScreen_edgeCaseUnicodeCharacters() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Enter token with unicode
@@ -525,7 +518,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun edgeCase_rapidInputChanges() {
+  fun tokenEntryScreen_edgeCaseRapidInputChanges() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Rapidly change input
@@ -539,7 +532,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun edgeCase_multipleValidationAttempts() {
+  fun tokenEntryScreen_edgeCaseMultipleValidationAttempts() {
     // Setup: Add valid invitation
     val invitation = Invitation(token = "MULTI-TOKEN", projectId = "project_1", isUsed = false)
     mockRepository.addInvitation(invitation)
@@ -566,12 +559,8 @@ class TokenEntryScreenTest {
     assert(viewModel.uiState.value.validationSuccess)
   }
 
-  // ========================================
-  // LaunchedEffect Tests
-  // ========================================
-
   @Test
-  fun launchedEffect_errorMessageCleared() {
+  fun tokenEntryScreen_launchedEffectErrorMessageCleared() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Trigger error by validating invalid token
@@ -588,7 +577,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun launchedEffect_successNavigationTriggered() {
+  fun tokenEntryScreen_launchedEffectSuccessNavigationTriggered() {
     // Setup: Add valid invitation
     val invitation = Invitation(token = "SUCCESS-TOKEN", projectId = "project_1", isUsed = false)
     mockRepository.addInvitation(invitation)
@@ -610,12 +599,8 @@ class TokenEntryScreenTest {
     assert(navigationCount == 1)
   }
 
-  // ========================================
-  // Repository Failure Tests
-  // ========================================
-
   @Test
-  fun repositoryFailure_displaysErrorNoNavigation() {
+  fun tokenEntryScreen_repositoryFailureDisplaysErrorNoNavigation() {
     // Setup: Add valid invitation but configure repository to fail
     val invitation = Invitation(token = "FAIL-TOKEN", projectId = "project_1", isUsed = false)
     mockRepository.addInvitation(invitation)
@@ -643,7 +628,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun repositoryException_displaysErrorNoNavigation() {
+  fun tokenEntryScreen_repositoryExceptionDisplaysErrorNoNavigation() {
     // Setup: Configure repository to throw exception
     mockRepository.shouldThrowException = true
     mockRepository.exceptionToThrow = Exception("Network error")
@@ -666,12 +651,8 @@ class TokenEntryScreenTest {
     assert(!callbackInvoked)
   }
 
-  // ========================================
-  // State Consistency Tests
-  // ========================================
-
   @Test
-  fun stateConsistency_buttonStateMatchesTokenInput() {
+  fun tokenEntryScreen_stateConsistencyButtonStateMatchesTokenInput() {
     composeTestRule.setContent { TokenEntryScreen(tokenEntryViewModel = viewModel) }
 
     // Initially disabled (empty token)
@@ -689,7 +670,7 @@ class TokenEntryScreenTest {
   }
 
   @Test
-  fun stateConsistency_inputFieldStateMatchesLoading() {
+  fun tokenEntryScreen_stateConsistencyInputFieldStateMatchesLoading() {
     // Setup: Add valid invitation
     val invitation = Invitation(token = "STATE-TOKEN", projectId = "project_1", isUsed = false)
     mockRepository.addInvitation(invitation)

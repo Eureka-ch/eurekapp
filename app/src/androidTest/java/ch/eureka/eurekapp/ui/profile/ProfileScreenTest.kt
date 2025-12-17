@@ -157,7 +157,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_clickEditButton_showsEditMode() {
+  fun profileScreen_clickEditButtonShowsEditMode() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
     composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
@@ -173,7 +173,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_editMode_displayNameFieldContainsCurrentName() {
+  fun profileScreen_editModeDisplayNameFieldContainsCurrentName() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
     composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
@@ -188,7 +188,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_editMode_canTypeInDisplayNameField() {
+  fun profileScreen_editModeCanTypeInDisplayNameField() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
     composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
@@ -207,7 +207,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_editMode_clickCancel_exitsEditMode() {
+  fun profileScreen_editModeClickCancelExitsEditMode() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
     composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
@@ -229,7 +229,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_editMode_clickSave_savesDisplayName() {
+  fun profileScreen_editModeClickSaveSavesDisplayName() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
     composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
@@ -248,7 +248,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_editMode_clickSave_exitsEditMode() {
+  fun profileScreen_editModeClickSaveExitsEditMode() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
     composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
@@ -280,7 +280,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_noUserData_doesNotShowEditButton() {
+  fun profileScreen_noUserDataDoesNotShowEditButton() {
     // Given
     userRepository.userFlow.value = null
     val viewModel = ProfileViewModel(userRepository, testUserId)
@@ -294,7 +294,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_clickSignOut_callsFirebaseSignOut() {
+  fun profileScreen_clickSignOutCallsFirebaseSignOut() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
     composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
@@ -307,7 +307,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_editMode_saveEmptyName_savesEmptyString() {
+  fun profileScreen_editModeSaveEmptyNameSavesEmptyString() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
     composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
@@ -323,7 +323,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_editMode_saveSpecialCharacters_savesCorrectly() {
+  fun profileScreen_editModeSaveSpecialCharactersSavesCorrectly() {
     // Given
     val specialName = "Test@#$%Name"
     val viewModel = ProfileViewModel(userRepository, testUserId)
@@ -343,7 +343,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_userDataUpdates_displaysNewData() {
+  fun profileScreen_userDataUpdatesDisplaysNewData() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
     composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
@@ -359,7 +359,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_multipleEditCancelCycles_worksCorrectly() {
+  fun profileScreen_multipleEditCancelCyclesWorksCorrectly() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
     composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
@@ -390,7 +390,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_repositorySaveFails_stillExitsEditMode() {
+  fun profileScreen_repositorySaveFailsStillExitsEditMode() {
     // Given
     userRepository.saveUserResult = Result.failure(Exception("Save failed"))
     val viewModel = ProfileViewModel(userRepository, testUserId)
@@ -406,7 +406,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_withUnicodeCharacters_displaysCorrectly() {
+  fun profileScreen_withUnicodeCharactersDisplaysCorrectly() {
     // Given
     userRepository.userFlow.value = testUser.copy(displayName = "Test 测试 テスト 🎉 العربية")
     val viewModel = ProfileViewModel(userRepository, testUserId)
@@ -421,7 +421,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_editAndCancel_restoresOriginalName() {
+  fun profileScreen_editAndCancelRestoresOriginalName() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
     composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
@@ -442,7 +442,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_userChangesFromNullToValid_displaysUser() {
+  fun profileScreen_userChangesFromNullToValidDisplaysUser() {
     // Given
     userRepository.userFlow.value = null
     val viewModel = ProfileViewModel(userRepository, testUserId)
@@ -459,7 +459,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_userChangesFromValidToNull_showsError() {
+  fun profileScreen_userChangesFromValidToNullShowsError() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
     composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
@@ -475,7 +475,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_photoUrlChanges_displaysNewPhoto() {
+  fun profileScreen_photoUrlChangesDisplaysNewPhoto() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
     composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
@@ -489,7 +489,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_photoUrlChangesToEmpty_showsFallbackIcon() {
+  fun profileScreen_photoUrlChangesToEmptyShowsFallbackIcon() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
     composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
@@ -503,7 +503,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_editModeActiveWhenUserChanges_handlesGracefully() {
+  fun profileScreen_editModeActiveWhenUserChangesHandlesGracefully() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
     composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
@@ -520,7 +520,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_editMode_enforcesMaxCharacterLimit() {
+  fun profileScreen_editModeEnforcesMaxCharacterLimit() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
     composeTestRule.setContent { ProfileScreen(viewModel = viewModel, firebaseAuth = firebaseAuth) }
@@ -550,7 +550,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_activityFeedButton_triggersCallback() {
+  fun profileScreen_activityFeedButtonTriggersCallback() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
     var callbackTriggered = false
@@ -571,7 +571,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_activityFeedButton_displaysWhenCallbackProvided() {
+  fun profileScreen_activityFeedButtonDisplaysWhenCallbackProvided() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
 
@@ -585,7 +585,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_activityFeedButton_displaysWithDefaultCallback() {
+  fun profileScreen_activityFeedButtonDisplaysWithDefaultCallback() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
 
@@ -608,7 +608,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_clickSettingsButton_triggersCallback() {
+  fun profileScreen_clickSettingsButtonTriggersCallback() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
     var callbackTriggered = false
@@ -629,7 +629,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun profileScreen_settingsButton_displaysWithDefaultCallback() {
+  fun profileScreen_settingsButtonDisplaysWithDefaultCallback() {
     // Given
     val viewModel = ProfileViewModel(userRepository, testUserId)
 
