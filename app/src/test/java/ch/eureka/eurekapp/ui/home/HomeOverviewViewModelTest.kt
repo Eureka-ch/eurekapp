@@ -105,9 +105,8 @@ class HomeOverviewViewModelTest {
     val state = viewModel.uiState.value
     assertFalse(state.isLoading)
     assertEquals("Eureka User", state.currentUserName)
-    assertEquals(listOf("Task 1", "Task 2", "Task 3"), state.upcomingTasks.map { it.title })
-
-    // Verify meetings are aggregated and sorted correctly
+    assertEquals(
+        listOf("Task 1", "Task 2", "Task 3", "Task 4"), state.upcomingTasks.map { it.title })
     assertEquals(3, state.upcomingMeetings.size)
     assertTrue(state.upcomingMeetings.all { it.status != MeetingStatus.COMPLETED })
 
