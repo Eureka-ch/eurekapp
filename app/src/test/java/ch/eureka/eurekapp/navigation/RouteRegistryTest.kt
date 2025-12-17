@@ -174,4 +174,108 @@ class RouteRegistryTest {
         "MeetingsSection should contain both AudioRecording and AudioTranscript routes",
         hasAudioRecording && hasAudioTranscript)
   }
+
+  // ===== ROUTE INSTANTIATION TESTS (Lines 136-158) =====
+
+  @Test
+  fun meetingProposalVotesRoute_createsWithCorrectParameters() {
+    val projectId = "test-project-123"
+    val meetingId = "test-meeting-456"
+    val route = Route.MeetingsSection.MeetingProposalVotes(projectId, meetingId)
+
+    assertEquals("Project ID should match", projectId, route.projectId)
+    assertEquals("Meeting ID should match", meetingId, route.meetingId)
+  }
+
+  @Test
+  fun createDateTimeFormatMeetingProposalRoute_createsWithCorrectParameters() {
+    val projectId = "proj-789"
+    val meetingId = "meet-012"
+    val route = Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting(projectId, meetingId)
+
+    assertEquals("Project ID should match", projectId, route.projectId)
+    assertEquals("Meeting ID should match", meetingId, route.meetingId)
+  }
+
+  @Test
+  fun meetingDetailRoute_createsWithCorrectParameters() {
+    val projectId = "project-abc"
+    val meetingId = "meeting-xyz"
+    val route = Route.MeetingsSection.MeetingDetail(projectId, meetingId)
+
+    assertEquals("Project ID should match", projectId, route.projectId)
+    assertEquals("Meeting ID should match", meetingId, route.meetingId)
+  }
+
+  @Test
+  fun meetingNavigationRoute_createsWithCorrectParameters() {
+    val projectId = "nav-project-001"
+    val meetingId = "nav-meeting-002"
+    val route = Route.MeetingsSection.MeetingNavigation(projectId, meetingId)
+
+    assertEquals("Project ID should match", projectId, route.projectId)
+    assertEquals("Meeting ID should match", meetingId, route.meetingId)
+  }
+
+  @Test
+  fun allMeetingRoutes_canBeInstantiatedWithTestData() {
+    val testProjectId = "test-proj"
+    val testMeetingId = "test-meet"
+
+    // Test all route types can be created
+    val proposalVotes = Route.MeetingsSection.MeetingProposalVotes(testProjectId, testMeetingId)
+    val dateTimeProposal = Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting(testProjectId, testMeetingId)
+    val meetingDetail = Route.MeetingsSection.MeetingDetail(testProjectId, testMeetingId)
+    val audioRecording = Route.MeetingsSection.AudioRecording(testProjectId, testMeetingId)
+    val audioTranscript = Route.MeetingsSection.AudioTranscript(testProjectId, testMeetingId)
+    val meetingNav = Route.MeetingsSection.MeetingNavigation(testProjectId, testMeetingId)
+
+    // Verify all routes have correct IDs
+    assertEquals(testProjectId, proposalVotes.projectId)
+    assertEquals(testProjectId, dateTimeProposal.projectId)
+    assertEquals(testProjectId, meetingDetail.projectId)
+    assertEquals(testProjectId, audioRecording.projectId)
+    assertEquals(testProjectId, audioTranscript.projectId)
+    assertEquals(testProjectId, meetingNav.projectId)
+
+    assertEquals(testMeetingId, proposalVotes.meetingId)
+    assertEquals(testMeetingId, dateTimeProposal.meetingId)
+    assertEquals(testMeetingId, meetingDetail.meetingId)
+    assertEquals(testMeetingId, audioRecording.meetingId)
+    assertEquals(testMeetingId, audioTranscript.meetingId)
+    assertEquals(testMeetingId, meetingNav.meetingId)
+  }
+
+  @Test
+  fun meetingRoutes_handleSpecialCharactersInIds() {
+    val projectIdWithSpecialChars = "proj-123_test@domain"
+    val meetingIdWithSpecialChars = "meet-456_special#id"
+
+    val route = Route.MeetingsSection.MeetingDetail(projectIdWithSpecialChars, meetingIdWithSpecialChars)
+
+    assertEquals(projectIdWithSpecialChars, route.projectId)
+    assertEquals(meetingIdWithSpecialChars, route.meetingId)
+  }
+
+  @Test
+  fun meetingRoutes_handleEmptyStringsInIds() {
+    val emptyProjectId = ""
+    val emptyMeetingId = ""
+
+    val route = Route.MeetingsSection.AudioTranscript(emptyProjectId, emptyMeetingId)
+
+    assertEquals(emptyProjectId, route.projectId)
+    assertEquals(emptyMeetingId, route.meetingId)
+  }
+
+  @Test
+  fun meetingRoutes_handleLongIdsCorrectly() {
+    val longProjectId = "a".repeat(500)
+    val longMeetingId = "b".repeat(500)
+
+    val route = Route.MeetingsSection.MeetingNavigation(longProjectId, longMeetingId)
+
+    assertEquals(longProjectId, route.projectId)
+    assertEquals(longMeetingId, route.meetingId)
+  }
 }
