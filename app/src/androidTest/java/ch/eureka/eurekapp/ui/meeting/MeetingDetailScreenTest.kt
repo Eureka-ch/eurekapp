@@ -202,7 +202,10 @@ class MeetingDetailScreenTest {
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_STATUS).assertIsDisplayed()
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_DATETIME).assertIsDisplayed()
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_FORMAT).assertIsDisplayed()
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_LINK).assertExists()
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.MEETING_LINK)
+        .performScrollTo()
+        .assertIsDisplayed()
   }
 
   @Test
@@ -950,6 +953,7 @@ class MeetingDetailScreenTest {
 
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.START_MEETING_BUTTON)
+        .performScrollTo()
         .assertIsDisplayed()
   }
 
@@ -1106,7 +1110,10 @@ class MeetingDetailScreenTest {
 
     composeTestRule.waitForIdle()
 
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.START_MEETING_BUTTON).performClick()
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.START_MEETING_BUTTON)
+        .performScrollTo()
+        .performClick()
 
     composeTestRule.waitForIdle()
 
