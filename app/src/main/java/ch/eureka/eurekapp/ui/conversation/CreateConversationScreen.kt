@@ -46,6 +46,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.ui.components.BackButton
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 /*
@@ -62,6 +64,7 @@ object CreateConversationScreenTestTags {
   const val MEMBER_DROPDOWN = "MemberDropdown"
   const val MEMBER_DROPDOWN_ITEM = "MemberDropdownItem"
   const val CREATE_BUTTON = "CreateButton"
+  const val BACK_BUTTON = "CreateConversationBackButton"
   const val LOADING_INDICATOR = "CreateConversationLoading"
   const val NO_MEMBERS_MESSAGE = "NoMembersMessage"
 }
@@ -83,6 +86,7 @@ object CreateConversationScreenTestTags {
 @Composable
 fun CreateConversationScreen(
     onNavigateToConversation: (String) -> Unit,
+    onNavigateBack: () -> Unit = {},
     viewModel: CreateConversationViewModel = viewModel()
 ) {
   val context = LocalContext.current
@@ -108,53 +112,63 @@ fun CreateConversationScreen(
     }
   }
 
-  Scaffold(modifier = Modifier.testTag(CreateConversationScreenTestTags.SCREEN)) { padding ->
-    Column(
-        modifier =
-            Modifier.fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = Spacing.md)
-                .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.Top) {
-          Spacer(modifier = Modifier.height(Spacing.md))
+  Scaffold(
+      modifier = Modifier.testTag(CreateConversationScreenTestTags.SCREEN),
+      topBar = {
+        EurekaTopBar(
+            title = "New Conversation",
+            navigationIcon = {
+              BackButton(
+                  onClick = onNavigateBack,
+                  modifier = Modifier.testTag(CreateConversationScreenTestTags.BACK_BUTTON))
+            })
+      }) { padding ->
+        Column(
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = Spacing.md)
+                    .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.Top) {
+              Spacer(modifier = Modifier.height(Spacing.md))
 
-          ScreenHeader()
+              ScreenHeader()
 
-          Spacer(modifier = Modifier.height(Spacing.lg))
+              Spacer(modifier = Modifier.height(Spacing.lg))
 
-          ProjectDropdown(
-              uiState = uiState,
-              projectDropdownExpanded = projectDropdownExpanded,
-              onExpandedChange = { projectDropdownExpanded = it },
-              onProjectSelect = { project ->
-                viewModel.selectProject(project)
-                projectDropdownExpanded = false
-              })
+              ProjectDropdown(
+                  uiState = uiState,
+                  projectDropdownExpanded = projectDropdownExpanded,
+                  onExpandedChange = { projectDropdownExpanded = it },
+                  onProjectSelect = { project ->
+                    viewModel.selectProject(project)
+                    projectDropdownExpanded = false
+                  })
 
-          Spacer(modifier = Modifier.height(Spacing.md))
+              Spacer(modifier = Modifier.height(Spacing.md))
 
-          if (uiState.selectedProject != null) {
-            MemberSelection(
-                uiState = uiState,
-                memberDropdownExpanded = memberDropdownExpanded,
-                onExpandedChange = { memberDropdownExpanded = it },
-                onMemberSelect = { member -> viewModel.selectMember(member) },
-                onMemberDeselect = { viewModel.removeMember(it) })
-          }
+              if (uiState.selectedProject != null) {
+                MemberSelection(
+                    uiState = uiState,
+                    memberDropdownExpanded = memberDropdownExpanded,
+                    onExpandedChange = { memberDropdownExpanded = it },
+                    onMemberSelect = { member -> viewModel.selectMember(member) },
+                    onMemberDeselect = { viewModel.removeMember(it) })
+              }
 
-          Spacer(modifier = Modifier.height(Spacing.lg))
+              Spacer(modifier = Modifier.height(Spacing.lg))
 
-          CreateButton(uiState = uiState, onClick = { viewModel.createConversation() })
+              CreateButton(uiState = uiState, onClick = { viewModel.createConversation() })
 
-          if (!uiState.isConnected) {
-            Spacer(modifier = Modifier.height(Spacing.sm))
-            Text(
-                text = "You are offline. Cannot create conversations.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error)
-          }
-        }
-  }
+              if (!uiState.isConnected) {
+                Spacer(modifier = Modifier.height(Spacing.sm))
+                Text(
+                    text = "You are offline. Cannot create conversations.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error)
+              }
+            }
+      }
 }
 
 @Composable

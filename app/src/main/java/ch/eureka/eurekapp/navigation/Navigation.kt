@@ -651,6 +651,9 @@ fun NavigationMenu(
                   onNavigateToConversation = { conversationId ->
                     navigationController.navigate(
                         Route.ConversationsSection.ConversationDetail(conversationId))
+                  },
+                  onNavigateBack = {
+                    navigationController.navigate(Route.ConversationsSection.Conversations)
                   })
             }
           }
