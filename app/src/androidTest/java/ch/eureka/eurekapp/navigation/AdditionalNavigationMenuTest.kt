@@ -19,6 +19,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
+// Parts of this code were generated using the help of claude sonnet 4.5
+
 class AdditionalNavigationMenuTest : TestCase() {
 
   @get:Rule
