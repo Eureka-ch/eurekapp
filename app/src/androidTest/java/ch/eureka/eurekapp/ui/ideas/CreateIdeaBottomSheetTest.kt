@@ -164,4 +164,63 @@ class CreateIdeaBottomSheetTest {
     composeTestRule.waitForIdle()
     assert(mockViewModel.createIdeaCalled) { "createIdea should be called" }
   }
+
+  @Test
+  fun createIdeaBottomSheet_participantsModal_opensWhenClicked() {
+    setContent(users = testUsers)
+    selectProject()
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)
+        .performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("Select Participants").assertIsDisplayed()
+    composeTestRule.onNodeWithText("OK").assertIsDisplayed()
+  }
+
+  @Test
+  fun createIdeaBottomSheet_participantsModal_displaysUsers() {
+    setContent(users = testUsers)
+    selectProject()
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)
+        .performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("User One").assertIsDisplayed()
+    composeTestRule.onNodeWithText("User Two").assertIsDisplayed()
+  }
+
+  @Test
+  fun createIdeaBottomSheet_participantsModal_okButtonClosesModal() {
+    setContent(users = testUsers)
+    selectProject()
+    composeTestRule
+        .onNodeWithTag(CreateIdeaBottomSheetTestTags.PARTICIPANTS_DROPDOWN)
+        .performClick()
+    composeTestRule.waitForIdle()
+    // Find button with "OK" text
+    composeTestRule.onNodeWithText("OK", useUnmergedTree = true).performClick()
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("Select Participants").assertDoesNotExist()
+  }
+
+  @Test
+  fun createIdeaBottomSheet_participantsModal_displaysSelectedCount() {
+    val mockViewModel = setContent(users = testUsers)
+    selectProject()
+    mockViewModel.toggleParticipant("user1")
+    composeTestRule.waitForIdle()
+    // When a user is selected, it shows the user's name, not "1 participant selected"
+    composeTestRule.onNodeWithText("User One").assertIsDisplayed()
+  }
+
+  @Test
+  fun createIdeaBottomSheet_participantsModal_displaysSelectedCountWhenNoName() {
+    val usersWithoutName = listOf(User(uid = "user1", displayName = "", email = "user1@test.com"))
+    val mockViewModel = setContent(users = usersWithoutName)
+    selectProject()
+    mockViewModel.toggleParticipant("user1")
+    composeTestRule.waitForIdle()
+    // When user has empty displayName, ifBlank returns email, so it shows the email
+    composeTestRule.onNodeWithText("user1@test.com").assertIsDisplayed()
+  }
 }

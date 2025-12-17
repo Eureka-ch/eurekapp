@@ -26,11 +26,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Title
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -43,10 +46,12 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -59,6 +64,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.activity.Activity
 import ch.eureka.eurekapp.model.data.activity.EntityType
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
 import ch.eureka.eurekapp.ui.meeting.InfoRow
 import ch.eureka.eurekapp.utils.Formatters
@@ -76,6 +83,8 @@ object ActivityDetailScreenTestTags {
   const val ENTITY_BUTTON = "EntityButton"
   const val RELATED_ACTIVITIES_SECTION = "RelatedActivitiesSection"
   const val SHARE_BUTTON = "ShareButton"
+  const val DELETE_BUTTON = "DeleteButton"
+  const val DELETE_DIALOG = "DeleteDialog"
   const val ACTIVITY_TYPE = "ActivityType"
   const val ENTITY_TYPE = "EntityType"
   const val USER_NAME = "UserName"
@@ -120,14 +129,24 @@ fun ActivityDetailScreen(
   val uiState by vm.uiState.collectAsState()
   val context = LocalContext.current
 
+  LaunchedEffect(uiState.deleteSuccess) {
+    if (uiState.deleteSuccess) {
+      Toast.makeText(context, "Activity deleted", Toast.LENGTH_SHORT).show()
+      onNavigateBack()
+    }
+  }
+
   Scaffold(
       modifier = Modifier.testTag(ActivityDetailScreenTestTags.ACTIVITY_DETAIL_SCREEN),
       topBar = {
-        TopAppBar(
-            title = { Text("Activity Details") },
+        EurekaTopBar(
+            title = "Activity Details",
             navigationIcon = {
               IconButton(onClick = onNavigateBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Navigate back")
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Navigate back",
+                    tint = EColors.WhiteTextColor)
               }
             })
       }) { paddingValues ->
@@ -164,6 +183,7 @@ fun ActivityDetailScreen(
                     Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
                   }
                 },
+                onDelete = { vm.deleteActivity() },
                 modifier = Modifier.padding(paddingValues))
           }
         }
@@ -182,6 +202,7 @@ private fun ActivityDetailContent(
     isConnected: Boolean,
     onNavigateToEntity: (EntityType, String, String) -> Unit,
     onShare: () -> Unit,
+    onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
   LazyColumn(
@@ -211,7 +232,7 @@ private fun ActivityDetailContent(
           }
         }
         item { RelatedActivitiesSection(relatedActivities) }
-        item { ActionButtonsSection(isConnected, onShare) }
+        item { ActionButtonsSection(isConnected, onShare, onDelete) }
         if (!isConnected) {
           item {
             Text(
@@ -245,7 +266,7 @@ private fun ActivityHeader(activity: Activity) {
                   modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                   style = MaterialTheme.typography.labelLarge,
                   fontWeight = FontWeight.Bold,
-                  color = Color.White)
+                  color = EColors.WhiteTextColor)
             }
       }
 }
@@ -332,7 +353,7 @@ private fun RelatedActivitiesSection(relatedActivities: List<Activity>) {
                 Text(
                     text = "No other activities for this entity",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
+                    color = EColors.SecondaryTextColor,
                     modifier = Modifier.testTag(ActivityDetailScreenTestTags.NO_RELATED_ACTIVITIES))
               } else {
                 relatedActivities.forEach { activity -> RelatedActivityItem(activity) }
@@ -362,7 +383,7 @@ private fun RelatedActivityItem(activity: Activity) {
             contentAlignment = Alignment.Center) {
               Text(
                   text = activity.activityType.name.first().toString(),
-                  color = Color.White,
+                  color = EColors.WhiteTextColor,
                   style = MaterialTheme.typography.labelSmall,
                   fontWeight = FontWeight.Bold)
             }
@@ -378,7 +399,7 @@ private fun RelatedActivityItem(activity: Activity) {
           Text(
               text = Formatters.formatRelativeTime(activity.timestamp.toDate()),
               style = MaterialTheme.typography.bodySmall,
-              color = Color.Gray)
+              color = EColors.SecondaryTextColor)
         }
       }
 }
@@ -386,40 +407,76 @@ private fun RelatedActivityItem(activity: Activity) {
 /**
  * Action buttons section.
  *
- * Contains Share button.
+ * Contains Share and Delete buttons.
  */
 @Composable
-private fun ActionButtonsSection(isConnected: Boolean, onShare: () -> Unit) {
-  OutlinedButton(
-      onClick = onShare,
-      modifier =
-          Modifier.fillMaxWidth()
-              .alpha(getAlpha(isConnected))
-              .testTag(ActivityDetailScreenTestTags.SHARE_BUTTON),
-      enabled = isConnected) {
-        Icon(Icons.Default.Share, "Share", modifier = Modifier.size(18.dp))
-        Spacer(modifier = Modifier.width(8.dp))
-        Text("Share Activity")
-      }
+private fun ActionButtonsSection(isConnected: Boolean, onShare: () -> Unit, onDelete: () -> Unit) {
+  var showDeleteDialog by remember { mutableStateOf(false) }
+
+  Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    OutlinedButton(
+        onClick = onShare,
+        modifier =
+            Modifier.fillMaxWidth()
+                .alpha(getAlpha(isConnected))
+                .testTag(ActivityDetailScreenTestTags.SHARE_BUTTON),
+        enabled = isConnected) {
+          Icon(Icons.Default.Share, "Share", modifier = Modifier.size(18.dp))
+          Spacer(modifier = Modifier.width(8.dp))
+          Text("Share Activity")
+        }
+
+    OutlinedButton(
+        onClick = { showDeleteDialog = true },
+        modifier =
+            Modifier.fillMaxWidth()
+                .alpha(getAlpha(isConnected))
+                .testTag(ActivityDetailScreenTestTags.DELETE_BUTTON),
+        enabled = isConnected,
+        colors =
+            ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
+          Icon(Icons.Default.Delete, "Delete", modifier = Modifier.size(18.dp))
+          Spacer(modifier = Modifier.width(8.dp))
+          Text("Delete Activity")
+        }
+  }
+
+  if (showDeleteDialog) {
+    AlertDialog(
+        onDismissRequest = { showDeleteDialog = false },
+        title = { Text("Delete Activity?") },
+        text = { Text("This action cannot be undone.") },
+        confirmButton = {
+          TextButton(
+              onClick = {
+                showDeleteDialog = false
+                onDelete()
+              }) {
+                Text("Delete", color = MaterialTheme.colorScheme.error)
+              }
+        },
+        dismissButton = { TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") } },
+        modifier = Modifier.testTag(ActivityDetailScreenTestTags.DELETE_DIALOG))
+  }
 }
 
 /** Helper function to get color for activity type. */
 private fun getActivityTypeColor(activityType: String): Color {
   return when (activityType) {
-    "CREATED" -> Color(0xFF4CAF50)
-    "UPDATED" -> Color(0xFF2196F3)
-    "DELETED" -> Color(0xFFF44336)
-    "UPLOADED" -> Color(0xFF9C27B0)
-    "SHARED" -> Color(0xFFFF9800)
-    "COMMENTED" -> Color(0xFF00BCD4)
-    "STATUS_CHANGED" -> Color(0xFFFF5722)
-    "JOINED" -> Color(0xFF8BC34A)
-    "LEFT" -> Color(0xFF795548)
-    "ASSIGNED" -> Color(0xFF3F51B5)
-    "UNASSIGNED" -> Color(0xFF607D8B)
-    "ROLE_CHANGED" -> Color(0xFFE91E63)
-    "DOWNLOADED" -> Color(0xFF673AB7)
-    else -> Color.Gray
+    "CREATED" -> EColors.ActivityCreated
+    "UPDATED" -> EColors.ActivityUpdated
+    "DELETED" -> EColors.ActivityDeleted
+    "UPLOADED" -> EColors.ActivityUploaded
+    "SHARED" -> EColors.ActivityShared
+    "COMMENTED" -> EColors.ActivityCommented
+    "STATUS_CHANGED" -> EColors.ActivityStatusChanged
+    "JOINED" -> EColors.ActivityJoined
+    "LEFT" -> EColors.ActivityLeft
+    "ASSIGNED" -> EColors.ActivityAssigned
+    "UNASSIGNED" -> EColors.ActivityUnassigned
+    "ROLE_CHANGED" -> EColors.ActivityRoleChanged
+    "DOWNLOADED" -> EColors.ActivityDownloaded
+    else -> EColors.ActivityDefault
   }
 }
 

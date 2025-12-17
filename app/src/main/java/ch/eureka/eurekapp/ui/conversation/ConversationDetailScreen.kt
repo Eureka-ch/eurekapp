@@ -30,8 +30,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -53,6 +51,7 @@ import ch.eureka.eurekapp.ui.components.MessageBubbleFileAttachment
 import ch.eureka.eurekapp.ui.components.MessageBubbleInteractions
 import ch.eureka.eurekapp.ui.components.MessageBubbleState
 import ch.eureka.eurekapp.ui.components.MessageInputField
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 object ConversationDetailScreenTestTags {
@@ -144,19 +143,18 @@ fun ConversationDetailScreen(
       topBar = {
         if (uiState.isEditing) {
           // Contextual top bar for editing mode
-          TopAppBar(
-              title = { Text("Editing Message") },
+          EurekaTopBar(
+              title = "Editing Message",
               modifier = Modifier.testTag(ConversationDetailScreenTestTags.EDITING_TOP_BAR),
-              colors =
-                  TopAppBarDefaults.topAppBarColors(
-                      containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                      titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant),
               navigationIcon = {
                 IconButton(
                     onClick = viewModel::cancelEditing,
                     modifier =
                         Modifier.testTag(ConversationDetailScreenTestTags.CANCEL_EDIT_BUTTON)) {
-                      Icon(Icons.Default.Close, contentDescription = "Cancel Edit")
+                      Icon(
+                          Icons.Default.Close,
+                          contentDescription = "Cancel Edit",
+                          tint = EColors.WhiteTextColor)
                     }
               })
         } else {

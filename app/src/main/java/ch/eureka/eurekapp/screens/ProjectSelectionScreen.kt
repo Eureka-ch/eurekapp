@@ -7,33 +7,33 @@ import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -46,24 +46,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.project.ProjectSelectionScreenViewModel
 import ch.eureka.eurekapp.model.data.project.ProjectStatus
-import ch.eureka.eurekapp.model.data.user.User
-import ch.eureka.eurekapp.ui.components.IconTextRow
-import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.BorderGrayColor
-import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.LightingBlue
-import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.SuccessGreen
-import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.WarningOrange
-import ch.eureka.eurekapp.ui.theme.DarkColorScheme
-import ch.eureka.eurekapp.ui.theme.LightColorScheme
-import ch.eureka.eurekapp.ui.theme.Typography
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.components.ProjectSummaryCard
+import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 /** Object holding test tags for UI testing on ProjectSelectionScreen. */
 object ProjectSelectionScreenTestTags {
@@ -133,236 +125,196 @@ fun ProjectSelectionScreen(
     }
   }
 
-  Column(
-      modifier = Modifier.fillMaxSize(),
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.Center) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center) {
-              CustomElevatedButton(
-                  onClick = { onCreateProjectRequest() },
-                  text = "+ Create Project",
-                  typography = Typography.titleLarge,
-                  buttonColor = LightingBlue,
-                  testTag = ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON)
-              CustomElevatedButton(
-                  onClick = { onInputTokenRequest() },
-                  text = "Input Project Token",
-                  typography = Typography.titleLarge,
-                  buttonColor = LightingBlue,
-                  testTag = ProjectSelectionScreenTestTags.INPUT_TOKEN_BUTTON,
-              )
+  val listState = rememberLazyListState()
+
+  Scaffold(
+      topBar = { EurekaTopBar(title = "Projects") },
+      content = { paddingValues ->
+        ProjectSelectionContent(
+            paddingValues = paddingValues,
+            projects = projectsList.value,
+            currentUserId = currentUser.value?.uid,
+            listState = listState,
+            actions =
+                ProjectSelectionActions(
+                    onCreateProjectRequest = onCreateProjectRequest,
+                    onInputTokenRequest = onInputTokenRequest,
+                    onGenerateInviteRequest = onGenerateInviteRequest,
+                    onSeeProjectMembers = onSeeProjectMembers),
+            viewModel = projectSelectionScreenViewModel)
+      })
+}
+
+/** Data class to group project selection actions and reduce parameter count. */
+data class ProjectSelectionActions(
+    val onCreateProjectRequest: () -> Unit,
+    val onInputTokenRequest: () -> Unit,
+    val onGenerateInviteRequest: (String) -> Unit,
+    val onSeeProjectMembers: (String) -> Unit
+)
+
+@Composable
+private fun ProjectSelectionContent(
+    paddingValues: PaddingValues,
+    projects: List<Project>,
+    currentUserId: String?,
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    actions: ProjectSelectionActions,
+    viewModel: ProjectSelectionScreenViewModel
+) {
+  Column(modifier = Modifier.fillMaxSize().padding(paddingValues).background(Color(0xFFF8FAFC))) {
+    ProjectSelectionHeader(
+        onCreateProjectRequest = actions.onCreateProjectRequest,
+        onInputTokenRequest = actions.onInputTokenRequest)
+
+    if (projects.isEmpty()) {
+      EmptyProjectsState()
+    } else {
+      LazyColumn(
+          state = listState,
+          modifier = Modifier.fillMaxSize(),
+          contentPadding = PaddingValues(horizontal = Spacing.lg),
+          verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+            items(projects) { project ->
+              val projectUsers =
+                  viewModel.getProjectUsersInformation(project.projectId).collectAsState(listOf())
+              ProjectSummaryCard(
+                  project = project,
+                  onClick = { actions.onSeeProjectMembers(project.projectId) },
+                  memberCount = projectUsers.value.size,
+                  actionButton = {
+                    ProjectCardActions(
+                        projectId = project.projectId,
+                        isOwner = currentUserId == project.createdBy,
+                        onSeeProjectMembers = actions.onSeeProjectMembers,
+                        onGenerateInviteRequest = actions.onGenerateInviteRequest)
+                  })
             }
-        if (projectsList.value.isEmpty()) {
-          Row(
-              modifier = Modifier.fillMaxSize(),
-              horizontalArrangement = Arrangement.Center,
-              verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    "No projects yet. Create your first project!",
-                    style = Typography.bodyMedium,
-                    fontWeight = FontWeight(600))
-              }
-        } else {
-          LazyColumn(
-              modifier = Modifier.fillMaxSize(),
-              horizontalAlignment = Alignment.CenterHorizontally) {
-                items(projectsList.value) { project ->
-                  ProjectCard(
-                      project,
-                      projectSelectionScreenViewModel,
-                      onSeeProjectMembers,
-                      onGenerateInviteRequest,
-                      currentUser.value)
-                }
+          }
+    }
+  }
+}
+
+@Composable
+private fun ProjectCardActions(
+    projectId: String,
+    isOwner: Boolean,
+    onSeeProjectMembers: (String) -> Unit,
+    onGenerateInviteRequest: (String) -> Unit
+) {
+  Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically) {
+        TextButton(
+            onClick = { onSeeProjectMembers(projectId) },
+            modifier =
+                Modifier.testTag(
+                    ProjectSelectionScreenTestTags.getShowMembersButtonTestTag(projectId)),
+            colors =
+                ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)) {
+              Text(
+                  "View Members",
+                  style = MaterialTheme.typography.labelLarge,
+                  fontWeight = FontWeight.SemiBold)
+            }
+        if (isOwner) {
+          IconButton(
+              onClick = { onGenerateInviteRequest(projectId) },
+              modifier =
+                  Modifier.testTag(
+                      ProjectSelectionScreenTestTags.getInviteButtonTestTag(projectId))) {
+                Icon(
+                    imageVector = Icons.Default.PersonAdd,
+                    contentDescription = "Generate Invite",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp))
               }
         }
       }
 }
 
-/**
- * Custom elevated button composable used across the Project Selection Screen.
- *
- * @param onClick lambda triggered when the button is clicked.
- * @param text the label displayed on the button.
- * @param typography the text style to use for the label.
- * @param buttonColor background color of the button.
- * @param testTag optional test tag for UI testing.
- */
 @Composable
-private fun CustomElevatedButton(
-    onClick: () -> Unit,
-    text: String,
-    typography: TextStyle,
-    buttonColor: Color = LightColorScheme.primary,
-    testTag: String
+private fun ProjectSelectionHeader(
+    onCreateProjectRequest: () -> Unit,
+    onInputTokenRequest: () -> Unit,
 ) {
-  ElevatedButton(
-      modifier = Modifier.padding(vertical = 10.dp, horizontal = 10.dp).testTag(testTag),
-      onClick = onClick,
-      colors = ButtonDefaults.elevatedButtonColors(containerColor = buttonColor),
-      elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
-  ) {
-    Text(text, style = typography, color = LightColorScheme.surface, textAlign = TextAlign.Center)
-  }
-}
-
-/**
- * Custom icon button composable used across the Project Selection Screen.
- *
- * @param onClick lambda triggered when the button is clicked.
- * @param buttonColor background color of the button.
- * @param testTag optional test tag for UI testing.
- */
-@Composable
-private fun CustomIconButton(
-    onClick: () -> Unit,
-    buttonColor: Color = LightColorScheme.primary,
-    testTag: String
-) {
-  IconButton(
-      modifier = Modifier.padding(vertical = 10.dp, horizontal = 10.dp).testTag(testTag),
-      onClick = onClick,
-      colors = IconButtonDefaults.iconButtonColors(containerColor = buttonColor),
-  ) {
-    Icon(
-        modifier = Modifier.size(20.dp),
-        imageVector = Icons.Default.PersonAdd,
-        contentDescription = null,
-        tint = LightColorScheme.surface)
-  }
-}
-
-/**
- * Composable representing a single project card. Displays project name, description, users, status,
- * and a show project members button.
- *
- * @param project the Project object to display.
- * @param projectSelectionScreenViewModel ViewModel used to fetch users for the project.
- * @param onSeeProjectMembers lambda triggered when the show project members button is clicked.
- * @param onGenerateInviteRequest lambda triggered when the user requests to generate an invite
- * @param currentUser the user who using the app
- */
-@Composable
-private fun ProjectCard(
-    project: Project,
-    projectSelectionScreenViewModel: ProjectSelectionScreenViewModel,
-    onSeeProjectMembers: (String) -> Unit,
-    onGenerateInviteRequest: (String) -> Unit,
-    currentUser: User?
-) {
-  Card(
-      modifier = Modifier.fillMaxWidth(0.9f).height(220.dp).padding(vertical = 10.dp),
-      shape = RoundedCornerShape(16.dp),
-      elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-      border = BorderStroke(1.dp, BorderGrayColor)) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top) {
-              // Show name
-              Row(
-                  modifier = Modifier.padding(vertical = 10.dp),
-                  horizontalArrangement = Arrangement.Center) {
-                    Text(
-                        project.name,
-                        style = Typography.titleLarge,
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight(600))
-                  }
-
-              val projectUsers =
-                  projectSelectionScreenViewModel
-                      .getProjectUsersInformation(project.projectId)
-                      .collectAsState(listOf())
-
-              // Description users and status
-              Row(
-                  modifier = Modifier.fillMaxSize(),
-                  horizontalArrangement = Arrangement.Center,
-              ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Top,
-                ) {
-                  Row(modifier = Modifier.weight(2f)) {
-                    IconTextRow(
-                        text = project.description,
-                        iconVector = Icons.Default.Description,
-                        iconColor = WarningOrange)
-                  }
-                  Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.Center) {
-                    CustomElevatedButton(
-                        onClick = { onSeeProjectMembers(project.projectId) },
-                        text = "Members",
-                        typography = Typography.labelSmall,
-                        testTag =
-                            ProjectSelectionScreenTestTags.getShowMembersButtonTestTag(
-                                project.projectId))
-                    if (currentUser?.uid.equals(project.createdBy)) {
-                      CustomIconButton(
-                          onClick = { onGenerateInviteRequest(project.projectId) },
-                          testTag =
-                              ProjectSelectionScreenTestTags.getInviteButtonTestTag(
-                                  project.projectId))
-                    }
-                  }
-                }
-                Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                  Row(
-                      modifier = Modifier.weight(2f).fillMaxWidth(),
-                      horizontalArrangement = Arrangement.Center,
-                      verticalAlignment = Alignment.CenterVertically) {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally) {
-                              items(projectUsers.value) { user ->
-                                IconTextRow(
-                                    text = user.displayName,
-                                    iconVector = Icons.Default.Person,
-                                    iconColor = DarkColorScheme.background)
-                              }
-                            }
-                      }
-                  Row(
-                      modifier = Modifier.weight(1f).fillMaxWidth(),
-                      horizontalArrangement = Arrangement.Center,
-                      verticalAlignment = Alignment.CenterVertically) {
-                        ProjectStatusDisplay(project.status)
-                      }
-                }
-              }
+  Column(
+      modifier = Modifier.fillMaxWidth().padding(Spacing.lg),
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+        Button(
+            onClick = { onCreateProjectRequest() },
+            modifier =
+                Modifier.fillMaxWidth()
+                    .testTag(ProjectSelectionScreenTestTags.CREATE_PROJECT_BUTTON),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = Color.White)) {
+              Text(
+                  "+ Create Project",
+                  style = MaterialTheme.typography.titleMedium,
+                  fontWeight = FontWeight.Bold)
+            }
+        OutlinedButton(
+            onClick = { onInputTokenRequest() },
+            modifier =
+                Modifier.fillMaxWidth().testTag(ProjectSelectionScreenTestTags.INPUT_TOKEN_BUTTON),
+            colors =
+                ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.primary)) {
+              Text(
+                  "Input Project Token",
+                  style = MaterialTheme.typography.titleMedium,
+                  fontWeight = FontWeight.SemiBold)
             }
       }
 }
 
-private val colorMap =
-    mapOf(
-        ProjectStatus.OPEN to SuccessGreen,
-        ProjectStatus.IN_PROGRESS to LightColorScheme.tertiary,
-        ProjectStatus.ARCHIVED to WarningOrange,
-        ProjectStatus.COMPLETED to LightColorScheme.onSurfaceVariant)
-/**
- * Displays the status of a project in a colored surface with rounded corners.
- *
- * @param projectStatus the status of the project.
- */
+@Composable
+private fun EmptyProjectsState() {
+  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+          Text(
+              "No projects yet",
+              style = MaterialTheme.typography.titleLarge,
+              color = Color(0xFF0F172A),
+              fontWeight = FontWeight.Bold)
+          Text(
+              "Create your first project to get started",
+              style = MaterialTheme.typography.bodyMedium,
+              color = Color(0xFF64748B))
+        }
+  }
+}
+
+/** Displays the status of a project in a modern badge style. */
 @Composable
 fun ProjectStatusDisplay(projectStatus: ProjectStatus) {
+  val (backgroundColor, textColor) =
+      when (projectStatus) {
+        ProjectStatus.OPEN -> Color(0xFFF0FDF4) to Color(0xFF16A34A) // Light green
+        ProjectStatus.IN_PROGRESS -> Color(0xFFFEF3C7) to Color(0xFFD97706) // Light yellow
+        ProjectStatus.ARCHIVED -> Color(0xFFF1F5F9) to Color(0xFF475569) // Light gray
+        ProjectStatus.COMPLETED -> Color(0xFFFEF2F2) to Color(0xFFDC2626) // Light red
+      }
+
   Surface(
-      color = colorMap.getOrDefault(projectStatus, LightColorScheme.onSurfaceVariant),
-      modifier = Modifier.height(30.dp).width(130.dp),
-      shape = RoundedCornerShape(16.dp),
-      tonalElevation = 8.dp,
-  ) {
-    Row(
-        modifier = Modifier.fillMaxSize(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically) {
-          Text(projectStatus.name, style = Typography.labelMedium, color = LightColorScheme.surface)
-        }
-  }
+      color = backgroundColor,
+      modifier = Modifier.height(28.dp),
+      shape = RoundedCornerShape(12.dp)) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically) {
+              Text(
+                  projectStatus.name.replace("_", " "),
+                  style = MaterialTheme.typography.labelMedium,
+                  color = textColor,
+                  fontWeight = FontWeight.SemiBold)
+            }
+      }
 }

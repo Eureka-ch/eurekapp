@@ -4,10 +4,15 @@ package ch.eureka.eurekapp.ui.meeting
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,9 +23,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,12 +38,15 @@ import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.VideoCall
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -51,23 +59,33 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.calendar.MeetingCalendarViewModel
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.help.HelpContext
 import ch.eureka.eurekapp.ui.components.help.InteractiveHelpEntryPoint
-import ch.eureka.eurekapp.ui.designsystem.tokens.EurekaStyles
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
-import ch.eureka.eurekapp.ui.theme.LightColorScheme
 import ch.eureka.eurekapp.utils.Formatters
+
+private const val PRESSED_SCALE = 0.98f
+private const val NORMAL_SCALE = 1f
+private const val ANIMATION_DURATION_MS = 150
+private val CardGradientColors = listOf(Color.White, EColors.GradientLightColor)
 
 object MeetingScreenTestTags {
   const val MEETING_SCREEN = "MeetingScreen"
@@ -190,10 +208,21 @@ fun MeetingScreen(
   }
 
   Scaffold(
+      topBar = {
+        EurekaTopBar(
+            title = "Meetings",
+            modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_TITLE),
+            actions = {
+              InteractiveHelpEntryPoint(
+                  helpContext = HelpContext.MEETINGS,
+                  modifier = Modifier.testTag("meetingsHelpButton"))
+            })
+      },
       floatingActionButton = {
         FloatingActionButton(
             onClick = { config.onCreateMeeting(uiState.isConnected) },
-            modifier = Modifier.testTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON),
+            modifier =
+                Modifier.offset(y = (-48).dp).testTag(MeetingScreenTestTags.CREATE_MEETING_BUTTON),
             containerColor =
                 if (uiState.isConnected) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.surfaceVariant) {
@@ -220,28 +249,19 @@ private fun MeetingScreenContent(
 ) {
   Column(
       modifier =
-          Modifier.fillMaxSize().padding(10.dp).testTag(MeetingScreenTestTags.MEETING_SCREEN)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically) {
-              Text(
-                  modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_TITLE),
-                  text = "Meetings",
-                  style = MaterialTheme.typography.headlineSmall,
-                  fontWeight = FontWeight.Bold)
-              InteractiveHelpEntryPoint(
-                  helpContext = HelpContext.MEETINGS,
-                  modifier = Modifier.padding(start = Spacing.md))
-            }
-        Spacer(modifier = Modifier.height(8.dp))
+          Modifier.fillMaxSize()
+              .padding(padding)
+              .padding(horizontal = 16.dp, vertical = 4.dp)
+              .background(Color.White)
+              .testTag(MeetingScreenTestTags.MEETING_SCREEN)) {
         Text(
             modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_DESCRIPTION),
             text = "Schedule and manage your team meetings",
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray)
+            style = MaterialTheme.typography.bodyLarge,
+            color = EColors.GrayTextColor2,
+            fontWeight = FontWeight.Medium)
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(4.dp))
 
         if (!uiState.isConnected) {
           Text(
@@ -257,13 +277,13 @@ private fun MeetingScreenContent(
             selectedTab = uiState.selectedTab,
             onTabSelected = { meetingViewModel.selectTab(it) })
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(4.dp))
 
         when (uiState.selectedTab) {
           MeetingTab.UPCOMING ->
               MeetingsList(
                   MeetingsListConfig(
-                      modifier = Modifier.padding(padding),
+                      modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
                       meetings = uiState.upcomingMeetings,
                       tabName = MeetingTab.UPCOMING.name.lowercase(),
                       projectId = config.projectId,
@@ -281,7 +301,7 @@ private fun MeetingScreenContent(
           MeetingTab.PAST ->
               MeetingsList(
                   MeetingsListConfig(
-                      modifier = Modifier.padding(padding),
+                      modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
                       meetings = uiState.pastMeetings,
                       tabName = MeetingTab.PAST.name.lowercase(),
                       projectId = config.projectId,
@@ -327,6 +347,25 @@ data class MeetingsListConfig(
 )
 
 /**
+ * Handles joining a meeting by opening the meeting link in a browser.
+ *
+ * @param context Android context for starting activities and showing toasts
+ * @param link The meeting link to open, or null if no link is available
+ */
+private fun handleJoinMeeting(context: Context, link: String?) {
+  if (!link.isNullOrBlank()) {
+    val browserIntent =
+        Intent(Intent.ACTION_VIEW, link.toUri()).apply {
+          addCategory(Intent.CATEGORY_BROWSABLE)
+          flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+    context.startActivity(browserIntent)
+  } else {
+    Toast.makeText(context, "No meeting link available", Toast.LENGTH_SHORT).show()
+  }
+}
+
+/**
  * Component that displays the meetings.
  *
  * @param config Config of that composable.
@@ -344,7 +383,8 @@ fun MeetingsList(
   if (config.meetings.isNotEmpty()) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = 8.dp),
-        modifier = config.modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+        modifier = config.modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)) {
           items(config.meetings.size) { index ->
             val meeting = config.meetings[index]
             MeetingCard(
@@ -353,6 +393,7 @@ fun MeetingsList(
                     MeetingCardConfig(
                         isCurrentUserId = config.isCurrentUserId,
                         onClick = { config.onMeetingClick(config.projectId, meeting.meetingID) },
+                        onJoinMeeting = { _ -> handleJoinMeeting(context, meeting.link) },
                         onVoteForMeetingProposals = { isConnected ->
                           config.onVoteForMeetingProposalClick(
                               config.projectId, meeting.meetingID, isConnected)
@@ -464,264 +505,401 @@ fun MeetingCard(
     meeting: Meeting,
     config: MeetingCardConfig,
 ) {
+  var isPressed by remember { mutableStateOf(false) }
+  val scale by
+      animateFloatAsState(
+          targetValue = if (isPressed) PRESSED_SCALE else NORMAL_SCALE,
+          animationSpec = tween(ANIMATION_DURATION_MS))
+
+  val statusColor =
+      when (meeting.status) {
+        MeetingStatus.OPEN_TO_VOTES -> EColors.StatusBlue
+        MeetingStatus.SCHEDULED -> EColors.GrayTextColor2
+        MeetingStatus.COMPLETED -> EColors.SecondaryTextColor
+        MeetingStatus.IN_PROGRESS -> EColors.StatusGreen
+      }
+
   Card(
       modifier =
           Modifier.fillMaxWidth()
-              .padding(5.dp)
-              .wrapContentHeight()
-              .clickable(onClick = config.onClick)
+              .scale(scale)
+              .shadow(elevation = 12.dp, shape = RoundedCornerShape(12.dp))
+              .clickable(role = Role.Button, onClick = config.onClick)
               .testTag(MeetingScreenTestTags.MEETING_CARD),
-      shape = RoundedCornerShape(16.dp),
-      elevation = CardDefaults.cardElevation(defaultElevation = EurekaStyles.CardElevation)) {
-        Column(modifier = Modifier.padding(16.dp)) {
-          // title and status row
-          Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = meeting.title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.weight(1f).testTag(MeetingScreenTestTags.MEETING_TITLE))
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_STATUS_TEXT),
-                text = meeting.status.description,
-                style = MaterialTheme.typography.bodySmall,
-                color =
-                    when (meeting.status) {
-                      MeetingStatus.OPEN_TO_VOTES -> Color.Blue
-                      MeetingStatus.SCHEDULED -> Color.Red
-                      MeetingStatus.COMPLETED -> Color.DarkGray
-                      MeetingStatus.IN_PROGRESS -> Color.Green
-                    })
-          }
-
-          Spacer(modifier = Modifier.height(8.dp))
-
-          // datetime row(s)
-          when (meeting.status) {
-            MeetingStatus.OPEN_TO_VOTES -> {
-              Column(modifier = Modifier.fillMaxWidth()) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                  Icon(
-                      imageVector = Icons.Default.HourglassTop,
-                      contentDescription = "Schedule icon.",
-                      modifier = Modifier.size(16.dp),
-                      tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                  Spacer(modifier = Modifier.width(4.dp))
-                  Text(
-                      modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_DURATION),
-                      text = "${meeting.duration} minutes",
-                      style = MaterialTheme.typography.bodySmall,
-                      color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                  Icon(
-                      imageVector = Icons.Default.HowToVote,
-                      contentDescription = "Vote icon.",
-                      modifier = Modifier.size(16.dp),
-                      tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                  Spacer(modifier = Modifier.width(4.dp))
-                  Text(
-                      modifier =
-                          Modifier.testTag(MeetingScreenTestTags.MEETING_VOTE_FOR_DATETIME_MESSAGE),
-                      text = "Vote for your preferred datetime(s)",
-                      style = MaterialTheme.typography.bodySmall,
-                      color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-              }
-            }
-            MeetingStatus.SCHEDULED,
-            MeetingStatus.IN_PROGRESS,
-            MeetingStatus.COMPLETED -> {
-              checkNotNull(meeting.datetime) {
-                "Datetime should be set if meeting is not open to votes."
-              }
-              Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.Schedule,
-                    contentDescription = "Schedule icon.",
-                    modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_DATETIME),
-                    text = Formatters.formatDateTime(meeting.datetime.toDate()),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-              }
-            }
-          }
-
-          Spacer(modifier = Modifier.height(4.dp))
-
-          // format row
-          Row(verticalAlignment = Alignment.CenterVertically) {
-            when (meeting.status) {
-              MeetingStatus.OPEN_TO_VOTES -> {
-                when (meeting.format) {
-                  MeetingFormat.IN_PERSON,
-                  MeetingFormat.VIRTUAL ->
-                      throw IllegalStateException(
-                          "Format must not be set if meeting is open to votes.")
-                  null -> {
-                    Icon(
-                        imageVector = Icons.Default.HowToVote,
-                        contentDescription = "Vote icon.",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        modifier =
-                            Modifier.testTag(MeetingScreenTestTags.MEETING_VOTE_FOR_FORMAT_MESSAGE),
-                        text = "Vote for your preferred meeting format",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                  }
-                }
-              }
-              MeetingStatus.SCHEDULED,
-              MeetingStatus.IN_PROGRESS,
-              MeetingStatus.COMPLETED -> {
-                when (meeting.format) {
-                  MeetingFormat.IN_PERSON -> {
-                    Icon(
-                        imageVector = Icons.Default.Place,
-                        contentDescription = "Place icon.",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_LOCATION),
-                        text =
-                            meeting.location?.name
-                                ?: throw IllegalStateException(
-                                    "Location of in-person meeting closed to votes should exist."),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                  }
-                  MeetingFormat.VIRTUAL -> {
-                    if (meeting.status != MeetingStatus.COMPLETED) {
-                      Icon(
-                          imageVector = Icons.Default.VideoCall,
-                          contentDescription = "Video call icon.",
-                          modifier = Modifier.size(16.dp),
-                          tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                      Spacer(modifier = Modifier.width(4.dp))
-                      Text(
-                          modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_LINK),
-                          text =
-                              meeting.link
-                                  ?: throw IllegalStateException(
-                                      "Link to scheduled/in progress virtual meeting should exist."),
-                          style = MaterialTheme.typography.bodySmall,
-                          color = MaterialTheme.colorScheme.onSurfaceVariant)
+      shape = RoundedCornerShape(12.dp),
+      elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+      colors = CardDefaults.cardColors(containerColor = Color.White)) {
+        Box(
+            modifier =
+                Modifier.fillMaxWidth()
+                    .border(
+                        width = 1.5.dp,
+                        color = EColors.CardBorderColor,
+                        shape = RoundedCornerShape(12.dp))
+                    .background(
+                        brush =
+                            Brush.linearGradient(
+                                colors = CardGradientColors,
+                                start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                                end = androidx.compose.ui.geometry.Offset(1000f, 1000f)))) {
+              Column(modifier = Modifier.padding(20.dp)) {
+                // Header: Title + Status badge
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top) {
+                      Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = meeting.title,
+                            style = MaterialTheme.typography.titleLarge,
+                            color = EColors.TitleTextColor,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_TITLE))
+                      }
+                      // Status badge
+                      Surface(
+                          color = statusColor.copy(alpha = 0.1f),
+                          shape = RoundedCornerShape(12.dp)) {
+                            Text(
+                                modifier =
+                                    Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                        .testTag(MeetingScreenTestTags.MEETING_STATUS_TEXT),
+                                text = meeting.status.description,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = statusColor,
+                                fontWeight = FontWeight.SemiBold)
+                          }
                     }
-                  }
-                  null ->
-                      throw IllegalStateException(
-                          "Format of meeting closed to votes should be set.")
-                }
-              }
-            }
-          }
 
-          Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-          // button row
-          Row(
-              modifier = Modifier.fillMaxWidth(),
-              horizontalArrangement = Arrangement.Center,
-              verticalAlignment = Alignment.CenterVertically) {
-                when (meeting.status) {
-                  MeetingStatus.OPEN_TO_VOTES -> {
-                    Button(
-                        onClick = { config.onVoteForMeetingProposals(config.isConnected) },
-                        modifier =
-                            Modifier.testTag(
-                                MeetingScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON),
-                        enabled = config.isConnected,
-                    ) {
-                      Text("Vote for meeting proposals")
+                // Metadata rows with icons
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                  // Datetime/Duration row
+                  when (meeting.status) {
+                    MeetingStatus.OPEN_TO_VOTES -> {
+                      Row(
+                          verticalAlignment = Alignment.CenterVertically,
+                          horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Box(
+                                modifier =
+                                    Modifier.size(32.dp)
+                                        .background(
+                                            color = EColors.IconBackgroundColor,
+                                            shape = RoundedCornerShape(8.dp)),
+                                contentAlignment = Alignment.Center) {
+                                  Icon(
+                                      imageVector = Icons.Default.HourglassTop,
+                                      contentDescription = "Duration",
+                                      modifier = Modifier.size(16.dp),
+                                      tint = EColors.GrayTextColor2)
+                                }
+                            Column {
+                              Text(
+                                  modifier =
+                                      Modifier.testTag(MeetingScreenTestTags.MEETING_DURATION),
+                                  text = "${meeting.duration} minutes",
+                                  style = MaterialTheme.typography.bodyMedium,
+                                  color = EColors.TitleTextColor,
+                                  fontWeight = FontWeight.SemiBold)
+                              Spacer(modifier = Modifier.height(4.dp))
+                              Row(
+                                  verticalAlignment = Alignment.CenterVertically,
+                                  horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Icon(
+                                        imageVector = Icons.Default.HowToVote,
+                                        contentDescription = "Vote",
+                                        modifier = Modifier.size(14.dp),
+                                        tint = EColors.GrayTextColor2)
+                                    Text(
+                                        modifier =
+                                            Modifier.testTag(
+                                                MeetingScreenTestTags
+                                                    .MEETING_VOTE_FOR_DATETIME_MESSAGE),
+                                        text = "Vote for your preferred datetime(s)",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = EColors.GrayTextColor2)
+                                  }
+                            }
+                          }
                     }
-                    if (config.isCurrentUserId(meeting.createdBy)) {
-                      Spacer(modifier = Modifier.width(10.dp))
-                      Button(
-                          onClick = { config.onCloseVotes(meeting, config.isConnected) },
-                          modifier = Modifier.testTag(MeetingScreenTestTags.CLOSE_VOTES_BUTTON),
-                          enabled = config.isConnected) {
-                            Text("Close votes")
+                    MeetingStatus.SCHEDULED,
+                    MeetingStatus.IN_PROGRESS,
+                    MeetingStatus.COMPLETED -> {
+                      checkNotNull(meeting.datetime) {
+                        "Datetime should be set if meeting is not open to votes."
+                      }
+                      Row(
+                          verticalAlignment = Alignment.CenterVertically,
+                          horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Box(
+                                modifier =
+                                    Modifier.size(32.dp)
+                                        .background(
+                                            color = EColors.IconBackgroundColor,
+                                            shape = RoundedCornerShape(8.dp)),
+                                contentAlignment = Alignment.Center) {
+                                  Icon(
+                                      imageVector = Icons.Default.Schedule,
+                                      contentDescription = "Schedule",
+                                      modifier = Modifier.size(16.dp),
+                                      tint = EColors.GrayTextColor2)
+                                }
+                            Text(
+                                modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_DATETIME),
+                                text = Formatters.formatDateTime(meeting.datetime.toDate()),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = EColors.TitleTextColor,
+                                fontWeight = FontWeight.SemiBold)
                           }
                     }
                   }
-                  MeetingStatus.SCHEDULED,
-                  MeetingStatus.IN_PROGRESS -> {
-                    when (meeting.format) {
-                      MeetingFormat.IN_PERSON -> {
-                        Button(
-                            onClick = { config.onDirections(config.isConnected) },
-                            modifier = Modifier.testTag(MeetingScreenTestTags.DIRECTIONS_BUTTON),
-                            enabled = config.isConnected,
-                        ) {
-                          Text("Directions")
+
+                  // Format/Location row
+                  when (meeting.status) {
+                    MeetingStatus.OPEN_TO_VOTES -> {
+                      when (meeting.format) {
+                        MeetingFormat.IN_PERSON,
+                        MeetingFormat.VIRTUAL ->
+                            throw IllegalStateException(
+                                "Format must not be set if meeting is open to votes.")
+                        null -> {
+                          Row(
+                              verticalAlignment = Alignment.CenterVertically,
+                              horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Box(
+                                    modifier =
+                                        Modifier.size(32.dp)
+                                            .background(
+                                                color = EColors.IconBackgroundColor,
+                                                shape = RoundedCornerShape(8.dp)),
+                                    contentAlignment = Alignment.Center) {
+                                      Icon(
+                                          imageVector = Icons.Default.HowToVote,
+                                          contentDescription = "Vote",
+                                          modifier = Modifier.size(16.dp),
+                                          tint = EColors.GrayTextColor2)
+                                    }
+                                Text(
+                                    modifier =
+                                        Modifier.testTag(
+                                            MeetingScreenTestTags.MEETING_VOTE_FOR_FORMAT_MESSAGE),
+                                    text = "Vote for your preferred meeting format",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = EColors.SecondaryTextColor,
+                                    fontWeight = FontWeight.Medium)
+                              }
                         }
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Button(
-                            onClick = {
-                              config.onRecord(
-                                  meeting.projectId, meeting.meetingID, config.isConnected)
-                            },
-                            modifier = Modifier.testTag(MeetingScreenTestTags.RECORD_BUTTON),
-                            enabled = config.isConnected,
-                        ) {
-                          Text("Record")
+                      }
+                    }
+                    MeetingStatus.SCHEDULED,
+                    MeetingStatus.IN_PROGRESS,
+                    MeetingStatus.COMPLETED -> {
+                      when (meeting.format) {
+                        MeetingFormat.IN_PERSON -> {
+                          Row(
+                              verticalAlignment = Alignment.CenterVertically,
+                              horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Box(
+                                    modifier =
+                                        Modifier.size(32.dp)
+                                            .background(
+                                                color = EColors.IconBackgroundColor,
+                                                shape = RoundedCornerShape(8.dp)),
+                                    contentAlignment = Alignment.Center) {
+                                      Icon(
+                                          imageVector = Icons.Default.Place,
+                                          contentDescription = "Location",
+                                          modifier = Modifier.size(16.dp),
+                                          tint = EColors.GrayTextColor2)
+                                    }
+                                Text(
+                                    modifier =
+                                        Modifier.testTag(MeetingScreenTestTags.MEETING_LOCATION),
+                                    text =
+                                        meeting.location?.name
+                                            ?: throw IllegalStateException(
+                                                "Location of in-person meeting closed to votes should exist."),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = EColors.SecondaryTextColor,
+                                    fontWeight = FontWeight.Medium)
+                              }
                         }
-                        if (!config.isMeetingAddedToCalendar) {
-                          Spacer(modifier = Modifier.width(10.dp))
+                        MeetingFormat.VIRTUAL -> {
+                          if (meeting.status != MeetingStatus.COMPLETED) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                  Box(
+                                      modifier =
+                                          Modifier.size(32.dp)
+                                              .background(
+                                                  color = EColors.IconBackgroundColor,
+                                                  shape = RoundedCornerShape(8.dp)),
+                                      contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = Icons.Default.VideoCall,
+                                            contentDescription = "Video call",
+                                            modifier = Modifier.size(16.dp),
+                                            tint = EColors.GrayTextColor2)
+                                      }
+                                  Text(
+                                      modifier =
+                                          Modifier.testTag(MeetingScreenTestTags.MEETING_LINK),
+                                      text =
+                                          meeting.link
+                                              ?: throw IllegalStateException(
+                                                  "Link to scheduled/in progress virtual meeting should exist."),
+                                      style = MaterialTheme.typography.bodyMedium,
+                                      color = EColors.SecondaryTextColor,
+                                      fontWeight = FontWeight.Medium)
+                                }
+                          }
+                        }
+                        null ->
+                            throw IllegalStateException(
+                                "Format of meeting closed to votes should be set.")
+                      }
+                    }
+                  }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Actions row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+                    verticalAlignment = Alignment.CenterVertically) {
+                      when (meeting.status) {
+                        MeetingStatus.OPEN_TO_VOTES -> {
                           Button(
+                              onClick = { config.onVoteForMeetingProposals(config.isConnected) },
                               modifier =
-                                  Modifier.testTag(
-                                      MeetingScreenTestTags
-                                          .getCalendarButtonTestTagForScheduledMeeting(
-                                              meeting.meetingID)),
-                              onClick = { config.onAddMeetingToCalendar(meeting) },
-                          ) {
-                            Icon(
-                                imageVector = Icons.Default.CalendarToday,
-                                null,
-                                tint = LightColorScheme.surface)
+                                  Modifier.weight(1f)
+                                      .testTag(
+                                          MeetingScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON),
+                              enabled = config.isConnected,
+                              colors =
+                                  ButtonDefaults.buttonColors(
+                                      containerColor = MaterialTheme.colorScheme.primary,
+                                      contentColor = Color.White)) {
+                                Text(
+                                    "Vote",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.SemiBold)
+                              }
+                          if (config.isCurrentUserId(meeting.createdBy)) {
+                            OutlinedButton(
+                                onClick = { config.onCloseVotes(meeting, config.isConnected) },
+                                modifier =
+                                    Modifier.testTag(MeetingScreenTestTags.CLOSE_VOTES_BUTTON),
+                                enabled = config.isConnected,
+                                colors =
+                                    ButtonDefaults.outlinedButtonColors(
+                                        contentColor = MaterialTheme.colorScheme.primary)) {
+                                  Text(
+                                      "Close votes",
+                                      style = MaterialTheme.typography.labelLarge,
+                                      fontWeight = FontWeight.SemiBold)
+                                }
                           }
                         }
-                      }
-                      MeetingFormat.VIRTUAL -> {
-                        Button(
-                            onClick = { config.onJoinMeeting(config.isConnected) },
-                            modifier = Modifier.testTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON),
-                            enabled = config.isConnected,
-                        ) {
-                          Text("Join meeting")
+                        MeetingStatus.SCHEDULED,
+                        MeetingStatus.IN_PROGRESS -> {
+                          when (meeting.format) {
+                            MeetingFormat.IN_PERSON -> {
+                              Button(
+                                  onClick = { config.onDirections(config.isConnected) },
+                                  modifier =
+                                      Modifier.weight(1f)
+                                          .testTag(MeetingScreenTestTags.DIRECTIONS_BUTTON),
+                                  enabled = config.isConnected,
+                                  colors =
+                                      ButtonDefaults.buttonColors(
+                                          containerColor = MaterialTheme.colorScheme.primary,
+                                          contentColor = Color.White)) {
+                                    Text(
+                                        "Directions",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = FontWeight.SemiBold)
+                                  }
+                              OutlinedButton(
+                                  onClick = {
+                                    config.onRecord(
+                                        meeting.projectId, meeting.meetingID, config.isConnected)
+                                  },
+                                  modifier = Modifier.testTag(MeetingScreenTestTags.RECORD_BUTTON),
+                                  enabled = config.isConnected,
+                                  colors =
+                                      ButtonDefaults.outlinedButtonColors(
+                                          contentColor = MaterialTheme.colorScheme.primary)) {
+                                    Text(
+                                        "Record",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = FontWeight.SemiBold)
+                                  }
+                              if (!config.isMeetingAddedToCalendar) {
+                                IconButton(
+                                    modifier =
+                                        Modifier.testTag(
+                                            MeetingScreenTestTags
+                                                .getCalendarButtonTestTagForScheduledMeeting(
+                                                    meeting.meetingID)),
+                                    onClick = { config.onAddMeetingToCalendar(meeting) }) {
+                                      Icon(
+                                          imageVector = Icons.Default.CalendarToday,
+                                          contentDescription = "Add to calendar",
+                                          tint = MaterialTheme.colorScheme.primary,
+                                          modifier = Modifier.size(24.dp))
+                                    }
+                              }
+                            }
+                            MeetingFormat.VIRTUAL -> {
+                              Button(
+                                  onClick = { config.onJoinMeeting(config.isConnected) },
+                                  modifier =
+                                      Modifier.fillMaxWidth()
+                                          .testTag(MeetingScreenTestTags.JOIN_MEETING_BUTTON),
+                                  enabled = config.isConnected,
+                                  colors =
+                                      ButtonDefaults.buttonColors(
+                                          containerColor = MaterialTheme.colorScheme.primary,
+                                          contentColor = Color.White)) {
+                                    Text(
+                                        "Join meeting",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = FontWeight.SemiBold)
+                                  }
+                            }
+                            null ->
+                                throw IllegalStateException(
+                                    "Format of scheduled/in progress should exist.")
+                          }
+                        }
+                        MeetingStatus.COMPLETED -> {
+                          Button(
+                              onClick = {
+                                config.onViewTranscript(
+                                    meeting.projectId, meeting.meetingID, config.isConnected)
+                              },
+                              modifier =
+                                  Modifier.fillMaxWidth()
+                                      .testTag(MeetingScreenTestTags.VIEW_TRANSCRIPT_BUTTON),
+                              colors =
+                                  ButtonDefaults.buttonColors(
+                                      containerColor = MaterialTheme.colorScheme.primary,
+                                      contentColor = Color.White)) {
+                                Text(
+                                    "View Transcript",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.SemiBold)
+                              }
                         }
                       }
-                      null ->
-                          throw IllegalStateException(
-                              "Format of scheduled/in progress should exist.")
                     }
-                  }
-                  MeetingStatus.COMPLETED -> {
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Button(
-                        onClick = {
-                          config.onViewTranscript(
-                              meeting.projectId, meeting.meetingID, config.isConnected)
-                        },
-                        modifier = Modifier.testTag(MeetingScreenTestTags.VIEW_TRANSCRIPT_BUTTON),
-                    ) {
-                      Text("Transcript")
-                    }
-                  }
-                }
               }
-        }
+            }
       }
 }
 
