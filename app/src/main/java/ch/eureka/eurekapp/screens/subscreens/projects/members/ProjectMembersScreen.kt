@@ -267,11 +267,10 @@ fun MemberItem(user: User, isUserOnline: (Timestamp) -> Boolean) {
  * @param isOnline Boolean indicating if the user is currently considered online.
  * @return A string representing the user's status.
  */
-@Composable
 fun getStatusText(lastActive: Timestamp, isOnline: Boolean): String {
-  if (isOnline) return stringResource(R.string.online)
+  if (isOnline) return "Online"
 
-  if (lastActive == Timestamp(0, 0)) return stringResource(R.string.never_active)
+  if (lastActive == Timestamp(0, 0)) return "Never active"
 
   val now = System.currentTimeMillis()
   val time = lastActive.toDate().time
