@@ -22,7 +22,7 @@ class CameraScreenNoPermissionTest {
   private var onBackClickCalled = false
 
   @Test
-  fun testCameraUI() {
+  fun cameraScreen_testCameraUI() {
     onBackClickCalled = false
     composeTestRule.setContent {
       MaterialTheme { Camera(onBackClick = { onBackClickCalled = true }, onPhotoSaved = {}) }
@@ -36,7 +36,7 @@ class CameraScreenNoPermissionTest {
   }
 
   @Test
-  fun testBackButtonFunctionality() {
+  fun cameraScreen_testBackButtonFunctionality() {
     onBackClickCalled = false
     composeTestRule.setContent {
       MaterialTheme { Camera(onBackClick = { onBackClickCalled = true }, onPhotoSaved = {}) }
@@ -57,7 +57,7 @@ class CameraScreenTest {
   private var onBackClickCalled = false
 
   @Test
-  fun testCameraUI() {
+  fun cameraScreen_testCameraUI() {
     onBackClickCalled = false
     composeTestRule.setContent {
       MaterialTheme { Camera(onBackClick = { onBackClickCalled = true }, onPhotoSaved = {}) }
@@ -108,7 +108,7 @@ class CameraScreenTest {
   }
 
   @Test
-  fun testBackButtonFunctionality() {
+  fun cameraScreen_testBackButtonFunctionality() {
     onBackClickCalled = false
     composeTestRule.setContent {
       MaterialTheme { Camera(onBackClick = { onBackClickCalled = true }, onPhotoSaved = {}) }

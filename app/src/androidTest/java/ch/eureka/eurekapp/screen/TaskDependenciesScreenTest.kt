@@ -75,7 +75,7 @@ open class TaskDependenciesScreenTest : TestCase() {
 
   @org.junit.Ignore("Test fails on CI - needs investigation")
   @Test
-  fun testTaskDependenciesScreenCorrectlyShowsEverything() {
+  fun taskDependenciesScreen_testTaskDependenciesScreenCorrectlyShowsEverything() {
     runBlocking {
       val viewModel =
           TaskDependenciesViewModel(
@@ -105,7 +105,7 @@ open class TaskDependenciesScreenTest : TestCase() {
   }
 
   @Test
-  fun testBackButtonIsDisplayed() {
+  fun taskDependenciesScreen_testBackButtonIsDisplayed() {
     runBlocking {
       val viewModel =
           TaskDependenciesViewModel(
@@ -130,7 +130,7 @@ open class TaskDependenciesScreenTest : TestCase() {
   }
 
   @Test
-  fun testTreeViewFiltersTasksByStatus() {
+  fun taskDependenciesScreen_testTreeViewFiltersTasksByStatus() {
     runBlocking {
       val projectId = "filter-test-project"
       val rootTaskId = "root-task"
@@ -205,7 +205,7 @@ open class TaskDependenciesScreenTest : TestCase() {
   }
 
   @Test
-  fun testTaskSurfaceComponentDisplaysWithFilter() {
+  fun taskDependenciesScreen_testTaskSurfaceComponentDisplaysWithFilter() {
     runBlocking {
       val projectId = "filter-component-project"
       val taskId = "test-task"

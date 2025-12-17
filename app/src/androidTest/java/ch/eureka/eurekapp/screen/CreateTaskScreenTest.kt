@@ -97,7 +97,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun projectSelectionShowslistAndSelectsproject() {
+  fun createTaskScreen_projectSelectionShowsListAndSelectsProject() {
     val projectId = "project123"
 
     // Provide a fake project list via a fake repository-injected VM
@@ -158,7 +158,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun projectSelectionShowsnoprojectsmessageWhenemptylist() {
+  fun createTaskScreen_projectSelectionShowsNoProjectsMessageWhenEmptyList() {
     val emptyRepo =
         object : ProjectRepository {
           override fun getProjectById(projectId: String): Flow<Project?> = flowOf(null)
@@ -275,14 +275,14 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testEmptyFieldsShowErrors() {
+  fun createTaskScreen_testEmptyFieldsShowErrors() {
     navigateToCreateTaskScreen()
     // Focus and leave the Title field empty
     composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performClick()
     composeTestRule.waitForIdle()
     composeTestRule.onNodeWithTag(CommonTaskTestTags.ERROR_MSG).assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Test Task")
+    composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performTextInput("Valid Title")
 
     // Focus and leave the Description field empty
     composeTestRule.onNodeWithTag(CommonTaskTestTags.DESCRIPTION).performClick()
@@ -290,7 +290,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testInvalidDateShowsError() {
+  fun createTaskScreen_testInvalidDateShowsError() {
     navigateToCreateTaskScreen()
 
     // Input title and description
@@ -306,7 +306,7 @@ class CreateTaskScreenTests : TestCase() {
 
   /** This is our end-to-end test. */
   @Test
-  fun testTakingPhotos() {
+  fun createTaskScreen_testTakingPhotos() {
     navigateToCreateTaskScreen()
 
     // Initially, no photo should be displayed
@@ -345,7 +345,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testPhotoUpload() {
+  fun createTaskScreen_testPhotoUpload() {
     val projectId = "project123"
     val fakeProjectRepository =
         object : ProjectRepository {
@@ -504,7 +504,7 @@ class CreateTaskScreenTests : TestCase() {
   }*/
 
   @Test
-  fun testTaskCreated() {
+  fun createTaskScreen_testTaskCreated() {
     val projectId = "project123"
     val fakeProjectRepository =
         object : ProjectRepository {
@@ -563,8 +563,7 @@ class CreateTaskScreenTests : TestCase() {
     composeTestRule.onNodeWithTag(CommonTaskTestTags.DUE_DATE).performTextInput("15/10/2025")
     composeTestRule.onNodeWithTag(CommonTaskTestTags.REMINDER_TIME).performTextInput("10:00")
 
-    // Scroll to Add Photo button
-    composeTestRule.onRoot().performScrollToNode(hasTestTag(CommonTaskTestTags.ADD_PHOTO))
+    // Project already selected via viewModel
 
     // Click add photo button to navigate to Camera screen
     composeTestRule.onNodeWithTag(CommonTaskTestTags.ADD_PHOTO).performClick()
@@ -630,7 +629,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testSaveButtonEnabledOnlyWithValidInput() {
+  fun createTaskScreen_testSaveButtonEnabledOnlyWithValidInput() {
     val projectId = "project123"
     val fakeProjectRepository =
         object : ProjectRepository {
@@ -778,7 +777,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun reminderTimeFieldIsdisplayed() {
+  fun createTaskScreen_reminderTimeFieldIsDisplayed() {
     val projectId = "project123"
 
     val fakeProjectRepository =
@@ -858,7 +857,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testAddDependencyShowsdependencyinlist() {
+  fun createTaskScreen_testAddDependencyShowsDependencyInList() {
     runBlocking {
       val projectId = "project123"
       val taskId1 = "task1"
@@ -929,7 +928,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testTaskCreatedWithdependenciesSavesdependencies() {
+  fun createTaskScreen_testTaskCreatedWithDependenciesSavesDependencies() {
     runBlocking {
       val projectId = "project123"
       val taskId1 = "task1"
@@ -1015,7 +1014,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testBackButtonNavigatesBack() {
+  fun createTaskScreen_testBackButtonNavigatesBack() {
     runBlocking {
       val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
       lastCreateVm = viewModel
@@ -1044,7 +1043,7 @@ class CreateTaskScreenTests : TestCase() {
   // ========== TEMPLATE SELECTION TESTS ==========
 
   @Test
-  fun templateSelectionShowsCreateButtonWhenProjectSelected() {
+  fun createTaskScreen_templateSelectionShowsCreateButtonWhenProjectSelected() {
     val projectId = "project123"
 
     val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
@@ -1076,7 +1075,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun templateSelectionNavigatesToCreateTemplateScreen() {
+  fun createTaskScreen_templateSelectionNavigatesToCreateTemplateScreen() {
     val projectId = "project123"
 
     val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())

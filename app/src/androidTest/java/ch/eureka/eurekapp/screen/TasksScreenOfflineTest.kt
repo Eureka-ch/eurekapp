@@ -59,7 +59,7 @@ class TasksScreenOfflineTest {
   }
 
   @Test
-  fun tasksScreenOfflineDisplaysMessage() {
+  fun tasksScreenOffline_tasksScreenOfflineDisplaysMessage() {
     val task =
         Task(
             taskID = "task1",
@@ -88,7 +88,7 @@ class TasksScreenOfflineTest {
   }
 
   @Test
-  fun tasksScreenOfflineDisablesButtons() {
+  fun tasksScreenOffline_tasksScreenOfflineDisablesButtons() {
     mockTaskRepository.setCurrentUserTasks(flowOf(emptyList()))
     mockConnectivityObserver.setConnected(false)
 
@@ -119,7 +119,7 @@ class TasksScreenOfflineTest {
   }
 
   @Test
-  fun tasksScreenOfflineViewsExistingTasks() {
+  fun tasksScreenOffline_tasksScreenOfflineViewsExistingTasks() {
     val task =
         Task(
             taskID = "task1",
@@ -149,7 +149,7 @@ class TasksScreenOfflineTest {
   }
 
   @Test
-  fun tasksScreenGoesOfflineUpdatesUI() {
+  fun tasksScreenOffline_tasksScreenGoesOfflineUpdatesUI() {
     val task =
         Task(
             taskID = "task1",
@@ -183,7 +183,7 @@ class TasksScreenOfflineTest {
   }
 
   @Test
-  fun tasksScreenComesBackOnlineUpdatesUI() {
+  fun tasksScreenOffline_tasksScreenComesBackOnlineUpdatesUI() {
     val task =
         Task(
             taskID = "task1",
@@ -222,7 +222,7 @@ class TasksScreenOfflineTest {
   }
 
   @Test
-  fun tasksScreenOfflineAllowsNavigationToViewTask() {
+  fun tasksScreenOffline_tasksScreenOfflineAllowsNavigationToViewTask() {
     val task =
         Task(
             taskID = "task1",

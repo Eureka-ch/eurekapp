@@ -79,7 +79,7 @@ class TasksScreenTest {
   }
 
   @Test
-  fun tasksScreen_withLoadingState_displaysLoadingIndicator() {
+  fun tasksScreen_withLoadingStateDisplaysLoadingIndicator() {
     mockTaskRepository.setCurrentUserTasks(flowOf(emptyList()))
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
 
@@ -100,7 +100,7 @@ class TasksScreenTest {
   }
 
   @Test
-  fun tasksScreen_withErrorState_displaysErrorMessage() {
+  fun tasksScreen_withErrorStateDisplaysErrorMessage() {
     // Create a mock repository that will cause an error
     mockTaskRepository.setCurrentUserTasks(flowOf(emptyList()))
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
@@ -122,7 +122,7 @@ class TasksScreenTest {
   }
 
   @Test
-  fun tasksScreen_withEmptyState_displaysCorrectMessage() {
+  fun tasksScreen_withEmptyStateDisplaysCorrectMessage() {
     mockTaskRepository.setCurrentUserTasks(flowOf(emptyList()))
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
 
@@ -144,7 +144,7 @@ class TasksScreenTest {
   }
 
   @Test
-  fun tasksScreen_withSingleTask_displaysAllTaskDetails() {
+  fun tasksScreen_withSingleTaskDisplaysAllTaskDetails() {
     val task =
         Task(
             taskID = "task1",
@@ -188,7 +188,7 @@ class TasksScreenTest {
   }
 
   @Test
-  fun tasksScreen_withMultipleTasks_displaysAllInOrder() {
+  fun tasksScreen_withMultipleTasksDisplaysAllInOrder() {
     val tasks =
         (1..5).map { i ->
           Task(
@@ -444,7 +444,7 @@ class TasksScreenTest {
   }
 
   @Test
-  fun tasksScreen_teamFilter_showsOnlyTeamTasks() {
+  fun tasksScreen_teamFilterShowsOnlyTeamTasks() {
     val myTask =
         Task(
             taskID = "task1",
@@ -482,7 +482,7 @@ class TasksScreenTest {
   }
 
   @Test
-  fun tasksScreen_whenTaskAdded_updatesImmediately() {
+  fun tasksScreen_whenTaskAddedUpdatesImmediately() {
     val tasksFlow = MutableStateFlow<List<Task>>(emptyList())
     mockTaskRepository.setCurrentUserTasks(tasksFlow)
     mockUserRepository.setUsers(testUser1)
@@ -511,7 +511,7 @@ class TasksScreenTest {
   }
 
   @Test
-  fun tasksScreen_whenTaskRemoved_updatesImmediately() {
+  fun tasksScreen_whenTaskRemovedUpdatesImmediately() {
     val task1 =
         Task(
             taskID = "task1",
@@ -555,7 +555,7 @@ class TasksScreenTest {
   }
 
   @Test
-  fun tasksScreen_whenTaskUpdated_displaysNewData() {
+  fun tasksScreen_whenTaskUpdatedDisplaysNewData() {
     val originalTask =
         Task(
             taskID = "task1",
@@ -590,7 +590,7 @@ class TasksScreenTest {
   }
 
   @Test
-  fun tasksScreen_thisWeekFilter_showsOnlyTasksDueThisWeek() {
+  fun tasksScreen_thisWeekFilterShowsOnlyTasksDueThisWeek() {
     val taskDueTomorrow =
         Task(
             taskID = "task1",
@@ -643,7 +643,7 @@ class TasksScreenTest {
   }
 
   @Test
-  fun tasksScreen_taskToggleCompletion_triggersViewModelUpdate() {
+  fun tasksScreen_taskToggleCompletionTriggersViewModelUpdate() {
     val task =
         Task(
             taskID = "task1",
@@ -688,7 +688,7 @@ class TasksScreenTest {
   }
 
   @Test
-  fun tasksScreen_createTaskButton_triggersCallback() {
+  fun tasksScreen_createTaskButtonTriggersCallback() {
     mockTaskRepository.setCurrentUserTasks(flowOf(emptyList()))
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
 
@@ -713,7 +713,7 @@ class TasksScreenTest {
   }
 
   @Test
-  fun tasksScreen_autoAssignButton_triggersCallback() {
+  fun tasksScreen_autoAssignButtonTriggersCallback() {
     mockTaskRepository.setCurrentUserTasks(flowOf(emptyList()))
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
 
@@ -738,7 +738,7 @@ class TasksScreenTest {
   }
 
   @Test
-  fun tasksScreen_bothActionButtons_triggerCallbacksIndependently() {
+  fun tasksScreen_bothActionButtonsTriggerCallbacksIndependently() {
     mockTaskRepository.setCurrentUserTasks(flowOf(emptyList()))
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
 

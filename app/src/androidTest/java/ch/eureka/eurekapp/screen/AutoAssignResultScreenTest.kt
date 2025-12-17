@@ -142,7 +142,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun autoAssignResultScreen_withLoadingState_displaysLoadingIndicator() {
+  fun autoAssignResultScreen_withLoadingStateDisplaysLoadingIndicator() {
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
     setContentWithNav()
     composeTestRule.waitForIdle()
@@ -150,7 +150,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun autoAssignResultScreen_withNoProjects_displaysErrorMessage() {
+  fun autoAssignResultScreen_withNoProjectsDisplaysErrorMessage() {
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
     setContentWithNav()
     composeTestRule.waitForIdle()
@@ -159,7 +159,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun autoAssignResultScreen_withProposedAssignments_displaysTaskCards() {
+  fun autoAssignResultScreen_withProposedAssignmentsDisplaysTaskCards() {
     setupBasicProject()
     mockTaskRepository.setProjectTasks(
         "proj1", flowOf(listOf(createTask("task1"), createTask("task2"))))
@@ -170,7 +170,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun autoAssignResultScreen_acceptAssignment_updatesButtonState() {
+  fun autoAssignResultScreen_acceptAssignmentUpdatesButtonState() {
     setupBasicProject()
     mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(createTask("task1"))))
     setContentWithNav()
@@ -182,7 +182,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun autoAssignResultScreen_applyAcceptedAssignments_appliesOnlyAccepted() {
+  fun autoAssignResultScreen_applyAcceptedAssignmentsAppliesOnlyAccepted() {
     setupBasicProject()
     mockTaskRepository.setProjectTasks(
         "proj1", flowOf(listOf(createTask("task1"), createTask("task2"))))
@@ -218,7 +218,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun autoAssignResultScreen_withEmptyAssignments_displaysEmptyState() {
+  fun autoAssignResultScreen_withEmptyAssignmentsDisplaysEmptyState() {
     setupBasicProject()
     mockTaskRepository.setProjectTasks(
         "proj1", flowOf(listOf(createTask("task1", assigned = true))))
@@ -257,7 +257,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun autoAssignResultScreen_emptyState_goBackButtonNavigatesBack() {
+  fun autoAssignResultScreen_emptyStateGoBackButtonNavigatesBack() {
     setupBasicProject()
     mockTaskRepository.setProjectTasks(
         "proj1", flowOf(listOf(createTask("task1", assigned = true))))
@@ -270,7 +270,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun autoAssignResultScreen_errorState_goBackButtonNavigatesBack() {
+  fun autoAssignResultScreen_errorStateGoBackButtonNavigatesBack() {
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
     setContentWithNav(includeTasksScreen = true)
     composeTestRule.waitForIdle()
@@ -281,7 +281,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun autoAssignResultScreen_afterSuccessfulApplication_navigatesBack() {
+  fun autoAssignResultScreen_afterSuccessfulApplicationNavigatesBack() {
     setupBasicProject()
     mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(createTask("task1"))))
     setContentWithNav(includeTasksScreen = true)
@@ -297,7 +297,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun autoAssignResultScreen_loadingState_displaysLoadingIndicator() {
+  fun autoAssignResultScreen_loadingStateDisplaysLoadingIndicator() {
     setupBasicProject()
     mockTaskRepository.setProjectTasks("proj1", flowOf(emptyList()))
     setContentWithNav()

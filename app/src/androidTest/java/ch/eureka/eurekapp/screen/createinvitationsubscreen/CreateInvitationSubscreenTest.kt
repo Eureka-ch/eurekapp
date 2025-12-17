@@ -35,7 +35,7 @@ class CreateProjectScreenTest : TestCase() {
   }
 
   @Test
-  fun testInvitationUI() {
+  fun createInvitationSubscreen_testInvitationUI() {
     runBlocking {
       composeRule.setContent { CreateInvitationSubscreen("kddjfdshf") {} }
 

@@ -16,7 +16,7 @@ class ProjectSelectionFieldTest {
   @get:Rule val composeRule = createComposeRule()
 
   @Test
-  fun showsError_whenProjectsExist_andNoSelection() {
+  fun projectSelectionField_showsErrorWhenProjectsExistAndNoSelection() {
     val projects = listOf(Project(projectId = "p1", name = "Proj 1"))
 
     composeRule.setContent {
