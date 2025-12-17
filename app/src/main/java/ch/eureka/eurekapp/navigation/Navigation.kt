@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -29,8 +30,6 @@ import androidx.navigation.toRoute
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.model.data.mcp.FirebaseMcpTokenRepository
-import ch.eureka.eurekapp.model.data.project.Project
-import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.model.notifications.NotificationType
@@ -239,33 +238,9 @@ fun NavigationMenu(
 ) {
   val navigationController = rememberNavController()
   val testProjectId = "test-project-id"
-
-  HandleNotificationNavigation(
-      notificationType = notificationType,
-      notificationId = notificationId,
-      notificationProjectId = notificationProjectId,
-      navigationController = navigationController)
-
-  RepositoriesProvider.projectRepository
-  val auth = Firebase.auth
-  Project(
-      projectId = testProjectId,
-      name = "Test Project",
-      description = "This is a test project",
-      status = ProjectStatus.OPEN,
-      createdBy = auth.currentUser?.uid ?: "unknown",
-      memberIds = listOf(auth.currentUser?.uid ?: "unknown"),
-  )
-
-  val userRepository = RepositoriesProvider.userRepository
-  val currentUser = auth.currentUser
-  requireNotNull(currentUser)
-
-  UserHeartbeatEffect(userRepository, currentUser)
-  val navBackStackEntry by navigationController.currentBackStackEntryAsState()
-  val currentDestination = navBackStackEntry?.destination
   val hideBottomBar by
-      remember(currentDestination) { derivedStateOf { shouldHideBottomBar(currentDestination) } }
+      setupNavigationState(
+          navigationController, notificationType, notificationId, notificationProjectId)
 
   Scaffold(containerColor = Color.White) { innerPadding ->
     Box(modifier = Modifier.fillMaxSize()) {
@@ -716,6 +691,32 @@ fun NavigationMenu(
 private fun shouldHideBottomBar(currentDestination: NavDestination?): Boolean {
   val destination = currentDestination ?: return false
   return destination.hierarchy.any { dest -> ROUTES_HIDE_BOTTOM_BAR.any { dest.hasRoute(it) } }
+}
+
+/** Helper function to setup navigation state and return bottom bar visibility state. */
+@Composable
+private fun setupNavigationState(
+    navigationController: NavHostController,
+    notificationType: String?,
+    notificationId: String?,
+    notificationProjectId: String?
+): State<Boolean> {
+  HandleNotificationNavigation(
+      notificationType = notificationType,
+      notificationId = notificationId,
+      notificationProjectId = notificationProjectId,
+      navigationController = navigationController)
+
+  RepositoriesProvider.projectRepository
+  val auth = Firebase.auth
+  val userRepository = RepositoriesProvider.userRepository
+  val currentUser = auth.currentUser
+  requireNotNull(currentUser)
+
+  UserHeartbeatEffect(userRepository, currentUser)
+  val navBackStackEntry by navigationController.currentBackStackEntryAsState()
+  val currentDestination = navBackStackEntry?.destination
+  return remember(currentDestination) { derivedStateOf { shouldHideBottomBar(currentDestination) } }
 }
 
 /**

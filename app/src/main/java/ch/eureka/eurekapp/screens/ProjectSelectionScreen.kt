@@ -135,13 +135,23 @@ fun ProjectSelectionScreen(
             projects = projectsList.value,
             currentUserId = currentUser.value?.uid,
             listState = listState,
-            onCreateProjectRequest = onCreateProjectRequest,
-            onInputTokenRequest = onInputTokenRequest,
-            onGenerateInviteRequest = onGenerateInviteRequest,
-            onSeeProjectMembers = onSeeProjectMembers,
+            actions =
+                ProjectSelectionActions(
+                    onCreateProjectRequest = onCreateProjectRequest,
+                    onInputTokenRequest = onInputTokenRequest,
+                    onGenerateInviteRequest = onGenerateInviteRequest,
+                    onSeeProjectMembers = onSeeProjectMembers),
             viewModel = projectSelectionScreenViewModel)
       })
 }
+
+/** Data class to group project selection actions and reduce parameter count. */
+data class ProjectSelectionActions(
+    val onCreateProjectRequest: () -> Unit,
+    val onInputTokenRequest: () -> Unit,
+    val onGenerateInviteRequest: (String) -> Unit,
+    val onSeeProjectMembers: (String) -> Unit
+)
 
 @Composable
 private fun ProjectSelectionContent(
@@ -149,15 +159,13 @@ private fun ProjectSelectionContent(
     projects: List<Project>,
     currentUserId: String?,
     listState: androidx.compose.foundation.lazy.LazyListState,
-    onCreateProjectRequest: () -> Unit,
-    onInputTokenRequest: () -> Unit,
-    onGenerateInviteRequest: (String) -> Unit,
-    onSeeProjectMembers: (String) -> Unit,
+    actions: ProjectSelectionActions,
     viewModel: ProjectSelectionScreenViewModel
 ) {
   Column(modifier = Modifier.fillMaxSize().padding(paddingValues).background(Color(0xFFF8FAFC))) {
     ProjectSelectionHeader(
-        onCreateProjectRequest = onCreateProjectRequest, onInputTokenRequest = onInputTokenRequest)
+        onCreateProjectRequest = actions.onCreateProjectRequest,
+        onInputTokenRequest = actions.onInputTokenRequest)
 
     if (projects.isEmpty()) {
       EmptyProjectsState()
@@ -172,14 +180,14 @@ private fun ProjectSelectionContent(
                   viewModel.getProjectUsersInformation(project.projectId).collectAsState(listOf())
               ProjectSummaryCard(
                   project = project,
-                  onClick = { onSeeProjectMembers(project.projectId) },
+                  onClick = { actions.onSeeProjectMembers(project.projectId) },
                   memberCount = projectUsers.value.size,
                   actionButton = {
                     ProjectCardActions(
                         projectId = project.projectId,
                         isOwner = currentUserId == project.createdBy,
-                        onSeeProjectMembers = onSeeProjectMembers,
-                        onGenerateInviteRequest = onGenerateInviteRequest)
+                        onSeeProjectMembers = actions.onSeeProjectMembers,
+                        onGenerateInviteRequest = actions.onGenerateInviteRequest)
                   })
             }
           }
