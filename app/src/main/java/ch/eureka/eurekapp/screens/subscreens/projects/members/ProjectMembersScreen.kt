@@ -28,8 +28,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,7 +35,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -48,6 +45,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.data.project.MembersUiState
 import ch.eureka.eurekapp.model.data.project.ProjectMembersViewModel
 import ch.eureka.eurekapp.model.data.user.User
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.firebase.Timestamp
@@ -92,35 +91,34 @@ fun ProjectMembersScreen(
 
   Scaffold(
       topBar = {
-        TopAppBar(
-            title = {
-              Text(
-                  text =
-                      when (val state = uiState) {
-                        is MembersUiState.Success -> state.projectName
-                        is MembersUiState.Loading,
-                        is MembersUiState.Error -> "Project members"
-                      },
-                  modifier = Modifier.testTag(ProjectMembersScreenTestTags.TITLE))
-            },
+        EurekaTopBar(
+            title =
+                when (val state = uiState) {
+                  is MembersUiState.Success -> state.projectName
+                  is MembersUiState.Loading,
+                  is MembersUiState.Error -> "Project members"
+                },
+            titleTestTag = ProjectMembersScreenTestTags.TITLE,
             navigationIcon = {
               IconButton(
                   onClick = onBackClick,
                   modifier = Modifier.testTag(ProjectMembersScreenTestTags.BACK_BUTTON)) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = EColors.WhiteTextColor)
                   }
             },
             actions = {
               IconButton(
                   onClick = { projectMembersViewModel.loadMembers() },
                   modifier = Modifier.testTag(ProjectMembersScreenTestTags.REFRESH_BUTTON)) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                    Icon(
+                        Icons.Default.Refresh,
+                        contentDescription = "Refresh",
+                        tint = EColors.WhiteTextColor)
                   }
-            },
-            colors =
-                TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface))
+            })
       }) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
           when (val state = uiState) {
@@ -237,7 +235,7 @@ fun MemberItem(user: User, isUserOnline: (Timestamp) -> Boolean) {
               modifier =
                   Modifier.size(14.dp) // Size of the dot
                       .clip(CircleShape)
-                      .background(if (isOnline) Color.Green else Color.Gray)
+                      .background(if (isOnline) EColors.StatusGreen else EColors.ActivityDefault)
                       .border(2.dp, MaterialTheme.colorScheme.surface, CircleShape))
         }
 

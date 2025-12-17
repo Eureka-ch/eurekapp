@@ -1,4 +1,4 @@
-// Portions of this code were generated with the help of Grok.
+// Portions of this code were generated with the help of Grok and Claude 4.5 Sonnet.
 package ch.eureka.eurekapp.ui.meeting
 
 import android.net.Uri
@@ -17,7 +17,8 @@ import ch.eureka.eurekapp.model.data.file.FileStorageRepository
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
-import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.model.data.user.User
+import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.utils.FirebaseEmulator
 import ch.eureka.eurekapp.utils.MockConnectivityObserver
@@ -43,7 +44,7 @@ class MeetingDetailScreenOfflineTest {
   private val testMeetingId = "testMeeting123"
 
   private val meetingFlow = MutableStateFlow<Meeting?>(null)
-  private val participantsFlow = MutableStateFlow<List<Participant>>(emptyList())
+  private val userFlow = MutableStateFlow<User?>(null)
 
   private class FileStorageRepositoryMock : FileStorageRepository {
     override suspend fun uploadFile(storagePath: String, fileUri: Uri): Result<String> {
@@ -74,12 +75,28 @@ class MeetingDetailScreenOfflineTest {
         ): kotlinx.coroutines.flow.Flow<Meeting?> {
           return meetingFlow
         }
+      }
 
-        override fun getParticipants(
-            projectId: String,
-            meetingId: String
-        ): kotlinx.coroutines.flow.Flow<List<Participant>> {
-          return participantsFlow
+  private val userRepositoryMock =
+      object : UserRepository {
+        override fun getUserById(userId: String): kotlinx.coroutines.flow.Flow<User?> {
+          return userFlow
+        }
+
+        override fun getCurrentUser(): kotlinx.coroutines.flow.Flow<User?> {
+          return kotlinx.coroutines.flow.flow { emit(null) }
+        }
+
+        override suspend fun saveUser(user: User): Result<Unit> {
+          return Result.success(Unit)
+        }
+
+        override suspend fun updateLastActive(userId: String): Result<Unit> {
+          return Result.success(Unit)
+        }
+
+        override suspend fun updateFcmToken(userId: String, fcmToken: String): Result<Unit> {
+          return Result.success(Unit)
         }
       }
 
@@ -89,7 +106,11 @@ class MeetingDetailScreenOfflineTest {
         MockConnectivityObserver(InstrumentationRegistry.getInstrumentation().targetContext)
     viewModel =
         MeetingDetailViewModel(
-            testProjectId, testMeetingId, repositoryMock, mockConnectivityObserver)
+            testProjectId,
+            testMeetingId,
+            repositoryMock,
+            userRepositoryMock,
+            mockConnectivityObserver)
     attachmentsViewModel =
         MeetingAttachmentsViewModel(
             fileStorageRepository = FileStorageRepositoryMock(),
@@ -118,7 +139,7 @@ class MeetingDetailScreenOfflineTest {
             createdBy = "user1")
 
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -164,7 +185,7 @@ class MeetingDetailScreenOfflineTest {
             createdBy = "user1")
 
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -204,7 +225,7 @@ class MeetingDetailScreenOfflineTest {
             createdBy = "user1")
 
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -241,7 +262,7 @@ class MeetingDetailScreenOfflineTest {
             createdBy = "user1")
 
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -285,7 +306,7 @@ class MeetingDetailScreenOfflineTest {
             createdBy = "user1")
 
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -328,7 +349,7 @@ class MeetingDetailScreenOfflineTest {
             createdBy = "user1")
 
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -372,7 +393,7 @@ class MeetingDetailScreenOfflineTest {
             transcriptId = "testTranscriptId")
 
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {
@@ -415,7 +436,7 @@ class MeetingDetailScreenOfflineTest {
             createdBy = "user1")
 
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     mockConnectivityObserver.setConnected(true)
 
     composeTestRule.setContent {
@@ -467,7 +488,7 @@ class MeetingDetailScreenOfflineTest {
             createdBy = "user1")
 
     meetingFlow.value = meeting
-    participantsFlow.value = emptyList()
+    userFlow.value = null
     mockConnectivityObserver.setConnected(false)
 
     composeTestRule.setContent {

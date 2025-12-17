@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -33,11 +34,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 /*
@@ -88,11 +90,13 @@ fun ConversationListScreen(
 
   Scaffold(
       modifier = Modifier.testTag(ConversationListScreenTestTags.SCREEN),
+      topBar = { EurekaTopBar(title = "Conversations") },
       floatingActionButton = {
         // FAB to create new conversation
         FloatingActionButton(
             onClick = onCreateConversation,
-            modifier = Modifier.testTag(ConversationListScreenTestTags.CREATE_BUTTON),
+            modifier =
+                Modifier.offset(y = (-32).dp).testTag(ConversationListScreenTestTags.CREATE_BUTTON),
             containerColor =
                 if (uiState.isConnected) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.surfaceVariant) {
@@ -101,21 +105,12 @@ fun ConversationListScreen(
       }) { padding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = Spacing.md)) {
-              // Screen title
-              Spacer(modifier = Modifier.height(Spacing.md))
-              Text(
-                  text = "Conversations",
-                  style = MaterialTheme.typography.headlineSmall,
-                  fontWeight = FontWeight.Bold,
-                  modifier = Modifier.testTag(ConversationListScreenTestTags.TITLE))
-
-              Spacer(modifier = Modifier.height(Spacing.xs))
-
               // Screen description
+              Spacer(modifier = Modifier.height(Spacing.md))
               Text(
                   text = "Chat with your project members",
                   style = MaterialTheme.typography.bodyMedium,
-                  color = Color.Gray,
+                  color = EColors.SecondaryTextColor,
                   modifier = Modifier.testTag(ConversationListScreenTestTags.DESCRIPTION))
 
               Spacer(modifier = Modifier.height(Spacing.md))
@@ -151,14 +146,14 @@ fun ConversationListScreen(
                           Text(
                               text = "No conversations yet",
                               style = MaterialTheme.typography.titleMedium,
-                              color = Color.Gray,
+                              color = EColors.SecondaryTextColor,
                               modifier =
                                   Modifier.testTag(ConversationListScreenTestTags.EMPTY_STATE))
                           Spacer(modifier = Modifier.height(Spacing.xs))
                           Text(
                               text = "Tap + to start a conversation",
                               style = MaterialTheme.typography.bodyMedium,
-                              color = Color.Gray)
+                              color = EColors.SecondaryTextColor)
                         }
                   }
                 }

@@ -573,11 +573,9 @@ fun CreateProjectTextField(
         properties = defaultPopupProperties) {
           Box(
               contentAlignment = Alignment.Center,
-              modifier =
-                  Modifier.fillMaxWidth(0.85f)
-                      .shadow(elevation = 4.dp)
-                      .background(LightColorScheme.surface)) {
+              modifier = Modifier.shadow(elevation = 4.dp).background(LightColorScheme.surface)) {
                 DatePicker(
+                    modifier = Modifier.fillMaxWidth(),
                     colors =
                         DatePickerDefaults.colors(
                             selectedDayContainerColor = LightingBlue,
