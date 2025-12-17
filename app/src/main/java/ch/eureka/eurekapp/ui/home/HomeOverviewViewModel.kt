@@ -99,7 +99,6 @@ class HomeOverviewViewModel(
                       task.status != TaskStatus.COMPLETED
                 }
                 .sortedBy { it.dueDate.toEpochMillisOrMax() }
-                .take(HOME_ITEMS_LIMIT)
           }
           .catch { throwable ->
             _error.value = throwable.message
@@ -168,14 +167,13 @@ class HomeOverviewViewModel(
                               .minOfOrNull { it.dateTime.toDate().time }
                           ?: Long.MAX_VALUE
                     }
-                    .take(HOME_ITEMS_LIMIT)
               }
         }
       }
 
   private val recentProjects: Flow<List<Project>> =
       projectsFlow.map { projects ->
-        projects.sortedByDescending { it.lastUpdated.toEpochMillisOrMin() }.take(HOME_ITEMS_LIMIT)
+        projects.sortedByDescending { it.lastUpdated.toEpochMillisOrMin() }
       }
 
   private val connectivity: StateFlow<Boolean> =
