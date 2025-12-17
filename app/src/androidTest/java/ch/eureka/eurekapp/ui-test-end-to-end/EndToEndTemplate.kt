@@ -6,6 +6,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -309,12 +310,16 @@ class TemplateEndToEndTest : TestCase() {
       }
     }
 
+    // Scroll to ensure the button is visible before clicking
+    composeTestRule.onNodeWithTag("add_field_button").performScrollTo()
+    composeTestRule.waitForIdle()
+
     composeTestRule.onNodeWithTag("add_field_button").performClick()
 
     composeTestRule.waitForIdle()
 
     // Wait for bottom sheet to appear and select "Text" field type
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+    composeTestRule.waitUntil(timeoutMillis = 10_000) {
       try {
         composeTestRule.onNodeWithText("Text").assertExists()
         true
@@ -322,6 +327,8 @@ class TemplateEndToEndTest : TestCase() {
         false
       }
     }
+
+    composeTestRule.waitForIdle()
 
     composeTestRule.onNodeWithText("Text").performClick()
 

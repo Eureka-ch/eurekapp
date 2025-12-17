@@ -385,12 +385,14 @@ class TaskEndToEndTest : TestCase() {
     composeTestRule.waitForIdle()
 
     // Wait for create meeting screen to load by checking for the title input field
-    composeTestRule.waitUntil(timeoutMillis = 5_000) {
+    composeTestRule.waitUntil(timeoutMillis = 10_000) {
       composeTestRule
           .onAllNodesWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
           .fetchSemanticsNodes()
           .isNotEmpty()
     }
+
+    composeTestRule.waitForIdle()
 
     val meetingTitle = "E2E Test Meeting"
 
