@@ -347,6 +347,25 @@ data class MeetingsListConfig(
 )
 
 /**
+ * Handles joining a meeting by opening the meeting link in a browser.
+ *
+ * @param context Android context for starting activities and showing toasts
+ * @param link The meeting link to open, or null if no link is available
+ */
+private fun handleJoinMeeting(context: Context, link: String?) {
+  if (!link.isNullOrBlank()) {
+    val browserIntent =
+        Intent(Intent.ACTION_VIEW, link.toUri()).apply {
+          addCategory(Intent.CATEGORY_BROWSABLE)
+          flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+    context.startActivity(browserIntent)
+  } else {
+    Toast.makeText(context, "No meeting link available", Toast.LENGTH_SHORT).show()
+  }
+}
+
+/**
  * Component that displays the meetings.
  *
  * @param config Config of that composable.
@@ -374,19 +393,7 @@ fun MeetingsList(
                     MeetingCardConfig(
                         isCurrentUserId = config.isCurrentUserId,
                         onClick = { config.onMeetingClick(config.projectId, meeting.meetingID) },
-                        onJoinMeeting = { _ ->
-                          if (!meeting.link.isNullOrBlank()) {
-                            val browserIntent =
-                                Intent(Intent.ACTION_VIEW, meeting.link.toUri()).apply {
-                                  addCategory(Intent.CATEGORY_BROWSABLE)
-                                  flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                }
-                            context.startActivity(browserIntent)
-                          } else {
-                            Toast.makeText(context, "No meeting link available", Toast.LENGTH_SHORT)
-                                .show()
-                          }
-                        },
+                        onJoinMeeting = { _ -> handleJoinMeeting(context, meeting.link) },
                         onVoteForMeetingProposals = { isConnected ->
                           config.onVoteForMeetingProposalClick(
                               config.projectId, meeting.meetingID, isConnected)

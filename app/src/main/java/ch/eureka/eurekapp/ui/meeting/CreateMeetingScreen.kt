@@ -459,10 +459,6 @@ fun MeetingLinkInputSection(
   if (format != MeetingFormat.VIRTUAL) return
 
   val showError = linkState.linkValidationError != null && linkState.hasTouchedLink
-  val showWarning =
-      linkState.linkValidationWarning != null &&
-          linkState.hasTouchedLink &&
-          linkState.linkValidationError == null
   val showPlatform =
       linkState.detectedPlatform != MeetingPlatform.UNKNOWN &&
           !linkState.meetingLink.isNullOrBlank()
@@ -498,21 +494,25 @@ fun MeetingLinkInputSection(
               })
 
   // Show error message if validation failed
-  if (showError) {
-    Text(
-        text = linkState.linkValidationError!!,
-        color = Color.Red,
-        style = MaterialTheme.typography.bodySmall,
-        modifier = Modifier.testTag(CreateMeetingScreenTestTags.ERROR_MSG))
+  linkState.linkValidationError?.let { errorMessage ->
+    if (linkState.hasTouchedLink) {
+      Text(
+          text = errorMessage,
+          color = Color.Red,
+          style = MaterialTheme.typography.bodySmall,
+          modifier = Modifier.testTag(CreateMeetingScreenTestTags.ERROR_MSG))
+    }
   }
 
   // Show warning message for non-whitelisted domains
-  if (showWarning) {
-    Text(
-        text = linkState.linkValidationWarning!!,
-        color = MaterialTheme.colorScheme.secondary,
-        style = MaterialTheme.typography.bodySmall,
-        modifier = Modifier.testTag(CreateMeetingScreenTestTags.MEETING_LINK_WARNING))
+  linkState.linkValidationWarning?.let { warningMessage ->
+    if (linkState.hasTouchedLink && linkState.linkValidationError == null) {
+      Text(
+          text = warningMessage,
+          color = MaterialTheme.colorScheme.secondary,
+          style = MaterialTheme.typography.bodySmall,
+          modifier = Modifier.testTag(CreateMeetingScreenTestTags.MEETING_LINK_WARNING))
+    }
   }
 
   // Show detected platform name
