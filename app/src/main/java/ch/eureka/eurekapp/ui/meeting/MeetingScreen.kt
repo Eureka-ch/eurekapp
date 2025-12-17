@@ -65,11 +65,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.calendar.MeetingCalendarViewModel
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
@@ -204,14 +206,15 @@ fun MeetingScreen(
 
   LaunchedEffect(meetingViewModel.userId) {
     if (meetingViewModel.userId == null) {
-      meetingViewModel.setErrorMsg("Not logged in")
+      // use localized resource for the error
+      meetingViewModel.setErrorMsg(context.getString(R.string.error_not_logged_in))
     }
   }
 
   Scaffold(
       topBar = {
         EurekaTopBar(
-            title = "Meetings",
+            title = stringResource(R.string.meeting_screen_title),
             modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_TITLE),
             actions = {
               InteractiveHelpEntryPoint(
@@ -222,7 +225,7 @@ fun MeetingScreen(
                   modifier = Modifier.testTag(TasksScreenTestTags.FILES_MANAGEMENT_BUTTON)) {
                     Icon(
                         Icons.Filled.Folder,
-                        contentDescription = "Manage Files",
+                        contentDescription = stringResource(R.string.meeting_manage_files),
                         tint = EColors.WhiteTextColor)
                   }
             })
@@ -235,7 +238,7 @@ fun MeetingScreen(
             containerColor =
                 if (uiState.isConnected) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.surfaceVariant) {
-              Icon(imageVector = Icons.Default.Add, contentDescription = "Create meeting")
+              Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(R.string.meeting_create_meeting))
             }
       },
       content = { padding ->
@@ -265,7 +268,7 @@ private fun MeetingScreenContent(
               .testTag(MeetingScreenTestTags.MEETING_SCREEN)) {
         Text(
             modifier = Modifier.testTag(MeetingScreenTestTags.MEETING_SCREEN_DESCRIPTION),
-            text = "Schedule and manage your team meetings",
+            text = stringResource(R.string.meeting_screen_description),
             style = MaterialTheme.typography.bodyLarge,
             color = EColors.GrayTextColor2,
             fontWeight = FontWeight.Medium)
@@ -274,7 +277,7 @@ private fun MeetingScreenContent(
 
         if (!uiState.isConnected) {
           Text(
-              text = "You are offline. Meeting creation is unavailable to prevent sync conflicts.",
+              text = stringResource(R.string.meeting_creation_offline_unavailable),
               style = MaterialTheme.typography.bodyMedium,
               color = MaterialTheme.colorScheme.error,
               modifier =
@@ -407,14 +410,14 @@ fun MeetingsList(
                               onSuccess = {
                                 Toast.makeText(
                                         context,
-                                        "Successfully saved the event to the calendar!",
+                                        context.getString(R.string.meeting_saved_to_calendar_success),
                                         Toast.LENGTH_SHORT)
                                     .show()
                               },
                               onFailure = {
                                 Toast.makeText(
                                         context,
-                                        "There was a problem saving the event to the calendar!",
+                                        context.getString(R.string.meeting_saved_to_calendar_failure),
                                         Toast.LENGTH_SHORT)
                                     .show()
                               })
@@ -442,7 +445,7 @@ fun MeetingsList(
                 if (config.tabName == MeetingTab.UPCOMING.name.lowercase())
                     MeetingScreenTestTags.NO_UPCOMING_MEETINGS_MESSAGE
                 else MeetingScreenTestTags.NO_PAST_MEETINGS_MESSAGE),
-        text = "You have no ${config.tabName} meetings yet.")
+        text = stringResource(R.string.meeting_no_meetings_for_tab, config.tabName))
   }
 }
 
@@ -579,10 +582,11 @@ fun MeetingCard(
                                 contentAlignment = Alignment.Center) {
                                   Icon(
                                       imageVector = Icons.Default.HourglassTop,
-                                      contentDescription = "Duration",
+                                      contentDescription = stringResource(R.string.meeting_icon_duration),
                                       modifier = Modifier.size(16.dp),
                                       tint = EColors.GrayTextColor2)
                                 }
+
                             Column {
                               Text(
                                   modifier =
@@ -597,7 +601,7 @@ fun MeetingCard(
                                   horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                     Icon(
                                         imageVector = Icons.Default.HowToVote,
-                                        contentDescription = "Vote",
+                                        contentDescription = stringResource(R.string.meeting_icon_vote),
                                         modifier = Modifier.size(14.dp),
                                         tint = EColors.GrayTextColor2)
                                     Text(
@@ -605,7 +609,7 @@ fun MeetingCard(
                                             Modifier.testTag(
                                                 MeetingScreenTestTags
                                                     .MEETING_VOTE_FOR_DATETIME_MESSAGE),
-                                        text = "Vote for your preferred datetime(s)",
+                                        text = stringResource(R.string.meeting_vote_datetime_message),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = EColors.GrayTextColor2)
                                   }
@@ -630,7 +634,7 @@ fun MeetingCard(
                                 contentAlignment = Alignment.Center) {
                                   Icon(
                                       imageVector = Icons.Default.Schedule,
-                                      contentDescription = "Schedule",
+                                      contentDescription = stringResource(R.string.meeting_icon_schedule),
                                       modifier = Modifier.size(16.dp),
                                       tint = EColors.GrayTextColor2)
                                 }
@@ -665,7 +669,7 @@ fun MeetingCard(
                                     contentAlignment = Alignment.Center) {
                                       Icon(
                                           imageVector = Icons.Default.HowToVote,
-                                          contentDescription = "Vote",
+                                          contentDescription = stringResource(R.string.meeting_icon_vote),
                                           modifier = Modifier.size(16.dp),
                                           tint = EColors.GrayTextColor2)
                                     }
@@ -698,7 +702,7 @@ fun MeetingCard(
                                     contentAlignment = Alignment.Center) {
                                       Icon(
                                           imageVector = Icons.Default.Place,
-                                          contentDescription = "Location",
+                                          contentDescription = stringResource(R.string.meeting_icon_location),
                                           modifier = Modifier.size(16.dp),
                                           tint = EColors.GrayTextColor2)
                                     }
@@ -728,7 +732,7 @@ fun MeetingCard(
                                       contentAlignment = Alignment.Center) {
                                         Icon(
                                             imageVector = Icons.Default.VideoCall,
-                                            contentDescription = "Video call",
+                                            contentDescription = stringResource(R.string.meeting_icon_video_call),
                                             modifier = Modifier.size(16.dp),
                                             tint = EColors.GrayTextColor2)
                                       }
@@ -774,7 +778,7 @@ fun MeetingCard(
                                       containerColor = MaterialTheme.colorScheme.primary,
                                       contentColor = Color.White)) {
                                 Text(
-                                    "Vote",
+                                    stringResource(R.string.vote_button_label),
                                     style = MaterialTheme.typography.labelLarge,
                                     fontWeight = FontWeight.SemiBold)
                               }
@@ -788,7 +792,7 @@ fun MeetingCard(
                                     ButtonDefaults.outlinedButtonColors(
                                         contentColor = MaterialTheme.colorScheme.primary)) {
                                   Text(
-                                      "Close votes",
+                                      stringResource(R.string.close_votes_button_label),
                                       style = MaterialTheme.typography.labelLarge,
                                       fontWeight = FontWeight.SemiBold)
                                 }
@@ -809,7 +813,7 @@ fun MeetingCard(
                                           containerColor = MaterialTheme.colorScheme.primary,
                                           contentColor = Color.White)) {
                                     Text(
-                                        "Directions",
+                                        stringResource(R.string.directions_button_label),
                                         style = MaterialTheme.typography.labelLarge,
                                         fontWeight = FontWeight.SemiBold)
                                   }
@@ -824,7 +828,7 @@ fun MeetingCard(
                                       ButtonDefaults.outlinedButtonColors(
                                           contentColor = MaterialTheme.colorScheme.primary)) {
                                     Text(
-                                        "Record",
+                                        stringResource(R.string.record_button_label),
                                         style = MaterialTheme.typography.labelLarge,
                                         fontWeight = FontWeight.SemiBold)
                                   }
@@ -838,7 +842,7 @@ fun MeetingCard(
                                     onClick = { config.onAddMeetingToCalendar(meeting) }) {
                                       Icon(
                                           imageVector = Icons.Default.CalendarToday,
-                                          contentDescription = "Add to calendar",
+                                          contentDescription = stringResource(R.string.meeting_add_to_calendar),
                                           tint = MaterialTheme.colorScheme.primary,
                                           modifier = Modifier.size(24.dp))
                                     }
@@ -856,7 +860,7 @@ fun MeetingCard(
                                           containerColor = MaterialTheme.colorScheme.primary,
                                           contentColor = Color.White)) {
                                     Text(
-                                        "Join meeting",
+                                        stringResource(R.string.meeting_join_button),
                                         style = MaterialTheme.typography.labelLarge,
                                         fontWeight = FontWeight.SemiBold)
                                   }
@@ -880,7 +884,7 @@ fun MeetingCard(
                                       containerColor = MaterialTheme.colorScheme.primary,
                                       contentColor = Color.White)) {
                                 Text(
-                                    "View Transcript",
+                                    stringResource(R.string.view_transcript),
                                     style = MaterialTheme.typography.labelLarge,
                                     fontWeight = FontWeight.SemiBold)
                               }
@@ -905,20 +909,22 @@ fun RoundedTabRow(
     selectedTab: MeetingTab,
     onTabSelected: (MeetingTab) -> Unit
 ) {
-  Surface(
-      shape = RoundedCornerShape(24.dp),
-      color = MaterialTheme.colorScheme.surfaceVariant,
-      tonalElevation = 2.dp,
-      modifier =
-          Modifier.padding(horizontal = 8.dp)
-              .fillMaxWidth()
-              .wrapContentHeight()
-              .testTag(MeetingScreenTestTags.MEETING_TABS)) {
+    Surface(
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        tonalElevation = 2.dp,
+        modifier =
+            Modifier.padding(horizontal = 8.dp)
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .testTag(MeetingScreenTestTags.MEETING_TABS)
+    ) {
         Row(
             modifier = Modifier.padding(6.dp).fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically) {
-              tabs.forEach { tab ->
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            tabs.forEach { tab ->
                 val isSelected = tab == selectedTab
                 Surface(
                     shape = RoundedCornerShape(20.dp),
@@ -930,20 +936,22 @@ fun RoundedTabRow(
                             .padding(horizontal = 4.dp)
                             .testTag(
                                 if (tab.ordinal == 0) MeetingScreenTestTags.MEETING_TAB_UPCOMING
-                                else MeetingScreenTestTags.MEETING_TAB_PAST)
+                                else MeetingScreenTestTags.MEETING_TAB_PAST
+                            )
                             .clickable { onTabSelected(tab) },
                 ) {
-                  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = tab.name,
-                        color =
-                            if (isSelected) MaterialTheme.colorScheme.onPrimary
-                            else MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
-                  }
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = tab.name,
+                            color =
+                                if (isSelected) MaterialTheme.colorScheme.onPrimary
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
                 }
-              }
             }
-      }
+        }
+    }
 }

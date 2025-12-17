@@ -35,9 +35,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.MessageInputField
@@ -161,12 +163,12 @@ private fun ContextualSelectionTopBar(
     onDeleteSelected: () -> Unit
 ) {
   EurekaTopBar(
-      title = "$selectionCount Selected",
+      title = stringResource(R.string.selfnotes_selection_count, selectionCount),
       navigationIcon = {
         IconButton(onClick = onClearSelection) {
           Icon(
               Icons.Default.Close,
-              contentDescription = "Cancel Selection",
+              contentDescription = stringResource(R.string.cancel_selection_desc),
               tint = EColors.WhiteTextColor)
         }
       },
@@ -174,13 +176,13 @@ private fun ContextualSelectionTopBar(
         if (selectionCount == 1) {
           IconButton(onClick = { onEditSelected(selectedIds.first()) }) {
             Icon(
-                Icons.Default.Edit, contentDescription = "Edit Note", tint = EColors.WhiteTextColor)
+                Icons.Default.Edit, contentDescription = stringResource(R.string.edit_note_desc), tint = EColors.WhiteTextColor)
           }
         }
         IconButton(onClick = onDeleteSelected) {
           Icon(
               Icons.Default.Delete,
-              contentDescription = "Delete Selected",
+              contentDescription = stringResource(R.string.delete_selected_desc),
               tint = EColors.WhiteTextColor)
         }
       })
@@ -196,13 +198,13 @@ private fun StandardTopBar(
     onNavigateBack: () -> Unit
 ) {
   EurekaTopBar(
-      title = if (isEditing) "Editing Note" else "Notes",
+      title = if (isEditing) stringResource(R.string.selfnotes_editing_title) else stringResource(R.string.selfnotes_title),
       navigationIcon = {
         if (isEditing) {
           IconButton(onClick = onCancelEditing) {
             Icon(
                 Icons.Default.Close,
-                contentDescription = "Cancel Edit",
+                contentDescription = stringResource(R.string.cancel_edit_desc),
                 tint = EColors.WhiteTextColor)
           }
         } else {
@@ -214,7 +216,7 @@ private fun StandardTopBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(end = 8.dp)) {
               Text(
-                  text = if (isCloudEnabled) "Cloud" else "Local",
+                  text = if (isCloudEnabled) stringResource(R.string.selfnotes_storage_cloud) else stringResource(R.string.selfnotes_storage_local),
                   style = MaterialTheme.typography.labelMedium,
                   color = EColors.WhiteTextColor,
                   modifier = Modifier.padding(end = 8.dp))
@@ -245,8 +247,8 @@ private fun SelfNotesBottomBar(
         onSend = onSend,
         isSending = uiState.isSending,
         placeholder =
-            if (uiState.editingMessageId != null) "Edit your note..."
-            else "Write a note to yourself...")
+            if (uiState.editingMessageId != null) stringResource(R.string.selfnotes_edit_placeholder)
+            else stringResource(R.string.selfnotes_message_placeholder))
   }
 }
 
@@ -266,7 +268,7 @@ private fun SelfNotesContent(
       }
       uiState.notes.isEmpty() -> {
         Text(
-            text = "No notes yet. Start writing!",
+            text = stringResource(R.string.selfnotes_empty_state),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

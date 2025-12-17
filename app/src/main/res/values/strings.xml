@@ -656,8 +656,6 @@
     <string name="create_meeting_location_more">More...</string>
     <string name="create_meeting_future_validation_error">Meeting should be scheduled in the future.</string>
     <string name="create_meeting_save_button">Save</string>
-    <string name="date_picker_ok">OK</string>
-    <string name="date_picker_cancel">Cancel</string>
     <string name="time_picker_title">Select time</string>
     <string name="time_picker_ok">OK</string>
     <string name="time_picker_cancel">Cancel</string>
@@ -783,5 +781,47 @@
     <string name="meeting_votes_in_person">In-person votes</string>
     <string name="meeting_votes_virtual">Virtual votes</string>
     <string name="meeting_votes_total">Total votes</string>
+
+    <!-- MeetingScreen specific -->
+    <string name="meeting_screen_title">Meetings</string>
+    <string name="meeting_screen_description">Schedule and manage your team meetings</string>
+    <string name="meeting_create_meeting">Create meeting</string>
+    <string name="meeting_creation_offline_unavailable">You are offline. Meeting creation is unavailable to prevent sync conflicts.</string>
+    <string name="meeting_saved_to_calendar_success">Successfully saved the event to the calendar!</string>
+    <string name="meeting_saved_to_calendar_failure">There was a problem saving the event to the calendar!</string>
+    <string name="meeting_no_meetings_for_tab">You have no %1$s meetings yet.</string>
+
+    <!-- MeetingCard icons / labels -->
+    <string name="meeting_icon_duration">Duration</string>
+    <string name="meeting_icon_vote">Vote</string>
+    <string name="meeting_icon_schedule">Schedule</string>
+    <string name="meeting_icon_location">Location</string>
+    <string name="meeting_icon_video_call">Video call</string>
+
+    <string name="meeting_vote_datetime_message">Vote for your preferred datetime(s)</string>
+    <string name="meeting_vote_format_message">Vote for your preferred meeting format</string>
+
+    <string name="vote_button_label">Vote</string>
+    <string name="close_votes_button_label">Close votes</string>
+    <string name="directions_button_label">Directions</string>
+    <string name="record_button_label">Record</string>
+    <string name="meeting_add_to_calendar">Add to calendar</string>
+
+    <!-- Self Notes / Selection top bar -->
+    <string name="selfnotes_selection_count">%1$d Selected</string>
+    <string name="cancel_selection_desc">Cancel Selection</string>
+    <string name="edit_note_desc">Edit Note</string>
+    <string name="delete_selected_desc">Delete Selected</string>
+
+    <string name="selfnotes_editing_title">Editing Note</string>
+    <string name="selfnotes_title">Notes</string>
+    <string name="cancel_edit_desc">Cancel Edit</string>
+
+    <string name="selfnotes_storage_cloud">Cloud</string>
+    <string name="selfnotes_storage_local">Local</string>
+
+    <string name="selfnotes_edit_placeholder">Edit your note...</string>
+    <string name="selfnotes_message_placeholder">Write a note to yourself...</string>
+    <string name="selfnotes_empty_state">No notes yet. Start writing!</string>
 </resources>
 

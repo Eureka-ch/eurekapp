@@ -245,7 +245,7 @@ fun CreateMeetingContent(
         config =
             SingleChoiceInputFieldConfig(
                 currentValue = uiState.duration,
-                displayValue = { d -> LocalContext.current.getString(R.string.create_meeting_duration_option, d) },
+                displayValue = { d -> "$d minutes" },
                 label = stringResource(R.string.create_meeting_duration_label),
                 placeholder = stringResource(R.string.create_meeting_duration_placeholder),
                 icon = Icons.Default.HourglassTop,
