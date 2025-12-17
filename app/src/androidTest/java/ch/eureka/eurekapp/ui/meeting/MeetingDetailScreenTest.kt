@@ -210,13 +210,18 @@ class MeetingDetailScreenTest {
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_TITLE).assertIsDisplayed()
     composeTestRule.onNodeWithText(meeting.title).assertIsDisplayed()
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_STATUS).assertIsDisplayed()
-
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_DATETIME).assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_FORMAT).assertIsDisplayed()
+    // Verify the meeting link exists (it's a VIRTUAL meeting with a link)
+    assert(meeting.format == MeetingFormat.VIRTUAL && meeting.link != null)
 
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_LINK).assertIsDisplayed()
-    composeTestRule.onNodeWithText(meeting.link!!).assertIsDisplayed()
+    // Scroll to bring meeting link into view using onNodeWithText and useUnmergedTree
+    composeTestRule.onNodeWithText("Meeting Link", useUnmergedTree = true).performScrollTo()
+
+    // Now MEETING_LINK should be visible
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.MEETING_LINK, useUnmergedTree = true)
+        .assertIsDisplayed()
   }
 
   @Test
@@ -584,7 +589,7 @@ class MeetingDetailScreenTest {
 
   @Test
   fun meetingDetailScreen_editButtonIsDisplayedForScheduledMeeting() {
-    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
+    val meeting = MeetingProvider.sampleMeetings[2] // SCHEDULED IN_PERSON meeting with datetime
     meetingFlow.value = meeting
     userFlow.value = null
 
@@ -599,12 +604,15 @@ class MeetingDetailScreenTest {
 
   @Test
   fun meetingDetailScreen_editModeDisplaysSaveAndCancelButtons() {
-    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
+    val meeting = MeetingProvider.sampleMeetings[2] // SCHEDULED IN_PERSON meeting
     meetingFlow.value = meeting
     userFlow.value = null
 
     setContent()
     composeTestRule.waitForIdle()
+
+    // Verify meeting loaded
+    composeTestRule.onNodeWithText(meeting.title).assertIsDisplayed()
 
     // Click edit button
     composeTestRule
@@ -613,15 +621,15 @@ class MeetingDetailScreenTest {
         .performClick()
     composeTestRule.waitForIdle()
 
-    // Verify edit mode buttons appear
+    // Verify edit mode buttons appear - scroll to them individually
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.SAVE_BUTTON)
         .performScrollTo()
-        .assertIsDisplayed()
+        .assertExists()
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.CANCEL_EDIT_BUTTON)
         .performScrollTo()
-        .assertIsDisplayed()
+        .assertExists()
 
     // Verify edit button is hidden
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).assertDoesNotExist()
@@ -629,7 +637,7 @@ class MeetingDetailScreenTest {
 
   @Test
   fun meetingDetailScreen_editModeDisplaysEditableFields() {
-    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
+    val meeting = MeetingProvider.sampleMeetings[2] // SCHEDULED IN_PERSON meeting with datetime
     meetingFlow.value = meeting
     userFlow.value = null
 
@@ -654,7 +662,7 @@ class MeetingDetailScreenTest {
 
   @Test
   fun meetingDetailScreen_cancelButtonExitsEditModeAndRestoresView() {
-    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
+    val meeting = MeetingProvider.sampleMeetings[2] // SCHEDULED IN_PERSON meeting with datetime
     meetingFlow.value = meeting
     userFlow.value = null
 
@@ -671,12 +679,17 @@ class MeetingDetailScreenTest {
     // Verify in edit mode
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.SAVE_BUTTON).assertExists()
 
-    // Click cancel (scroll to it first as it's at the end of the screen)
+    // Click cancel
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.CANCEL_EDIT_BUTTON)
         .performScrollTo()
         .performClick()
     composeTestRule.waitForIdle()
+
+    // Scroll to action buttons section to see the edit button
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.ACTION_BUTTONS_SECTION)
+        .performScrollTo()
 
     // Verify back in view mode
     composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).assertIsDisplayed()
@@ -688,7 +701,7 @@ class MeetingDetailScreenTest {
 
   @Test
   fun meetingDetailScreen_editModeHidesActionButtons() {
-    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
+    val meeting = MeetingProvider.sampleMeetings[2] // SCHEDULED IN_PERSON meeting with datetime
     meetingFlow.value = meeting
     userFlow.value = null
 
@@ -713,7 +726,7 @@ class MeetingDetailScreenTest {
 
   @Test
   fun meetingDetailScreen_editModePreservesOriginalMeetingData() {
-    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting with datetime
+    val meeting = MeetingProvider.sampleMeetings[2] // SCHEDULED IN_PERSON meeting with datetime
     meetingFlow.value = meeting
     userFlow.value = null
 
@@ -726,19 +739,27 @@ class MeetingDetailScreenTest {
         .performScrollTo()
         .performClick()
     composeTestRule.waitForIdle()
+
+    // Scroll down to see cancel button area, then click cancel
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.CANCEL_EDIT_BUTTON)
         .performScrollTo()
         .performClick()
     composeTestRule.waitForIdle()
 
-    // Verify original meeting title is still displayed
-    composeTestRule.onNodeWithText(meeting.title).assertIsDisplayed()
+    // Scroll to action buttons section to see the edit button
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.ACTION_BUTTONS_SECTION)
+        .performScrollTo()
+
+    // Verify we're back in view mode and original title is displayed
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON).assertExists()
+    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.MEETING_TITLE).assertIsDisplayed()
   }
 
   @Test
   fun meetingDetailScreen_editModePastDateShowsErrorMessage() {
-    val meeting = MeetingProvider.sampleMeetings[1] // SCHEDULED meeting
+    val meeting = MeetingProvider.sampleMeetings[2] // SCHEDULED IN_PERSON meeting
     meetingFlow.value = meeting
     userFlow.value = null
 
@@ -798,6 +819,71 @@ class MeetingDetailScreenTest {
         .onNodeWithTag(MeetingDetailScreenTestTags.VOTE_FOR_MEETING_PROPOSAL_BUTTON)
         .assertIsDisplayed()
   }
+
+  // ========== Meeting Link Tests ==========
+
+  @Test
+  fun editMode_editableLinkFieldDisplayedForVirtualMeetingOnly() {
+    val virtualMeeting =
+        MeetingProvider.sampleMeetings.first {
+          it.status == MeetingStatus.SCHEDULED &&
+              it.format == MeetingFormat.VIRTUAL &&
+              it.link != null
+        }
+    meetingFlow.value = virtualMeeting
+    userFlow.value = null
+    setContent()
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON)
+        .performScrollTo()
+        .performClick()
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.EDITABLE_LINK_FIELD)
+        .performScrollTo()
+        .assertIsDisplayed()
+    composeTestRule.onNodeWithText(virtualMeeting.link!!).assertIsDisplayed()
+  }
+
+  @Test
+  fun editMode_linkValidationAndErrorDisplay() {
+    val meeting =
+        MeetingProvider.sampleMeetings.first {
+          it.status == MeetingStatus.SCHEDULED &&
+              it.format == MeetingFormat.VIRTUAL &&
+              it.link != null
+        }
+    meetingFlow.value = meeting
+    userFlow.value = null
+    setContent()
+    composeTestRule.waitForIdle()
+
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.EDIT_BUTTON)
+        .performScrollTo()
+        .performClick()
+    composeTestRule.waitForIdle()
+
+    // Invalid link WITHOUT touching - no error shown
+    composeTestRule.runOnIdle { viewModel.updateEditLink("invalid-url") }
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("Invalid URL format").assertDoesNotExist()
+
+    // Touch field - error NOW shown
+    composeTestRule.runOnIdle { viewModel.touchLink() }
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("Invalid URL format").performScrollTo().assertIsDisplayed()
+
+    // Fix to valid link - error cleared
+    composeTestRule.runOnIdle { viewModel.updateEditLink("https://zoom.us/j/9999999999") }
+    composeTestRule.waitForIdle()
+    composeTestRule.onNodeWithText("Invalid URL format").assertDoesNotExist()
+  }
+
+  // ========== Creator Section Tests ==========
 
   @Test
   fun creatorSectionDisplaysWhenUserFound() {
@@ -887,6 +973,7 @@ class MeetingDetailScreenTest {
 
     composeTestRule
         .onNodeWithTag(MeetingDetailScreenTestTags.START_MEETING_BUTTON)
+        .performScrollTo()
         .assertIsDisplayed()
   }
 
@@ -1059,7 +1146,10 @@ class MeetingDetailScreenTest {
 
     composeTestRule.waitForIdle()
 
-    composeTestRule.onNodeWithTag(MeetingDetailScreenTestTags.START_MEETING_BUTTON).performClick()
+    composeTestRule
+        .onNodeWithTag(MeetingDetailScreenTestTags.START_MEETING_BUTTON)
+        .performScrollTo()
+        .performClick()
 
     composeTestRule.waitForIdle()
 

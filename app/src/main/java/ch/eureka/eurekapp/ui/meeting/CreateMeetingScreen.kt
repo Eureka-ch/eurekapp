@@ -7,6 +7,7 @@ package ch.eureka.eurekapp.ui.meeting
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -23,7 +25,9 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.HourglassTop
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.VideoCall
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
@@ -66,6 +70,7 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
+import ch.eureka.eurekapp.utils.MeetingPlatform
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -86,6 +91,9 @@ object CreateMeetingScreenTestTags {
   const val INPUT_MEETING_TIME = "InputMeetingTime"
   const val INPUT_MEETING_DURATION = "InputMeetingDuration"
   const val INPUT_FORMAT = "InputFormat"
+  const val INPUT_MEETING_LINK = "InputMeetingLink"
+  const val MEETING_LINK_WARNING = "MeetingLinkWarning"
+  const val PLATFORM_ICON = "PlatformIcon"
   const val CREATE_MEETING_BUTTON = "CreateMeetingButton"
   const val INPUT_MEETING_LOCATION = "InputMeetingLocation"
   const val LOCATION_SUGGESTION = "LocationSuggestion"
@@ -108,6 +116,8 @@ const val SPACING = 8
  * @property onTimeTouched Callback when the time field is clicked.
  * @property onDurationSelected Callback when a duration is selected.
  * @property onFormatSelected Callback when a meeting format is selected.
+ * @property onLinkChange Callback when the meeting link text changes.
+ * @property onLinkTouch Callback when the link field is focused/touched.
  * @property onLocationQueryChange Callback when the location search query changes.
  * @property onLocationSelected Callback when a specific location is selected from suggestions.
  * @property onPickLocationOnMap Callback when the user clicks the map icon to pick a location.
@@ -122,6 +132,8 @@ data class CreateMeetingActions(
     val onTimeTouched: () -> Unit,
     val onDurationSelected: (Int) -> Unit,
     val onFormatSelected: (MeetingFormat) -> Unit,
+    val onLinkChange: (String) -> Unit,
+    val onLinkTouch: () -> Unit,
     val onLocationQueryChange: (String) -> Unit,
     val onLocationSelected: (Location) -> Unit,
     val onPickLocationOnMap: () -> Unit,
@@ -173,6 +185,8 @@ fun CreateMeetingScreen(
           onTimeTouched = createMeetingViewModel::touchTime,
           onDurationSelected = createMeetingViewModel::setDuration,
           onFormatSelected = createMeetingViewModel::setFormat,
+          onLinkChange = createMeetingViewModel::setMeetingLink,
+          onLinkTouch = createMeetingViewModel::touchLink,
           onLocationQueryChange = createMeetingViewModel::setLocationQuery,
           onLocationSelected = createMeetingViewModel::setLocation,
           onPickLocationOnMap = onPickLocationOnMap,
@@ -208,92 +222,122 @@ fun CreateMeetingContent(
     uiState: CreateMeetingUIState,
     actions: CreateMeetingActions
 ) {
-  Column(modifier = modifier.fillMaxSize().padding(10.dp)) {
-    CreateMeetingHeader()
+  LazyColumn(modifier = modifier.fillMaxSize(), contentPadding = PaddingValues(10.dp)) {
+    item { CreateMeetingHeader() }
 
-    Spacer(Modifier.height((2 * SPACING).dp))
+    item { Spacer(Modifier.height((2 * SPACING).dp)) }
 
-    TitleInputSection(
-        title = uiState.title,
-        hasTouchedTitle = uiState.hasTouchedTitle,
-        onTitleChange = actions.onTitleChange,
-        onTitleTouch = actions.onTitleTouch)
+    item {
+      TitleInputSection(
+          title = uiState.title,
+          hasTouchedTitle = uiState.hasTouchedTitle,
+          onTitleChange = actions.onTitleChange,
+          onTitleTouch = actions.onTitleTouch)
+    }
 
-    Spacer(Modifier.height(SPACING.dp))
+    item { Spacer(Modifier.height(SPACING.dp)) }
 
-    DateInputField(
-        selectedDate = uiState.date,
-        label = stringResource(R.string.create_meeting_date_label),
-        placeHolder = stringResource(R.string.create_meeting_date_placeholder),
-        tag = CreateMeetingScreenTestTags.INPUT_MEETING_DATE,
-        onDateSelected = actions.onDateSelected,
-        onDateTouched = actions.onDateTouched)
+    item {
+      DateInputField(
+          selectedDate = uiState.date,
+          label = stringResource(R.string.create_meeting_date_label),
+          placeHolder = stringResource(R.string.create_meeting_date_placeholder),
+          tag = CreateMeetingScreenTestTags.INPUT_MEETING_DATE,
+          onDateSelected = actions.onDateSelected,
+          onDateTouched = actions.onDateTouched)
+    }
 
-    Spacer(Modifier.height(SPACING.dp))
+    item { Spacer(Modifier.height(SPACING.dp)) }
 
-    TimeInputField(
-        selectedTime = uiState.time,
-        label = stringResource(R.string.create_meeting_time_label),
-        placeHolder = stringResource(R.string.create_meeting_time_placeholder),
-        tag = CreateMeetingScreenTestTags.INPUT_MEETING_TIME,
-        onTimeSelected = actions.onTimeSelected,
-        onTimeTouched = actions.onTimeTouched)
+    item {
+      TimeInputField(
+          selectedTime = uiState.time,
+          label = stringResource(R.string.create_meeting_time_label),
+          placeHolder = stringResource(R.string.create_meeting_time_placeholder),
+          tag = CreateMeetingScreenTestTags.INPUT_MEETING_TIME,
+          onTimeSelected = actions.onTimeSelected,
+          onTimeTouched = actions.onTimeTouched)
+    }
 
-    Spacer(Modifier.height(SPACING.dp))
+    item { Spacer(Modifier.height(SPACING.dp)) }
 
-    SingleChoiceInputField(
-        config =
-            SingleChoiceInputFieldConfig(
-                currentValue = uiState.duration,
-                displayValue = { d -> "$d minutes" },
-                label = stringResource(R.string.create_meeting_duration_label),
-                placeholder = stringResource(R.string.create_meeting_duration_placeholder),
-                icon = Icons.Default.HourglassTop,
-                iconDescription = stringResource(R.string.create_meeting_duration_placeholder),
-                alertDialogTitle = stringResource(R.string.create_meeting_duration_dialog_title),
-                options = listOf(5, 10, 15, 20, 30, 45, 60),
-                tag = CreateMeetingScreenTestTags.INPUT_MEETING_DURATION,
-                onOptionSelected = actions.onDurationSelected))
+    item {
+      SingleChoiceInputField(
+          config =
+              SingleChoiceInputFieldConfig(
+                  currentValue = uiState.duration,
+                  displayValue = { d -> "$d minutes" },
+                  label = stringResource(R.string.create_meeting_duration_label),
+                  placeholder = stringResource(R.string.create_meeting_duration_placeholder),
+                  icon = Icons.Default.HourglassTop,
+                  iconDescription = stringResource(R.string.create_meeting_duration_placeholder),
+                  alertDialogTitle = stringResource(R.string.create_meeting_duration_dialog_title),
+                  options = listOf(5, 10, 15, 20, 30, 45, 60),
+                  tag = CreateMeetingScreenTestTags.INPUT_MEETING_DURATION,
+                  onOptionSelected = actions.onDurationSelected))
+    }
 
-    Spacer(Modifier.height(SPACING.dp))
+    item { Spacer(Modifier.height(SPACING.dp)) }
 
-    SingleChoiceInputField(
-        config =
-            SingleChoiceInputFieldConfig(
-                currentValue = uiState.format,
-                displayValue = { f -> f.description },
-                label = stringResource(R.string.create_meeting_format_label),
-                placeholder = stringResource(R.string.create_meeting_format_placeholder),
-                icon = Icons.Default.Description,
-                iconDescription = stringResource(R.string.create_meeting_format_placeholder),
-                alertDialogTitle = stringResource(R.string.create_meeting_format_dialog_title),
-                options = listOf(MeetingFormat.IN_PERSON, MeetingFormat.VIRTUAL),
-                tag = CreateMeetingScreenTestTags.INPUT_FORMAT,
-                onOptionSelected = actions.onFormatSelected))
+    item {
+      SingleChoiceInputField(
+          config =
+              SingleChoiceInputFieldConfig(
+                  currentValue = uiState.format,
+                  displayValue = { f -> f.description },
+                  label = stringResource(R.string.create_meeting_format_label),
+                  placeholder = stringResource(R.string.create_meeting_format_placeholder),
+                  icon = Icons.Default.Description,
+                  iconDescription = stringResource(R.string.create_meeting_format_placeholder),
+                  alertDialogTitle = stringResource(R.string.create_meeting_format_dialog_title),
+                  options = listOf(MeetingFormat.IN_PERSON, MeetingFormat.VIRTUAL),
+                  tag = CreateMeetingScreenTestTags.INPUT_FORMAT,
+                  onOptionSelected = actions.onFormatSelected))
+    }
 
-    LocationInputSection(
-        format = uiState.format,
-        locationQuery = uiState.locationQuery,
-        locationSuggestions = uiState.locationSuggestions,
-        onLocationQueryChange = actions.onLocationQueryChange,
-        onLocationSelected = actions.onLocationSelected,
-        onPickLocationOnMap = actions.onPickLocationOnMap)
+    item {
+      MeetingLinkInputSection(
+          format = uiState.format,
+          linkState =
+              MeetingLinkState(
+                  meetingLink = uiState.meetingLink,
+                  linkValidationError = uiState.linkValidationError,
+                  linkValidationWarning = uiState.linkValidationWarning,
+                  hasTouchedLink = uiState.hasTouchedLink,
+                  detectedPlatform = uiState.detectedPlatform),
+          onLinkChange = actions.onLinkChange,
+          onLinkTouch = actions.onLinkTouch)
+    }
 
-    Spacer(Modifier.height(SPACING.dp))
+    item {
+      LocationInputSection(
+          format = uiState.format,
+          locationQuery = uiState.locationQuery,
+          locationSuggestions = uiState.locationSuggestions,
+          onLocationQueryChange = actions.onLocationQueryChange,
+          onLocationSelected = actions.onLocationSelected,
+          onPickLocationOnMap = actions.onPickLocationOnMap)
+    }
 
-    TimeValidationMessage(
-        date = uiState.date,
-        time = uiState.time,
-        hasTouchedDate = uiState.hasTouchedDate,
-        hasTouchedTime = uiState.hasTouchedTime)
+    item { Spacer(Modifier.height(SPACING.dp)) }
 
-    Button(
-        onClick = actions.onSave,
-        modifier =
-            Modifier.fillMaxWidth().testTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON),
-        enabled = uiState.isValid) {
+    item {
+      TimeValidationMessage(
+          date = uiState.date,
+          time = uiState.time,
+          hasTouchedDate = uiState.hasTouchedDate,
+          hasTouchedTime = uiState.hasTouchedTime)
+    }
+
+    item {
+      Button(
+          onClick = actions.onSave,
+          modifier =
+              Modifier.fillMaxWidth().testTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON),
+          enabled = uiState.isValid) {
           Text(stringResource(R.string.create_meeting_save_button))
-        }
+          }
+    }
   }
 }
 
@@ -379,6 +423,107 @@ fun LocationInputSection(
         selectLocationQuery = onLocationQueryChange,
         selectLocation = onLocationSelected,
         onPickLocationOnMap = onPickLocationOnMap)
+  }
+}
+
+/**
+ * Data class to hold meeting link input state.
+ *
+ * @param meetingLink The current meeting link URL.
+ * @param linkValidationError The validation error message, null if valid.
+ * @param linkValidationWarning The validation warning message, null if no warning.
+ * @param hasTouchedLink Whether the user has interacted with this field.
+ * @param detectedPlatform The detected meeting platform from the link.
+ */
+data class MeetingLinkState(
+    val meetingLink: String?,
+    val linkValidationError: String?,
+    val linkValidationWarning: String?,
+    val hasTouchedLink: Boolean,
+    val detectedPlatform: MeetingPlatform
+)
+
+/**
+ * Composable that conditionally displays the meeting link input field if the format is VIRTUAL.
+ *
+ * @param format The currently selected meeting format.
+ * @param linkState The state containing link data and validation.
+ * @param onLinkChange Callback when the link text changes.
+ * @param onLinkTouch Callback when the field gains focus.
+ */
+@Composable
+fun MeetingLinkInputSection(
+    format: MeetingFormat,
+    linkState: MeetingLinkState,
+    onLinkChange: (String) -> Unit,
+    onLinkTouch: () -> Unit
+) {
+  if (format != MeetingFormat.VIRTUAL) return
+
+  val showError = linkState.linkValidationError != null && linkState.hasTouchedLink
+  val showPlatform =
+      linkState.detectedPlatform != MeetingPlatform.UNKNOWN &&
+          !linkState.meetingLink.isNullOrBlank()
+
+  Spacer(Modifier.height(SPACING.dp))
+
+  OutlinedTextField(
+      value = linkState.meetingLink ?: "",
+      onValueChange = onLinkChange,
+      label = { Text("Meeting Link") },
+      placeholder = { Text("https://zoom.us/j/...") },
+      leadingIcon = {
+        Icon(
+            imageVector =
+                when (linkState.detectedPlatform) {
+                  MeetingPlatform.ZOOM,
+                  MeetingPlatform.GOOGLE_MEET,
+                  MeetingPlatform.MICROSOFT_TEAMS,
+                  MeetingPlatform.WEBEX -> Icons.Default.VideoCall
+                  MeetingPlatform.UNKNOWN -> Icons.Default.Link
+                },
+            contentDescription = "Meeting link icon",
+            modifier = Modifier.testTag(CreateMeetingScreenTestTags.PLATFORM_ICON))
+      },
+      isError = showError,
+      modifier =
+          Modifier.fillMaxWidth()
+              .testTag(CreateMeetingScreenTestTags.INPUT_MEETING_LINK)
+              .onFocusChanged { focusState ->
+                if (focusState.isFocused) {
+                  onLinkTouch()
+                }
+              })
+
+  // Show error message if validation failed
+  linkState.linkValidationError?.let { errorMessage ->
+    if (linkState.hasTouchedLink) {
+      Text(
+          text = errorMessage,
+          color = Color.Red,
+          style = MaterialTheme.typography.bodySmall,
+          modifier = Modifier.testTag(CreateMeetingScreenTestTags.ERROR_MSG))
+    }
+  }
+
+  // Show warning message for non-whitelisted domains
+  linkState.linkValidationWarning?.let { warningMessage ->
+    if (linkState.hasTouchedLink && linkState.linkValidationError == null) {
+      Text(
+          text = warningMessage,
+          color = MaterialTheme.colorScheme.secondary,
+          style = MaterialTheme.typography.bodySmall,
+          modifier = Modifier.testTag(CreateMeetingScreenTestTags.MEETING_LINK_WARNING))
+    }
+  }
+
+  // Show detected platform name
+  if (showPlatform) {
+    Spacer(Modifier.height(4.dp))
+    Text(
+        text = "Platform: ${linkState.detectedPlatform.displayName}",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.primary)
   }
 }
 

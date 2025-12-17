@@ -91,7 +91,17 @@ fun ProjectSelectionScreen(
     onSeeProjectMembers: (String) -> Unit = {},
     projectSelectionScreenViewModel: ProjectSelectionScreenViewModel = viewModel()
 ) {
-  handleNotificationsPermission()
+
+    val context = LocalContext.current
+    var hasNotificationsPermission by remember {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            mutableStateOf(
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
+                        PackageManager.PERMISSION_GRANTED)
+        } else {
+            mutableStateOf(true)
+        }
+    }
 
   val currentUser =
       remember { projectSelectionScreenViewModel.getCurrentUser() }.collectAsState(null)
@@ -100,6 +110,25 @@ fun ProjectSelectionScreen(
       remember { projectSelectionScreenViewModel.getProjectsForUser() }.collectAsState(listOf())
 
   val listState = rememberLazyListState()
+
+    val launcher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
+                isGranted ->
+            hasNotificationsPermission = isGranted
+            if (isGranted) {
+                Toast.makeText(context, "Notifications permission granted!", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(
+                    context, "You will not be able to receive notifications!", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
+
+    LaunchedEffect(Unit) {
+        if (!hasNotificationsPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
   Scaffold(
       topBar = { EurekaTopBar(title = stringResource(R.string.project_selection_title)) },
@@ -126,43 +155,100 @@ fun ProjectSelectionScreen(
       })
 }
 
+
+/** Data class to group project selection actions and reduce parameter count. */
+data class ProjectSelectionActions(
+    val onCreateProjectRequest: () -> Unit,
+    val onInputTokenRequest: () -> Unit,
+    val onGenerateInviteRequest: (String) -> Unit,
+    val onSeeProjectMembers: (String) -> Unit
+)
+
 @Composable
-private fun handleNotificationsPermission() {
-  val context = LocalContext.current
-  var hasNotificationsPermission by remember {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-      mutableStateOf(
-          ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
-              PackageManager.PERMISSION_GRANTED)
+private fun ProjectSelectionContent(
+    paddingValues: PaddingValues,
+    projects: List<Project>,
+    currentUserId: String?,
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    actions: ProjectSelectionActions,
+    viewModel: ProjectSelectionScreenViewModel
+) {
+  Column(modifier = Modifier.fillMaxSize().padding(paddingValues).background(Color(0xFFF8FAFC))) {
+    ProjectSelectionHeader(
+        onCreateProjectRequest = actions.onCreateProjectRequest,
+        onInputTokenRequest = actions.onInputTokenRequest)
+
+    if (projects.isEmpty()) {
+      EmptyProjectsState()
     } else {
-      mutableStateOf(true)
-    }
-  }
-
-  val launcher =
-      rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
-          isGranted ->
-        hasNotificationsPermission = isGranted
-        if (isGranted) {
-          Toast.makeText(context, "Notifications permission granted!", Toast.LENGTH_SHORT).show()
-        } else {
-          Toast.makeText(
-                  context, "You will not be able to receive notifications!", Toast.LENGTH_SHORT)
-              .show()
-        }
-      }
-
-  LaunchedEffect(Unit) {
-    if (!hasNotificationsPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-      launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+      LazyColumn(
+          state = listState,
+          modifier = Modifier.fillMaxSize(),
+          contentPadding = PaddingValues(horizontal = Spacing.lg),
+          verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+            items(projects) { project ->
+              val projectUsers =
+                  viewModel.getProjectUsersInformation(project.projectId).collectAsState(listOf())
+              ProjectSummaryCard(
+                  project = project,
+                  onClick = { actions.onSeeProjectMembers(project.projectId) },
+                  memberCount = projectUsers.value.size,
+                  actionButton = {
+                    ProjectCardActions(
+                        projectId = project.projectId,
+                        isOwner = currentUserId == project.createdBy,
+                        onSeeProjectMembers = actions.onSeeProjectMembers,
+                        onGenerateInviteRequest = actions.onGenerateInviteRequest)
+                  })
+            }
+          }
     }
   }
 }
 
 @Composable
+private fun ProjectCardActions(
+    projectId: String,
+    isOwner: Boolean,
+    onSeeProjectMembers: (String) -> Unit,
+    onGenerateInviteRequest: (String) -> Unit
+) {
+  Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically) {
+        TextButton(
+            onClick = { onSeeProjectMembers(projectId) },
+            modifier =
+                Modifier.testTag(
+                    ProjectSelectionScreenTestTags.getShowMembersButtonTestTag(projectId)),
+            colors =
+                ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)) {
+              Text(
+                  "View Members",
+                  style = MaterialTheme.typography.labelLarge,
+                  fontWeight = FontWeight.SemiBold)
+            }
+        if (isOwner) {
+          IconButton(
+              onClick = { onGenerateInviteRequest(projectId) },
+              modifier =
+                  Modifier.testTag(
+                      ProjectSelectionScreenTestTags.getInviteButtonTestTag(projectId))) {
+                Icon(
+                    imageVector = Icons.Default.PersonAdd,
+                    contentDescription = "Generate Invite",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp))
+              }
+        }
+      }
+}
+
+@Composable
 private fun ProjectSelectionHeader(
     onCreateProjectRequest: () -> Unit,
-    onInputTokenRequest: () -> Unit
+    onInputTokenRequest: () -> Unit,
 ) {
   Column(
       modifier = Modifier.fillMaxWidth().padding(Spacing.lg),

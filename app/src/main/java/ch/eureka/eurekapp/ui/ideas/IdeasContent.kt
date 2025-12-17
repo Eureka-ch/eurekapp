@@ -40,7 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -55,6 +54,7 @@ import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.user.User
 import ch.eureka.eurekapp.ui.components.MessageBubble
 import ch.eureka.eurekapp.ui.components.MessageBubbleState
+import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import coil.compose.AsyncImage
 import kotlinx.coroutines.flow.first
@@ -75,33 +75,17 @@ data class ListState(val ideas: List<Idea>, val onIdeaClick: (Idea) -> Unit)
  * colors: electric blue, neon violet, mint green, hot orange, light red.
  */
 @Composable
-private fun getIdeaBorderGradient(ideaId: String): Brush {
-  // Vibrant colors with light opacity for subtle but visible effect
-  val electricBlue = Color(0xFF00D4FF).copy(alpha = 0.25f) // Bleu électrique
-  val neonViolet = Color(0xFF8B5CF6).copy(alpha = 0.25f) // Violet néon
-  val mintGreen = Color(0xFF00F5A0).copy(alpha = 0.25f) // Vert menthe
-  val hotOrange = Color(0xFFFF6B35).copy(alpha = 0.25f) // Orange chaud
-  val lightRed = Color(0xFFFF6B9D).copy(alpha = 0.25f) // Rouge clair
-
-  val colorSets =
+private fun getIdeaBorderGradient(): Brush {
+  val gradientColors =
       listOf(
-          listOf(electricBlue, neonViolet, mintGreen),
-          listOf(neonViolet, mintGreen, hotOrange),
-          listOf(mintGreen, hotOrange, lightRed),
-          listOf(hotOrange, lightRed, electricBlue),
-          listOf(lightRed, electricBlue, neonViolet),
-          listOf(electricBlue, hotOrange, mintGreen),
-          listOf(neonViolet, lightRed, hotOrange),
-          listOf(mintGreen, electricBlue, lightRed))
-
-  val index = ideaId.hashCode().mod(colorSets.size)
-  val selectedColors = colorSets[if (index < 0) -index else index]
-
-  // Create a linear gradient that gives a rotating effect around the border
+          MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+          MaterialTheme.colorScheme.secondary.copy(alpha = 0.18f),
+          MaterialTheme.colorScheme.tertiary.copy(alpha = 0.16f),
+          EColors.IconBackgroundColor.copy(alpha = 0.24f))
   return Brush.linearGradient(
-      colors = selectedColors,
-      start = androidx.compose.ui.geometry.Offset(0f, 0f),
-      end = androidx.compose.ui.geometry.Offset(1000f, 1000f))
+      colors = gradientColors,
+      start = androidx.compose.ui.geometry.Offset.Zero,
+      end = androidx.compose.ui.geometry.Offset(220f, 220f))
 }
 
 /**
@@ -201,7 +185,7 @@ private fun ParticipantAvatars(
 
 @Composable
 private fun IdeaCard(idea: Idea, onIdeaClick: () -> Unit) {
-  val borderGradient = getIdeaBorderGradient(idea.ideaId)
+  val borderGradient = getIdeaBorderGradient()
 
   // Outer box with gradient border effect
   Box(
@@ -212,7 +196,7 @@ private fun IdeaCard(idea: Idea, onIdeaClick: () -> Unit) {
                   shape = RoundedCornerShape(20.dp),
                   spotColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
               .background(brush = borderGradient, shape = RoundedCornerShape(20.dp))
-              .padding(1.5.dp)) {
+              .padding(2.5.dp)) {
         // Inner card with white background
         Card(
             onClick = onIdeaClick,
