@@ -55,6 +55,12 @@ class EditTaskViewModel(
   private val _uiState = MutableStateFlow(EditTaskState())
   override val uiState: StateFlow<EditTaskState> = _uiState.asStateFlow()
 
+  override fun isCustomDataValid(state: EditTaskState): Boolean {
+    val template = state.selectedTemplate ?: return true
+    val result = state.customData.validate(template.definedFields)
+    return result is ch.eureka.eurekapp.model.data.task.ValidationResult.Success
+  }
+
   init {
     // Load available projects
     loadAvailableProjects()
