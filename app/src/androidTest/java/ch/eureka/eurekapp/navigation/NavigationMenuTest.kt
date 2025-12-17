@@ -57,6 +57,12 @@ class NavigationMenuTest : TestCase() {
       throw IllegalStateException("Firebase Emulator must be running for tests")
     }
 
+    try {
+      FirebaseEmulator.firestore.clearPersistence().await()
+    } catch (_: Exception) {
+      // Ignore if persistence is already cleared or active
+    }
+
     FirebaseEmulator.clearFirestoreEmulator()
     FirebaseEmulator.clearAuthEmulator()
 
@@ -103,9 +109,7 @@ class NavigationMenuTest : TestCase() {
     composeTestRule.setContent { NavigationMenu() }
 
     // Verify HomeOverview is the start destination
-    composeTestRule
-        .onNodeWithTag(ch.eureka.eurekapp.screens.HomeOverviewTestTags.SCREEN)
-        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag(HomeOverviewTestTags.SCREEN).assertIsDisplayed()
 
     composeTestRule.onNodeWithTag(BottomBarNavigationTestTags.PROFILE_SCREEN_BUTTON).performClick()
     composeTestRule.onNodeWithTag(ProfileScreenTestTags.PROFILE_SCREEN).assertIsDisplayed()
@@ -191,7 +195,7 @@ class NavigationMenuTest : TestCase() {
       try {
         composeTestRule.onNodeWithTag(TasksScreenTestTags.TASK_CARD).assertExists()
         true
-      } catch (e: AssertionError) {
+      } catch (_: AssertionError) {
         false
       }
     }
@@ -322,7 +326,7 @@ class NavigationMenuTest : TestCase() {
                 ch.eureka.eurekapp.ui.conversation.ConversationCardTestTags.CONVERSATION_CARD)
             .assertExists()
         true
-      } catch (e: AssertionError) {
+      } catch (_: AssertionError) {
         false
       }
     }
@@ -384,7 +388,7 @@ class NavigationMenuTest : TestCase() {
             .fetchSemanticsNodes()
             .size > 1
         true
-      } catch (e: AssertionError) {
+      } catch (_: AssertionError) {
         false
       }
     }
