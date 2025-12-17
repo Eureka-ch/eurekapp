@@ -36,9 +36,11 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.screens.ProjectStatusDisplay
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
@@ -72,7 +74,9 @@ fun ProjectSummaryCard(
               androidx.compose.material3.ButtonDefaults.textButtonColors(
                   contentColor = MaterialTheme.colorScheme.primary)) {
             Text(
-                "Open →", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+                stringResource(R.string.project_summary_card_open_button),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold)
           }
     },
     actionButtonTestTag: String? = null
@@ -117,7 +121,7 @@ fun ProjectSummaryCard(
                     verticalAlignment = Alignment.Top) {
                       Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = project.name.ifEmpty { "Untitled project" },
+                            text = project.name.ifEmpty { stringResource(R.string.project_summary_card_untitled) },
                             style = MaterialTheme.typography.titleLarge,
                             color = EColors.TitleTextColor,
                             fontWeight = FontWeight.Bold)
@@ -148,7 +152,7 @@ fun ProjectSummaryCard(
                           }
                       Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = project.description.ifEmpty { "No description provided" },
+                            text = project.description.ifEmpty { stringResource(R.string.project_summary_card_no_description) },
                             style = MaterialTheme.typography.bodyMedium,
                             color = EColors.SecondaryTextColor,
                             fontWeight = FontWeight.Medium)
@@ -180,7 +184,7 @@ fun ProjectSummaryCard(
                                       modifier = Modifier.size(16.dp))
                                 }
                             Text(
-                                text = "$memberCount members",
+                                text = stringResource(R.string.project_summary_card_members_count, memberCount),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = EColors.SecondaryTextColor,
                                 fontWeight = FontWeight.SemiBold)

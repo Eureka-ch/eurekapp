@@ -39,8 +39,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.conversation.ConversationMessage
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.DeleteConfirmationDialog
@@ -144,7 +146,7 @@ fun ConversationDetailScreen(
         if (uiState.isEditing) {
           // Contextual top bar for editing mode
           EurekaTopBar(
-              title = "Editing Message",
+              title = stringResource(R.string.conversation_detail_editing_title),
               modifier = Modifier.testTag(ConversationDetailScreenTestTags.EDITING_TOP_BAR),
               navigationIcon = {
                 IconButton(
@@ -153,14 +155,14 @@ fun ConversationDetailScreen(
                         Modifier.testTag(ConversationDetailScreenTestTags.CANCEL_EDIT_BUTTON)) {
                       Icon(
                           Icons.Default.Close,
-                          contentDescription = "Cancel Edit",
+                          contentDescription = stringResource(R.string.conversation_detail_cancel_edit_description),
                           tint = EColors.WhiteTextColor)
                     }
               })
         } else {
           // Standard top bar
           EurekaTopBar(
-              title = uiState.otherMemberNames.joinToString(", ").ifEmpty { "Chat" },
+              title = uiState.otherMemberNames.joinToString(", ").ifEmpty { stringResource(R.string.conversation_detail_chat_default_title) },
               navigationIcon = {
                 BackButton(
                     onClick = onNavigateBack,
@@ -260,12 +262,14 @@ private fun SelectedFileIndicator(
         modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.xs),
         verticalAlignment = Alignment.CenterVertically) {
           Text(
-              text = "Selected file: $selectedFileName",
+              text = stringResource(R.string.conversation_detail_selected_file_prefix) + selectedFileName,
               style = MaterialTheme.typography.bodySmall,
               modifier =
                   Modifier.weight(1f).testTag(ConversationDetailScreenTestTags.SELECTED_FILE_TEXT))
           IconButton(onClick = onClearSelectedFile) {
-            Icon(Icons.Default.Close, contentDescription = "Remove selected file")
+            Icon(
+                Icons.Default.Close,
+                contentDescription = stringResource(R.string.conversation_detail_remove_file_description))
           }
         }
   }
@@ -277,7 +281,7 @@ private fun UploadingIndicator() {
     CircularProgressIndicator(modifier = Modifier.size(16.dp))
     Spacer(modifier = Modifier.width(Spacing.sm))
     Text(
-        "Uploading file...",
+        stringResource(R.string.conversation_detail_uploading_indicator),
         style = MaterialTheme.typography.bodySmall,
         modifier = Modifier.testTag(ConversationDetailScreenTestTags.UPLOADING_TEXT))
   }
@@ -293,7 +297,9 @@ private fun MessageInputRow(
   Row {
     if (!uiState.isEditing) {
       IconButton(onClick = onAttachFile) {
-        Icon(Icons.Default.AttachFile, contentDescription = "Attach file")
+        Icon(
+            Icons.Default.AttachFile,
+            contentDescription = stringResource(R.string.conversation_detail_attach_file_description))
       }
     }
     MessageInputField(
@@ -301,7 +307,7 @@ private fun MessageInputRow(
         onMessageChange = onMessageChange,
         onSend = onSend,
         isSending = uiState.isSending,
-        placeholder = if (uiState.isEditing) "Edit your message..." else "Write a message...",
+        placeholder = if (uiState.isEditing) stringResource(R.string.conversation_detail_edit_placeholder) else stringResource(R.string.conversation_detail_message_placeholder),
         canSend =
             uiState.currentMessage.isNotBlank() ||
                 (!uiState.isEditing && uiState.selectedFileUri != null))
@@ -328,7 +334,7 @@ private fun ConversationContent(
       }
       uiState.messages.isEmpty() -> {
         Text(
-            text = "No messages yet. Start the conversation!",
+            text = stringResource(R.string.conversation_detail_empty_state),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

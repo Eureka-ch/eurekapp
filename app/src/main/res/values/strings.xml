@@ -549,5 +549,82 @@
     <!-- Message Input Field -->
     <string name="message_input_placeholder">Write a message…</string>
     <string name="message_input_send_button">Send</string>
+
+    <!-- Project Summary Card -->
+    <string name="project_summary_card_untitled">Untitled project</string>
+    <string name="project_summary_card_no_description">No description provided</string>
+    <string name="project_summary_card_members_count">%1$d members</string>
+    <string name="project_summary_card_open_button">Open →</string>
+
+    <!-- Conversation List Screen -->
+    <string name="conversation_list_title">Conversations</string>
+    <string name="conversation_list_description">Chat with your project members</string>
+    <string name="conversation_list_offline_message">You are offline. Some features may be unavailable.</string>
+    <string name="conversation_list_empty_state">No conversations yet</string>
+    <string name="conversation_list_empty_hint">Tap + to start a conversation</string>
+    <string name="conversation_list_create_button_description">Create conversation</string>
+
+    <!-- Conversation Detail Screen -->
+    <string name="conversation_detail_editing_title">Editing Message</string>
+    <string name="conversation_detail_cancel_edit_description">Cancel Edit</string>
+    <string name="conversation_detail_chat_default_title">Chat</string>
+    <string name="conversation_detail_empty_state">No messages yet. Start the conversation!</string>
+    <string name="conversation_detail_selected_file_prefix">Selected file: </string>
+    <string name="conversation_detail_remove_file_description">Remove selected file</string>
+    <string name="conversation_detail_uploading_indicator">Uploading file...</string>
+    <string name="conversation_detail_attach_file_description">Attach file</string>
+    <string name="conversation_detail_edit_placeholder">Edit your message...</string>
+    <string name="conversation_detail_message_placeholder">Write a message...</string>
+
+    <!-- Create Conversation Screen -->
+    <string name="create_conversation_title">New Conversation</string>
+    <string name="create_conversation_description">Select a project and a member to start chatting</string>
+    <string name="create_conversation_project_label">Project</string>
+    <string name="create_conversation_project_placeholder">Select a project</string>
+    <string name="create_conversation_member_label">Member</string>
+    <string name="create_conversation_member_placeholder">Select a member</string>
+    <string name="create_conversation_members_selected">%1$d members selected</string>
+    <string name="create_conversation_no_members">No other members in this project</string>
+    <string name="create_conversation_offline_message">You are offline. Cannot create conversations.</string>
+    <string name="create_conversation_button">Create Conversation</string>
+
+    <!-- Ideas Screen -->
+    <string name="ideas_screen_title">Ideas</string>
+    <string name="ideas_create_button_description">Create new idea</string>
+    <string name="ideas_project_selector_placeholder">Select a project</string>
+    <string name="ideas_no_projects_available">No projects available</string>
+    <string name="ideas_empty_state_message">No ideas yet for %1$s</string>
+    <string name="ideas_empty_state_hint">Tap the + button to create your first idea</string>
+    <string name="ideas_select_project_message">Please select a project to start</string>
+
+    <!-- Create Idea Bottom Sheet -->
+    <string name="create_idea_title">Create New Idea</string>
+    <string name="create_idea_title_label">Idea Title (Optional)</string>
+    <string name="create_idea_title_placeholder">Enter a title for your idea...</string>
+    <string name="create_idea_project_label">Project</string>
+    <string name="create_idea_project_placeholder">Select a project</string>
+    <string name="create_idea_project_error">Please select a project</string>
+    <string name="create_idea_no_projects">No projects available</string>
+    <string name="create_idea_participants_label">Add Participants (Optional)</string>
+    <string name="create_idea_no_users">No users available in this project</string>
+    <string name="create_idea_participants_placeholder">Select participants</string>
+    <string name="create_idea_no_participants_selected">No participants selected</string>
+    <string name="create_idea_single_participant_selected">%1$s</string>
+    <string name="create_idea_multiple_participants_selected">%1$d participants selected</string>
+    <string name="create_idea_select_participants_title">Select Participants</string>
+    <string name="create_idea_cancel_button">Cancel</string>
+    <string name="create_idea_create_button">Create</string>
+    <string name="create_idea_ok_button">OK</string>
+
+    <!-- Idea Card -->
+    <string name="idea_card_untitled">Untitled Idea</string>
+    <string name="idea_card_participant_avatar_description">Participant avatar</string>
+    <string name="idea_card_participant_icon_description">Participant icon</string>
+
+    <!-- Idea Conversation Content -->
+    <string name="idea_conversation_back_description">Back to list</string>
+    <string name="idea_conversation_empty_state">No messages yet. Start the conversation!</string>
+    <string name="idea_conversation_messages_list">conversationMessagesList</string>
+
 </resources>
 

@@ -41,10 +41,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.ideas.Idea
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.user.User
@@ -102,7 +104,7 @@ fun CreateIdeaBottomSheet(
                   Modifier.fillMaxWidth().padding(Spacing.md).verticalScroll(rememberScrollState()),
               verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
                 Text(
-                    text = "Create New Idea",
+                    text = stringResource(R.string.create_idea_title),
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.padding(bottom = Spacing.xs))
 
@@ -147,8 +149,8 @@ private fun TitleField(title: String, onTitleChange: (String) -> Unit) {
   OutlinedTextField(
       value = title,
       onValueChange = onTitleChange,
-      label = { Text("Idea Title (Optional)") },
-      placeholder = { Text("Enter a title for your idea...") },
+      label = { Text(stringResource(R.string.create_idea_title_label)) },
+      placeholder = { Text(stringResource(R.string.create_idea_title_placeholder)) },
       modifier = Modifier.fillMaxWidth().testTag(CreateIdeaBottomSheetTestTags.TITLE_FIELD),
       singleLine = true,
       shape = RoundedCornerShape(16.dp),
@@ -165,12 +167,12 @@ private fun ProjectSelector(
   if (availableProjects.isEmpty()) {
     Column {
       Text(
-          text = "Project",
+          text = stringResource(R.string.create_idea_project_label),
           style = MaterialTheme.typography.labelLarge,
           fontWeight = FontWeight.Medium)
       Spacer(modifier = Modifier.height(Spacing.xs))
       Text(
-          text = "No projects available",
+          text = stringResource(R.string.create_idea_no_projects),
           style = MaterialTheme.typography.bodyMedium,
           color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
@@ -186,8 +188,8 @@ private fun ProjectSelector(
                 value = selectedProject?.name ?: "",
                 onValueChange = {},
                 readOnly = true,
-                placeholder = { Text("Select a project") },
-                label = { Text("Project") },
+                placeholder = { Text(stringResource(R.string.create_idea_project_placeholder)) },
+                label = { Text(stringResource(R.string.create_idea_project_label)) },
                 trailingIcon = {
                   ExposedDropdownMenuDefaults.TrailingIcon(expanded = projectDropdownExpanded)
                 },
@@ -211,7 +213,7 @@ private fun ProjectSelector(
           }
       if (selectedProject == null) {
         Text(
-            text = "Please select a project",
+            text = stringResource(R.string.create_idea_project_error),
             color = MaterialTheme.colorScheme.error,
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(top = Spacing.xs))
@@ -240,23 +242,23 @@ private fun ParticipantsSelector(
   val selectedCount = selectedParticipantIds.size
   val displayText =
       when {
-        selectedCount == 0 -> "No participants selected"
+        selectedCount == 0 -> stringResource(R.string.create_idea_no_participants_selected)
         selectedCount == 1 -> {
           val user = availableUsers.firstOrNull { it.uid == selectedParticipantIds.first() }
-          user?.displayName?.ifBlank { user.email } ?: "1 participant selected"
+          user?.displayName?.ifBlank { user.email } ?: stringResource(R.string.create_idea_single_participant_selected, "1")
         }
-        else -> "$selectedCount participants selected"
+        else -> stringResource(R.string.create_idea_multiple_participants_selected, selectedCount)
       }
 
   Column {
     Text(
-        text = "Add Participants (Optional)",
+        text = stringResource(R.string.create_idea_participants_label),
         style = MaterialTheme.typography.labelLarge,
         fontWeight = FontWeight.Medium)
     Spacer(modifier = Modifier.height(Spacing.xs))
     if (availableUsers.isEmpty()) {
       Text(
-          text = "No users available in this project",
+          text = stringResource(R.string.create_idea_no_users),
           style = MaterialTheme.typography.bodyMedium,
           color = MaterialTheme.colorScheme.onSurfaceVariant)
     } else {
@@ -309,14 +311,14 @@ private fun ParticipantsSelectionModal(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically) {
                       Text(
-                          text = "Select Participants",
+                          text = stringResource(R.string.create_idea_select_participants_title),
                           style = MaterialTheme.typography.titleLarge,
                           fontWeight = FontWeight.Bold)
                       Button(
                           onClick = onDismiss,
                           colors = EurekaStyles.primaryButtonColors(),
                           shape = RoundedCornerShape(12.dp)) {
-                            Text("OK")
+                            Text(stringResource(R.string.create_idea_ok_button))
                           }
                     }
                 Spacer(modifier = Modifier.height(Spacing.md))
@@ -362,7 +364,7 @@ private fun ActionButtons(
             modifier = Modifier.weight(1f).testTag(CreateIdeaBottomSheetTestTags.CANCEL_BUTTON),
             shape = RoundedCornerShape(16.dp),
             colors = EurekaStyles.outlinedButtonColors()) {
-              Text("Cancel")
+              Text(stringResource(R.string.create_idea_cancel_button))
             }
 
         Button(
@@ -381,7 +383,7 @@ private fun ActionButtons(
                 CircularProgressIndicator(
                     color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
               } else {
-                Text("Create", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.create_idea_create_button), fontWeight = FontWeight.Bold)
               }
             }
       }

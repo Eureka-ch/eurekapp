@@ -66,6 +66,7 @@ guava = "31.1-android"
 coroutinesPlayServices = "1.7.3"
 ui = "1.9.4"
 firebaseMessaging = "25.0.1"
+uiText = "1.10.0"
 
 [libraries]
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
@@ -151,6 +152,7 @@ androidx-room-testing = { group = "androidx.room", name = "room-testing", versio
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebaseMessaging" }
+androidx-compose-ui-text = { group = "androidx.compose.ui", name = "ui-text", version.ref = "uiText" }
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

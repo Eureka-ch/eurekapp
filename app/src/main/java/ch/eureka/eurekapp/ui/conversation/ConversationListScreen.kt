@@ -36,8 +36,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
@@ -90,7 +92,7 @@ fun ConversationListScreen(
 
   Scaffold(
       modifier = Modifier.testTag(ConversationListScreenTestTags.SCREEN),
-      topBar = { EurekaTopBar(title = "Conversations") },
+      topBar = { EurekaTopBar(title = stringResource(R.string.conversation_list_title)) },
       floatingActionButton = {
         // FAB to create new conversation
         FloatingActionButton(
@@ -100,7 +102,9 @@ fun ConversationListScreen(
             containerColor =
                 if (uiState.isConnected) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.surfaceVariant) {
-              Icon(imageVector = Icons.Default.Add, contentDescription = "Create conversation")
+              Icon(
+                  imageVector = Icons.Default.Add,
+                  contentDescription = stringResource(R.string.conversation_list_create_button_description))
             }
       }) { padding ->
         Column(
@@ -108,7 +112,7 @@ fun ConversationListScreen(
               // Screen description
               Spacer(modifier = Modifier.height(Spacing.md))
               Text(
-                  text = "Chat with your project members",
+                  text = stringResource(R.string.conversation_list_description),
                   style = MaterialTheme.typography.bodyMedium,
                   color = EColors.SecondaryTextColor,
                   modifier = Modifier.testTag(ConversationListScreenTestTags.DESCRIPTION))
@@ -118,7 +122,7 @@ fun ConversationListScreen(
               // Offline warning message
               if (!uiState.isConnected) {
                 Text(
-                    text = "You are offline. Some features may be unavailable.",
+                    text = stringResource(R.string.conversation_list_offline_message),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error,
                     modifier =
@@ -144,14 +148,14 @@ fun ConversationListScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center) {
                           Text(
-                              text = "No conversations yet",
+                              text = stringResource(R.string.conversation_list_empty_state),
                               style = MaterialTheme.typography.titleMedium,
                               color = EColors.SecondaryTextColor,
                               modifier =
                                   Modifier.testTag(ConversationListScreenTestTags.EMPTY_STATE))
                           Spacer(modifier = Modifier.height(Spacing.xs))
                           Text(
-                              text = "Tap + to start a conversation",
+                              text = stringResource(R.string.conversation_list_empty_hint),
                               style = MaterialTheme.typography.bodyMedium,
                               color = EColors.SecondaryTextColor)
                         }

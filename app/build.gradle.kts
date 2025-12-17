@@ -187,6 +187,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.androidx.compose.ui)
     implementation(libs.firebase.messaging)
+    implementation(libs.androidx.compose.ui.text)
 
     // Jetpack Compose BOM (manages versions)
     val composeBom = platform(libs.compose.bom)

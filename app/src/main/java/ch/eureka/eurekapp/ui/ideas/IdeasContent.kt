@@ -43,9 +43,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.ideas.Idea
@@ -111,7 +113,7 @@ private fun ParticipantAvatar(photoUrl: String, modifier: Modifier = Modifier) {
   if (photoUrl.isNotEmpty()) {
     AsyncImage(
         model = photoUrl,
-        contentDescription = "Participant avatar",
+        contentDescription = stringResource(R.string.idea_card_participant_avatar_description),
         modifier =
             modifier
                 .size(24.dp)
@@ -131,7 +133,7 @@ private fun ParticipantAvatar(photoUrl: String, modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center) {
           Icon(
               imageVector = Icons.Default.Person,
-              contentDescription = "Participant icon",
+              contentDescription = stringResource(R.string.idea_card_participant_icon_description),
               modifier = Modifier.size(14.dp),
               tint = MaterialTheme.colorScheme.onPrimaryContainer)
         }
@@ -226,7 +228,7 @@ private fun IdeaCard(idea: Idea, onIdeaClick: () -> Unit) {
                   verticalAlignment = Alignment.CenterVertically) {
                     Column(modifier = Modifier.weight(1f)) {
                       Text(
-                          text = idea.title ?: "Untitled Idea",
+                          text = idea.title ?: stringResource(R.string.idea_card_untitled),
                           style = MaterialTheme.typography.titleMedium,
                           fontWeight = FontWeight.SemiBold)
                       if (idea.content != null) {
@@ -270,7 +272,7 @@ fun IdeasContent(
       }
       selectedProject == null -> {
         Text(
-            text = "Please select a project to start",
+            text = stringResource(R.string.ideas_select_project_message),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -307,12 +309,12 @@ private fun IdeasListContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center) {
           Text(
-              text = "No ideas yet for ${selectedProject?.name ?: "this project"}",
+              text = stringResource(R.string.ideas_empty_state_message, selectedProject?.name ?: "this project"),
               style = MaterialTheme.typography.bodyLarge,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
               textAlign = TextAlign.Center)
           Text(
-              text = "Tap the + button to create your first idea",
+              text = stringResource(R.string.ideas_empty_state_hint),
               style = MaterialTheme.typography.bodyMedium,
               color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
               textAlign = TextAlign.Center,
@@ -345,11 +347,11 @@ private fun IdeaConversationContent(
           IconButton(onClick = onBackToList, modifier = Modifier.testTag("backToListButton")) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back to list")
+                contentDescription = stringResource(R.string.idea_conversation_back_description))
           }
           Column(modifier = Modifier.weight(1f).padding(start = Spacing.sm)) {
             Text(
-                text = idea.title ?: "Untitled Idea",
+                text = idea.title ?: stringResource(R.string.idea_card_untitled),
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 1)
             if (idea.content != null) {
@@ -366,7 +368,7 @@ private fun IdeaConversationContent(
     if (messages.isEmpty()) {
       Box(modifier = Modifier.fillMaxSize().testTag("emptyConversation")) {
         Text(
-            text = "No messages yet. Start the conversation!",
+            text = stringResource(R.string.idea_conversation_empty_state),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -375,7 +377,7 @@ private fun IdeaConversationContent(
     } else {
       LazyColumn(
           state = listState,
-          modifier = Modifier.weight(1f).fillMaxWidth().testTag("conversationMessagesList"),
+          modifier = Modifier.weight(1f).fillMaxWidth().testTag(stringResource(R.string.idea_conversation_messages_list)),
           reverseLayout = true,
           verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             items(items = messages, key = { it.messageID }) { message ->

@@ -41,9 +41,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
 /*
@@ -143,7 +145,7 @@ fun CreateConversationScreen(
           if (!uiState.isConnected) {
             Spacer(modifier = Modifier.height(Spacing.sm))
             Text(
-                text = "You are offline. Cannot create conversations.",
+                text = stringResource(R.string.create_conversation_offline_message),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error)
           }
@@ -154,13 +156,13 @@ fun CreateConversationScreen(
 @Composable
 private fun ScreenHeader() {
   Text(
-      text = "New Conversation",
+      text = stringResource(R.string.create_conversation_title),
       style = MaterialTheme.typography.headlineSmall,
       fontWeight = FontWeight.Bold,
       modifier = Modifier.testTag(CreateConversationScreenTestTags.TITLE))
   Spacer(modifier = Modifier.height(Spacing.xs))
   Text(
-      text = "Select a project and a member to start chatting",
+      text = stringResource(R.string.create_conversation_description),
       style = MaterialTheme.typography.bodyMedium,
       color = Color.Gray)
 }
@@ -174,7 +176,9 @@ private fun ProjectDropdown(
     onProjectSelect: (ch.eureka.eurekapp.model.data.project.Project) -> Unit
 ) {
   Text(
-      text = "Project", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Medium)
+      text = stringResource(R.string.create_conversation_project_label),
+      style = MaterialTheme.typography.labelLarge,
+      fontWeight = FontWeight.Medium)
   Spacer(modifier = Modifier.height(Spacing.xs))
 
   ExposedDropdownMenuBox(
@@ -185,7 +189,7 @@ private fun ProjectDropdown(
             value = uiState.selectedProject?.name ?: "",
             onValueChange = {},
             readOnly = true,
-            placeholder = { Text("Select a project") },
+            placeholder = { Text(stringResource(R.string.create_conversation_project_placeholder)) },
             trailingIcon = {
               if (uiState.isLoadingProjects) {
                 CircularProgressIndicator(
@@ -220,7 +224,10 @@ private fun MemberSelection(
     onMemberSelect: (MemberDisplayData) -> Unit,
     onMemberDeselect: (MemberDisplayData) -> Unit
 ) {
-  Text(text = "Member", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Medium)
+  Text(
+      text = stringResource(R.string.create_conversation_member_label),
+      style = MaterialTheme.typography.labelLarge,
+      fontWeight = FontWeight.Medium)
   Spacer(modifier = Modifier.height(Spacing.xs))
 
   when {
@@ -232,7 +239,7 @@ private fun MemberSelection(
     }
     uiState.members.isEmpty() -> {
       Text(
-          text = "No other members in this project",
+          text = stringResource(R.string.create_conversation_no_members),
           style = MaterialTheme.typography.bodyMedium,
           color = MaterialTheme.colorScheme.error,
           modifier = Modifier.testTag(CreateConversationScreenTestTags.NO_MEMBERS_MESSAGE))
@@ -243,10 +250,10 @@ private fun MemberSelection(
           onExpandedChange = onExpandedChange,
           modifier = Modifier.testTag(CreateConversationScreenTestTags.MEMBER_DROPDOWN)) {
             OutlinedTextField(
-                value = "${uiState.selectedMembers.size} members selected",
+                value = stringResource(R.string.create_conversation_members_selected, uiState.selectedMembers.size),
                 onValueChange = {},
                 readOnly = true,
-                placeholder = { Text("Select a member") },
+                placeholder = { Text(stringResource(R.string.create_conversation_member_placeholder)) },
                 trailingIcon = {
                   ExposedDropdownMenuDefaults.TrailingIcon(expanded = memberDropdownExpanded)
                 },
@@ -328,7 +335,7 @@ private fun CreateButton(uiState: CreateConversationState, onClick: () -> Unit) 
         if (uiState.isCreating) {
           CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
         } else {
-          Text("Create Conversation")
+          Text(stringResource(R.string.create_conversation_button))
         }
       }
 }

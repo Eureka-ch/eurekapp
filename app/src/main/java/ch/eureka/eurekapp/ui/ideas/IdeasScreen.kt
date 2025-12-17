@@ -34,8 +34,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.R
 import ch.eureka.eurekapp.ui.components.BackButton
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 
@@ -90,7 +92,7 @@ fun IdeasScreen(
       modifier = modifier.fillMaxSize().testTag(IdeasScreenTestTags.SCREEN),
       topBar = {
         EurekaTopBar(
-            title = "Ideas",
+            title = stringResource(R.string.ideas_screen_title),
             navigationIcon = {
               BackButton(
                   onClick = onNavigateBack,
@@ -105,7 +107,9 @@ fun IdeasScreen(
               modifier = Modifier.offset(y = (-32).dp).testTag("createIdeaButton"),
               containerColor = MaterialTheme.colorScheme.primary,
               contentColor = Color.White) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Create new idea")
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = stringResource(R.string.ideas_create_button_description))
               }
         }
       }) { paddingValues ->
@@ -127,11 +131,11 @@ fun IdeasScreen(
                                   containerColor = MaterialTheme.colorScheme.surface,
                                   contentColor = MaterialTheme.colorScheme.onSurface)) {
                             Text(
-                                text = uiState.selectedProject?.name ?: "Select a project",
+                                text = uiState.selectedProject?.name ?: stringResource(R.string.ideas_project_selector_placeholder),
                                 modifier = Modifier.padding(horizontal = 8.dp))
                             Icon(
                                 imageVector = Icons.Default.ArrowDropDown,
-                                contentDescription = "Select project",
+                                contentDescription = stringResource(R.string.ideas_project_selector_placeholder),
                                 modifier = Modifier.padding(start = 4.dp))
                           }
                       ExposedDropdownMenu(
@@ -139,7 +143,7 @@ fun IdeasScreen(
                           onDismissRequest = { projectDropdownExpanded = false }) {
                             if (uiState.availableProjects.isEmpty()) {
                               DropdownMenuItem(
-                                  text = { Text("No projects available") },
+                                  text = { Text(stringResource(R.string.ideas_no_projects_available)) },
                                   onClick = {},
                                   enabled = false)
                             } else {
