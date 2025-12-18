@@ -88,7 +88,11 @@ class HomeOverviewViewModelTest {
               datetime = timestamp(now + index * DAY))
         }
 
-    meetingRepository.setMeetingsForCurrentUser(meetings)
+    // Set meetings per project since ViewModel uses getMeetingsInProject
+    val meetingsForProjectA = meetings.filter { it.projectId == projectA.projectId }
+    val meetingsForProjectB = meetings.filter { it.projectId == projectB.projectId }
+    meetingRepository.setMeetingsForProject(projectA.projectId, flowOf(meetingsForProjectA))
+    meetingRepository.setMeetingsForProject(projectB.projectId, flowOf(meetingsForProjectB))
     projectRepository.setCurrentUserProjects(flowOf(listOf(projectA, projectB)))
     userRepository.setCurrentUser(flowOf(User(uid = "user-1", displayName = "Eureka User")))
 
@@ -107,7 +111,8 @@ class HomeOverviewViewModelTest {
     assertEquals("Eureka User", state.currentUserName)
     assertEquals(
         listOf("Task 1", "Task 2", "Task 3", "Task 4"), state.upcomingTasks.map { it.title })
-    assertEquals(3, state.upcomingMeetings.size)
+    // All 4 meetings are in the future, so all should be included (no limit applied)
+    assertEquals(4, state.upcomingMeetings.size)
     assertTrue(state.upcomingMeetings.all { it.status != MeetingStatus.COMPLETED })
 
     // Projects should be sorted by lastUpdated descending => Project B first
