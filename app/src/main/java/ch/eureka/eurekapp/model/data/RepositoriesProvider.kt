@@ -114,7 +114,10 @@ object RepositoriesProvider {
   private val _unifiedSelfNotesRepository: UnifiedSelfNotesRepository by lazy {
     val context = applicationContext ?: throw IllegalStateException(ERROR_MSG)
 
-    val database = Room.databaseBuilder(context, AppDatabase::class.java, "eureka_local.db").build()
+    val database =
+        Room.databaseBuilder(context, AppDatabase::class.java, "eureka_local.db")
+            .fallbackToDestructiveMigration(false)
+            .build()
 
     val firestoreRepo =
         FirestoreSelfNotesRepository(FirebaseFirestore.getInstance(), FirebaseAuth.getInstance())
