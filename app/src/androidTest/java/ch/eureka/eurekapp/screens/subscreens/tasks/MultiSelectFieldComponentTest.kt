@@ -432,7 +432,7 @@ class MultiSelectFieldComponentTest {
   fun multiSelectFieldComponent_toggleableSaveCallsOnSaveCallback() {
     var saveCalled = false
     setFieldContent(
-        value = FieldValue.MultiSelectValue(listOf("opt1")),
+        value = FieldValue.MultiSelectValue(listOf("option1")),
         mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true),
         callbacks = FieldCallbacks(onSave = { saveCalled = true }))
 

@@ -379,6 +379,31 @@ class CreateConversationScreenTest {
         .assertDoesNotExist()
   }
 
+  @Test
+  fun createConversationScreen_displaysBackButton() {
+    composeTestRule.setContent {
+      CreateConversationScreen(onNavigateToConversation = {}, viewModel = createMockViewModel())
+    }
+
+    composeTestRule.onNodeWithTag(CreateConversationScreenTestTags.BACK_BUTTON).assertIsDisplayed()
+  }
+
+  @Test
+  fun createConversationScreen_backButtonTriggersCallback() {
+    var backClicked = false
+
+    composeTestRule.setContent {
+      CreateConversationScreen(
+          onNavigateToConversation = {},
+          onBackClick = { backClicked = true },
+          viewModel = createMockViewModel())
+    }
+
+    composeTestRule.onNodeWithTag(CreateConversationScreenTestTags.BACK_BUTTON).performClick()
+
+    assert(backClicked)
+  }
+
   /** Helper to create a mock ViewModel with action callback */
   private fun createMockViewModelWithAction(
       state: CreateConversationState = CreateConversationState(),

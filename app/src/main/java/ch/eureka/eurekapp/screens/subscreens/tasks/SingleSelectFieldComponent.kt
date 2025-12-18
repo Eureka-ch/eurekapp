@@ -83,7 +83,7 @@ fun SingleSelectFieldComponent(
     callbacks: FieldCallbacks = FieldCallbacks(),
     showHeader: Boolean = true
 ) {
-  val fieldType = fieldDefinition.type as FieldType.SingleSelect
+  val fieldType = fieldDefinition.type as? FieldType.SingleSelect ?: return
 
   BaseFieldComponent(
       modifier = modifier,
@@ -246,7 +246,10 @@ private fun handleTextFieldValueChange(
 ) {
   if (selectState is SelectState.Custom) {
     onSelectStateChange(SelectState.Custom(newValue))
-    onChange(FieldValue.SingleSelectValue(newValue))
+    // Only save non-blank custom values to prevent empty selections
+    if (newValue.isNotBlank()) {
+      onChange(FieldValue.SingleSelectValue(newValue))
+    }
   }
 }
 

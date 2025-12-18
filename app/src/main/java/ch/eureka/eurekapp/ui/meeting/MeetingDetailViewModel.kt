@@ -442,7 +442,10 @@ class MeetingDetailViewModel(
    * @param meetingFormat The format of the meeting being edited.
    * @return Error message if validation fails, null if valid.
    */
-  private fun validateEditFields(meetingFormat: MeetingFormat?): String? {
+  private fun validateEditFields(
+      meetingFormat: MeetingFormat?,
+      meetingStatus: MeetingStatus
+  ): String? {
     val editDateTime = _editDateTime.value
     val isDateTimeInPast =
         editDateTime?.let {
@@ -453,7 +456,8 @@ class MeetingDetailViewModel(
 
     return when {
       _editTitle.value.isBlank() -> "Title cannot be empty"
-      editDateTime == null -> "Date and time must be set"
+      editDateTime == null && meetingStatus != MeetingStatus.OPEN_TO_VOTES ->
+          "Date and time must be set"
       isDateTimeInPast -> "Meeting should be scheduled in the future."
       _editDuration.value <= 0 -> "Duration must be greater than 0"
       meetingFormat == MeetingFormat.VIRTUAL &&
@@ -471,7 +475,7 @@ class MeetingDetailViewModel(
    */
   fun saveMeetingChanges(currentMeeting: Meeting, isConnected: Boolean) {
     if (isConnected) {
-      val validationError = validateEditFields(currentMeeting.format)
+      val validationError = validateEditFields(currentMeeting.format, currentMeeting.status)
       if (validationError != null) {
         _errorMsg.value = validationError
         return

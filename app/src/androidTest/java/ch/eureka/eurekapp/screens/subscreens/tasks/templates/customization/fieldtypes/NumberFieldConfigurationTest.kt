@@ -2,6 +2,10 @@ package ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fiel
 
 /* Portions of this code were generated with the help of Claude Sonnet 4.5. */
 
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performTextInput
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.utils.BaseFieldConfigurationTest
 import org.junit.Test
@@ -102,8 +106,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
           fieldType = FieldType.Number(min = 10.0, max = 100.0), onUpdate = {}, enabled = true)
     }
 
-    utils.assertNoError(
-        composeTestRule, "Minimum value must be less than or equal to maximum value")
+    utils.assertNoError(composeTestRule, "Max must be ≥ min")
   }
 
   @Test
@@ -113,8 +116,7 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
           fieldType = FieldType.Number(min = 50.0, max = 50.0), onUpdate = {}, enabled = true)
     }
 
-    utils.assertNoError(
-        composeTestRule, "Minimum value must be less than or equal to maximum value")
+    utils.assertNoError(composeTestRule, "Max must be ≥ min")
   }
 
   @Test
@@ -135,20 +137,36 @@ class NumberFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun numberFieldConfiguration_invalidDecimalsInputFallsBackToZero() {
+  fun numberFieldConfiguration_invalidDecimalsInputShowsErrorAndDoesNotUpdate() {
     val updates = mutableListOf<FieldType.Number>()
+    composeTestRule.setContent {
+      NumberFieldConfiguration(
+          fieldType = FieldType.Number(), onUpdate = { updates.add(it) }, enabled = true)
+    }
 
-    utils.testInputUpdate(
-        composeTestRule,
-        content = { onUpdate ->
-          NumberFieldConfiguration(
-              fieldType = FieldType.Number(), onUpdate = onUpdate, enabled = true)
-        },
-        capturedUpdate = updates,
-        testTag = NumberFieldConfigurationTestTags.DECIMALS,
-        inputValue = "abc") { updated ->
-          assertions.assertPropertyEquals(0, updated, { it.decimals }, "decimals")
-        }
+    composeTestRule.onNodeWithTag(NumberFieldConfigurationTestTags.DECIMALS).performTextInput("abc")
+    composeTestRule.onNodeWithText("Invalid number").assertIsDisplayed()
+    assert(updates.isEmpty()) { "Model should not be updated with invalid input" }
+  }
+
+  @Test
+  fun numberFieldConfiguration_zeroStepShowsError() {
+    composeTestRule.setContent {
+      NumberFieldConfiguration(fieldType = FieldType.Number(), onUpdate = {}, enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag(NumberFieldConfigurationTestTags.STEP).performTextInput("0")
+    composeTestRule.onNodeWithText("Step must be positive").assertIsDisplayed()
+  }
+
+  @Test
+  fun numberFieldConfiguration_negativeDecimalsShowsError() {
+    composeTestRule.setContent {
+      NumberFieldConfiguration(fieldType = FieldType.Number(), onUpdate = {}, enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag(NumberFieldConfigurationTestTags.DECIMALS).performTextInput("-1")
+    composeTestRule.onNodeWithText("Decimals must be non-negative").assertIsDisplayed()
   }
 
   @Test
