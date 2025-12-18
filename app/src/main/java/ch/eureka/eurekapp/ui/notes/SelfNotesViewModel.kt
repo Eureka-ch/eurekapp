@@ -1,22 +1,13 @@
 /* Portions of this file were written with the help of Gemini. */
 package ch.eureka.eurekapp.ui.notes
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.Constraints
-import androidx.work.ExistingWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.IdGenerator
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.chat.Message
-import ch.eureka.eurekapp.model.data.notes.SyncStats
 import ch.eureka.eurekapp.model.data.notes.UnifiedSelfNotesRepository
 import ch.eureka.eurekapp.model.data.prefs.UserPreferencesRepository
-import ch.eureka.eurekapp.worker.SyncNotesWorker
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -32,17 +23,17 @@ import kotlinx.coroutines.launch
 /**
  * ViewModel for the Self Notes screen.
  *
- * This ViewModel manages the UI state for the personal notes feature, including:
- * - Loading and displaying notes from the unified repository.
- * - Handling user input for creating and editing notes.
- * - Toggling between Local-Only and Cloud-Sync storage modes.
- * - Managing background synchronization status and error reporting.
- * - Handling multi-selection for bulk actions (deletion).
+ * This ViewModel manages the UI state for the personal notes feature, handling user interactions
+ * for creating, editing, and deleting notes. It facilitates the strict separation between Cloud and
+ * Local storage modes by delegating operations to the [UnifiedSelfNotesRepository].
  *
- * @property repository The repository for managing notes (Unified Local + Cloud).
- * @property userPrefs The repository for accessing user preferences (storage mode).
- * @property workManager The system WorkManager for scheduling background sync tasks.
- * @property dispatcher The coroutine dispatcher for background operations (default: IO).
+ * It combines multiple data streams (notes, loading state, user input, preferences) into a single
+ * [SelfNotesUIState] for the UI to consume.
+ *
+ * @property repository The unified repository for managing self-notes operations.
+ * @property userPrefs The repository for accessing user preferences (specifically storage mode).
+ * @property dispatcher The coroutine dispatcher for background operations (defaults to
+ *   [Dispatchers.IO]).
  */
 class SelfNotesViewModel
 @JvmOverloads
@@ -51,20 +42,21 @@ constructor(
         RepositoriesProvider.unifiedSelfNotesRepository,
     private val userPrefs: UserPreferencesRepository =
         RepositoriesProvider.userPreferencesRepository,
-    private val workManager: WorkManager = RepositoriesProvider.workManager,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
   private val _currentMessage = MutableStateFlow("")
   private val _isSending = MutableStateFlow(false)
   private val _infoMsg = MutableStateFlow<String?>(null)
-  // Track which message is being edited. Null means creating new.
   private val _editingMessageId = MutableStateFlow<String?>(null)
-  // Track selected messages for bulk actions
   private val _selectedNoteIds = MutableStateFlow<Set<String>>(emptySet())
 
-  /** The single source of truth for the UI state. */
-  @Suppress("UNCHECKED_CAST")
+  /**
+   * The single source of truth for the UI state.
+   *
+   * Combines data from the repository, user preferences, and local ViewModel state to produce a
+   * comprehensive [SelfNotesUIState].
+   */
   val uiState: StateFlow<SelfNotesUIState> =
       combine(
               repository
@@ -77,14 +69,13 @@ constructor(
               userPrefs.isCloudStorageEnabled,
               _editingMessageId,
               _selectedNoteIds) { args ->
-                // Combine with >5 args uses vararg and passes an Array<Any?>
                 val notesState = args[0] as NotesLoadState
                 val currentMessage = args[1] as String
                 val isSending = args[2] as Boolean
                 val errorMsg = args[3] as String?
                 val isCloud = args[4] as Boolean
                 val editingId = args[5] as String?
-                val selectedIds = args[6] as Set<String>
+                @Suppress("UNCHECKED_CAST") val selectedIds = args[6] as Set<String>
 
                 val notes =
                     when (notesState) {
@@ -114,63 +105,27 @@ constructor(
               started = SharingStarted.WhileSubscribed(5000),
               initialValue = SelfNotesUIState(isLoading = true))
 
-  init {
-    // Monitor Connectivity to trigger Sync
-    viewModelScope.launch {
-      try {
-        // Safe call in case ConnectivityObserver isn't initialized
-        ConnectivityObserverProvider.connectivityObserver.isConnected.collect { isOnline ->
-          if (isOnline) {
-            val stats = repository.syncPendingNotes()
-            if (stats.total > 0) {
-              _infoMsg.value = "Back online: ${formatSyncMessage(stats)}"
-            }
-          }
-        }
-      } catch (e: Exception) {
-        Log.e("SelfNotesViewModel", "Connectivity Observer error", e)
-      }
-    }
-  }
-
   /**
-   * Formats a user-friendly message summarizing the sync operations performed.
+   * Toggles the storage mode between Local and Cloud.
    *
-   * @param stats The sync statistics containing counts of upserts and deletions.
-   * @return A string describing the sync result (e.g., "Synced: 2 sent, 1 deleted").
-   */
-  private fun formatSyncMessage(stats: SyncStats): String {
-    val parts = mutableListOf<String>()
-    if (stats.upserts > 0) parts.add("${stats.upserts} sent")
-    if (stats.deletes > 0) parts.add("${stats.deletes} deleted")
-    return if (parts.isNotEmpty()) "Synced: ${parts.joinToString(", ")}" else "Synced"
-  }
-
-  /**
-   * Toggles the storage mode between Local-only and Cloud.
+   * This performs an instant view switch by updating the user preference. It provides feedback to
+   * the user about which mode they are now viewing.
    *
-   * If switching to Cloud, it triggers a sync of existing local notes. If switching to Local, it
-   * ensures cloud privacy by clearing cloud data.
-   *
-   * @param enableCloud True to enable Cloud storage/sync, False for Local-only.
+   * @param enableCloud `true` to switch to Cloud Mode, `false` to switch to Local Mode.
    */
   fun toggleStorageMode(enableCloud: Boolean) {
     viewModelScope.launch {
-      val stats = repository.setStorageMode(enableCloud)
+      repository.setStorageMode(enableCloud)
       if (enableCloud) {
-        if (stats.total > 0) {
-          _infoMsg.value = "Switched to Cloud: ${formatSyncMessage(stats)}"
-        } else {
-          _infoMsg.value = "Switched to Cloud Storage"
-        }
+        _infoMsg.value = "Viewing Cloud Notes"
       } else {
-        _infoMsg.value = "Switched to Local Storage (Private)"
+        _infoMsg.value = "Viewing Local Notes"
       }
     }
   }
 
   /**
-   * Updates the text of the message currently being composed.
+   * Updates the text of the message currently being composed or edited.
    *
    * @param text The new text entered by the user.
    */
@@ -179,12 +134,11 @@ constructor(
   }
 
   /**
-   * Toggles the selection state of a note.
+   * Toggles the selection state of a specific note.
    *
-   * Used for multi-selection mode. If the note is already selected, it is deselected. If the
-   * resulting selection is empty, the UI automatically exits selection mode.
+   * Used for the multi-selection feature (e.g., for bulk deletion).
    *
-   * @param noteId The unique ID of the note to toggle.
+   * @param noteId The unique ID of the note to select or deselect.
    */
   fun toggleSelection(noteId: String) {
     val currentSelection = _selectedNoteIds.value.toMutableSet()
@@ -196,16 +150,16 @@ constructor(
     _selectedNoteIds.value = currentSelection
   }
 
-  /** Clears all selected notes, effectively exiting selection mode. */
+  /** Clears all currently selected notes, exiting selection mode. */
   fun clearSelection() {
     _selectedNoteIds.value = emptySet()
   }
 
   /**
-   * Deletes all currently selected notes.
+   * Deletes all notes currently selected in the UI.
    *
-   * This action is performed optimistically: selection is cleared immediately, and deletions are
-   * queued in the background.
+   * Iterates through the selected IDs and attempts to delete them via the repository. Displays an
+   * error message if any deletion fails.
    */
   fun deleteSelectedNotes() {
     val selectedIds = _selectedNoteIds.value.toSet()
@@ -213,22 +167,19 @@ constructor(
 
     viewModelScope.launch(dispatcher) {
       clearSelection()
-
       selectedIds.forEach { id ->
-        repository.deleteNote(id).onFailure {
-          Log.e("SelfNotesViewModel", "Error deleting $id: ${it.message}")
-        }
+        repository.deleteNote(id).onFailure { _infoMsg.value = "Failed to delete: ${it.message}" }
       }
     }
   }
 
   /**
-   * Enters "Edit Mode" for a specific note. Populates the input field with the note's text and
-   * stores the ID of the note being edited.
+   * Enters "Edit Mode" for the specified note.
    *
-   * If selection mode was active, it is cleared first.
+   * Populates the input field with the note's current text and tracks the note ID. Clears any
+   * active selection before starting.
    *
-   * @param note The note object to edit.
+   * @param note The [Message] object to be edited.
    */
   fun startEditing(note: Message) {
     clearSelection()
@@ -237,8 +188,10 @@ constructor(
   }
 
   /**
-   * Cancels the current edit operation. Clears the input field and resets the editing state to
-   * allow creating new notes.
+   * Cancels the current edit operation.
+   *
+   * Resets the input field and clears the tracking of the editing message ID, returning the UI to
+   * "Create Mode".
    */
   fun cancelEditing() {
     _editingMessageId.value = null
@@ -246,21 +199,16 @@ constructor(
   }
 
   /**
-   * Saves the current note.
+   * Saves the current note to the active storage.
+   * - If an ID is being edited, it updates the existing note.
+   * - If no ID is being edited, it creates a new note with a generated ID.
    *
-   * Behavior depends on the current state:
-   * - **Editing Mode:** Updates the existing note with the new text.
-   * - **Creation Mode:** Creates a new note with the entered text.
-   *
-   * In both cases, the operation is synced to the cloud if Cloud Storage is enabled.
+   * Handles success by resetting the input, and failure by displaying an error message (e.g., if
+   * the user tries to save a cloud note while offline).
    */
   fun sendNote() {
     val currentMessageText = _currentMessage.value.trim()
     if (currentMessageText.isEmpty()) return
-    if (currentMessageText.length > 5000) {
-      _infoMsg.value = "Note too long (max 5000 characters)"
-      return
-    }
 
     _isSending.value = true
     val editingId = _editingMessageId.value
@@ -268,50 +216,28 @@ constructor(
     viewModelScope.launch(dispatcher) {
       val result =
           if (editingId != null) {
-            // Update existing note
             repository.updateNote(editingId, currentMessageText)
           } else {
-            // Create new note
             val message =
                 Message(
                     messageID = IdGenerator.generateMessageId(),
                     text = currentMessageText,
                     createdAt = Timestamp.now())
-            repository.createNote(message).map {
-              Unit
-            } // map result to Unit to match update return type
+            repository.createNote(message).map { Unit }
           }
 
       result.fold(
           onSuccess = {
             _currentMessage.value = ""
-            _editingMessageId.value = null // Exit edit mode
+            _editingMessageId.value = null
             _isSending.value = false
             _infoMsg.value = null
-
-            if (uiState.value.isCloudStorageEnabled) {
-              scheduleWorker()
-            }
           },
           onFailure = { error ->
             _isSending.value = false
-            _infoMsg.value = "Error: ${error.message}"
+            _infoMsg.value = error.message ?: "Operation failed"
           })
     }
-  }
-
-  /**
-   * Schedules a one-time background worker to synchronize pending notes. This is used to ensure
-   * robust syncing even if the app is closed or network is unavailable.
-   */
-  private fun scheduleWorker() {
-    val request =
-        OneTimeWorkRequestBuilder<SyncNotesWorker>()
-            .setConstraints(
-                Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
-            .build()
-
-    workManager.enqueueUniqueWork("SyncNotes", ExistingWorkPolicy.KEEP, request)
   }
 
   /** Clears the current informational or error message displayed to the user. */
@@ -320,22 +246,9 @@ constructor(
   }
 }
 
-/**
- * Internal state representation for the asynchronous note loading process. Used to map the
- * Flow<List<Message>> from the repository into a UI-consumable state.
- */
+/** Internal sealed class to represent the loading state of notes. */
 private sealed class NotesLoadState {
-  /**
-   * Represents a successful load of notes.
-   *
-   * @property notes The list of loaded messages.
-   */
   data class Success(val notes: List<Message>) : NotesLoadState()
 
-  /**
-   * Represents a failure during note loading.
-   *
-   * @property message The error message describing what went wrong.
-   */
   data class Error(val message: String) : NotesLoadState()
 }
