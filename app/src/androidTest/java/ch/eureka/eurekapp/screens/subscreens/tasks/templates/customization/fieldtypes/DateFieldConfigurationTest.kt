@@ -2,6 +2,10 @@ package ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fiel
 
 /* Portions of this code were generated with the help of Claude Sonnet 4.5. */
 
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performTextInput
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.utils.BaseFieldConfigurationTest
 import org.junit.Test
@@ -196,5 +200,55 @@ class DateFieldConfigurationTest : BaseFieldConfigurationTest() {
 
     utils.clearText(composeTestRule, DateFieldConfigurationTestTags.MAX)
     assertions.assertPropertyNull(updates.lastOrNull(), { it.maxDate }, "maxDate")
+  }
+
+  @Test
+  fun dateFieldConfiguration_invalidMinDateShowsError() {
+    val updates = mutableListOf<FieldType.Date>()
+    composeTestRule.setContent {
+      DateFieldConfiguration(
+          fieldType = FieldType.Date(), onUpdate = { updates.add(it) }, enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag(DateFieldConfigurationTestTags.MIN).performTextInput("not-a-date")
+    composeTestRule.onNodeWithText("Invalid date (use YYYY-MM-DD)").assertIsDisplayed()
+    assert(updates.isEmpty()) { "Model should not be updated with invalid input" }
+  }
+
+  @Test
+  fun dateFieldConfiguration_invalidMaxDateShowsError() {
+    val updates = mutableListOf<FieldType.Date>()
+    composeTestRule.setContent {
+      DateFieldConfiguration(
+          fieldType = FieldType.Date(), onUpdate = { updates.add(it) }, enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag(DateFieldConfigurationTestTags.MAX).performTextInput("15-01-2025")
+    composeTestRule.onNodeWithText("Invalid date (use YYYY-MM-DD)").assertIsDisplayed()
+    assert(updates.isEmpty()) { "Model should not be updated with invalid input" }
+  }
+
+  @Test
+  fun dateFieldConfiguration_minLessThanMaxNoError() {
+    this.composeTestRule.setContent {
+      DateFieldConfiguration(
+          fieldType = FieldType.Date(minDate = "2025-01-01", maxDate = "2025-12-31"),
+          onUpdate = {},
+          enabled = true)
+    }
+
+    utils.assertNoError(composeTestRule, "Max date must be ≥ min date")
+  }
+
+  @Test
+  fun dateFieldConfiguration_minEqualToMaxNoError() {
+    this.composeTestRule.setContent {
+      DateFieldConfiguration(
+          fieldType = FieldType.Date(minDate = "2025-06-15", maxDate = "2025-06-15"),
+          onUpdate = {},
+          enabled = true)
+    }
+
+    utils.assertNoError(composeTestRule, "Max date must be ≥ min date")
   }
 }

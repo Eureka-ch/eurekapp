@@ -60,9 +60,14 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
 
   val inputValid: StateFlow<Boolean> by lazy {
     uiState
-        .map { state -> isValidInput(state.title, state.description, state.dueDate) }
+        .map { state ->
+          isValidInput(state.title, state.description, state.dueDate) && isCustomDataValid(state)
+        }
         .stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = false)
   }
+
+  /** Validates custom field data against the template schema. Override to implement. */
+  protected open fun isCustomDataValid(state: T): Boolean = true
 
   protected val availableTasksMutable = MutableStateFlow<List<Task>>(emptyList())
   val availableTasks: StateFlow<List<Task>> = availableTasksMutable.asStateFlow()

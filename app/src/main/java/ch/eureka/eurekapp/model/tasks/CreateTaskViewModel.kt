@@ -58,6 +58,12 @@ class CreateTaskViewModel(
   private val _uiState = MutableStateFlow(CreateTaskState())
   override val uiState: StateFlow<CreateTaskState> = _uiState.asStateFlow()
 
+  override fun isCustomDataValid(state: CreateTaskState): Boolean {
+    val template = state.selectedTemplate ?: return true
+    val result = state.customData.validate(template.definedFields)
+    return result is ch.eureka.eurekapp.model.data.task.ValidationResult.Success
+  }
+
   private val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
   val isConnected =
       connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
