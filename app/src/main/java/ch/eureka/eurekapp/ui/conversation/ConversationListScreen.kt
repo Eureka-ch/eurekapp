@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -96,7 +97,10 @@ fun ConversationListScreen(
         FloatingActionButton(
             onClick = onCreateConversation,
             modifier =
-                Modifier.offset(y = (-32).dp).testTag(ConversationListScreenTestTags.CREATE_BUTTON),
+                Modifier
+                    .size(60.dp)
+                    .offset(y = (-32).dp)
+                    .testTag(ConversationListScreenTestTags.CREATE_BUTTON),
             containerColor =
                 if (uiState.isConnected) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.surfaceVariant) {
