@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,8 +29,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.ideas.Idea
-import ch.eureka.eurekapp.ui.components.BackButton
-import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.MessageBubble
 import ch.eureka.eurekapp.ui.components.MessageBubbleState
 import ch.eureka.eurekapp.ui.components.MessageInputField
@@ -124,30 +121,7 @@ fun MCPChatbotScreen(
     }
   }
 
-  Scaffold(
-    modifier = modifier.fillMaxSize().testTag(MCPChatbotScreenTestTags.SCREEN),
-    topBar = {
-      EurekaTopBar(
-        title = idea?.title ?: "MCP Chat",
-        navigationIcon = {
-          BackButton(
-            onClick = onNavigateBack,
-            modifier = Modifier.testTag("mcpBackButton")
-          )
-        },
-        actions = {
-          if (projectName != null && projectName.isNotEmpty()) {
-            Text(
-              text = projectName,
-              style = MaterialTheme.typography.labelSmall,
-              color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
-            )
-          }
-        }
-      )
-    }
-  ) { paddingValues ->
-    Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+  Column(modifier = modifier.fillMaxSize().testTag(MCPChatbotScreenTestTags.SCREEN)) {
       // Messages list
       Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
       when {
@@ -255,7 +229,6 @@ fun MCPChatbotScreen(
       isSending = isSending,
       placeholder = "Ask MCP about your project..."
     )
-    }
   }
 }
 

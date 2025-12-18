@@ -89,13 +89,31 @@ fun IdeasScreen(
   Scaffold(
       modifier = modifier.fillMaxSize().testTag(IdeasScreenTestTags.SCREEN),
       topBar = {
-        EurekaTopBar(
-            title = "Ideas",
-            navigationIcon = {
-              BackButton(
-                  onClick = onNavigateBack,
-                  modifier = Modifier.testTag(IdeasScreenTestTags.BACK_BUTTON))
-            })
+        if (uiState.viewMode == IdeasViewMode.CONVERSATION && uiState.selectedIdea != null) {
+          EurekaTopBar(
+              title = uiState.selectedIdea?.title ?: "MCP Chat",
+              navigationIcon = {
+                BackButton(
+                    onClick = { viewModel.backToList() },
+                    modifier = Modifier.testTag(IdeasScreenTestTags.BACK_BUTTON))
+              },
+              actions = {
+                if (uiState.selectedProject?.name != null && uiState.selectedProject?.name?.isNotEmpty() == true) {
+                  Text(
+                      text = uiState.selectedProject?.name ?: "",
+                      style = MaterialTheme.typography.labelSmall,
+                      color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f))
+                }
+              })
+        } else {
+          EurekaTopBar(
+              title = "Ideas",
+              navigationIcon = {
+                BackButton(
+                    onClick = onNavigateBack,
+                    modifier = Modifier.testTag(IdeasScreenTestTags.BACK_BUTTON))
+              })
+        }
       },
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       floatingActionButton = {
