@@ -267,9 +267,10 @@ private fun getBubbleColors(isFromCurrentUser: Boolean): Triple<Color, Color, Al
         MaterialTheme.colorScheme.onPrimaryContainer,
         Alignment.CenterEnd)
   } else {
+    // More pleasant color for assistant messages - using tertiary container
     Triple(
-        MaterialTheme.colorScheme.secondaryContainer,
-        MaterialTheme.colorScheme.onSecondaryContainer,
+        MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.8f),
+        MaterialTheme.colorScheme.onTertiaryContainer,
         Alignment.CenterStart)
   }
 }

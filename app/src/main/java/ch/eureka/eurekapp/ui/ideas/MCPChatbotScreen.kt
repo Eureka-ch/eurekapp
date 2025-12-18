@@ -58,31 +58,10 @@ private val MOCK_THINKING_STEPS = listOf(
 )
 
 /**
- * Mock responses - Returns innovative AI feature ideas
+ * Mock responses - Returns AI meeting integration feature idea
  */
 private fun getMockResponse(userMessage: String): String {
-  // Generate different innovative AI feature ideas (mobile chat format)
-  val featureIdeas = listOf(
-    """Here's an idea: **AI Code Review Assistant**
-
-Built right into the app - automatically reviews code on commits, catches bugs, suggests improvements, and comments on PRs. Could cut review time by 40%.""",
-    """What about **AI Meeting Insights**?
-
-Turns meeting transcripts into actionable items - extracts decisions, auto-creates tasks, generates smart summaries. No more forgotten action items.""",
-    """**AI Task Auto-Assignment 2.0** could be interesting
-
-Uses predictive AI to match skills, predict workload, and optimize task distribution. Better balance across the team.""",
-    """**AI Project Health Monitor** - real-time dashboard
-
-Tracks team velocity, detects bottlenecks early, predicts risks, analyzes team sentiment. Gives you visibility before things go wrong.""",
-    """**AI Documentation Generator**
-
-Auto-generates docs from code, creates API docs, maintains decision logs, builds onboarding guides. Keeps everything up to date automatically."""
-  )
-  
-  // Return a random feature idea (or cycle through them)
-  val randomIndex = userMessage.hashCode().absoluteValue % featureIdeas.size
-  return featureIdeas[randomIndex].trimIndent()
+  return "A great feature would be to integrate AI to be a part of the meeting and add inputs when necessary."
 }
 
 /**
