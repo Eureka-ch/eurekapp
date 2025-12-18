@@ -1,4 +1,5 @@
 // Co-authored by Claude Code
+// This code was written with help of Claude.
 package ch.eureka.eurekapp.ui.mcp
 
 import ch.eureka.eurekapp.model.data.mcp.CreateTokenResult
@@ -61,7 +62,7 @@ class McpTokenViewModelTest {
   }
 
   @Test
-  fun mcpTokenViewModel_initialStateHasCorrectDefaults() {
+  fun mcpTokenViewModel_hasCorrectDefaultsInInitialState() {
     val state = viewModel.uiState.value
 
     assertTrue(state.tokens.isEmpty())

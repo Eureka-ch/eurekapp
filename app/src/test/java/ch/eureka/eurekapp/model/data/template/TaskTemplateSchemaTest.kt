@@ -17,13 +17,13 @@ import org.junit.Test
 class TaskTemplateSchemaTest {
 
   @Test
-  fun `empty schema is valid`() {
+  fun emptySchema_isValid() {
     val schema = TaskTemplateSchema()
     assertEquals(0, schema.fields.size)
   }
 
   @Test
-  fun `schema with fields stores them correctly`() {
+  fun schemaWithFields_storesThemCorrectly() {
     val field1 = FieldDefinition("title", "Title", FieldType.Text())
     val field2 = FieldDefinition("priority", "Priority", FieldType.Number())
     val schema = TaskTemplateSchema(listOf(field1, field2))
@@ -34,14 +34,14 @@ class TaskTemplateSchemaTest {
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun `schema rejects duplicate field IDs`() {
+  fun schema_rejectsDuplicateFieldIDs() {
     val field1 = FieldDefinition("title", "Title", FieldType.Text())
     val field2 = FieldDefinition("title", "Another Title", FieldType.Number())
     TaskTemplateSchema(listOf(field1, field2))
   }
 
   @Test
-  fun `getField returns correct field by ID`() {
+  fun getField_returnsCorrectFieldById() {
     val field1 = FieldDefinition("title", "Title", FieldType.Text())
     val field2 = FieldDefinition("priority", "Priority", FieldType.Number())
     val schema = TaskTemplateSchema(listOf(field1, field2))
@@ -51,28 +51,28 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `getField returns null for non-existent field`() {
+  fun getField_returnsNullForNonExistentField() {
     val schema = TaskTemplateSchema(listOf(FieldDefinition("title", "Title", FieldType.Text())))
 
     assertNull(schema.getField("non_existent"))
   }
 
   @Test
-  fun `hasField returns true for existing field`() {
+  fun hasField_returnsTrueForExistingField() {
     val schema = TaskTemplateSchema(listOf(FieldDefinition("title", "Title", FieldType.Text())))
 
     assertTrue(schema.hasField("title"))
   }
 
   @Test
-  fun `hasField returns false for non-existent field`() {
+  fun hasField_returnsFalseForNonExistentField() {
     val schema = TaskTemplateSchema(listOf(FieldDefinition("title", "Title", FieldType.Text())))
 
     assertFalse(schema.hasField("non_existent"))
   }
 
   @Test
-  fun `getRequiredFields returns only required fields`() {
+  fun getRequiredFields_returnsOnlyRequiredFields() {
     val field1 = FieldDefinition("title", "Title", FieldType.Text(), required = true)
     val field2 = FieldDefinition("description", "Description", FieldType.Text(), required = false)
     val field3 = FieldDefinition("priority", "Priority", FieldType.Number(), required = true)
@@ -86,7 +86,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `getRequiredFields returns empty list when no required fields`() {
+  fun getRequiredFields_returnsEmptyListWhenNoRequiredFields() {
     val field1 = FieldDefinition("title", "Title", FieldType.Text(), required = false)
     val schema = TaskTemplateSchema(listOf(field1))
 
@@ -94,7 +94,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `addField adds new field`() {
+  fun addField_addsNewField() {
     val field1 = FieldDefinition("title", "Title", FieldType.Text())
     val schema = TaskTemplateSchema(listOf(field1))
 
@@ -107,7 +107,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun `addField rejects duplicate field ID`() {
+  fun addField_rejectsDuplicateFieldId() {
     val field1 = FieldDefinition("title", "Title", FieldType.Text())
     val schema = TaskTemplateSchema(listOf(field1))
 
@@ -116,7 +116,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `addField is immutable`() {
+  fun addField_isImmutable() {
     val field1 = FieldDefinition("title", "Title", FieldType.Text())
     val schema = TaskTemplateSchema(listOf(field1))
 
@@ -128,7 +128,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `removeField removes existing field`() {
+  fun removeField_removesExistingField() {
     val field1 = FieldDefinition("title", "Title", FieldType.Text())
     val field2 = FieldDefinition("priority", "Priority", FieldType.Number())
     val schema = TaskTemplateSchema(listOf(field1, field2))
@@ -141,7 +141,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `removeField with non-existent ID does nothing`() {
+  fun removeField_withNonExistentIdDoesNothing() {
     val field1 = FieldDefinition("title", "Title", FieldType.Text())
     val schema = TaskTemplateSchema(listOf(field1))
 
@@ -152,7 +152,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `removeField is immutable`() {
+  fun removeField_isImmutable() {
     val field1 = FieldDefinition("title", "Title", FieldType.Text())
     val schema = TaskTemplateSchema(listOf(field1))
 
@@ -163,7 +163,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `updateField updates existing field`() {
+  fun updateField_updatesExistingField() {
     val field1 = FieldDefinition("title", "Title", FieldType.Text())
     val schema = TaskTemplateSchema(listOf(field1))
 
@@ -179,14 +179,14 @@ class TaskTemplateSchemaTest {
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun `updateField rejects non-existent field ID`() {
+  fun updateField_rejectsNonExistentFieldId() {
     val schema = TaskTemplateSchema()
     val field = FieldDefinition("title", "Title", FieldType.Text())
     schema.updateField("non_existent", field)
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun `updateField rejects changing field ID`() {
+  fun updateField_rejectsChangingFieldId() {
     val field1 = FieldDefinition("title", "Title", FieldType.Text())
     val schema = TaskTemplateSchema(listOf(field1))
 
@@ -195,7 +195,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `updateField is immutable`() {
+  fun updateField_isImmutable() {
     val field1 = FieldDefinition("title", "Title", FieldType.Text())
     val schema = TaskTemplateSchema(listOf(field1))
 
@@ -207,7 +207,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `schema supports multiple field types`() {
+  fun schema_supportsMultipleFieldTypes() {
     val textField = FieldDefinition("text", "Text", FieldType.Text())
     val numberField = FieldDefinition("number", "Number", FieldType.Number())
     val dateField = FieldDefinition("date", "Date", FieldType.Date())
@@ -226,7 +226,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `reorderField moves field to new position`() {
+  fun reorderField_movesFieldToNewPosition() {
     val field1 = FieldDefinition("field1", "Field 1", FieldType.Text())
     val field2 = FieldDefinition("field2", "Field 2", FieldType.Text())
     val field3 = FieldDefinition("field3", "Field 3", FieldType.Text())
@@ -241,7 +241,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `reorderField with invalid indices returns unchanged schema`() {
+  fun reorderField_withInvalidIndicesReturnsUnchangedSchema() {
     val field1 = FieldDefinition("field1", "Field 1", FieldType.Text())
     val schema = TaskTemplateSchema(listOf(field1))
 
@@ -255,7 +255,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `reorderField is immutable`() {
+  fun reorderField_isImmutable() {
     val field1 = FieldDefinition("field1", "Field 1", FieldType.Text())
     val field2 = FieldDefinition("field2", "Field 2", FieldType.Text())
     val schema = TaskTemplateSchema(listOf(field1, field2))
@@ -267,7 +267,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `duplicateField creates copy with new ID and modified label`() {
+  fun duplicateField_createsCopyWithNewIdAndModifiedLabel() {
     val field1 = FieldDefinition("field1", "Original", FieldType.Text())
     val schema = TaskTemplateSchema(listOf(field1))
 
@@ -280,7 +280,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `duplicateField inserts copy after original`() {
+  fun duplicateField_insertsCopyAfterOriginal() {
     val field1 = FieldDefinition("field1", "Field 1", FieldType.Text())
     val field2 = FieldDefinition("field2", "Field 2", FieldType.Text())
     val field3 = FieldDefinition("field3", "Field 3", FieldType.Text())
@@ -296,7 +296,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `duplicateField with non-existent ID returns unchanged schema`() {
+  fun duplicateField_withNonExistentIdReturnsUnchangedSchema() {
     val field1 = FieldDefinition("field1", "Field 1", FieldType.Text())
     val schema = TaskTemplateSchema(listOf(field1))
 
@@ -306,7 +306,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `duplicateField is immutable`() {
+  fun duplicateField_isImmutable() {
     val field1 = FieldDefinition("field1", "Field 1", FieldType.Text())
     val schema = TaskTemplateSchema(listOf(field1))
 
@@ -317,7 +317,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `duplicateField preserves field properties`() {
+  fun duplicateField_preservesFieldProperties() {
     val field1 =
         FieldDefinition(
             "field1",
@@ -337,7 +337,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `reorderField with same indices returns unchanged schema`() {
+  fun reorderField_withSameIndicesReturnsUnchangedSchema() {
     val field1 = FieldDefinition("field1", "Field 1", FieldType.Text())
     val field2 = FieldDefinition("field2", "Field 2", FieldType.Text())
     val schema = TaskTemplateSchema(listOf(field1, field2))
@@ -349,7 +349,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `addField to empty schema succeeds`() {
+  fun addField_toEmptySchemaSucceeds() {
     val schema = TaskTemplateSchema()
     val field = FieldDefinition("field1", "Field 1", FieldType.Text())
 
@@ -360,7 +360,7 @@ class TaskTemplateSchemaTest {
   }
 
   @Test
-  fun `duplicateField at end of list appends correctly`() {
+  fun duplicateField_atEndOfListAppendsCorrectly() {
     val field1 = FieldDefinition("field1", "Field 1", FieldType.Text())
     val field2 = FieldDefinition("field2", "Field 2", FieldType.Text())
     val schema = TaskTemplateSchema(listOf(field1, field2))

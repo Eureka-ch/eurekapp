@@ -1,4 +1,5 @@
 /* Portions of this code and documentation were generated with the help of AI (ChatGPT 5.1). */
+/* This code was written with help of Claude. */
 package ch.eureka.eurekapp.ui.home
 
 import ch.eureka.eurekapp.model.data.meeting.Meeting
@@ -143,7 +144,7 @@ class HomeOverviewViewModelTest {
   }
 
   @Test
-  fun projectsFlow_catchBlock_handlesError() = runTest {
+  fun projectsFlow_handlesErrorWithCatchBlock() = runTest {
     projectRepository.setCurrentUserProjects(flow { throw IllegalStateException("Project error") })
     userRepository.setCurrentUser(flowOf(null))
     taskRepository.setCurrentUserTasks(flowOf(emptyList()))

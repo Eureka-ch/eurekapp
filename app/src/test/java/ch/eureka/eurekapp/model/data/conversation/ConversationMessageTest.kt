@@ -1,3 +1,4 @@
+// Portions of this file were generated with the help of Claude (Sonnet 4.5).
 package ch.eureka.eurekapp.model.data.conversation
 
 import com.google.firebase.Timestamp
@@ -14,7 +15,7 @@ Co-author: Claude 4.5 Sonnet
 class ConversationMessageTest {
 
   @Test
-  fun `default constructor creates message with empty values`() {
+  fun conversationMessage_createsMessageWithEmptyValues() {
     val message = ConversationMessage()
     assertEquals("", message.messageId)
     assertEquals("", message.senderId)
@@ -25,7 +26,7 @@ class ConversationMessageTest {
   }
 
   @Test
-  fun `constructor with all parameters sets values correctly`() {
+  fun conversationMessage_setsValuesCorrectly() {
     val timestamp = Timestamp.now()
     val editedTimestamp = Timestamp.now()
     val message =
@@ -46,7 +47,7 @@ class ConversationMessageTest {
   }
 
   @Test
-  fun `equals and hashCode work correctly`() {
+  fun conversationMessage_worksCorrectly() {
     val timestamp = Timestamp.now()
     val message1 = ConversationMessage(messageId = "msg1", text = "Test", createdAt = timestamp)
     val message2 = ConversationMessage(messageId = "msg1", text = "Test", createdAt = timestamp)

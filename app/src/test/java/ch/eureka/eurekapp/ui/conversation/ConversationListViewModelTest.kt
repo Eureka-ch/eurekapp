@@ -29,6 +29,7 @@ import org.junit.Test
 /*
 Co-author: GPT-5 Codex
 Co-author: Claude 4.5 Sonnet
+This code was written with help of Claude.
 */
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -67,7 +68,7 @@ class ConversationListViewModelTest {
   }
 
   @Test
-  fun `loadConversations emits conversations with resolved display data`() = runTest {
+  fun loadConversations_emitsConversationsWithResolvedDisplayData() = runTest {
     // Arrange: Set up mock data for a conversation with resolved user and project
     val otherUser = User(uid = "otherUser", displayName = "John Doe", photoUrl = "http://photo.url")
     val project = Project(projectId = "project1", name = "Test Project")
@@ -113,7 +114,7 @@ class ConversationListViewModelTest {
   }
 
   @Test
-  fun `loadConversations uses fallback for unknown user`() = runTest {
+  fun loadConversations_usesFallbackForUnknownUser() = runTest {
     // Arrange: User repository returns null (user not found)
     val project = Project(projectId = "project1", name = "Test Project")
     val conversation =
@@ -152,7 +153,7 @@ class ConversationListViewModelTest {
   }
 
   @Test
-  fun `connectivity state updates UI state`() = runTest {
+  fun connectivityState_updatesUiState() = runTest {
     // Arrange: Connectivity observer reports offline
     every { mockConversationRepository.getConversationsForCurrentUser() } returns
         flowOf(emptyList())
@@ -185,7 +186,7 @@ class ConversationListViewModelTest {
    * the conversation card to show recent activity.
    */
   @Test
-  fun `loadConversations resolves lastMessagePreview`() = runTest {
+  fun loadConversations_resolvesLastMessagePreview() = runTest {
     val otherUser = User(uid = "otherUser", displayName = "Jane")
     val project = Project(projectId = "project1", name = "Test Project")
     val conversation =
@@ -222,7 +223,7 @@ class ConversationListViewModelTest {
    * map is empty for the current user, any message makes it unread.
    */
   @Test
-  fun `loadConversations calculates hasUnread when lastReadAt is null`() = runTest {
+  fun loadConversations_calculatesHasUnreadWhenLastReadAtIsNull() = runTest {
     val otherUser = User(uid = "otherUser", displayName = "Jane")
     val project = Project(projectId = "project1", name = "Test Project")
     val conversation =
@@ -261,7 +262,7 @@ class ConversationListViewModelTest {
    * lastReadAt timestamp with lastMessageAt to determine read status.
    */
   @Test
-  fun `loadConversations calculates hasUnread false when read after last message`() = runTest {
+  fun loadConversations_calculatesHasUnreadFalseWhenReadAfterLastMessage() = runTest {
     val otherUser = User(uid = "otherUser", displayName = "Jane")
     val project = Project(projectId = "project1", name = "Test Project")
     val pastTime = com.google.firebase.Timestamp(java.util.Date(System.currentTimeMillis() - 60000))
@@ -299,7 +300,7 @@ class ConversationListViewModelTest {
    * without any messages should not show unread indicators.
    */
   @Test
-  fun `loadConversations hasUnread is false when no messages`() = runTest {
+  fun loadConversations_hasUnreadIsFalseWhenNoMessages() = runTest {
     val otherUser = User(uid = "otherUser", displayName = "Jane")
     val project = Project(projectId = "project1", name = "Test Project")
     val conversation =
@@ -337,7 +338,7 @@ class ConversationListViewModelTest {
    * to convert timestamp to "now", "5m", "2h", etc.
    */
   @Test
-  fun `loadConversations resolves lastMessageTime`() = runTest {
+  fun loadConversations_resolvesLastMessageTime() = runTest {
     val otherUser = User(uid = "otherUser", displayName = "Jane")
     val project = Project(projectId = "project1", name = "Test Project")
     val conversation =
@@ -371,7 +372,7 @@ class ConversationListViewModelTest {
   }
 
   @Test
-  fun resolveConversationDisplayData_withMultipleOtherMembersReturnsAllNames() = runTest {
+  fun resolveConversationDisplayData_returnsAllNamesWithMultipleOtherMembers() = runTest {
     val mockConversationRepo =
         mockk<ch.eureka.eurekapp.model.data.conversation.ConversationRepository>()
     val mockUserRepo = mockk<ch.eureka.eurekapp.model.data.user.UserRepository>()
@@ -419,7 +420,7 @@ class ConversationListViewModelTest {
   }
 
   @Test
-  fun resolveConversationDisplayData_withEmptyOtherUserIdsReturnsEmptyLists() = runTest {
+  fun resolveConversationDisplayData_returnsEmptyListsWithEmptyOtherUserIds() = runTest {
     val mockConversationRepo =
         mockk<ch.eureka.eurekapp.model.data.conversation.ConversationRepository>()
     val mockUserRepo = mockk<ch.eureka.eurekapp.model.data.user.UserRepository>()

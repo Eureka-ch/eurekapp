@@ -5,11 +5,15 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
-/** Unit tests for [MessageEntity]. */
+/**
+ * Unit tests for [MessageEntity].
+ *
+ * Note: This code was written with help of Claude.
+ */
 class MessageEntityTest {
 
   @Test
-  fun `default constructor creates object with expected default values`() {
+  fun defaultConstructor_createsObjectWithExpectedDefaultValues() {
     val entity =
         MessageEntity(
             messageId = "msg_123", text = "Test Note", senderId = "user_1", createdAtMillis = 1000L)
@@ -21,7 +25,7 @@ class MessageEntityTest {
   }
 
   @Test
-  fun `constructor with all arguments creates object correctly`() {
+  fun constructorWithAllArguments_createsObjectCorrectly() {
     val entity =
         MessageEntity(
             localId = 55,
@@ -37,7 +41,7 @@ class MessageEntityTest {
   }
 
   @Test
-  fun `equals and hashCode contract works correctly`() {
+  fun equalsAndHashCodeContract_worksCorrectly() {
     val entity1 =
         MessageEntity(
             localId = 1,
@@ -76,7 +80,7 @@ class MessageEntityTest {
   }
 
   @Test
-  fun `copy creates new instance with modified values`() {
+  fun copy_createsNewInstanceWithModifiedValues() {
     val original =
         MessageEntity(
             messageId = "original_id",

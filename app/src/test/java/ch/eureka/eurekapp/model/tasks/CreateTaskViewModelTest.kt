@@ -46,6 +46,7 @@ import org.junit.Test
 /*
  * Portions of this code were generated with the help of Claude <noreply@anthropic.com> and GPT-5 Codex.
  * Co-Authored-By: Claude Sonnet 4.5
+ * This code was written with help of Claude.
  */
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -120,7 +121,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun viewModel_initialState_hasCorrectDefaults() = runTest {
+  fun viewModel_hasCorrectDefaultsInInitialState() = runTest {
     viewModel = createViewModel()
     advanceUntilIdle()
 
@@ -184,7 +185,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun availableProjects_loadedFromRepositoryFlow() = runTest {
+  fun availableProjects_areLoadedFromRepositoryFlow() = runTest {
     val projects =
         listOf(
             Project(
@@ -206,7 +207,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun availableProjects_emptyListWhenNoProjects() = runTest {
+  fun availableProjects_areEmptyListWhenNoProjects() = runTest {
     viewModel = createViewModel()
     advanceUntilIdle()
 
@@ -263,7 +264,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun removeAttachment_withInvalidIndex_doesNothing() = runTest {
+  fun removeAttachment_doesNothingWithInvalidIndex() = runTest {
     viewModel = createViewModel()
     advanceUntilIdle()
 
@@ -282,7 +283,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun deletePhoto_withSecurityException_returnsFalse() = runTest {
+  fun deletePhoto_returnsFalseWithSecurityException() = runTest {
     viewModel = createViewModel()
     advanceUntilIdle()
 
@@ -299,7 +300,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun deletePhoto_withZeroRowsDeleted_returnsFalse() = runTest {
+  fun deletePhoto_returnsFalseWithZeroRowsDeleted() = runTest {
     viewModel = createViewModel()
     advanceUntilIdle()
 
@@ -387,7 +388,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun addTask_withPhotos_uploadsPhotosAndCreatesTask() = runTest {
+  fun addTask_uploadsPhotosAndCreatesTaskWithPhotos() = runTest {
     viewModel = createViewModel(getCurrentUserId = { "test-user-123" })
     viewModel.setProjectId("project123")
     viewModel.setTitle("Test Task")
@@ -410,7 +411,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun addTask_withFileUploadError_setsIsSavingToFalse() = runTest {
+  fun addTask_setsIsSavingToFalseWithFileUploadError() = runTest {
     viewModel = createViewModel(getCurrentUserId = { "test-user-123" })
     viewModel.setProjectId("project123")
     viewModel.setTitle("Test Task")
@@ -433,7 +434,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun addTask_withTaskCreationError_setsIsSavingToFalse() = runTest {
+  fun addTask_setsIsSavingToFalseWithTaskCreationError() = runTest {
     viewModel = createViewModel(getCurrentUserId = { "test-user-123" })
     viewModel.setProjectId("project123")
     viewModel.setTitle("Test Task")
@@ -453,7 +454,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun addTask_withInvalidDate_setsErrorMessage() = runTest {
+  fun addTask_setsErrorMessageWithInvalidDate() = runTest {
     viewModel = createViewModel()
     viewModel.setProjectId("project123")
     viewModel.setTitle("Test Task")
@@ -534,7 +535,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun addTask_withValidReminderTime_createsTaskWithReminder() = runTest {
+  fun addTask_createsTaskWithReminderWithValidReminderTime() = runTest {
     viewModel = createViewModel(getCurrentUserId = { "test-user-123" })
     viewModel.setProjectId("project123")
     viewModel.setTitle("Test Task")
@@ -557,7 +558,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun addTask_withInvalidReminderTimeFormat_createsTaskWithoutReminder() = runTest {
+  fun addTask_createsTaskWithoutReminderWithInvalidReminderTimeFormat() = runTest {
     viewModel = createViewModel(getCurrentUserId = { "test-user-123" })
     viewModel.setProjectId("project123")
     viewModel.setTitle("Test Task")
@@ -582,7 +583,7 @@ class CreateTaskViewModelTest {
   // ========== USER ASSIGNMENT TESTS ==========
 
   @Test
-  fun initialState_noUserIsPreselectedAsAssignee() = runTest {
+  fun initialState_hasNoUserPreselectedAsAssignee() = runTest {
     viewModel = createViewModel(getCurrentUserId = { "user-123" })
     advanceUntilIdle()
 
@@ -592,7 +593,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun initialState_availableUsersIsEmpty() = runTest {
+  fun initialState_hasEmptyAvailableUsers() = runTest {
     viewModel = createViewModel(getCurrentUserId = { "user-123" })
     advanceUntilIdle()
 
@@ -627,7 +628,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun loadProjectMembers_withBlankProjectId_clearsAvailableUsers() = runTest {
+  fun loadProjectMembers_clearsAvailableUsersWithBlankProjectId() = runTest {
     viewModel = createViewModel(getCurrentUserId = { "user-123" })
     advanceUntilIdle()
 
@@ -700,7 +701,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun addTask_withEmptySelectedUsers_createsTaskWithEmptyAssignedUsers() = runTest {
+  fun addTask_createsTaskWithEmptyAssignedUsersWithEmptySelectedUsers() = runTest {
     viewModel = createViewModel(getCurrentUserId = { "test-user-123" })
     viewModel.setProjectId("project123")
     viewModel.setTitle("Test Task")
@@ -861,7 +862,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun removeDependency_whenNotExists_doesNotCrash() = runTest {
+  fun removeDependency_doesNotCrashWhenNotExists() = runTest {
     viewModel = createViewModel()
     viewModel.setProjectId("project123")
     advanceUntilIdle()
@@ -908,7 +909,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun validateDependency_noCycle_returnsTrueAndClearsError() = runTest {
+  fun validateDependency_returnsTrueAndClearsErrorWithNoCycle() = runTest {
     mockkObject(IdGenerator)
     try {
       every { IdGenerator.generateTaskId() } returns "task_new"
@@ -931,7 +932,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun validateDependency_cycleDetected_setsErrorAndReturnsFalse() = runTest {
+  fun validateDependency_setsErrorAndReturnsFalseWithCycleDetected() = runTest {
     mockkObject(IdGenerator)
     try {
       every { IdGenerator.generateTaskId() } returns "task_new"
@@ -956,7 +957,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun addTask_withDependencies_savesDependencies() = runTest {
+  fun addTask_savesDependenciesWithDependencies() = runTest {
     viewModel = createViewModel(getCurrentUserId = { "test-user" })
     viewModel.setProjectId("project123")
     viewModel.setTitle("Test Task")
@@ -1025,7 +1026,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun loadTemplatesForProject_withEmptyProjectId_clearsTemplates() = runTest {
+  fun loadTemplatesForProject_clearsTemplatesWithEmptyProjectId() = runTest {
     val templates = listOf(TaskTemplate(templateID = "t1", title = "Bug Report"))
     mockTemplateRepository.setTemplates("project123", templates)
 
@@ -1104,7 +1105,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun selectTemplate_withNullId_clearsSelection() = runTest {
+  fun selectTemplate_clearsSelectionWithNullId() = runTest {
     val template = TaskTemplate(templateID = "t1", title = "Bug Report")
     mockTemplateRepository.setTemplates("project123", listOf(template))
 
@@ -1185,7 +1186,7 @@ class CreateTaskViewModelTest {
   }
 
   @Test
-  fun addTask_withNoTemplate_createsTaskWithEmptyTemplateId() = runTest {
+  fun addTask_createsTaskWithEmptyTemplateIdWithNoTemplate() = runTest {
     viewModel = createViewModel(getCurrentUserId = { "test-user-123" })
     viewModel.setProjectId("project123")
     viewModel.setTitle("Test Task")

@@ -9,101 +9,101 @@ import org.junit.Test
 class FieldValueTest {
 
   @Test
-  fun `TextValue has correct typeKey`() {
+  fun textValue_hasCorrectTypeKey() {
     val textValue = FieldValue.TextValue("Hello")
     assertEquals(FieldTypeKey.TEXT, textValue.typeKey)
   }
 
   @Test
-  fun `TextValue stores value correctly`() {
+  fun textValue_storesValueCorrectly() {
     val textValue = FieldValue.TextValue("Hello World")
     assertEquals("Hello World", textValue.value)
   }
 
   @Test
-  fun `TextValue accepts empty string`() {
+  fun textValue_acceptsEmptyString() {
     val textValue = FieldValue.TextValue("")
     assertEquals("", textValue.value)
   }
 
   @Test
-  fun `NumberValue has correct typeKey`() {
+  fun numberValue_hasCorrectTypeKey() {
     val numberValue = FieldValue.NumberValue(42.0)
     assertEquals(FieldTypeKey.NUMBER, numberValue.typeKey)
   }
 
   @Test
-  fun `NumberValue stores value correctly`() {
+  fun numberValue_storesValueCorrectly() {
     val numberValue = FieldValue.NumberValue(123.456)
     assertEquals(123.456, numberValue.value)
   }
 
   @Test
-  fun `NumberValue accepts negative values`() {
+  fun numberValue_acceptsNegativeValues() {
     val numberValue = FieldValue.NumberValue(-10.5)
     assertEquals(-10.5, numberValue.value)
   }
 
   @Test
-  fun `NumberValue accepts zero`() {
+  fun numberValue_acceptsZero() {
     val numberValue = FieldValue.NumberValue(0.0)
     assertEquals(0.0, numberValue.value)
   }
 
   @Test
-  fun `NumberValue accepts null`() {
+  fun numberValue_acceptsNull() {
     val numberValue = FieldValue.NumberValue(null)
     assertEquals(null, numberValue.value)
   }
 
   @Test
-  fun `DateValue has correct typeKey`() {
+  fun dateValue_hasCorrectTypeKey() {
     val dateValue = FieldValue.DateValue("2024-01-15")
     assertEquals(FieldTypeKey.DATE, dateValue.typeKey)
   }
 
   @Test
-  fun `DateValue stores value correctly`() {
+  fun dateValue_storesValueCorrectly() {
     val dateValue = FieldValue.DateValue("2024-01-15T10:30:00")
     assertEquals("2024-01-15T10:30:00", dateValue.value)
   }
 
   @Test
-  fun `DateValue accepts empty string`() {
+  fun dateValue_acceptsEmptyString() {
     val dateValue = FieldValue.DateValue("")
     assertEquals("", dateValue.value)
   }
 
   @Test
-  fun `SingleSelectValue has correct typeKey`() {
+  fun singleSelectValue_hasCorrectTypeKey() {
     val singleSelectValue = FieldValue.SingleSelectValue("option1")
     assertEquals(FieldTypeKey.SINGLE_SELECT, singleSelectValue.typeKey)
   }
 
   @Test
-  fun `SingleSelectValue stores value correctly`() {
+  fun singleSelectValue_storesValueCorrectly() {
     val singleSelectValue = FieldValue.SingleSelectValue("high")
     assertEquals("high", singleSelectValue.value)
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun `SingleSelectValue rejects blank value`() {
+  fun singleSelectValue_rejectsBlankValue() {
     FieldValue.SingleSelectValue("")
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun `SingleSelectValue rejects whitespace-only value`() {
+  fun singleSelectValue_rejectsWhitespaceOnlyValue() {
     FieldValue.SingleSelectValue("   ")
   }
 
   @Test
-  fun `MultiSelectValue has correct typeKey`() {
+  fun multiSelectValue_hasCorrectTypeKey() {
     val multiSelectValue = FieldValue.MultiSelectValue(listOf("tag1", "tag2"))
     assertEquals(FieldTypeKey.MULTI_SELECT, multiSelectValue.typeKey)
   }
 
   @Test
-  fun `MultiSelectValue stores values correctly`() {
+  fun multiSelectValue_storesValuesCorrectly() {
     val multiSelectValue = FieldValue.MultiSelectValue(listOf("tag1", "tag2", "tag3"))
     assertEquals(3, multiSelectValue.values.size)
     assertEquals("tag1", multiSelectValue.values[0])
@@ -112,28 +112,28 @@ class FieldValueTest {
   }
 
   @Test
-  fun `MultiSelectValue accepts empty list`() {
+  fun multiSelectValue_acceptsEmptyList() {
     val multiSelectValue = FieldValue.MultiSelectValue(emptyList())
     assertEquals(0, multiSelectValue.values.size)
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun `MultiSelectValue rejects blank values`() {
+  fun multiSelectValue_rejectsBlankValues() {
     FieldValue.MultiSelectValue(listOf("tag1", "", "tag3"))
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun `MultiSelectValue rejects whitespace-only values`() {
+  fun multiSelectValue_rejectsWhitespaceOnlyValues() {
     FieldValue.MultiSelectValue(listOf("tag1", "   ", "tag3"))
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun `MultiSelectValue rejects duplicate values`() {
+  fun multiSelectValue_rejectsDuplicateValues() {
     FieldValue.MultiSelectValue(listOf("tag1", "tag2", "tag1"))
   }
 
   @Test
-  fun `MultiSelectValue with single value`() {
+  fun multiSelectValue_withSingleValue() {
     val multiSelectValue = FieldValue.MultiSelectValue(listOf("tag1"))
     assertEquals(1, multiSelectValue.values.size)
     assertEquals("tag1", multiSelectValue.values[0])

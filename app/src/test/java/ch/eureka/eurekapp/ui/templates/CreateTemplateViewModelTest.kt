@@ -1,4 +1,5 @@
 // Portions of this code were generated with the help of Claude Sonnet 4.5 in Claude Code
+// This code was written with help of Claude.
 
 package ch.eureka.eurekapp.ui.templates
 
@@ -46,7 +47,7 @@ class CreateTemplateViewModelTest {
   }
 
   @Test
-  fun viewModel_initialState_hasCorrectDefaults() = runTest {
+  fun viewModel_hasCorrectDefaultsInInitialState() = runTest {
     viewModel = CreateTemplateViewModel(mockRepository)
     advanceUntilIdle()
 
@@ -63,7 +64,7 @@ class CreateTemplateViewModelTest {
   }
 
   @Test
-  fun viewModel_initialState_withProjectId_setsProjectId() = runTest {
+  fun viewModel_setsProjectIdWithInitialStateWithProjectId() = runTest {
     viewModel = CreateTemplateViewModel(mockRepository, initialProjectId = "proj1")
     advanceUntilIdle()
 
@@ -85,7 +86,7 @@ class CreateTemplateViewModelTest {
   }
 
   @Test
-  fun updateTitle_withBlankTitle_setsTitleError() = runTest {
+  fun updateTitle_setsTitleErrorWithBlankTitle() = runTest {
     viewModel = CreateTemplateViewModel(mockRepository)
     advanceUntilIdle()
 
@@ -127,7 +128,7 @@ class CreateTemplateViewModelTest {
   }
 
   @Test
-  fun addField_withMultipleFields_addsAllFields() = runTest {
+  fun addField_addsAllFieldsWithMultipleFields() = runTest {
     viewModel = CreateTemplateViewModel(mockRepository)
     advanceUntilIdle()
 
@@ -164,7 +165,7 @@ class CreateTemplateViewModelTest {
   }
 
   @Test
-  fun updateField_withRequiredChange_updatesField() = runTest {
+  fun updateField_updatesFieldWithRequiredChange() = runTest {
     viewModel = CreateTemplateViewModel(mockRepository)
     advanceUntilIdle()
 
@@ -252,7 +253,7 @@ class CreateTemplateViewModelTest {
   }
 
   @Test
-  fun setEditingFieldId_withNull_clearsEditingField() = runTest {
+  fun setEditingFieldId_clearsEditingFieldWithNull() = runTest {
     viewModel = CreateTemplateViewModel(mockRepository)
     advanceUntilIdle()
 
@@ -266,7 +267,7 @@ class CreateTemplateViewModelTest {
   }
 
   @Test
-  fun validateAll_withValidData_returnsTrue() = runTest {
+  fun validateAll_returnsTrueWithValidData() = runTest {
     viewModel = CreateTemplateViewModel(mockRepository)
     advanceUntilIdle()
 
@@ -285,7 +286,7 @@ class CreateTemplateViewModelTest {
   }
 
   @Test
-  fun validateAll_withBlankTitle_returnsFalse() = runTest {
+  fun validateAll_returnsFalseWithBlankTitle() = runTest {
     viewModel = CreateTemplateViewModel(mockRepository)
     advanceUntilIdle()
 
@@ -303,7 +304,7 @@ class CreateTemplateViewModelTest {
   }
 
   @Test
-  fun validateAll_withNoFields_returnsFalse() = runTest {
+  fun validateAll_returnsFalseWithNoFields() = runTest {
     viewModel = CreateTemplateViewModel(mockRepository)
     advanceUntilIdle()
 
@@ -336,7 +337,7 @@ class CreateTemplateViewModelTest {
   }
 
   @Test
-  fun save_withValidData_succeeds() = runTest {
+  fun save_succeedsWithValidData() = runTest {
     viewModel =
         CreateTemplateViewModel(
             mockRepository,
@@ -371,7 +372,7 @@ class CreateTemplateViewModelTest {
   }
 
   @Test
-  fun save_withInvalidData_fails() = runTest {
+  fun save_failsWithInvalidData() = runTest {
     viewModel =
         CreateTemplateViewModel(
             mockRepository, ioDispatcher = testDispatcher, mainDispatcher = testDispatcher)
@@ -415,7 +416,7 @@ class CreateTemplateViewModelTest {
   }
 
   @Test
-  fun save_onRepositoryFailure_callsOnFailure() = runTest {
+  fun save_callsOnFailureWithRepositoryFailure() = runTest {
     viewModel =
         CreateTemplateViewModel(
             mockRepository,
@@ -443,7 +444,7 @@ class CreateTemplateViewModelTest {
   }
 
   @Test
-  fun templateEditorState_errorCount_countsAllErrors() {
+  fun templateEditorState_countsAllErrorsWithErrorCount() {
     val state =
         TemplateEditorState(
             titleError = "Title error",
@@ -453,14 +454,14 @@ class CreateTemplateViewModelTest {
   }
 
   @Test
-  fun templateEditorState_errorCount_withNoErrors_isZero() {
+  fun templateEditorState_isZeroWithErrorCountWithNoErrors() {
     val state = TemplateEditorState()
 
     assertEquals(0, state.errorCount)
   }
 
   @Test
-  fun templateEditorState_canSave_withValidState_isTrue() {
+  fun templateEditorState_isTrueWithCanSaveWithValidState() {
     val field = FieldDefinition(id = "field1", label = "Name", type = FieldType.Text())
     val state = TemplateEditorState(title = "Valid Title", fields = listOf(field))
 
@@ -468,7 +469,7 @@ class CreateTemplateViewModelTest {
   }
 
   @Test
-  fun templateEditorState_canSave_withBlankTitle_isFalse() {
+  fun templateEditorState_isFalseWithCanSaveWithBlankTitle() {
     val field = FieldDefinition(id = "field1", label = "Name", type = FieldType.Text())
     val state = TemplateEditorState(title = "", fields = listOf(field))
 
@@ -476,14 +477,14 @@ class CreateTemplateViewModelTest {
   }
 
   @Test
-  fun templateEditorState_canSave_withNoFields_isFalse() {
+  fun templateEditorState_isFalseWithCanSaveWithNoFields() {
     val state = TemplateEditorState(title = "Valid Title", fields = emptyList())
 
     assertFalse(state.canSave)
   }
 
   @Test
-  fun templateEditorState_canSave_withErrors_isFalse() {
+  fun templateEditorState_isFalseWithCanSaveWithErrors() {
     val field = FieldDefinition(id = "field1", label = "Name", type = FieldType.Text())
     val state =
         TemplateEditorState(
@@ -493,7 +494,7 @@ class CreateTemplateViewModelTest {
   }
 
   @Test
-  fun templateEditorState_canSave_whileSaving_isFalse() {
+  fun templateEditorState_isFalseWithCanSaveWhileSaving() {
     val field = FieldDefinition(id = "field1", label = "Name", type = FieldType.Text())
     val state = TemplateEditorState(title = "Valid Title", fields = listOf(field), isSaving = true)
 

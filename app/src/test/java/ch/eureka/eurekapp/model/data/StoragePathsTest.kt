@@ -3,7 +3,10 @@ package ch.eureka.eurekapp.model.data
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-/** Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5 */
+/**
+ * Note: This file was partially written by ChatGPT (GPT-5) Co-author: GPT-5 This code was written
+ * with help of Claude.
+ */
 class StoragePathsTest {
 
   @Test

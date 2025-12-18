@@ -42,6 +42,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 Note: This file was partially written by GPT-5 Codex
 Co-author : GPT-5
 Co-Authored-By: Claude Opus 4.5
+This code was written with help of Claude.
 */
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -93,7 +94,7 @@ class EditTaskViewModelTest {
   }
 
   @Test
-  fun availableProjects_loadedFromRepositoryFlow() = runTest {
+  fun availableProjects_areLoadedFromRepositoryFlow() = runTest {
     val projects =
         listOf(
             Project(
@@ -123,7 +124,7 @@ class EditTaskViewModelTest {
   }
 
   @Test
-  fun availableProjects_emptyListWhenNoProjects() = runTest {
+  fun availableProjects_areEmptyListWhenNoProjects() = runTest {
     viewModel =
         EditTaskViewModel(
             taskRepository = mockTaskRepository,
@@ -141,7 +142,7 @@ class EditTaskViewModelTest {
   }
 
   @Test
-  fun viewModel_initialState_hasCorrectDefaults() = runTest {
+  fun viewModel_hasCorrectDefaultsInInitialState() = runTest {
     viewModel =
         EditTaskViewModel(
             taskRepository = mockTaskRepository,
@@ -254,7 +255,7 @@ class EditTaskViewModelTest {
   }
 
   @Test
-  fun addDependency_withCycle_setsCycleError() = runTest {
+  fun addDependency_setsCycleErrorWithCycle() = runTest {
     val task =
         Task(
             taskID = "task123",
@@ -323,7 +324,7 @@ class EditTaskViewModelTest {
   }
 
   @Test
-  fun removeDependency_whenNotExists_doesNotCrash() = runTest {
+  fun removeDependency_doesNotCrashWhenNotExists() = runTest {
     val task =
         Task(
             taskID = "task123",
@@ -353,7 +354,7 @@ class EditTaskViewModelTest {
   }
 
   @Test
-  fun editTask_withDependencies_savesDependencies() = runTest {
+  fun editTask_savesDependenciesWithDependencies() = runTest {
     val task =
         Task(
             taskID = "task123",
@@ -392,7 +393,7 @@ class EditTaskViewModelTest {
   }
 
   @Test
-  fun editTask_withCycleDetected_preventsSave() = runTest {
+  fun editTask_preventsSaveWithCycleDetected() = runTest {
     val task =
         Task(
             taskID = "task123",

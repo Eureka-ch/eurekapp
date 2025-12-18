@@ -1,3 +1,4 @@
+// Portions of this file were generated with the help of Claude (Sonnet 4.5).
 package ch.eureka.eurekapp.model.chatbot
 
 import ch.eureka.eurekapp.BuildConfig
@@ -26,7 +27,7 @@ class ManualApiTest {
   }
 
   @Test
-  fun testDeterminantQuestion() =
+  fun manualApiTest_testDeterminantQuestion() =
       runTest(timeout = 90.seconds) {
         println("API Key present: ${BuildConfig.DEEPSEEK_API_KEY.isNotBlank()}")
 

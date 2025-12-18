@@ -35,6 +35,8 @@ import org.junit.Test
  *    initialization.
  * 3. Local/Hybrid repositories are instantiated correctly after [RepositoriesProvider.initialize]
  *    is called.
+ *
+ * Note: This code was written with help of Claude.
  */
 class RepositoriesProviderTest {
 
@@ -129,67 +131,67 @@ class RepositoriesProviderTest {
   }
 
   @Test
-  fun taskRepository_shouldNotBeNull() {
+  fun taskRepository_isNotNull() {
     assertNotNull("Task repository should not be null", RepositoriesProvider.taskRepository)
   }
 
   @Test
-  fun projectRepository_shouldNotBeNull() {
+  fun projectRepository_isNotNull() {
     assertNotNull("Project repository should not be null", RepositoriesProvider.projectRepository)
   }
 
   @Test
-  fun fileRepository_shouldNotBeNull() {
+  fun fileRepository_isNotNull() {
     assertNotNull("File repository should not be null", RepositoriesProvider.fileRepository)
   }
 
   @Test
-  fun fileRepository_shouldBeInstanceOfFirebaseFileStorageRepository() {
+  fun fileRepository_isInstanceOfFirebaseFileStorageRepository() {
     assertTrue(
         "File repository should be instance of FirebaseFileStorageRepository",
         RepositoriesProvider.fileRepository is FirebaseFileStorageRepository)
   }
 
   @Test
-  fun chatRepository_shouldNotBeNull() {
+  fun chatRepository_isNotNull() {
     assertNotNull("Chat repository should not be null", RepositoriesProvider.chatRepository)
   }
 
   @Test
-  fun invitationRepository_shouldNotBeNull() {
+  fun invitationRepository_isNotNull() {
     assertNotNull(
         "Invitation repository should not be null", RepositoriesProvider.invitationRepository)
   }
 
   @Test
-  fun meetingRepository_shouldNotBeNull() {
+  fun meetingRepository_isNotNull() {
     assertNotNull("Meeting repository should not be null", RepositoriesProvider.meetingRepository)
   }
 
   @Test
-  fun taskTemplateRepository_shouldNotBeNull() {
+  fun taskTemplateRepository_isNotNull() {
     assertNotNull(
         "Task template repository should not be null", RepositoriesProvider.taskTemplateRepository)
   }
 
   @Test
-  fun userRepository_shouldNotBeNull() {
+  fun userRepository_isNotNull() {
     assertNotNull("User repository should not be null", RepositoriesProvider.userRepository)
   }
 
   @Test
-  fun conversationRepository_shouldNotBeNull() {
+  fun conversationRepository_isNotNull() {
     assertNotNull(
         "Conversation repository should not be null", RepositoriesProvider.conversationRepository)
   }
 
   @Test
-  fun ideasRepository_shouldNotBeNull() {
+  fun ideasRepository_isNotNull() {
     assertNotNull("Ideas repository should not be null", RepositoriesProvider.ideasRepository)
   }
 
   @Test
-  fun repositoryInstances_shouldBeSingleton() {
+  fun repositoryInstances_areSingleton() {
     val firstTaskRepo = RepositoriesProvider.taskRepository
     val secondTaskRepo = RepositoriesProvider.taskRepository
     assertSame(
@@ -262,7 +264,7 @@ class RepositoriesProviderTest {
   }
 
   @Test
-  fun unifiedSelfNotesRepository_shouldBeInstanceOfUnifiedSelfNotesRepository_whenInitialized() {
+  fun unifiedSelfNotesRepository_isInstanceOfUnifiedSelfNotesRepositoryWhenInitialized() {
     val mockContext = mockk<Context>(relaxed = true)
     RepositoriesProvider.initialize(mockContext)
 
@@ -272,7 +274,7 @@ class RepositoriesProviderTest {
   }
 
   @Test
-  fun userPreferencesRepository_shouldBeInstanceOfUserPreferencesRepository_whenInitialized() {
+  fun userPreferencesRepository_isInstanceOfUserPreferencesRepositoryWhenInitialized() {
     val mockContext = mockk<Context>(relaxed = true)
     RepositoriesProvider.initialize(mockContext)
 
@@ -282,12 +284,12 @@ class RepositoriesProviderTest {
   }
 
   @Test
-  fun workManager_shouldThrowIfNotInitialized() {
+  fun workManager_throwsIfNotInitialized() {
     assertThrows(IllegalStateException::class.java) { RepositoriesProvider.workManager }
   }
 
   @Test
-  fun workManager_shouldNotBeNull_whenInitialized() {
+  fun workManager_isNotNullWhenInitialized() {
     val mockContext = mockk<Context>(relaxed = true)
     RepositoriesProvider.initialize(mockContext)
 

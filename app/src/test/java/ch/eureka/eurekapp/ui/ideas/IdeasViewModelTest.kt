@@ -1,4 +1,5 @@
 /* Portions of this file were written with the help of GPT-5 Codex and Gemini. */
+/* This code was written with help of Claude. */
 package ch.eureka.eurekapp.ui.ideas
 
 import ch.eureka.eurekapp.model.data.chat.Message

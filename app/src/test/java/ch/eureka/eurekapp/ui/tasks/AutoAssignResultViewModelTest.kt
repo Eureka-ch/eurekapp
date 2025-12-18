@@ -24,6 +24,7 @@ import org.junit.Before
 import org.junit.Test
 
 // portions of this code and documentation were generated with the help of AI.
+// This code was written with help of Claude.
 @OptIn(ExperimentalCoroutinesApi::class)
 class AutoAssignResultViewModelTest {
 
@@ -68,7 +69,7 @@ class AutoAssignResultViewModelTest {
   }
 
   @Test
-  fun viewModel_initialState_isLoading() = runTest {
+  fun viewModel_isLoadingInInitialState() = runTest {
     // Set up empty projects to trigger immediate completion
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
 
@@ -94,7 +95,7 @@ class AutoAssignResultViewModelTest {
   }
 
   @Test
-  fun viewModel_withNoProjects_showsError() = runTest {
+  fun viewModel_showsErrorWithNoProjects() = runTest {
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
     viewModel =
         AutoAssignResultViewModel(
@@ -110,7 +111,7 @@ class AutoAssignResultViewModelTest {
   }
 
   @Test
-  fun viewModel_withNoMembers_showsError() = runTest {
+  fun viewModel_showsErrorWithNoMembers() = runTest {
     mockProjectRepository.setCurrentUserProjects(flowOf(listOf(testProject1)))
     mockProjectRepository.setMembers("proj1", flowOf(emptyList()))
     mockTaskRepository.setProjectTasks("proj1", flowOf(emptyList()))
@@ -128,7 +129,7 @@ class AutoAssignResultViewModelTest {
   }
 
   @Test
-  fun viewModel_withUnassignedTasks_proposesAssignments() = runTest {
+  fun viewModel_proposesAssignmentsWithUnassignedTasks() = runTest {
     setupBasicProject()
     mockTaskRepository.setProjectTasks(
         "proj1", flowOf(listOf(createTask("task1"), createTask("task2"))))
@@ -149,7 +150,7 @@ class AutoAssignResultViewModelTest {
   }
 
   @Test
-  fun viewModel_acceptAssignment_updatesState() = runTest {
+  fun viewModel_updatesStateWithAcceptAssignment() = runTest {
     setupBasicProject()
     mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(createTask("task1"))))
 
@@ -170,7 +171,7 @@ class AutoAssignResultViewModelTest {
   }
 
   @Test
-  fun viewModel_rejectAssignment_updatesState() = runTest {
+  fun viewModel_updatesStateWithRejectAssignment() = runTest {
     setupBasicProject()
     mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(createTask("task1"))))
 
@@ -191,7 +192,7 @@ class AutoAssignResultViewModelTest {
   }
 
   @Test
-  fun viewModel_acceptAll_acceptsAllAssignments() = runTest {
+  fun viewModel_acceptsAllAssignmentsWithAcceptAll() = runTest {
     setupBasicProject()
     mockTaskRepository.setProjectTasks(
         "proj1", flowOf(listOf(createTask("task1"), createTask("task2"))))
@@ -213,7 +214,7 @@ class AutoAssignResultViewModelTest {
   }
 
   @Test
-  fun viewModel_rejectAll_rejectsAllAssignments() = runTest {
+  fun viewModel_rejectsAllAssignmentsWithRejectAll() = runTest {
     setupBasicProject()
     mockTaskRepository.setProjectTasks(
         "proj1", flowOf(listOf(createTask("task1"), createTask("task2"))))
@@ -235,7 +236,7 @@ class AutoAssignResultViewModelTest {
   }
 
   @Test
-  fun viewModel_applyAcceptedAssignments_appliesOnlyAccepted() = runTest {
+  fun viewModel_appliesOnlyAcceptedWithApplyAcceptedAssignments() = runTest {
     setupBasicProject()
     mockTaskRepository.setProjectTasks(
         "proj1", flowOf(listOf(createTask("task1"), createTask("task2"))))
@@ -262,7 +263,7 @@ class AutoAssignResultViewModelTest {
   }
 
   @Test
-  fun viewModel_applyWithNoAccepted_showsError() = runTest {
+  fun viewModel_showsErrorWithApplyWithNoAccepted() = runTest {
     setupBasicProject()
     mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(createTask("task1"))))
 
@@ -287,7 +288,7 @@ class AutoAssignResultViewModelTest {
   }
 
   @Test
-  fun viewModel_withTaskNotFoundInProject_skipsAssignment() = runTest {
+  fun viewModel_skipsAssignmentWithTaskNotFoundInProject() = runTest {
     setupBasicProject()
     mockTaskRepository.setProjectTasks(
         "proj1", flowOf(listOf(createTask("task1"), createTask("task2"))))
@@ -304,7 +305,7 @@ class AutoAssignResultViewModelTest {
   }
 
   @Test
-  fun viewModel_withNullUser_skipsThatAssignment() = runTest {
+  fun viewModel_skipsThatAssignmentWithNullUser() = runTest {
     setupBasicProject()
     mockTaskRepository.setProjectTasks(
         "proj1", flowOf(listOf(createTask("task1"), createTask("task2"))))
@@ -323,7 +324,7 @@ class AutoAssignResultViewModelTest {
   }
 
   @Test
-  fun viewModel_withMultipleProjects_collectsAllTasksAndMembers() = runTest {
+  fun viewModel_collectsAllTasksAndMembersWithMultipleProjects() = runTest {
     val testProject2 =
         ch.eureka.eurekapp.model.data.project.Project(
             projectId = "proj2", name = "Project 2", memberIds = listOf("user2"))
@@ -353,7 +354,7 @@ class AutoAssignResultViewModelTest {
   }
 
   @Test
-  fun viewModel_withDuplicateMembers_removesDuplicates() = runTest {
+  fun viewModel_removesDuplicatesWithDuplicateMembers() = runTest {
     val testProject2 =
         ch.eureka.eurekapp.model.data.project.Project(
             projectId = "proj2", name = "Project 2", memberIds = listOf("user1"))

@@ -22,6 +22,7 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 
+/** This code was written with help of Claude. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SignInViewModelTest {
 
@@ -80,7 +81,7 @@ class SignInViewModelTest {
   }
 
   @Test
-  fun `signIn with new user creates user in database`() = runTest {
+  fun signIn_createsUserInDatabaseWithNewUser() = runTest {
     // Given
     val credential = mockk<Credential>()
     val credentialResponse = mockk<GetCredentialResponse>()
@@ -109,7 +110,7 @@ class SignInViewModelTest {
   }
 
   @Test
-  fun `signIn with existing user updates photoUrl and lastActive`() = runTest {
+  fun signIn_updatesPhotoUrlAndLastActiveWithExistingUser() = runTest {
     // Given
     val credential = mockk<Credential>()
     val credentialResponse = mockk<GetCredentialResponse>()
@@ -145,7 +146,7 @@ class SignInViewModelTest {
   }
 
   @Test
-  fun `signIn with existing user preserves displayName and email`() = runTest {
+  fun signIn_preservesDisplayNameAndEmailWithExistingUser() = runTest {
     // Given
     val credential = mockk<Credential>()
     val credentialResponse = mockk<GetCredentialResponse>()
@@ -169,7 +170,7 @@ class SignInViewModelTest {
   }
 
   @Test
-  fun `signIn handles user save failure`() = runTest {
+  fun signIn_handlesUserSaveFailure() = runTest {
     // Given
     val credential = mockk<Credential>()
     val credentialResponse = mockk<GetCredentialResponse>()
@@ -190,7 +191,7 @@ class SignInViewModelTest {
   }
 
   @Test
-  fun `signIn with null Firebase photoUrl uses empty string for new user`() = runTest {
+  fun signIn_usesEmptyStringForPhotoUrlWithNullFirebasePhotoUrlForNewUser() = runTest {
     // Given
     val credential = mockk<Credential>()
     val credentialResponse = mockk<GetCredentialResponse>()
@@ -212,31 +213,29 @@ class SignInViewModelTest {
   }
 
   @Test
-  fun `signIn with null Firebase photoUrl preserves existing photoUrl for existing user`() =
-      runTest {
-        // Given
-        val credential = mockk<Credential>()
-        val credentialResponse = mockk<GetCredentialResponse>()
-        every { credentialResponse.credential } returns credential
-        every { mockFirebaseUser.photoUrl } returns null
+  fun signIn_preservesExistingPhotoUrlWithNullFirebasePhotoUrlForExistingUser() = runTest {
+    // Given
+    val credential = mockk<Credential>()
+    val credentialResponse = mockk<GetCredentialResponse>()
+    every { credentialResponse.credential } returns credential
+    every { mockFirebaseUser.photoUrl } returns null
 
-        coEvery { credentialManager.getCredential(any(), any<GetCredentialRequest>()) } returns
-            credentialResponse
-        coEvery { authRepository.signInWithGoogle(credential) } returns
-            Result.success(mockFirebaseUser)
-        every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
-        coEvery { userRepository.saveUser(any()) } returns Result.success(Unit)
+    coEvery { credentialManager.getCredential(any(), any<GetCredentialRequest>()) } returns
+        credentialResponse
+    coEvery { authRepository.signInWithGoogle(credential) } returns Result.success(mockFirebaseUser)
+    every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
+    coEvery { userRepository.saveUser(any()) } returns Result.success(Unit)
 
-        // When
-        viewModel.signIn(context, credentialManager)
-        testDispatcher.scheduler.advanceUntilIdle()
+    // When
+    viewModel.signIn(context, credentialManager)
+    testDispatcher.scheduler.advanceUntilIdle()
 
-        // Then
-        coVerify { userRepository.saveUser(match { it.photoUrl == testUser.photoUrl }) }
-      }
+    // Then
+    coVerify { userRepository.saveUser(match { it.photoUrl == testUser.photoUrl }) }
+  }
 
   @Test
-  fun `signIn with null displayName uses empty string`() = runTest {
+  fun signIn_usesEmptyStringWithNullDisplayName() = runTest {
     // Given
     val credential = mockk<Credential>()
     val credentialResponse = mockk<GetCredentialResponse>()
@@ -258,7 +257,7 @@ class SignInViewModelTest {
   }
 
   @Test
-  fun `signIn with null email uses empty string`() = runTest {
+  fun signIn_usesEmptyStringWithNullEmail() = runTest {
     // Given
     val credential = mockk<Credential>()
     val credentialResponse = mockk<GetCredentialResponse>()
@@ -280,7 +279,7 @@ class SignInViewModelTest {
   }
 
   @Test
-  fun `signIn updates lastActive timestamp for existing user`() = runTest {
+  fun signIn_updatesLastActiveTimestampForExistingUser() = runTest {
     // Given
     val credential = mockk<Credential>()
     val credentialResponse = mockk<GetCredentialResponse>()

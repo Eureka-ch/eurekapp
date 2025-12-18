@@ -10,6 +10,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 // portions of this code and documentation were generated with the help of AI.
+// This code was written with help of Claude.
 /**
  * Unit tests for TaskAutoAssignmentService.
  *
@@ -18,7 +19,7 @@ import org.junit.Test
 class TaskAutoAssignmentServiceTest {
 
   @Test
-  fun assignTasks_withNoMembers_returnsAllTasksSkipped() {
+  fun assignTasks_returnsAllTasksSkippedWithNoMembers() {
     val tasks =
         listOf(
             Task(taskID = "task1", title = "Task 1", status = TaskStatus.TODO),
@@ -33,7 +34,7 @@ class TaskAutoAssignmentServiceTest {
   }
 
   @Test
-  fun assignTasks_withNoUnassignedTasks_returnsEmptyResult() {
+  fun assignTasks_returnsEmptyResultWithNoUnassignedTasks() {
     val members = listOf(Member(userId = "user1", role = ProjectRole.MEMBER))
     val tasks =
         listOf(
@@ -55,7 +56,7 @@ class TaskAutoAssignmentServiceTest {
   }
 
   @Test
-  fun assignTasks_withUnassignedTasks_assignsToLeastLoadedMember() {
+  fun assignTasks_assignsToLeastLoadedMemberWithUnassignedTasks() {
     val members =
         listOf(
             Member(userId = "user1", role = ProjectRole.MEMBER),
@@ -87,7 +88,7 @@ class TaskAutoAssignmentServiceTest {
   }
 
   @Test
-  fun assignTasks_withTaskDependencies_assignsToSameMemberAsParent() {
+  fun assignTasks_assignsToSameMemberAsParentWithTaskDependencies() {
     val members =
         listOf(
             Member(userId = "user1", role = ProjectRole.MEMBER),
@@ -155,7 +156,7 @@ class TaskAutoAssignmentServiceTest {
   }
 
   @Test
-  fun assignTasks_withEqualWorkload_assignsToFirstAvailable() {
+  fun assignTasks_assignsToFirstAvailableWithEqualWorkload() {
     val members =
         listOf(
             Member(userId = "user1", role = ProjectRole.MEMBER),
@@ -185,7 +186,7 @@ class TaskAutoAssignmentServiceTest {
   }
 
   @Test
-  fun assignTasks_withMultipleDependencies_usesFirstDependency() {
+  fun assignTasks_usesFirstDependencyWithMultipleDependencies() {
     val members =
         listOf(
             Member(userId = "user1", role = ProjectRole.MEMBER),
@@ -216,7 +217,7 @@ class TaskAutoAssignmentServiceTest {
   }
 
   @Test
-  fun assignTasks_withDependencyOnUnassignedParent_usesWorkloadStrategy() {
+  fun assignTasks_usesWorkloadStrategyWithDependencyOnUnassignedParent() {
     val members =
         listOf(
             Member(userId = "user1", role = ProjectRole.MEMBER),
@@ -249,7 +250,7 @@ class TaskAutoAssignmentServiceTest {
   }
 
   @Test
-  fun assignTasks_withComplexScenario_balancesWorkload() {
+  fun assignTasks_balancesWorkloadWithComplexScenario() {
     val members =
         listOf(
             Member(userId = "user1", role = ProjectRole.MEMBER),

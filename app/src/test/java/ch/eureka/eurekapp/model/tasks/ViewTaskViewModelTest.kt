@@ -39,6 +39,7 @@ import org.junit.Test
 Portions of this code were generated with the help of Grok.
 Note: This file was partially written by GPT-5 Codex
 Co-author : GPT-5
+This code was written with help of Claude.
 */
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -72,7 +73,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun viewModelWithValidTaskEmitsCorrectState() = runTest {
+  fun viewModel_emitsCorrectStateWithValidTask() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val task =
@@ -114,7 +115,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun viewModelWithNullTaskEmitsErrorState() = runTest {
+  fun viewModel_emitsErrorStateWithNullTask() = runTest {
     val projectId = "project123"
     val taskId = "task123"
 
@@ -144,7 +145,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun viewModelWithExceptionEmitsErrorState() = runTest {
+  fun viewModel_emitsErrorStateWithException() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val exception = Exception("Network error")
@@ -179,7 +180,7 @@ class ViewTaskViewModelTest {
   // It seems to me like the cleanest solution for this case.
   // The main goal of this test is to ensure that the ViewModel won't crash or misbehave.
   @Test
-  fun viewModelWithTaskWithoutDueDateEmitsEmptyDueDate() = runTest {
+  fun viewModel_emitsEmptyDueDateWithTaskWithoutDueDate() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val task =
@@ -213,7 +214,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun viewModelWithSingleAssignedUserLoadsUserCorrectly() = runTest {
+  fun viewModel_loadsUserCorrectlyWithSingleAssignedUser() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val userId = "user1"
@@ -256,7 +257,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun viewModelWithMultipleAssignedUsersLoadsAllUsersCorrectly() = runTest {
+  fun viewModel_loadsAllUsersCorrectlyWithMultipleAssignedUsers() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val user1Id = "user1"
@@ -310,7 +311,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun viewModelWithNullUserFiltersOutNulls() = runTest {
+  fun viewModel_filtersOutNullsWithNullUser() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val user1Id = "user1"
@@ -354,7 +355,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun downloadFile_alreadyDownloaded_skipsInsert() = runTest {
+  fun downloadFile_skipsInsertWhenAlreadyDownloaded() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val task =
@@ -393,7 +394,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun uiState_offlineMode_withDownloadedFiles_setsDownloadedUrls() = runTest {
+  fun uiState_setsDownloadedUrlsInOfflineModeWithDownloadedFiles() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val task =
@@ -482,7 +483,7 @@ class ViewTaskViewModelTest {
   }
 
   @Test
-  fun uiState_onlineMode_showsRemoteAttachments() = runTest {
+  fun uiState_showsRemoteAttachmentsInOnlineMode() = runTest {
     val projectId = "project123"
     val taskId = "task123"
     val task =

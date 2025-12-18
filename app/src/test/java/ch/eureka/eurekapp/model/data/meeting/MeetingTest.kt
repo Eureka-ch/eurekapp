@@ -1,3 +1,4 @@
+// Portions of this file were generated with the help of Claude (Sonnet 4.5).
 package ch.eureka.eurekapp.model.data.meeting
 
 import ch.eureka.eurekapp.model.map.Location
@@ -18,7 +19,7 @@ import org.junit.Test
 class MeetingTest {
 
   @Test
-  fun meetingDefaultConstructor() {
+  fun meeting_defaultConstructorCreatesEmptyMeeting() {
     val meeting = Meeting()
 
     assertEquals("", meeting.meetingID)
@@ -40,7 +41,7 @@ class MeetingTest {
   }
 
   @Test
-  fun meetingWithParameters() {
+  fun meeting_withParametersSetsCorrectValues() {
     val attachments = listOf("url1", "url2")
     val testTimestamp = Timestamp.now()
     val testDuration = 60
@@ -67,7 +68,7 @@ class MeetingTest {
   }
 
   @Test
-  fun meetingWithoutTaskId() {
+  fun meeting_withoutTaskIdLeavesItNull() {
     val meeting =
         Meeting(
             meetingID = "mtg123",
@@ -79,7 +80,7 @@ class MeetingTest {
   }
 
   @Test
-  fun meetingCopy() {
+  fun meeting_copyCreatesNewInstance() {
     val meeting =
         Meeting(
             meetingID = "mtg123",
@@ -97,7 +98,7 @@ class MeetingTest {
   }
 
   @Test
-  fun meetingEquals() {
+  fun meeting_equalsComparesCorrectly() {
     val fixedTimestamp = Timestamp(Date(0))
     val fixedDuration = 60
     val meeting1 =
@@ -133,7 +134,7 @@ class MeetingTest {
   }
 
   @Test
-  fun meetingHashCode() {
+  fun meeting_hashCodeIsConsistent() {
     val fixedTimestamp = Timestamp(Date(0))
     val fixedDuration = 60
     val meeting1 =
@@ -159,7 +160,7 @@ class MeetingTest {
   }
 
   @Test
-  fun meetingToString() {
+  fun meeting_toStringContainsAllFields() {
     val meeting =
         Meeting(
             meetingID = "mtg123",
@@ -178,7 +179,7 @@ class MeetingTest {
   }
 
   @Test
-  fun testFullConstructorAndPropertyValues() {
+  fun meeting_fullConstructorSetsAllPropertyValues() {
     val timestamp = Timestamp.now()
     val location = Location(latitude = 46.0, longitude = 7.0)
     val duration = 90
@@ -229,7 +230,7 @@ class MeetingTest {
   }
 
   @Test
-  fun testCopyAndEquality() {
+  fun meeting_copyAndEqualityWorkCorrectly() {
     val m1 = Meeting(meetingID = "id1", title = "A")
     val m2 = m1.copy(title = "B")
 
@@ -241,7 +242,7 @@ class MeetingTest {
   }
 
   @Test
-  fun testToStringAndComponents() {
+  fun meeting_toStringAndComponentsWorkCorrectly() {
     val meeting = Meeting(meetingID = "id123", projectId = "proj1", title = "Kickoff")
 
     val str = meeting.toString()

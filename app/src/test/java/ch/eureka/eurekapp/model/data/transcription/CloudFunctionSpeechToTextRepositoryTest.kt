@@ -67,7 +67,7 @@ class CloudFunctionSpeechToTextRepositoryTest {
 
   /** Test that transcribeAudio fails with SecurityException when no user is authenticated */
   @Test
-  fun `transcribeAudio should fail when user not authenticated`() = runTest {
+  fun transcribeAudio_failsWhenUserNotAuthenticated() = runTest {
     // Mock unauthenticated state
     every { auth.currentUser } returns null
 
@@ -80,7 +80,7 @@ class CloudFunctionSpeechToTextRepositoryTest {
 
   /** Test that network/Cloud Function exceptions are properly caught and returned as failures */
   @Test
-  fun `transcribeAudio should fail when task throws exception`() = runTest {
+  fun transcribeAudio_failsWhenTaskThrowsException() = runTest {
     // Setup Firestore mocks
     val transcriptionsPath = FirestorePaths.transcriptionsPath(testProjectId, testMeetingId)
     every { firestore.collection(transcriptionsPath) } returns mockCollectionRef
@@ -104,7 +104,7 @@ class CloudFunctionSpeechToTextRepositoryTest {
 
   /** Test that Firestore snapshot listener emits list of transcriptions for a meeting */
   @Test
-  fun `getTranscriptionsForMeeting should emit transcriptions`() = runTest {
+  fun getTranscriptionsForMeeting_emitsTranscriptions() = runTest {
     val listenerSlot = slot<EventListener<QuerySnapshot>>()
     val mockListenerRegistration = mockk<ListenerRegistration>(relaxed = true)
 
@@ -148,7 +148,7 @@ class CloudFunctionSpeechToTextRepositoryTest {
 
   /** Test that null snapshots return empty lists instead of causing errors */
   @Test
-  fun `getTranscriptionsForMeeting should emit empty list when snapshot is null`() = runTest {
+  fun getTranscriptionsForMeeting_emitsEmptyListWhenSnapshotIsNull() = runTest {
     // Capture the listener that will be registered with Firestore
     val listenerSlot = slot<EventListener<QuerySnapshot>>()
     val mockListenerRegistration = mockk<ListenerRegistration>(relaxed = true)
@@ -173,7 +173,7 @@ class CloudFunctionSpeechToTextRepositoryTest {
 
   /** Test that a specific transcription can be retrieved by ID via snapshot listener */
   @Test
-  fun `getTranscriptionById should emit transcription when it exists`() = runTest {
+  fun getTranscriptionById_emitsTranscriptionWhenItExists() = runTest {
     // Setup listener slot to capture the Firestore snapshot listener
     val listenerSlot = slot<EventListener<DocumentSnapshot>>()
     val mockListenerRegistration = mockk<ListenerRegistration>(relaxed = true)
@@ -215,7 +215,7 @@ class CloudFunctionSpeechToTextRepositoryTest {
 
   /** Test successful deletion of a transcription from Firestore */
   @Test
-  fun `deleteTranscription should return success when deletion succeeds`() = runTest {
+  fun deleteTranscription_returnsSuccessWhenDeletionSucceeds() = runTest {
     // Setup Firestore path and document reference
     val transcriptionsPath = FirestorePaths.transcriptionsPath(testProjectId, testMeetingId)
     every { firestore.collection(transcriptionsPath) } returns mockCollectionRef
@@ -234,7 +234,7 @@ class CloudFunctionSpeechToTextRepositoryTest {
 
   /** Test that Firestore deletion errors are caught and returned as failures */
   @Test
-  fun `deleteTranscription should return failure when deletion fails`() = runTest {
+  fun deleteTranscription_returnsFailureWhenDeletionFails() = runTest {
     val transcriptionsPath = FirestorePaths.transcriptionsPath(testProjectId, testMeetingId)
     every { firestore.collection(transcriptionsPath) } returns mockCollectionRef
     every { mockCollectionRef.document(testTranscriptionId) } returns mockDocumentRef
@@ -253,7 +253,7 @@ class CloudFunctionSpeechToTextRepositoryTest {
 
   /** Test that non-existent or invalid documents emit null instead of throwing errors */
   @Test
-  fun `getTranscriptionById should emit null when document does not exist`() = runTest {
+  fun getTranscriptionById_emitsNullWhenDocumentDoesNotExist() = runTest {
     val listenerSlot = slot<EventListener<DocumentSnapshot>>()
     val mockListenerRegistration = mockk<ListenerRegistration>(relaxed = true)
 
@@ -280,7 +280,7 @@ class CloudFunctionSpeechToTextRepositoryTest {
 
   /** Test that Firestore errors in snapshot listener close the flow with the error */
   @Test
-  fun `getTranscriptionById should propagate error when snapshot listener fails`() = runTest {
+  fun getTranscriptionById_propagatesErrorWhenSnapshotListenerFails() = runTest {
     val listenerSlot = slot<EventListener<DocumentSnapshot>>()
     val mockListenerRegistration = mockk<ListenerRegistration>(relaxed = true)
 
@@ -308,7 +308,7 @@ class CloudFunctionSpeechToTextRepositoryTest {
 
   /** Test that malformed/null documents in snapshots are filtered out of results */
   @Test
-  fun `getTranscriptionsForMeeting should filter null transcriptions`() = runTest {
+  fun getTranscriptionsForMeeting_filtersNullTranscriptions() = runTest {
     val listenerSlot = slot<EventListener<QuerySnapshot>>()
     val mockListenerRegistration = mockk<ListenerRegistration>(relaxed = true)
 
@@ -352,38 +352,35 @@ class CloudFunctionSpeechToTextRepositoryTest {
 
   /** Test that Firestore errors in query snapshot listener close the flow with the error */
   @Test
-  fun `getTranscriptionsForMeeting should propagate error when snapshot listener fails`() =
-      runTest {
-        val listenerSlot = slot<EventListener<QuerySnapshot>>()
-        val mockListenerRegistration = mockk<ListenerRegistration>(relaxed = true)
+  fun getTranscriptionsForMeeting_propagatesErrorWhenSnapshotListenerFails() = runTest {
+    val listenerSlot = slot<EventListener<QuerySnapshot>>()
+    val mockListenerRegistration = mockk<ListenerRegistration>(relaxed = true)
 
-        val transcriptionsPath = FirestorePaths.transcriptionsPath(testProjectId, testMeetingId)
-        every { firestore.collection(transcriptionsPath) } returns mockCollectionRef
-        every { mockCollectionRef.orderBy("createdAt", Query.Direction.DESCENDING) } returns
-            mockQuery
+    val transcriptionsPath = FirestorePaths.transcriptionsPath(testProjectId, testMeetingId)
+    every { firestore.collection(transcriptionsPath) } returns mockCollectionRef
+    every { mockCollectionRef.orderBy("createdAt", Query.Direction.DESCENDING) } returns mockQuery
 
-        // Simulate Firestore query error (e.g., index not found, permission denied)
-        val mockError = mockk<FirebaseFirestoreException>(relaxed = true)
-        every { mockError.message } returns "FAILED_PRECONDITION: The query requires an index"
-        every { mockQuery.addSnapshotListener(capture(listenerSlot)) } answers
-            {
-              listenerSlot.captured.onEvent(null, mockError) // Pass error to listener
-              mockListenerRegistration
-            }
+    // Simulate Firestore query error (e.g., index not found, permission denied)
+    val mockError = mockk<FirebaseFirestoreException>(relaxed = true)
+    every { mockError.message } returns "FAILED_PRECONDITION: The query requires an index"
+    every { mockQuery.addSnapshotListener(capture(listenerSlot)) } answers
+        {
+          listenerSlot.captured.onEvent(null, mockError) // Pass error to listener
+          mockListenerRegistration
+        }
 
-        val flow = repository.getTranscriptionsForMeeting(testProjectId, testMeetingId)
+    val flow = repository.getTranscriptionsForMeeting(testProjectId, testMeetingId)
 
-        // Verify that the error is propagated (flow should throw when collecting)
-        val exception = runCatching { flow.first() }.exceptionOrNull()
-        assertNotNull("Flow should close with exception", exception)
-        assertTrue(
-            "Exception should be FirebaseFirestoreException",
-            exception is FirebaseFirestoreException)
-      }
+    // Verify that the error is propagated (flow should throw when collecting)
+    val exception = runCatching { flow.first() }.exceptionOrNull()
+    assertNotNull("Flow should close with exception", exception)
+    assertTrue(
+        "Exception should be FirebaseFirestoreException", exception is FirebaseFirestoreException)
+  }
 
   /** Test the happy path: Cloud Function succeeds and returns transcriptionId */
   @Test
-  fun `transcribeAudio should succeed when Cloud Function returns success`() = runTest {
+  fun transcribeAudio_succeedsWhenCloudFunctionReturnsSuccess() = runTest {
     // Setup Firestore mocks
     val transcriptionsPath = FirestorePaths.transcriptionsPath(testProjectId, testMeetingId)
     every { firestore.collection(transcriptionsPath) } returns mockCollectionRef
@@ -417,40 +414,39 @@ class CloudFunctionSpeechToTextRepositoryTest {
 
   /** Test error handling when Cloud Function returns unexpected response type (not a Map) */
   @Test
-  fun `transcribeAudio should fail when Cloud Function returns invalid response format`() =
-      runTest {
-        val transcriptionsPath = FirestorePaths.transcriptionsPath(testProjectId, testMeetingId)
-        every { firestore.collection(transcriptionsPath) } returns mockCollectionRef
-        every { mockCollectionRef.document() } returns mockDocumentRef
-        every { mockDocumentRef.id } returns testTranscriptionId
+  fun transcribeAudio_failsWhenCloudFunctionReturnsInvalidResponseFormat() = runTest {
+    val transcriptionsPath = FirestorePaths.transcriptionsPath(testProjectId, testMeetingId)
+    every { firestore.collection(transcriptionsPath) } returns mockCollectionRef
+    every { mockCollectionRef.document() } returns mockDocumentRef
+    every { mockDocumentRef.id } returns testTranscriptionId
 
-        val mockCallableRef = mockk<com.google.firebase.functions.HttpsCallableReference>()
-        every { functions.getHttpsCallable("transcribeAudio") } returns mockCallableRef
+    val mockCallableRef = mockk<com.google.firebase.functions.HttpsCallableReference>()
+    every { functions.getHttpsCallable("transcribeAudio") } returns mockCallableRef
 
-        val mockResult = mockk<com.google.firebase.functions.HttpsCallableResult>()
-        // Return a String instead of expected Map - this is invalid
-        every { mockResult.getData() } returns "Invalid string response"
+    val mockResult = mockk<com.google.firebase.functions.HttpsCallableResult>()
+    // Return a String instead of expected Map - this is invalid
+    every { mockResult.getData() } returns "Invalid string response"
 
-        val mockTask = Tasks.forResult(mockResult)
-        every { mockCallableRef.call(any()) } returns mockTask
+    val mockTask = Tasks.forResult(mockResult)
+    every { mockCallableRef.call(any()) } returns mockTask
 
-        val result =
-            repository.transcribeAudio(
-                "https://storage.googleapis.com/test-bucket/meeting-audio.wav",
-                testMeetingId,
-                testProjectId,
-                "en-US")
+    val result =
+        repository.transcribeAudio(
+            "https://storage.googleapis.com/test-bucket/meeting-audio.wav",
+            testMeetingId,
+            testProjectId,
+            "en-US")
 
-        // Verify IllegalStateException is thrown for invalid response type
-        assertTrue("Result should be failure", result.isFailure)
-        assertTrue(
-            "Should throw IllegalStateException", result.exceptionOrNull() is IllegalStateException)
-        assertEquals("Invalid response from Cloud Function", result.exceptionOrNull()?.message)
-      }
+    // Verify IllegalStateException is thrown for invalid response type
+    assertTrue("Result should be failure", result.isFailure)
+    assertTrue(
+        "Should throw IllegalStateException", result.exceptionOrNull() is IllegalStateException)
+    assertEquals("Invalid response from Cloud Function", result.exceptionOrNull()?.message)
+  }
 
   /** Test error handling when Cloud Function explicitly returns success=false with error message */
   @Test
-  fun `transcribeAudio should fail when Cloud Function returns success false`() = runTest {
+  fun transcribeAudio_failsWhenCloudFunctionReturnsSuccessFalse() = runTest {
     val transcriptionsPath = FirestorePaths.transcriptionsPath(testProjectId, testMeetingId)
     every { firestore.collection(transcriptionsPath) } returns mockCollectionRef
     every { mockCollectionRef.document() } returns mockDocumentRef
@@ -484,37 +480,36 @@ class CloudFunctionSpeechToTextRepositoryTest {
 
   /** Test error handling when Cloud Function response is missing required transcriptionId field */
   @Test
-  fun `transcribeAudio should fail when Cloud Function response missing transcriptionId`() =
-      runTest {
-        val transcriptionsPath = FirestorePaths.transcriptionsPath(testProjectId, testMeetingId)
-        every { firestore.collection(transcriptionsPath) } returns mockCollectionRef
-        every { mockCollectionRef.document() } returns mockDocumentRef
-        every { mockDocumentRef.id } returns testTranscriptionId
+  fun transcribeAudio_failsWhenCloudFunctionResponseMissingTranscriptionId() = runTest {
+    val transcriptionsPath = FirestorePaths.transcriptionsPath(testProjectId, testMeetingId)
+    every { firestore.collection(transcriptionsPath) } returns mockCollectionRef
+    every { mockCollectionRef.document() } returns mockDocumentRef
+    every { mockDocumentRef.id } returns testTranscriptionId
 
-        val mockCallableRef = mockk<com.google.firebase.functions.HttpsCallableReference>()
-        every { functions.getHttpsCallable("transcribeAudio") } returns mockCallableRef
+    val mockCallableRef = mockk<com.google.firebase.functions.HttpsCallableReference>()
+    every { functions.getHttpsCallable("transcribeAudio") } returns mockCallableRef
 
-        val mockResult = mockk<com.google.firebase.functions.HttpsCallableResult>()
-        // Response has success=true but is missing the required transcriptionId field
-        val responseData: Map<String, Any> =
-            mapOf("success" to true, "message" to "Transcription started")
-        every { mockResult.getData() } returns responseData
+    val mockResult = mockk<com.google.firebase.functions.HttpsCallableResult>()
+    // Response has success=true but is missing the required transcriptionId field
+    val responseData: Map<String, Any> =
+        mapOf("success" to true, "message" to "Transcription started")
+    every { mockResult.getData() } returns responseData
 
-        val mockTask = Tasks.forResult(mockResult)
-        every { mockCallableRef.call(any()) } returns mockTask
+    val mockTask = Tasks.forResult(mockResult)
+    every { mockCallableRef.call(any()) } returns mockTask
 
-        val result =
-            repository.transcribeAudio(
-                "https://storage.googleapis.com/test-bucket/meeting-audio.wav",
-                testMeetingId,
-                testProjectId,
-                "en-US")
+    val result =
+        repository.transcribeAudio(
+            "https://storage.googleapis.com/test-bucket/meeting-audio.wav",
+            testMeetingId,
+            testProjectId,
+            "en-US")
 
-        // Verify IllegalStateException for missing required field
-        assertTrue("Result should be failure", result.isFailure)
-        assertTrue(
-            "Should throw IllegalStateException", result.exceptionOrNull() is IllegalStateException)
-        assertEquals(
-            "Missing transcriptionId in Cloud Function response", result.exceptionOrNull()?.message)
-      }
+    // Verify IllegalStateException for missing required field
+    assertTrue("Result should be failure", result.isFailure)
+    assertTrue(
+        "Should throw IllegalStateException", result.exceptionOrNull() is IllegalStateException)
+    assertEquals(
+        "Missing transcriptionId in Cloud Function response", result.exceptionOrNull()?.message)
+  }
 }

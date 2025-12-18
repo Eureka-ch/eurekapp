@@ -27,7 +27,8 @@ import org.junit.Test
 /**
  * Test suite for TranscriptViewModel
  *
- * Note :This file was partially written by ChatGPT (GPT-5) Co-author : GPT-5
+ * Note: This file was partially written by ChatGPT (GPT-5) Co-author: GPT-5 This code was written
+ * with help of Claude.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class TranscriptViewModelTest {
@@ -66,7 +67,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `initial state is loading`() = runTest {
+  fun initialState_isLoading() = runTest {
     val meeting = createTestMeeting(audioUrl = audioUrl)
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
 
@@ -83,7 +84,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `shows error when meeting not found`() = runTest {
+  fun showsError_whenMeetingNotFound() = runTest {
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(null)
 
     viewModel =
@@ -101,7 +102,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `shows error when no audio recording found`() = runTest {
+  fun showsError_whenNoAudioRecordingFound() = runTest {
     val meeting = createTestMeeting(audioUrl = null)
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
 
@@ -120,7 +121,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `loads meeting with audio successfully`() = runTest {
+  fun loadsMeeting_withAudioSuccessfully() = runTest {
     val meeting = createTestMeeting(audioUrl = audioUrl)
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
 
@@ -141,7 +142,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `loads meeting with transcript successfully`() = runTest {
+  fun loadsMeeting_withTranscriptSuccessfully() = runTest {
     val meeting = createTestMeeting(audioUrl = audioUrl, transcriptId = transcriptId)
     val transcript =
         AudioTranscription(
@@ -173,7 +174,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `clearErrorMsg clears error message`() = runTest {
+  fun clearErrorMsg_clearsErrorMessage() = runTest {
     val meeting = createTestMeeting(audioUrl = null)
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
 
@@ -198,7 +199,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `generateTranscript fails when no audio url available`() = runTest {
+  fun generateTranscript_failsWhenNoAudioUrlAvailable() = runTest {
     val meeting = createTestMeeting(audioUrl = null)
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
 
@@ -219,7 +220,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `generateTranscript with valid audio url does not throw`() = runTest {
+  fun generateTranscript_doesNotThrowWithValidAudioUrl() = runTest {
     val meeting = createTestMeeting(audioUrl = audioUrl)
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
     coEvery { speechToTextRepository.transcribeAudio(any(), any(), any(), any()) } returns
@@ -241,7 +242,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `generateTranscript with failure does not update meeting`() = runTest {
+  fun generateTranscript_doesNotUpdateMeetingWithFailure() = runTest {
     val meeting = createTestMeeting(audioUrl = audioUrl)
     var updateCalled = false
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
@@ -270,7 +271,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `generateSummary with no transcript does not call chatbot`() = runTest {
+  fun generateSummary_doesNotCallChatbotWithNoTranscript() = runTest {
     val meeting = createTestMeeting(audioUrl = audioUrl)
     var chatbotCalled = false
     coEvery { meetingRepository.getMeetingById(projectId, meetingId) } returns flowOf(meeting)
@@ -297,7 +298,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `generateSummary with transcript text does not throw`() = runTest {
+  fun generateSummary_doesNotThrowWithTranscriptText() = runTest {
     val meeting = createTestMeeting(audioUrl = audioUrl, transcriptId = transcriptId)
     val transcript =
         AudioTranscription(
@@ -329,7 +330,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `transcript with pending status does not show text`() = runTest {
+  fun transcript_doesNotShowTextWithPendingStatus() = runTest {
     val meeting = createTestMeeting(audioUrl = audioUrl, transcriptId = transcriptId)
     val transcript =
         AudioTranscription(
@@ -360,7 +361,7 @@ class TranscriptViewModelTest {
   }
 
   @Test
-  fun `transcript with failed status shows error`() = runTest {
+  fun transcript_showsErrorWithFailedStatus() = runTest {
     val meeting = createTestMeeting(audioUrl = audioUrl, transcriptId = transcriptId)
     val transcript =
         AudioTranscription(

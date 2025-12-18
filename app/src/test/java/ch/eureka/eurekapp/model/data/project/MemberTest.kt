@@ -1,3 +1,4 @@
+// Portions of this file were generated with the help of Claude (Sonnet 4.5).
 package ch.eureka.eurekapp.model.data.project
 
 import junit.framework.TestCase.assertEquals
@@ -12,21 +13,21 @@ import org.junit.Test
 class MemberTest {
 
   @Test
-  fun member_shouldHaveCorrectDefaultValues() {
+  fun member_hasCorrectDefaultValues() {
     val member = Member()
     assertEquals("", member.userId)
     assertEquals(ProjectRole.MEMBER, member.role)
   }
 
   @Test
-  fun member_shouldInitializeWithProvidedValues() {
+  fun member_initializesWithProvidedValues() {
     val member = Member(userId = "user123", role = ProjectRole.OWNER)
     assertEquals("user123", member.userId)
     assertEquals(ProjectRole.OWNER, member.role)
   }
 
   @Test
-  fun member_shouldSupportCopy() {
+  fun member_supportsCopy() {
     val member = Member(userId = "user123", role = ProjectRole.OWNER)
     val copiedMember = member.copy(role = ProjectRole.ADMIN)
     assertEquals("user123", copiedMember.userId)
@@ -35,21 +36,21 @@ class MemberTest {
   }
 
   @Test
-  fun member_shouldSupportEquality() {
+  fun member_supportsEquality() {
     val member1 = Member(userId = "user123", role = ProjectRole.OWNER)
     val member2 = Member(userId = "user123", role = ProjectRole.OWNER)
     assertEquals(member1, member2)
   }
 
   @Test
-  fun member_shouldSupportHashCode() {
+  fun member_supportsHashCode() {
     val member1 = Member(userId = "user123", role = ProjectRole.OWNER)
     val member2 = Member(userId = "user123", role = ProjectRole.OWNER)
     assertEquals(member1.hashCode(), member2.hashCode())
   }
 
   @Test
-  fun member_shouldSupportToString() {
+  fun member_supportsToString() {
     val member = Member(userId = "user123", role = ProjectRole.OWNER)
     val string = member.toString()
     assert(string.contains("user123"))
@@ -57,14 +58,14 @@ class MemberTest {
   }
 
   @Test
-  fun member_differentInstances_shouldNotBeSame() {
+  fun member_differentInstancesAreNotSame() {
     val member1 = Member(userId = "user123", role = ProjectRole.OWNER)
     val member2 = Member(userId = "user123", role = ProjectRole.OWNER)
     assertNotSame(member1, member2)
   }
 
   @Test
-  fun member_shouldSupportComponentFunctions() {
+  fun member_supportsComponentFunctions() {
     val member = Member(userId = "user123", role = ProjectRole.OWNER)
     val (userId, role) = member
     assertEquals("user123", userId)

@@ -1,3 +1,4 @@
+// Portions of this file were generated with the help of Claude (Sonnet 4.5).
 package ch.eureka.eurekapp.model.data.invitation
 
 import com.google.android.gms.tasks.Task
@@ -61,7 +62,7 @@ class FirestoreInvitationRepositoryTest {
   // ========================================
 
   @Test
-  fun `createInvitation should successfully save invitation to Firestore`() = runTest {
+  fun createInvitation_successfullySavesInvitationToFirestore() = runTest {
     // Given
     val invitation = Invitation(token = "TOKEN123", projectId = "project_1", isUsed = false)
     val successTask: Task<Void> = Tasks.forResult(null)
@@ -77,7 +78,7 @@ class FirestoreInvitationRepositoryTest {
   }
 
   @Test
-  fun `createInvitation should return failure when Firestore operation fails`() = runTest {
+  fun createInvitation_returnsFailureWhenFirestoreOperationFails() = runTest {
     // Given
     val invitation = Invitation(token = "TOKEN123", projectId = "project_1", isUsed = false)
     val exception =
@@ -101,7 +102,7 @@ class FirestoreInvitationRepositoryTest {
   // ========================================
 
   @Test
-  fun `getInvitationByToken should emit invitation when it exists`() = runTest {
+  fun getInvitationByToken_emitsInvitationWhenItExists() = runTest {
     // Given
     val testToken = "TOKEN123"
     val invitation = Invitation(token = testToken, projectId = "project_1", isUsed = false)
@@ -128,7 +129,7 @@ class FirestoreInvitationRepositoryTest {
   }
 
   @Test
-  fun `getInvitationByToken should emit null when invitation does not exist`() = runTest {
+  fun getInvitationByToken_emitsNullWhenInvitationDoesNotExist() = runTest {
     // Given
     val testToken = "NONEXISTENT"
     val mockSnapshot: DocumentSnapshot = mockk(relaxed = true)
@@ -151,7 +152,7 @@ class FirestoreInvitationRepositoryTest {
   }
 
   @Test
-  fun `getInvitationByToken should emit updates when invitation changes`() = runBlocking {
+  fun getInvitationByToken_emitsUpdatesWhenInvitationChanges() = runBlocking {
     // Given
     val testToken = "TOKEN123"
     val unusedInvitation = Invitation(token = testToken, projectId = "project_1", isUsed = false)
@@ -190,7 +191,7 @@ class FirestoreInvitationRepositoryTest {
   }
 
   @Test
-  fun `getInvitationByToken should close flow on Firestore error`() = runTest {
+  fun getInvitationByToken_closesFlowOnFirestoreError() = runTest {
     // Given
     val testToken = "TOKEN123"
     val exception =
@@ -222,7 +223,7 @@ class FirestoreInvitationRepositoryTest {
   // ========================================
 
   @Test
-  fun `getProjectInvitations should emit all invitations for project`() = runTest {
+  fun getProjectInvitations_emitsAllInvitationsForProject() = runTest {
     // Given
     val projectId = "project_1"
     val invitation1 = Invitation(token = "TOKEN1", projectId = projectId, isUsed = false)
@@ -255,7 +256,7 @@ class FirestoreInvitationRepositoryTest {
   }
 
   @Test
-  fun `getProjectInvitations should emit empty list when no invitations exist`() = runTest {
+  fun getProjectInvitations_emitsEmptyListWhenNoInvitationsExist() = runTest {
     // Given
     val projectId = "empty_project"
     val mockSnapshot: QuerySnapshot = mockk(relaxed = true)
@@ -279,7 +280,7 @@ class FirestoreInvitationRepositoryTest {
   }
 
   @Test
-  fun `getProjectInvitations should filter out null invitations`() = runTest {
+  fun getProjectInvitations_filtersOutNullInvitations() = runTest {
     // Given
     val projectId = "project_1"
     val invitation = Invitation(token = "TOKEN1", projectId = projectId, isUsed = false)
@@ -314,7 +315,7 @@ class FirestoreInvitationRepositoryTest {
   // ========================================
 
   @Test
-  fun `markInvitationAsUsed should successfully mark unused invitation`() = runTest {
+  fun markInvitationAsUsed_successfullyMarksUnusedInvitation() = runTest {
     // Given
     val token = "TOKEN123"
     val userId = "user_1"
@@ -345,7 +346,7 @@ class FirestoreInvitationRepositoryTest {
   }
 
   @Test
-  fun `markInvitationAsUsed should fail when invitation does not exist`() = runTest {
+  fun markInvitationAsUsed_failsWhenInvitationDoesNotExist() = runTest {
     // Given
     val token = "NONEXISTENT"
     val userId = "user_1"
@@ -378,7 +379,7 @@ class FirestoreInvitationRepositoryTest {
   }
 
   @Test
-  fun `markInvitationAsUsed should fail when invitation already used`() = runTest {
+  fun markInvitationAsUsed_failsWhenInvitationAlreadyUsed() = runTest {
     // Given
     val token = "USED_TOKEN"
     val userId = "user_2"
@@ -419,7 +420,7 @@ class FirestoreInvitationRepositoryTest {
   }
 
   @Test
-  fun `markInvitationAsUsed should handle Firestore transaction failure`() = runTest {
+  fun markInvitationAsUsed_handlesFirestoreTransactionFailure() = runTest {
     // Given
     val token = "TOKEN123"
     val userId = "user_1"
@@ -440,7 +441,7 @@ class FirestoreInvitationRepositoryTest {
   }
 
   @Test
-  fun `markInvitationAsUsed should set timestamp when marking as used`() = runTest {
+  fun markInvitationAsUsed_setsTimestampWhenMarkingAsUsed() = runTest {
     // Given
     val token = "TOKEN123"
     val userId = "user_1"

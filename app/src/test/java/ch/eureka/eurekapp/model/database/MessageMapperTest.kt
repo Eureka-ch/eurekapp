@@ -15,11 +15,13 @@ import org.junit.Test
  * - [Message] (Domain Model) -> [MessageEntity] (Database Model)
  *
  * Specifically checks the time unit conversion (Seconds <-> Milliseconds).
+ *
+ * Note: This code was written with help of Claude.
  */
 class MessageMapperTest {
 
   @Test
-  fun `toDomainModel maps fields correctly`() {
+  fun toDomainModel_mapsFieldsCorrectly() {
     val entity =
         MessageEntity(
             localId = 123,
@@ -37,7 +39,7 @@ class MessageMapperTest {
   }
 
   @Test
-  fun `toEntity maps fields correctly`() {
+  fun toEntity_mapsFieldsCorrectly() {
     val timestamp = Timestamp(1700000000L, 0)
     val message =
         Message(

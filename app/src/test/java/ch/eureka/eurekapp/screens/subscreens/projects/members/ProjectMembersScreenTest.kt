@@ -1,4 +1,5 @@
 /* Portions of this file were written with the help of Gemini. */
+/* This code was written with help of Claude. */
 package ch.eureka.eurekapp.screens.subscreens.projects.members
 
 import android.text.format.DateUtils

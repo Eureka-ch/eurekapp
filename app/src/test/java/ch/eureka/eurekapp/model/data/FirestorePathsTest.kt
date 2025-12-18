@@ -16,7 +16,7 @@ Co-author: GPT-5 Codex
 class FirestorePathsTest {
 
   @Test
-  fun constants_shouldHaveCorrectValues() {
+  fun constants_haveCorrectValues() {
     TestCase.assertEquals("users", FirestorePaths.USERS)
     TestCase.assertEquals("projects", FirestorePaths.PROJECTS)
     TestCase.assertEquals("chatChannels", FirestorePaths.CHAT_CHANNELS)
@@ -29,28 +29,28 @@ class FirestorePathsTest {
   }
 
   @Test
-  fun userPath_shouldReturnCorrectPath() {
+  fun userPath_returnsCorrectPath() {
     val userId = "user123"
     val expected = "users/user123"
     TestCase.assertEquals(expected, FirestorePaths.userPath(userId))
   }
 
   @Test
-  fun projectPath_shouldReturnCorrectPath() {
+  fun projectPath_returnsCorrectPath() {
     val projectId = "project123"
     val expected = "projects/project123"
     TestCase.assertEquals(expected, FirestorePaths.projectPath(projectId))
   }
 
   @Test
-  fun chatChannelsPath_shouldReturnCorrectPath() {
+  fun chatChannelsPath_returnsCorrectPath() {
     val projectId = "project123"
     val expected = "projects/project123/chatChannels"
     TestCase.assertEquals(expected, FirestorePaths.chatChannelsPath(projectId))
   }
 
   @Test
-  fun chatChannelPath_shouldReturnCorrectPath() {
+  fun chatChannelPath_returnsCorrectPath() {
     val projectId = "project123"
     val channelId = "channel456"
     val expected = "projects/project123/chatChannels/channel456"
@@ -58,7 +58,7 @@ class FirestorePathsTest {
   }
 
   @Test
-  fun messagesPath_shouldReturnCorrectPath() {
+  fun messagesPath_returnsCorrectPath() {
     val projectId = "project123"
     val channelId = "channel456"
     val expected = "projects/project123/chatChannels/channel456/messages"
@@ -66,7 +66,7 @@ class FirestorePathsTest {
   }
 
   @Test
-  fun messagePath_shouldReturnCorrectPath() {
+  fun messagePath_returnsCorrectPath() {
     val projectId = "project123"
     val channelId = "channel456"
     val messageId = "msg789"
@@ -75,14 +75,14 @@ class FirestorePathsTest {
   }
 
   @Test
-  fun meetingsPath_shouldReturnCorrectPath() {
+  fun meetingsPath_returnsCorrectPath() {
     val projectId = "project123"
     val expected = "projects/project123/meetings"
     TestCase.assertEquals(expected, FirestorePaths.meetingsPath(projectId))
   }
 
   @Test
-  fun meetingPath_shouldReturnCorrectPath() {
+  fun meetingPath_returnsCorrectPath() {
     val projectId = "project123"
     val meetingId = "meeting456"
     val expected = "projects/project123/meetings/meeting456"
@@ -90,14 +90,14 @@ class FirestorePathsTest {
   }
 
   @Test
-  fun taskTemplatesPath_shouldReturnCorrectPath() {
+  fun taskTemplatesPath_returnsCorrectPath() {
     val projectId = "project123"
     val expected = "projects/project123/taskTemplates"
     TestCase.assertEquals(expected, FirestorePaths.taskTemplatesPath(projectId))
   }
 
   @Test
-  fun taskTemplatePath_shouldReturnCorrectPath() {
+  fun taskTemplatePath_returnsCorrectPath() {
     val projectId = "project123"
     val templateId = "template456"
     val expected = "projects/project123/taskTemplates/template456"
@@ -105,14 +105,14 @@ class FirestorePathsTest {
   }
 
   @Test
-  fun tasksPath_shouldReturnCorrectPath() {
+  fun tasksPath_returnsCorrectPath() {
     val projectId = "project123"
     val expected = "projects/project123/tasks"
     TestCase.assertEquals(expected, FirestorePaths.tasksPath(projectId))
   }
 
   @Test
-  fun taskPath_shouldReturnCorrectPath() {
+  fun taskPath_returnsCorrectPath() {
     val projectId = "project123"
     val taskId = "task456"
     val expected = "projects/project123/tasks/task456"
@@ -120,14 +120,14 @@ class FirestorePathsTest {
   }
 
   @Test
-  fun membersPath_shouldReturnCorrectPath() {
+  fun membersPath_returnsCorrectPath() {
     val projectId = "project123"
     val expected = "projects/project123/members"
     TestCase.assertEquals(expected, FirestorePaths.membersPath(projectId))
   }
 
   @Test
-  fun memberPath_shouldReturnCorrectPath() {
+  fun memberPath_returnsCorrectPath() {
     val projectId = "project123"
     val userId = "user456"
     val expected = "projects/project123/members/user456"
@@ -135,7 +135,7 @@ class FirestorePathsTest {
   }
 
   @Test
-  fun participantsPath_shouldReturnCorrectPath() {
+  fun participantsPath_returnsCorrectPath() {
     val projectId = "project123"
     val meetingId = "meeting456"
     val expected = "projects/project123/meetings/meeting456/participants"
@@ -143,7 +143,7 @@ class FirestorePathsTest {
   }
 
   @Test
-  fun participantPath_shouldReturnCorrectPath() {
+  fun participantPath_returnsCorrectPath() {
     val projectId = "project123"
     val meetingId = "meeting456"
     val userId = "user789"
@@ -152,7 +152,7 @@ class FirestorePathsTest {
   }
 
   @Test
-  fun transcriptionsPath_shouldReturnCorrectPath() {
+  fun transcriptionsPath_returnsCorrectPath() {
     val projectId = "project123"
     val meetingId = "meeting456"
     val expected = "projects/project123/meetings/meeting456/transcriptions"
@@ -160,7 +160,7 @@ class FirestorePathsTest {
   }
 
   @Test
-  fun transcriptionPath_shouldReturnCorrectPath() {
+  fun transcriptionPath_returnsCorrectPath() {
     val projectId = "project123"
     val meetingId = "meeting456"
     val transcriptionId = "transcription789"
@@ -170,14 +170,14 @@ class FirestorePathsTest {
   }
 
   @Test
-  fun selfNotesPath_shouldReturnCorrectPath() {
+  fun selfNotesPath_returnsCorrectPath() {
     val userId = "user123"
     val expected = "users/user123/selfNotes"
     TestCase.assertEquals(expected, FirestorePaths.selfNotesPath(userId))
   }
 
   @Test
-  fun selfNotePath_shouldReturnCorrectPath() {
+  fun selfNotePath_returnsCorrectPath() {
     val userId = "user123"
     val noteId = "note456"
     val expected = "users/user123/selfNotes/note456"
@@ -187,20 +187,20 @@ class FirestorePathsTest {
   // ==================== Conversations Tests ====================
 
   @Test
-  fun constants_shouldHaveConversationsValue() {
+  fun constants_haveConversationsValue() {
     // Verify the CONVERSATIONS constant is correctly defined
     TestCase.assertEquals("conversations", FirestorePaths.CONVERSATIONS)
   }
 
   @Test
-  fun conversationsPath_shouldReturnCorrectPath() {
+  fun conversationsPath_returnsCorrectPath() {
     // Conversations is a top-level collection, so path is just the collection name
     val expected = "conversations"
     TestCase.assertEquals(expected, FirestorePaths.conversationsPath())
   }
 
   @Test
-  fun conversationPath_shouldReturnCorrectPath() {
+  fun conversationPath_returnsCorrectPath() {
     // Individual conversation document path
     val conversationId = "conv123"
     val expected = "conversations/conv123"
@@ -210,14 +210,14 @@ class FirestorePathsTest {
   // ==================== Ideas Tests ====================
 
   @Test
-  fun ideasPath_shouldReturnCorrectPath() {
+  fun ideasPath_returnsCorrectPath() {
     val projectId = "project123"
     val expected = "projects/project123/ideas"
     TestCase.assertEquals(expected, FirestorePaths.ideasPath(projectId))
   }
 
   @Test
-  fun ideaPath_shouldReturnCorrectPath() {
+  fun ideaPath_returnsCorrectPath() {
     val projectId = "project123"
     val ideaId = "idea456"
     val expected = "projects/project123/ideas/idea456"
@@ -225,7 +225,7 @@ class FirestorePathsTest {
   }
 
   @Test
-  fun ideaMessagesPath_shouldReturnCorrectPath() {
+  fun ideaMessagesPath_returnsCorrectPath() {
     val projectId = "project123"
     val ideaId = "idea456"
     val expected = "projects/project123/ideas/idea456/messages"
@@ -233,7 +233,7 @@ class FirestorePathsTest {
   }
 
   @Test
-  fun ideaMessagePath_shouldReturnCorrectPath() {
+  fun ideaMessagePath_returnsCorrectPath() {
     val projectId = "project123"
     val ideaId = "idea456"
     val messageId = "msg789"

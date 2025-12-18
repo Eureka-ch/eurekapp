@@ -1,4 +1,5 @@
 // Portions of this code were generated with the help of Grok.
+// This code was written with help of Claude.
 package ch.eureka.eurekapp.screens.subscreens.tasks
 
 import android.net.Uri

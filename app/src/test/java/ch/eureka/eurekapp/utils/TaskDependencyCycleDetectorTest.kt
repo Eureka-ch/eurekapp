@@ -1,6 +1,7 @@
 package ch.eureka.eurekapp.utils
 
 // Portions of this code were generated with the help of AI.
+// This code was written with help of Claude.
 
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskRepository
@@ -57,7 +58,7 @@ class TaskDependencyCycleDetectorTest {
   }
 
   @Test
-  fun wouldCreateCycle_taskDependsOnItself_returnsTrue() = runTest {
+  fun wouldCreateCycle_returnsTrueWithTaskDependsOnItself() = runTest {
     val repository = MockTaskRepository()
     val result =
         TaskDependencyCycleDetector.wouldCreateCycle(
@@ -69,7 +70,7 @@ class TaskDependencyCycleDetectorTest {
   }
 
   @Test
-  fun wouldCreateCycle_directCycle_returnsTrue() = runTest {
+  fun wouldCreateCycle_returnsTrueWithDirectCycle() = runTest {
     val repository = MockTaskRepository()
     // task2 depends on task1
     repository.addTask(
@@ -86,7 +87,7 @@ class TaskDependencyCycleDetectorTest {
   }
 
   @Test
-  fun wouldCreateCycle_indirectCycle_returnsTrue() = runTest {
+  fun wouldCreateCycle_returnsTrueWithIndirectCycle() = runTest {
     val repository = MockTaskRepository()
     // task2 -> task3 -> task1 (indirect cycle)
     repository.addTask(
@@ -105,7 +106,7 @@ class TaskDependencyCycleDetectorTest {
   }
 
   @Test
-  fun wouldCreateCycle_noCycle_returnsFalse() = runTest {
+  fun wouldCreateCycle_returnsFalseWithNoCycle() = runTest {
     val repository = MockTaskRepository()
     // task2 depends on task3 (no cycle with task1)
     repository.addTask(
@@ -122,7 +123,7 @@ class TaskDependencyCycleDetectorTest {
   }
 
   @Test
-  fun wouldCreateCycle_dependencyDoesNotExist_returnsFalse() = runTest {
+  fun wouldCreateCycle_returnsFalseWithDependencyDoesNotExist() = runTest {
     val repository = MockTaskRepository()
     // Dependency task doesn't exist
     val result =
@@ -135,7 +136,7 @@ class TaskDependencyCycleDetectorTest {
   }
 
   @Test
-  fun validateNoCycles_validDependencies_returnsSuccess() = runTest {
+  fun validateNoCycles_returnsSuccessWithValidDependencies() = runTest {
     val repository = MockTaskRepository()
     repository.addTask(Task(taskID = "task2", projectId = "project1"))
     repository.addTask(Task(taskID = "task3", projectId = "project1"))
@@ -150,7 +151,7 @@ class TaskDependencyCycleDetectorTest {
   }
 
   @Test
-  fun validateNoCycles_cycleDetected_returnsFailure() = runTest {
+  fun validateNoCycles_returnsFailureWithCycleDetected() = runTest {
     val repository = MockTaskRepository()
     // task2 depends on task1
     repository.addTask(

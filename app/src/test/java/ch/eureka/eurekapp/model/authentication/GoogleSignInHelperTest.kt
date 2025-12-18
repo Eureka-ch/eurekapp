@@ -1,3 +1,4 @@
+// Portions of this file were generated with the help of Claude (Sonnet 4.5).
 package ch.eureka.eurekapp.model.authentication
 
 import android.os.Bundle
@@ -32,7 +33,7 @@ class DefaultGoogleSignInHelperTest {
   }
 
   @Test
-  fun `extractIdTokenCredential delegates to GoogleIdTokenCredential createFrom`() {
+  fun googleSignInHelper_extractIdTokenCredentialDelegatesToGoogleIdTokenCredentialCreateFrom() {
     val mockBundle = mockk<Bundle>()
     val expectedCredential = mockk<GoogleIdTokenCredential>()
 
@@ -44,7 +45,7 @@ class DefaultGoogleSignInHelperTest {
   }
 
   @Test
-  fun `toFirebaseCredential delegates to GoogleAuthProvider getCredential`() {
+  fun googleSignInHelper_toFirebaseCredentialDelegatesToGoogleAuthProviderGetCredential() {
     val idToken = "fake-id-token"
     val expectedAuthCredential = mockk<AuthCredential>()
 

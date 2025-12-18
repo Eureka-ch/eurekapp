@@ -20,6 +20,8 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 
+// This code was written with help of Claude.
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class EditTemplateViewModelTest {
 
@@ -38,7 +40,7 @@ class EditTemplateViewModelTest {
   }
 
   @Test
-  fun viewModel_afterLoading_isNotLoading() = runTest {
+  fun viewModel_isNotLoadingAfterLoading() = runTest {
     mockRepository.setTemplate(null)
     val viewModel =
         EditTemplateViewModel(mockRepository, "proj1", "template1", ioDispatcher = testDispatcher)
@@ -47,7 +49,7 @@ class EditTemplateViewModelTest {
   }
 
   @Test
-  fun viewModel_loadsTemplate_successfully() = runTest {
+  fun viewModel_loadsTemplateSuccessfully() = runTest {
     val existingField = FieldDefinition(id = "f1", label = "Name", type = FieldType.Text())
     val template =
         TaskTemplate(
@@ -74,7 +76,7 @@ class EditTemplateViewModelTest {
   }
 
   @Test
-  fun viewModel_templateNotFound_setsError() = runTest {
+  fun viewModel_setsErrorWithTemplateNotFound() = runTest {
     mockRepository.setTemplate(null)
 
     val viewModel =
@@ -160,7 +162,7 @@ class EditTemplateViewModelTest {
   }
 
   @Test
-  fun save_withInvalidData_fails() = runTest {
+  fun save_failsWithInvalidData() = runTest {
     val template =
         TaskTemplate(
             templateID = "t1",
@@ -192,7 +194,7 @@ class EditTemplateViewModelTest {
   }
 
   @Test
-  fun save_repositoryFailure_callsOnFailure() = runTest {
+  fun save_callsOnFailureWithRepositoryFailure() = runTest {
     val existingField = FieldDefinition(id = "f1", label = "Name", type = FieldType.Text())
     val template =
         TaskTemplate(

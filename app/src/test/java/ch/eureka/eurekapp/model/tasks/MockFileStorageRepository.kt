@@ -7,6 +7,7 @@ import com.google.firebase.storage.StorageMetadata
 
 /*
 Co-Authored-By: Claude <noreply@anthropic.com>
+This code was written with help of Claude.
 */
 
 class MockFileStorageRepository : FileStorageRepository {

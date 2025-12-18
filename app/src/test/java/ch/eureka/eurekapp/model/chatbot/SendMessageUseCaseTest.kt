@@ -1,3 +1,4 @@
+// Portions of this file were generated with the help of Claude (Sonnet 4.5).
 package ch.eureka.eurekapp.model.chatbot
 
 import kotlinx.coroutines.test.runTest
@@ -18,7 +19,7 @@ class SendMessageUseCaseTest {
   }
 
   @Test
-  fun invoke_withMeetingTranscription_returnsSuccess() = runTest {
+  fun sendMessageUseCase_invokeWithMeetingTranscriptionReturnsSuccess() = runTest {
     val context = "Transcribe: John said the project deadline is next Monday."
     val result = useCase("Transcribe this meeting", context)
 
@@ -28,7 +29,7 @@ class SendMessageUseCaseTest {
   }
 
   @Test
-  fun invoke_withBlankContext_returnsFailure() = runTest {
+  fun sendMessageUseCase_invokeWithBlankContextReturnsFailure() = runTest {
     val context = ""
     val result = useCase("Transcribe this meeting", context)
 
@@ -39,7 +40,7 @@ class SendMessageUseCaseTest {
   }
 
   @Test
-  fun invoke_withMeetingSummary_returnsSuccess() = runTest {
+  fun sendMessageUseCase_invokeWithMeetingSummaryReturnsSuccess() = runTest {
     val context =
         """
             Summarize this meeting:
@@ -56,7 +57,7 @@ class SendMessageUseCaseTest {
   }
 
   @Test
-  fun invoke_withActionItemExtraction_returnsSuccess() = runTest {
+  fun sendMessageUseCase_invokeWithActionItemExtractionReturnsSuccess() = runTest {
     val context =
         """
             Extract action items:
@@ -73,7 +74,7 @@ class SendMessageUseCaseTest {
   }
 
   @Test
-  fun invoke_withApiEngineNotConfigured_returnsFailure() = runTest {
+  fun sendMessageUseCase_invokeWithApiEngineNotConfiguredReturnsFailure() = runTest {
     repository.setEngineType(ChatbotEngineType.API)
     val context = "Test context"
 
@@ -85,7 +86,7 @@ class SendMessageUseCaseTest {
   }
 
   @Test
-  fun invoke_withDifferentMeetingTypes_eachReturnsSuccess() = runTest {
+  fun sendMessageUseCase_invokeWithDifferentMeetingTypesEachReturnsSuccess() = runTest {
     val standup = "Standup: Completed tasks, no blockers."
     val retrospective = "Retro: What went well, what to improve."
     val planning = "Planning: Sprint goals and capacity."
@@ -100,7 +101,7 @@ class SendMessageUseCaseTest {
   }
 
   @Test
-  fun invoke_withLongMeetingTranscript_returnsSuccess() = runTest {
+  fun sendMessageUseCase_invokeWithLongMeetingTranscriptReturnsSuccess() = runTest {
     val context =
         """
             Meeting participants: John (PM), Sarah (Dev), Tom (Design)

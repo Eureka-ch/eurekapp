@@ -1,4 +1,4 @@
-/* Portions of this file were written with the help of Gemini. */
+/* Portions of this file were generated with the help of Claude (Sonnet 4.5). */
 package ch.eureka.eurekapp.model.data.notes
 
 import android.content.Context
@@ -102,7 +102,7 @@ class UnifiedSelfNotesRepositoryTest {
   // --- getNotes Tests ---
 
   @Test
-  fun `getNotes fetches from Local DAO when Cloud is DISABLED`() =
+  fun getNotes_fetchesFromLocalDaoWhenCloudIsDisabled() =
       runTest(testDispatcher) {
         isCloudEnabledFlow.value = false
         val entity =
@@ -120,7 +120,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `getNotes fetches from Firestore when Cloud is ENABLED`() =
+  fun getNotes_fetchesFromFirestoreWhenCloudIsEnabled() =
       runTest(testDispatcher) {
         isCloudEnabledFlow.value = true
         val msg = Message(messageID = "c1", text = "Cloud")
@@ -138,7 +138,7 @@ class UnifiedSelfNotesRepositoryTest {
   // --- createNote Tests ---
 
   @Test
-  fun `createNote fails if user is not logged in`() =
+  fun createNote_failsIfUserIsNotLoggedIn() =
       runTest(testDispatcher) {
         every { auth.currentUser } returns null
         val result = repository.createNote(Message(messageID = "1"))
@@ -147,7 +147,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `createNote saves to Local DAO when Cloud is DISABLED`() =
+  fun createNote_savesToLocalDaoWhenCloudIsDisabled() =
       runTest(testDispatcher) {
         isCloudEnabledFlow.value = false
         val msg = Message(messageID = "msg1", text = "Local Note")
@@ -167,7 +167,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `createNote saves to Firestore when Cloud is ENABLED and ONLINE`() =
+  fun createNote_savesToFirestoreWhenCloudIsEnabledAndOnline() =
       runTest(testDispatcher) {
         isCloudEnabledFlow.value = true
         mockNetwork(true)
@@ -185,7 +185,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `createNote fails when Cloud is ENABLED and OFFLINE`() =
+  fun createNote_failsWhenCloudIsEnabledAndOffline() =
       runTest(testDispatcher) {
         isCloudEnabledFlow.value = true
         mockNetwork(false) // Offline
@@ -206,7 +206,7 @@ class UnifiedSelfNotesRepositoryTest {
   // --- updateNote Tests ---
 
   @Test
-  fun `updateNote updates Local DAO when Cloud is DISABLED`() =
+  fun updateNote_updatesLocalDaoWhenCloudIsDisabled() =
       runTest(testDispatcher) {
         isCloudEnabledFlow.value = false
         every { localDao.updateMessageText(any(), any(), any()) } returns Unit
@@ -219,7 +219,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `updateNote updates Firestore when Cloud is ENABLED and ONLINE`() =
+  fun updateNote_updatesFirestoreWhenCloudIsEnabledAndOnline() =
       runTest(testDispatcher) {
         isCloudEnabledFlow.value = true
         mockNetwork(true)
@@ -233,7 +233,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `updateNote fails when Cloud is ENABLED and OFFLINE`() =
+  fun updateNote_failsWhenCloudIsEnabledAndOffline() =
       runTest(testDispatcher) {
         isCloudEnabledFlow.value = true
         mockNetwork(false)
@@ -250,7 +250,7 @@ class UnifiedSelfNotesRepositoryTest {
   // --- deleteNote Tests ---
 
   @Test
-  fun `deleteNote deletes from Local DAO when Cloud is DISABLED`() =
+  fun deleteNote_deletesFromLocalDaoWhenCloudIsDisabled() =
       runTest(testDispatcher) {
         isCloudEnabledFlow.value = false
         every { localDao.deleteMessage(any(), any()) } returns 1
@@ -263,7 +263,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `deleteNote deletes from Firestore when Cloud is ENABLED and ONLINE`() =
+  fun deleteNote_deletesFromFirestoreWhenCloudIsEnabledAndOnline() =
       runTest(testDispatcher) {
         isCloudEnabledFlow.value = true
         mockNetwork(true)
@@ -277,7 +277,7 @@ class UnifiedSelfNotesRepositoryTest {
       }
 
   @Test
-  fun `deleteNote fails when Cloud is ENABLED and OFFLINE`() =
+  fun deleteNote_failsWhenCloudIsEnabledAndOffline() =
       runTest(testDispatcher) {
         isCloudEnabledFlow.value = true
         mockNetwork(false)
@@ -294,7 +294,7 @@ class UnifiedSelfNotesRepositoryTest {
   // --- setStorageMode Tests ---
 
   @Test
-  fun `setStorageMode simply updates user preference`() =
+  fun setStorageMode_simplyUpdatesUserPreference() =
       runTest(testDispatcher) {
         repository.setStorageMode(true)
         coVerify { userPreferences.setCloudStorageEnabled(true) }
