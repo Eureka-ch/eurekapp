@@ -1,5 +1,6 @@
 /*
  * This file was co-authored by Claude Code.
+ * This code was written with help of Claude.
  */
 package ch.eureka.eurekapp.ui.activity
 
@@ -90,7 +91,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun `initial state has correct defaults`() {
+  fun initialState_hasCorrectDefaults() {
     val state = viewModel.uiState.value
 
     assertTrue(state.activities.isEmpty())
@@ -103,7 +104,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun `loadActivities fetches and enriches activities with user names`() = runTest {
+  fun loadActivities_fetchesAndEnrichesActivitiesWithUserNames() = runTest {
     val activities =
         listOf(createActivity("1", EntityType.PROJECT), createActivity("2", EntityType.MEETING))
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
@@ -120,7 +121,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun `loadActivities handles repository errors`() = runTest {
+  fun loadActivities_handlesRepositoryErrors() = runTest {
     coEvery { repository.getActivities(testUserId) } returns
         kotlinx.coroutines.flow.flow { throw Exception("Network error") }
 
@@ -132,7 +133,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun `loadActivities handles enrichment errors gracefully`() = runTest {
+  fun loadActivities_handlesEnrichmentErrorsGracefully() = runTest {
     val activities = listOf(createActivity("1", EntityType.PROJECT))
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
@@ -148,7 +149,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun `applyFilter PROJECT includes both PROJECT and MEMBER activities`() = runTest {
+  fun applyFilter_includesBothProjectAndMemberActivitiesWithProject() = runTest {
     val activities =
         listOf(
             createActivity("1", EntityType.PROJECT),
@@ -170,7 +171,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun `applyFilter MEETING includes only MEETING activities`() = runTest {
+  fun applyFilter_includesOnlyMeetingActivitiesWithMeeting() = runTest {
     val activities =
         listOf(
             createActivity("1", EntityType.PROJECT),
@@ -188,7 +189,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun `applyFilter FILE includes only FILE activities`() = runTest {
+  fun applyFilter_includesOnlyFileActivitiesWithFile() = runTest {
     val activities =
         listOf(
             createActivity("1", EntityType.PROJECT),
@@ -206,7 +207,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun `clearFilters shows empty state`() = runTest {
+  fun clearFilters_showsEmptyState() = runTest {
     val activities =
         listOf(
             createActivity("1", EntityType.PROJECT),
@@ -230,7 +231,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun `clearFilters results in empty displayed activities`() = runTest {
+  fun clearFilters_resultsInEmptyDisplayedActivities() = runTest {
     val activities = listOf(createActivity("1", EntityType.PROJECT))
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
@@ -254,7 +255,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun `setCompactMode updates state correctly`() {
+  fun setCompactMode_updatesStateCorrectly() {
     assertFalse(viewModel.uiState.value.isCompactMode)
 
     viewModel.setCompactMode(true)
@@ -265,7 +266,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun `clearErrorMsg clears error state`() {
+  fun clearErrorMsg_clearsErrorState() {
     // Manually set error through failed load
     coEvery { repository.getActivities(testUserId) } returns
         kotlinx.coroutines.flow.flow { throw Exception("Test error") }
@@ -281,7 +282,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun `deleteActivity removes activity from list`() = runTest {
+  fun deleteActivity_removesActivityFromList() = runTest {
     val activitiesFlow =
         MutableStateFlow(
             listOf(
@@ -308,7 +309,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun `deleteActivity rolls back on failure`() = runTest {
+  fun deleteActivity_rollsBackOnFailure() = runTest {
     val activities =
         listOf(createActivity("1", EntityType.PROJECT), createActivity("2", EntityType.MEETING))
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
@@ -328,7 +329,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun `deleteActivity removes from filtered view correctly`() = runTest {
+  fun deleteActivity_removesFromFilteredViewCorrectly() = runTest {
     val activitiesFlow =
         MutableStateFlow(
             listOf(
@@ -356,7 +357,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun `loadActivities returns early if no current user`() = runTest {
+  fun loadActivities_returnsEarlyIfNoCurrentUser() = runTest {
     every { auth.currentUser } returns null
 
     viewModel.loadActivities()
@@ -366,7 +367,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun `applying filter on empty cache loads activities`() = runTest {
+  fun applyingFilter_loadsActivitiesOnEmptyCache() = runTest {
     val activities = listOf(createActivity("1", EntityType.PROJECT))
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 

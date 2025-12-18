@@ -13,7 +13,7 @@ import org.junit.Test
 class UserTest {
 
   @Test
-  fun user_defaultConstructor_createsEmptyUser() {
+  fun user_createsEmptyUserWithDefaultConstructor() {
     val user = User()
 
     assertEquals("", user.uid)
@@ -24,7 +24,7 @@ class UserTest {
   }
 
   @Test
-  fun user_withParameters_setsCorrectValues() {
+  fun user_setsCorrectValuesWithParameters() {
     val timestamp = Timestamp(1000, 0)
     val user =
         User(
@@ -42,7 +42,7 @@ class UserTest {
   }
 
   @Test
-  fun user_copy_createsNewInstance() {
+  fun user_createsNewInstanceWithCopy() {
     val user = User(uid = "user123", displayName = "John Doe", email = "john@example.com")
     val copiedUser = user.copy(displayName = "Jane Doe")
 
@@ -52,7 +52,7 @@ class UserTest {
   }
 
   @Test
-  fun user_equals_comparesCorrectly() {
+  fun user_comparesCorrectlyWithEquals() {
     val user1 = User(uid = "user123", displayName = "John Doe", email = "john@example.com")
     val user2 = User(uid = "user123", displayName = "John Doe", email = "john@example.com")
     val user3 = User(uid = "user456", displayName = "Jane Doe", email = "jane@example.com")
@@ -62,7 +62,7 @@ class UserTest {
   }
 
   @Test
-  fun user_hashCode_isConsistent() {
+  fun user_isConsistentWithHashCode() {
     val user1 = User(uid = "user123", displayName = "John Doe", email = "john@example.com")
     val user2 = User(uid = "user123", displayName = "John Doe", email = "john@example.com")
 
@@ -70,7 +70,7 @@ class UserTest {
   }
 
   @Test
-  fun user_toString_containsAllFields() {
+  fun user_containsAllFieldsInToString() {
     val user = User(uid = "user123", displayName = "John Doe", email = "john@example.com")
     val userString = user.toString()
 

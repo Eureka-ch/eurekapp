@@ -1,3 +1,4 @@
+// Portions of this file were generated with the help of Claude (Sonnet 4.5).
 package ch.eureka.eurekapp.model.chatbot
 
 import ch.eureka.eurekapp.BuildConfig
@@ -26,19 +27,19 @@ class ChatbotApiDataSourceTest {
   }
 
   @Test
-  fun constructor_withValidParameters_createsInstance() {
+  fun chatbotApiDataSource_constructorWithValidParametersCreatesInstance() {
     val dataSource = ChatbotApiDataSource("https://api.example.com/chat", "test-api-key")
     assertTrue(dataSource is ChatbotDataSource)
   }
 
   @Test
-  fun constructor_withoutApiKey_createsInstance() {
+  fun chatbotApiDataSource_constructorWithoutApiKeyCreatesInstance() {
     val dataSource = ChatbotApiDataSource("https://api.example.com/chat")
     assertTrue(dataSource is ChatbotDataSource)
   }
 
   @Test
-  fun sendMessage_withInvalidUrl_throwsException() = runTest {
+  fun chatbotApiDataSource_sendMessageWithInvalidUrlThrowsException() = runTest {
     val dataSource = ChatbotApiDataSource("invalid-url")
     val context = "test context"
 
@@ -52,7 +53,7 @@ class ChatbotApiDataSourceTest {
   }
 
   @Test
-  fun sendMessage_withMeetingTranscription_returnsResponse() =
+  fun chatbotApiDataSource_sendMessageWithMeetingTranscriptionReturnsResponse() =
       runTest(timeout = 30.seconds) {
         assumeTrue("API key not configured", BuildConfig.DEEPSEEK_API_KEY.isNotBlank())
 
@@ -70,7 +71,7 @@ class ChatbotApiDataSourceTest {
       }
 
   @Test
-  fun sendMessage_withMeetingSummary_returnsResponse() =
+  fun chatbotApiDataSource_sendMessageWithMeetingSummaryReturnsResponse() =
       runTest(timeout = 30.seconds) {
         assumeTrue("API key not configured", BuildConfig.DEEPSEEK_API_KEY.isNotBlank())
 
@@ -96,7 +97,7 @@ class ChatbotApiDataSourceTest {
       }
 
   @Test
-  fun sendMessage_withActionItemExtraction_returnsResponse() =
+  fun chatbotApiDataSource_sendMessageWithActionItemExtractionReturnsResponse() =
       runTest(timeout = 30.seconds) {
         assumeTrue("API key not configured", BuildConfig.DEEPSEEK_API_KEY.isNotBlank())
 
@@ -122,7 +123,7 @@ class ChatbotApiDataSourceTest {
       }
 
   @Test
-  fun sendMessage_withEmptyPrompt_throwsException() = runTest {
+  fun chatbotApiDataSource_sendMessageWithEmptyPromptThrowsException() = runTest {
     val dataSource = ChatbotApiDataSource("https://api.example.com/chat", "test-key")
 
     try {
@@ -134,7 +135,7 @@ class ChatbotApiDataSourceTest {
   }
 
   @Test
-  fun sendMessage_withEmptyContext_throwsException() = runTest {
+  fun chatbotApiDataSource_sendMessageWithEmptyContextThrowsException() = runTest {
     val dataSource = ChatbotApiDataSource("https://api.example.com/chat", "test-key")
 
     try {
@@ -146,7 +147,7 @@ class ChatbotApiDataSourceTest {
   }
 
   @Test
-  fun sendMessage_withSpecialCharacters_handlesCorrectly() = runTest {
+  fun chatbotApiDataSource_sendMessageWithSpecialCharactersHandlesCorrectly() = runTest {
     assumeTrue("API key not configured", BuildConfig.DEEPSEEK_API_KEY.isNotBlank())
 
     val dataSource =
@@ -161,7 +162,7 @@ class ChatbotApiDataSourceTest {
   }
 
   @Test
-  fun sendMessage_withVeryLongContext_handlesCorrectly() =
+  fun chatbotApiDataSource_sendMessageWithVeryLongContextHandlesCorrectly() =
       runTest(timeout = 60.seconds) {
         assumeTrue("API key not configured", BuildConfig.DEEPSEEK_API_KEY.isNotBlank())
 
@@ -177,7 +178,7 @@ class ChatbotApiDataSourceTest {
       }
 
   @Test
-  fun sendMessage_withInvalidApiKey_throwsException() = runTest {
+  fun chatbotApiDataSource_sendMessageWithInvalidApiKeyThrowsException() = runTest {
     val dataSource =
         ChatbotApiDataSource(
             apiUrl = "https://api.deepseek.com/v1/chat/completions", apiKey = "invalid-key")
@@ -191,7 +192,7 @@ class ChatbotApiDataSourceTest {
   }
 
   @Test
-  fun sendMessage_with404Url_throwsException() = runTest {
+  fun chatbotApiDataSource_sendMessageWith404UrlThrowsException() = runTest {
     val dataSource =
         ChatbotApiDataSource(apiUrl = "https://api.deepseek.com/v1/nonexistent", apiKey = "test")
 
@@ -204,7 +205,7 @@ class ChatbotApiDataSourceTest {
   }
 
   @Test
-  fun sendMessage_withNetworkTimeout_throwsException() =
+  fun chatbotApiDataSource_sendMessageWithNetworkTimeoutThrowsException() =
       runTest(timeout = 65.seconds) {
         val dataSource =
             ChatbotApiDataSource(apiUrl = "https://httpstat.us/200?sleep=65000", apiKey = "test")

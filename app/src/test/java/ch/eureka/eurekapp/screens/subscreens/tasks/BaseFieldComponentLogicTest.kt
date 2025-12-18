@@ -10,30 +10,31 @@ import org.junit.Test
 /**
  * Unit tests for BaseFieldComponent logic functions.
  *
- * Portions of this code were generated with the help of Claude Sonnet 4.5.
+ * Portions of this code were generated with the help of Claude Sonnet 4.5. This code was written
+ * with help of Claude.
  */
 class BaseFieldComponentLogicTest {
 
   @Test
-  fun fieldInteractionMode_editOnly_isEditingTrue() {
+  fun fieldInteractionMode_isEditingTrueWithEditOnly() {
     val mode = FieldInteractionMode.EditOnly
     assertEquals(true, mode.isEditing)
   }
 
   @Test
-  fun fieldInteractionMode_viewOnly_isEditingFalse() {
+  fun fieldInteractionMode_isEditingFalseWithViewOnly() {
     val mode = FieldInteractionMode.ViewOnly
     assertEquals(false, mode.isEditing)
   }
 
   @Test
-  fun fieldInteractionMode_toggleableEditing_isEditingTrue() {
+  fun fieldInteractionMode_isEditingTrueWithToggleableEditing() {
     val mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = true)
     assertEquals(true, mode.isEditing)
   }
 
   @Test
-  fun fieldInteractionMode_toggleableViewing_isEditingFalse() {
+  fun fieldInteractionMode_isEditingFalseWithToggleableViewing() {
     val mode = FieldInteractionMode.Toggleable(isCurrentlyEditing = false)
     assertEquals(false, mode.isEditing)
   }
@@ -41,42 +42,42 @@ class BaseFieldComponentLogicTest {
   // getConstraintHint tests for Text fields
 
   @Test
-  fun getConstraintHint_textFieldWithNoConstraints_returnsNull() {
+  fun getConstraintHint_returnsNullWithTextFieldWithNoConstraints() {
     val fieldType = FieldType.Text()
     val hint = getConstraintHint(fieldType)
     assertNull(hint)
   }
 
   @Test
-  fun getConstraintHint_textFieldWithMaxLength_returnsMaxLengthHint() {
+  fun getConstraintHint_returnsMaxLengthHintWithTextFieldWithMaxLength() {
     val fieldType = FieldType.Text(maxLength = 100)
     val hint = getConstraintHint(fieldType)
     assertEquals("Max 100 characters", hint)
   }
 
   @Test
-  fun getConstraintHint_textFieldWithMinLength_returnsMinLengthHint() {
+  fun getConstraintHint_returnsMinLengthHintWithTextFieldWithMinLength() {
     val fieldType = FieldType.Text(minLength = 10)
     val hint = getConstraintHint(fieldType)
     assertEquals("Min 10 characters", hint)
   }
 
   @Test
-  fun getConstraintHint_textFieldWithBothLengths_returnsBothHints() {
+  fun getConstraintHint_returnsBothHintsWithTextFieldWithBothLengths() {
     val fieldType = FieldType.Text(maxLength = 100, minLength = 10)
     val hint = getConstraintHint(fieldType)
     assertEquals("Max 100 characters • Min 10 characters", hint)
   }
 
   @Test
-  fun getConstraintHint_textFieldWithPattern_returnsPatternHint() {
+  fun getConstraintHint_returnsPatternHintWithTextFieldWithPattern() {
     val fieldType = FieldType.Text(pattern = "[A-Z]+")
     val hint = getConstraintHint(fieldType)
     assertEquals("Pattern: [A-Z]+", hint)
   }
 
   @Test
-  fun getConstraintHint_textFieldWithAllConstraints_returnsAllHints() {
+  fun getConstraintHint_returnsAllHintsWithTextFieldWithAllConstraints() {
     val fieldType = FieldType.Text(maxLength = 100, minLength = 10, pattern = "[A-Z]+")
     val hint = getConstraintHint(fieldType)
     assertEquals("Max 100 characters • Min 10 characters • Pattern: [A-Z]+", hint)
@@ -85,42 +86,42 @@ class BaseFieldComponentLogicTest {
   // getConstraintHint tests for Number fields
 
   @Test
-  fun getConstraintHint_numberFieldWithNoConstraints_returnsNull() {
+  fun getConstraintHint_returnsNullWithNumberFieldWithNoConstraints() {
     val fieldType = FieldType.Number()
     val hint = getConstraintHint(fieldType)
     assertNull(hint)
   }
 
   @Test
-  fun getConstraintHint_numberFieldWithMinOnly_returnsMinHint() {
+  fun getConstraintHint_returnsMinHintWithNumberFieldWithMinOnly() {
     val fieldType = FieldType.Number(min = 0.0)
     val hint = getConstraintHint(fieldType)
     assertEquals("Min: 0.0", hint)
   }
 
   @Test
-  fun getConstraintHint_numberFieldWithMaxOnly_returnsMaxHint() {
+  fun getConstraintHint_returnsMaxHintWithNumberFieldWithMaxOnly() {
     val fieldType = FieldType.Number(max = 100.0)
     val hint = getConstraintHint(fieldType)
     assertEquals("Max: 100.0", hint)
   }
 
   @Test
-  fun getConstraintHint_numberFieldWithBothMinMax_returnsRangeHint() {
+  fun getConstraintHint_returnsRangeHintWithNumberFieldWithBothMinMax() {
     val fieldType = FieldType.Number(min = 0.0, max = 100.0)
     val hint = getConstraintHint(fieldType)
     assertEquals("Range: 0.0 - 100.0", hint)
   }
 
   @Test
-  fun getConstraintHint_numberFieldWithUnit_includesUnit() {
+  fun getConstraintHint_includesUnitWithNumberFieldWithUnit() {
     val fieldType = FieldType.Number(unit = "kg")
     val hint = getConstraintHint(fieldType)
     assertEquals("Unit: kg", hint)
   }
 
   @Test
-  fun getConstraintHint_numberFieldWithRangeAndUnit_returnsBothHints() {
+  fun getConstraintHint_returnsBothHintsWithNumberFieldWithRangeAndUnit() {
     val fieldType = FieldType.Number(min = 0.0, max = 100.0, unit = "kg")
     val hint = getConstraintHint(fieldType)
     assertEquals("Range: 0.0 - 100.0 • Unit: kg", hint)
@@ -129,49 +130,49 @@ class BaseFieldComponentLogicTest {
   // getConstraintHint tests for Date fields
 
   @Test
-  fun getConstraintHint_dateFieldWithNoConstraints_returnsNull() {
+  fun getConstraintHint_returnsNullWithDateFieldWithNoConstraints() {
     val fieldType = FieldType.Date()
     val hint = getConstraintHint(fieldType)
     assertNull(hint)
   }
 
   @Test
-  fun getConstraintHint_dateFieldWithMinDateOnly_returnsFromHint() {
+  fun getConstraintHint_returnsFromHintWithDateFieldWithMinDateOnly() {
     val fieldType = FieldType.Date(minDate = "2024-01-01")
     val hint = getConstraintHint(fieldType)
     assertEquals("From: 2024-01-01", hint)
   }
 
   @Test
-  fun getConstraintHint_dateFieldWithMaxDateOnly_returnsUntilHint() {
+  fun getConstraintHint_returnsUntilHintWithDateFieldWithMaxDateOnly() {
     val fieldType = FieldType.Date(maxDate = "2024-12-31")
     val hint = getConstraintHint(fieldType)
     assertEquals("Until: 2024-12-31", hint)
   }
 
   @Test
-  fun getConstraintHint_dateFieldWithBothDates_returnsRangeHint() {
+  fun getConstraintHint_returnsRangeHintWithDateFieldWithBothDates() {
     val fieldType = FieldType.Date(minDate = "2024-01-01", maxDate = "2024-12-31")
     val hint = getConstraintHint(fieldType)
     assertEquals("Range: 2024-01-01 - 2024-12-31", hint)
   }
 
   @Test
-  fun getConstraintHint_dateFieldWithFormat_includesFormat() {
+  fun getConstraintHint_includesFormatWithDateFieldWithFormat() {
     val fieldType = FieldType.Date(format = "dd/MM/yyyy")
     val hint = getConstraintHint(fieldType)
     assertEquals("Format: dd/MM/yyyy", hint)
   }
 
   @Test
-  fun getConstraintHint_dateFieldWithIncludeTime_includesTimeHint() {
+  fun getConstraintHint_includesTimeHintWithDateFieldWithIncludeTime() {
     val fieldType = FieldType.Date(includeTime = true)
     val hint = getConstraintHint(fieldType)
     assertEquals("Includes time", hint)
   }
 
   @Test
-  fun getConstraintHint_dateFieldWithAllConstraints_returnsAllHints() {
+  fun getConstraintHint_returnsAllHintsWithDateFieldWithAllConstraints() {
     val fieldType =
         FieldType.Date(
             minDate = "2024-01-01",
@@ -183,7 +184,7 @@ class BaseFieldComponentLogicTest {
   }
 
   @Test
-  fun getConstraintHint_dateFieldWithIncludeTimeFalse_doesNotIncludeTimeHint() {
+  fun getConstraintHint_doesNotIncludeTimeHintWithDateFieldWithIncludeTimeFalse() {
     val fieldType = FieldType.Date(includeTime = false)
     val hint = getConstraintHint(fieldType)
     assertNull(hint)
@@ -192,14 +193,14 @@ class BaseFieldComponentLogicTest {
   // getConstraintHint tests for SingleSelect fields
 
   @Test
-  fun getConstraintHint_singleSelectWithOneOption_returnsSingularHint() {
+  fun getConstraintHint_returnsSingularHintWithSingleSelectWithOneOption() {
     val fieldType = FieldType.SingleSelect(options = listOf(SelectOption("val1", "Label 1")))
     val hint = getConstraintHint(fieldType)
     assertEquals("1 option", hint)
   }
 
   @Test
-  fun getConstraintHint_singleSelectWithMultipleOptions_returnsPluralHint() {
+  fun getConstraintHint_returnsPluralHintWithSingleSelectWithMultipleOptions() {
     val fieldType =
         FieldType.SingleSelect(
             options = listOf(SelectOption("val1", "Label 1"), SelectOption("val2", "Label 2")))
@@ -208,7 +209,7 @@ class BaseFieldComponentLogicTest {
   }
 
   @Test
-  fun getConstraintHint_singleSelectWithCustomAllowed_includesCustomHint() {
+  fun getConstraintHint_includesCustomHintWithSingleSelectWithCustomAllowed() {
     val fieldType =
         FieldType.SingleSelect(
             options = listOf(SelectOption("val1", "Label 1")), allowCustom = true)
@@ -219,7 +220,7 @@ class BaseFieldComponentLogicTest {
   // getConstraintHint tests for MultiSelect fields
 
   @Test
-  fun getConstraintHint_multiSelectWithOptions_returnsOptionsCount() {
+  fun getConstraintHint_returnsOptionsCountWithMultiSelectWithOptions() {
     val fieldType =
         FieldType.MultiSelect(
             options =
@@ -232,7 +233,7 @@ class BaseFieldComponentLogicTest {
   }
 
   @Test
-  fun getConstraintHint_multiSelectWithMinSelections_includesMinHint() {
+  fun getConstraintHint_includesMinHintWithMultiSelectWithMinSelections() {
     val fieldType =
         FieldType.MultiSelect(options = listOf(SelectOption("val1", "Label 1")), minSelections = 1)
     val hint = getConstraintHint(fieldType)
@@ -240,7 +241,7 @@ class BaseFieldComponentLogicTest {
   }
 
   @Test
-  fun getConstraintHint_multiSelectWithMaxSelections_includesMaxHint() {
+  fun getConstraintHint_includesMaxHintWithMultiSelectWithMaxSelections() {
     val fieldType =
         FieldType.MultiSelect(options = listOf(SelectOption("val1", "Label 1")), maxSelections = 5)
     val hint = getConstraintHint(fieldType)
@@ -248,7 +249,7 @@ class BaseFieldComponentLogicTest {
   }
 
   @Test
-  fun getConstraintHint_multiSelectWithBothMinMax_includesRangeHint() {
+  fun getConstraintHint_includesRangeHintWithMultiSelectWithBothMinMax() {
     val fieldType =
         FieldType.MultiSelect(
             options = listOf(SelectOption("val1", "Label 1")), minSelections = 1, maxSelections = 3)
@@ -257,7 +258,7 @@ class BaseFieldComponentLogicTest {
   }
 
   @Test
-  fun getConstraintHint_multiSelectWithCustomAllowed_includesCustomHint() {
+  fun getConstraintHint_includesCustomHintWithMultiSelectWithCustomAllowed() {
     val fieldType =
         FieldType.MultiSelect(options = listOf(SelectOption("val1", "Label 1")), allowCustom = true)
     val hint = getConstraintHint(fieldType)
@@ -265,7 +266,7 @@ class BaseFieldComponentLogicTest {
   }
 
   @Test
-  fun getConstraintHint_multiSelectWithAllConstraints_returnsAllHints() {
+  fun getConstraintHint_returnsAllHintsWithMultiSelectWithAllConstraints() {
     val fieldType =
         FieldType.MultiSelect(
             options =

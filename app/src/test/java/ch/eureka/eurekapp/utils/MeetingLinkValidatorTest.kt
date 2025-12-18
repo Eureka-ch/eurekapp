@@ -6,12 +6,14 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+// This code was written with help of Claude.
+
 class MeetingLinkValidatorTest {
 
   // ========== validateMeetingLink() Tests ==========
 
   @Test
-  fun validateMeetingLink_nullUrl_returnsInvalid() {
+  fun validateMeetingLink_returnsInvalidWithNullUrl() {
     val (isValid, error) = MeetingLinkValidator.validateMeetingLink(null)
 
     assertFalse(isValid)
@@ -19,7 +21,7 @@ class MeetingLinkValidatorTest {
   }
 
   @Test
-  fun validateMeetingLink_emptyUrl_returnsInvalid() {
+  fun validateMeetingLink_returnsInvalidWithEmptyUrl() {
     val (isValid, error) = MeetingLinkValidator.validateMeetingLink("")
 
     assertFalse(isValid)
@@ -27,7 +29,7 @@ class MeetingLinkValidatorTest {
   }
 
   @Test
-  fun validateMeetingLink_blankUrl_returnsInvalid() {
+  fun validateMeetingLink_returnsInvalidWithBlankUrl() {
     val (isValid, error) = MeetingLinkValidator.validateMeetingLink("   ")
 
     assertFalse(isValid)
@@ -35,7 +37,7 @@ class MeetingLinkValidatorTest {
   }
 
   @Test
-  fun validateMeetingLink_invalidUrlFormat_returnsInvalid() {
+  fun validateMeetingLink_returnsInvalidWithInvalidUrlFormat() {
     val (isValid, error) = MeetingLinkValidator.validateMeetingLink("not-a-url")
 
     assertFalse(isValid)
@@ -43,7 +45,7 @@ class MeetingLinkValidatorTest {
   }
 
   @Test
-  fun validateMeetingLink_urlWithoutProtocol_returnsInvalid() {
+  fun validateMeetingLink_returnsInvalidWithUrlWithoutProtocol() {
     val (isValid, error) = MeetingLinkValidator.validateMeetingLink("zoom.us/j/123456")
 
     assertFalse(isValid)
@@ -51,7 +53,7 @@ class MeetingLinkValidatorTest {
   }
 
   @Test
-  fun validateMeetingLink_validZoomUrl_returnsValid() {
+  fun validateMeetingLink_returnsValidWithValidZoomUrl() {
     val (isValid, error) = MeetingLinkValidator.validateMeetingLink("https://zoom.us/j/1234567890")
 
     assertTrue(isValid)
@@ -59,7 +61,7 @@ class MeetingLinkValidatorTest {
   }
 
   @Test
-  fun validateMeetingLink_validZoomUrlWithPassword_returnsValid() {
+  fun validateMeetingLink_returnsValidWithValidZoomUrlWithPassword() {
     val (isValid, error) =
         MeetingLinkValidator.validateMeetingLink("https://zoom.us/j/1234567890?pwd=abcd1234")
 
@@ -68,7 +70,7 @@ class MeetingLinkValidatorTest {
   }
 
   @Test
-  fun validateMeetingLink_validGoogleMeetUrl_returnsValid() {
+  fun validateMeetingLink_returnsValidWithValidGoogleMeetUrl() {
     val (isValid, error) =
         MeetingLinkValidator.validateMeetingLink("https://meet.google.com/abc-defg-hij")
 
@@ -77,7 +79,7 @@ class MeetingLinkValidatorTest {
   }
 
   @Test
-  fun validateMeetingLink_validMicrosoftTeamsUrl_returnsValid() {
+  fun validateMeetingLink_returnsValidWithValidMicrosoftTeamsUrl() {
     val (isValid, error) =
         MeetingLinkValidator.validateMeetingLink(
             "https://teams.microsoft.com/l/meetup-join/19%3ameeting_123")
@@ -87,7 +89,7 @@ class MeetingLinkValidatorTest {
   }
 
   @Test
-  fun validateMeetingLink_validWebexUrl_returnsValid() {
+  fun validateMeetingLink_returnsValidWithValidWebexUrl() {
     val (isValid, error) =
         MeetingLinkValidator.validateMeetingLink("https://webex.com/meet/username")
 
@@ -96,7 +98,7 @@ class MeetingLinkValidatorTest {
   }
 
   @Test
-  fun validateMeetingLink_nonWhitelistedDomain_returnsValidWithWarning() {
+  fun validateMeetingLink_returnsValidWithWarningWithNonWhitelistedDomain() {
     val (isValid, error) = MeetingLinkValidator.validateMeetingLink("https://jitsi.org/meeting123")
 
     assertTrue(isValid)
@@ -104,7 +106,7 @@ class MeetingLinkValidatorTest {
   }
 
   @Test
-  fun validateMeetingLink_httpUrl_acceptsHttp() {
+  fun validateMeetingLink_acceptsHttpWithHttpUrl() {
     val (isValid, error) = MeetingLinkValidator.validateMeetingLink("http://zoom.us/j/1234567890")
 
     assertTrue(isValid)
@@ -114,28 +116,28 @@ class MeetingLinkValidatorTest {
   // ========== detectPlatform() Tests ==========
 
   @Test
-  fun detectPlatform_nullUrl_returnsUnknown() {
+  fun detectPlatform_returnsUnknownWithNullUrl() {
     val platform = MeetingLinkValidator.detectPlatform(null)
 
     assertEquals(MeetingPlatform.UNKNOWN, platform)
   }
 
   @Test
-  fun detectPlatform_emptyUrl_returnsUnknown() {
+  fun detectPlatform_returnsUnknownWithEmptyUrl() {
     val platform = MeetingLinkValidator.detectPlatform("")
 
     assertEquals(MeetingPlatform.UNKNOWN, platform)
   }
 
   @Test
-  fun detectPlatform_invalidUrl_returnsUnknown() {
+  fun detectPlatform_returnsUnknownWithInvalidUrl() {
     val platform = MeetingLinkValidator.detectPlatform("not-a-url")
 
     assertEquals(MeetingPlatform.UNKNOWN, platform)
   }
 
   @Test
-  fun detectPlatform_zoomUsUrl_returnsZoom() {
+  fun detectPlatform_returnsZoomWithZoomUsUrl() {
     val platform = MeetingLinkValidator.detectPlatform("https://zoom.us/j/1234567890")
 
     assertEquals(MeetingPlatform.ZOOM, platform)
@@ -143,14 +145,14 @@ class MeetingLinkValidatorTest {
   }
 
   @Test
-  fun detectPlatform_zoomComUrl_returnsZoom() {
+  fun detectPlatform_returnsZoomWithZoomComUrl() {
     val platform = MeetingLinkValidator.detectPlatform("https://zoom.com/j/1234567890")
 
     assertEquals(MeetingPlatform.ZOOM, platform)
   }
 
   @Test
-  fun detectPlatform_googleMeetUrl_returnsGoogleMeet() {
+  fun detectPlatform_returnsGoogleMeetWithGoogleMeetUrl() {
     val platform = MeetingLinkValidator.detectPlatform("https://meet.google.com/abc-defg-hij")
 
     assertEquals(MeetingPlatform.GOOGLE_MEET, platform)
@@ -158,7 +160,7 @@ class MeetingLinkValidatorTest {
   }
 
   @Test
-  fun detectPlatform_microsoftTeamsUrl_returnsTeams() {
+  fun detectPlatform_returnsTeamsWithMicrosoftTeamsUrl() {
     val platform =
         MeetingLinkValidator.detectPlatform("https://teams.microsoft.com/l/meetup-join/123")
 
@@ -167,14 +169,14 @@ class MeetingLinkValidatorTest {
   }
 
   @Test
-  fun detectPlatform_teamsLiveUrl_returnsTeams() {
+  fun detectPlatform_returnsTeamsWithTeamsLiveUrl() {
     val platform = MeetingLinkValidator.detectPlatform("https://teams.live.com/meet/123")
 
     assertEquals(MeetingPlatform.MICROSOFT_TEAMS, platform)
   }
 
   @Test
-  fun detectPlatform_webexUrl_returnsWebex() {
+  fun detectPlatform_returnsWebexWithWebexUrl() {
     val platform = MeetingLinkValidator.detectPlatform("https://webex.com/meet/username")
 
     assertEquals(MeetingPlatform.WEBEX, platform)
@@ -182,7 +184,7 @@ class MeetingLinkValidatorTest {
   }
 
   @Test
-  fun detectPlatform_nonWhitelistedUrl_returnsUnknown() {
+  fun detectPlatform_returnsUnknownWithNonWhitelistedUrl() {
     val platform = MeetingLinkValidator.detectPlatform("https://jitsi.org/meeting123")
 
     assertEquals(MeetingPlatform.UNKNOWN, platform)
@@ -190,7 +192,7 @@ class MeetingLinkValidatorTest {
   }
 
   @Test
-  fun detectPlatform_caseInsensitive_detectsCorrectly() {
+  fun detectPlatform_detectsCorrectlyWithCaseInsensitive() {
     val platform = MeetingLinkValidator.detectPlatform("https://ZOOM.US/j/1234567890")
 
     assertEquals(MeetingPlatform.ZOOM, platform)

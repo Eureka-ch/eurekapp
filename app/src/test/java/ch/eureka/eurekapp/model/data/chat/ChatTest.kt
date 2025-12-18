@@ -1,3 +1,4 @@
+// Portions of this file were generated with the help of Claude (Sonnet 4.5).
 package ch.eureka.eurekapp.model.data.chat
 
 import com.google.firebase.Timestamp
@@ -13,7 +14,7 @@ import org.junit.Test
 class ChatTest {
 
   @Test
-  fun chatChannel_defaultConstructor_createsEmptyChatChannel() {
+  fun chatChannel_createsEmptyChatChannel() {
     val channel = ChatChannel()
 
     assertEquals("", channel.channelID)
@@ -22,7 +23,7 @@ class ChatTest {
   }
 
   @Test
-  fun chatChannel_withParameters_setsCorrectValues() {
+  fun chatChannel_setsCorrectValues() {
     val channel =
         ChatChannel(channelID = "ch123", projectId = "prj123", name = "General Discussion")
 
@@ -32,7 +33,7 @@ class ChatTest {
   }
 
   @Test
-  fun chatChannel_copy_createsNewInstance() {
+  fun chatChannel_createsNewInstance() {
     val channel =
         ChatChannel(channelID = "ch123", projectId = "prj123", name = "General Discussion")
     val copiedChannel = channel.copy(name = "Announcements")
@@ -43,7 +44,7 @@ class ChatTest {
   }
 
   @Test
-  fun chatChannel_equals_comparesCorrectly() {
+  fun chatChannel_comparesCorrectly() {
     val channel1 =
         ChatChannel(channelID = "ch123", projectId = "prj123", name = "General Discussion")
     val channel2 =
@@ -55,7 +56,7 @@ class ChatTest {
   }
 
   @Test
-  fun chatChannel_hashCode_isConsistent() {
+  fun chatChannel_isConsistent() {
     val channel1 =
         ChatChannel(channelID = "ch123", projectId = "prj123", name = "General Discussion")
     val channel2 =
@@ -65,7 +66,7 @@ class ChatTest {
   }
 
   @Test
-  fun chatChannel_toString_containsAllFields() {
+  fun chatChannel_containsAllFields() {
     val channel =
         ChatChannel(channelID = "ch123", projectId = "prj123", name = "General Discussion")
     val channelString = channel.toString()
@@ -76,7 +77,7 @@ class ChatTest {
   }
 
   @Test
-  fun message_defaultConstructor_createsEmptyMessage() {
+  fun message_createsEmptyMessage() {
     val message = Message()
 
     assertEquals("", message.messageID)
@@ -87,7 +88,7 @@ class ChatTest {
   }
 
   @Test
-  fun message_withParameters_setsCorrectValues() {
+  fun message_setsCorrectValues() {
     val timestamp = Timestamp(1000, 0)
     val references = listOf("ref1", "ref2")
     val message =
@@ -106,7 +107,7 @@ class ChatTest {
   }
 
   @Test
-  fun message_copy_createsNewInstance() {
+  fun message_createsNewInstance() {
     val message = Message(messageID = "msg123", text = "Hello, world!", senderId = "user123")
     val copiedMessage = message.copy(text = "Updated message")
 
@@ -116,7 +117,7 @@ class ChatTest {
   }
 
   @Test
-  fun message_equals_comparesCorrectly() {
+  fun message_comparesCorrectly() {
     val timestamp = Timestamp(1000, 0)
     val message1 =
         Message(
@@ -137,7 +138,7 @@ class ChatTest {
   }
 
   @Test
-  fun message_hashCode_isConsistent() {
+  fun message_isConsistent() {
     val timestamp = Timestamp(1000, 0)
     val message1 =
         Message(
@@ -156,7 +157,7 @@ class ChatTest {
   }
 
   @Test
-  fun message_toString_containsAllFields() {
+  fun message_containsAllFields() {
     val message = Message(messageID = "msg123", text = "Hello, world!", senderId = "user123")
     val messageString = message.toString()
 

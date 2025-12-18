@@ -12,7 +12,7 @@ import org.junit.Test
  * included via Kotlin's built-in sealedSubclasses property.
  *
  * Portions of this code were generated with the help of Claude <noreply@anthropic.com> and ChatGPT
- * (GPT-5). Co-Authored-By: Claude Sonnet 4.5
+ * (GPT-5). Co-Authored-By: Claude Sonnet 4.5 This code was written with help of Claude.
  */
 class RouteRegistryTest {
 

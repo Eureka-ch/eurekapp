@@ -1,3 +1,4 @@
+// Portions of this file were generated with the help of Claude (Sonnet 4.5).
 package ch.eureka.eurekapp.model.data.meeting
 
 import com.google.firebase.Timestamp
@@ -12,7 +13,7 @@ import org.junit.Test
 class TimeSlotTest {
 
   @Test
-  fun testDefaultConstructorValues() {
+  fun timeSlot_defaultConstructorSetsValues() {
     val slot = TimeSlot()
 
     assertNotNull(slot.startTime)
@@ -20,7 +21,7 @@ class TimeSlotTest {
   }
 
   @Test
-  fun testFullConstructorAndProperties() {
+  fun timeSlot_fullConstructorSetsProperties() {
     val start = Timestamp.now()
     val end = Timestamp(start.seconds + 3600, start.nanoseconds) // 1 hour later
 
@@ -31,7 +32,7 @@ class TimeSlotTest {
   }
 
   @Test
-  fun testCopyAndEquality() {
+  fun timeSlot_copyAndEqualityWorkCorrectly() {
     val start = Timestamp.now()
     val end = Timestamp(start.seconds + 1800, start.nanoseconds)
     val slot1 = TimeSlot(start, end)
@@ -45,7 +46,7 @@ class TimeSlotTest {
   }
 
   @Test
-  fun testToStringAndComponents() {
+  fun timeSlot_toStringAndComponentsWorkCorrectly() {
     val start = Timestamp.now()
     val end = Timestamp(start.seconds + 3600, start.nanoseconds)
     val slot = TimeSlot(start, end)
@@ -59,7 +60,7 @@ class TimeSlotTest {
   }
 
   @Test
-  fun testFormatTimeSlot() {
+  fun timeSlot_formatTimeSlotReturnsFormattedString() {
     val start = Timestamp.now()
     val end = Timestamp(start.seconds + 3600, start.nanoseconds) // 1 hour later
     val slot = TimeSlot(start, end)

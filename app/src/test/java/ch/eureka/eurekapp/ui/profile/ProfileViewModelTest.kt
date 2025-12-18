@@ -1,3 +1,4 @@
+/* This code was written with help of Claude. */
 package ch.eureka.eurekapp.ui.profile
 
 import ch.eureka.eurekapp.model.data.user.User
@@ -54,7 +55,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `initial state has null user and not editing`() {
+  fun initialState_hasNullUserAndNotEditing() {
     // Given
     every { userRepository.getUserById(any()) } returns flowOf(null)
 
@@ -69,7 +70,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `loadUserProfile loads user data successfully`() = runTest {
+  fun loadUserProfile_loadsUserDataSuccessfully() = runTest {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
 
@@ -85,7 +86,7 @@ class ProfileViewModelTest {
   }
 
   @Test(expected = IllegalStateException::class)
-  fun `loadUserProfile throws exception when Firebase user is null`() = runTest {
+  fun loadUserProfile_throwsExceptionWhenFirebaseUserIsNull() = runTest {
     // Given
     every { firebaseAuth.currentUser } returns null
 
@@ -94,7 +95,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `loadUserProfile updates when user data changes`() = runTest {
+  fun loadUserProfile_updatesWhenUserDataChanges() = runTest {
     // Given
     val updatedUser = testUser.copy(displayName = "Updated Name")
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser, updatedUser)
@@ -109,7 +110,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `setEditing updates isEditing state to true`() = runTest {
+  fun setEditing_updatesIsEditingStateToTrue() = runTest {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
     viewModel = ProfileViewModel(userRepository)
@@ -124,7 +125,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `setEditing updates isEditing state to false`() = runTest {
+  fun setEditing_updatesIsEditingStateToFalse() = runTest {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
     viewModel = ProfileViewModel(userRepository)
@@ -140,7 +141,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `updateDisplayName saves user with new display name`() = runTest {
+  fun updateDisplayName_savesUserWithNewDisplayName() = runTest {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
     coEvery { userRepository.saveUser(any()) } returns Result.success(Unit)
@@ -159,7 +160,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `updateDisplayName preserves other user fields`() = runTest {
+  fun updateDisplayName_preservesOtherUserFields() = runTest {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
     coEvery { userRepository.saveUser(any()) } returns Result.success(Unit)
@@ -183,7 +184,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `updateDisplayName sets isEditing to false after save`() = runTest {
+  fun updateDisplayName_setsIsEditingToFalseAfterSave() = runTest {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
     coEvery { userRepository.saveUser(any()) } returns Result.success(Unit)
@@ -200,7 +201,7 @@ class ProfileViewModelTest {
   }
 
   @Test(expected = IllegalStateException::class)
-  fun `updateDisplayName throws exception when user is null`() = runTest {
+  fun updateDisplayName_throwsExceptionWhenUserIsNull() = runTest {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(null)
     viewModel = ProfileViewModel(userRepository)
@@ -212,7 +213,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `updateDisplayName handles empty string`() = runTest {
+  fun updateDisplayName_handlesEmptyString() = runTest {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
     coEvery { userRepository.saveUser(any()) } returns Result.success(Unit)
@@ -228,7 +229,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `updateDisplayName handles very long string`() = runTest {
+  fun updateDisplayName_handlesVeryLongString() = runTest {
     // Given
     val longName = "A".repeat(1000)
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
@@ -245,7 +246,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `updateDisplayName handles special characters`() = runTest {
+  fun updateDisplayName_handlesSpecialCharacters() = runTest {
     // Given
     val specialName = "Test@#$%^&*()_+-=[]{}|;':\",./<>?"
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
@@ -262,7 +263,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `user with empty photoUrl is handled correctly`() = runTest {
+  fun user_handledCorrectlyWithEmptyPhotoUrl() = runTest {
     // Given
     val userWithoutPhoto = testUser.copy(photoUrl = "")
     every { userRepository.getUserById("test-uid") } returns flowOf(userWithoutPhoto)
@@ -279,7 +280,7 @@ class ProfileViewModelTest {
   // Error Handling Tests
 
   @Test
-  fun `updateDisplayName handles repository save failure`() = runTest {
+  fun updateDisplayName_handlesRepositorySaveFailure() = runTest {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
     coEvery { userRepository.saveUser(any()) } returns Result.failure(Exception("Network error"))
@@ -298,7 +299,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `updateDisplayName with Unicode characters`() = runTest {
+  fun updateDisplayName_handlesUnicodeCharacters() = runTest {
     // Given
     val unicodeName = "Test 测试 テスト 🎉 العربية"
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
@@ -315,7 +316,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `multiple rapid updateDisplayName calls`() = runTest {
+  fun updateDisplayName_handlesMultipleRapidCalls() = runTest {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
     coEvery { userRepository.saveUser(any()) } returns Result.success(Unit)
@@ -333,7 +334,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `setEditing multiple times in quick succession`() = runTest {
+  fun setEditing_handlesMultipleTimesInQuickSuccession() = runTest {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
     viewModel = ProfileViewModel(userRepository)
@@ -350,7 +351,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `updateDisplayName preserves timestamp accurately`() = runTest {
+  fun updateDisplayName_preservesTimestampAccurately() = runTest {
     // Given
     val specificTimestamp = Timestamp(9999999, 12345)
     val userWithTimestamp = testUser.copy(lastActive = specificTimestamp)
@@ -374,7 +375,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `user flow emits multiple values rapidly`() = runTest {
+  fun userFlow_emitsMultipleValuesRapidly() = runTest {
     // Given
     val flow =
         kotlinx.coroutines.flow.flow {
@@ -394,7 +395,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `updateDisplayName maintains UID consistency`() = runTest {
+  fun updateDisplayName_maintainsUIDConsistency() = runTest {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
     coEvery { userRepository.saveUser(any()) } returns Result.success(Unit)
@@ -411,7 +412,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `updateDisplayName with whitespace only string`() = runTest {
+  fun updateDisplayName_handlesWhitespaceOnlyString() = runTest {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
     coEvery { userRepository.saveUser(any()) } returns Result.success(Unit)
@@ -427,7 +428,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `updateDisplayName with newline characters`() = runTest {
+  fun updateDisplayName_handlesNewlineCharacters() = runTest {
     // Given
     val nameWithNewlines = "Test\nUser\nName"
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
@@ -444,7 +445,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `user with null email is handled correctly`() = runTest {
+  fun user_handledCorrectlyWithNullEmail() = runTest {
     // Given
     val userWithNullEmail = testUser.copy(email = "")
     every { userRepository.getUserById("test-uid") } returns flowOf(userWithNullEmail)
@@ -459,7 +460,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `updateDisplayName preserves email when updating`() = runTest {
+  fun updateDisplayName_preservesEmailWhenUpdating() = runTest {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
     coEvery { userRepository.saveUser(any()) } returns Result.success(Unit)
@@ -476,7 +477,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `setEditing true does not trigger save`() = runTest {
+  fun setEditing_doesNotTriggerSaveWithTrue() = runTest {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
     viewModel = ProfileViewModel(userRepository)
@@ -491,7 +492,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `setEditing false does not trigger save`() = runTest {
+  fun setEditing_doesNotTriggerSaveWithFalse() = runTest {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
     viewModel = ProfileViewModel(userRepository)
@@ -507,7 +508,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `updateDisplayName with same name still triggers save`() = runTest {
+  fun updateDisplayName_stillTriggersSaveWithSameName() = runTest {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
     coEvery { userRepository.saveUser(any()) } returns Result.success(Unit)
@@ -523,7 +524,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `user state is null initially before repository returns`() {
+  fun userState_isNullInitiallyBeforeRepositoryReturns() {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
 
@@ -537,7 +538,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `updateDisplayName with trailing and leading whitespace`() = runTest {
+  fun updateDisplayName_handlesTrailingAndLeadingWhitespace() = runTest {
     // Given
     val nameWithWhitespace = "  Test User  "
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
@@ -554,7 +555,7 @@ class ProfileViewModelTest {
   }
 
   @Test
-  fun `updateDisplayName after setEditing false still works`() = runTest {
+  fun updateDisplayName_stillWorksAfterSetEditingFalse() = runTest {
     // Given
     every { userRepository.getUserById("test-uid") } returns flowOf(testUser)
     coEvery { userRepository.saveUser(any()) } returns Result.success(Unit)

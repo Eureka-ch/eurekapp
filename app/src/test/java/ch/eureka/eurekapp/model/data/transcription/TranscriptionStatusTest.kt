@@ -3,35 +3,39 @@ package ch.eureka.eurekapp.model.data.transcription
 import junit.framework.TestCase.assertEquals
 import org.junit.Test
 
-/** Test suite for TranscriptionStatus enum. */
+/**
+ * Test suite for TranscriptionStatus enum.
+ *
+ * Note: This code was written with help of Claude.
+ */
 class TranscriptionStatusTest {
 
   @Test
-  fun transcriptionStatus_shouldHaveThreeValues() {
+  fun transcriptionStatus_hasThreeValues() {
     val values = TranscriptionStatus.values()
     assertEquals(3, values.size)
   }
 
   @Test
-  fun transcriptionStatus_shouldHavePendingValue() {
+  fun transcriptionStatus_hasPendingValue() {
     val pending = TranscriptionStatus.valueOf("PENDING")
     assertEquals(TranscriptionStatus.PENDING, pending)
   }
 
   @Test
-  fun transcriptionStatus_shouldHaveCompletedValue() {
+  fun transcriptionStatus_hasCompletedValue() {
     val completed = TranscriptionStatus.valueOf("COMPLETED")
     assertEquals(TranscriptionStatus.COMPLETED, completed)
   }
 
   @Test
-  fun transcriptionStatus_shouldHaveFailedValue() {
+  fun transcriptionStatus_hasFailedValue() {
     val failed = TranscriptionStatus.valueOf("FAILED")
     assertEquals(TranscriptionStatus.FAILED, failed)
   }
 
   @Test
-  fun transcriptionStatus_shouldReturnCorrectName() {
+  fun transcriptionStatus_returnsCorrectName() {
     assertEquals("PENDING", TranscriptionStatus.PENDING.name)
     assertEquals("COMPLETED", TranscriptionStatus.COMPLETED.name)
     assertEquals("FAILED", TranscriptionStatus.FAILED.name)

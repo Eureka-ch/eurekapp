@@ -9,7 +9,7 @@ import org.junit.Test
 class FieldDefinitionTest {
 
   @Test
-  fun `FieldDefinition accepts valid data`() {
+  fun fieldDefinition_acceptsValidData() {
     val fieldDef =
         FieldDefinition(
             id = "severity",
@@ -26,7 +26,7 @@ class FieldDefinitionTest {
   }
 
   @Test
-  fun `FieldDefinition accepts minimal data`() {
+  fun fieldDefinition_acceptsMinimalData() {
     val fieldDef = FieldDefinition(id = "title", label = "Title", type = FieldType.Text())
 
     assertEquals("title", fieldDef.id)
@@ -37,7 +37,7 @@ class FieldDefinitionTest {
   }
 
   @Test
-  fun `FieldDefinition accepts matching defaultValue`() {
+  fun fieldDefinition_acceptsMatchingDefaultValue() {
     val fieldDef =
         FieldDefinition(
             id = "priority",
@@ -49,27 +49,27 @@ class FieldDefinitionTest {
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun `FieldDefinition rejects blank id`() {
+  fun fieldDefinition_rejectsBlankId() {
     FieldDefinition(id = "", label = "Label", type = FieldType.Text())
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun `FieldDefinition rejects blank label`() {
+  fun fieldDefinition_rejectsBlankLabel() {
     FieldDefinition(id = "id", label = "", type = FieldType.Text())
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun `FieldDefinition rejects whitespace-only id`() {
+  fun fieldDefinition_rejectsWhitespaceOnlyId() {
     FieldDefinition(id = "   ", label = "Label", type = FieldType.Text())
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun `FieldDefinition rejects whitespace-only label`() {
+  fun fieldDefinition_rejectsWhitespaceOnlyLabel() {
     FieldDefinition(id = "id", label = "   ", type = FieldType.Text())
   }
 
   @Test(expected = IllegalArgumentException::class)
-  fun `FieldDefinition rejects mismatched defaultValue type`() {
+  fun fieldDefinition_rejectsMismatchedDefaultValueType() {
     FieldDefinition(
         id = "count",
         label = "Count",
@@ -78,7 +78,7 @@ class FieldDefinitionTest {
   }
 
   @Test
-  fun `FieldDefinition accepts all field types`() {
+  fun fieldDefinition_acceptsAllFieldTypes() {
     val textField = FieldDefinition(id = "text", label = "Text", type = FieldType.Text())
     assertEquals(FieldTypeKey.TEXT, textField.type.typeKey)
 

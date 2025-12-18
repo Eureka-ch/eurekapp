@@ -20,13 +20,7 @@ import org.junit.Test
 /**
  * Comprehensive unit tests for TokenEntryViewModel.
  *
- * Tests cover:
- * - Token validation logic
- * - State management
- * - Error handling
- * - Edge cases and boundary conditions
- * - Repository interaction
- * - Firebase Auth integration
+ * This code was written with help of Claude.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class TokenEntryViewModelTest {
@@ -69,12 +63,12 @@ class TokenEntryViewModelTest {
   // ========================================
 
   @Test
-  fun init_shouldLoadUserNameFromAuth() {
+  fun init_loadsUserNameFromAuth() {
     assertEquals("Test User", viewModel.uiState.value.userName)
   }
 
   @Test
-  fun init_whenUserHasNoDisplayName_shouldUseGuestAsDefault() {
+  fun init_usesGuestAsDefaultWhenUserHasNoDisplayName() {
     every { mockUser.displayName } returns null
 
     val viewModelNoName =
@@ -85,7 +79,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun init_whenUserHasEmptyDisplayName_shouldUseEmptyString() {
+  fun init_usesEmptyStringWhenUserHasEmptyDisplayName() {
     every { mockUser.displayName } returns ""
 
     val viewModelEmptyName =
@@ -96,7 +90,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun init_whenNoUserSignedIn_shouldUseGuestAsDefault() {
+  fun init_usesGuestAsDefaultWhenNoUserSignedIn() {
     every { mockAuth.currentUser } returns null
 
     val viewModelNoUser =
@@ -111,21 +105,21 @@ class TokenEntryViewModelTest {
   // ========================================
 
   @Test
-  fun updateToken_shouldUpdateTokenInState() {
+  fun updateToken_updatesTokenInState() {
     viewModel.updateToken("ABC-123")
 
     assertEquals("ABC-123", viewModel.uiState.value.token)
   }
 
   @Test
-  fun updateToken_shouldTrimWhitespace() {
+  fun updateToken_trimsWhitespace() {
     viewModel.updateToken("  ABC-123  ")
 
     assertEquals("ABC-123", viewModel.uiState.value.token)
   }
 
   @Test
-  fun updateToken_shouldClearErrorMessage() = runTest {
+  fun updateToken_clearsErrorMessage() = runTest {
     // Set an error first
     viewModel.validateToken() // This will set error for empty token
 
@@ -140,14 +134,14 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun updateToken_shouldHandleEmptyString() {
+  fun updateToken_handlesEmptyString() {
     viewModel.updateToken("")
 
     assertEquals("", viewModel.uiState.value.token)
   }
 
   @Test
-  fun updateToken_shouldHandleVeryLongToken() {
+  fun updateToken_handlesVeryLongToken() {
     val longToken = "A".repeat(10000)
     viewModel.updateToken(longToken)
 
@@ -155,7 +149,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun updateToken_shouldHandleSpecialCharacters() {
+  fun updateToken_handlesSpecialCharacters() {
     val specialToken = "TOKEN_!@#$%^&*()_+-=[]{}|;:',.<>?"
     viewModel.updateToken(specialToken)
 
@@ -163,7 +157,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun updateToken_shouldHandleUnicodeCharacters() {
+  fun updateToken_handlesUnicodeCharacters() {
     val unicodeToken = "TOKEN_こんにちは_🎉_مرحبا"
     viewModel.updateToken(unicodeToken)
 
@@ -175,7 +169,7 @@ class TokenEntryViewModelTest {
   // ========================================
 
   @Test
-  fun clearError_shouldRemoveErrorMessage() = runTest {
+  fun clearError_removesErrorMessage() = runTest {
     // Trigger an error by validating empty token
     viewModel.validateToken()
     advanceUntilIdle()
@@ -192,7 +186,7 @@ class TokenEntryViewModelTest {
   // ========================================
 
   @Test
-  fun validateToken_whenTokenIsEmpty_shouldSetError() = runTest {
+  fun validateToken_setsErrorWhenTokenIsEmpty() = runTest {
     viewModel.updateToken("")
 
     viewModel.validateToken()
@@ -204,7 +198,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun validateToken_whenTokenIsBlank_shouldSetError() = runTest {
+  fun validateToken_setsErrorWhenTokenIsBlank() = runTest {
     viewModel.updateToken("   ")
 
     viewModel.validateToken()
@@ -214,7 +208,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun validateToken_whenTokenIsWhitespace_shouldSetError() = runTest {
+  fun validateToken_setsErrorWhenTokenIsWhitespace() = runTest {
     viewModel.updateToken("\t\n  ")
 
     viewModel.validateToken()
@@ -228,7 +222,7 @@ class TokenEntryViewModelTest {
   // ========================================
 
   @Test
-  fun validateToken_whenNoUserSignedIn_shouldSetError() = runTest {
+  fun validateToken_setsErrorWhenNoUserSignedIn() = runTest {
     every { mockAuth.currentUser } returns null
     viewModel.updateToken("VALID-TOKEN")
 
@@ -245,7 +239,7 @@ class TokenEntryViewModelTest {
   // ========================================
 
   @Test
-  fun validateToken_whenTokenNotFound_shouldSetError() = runTest {
+  fun validateToken_setsErrorWhenTokenNotFound() = runTest {
     viewModel.updateToken("INVALID-TOKEN")
     coEvery { mockRepository.getInvitationByToken("INVALID-TOKEN") } returns flowOf(null)
 
@@ -262,7 +256,7 @@ class TokenEntryViewModelTest {
   // ========================================
 
   @Test
-  fun validateToken_whenTokenAlreadyUsed_shouldSetError() = runTest {
+  fun validateToken_setsErrorWhenTokenAlreadyUsed() = runTest {
     val usedInvitation =
         Invitation(
             token = "USED-TOKEN",
@@ -287,7 +281,7 @@ class TokenEntryViewModelTest {
   // ========================================
 
   @Test
-  fun validateToken_whenValidToken_shouldMarkAsUsedAndSetSuccess() = runTest {
+  fun validateToken_marksAsUsedAndSetsSuccessWithValidToken() = runTest {
     val validInvitation =
         Invitation(token = "VALID-TOKEN", projectId = "project_123", isUsed = false)
 
@@ -306,7 +300,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun validateToken_shouldCompleteValidationSuccessfully() = runTest {
+  fun validateToken_completesValidationSuccessfully() = runTest {
     val validInvitation =
         Invitation(token = "VALID-TOKEN", projectId = "project_123", isUsed = false)
 
@@ -323,7 +317,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun validateToken_shouldAddUserToProjectAfterMarkingAsUsed() = runTest {
+  fun validateToken_addsUserToProjectAfterMarkingAsUsed() = runTest {
     val validInvitation =
         Invitation(token = "VALID-TOKEN", projectId = "project_123", isUsed = false)
 
@@ -343,7 +337,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun validateToken_shouldCallAddMemberWithCorrectProjectId() = runTest {
+  fun validateToken_callsAddMemberWithCorrectProjectId() = runTest {
     val validInvitation =
         Invitation(token = "TOKEN-ABC", projectId = "different_project_456", isUsed = false)
 
@@ -365,7 +359,7 @@ class TokenEntryViewModelTest {
   // ========================================
 
   @Test
-  fun validateToken_whenMarkAsUsedFails_shouldSetError() = runTest {
+  fun validateToken_setsErrorWhenMarkAsUsedFails() = runTest {
     val validInvitation =
         Invitation(token = "VALID-TOKEN", projectId = "project_123", isUsed = false)
 
@@ -383,7 +377,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun validateToken_whenMarkAsUsedFailsWithNoMessage_shouldSetGenericError() = runTest {
+  fun validateToken_setsGenericErrorWhenMarkAsUsedFailsWithNoMessage() = runTest {
     val validInvitation =
         Invitation(token = "VALID-TOKEN", projectId = "project_123", isUsed = false)
 
@@ -400,7 +394,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun validateToken_whenAddMemberFails_shouldSetError() = runTest {
+  fun validateToken_setsErrorWhenAddMemberFails() = runTest {
     val validInvitation =
         Invitation(token = "VALID-TOKEN", projectId = "project_123", isUsed = false)
 
@@ -421,7 +415,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun validateToken_whenAddMemberFailsWithNoMessage_shouldSetGenericError() = runTest {
+  fun validateToken_setsGenericErrorWhenAddMemberFailsWithNoMessage() = runTest {
     val validInvitation =
         Invitation(token = "VALID-TOKEN", projectId = "project_123", isUsed = false)
 
@@ -445,7 +439,7 @@ class TokenEntryViewModelTest {
   // ========================================
 
   @Test
-  fun validateToken_whenRepositoryThrowsException_shouldSetError() = runTest {
+  fun validateToken_setsErrorWhenRepositoryThrowsException() = runTest {
     viewModel.updateToken("ERROR-TOKEN")
     coEvery { mockRepository.getInvitationByToken("ERROR-TOKEN") } throws Exception("Network error")
 
@@ -458,7 +452,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun validateToken_whenUnexpectedExceptionOccurs_shouldSetGenericError() = runTest {
+  fun validateToken_setsGenericErrorWhenUnexpectedExceptionOccurs() = runTest {
     viewModel.updateToken("EXCEPTION-TOKEN")
     coEvery { mockRepository.getInvitationByToken("EXCEPTION-TOKEN") } throws
         RuntimeException("Unexpected error")
@@ -472,7 +466,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun validateToken_whenNullPointerException_shouldHandleGracefully() = runTest {
+  fun validateToken_handlesGracefullyWhenNullPointerException() = runTest {
     viewModel.updateToken("NULL-TOKEN")
     coEvery { mockRepository.getInvitationByToken("NULL-TOKEN") } throws
         NullPointerException("Null pointer")
@@ -490,7 +484,7 @@ class TokenEntryViewModelTest {
   // ========================================
 
   @Test
-  fun validateToken_withVeryLongValidToken_shouldSucceed() = runTest {
+  fun validateToken_succeedsWithVeryLongValidToken() = runTest {
     val longToken = "A".repeat(1000)
     val validInvitation = Invitation(token = longToken, projectId = "project_123", isUsed = false)
 
@@ -506,7 +500,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun validateToken_withSpecialCharactersInToken_shouldSucceed() = runTest {
+  fun validateToken_succeedsWithSpecialCharactersInToken() = runTest {
     val specialToken = "TOKEN_!@#$%^&*()"
     val validInvitation =
         Invitation(token = specialToken, projectId = "project_123", isUsed = false)
@@ -523,7 +517,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun validateToken_multipleSequentialCalls_allExecute() = runTest {
+  fun validateToken_allExecuteWithMultipleSequentialCalls() = runTest {
     val validInvitation =
         Invitation(token = "VALID-TOKEN", projectId = "project_123", isUsed = false)
 
@@ -547,7 +541,7 @@ class TokenEntryViewModelTest {
   // ========================================
 
   @Test
-  fun uiState_shouldStartWithCorrectDefaults() {
+  fun uiState_startsWithCorrectDefaults() {
     val initialState = viewModel.uiState.value
 
     assertEquals("", initialState.token)
@@ -558,7 +552,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun validateToken_afterError_successfulValidationClearsError() = runTest {
+  fun validateToken_clearsErrorAfterSuccessfulValidationAfterError() = runTest {
     // Set an error first
     viewModel.validateToken() // Empty token error
     advanceUntilIdle()
@@ -581,7 +575,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun validateToken_afterSuccess_statesShouldBeCorrect() = runTest {
+  fun validateToken_statesAreCorrectAfterSuccess() = runTest {
     val validInvitation =
         Invitation(token = "VALID-TOKEN", projectId = "project_123", isUsed = false)
 
@@ -611,7 +605,7 @@ class TokenEntryViewModelTest {
   // ========================================
 
   @Test
-  fun validateToken_success_shouldCallRepositoryInCorrectOrder() = runTest {
+  fun validateToken_callsRepositoryInCorrectOrderWithSuccess() = runTest {
     val validInvitation =
         Invitation(token = "ORDER-TOKEN", projectId = "project_123", isUsed = false)
 
@@ -632,7 +626,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun validateToken_whenInvitationNotFound_shouldNotCallMarkAsUsed() = runTest {
+  fun validateToken_doesNotCallMarkAsUsedWhenInvitationNotFound() = runTest {
     viewModel.updateToken("NOT-FOUND-TOKEN")
     coEvery { mockRepository.getInvitationByToken("NOT-FOUND-TOKEN") } returns flowOf(null)
 
@@ -645,7 +639,7 @@ class TokenEntryViewModelTest {
   }
 
   @Test
-  fun validateToken_whenAlreadyUsed_shouldNotCallMarkAsUsed() = runTest {
+  fun validateToken_doesNotCallMarkAsUsedWhenAlreadyUsed() = runTest {
     val usedInvitation =
         Invitation(
             token = "ALREADY-USED", projectId = "project_123", isUsed = true, usedBy = "other_user")

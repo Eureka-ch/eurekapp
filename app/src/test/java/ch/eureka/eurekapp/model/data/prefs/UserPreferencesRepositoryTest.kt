@@ -1,4 +1,4 @@
-/* Portions of this file were written with the help of Gemini. */
+/* Portions of this file were generated with the help of Claude (Sonnet 4.5). */
 package ch.eureka.eurekapp.model.data.prefs
 
 import android.content.Context
@@ -35,14 +35,14 @@ class UserPreferencesRepositoryTest {
   }
 
   @Test
-  fun `isCloudStorageEnabled returns false by default`() = runTest {
+  fun isCloudStorageEnabled_returnsFalseByDefault() = runTest {
     val isEnabled = repository.isCloudStorageEnabled.first()
 
     assertFalse("Default value should be false (Local only)", isEnabled)
   }
 
   @Test
-  fun `setCloudStorageEnabled to true updates flow`() = runTest {
+  fun setCloudStorageEnabled_toTrueUpdatesFlow() = runTest {
     repository.setCloudStorageEnabled(true)
     val isEnabled = repository.isCloudStorageEnabled.first()
 
@@ -50,7 +50,7 @@ class UserPreferencesRepositoryTest {
   }
 
   @Test
-  fun `setCloudStorageEnabled toggles value correctly`() = runTest {
+  fun setCloudStorageEnabled_togglesValueCorrectly() = runTest {
     repository.setCloudStorageEnabled(true)
     assertTrue(repository.isCloudStorageEnabled.first())
 

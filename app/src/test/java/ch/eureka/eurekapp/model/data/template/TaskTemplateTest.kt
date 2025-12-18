@@ -9,12 +9,13 @@ import org.junit.Test
 /**
  * Test suite for TaskTemplate model.
  *
- * Note: Some of these tests were co-authored by Claude Code.
+ * Note: This code was written with help of Claude. Some of these tests were co-authored by Claude
+ * Code.
  */
 class TaskTemplateTest {
 
   @Test
-  fun taskTemplate_defaultConstructor_createsEmptyTaskTemplate() {
+  fun taskTemplate_createsEmptyTaskTemplateWithDefaultConstructor() {
     val template = TaskTemplate()
 
     assertEquals("", template.templateID)
@@ -25,7 +26,7 @@ class TaskTemplateTest {
   }
 
   @Test
-  fun taskTemplate_withParameters_setsCorrectValues() {
+  fun taskTemplate_setsCorrectValuesWithParameters() {
     val fields =
         TaskTemplateSchema(
             listOf(
@@ -47,7 +48,7 @@ class TaskTemplateTest {
   }
 
   @Test
-  fun taskTemplate_copy_createsNewInstance() {
+  fun taskTemplate_createsNewInstanceWithCopy() {
     val template =
         TaskTemplate(templateID = "tmpl123", projectId = "prj123", title = "Bug Fix Template")
     val copiedTemplate = template.copy(title = "Feature Template")
@@ -58,7 +59,7 @@ class TaskTemplateTest {
   }
 
   @Test
-  fun taskTemplate_equals_comparesCorrectly() {
+  fun taskTemplate_comparesCorrectlyWithEquals() {
     val template1 =
         TaskTemplate(templateID = "tmpl123", projectId = "prj123", title = "Bug Fix Template")
     val template2 =
@@ -71,7 +72,7 @@ class TaskTemplateTest {
   }
 
   @Test
-  fun taskTemplate_hashCode_isConsistent() {
+  fun taskTemplate_isConsistentWithHashCode() {
     val template1 =
         TaskTemplate(templateID = "tmpl123", projectId = "prj123", title = "Bug Fix Template")
     val template2 =
@@ -81,7 +82,7 @@ class TaskTemplateTest {
   }
 
   @Test
-  fun taskTemplate_toString_containsAllFields() {
+  fun taskTemplate_containsAllFieldsInToString() {
     val template =
         TaskTemplate(
             templateID = "tmpl123",

@@ -30,6 +30,7 @@ import org.junit.Test
 /*
 Co-author: GPT-5 Codex
 Co-author: Claude 4.5 Sonnet
+This code was written with help of Claude.
 */
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -60,7 +61,7 @@ class CreateConversationViewModelTest {
   }
 
   @Test
-  fun `selectProject loads members excluding current user`() = runTest {
+  fun selectProject_loadsMembersExcludingCurrentUser() = runTest {
     val project = Project(projectId = "p1", name = "Project 1")
     val members =
         listOf(
@@ -91,7 +92,7 @@ class CreateConversationViewModelTest {
   }
 
   @Test
-  fun `createConversation detects duplicate and shows error`() = runTest {
+  fun createConversation_detectsDuplicateAndShowsError() = runTest {
     val project = Project(projectId = "p1", name = "Project 1")
     val otherUser = User(uid = "otherUser", displayName = "Other User")
     val memberData = MemberDisplayData(Member(userId = "otherUser"), otherUser)
@@ -121,7 +122,7 @@ class CreateConversationViewModelTest {
   }
 
   @Test
-  fun `createConversation succeeds when no duplicate`() = runTest {
+  fun createConversation_succeedsWhenNoDuplicate() = runTest {
     val project = Project(projectId = "p1", name = "Project 1")
     val members = listOf(Member(userId = "otherUser", role = ProjectRole.MEMBER))
     val otherUser = User(uid = "otherUser", displayName = "Other User")
@@ -155,7 +156,7 @@ class CreateConversationViewModelTest {
   }
 
   @Test
-  fun `connectivity state updates UI`() = runTest {
+  fun connectivityState_updatesUI() = runTest {
     every { mockProjectRepository.getProjectsForCurrentUser(skipCache = false) } returns
         flowOf(emptyList())
     every { mockConnectivityObserver.isConnected } returns flowOf(false)

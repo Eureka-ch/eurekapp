@@ -1,3 +1,4 @@
+// Portions of this file were generated with the help of Claude (Sonnet 4.5).
 package ch.eureka.eurekapp.model.data.meeting
 
 import ch.eureka.eurekapp.model.data.StringSerializableEnum
@@ -11,7 +12,7 @@ import junit.framework.TestCase.*
 class MeetingFormatTest {
 
   @org.junit.Test
-  fun testEnumValuesAndValueOf() {
+  fun meetingFormat_enumValuesAndValueOf() {
     val values = MeetingFormat.values()
     assertEquals(2, values.size)
     assertTrue(values.contains(MeetingFormat.IN_PERSON))
@@ -25,13 +26,13 @@ class MeetingFormatTest {
   }
 
   @org.junit.Test
-  fun testImplementsInterface() {
+  fun meetingFormat_implementsInterface() {
     val format: StringSerializableEnum = MeetingFormat.IN_PERSON
     assertNotNull(format)
   }
 
   @org.junit.Test
-  fun testToString() {
+  fun meetingFormat_toString() {
     assertEquals("IN_PERSON", MeetingFormat.IN_PERSON.toString())
     assertEquals("VIRTUAL", MeetingFormat.VIRTUAL.toString())
   }

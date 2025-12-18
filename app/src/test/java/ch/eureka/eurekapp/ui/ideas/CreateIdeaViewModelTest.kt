@@ -1,4 +1,5 @@
 /* Portions of this file were written with the help of GPT-5 Codex and Gemini. */
+/* This code was written with help of Claude. */
 package ch.eureka.eurekapp.ui.ideas
 
 import ch.eureka.eurekapp.model.data.project.Member
@@ -113,7 +114,7 @@ class CreateIdeaViewModelTest {
   }
 
   @Test
-  fun createIdea_withValidData_createsIdeaSuccessfully() = runTest {
+  fun createIdea_createsIdeaSuccessfullyWithValidData() = runTest {
     val project = Project(projectId = "project-123", name = "Test Project")
     mockProjectRepository.setCurrentUserProjects(flowOf(listOf(project)))
     mockIdeasRepository.setCreateIdeaResult(Result.success("idea-123"))
@@ -134,7 +135,7 @@ class CreateIdeaViewModelTest {
   }
 
   @Test
-  fun createIdea_withoutTitle_createsIdeaWithNullTitle() = runTest {
+  fun createIdea_createsIdeaWithNullTitleWithoutTitle() = runTest {
     val project = Project(projectId = "project-123", name = "Test Project")
     mockProjectRepository.setCurrentUserProjects(flowOf(listOf(project)))
     mockIdeasRepository.setCreateIdeaResult(Result.success("idea-123"))
@@ -149,7 +150,7 @@ class CreateIdeaViewModelTest {
   }
 
   @Test
-  fun createIdea_withoutProject_showsError() = runTest {
+  fun createIdea_showsErrorWithoutProject() = runTest {
     viewModel = createViewModel()
     advanceUntilIdle()
     viewModel.createIdea()
@@ -159,7 +160,7 @@ class CreateIdeaViewModelTest {
   }
 
   @Test
-  fun createIdea_withoutCurrentUser_showsError() = runTest {
+  fun createIdea_showsErrorWithoutCurrentUser() = runTest {
     val project = Project(projectId = "project-123", name = "Test Project")
     mockProjectRepository.setCurrentUserProjects(flowOf(listOf(project)))
     viewModel = createViewModel(getCurrentUserId = { null })

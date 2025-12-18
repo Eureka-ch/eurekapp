@@ -1,5 +1,6 @@
 /*
 Portions of the code in this file were written with the help of Gemini.
+This code was written with help of Claude.
 */
 package ch.eureka.eurekapp.model.map
 
@@ -63,7 +64,7 @@ class NominatimLocationRepositoryTest {
   }
 
   @Test
-  fun `search returns list of locations on successful response`() = runTest {
+  fun search_returnsListOfLocationsOnSuccessfulResponse() = runTest {
     val jsonResponse =
         """
             [
@@ -101,7 +102,7 @@ class NominatimLocationRepositoryTest {
   }
 
   @Test
-  fun `search returns empty list on HTTP error`() = runTest {
+  fun search_returnsEmptyListOnHttpError() = runTest {
     every { mockResponse.isSuccessful } returns false
     every { mockResponse.code } returns 404
     every { mockResponse.close() } returns Unit
@@ -119,7 +120,7 @@ class NominatimLocationRepositoryTest {
   }
 
   @Test
-  fun `search throws IOException on network failure`() = runTest {
+  fun search_throwsIOExceptionOnNetworkFailure() = runTest {
     val exception = IOException("No Internet")
     val slot = slot<Callback>()
 
@@ -137,7 +138,7 @@ class NominatimLocationRepositoryTest {
   }
 
   @Test
-  fun `search throws IOException on empty body`() = runTest {
+  fun search_throwsIOExceptionOnEmptyBody() = runTest {
     every { mockResponse.isSuccessful } returns true
     every { mockResponse.body } returns null
     every { mockResponse.close() } returns Unit
@@ -157,7 +158,7 @@ class NominatimLocationRepositoryTest {
   }
 
   @Test
-  fun `search filters out invalid locations in JSON`() = runTest {
+  fun search_filtersOutInvalidLocationsInJson() = runTest {
     val jsonResponse =
         """
             [
@@ -193,7 +194,7 @@ class NominatimLocationRepositoryTest {
   }
 
   @Test
-  fun `awaitResponse cancels call when coroutine is cancelled`() = runTest {
+  fun awaitResponse_cancelsCallWhenCoroutineIsCancelled() = runTest {
     val slot = slot<Callback>()
     every { mockCall.enqueue(capture(slot)) } returns Unit
     every { mockCall.cancel() } returns Unit
@@ -206,7 +207,7 @@ class NominatimLocationRepositoryTest {
   }
 
   @Test
-  fun `search returns empty list on malformed JSON`() = runTest {
+  fun search_returnsEmptyListOnMalformedJson() = runTest {
     val badJson = "<html><body>Error 500</body></html>"
 
     every { mockResponse.isSuccessful } returns true
@@ -227,7 +228,7 @@ class NominatimLocationRepositoryTest {
   }
 
   @Test
-  fun `search returns empty list when JSON is not an array`() = runTest {
+  fun search_returnsEmptyListWhenJsonIsNotAnArray() = runTest {
     val errorJson = """ { "error": "Rate limit exceeded" } """
 
     every { mockResponse.isSuccessful } returns true
@@ -248,7 +249,7 @@ class NominatimLocationRepositoryTest {
   }
 
   @Test
-  fun `search skips items with missing fields`() = runTest {
+  fun search_skipsItemsWithMissingFields() = runTest {
     val jsonResponse =
         """
             [

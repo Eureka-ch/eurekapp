@@ -1,4 +1,6 @@
+// Portions of this file were generated with the help of Claude (Sonnet 4.5).
 package ch.eureka.eurekapp.model.audio
+
 // Parts of this code were generated using the help of Gemini 3 Pro and Grok
 import android.content.Context
 import ch.eureka.eurekapp.model.connection.ConnectivityObserver
@@ -67,7 +69,7 @@ class AudioRecordingViewModelTimerTest {
   }
 
   @Test
-  fun `startRecording initiates timer and increments seconds`() =
+  fun audioRecordingViewModel_startRecordingInitiatesTimerAndIncrementsSeconds() =
       runTest(testDispatcher) {
         recordingStateFlow.value = RecordingState.RUNNING
         every { recordingRepository.createRecording(any(), any()) } returns Result.success(mockk())
@@ -84,7 +86,7 @@ class AudioRecordingViewModelTimerTest {
       }
 
   @Test
-  fun `resumeRecording starts timer if state is PAUSED and resume succeeds`() =
+  fun audioRecordingViewModel_resumeRecordingStartsTimerIfStateIsPausedAndResumeSucceeds() =
       runTest(testDispatcher) {
         recordingStateFlow.value = RecordingState.PAUSED
         every { recordingRepository.resumeRecording() } returns Result.success(Unit)
@@ -102,7 +104,7 @@ class AudioRecordingViewModelTimerTest {
       }
 
   @Test
-  fun `stopRecording resets timer to zero`() =
+  fun audioRecordingViewModel_stopRecordingResetsTimerToZero() =
       runTest(testDispatcher) {
         recordingStateFlow.value = RecordingState.RUNNING
         every { recordingRepository.createRecording(any(), any()) } returns Result.success(mockk())
@@ -121,7 +123,7 @@ class AudioRecordingViewModelTimerTest {
       }
 
   @Test
-  fun `timer loop stops when RecordingState is no longer RUNNING`() =
+  fun audioRecordingViewModel_timerLoopStopsWhenRecordingStateIsNoLongerRunning() =
       runTest(testDispatcher) {
         recordingStateFlow.value = RecordingState.RUNNING
         every { recordingRepository.createRecording(any(), any()) } returns Result.success(mockk())

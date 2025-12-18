@@ -1,3 +1,4 @@
+// Portions of this file were generated with the help of Claude (Sonnet 4.5).
 package ch.eureka.eurekapp.model.chatbot
 
 import kotlinx.coroutines.test.runTest
@@ -17,12 +18,12 @@ class ChatbotRepositoryTest {
   }
 
   @Test
-  fun initialState_usesDummyEngine() {
+  fun chatbotRepository_initialStateUsesDummyEngine() {
     assertEquals(ChatbotEngineType.DUMMY, repository.getEngineType())
   }
 
   @Test
-  fun setEngineType_updatesEngineType() {
+  fun chatbotRepository_setEngineTypeUpdatesEngineType() {
     repository.setEngineType(ChatbotEngineType.API)
     assertEquals(ChatbotEngineType.API, repository.getEngineType())
 
@@ -31,7 +32,7 @@ class ChatbotRepositoryTest {
   }
 
   @Test
-  fun sendMessage_withMeetingTranscription_returnsResponse() = runTest {
+  fun chatbotRepository_sendMessageWithMeetingTranscriptionReturnsResponse() = runTest {
     val context =
         """
             Meeting transcript:
@@ -54,7 +55,7 @@ class ChatbotRepositoryTest {
   }
 
   @Test
-  fun sendMessage_withMeetingSummary_returnsResponse() = runTest {
+  fun chatbotRepository_sendMessageWithMeetingSummaryReturnsResponse() = runTest {
     val context =
         """
             Meeting transcript:
@@ -77,7 +78,7 @@ class ChatbotRepositoryTest {
   }
 
   @Test
-  fun sendMessage_withApiEngineNotConfigured_throwsException() = runTest {
+  fun chatbotRepository_sendMessageWithApiEngineNotConfiguredThrowsException() = runTest {
     repository.setEngineType(ChatbotEngineType.API)
     val context =
         """
@@ -105,7 +106,7 @@ class ChatbotRepositoryTest {
   }
 
   @Test
-  fun configureApiDataSource_allowsApiEngine() = runTest {
+  fun chatbotRepository_configureApiDataSourceAllowsApiEngine() = runTest {
     repository.configureApiDataSource("https://api.example.com/chat", "test-key")
     repository.setEngineType(ChatbotEngineType.API)
     val context =
@@ -133,7 +134,7 @@ class ChatbotRepositoryTest {
   }
 
   @Test
-  fun sendMessage_withAllMeetingPromptTypes_callsDataSource() = runTest {
+  fun chatbotRepository_sendMessageWithAllMeetingPromptTypesCallsDataSource() = runTest {
     val context =
         """
             Meeting transcript:
@@ -161,19 +162,19 @@ class ChatbotRepositoryTest {
   }
 
   @Test
-  fun sendMessage_withEmptyPrompt_returnsResponse() = runTest {
+  fun chatbotRepository_sendMessageWithEmptyPromptReturnsResponse() = runTest {
     val response = repository.sendMessage("", "Some context")
     assertTrue(response.isNotEmpty())
   }
 
   @Test
-  fun sendMessage_withEmptyContext_returnsResponse() = runTest {
+  fun chatbotRepository_sendMessageWithEmptyContextReturnsResponse() = runTest {
     val response = repository.sendMessage("Test prompt", "")
     assertTrue(response.isNotEmpty())
   }
 
   @Test
-  fun setEngineType_multipleTransitions_worksCorrectly() = runTest {
+  fun chatbotRepository_setEngineTypeMultipleTransitionsWorksCorrectly() = runTest {
     repository.setEngineType(ChatbotEngineType.API)
     assertEquals(ChatbotEngineType.API, repository.getEngineType())
 
@@ -189,7 +190,7 @@ class ChatbotRepositoryTest {
   }
 
   @Test
-  fun configureApiDataSource_multipleTimes_usesLatestConfiguration() = runTest {
+  fun chatbotRepository_configureApiDataSourceMultipleTimesUsesLatestConfiguration() = runTest {
     repository.configureApiDataSource("https://api1.example.com", "key1")
     repository.configureApiDataSource("https://api2.example.com", "key2")
     repository.setEngineType(ChatbotEngineType.API)
@@ -203,7 +204,7 @@ class ChatbotRepositoryTest {
   }
 
   @Test
-  fun configureApiDataSource_withoutApiKey_allowsConfiguration() = runTest {
+  fun chatbotRepository_configureApiDataSourceWithoutApiKeyAllowsConfiguration() = runTest {
     repository.configureApiDataSource("https://api.example.com")
     repository.setEngineType(ChatbotEngineType.API)
 
@@ -215,7 +216,7 @@ class ChatbotRepositoryTest {
   }
 
   @Test
-  fun sendMessage_switchingBetweenEngines_worksCorrectly() = runTest {
+  fun chatbotRepository_sendMessageSwitchingBetweenEnginesWorksCorrectly() = runTest {
     val response1 = repository.sendMessage("Test", "Context")
     assertTrue(response1.contains("dummy"))
     repository.configureApiDataSource("https://api.example.com", "key")
@@ -232,7 +233,7 @@ class ChatbotRepositoryTest {
   }
 
   @Test
-  fun sendMessage_withNullApiKeyAfterConfiguration_worksCorrectly() = runTest {
+  fun chatbotRepository_sendMessageWithNullApiKeyAfterConfigurationWorksCorrectly() = runTest {
     repository.configureApiDataSource("https://api.example.com", null)
     repository.setEngineType(ChatbotEngineType.API)
 

@@ -27,6 +27,7 @@ import org.junit.Before
 import org.junit.Test
 
 // Portions of this code were generated with the help of Grok.
+// This code was written with help of Claude.
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TaskScreenViewModelTest {
@@ -69,7 +70,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun viewModel_initialState_hasCorrectDefaults() = runTest {
+  fun viewModel_hasCorrectDefaultsInInitialState() = runTest {
     viewModel =
         TaskScreenViewModel(
             projectRepository = mockProjectRepository,
@@ -87,7 +88,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun viewModel_withUserTasks_displaysCorrectly() = runTest {
+  fun viewModel_displaysCorrectlyWithUserTasks() = runTest {
     val task1 =
         Task(
             taskID = "task1",
@@ -120,7 +121,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun viewModel_setFilterToTeam_showsTeamTasks() = runTest {
+  fun viewModel_showsTeamTasksWithSetFilterToTeam() = runTest {
     val userTask =
         Task(
             taskID = "task1",
@@ -158,7 +159,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun viewModel_setFilterToAll_showsAllTasks() = runTest {
+  fun viewModel_showsAllTasksWithSetFilterToAll() = runTest {
     val userTask =
         Task(
             taskID = "task1",
@@ -195,7 +196,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun viewModel_setFilterToToday_showsOnlyTasksDueToday() = runTest {
+  fun viewModel_showsOnlyTasksDueTodayWithSetFilterToToday() = runTest {
     val baseTime = System.currentTimeMillis()
     val calendar = java.util.Calendar.getInstance()
     calendar.timeInMillis = baseTime
@@ -251,7 +252,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun viewModel_setFilterToTomorrow_showsOnlyTasksDueTomorrow() = runTest {
+  fun viewModel_showsOnlyTasksDueTomorrowWithSetFilterToTomorrow() = runTest {
     val baseTime = System.currentTimeMillis()
     val calendar = java.util.Calendar.getInstance()
     calendar.timeInMillis = baseTime
@@ -307,7 +308,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun viewModel_setFilterToOverdue_showsOnlyOverdueTasks() = runTest {
+  fun viewModel_showsOnlyOverdueTasksWithSetFilterToOverdue() = runTest {
     val baseTime = System.currentTimeMillis()
     val calendar = java.util.Calendar.getInstance()
     calendar.timeInMillis = baseTime
@@ -363,7 +364,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun viewModel_setFilterToThisWeek_showsOnlyTasksDueThisWeek() = runTest {
+  fun viewModel_showsOnlyTasksDueThisWeekWithSetFilterToThisWeek() = runTest {
     val taskDueTomorrow =
         Task(
             taskID = "task1",
@@ -401,7 +402,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun viewModel_toggleTaskCompletion_updatesTodoToCompleted() = runTest {
+  fun viewModel_updatesTodoToCompletedWithToggleTaskCompletion() = runTest {
     val task =
         Task(
             taskID = "task1",
@@ -432,7 +433,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun viewModel_toggleTaskCompletion_updatesCompletedToTodo() = runTest {
+  fun viewModel_updatesCompletedToTodoWithToggleTaskCompletion() = runTest {
     val task =
         Task(
             taskID = "task1",
@@ -462,7 +463,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun viewModel_toggleTaskCompletion_withError_setsErrorState() = runTest {
+  fun viewModel_setsErrorStateWithToggleTaskCompletionWithError() = runTest {
     val task =
         Task(
             taskID = "task1",
@@ -493,7 +494,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun viewModel_getAssignees_returnsCorrectUsers() = runTest {
+  fun viewModel_returnsCorrectUsersWithGetAssignees() = runTest {
     val task =
         Task(taskID = "task1", projectId = "proj1", assignedUserIds = listOf("user1", "user2"))
 
@@ -516,7 +517,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun viewModel_getAssignees_withEmptyList_returnsEmptyList() = runTest {
+  fun viewModel_returnsEmptyListWithGetAssigneesWithEmptyList() = runTest {
     val task = Task(taskID = "task1", projectId = "proj1", assignedUserIds = emptyList())
 
     viewModel =
@@ -534,7 +535,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun viewModel_withMultipleProjects_combinesTeamTasks() = runTest {
+  fun viewModel_combinesTeamTasksWithMultipleProjects() = runTest {
     val teamTask1 =
         Task(
             taskID = "task1",
@@ -570,7 +571,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun viewModel_withNoProjects_showsEmptyTeamTasks() = runTest {
+  fun viewModel_showsEmptyTeamTasksWithNoProjects() = runTest {
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
 
     viewModel =
@@ -608,7 +609,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun viewModel_whenTasksUpdate_propagatesChangesToUiState() = runTest {
+  fun viewModel_propagatesChangesToUiStateWhenTasksUpdate() = runTest {
     val initialTask =
         Task(
             taskID = "task1",
@@ -652,7 +653,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun viewModel_whenUserDataUpdates_propagatesChangesToUiState() = runTest {
+  fun viewModel_propagatesChangesToUiStateWhenUserDataUpdates() = runTest {
     val task =
         Task(
             taskID = "task1",
@@ -689,7 +690,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun viewModel_whenProjectsUpdate_propagatesTeamTaskChanges() = runTest {
+  fun viewModel_propagatesTeamTaskChangesWhenProjectsUpdate() = runTest {
     val teamTask =
         Task(
             taskID = "task1",
@@ -729,7 +730,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun viewModel_whenFilterChanges_immediatelyUpdatesUiState() = runTest {
+  fun viewModel_immediatelyUpdatesUiStateWhenFilterChanges() = runTest {
     val userTask =
         Task(
             taskID = "task1",
@@ -782,7 +783,7 @@ class TaskScreenViewModelTest {
 
   // Tests for TaskScreenUiState data class
   @Test
-  fun taskScreenUiState_defaultConstructor_hasCorrectDefaults() {
+  fun taskScreenUiState_hasCorrectDefaultsWithDefaultConstructor() {
     val uiState = TaskScreenUiState()
 
     assertEquals(emptyList<TaskAndUsers>(), uiState.tasksAndUsers)
@@ -792,7 +793,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun taskScreenUiState_copy_preservesUnchangedValues() {
+  fun taskScreenUiState_preservesUnchangedValuesWithCopy() {
     val original =
         TaskScreenUiState(
             tasksAndUsers = emptyList(),
@@ -809,7 +810,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun taskScreenUiState_equality_worksCorrectly() {
+  fun taskScreenUiState_worksCorrectlyWithEquality() {
     val state1 =
         TaskScreenUiState(
             tasksAndUsers = emptyList(),
@@ -828,47 +829,47 @@ class TaskScreenViewModelTest {
 
   // Tests for TaskScreenFilter sealed class and constants
   @Test
-  fun taskScreenFilter_mine_hasCorrectDisplayName() {
+  fun taskScreenFilter_hasCorrectDisplayNameWithMine() {
     assertEquals("My tasks", TaskScreenFilter.Mine.displayName)
   }
 
   @Test
-  fun taskScreenFilter_team_hasCorrectDisplayName() {
+  fun taskScreenFilter_hasCorrectDisplayNameWithTeam() {
     assertEquals("Team", TaskScreenFilter.Team.displayName)
   }
 
   @Test
-  fun taskScreenFilter_thisWeek_hasCorrectDisplayName() {
+  fun taskScreenFilter_hasCorrectDisplayNameWithThisWeek() {
     assertEquals("This week", TaskScreenFilter.ThisWeek.displayName)
   }
 
   @Test
-  fun taskScreenFilter_all_hasCorrectDisplayName() {
+  fun taskScreenFilter_hasCorrectDisplayNameWithAll() {
     assertEquals("All", TaskScreenFilter.All.displayName)
   }
 
   @Test
-  fun taskScreenFilter_companion_myTasksDisplayName_hasCorrectValue() {
+  fun taskScreenFilter_hasCorrectValueWithCompanionMyTasksDisplayName() {
     assertEquals("My tasks", TaskScreenFilter.MY_TASKS_DISPLAY_NAME)
   }
 
   @Test
-  fun taskScreenFilter_companion_teamDisplayName_hasCorrectValue() {
+  fun taskScreenFilter_hasCorrectValueWithCompanionTeamDisplayName() {
     assertEquals("Team", TaskScreenFilter.TEAM_DISPLAY_NAME)
   }
 
   @Test
-  fun taskScreenFilter_companion_thisWeekDisplayName_hasCorrectValue() {
+  fun taskScreenFilter_hasCorrectValueWithCompanionThisWeekDisplayName() {
     assertEquals("This week", TaskScreenFilter.THIS_WEEK_DISPLAY_NAME)
   }
 
   @Test
-  fun taskScreenFilter_companion_allDisplayName_hasCorrectValue() {
+  fun taskScreenFilter_hasCorrectValueWithCompanionAllDisplayName() {
     assertEquals("All", TaskScreenFilter.ALL_DISPLAY_NAME)
   }
 
   @Test
-  fun taskScreenFilter_companion_values_containsAllFilters() {
+  fun taskScreenFilter_containsAllFiltersWithCompanionValues() {
     val values = TaskScreenFilter.values
 
     assertEquals(7, values.size)
@@ -882,7 +883,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun taskScreenFilter_values_areInCorrectOrder() {
+  fun taskScreenFilter_areInCorrectOrderWithValues() {
     val values = TaskScreenFilter.values
 
     assertEquals(7, values.size)
@@ -897,7 +898,7 @@ class TaskScreenViewModelTest {
 
   // Tests for TaskAndUsers data class
   @Test
-  fun taskAndUsers_constructor_storesValuesCorrectly() {
+  fun taskAndUsers_storesValuesCorrectlyWithConstructor() {
     val task =
         Task(
             taskID = "task1",
@@ -913,7 +914,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun taskAndUsers_copy_preservesUnchangedValues() {
+  fun taskAndUsers_preservesUnchangedValuesWithCopy() {
     val task =
         Task(
             taskID = "task1",
@@ -931,7 +932,7 @@ class TaskScreenViewModelTest {
   }
 
   @Test
-  fun taskAndUsers_equality_worksCorrectly() {
+  fun taskAndUsers_worksCorrectlyWithEquality() {
     val task =
         Task(
             taskID = "task1",

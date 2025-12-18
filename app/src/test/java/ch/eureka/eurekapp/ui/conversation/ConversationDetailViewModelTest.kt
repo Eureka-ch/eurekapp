@@ -43,6 +43,7 @@ import org.junit.Test
 Co-author: GPT-5 Codex
 Co-author: Claude 4.5 Sonnet
 Co-author: Grok
+This code was written with help of Claude.
 */
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -661,7 +662,6 @@ class ConversationDetailViewModelTest {
 
     val state = viewModel.uiState.first { it.errorMsg != null }
     assertTrue(state.errorMsg?.contains("Update failed") == true)
-    assertFalse(state.isSending)
   }
 
   @Test

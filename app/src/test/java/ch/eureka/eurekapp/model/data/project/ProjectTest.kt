@@ -1,3 +1,4 @@
+// Portions of this file were generated with the help of Claude (Sonnet 4.5).
 package ch.eureka.eurekapp.model.data.project
 
 import org.junit.Assert.assertEquals
@@ -12,7 +13,7 @@ import org.junit.Test
 class ProjectTest {
 
   @Test
-  fun project_defaultConstructor_createsEmptyProject() {
+  fun project_defaultConstructorCreatesEmptyProject() {
     val project = Project()
 
     assertEquals("", project.projectId)
@@ -22,7 +23,7 @@ class ProjectTest {
   }
 
   @Test
-  fun project_withParameters_setsCorrectValues() {
+  fun project_withParametersSetsCorrectValues() {
     val project =
         Project(
             projectId = "prj123",
@@ -38,7 +39,7 @@ class ProjectTest {
   }
 
   @Test
-  fun project_copy_createsNewInstance() {
+  fun project_copyCreatesNewInstance() {
     val project = Project(projectId = "prj123", name = "Mobile App", status = ProjectStatus.OPEN)
     val copiedProject = project.copy(status = ProjectStatus.IN_PROGRESS)
 
@@ -48,7 +49,7 @@ class ProjectTest {
   }
 
   @Test
-  fun project_equals_comparesCorrectly() {
+  fun project_equalsComparesCorrectly() {
     val project1 = Project(projectId = "prj123", name = "Mobile App", status = ProjectStatus.OPEN)
     val project2 = Project(projectId = "prj123", name = "Mobile App", status = ProjectStatus.OPEN)
     val project3 = Project(projectId = "prj456", name = "Web App", status = ProjectStatus.COMPLETED)
@@ -58,7 +59,7 @@ class ProjectTest {
   }
 
   @Test
-  fun project_hashCode_isConsistent() {
+  fun project_hashCodeIsConsistent() {
     val project1 = Project(projectId = "prj123", name = "Mobile App", status = ProjectStatus.OPEN)
     val project2 = Project(projectId = "prj123", name = "Mobile App", status = ProjectStatus.OPEN)
 
@@ -66,7 +67,7 @@ class ProjectTest {
   }
 
   @Test
-  fun project_toString_containsAllFields() {
+  fun project_toStringContainsAllFields() {
     val project =
         Project(
             projectId = "prj123",

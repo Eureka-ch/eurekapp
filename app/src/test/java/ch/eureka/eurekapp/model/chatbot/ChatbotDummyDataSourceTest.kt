@@ -1,3 +1,4 @@
+// Portions of this file were generated with the help of Claude (Sonnet 4.5).
 package ch.eureka.eurekapp.model.chatbot
 
 import kotlinx.coroutines.test.runTest
@@ -15,7 +16,7 @@ class ChatbotDummyDataSourceTest {
   }
 
   @Test
-  fun sendMessage_withMeetingTranscript_returnsDummyResponse() = runTest {
+  fun chatbotDummyDataSource_sendMessageWithMeetingTranscriptReturnsDummyResponse() = runTest {
     val context = "Please transcribe this meeting: John said we need to review the Q4 budget."
     val response = dataSource.sendMessage("Transcribe this meeting", context)
 
@@ -24,7 +25,7 @@ class ChatbotDummyDataSourceTest {
   }
 
   @Test
-  fun sendMessage_withMeetingSummaryRequest_returnsDummyResponse() = runTest {
+  fun chatbotDummyDataSource_sendMessageWithMeetingSummaryRequestReturnsDummyResponse() = runTest {
     val context =
         """
             Meeting transcript:
@@ -48,7 +49,7 @@ class ChatbotDummyDataSourceTest {
   }
 
   @Test
-  fun sendMessage_withActionItemExtraction_returnsDummyResponse() = runTest {
+  fun chatbotDummyDataSource_sendMessageWithActionItemExtractionReturnsDummyResponse() = runTest {
     val context =
         """
             Extract action items from: John to prepare budget by Friday.
@@ -61,7 +62,7 @@ class ChatbotDummyDataSourceTest {
   }
 
   @Test
-  fun sendMessage_withDifferentMeetingPrompts_returnsSameFormat() = runTest {
+  fun chatbotDummyDataSource_sendMessageWithDifferentMeetingPromptsReturnsSameFormat() = runTest {
     val context = "Team standup: We discussed sprint progress and blockers."
 
     val response1 = dataSource.sendMessage("Transcribe this meeting", context)

@@ -26,6 +26,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
+/** Note: This code was written with help of Claude. */
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
 class FilesManagementViewModelTest {
@@ -51,7 +52,7 @@ class FilesManagementViewModelTest {
   }
 
   @Test
-  fun filesManagementViewModel_uiStateInitiallyEmpty() = runTest {
+  fun filesManagementViewModel_hasUiStateInitiallyEmpty() = runTest {
     coEvery { dao.getAll() } returns flowOf(emptyList())
     viewModel = FilesManagementViewModel(dao, application)
 
@@ -60,7 +61,7 @@ class FilesManagementViewModelTest {
   }
 
   @Test
-  fun filesManagementViewModel_processFileHandlesRegularFile() = runTest {
+  fun filesManagementViewModel_processesFileAsRegularFile() = runTest {
     val downloadedFile =
         DownloadedFile(
             url = "http://example.com/test.pdf",
@@ -76,7 +77,7 @@ class FilesManagementViewModelTest {
   }
 
   @Test
-  fun filesManagementViewModel_processFileHandlesImageFile() = runTest {
+  fun filesManagementViewModel_processesFileAsImageFile() = runTest {
     val downloadedFile =
         DownloadedFile(
             url = "http://example.com/photo.jpg",
@@ -92,7 +93,7 @@ class FilesManagementViewModelTest {
   }
 
   @Test
-  fun filesManagementViewModel_processFileHandlesContentUri() = runTest {
+  fun filesManagementViewModel_processesFileWithContentUri() = runTest {
     val downloadedFile =
         DownloadedFile(
             url = "http://example.com/test.pdf",
@@ -108,7 +109,7 @@ class FilesManagementViewModelTest {
   }
 
   @Test
-  fun filesManagementViewModel_deleteFileCallsDaoDelete() = runTest {
+  fun filesManagementViewModel_callsDaoDeleteOnDeleteFile() = runTest {
     coEvery { dao.getAll() } returns flowOf(emptyList())
     viewModel = FilesManagementViewModel(dao, application)
 
@@ -123,7 +124,7 @@ class FilesManagementViewModelTest {
   }
 
   @Test
-  fun filesManagementViewModel_displayNameDecodesUrlEncodedNames() = runTest {
+  fun filesManagementViewModel_decodesUrlEncodedDisplayNames() = runTest {
     val downloadedFile =
         DownloadedFile(
             url = "http://example.com/my%20file.pdf",
@@ -156,7 +157,7 @@ class FilesManagementViewModelTest {
   }
 
   @Test
-  fun filesManagementViewModel_getOpenFileIntentReturnsCorrectIntentForPdf() = runTest {
+  fun filesManagementViewModel_returnsCorrectIntentForPdfFile() = runTest {
     coEvery { dao.getAll() } returns flowOf(emptyList())
     val mimeTypeResolver = { extension: String ->
       if (extension == "pdf") "application/pdf" else null
@@ -182,7 +183,7 @@ class FilesManagementViewModelTest {
   }
 
   @Test
-  fun filesManagementViewModel_getOpenFileIntentReturnsIntentForUnknownFile() = runTest {
+  fun filesManagementViewModel_returnsIntentForUnknownFile() = runTest {
     coEvery { dao.getAll() } returns flowOf(emptyList())
     val mimeTypeResolver = { extension: String ->
       if (extension == "unknown") null else "application/pdf"

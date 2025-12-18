@@ -1,4 +1,5 @@
 // Portions of this code were generated with the help of Grok.
+// This code was written with help of Claude.
 package ch.eureka.eurekapp.model.tasks
 
 import org.junit.Assert.assertEquals
@@ -10,7 +11,7 @@ import org.robolectric.RobolectricTestRunner
 class AttachmentTest {
 
   @Test
-  fun parseAttachment_withFullMetadataReturnsRemoteAttachment() {
+  fun parseAttachment_returnsRemoteAttachmentWithFullMetadata() {
     val metadata = "https://example.com/file.pdf|Document.pdf|application/pdf"
 
     val result = Attachment.parseAttachment(metadata)
@@ -21,7 +22,7 @@ class AttachmentTest {
   }
 
   @Test
-  fun parseAttachment_withUrlOnlyInfersMetadata() {
+  fun parseAttachment_infersMetadataWithUrlOnly() {
     val metadata = "https://example.com/image.jpg"
 
     val result = Attachment.parseAttachment(metadata)
@@ -32,7 +33,7 @@ class AttachmentTest {
   }
 
   @Test
-  fun parseAttachment_withUrlAndQueryParamsExtractsFileName() {
+  fun parseAttachment_extractsFileNameWithUrlAndQueryParams() {
     val metadata = "https://example.com/video.mp4?token=abc123"
 
     val result = Attachment.parseAttachment(metadata)
@@ -43,7 +44,7 @@ class AttachmentTest {
   }
 
   @Test
-  fun parseAttachment_withUnknownExtensionUsesFallbackMimeType() {
+  fun parseAttachment_usesFallbackMimeTypeWithUnknownExtension() {
     val metadata = "https://example.com/file.xyz"
 
     val result = Attachment.parseAttachment(metadata)

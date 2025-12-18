@@ -1,4 +1,4 @@
-// Co-authored by Claude Code
+// Portions of this file were generated with the help of Claude (Sonnet 4.5).
 package ch.eureka.eurekapp.model.data.mcp
 
 import com.google.firebase.Timestamp
@@ -91,7 +91,7 @@ class McpTokenTest {
   }
 
   @Test
-  fun mcpToken_withNullOptionalFields_setsNullValues() {
+  fun mcpToken_setsNullValues() {
     val token =
         McpToken(
             userId = "user-123",

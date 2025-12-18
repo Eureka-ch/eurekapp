@@ -6,10 +6,11 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 // Portions of this code were generated with the help of AI(chatGPT) and Claude Sonnet 4.5
+// This code was written with help of Claude.
 class HelpContextTest {
 
   @Test
-  fun homeOverviewContextGeneratesCorrectHelpContent() {
+  fun homeOverviewContext_generatesCorrectHelpContent() {
     val userName = "John"
     val content = HelpContext.HOME_OVERVIEW.toHelpContent(userName)
 
@@ -22,7 +23,7 @@ class HelpContextTest {
   }
 
   @Test
-  fun tasksContextGeneratesCorrectHelpContent() {
+  fun tasksContext_generatesCorrectHelpContent() {
     val userName = "Alice"
     val content = HelpContext.TASKS.toHelpContent(userName)
 
@@ -35,7 +36,7 @@ class HelpContextTest {
   }
 
   @Test
-  fun meetingsContextGeneratesCorrectHelpContent() {
+  fun meetingsContext_generatesCorrectHelpContent() {
     val userName = "Bob"
     val content = HelpContext.MEETINGS.toHelpContent(userName)
 
@@ -49,7 +50,7 @@ class HelpContextTest {
   }
 
   @Test
-  fun projectsContextGeneratesCorrectHelpContent() {
+  fun projectsContext_generatesCorrectHelpContent() {
     val userName = "Charlie"
     val content = HelpContext.PROJECTS.toHelpContent(userName)
 
@@ -62,7 +63,7 @@ class HelpContextTest {
   }
 
   @Test
-  fun createTaskContextGeneratesCorrectHelpContentWithDependencies() {
+  fun createTaskContext_generatesCorrectHelpContentWithDependencies() {
     val userName = "Diana"
     val content = HelpContext.CREATE_TASK.toHelpContent(userName)
 
@@ -87,7 +88,7 @@ class HelpContextTest {
   }
 
   @Test
-  fun allContextsGenerateNonEmptyContent() {
+  fun allContexts_generateNonEmptyContent() {
     val userName = "TestUser"
     HelpContext.entries.forEach { context ->
       val content = context.toHelpContent(userName)
@@ -102,7 +103,7 @@ class HelpContextTest {
   }
 
   @Test
-  fun helpContentUsesProvidedUserName() {
+  fun helpContent_usesProvidedUserName() {
     val customName = "CustomName"
     val content = HelpContext.HOME_OVERVIEW.toHelpContent(customName)
 
@@ -111,7 +112,7 @@ class HelpContextTest {
   }
 
   @Test
-  fun helpContentHandlesEmptyUserNameWithDefault() {
+  fun helpContent_handlesEmptyUserNameWithDefault() {
     // When empty string is passed, it should still generate valid content
     val content = HelpContext.HOME_OVERVIEW.toHelpContent("")
 
@@ -122,7 +123,7 @@ class HelpContextTest {
   }
 
   @Test
-  fun filesManagementContextGeneratesCorrectHelpContent() {
+  fun filesManagementContext_generatesCorrectHelpContent() {
     val userName = "Emma"
     val content = HelpContext.FILES_MANAGEMENT.toHelpContent(userName)
 
@@ -135,7 +136,7 @@ class HelpContextTest {
   }
 
   @Test
-  fun meetingVotesContextGeneratesCorrectHelpContent() {
+  fun meetingVotesContext_generatesCorrectHelpContent() {
     val userName = "Frank"
     val content = HelpContext.MEETING_VOTES.toHelpContent(userName)
 
@@ -149,7 +150,7 @@ class HelpContextTest {
   }
 
   @Test
-  fun tokenEntryContextGeneratesCorrectHelpContent() {
+  fun tokenEntryContext_generatesCorrectHelpContent() {
     val userName = "Grace"
     val content = HelpContext.TOKEN_ENTRY.toHelpContent(userName)
 
@@ -162,7 +163,7 @@ class HelpContextTest {
   }
 
   @Test
-  fun viewTaskContextGeneratesCorrectHelpContent() {
+  fun viewTaskContext_generatesCorrectHelpContent() {
     val userName = "Henry"
     val content = HelpContext.VIEW_TASK.toHelpContent(userName)
 
@@ -176,7 +177,7 @@ class HelpContextTest {
   }
 
   @Test
-  fun notesContextGeneratesCorrectHelpContent() {
+  fun notesContext_generatesCorrectHelpContent() {
     val userName = "Iris"
     val content = HelpContext.NOTES.toHelpContent(userName)
 
