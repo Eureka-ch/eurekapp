@@ -1,5 +1,8 @@
 package ch.eureka.eurekapp.screens
 
+import android.content.Context
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -33,11 +36,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ch.eureka.eurekapp.model.calendar.MeetingCalendarViewModel
+import ch.eureka.eurekapp.model.data.meeting.Meeting
+import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.data.task.determinePriority
@@ -98,7 +106,17 @@ data class HomeOverviewActions(
     val onTaskSelected: (projectId: String, taskId: String) -> Unit = { _, _ -> },
     val onMeetingSelected: (projectId: String, meetingId: String) -> Unit = { _, _ -> },
     val onProjectSelected: (projectId: String) -> Unit = {},
-    val onOpenProjectMembers: (projectId: String) -> Unit = {}
+    val onOpenProjectMembers: (projectId: String) -> Unit = {},
+    val onVoteForMeetingProposalClick: (projectId: String, meetingId: String, Boolean) -> Unit =
+        { _, _, _ ->
+        },
+    val onNavigateToMeeting: (projectId: String, meetingId: String, Boolean) -> Unit = { _, _, _ ->
+    },
+    val onViewTranscript: (projectId: String, meetingId: String, Boolean) -> Unit = { _, _, _ -> },
+    val onRecord: (projectId: String, meetingId: String, Boolean) -> Unit = { _, _, _ -> },
+    val onCloseVotes: (meeting: ch.eureka.eurekapp.model.data.meeting.Meeting, Boolean) -> Unit =
+        { _, _ ->
+        }
 )
 
 /**
@@ -257,16 +275,8 @@ internal fun HomeOverviewLayout(
                           Modifier.fillMaxWidth()
                               .testTag(
                                   HomeOverviewTestTags.getMeetingItemTestTag(meeting.meetingID))) {
-                        MeetingCard(
-                            meeting = meeting,
-                            config =
-                                MeetingCardConfig(
-                                    isCurrentUserId = { false },
-                                    onClick = {
-                                      actions.onMeetingSelected(
-                                          meeting.projectId, meeting.meetingID)
-                                    },
-                                    isConnected = uiState.isConnected))
+                        MeetingCardWithCallbacks(
+                            meeting = meeting, actions = actions, isConnected = uiState.isConnected)
                       }
                 }
           }
@@ -297,9 +307,7 @@ internal fun HomeOverviewLayout(
                       onClick = {}, // No action on card click - only button navigates
                       actionButton = {
                         TextButton(
-                            onClick = {
-                              actions.onOpenProjectMembers(project.projectId)
-                            },
+                            onClick = { actions.onOpenProjectMembers(project.projectId) },
                             colors =
                                 androidx.compose.material3.ButtonDefaults.textButtonColors(
                                     contentColor = MaterialTheme.colorScheme.primary)) {
@@ -426,6 +434,86 @@ private fun EmptyState(text: String) {
       style = MaterialTheme.typography.bodyMedium,
       color = MaterialTheme.colorScheme.onSurfaceVariant,
       modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.sm))
+}
+
+/** Helper function to handle joining a meeting by opening the meeting link in a browser. */
+private fun handleJoinMeeting(context: Context, link: String?) {
+  if (!link.isNullOrBlank()) {
+    val browserIntent =
+        Intent(Intent.ACTION_VIEW, link.toUri()).apply {
+          addCategory(Intent.CATEGORY_BROWSABLE)
+          flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+    context.startActivity(browserIntent)
+  } else {
+    Toast.makeText(context, "No meeting link available", Toast.LENGTH_SHORT).show()
+  }
+}
+
+/** MeetingCard wrapper with all callbacks configured for HomeOverviewScreen. */
+@Composable
+private fun MeetingCardWithCallbacks(
+    meeting: Meeting,
+    actions: HomeOverviewActions,
+    isConnected: Boolean
+) {
+  val context = LocalContext.current
+  val calendarViewModel: MeetingCalendarViewModel = viewModel()
+  val registeredMeetings =
+      androidx.compose.runtime.remember { calendarViewModel.registeredMeetings }.collectAsState()
+
+  MeetingCard(
+      meeting = meeting,
+      config =
+          MeetingCardConfig(
+              isCurrentUserId = { false },
+              onClick = { actions.onMeetingSelected(meeting.projectId, meeting.meetingID) },
+              onJoinMeeting = { _ -> handleJoinMeeting(context, meeting.link) },
+              onVoteForMeetingProposals = { isConnected ->
+                actions.onVoteForMeetingProposalClick(
+                    meeting.projectId, meeting.meetingID, isConnected)
+              },
+              onDirections = { isConnected ->
+                actions.onNavigateToMeeting(meeting.projectId, meeting.meetingID, isConnected)
+              },
+              onCloseVotes = { meeting, isConnected -> actions.onCloseVotes(meeting, isConnected) },
+              onViewTranscript = { projectId, meetingId, isConnected ->
+                actions.onViewTranscript(projectId, meetingId, isConnected)
+              },
+              onRecord = { projectId, meetingId, isConnected ->
+                actions.onRecord(projectId, meetingId, isConnected)
+              },
+              onAddMeetingToCalendar = { meeting ->
+                calendarViewModel.addMeetingToCalendar(
+                    context.contentResolver,
+                    meeting,
+                    onSuccess = {
+                      Toast.makeText(
+                              context,
+                              "Successfully saved the event to the calendar!",
+                              Toast.LENGTH_SHORT)
+                          .show()
+                    },
+                    onFailure = {
+                      Toast.makeText(
+                              context,
+                              "There was a problem saving the event to the calendar!",
+                              Toast.LENGTH_SHORT)
+                          .show()
+                    })
+              },
+              isMeetingAddedToCalendar =
+                  registeredMeetings.value.getOrElse(meeting.meetingID) {
+                    if (meeting.status == MeetingStatus.SCHEDULED) {
+                      calendarViewModel.checkIsMeetingRegisteredInCalendar(
+                          context.contentResolver, meeting)
+                    } else {
+                      true
+                    }
+                    false
+                  },
+              isConnected = isConnected,
+          ))
 }
 
 @Composable
