@@ -258,6 +258,49 @@ fun NavigationMenu(
                             onProjectSelected = { projectId ->
                               navigationController.navigate(
                                   Route.OverviewProject(projectId = projectId))
+                            },
+                            onOpenProjectMembers = { projectId ->
+                              navigationController.navigate(
+                                  Route.OverviewProjectSection.ProjectMembers(
+                                      projectId = projectId))
+                            },
+                            onVoteForMeetingProposalClick = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.MeetingProposalVotes(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
+                            },
+                            onNavigateToMeeting = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.MeetingNavigation(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
+                            },
+                            onViewTranscript = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.AudioTranscript(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
+                            },
+                            onRecord = { projectId, meetingId, isConnected ->
+                              navigateIfConditionSatisfied(isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.AudioRecording(
+                                        projectId = projectId, meetingId = meetingId))
+                              }
+                            },
+                            onCloseVotes = { meeting, isConnected ->
+                              // This requires MeetingViewModel, so we'll navigate to meeting detail
+                              // where the user can close votes if they're the creator
+                              if (isConnected) {
+                                navigationController.navigate(
+                                    Route.MeetingsSection.MeetingDetail(
+                                        projectId = meeting.projectId,
+                                        meetingId = meeting.meetingID))
+                              }
                             }))
               }
               // Main screens
