@@ -106,7 +106,7 @@ class MeetingAttachmentsViewModelTest {
     }
 
     override suspend fun getFileMetadata(downloadUrl: String): Result<StorageMetadata> {
-        return Result.failure(Exception("dummy"))
+      return Result.failure(Exception("dummy"))
     }
   }
 
@@ -130,7 +130,7 @@ class MeetingAttachmentsViewModelTest {
     }
 
     override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> {
-        return flowOf(listOf())
+      return flowOf(listOf())
     }
 
     override suspend fun createMeeting(
@@ -280,9 +280,9 @@ class MeetingAttachmentsViewModelTest {
       return flowOf(listOf())
     }
 
-      override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> {
-          return flowOf(listOf())
-      }
+    override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> {
+      return flowOf(listOf())
+    }
 
     override suspend fun createMeeting(
         meeting: Meeting,
@@ -413,9 +413,9 @@ class MeetingAttachmentsViewModelTest {
       TODO("Not yet implemented")
     }
 
-      override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> {
-          return flowOf(listOf())
-      }
+    override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> {
+      return flowOf(listOf())
+    }
 
     override suspend fun createMeeting(
         meeting: Meeting,
