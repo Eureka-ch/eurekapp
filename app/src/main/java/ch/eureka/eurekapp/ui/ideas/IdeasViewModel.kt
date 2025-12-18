@@ -148,7 +148,7 @@ constructor(
 
   open fun selectIdea(idea: Idea) {
     _selectedIdea.value = idea
-    _viewMode.value = IdeasViewMode.LIST // Conversation mode in separate PR
+    _viewMode.value = IdeasViewMode.CONVERSATION
   }
 
   /** Called when a new idea is created from CreateIdeaViewModel */
