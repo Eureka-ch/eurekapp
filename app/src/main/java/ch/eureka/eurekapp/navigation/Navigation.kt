@@ -233,10 +233,10 @@ fun NavigationMenu(
   UserHeartbeatEffect(userRepository, currentUser)
 
   Box(modifier = Modifier.fillMaxSize()) {
-        NavHost(
+    NavHost(
         modifier = Modifier.fillMaxSize(),
-            navController = navigationController,
-            startDestination = Route.HomeOverview) {
+        navController = navigationController,
+        startDestination = Route.HomeOverview) {
               composable<Route.HomeOverview> {
                 HomeOverviewScreen(
                     actions =
@@ -742,9 +742,9 @@ fun NavigationMenu(
           .fillMaxWidth()
       ) {
         BottomBarNavigationComponent(navigationController = navigationController)
-              }
-            }
       }
+    }
+  }
 }
 
 /**
