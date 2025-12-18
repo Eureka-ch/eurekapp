@@ -243,11 +243,11 @@ fun MeetingDetailScreen(
           uiState.meeting == null -> {
             val err =
                 uiState.errorMsg
-                  ?: throw IllegalStateException(
-                      "Error message should not be null if meeting is null.")
-          Text(
-              modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MESSAGE),
-              text = stringResource(R.string.meeting_detail_error_loading, err))
+                    ?: throw IllegalStateException(
+                        "Error message should not be null if meeting is null.")
+            Text(
+                modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MESSAGE),
+                text = stringResource(R.string.meeting_detail_error_loading, err))
           }
           meetingProjectName == null -> {
             ErrorScreen(message = uiState.errorMsg ?: "Meeting project name not found")
