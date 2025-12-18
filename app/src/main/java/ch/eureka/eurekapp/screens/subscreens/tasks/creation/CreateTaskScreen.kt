@@ -37,6 +37,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.tasks.Attachment
@@ -93,6 +94,16 @@ fun CreateTaskScreen(
   val context = LocalContext.current
   val scrollState = rememberScrollState()
 
+  val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
+  val isConnected by connectivityObserver.isConnected.collectAsState(initial = true)
+
+  // Navigate back if connection is lost
+  LaunchedEffect(isConnected) {
+    if (!isConnected) {
+      navigationController.popBackStack()
+    }
+  }
+
   // File picker launcher for any file type
   val filePickerLauncher =
       rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
@@ -123,28 +134,38 @@ fun CreateTaskScreen(
             })
       },
       content = { paddingValues ->
-        CreateTaskContent(
-            config =
-                CreateTaskContentConfig(
-                    paddingValues = paddingValues,
-                    scrollState = scrollState,
-                    createTaskState = createTaskState,
-                    createTaskViewModel = createTaskViewModel,
-                    hasTouchedTitle = hasTouchedTitle,
-                    onTitleFocusChanged = { _ -> hasTouchedTitle = true },
-                    hasTouchedDescription = hasTouchedDescription,
-                    onDescriptionFocusChanged = { _ -> hasTouchedDescription = true },
-                    hasTouchedDate = hasTouchedDate,
-                    onDateFocusChanged = { _ -> hasTouchedDate = true },
-                    availableProjects = availableProjects,
-                    projectId = projectId,
-                    availableTasks = availableTasks,
-                    cycleError = cycleError,
-                    navigationController = navigationController,
-                    context = context,
-                    inputValid = inputValid,
-                    filePickerLauncher = filePickerLauncher,
-                    temporaryPhotoUris = createTaskState.temporaryPhotoUris))
+        // Note: userProvidedName is not passed as CreateTaskScreen doesn't have access to user
+        // data.
+        // The help composable will fall back to
+        // FirebaseAuth.getInstance().currentUser?.displayName.
+        ScreenWithHelp(
+            helpContext = HelpContext.CREATE_TASK,
+            helpPadding = PaddingValues(16.dp),
+            content = {
+              CreateTaskContent(
+                  config =
+                      CreateTaskContentConfig(
+                          paddingValues = paddingValues,
+                          scrollState = scrollState,
+                          createTaskState = createTaskState,
+                          createTaskViewModel = createTaskViewModel,
+                          hasTouchedTitle = hasTouchedTitle,
+                          onTitleFocusChanged = { _ -> hasTouchedTitle = true },
+                          hasTouchedDescription = hasTouchedDescription,
+                          onDescriptionFocusChanged = { _ -> hasTouchedDescription = true },
+                          hasTouchedDate = hasTouchedDate,
+                          onDateFocusChanged = { _ -> hasTouchedDate = true },
+                          availableProjects = availableProjects,
+                          projectId = projectId,
+                          availableTasks = availableTasks,
+                          cycleError = cycleError,
+                          navigationController = navigationController,
+                          context = context,
+                          inputValid = inputValid,
+                          filePickerLauncher = filePickerLauncher,
+                          temporaryPhotoUris = createTaskState.temporaryPhotoUris,
+                          isConnected = isConnected))
+            })
       })
 }
 
@@ -252,7 +273,8 @@ private data class CreateTaskContentConfig(
     val context: android.content.Context,
     val inputValid: Boolean,
     val filePickerLauncher: androidx.activity.compose.ManagedActivityResultLauncher<String, Uri?>,
-    val temporaryPhotoUris: List<Uri>
+    val temporaryPhotoUris: List<Uri>,
+    val isConnected: Boolean
 )
 
 @Composable
@@ -357,7 +379,7 @@ private fun CreateTaskContent(config: CreateTaskContentConfig) {
               config.createTaskViewModel.removeAttachmentAndDelete(config.context, index)
             },
             isReadOnly = false,
-            isConnected = true)
+            isConnected = config.isConnected)
 
         Button(
             onClick = { config.createTaskViewModel.addTask(config.context) },

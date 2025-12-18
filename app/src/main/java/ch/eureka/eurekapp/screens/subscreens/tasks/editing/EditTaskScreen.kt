@@ -33,6 +33,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.task.Task
 import ch.eureka.eurekapp.model.data.task.TaskStatus
 import ch.eureka.eurekapp.model.tasks.EditTaskState
@@ -86,7 +87,15 @@ fun EditTaskScreen(
   val context = LocalContext.current
   val scrollState = rememberScrollState()
   var showDeleteDialog by remember { mutableStateOf(false) }
-  val isConnected = true // Assume online for edit screen
+  val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
+  val isConnected by connectivityObserver.isConnected.collectAsState(initial = true)
+
+  // Navigate back if connection is lost
+  LaunchedEffect(isConnected) {
+    if (!isConnected) {
+      navigationController.popBackStack()
+    }
+  }
 
   // File picker launcher for any file type
   val filePickerLauncher =
