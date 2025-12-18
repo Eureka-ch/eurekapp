@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.HowToVote
 import androidx.compose.material.icons.filled.Link
@@ -81,6 +82,9 @@ import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingStatus
 import ch.eureka.eurekapp.model.data.user.User
+import ch.eureka.eurekapp.model.downloads.AppDatabase
+import ch.eureka.eurekapp.model.downloads.DownloadedFileDao
+import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors
 import ch.eureka.eurekapp.ui.designsystem.tokens.EColors.LightingBlue
@@ -95,6 +99,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
+import kotlinx.coroutines.flow.map
 
 /**
  * Helper function to get alpha value based on connection status. Returns 1f if connected, 0.6f if
@@ -172,7 +177,8 @@ data class MeetingDetailActionsConfig(
     val onRecordMeeting: (String, String, Boolean) -> Unit = { _, _, _ -> },
     val onViewTranscript: (String, String, Boolean) -> Unit = { _, _, _ -> },
     val onVoteForMeetingProposalClick: (String, String, Boolean) -> Unit = { _, _, _ -> },
-    val onNavigateToMeeting: (Boolean) -> Unit = {}
+    val onNavigateToMeeting: (Boolean) -> Unit = {},
+    val onFileManagementScreenClick: () -> Unit = {}
 )
 
 /**
@@ -185,6 +191,8 @@ data class MeetingDetailActionsConfig(
  * @param projectId The ID of the project containing the meeting.
  * @param meetingId The ID of the meeting to display.
  * @param viewModel The ViewModel managing the meeting detail state.
+ * @param downloadedFileDao the downloaded files database
+ * @param attachmentsViewModel the View model handling the meeting attachments
  * @param actionsConfig The actions that can be executed with buttons on the detail meeting screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -193,8 +201,12 @@ fun MeetingDetailScreen(
     projectId: String,
     meetingId: String,
     viewModel: MeetingDetailViewModel = viewModel { MeetingDetailViewModel(projectId, meetingId) },
-    attachmentsViewModel: MeetingAttachmentsViewModel = viewModel(),
-    actionsConfig: MeetingDetailActionsConfig = MeetingDetailActionsConfig()
+    downloadedFileDao: DownloadedFileDao =
+        AppDatabase.getDatabase(LocalContext.current).downloadedFileDao(),
+    attachmentsViewModel: MeetingAttachmentsViewModel = viewModel {
+      MeetingAttachmentsViewModel(downloadedFileDao = downloadedFileDao)
+    },
+    actionsConfig: MeetingDetailActionsConfig = MeetingDetailActionsConfig(),
 ) {
   val context = LocalContext.current
   val uiState by viewModel.uiState.collectAsState()
@@ -233,6 +245,16 @@ fun MeetingDetailScreen(
               IconButton(onClick = actionsConfig.onNavigateBack) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Navigate back")
               }
+            },
+            actions = {
+              IconButton(
+                  onClick = actionsConfig.onFileManagementScreenClick,
+                  modifier = Modifier.testTag(TasksScreenTestTags.FILES_MANAGEMENT_BUTTON)) {
+                    Icon(
+                        Icons.Filled.Folder,
+                        contentDescription = "Manage Files",
+                        tint = EColors.WhiteTextColor)
+                  }
             })
       },
       content = { padding ->
@@ -241,13 +263,10 @@ fun MeetingDetailScreen(
             LoadingScreen()
           }
           uiState.meeting == null -> {
-            val err =
-                uiState.errorMsg
-                    ?: throw IllegalStateException(
-                        "Error message should not be null if meeting is null.")
             Text(
                 modifier = Modifier.testTag(MeetingDetailScreenTestTags.ERROR_MESSAGE),
-                text = stringResource(R.string.meeting_detail_error_loading, err))
+                text =
+                    "There was an error while loading meetings : ${uiState.errorMsg ?: throw IllegalStateException("Error message should not be null if meeting is null.")}")
           }
           meetingProjectName == null -> {
             ErrorScreen(message = uiState.errorMsg ?: "Meeting project name not found")
@@ -1208,7 +1227,13 @@ fun AttachmentItem(
     attachmentsViewModel: MeetingAttachmentsViewModel
 ) {
   val context = LocalContext.current
-  val downloadingFilesSet = remember { attachmentsViewModel.downloadingFilesSet }.collectAsState()
+  val downloadingFilesSet =
+      remember { attachmentsViewModel.downloadingFileStateUrlToBoolean }.collectAsState()
+  val downloadedFiles =
+      remember {
+            attachmentsViewModel.downloadedFiles.map { list -> list.map { file -> file.url } }
+          }
+          .collectAsState(listOf())
   val fileNames = remember { attachmentsViewModel.attachmentUrlsToFileNames }.collectAsState()
   LaunchedEffect(Unit) { attachmentsViewModel.getFilenameFromDownloadURL(attachmentUrl) }
   Row(
@@ -1255,7 +1280,7 @@ fun AttachmentItem(
                         contentDescription = null)
                   }
               Spacer(modifier = Modifier.width(12.dp))
-              if (downloadingFilesSet.value.contains(attachmentUrl)) {
+              if (downloadingFilesSet.value.getOrElse(attachmentUrl, { false })) {
                 CircularProgressIndicator(
                     modifier =
                         Modifier.testTag(
@@ -1265,13 +1290,14 @@ fun AttachmentItem(
                     strokeWidth = 4.dp)
               } else {
                 IconButton(
+                    enabled = !downloadedFiles.value.contains(attachmentUrl),
                     modifier =
                         Modifier.testTag(
                             AttachmentItemTestTags.downloadButtonAttachmentTestTag(attachmentUrl)),
                     onClick = {
                       attachmentsViewModel.downloadFileToPhone(
-                          context,
                           attachmentUrl,
+                          context,
                           {},
                           { message ->
                             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
