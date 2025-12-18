@@ -140,12 +140,10 @@ class HomeOverviewViewModel(
         } else {
           combine(
                   projects.map { project ->
-                    meetingRepository
-                        .getMeetingsForCurrentUser(project.projectId, skipCache = false)
-                        .catch { throwable ->
-                          _error.value = throwable.message
-                          emit(emptyList())
-                        }
+                    meetingRepository.getMeetingsInProject(project.projectId).catch { throwable ->
+                      _error.value = throwable.message
+                      emit(emptyList())
+                    }
                   }) { meetingsArrays ->
                     meetingsArrays.flatMap { it.toList() }
                   }
