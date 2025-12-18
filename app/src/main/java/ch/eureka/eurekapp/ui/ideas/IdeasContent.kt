@@ -262,6 +262,15 @@ fun IdeasContent(
             textAlign = TextAlign.Center,
             modifier = Modifier.align(Alignment.Center).padding(Spacing.lg).testTag("emptyState"))
       }
+      viewMode == IdeasViewMode.CONVERSATION && conversationState.selectedIdea != null -> {
+        // Use MCP Chatbot Screen instead of regular conversation
+        MCPChatbotScreen(
+            idea = conversationState.selectedIdea,
+            projectName = selectedProject?.name,
+            onNavigateBack = conversationState.onBackToList,
+            currentUserId = conversationState.currentUserId ?: "user"
+        )
+      }
       else -> {
         IdeasListContent(
             ideas = listState.ideas,

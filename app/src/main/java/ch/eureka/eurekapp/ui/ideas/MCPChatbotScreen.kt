@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,8 +29,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ch.eureka.eurekapp.model.data.chat.Message
 import ch.eureka.eurekapp.model.data.ideas.Idea
-import ch.eureka.eurekapp.ui.components.BackButton
-import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.MessageBubble
 import ch.eureka.eurekapp.ui.components.MessageBubbleState
 import ch.eureka.eurekapp.ui.components.MessageInputField
@@ -39,7 +36,6 @@ import ch.eureka.eurekapp.ui.components.ThinkingBubble
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import kotlin.math.absoluteValue
 
 object MCPChatbotScreenTestTags {
@@ -98,29 +94,11 @@ Auto-generates docs from code, creates API docs, maintains decision logs, builds
 @Composable
 fun MCPChatbotScreen(
     modifier: Modifier = Modifier,
-    ideaId: String,
-    projectId: String? = null,
+    idea: Idea?,
+    projectName: String? = null,
     onNavigateBack: () -> Unit = {},
     currentUserId: String = "user"
 ) {
-  // Load idea and project from repository
-  var idea by remember(ideaId, projectId) { mutableStateOf<Idea?>(null) }
-  var projectName by remember(projectId) { mutableStateOf<String?>(null) }
-  
-  LaunchedEffect(ideaId, projectId) {
-    val ideasRepository = ch.eureka.eurekapp.model.data.RepositoriesProvider.ideasRepository
-    val projectRepository = ch.eureka.eurekapp.model.data.RepositoriesProvider.projectRepository
-    
-    try {
-      // Get idea from project's ideas list
-      if (projectId != null) {
-        idea = ideasRepository.getIdeasForProject(projectId).first().find { it.ideaId == ideaId }
-        projectName = projectRepository.getProjectById(projectId).first()?.name
-      }
-    } catch (e: Exception) {
-      // Handle error - idea will remain null
-    }
-  }
   var messages by remember { mutableStateOf<List<ChatMessage>>(emptyList()) }
   var currentMessage by remember { mutableStateOf("") }
   var isSending by remember { mutableStateOf(false) }
@@ -143,30 +121,7 @@ fun MCPChatbotScreen(
     }
   }
 
-  Scaffold(
-    modifier = modifier.fillMaxSize().testTag(MCPChatbotScreenTestTags.SCREEN),
-    topBar = {
-      EurekaTopBar(
-        title = idea?.title ?: "MCP Chat",
-        navigationIcon = {
-          BackButton(
-            onClick = onNavigateBack,
-            modifier = Modifier.testTag("mcpBackButton")
-          )
-        },
-        actions = {
-          if (projectName != null && projectName.isNotEmpty()) {
-            Text(
-              text = projectName ?: "",
-              style = MaterialTheme.typography.labelSmall,
-              color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
-            )
-          }
-        }
-      )
-    }
-  ) { paddingValues ->
-    Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+  Column(modifier = modifier.fillMaxSize().testTag(MCPChatbotScreenTestTags.SCREEN)) {
       // Messages list
       Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
       when {
@@ -274,7 +229,6 @@ fun MCPChatbotScreen(
       isSending = isSending,
       placeholder = "Ask MCP about your project..."
     )
-    }
   }
 }
 

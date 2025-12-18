@@ -64,7 +64,6 @@ object IdeasScreenTestTags {
 fun IdeasScreen(
     modifier: Modifier = Modifier,
     onNavigateBack: () -> Unit = {},
-    onIdeaClick: ((String, String?) -> Unit)? = null,
     viewModel: IdeasViewModel = viewModel()
 ) {
   val uiState by viewModel.uiState.collectAsState()
@@ -90,13 +89,31 @@ fun IdeasScreen(
   Scaffold(
       modifier = modifier.fillMaxSize().testTag(IdeasScreenTestTags.SCREEN),
       topBar = {
-        EurekaTopBar(
-            title = "Ideas",
-            navigationIcon = {
-              BackButton(
-                  onClick = onNavigateBack,
-                  modifier = Modifier.testTag(IdeasScreenTestTags.BACK_BUTTON))
-            })
+        if (uiState.viewMode == IdeasViewMode.CONVERSATION && uiState.selectedIdea != null) {
+          EurekaTopBar(
+              title = uiState.selectedIdea?.title ?: "MCP Chat",
+              navigationIcon = {
+                BackButton(
+                    onClick = { viewModel.backToList() },
+                    modifier = Modifier.testTag(IdeasScreenTestTags.BACK_BUTTON))
+              },
+              actions = {
+                if (uiState.selectedProject?.name != null && uiState.selectedProject?.name?.isNotEmpty() == true) {
+                  Text(
+                      text = uiState.selectedProject?.name ?: "",
+                      style = MaterialTheme.typography.labelSmall,
+                      color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f))
+                }
+              })
+        } else {
+          EurekaTopBar(
+              title = "Ideas",
+              navigationIcon = {
+                BackButton(
+                    onClick = onNavigateBack,
+                    modifier = Modifier.testTag(IdeasScreenTestTags.BACK_BUTTON))
+              })
+        }
       },
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       floatingActionButton = {
@@ -163,11 +180,7 @@ fun IdeasScreen(
               selectedProject = uiState.selectedProject,
               listState =
                   ch.eureka.eurekapp.ui.ideas.ListState(
-                      ideas = uiState.ideas, 
-                      onIdeaClick = { idea -> 
-                        onIdeaClick?.invoke(idea.ideaId, idea.projectId) 
-                          ?: viewModel.selectIdea(idea)
-                      }),
+                      ideas = uiState.ideas, onIdeaClick = { idea -> viewModel.selectIdea(idea) }),
               conversationState =
                   ConversationState(
                       selectedIdea = uiState.selectedIdea,

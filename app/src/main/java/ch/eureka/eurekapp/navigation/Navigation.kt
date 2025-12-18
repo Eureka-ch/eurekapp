@@ -52,7 +52,6 @@ import ch.eureka.eurekapp.ui.conversation.ConversationDetailScreen
 import ch.eureka.eurekapp.ui.conversation.ConversationListScreen
 import ch.eureka.eurekapp.ui.conversation.CreateConversationScreen
 import ch.eureka.eurekapp.ui.ideas.IdeasScreen
-import ch.eureka.eurekapp.ui.ideas.MCPChatbotScreen
 import ch.eureka.eurekapp.ui.map.MeetingLocationSelectionScreen
 import ch.eureka.eurekapp.ui.mcp.McpTokenScreen
 import ch.eureka.eurekapp.ui.mcp.McpTokenViewModel
@@ -208,8 +207,6 @@ sealed interface Route {
     }
 
     @Serializable data class Ideas(val projectId: String? = null) : IdeasSection
-
-    @Serializable data class IdeaChat(val ideaId: String, val projectId: String? = null) : IdeasSection
   }
 }
 
@@ -399,19 +396,7 @@ fun NavigationMenu(
                     })
               }
               composable<Route.IdeasSection.Ideas> {
-                IdeasScreen(
-                    onNavigateBack = { navigationController.popBackStack() },
-                    onIdeaClick = { ideaId, projectId ->
-                      navigationController.navigate(
-                          Route.IdeasSection.IdeaChat(ideaId = ideaId, projectId = projectId))
-                    })
-              }
-              composable<Route.IdeasSection.IdeaChat> { backStackEntry ->
-                val route = backStackEntry.toRoute<Route.IdeasSection.IdeaChat>()
-                MCPChatbotScreen(
-                    ideaId = route.ideaId,
-                    projectId = route.projectId,
-                    onNavigateBack = { navigationController.popBackStack() })
+                IdeasScreen(onNavigateBack = { navigationController.popBackStack() })
               }
               composable<Route.OverviewProject> { backStackEntry ->
                 val overviewProjectScreenRoute = backStackEntry.toRoute<Route.OverviewProject>()
