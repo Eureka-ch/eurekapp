@@ -17,8 +17,6 @@ import androidx.navigation.toRoute
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.activity.EntityType
 import ch.eureka.eurekapp.model.data.mcp.FirebaseMcpTokenRepository
-import ch.eureka.eurekapp.model.data.project.Project
-import ch.eureka.eurekapp.model.data.project.ProjectStatus
 import ch.eureka.eurekapp.model.data.user.UserRepository
 import ch.eureka.eurekapp.model.map.Location
 import ch.eureka.eurekapp.model.notifications.NotificationType
@@ -131,7 +129,7 @@ sealed interface Route {
 
     @Serializable data object Meetings : MeetingsSection
 
-    @Serializable data class CreateMeeting(val projectId: String) : MeetingsSection
+    @Serializable data object CreateMeeting : MeetingsSection
 
     @Serializable
     data class MeetingProposalVotes(val projectId: String, val meetingId: String) : MeetingsSection
@@ -191,7 +189,7 @@ sealed interface Route {
 
     @Serializable data class ConversationDetail(val conversationId: String) : ConversationsSection
 
-    @Serializable data class CreateConversation(val projectId: String) : ConversationsSection
+    @Serializable data object CreateConversation : ConversationsSection
   }
 
   sealed interface IdeasSection : Route {
@@ -211,7 +209,6 @@ fun NavigationMenu(
     notificationProjectId: String? = null,
 ) {
   val navigationController = rememberNavController()
-  val testProjectId = "test-project-id"
 
   HandleNotificationNavigation(
       notificationType = notificationType,
@@ -221,15 +218,6 @@ fun NavigationMenu(
 
   RepositoriesProvider.projectRepository
   val auth = Firebase.auth
-  Project(
-      projectId = testProjectId,
-      name = "Test Project",
-      description = "This is a test project",
-      status = ProjectStatus.OPEN,
-      createdBy = auth.currentUser?.uid ?: "unknown",
-      memberIds = listOf(auth.currentUser?.uid ?: "unknown"),
-  )
-
   val userRepository = RepositoriesProvider.userRepository
   val currentUser = auth.currentUser
   requireNotNull(currentUser)
@@ -433,11 +421,9 @@ fun NavigationMenu(
                 MeetingScreen(
                     config =
                         MeetingScreenConfig(
-                            projectId = testProjectId,
                             onCreateMeeting = { isConnected ->
                               navigateIfConditionSatisfied(isConnected) {
-                                navigationController.navigate(
-                                    Route.MeetingsSection.CreateMeeting(testProjectId))
+                                navigationController.navigate(Route.MeetingsSection.CreateMeeting)
                               }
                             },
                             onMeetingClick = { projectId, meetingId ->
@@ -524,9 +510,6 @@ fun NavigationMenu(
               }
 
               composable<Route.MeetingsSection.CreateMeeting> { backStackEntry ->
-                val createMeetingRoute =
-                    backStackEntry.toRoute<Route.MeetingsSection.CreateMeeting>()
-
                 val viewModel = viewModel<CreateMeetingViewModel>()
 
                 val selectedLocation: Location? =
@@ -539,7 +522,6 @@ fun NavigationMenu(
                 }
 
                 CreateMeetingScreen(
-                    projectId = createMeetingRoute.projectId,
                     onDone = { navigationController.navigate(Route.MeetingsSection.Meetings) },
                     createMeetingViewModel = viewModel,
                     onPickLocationOnMap = {
@@ -573,8 +555,7 @@ fun NavigationMenu(
                           Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting(
                               projectId = meetingProposalVotesRoute.projectId,
                               meetingId = meetingProposalVotesRoute.meetingId))
-                    },
-                )
+                    })
               }
 
               composable<Route.MeetingsSection.CreateDateTimeFormatMeetingProposalForMeeting> {
@@ -594,7 +575,14 @@ fun NavigationMenu(
                                   createDateTimeFormatMeetingProposalForMeetingVotesRoute
                                       .meetingId))
                     },
-                )
+                    onBackClick = { navigationController.popBackStack() })
+              }
+
+              composable<Route.OverviewProjectSection.CreateInvitation> { backStackEntry ->
+                val createInvitationRoute =
+                    backStackEntry.toRoute<Route.OverviewProjectSection.CreateInvitation>()
+                CreateInvitationSubscreen(
+                    projectId = createInvitationRoute.projectId, onInvitationCreate = {})
               }
 
               composable<Route.MeetingsSection.MeetingNavigation> { backStackEntry ->
@@ -629,13 +617,6 @@ fun NavigationMenu(
                     onNavigateBack = { navigationController.popBackStack() })
               }
 
-              composable<Route.OverviewProjectSection.CreateInvitation> { backStackEntry ->
-                val createInvitationRoute =
-                    backStackEntry.toRoute<Route.OverviewProjectSection.CreateInvitation>()
-                CreateInvitationSubscreen(
-                    projectId = createInvitationRoute.projectId, onInvitationCreate = {})
-              }
-
               composable<Route.Camera> {
                 Camera(
                     onBackClick = { navigationController.popBackStack() },
@@ -661,8 +642,7 @@ fun NavigationMenu(
                       }
                     },
                     onCreateConversation = {
-                      navigationController.navigate(
-                          Route.ConversationsSection.CreateConversation(projectId = testProjectId))
+                      navigationController.navigate(Route.ConversationsSection.CreateConversation)
                     })
               }
 

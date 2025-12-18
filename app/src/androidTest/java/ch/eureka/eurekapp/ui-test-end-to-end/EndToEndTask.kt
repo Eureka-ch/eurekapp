@@ -1,8 +1,8 @@
+/* Portions of this file were written with the help of Claude (Sonnet 4.5) and GPT-5 Codex. */
 package ch.eureka.eurekapp.test_end_to_end
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -20,6 +20,7 @@ import ch.eureka.eurekapp.navigation.NavigationMenu
 import ch.eureka.eurekapp.screens.TasksScreenTestTags
 import ch.eureka.eurekapp.screens.subscreens.tasks.CommonTaskTestTags
 import ch.eureka.eurekapp.ui.authentication.SignInScreenTestTags
+import ch.eureka.eurekapp.ui.components.ProjectDropDownMenuTestTag
 import ch.eureka.eurekapp.ui.meeting.CreateMeetingScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingDetailScreenTestTags
 import ch.eureka.eurekapp.ui.meeting.MeetingScreenTestTags
@@ -36,10 +37,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-
-/*
-Co-author: GPT-5 Codex
-*/
 
 /**
  * End-to-end test for the task creation flow.
@@ -121,7 +118,7 @@ class TaskEndToEndTest : TestCase() {
             .onNodeWithTag(SignInScreenTestTags.SIGN_IN_WITH_GOOGLE_BUTTON)
             .assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -197,7 +194,7 @@ class TaskEndToEndTest : TestCase() {
             .onNodeWithTag(BottomBarNavigationTestTags.TASKS_SCREEN_BUTTON)
             .assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -212,7 +209,7 @@ class TaskEndToEndTest : TestCase() {
       try {
         composeTestRule.onNodeWithTag(TasksScreenTestTags.CREATE_TASK_BUTTON).assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -224,7 +221,7 @@ class TaskEndToEndTest : TestCase() {
       try {
         composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -245,7 +242,7 @@ class TaskEndToEndTest : TestCase() {
       try {
         composeTestRule.onNodeWithText("End-to-End Test Task").assertExists()
         true
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         false
       }
     }
@@ -255,8 +252,7 @@ class TaskEndToEndTest : TestCase() {
 
   private val testUserName = "Test User"
   private val testUserEmail = "testuser@example.com"
-  // Use the same project ID as NavigationMenu
-  private val testProjectId = "test-project-id"
+  private val testProjectId = "project-id-test"
 
   @OptIn(ExperimentalTestApi::class)
   @Test
@@ -267,6 +263,31 @@ class TaskEndToEndTest : TestCase() {
       val firebaseCred = GoogleAuthProvider.getCredential(fakeIdToken, null)
       val authResult = FirebaseEmulator.auth.signInWithCredential(firebaseCred).await()
       testUserId = authResult.user?.uid ?: throw IllegalStateException("Failed to sign in")
+
+      val userRef = FirebaseEmulator.firestore.collection("users").document(testUserId)
+      val userProfile =
+          mapOf(
+              "uid" to testUserId,
+              "displayName" to testUserName,
+              "email" to testUserEmail,
+              "photoUrl" to "")
+      userRef.set(userProfile).await()
+
+      val projectRef = FirebaseEmulator.firestore.collection("projects").document(testProjectId)
+      val project =
+          ch.eureka.eurekapp.model.data.project.Project(
+              projectId = testProjectId,
+              name = "Test Project",
+              description = "Auto-created by test",
+              status = ch.eureka.eurekapp.model.data.project.ProjectStatus.OPEN,
+              createdBy = testUserId,
+              memberIds = listOf(testUserId))
+      projectRef.set(project).await()
+
+      val member =
+          ch.eureka.eurekapp.model.data.project.Member(
+              userId = testUserId, role = ch.eureka.eurekapp.model.data.project.ProjectRole.OWNER)
+      projectRef.collection("members").document(testUserId).set(member).await()
 
       // Set up the navigation menu after authentication
       // NavigationMenu will create the test project automatically
@@ -319,6 +340,24 @@ class TaskEndToEndTest : TestCase() {
 
       val meetingTitle = "E2E Test Meeting"
 
+      // Select Project (New Step)
+      composeTestRule.onNodeWithTag(ProjectDropDownMenuTestTag.PROJECT_DROPDOWN_MENU).performClick()
+
+      // FIX: Wait for the dropdown items to load from Firestore and appear in the UI
+      composeTestRule.waitUntil(timeoutMillis = 5_000) {
+        composeTestRule
+            .onAllNodesWithTag(ProjectDropDownMenuTestTag.DROPDOWN_MENU_ITEM)
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+      }
+
+      // Click the first project in the dropdown
+      composeTestRule
+          .onAllNodesWithTag(ProjectDropDownMenuTestTag.DROPDOWN_MENU_ITEM)[0]
+          .performClick()
+
+      composeTestRule.waitForIdle()
+
       // Title input
       composeTestRule
           .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
@@ -347,29 +386,41 @@ class TaskEndToEndTest : TestCase() {
       composeTestRule.onNodeWithText("OK").performClick()
       composeTestRule.waitForIdle()
 
+      // Meeting Link (required for Virtual meetings on feature/meeting-link-support branch)
+      composeTestRule
+          .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LINK)
+          .performTextInput("https://meet.google.com/abc-defg-hij")
+      composeTestRule.waitForIdle()
+
       // Create meeting
       composeTestRule
           .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
+          .performScrollTo()
           .performClick()
-
       composeTestRule.waitForIdle()
 
       // Step 2: Verify Listing - Wait to navigate back to meetings screen
-      composeTestRule.waitUntil(timeoutMillis = 10_000) {
+      composeTestRule.waitUntil(timeoutMillis = 30_000) {
         composeTestRule
             .onAllNodesWithTag(MeetingScreenTestTags.MEETING_SCREEN)
             .fetchSemanticsNodes()
             .isNotEmpty()
       }
 
-      // Wait for meeting to appear in list
-      composeTestRule.waitUntilExactlyOneExists(hasText(meetingTitle), timeoutMillis = 15_000)
+      composeTestRule.waitUntil(timeoutMillis = 30_000) {
+        try {
+          composeTestRule.onNodeWithText(meetingTitle).assertExists()
+          true
+        } catch (_: Exception) {
+          // Meeting hasn't loaded yet, keep waiting
+          false
+        }
+      }
 
-      // Verify meeting is displayed in the list
+      // Now verify meeting is displayed in the list
       composeTestRule.onNodeWithText(meetingTitle).assertIsDisplayed()
 
       // Step 3: View Details - Click on meeting card to open details
-      // Use meeting card tag instead of text to ensure we click the right element
       composeTestRule.waitForIdle()
 
       // Find and click the meeting card
@@ -425,7 +476,6 @@ class TaskEndToEndTest : TestCase() {
             .isNotEmpty()
       }
 
-      // Verify meeting no longer appears in the list
       composeTestRule.waitForIdle()
       composeTestRule.onNodeWithText(meetingTitle).assertDoesNotExist()
     }

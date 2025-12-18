@@ -49,6 +49,7 @@ import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreen
 import ch.eureka.eurekapp.screens.subscreens.tasks.creation.CreateTaskScreenTestTags
 import ch.eureka.eurekapp.testutils.testCameraRoute
 import ch.eureka.eurekapp.utils.FirebaseEmulator
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
@@ -1312,5 +1313,57 @@ class CreateTaskScreenTests : TestCase() {
 
     // Verify both attachments are displayed (1 file + 1 photo)
     composeTestRule.onAllNodesWithTag(CommonTaskTestTags.ATTACHMENT).assertCountEquals(2)
+  }
+
+  @Test
+  fun createTaskScreen_navigatesBackWhenConnectionLost() {
+    runBlocking {
+      val projectId = "project123"
+      setupTestProject(projectId)
+
+      // Start with connection online
+      val mockConnectivityObserver = MockConnectivityObserver(context)
+      mockConnectivityObserver.setConnected(true)
+
+      // Replace ConnectivityObserverProvider's observer with mock for testing
+      val originalObserver = ConnectivityObserverProvider.connectivityObserver
+      val providerField =
+          ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
+      providerField.isAccessible = true
+      providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
+
+      val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
+      lastCreateVm = viewModel
+
+      composeTestRule.setContent {
+        val navController = rememberNavController()
+        FakeNavGraph(navController = navController, viewModel = viewModel)
+        navController.navigate(Route.TasksSection.CreateTask)
+      }
+
+      composeTestRule.waitForIdle()
+
+      // Verify we're on CreateTaskScreen
+      composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).assertIsDisplayed()
+
+      // Simulate connection loss
+      mockConnectivityObserver.setConnected(false)
+
+      composeTestRule.waitForIdle()
+
+      // Verify navigation back to TasksScreen
+      composeTestRule.waitUntil(timeoutMillis = 5000) {
+        try {
+          composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
+          true
+        } catch (e: Exception) {
+          false
+        }
+      }
+      composeTestRule.onNodeWithTag(TasksScreenTestTags.TASKS_SCREEN_TEXT).assertIsDisplayed()
+
+      // Restore original observer
+      providerField.set(ConnectivityObserverProvider, originalObserver)
+    }
   }
 }

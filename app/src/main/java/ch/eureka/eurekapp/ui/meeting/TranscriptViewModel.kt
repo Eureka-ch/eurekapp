@@ -3,6 +3,7 @@ package ch.eureka.eurekapp.ui.meeting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.eureka.eurekapp.model.chatbot.ChatbotRepository
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.RepositoriesProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
@@ -56,6 +57,10 @@ class TranscriptViewModel(
   private val _summary = MutableStateFlow<String?>(null)
   private val _isSummarizing = MutableStateFlow(false)
   private val _isGeneratingTranscript = MutableStateFlow(false)
+
+  private val connectivityObserver = ConnectivityObserverProvider.connectivityObserver
+  val isConnected =
+      connectivityObserver.isConnected.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
   private fun validateData(meeting: Meeting?): String? {
     return when {

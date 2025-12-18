@@ -1,6 +1,8 @@
 /* Portions of this file were written with the help of Gemini.*/
 package ch.eureka.eurekapp.ui.meeting
 
+import androidx.test.platform.app.InstrumentationRegistry
+import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.meeting.Meeting
 import ch.eureka.eurekapp.model.data.meeting.MeetingFormat
 import ch.eureka.eurekapp.model.data.meeting.MeetingProposal
@@ -8,6 +10,7 @@ import ch.eureka.eurekapp.model.data.meeting.MeetingProposalVote
 import ch.eureka.eurekapp.model.data.meeting.MeetingRepository
 import ch.eureka.eurekapp.model.data.meeting.MeetingRole
 import ch.eureka.eurekapp.model.data.meeting.Participant
+import ch.eureka.eurekapp.utils.MockConnectivityObserver
 import com.google.firebase.Timestamp
 import java.time.Instant
 import java.time.LocalDate
@@ -47,6 +50,7 @@ class CreateDateTimeFormatProposalForMeetingViewModelTest {
   private val testDispatcher = StandardTestDispatcher()
   private lateinit var viewModel: CreateDateTimeFormatProposalForMeetingViewModel
   private lateinit var repositoryMock: MockCreateMeetingProposalRepository
+  private lateinit var mockConnectivityObserver: MockConnectivityObserver
 
   private val testProjectId = "project-123"
   private val testMeetingId = "meeting-abc"
@@ -68,6 +72,19 @@ class CreateDateTimeFormatProposalForMeetingViewModelTest {
   @Before
   fun setup() {
     Dispatchers.setMain(testDispatcher)
+
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    // Initialize mock connectivity observer
+    mockConnectivityObserver = MockConnectivityObserver(context)
+    mockConnectivityObserver.setConnected(true)
+
+    // Replace ConnectivityObserverProvider's observer with mock
+    val providerField =
+        ConnectivityObserverProvider::class.java.getDeclaredField("_connectivityObserver")
+    providerField.isAccessible = true
+    providerField.set(ConnectivityObserverProvider, mockConnectivityObserver)
+
     repositoryMock = MockCreateMeetingProposalRepository()
     viewModel =
         CreateDateTimeFormatProposalForMeetingViewModel(
@@ -303,10 +320,7 @@ private class MockCreateMeetingProposalRepository : MeetingRepository {
     return flowOf(emptyList())
   }
 
-  override fun getMeetingsForCurrentUser(
-      projectId: String,
-      skipCache: Boolean
-  ): Flow<List<Meeting>> {
+  override fun getMeetingsForCurrentUser(skipCache: Boolean): Flow<List<Meeting>> {
     return flowOf(emptyList())
   }
 

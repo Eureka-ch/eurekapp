@@ -4,6 +4,7 @@ package ch.eureka.eurekapp.ui.meeting
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -68,6 +69,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.model.calendar.MeetingCalendarViewModel
 import ch.eureka.eurekapp.model.data.meeting.Meeting
@@ -120,7 +122,6 @@ object MeetingScreenTestTags {
 /**
  * Config for the main composable to draw the meetings screen.
  *
- * @property projectId The ID of the project to display the meetings from.
  * @property onCreateMeeting Callback executed when the users creates a new meeting.
  * @property onMeetingClick Callback when a meeting card is clicked, receives projectId and
  *   meetingId.
@@ -131,7 +132,6 @@ object MeetingScreenTestTags {
  * @property onRecord Callback executed when the user clicks on the record button.
  */
 data class MeetingScreenConfig(
-    val projectId: String,
     val onCreateMeeting: (Boolean) -> Unit,
     val onMeetingClick: (String, String) -> Unit = { _, _ -> },
     val onVoteForMeetingProposalClick: (String, String, Boolean) -> Unit = { _, _, _ -> },
@@ -197,7 +197,7 @@ fun MeetingScreen(
     }
   }
 
-  LaunchedEffect(Unit) { meetingViewModel.loadMeetings(config.projectId) }
+  LaunchedEffect(Unit) { meetingViewModel.loadMeetings() }
 
   LaunchedEffect(meetingViewModel.userId) {
     if (meetingViewModel.userId == null) {
@@ -284,7 +284,6 @@ private fun MeetingScreenContent(
                       modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
                       meetings = uiState.upcomingMeetings,
                       tabName = MeetingTab.UPCOMING.name.lowercase(),
-                      projectId = config.projectId,
                       isCurrentUserId = { uid -> meetingViewModel.userId == uid },
                       onMeetingClick = config.onMeetingClick,
                       onVoteForMeetingProposalClick = config.onVoteForMeetingProposalClick,
@@ -302,7 +301,6 @@ private fun MeetingScreenContent(
                       modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
                       meetings = uiState.pastMeetings,
                       tabName = MeetingTab.PAST.name.lowercase(),
-                      projectId = config.projectId,
                       isCurrentUserId = { uid -> meetingViewModel.userId == uid },
                       onMeetingClick = config.onMeetingClick,
                       isConnected = uiState.isConnected),
@@ -317,7 +315,6 @@ private fun MeetingScreenContent(
  * @property modifier Modifier used in the component.
  * @property meetings Meetings list to display.
  * @property tabName Name of the tab in which to display these meetings.
- * @property projectId The ID of the project containing the meetings.
  * @property isCurrentUserId Function taking as argument a user ID and return true if this is the Id
  *   of the user that is currently logged in and false otherwise.
  * @property onMeetingClick Callback when a meeting card is clicked.
@@ -333,7 +330,6 @@ data class MeetingsListConfig(
     val modifier: Modifier,
     val meetings: List<Meeting>,
     val tabName: String,
-    val projectId: String = "",
     val isCurrentUserId: (String) -> Boolean,
     val onMeetingClick: (String, String) -> Unit = { _, _ -> },
     val onVoteForMeetingProposalClick: (String, String, Boolean) -> Unit = { _, _, _ -> },
@@ -343,6 +339,25 @@ data class MeetingsListConfig(
     val onRecord: (String, String, Boolean) -> Unit = { _, _, _ -> },
     val isConnected: Boolean,
 )
+
+/**
+ * Handles joining a meeting by opening the meeting link in a browser.
+ *
+ * @param context Android context for starting activities and showing toasts
+ * @param link The meeting link to open, or null if no link is available
+ */
+private fun handleJoinMeeting(context: Context, link: String?) {
+  if (!link.isNullOrBlank()) {
+    val browserIntent =
+        Intent(Intent.ACTION_VIEW, link.toUri()).apply {
+          addCategory(Intent.CATEGORY_BROWSABLE)
+          flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+    context.startActivity(browserIntent)
+  } else {
+    Toast.makeText(context, "No meeting link available", Toast.LENGTH_SHORT).show()
+  }
+}
 
 /**
  * Component that displays the meetings.
@@ -371,14 +386,15 @@ fun MeetingsList(
                 config =
                     MeetingCardConfig(
                         isCurrentUserId = config.isCurrentUserId,
-                        onClick = { config.onMeetingClick(config.projectId, meeting.meetingID) },
+                        onClick = { config.onMeetingClick(meeting.projectId, meeting.meetingID) },
+                        onJoinMeeting = { _ -> handleJoinMeeting(context, meeting.link) },
                         onVoteForMeetingProposals = { isConnected ->
                           config.onVoteForMeetingProposalClick(
-                              config.projectId, meeting.meetingID, isConnected)
+                              meeting.projectId, meeting.meetingID, isConnected)
                         },
                         onDirections = { isConnected ->
                           config.onNavigateToMeeting(
-                              config.projectId, meeting.meetingID, isConnected)
+                              meeting.projectId, meeting.meetingID, isConnected)
                         },
                         onCloseVotes = { meeting, isConnected ->
                           config.onCloseVotes(meeting, isConnected)
@@ -409,17 +425,15 @@ fun MeetingsList(
                               })
                         },
                         isMeetingAddedToCalendar =
-                            registeredMeetings.value.getOrElse(
-                                meeting.meetingID,
-                                {
-                                  if (meeting.status == MeetingStatus.SCHEDULED) {
-                                    calendarViewModel.checkIsMeetingRegisteredInCalendar(
-                                        context.contentResolver, meeting)
-                                  } else {
-                                    true
-                                  }
-                                  false
-                                }),
+                            registeredMeetings.value.getOrElse(meeting.meetingID) {
+                              if (meeting.status == MeetingStatus.SCHEDULED) {
+                                calendarViewModel.checkIsMeetingRegisteredInCalendar(
+                                    context.contentResolver, meeting)
+                              } else {
+                                true
+                              }
+                              false
+                            },
                         isConnected = config.isConnected,
                     ))
           }

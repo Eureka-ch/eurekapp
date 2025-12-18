@@ -13,6 +13,7 @@ import ch.eureka.eurekapp.model.connection.ConnectivityObserverProvider
 import ch.eureka.eurekapp.model.data.project.Member
 import ch.eureka.eurekapp.model.data.project.Project
 import ch.eureka.eurekapp.model.data.user.User
+import ch.eureka.eurekapp.ui.components.ProjectDropDownMenuTestTag
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
 import org.junit.Rule
@@ -124,7 +125,7 @@ class CreateConversationScreenTest {
     }
 
     composeTestRule
-        .onNodeWithTag(CreateConversationScreenTestTags.PROJECT_DROPDOWN)
+        .onNodeWithTag(ProjectDropDownMenuTestTag.PROJECT_DROPDOWN_MENU)
         .assertIsDisplayed()
   }
 
@@ -138,7 +139,7 @@ class CreateConversationScreenTest {
     }
 
     composeTestRule
-        .onNodeWithTag(CreateConversationScreenTestTags.PROJECT_DROPDOWN)
+        .onNodeWithTag(ProjectDropDownMenuTestTag.PROJECT_DROPDOWN_MENU)
         .assertIsDisplayed()
   }
 
@@ -167,11 +168,9 @@ class CreateConversationScreenTest {
           onNavigateToConversation = {}, viewModel = createMockViewModel(state))
     }
 
-    composeTestRule.onNodeWithTag(CreateConversationScreenTestTags.PROJECT_DROPDOWN).performClick()
+    composeTestRule.onNodeWithTag(ProjectDropDownMenuTestTag.PROJECT_DROPDOWN_MENU).performClick()
 
-    composeTestRule
-        .onNodeWithTag(CreateConversationScreenTestTags.PROJECT_DROPDOWN_ITEM)
-        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag(ProjectDropDownMenuTestTag.DROPDOWN_MENU_ITEM).assertIsDisplayed()
   }
 
   @Test
