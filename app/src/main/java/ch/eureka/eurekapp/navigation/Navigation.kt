@@ -91,8 +91,6 @@ sealed interface Route {
 
   @Serializable data object ActivityFeed : Route
 
-  @Serializable data object FilesManagement : TasksSection
-
   sealed interface ActivitySection : Route {
     @Serializable data class ActivityDetail(val activityId: String) : ActivitySection
   }
@@ -114,6 +112,8 @@ sealed interface Route {
     @Serializable data class EditTask(val projectId: String, val taskId: String) : TasksSection
 
     @Serializable data object AutoTaskAssignment : TasksSection
+
+    @Serializable data object FilesManagement : TasksSection
 
     @Serializable
     data class TaskDependence(val projectId: String, val taskId: String) : TasksSection
