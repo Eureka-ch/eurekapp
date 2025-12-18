@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of GPT-5 Codex, Gemini, and Claude. */
 package ch.eureka.eurekapp.ui.ideas
 
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -29,7 +30,7 @@ class IdeasContentTest {
       Message(messageID = "m1", text = "Hello", senderId = "user1", createdAt = Timestamp.now())
 
   @Test
-  fun ideasContent_loading_showsLoadingIndicator() {
+  fun ideasContent_loadingShowsLoadingIndicator() {
     composeTestRule.setContent {
       IdeasContent(
           viewMode = IdeasViewMode.LIST,
@@ -43,7 +44,7 @@ class IdeasContentTest {
   }
 
   @Test
-  fun ideasContent_noProjectSelected_showsEmptyState() {
+  fun ideasContent_noProjectSelectedShowsEmptyState() {
     composeTestRule.setContent {
       IdeasContent(
           viewMode = IdeasViewMode.LIST,
@@ -57,7 +58,7 @@ class IdeasContentTest {
   }
 
   @Test
-  fun ideasListContent_emptyIdeas_showsEmptyState() {
+  fun ideasListContent_emptyIdeasShowsEmptyState() {
     composeTestRule.setContent {
       IdeasContent(
           viewMode = IdeasViewMode.LIST,
@@ -72,7 +73,7 @@ class IdeasContentTest {
   }
 
   @Test
-  fun ideasListContent_withIdeas_displaysIdeaCards() {
+  fun ideasListContent_withIdeasDisplaysIdeaCards() {
     composeTestRule.setContent {
       IdeasContent(
           viewMode = IdeasViewMode.LIST,
@@ -88,7 +89,7 @@ class IdeasContentTest {
   }
 
   @Test
-  fun ideaCard_withoutContent_displaysOnlyTitle() {
+  fun ideaCard_withoutContentDisplaysOnlyTitle() {
     val ideaWithoutContent = testIdea.copy(content = null)
     composeTestRule.setContent {
       IdeasContent(
@@ -103,7 +104,7 @@ class IdeasContentTest {
   }
 
   @Test
-  fun ideaCard_withoutTitle_displaysUntitled() {
+  fun ideaCard_withoutTitleDisplaysUntitled() {
     val ideaWithoutTitle = testIdea.copy(title = null)
     composeTestRule.setContent {
       IdeasContent(
@@ -118,7 +119,7 @@ class IdeasContentTest {
   }
 
   @Test
-  fun conversationContent_emptyMessages_showsEmptyState() {
+  fun conversationContent_emptyMessagesShowsEmptyState() {
     composeTestRule.setContent {
       IdeasContent(
           viewMode = IdeasViewMode.CONVERSATION,
@@ -133,7 +134,7 @@ class IdeasContentTest {
   }
 
   @Test
-  fun conversationContent_withMessages_displaysMessages() {
+  fun conversationContent_withMessagesDisplaysMessages() {
     composeTestRule.setContent {
       IdeasContent(
           viewMode = IdeasViewMode.CONVERSATION,
@@ -163,7 +164,7 @@ class IdeasContentTest {
   }
 
   @Test
-  fun conversationContent_backButton_triggersCallback() {
+  fun conversationContent_backButtonTriggersCallback() {
     var backCalled = false
     composeTestRule.setContent {
       IdeasContent(
@@ -180,7 +181,7 @@ class IdeasContentTest {
   }
 
   @Test
-  fun ideaCard_withParticipants_displaysParticipantAvatars() {
+  fun ideaCard_withParticipantsDisplaysParticipantAvatars() {
     val ideaWithParticipants =
         testIdea.copy(participantIds = listOf("user1", "user2", "user3"), createdBy = "user1")
     composeTestRule.setContent {
@@ -197,7 +198,7 @@ class IdeasContentTest {
   }
 
   @Test
-  fun ideaCard_withoutParticipants_doesNotShowAvatars() {
+  fun ideaCard_withoutParticipantsDoesNotShowAvatars() {
     val ideaWithoutParticipants =
         testIdea.copy(participantIds = listOf("user1"), createdBy = "user1")
     composeTestRule.setContent {
@@ -213,7 +214,7 @@ class IdeasContentTest {
   }
 
   @Test
-  fun ideaCard_withBorderColor_displaysCard() {
+  fun ideaCard_withBorderColorDisplaysCard() {
     val idea1 = testIdea.copy(ideaId = "idea1", title = "Idea 1")
     val idea2 = testIdea.copy(ideaId = "idea2", title = "Idea 2")
     composeTestRule.setContent {

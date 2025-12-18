@@ -443,7 +443,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun basicInfoSection_titleChangeCallback_invoked() {
+  fun basicInfoSection_titleChangeCallbackInvoked() {
     var capturedTitle = ""
 
     composeTestRule.setContent {
@@ -473,7 +473,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun basicInfoSection_descriptionChangeCallback_invoked() {
+  fun basicInfoSection_descriptionChangeCallbackInvoked() {
     var capturedDescription = ""
 
     composeTestRule.setContent {
@@ -504,7 +504,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun basicInfoSection_titleError_displayed() {
+  fun basicInfoSection_titleErrorDisplayed() {
     composeTestRule.setContent {
       TemplateFieldList(
           fields = testFields,
@@ -530,7 +530,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun basicInfoSection_notDisplayed_whenHeaderConfigNull() {
+  fun basicInfoSection_notDisplayedWhenHeaderConfigNull() {
     composeTestRule.setContent {
       TemplateFieldList(
           fields = testFields,
@@ -552,7 +552,7 @@ class TemplateFieldListTest {
   }
 
   @Test
-  fun fieldList_withHeaderConfig_displaysFieldsAfterHeader() {
+  fun fieldList_withHeaderConfigDisplaysFieldsAfterHeader() {
     composeTestRule.setContent {
       TemplateFieldList(
           fields = testFields,

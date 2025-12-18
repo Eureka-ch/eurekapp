@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Claude. */
 package ch.eureka.eurekapp.ui.tasks
 
 import ch.eureka.eurekapp.model.data.project.Member

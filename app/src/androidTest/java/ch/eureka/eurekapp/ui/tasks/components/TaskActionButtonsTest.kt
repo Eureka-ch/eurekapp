@@ -4,7 +4,7 @@
  * These tests verify the correct display and interaction behavior of the task action buttons
  * including create task and auto-assign functionality.
  *
- * @author Assisted by AI for comprehensive test coverage
+ * @author Assisted by AI (including Claude) for comprehensive test coverage
  */
 package ch.eureka.eurekapp.ui.tasks.components
 
@@ -23,7 +23,7 @@ import org.junit.runner.RunWith
  * These tests verify the correct display and interaction behavior of the task action buttons
  * (Create Task and Auto-assign).
  *
- * @author Assisted by AI for comprehensive test coverage
+ * @author Assisted by AI (including Claude) for comprehensive test coverage
  */
 @RunWith(AndroidJUnit4::class)
 class TaskActionButtonsTest {

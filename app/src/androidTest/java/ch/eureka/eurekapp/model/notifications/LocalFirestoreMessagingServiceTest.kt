@@ -1,4 +1,4 @@
-// Portions of this code were generated with the help of Gemini Pro 3
+/* Portions of this file were written with the help of Gemini Pro 3 and Claude. */
 package ch.eureka.eurekapp.model.notifications
 
 import android.app.NotificationManager
@@ -77,12 +77,12 @@ class LocalFirestoreMessagingServiceTest {
   }
 
   @Test
-  fun testOnNewToken() {
+  fun localFirestoreMessagingService_testOnNewToken() {
     service.onNewToken("token")
   }
 
   @Test
-  fun testMessagePathMeeting() {
+  fun localFirestoreMessagingService_testMessagePathMeeting() {
     // Given
     val dataMap =
         mapOf(
@@ -99,7 +99,7 @@ class LocalFirestoreMessagingServiceTest {
   }
 
   @Test
-  fun testMessagePathMessage() {
+  fun localFirestoreMessagingService_testMessagePathMessage() {
     val dataMap =
         mapOf("type" to NotificationType.MESSAGE_NOTIFICATION.backendTypeString, "id" to "123")
     val message = RemoteMessage.Builder("sender").setData(dataMap).build()
@@ -110,7 +110,7 @@ class LocalFirestoreMessagingServiceTest {
   }
 
   @Test
-  fun testMessagePathGeneralAndMissingData() {
+  fun localFirestoreMessagingService_testMessagePathGeneralAndMissingData() {
     val dataMap = emptyMap<String, String>()
     val message = RemoteMessage.Builder("sender").setData(dataMap).build()
 
@@ -120,7 +120,7 @@ class LocalFirestoreMessagingServiceTest {
   }
 
   @Test
-  fun testPermissionDenied() {
+  fun localFirestoreMessagingService_testPermissionDenied() {
     every { ContextCompat.checkSelfPermission(any(), any()) } returns
         PackageManager.PERMISSION_DENIED
     val dataMap = mapOf("title" to "Test")
@@ -133,7 +133,7 @@ class LocalFirestoreMessagingServiceTest {
   }
 
   @Test
-  fun testChannelCreationVersionHigh() {
+  fun localFirestoreMessagingService_testChannelCreationVersionHigh() {
     setSdkInt(Build.VERSION_CODES.O)
     val dataMap = mapOf("type" to "general")
     val message = RemoteMessage.Builder("sender").setData(dataMap).build()

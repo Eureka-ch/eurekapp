@@ -56,7 +56,7 @@ class ActivityFeedScreenTest {
   }
 
   @Test
-  fun displaysFilterChipsAndEmptyState() {
+  fun activityFeedScreen_displaysFilterChipsAndEmptyState() {
     coEvery { repository.getActivities(testUserId) } returns flowOf(emptyList())
 
     composeTestRule.setContent { ActivityFeedScreen(viewModel = viewModel) }
@@ -69,7 +69,7 @@ class ActivityFeedScreenTest {
   }
 
   @Test
-  fun clickingProjectsFilter_displaysActivities() {
+  fun activityFeedScreen_clickingProjectsFilterDisplaysActivities() {
     val activities = listOf(createActivity("1", EntityType.PROJECT, "Test Project"))
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
@@ -84,7 +84,7 @@ class ActivityFeedScreenTest {
   }
 
   @Test
-  fun clickingMeetingsFilter_displaysActivities() {
+  fun activityFeedScreen_clickingMeetingsFilterDisplaysActivities() {
     val activities = listOf(createActivity("1", EntityType.MEETING, "Sprint Meeting"))
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
@@ -99,7 +99,7 @@ class ActivityFeedScreenTest {
   }
 
   @Test
-  fun deselectingFilter_showsEmptyStateAgain() {
+  fun activityFeedScreen_deselectingFilterShowsEmptyStateAgain() {
     coEvery { repository.getActivities(testUserId) } returns
         flowOf(listOf(createActivity("1", EntityType.PROJECT, "Test")))
 
@@ -118,7 +118,7 @@ class ActivityFeedScreenTest {
   }
 
   @Test
-  fun filterSelected_noActivities_showsNoActivitiesMessage() {
+  fun activityFeedScreen_filterSelectedNoActivitiesShowsNoActivitiesMessage() {
     coEvery { repository.getActivities(testUserId) } returns flowOf(emptyList())
 
     composeTestRule.setContent { ActivityFeedScreen(viewModel = viewModel) }
@@ -132,7 +132,7 @@ class ActivityFeedScreenTest {
   }
 
   @Test
-  fun switchingFilters_updatesDisplayedActivities() {
+  fun activityFeedScreen_switchingFiltersUpdatesDisplayedActivities() {
     val projectActivities = listOf(createActivity("1", EntityType.PROJECT, "Project Alpha"))
     val meetingActivities = listOf(createActivity("2", EntityType.MEETING, "Sprint Planning"))
     val allActivities = projectActivities + meetingActivities
@@ -152,7 +152,7 @@ class ActivityFeedScreenTest {
   }
 
   @Test
-  fun deleteButton_removesActivityFromList() {
+  fun activityFeedScreen_deleteButtonRemovesActivityFromList() {
     val activities =
         listOf(
             createActivity("1", EntityType.PROJECT, "Project Alpha"),
@@ -177,7 +177,7 @@ class ActivityFeedScreenTest {
   }
 
   @Test
-  fun errorState_displaysErrorMessage() {
+  fun activityFeedScreen_errorStateDisplaysErrorMessage() {
     coEvery { repository.getActivities(testUserId) } returns
         kotlinx.coroutines.flow.flow { throw Exception("Network error") }
 
@@ -191,7 +191,7 @@ class ActivityFeedScreenTest {
   }
 
   @Test
-  fun dateHeader_displaysForActivityGroups() {
+  fun activityFeedScreen_dateHeaderDisplaysForActivityGroups() {
     val activities = listOf(createActivity("1", EntityType.PROJECT, "Test Project"))
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
@@ -205,7 +205,7 @@ class ActivityFeedScreenTest {
   }
 
   @Test
-  fun loadingState_showsLoadingIndicator() {
+  fun activityFeedScreen_loadingStateShowsLoadingIndicator() {
     coEvery { repository.getActivities(testUserId) } returns
         kotlinx.coroutines.flow.flow { kotlinx.coroutines.delay(Long.MAX_VALUE) }
 
@@ -219,7 +219,7 @@ class ActivityFeedScreenTest {
   }
 
   @Test
-  fun activityClick_triggersCallback() {
+  fun activityFeedScreen_activityClickTriggersCallback() {
     val activities = listOf(createActivity("1", EntityType.PROJECT, "Test Project"))
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 

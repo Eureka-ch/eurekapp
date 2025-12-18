@@ -1,3 +1,9 @@
+/*
+Co-author: GPT-5 Codex
+Co-author: Claude 4.5 Sonnet
+Co-author: Grok
+*/
+
 package ch.eureka.eurekapp.ui.conversation
 
 import android.net.Uri
@@ -23,12 +29,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-
-/*
-Co-author: GPT-5 Codex
-Co-author: Claude 4.5 Sonnet
-Co-author: Grok
-*/
 
 @RunWith(AndroidJUnit4::class)
 class ConversationDetailScreenTest {

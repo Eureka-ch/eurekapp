@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Claude. */
 package ch.eureka.eurekapp.designsystem.tokens
 
 import androidx.compose.foundation.layout.padding
@@ -22,7 +23,7 @@ class DesignTokensTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun eurekaThemeUsesLightColors() {
+  fun eurekaTheme_usesLightColors() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) { androidx.compose.material3.Text("Light Theme Test") }
     }
@@ -32,7 +33,7 @@ class DesignTokensTest {
   }
 
   @Test
-  fun eurekaThemeUsesDarkColors() {
+  fun eurekaTheme_usesDarkColors() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = true) { androidx.compose.material3.Text("Dark Theme Test") }
     }
@@ -42,7 +43,7 @@ class DesignTokensTest {
   }
 
   @Test
-  fun eurekaThemeUsesCustomTypography() {
+  fun eurekaTheme_usesCustomTypography() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.material3.Text(
@@ -56,7 +57,7 @@ class DesignTokensTest {
   }
 
   @Test
-  fun eurekaThemeUsesCustomShapes() {
+  fun eurekaTheme_usesCustomShapes() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.material3.Card(
@@ -71,7 +72,7 @@ class DesignTokensTest {
   }
 
   @Test
-  fun eurekaThemeProvidesSpacingCompositionLocal() {
+  fun eurekaTheme_providesSpacingCompositionLocal() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.foundation.layout.Box(
@@ -86,7 +87,7 @@ class DesignTokensTest {
   }
 
   @Test
-  fun eColorsLightSchemeIsAccessible() {
+  fun eColors_lightSchemeIsAccessible() {
     // Test that light color scheme can be accessed
     val lightScheme = EColors.light
     assert(lightScheme.primary != null)
@@ -96,7 +97,7 @@ class DesignTokensTest {
   }
 
   @Test
-  fun eColorsDarkSchemeIsAccessible() {
+  fun eColors_darkSchemeIsAccessible() {
     // Test that dark color scheme can be accessed
     val darkScheme = EColors.dark
     assert(darkScheme.primary != null)
@@ -106,7 +107,7 @@ class DesignTokensTest {
   }
 
   @Test
-  fun eTypographyIsAccessible() {
+  fun eTypography_isAccessible() {
     // Test that typography can be accessed
     val typography = ETypography.value
     assert(typography.displayLarge != null)
@@ -116,7 +117,7 @@ class DesignTokensTest {
   }
 
   @Test
-  fun eShapesIsAccessible() {
+  fun eShapes_isAccessible() {
     // Test that shapes can be accessed
     val shapes = EShapes.value
     assert(shapes.small != null)
@@ -125,7 +126,7 @@ class DesignTokensTest {
   }
 
   @Test
-  fun spacingIsAccessible() {
+  fun spacing_isAccessible() {
     // Test that spacing values can be accessed
     assert(Spacing.xxs != null)
     assert(Spacing.xs != null)
@@ -136,7 +137,7 @@ class DesignTokensTest {
   }
 
   @Test
-  fun spacingValuesAreCorrect() {
+  fun spacing_valuesAreCorrect() {
     // Test that spacing values are correct
     assert(Spacing.xxs.value == 4f)
     assert(Spacing.xs.value == 8f)
@@ -147,7 +148,7 @@ class DesignTokensTest {
   }
 
   @Test
-  fun eTypographyConstantsAreCorrect() {
+  fun eTypography_constantsAreCorrect() {
     // Test that typography constants are correct
     assert(ETypography.Constants.DISPLAY_LARGE_SIZE == 28)
     assert(ETypography.Constants.DISPLAY_MEDIUM_SIZE == 24)
@@ -163,7 +164,7 @@ class DesignTokensTest {
   }
 
   @Test
-  fun eurekaThemeWorksInLightMode() {
+  fun eurekaTheme_worksInLightMode() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) { androidx.compose.material3.Text("Light") }
     }
@@ -171,7 +172,7 @@ class DesignTokensTest {
   }
 
   @Test
-  fun eurekaThemeWorksInDarkMode() {
+  fun eurekaTheme_worksInDarkMode() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = true) { androidx.compose.material3.Text("Dark") }
     }
@@ -179,7 +180,7 @@ class DesignTokensTest {
   }
 
   @Test
-  fun eurekaThemeAppliesAllTokensTogether() {
+  fun eurekaTheme_appliesAllTokensTogether() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.material3.Card(

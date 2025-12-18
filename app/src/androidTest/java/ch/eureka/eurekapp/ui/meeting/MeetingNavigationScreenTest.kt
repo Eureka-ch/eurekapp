@@ -105,7 +105,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun screenDisplaysWithValidMeetingLocation() = runTest {
+  fun meetingNavigationScreen_displaysWithValidMeetingLocation() = runTest {
     setContent(meeting = testMeeting)
 
     composeTestRule.waitForIdle()
@@ -116,7 +116,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun loadingStateDisplaysLoadingIndicator() = runTest {
+  fun meetingNavigationScreen_loadingStateDisplaysLoadingIndicator() = runTest {
     // Initially return null to simulate loading, then will update
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         kotlinx.coroutines.flow.flow {
@@ -135,7 +135,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun errorDisplayedWhenMeetingNotFound() = runTest {
+  fun meetingNavigationScreen_errorDisplayedWhenMeetingNotFound() = runTest {
     setContent(meeting = null)
 
     composeTestRule.waitForIdle()
@@ -145,7 +145,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun errorDisplayedWhenMeetingHasNoLocation() = runTest {
+  fun meetingNavigationScreen_errorDisplayedWhenMeetingHasNoLocation() = runTest {
     setContent(meeting = testMeetingNoLocation)
 
     composeTestRule.waitForIdle()
@@ -155,7 +155,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun infoCardDisplaysLocationName() = runTest {
+  fun meetingNavigationScreen_infoCardDisplaysLocationName() = runTest {
     setContent(meeting = testMeeting)
 
     composeTestRule.waitForIdle()
@@ -165,7 +165,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun mapViewIsDisplayedWithValidLocation() = runTest {
+  fun meetingNavigationScreen_mapViewIsDisplayedWithValidLocation() = runTest {
     setContent(meeting = testMeeting)
 
     composeTestRule.waitForIdle()
@@ -176,7 +176,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun screenTitleIsCorrect() = runTest {
+  fun meetingNavigationScreen_screenTitleIsCorrect() = runTest {
     setContent(meeting = testMeeting)
 
     composeTestRule.waitForIdle()
@@ -185,7 +185,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun backButtonNavigatesBack() = runTest {
+  fun meetingNavigationScreen_backButtonNavigatesBack() = runTest {
     var navigatedBack = false
     setContent(meeting = testMeeting, onNavigateBack = { navigatedBack = true })
 
@@ -196,7 +196,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun backButtonActuallyTriggersCallback() = runTest {
+  fun meetingNavigationScreen_backButtonActuallyTriggersCallback() = runTest {
     var navigatedBack = false
     setContent(meeting = testMeeting, onNavigateBack = { navigatedBack = true })
 
@@ -210,7 +210,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun errorScreenDisplaysCustomErrorMessage() = runTest {
+  fun meetingNavigationScreen_errorScreenDisplaysCustomErrorMessage() = runTest {
     val customErrorMessage = "Custom error occurred"
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         kotlinx.coroutines.flow.flow { throw Exception(customErrorMessage) }
@@ -229,7 +229,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun mapMarkerDisplaysCorrectTitle() = runTest {
+  fun meetingNavigationScreen_mapMarkerDisplaysCorrectTitle() = runTest {
     setContent(meeting = testMeeting)
 
     composeTestRule.waitForIdle()
@@ -242,7 +242,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun infoCardDisplaysCorrectLocationIcon() = runTest {
+  fun meetingNavigationScreen_infoCardDisplaysCorrectLocationIcon() = runTest {
     setContent(meeting = testMeeting)
 
     composeTestRule.waitForIdle()
@@ -255,7 +255,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun loadingScreenDisplaysProgressIndicator() = runTest {
+  fun meetingNavigationScreen_loadingScreenDisplaysProgressIndicator() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         kotlinx.coroutines.flow.flow { kotlinx.coroutines.delay(5000) }
 
@@ -271,7 +271,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun scaffoldDisplaysTopAppBar() = runTest {
+  fun meetingNavigationScreen_scaffoldDisplaysTopAppBar() = runTest {
     setContent(meeting = testMeeting)
 
     composeTestRule.waitForIdle()
@@ -284,7 +284,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun viewModelGetMeetingLocationReturnsCorrectCoordinates() = runTest {
+  fun meetingNavigationScreen_viewModelGetMeetingLocationReturnsCorrectCoordinates() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeeting)
 
@@ -300,7 +300,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun viewModelGetMeetingLocationReturnsNullWhenNoLocation() = runTest {
+  fun meetingNavigationScreen_viewModelGetMeetingLocationReturnsNullWhenNoLocation() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeetingNoLocation)
 
@@ -321,7 +321,7 @@ class MeetingNavigationScreenTest {
   // The "Enable location to see route" message only shows without permission
 
   @Test
-  fun transportModesDisplayedWhenUserLocationAvailable() = runTest {
+  fun meetingNavigationScreen_transportModesDisplayedWhenUserLocationAvailable() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeeting)
 
@@ -345,7 +345,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun getDirectionsButtonDisplayedAndEnabled() = runTest {
+  fun meetingNavigationScreen_getDirectionsButtonDisplayedAndEnabled() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeeting)
 
@@ -365,7 +365,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun getDirectionsButtonShowsLoadingState() = runTest {
+  fun meetingNavigationScreen_getDirectionsButtonShowsLoadingState() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeeting)
 
@@ -386,7 +386,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun routeInformationDisplayedWhenRouteAvailable() = runTest {
+  fun meetingNavigationScreen_routeInformationDisplayedWhenRouteAvailable() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeeting)
 
@@ -433,7 +433,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun routeErrorMessageDisplayed() = runTest {
+  fun meetingNavigationScreen_routeErrorMessageDisplayed() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeeting)
 
@@ -454,7 +454,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun directionsPanelDisplaysTurnByTurnInstructions() = runTest {
+  fun meetingNavigationScreen_directionsPanelDisplaysTurnByTurnInstructions() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeeting)
 
@@ -547,7 +547,7 @@ class MeetingNavigationScreenTest {
   }
 
   @Test
-  fun transportModeSelectionChanges() = runTest {
+  fun meetingNavigationScreen_transportModeSelectionChanges() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeeting)
 

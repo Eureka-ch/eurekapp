@@ -1,4 +1,5 @@
 /* Portions of this file were written with the help of Gemini. */
+/* Portions of this file were written with the help of Claude. */
 package ch.eureka.eurekapp.model.calendar
 
 import android.content.Context
@@ -115,7 +116,7 @@ class MeetingScreenWithCalendarButtonTest {
   @get:Rule val composeRule = createComposeRule()
 
   @Test
-  fun meetingScreen_calendarButtonAppearsAndIsClickableForScheduledMeeting() {
+  fun meetingScreenWithCalendarButton_calendarButtonAppearsAndIsClickableForScheduledMeeting() {
     val context: Context = ApplicationProvider.getApplicationContext()
 
     val mockConnectivityObserver = MockConnectivityObserver(context)

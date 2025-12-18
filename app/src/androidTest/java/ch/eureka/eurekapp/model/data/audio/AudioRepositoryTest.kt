@@ -18,8 +18,8 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * Note :This file was partially written by ChatGPT (GPT-5) and Grok Co-author : GPT-5 Co-author :
- * Grok
+ * Note: This file was partially written by ChatGPT (GPT-5), Grok, and Claude. Co-author: GPT-5
+ * Co-author: Grok Co-author: Claude
  */
 class AudioRepositoryTest {
   @get:Rule val composeTestRule = createComposeRule()
@@ -29,7 +29,7 @@ class AudioRepositoryTest {
       GrantPermissionRule.grant(android.Manifest.permission.RECORD_AUDIO)
 
   @Test
-  fun testCreateRecordingWorks() {
+  fun audioRepository_testCreateRecordingWorks() {
     val context: Context = ApplicationProvider.getApplicationContext()
     val mockConnectivityObserver = MockConnectivityObserver(context)
     val providerField =
@@ -58,7 +58,7 @@ class AudioRepositoryTest {
   }
 
   @Test
-  fun testPauseAndResumeRecordingWorks() {
+  fun audioRepository_testPauseAndResumeRecordingWorks() {
     val context: Context = ApplicationProvider.getApplicationContext()
     val repo = LocalAudioRecordingRepository()
 
@@ -79,7 +79,7 @@ class AudioRepositoryTest {
   }
 
   @Test
-  fun completelyStopAndDeleteRecording() {
+  fun audioRepository_completelyStopAndDeleteRecording() {
     val context: Context = ApplicationProvider.getApplicationContext()
     val repo = LocalAudioRecordingRepository()
 
@@ -101,7 +101,7 @@ class AudioRepositoryTest {
   }
 
   @Test
-  fun testNotAllowedStatesActuallyWork() {
+  fun audioRepository_testNotAllowedStatesActuallyWork() {
     val context: Context = ApplicationProvider.getApplicationContext()
     val repo = LocalAudioRecordingRepository()
 

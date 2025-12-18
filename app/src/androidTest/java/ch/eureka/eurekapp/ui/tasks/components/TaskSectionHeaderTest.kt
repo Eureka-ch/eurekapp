@@ -1,5 +1,7 @@
 package ch.eureka.eurekapp.ui.tasks.components
 
+/* Portions of this file were written with the help of Claude. */
+
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -14,7 +16,7 @@ import org.junit.runner.RunWith
  *
  * These tests verify the correct display of section headers with proper task counts and formatting.
  *
- * @author Assisted by AI for comprehensive test coverage
+ * @author Assisted by AI (including Claude) for comprehensive test coverage
  */
 @RunWith(AndroidJUnit4::class)
 class TaskSectionHeaderTest {

@@ -1,4 +1,4 @@
-// Portions of this code were generated with the help of Grok.
+// Portions of this code were generated with the help of Grok and Claude.
 package ch.eureka.eurekapp.screen
 
 import androidx.compose.ui.test.assertCountEquals
@@ -130,7 +130,7 @@ class ViewTaskScreenOfflineTest {
   }
 
   @Test
-  fun viewTaskScreenOfflineDisplaysMessage() {
+  fun viewTaskScreen_offlineDisplaysMessage() {
     runBlocking {
       val projectId = "project123"
       val taskId = "task123"
@@ -166,7 +166,7 @@ class ViewTaskScreenOfflineTest {
   }
 
   @Test
-  fun viewTaskScreenOfflineStillViewsTaskDetails() {
+  fun viewTaskScreen_offlineStillViewsTaskDetails() {
     runBlocking {
       val projectId = "project123"
       val taskId = "task123"
@@ -211,7 +211,7 @@ class ViewTaskScreenOfflineTest {
   }
 
   @Test
-  fun viewTaskScreenOfflineButtonDoesNotNavigate() {
+  fun viewTaskScreen_offlineButtonDoesNotNavigate() {
     runBlocking {
       val projectId = "project123"
       val taskId = "task123"
@@ -253,7 +253,7 @@ class ViewTaskScreenOfflineTest {
   }
 
   @Test
-  fun viewTaskScreenOfflineAttachmentsShowMessage() {
+  fun viewTaskScreen_offlineAttachmentsShowMessage() {
     runBlocking {
       val projectId = "project123"
       val taskId = "task123"
@@ -292,7 +292,7 @@ class ViewTaskScreenOfflineTest {
   }
 
   @Test
-  fun viewTaskScreenOnlineThenOfflineShowsMessage() {
+  fun viewTaskScreen_onlineThenOfflineShowsMessage() {
     runBlocking {
       val projectId = "project123"
       val taskId = "task123"
@@ -335,7 +335,7 @@ class ViewTaskScreenOfflineTest {
   }
 
   @Test
-  fun viewTaskScreenOffline_noDownloadButton() {
+  fun viewTaskScreen_offlineNoDownloadButton() {
     runBlocking {
       val projectId = "project123"
       val taskId = "task123"
@@ -374,7 +374,7 @@ class ViewTaskScreenOfflineTest {
   }
 
   @Test
-  fun viewTaskScreenOffline_downloadedAttachmentDisplayedAsLocal() {
+  fun viewTaskScreen_offlineDownloadedAttachmentDisplayedAsLocal() {
     runBlocking {
       val projectId = "project123"
       val taskId = "task123"

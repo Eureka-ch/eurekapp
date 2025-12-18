@@ -1,4 +1,4 @@
-// Portions of this code were generated with the help of Grok.
+// Portions of this code were generated with the help of Grok and Claude.
 package ch.eureka.eurekapp.screen
 
 import android.net.Uri

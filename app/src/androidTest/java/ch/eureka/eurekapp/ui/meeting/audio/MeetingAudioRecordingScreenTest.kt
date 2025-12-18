@@ -1,3 +1,7 @@
+/**
+ * Note: This file was partially written by ChatGPT (GPT-5), Grok, and Claude. Co-author: GPT-5
+ * Co-author: Grok Co-author: Claude
+ */
 package ch.eureka.eurekapp.ui.meeting.audio
 
 import android.Manifest
@@ -22,8 +26,8 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * Note :This file was partially written by ChatGPT (GPT-5) and Grok Co-author : GPT-5 Co-author :
- * Grok
+ * Note: This file was partially written by ChatGPT (GPT-5), Grok, and Claude. Co-author: GPT-5
+ * Co-author: Grok Co-author: Claude
  */
 class MeetingAudioRecordingScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
@@ -50,7 +54,7 @@ class MeetingAudioRecordingScreenTest {
   }
 
   @Test
-  fun recordingWorks() {
+  fun meetingAudioRecordingScreen_recordingWorks() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     composeTestRule.setContent {
       MeetingAudioRecordingScreen(
@@ -111,7 +115,7 @@ class MeetingAudioRecordingScreenTest {
   }
 
   @Test
-  fun viewTranscriptButtonAppearsAfterSuccessfulUpload() {
+  fun meetingAudioRecordingScreen_viewTranscriptButtonAppearsAfterSuccessfulUpload() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val mockMeetingRepository =
         object : ch.eureka.eurekapp.ui.meeting.MeetingRepositoryMock() {
@@ -146,7 +150,7 @@ class MeetingAudioRecordingScreenTest {
   }
 
   @Test
-  fun viewTranscriptButtonNavigatesToTranscriptScreen() {
+  fun meetingAudioRecordingScreen_viewTranscriptButtonNavigatesToTranscriptScreen() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val mockMeetingRepository =
         object : ch.eureka.eurekapp.ui.meeting.MeetingRepositoryMock() {
@@ -193,7 +197,7 @@ class MeetingAudioRecordingScreenTest {
   }
 
   @Test
-  fun test_backButton_isDisplayed_andCallsOnBackClick() {
+  fun meetingAudioRecordingScreen_backButtonIsDisplayedAndCallsOnBackClick() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val onBackClickCalled = mutableStateOf(false)
     composeTestRule.setContent {

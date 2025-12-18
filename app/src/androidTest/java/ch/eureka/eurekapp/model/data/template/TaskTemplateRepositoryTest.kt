@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Claude. */
 package ch.eureka.eurekapp.model.data.template
 
 import ch.eureka.eurekapp.model.data.template.field.FieldDefinition
@@ -38,7 +39,7 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun createTemplate_shouldCreateTemplateInFirestore() = runBlocking {
+  fun taskTemplateRepository_createTemplateShouldCreateTemplateInFirestore() = runBlocking {
     val projectId = "project_template_1"
     setupTestProject(projectId)
 
@@ -78,7 +79,7 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getTemplateById_shouldReturnTemplateWhenExists() = runBlocking {
+  fun taskTemplateRepository_getTemplateByIdShouldReturnTemplateWhenExists() = runBlocking {
     val projectId = "project_template_2"
     setupTestProject(projectId)
 
@@ -101,18 +102,19 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getTemplateById_shouldReturnNullWhenTemplateDoesNotExist() = runBlocking {
-    val projectId = "project_template_3"
-    setupTestProject(projectId)
+  fun taskTemplateRepository_getTemplateByIdShouldReturnNullWhenTemplateDoesNotExist() =
+      runBlocking {
+        val projectId = "project_template_3"
+        setupTestProject(projectId)
 
-    val flow = repository.getTemplateById(projectId, "non_existent_template")
-    val retrievedTemplate = flow.first()
+        val flow = repository.getTemplateById(projectId, "non_existent_template")
+        val retrievedTemplate = flow.first()
 
-    assertNull(retrievedTemplate)
-  }
+        assertNull(retrievedTemplate)
+      }
 
   @Test
-  fun getTemplatesInProject_shouldReturnAllTemplates() = runBlocking {
+  fun taskTemplateRepository_getTemplatesInProjectShouldReturnAllTemplates() = runBlocking {
     val projectId = "project_template_4"
     setupTestProject(projectId)
 
@@ -144,18 +146,19 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getTemplatesInProject_shouldReturnEmptyListWhenNoTemplates() = runBlocking {
-    val projectId = "project_template_5"
-    setupTestProject(projectId)
+  fun taskTemplateRepository_getTemplatesInProjectShouldReturnEmptyListWhenNoTemplates() =
+      runBlocking {
+        val projectId = "project_template_5"
+        setupTestProject(projectId)
 
-    val flow = repository.getTemplatesInProject(projectId)
-    val templates = flow.first()
+        val flow = repository.getTemplatesInProject(projectId)
+        val templates = flow.first()
 
-    assertTrue(templates.isEmpty())
-  }
+        assertTrue(templates.isEmpty())
+      }
 
   @Test
-  fun updateTemplate_shouldUpdateTemplateDetails() = runBlocking {
+  fun taskTemplateRepository_updateTemplateShouldUpdateTemplateDetails() = runBlocking {
     val projectId = "project_template_6"
     setupTestProject(projectId)
 
@@ -198,7 +201,7 @@ class TaskTemplateRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun deleteTemplate_shouldDeleteTemplateFromFirestore() = runBlocking {
+  fun taskTemplateRepository_deleteTemplateShouldDeleteTemplateFromFirestore() = runBlocking {
     val projectId = "project_template_7"
     setupTestProject(projectId)
 

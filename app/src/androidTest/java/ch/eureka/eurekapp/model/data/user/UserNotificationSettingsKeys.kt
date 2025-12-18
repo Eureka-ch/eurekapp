@@ -9,7 +9,7 @@ import org.junit.Test
 class UserNotificationSettingsKeysTest {
 
   @Test
-  fun testEnumProperties() {
+  fun userNotificationSettingsKeys_testEnumProperties() {
     // Verify Meeting Notification properties
     val meetingScheduled = UserNotificationSettingsKeys.ON_MEETING_SCHEDULED_NOTIFY
     assertEquals("Notify when meeting scheduled: ", meetingScheduled.displayName)
@@ -26,14 +26,14 @@ class UserNotificationSettingsKeysTest {
   }
 
   @Test
-  fun testDefaultValuesMapSize() {
+  fun userNotificationSettingsKeys_testDefaultValuesMapSize() {
     // Ensure the map has the same number of entries as the Enum
     assertEquals(
         UserNotificationSettingsKeys.entries.size, defaultValuesNotificationSettingsKeys.size)
   }
 
   @Test
-  fun testDefaultValuesMapContent() {
+  fun userNotificationSettingsKeys_testDefaultValuesMapContent() {
     // Verify every Enum key is present in the map and set to TRUE by default
     UserNotificationSettingsKeys.entries.forEach { key ->
       assertTrue(

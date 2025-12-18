@@ -26,7 +26,7 @@ class TemplateSelectionFieldTest {
           TaskTemplate(templateID = "template-3", title = "Documentation"))
 
   @Test
-  fun displaysDropdownWhenTemplatesExist() {
+  fun templateSelectionField_displaysDropdownWhenTemplatesExist() {
     composeTestRule.setContent {
       TemplateSelectionField(
           templates = testTemplates,
@@ -40,7 +40,7 @@ class TemplateSelectionFieldTest {
   }
 
   @Test
-  fun hidesDropdownWhenNoTemplatesExist() {
+  fun templateSelectionField_hidesDropdownWhenNoTemplatesExist() {
     composeTestRule.setContent {
       TemplateSelectionField(
           templates = emptyList(),
@@ -54,7 +54,7 @@ class TemplateSelectionFieldTest {
   }
 
   @Test
-  fun displaysSelectedTemplateTitle() {
+  fun templateSelectionField_displaysSelectedTemplateTitle() {
     composeTestRule.setContent {
       TemplateSelectionField(
           templates = testTemplates,
@@ -69,7 +69,7 @@ class TemplateSelectionFieldTest {
   }
 
   @Test
-  fun displaysNoTemplateWhenNoneSelected() {
+  fun templateSelectionField_displaysNoTemplateWhenNoneSelected() {
     composeTestRule.setContent {
       TemplateSelectionField(
           templates = testTemplates,
@@ -84,7 +84,7 @@ class TemplateSelectionFieldTest {
   }
 
   @Test
-  fun callsOnTemplateSelectedWhenTemplateClicked() {
+  fun templateSelectionField_callsOnTemplateSelectedWhenTemplateClicked() {
     var selectedId: String? = "initial"
 
     composeTestRule.setContent {
@@ -104,7 +104,7 @@ class TemplateSelectionFieldTest {
   }
 
   @Test
-  fun callsOnTemplateSelectedWithNullWhenNoTemplateClicked() {
+  fun templateSelectionField_callsOnTemplateSelectedWithNullWhenNoTemplateClicked() {
     var selectedId: String? = "initial"
 
     composeTestRule.setContent {
@@ -122,7 +122,7 @@ class TemplateSelectionFieldTest {
   }
 
   @Test
-  fun callsOnCreateTemplateWhenButtonClicked() {
+  fun templateSelectionField_callsOnCreateTemplateWhenButtonClicked() {
     var createCalled = false
 
     composeTestRule.setContent {
@@ -139,7 +139,7 @@ class TemplateSelectionFieldTest {
   }
 
   @Test
-  fun showsCreateButtonEvenWhenNoTemplates() {
+  fun templateSelectionField_showsCreateButtonEvenWhenNoTemplates() {
     var createCalled = false
 
     composeTestRule.setContent {
@@ -157,7 +157,7 @@ class TemplateSelectionFieldTest {
   }
 
   @Test
-  fun displaysFieldLabel() {
+  fun templateSelectionField_displaysFieldLabel() {
     composeTestRule.setContent {
       TemplateSelectionField(
           templates = testTemplates,

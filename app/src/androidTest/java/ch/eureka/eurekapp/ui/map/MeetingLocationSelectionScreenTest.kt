@@ -1,4 +1,4 @@
-/* Portions of the code in this file were written with the help of Gemini and Grok. */
+/* Portions of the code in this file were written with the help of Gemini, Grok, and Claude. */
 package ch.eureka.eurekapp.ui.map
 
 import androidx.compose.ui.test.assertHasClickAction
@@ -64,7 +64,7 @@ class MeetingLocationSelectionScreenTest {
   }
 
   @Test
-  fun screenLoadsWithInitialStateElementsAreDisplayed() {
+  fun meetingLocationSelectionScreen_screenLoadsWithInitialStateElementsAreDisplayed() {
     composeTestRule.onNodeWithTag(MeetingLocationSelectionTestTags.SCREEN_TITLE).assertIsDisplayed()
 
     composeTestRule.onNodeWithTag(MeetingLocationSelectionTestTags.GOOGLE_MAP).assertIsDisplayed()
@@ -77,14 +77,14 @@ class MeetingLocationSelectionScreenTest {
   }
 
   @Test
-  fun backButtonTriggersCallback() {
+  fun meetingLocationSelectionScreen_backButtonTriggersCallback() {
     composeTestRule.onNodeWithContentDescription("Back").assertIsDisplayed().performClick()
 
     assert(onBackCalled)
   }
 
   @Test
-  fun selectionUpdatesUiAndEnablesSaveButton() {
+  fun meetingLocationSelectionScreen_selectionUpdatesUiAndEnablesSaveButton() {
     val latLng = LatLng(46.5, 6.6)
     viewModel.selectLocation(latLng, null)
 
@@ -99,7 +99,7 @@ class MeetingLocationSelectionScreenTest {
   }
 
   @Test
-  fun markerSnippetLogicExecutesForCoordinates() {
+  fun meetingLocationSelectionScreen_markerSnippetLogicExecutesForCoordinates() {
     val latLng = LatLng(10.0, 20.0)
     viewModel.selectLocation(latLng, null)
 
@@ -113,7 +113,7 @@ class MeetingLocationSelectionScreenTest {
   }
 
   @Test
-  fun markerSnippetLogicExecutesForPoi() {
+  fun meetingLocationSelectionScreen_markerSnippetLogicExecutesForPoi() {
     val latLng = LatLng(40.0, 50.0)
     val poiName = "Eiffel Tower"
     viewModel.selectLocation(latLng, poiName)
@@ -127,7 +127,7 @@ class MeetingLocationSelectionScreenTest {
   }
 
   @Test
-  fun mapClicksTriggerViewModelFunctions() {
+  fun meetingLocationSelectionScreen_mapClicksTriggerViewModelFunctions() {
     composeTestRule.onNodeWithTag(MeetingLocationSelectionTestTags.GOOGLE_MAP).assertIsDisplayed()
   }
 

@@ -1,4 +1,4 @@
-/* Portions of this code were generated with the help of Gemini 3 Pro. */
+/* Portions of this code were generated with the help of Gemini 3 Pro and Claude. */
 package ch.eureka.eurekapp.ui.meeting
 
 import android.content.ContentResolver
@@ -185,7 +185,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun uploadMeetingFileToFirestoreSuccess() = runTest {
+  fun uploadMeetingFileToFirestore_successUploadAndSaveToDatabase() = runTest {
     val projectId = "proj1"
     val meetingId = "meet1"
     val downloadUrl = "http://fake.url/file.pdf"
@@ -224,7 +224,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun uploadMeetingFileToFirestoreFailsWhenOffline() = runTest {
+  fun uploadMeetingFileToFirestore_failsWhenOffline() = runTest {
     isConnectedFlow.value = false
     advanceUntilIdle()
 
@@ -236,7 +236,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun uploadMeetingFileToFirestoreFailsWhenFileTooBig() = runTest {
+  fun uploadMeetingFileToFirestore_failsWhenFileTooBig() = runTest {
     val hugeSize = 51 * 1024 * 1024L
     every { contentResolver.query(uri, null, null, null, null) } returns cursor
     every { cursor.moveToFirst() } returns true
@@ -253,7 +253,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun uploadMeetingFileToFirestoreFailsWhenSizeIndexNotFound() = runTest {
+  fun uploadMeetingFileToFirestore_failsWhenSizeIndexNotFound() = runTest {
     every { contentResolver.query(uri, null, null, null, null) } returns cursor
     every { cursor.moveToFirst() } returns true
     every { cursor.getColumnIndex(OpenableColumns.SIZE) } returns -1
@@ -353,7 +353,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun uploadMeetingFileToFirestoreFailsWhenMeetingNoLongerExists() = runTest {
+  fun uploadMeetingFileToFirestore_failsWhenMeetingNoLongerExists() = runTest {
     val downloadUrl = "http://fake.url/file.pdf"
 
     every { contentResolver.query(uri, null, null, null, null) } returns cursor
@@ -465,7 +465,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun uploadMeetingFileToFirestoreFailsWhenUpdateFails() = runTest {
+  fun uploadMeetingFileToFirestore_failsWhenUpdateFails() = runTest {
     val downloadUrl = "http://fake.url/file.pdf"
     val meeting = Meeting(meetingID = "m", projectId = "p", attachmentUrls = emptyList())
 
@@ -514,7 +514,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun uploadMeetingFileToFirestore_FailsWhenUploadFails() = runTest {
+  fun uploadMeetingFileToFirestore_failsWhenUploadFails() = runTest {
     every { contentResolver.query(uri, null, null, null, null) } returns cursor
     every { cursor.moveToFirst() } returns true
     every { cursor.getColumnIndex(OpenableColumns.SIZE) } returns 0
@@ -537,7 +537,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun uploadMeetingFileToFirestore_HandlesGenericException() = runTest {
+  fun uploadMeetingFileToFirestore_handlesGenericException() = runTest {
     every { contentResolver.query(uri, null, null, null, null) } throws
         RuntimeException("Query failed")
 
@@ -550,7 +550,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun uploadMeetingFileToFirestore_SetsUploadingStateCorrectly() = runTest {
+  fun uploadMeetingFileToFirestore_setsUploadingStateCorrectly() = runTest {
     val downloadUrl = "http://fake.url/file.pdf"
     val meeting = Meeting(meetingID = "m", projectId = "p", attachmentUrls = emptyList())
 
@@ -575,7 +575,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun deleteFileFromMeetingAttachmentsSuccess() = runTest {
+  fun deleteFileFromMeetingAttachments_successfullyDeletesFile() = runTest {
     val projectId = "proj1"
     val meetingId = "meet1"
     val urlToDelete = "http://url.com/delete_me"
@@ -593,7 +593,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun deleteFileFromMeetingAttachmentsFailsOffline() = runTest {
+  fun deleteFileFromMeetingAttachments_failsWhenOffline() = runTest {
     isConnectedFlow.value = false
     advanceUntilIdle()
 
@@ -604,7 +604,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun deleteFileFromMeetingAttachments_WhenMeetingDoesNotExist() = runTest {
+  fun deleteFileFromMeetingAttachments_whenMeetingDoesNotExist() = runTest {
     coEvery { fileStorageRepository.deleteFile(any()) } returns Result.success(Unit)
     coEvery { meetingRepository.getMeetingById(any(), any()) } returns flowOf(null)
 
@@ -616,7 +616,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun checkFileSizeReturnsErrorWhenFileTooBig() {
+  fun checkFileSize_returnsErrorWhenFileTooBig() {
     val hugeSize = 51 * 1024 * 1024L
     every { contentResolver.query(uri, null, null, null, null) } returns cursor
     every { cursor.moveToFirst() } returns true
@@ -629,7 +629,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun checkFileSizeReturnsNullWhenFileSizeOk() {
+  fun checkFileSize_returnsNullWhenFileSizeOk() {
     every { contentResolver.query(uri, null, null, null, null) } returns cursor
     every { cursor.moveToFirst() } returns true
     every { cursor.getColumnIndex(OpenableColumns.SIZE) } returns 0
@@ -641,7 +641,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun getFilenameFromDownloadURLParsesCorrectly() = runTest {
+  fun getFilenameFromDownloadURL_parsesCorrectly() = runTest {
     val url = "https://firebasestorage.googleapis.com/b/bucket/o/folder%2FMyFile.pdf"
     val expectedName = "MyFile.pdf"
     every { storageReference.name } returns expectedName
@@ -653,7 +653,7 @@ class MeetingAttachmentsViewModelTest {
   }
 
   @Test
-  fun downloadFileToPhone_SetsDownloadingState() = runTest {
+  fun downloadFileToPhone_setsDownloadingState() = runTest {
     val url = "https://test.com/file.pdf"
 
     coEvery { downloadedFileDao.isDownloaded(url) } returns false

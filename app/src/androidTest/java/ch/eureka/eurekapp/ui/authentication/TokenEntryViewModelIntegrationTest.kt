@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Claude. */
 package ch.eureka.eurekapp.ui.authentication
 
 import ch.eureka.eurekapp.model.data.invitation.Invitation
@@ -79,7 +80,7 @@ class TokenEntryViewModelIntegrationTest {
   // ========================================
 
   @Test
-  fun fullFlow_validToken_successfullyMarksAsUsed() = runTest {
+  fun tokenEntryViewModel_validTokenSuccessfullyMarksAsUsed() = runTest {
     // Setup: Add valid invitation to repository
     val invitation = Invitation(token = "VALID-TOKEN-123", projectId = "project_1", isUsed = false)
     mockRepository.addInvitation(invitation)
@@ -105,7 +106,7 @@ class TokenEntryViewModelIntegrationTest {
   }
 
   @Test
-  fun fullFlow_invalidToken_showsError() = runTest {
+  fun tokenEntryViewModel_invalidTokenShowsError() = runTest {
     // Act: Try to validate non-existent token
     viewModel.updateToken("INVALID-TOKEN")
     viewModel.validateToken()
@@ -122,7 +123,7 @@ class TokenEntryViewModelIntegrationTest {
   }
 
   @Test
-  fun fullFlow_alreadyUsedToken_showsError() = runTest {
+  fun tokenEntryViewModel_alreadyUsedTokenShowsError() = runTest {
     // Setup: Add already used invitation
     val usedInvitation =
         Invitation(
@@ -143,7 +144,7 @@ class TokenEntryViewModelIntegrationTest {
   }
 
   @Test
-  fun fullFlow_repositoryFailure_showsError() = runTest {
+  fun tokenEntryViewModel_repositoryFailureShowsError() = runTest {
     // Setup: Add valid invitation but configure repository to fail
     val invitation = Invitation(token = "FAIL-TOKEN", projectId = "project_1", isUsed = false)
     mockRepository.addInvitation(invitation)
@@ -161,7 +162,7 @@ class TokenEntryViewModelIntegrationTest {
   }
 
   @Test
-  fun fullFlow_repositoryException_showsError() = runTest {
+  fun tokenEntryViewModel_repositoryExceptionShowsError() = runTest {
     // Setup: Configure repository to throw exception
     mockRepository.shouldThrowException = true
     mockRepository.exceptionToThrow = Exception("Network timeout")
@@ -181,7 +182,7 @@ class TokenEntryViewModelIntegrationTest {
   // ========================================
 
   @Test
-  fun raceCondition_multipleUsersSimultaneous_onlyOneSucceeds() = runTest {
+  fun tokenEntryViewModel_multipleUsersSimultaneousOnlyOneSucceeds() = runTest {
     // Setup: Create invitation
     val invitation = Invitation(token = "RACE-TOKEN", projectId = "project_1", isUsed = false)
     mockRepository.addInvitation(invitation)
@@ -217,7 +218,7 @@ class TokenEntryViewModelIntegrationTest {
   // ========================================
 
   @Test
-  fun stateTransition_loadingStateSetCorrectly() = runTest {
+  fun tokenEntryViewModel_loadingStateSetCorrectly() = runTest {
     // Setup
     val invitation = Invitation(token = "STATE-TOKEN", projectId = "project_1", isUsed = false)
     mockRepository.addInvitation(invitation)
@@ -239,7 +240,7 @@ class TokenEntryViewModelIntegrationTest {
   }
 
   @Test
-  fun stateTransition_errorRecovery_clearsErrorOnSuccess() = runTest {
+  fun tokenEntryViewModel_errorRecoveryClearsErrorOnSuccess() = runTest {
     // Step 1: Cause an error
     viewModel.validateToken() // Empty token
     advanceUntilIdle()
@@ -263,7 +264,7 @@ class TokenEntryViewModelIntegrationTest {
   // ========================================
 
   @Test
-  fun edgeCase_veryLongToken_handlesCorrectly() = runTest {
+  fun tokenEntryViewModel_veryLongTokenHandlesCorrectly() = runTest {
     // Setup: Create invitation with very long token
     val longToken = "A".repeat(1000)
     val invitation = Invitation(token = longToken, projectId = "project_1", isUsed = false)
@@ -279,7 +280,7 @@ class TokenEntryViewModelIntegrationTest {
   }
 
   @Test
-  fun edgeCase_specialCharactersInToken_handlesCorrectly() = runTest {
+  fun tokenEntryViewModel_specialCharactersInTokenHandlesCorrectly() = runTest {
     // Setup: Create invitation with special characters
     val specialToken = "TOKEN_!@#\$%^&*()"
     val invitation = Invitation(token = specialToken, projectId = "project_1", isUsed = false)
@@ -299,7 +300,7 @@ class TokenEntryViewModelIntegrationTest {
   // ========================================
 
   @Test
-  fun repositoryCalls_correctSequence() = runTest {
+  fun tokenEntryViewModel_repositoryCallsCorrectSequence() = runTest {
     // Setup
     val invitation = Invitation(token = "SEQ-TOKEN", projectId = "project_1", isUsed = false)
     mockRepository.addInvitation(invitation)
@@ -317,7 +318,7 @@ class TokenEntryViewModelIntegrationTest {
   }
 
   @Test
-  fun repositoryCalls_failurePreventsMarkAsUsed() = runTest {
+  fun tokenEntryViewModel_repositoryCallsFailurePreventsMarkAsUsed() = runTest {
     // Act: Try invalid token
     viewModel.updateToken("NONEXISTENT")
     viewModel.validateToken()

@@ -27,7 +27,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-// Portions of this code were generated with the help of Grok.
+// Portions of this code were generated with the help of Grok and Claude.
 
 @OptIn(ExperimentalTestApi::class)
 @RunWith(AndroidJUnit4::class)
@@ -59,7 +59,7 @@ class TasksScreenOfflineTest {
   }
 
   @Test
-  fun tasksScreenOfflineDisplaysMessage() {
+  fun tasksScreen_offlineDisplaysMessage() {
     val task =
         Task(
             taskID = "task1",
@@ -88,7 +88,7 @@ class TasksScreenOfflineTest {
   }
 
   @Test
-  fun tasksScreenOfflineDisablesButtons() {
+  fun tasksScreen_offlineDisablesButtons() {
     mockTaskRepository.setCurrentUserTasks(flowOf(emptyList()))
     mockConnectivityObserver.setConnected(false)
 
@@ -119,7 +119,7 @@ class TasksScreenOfflineTest {
   }
 
   @Test
-  fun tasksScreenOfflineViewsExistingTasks() {
+  fun tasksScreen_offlineViewsExistingTasks() {
     val task =
         Task(
             taskID = "task1",
@@ -149,7 +149,7 @@ class TasksScreenOfflineTest {
   }
 
   @Test
-  fun tasksScreenGoesOfflineUpdatesUI() {
+  fun tasksScreen_goesOfflineUpdatesUI() {
     val task =
         Task(
             taskID = "task1",
@@ -183,7 +183,7 @@ class TasksScreenOfflineTest {
   }
 
   @Test
-  fun tasksScreenComesBackOnlineUpdatesUI() {
+  fun tasksScreen_comesBackOnlineUpdatesUI() {
     val task =
         Task(
             taskID = "task1",
@@ -222,7 +222,7 @@ class TasksScreenOfflineTest {
   }
 
   @Test
-  fun tasksScreenOfflineAllowsNavigationToViewTask() {
+  fun tasksScreen_offlineAllowsNavigationToViewTask() {
     val task =
         Task(
             taskID = "task1",

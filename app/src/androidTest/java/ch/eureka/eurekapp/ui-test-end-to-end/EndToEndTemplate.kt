@@ -94,7 +94,7 @@ class TemplateEndToEndTest : TestCase() {
 
   @OptIn(ExperimentalTestApi::class)
   @Test
-  fun endToEnd_createTemplateAndApplyToTask() {
+  fun templateEndToEnd_createTemplateAndApplyToTask() {
     val fakeName = "Test User"
     val fakeEmail = "testuser@eureka.com"
     val fakeIdToken = FakeJwtGenerator.createFakeGoogleIdToken(fakeName, fakeEmail)

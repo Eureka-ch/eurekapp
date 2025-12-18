@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Claude. */
 package ch.eureka.eurekapp.model.authentication
 
 import junit.framework.TestCase
@@ -7,7 +8,7 @@ import org.junit.Test
 class AuthRepositoryProviderTest {
 
   @Test
-  fun repositoryIsInitializedAndIsAuthRepositoryType() {
+  fun authRepositoryProvider_repositoryIsInitializedAndIsAuthRepositoryType() {
     val instance: AuthRepository = AuthRepositoryProvider.repository
 
     TestCase.assertNotNull(instance)
@@ -17,7 +18,7 @@ class AuthRepositoryProviderTest {
   }
 
   @Test
-  fun getUserLoggedInId() {
+  fun authRepositoryProvider_getUserLoggedInId() {
     val instance: AuthRepository = AuthRepositoryProvider.repository
     val userId = instance.getUserId()
     assertTrue(userId.isFailure) // no logged in user

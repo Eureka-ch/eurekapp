@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Claude. */
 package ch.eureka.eurekapp.designsystem
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -18,7 +19,7 @@ class EurekaThemeIntegrationTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun eurekaThemeRendersComponentsCorrectlyInLightMode() {
+  fun eurekaTheme_rendersComponentsCorrectlyInLightMode() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) {
         androidx.compose.foundation.layout.Column {
@@ -37,7 +38,7 @@ class EurekaThemeIntegrationTest {
   }
 
   @Test
-  fun eurekaThemeRendersComponentsCorrectlyInDarkMode() {
+  fun eurekaTheme_rendersComponentsCorrectlyInDarkMode() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = true) {
         androidx.compose.foundation.layout.Column {
@@ -56,7 +57,7 @@ class EurekaThemeIntegrationTest {
   }
 
   @Test
-  fun eurekaThemeRendersSimpleText() {
+  fun eurekaTheme_rendersSimpleText() {
     composeTestRule.setContent {
       EurekaTheme(darkTheme = false) { androidx.compose.material3.Text("Simple Text") }
     }

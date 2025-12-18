@@ -1,3 +1,5 @@
+/* Portions of this code were generated with the help of Claude Sonnet 4.5. */
+
 package ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.utils
 
 import androidx.compose.runtime.Composable

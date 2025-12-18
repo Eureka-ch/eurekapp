@@ -49,7 +49,7 @@ class ActivityDetailViewModelTest {
   }
 
   @Test
-  fun activityDetailViewModel_initialState_isLoading() {
+  fun activityDetailViewModel_initialStateIsLoading() {
     coEvery { repository.getActivities(testUserId) } returns flowOf(emptyList())
     val userDoc = mockk<DocumentSnapshot>(relaxed = true)
     every { userDoc.getString("displayName") } returns "Test User"
@@ -63,7 +63,7 @@ class ActivityDetailViewModelTest {
   }
 
   @Test
-  fun activityDetailViewModel_markShareSuccess_updatesState() {
+  fun activityDetailViewModel_markShareSuccessUpdatesState() {
     val activity =
         createActivity(
             testActivityId, EntityType.MESSAGE, "Message", ActivityType.CREATED, testEntityId)
@@ -83,7 +83,7 @@ class ActivityDetailViewModelTest {
   }
 
   @Test
-  fun activityDetailViewModel_clearError_removesErrorMessage() {
+  fun activityDetailViewModel_clearErrorRemovesErrorMessage() {
     val activities = emptyList<Activity>()
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
 
@@ -104,7 +104,7 @@ class ActivityDetailViewModelTest {
   }
 
   @Test
-  fun activityDetailViewModel_enrichActivityMissingDisplayName_setsError() {
+  fun activityDetailViewModel_enrichActivityMissingDisplayNameSetsError() {
     val activity =
         createActivity(testActivityId, EntityType.TASK, "Task", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
@@ -122,7 +122,7 @@ class ActivityDetailViewModelTest {
   }
 
   @Test
-  fun activityDetailViewModel_enrichActivityFirestoreException_setsError() {
+  fun activityDetailViewModel_enrichActivityFirestoreExceptionSetsError() {
     val activity =
         createActivity(testActivityId, EntityType.TASK, "Task", ActivityType.CREATED, testEntityId)
     coEvery { repository.getActivities(testUserId) } returns flowOf(listOf(activity))
@@ -139,7 +139,7 @@ class ActivityDetailViewModelTest {
   }
 
   @Test
-  fun activityDetailViewModel_batchFetchMissingDisplayName_setsError() {
+  fun activityDetailViewModel_batchFetchMissingDisplayNameSetsError() {
     val activity1 =
         createActivity(
             testActivityId, EntityType.TASK, "Task 1", ActivityType.CREATED, testEntityId)
@@ -178,7 +178,7 @@ class ActivityDetailViewModelTest {
   }
 
   @Test
-  fun activityDetailViewModel_batchFetchFirestoreException_setsError() {
+  fun activityDetailViewModel_batchFetchFirestoreExceptionSetsError() {
     val activity1 =
         createActivity(
             testActivityId, EntityType.TASK, "Task 1", ActivityType.CREATED, testEntityId)
@@ -207,7 +207,7 @@ class ActivityDetailViewModelTest {
   }
 
   @Test
-  fun activityDetailViewModel_getShareText_returnsFormattedString() {
+  fun activityDetailViewModel_getShareTextReturnsFormattedString() {
     val activity =
         createActivity(
             testActivityId, EntityType.TASK, "Test Task", ActivityType.CREATED, testEntityId)

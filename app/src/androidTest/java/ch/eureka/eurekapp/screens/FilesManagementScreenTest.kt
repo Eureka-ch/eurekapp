@@ -1,4 +1,4 @@
-// Portions of this code were generated with the help of Grok.
+// Portions of this code were generated with the help of Grok and Claude.
 package ch.eureka.eurekapp.screens
 
 import android.net.Uri
@@ -383,7 +383,7 @@ class FilesManagementScreenTest {
   }
 
   @Test
-  fun testNavigationFromTasksScreenToFilesManagementScreen() =
+  fun filesManagementScreen_testNavigationFromTasksScreenToFilesManagementScreen() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"

@@ -1,5 +1,7 @@
 package ch.eureka.eurekapp.ui.tasks.components
 
+/* Portions of this file were written with the help of GPT-5 Codex and Claude. */
+
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -17,8 +19,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /*
-Note: This file was partially written by GPT-5 Codex
+Note: This file was partially written by GPT-5 Codex and Claude
 Co-author : GPT-5
+Co-author : Claude
 */
 
 /**

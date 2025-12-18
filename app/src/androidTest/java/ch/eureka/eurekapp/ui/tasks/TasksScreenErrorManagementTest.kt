@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Claude. */
 package ch.eureka.eurekapp.ui.tasks
 
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -57,7 +58,7 @@ class TasksScreenErrorManagementTest {
   }
 
   @Test
-  fun tasksScreen_withLoadingState_displaysLoadingIndicator() {
+  fun tasksScreen_withLoadingStateDisplaysLoadingIndicator() {
     // Set loading state
     mockViewModel.setLoading(true)
 
@@ -69,7 +70,7 @@ class TasksScreenErrorManagementTest {
   }
 
   @Test
-  fun tasksScreen_withErrorState_displaysErrorMessage() {
+  fun tasksScreen_withErrorStateDisplaysErrorMessage() {
     // Set error state
     mockViewModel.setError("Failed to load tasks from server")
 
@@ -81,7 +82,7 @@ class TasksScreenErrorManagementTest {
   }
 
   @Test
-  fun tasksScreen_errorState_hidesTaskList() {
+  fun tasksScreen_errorStateHidesTaskList() {
     // Set error state with some tasks
     val task =
         Task(
@@ -100,7 +101,7 @@ class TasksScreenErrorManagementTest {
   }
 
   @Test
-  fun tasksScreen_loadingState_hidesTaskList() {
+  fun tasksScreen_loadingStateHidesTaskList() {
     // Set loading state with some tasks in state
     val task =
         Task(
@@ -119,7 +120,7 @@ class TasksScreenErrorManagementTest {
   }
 
   @Test
-  fun tasksScreen_transitionFromLoadingToSuccess_displaysTasksCorrectly() {
+  fun tasksScreen_transitionFromLoadingToSuccessDisplaysTasksCorrectly() {
     // Start with loading
     mockViewModel.setLoading(true)
 
@@ -144,7 +145,7 @@ class TasksScreenErrorManagementTest {
   }
 
   @Test
-  fun tasksScreen_transitionFromErrorToSuccess_displaysTasksCorrectly() {
+  fun tasksScreen_transitionFromErrorToSuccessDisplaysTasksCorrectly() {
     // Start with error
     mockViewModel.setError("Initial error")
 
@@ -169,7 +170,7 @@ class TasksScreenErrorManagementTest {
   }
 
   @Test
-  fun tasksScreen_withNetworkError_displaysSpecificErrorMessage() {
+  fun tasksScreen_withNetworkErrorDisplaysSpecificErrorMessage() {
     mockViewModel.setError("Network connection failed. Please check your internet connection.")
 
     composeTestRule.setContent { TasksScreen(viewModel = mockViewModel) }
@@ -180,7 +181,7 @@ class TasksScreenErrorManagementTest {
   }
 
   @Test
-  fun tasksScreen_withDatabaseError_displaysSpecificErrorMessage() {
+  fun tasksScreen_withDatabaseErrorDisplaysSpecificErrorMessage() {
     mockViewModel.setError("Database error: Failed to sync tasks")
 
     composeTestRule.setContent { TasksScreen(viewModel = mockViewModel) }
@@ -191,7 +192,7 @@ class TasksScreenErrorManagementTest {
   }
 
   @Test
-  fun tasksScreen_withAuthenticationError_displaysSpecificErrorMessage() {
+  fun tasksScreen_withAuthenticationErrorDisplaysSpecificErrorMessage() {
     mockViewModel.setError("Authentication failed. Please sign in again.")
 
     composeTestRule.setContent { TasksScreen(viewModel = mockViewModel) }
@@ -202,7 +203,7 @@ class TasksScreenErrorManagementTest {
   }
 
   @Test
-  fun tasksScreen_errorState_filtersStillInteractive() {
+  fun tasksScreen_errorStateFiltersStillInteractive() {
     mockViewModel.setError("Test error")
 
     composeTestRule.setContent { TasksScreen(viewModel = mockViewModel) }
@@ -218,7 +219,7 @@ class TasksScreenErrorManagementTest {
   }
 
   @Test
-  fun tasksScreen_errorState_actionButtonsStillClickable() {
+  fun tasksScreen_errorStateActionButtonsStillClickable() {
     mockViewModel.setError("Test error")
 
     var createTaskClicked = false
@@ -242,7 +243,7 @@ class TasksScreenErrorManagementTest {
   }
 
   @Test
-  fun tasksScreen_toggleCompletionWithMockViewModel_callsToggleMethod() {
+  fun tasksScreen_toggleCompletionWithMockViewModelCallsToggleMethod() {
     val task =
         Task(
             taskID = "task1",
@@ -270,7 +271,7 @@ class TasksScreenErrorManagementTest {
   }
 
   @Test
-  fun tasksScreen_multipleErrors_displaysLatestError() {
+  fun tasksScreen_multipleErrorsDisplaysLatestError() {
     mockViewModel.setError("First error")
 
     composeTestRule.setContent { TasksScreen(viewModel = mockViewModel) }
@@ -287,7 +288,7 @@ class TasksScreenErrorManagementTest {
   }
 
   @Test
-  fun tasksScreen_emptyErrorString_showsGenericError() {
+  fun tasksScreen_emptyErrorStringShowsGenericError() {
     mockViewModel.setError("")
 
     composeTestRule.setContent { TasksScreen(viewModel = mockViewModel) }
@@ -298,7 +299,7 @@ class TasksScreenErrorManagementTest {
   }
 
   @Test
-  fun tasksScreen_longErrorMessage_displaysCompletely() {
+  fun tasksScreen_longErrorMessageDisplaysCompletely() {
     val longError =
         "This is a very long error message that describes in detail what went wrong with the task loading process. " +
             "It includes multiple sentences and provides comprehensive information about the failure. " +

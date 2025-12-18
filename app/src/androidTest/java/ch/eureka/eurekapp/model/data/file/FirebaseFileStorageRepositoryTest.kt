@@ -96,7 +96,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun uploadFile_shouldUploadAndReturnDownloadUrl() = runBlocking {
+  fun firebaseFileStorageRepository_uploadFileShouldUploadAndReturnDownloadUrl() = runBlocking {
     val projectId = "test_project_1"
     setupTestProject(projectId)
 
@@ -127,7 +127,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun uploadFile_shouldFailWhenNotAuthenticated() = runBlocking {
+  fun firebaseFileStorageRepository_uploadFileShouldFailWhenNotAuthenticated() = runBlocking {
     // Sign out to test unauthenticated access
     FirebaseEmulator.auth.signOut()
 
@@ -142,7 +142,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun deleteFile_shouldDeleteFileSuccessfully() = runBlocking {
+  fun firebaseFileStorageRepository_deleteFileShouldDeleteFileSuccessfully() = runBlocking {
     val projectId = "test_project_2"
     setupTestProject(projectId)
 
@@ -178,7 +178,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun deleteFile_shouldFailForInvalidUrl() = runBlocking {
+  fun firebaseFileStorageRepository_deleteFileShouldFailForInvalidUrl() = runBlocking {
     val invalidUrl = "https://invalid-url.com/file.txt"
 
     val result = repository.deleteFile(invalidUrl)
@@ -187,41 +187,43 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getFileMetadata_shouldReturnMetadataForExistingFile() = runBlocking {
-    val projectId = "test_project_3"
-    setupTestProject(projectId)
+  fun firebaseFileStorageRepository_getFileMetadataShouldReturnMetadataForExistingFile() =
+      runBlocking {
+        val projectId = "test_project_3"
+        setupTestProject(projectId)
 
-    val testContent = "Test metadata content"
-    val fileUri = createTempFile("test_metadata", "txt", testContent)
-    val expectedPath = StoragePaths.meetingAttachmentPath(projectId, "meeting1", "notes.txt")
+        val testContent = "Test metadata content"
+        val fileUri = createTempFile("test_metadata", "txt", testContent)
+        val expectedPath = StoragePaths.meetingAttachmentPath(projectId, "meeting1", "notes.txt")
 
-    // Upload file first
-    val uploadResult = repository.uploadFile(storagePath = expectedPath, fileUri = fileUri)
-    assertTrue(uploadResult.isSuccess)
-    val downloadUrl = uploadResult.getOrNull()!!
+        // Upload file first
+        val uploadResult = repository.uploadFile(storagePath = expectedPath, fileUri = fileUri)
+        assertTrue(uploadResult.isSuccess)
+        val downloadUrl = uploadResult.getOrNull()!!
 
-    // Verify file is accessible
-    compareFileContent(testContent, downloadUrl)
+        // Verify file is accessible
+        compareFileContent(testContent, downloadUrl)
 
-    // Get metadata
-    val metadataResult = repository.getFileMetadata(downloadUrl)
-    assertTrue(
-        "Get metadata failed: ${metadataResult.exceptionOrNull()?.message}",
-        metadataResult.isSuccess)
+        // Get metadata
+        val metadataResult = repository.getFileMetadata(downloadUrl)
+        assertTrue(
+            "Get metadata failed: ${metadataResult.exceptionOrNull()?.message}",
+            metadataResult.isSuccess)
 
-    val metadata = metadataResult.getOrNull()!!
-    assertNotNull("Metadata name should not be null", metadata.name)
-    assertTrue("File size should be greater than 0", metadata.sizeBytes > 0)
-    assertEquals("File size should match content", testContent.length.toLong(), metadata.sizeBytes)
-    assertEquals("Content type should be text/plain", "text/plain", metadata.contentType)
+        val metadata = metadataResult.getOrNull()!!
+        assertNotNull("Metadata name should not be null", metadata.name)
+        assertTrue("File size should be greater than 0", metadata.sizeBytes > 0)
+        assertEquals(
+            "File size should match content", testContent.length.toLong(), metadata.sizeBytes)
+        assertEquals("Content type should be text/plain", "text/plain", metadata.contentType)
 
-    // Verify metadata path matches upload path
-    val storagePath = getStoragePath(downloadUrl)
-    assertEquals("Storage path should match", expectedPath, storagePath)
-  }
+        // Verify metadata path matches upload path
+        val storagePath = getStoragePath(downloadUrl)
+        assertEquals("Storage path should match", expectedPath, storagePath)
+      }
 
   @Test
-  fun getFileMetadata_shouldFailForNonExistentFile() = runBlocking {
+  fun firebaseFileStorageRepository_getFileMetadataShouldFailForNonExistentFile() = runBlocking {
     // Use a valid-looking but non-existent URL
     val fakeUrl =
         "https://firebasestorage.googleapis.com/v0/b/test.appspot.com/o/nonexistent.txt?alt=media"
@@ -232,7 +234,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getFileMetadata_shouldFailWhenNotAuthenticated() = runBlocking {
+  fun firebaseFileStorageRepository_getFileMetadataShouldFailWhenNotAuthenticated() = runBlocking {
     val projectId = "test_project_metadata_unauth"
     setupTestProject(projectId)
 
@@ -258,7 +260,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun uploadFile_shouldHandleDifferentFileTypes() = runBlocking {
+  fun firebaseFileStorageRepository_uploadFileShouldHandleDifferentFileTypes() = runBlocking {
     val projectId = "test_project_7"
     setupTestProject(projectId)
 
@@ -291,24 +293,25 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun uploadFile_shouldHandleSpecialCharactersInFilename() = runBlocking {
-    val projectId = "test_project_8"
-    setupTestProject(projectId)
+  fun firebaseFileStorageRepository_uploadFileShouldHandleSpecialCharactersInFilename() =
+      runBlocking {
+        val projectId = "test_project_8"
+        setupTestProject(projectId)
 
-    val fileUri = createTempFile("special", "txt", "Content with special chars")
-    val filename = "my document (v2).txt"
+        val fileUri = createTempFile("special", "txt", "Content with special chars")
+        val filename = "my document (v2).txt"
 
-    val result =
-        repository.uploadFile(
-            storagePath = StoragePaths.projectFilePath(projectId, filename), fileUri = fileUri)
+        val result =
+            repository.uploadFile(
+                storagePath = StoragePaths.projectFilePath(projectId, filename), fileUri = fileUri)
 
-    assertTrue(result.isSuccess)
-    val downloadUrl = result.getOrNull()!!
-    assertNotNull(downloadUrl)
-  }
+        assertTrue(result.isSuccess)
+        val downloadUrl = result.getOrNull()!!
+        assertNotNull(downloadUrl)
+      }
 
   @Test
-  fun uploadAndDelete_multipleFiles_shouldWork() = runBlocking {
+  fun firebaseFileStorageRepository_uploadAndDeleteMultipleFilesShouldWork() = runBlocking {
     val projectId = "test_project_9"
     setupTestProject(projectId)
 
@@ -345,7 +348,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun uploadProfilePhoto_ownerCanUpload() = runBlocking {
+  fun firebaseFileStorageRepository_uploadProfilePhotoOwnerCanUpload() = runBlocking {
     val userId = FirebaseEmulator.auth.currentUser!!.uid
     val fileUri = createTempFile("profile", "jpg", "Profile photo content")
 
@@ -363,7 +366,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun deleteProfilePhoto_ownerCanDelete() = runBlocking {
+  fun firebaseFileStorageRepository_deleteProfilePhotoOwnerCanDelete() = runBlocking {
     val userId = FirebaseEmulator.auth.currentUser!!.uid
     val fileUri = createTempFile("profile_delete", "jpg", "Profile photo to delete")
 
@@ -384,7 +387,7 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun profilePhoto_authenticatedReadAccess() = runBlocking {
+  fun firebaseFileStorageRepository_profilePhotoAuthenticatedReadAccess() = runBlocking {
     val currentUserId = FirebaseEmulator.auth.currentUser!!.uid
     val differentUserId = "different_user_id_12345"
 
@@ -398,104 +401,111 @@ class FirebaseFileStorageRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun uploadFile_withFileDescriptor_shouldUploadAndReturnDownloadUrl() = runBlocking {
-    val projectId = "test_project_fd_1"
-    setupTestProject(projectId)
+  fun firebaseFileStorageRepository_uploadFileWithFileDescriptorShouldUploadAndReturnDownloadUrl() =
+      runBlocking {
+        val projectId = "test_project_fd_1"
+        setupTestProject(projectId)
 
-    val testContent = "Test file content for upload via descriptor"
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
-    val tempFile = File.createTempFile("test_upload_fd", ".txt", context.cacheDir)
-    tempFile.writeText(testContent)
-    tempFiles.add(tempFile)
-    val fileDescriptor = ParcelFileDescriptor.open(tempFile, ParcelFileDescriptor.MODE_READ_ONLY)
-    val expectedPath = StoragePaths.taskAttachmentPath(projectId, "task1", "test_fd.txt")
+        val testContent = "Test file content for upload via descriptor"
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val tempFile = File.createTempFile("test_upload_fd", ".txt", context.cacheDir)
+        tempFile.writeText(testContent)
+        tempFiles.add(tempFile)
+        val fileDescriptor =
+            ParcelFileDescriptor.open(tempFile, ParcelFileDescriptor.MODE_READ_ONLY)
+        val expectedPath = StoragePaths.taskAttachmentPath(projectId, "task1", "test_fd.txt")
 
-    val result = repository.uploadFile(storagePath = expectedPath, fileDescriptor = fileDescriptor)
+        val result =
+            repository.uploadFile(storagePath = expectedPath, fileDescriptor = fileDescriptor)
 
-    val downloadUrl = result.getOrNull()
-    assertNotNull(downloadUrl)
+        val downloadUrl = result.getOrNull()
+        assertNotNull(downloadUrl)
 
-    // Verify URL format
-    assertTrue(
-        "Expected storage URL but got: $downloadUrl",
-        downloadUrl!!.startsWith("http://10.0.2.2:9199/v0/b/eureka-app-ch.firebasestorage.app/o/"))
+        // Verify URL format
+        assertTrue(
+            "Expected storage URL but got: $downloadUrl",
+            downloadUrl!!.startsWith(
+                "http://10.0.2.2:9199/v0/b/eureka-app-ch.firebasestorage.app/o/"))
 
-    // Verify storage path is correct
-    val storagePath = getStoragePath(downloadUrl)
-    assertEquals("Storage path mismatch", expectedPath, storagePath)
+        // Verify storage path is correct
+        val storagePath = getStoragePath(downloadUrl)
+        assertEquals("Storage path mismatch", expectedPath, storagePath)
 
-    // Verify token is present
-    val token = getToken(downloadUrl)
-    assertTrue("Download URL should contain token", token.isNotEmpty())
+        // Verify token is present
+        val token = getToken(downloadUrl)
+        assertTrue("Download URL should contain token", token.isNotEmpty())
 
-    // Verify file content by downloading
-    compareFileContent(testContent, downloadUrl)
-  }
-
-  @Test
-  fun uploadFile_withFileDescriptor_shouldFailWhenNotAuthenticated() = runBlocking {
-    // Sign out to test unauthenticated access
-    FirebaseEmulator.auth.signOut()
-
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
-    val tempFile = File.createTempFile("test_unauth_fd", ".txt", context.cacheDir)
-    tempFile.writeText("Test content")
-    tempFiles.add(tempFile)
-    val fileDescriptor = ParcelFileDescriptor.open(tempFile, ParcelFileDescriptor.MODE_READ_ONLY)
-
-    val result =
-        repository.uploadFile(
-            storagePath = StoragePaths.userFilePath("user1", "test_fd.txt"),
-            fileDescriptor = fileDescriptor)
-
-    assertTrue(result.isFailure)
-    assertTrue(result.exceptionOrNull() is IllegalStateException)
-  }
+        // Verify file content by downloading
+        compareFileContent(testContent, downloadUrl)
+      }
 
   @Test
-  fun uploadFile_withFileDescriptor_shouldHandleDifferentFileTypes() = runBlocking {
-    val projectId = "test_project_fd_2"
-    setupTestProject(projectId)
+  fun firebaseFileStorageRepository_uploadFileWithFileDescriptorShouldFailWhenNotAuthenticated() =
+      runBlocking {
+        // Sign out to test unauthenticated access
+        FirebaseEmulator.auth.signOut()
 
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val tempFile = File.createTempFile("test_unauth_fd", ".txt", context.cacheDir)
+        tempFile.writeText("Test content")
+        tempFiles.add(tempFile)
+        val fileDescriptor =
+            ParcelFileDescriptor.open(tempFile, ParcelFileDescriptor.MODE_READ_ONLY)
 
-    // Test text file
-    val txtFile = File.createTempFile("test_fd", ".txt", context.cacheDir)
-    txtFile.writeText("Text content")
-    tempFiles.add(txtFile)
-    val txtDescriptor = ParcelFileDescriptor.open(txtFile, ParcelFileDescriptor.MODE_READ_ONLY)
-    val txtResult =
-        repository.uploadFile(
-            storagePath = StoragePaths.projectFilePath(projectId, "test_fd.txt"),
-            fileDescriptor = txtDescriptor)
-    assertTrue(txtResult.isSuccess)
-    val txtMetadata = repository.getFileMetadata(txtResult.getOrNull()!!).getOrNull()
-    assertEquals("text/plain", txtMetadata?.contentType)
+        val result =
+            repository.uploadFile(
+                storagePath = StoragePaths.userFilePath("user1", "test_fd.txt"),
+                fileDescriptor = fileDescriptor)
 
-    // Test PDF file (simulated)
-    val pdfFile = File.createTempFile("document_fd", ".pdf", context.cacheDir)
-    pdfFile.writeText("PDF content")
-    tempFiles.add(pdfFile)
-    val pdfDescriptor = ParcelFileDescriptor.open(pdfFile, ParcelFileDescriptor.MODE_READ_ONLY)
-    val pdfResult =
-        repository.uploadFile(
-            storagePath = StoragePaths.projectFilePath(projectId, "doc_fd.pdf"),
-            fileDescriptor = pdfDescriptor)
-    assertTrue(pdfResult.isSuccess)
-    val pdfMetadata = repository.getFileMetadata(pdfResult.getOrNull()!!).getOrNull()
-    assertEquals("application/pdf", pdfMetadata?.contentType)
+        assertTrue(result.isFailure)
+        assertTrue(result.exceptionOrNull() is IllegalStateException)
+      }
 
-    // Test image file (simulated)
-    val imgFile = File.createTempFile("image_fd", ".jpg", context.cacheDir)
-    imgFile.writeText("Image content")
-    tempFiles.add(imgFile)
-    val imgDescriptor = ParcelFileDescriptor.open(imgFile, ParcelFileDescriptor.MODE_READ_ONLY)
-    val imgResult =
-        repository.uploadFile(
-            storagePath = StoragePaths.projectFilePath(projectId, "img_fd.jpg"),
-            fileDescriptor = imgDescriptor)
-    assertTrue(imgResult.isSuccess)
-    val imgMetadata = repository.getFileMetadata(imgResult.getOrNull()!!).getOrNull()
-    assertEquals("image/jpeg", imgMetadata?.contentType)
-  }
+  @Test
+  fun firebaseFileStorageRepository_uploadFileWithFileDescriptorShouldHandleDifferentFileTypes() =
+      runBlocking {
+        val projectId = "test_project_fd_2"
+        setupTestProject(projectId)
+
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+        // Test text file
+        val txtFile = File.createTempFile("test_fd", ".txt", context.cacheDir)
+        txtFile.writeText("Text content")
+        tempFiles.add(txtFile)
+        val txtDescriptor = ParcelFileDescriptor.open(txtFile, ParcelFileDescriptor.MODE_READ_ONLY)
+        val txtResult =
+            repository.uploadFile(
+                storagePath = StoragePaths.projectFilePath(projectId, "test_fd.txt"),
+                fileDescriptor = txtDescriptor)
+        assertTrue(txtResult.isSuccess)
+        val txtMetadata = repository.getFileMetadata(txtResult.getOrNull()!!).getOrNull()
+        assertEquals("text/plain", txtMetadata?.contentType)
+
+        // Test PDF file (simulated)
+        val pdfFile = File.createTempFile("document_fd", ".pdf", context.cacheDir)
+        pdfFile.writeText("PDF content")
+        tempFiles.add(pdfFile)
+        val pdfDescriptor = ParcelFileDescriptor.open(pdfFile, ParcelFileDescriptor.MODE_READ_ONLY)
+        val pdfResult =
+            repository.uploadFile(
+                storagePath = StoragePaths.projectFilePath(projectId, "doc_fd.pdf"),
+                fileDescriptor = pdfDescriptor)
+        assertTrue(pdfResult.isSuccess)
+        val pdfMetadata = repository.getFileMetadata(pdfResult.getOrNull()!!).getOrNull()
+        assertEquals("application/pdf", pdfMetadata?.contentType)
+
+        // Test image file (simulated)
+        val imgFile = File.createTempFile("image_fd", ".jpg", context.cacheDir)
+        imgFile.writeText("Image content")
+        tempFiles.add(imgFile)
+        val imgDescriptor = ParcelFileDescriptor.open(imgFile, ParcelFileDescriptor.MODE_READ_ONLY)
+        val imgResult =
+            repository.uploadFile(
+                storagePath = StoragePaths.projectFilePath(projectId, "img_fd.jpg"),
+                fileDescriptor = imgDescriptor)
+        assertTrue(imgResult.isSuccess)
+        val imgMetadata = repository.getFileMetadata(imgResult.getOrNull()!!).getOrNull()
+        assertEquals("image/jpeg", imgMetadata?.contentType)
+      }
 }

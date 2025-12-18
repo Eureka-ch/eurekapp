@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Claude. */
 package ch.eureka.eurekapp.navigation
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -53,7 +54,7 @@ class AdditionalNavigationMenuTest : TestCase() {
   // ========== NOTIFICATION HANDLING TESTS (Lines 568-596) ==========
 
   @Test
-  fun testHandleNotificationNavigationWithMessageNotification() {
+  fun additionalNavigationMenu_handleNotificationNavigationWithMessageNotification() {
     // Covers: HandleNotificationNavigation MESSAGE case (lines 587-589)
     composeTestRule.setContent {
       NavigationMenu(
@@ -68,7 +69,7 @@ class AdditionalNavigationMenuTest : TestCase() {
   }
 
   @Test
-  fun testHandleNotificationNavigationWithNullType() {
+  fun additionalNavigationMenu_handleNotificationNavigationWithNullType() {
     // Covers: HandleNotificationNavigation else case (lines 590-593)
     composeTestRule.setContent {
       NavigationMenu(notificationType = null, notificationId = null, notificationProjectId = null)
@@ -83,7 +84,7 @@ class AdditionalNavigationMenuTest : TestCase() {
   // ========== CAMERA AND PHOTO TESTS (Lines 528-537) ==========
 
   @Test
-  fun testCameraNavigationAndPhotoCallback() {
+  fun additionalNavigationMenu_cameraNavigationAndPhotoCallback() {
     // Covers: Camera composable (lines 528-537)
     composeTestRule.setContent { NavigationMenu() }
     composeTestRule.waitForIdle()
@@ -99,7 +100,7 @@ class AdditionalNavigationMenuTest : TestCase() {
   // ========== IDEAS SECTION TEST (Lines 318-320) ==========
 
   @Test
-  fun testIdeasSectionNavigation() {
+  fun additionalNavigationMenu_ideasSectionNavigation() {
     // Covers: IdeasSection composable (lines 318-320)
     composeTestRule.setContent { NavigationMenu() }
     composeTestRule.waitForIdle()
@@ -113,7 +114,7 @@ class AdditionalNavigationMenuTest : TestCase() {
   // ========== CONDITIONAL NAVIGATION TEST (Lines 663-667) ==========
 
   @Test
-  fun testNavigateIfConditionSatisfiedTrue() {
+  fun additionalNavigationMenu_navigateIfConditionSatisfiedTrue() {
     // Covers: navigateIfConditionSatisfied when condition is true (lines 663-667)
     var navigationExecuted = false
 
@@ -123,7 +124,7 @@ class AdditionalNavigationMenuTest : TestCase() {
   }
 
   @Test
-  fun testNavigateIfConditionSatisfiedFalse() {
+  fun additionalNavigationMenu_navigateIfConditionSatisfiedFalse() {
     // Covers: navigateIfConditionSatisfied when condition is false (lines 663-667)
     var navigationExecuted = false
 
@@ -135,7 +136,7 @@ class AdditionalNavigationMenuTest : TestCase() {
   // ========== BOTTOM BAR HIDING TESTS (Lines 66-77 + 549-553) ==========
 
   @Test
-  fun testBottomBarHiddenOnCreateTask() {
+  fun additionalNavigationMenu_bottomBarHiddenOnCreateTask() {
     // Covers: shouldHideBottomBar logic (lines 549-553) for CreateTask
     composeTestRule.setContent { NavigationMenu() }
     composeTestRule.waitForIdle()
@@ -157,7 +158,7 @@ class AdditionalNavigationMenuTest : TestCase() {
   }
 
   @Test
-  fun testBottomBarHiddenOnSelfNotes() {
+  fun additionalNavigationMenu_bottomBarHiddenOnSelfNotes() {
     // Covers: shouldHideBottomBar for SelfNotes (line 67)
     runBlocking {
       val testUserId =

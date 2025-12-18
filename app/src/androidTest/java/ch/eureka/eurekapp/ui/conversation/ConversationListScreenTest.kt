@@ -1,3 +1,8 @@
+/*
+Co-author: GPT-5 Codex
+Co-author: Claude 4.5 Sonnet
+*/
+
 package ch.eureka.eurekapp.ui.conversation
 
 import androidx.compose.ui.test.junit4.createComposeRule

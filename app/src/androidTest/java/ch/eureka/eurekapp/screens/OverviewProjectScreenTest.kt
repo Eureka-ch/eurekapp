@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Claude. */
 package ch.eureka.eurekapp.screens
 
 import androidx.compose.ui.test.assertIsDisplayed

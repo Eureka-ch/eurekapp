@@ -36,7 +36,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun createMeeting_shouldCreateMeetingInFirestore() = runBlocking {
+  fun meetingRepository_createMeetingShouldCreateMeetingInFirestore() = runBlocking {
     val projectId = "project_meeting_1"
     setupTestProject(projectId)
 
@@ -80,7 +80,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getMeetingById_shouldReturnMeetingWhenExists() = runBlocking {
+  fun meetingRepository_getMeetingByIdShouldReturnMeetingWhenExists() = runBlocking {
     val projectId = "project_meeting_2"
     setupTestProject(projectId)
 
@@ -104,7 +104,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getMeetingById_shouldReturnNullWhenMeetingDoesNotExist() = runBlocking {
+  fun meetingRepository_getMeetingByIdShouldReturnNullWhenMeetingDoesNotExist() = runBlocking {
     val projectId = "project_meeting_3"
     setupTestProject(projectId)
 
@@ -115,7 +115,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getMeetingsInProject_shouldReturnAllMeetings() = runBlocking {
+  fun meetingRepository_getMeetingsInProjectShouldReturnAllMeetings() = runBlocking {
     val projectId = "project_meeting_4"
     setupTestProject(projectId)
 
@@ -149,7 +149,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getMeetingsInProject_shouldReturnEmptyListWhenNoMeetings() = runBlocking {
+  fun meetingRepository_getMeetingsInProjectShouldReturnEmptyListWhenNoMeetings() = runBlocking {
     val projectId = "project_meeting_5"
     setupTestProject(projectId)
 
@@ -160,7 +160,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getMeetingsForTask_shouldReturnMeetingsForSpecificTask() = runBlocking {
+  fun meetingRepository_getMeetingsForTaskShouldReturnMeetingsForSpecificTask() = runBlocking {
     val projectId = "project_meeting_6"
     setupTestProject(projectId)
 
@@ -194,48 +194,49 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getMeetingsForCurrentUser_shouldReturnMeetingsWhereUserIsParticipant() = runBlocking {
-    val projectId = "project_meeting_7"
-    setupTestProject(projectId)
+  fun meetingRepository_getMeetingsForCurrentUserShouldReturnMeetingsWhereUserIsParticipant() =
+      runBlocking {
+        val projectId = "project_meeting_7"
+        setupTestProject(projectId)
 
-    // meeting7: user is in participantIds
-    val meeting7 =
-        Meeting(
-            meetingID = "meeting7",
-            projectId = projectId,
-            taskId = null,
-            title = "My Meeting",
-            status = MeetingStatus.SCHEDULED,
-            attachmentUrls = emptyList(),
-            createdBy = testUserId,
-            participantIds = listOf(testUserId))
+        // meeting7: user is in participantIds
+        val meeting7 =
+            Meeting(
+                meetingID = "meeting7",
+                projectId = projectId,
+                taskId = null,
+                title = "My Meeting",
+                status = MeetingStatus.SCHEDULED,
+                attachmentUrls = emptyList(),
+                createdBy = testUserId,
+                participantIds = listOf(testUserId))
 
-    // meeting8: user is NOT in participantIds
-    val meeting8 =
-        Meeting(
-            meetingID = "meeting8",
-            projectId = projectId,
-            taskId = null,
-            title = "Other Meeting",
-            status = MeetingStatus.SCHEDULED,
-            attachmentUrls = emptyList(),
-            createdBy = "otherUser",
-            participantIds = listOf("otherUser"))
+        // meeting8: user is NOT in participantIds
+        val meeting8 =
+            Meeting(
+                meetingID = "meeting8",
+                projectId = projectId,
+                taskId = null,
+                title = "Other Meeting",
+                status = MeetingStatus.SCHEDULED,
+                attachmentUrls = emptyList(),
+                createdBy = "otherUser",
+                participantIds = listOf("otherUser"))
 
-    repository.createMeeting(meeting7, testUserId, MeetingRole.HOST)
-    repository.createMeeting(meeting8, "otherUser", MeetingRole.HOST)
+        repository.createMeeting(meeting7, testUserId, MeetingRole.HOST)
+        repository.createMeeting(meeting8, "otherUser", MeetingRole.HOST)
 
-    // New API: No projectId required
-    val flow = repository.getMeetingsForCurrentUser(skipCache = false)
-    val meetings = flow.first()
+        // New API: No projectId required
+        val flow = repository.getMeetingsForCurrentUser(skipCache = false)
+        val meetings = flow.first()
 
-    // Should only find meeting7 where testUserId is in participantIds
-    assertEquals(1, meetings.size)
-    assertEquals("meeting7", meetings[0].meetingID)
-  }
+        // Should only find meeting7 where testUserId is in participantIds
+        assertEquals(1, meetings.size)
+        assertEquals("meeting7", meetings[0].meetingID)
+      }
 
   @Test
-  fun updateMeeting_shouldUpdateMeetingDetails() = runBlocking {
+  fun meetingRepository_updateMeetingShouldUpdateMeetingDetails() = runBlocking {
     val projectId = "project_meeting_9"
     setupTestProject(projectId)
 
@@ -271,7 +272,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun deleteMeeting_shouldDeleteMeetingFromFirestore() = runBlocking {
+  fun meetingRepository_deleteMeetingShouldDeleteMeetingFromFirestore() = runBlocking {
     val projectId = "project_meeting_10"
     setupTestProject(projectId)
 
@@ -304,7 +305,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun addParticipant_shouldAddParticipantToMeeting() = runBlocking {
+  fun meetingRepository_addParticipantShouldAddParticipantToMeeting() = runBlocking {
     val projectId = "project_meeting_11"
     setupTestProject(projectId)
 
@@ -344,7 +345,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun removeParticipant_shouldRemoveParticipantFromMeeting() = runBlocking {
+  fun meetingRepository_removeParticipantShouldRemoveParticipantFromMeeting() = runBlocking {
     val projectId = "project_meeting_12"
     setupTestProject(projectId)
 
@@ -383,7 +384,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun updateParticipantRole_shouldUpdateRole() = runBlocking {
+  fun meetingRepository_updateParticipantRoleShouldUpdateRole() = runBlocking {
     val projectId = "project_meeting_13"
     setupTestProject(projectId)
 
@@ -412,7 +413,7 @@ class MeetingRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun createMeeting_shouldUseDefaultHostRole() = runBlocking {
+  fun meetingRepository_createMeetingShouldUseDefaultHostRole() = runBlocking {
     val projectId = "project_meeting_14"
     setupTestProject(projectId)
 

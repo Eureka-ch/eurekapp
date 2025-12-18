@@ -118,7 +118,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun getProjectsForUser_works() = runBlocking {
+  fun projectSelectionScreenViewModel_getProjectsForUserWorks() = runBlocking {
     val fakeViewModel =
         ProjectSelectionScreenViewModel(
             projectsRepository = MockedProjectsRepository(),
@@ -130,7 +130,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun getProjectUsersInformation_works() = runBlocking {
+  fun projectSelectionScreenViewModel_getProjectUsersInformationWorks() = runBlocking {
     val fakeViewModel =
         ProjectSelectionScreenViewModel(
             projectsRepository = MockedProjectsRepository(),
@@ -141,7 +141,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun getCurrentUser_works() = runBlocking {
+  fun projectSelectionScreenViewModel_getCurrentUserWorks() = runBlocking {
     val fakeViewModel =
         ProjectSelectionScreenViewModel(
             projectsRepository = MockedProjectsRepository(),
@@ -152,7 +152,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun attemptToInviteUser_works() = runBlocking {
+  fun projectSelectionScreen_attemptToInviteUserWorks() = runBlocking {
     val fakeViewModel =
         ProjectSelectionScreenViewModel(
             projectsRepository = MockedProjectsRepository(),
@@ -176,7 +176,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun attemptToEnterToken_works() = runBlocking {
+  fun projectSelectionScreen_attemptToEnterTokenWorks() = runBlocking {
     val fakeViewModel =
         ProjectSelectionScreenViewModel(
             projectsRepository = MockedProjectsRepository(),
@@ -199,7 +199,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun projectScreen_correctlyShowsProjectsAndNavigatesToThem() {
+  fun projectSelectionScreen_correctlyShowsProjectsAndNavigatesToThem() {
     val fakeViewModel =
         ProjectSelectionScreenViewModel(
             projectsRepository = MockedProjectsRepository(),
@@ -236,7 +236,7 @@ class ProjectSelectionScreenTest : TestCase() {
   }
 
   @Test
-  fun projectScreen_correctlyCallsCreateProjectCallback() {
+  fun projectSelectionScreen_correctlyCallsCreateProjectCallback() {
     var createProjectCalled = false
     composeRule.setContent {
       ProjectSelectionScreen(onCreateProjectRequest = { createProjectCalled = true })

@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of GPT-5 Codex, Gemini, and Claude. */
 package ch.eureka.eurekapp.ui.ideas
 
 import ch.eureka.eurekapp.model.data.ideas.Idea
@@ -7,7 +8,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-// Portions of this file were written with the help of GPT-5 Codex and Gemini.
 /** Mock implementation of IdeasViewModel for Android tests. */
 class MockIdeasViewModel(
     projectRepository: MockProjectRepository = MockProjectRepository(),

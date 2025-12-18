@@ -92,7 +92,7 @@ class TaskEndToEndTest : TestCase() {
   }
 
   @Test
-  fun endToEnd_signInNavigateToTasksAndCreateTask() {
+  fun taskEndToEnd_signInNavigateToTasksAndCreateTask() {
     val fakeName = "Test User"
     val fakeEmail = "testuser@eureka.com"
     val fakeIdToken = FakeJwtGenerator.createFakeGoogleIdToken(fakeName, fakeEmail)
@@ -256,7 +256,7 @@ class TaskEndToEndTest : TestCase() {
 
   @OptIn(ExperimentalTestApi::class)
   @Test
-  fun completeE2EFlow_createVoteDeleteMeeting_succeeds() {
+  fun meetingEndToEnd_completeFlowCreateVoteDeleteMeetingSucceeds() {
     runBlocking {
       // Setup: Authenticate user
       val fakeIdToken = FakeJwtGenerator.createFakeGoogleIdToken(testUserName, testUserEmail)

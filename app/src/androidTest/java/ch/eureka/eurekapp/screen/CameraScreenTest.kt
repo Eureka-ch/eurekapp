@@ -1,4 +1,4 @@
-// Portions of this code were generated with the help of Grok.
+// Portions of this code were generated with the help of Grok and Claude.
 package ch.eureka.eurekapp.screen
 
 import android.Manifest
@@ -22,7 +22,7 @@ class CameraScreenNoPermissionTest {
   private var onBackClickCalled = false
 
   @Test
-  fun testCameraUI() {
+  fun cameraScreenNoPermission_cameraUI() {
     onBackClickCalled = false
     composeTestRule.setContent {
       MaterialTheme { Camera(onBackClick = { onBackClickCalled = true }, onPhotoSaved = {}) }
@@ -36,7 +36,7 @@ class CameraScreenNoPermissionTest {
   }
 
   @Test
-  fun testBackButtonFunctionality() {
+  fun cameraScreenNoPermission_backButtonFunctionality() {
     onBackClickCalled = false
     composeTestRule.setContent {
       MaterialTheme { Camera(onBackClick = { onBackClickCalled = true }, onPhotoSaved = {}) }
@@ -57,7 +57,7 @@ class CameraScreenTest {
   private var onBackClickCalled = false
 
   @Test
-  fun testCameraUI() {
+  fun cameraScreen_cameraUI() {
     onBackClickCalled = false
     composeTestRule.setContent {
       MaterialTheme { Camera(onBackClick = { onBackClickCalled = true }, onPhotoSaved = {}) }
@@ -108,7 +108,7 @@ class CameraScreenTest {
   }
 
   @Test
-  fun testBackButtonFunctionality() {
+  fun cameraScreen_backButtonFunctionality() {
     onBackClickCalled = false
     composeTestRule.setContent {
       MaterialTheme { Camera(onBackClick = { onBackClickCalled = true }, onPhotoSaved = {}) }

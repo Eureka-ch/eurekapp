@@ -1,3 +1,4 @@
+/* Portions of this code were generated with the help of Grok and Claude. */
 package ch.eureka.eurekapp.navigation
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -77,7 +78,7 @@ class NavigationMenuTest : TestCase() {
   }
 
   @Test
-  fun testNavigationBottomBarComponent() {
+  fun navigationMenu_navigationBottomBarComponent() {
     composeTestRule.setContent {
       val navigationController = rememberNavController()
       BottomBarNavigationComponent(navigationController)
@@ -101,7 +102,7 @@ class NavigationMenuTest : TestCase() {
   }
 
   @Test
-  fun testAllPages() {
+  fun navigationMenu_allPages() {
     composeTestRule.setContent { NavigationMenu() }
 
     // Verify HomeOverview is the start destination
@@ -127,7 +128,7 @@ class NavigationMenuTest : TestCase() {
   }
 
   @Test
-  fun testNavigateToTaskDependenciesScreen() {
+  fun navigationMenu_navigateToTaskDependenciesScreen() {
     runBlocking {
       val testUserId =
           FirebaseEmulator.auth.currentUser?.uid ?: throw IllegalStateException("No user")
@@ -208,7 +209,7 @@ class NavigationMenuTest : TestCase() {
   }
 
   @Test
-  fun testProjectButtonNavigatesToProjectSelectionScreen() {
+  fun navigationMenu_projectButtonNavigatesToProjectSelectionScreen() {
     // Test covers: BottomBarNavigationComponent.kt line 174 (onClick Project button)
     composeTestRule.setContent { NavigationMenu() }
     composeTestRule.waitForIdle()
@@ -228,7 +229,7 @@ class NavigationMenuTest : TestCase() {
   }
 
   @Test
-  fun testHomeButtonAlwaysReturnsToHomeOverviewWithoutRestoringState() {
+  fun navigationMenu_homeButtonAlwaysReturnsToHomeOverviewWithoutRestoringState() {
     // Test covers: BottomBarNavigationComponent.kt lines 85-91 (navigateToHome function)
     // and line 187 (onClick = { navigateToHome() })
     composeTestRule.setContent { NavigationMenu() }
@@ -259,7 +260,7 @@ class NavigationMenuTest : TestCase() {
   }
 
   @Test
-  fun testProjectsScreenPressedState() {
+  fun navigationMenu_projectsScreenPressedState() {
     // Test covers: BottomBarNavigationComponent.kt lines 119-124 (isProjectsScreenPressed)
     composeTestRule.setContent { NavigationMenu() }
     composeTestRule.waitForIdle()
@@ -281,7 +282,7 @@ class NavigationMenuTest : TestCase() {
   }
 
   @Test
-  fun testMeetingScreenCreatesNavigationCallbacks() {
+  fun navigationMenu_meetingScreenCreatesNavigationCallbacks() {
     runBlocking {
       val testUserName = "user test"
       val testUserEmail = "user-test"
@@ -324,7 +325,7 @@ class NavigationMenuTest : TestCase() {
   }
 
   @Test
-  fun testNavigationConversationClickToSelf() {
+  fun navigationMenu_navigationConversationClickToSelf() {
     // Test covers: Navigation.kt lines 655-657
     runBlocking {
       val testUserId =
@@ -372,7 +373,7 @@ class NavigationMenuTest : TestCase() {
   }
 
   @Test
-  fun testNavigationConversationClickRegular() {
+  fun navigationMenu_navigationConversationClickRegular() {
     // Test covers: Navigation.kt lines 658-660
     runBlocking {
       val testUserId =
@@ -438,7 +439,7 @@ class NavigationMenuTest : TestCase() {
   // ===== HOME OVERVIEW NAVIGATION CALLBACKS (Lines 252-269) =====
 
   @Test
-  fun testHomeOverviewOnOpenProjectsCallback() {
+  fun navigationMenu_homeOverviewOnOpenProjectsCallback() {
     // Test covers Navigation.kt line 256: onOpenProjects callback
     // This test verifies bottom bar navigation which also tests the navigation structure
     composeTestRule.setContent { NavigationMenu() }
@@ -458,7 +459,7 @@ class NavigationMenuTest : TestCase() {
   }
 
   @Test
-  fun testHomeOverviewOnOpenTasksCallback() {
+  fun navigationMenu_homeOverviewOnOpenTasksCallback() {
     // Test covers Navigation.kt line 258: onOpenTasks callback
     // This test verifies bottom bar navigation which also tests the navigation structure
     composeTestRule.setContent { NavigationMenu() }

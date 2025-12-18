@@ -67,7 +67,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun loadActivities_success_updatesUIState() = runTest {
+  fun activityFeedViewModel_loadActivitiesSuccessUpdatesUIState() = runTest {
     // Arrange
     val activities =
         listOf(
@@ -87,7 +87,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun applyEntityTypeFilter_projects_filtersCorrectly() = runTest {
+  fun activityFeedViewModel_applyEntityTypeFilterProjectsFiltersCorrectly() = runTest {
     // Arrange
     val activities =
         listOf(
@@ -111,7 +111,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun applyEntityTypeFilter_meetings_filtersCorrectly() = runTest {
+  fun activityFeedViewModel_applyEntityTypeFilterMeetingsFiltersCorrectly() = runTest {
     // Arrange
     val activities =
         listOf(
@@ -133,7 +133,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun applyActivityTypeFilter_created_filtersCorrectly() = runTest {
+  fun activityFeedViewModel_applyActivityTypeFilterCreatedFiltersCorrectly() = runTest {
     // Arrange
     val activities =
         listOf(
@@ -157,7 +157,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun applySearch_filtersByTitle() = runTest {
+  fun activityFeedViewModel_applySearchFiltersByTitle() = runTest {
     // Arrange
     val activities =
         listOf(
@@ -181,7 +181,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun applySearch_caseInsensitive() = runTest {
+  fun activityFeedViewModel_applySearchCaseInsensitive() = runTest {
     // Arrange
     val activities = listOf(createActivity("1", EntityType.PROJECT, "Important Project"))
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
@@ -200,7 +200,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun clearFilters_resetsAllFilters() = runTest {
+  fun activityFeedViewModel_clearFiltersResetsAllFilters() = runTest {
     // Arrange
     val activities = listOf(createActivity("1", EntityType.PROJECT, "Project A"))
     coEvery { repository.getActivities(testUserId) } returns flowOf(activities)
@@ -223,7 +223,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun markAsRead_addsToReadSet() = runTest {
+  fun activityFeedViewModel_markAsReadAddsToReadSet() = runTest {
     // Act
     viewModel.markAsRead("activity-1")
     advanceUntilIdle()
@@ -234,7 +234,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun markAllAsRead_marksAllVisibleActivities() = runTest {
+  fun activityFeedViewModel_markAllAsReadMarksAllVisibleActivities() = runTest {
     // Arrange
     val activities =
         listOf(
@@ -258,7 +258,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun toggleGroupByProject_togglesState() = runTest {
+  fun activityFeedViewModel_toggleGroupByProjectTogglesState() = runTest {
     // Act
     viewModel.toggleGroupByProject()
     advanceUntilIdle()
@@ -277,7 +277,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun deleteActivity_success_removesFromList() = runTest {
+  fun activityFeedViewModel_deleteActivitySuccessRemovesFromList() = runTest {
     // Arrange
     val activities =
         listOf(
@@ -301,7 +301,7 @@ class ActivityFeedViewModelTest {
   }
 
   @Test
-  fun setCompactMode_updatesState() = runTest {
+  fun activityFeedViewModel_setCompactModeUpdatesState() = runTest {
     // Act
     viewModel.setCompactMode(true)
     advanceUntilIdle()

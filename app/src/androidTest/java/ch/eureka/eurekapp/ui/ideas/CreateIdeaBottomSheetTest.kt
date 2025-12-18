@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of GPT-5 Codex, Gemini, and Claude. */
 package ch.eureka.eurekapp.ui.ideas
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -62,13 +63,13 @@ class CreateIdeaBottomSheetTest {
   }
 
   @Test
-  fun createIdeaBottomSheet_withEmptyProjects_showsNoProjectsMessage() {
+  fun createIdeaBottomSheet_withEmptyProjectsShowsNoProjectsMessage() {
     setContent(projects = emptyList())
     composeTestRule.onNodeWithText("No projects available").assertIsDisplayed()
   }
 
   @Test
-  fun createIdeaBottomSheet_withEmptyUsers_showsNoUsersMessage() {
+  fun createIdeaBottomSheet_withEmptyUsersShowsNoUsersMessage() {
     setContent()
     selectProject()
     composeTestRule.onNodeWithText("No users available in this project").assertIsDisplayed()
@@ -152,7 +153,7 @@ class CreateIdeaBottomSheetTest {
   }
 
   @Test
-  fun createIdeaBottomSheet_createWithParticipants_callsOnCreateIdeaWithParticipantIds() {
+  fun createIdeaBottomSheet_createWithParticipantsCallsOnCreateIdeaWithParticipantIds() {
     val mockViewModel = setContent(users = testUsers)
     selectProject()
     // Directly toggle participants via the viewModel instead of clicking the dropdown
@@ -166,7 +167,7 @@ class CreateIdeaBottomSheetTest {
   }
 
   @Test
-  fun createIdeaBottomSheet_participantsModal_opensWhenClicked() {
+  fun createIdeaBottomSheet_participantsModalOpensWhenClicked() {
     setContent(users = testUsers)
     selectProject()
     composeTestRule
@@ -178,7 +179,7 @@ class CreateIdeaBottomSheetTest {
   }
 
   @Test
-  fun createIdeaBottomSheet_participantsModal_displaysUsers() {
+  fun createIdeaBottomSheet_participantsModalDisplaysUsers() {
     setContent(users = testUsers)
     selectProject()
     composeTestRule
@@ -190,7 +191,7 @@ class CreateIdeaBottomSheetTest {
   }
 
   @Test
-  fun createIdeaBottomSheet_participantsModal_okButtonClosesModal() {
+  fun createIdeaBottomSheet_participantsModalOkButtonClosesModal() {
     setContent(users = testUsers)
     selectProject()
     composeTestRule
@@ -204,7 +205,7 @@ class CreateIdeaBottomSheetTest {
   }
 
   @Test
-  fun createIdeaBottomSheet_participantsModal_displaysSelectedCount() {
+  fun createIdeaBottomSheet_participantsModalDisplaysSelectedCount() {
     val mockViewModel = setContent(users = testUsers)
     selectProject()
     mockViewModel.toggleParticipant("user1")
@@ -214,7 +215,7 @@ class CreateIdeaBottomSheetTest {
   }
 
   @Test
-  fun createIdeaBottomSheet_participantsModal_displaysSelectedCountWhenNoName() {
+  fun createIdeaBottomSheet_participantsModalDisplaysSelectedCountWhenNoName() {
     val usersWithoutName = listOf(User(uid = "user1", displayName = "", email = "user1@test.com"))
     val mockViewModel = setContent(users = usersWithoutName)
     selectProject()

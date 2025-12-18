@@ -13,7 +13,7 @@ class ActivitySearchBarTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun searchBar_notExpanded_notVisible() {
+  fun activitySearchBar_notExpandedNotVisible() {
     composeTestRule.setContent {
       ActivitySearchBar(query = "", onQueryChange = {}, expanded = false)
     }
@@ -22,7 +22,7 @@ class ActivitySearchBarTest {
   }
 
   @Test
-  fun searchBar_expanded_displaysSearchField() {
+  fun activitySearchBar_expandedDisplaysSearchField() {
     composeTestRule.setContent {
       ActivitySearchBar(query = "", onQueryChange = {}, expanded = true)
     }
@@ -31,7 +31,7 @@ class ActivitySearchBarTest {
   }
 
   @Test
-  fun searchBar_emptyQuery_noClearButton() {
+  fun activitySearchBar_emptyQueryNoClearButton() {
     composeTestRule.setContent {
       ActivitySearchBar(query = "", onQueryChange = {}, expanded = true)
     }
@@ -40,7 +40,7 @@ class ActivitySearchBarTest {
   }
 
   @Test
-  fun searchBar_withQuery_showsClearButton() {
+  fun activitySearchBar_withQueryShowsClearButton() {
     composeTestRule.setContent {
       ActivitySearchBar(query = "test query", onQueryChange = {}, expanded = true)
     }
@@ -49,7 +49,7 @@ class ActivitySearchBarTest {
   }
 
   @Test
-  fun searchBar_textInput_triggersCallback() {
+  fun activitySearchBar_textInputTriggersCallback() {
     var capturedQuery = ""
     composeTestRule.setContent {
       ActivitySearchBar(query = "", onQueryChange = { capturedQuery = it }, expanded = true)
@@ -61,7 +61,7 @@ class ActivitySearchBarTest {
   }
 
   @Test
-  fun searchBar_clearButton_clearsQuery() {
+  fun activitySearchBar_clearButtonClearsQuery() {
     var currentQuery = "test query"
     composeTestRule.setContent {
       ActivitySearchBar(
@@ -74,7 +74,7 @@ class ActivitySearchBarTest {
   }
 
   @Test
-  fun searchBar_singleLine_doesNotWrap() {
+  fun activitySearchBar_singleLineDoesNotWrap() {
     composeTestRule.setContent {
       ActivitySearchBar(
           query = "This is a very long query that should not wrap to multiple lines",

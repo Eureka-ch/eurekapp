@@ -1,4 +1,4 @@
-/* Portions of this code were generated with the help of Grok and Gemini. */
+/* Portions of this code were generated with the help of Grok, Gemini and Claude. */
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.compose.ui.test.assertIsDisplayed

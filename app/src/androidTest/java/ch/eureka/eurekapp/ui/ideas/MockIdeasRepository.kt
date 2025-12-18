@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of GPT-5 Codex, Gemini, and Claude. */
 package ch.eureka.eurekapp.ui.ideas
 
 import ch.eureka.eurekapp.model.data.chat.Message
@@ -7,7 +8,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 
-// Portions of this file were written with the help of GPT-5 Codex and Gemini.
 /** Mock implementation of IdeasRepository for testing. */
 class MockIdeasRepository : IdeasRepository {
   private val ideas = mutableMapOf<String, MutableList<Idea>>()

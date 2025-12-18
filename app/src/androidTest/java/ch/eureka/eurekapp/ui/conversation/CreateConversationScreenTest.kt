@@ -1,3 +1,8 @@
+/*
+Co-author: GPT-5 Codex
+Co-author: Claude 4.5 Sonnet
+*/
+
 package ch.eureka.eurekapp.ui.conversation
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -42,7 +47,7 @@ class CreateConversationScreenTest {
   }
 
   @Test
-  fun createConversationScreen_memberDropdownShown_whenProjectSelected() {
+  fun createConversationScreen_memberDropdownShownWhenProjectSelected() {
     // Arrange: Project selected with available members
     val project = Project(projectId = "p1", name = "Test Project")
     val members =
@@ -61,7 +66,7 @@ class CreateConversationScreenTest {
   }
 
   @Test
-  fun createConversationScreen_createButtonEnabled_whenBothSelected() {
+  fun createConversationScreen_createButtonEnabledWhenBothSelected() {
     // Arrange: Both project and member selected, online
     val project = Project(projectId = "p1", name = "Test Project")
     val member = MemberDisplayData(Member(userId = "u1"), User(uid = "u1", displayName = "John"))
@@ -82,7 +87,7 @@ class CreateConversationScreenTest {
   }
 
   @Test
-  fun createConversationScreen_showsNoMembersMessage_whenEmpty() {
+  fun createConversationScreen_showsNoMembersMessageWhenEmpty() {
     // Arrange: Project selected but no other members in project
     val project = Project(projectId = "p1", name = "Test Project")
     val state =

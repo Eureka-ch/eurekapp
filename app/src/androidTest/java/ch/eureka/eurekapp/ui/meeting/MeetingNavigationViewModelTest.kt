@@ -96,7 +96,7 @@ class MeetingNavigationViewModelTest {
   }
 
   @Test
-  fun initialStateIsLoading() = runTest {
+  fun meetingNavigationViewModel_initialStateIsLoading() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeeting)
 
@@ -109,7 +109,7 @@ class MeetingNavigationViewModelTest {
   }
 
   @Test
-  fun successfulMeetingLoadUpdatesState() = runTest {
+  fun meetingNavigationViewModel_successfulMeetingLoadUpdatesState() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeeting)
 
@@ -125,7 +125,7 @@ class MeetingNavigationViewModelTest {
   }
 
   @Test
-  fun meetingNotFoundSetsError() = runTest {
+  fun meetingNavigationViewModel_meetingNotFoundSetsError() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns flowOf(null)
 
     viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
@@ -139,7 +139,7 @@ class MeetingNavigationViewModelTest {
   }
 
   @Test
-  fun meetingWithoutLocationSetsError() = runTest {
+  fun meetingNavigationViewModel_meetingWithoutLocationSetsError() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeetingNoLocation)
 
@@ -154,7 +154,7 @@ class MeetingNavigationViewModelTest {
   }
 
   @Test
-  fun getMeetingLocationReturnsCorrectLatLng() = runTest {
+  fun meetingNavigationViewModel_getMeetingLocationReturnsCorrectLatLng() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeeting)
 
@@ -169,7 +169,7 @@ class MeetingNavigationViewModelTest {
   }
 
   @Test
-  fun getMeetingLocationReturnsNullWhenMeetingNull() = runTest {
+  fun meetingNavigationViewModel_getMeetingLocationReturnsNullWhenMeetingNull() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns flowOf(null)
 
     viewModel = MeetingNavigationViewModel(testProjectId, testMeetingId, testApiKey, repositoryMock)
@@ -181,7 +181,7 @@ class MeetingNavigationViewModelTest {
   }
 
   @Test
-  fun getMeetingLocationReturnsNullWhenLocationNull() = runTest {
+  fun meetingNavigationViewModel_getMeetingLocationReturnsNullWhenLocationNull() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeetingNoLocation)
 
@@ -194,7 +194,7 @@ class MeetingNavigationViewModelTest {
   }
 
   @Test
-  fun viewModelHandlesFlowUpdates() = runTest {
+  fun meetingNavigationViewModel_handlesFlowUpdates() = runTest {
     val flow = kotlinx.coroutines.flow.MutableStateFlow<Meeting?>(null)
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns flow
 
@@ -215,7 +215,7 @@ class MeetingNavigationViewModelTest {
   }
 
   @Test
-  fun repositoryExceptionSetsErrorMessage() = runTest {
+  fun meetingNavigationViewModel_repositoryExceptionSetsErrorMessage() = runTest {
     val exceptionMessage = "Network connection failed"
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         kotlinx.coroutines.flow.flow { throw Exception(exceptionMessage) }
@@ -232,7 +232,7 @@ class MeetingNavigationViewModelTest {
   }
 
   @Test
-  fun loadingStateIsSetBeforeCollection() = runTest {
+  fun meetingNavigationViewModel_loadingStateIsSetBeforeCollection() = runTest {
     // Use a flow that never emits to verify loading state is set
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         kotlinx.coroutines.flow.flow { kotlinx.coroutines.delay(Long.MAX_VALUE) }
@@ -246,7 +246,7 @@ class MeetingNavigationViewModelTest {
   }
 
   @Test
-  fun exceptionWithNullMessageHandledCorrectly() = runTest {
+  fun meetingNavigationViewModel_exceptionWithNullMessageHandledCorrectly() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         kotlinx.coroutines.flow.flow { throw Exception(null as String?) }
 
@@ -264,7 +264,7 @@ class MeetingNavigationViewModelTest {
   // New tests for route and location functionality
 
   @Test
-  fun initialStateHasNoRouteOrLocation() = runTest {
+  fun meetingNavigationViewModel_initialStateHasNoRouteOrLocation() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeeting)
 
@@ -280,7 +280,7 @@ class MeetingNavigationViewModelTest {
   // Note: clearRouteError test removed - errors clear automatically on next fetchDirections call
 
   @Test
-  fun fetchDirectionsWithoutUserLocationSetsError() = runTest {
+  fun meetingNavigationViewModel_fetchDirectionsWithoutUserLocationSetsError() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeeting)
 
@@ -298,7 +298,7 @@ class MeetingNavigationViewModelTest {
   }
 
   @Test
-  fun fetchDirectionsWithoutMeetingLocationSetsError() = runTest {
+  fun meetingNavigationViewModel_fetchDirectionsWithoutMeetingLocationSetsError() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeetingNoLocation)
 
@@ -319,7 +319,7 @@ class MeetingNavigationViewModelTest {
   }
 
   @Test
-  fun fetchDirectionsSupportsMultipleTravelModes() = runTest {
+  fun meetingNavigationViewModel_fetchDirectionsSupportsMultipleTravelModes() = runTest {
     every { repositoryMock.getMeetingById(testProjectId, testMeetingId) } returns
         flowOf(testMeeting)
 
@@ -340,7 +340,7 @@ class MeetingNavigationViewModelTest {
   }
 
   @Test
-  fun fetchDirectionsHandlesZeroResultsError() = runTest {
+  fun meetingNavigationViewModel_fetchDirectionsHandlesZeroResultsError() = runTest {
     val directionsServiceMock = mockk<ch.eureka.eurekapp.services.navigation.DirectionsApiService>()
 
     // Mock to return ZERO_RESULTS status
@@ -373,7 +373,7 @@ class MeetingNavigationViewModelTest {
   }
 
   @Test
-  fun fetchDirectionsHandlesEmptyRoutesWithOkStatus() = runTest {
+  fun meetingNavigationViewModel_fetchDirectionsHandlesEmptyRoutesWithOkStatus() = runTest {
     val directionsServiceMock = mockk<ch.eureka.eurekapp.services.navigation.DirectionsApiService>()
 
     // Mock to return OK status but empty routes
@@ -404,7 +404,7 @@ class MeetingNavigationViewModelTest {
   }
 
   @Test
-  fun fetchDirectionsHandlesNetworkException() = runTest {
+  fun meetingNavigationViewModel_fetchDirectionsHandlesNetworkException() = runTest {
     val directionsServiceMock = mockk<ch.eureka.eurekapp.services.navigation.DirectionsApiService>()
 
     // Mock to throw exception
@@ -435,7 +435,7 @@ class MeetingNavigationViewModelTest {
   }
 
   @Test
-  fun fetchDirectionsHandlesNullErrorMessage() = runTest {
+  fun meetingNavigationViewModel_fetchDirectionsHandlesNullErrorMessage() = runTest {
     val directionsServiceMock = mockk<ch.eureka.eurekapp.services.navigation.DirectionsApiService>()
 
     // Mock to return error status with null errorMessage

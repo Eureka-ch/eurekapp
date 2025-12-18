@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Claude. */
 package ch.eureka.eurekapp.model.calendar
 
 import android.content.ContentResolver
@@ -30,7 +31,7 @@ class LocalGoogleCalendarRepositoryTest {
   @get:Rule val composeRule = createComposeRule()
 
   @Test
-  fun testCreateCalendarEventWorks() = runBlocking {
+  fun localGoogleCalendarRepository_testCreateCalendarEventWorks() = runBlocking {
     val contentResolver = mockk<ContentResolver>()
 
     every { contentResolver.insert(any<Uri>(), any()) } returns Uri.parse("content://fake/1")
@@ -64,7 +65,7 @@ class LocalGoogleCalendarRepositoryTest {
   }
 
   @Test
-  fun testGetCalendarEventWorks() = runBlocking {
+  fun localGoogleCalendarRepository_testGetCalendarEventWorks() = runBlocking {
     var counter = 0
     val fakeCursor = mockk<Cursor>()
 

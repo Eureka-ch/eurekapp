@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Claude. */
 package ch.eureka.eurekapp.components
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -18,7 +19,7 @@ class EurekaFilterBarTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun eurekaFilterBarRendersOptions() {
+  fun eurekaFilterBar_rendersOptions() {
     val options = listOf("All", "Active", "Completed")
 
     composeTestRule.setContent {
@@ -34,7 +35,7 @@ class EurekaFilterBarTest {
   }
 
   @Test
-  fun eurekaFilterBarShowsSelectedOption() {
+  fun eurekaFilterBar_showsSelectedOption() {
     val options = listOf("All", "Active", "Completed")
 
     composeTestRule.setContent {
@@ -48,7 +49,7 @@ class EurekaFilterBarTest {
   }
 
   @Test
-  fun eurekaFilterBarHandlesClickEvents() {
+  fun eurekaFilterBar_handlesClickEvents() {
     val options = listOf("All", "Active", "Completed")
     var selectedOption: String? = null
 
@@ -67,7 +68,7 @@ class EurekaFilterBarTest {
   }
 
   @Test
-  fun eurekaFilterBarWorksWithSingleOption() {
+  fun eurekaFilterBar_worksWithSingleOption() {
     val options = listOf("Only Option")
 
     composeTestRule.setContent {
@@ -82,7 +83,7 @@ class EurekaFilterBarTest {
   }
 
   @Test
-  fun eurekaFilterBarWorksInDarkMode() {
+  fun eurekaFilterBar_worksInDarkMode() {
     val options = listOf("Light", "Dark")
 
     composeTestRule.setContent {
@@ -98,7 +99,7 @@ class EurekaFilterBarTest {
   }
 
   @Test
-  fun eurekaFilterBarHandlesMultipleClicks() {
+  fun eurekaFilterBar_handlesMultipleClicks() {
     val options = listOf("A", "B", "C")
     var clickCount = 0
     var lastSelected: String? = null

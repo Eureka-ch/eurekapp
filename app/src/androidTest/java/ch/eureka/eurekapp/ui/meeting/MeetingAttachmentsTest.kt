@@ -1,4 +1,6 @@
+// Portions of this code were generated using the help of Gemini 3 Pro and Claude.
 package ch.eureka.eurekapp.ui.meeting
+
 // Portions of this code were generated using the help of Gemini 3 Pro
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
@@ -50,7 +52,7 @@ class MeetingAttachmentsTest {
   }
 
   @Test
-  fun attachmentsSection_emptyList_showsNoAttachmentsMessage() {
+  fun attachmentsSection_emptyListShowsNoAttachmentsMessage() {
     val meeting = createDummyMeeting(attachments = emptyList())
 
     composeTestRule.setContent {
@@ -67,7 +69,7 @@ class MeetingAttachmentsTest {
   }
 
   @Test
-  fun attachmentsSection_filePicker_showsButton_whenNotUploading() {
+  fun attachmentsSection_filePickerShowsButtonWhenNotUploading() {
     val meeting = createDummyMeeting()
     uploadingFileFlow.value = false
 
@@ -85,7 +87,7 @@ class MeetingAttachmentsTest {
   }
 
   @Test
-  fun attachmentsSection_filePicker_showsProgress_whenUploading() {
+  fun attachmentsSection_filePickerShowsProgressWhenUploading() {
     val meeting = createDummyMeeting()
     uploadingFileFlow.value = true
 
@@ -103,7 +105,7 @@ class MeetingAttachmentsTest {
   }
 
   @Test
-  fun attachmentsSection_populatedList_showsItemsAndHidesEmptyMessage() {
+  fun attachmentsSection_populatedListShowsItemsAndHidesEmptyMessage() {
     val attachments = listOf("http://test.com/file1", "http://test.com/file2")
     val meeting = createDummyMeeting(attachments = attachments)
 
@@ -117,7 +119,7 @@ class MeetingAttachmentsTest {
   }
 
   @Test
-  fun attachmentItem_clickDelete_callsViewModel() {
+  fun attachmentItem_clickDeleteCallsViewModel() {
     val url = "http://test.com/file1"
     val meeting = createDummyMeeting(attachments = listOf(url))
 
@@ -140,7 +142,7 @@ class MeetingAttachmentsTest {
   }
 
   @Test
-  fun attachmentItem_clickDownload_callsViewModel() {
+  fun attachmentItem_clickDownloadCallsViewModel() {
     val url = "http://test.com/file1"
     val meeting = createDummyMeeting(attachments = listOf(url))
     downloadingFilesFlow.value = emptyMap()
@@ -161,7 +163,7 @@ class MeetingAttachmentsTest {
   }
 
   @Test
-  fun attachmentItem_isDownloading_showsProgressIndicator() {
+  fun attachmentItem_isDownloadingShowsProgressIndicator() {
     val url = "http://test.com/file1"
     val meeting = createDummyMeeting(attachments = listOf(url))
 

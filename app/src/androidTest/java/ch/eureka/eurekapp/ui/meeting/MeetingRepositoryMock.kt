@@ -1,4 +1,4 @@
-/* Portions of this file were written with the help of Gemini and Grok.*/
+/* Portions of this file were written with the help of Gemini, Grok, and Claude.*/
 package ch.eureka.eurekapp.ui.meeting
 
 import ch.eureka.eurekapp.model.data.meeting.Meeting

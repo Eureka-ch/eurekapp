@@ -1,4 +1,4 @@
-/* Portions of this file were written with the help of Gemini and Grok.*/
+/* Portions of this file were written with the help of Gemini, Grok and Claude.*/
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.compose.runtime.mutableStateOf
@@ -140,7 +140,7 @@ class MeetingProposalVoteScreenTest {
   }
 
   @Test
-  fun test_screenLoadsAndDisplaysVotes_whenDataIsAvailable() {
+  fun meetingProposalVoteScreen_loadsAndDisplaysVotesWhenDataIsAvailable() {
 
     repositoryMock.setMeetingToReturn(MOCK_MEETING)
     setContent()
@@ -170,7 +170,7 @@ class MeetingProposalVoteScreenTest {
   }
 
   @Test
-  fun test_confirmVotes_succeeds_andCallsOnDone() {
+  fun meetingProposalVoteScreen_confirmVotesSucceedsAndCallsOnDone() {
     // Arrange
     repositoryMock.setMeetingToReturn(MOCK_MEETING)
     repositoryMock.updateShouldSucceed = true
@@ -192,7 +192,7 @@ class MeetingProposalVoteScreenTest {
   }
 
   @Test
-  fun test_confirmVotes_fails_andSetsError() {
+  fun meetingProposalVoteScreen_confirmVotesFailsAndSetsError() {
     val error = Exception("Update Failed")
     repositoryMock.setMeetingToReturn(MOCK_MEETING)
     repositoryMock.updateShouldSucceed = false
@@ -211,7 +211,7 @@ class MeetingProposalVoteScreenTest {
   }
 
   @Test
-  fun test_loadingMeetingFails_clearsErrorAndShowsNoVotes() {
+  fun meetingProposalVoteScreen_loadingMeetingFailsClearsErrorAndShowsNoVotes() {
     val error = Exception("Load Failed")
     repositoryMock.setMeetingLoadToFail(error)
 
@@ -233,7 +233,7 @@ class MeetingProposalVoteScreenTest {
   }
 
   @Test
-  fun test_peopleButton_whenVoted_retractsEntireVote() {
+  fun meetingProposalVoteScreen_peopleButtonWhenVotedRetractsEntireVote() {
     // Arrange
     repositoryMock.setMeetingToReturn(MOCK_MEETING)
     setContent()
@@ -252,7 +252,7 @@ class MeetingProposalVoteScreenTest {
   }
 
   @Test
-  fun test_peopleButton_whenNotVoted_opensFormatDialog() {
+  fun meetingProposalVoteScreen_peopleButtonWhenNotVotedOpensFormatDialog() {
 
     repositoryMock.setMeetingToReturn(MOCK_MEETING)
     setContent()
@@ -274,7 +274,7 @@ class MeetingProposalVoteScreenTest {
   }
 
   @Test
-  fun test_dialog_okButton_isInitiallyDisabled_andEnablesOnSelection() {
+  fun meetingProposalVoteScreen_dialogOkButtonIsInitiallyDisabledAndEnablesOnSelection() {
 
     repositoryMock.setMeetingToReturn(MOCK_MEETING)
     setContent()
@@ -302,7 +302,7 @@ class MeetingProposalVoteScreenTest {
   }
 
   @Test
-  fun test_dialog_cancelButton_dismissesDialog() {
+  fun meetingProposalVoteScreen_dialogCancelButtonDismissesDialog() {
     repositoryMock.setMeetingToReturn(MOCK_MEETING)
     setContent()
     composeTestRule.waitForIdle()
@@ -323,7 +323,7 @@ class MeetingProposalVoteScreenTest {
   }
 
   @Test
-  fun test_dialog_okButton_addsVoteAndDismissesDialog() {
+  fun meetingProposalVoteScreen_dialogOkButtonAddsVoteAndDismissesDialog() {
     repositoryMock.setMeetingToReturn(MOCK_MEETING)
     setContent()
     composeTestRule.waitForIdle()
@@ -353,7 +353,7 @@ class MeetingProposalVoteScreenTest {
   }
 
   @Test
-  fun test_formatButtons_areDisplayed_whenVoted_andNot_whenNotVoted() {
+  fun meetingProposalVoteScreen_formatButtonsAreDisplayedWhenVotedAndNotWhenNotVoted() {
     repositoryMock.setMeetingToReturn(MOCK_MEETING)
     setContent()
     composeTestRule.waitForIdle()
@@ -367,7 +367,7 @@ class MeetingProposalVoteScreenTest {
   }
 
   @Test
-  fun test_formatButton_clickToAddFormatVote() {
+  fun meetingProposalVoteScreen_formatButtonClickToAddFormatVote() {
     repositoryMock.setMeetingToReturn(MEETING_FOR_FORMAT_TESTS)
     setContent()
     composeTestRule.waitForIdle()
@@ -389,7 +389,7 @@ class MeetingProposalVoteScreenTest {
   }
 
   @Test
-  fun test_formatButton_clickToRetractFormatVote() {
+  fun meetingProposalVoteScreen_formatButtonClickToRetractFormatVote() {
     repositoryMock.setMeetingToReturn(MEETING_FOR_FORMAT_TESTS)
     setContent()
     composeTestRule.waitForIdle()
@@ -411,7 +411,7 @@ class MeetingProposalVoteScreenTest {
   }
 
   @Test
-  fun test_backButton_isDisplayed_andCallsOnBackClick() {
+  fun meetingProposalVoteScreen_backButtonIsDisplayedAndCallsOnBackClick() {
     repositoryMock.setMeetingToReturn(MOCK_MEETING)
     setContent(onBackClick = { onBackClickCalled.value = true })
     composeTestRule.waitForIdle()

@@ -110,7 +110,7 @@ class TemplateFieldListItemTest {
   }
 
   @Test
-  fun collapsedState_displaysErrorIcon_whenErrorPresent() {
+  fun collapsedState_displaysErrorIconWhenErrorPresent() {
     composeTestRule.setContent {
       TemplateFieldListItem(
           field = testTextField,
@@ -132,7 +132,7 @@ class TemplateFieldListItemTest {
   }
 
   @Test
-  fun collapsedState_doesNotDisplayErrorIcon_whenNoError() {
+  fun collapsedState_doesNotDisplayErrorIconWhenNoError() {
     composeTestRule.setContent {
       TemplateFieldListItem(
           field = testTextField,
@@ -154,7 +154,7 @@ class TemplateFieldListItemTest {
   }
 
   @Test
-  fun collapsedState_callsOnExpand_whenClicked() {
+  fun collapsedState_callsOnExpandWhenClicked() {
     var expandCalled = false
     composeTestRule.setContent {
       TemplateFieldListItem(
@@ -202,7 +202,7 @@ class TemplateFieldListItemTest {
   }
 
   @Test
-  fun expandedState_displaysTextFieldConfiguration_forTextField() {
+  fun expandedState_displaysTextFieldConfigurationForTextField() {
     composeTestRule.setContent {
       TemplateFieldListItem(
           field = testTextField,
@@ -225,7 +225,7 @@ class TemplateFieldListItemTest {
   }
 
   @Test
-  fun expandedState_displaysNumberFieldConfiguration_forNumberField() {
+  fun expandedState_displaysNumberFieldConfigurationForNumberField() {
     composeTestRule.setContent {
       TemplateFieldListItem(
           field = testNumberField,
@@ -248,7 +248,7 @@ class TemplateFieldListItemTest {
   }
 
   @Test
-  fun expandedState_displaysDateFieldConfiguration_forDateField() {
+  fun expandedState_displaysDateFieldConfigurationForDateField() {
     composeTestRule.setContent {
       TemplateFieldListItem(
           field = testDateField,
@@ -270,7 +270,7 @@ class TemplateFieldListItemTest {
   }
 
   @Test
-  fun expandedState_displaysSingleSelectConfiguration_forSingleSelectField() {
+  fun expandedState_displaysSingleSelectConfigurationForSingleSelectField() {
     composeTestRule.setContent {
       TemplateFieldListItem(
           field = testSingleSelectField,
@@ -292,7 +292,7 @@ class TemplateFieldListItemTest {
   }
 
   @Test
-  fun expandedState_displaysMultiSelectConfiguration_forMultiSelectField() {
+  fun expandedState_displaysMultiSelectConfigurationForMultiSelectField() {
     composeTestRule.setContent {
       TemplateFieldListItem(
           field = testMultiSelectField,
@@ -466,7 +466,7 @@ class TemplateFieldListItemTest {
   }
 
   @Test
-  fun expandedState_doesNotCallOnExpand_whenHeaderClicked() {
+  fun expandedState_doesNotCallOnExpandWhenHeaderClicked() {
     var expandCalled = false
     composeTestRule.setContent {
       TemplateFieldListItem(
@@ -556,7 +556,7 @@ class TemplateFieldListItemTest {
   }
 
   @Test
-  fun fieldTypeIcon_displaysCorrectIcon_forTextField() {
+  fun fieldTypeIcon_displaysCorrectIconForTextField() {
     composeTestRule.setContent {
       TemplateFieldListItem(
           field = testTextField,
@@ -578,7 +578,7 @@ class TemplateFieldListItemTest {
   }
 
   @Test
-  fun fieldTypeIcon_displaysCorrectIcon_forNumberField() {
+  fun fieldTypeIcon_displaysCorrectIconForNumberField() {
     composeTestRule.setContent {
       TemplateFieldListItem(
           field = testNumberField,
@@ -600,7 +600,7 @@ class TemplateFieldListItemTest {
   }
 
   @Test
-  fun fieldTypeIcon_displaysCorrectIcon_forDateField() {
+  fun fieldTypeIcon_displaysCorrectIconForDateField() {
     composeTestRule.setContent {
       TemplateFieldListItem(
           field = testDateField,
@@ -622,7 +622,7 @@ class TemplateFieldListItemTest {
   }
 
   @Test
-  fun fieldTypeIcon_displaysCorrectIcon_forSingleSelectField() {
+  fun fieldTypeIcon_displaysCorrectIconForSingleSelectField() {
     composeTestRule.setContent {
       TemplateFieldListItem(
           field = testSingleSelectField,
@@ -644,7 +644,7 @@ class TemplateFieldListItemTest {
   }
 
   @Test
-  fun fieldTypeIcon_displaysCorrectIcon_forMultiSelectField() {
+  fun fieldTypeIcon_displaysCorrectIconForMultiSelectField() {
     composeTestRule.setContent {
       TemplateFieldListItem(
           field = testMultiSelectField,
@@ -692,7 +692,7 @@ class TemplateFieldListItemTest {
   }
 
   @Test
-  fun editingLabel_updatesLocalFieldState_andPassesToCallback() {
+  fun editingLabel_updatesLocalFieldStateAndPassesToCallback() {
     var capturedField: FieldDefinition? = null
 
     composeTestRule.setContent {
@@ -719,7 +719,7 @@ class TemplateFieldListItemTest {
   }
 
   @Test
-  fun editingDescription_updatesLocalFieldState_andPassesToCallback() {
+  fun editingDescription_updatesLocalFieldStateAndPassesToCallback() {
     var capturedField: FieldDefinition? = null
 
     composeTestRule.setContent {
@@ -748,7 +748,7 @@ class TemplateFieldListItemTest {
   }
 
   @Test
-  fun togglingRequired_updatesLocalFieldState_andPassesToCallback() {
+  fun togglingRequired_updatesLocalFieldStateAndPassesToCallback() {
     var capturedField: FieldDefinition? = null
 
     composeTestRule.setContent {

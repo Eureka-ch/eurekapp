@@ -1,3 +1,5 @@
+/* Portions of this file were written with the help of Claude. */
+// Part of this code and documentation were generated with the help of AI (ChatGPT 5.1).
 package ch.eureka.eurekapp.screens
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -22,14 +24,13 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-// Part of this code and documentation were generated with the help of AI (ChatGPT 5.1).
 @RunWith(AndroidJUnit4::class)
 class HomeOverviewScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun displaysGreetingAndSections() {
+  fun homeOverviewScreen_displaysGreetingAndSections() {
     val uiState =
         sampleState()
             .copy(
@@ -73,7 +74,7 @@ class HomeOverviewScreenTest {
   }
 
   @Test
-  fun limitsItemsPerSection() {
+  fun homeOverviewScreen_limitsItemsPerSection() {
     val tasks = (1..4).map { createTask("Task $it") }
     val meetings = (1..4).map { createMeeting("Meeting $it") }
     val projects = (1..4).map { createProject("Project $it") }
@@ -109,7 +110,7 @@ class HomeOverviewScreenTest {
   }
 
   @Test
-  fun ctaButtonsTriggerCallbacks() {
+  fun homeOverviewScreen_ctaButtonsTriggerCallbacks() {
     var tasksClicked = false
     var meetingsClicked = false
     var projectsClicked = false
@@ -151,7 +152,7 @@ class HomeOverviewScreenTest {
   }
 
   @Test
-  fun showsLoadingState() {
+  fun homeOverviewScreen_showsLoadingState() {
     composeTestRule.setContent {
       HomeOverviewLayout(uiState = HomeOverviewUiState(isLoading = true))
     }

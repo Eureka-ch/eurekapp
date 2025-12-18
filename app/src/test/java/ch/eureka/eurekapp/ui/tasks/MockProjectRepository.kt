@@ -12,7 +12,8 @@ import kotlinx.coroutines.flow.flowOf
  *
  * Allows tests to configure project data and flows
  *
- * Note: This file was partially written by GPT-5 Codex Co-author : GPT-5
+ * Note: This file was partially written by GPT-5 Codex and Claude. Co-author: GPT-5 Co-author:
+ * Claude
  */
 class MockProjectRepository : ProjectRepository {
   private var currentUserProjects: Flow<List<Project>> = flowOf(emptyList())

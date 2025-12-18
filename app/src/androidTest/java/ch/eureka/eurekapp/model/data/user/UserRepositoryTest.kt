@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Claude. */
 package ch.eureka.eurekapp.model.data.user
 
 import ch.eureka.eurekapp.utils.FirebaseEmulator
@@ -35,7 +36,7 @@ class UserRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun saveUser_shouldSaveUserToFirestore() = runBlocking {
+  fun userRepository_saveUserShouldSaveUserToFirestore() = runBlocking {
     val user =
         User(
             uid = testUserId,
@@ -64,7 +65,7 @@ class UserRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getUserById_shouldReturnUserWhenExists() = runBlocking {
+  fun userRepository_getUserByIdShouldReturnUserWhenExists() = runBlocking {
     val user =
         User(
             uid = testUserId,
@@ -85,7 +86,7 @@ class UserRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getUserById_shouldReturnNullWhenUserDoesNotExist() = runBlocking {
+  fun userRepository_getUserByIdShouldReturnNullWhenUserDoesNotExist() = runBlocking {
     val flow = repository.getUserById("non_existent_user")
     val retrievedUser = flow.first()
 
@@ -93,7 +94,7 @@ class UserRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getCurrentUser_shouldReturnCurrentUserWhenSignedIn() = runBlocking {
+  fun userRepository_getCurrentUserShouldReturnCurrentUserWhenSignedIn() = runBlocking {
     val user =
         User(
             uid = testUserId,
@@ -113,7 +114,7 @@ class UserRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun updateLastActive_shouldUpdateTimestamp() = runBlocking {
+  fun userRepository_updateLastActiveShouldUpdateTimestamp() = runBlocking {
     val user =
         User(
             uid = testUserId,
@@ -151,7 +152,7 @@ class UserRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun saveUser_shouldUpdateExistingUser() = runBlocking {
+  fun userRepository_saveUserShouldUpdateExistingUser() = runBlocking {
     val user =
         User(
             uid = testUserId,
@@ -180,7 +181,7 @@ class UserRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getUserById_shouldReactToChanges() = runBlocking {
+  fun userRepository_getUserByIdShouldReactToChanges() = runBlocking {
     val user =
         User(
             uid = testUserId,
@@ -207,7 +208,7 @@ class UserRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getCurrentUser_shouldReactToChanges() = runBlocking {
+  fun userRepository_getCurrentUserShouldReactToChanges() = runBlocking {
     val user =
         User(
             uid = testUserId,

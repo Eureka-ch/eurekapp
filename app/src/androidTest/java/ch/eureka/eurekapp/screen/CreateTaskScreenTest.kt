@@ -1,7 +1,7 @@
 /*
  * Co-Authored-By: Claude Sonnet 4.5
  * Portions of this code were generated with the help of AI.
- * Portions added by Jiří Gebauer were generated with the help of Grok.
+ * Portions added by Jiří Gebauer were generated with the help of Grok and Claude.
  */
 package ch.eureka.eurekapp.screen
 
@@ -98,7 +98,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun projectSelectionShowslistAndSelectsproject() {
+  fun createTaskScreen_projectSelectionShowsListAndSelectsProject() {
     val projectId = "project123"
 
     // Provide a fake project list via a fake repository-injected VM
@@ -159,7 +159,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun projectSelectionShowsnoprojectsmessageWhenemptylist() {
+  fun createTaskScreen_projectSelectionShowsNoProjectsMessageWhenEmpty() {
     val emptyRepo =
         object : ProjectRepository {
           override fun getProjectById(projectId: String): Flow<Project?> = flowOf(null)
@@ -276,7 +276,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testEmptyFieldsShowErrors() {
+  fun createTaskScreen_emptyFieldsShowErrors() {
     navigateToCreateTaskScreen()
     // Focus and leave the Title field empty
     composeTestRule.onNodeWithTag(CommonTaskTestTags.TITLE).performClick()
@@ -291,7 +291,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testInvalidDateShowsError() {
+  fun createTaskScreen_invalidDateShowsError() {
     navigateToCreateTaskScreen()
 
     // Input title and description
@@ -307,7 +307,7 @@ class CreateTaskScreenTests : TestCase() {
 
   /** This is our end-to-end test. */
   @Test
-  fun testTakingPhotos() {
+  fun createTaskScreen_takingPhotosWorks() {
     navigateToCreateTaskScreen()
 
     // Initially, no photo should be displayed
@@ -346,7 +346,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testPhotoUpload() {
+  fun createTaskScreen_photoUploadWorks() {
     val projectId = "project123"
     val fakeProjectRepository =
         object : ProjectRepository {
@@ -505,7 +505,7 @@ class CreateTaskScreenTests : TestCase() {
   }*/
 
   @Test
-  fun testTaskCreated() {
+  fun createTaskScreen_taskCreatedSuccessfully() {
     val projectId = "project123"
     val fakeProjectRepository =
         object : ProjectRepository {
@@ -631,7 +631,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testSaveButtonEnabledOnlyWithValidInput() {
+  fun createTaskScreen_saveButtonEnabledOnlyWithValidInput() {
     val projectId = "project123"
     val fakeProjectRepository =
         object : ProjectRepository {
@@ -779,7 +779,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun reminderTimeFieldIsdisplayed() {
+  fun createTaskScreen_reminderTimeFieldIsDisplayed() {
     val projectId = "project123"
 
     val fakeProjectRepository =
@@ -859,7 +859,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testAddDependencyShowsdependencyinlist() {
+  fun createTaskScreen_addDependencyShowsDependencyInList() {
     runBlocking {
       val projectId = "project123"
       val taskId1 = "task1"
@@ -930,7 +930,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testTaskCreatedWithdependenciesSavesdependencies() {
+  fun createTaskScreen_taskCreatedWithDependenciesSavesDependencies() {
     runBlocking {
       val projectId = "project123"
       val taskId1 = "task1"
@@ -1016,7 +1016,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun testBackButtonNavigatesBack() {
+  fun createTaskScreen_backButtonNavigatesBack() {
     runBlocking {
       val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
       lastCreateVm = viewModel
@@ -1045,7 +1045,7 @@ class CreateTaskScreenTests : TestCase() {
   // ========== TEMPLATE SELECTION TESTS ==========
 
   @Test
-  fun templateSelectionShowsCreateButtonWhenProjectSelected() {
+  fun createTaskScreen_templateSelectionShowsCreateButtonWhenProjectSelected() {
     val projectId = "project123"
 
     val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())
@@ -1077,7 +1077,7 @@ class CreateTaskScreenTests : TestCase() {
   }
 
   @Test
-  fun templateSelectionNavigatesToCreateTemplateScreen() {
+  fun createTaskScreen_templateSelectionNavigatesToCreateTemplateScreen() {
     val projectId = "project123"
 
     val viewModel = CreateTaskViewModel(taskRepository, fileRepository = FakeFileRepository())

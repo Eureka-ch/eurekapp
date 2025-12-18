@@ -98,7 +98,7 @@ class ChatEndToEndTest : TestCase() {
 
   @OptIn(ExperimentalTestApi::class)
   @Test
-  fun endToEnd_signInNavigateToConversationsCreateChatAndSendMessage() {
+  fun chatEndToEnd_signInNavigateToConversationsCreateChatAndSendMessage() {
     val fakeName = "Test User"
     val fakeEmail = "testuser@eureka.com"
     val fakeIdToken = FakeJwtGenerator.createFakeGoogleIdToken(fakeName, fakeEmail)

@@ -1,4 +1,4 @@
-/* Portions of this file were written with the help of Gemini and Grok.*/
+/* Portions of this file were written with the help of Gemini, Grok, and Claude. */
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -117,7 +117,7 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
   private fun findCancelButton() = composeTestRule.onNodeWithText("Cancel")
 
   @Test
-  fun screenLoads_displaysStaticContent_andButtonIsDisabled() {
+  fun createDateTimeFormatProposalForMeetingScreen_screenLoadsDisplaysStaticContentAndButtonIsDisabled() {
     composeTestRule
         .onNodeWithTag(
             CreateDateTimeFormatMeetingProposalScreenTestTags.CREATE_MEETING_PROPOSAL_SCREEN_TITLE)
@@ -157,7 +157,7 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
   }
 
   @Test
-  fun saveButton_isEnabled_whenStateIsValid() {
+  fun createDateTimeFormatProposalForMeetingScreen_saveButtonIsEnabledWhenStateIsValid() {
     val buttonTag = CreateDateTimeFormatMeetingProposalScreenTestTags.CREATE_MEETING_PROPOSAL_BUTTON
 
     composeTestRule.onNodeWithTag(buttonTag).assertIsNotEnabled()
@@ -180,7 +180,7 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
   }
 
   @Test
-  fun createProposal_whenSuccess_callsOnDone() {
+  fun createDateTimeFormatProposalForMeetingScreen_createProposalWhenSuccessCallsOnDone() {
     repositoryMock.shouldUpdateSucceed = true
 
     composeTestRule.runOnIdle {
@@ -202,7 +202,7 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
   }
 
   @Test
-  fun createProposal_whenRepositoryFails_showsErrorAndClearsIt() {
+  fun createDateTimeFormatProposalForMeetingScreen_createProposalWhenRepositoryFailsShowsErrorAndClearsIt() {
     repositoryMock.shouldUpdateSucceed = false
 
     composeTestRule.runOnIdle {
@@ -224,7 +224,7 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
   }
 
   @Test
-  fun dateInputField_opensDialog_andCancels() {
+  fun createDateTimeFormatProposalForMeetingScreen_dateInputFieldOpensDialogAndCancels() {
     composeTestRule
         .onNodeWithTag(CreateDateTimeFormatMeetingProposalScreenTestTags.INPUT_MEETING_DATE)
         .performClick()
@@ -235,7 +235,7 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
   }
 
   @Test
-  fun dateInputField_opensDialogWithIcon_andConfirms() {
+  fun createDateTimeFormatProposalForMeetingScreen_dateInputFieldOpensDialogWithIconAndConfirms() {
     val initialDate = viewModel.uiState.value.date
     composeTestRule.onNodeWithContentDescription("Select date").performClick()
     findOkButton().assertIsDisplayed()
@@ -245,7 +245,7 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
   }
 
   @Test
-  fun timeInputField_opensDialog_andCancels() {
+  fun createDateTimeFormatProposalForMeetingScreen_timeInputFieldOpensDialogAndCancels() {
     composeTestRule
         .onNodeWithTag(CreateDateTimeFormatMeetingProposalScreenTestTags.INPUT_MEETING_TIME)
         .performClick()
@@ -255,7 +255,7 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
   }
 
   @Test
-  fun timeInputField_opensDialogWithIcon_andConfirms() {
+  fun createDateTimeFormatProposalForMeetingScreen_timeInputFieldOpensDialogWithIconAndConfirms() {
     val initialTimeTruncated = viewModel.uiState.value.time.truncatedTo(ChronoUnit.MINUTES)
     composeTestRule
         .onNodeWithTag(CreateDateTimeFormatMeetingProposalScreenTestTags.INPUT_MEETING_TIME)
@@ -268,7 +268,7 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
   }
 
   @Test
-  fun formatInputField_opensDialog_andCancels() {
+  fun createDateTimeFormatProposalForMeetingScreen_formatInputFieldOpensDialogAndCancels() {
     val initialFormat = viewModel.uiState.value.format
     assertEquals(MeetingFormat.IN_PERSON, initialFormat)
 
@@ -290,7 +290,7 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
   }
 
   @Test
-  fun formatInputField_opensDialogWithIcon_selectsOption_andConfirms() {
+  fun createDateTimeFormatProposalForMeetingScreen_formatInputFieldOpensDialogWithIconSelectsOptionAndConfirms() {
     val initialFormat = viewModel.uiState.value.format
     assertEquals(MeetingFormat.IN_PERSON, initialFormat)
 
@@ -312,7 +312,7 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
   }
 
   @Test
-  fun dateInput_iconClick_triggersTouchDate() {
+  fun createDateTimeFormatProposalForMeetingScreen_dateInputIconClickTriggersTouchDate() {
     assertFalse(viewModel.uiState.value.hasTouchedDate)
     composeTestRule
         .onNodeWithTag(CreateDateTimeFormatMeetingProposalScreenTestTags.INPUT_MEETING_DATE)
@@ -323,7 +323,7 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
   }
 
   @Test
-  fun timeInput_iconClick_triggersTouchTime() {
+  fun createDateTimeFormatProposalForMeetingScreen_timeInputIconClickTriggersTouchTime() {
     assertFalse(viewModel.uiState.value.hasTouchedTime)
     composeTestRule
         .onNodeWithTag(CreateDateTimeFormatMeetingProposalScreenTestTags.INPUT_MEETING_TIME)
@@ -334,7 +334,7 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
   }
 
   @Test
-  fun pastTimeError_appears_whenDateAndTimeTouchedAndInPast() {
+  fun createDateTimeFormatProposalForMeetingScreen_pastTimeErrorAppearsWhenDateAndTimeTouchedAndInPast() {
     val errorText = "Meeting should be scheduled in the future."
     composeTestRule.onNodeWithText(errorText).assertDoesNotExist()
 
@@ -356,7 +356,7 @@ class CreateDateTimeFormatProposalForMeetingScreenTest {
   }
 
   @Test
-  fun pastTimeError_disappears_whenFutureDateIsSelected() {
+  fun createDateTimeFormatProposalForMeetingScreen_pastTimeErrorDisappearsWhenFutureDateIsSelected() {
     val errorText = "Meeting should be scheduled in the future."
     composeTestRule.runOnIdle { viewModel.setDate(pastDateTime.toLocalDate()) }
     composeTestRule

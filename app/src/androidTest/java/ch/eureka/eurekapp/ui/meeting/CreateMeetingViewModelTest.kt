@@ -1,4 +1,4 @@
-/* Portions of this file were written with the help of Gemini.*/
+/* Portions of this file were written with the help of Gemini and Claude. */
 package ch.eureka.eurekapp.ui.meeting
 
 import android.util.Log

@@ -100,7 +100,7 @@ class CreateProjectScreenTest : TestCase() {
   }
 
   @Test
-  fun textInputFieldsInCreateProjectScreen_works() {
+  fun createProjectScreen_textInputFieldsWork() {
     composeRule.setContent { CreateProjectScreen() }
 
     composeRule
@@ -161,7 +161,7 @@ class CreateProjectScreenTest : TestCase() {
   }
 
   @Test
-  fun datePicker_works() {
+  fun createProjectScreen_datePickerWorks() {
     composeRule.setContent { CreateProjectScreen() }
 
     composeRule
@@ -172,7 +172,7 @@ class CreateProjectScreenTest : TestCase() {
   }
 
   @Test
-  fun createProject_works() {
+  fun createProjectScreen_createProjectWorks() {
     runBlocking {
       val auth = MockedAuthRepositoryFirebase()
       val firebaseProjectsRepository = MockedProjectsRepository()
@@ -233,7 +233,7 @@ class CreateProjectScreenTest : TestCase() {
   }
 
   @Test
-  fun backButton_works() {
+  fun createProjectScreen_backButtonWorks() {
     val onBackClickCalled = mutableStateOf(false)
     composeRule.setContent { CreateProjectScreen(onBackClick = { onBackClickCalled.value = true }) }
 

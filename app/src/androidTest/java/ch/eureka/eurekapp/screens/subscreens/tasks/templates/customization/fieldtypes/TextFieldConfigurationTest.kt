@@ -1,5 +1,7 @@
 package ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fieldtypes
 
+/* Portions of this code were generated with the help of Claude Sonnet 4.5. */
+
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.utils.BaseFieldConfigurationTest
 import org.junit.Test
@@ -8,7 +10,7 @@ import org.junit.Test
 class TextFieldConfigurationTest : BaseFieldConfigurationTest() {
 
   @Test
-  fun textFieldConfigurationDisplaysAllFields() {
+  fun textFieldConfiguration_displaysAllFields() {
     utils.testDisplaysAllFields(
         composeTestRule,
         content = {
@@ -20,7 +22,7 @@ class TextFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun textFieldConfigurationMaxLengthInputUpdatesType() {
+  fun textFieldConfiguration_maxLengthInputUpdatesType() {
     val updates = mutableListOf<FieldType.Text>()
 
     utils.testInputUpdate(
@@ -36,7 +38,7 @@ class TextFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun textFieldConfigurationMinLengthInputUpdatesType() {
+  fun textFieldConfiguration_minLengthInputUpdatesType() {
     val updates = mutableListOf<FieldType.Text>()
 
     utils.testInputUpdate(
@@ -52,7 +54,7 @@ class TextFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun textFieldConfigurationPlaceholderInputUpdatesType() {
+  fun textFieldConfiguration_placeholderInputUpdatesType() {
     val updates = mutableListOf<FieldType.Text>()
 
     utils.testInputUpdate(
@@ -68,7 +70,7 @@ class TextFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun textFieldConfigurationMinLessThanMaxNoError() {
+  fun textFieldConfiguration_minLessThanMaxNoError() {
     this.composeTestRule.setContent {
       TextFieldConfiguration(
           fieldType = FieldType.Text(minLength = 5, maxLength = 10), onUpdate = {}, enabled = true)
@@ -79,7 +81,7 @@ class TextFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun textFieldConfigurationMinEqualToMaxNoError() {
+  fun textFieldConfiguration_minEqualToMaxNoError() {
     this.composeTestRule.setContent {
       TextFieldConfiguration(
           fieldType = FieldType.Text(minLength = 5, maxLength = 5), onUpdate = {}, enabled = true)
@@ -90,7 +92,7 @@ class TextFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun textFieldConfigurationDisabledAllFieldsDisabled() {
+  fun textFieldConfiguration_disabledAllFieldsDisabled() {
     utils.testDisabledState(
         composeTestRule,
         content = {
@@ -102,7 +104,7 @@ class TextFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun textFieldConfigurationWithPlaceholderDisplays() {
+  fun textFieldConfiguration_withPlaceholderDisplays() {
     this.composeTestRule.setContent {
       TextFieldConfiguration(
           fieldType = FieldType.Text(placeholder = "Type here"), onUpdate = {}, enabled = true)
@@ -112,7 +114,7 @@ class TextFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun textFieldConfigurationWithMaxLengthDisplays() {
+  fun textFieldConfiguration_withMaxLengthDisplays() {
     this.composeTestRule.setContent {
       TextFieldConfiguration(
           fieldType = FieldType.Text(maxLength = 50), onUpdate = {}, enabled = true)
@@ -122,7 +124,7 @@ class TextFieldConfigurationTest : BaseFieldConfigurationTest() {
   }
 
   @Test
-  fun textFieldConfigurationWithMinLengthDisplays() {
+  fun textFieldConfiguration_withMinLengthDisplays() {
     this.composeTestRule.setContent {
       TextFieldConfiguration(
           fieldType = FieldType.Text(minLength = 3), onUpdate = {}, enabled = true)

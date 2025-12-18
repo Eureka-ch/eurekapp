@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Grok and Claude. */
 package ch.eureka.eurekapp.screen
 
 import android.Manifest
@@ -177,7 +178,7 @@ open class EditTaskScreenTest : TestCase() {
   }
 
   @Test
-  fun testEmptyFieldsShowErrors() =
+  fun editTaskScreen_emptyFieldsShowErrors() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -213,7 +214,7 @@ open class EditTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testInvalidDateShowsError() =
+  fun editTaskScreen_invalidDateShowsError() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -241,7 +242,7 @@ open class EditTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testTaskLoadedCorrectly() =
+  fun editTaskScreen_taskLoadedCorrectly() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -275,7 +276,7 @@ open class EditTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testTakingPhotos() =
+  fun editTaskScreen_takingPhotosWorks() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -329,7 +330,7 @@ open class EditTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testTaskEdited() =
+  fun editTaskScreen_taskEditedSuccessfully() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -380,7 +381,7 @@ open class EditTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testTaskDeleted() =
+  fun editTaskScreen_taskDeletedSuccessfully() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -465,7 +466,7 @@ open class EditTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testStatusChange() =
+  fun editTaskScreen_statusChangeWorks() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -505,7 +506,7 @@ open class EditTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testSaveButtonEnabledOnlyWithValidInput() =
+  fun editTaskScreen_saveButtonEnabledOnlyWithValidInput() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -556,7 +557,7 @@ open class EditTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testNavigateFromTasksToEditTask() =
+  fun editTaskScreen_navigateFromTasksToEditTask() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -700,7 +701,7 @@ open class EditTaskScreenTest : TestCase() {
   }
 
   @Test
-  fun testDependenciesLoadedFromTask() =
+  fun editTaskScreen_dependenciesLoadedFromTask() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -721,7 +722,7 @@ open class EditTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testCurrentTaskIsexcludedfromavailabletasks() =
+  fun editTaskScreen_currentTaskIsExcludedFromAvailableTasks() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -745,7 +746,7 @@ open class EditTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testEditTaskWithdependenciesSavesdependencies() =
+  fun editTaskScreen_editTaskWithDependenciesSavesDependencies() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -781,7 +782,7 @@ open class EditTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testRemoveDependencyRemovesfromlist() =
+  fun editTaskScreen_removeDependencyRemovesFromList() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -811,7 +812,7 @@ open class EditTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testCycleErrorIsdisplayedWhencycledetected() =
+  fun editTaskScreen_cycleErrorIsDisplayedWhenCycleDetected() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -1014,7 +1015,7 @@ open class EditTaskScreenTest : TestCase() {
   }
 
   @Test
-  fun testDeleteRemotePhotos() =
+  fun editTaskScreen_deleteRemotePhotos() =
       runBlocking<Unit> {
         val projectId = "project123"
         val taskId = "task123"
@@ -1051,7 +1052,7 @@ open class EditTaskScreenTest : TestCase() {
       }
 
   @Test
-  fun testBackButtonNavigatesBack() {
+  fun editTaskScreen_backButtonNavigatesBack() {
     runBlocking {
       val projectId = "project123"
       val taskId = "task123"

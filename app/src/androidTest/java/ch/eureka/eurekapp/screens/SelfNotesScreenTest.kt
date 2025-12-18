@@ -1,4 +1,4 @@
-/* Portions of this file were written with the help of Gemini. */
+/* Portions of this file were written with the help of Gemini and Claude. */
 package ch.eureka.eurekapp.screens
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -60,7 +60,7 @@ class SelfNotesScreenTest {
   }
 
   @Test
-  fun loadingState_displaysProgressIndicator() {
+  fun selfNotesScreen_loadingStateDisplaysProgressIndicator() {
     uiStateFlow.value = SelfNotesUIState(isLoading = true)
     setupScreen()
 
@@ -70,7 +70,7 @@ class SelfNotesScreenTest {
   }
 
   @Test
-  fun emptyState_displaysPlaceholder() {
+  fun selfNotesScreen_emptyStateDisplaysPlaceholder() {
     uiStateFlow.value = SelfNotesUIState(isLoading = false, notes = emptyList())
     setupScreen()
 
@@ -79,7 +79,7 @@ class SelfNotesScreenTest {
   }
 
   @Test
-  fun notesState_displaysList() {
+  fun selfNotesScreen_notesStateDisplaysList() {
     val notes = listOf(createMessage("1", "First Note"), createMessage("2", "Second Note"))
     uiStateFlow.value = SelfNotesUIState(isLoading = false, notes = notes)
     setupScreen()
@@ -90,7 +90,7 @@ class SelfNotesScreenTest {
   }
 
   @Test
-  fun inputField_handlesTextEntryAndSending() {
+  fun selfNotesScreen_inputFieldHandlesTextEntryAndSending() {
     setupScreen()
 
     val inputText = "My new note"
@@ -105,7 +105,7 @@ class SelfNotesScreenTest {
   }
 
   @Test
-  fun storageToggle_displaysAndWorks() {
+  fun selfNotesScreen_storageToggleDisplaysAndWorks() {
     uiStateFlow.value = SelfNotesUIState(isCloudStorageEnabled = false)
     setupScreen()
 
@@ -121,7 +121,7 @@ class SelfNotesScreenTest {
   }
 
   @Test
-  fun longClickOnNote_togglesSelection() {
+  fun selfNotesScreen_longClickOnNoteTogglesSelection() {
     val notes = listOf(createMessage("1", "Long press me"))
     uiStateFlow.value = SelfNotesUIState(notes = notes)
     setupScreen()
@@ -132,7 +132,7 @@ class SelfNotesScreenTest {
   }
 
   @Test
-  fun selectionMode_displaysContextualTopBar_andHidesInput() {
+  fun selfNotesScreen_selectionModeDisplaysContextualTopBarAndHidesInput() {
     val notes = listOf(createMessage("1", "Note 1"), createMessage("2", "Note 2"))
     uiStateFlow.value = SelfNotesUIState(notes = notes, selectedNoteIds = setOf("1", "2"))
     setupScreen()
@@ -146,7 +146,7 @@ class SelfNotesScreenTest {
   }
 
   @Test
-  fun selectionMode_showsEditButton_onlyForSingleSelection() {
+  fun selfNotesScreen_selectionModeShowsEditButtonOnlyForSingleSelection() {
     val notes = listOf(createMessage("1", "Note 1"), createMessage("2", "Note 2"))
 
     uiStateFlow.value = SelfNotesUIState(notes = notes, selectedNoteIds = setOf("1"))
@@ -158,7 +158,7 @@ class SelfNotesScreenTest {
   }
 
   @Test
-  fun selectionMode_actionsTriggerViewModel() {
+  fun selfNotesScreen_selectionModeActionsTriggerViewModel() {
     val notes = listOf(createMessage("1", "Note 1"))
     uiStateFlow.value = SelfNotesUIState(notes = notes, selectedNoteIds = setOf("1"))
     setupScreen()
@@ -174,7 +174,7 @@ class SelfNotesScreenTest {
   }
 
   @Test
-  fun editMode_changesUiState() {
+  fun selfNotesScreen_editModeChangesUiState() {
     val notes = listOf(createMessage("1", "Note 1"))
     uiStateFlow.value =
         SelfNotesUIState(notes = notes, editingMessageId = "1", currentMessage = "Note 1 content")

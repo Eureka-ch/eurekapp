@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Claude. */
 package ch.eureka.eurekapp.screen
 
 import androidx.compose.material3.Text
@@ -142,7 +143,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun autoAssignResultScreen_withLoadingState_displaysLoadingIndicator() {
+  fun autoAssignResultScreen_displaysLoadingIndicatorWithLoadingState() {
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
     setContentWithNav()
     composeTestRule.waitForIdle()
@@ -150,7 +151,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun autoAssignResultScreen_withNoProjects_displaysErrorMessage() {
+  fun autoAssignResultScreen_displaysErrorMessageWithNoProjects() {
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
     setContentWithNav()
     composeTestRule.waitForIdle()
@@ -159,7 +160,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun autoAssignResultScreen_withProposedAssignments_displaysTaskCards() {
+  fun autoAssignResultScreen_displaysTaskCardsWithProposedAssignments() {
     setupBasicProject()
     mockTaskRepository.setProjectTasks(
         "proj1", flowOf(listOf(createTask("task1"), createTask("task2"))))
@@ -170,7 +171,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun autoAssignResultScreen_acceptAssignment_updatesButtonState() {
+  fun autoAssignResultScreen_updatesButtonStateWhenAcceptingAssignment() {
     setupBasicProject()
     mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(createTask("task1"))))
     setContentWithNav()
@@ -182,7 +183,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun autoAssignResultScreen_applyAcceptedAssignments_appliesOnlyAccepted() {
+  fun autoAssignResultScreen_appliesOnlyAcceptedAssignments() {
     setupBasicProject()
     mockTaskRepository.setProjectTasks(
         "proj1", flowOf(listOf(createTask("task1"), createTask("task2"))))
@@ -218,7 +219,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun autoAssignResultScreen_withEmptyAssignments_displaysEmptyState() {
+  fun autoAssignResultScreen_displaysEmptyStateWithEmptyAssignments() {
     setupBasicProject()
     mockTaskRepository.setProjectTasks(
         "proj1", flowOf(listOf(createTask("task1", assigned = true))))
@@ -257,7 +258,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun autoAssignResultScreen_emptyState_goBackButtonNavigatesBack() {
+  fun autoAssignResultScreen_navigatesBackFromEmptyStateGoBackButton() {
     setupBasicProject()
     mockTaskRepository.setProjectTasks(
         "proj1", flowOf(listOf(createTask("task1", assigned = true))))
@@ -270,7 +271,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun autoAssignResultScreen_errorState_goBackButtonNavigatesBack() {
+  fun autoAssignResultScreen_navigatesBackFromErrorStateGoBackButton() {
     mockProjectRepository.setCurrentUserProjects(flowOf(emptyList()))
     setContentWithNav(includeTasksScreen = true)
     composeTestRule.waitForIdle()
@@ -281,7 +282,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun autoAssignResultScreen_afterSuccessfulApplication_navigatesBack() {
+  fun autoAssignResultScreen_navigatesBackAfterSuccessfulApplication() {
     setupBasicProject()
     mockTaskRepository.setProjectTasks("proj1", flowOf(listOf(createTask("task1"))))
     setContentWithNav(includeTasksScreen = true)
@@ -294,32 +295,6 @@ class AutoAssignResultScreenTest {
     composeTestRule.waitForIdle()
     waitForText("Tasks Screen", timeout = 5000L)
     composeTestRule.onNodeWithText("Tasks Screen", substring = true).assertIsDisplayed()
-  }
-
-  @Test
-  fun autoAssignResultScreen_loadingState_displaysLoadingIndicator() {
-    setupBasicProject()
-    mockTaskRepository.setProjectTasks("proj1", flowOf(emptyList()))
-    setContentWithNav()
-    composeTestRule.waitForIdle()
-    // Should show loading or have completed (safe assertion)
-    assert(
-        composeTestRule
-            .onAllNodesWithText("Calculating assignments", substring = true)
-            .fetchSemanticsNodes()
-            .isNotEmpty() ||
-            composeTestRule
-                .onAllNodesWithText("Review Assignments", substring = true)
-                .fetchSemanticsNodes()
-                .isNotEmpty() ||
-            composeTestRule
-                .onAllNodesWithText("No assignments", substring = true)
-                .fetchSemanticsNodes()
-                .isNotEmpty() ||
-            composeTestRule
-                .onAllNodesWithText("Error", substring = true)
-                .fetchSemanticsNodes()
-                .isNotEmpty())
   }
 
   @Test
@@ -341,7 +316,7 @@ class AutoAssignResultScreenTest {
   }
 
   @Test
-  fun constructor_passesProjectRepositoryToTaskRepository() = runBlocking {
+  fun autoAssignResultViewModel_passesProjectRepositoryToTaskRepository() = runBlocking {
     // Setup Firebase for this test
     if (!FirebaseEmulator.isRunning) {
       throw IllegalStateException("Firebase Emulator must be running for tests")

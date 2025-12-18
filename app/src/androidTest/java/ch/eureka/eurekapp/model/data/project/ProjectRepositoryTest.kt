@@ -1,4 +1,4 @@
-/* Portions of this file were written with the help og Gemini and Claude Code. */
+/* Portions of this file were written with the help of Gemini and Claude. */
 package ch.eureka.eurekapp.model.data.project
 
 import ch.eureka.eurekapp.model.data.meeting.Meeting
@@ -45,7 +45,7 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun createProject_shouldCreateProjectInFirestore() = runBlocking {
+  fun projectRepository_createProjectShouldCreateProjectInFirestore() = runBlocking {
     val project =
         Project(
             projectId = "project1",
@@ -80,7 +80,7 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getProjectById_shouldReturnProjectWhenExists() = runBlocking {
+  fun projectRepository_getProjectByIdShouldReturnProjectWhenExists() = runBlocking {
     val project =
         Project(
             projectId = "project2",
@@ -100,7 +100,7 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getProjectById_shouldReturnNullWhenProjectDoesNotExist() = runBlocking {
+  fun projectRepository_getProjectByIdShouldReturnNullWhenProjectDoesNotExist() = runBlocking {
     val flow = repository.getProjectById("non_existent_project")
     val retrievedProject = flow.first()
 
@@ -108,7 +108,7 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getProjectsForCurrentUser_shouldReturnAllProjectsForUser() = runBlocking {
+  fun projectRepository_getProjectsForCurrentUserShouldReturnAllProjectsForUser() = runBlocking {
     val project1 =
         Project(
             projectId = "project3",
@@ -136,7 +136,7 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun updateProject_shouldUpdateProjectDetails() = runBlocking {
+  fun projectRepository_updateProjectShouldUpdateProjectDetails() = runBlocking {
     val project =
         Project(
             projectId = "project5",
@@ -170,7 +170,7 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun deleteProject_shouldDeleteProjectFromFirestore() = runBlocking {
+  fun projectRepository_deleteProjectShouldDeleteProjectFromFirestore() = runBlocking {
     val project =
         Project(
             projectId = "project6",
@@ -196,7 +196,7 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun addMember_shouldAddMemberToProjectAndExistingMeetings() = runBlocking {
+  fun projectRepository_addMemberShouldAddMemberToProjectAndExistingMeetings() = runBlocking {
     val projectId = "project7"
     val project =
         Project(
@@ -266,7 +266,7 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun removeMember_shouldRemoveMemberFromProjectAndMeetings() = runBlocking {
+  fun projectRepository_removeMemberShouldRemoveMemberFromProjectAndMeetings() = runBlocking {
     val projectId = "project8"
     val memberToRemove = "test_user_2"
     val project =
@@ -348,7 +348,7 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun updateMemberRole_shouldUpdateMemberRole() = runBlocking {
+  fun projectRepository_updateMemberRoleShouldUpdateMemberRole() = runBlocking {
     val memberToUpdate = "test_user_2"
     val project =
         Project(
@@ -375,7 +375,7 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getProjectById_shouldHandleSnapshotListenerError(): Unit = runBlocking {
+  fun projectRepository_getProjectByIdShouldHandleSnapshotListenerError(): Unit = runBlocking {
     var caughtException: Throwable? = null
 
     val mockFirestore = mockk<FirebaseFirestore>(relaxed = true)
@@ -397,7 +397,7 @@ class ProjectRepositoryTest : FirestoreRepositoryTest() {
   }
 
   @Test
-  fun getMembers_shouldHandleSnapshotListenerError(): Unit = runBlocking {
+  fun projectRepository_getMembersShouldHandleSnapshotListenerError(): Unit = runBlocking {
     var caughtException: Throwable? = null
 
     val mockFirestore = mockk<FirebaseFirestore>(relaxed = true)

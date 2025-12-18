@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Claude. */
 package ch.eureka.eurekapp.ui.authentication
 
 import ch.eureka.eurekapp.model.data.invitation.FirestoreInvitationRepository
@@ -81,7 +82,7 @@ class TokenEntryViewModelFirestoreTest {
   // ========================================
 
   @Test
-  fun firestore_validToken_successfullyValidatesAndMarksAsUsed() = runBlocking {
+  fun tokenEntryViewModel_firestoreValidTokenSuccessfullyValidatesAndMarksAsUsed() = runBlocking {
     // Setup: Create invitation in Firestore
     val invitation =
         Invitation(token = "FIRESTORE-TOKEN-1", projectId = "project_1", isUsed = false)
@@ -117,7 +118,7 @@ class TokenEntryViewModelFirestoreTest {
   }
 
   @Test
-  fun firestore_invalidToken_returnsError() = runBlocking {
+  fun tokenEntryViewModel_firestoreInvalidTokenReturnsError() = runBlocking {
     // Act: Try to validate non-existent token
     viewModel.updateToken("NONEXISTENT-TOKEN")
     viewModel.validateToken()
@@ -129,7 +130,7 @@ class TokenEntryViewModelFirestoreTest {
   }
 
   @Test
-  fun firestore_alreadyUsedToken_returnsError() = runBlocking {
+  fun tokenEntryViewModel_firestoreAlreadyUsedTokenReturnsError() = runBlocking {
     // Setup: Create already-used invitation
     val usedInvitation =
         Invitation(
@@ -166,7 +167,7 @@ class TokenEntryViewModelFirestoreTest {
   }
 
   @Test
-  fun firestore_tokenWithSpecialCharacters_handlesCorrectly() = runBlocking {
+  fun tokenEntryViewModel_firestoreTokenWithSpecialCharactersHandlesCorrectly() = runBlocking {
     // Setup: Create token with special characters (Firestore allows most chars in doc IDs)
     val specialToken = "TOKEN-123_TEST"
     val invitation = Invitation(token = specialToken, projectId = "project_1", isUsed = false)
@@ -186,7 +187,7 @@ class TokenEntryViewModelFirestoreTest {
   }
 
   @Test
-  fun firestore_multipleSequentialValidations_workCorrectly() = runBlocking {
+  fun tokenEntryViewModel_firestoreMultipleSequentialValidationsWorkCorrectly() = runBlocking {
     // Setup: Create multiple invitations
     val invitation1 = Invitation(token = "TOKEN-1", projectId = "project_1", isUsed = false)
     val invitation2 = Invitation(token = "TOKEN-2", projectId = "project_1", isUsed = false)
@@ -235,7 +236,7 @@ class TokenEntryViewModelFirestoreTest {
   }
 
   @Test
-  fun firestore_raceCondition_onlyOneUserCanUseToken() = runBlocking {
+  fun tokenEntryViewModel_firestoreRaceConditionOnlyOneUserCanUseToken() = runBlocking {
     // Setup: Create invitation
     val invitation = Invitation(token = "RACE-TOKEN", projectId = "project_1", isUsed = false)
     FirebaseEmulator.firestore
@@ -262,7 +263,7 @@ class TokenEntryViewModelFirestoreTest {
   }
 
   @Test
-  fun firestore_orphanedInvitation_validatesSuccessfully() = runBlocking {
+  fun tokenEntryViewModel_firestoreOrphanedInvitationValidatesSuccessfully() = runBlocking {
     // Setup: Create invitation for non-existent project (orphaned)
     val orphanedInvitation =
         Invitation(token = "ORPHANED-TOKEN", projectId = "nonexistent_project", isUsed = false)
@@ -285,7 +286,7 @@ class TokenEntryViewModelFirestoreTest {
   // The already-used token detection is already tested in firestore_alreadyUsedToken_returnsError
 
   @Test
-  fun firestore_tokenTrimming_findsToken() = runBlocking {
+  fun tokenEntryViewModel_firestoreTokenTrimmingFindsToken() = runBlocking {
     // Setup: Create invitation with specific token
     val invitation = Invitation(token = "TRIM-TOKEN", projectId = "project_1", isUsed = false)
     FirebaseEmulator.firestore
@@ -304,7 +305,7 @@ class TokenEntryViewModelFirestoreTest {
   }
 
   @Test
-  fun firestore_clearData_verifyCleanState() = runBlocking {
+  fun tokenEntryViewModel_firestoreClearDataVerifyCleanState() = runBlocking {
     // Setup: Add some invitations
     val invitation1 = Invitation(token = "CLEAR-1", projectId = "project_1", isUsed = false)
     val invitation2 = Invitation(token = "CLEAR-2", projectId = "project_1", isUsed = false)

@@ -1,4 +1,4 @@
-/* Portions of this file were written with the help of Gemini and GPT-5 Codex. */
+/* Portions of this file were written with the help of Gemini, GPT-5 Codex, and Claude. */
 package ch.eureka.eurekapp.ui.notes
 
 import androidx.compose.ui.test.assertIsDisplayed

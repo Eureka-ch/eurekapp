@@ -1,3 +1,4 @@
+// Portions of this file were generated with the help of Claude (Sonnet 4.5).
 package ch.eureka.eurekapp
 
 import android.os.Bundle

@@ -1,4 +1,4 @@
-/* Portions of this file were written with the help of Gemini and Grok.*/
+/* Portions of this file were written with the help of Gemini, Grok, and Claude. */
 package ch.eureka.eurekapp.ui.meeting
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -113,7 +113,7 @@ class CreateMeetingScreenTest {
   private fun findCancelButton() = composeTestRule.onNodeWithText("Cancel")
 
   @Test
-  fun screenLoads_displaysStaticContent_andButtonIsDisabled() {
+  fun createMeetingScreen_screenLoadsDisplaysStaticContentAndButtonIsDisabled() {
     composeTestRule
         .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_SCREEN_TITLE)
         .assertIsDisplayed()
@@ -155,7 +155,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun projectDropdown_showsProjects_andUpdatesSelection() {
+  fun createMeetingScreen_projectDropdownShowsProjectsAndUpdatesSelection() {
     composeTestRule.onNodeWithTag(ProjectDropDownMenuTestTag.PROJECT_DROPDOWN_MENU).performClick()
 
     composeTestRule
@@ -168,7 +168,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun projectDropdown_showsLoadingIndicator() = runTest {
+  fun createMeetingScreen_projectDropdownShowsLoadingIndicator() = runTest {
     val job = launch { viewModel.loadProjects() }
 
     testScheduler.advanceUntilIdle()
@@ -177,7 +177,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun titleInput_onFocusChanged_triggersTouchTitle() {
+  fun createMeetingScreen_titleInputOnFocusChangedTriggersTouchTitle() {
     assertFalse(viewModel.uiState.value.hasTouchedTitle)
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE).performClick()
     composeTestRule.waitForIdle()
@@ -185,7 +185,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun titleInput_whenTouchedAndBlank_showsError() {
+  fun createMeetingScreen_titleInputWhenTouchedAndBlankShowsError() {
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE).performClick()
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE).performClick()
     findCancelButton().performClick()
@@ -200,7 +200,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun saveButton_isDisabled_whenProjectNotSelected() {
+  fun createMeetingScreen_saveButtonIsDisabledWhenProjectNotSelected() {
     composeTestRule
         .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TITLE)
         .performTextInput("Valid Meeting Title")
@@ -233,7 +233,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun saveButton_isEnabled_whenStateIsValid() {
+  fun createMeetingScreen_saveButtonIsEnabledWhenStateIsValid() {
     composeTestRule
         .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
         .assertIsNotEnabled()
@@ -264,7 +264,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun createMeeting_whenSuccess_callsOnDone() {
+  fun createMeetingScreen_createMeetingWhenSuccessCallsOnDone() {
     repositoryMock.shouldSucceed = true
 
     composeTestRule
@@ -302,7 +302,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun createMeeting_whenRepositoryFails_showsErrorAndClearsIt() {
+  fun createMeetingScreen_createMeetingWhenRepositoryFailsShowsErrorAndClearsIt() {
     repositoryMock.shouldSucceed = false
 
     composeTestRule
@@ -329,7 +329,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun dateInputField_opensDialog_andCancels() {
+  fun createMeetingScreen_dateInputFieldOpensDialogAndCancels() {
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE).performClick()
     composeTestRule.waitForIdle()
     findOkButton().assertIsDisplayed()
@@ -338,7 +338,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun dateInputField_opensDialogWithIcon_andConfirms() {
+  fun createMeetingScreen_dateInputFieldOpensDialogWithIconAndConfirms() {
     val initialDate = viewModel.uiState.value.date
     composeTestRule.onNodeWithContentDescription("Select date").performClick()
     findOkButton().assertIsDisplayed()
@@ -348,7 +348,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun timeInputField_opensDialog_andCancels() {
+  fun createMeetingScreen_timeInputFieldOpensDialogAndCancels() {
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TIME).performClick()
     composeTestRule.onNodeWithText("Select time").assertIsDisplayed()
     findCancelButton().performClick()
@@ -356,7 +356,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun timeInputField_opensDialogWithIcon_andConfirms() {
+  fun createMeetingScreen_timeInputFieldOpensDialogWithIconAndConfirms() {
     val initialTimeTruncated = viewModel.uiState.value.time.truncatedTo(ChronoUnit.MINUTES)
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TIME).performClick()
     composeTestRule.onNodeWithText("Select time").assertIsDisplayed()
@@ -367,7 +367,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun durationInputField_opensDialog_andCancels() {
+  fun createMeetingScreen_durationInputFieldOpensDialogAndCancels() {
     val initialDuration = viewModel.uiState.value.duration
     assertEquals(0, initialDuration)
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DURATION).performClick()
@@ -380,7 +380,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun durationInputField_opensDialogWithIcon_selectsOption_andConfirms() {
+  fun createMeetingScreen_durationInputFieldOpensDialogWithIconSelectsOptionAndConfirms() {
     val initialDuration = viewModel.uiState.value.duration
     assertEquals(0, initialDuration)
     composeTestRule.onNodeWithContentDescription("Select duration").performClick()
@@ -395,7 +395,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun formatInputField_opensDialog_andCancels() {
+  fun createMeetingScreen_formatInputFieldOpensDialogAndCancels() {
     val initialFormat = viewModel.uiState.value.format
     assertEquals(MeetingFormat.IN_PERSON, initialFormat)
 
@@ -415,7 +415,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun formatInputField_opensDialogWithIcon_selectsOption_andConfirms() {
+  fun createMeetingScreen_formatInputFieldOpensDialogWithIconSelectsOptionAndConfirms() {
     val initialFormat = viewModel.uiState.value.format
     assertEquals(MeetingFormat.IN_PERSON, initialFormat)
 
@@ -437,7 +437,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun saveButton_isEnabled_afterSelectingAllInputsViaUI() {
+  fun createMeetingScreen_saveButtonIsEnabledAfterSelectingAllInputsViaUI() {
     composeTestRule
         .onNodeWithTag(CreateMeetingScreenTestTags.CREATE_MEETING_BUTTON)
         .assertIsNotEnabled()
@@ -476,7 +476,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun dateInput_iconClick_triggersTouchDate() {
+  fun createMeetingScreen_dateInputIconClickTriggersTouchDate() {
     assertFalse(viewModel.uiState.value.hasTouchedDate)
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE).performClick()
     composeTestRule.waitForIdle()
@@ -485,7 +485,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun timeInput_iconClick_triggersTouchTime() {
+  fun createMeetingScreen_timeInputIconClickTriggersTouchTime() {
     assertFalse(viewModel.uiState.value.hasTouchedTime)
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_TIME).performClick()
     composeTestRule.waitForIdle()
@@ -494,7 +494,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun pastTimeError_appears_whenDateAndTimeTouchedAndInPast() {
+  fun createMeetingScreen_pastTimeErrorAppearsWhenDateAndTimeTouchedAndInPast() {
     val errorText = "Meeting should be scheduled in the future."
     composeTestRule.onNodeWithText(errorText).assertDoesNotExist()
 
@@ -512,7 +512,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun pastTimeError_disappears_whenFutureDateIsSelected() {
+  fun createMeetingScreen_pastTimeErrorDisappearsWhenFutureDateIsSelected() {
     val errorText = "Meeting should be scheduled in the future."
     composeTestRule.runOnIdle { viewModel.setDate(pastDate) }
     composeTestRule.onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_DATE).performClick()
@@ -527,7 +527,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun locationInput_isDisplayed_onlyWhenFormatIsInPerson() {
+  fun createMeetingScreen_locationInputIsDisplayedOnlyWhenFormatIsInPerson() {
     composeTestRule
         .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LOCATION)
         .assertIsDisplayed()
@@ -547,7 +547,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun locationInput_showsSuggestions_andUpdatesOnSelect() {
+  fun createMeetingScreen_locationInputShowsSuggestionsAndUpdatesOnSelect() {
     val expectedLocation = Location(46.5, 6.6, "EPFL Lausanne")
     locationRepositoryMock.searchResults = listOf(expectedLocation)
 
@@ -583,7 +583,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun locationInput_showsMoreOption_whenManySuggestions() {
+  fun createMeetingScreen_locationInputShowsMoreOptionWhenManySuggestions() {
     locationRepositoryMock.searchResults =
         listOf(
             Location(0.0, 0.0, "Loc1"),
@@ -614,7 +614,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun locationInput_mapIcon_isClickable() {
+  fun createMeetingScreen_locationInputMapIconIsClickable() {
     composeTestRule
         .onNodeWithTag(CreateMeetingScreenTestTags.PICK_LOCATION)
         .assertIsDisplayed()
@@ -623,7 +623,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun test_backButton_isDisplayed_andCallsOnBackClick() {
+  fun createMeetingScreen_backButtonIsDisplayedAndCallsOnBackClick() {
     composeTestRule.waitForIdle()
 
     composeTestRule
@@ -656,7 +656,7 @@ class CreateMeetingScreenTest {
   // ========== Meeting Link Tests ==========
 
   @Test
-  fun meetingLinkInput_isDisplayed_onlyWhenFormatIsVirtual() {
+  fun createMeetingScreen_meetingLinkInputIsDisplayedOnlyWhenFormatIsVirtual() {
     composeTestRule
         .onNodeWithTag(CreateMeetingScreenTestTags.INPUT_MEETING_LINK)
         .assertDoesNotExist()
@@ -670,7 +670,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun meetingLinkInput_validatesAndDetectsPlatforms() {
+  fun createMeetingScreen_meetingLinkInputValidatesAndDetectsPlatforms() {
     composeTestRule.runOnIdle { viewModel.setFormat(MeetingFormat.VIRTUAL) }
     composeTestRule.waitForIdle()
 
@@ -699,7 +699,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun meetingLinkInput_showsWarningForNonWhitelistedDomains() {
+  fun createMeetingScreen_meetingLinkInputShowsWarningForNonWhitelistedDomains() {
     composeTestRule.runOnIdle { viewModel.setFormat(MeetingFormat.VIRTUAL) }
     composeTestRule.waitForIdle()
 
@@ -716,7 +716,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun meetingLinkInput_errorWarningDisplayControlledByHasTouchedLink() {
+  fun createMeetingScreen_meetingLinkInputErrorWarningDisplayControlledByHasTouchedLink() {
     composeTestRule.runOnIdle { viewModel.setFormat(MeetingFormat.VIRTUAL) }
     composeTestRule.waitForIdle()
 
@@ -734,7 +734,7 @@ class CreateMeetingScreenTest {
   }
 
   @Test
-  fun createButton_enabledOnlyWithValidLinkForVirtualFormat() {
+  fun createMeetingScreen_createButtonEnabledOnlyWithValidLinkForVirtualFormat() {
     composeTestRule.runOnIdle {
       viewModel.setTitle("Test Meeting")
       viewModel.setDate(futureDate)

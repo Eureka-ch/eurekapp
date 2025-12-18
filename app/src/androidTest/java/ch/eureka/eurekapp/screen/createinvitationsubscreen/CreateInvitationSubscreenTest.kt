@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Claude. */
 package ch.eureka.eurekapp.screen.createinvitationsubscreen
 
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -35,7 +36,7 @@ class CreateProjectScreenTest : TestCase() {
   }
 
   @Test
-  fun testInvitationUI() {
+  fun createInvitationSubscreen_invitationUI() {
     runBlocking {
       composeRule.setContent { CreateInvitationSubscreen("kddjfdshf") {} }
 

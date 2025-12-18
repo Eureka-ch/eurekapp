@@ -1,3 +1,4 @@
+/* Portions of this file were written with the help of Claude. */
 package ch.eureka.eurekapp.model.data.audio
 
 import android.Manifest
@@ -40,7 +41,7 @@ class AudioRecordingViewModelTest {
   }
 
   @Test
-  fun startRecordingWorksAsExpected() {
+  fun audioRecordingViewModel_startRecordingWorksAsExpected() {
     val context = ApplicationProvider.getApplicationContext<Context>()
 
     val viewModel: AudioRecordingViewModel =
@@ -55,7 +56,7 @@ class AudioRecordingViewModelTest {
   }
 
   @Test
-  fun pauseRecordingWorksAsExpected() {
+  fun audioRecordingViewModel_pauseRecordingWorksAsExpected() {
     val context = ApplicationProvider.getApplicationContext<Context>()
 
     val viewModel: AudioRecordingViewModel =
@@ -70,7 +71,7 @@ class AudioRecordingViewModelTest {
   }
 
   @Test
-  fun stopRecordingWorksAsExpected() {
+  fun audioRecordingViewModel_stopRecordingWorksAsExpected() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val viewModel: AudioRecordingViewModel =
         AudioRecordingViewModel(recordingRepository = LocalAudioRecordingRepository())
@@ -87,7 +88,7 @@ class AudioRecordingViewModelTest {
   }
 
   @Test
-  fun resumeRecordingWorksAsExpected() {
+  fun audioRecordingViewModel_resumeRecordingWorksAsExpected() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val viewModel: AudioRecordingViewModel =
         AudioRecordingViewModel(recordingRepository = LocalAudioRecordingRepository())
@@ -104,7 +105,7 @@ class AudioRecordingViewModelTest {
   }
 
   @Test
-  fun deleteRecordingWorksAsExpected() {
+  fun audioRecordingViewModel_deleteRecordingWorksAsExpected() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val viewModel: AudioRecordingViewModel =
         AudioRecordingViewModel(recordingRepository = LocalAudioRecordingRepository())
@@ -115,7 +116,7 @@ class AudioRecordingViewModelTest {
   }
 
   @Test
-  fun onClearedWorksAsExpected() {
+  fun audioRecordingViewModel_onClearedWorksAsExpected() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val viewModel: AudioRecordingViewModel =
         AudioRecordingViewModel(recordingRepository = LocalAudioRecordingRepository())
@@ -124,7 +125,7 @@ class AudioRecordingViewModelTest {
   }
 
   @Test
-  fun saveRecordingToDatabaseWorksAsExpected() {
+  fun audioRecordingViewModel_saveRecordingToDatabaseWorksAsExpected() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val viewModel: AudioRecordingViewModel =
         AudioRecordingViewModel(
@@ -144,7 +145,7 @@ class AudioRecordingViewModelTest {
   }
 
   @Test
-  fun saveRecordingToDatabaseWorksAsExpectedOnFailure() {
+  fun audioRecordingViewModel_saveRecordingToDatabaseWorksAsExpectedOnFailure() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val viewModel: AudioRecordingViewModel =
         AudioRecordingViewModel(
