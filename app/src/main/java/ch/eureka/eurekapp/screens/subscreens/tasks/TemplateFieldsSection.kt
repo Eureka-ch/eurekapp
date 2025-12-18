@@ -34,7 +34,8 @@ fun TemplateFieldsSection(
     customData: TaskCustomData,
     onFieldValueChange: (fieldId: String, value: FieldValue) -> Unit,
     modifier: Modifier = Modifier,
-    mode: FieldInteractionMode = FieldInteractionMode.EditOnly
+    mode: FieldInteractionMode = FieldInteractionMode.EditOnly,
+    showValidationErrors: Boolean = true
 ) {
   if (template == null || template.definedFields.fields.isEmpty()) {
     return
@@ -60,35 +61,40 @@ fun TemplateFieldsSection(
                 fieldDefinition = fieldDefinition,
                 value = currentValue as? FieldValue.TextValue,
                 onValueChange = { onFieldValueChange(fieldDefinition.id, it) },
-                mode = mode)
+                mode = mode,
+                showValidationErrors = showValidationErrors)
           }
           is FieldType.Number -> {
             NumberFieldComponent(
                 fieldDefinition = fieldDefinition,
                 value = currentValue as? FieldValue.NumberValue,
                 onValueChange = { onFieldValueChange(fieldDefinition.id, it) },
-                mode = mode)
+                mode = mode,
+                showValidationErrors = showValidationErrors)
           }
           is FieldType.Date -> {
             DateFieldComponent(
                 fieldDefinition = fieldDefinition,
                 value = currentValue as? FieldValue.DateValue,
                 onValueChange = { onFieldValueChange(fieldDefinition.id, it) },
-                mode = mode)
+                mode = mode,
+                showValidationErrors = showValidationErrors)
           }
           is FieldType.SingleSelect -> {
             SingleSelectFieldComponent(
                 fieldDefinition = fieldDefinition,
                 value = currentValue as? FieldValue.SingleSelectValue,
                 onValueChange = { onFieldValueChange(fieldDefinition.id, it) },
-                mode = mode)
+                mode = mode,
+                showValidationErrors = showValidationErrors)
           }
           is FieldType.MultiSelect -> {
             MultiSelectFieldComponent(
                 fieldDefinition = fieldDefinition,
                 value = currentValue as? FieldValue.MultiSelectValue,
                 onValueChange = { onFieldValueChange(fieldDefinition.id, it) },
-                mode = mode)
+                mode = mode,
+                showValidationErrors = showValidationErrors)
           }
         }
 

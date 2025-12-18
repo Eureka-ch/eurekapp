@@ -46,6 +46,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ch.eureka.eurekapp.R
+import ch.eureka.eurekapp.ui.components.BackButton
+import ch.eureka.eurekapp.ui.components.EurekaTopBar
 import ch.eureka.eurekapp.ui.components.ProjectDropdownMenu
 import ch.eureka.eurekapp.ui.designsystem.tokens.Spacing
 
@@ -63,6 +65,7 @@ object CreateConversationScreenTestTags {
   const val CREATE_BUTTON = "CreateButton"
   const val LOADING_INDICATOR = "CreateConversationLoading"
   const val NO_MEMBERS_MESSAGE = "NoMembersMessage"
+  const val BACK_BUTTON = "BackButton"
 }
 
 /**
@@ -76,12 +79,14 @@ object CreateConversationScreenTestTags {
  * navigates to it directly.
  *
  * @param onNavigateToConversation Callback invoked with conversation ID to navigate to.
+ * @param onBackClick Callback invoked when the back button is clicked.
  * @param viewModel The ViewModel managing the create conversation state.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateConversationScreen(
     onNavigateToConversation: (String) -> Unit,
+    onBackClick: () -> Unit = {},
     viewModel: CreateConversationViewModel = viewModel()
 ) {
   val context = LocalContext.current
@@ -107,65 +112,70 @@ fun CreateConversationScreen(
     }
   }
 
-  Scaffold(modifier = Modifier.testTag(CreateConversationScreenTestTags.SCREEN)) { padding ->
-    Column(
-        modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = Spacing.md),
-        verticalArrangement = Arrangement.Top) {
-          Spacer(modifier = Modifier.height(Spacing.md))
+  Scaffold(
+      modifier = Modifier.testTag(CreateConversationScreenTestTags.SCREEN),
+      topBar = {
+        EurekaTopBar(
+            title = "New Conversation",
+            navigationIcon = {
+              BackButton(
+                  onClick = onBackClick,
+                  modifier = Modifier.testTag(CreateConversationScreenTestTags.BACK_BUTTON))
+            })
+      }) { padding ->
+        Column(
+            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = Spacing.md),
+            verticalArrangement = Arrangement.Top) {
+              Spacer(modifier = Modifier.height(Spacing.md))
 
-          ScreenHeader()
+              ScreenHeader()
 
-          Spacer(modifier = Modifier.height(Spacing.lg))
+              Spacer(modifier = Modifier.height(Spacing.lg))
 
-          ProjectDropdownMenu(
-              projectsList = uiState.projects,
-              selectedProject = uiState.selectedProject,
-              isLoadingProjects = uiState.isLoadingProjects,
-              projectDropdownExpanded = projectDropdownExpanded,
-              onExpandedChange = { projectDropdownExpanded = it },
-              onProjectSelect = { project ->
-                viewModel.selectProject(project)
-                projectDropdownExpanded = false
-              })
+              ProjectDropdownMenu(
+                  projectsList = uiState.projects,
+                  selectedProject = uiState.selectedProject,
+                  isLoadingProjects = uiState.isLoadingProjects,
+                  projectDropdownExpanded = projectDropdownExpanded,
+                  onExpandedChange = { projectDropdownExpanded = it },
+                  onProjectSelect = { project ->
+                    viewModel.selectProject(project)
+                    projectDropdownExpanded = false
+                  })
 
-          Spacer(modifier = Modifier.height(Spacing.md))
+              Spacer(modifier = Modifier.height(Spacing.md))
 
-          if (uiState.selectedProject != null) {
-            MemberSelection(
-                uiState = uiState,
-                memberDropdownExpanded = memberDropdownExpanded,
-                onExpandedChange = { memberDropdownExpanded = it },
-                onMemberSelect = { member -> viewModel.selectMember(member) },
-                onMemberDeselect = { viewModel.removeMember(it) })
-          }
+              if (uiState.selectedProject != null) {
+                MemberSelection(
+                    uiState = uiState,
+                    memberDropdownExpanded = memberDropdownExpanded,
+                    onExpandedChange = { memberDropdownExpanded = it },
+                    onMemberSelect = { member -> viewModel.selectMember(member) },
+                    onMemberDeselect = { viewModel.removeMember(it) })
+              }
 
-          Spacer(modifier = Modifier.height(Spacing.lg))
+              Spacer(modifier = Modifier.height(Spacing.lg))
 
-          CreateButton(uiState = uiState, onClick = { viewModel.createConversation() })
+              CreateButton(uiState = uiState, onClick = { viewModel.createConversation() })
 
-          if (!uiState.isConnected) {
-            Spacer(modifier = Modifier.height(Spacing.sm))
-            Text(
-                text = stringResource(R.string.create_conversation_offline_message),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error)
-          }
-        }
-  }
+              if (!uiState.isConnected) {
+                Spacer(modifier = Modifier.height(Spacing.sm))
+                Text(
+                    text = stringResource(R.string.create_conversation_offline_message),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error)
+              }
+            }
+      }
 }
 
 @Composable
 private fun ScreenHeader() {
   Text(
-      text = stringResource(R.string.create_conversation_title),
-      style = MaterialTheme.typography.headlineSmall,
-      fontWeight = FontWeight.Bold,
-      modifier = Modifier.testTag(CreateConversationScreenTestTags.TITLE))
-  Spacer(modifier = Modifier.height(Spacing.xs))
-  Text(
       text = stringResource(R.string.create_conversation_description),
       style = MaterialTheme.typography.bodyMedium,
-      color = Color.Gray)
+      color = Color.Gray,
+      modifier = Modifier.testTag(CreateConversationScreenTestTags.TITLE))
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

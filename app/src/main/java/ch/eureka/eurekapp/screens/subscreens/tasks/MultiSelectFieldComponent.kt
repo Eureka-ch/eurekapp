@@ -67,7 +67,7 @@ fun MultiSelectFieldComponent(
     callbacks: FieldCallbacks = FieldCallbacks(),
     showHeader: Boolean = true
 ) {
-  val fieldType = fieldDefinition.type as FieldType.MultiSelect
+  val fieldType = fieldDefinition.type as? FieldType.MultiSelect ?: return
 
   BaseFieldComponent(
       modifier = modifier,
@@ -127,6 +127,7 @@ private fun MultiSelectEditMode(
     if (fieldType.allowCustom) {
       CustomValueInput(
           fieldDefinition = fieldDefinition,
+          fieldType = fieldType,
           customText = customText,
           onCustomTextChange = onCustomTextChange,
           localSelectedValues = localSelectedValues,
@@ -179,12 +180,16 @@ private fun RenderCustomValueChips(
 @Composable
 private fun CustomValueInput(
     fieldDefinition: FieldDefinition,
+    fieldType: FieldType.MultiSelect,
     customText: String,
     onCustomTextChange: (String) -> Unit,
     localSelectedValues: Set<String>,
     onSelectionChange: (Set<String>) -> Unit,
     onCustomValueAdded: () -> Unit,
 ) {
+  val maxSelections = fieldType.maxSelections
+  val canAddMore = maxSelections == null || localSelectedValues.size < maxSelections
+
   Row(
       modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
       verticalAlignment = Alignment.CenterVertically) {
@@ -200,10 +205,11 @@ private fun CustomValueInput(
         Spacer(modifier = Modifier.width(8.dp))
         Button(
             onClick = {
-              handleCustomValueAdd(customText, localSelectedValues, onSelectionChange)
+              handleCustomValueAdd(
+                  customText, localSelectedValues, maxSelections, onSelectionChange)
               onCustomValueAdded()
             },
-            enabled = customText.isNotBlank(),
+            enabled = customText.isNotBlank() && canAddMore,
             modifier = Modifier.testTag(MultiSelectFieldTestTags.customAdd(fieldDefinition.id))) {
               Text(stringResource(R.string.multi_select_add_button))
             }
@@ -257,10 +263,12 @@ private fun getCustomValues(
 private fun handleCustomValueAdd(
     customText: String,
     localSelectedValues: Set<String>,
+    maxSelections: Int?,
     onSelectionChange: (Set<String>) -> Unit,
 ) {
   val trimmedValue = customText.trim()
-  if (trimmedValue.isNotBlank() && trimmedValue !in localSelectedValues) {
+  val canAdd = maxSelections == null || localSelectedValues.size < maxSelections
+  if (trimmedValue.isNotBlank() && trimmedValue !in localSelectedValues && canAdd) {
     val newSelectedValues = localSelectedValues + trimmedValue
     onSelectionChange(newSelectedValues)
   }

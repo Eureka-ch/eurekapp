@@ -60,9 +60,14 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
 
   val inputValid: StateFlow<Boolean> by lazy {
     uiState
-        .map { state -> isValidInput(state.title, state.description, state.dueDate) }
+        .map { state ->
+          isValidInput(state.title, state.description, state.dueDate) && isCustomDataValid(state)
+        }
         .stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = false)
   }
+
+  /** Validates custom field data against the template schema. Override to implement. */
+  protected open fun isCustomDataValid(state: T): Boolean = true
 
   protected val availableTasksMutable = MutableStateFlow<List<Task>>(emptyList())
   val availableTasks: StateFlow<List<Task>> = availableTasksMutable.asStateFlow()
@@ -383,7 +388,7 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
     updateState { copyWithReminderTime(reminderTime) }
   }
 
-  /** Loads available users from the selected project */
+  /** Loads available users from the selected project, including the current user */
   fun loadProjectMembers(projectId: String) {
     if (projectId.isBlank()) {
       updateState { copyWithAvailableUsers(emptyList()) }
@@ -391,14 +396,32 @@ abstract class ReadWriteTaskViewModel<T : TaskStateReadWrite>(
     }
 
     viewModelScope.launch(dispatcher) {
+      val currentUserId = getCurrentUserId()
       projectRepository.getMembers(projectId).collect { members ->
         if (members.isEmpty()) {
-          updateState { copyWithAvailableUsers(emptyList()) }
+          // If no members but current user exists, include current user
+          if (currentUserId != null) {
+            userRepository.getUserById(currentUserId).collect { currentUser ->
+              updateState { copyWithAvailableUsers(currentUser?.let { listOf(it) } ?: emptyList()) }
+            }
+          } else {
+            updateState { copyWithAvailableUsers(emptyList()) }
+          }
         } else {
           // Collect all user flows
+          val memberUserIds = members.map { it.userId }.toSet()
           val userFlows = members.map { member -> userRepository.getUserById(member.userId) }
+
+          // If current user is not in members, add them
+          val allUserFlows =
+              if (currentUserId != null && !memberUserIds.contains(currentUserId)) {
+                userFlows + userRepository.getUserById(currentUserId)
+              } else {
+                userFlows
+              }
+
           kotlinx.coroutines.flow
-              .combine(userFlows) { users -> users.toList().filterNotNull() }
+              .combine(allUserFlows) { users -> users.toList().filterNotNull() }
               .collect { users -> updateState { copyWithAvailableUsers(users) } }
         }
       }

@@ -2,6 +2,10 @@ package ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.fiel
 
 /* Portions of this code were generated with the help of Claude Sonnet 4.5. */
 
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performTextInput
 import ch.eureka.eurekapp.model.data.template.field.FieldType
 import ch.eureka.eurekapp.screens.subscreens.tasks.templates.customization.utils.BaseFieldConfigurationTest
 import org.junit.Test
@@ -89,8 +93,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
           enabled = true)
     }
 
-    utils.assertNoError(
-        composeTestRule, "Minimum selections must be less than or equal to maximum selections")
+    utils.assertNoError(composeTestRule, "Max selections must be ≥ min selections")
   }
 
   @Test
@@ -102,8 +105,7 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
           enabled = true)
     }
 
-    utils.assertNoError(
-        composeTestRule, "Minimum selections must be less than or equal to maximum selections")
+    utils.assertNoError(composeTestRule, "Max selections must be ≥ min selections")
   }
 
   @Test
@@ -205,6 +207,75 @@ class MultiSelectFieldConfigurationTest : BaseFieldConfigurationTest() {
         testTag = MultiSelectFieldConfigurationTestTags.MIN,
         inputValue = "1") { updated ->
           assertions.assertListPreserved(testOptions, updated, { it.options }, "options")
+        }
+  }
+
+  @Test
+  fun multiSelectFieldConfiguration_invalidMinSelectionsInputShowsErrorAndDoesNotUpdate() {
+    val updates = mutableListOf<FieldType.MultiSelect>()
+    composeTestRule.setContent {
+      MultiSelectFieldConfiguration(
+          fieldType = FieldType.MultiSelect(testOptions),
+          onUpdate = { updates.add(it) },
+          enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag(MultiSelectFieldConfigurationTestTags.MIN).performTextInput("abc")
+    composeTestRule.onNodeWithText("Invalid number").assertIsDisplayed()
+    assert(updates.isEmpty()) { "Model should not be updated with invalid input" }
+  }
+
+  @Test
+  fun multiSelectFieldConfiguration_invalidMaxSelectionsInputShowsErrorAndDoesNotUpdate() {
+    val updates = mutableListOf<FieldType.MultiSelect>()
+    composeTestRule.setContent {
+      MultiSelectFieldConfiguration(
+          fieldType = FieldType.MultiSelect(testOptions),
+          onUpdate = { updates.add(it) },
+          enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag(MultiSelectFieldConfigurationTestTags.MAX).performTextInput("xyz")
+    composeTestRule.onNodeWithText("Invalid number").assertIsDisplayed()
+    assert(updates.isEmpty()) { "Model should not be updated with invalid input" }
+  }
+
+  @Test
+  fun multiSelectFieldConfiguration_zeroMaxSelectionsShowsError() {
+    composeTestRule.setContent {
+      MultiSelectFieldConfiguration(
+          fieldType = FieldType.MultiSelect(testOptions), onUpdate = {}, enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag(MultiSelectFieldConfigurationTestTags.MAX).performTextInput("0")
+    composeTestRule.onNodeWithText("Max selections must be positive").assertIsDisplayed()
+  }
+
+  @Test
+  fun multiSelectFieldConfiguration_negativeMinSelectionsShowsError() {
+    composeTestRule.setContent {
+      MultiSelectFieldConfiguration(
+          fieldType = FieldType.MultiSelect(testOptions), onUpdate = {}, enabled = true)
+    }
+
+    composeTestRule.onNodeWithTag(MultiSelectFieldConfigurationTestTags.MIN).performTextInput("-1")
+    composeTestRule.onNodeWithText("Min selections must be non-negative").assertIsDisplayed()
+  }
+
+  @Test
+  fun multiSelectFieldConfiguration_zeroMinSelectionsAccepted() {
+    val updates = mutableListOf<FieldType.MultiSelect>()
+
+    utils.testInputUpdate(
+        composeTestRule,
+        content = { onUpdate ->
+          MultiSelectFieldConfiguration(
+              fieldType = FieldType.MultiSelect(testOptions), onUpdate = onUpdate, enabled = true)
+        },
+        capturedUpdate = updates,
+        testTag = MultiSelectFieldConfigurationTestTags.MIN,
+        inputValue = "0") { updated ->
+          assertions.assertPropertyEquals(0, updated, { it.minSelections }, "minSelections")
         }
   }
 }

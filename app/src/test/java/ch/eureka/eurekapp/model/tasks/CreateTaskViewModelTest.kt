@@ -758,6 +758,64 @@ class CreateTaskViewModelTest {
   }
 
   @Test
+  fun loadProjectMembers_includesCurrentUserEvenIfNotInMembers() = runTest {
+    val members =
+        listOf(
+            Member(userId = "user1", role = ProjectRole.MEMBER),
+            Member(userId = "user2", role = ProjectRole.MEMBER))
+
+    val user1 =
+        User(uid = "user1", displayName = "Alice", email = "alice@example.com", photoUrl = "")
+    val user2 = User(uid = "user2", displayName = "Bob", email = "bob@example.com", photoUrl = "")
+    val currentUser =
+        User(
+            uid = "current-user",
+            displayName = "Current User",
+            email = "current@example.com",
+            photoUrl = "")
+
+    mockProjectRepository.setMembers("project123", kotlinx.coroutines.flow.flowOf(members))
+    mockUserRepository.setUsers(user1, user2, currentUser)
+
+    viewModel = createViewModel(getCurrentUserId = { "current-user" })
+    advanceUntilIdle()
+
+    viewModel.loadProjectMembers("project123")
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.first()
+    // Should include all members plus current user
+    assertEquals(3, state.availableUsers.size)
+    assertTrue(state.availableUsers.any { it.uid == "user1" })
+    assertTrue(state.availableUsers.any { it.uid == "user2" })
+    assertTrue(state.availableUsers.any { it.uid == "current-user" })
+  }
+
+  @Test
+  fun loadProjectMembers_includesCurrentUserWhenNoMembers() = runTest {
+    val currentUser =
+        User(
+            uid = "current-user",
+            displayName = "Current User",
+            email = "current@example.com",
+            photoUrl = "")
+
+    mockProjectRepository.setMembers("project123", kotlinx.coroutines.flow.flowOf(emptyList()))
+    mockUserRepository.setUsers(currentUser)
+
+    viewModel = createViewModel(getCurrentUserId = { "current-user" })
+    advanceUntilIdle()
+
+    viewModel.loadProjectMembers("project123")
+    advanceUntilIdle()
+
+    val state = viewModel.uiState.first()
+    // Should include current user even when no members
+    assertEquals(1, state.availableUsers.size)
+    assertTrue(state.availableUsers.any { it.uid == "current-user" })
+  }
+
+  @Test
   fun addDependency_addsDependencyToList() = runTest {
     viewModel = createViewModel()
     viewModel.setProjectId("project123")

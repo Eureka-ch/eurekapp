@@ -45,7 +45,7 @@ fun NumberFieldComponent(
     showValidationErrors: Boolean = false,
     showHeader: Boolean = true
 ) {
-  val fieldType = fieldDefinition.type as FieldType.Number
+  val fieldType = fieldDefinition.type as? FieldType.Number ?: return
 
   BaseFieldComponent(
       fieldDefinition = fieldDefinition,

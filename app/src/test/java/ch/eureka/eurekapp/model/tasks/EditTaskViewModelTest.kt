@@ -183,6 +183,7 @@ class EditTaskViewModelTest {
             projectRepository = mockProjectRepository,
             userRepository = mockUserRepository,
             templateRepository = mockTemplateRepository,
+            getCurrentUserId = { null },
             dispatcher = testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
@@ -200,6 +201,7 @@ class EditTaskViewModelTest {
             projectRepository = mockProjectRepository,
             userRepository = mockUserRepository,
             templateRepository = mockTemplateRepository,
+            getCurrentUserId = { null },
             dispatcher = testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
@@ -233,6 +235,7 @@ class EditTaskViewModelTest {
             projectRepository = mockProjectRepository,
             userRepository = mockUserRepository,
             templateRepository = mockTemplateRepository,
+            getCurrentUserId = { null },
             dispatcher = testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
@@ -268,6 +271,7 @@ class EditTaskViewModelTest {
             projectRepository = mockProjectRepository,
             userRepository = mockUserRepository,
             templateRepository = mockTemplateRepository,
+            getCurrentUserId = { null },
             dispatcher = testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
@@ -306,6 +310,7 @@ class EditTaskViewModelTest {
             projectRepository = mockProjectRepository,
             userRepository = mockUserRepository,
             templateRepository = mockTemplateRepository,
+            getCurrentUserId = { null },
             dispatcher = testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
@@ -335,6 +340,7 @@ class EditTaskViewModelTest {
             projectRepository = mockProjectRepository,
             userRepository = mockUserRepository,
             templateRepository = mockTemplateRepository,
+            getCurrentUserId = { null },
             dispatcher = testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
@@ -464,6 +470,7 @@ class EditTaskViewModelTest {
             projectRepository = mockProjectRepository,
             userRepository = mockUserRepository,
             templateRepository = mockTemplateRepository,
+            getCurrentUserId = { null },
             dispatcher = testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
@@ -511,6 +518,7 @@ class EditTaskViewModelTest {
             projectRepository = mockProjectRepository,
             userRepository = mockUserRepository,
             templateRepository = mockTemplateRepository,
+            getCurrentUserId = { null },
             dispatcher = testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
@@ -540,6 +548,7 @@ class EditTaskViewModelTest {
             projectRepository = mockProjectRepository,
             userRepository = mockUserRepository,
             templateRepository = mockTemplateRepository,
+            getCurrentUserId = { null },
             dispatcher = testDispatcher)
     viewModel.loadTask("project123", "task123")
     advanceUntilIdle()
@@ -572,6 +581,7 @@ class EditTaskViewModelTest {
             projectRepository = mockProjectRepository,
             userRepository = mockUserRepository,
             templateRepository = mockTemplateRepository,
+            getCurrentUserId = { null },
             dispatcher = testDispatcher)
 
     // Simulate deletion in progress

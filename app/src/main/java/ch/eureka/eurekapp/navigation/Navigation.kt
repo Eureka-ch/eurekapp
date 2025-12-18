@@ -729,7 +729,8 @@ fun NavigationMenu(
                     onNavigateToConversation = { conversationId ->
                       navigationController.navigate(
                           Route.ConversationsSection.ConversationDetail(conversationId))
-                    })
+                    },
+                    onBackClick = { navigationController.popBackStack() })
               }
             }
       }
